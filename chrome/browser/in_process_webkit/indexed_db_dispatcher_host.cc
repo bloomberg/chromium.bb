@@ -33,6 +33,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebDOMStringList;
+using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBCursor;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
@@ -558,52 +559,75 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(
     const ViewHostMsg_IDBIndexOpenCursor_Params& params) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
-      &parent_->index_dispatcher_host_->map_,
-      params.idb_index_id_, NULL,
+      &map_, params.idb_index_id_, NULL,
       ViewHostMsg_IDBIndexOpenObjectCursor::ID);
-  if (!idb_index)
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_,
+      params.transaction_id_, NULL, ViewHostMsg_IDBIndexOpenObjectCursor::ID);
+  if (!idb_transaction || !idb_index)
     return;
+
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
   idb_index->openObjectCursor(
       WebIDBKeyRange(params.left_key_, params.right_key_, params.key_flags_),
-      params.direction_,
-      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
+      params.direction_, callbacks.release(), *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenCursor(
     const ViewHostMsg_IDBIndexOpenCursor_Params& params) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
-      &parent_->index_dispatcher_host_->map_,
-      params.idb_index_id_, NULL,
-      ViewHostMsg_IDBIndexOpenCursor::ID);
-  if (!idb_index)
+      &map_, params.idb_index_id_, NULL, ViewHostMsg_IDBIndexOpenCursor::ID);
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_, params.transaction_id_,
+      NULL, ViewHostMsg_IDBIndexOpenCursor::ID);
+  if (!idb_transaction || !idb_index)
     return;
+
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
   idb_index->openCursor(
       WebIDBKeyRange(params.left_key_, params.right_key_, params.key_flags_),
-      params.direction_,
-      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
+      params.direction_, callbacks.release(), *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetObject(
-    int idb_index_id, int32 response_id, const IndexedDBKey& key) {
+    int idb_index_id,
+    int32 response_id,
+    const IndexedDBKey& key,
+    int transaction_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
       &map_, idb_index_id, NULL, ViewHostMsg_IDBIndexGetObject::ID);
-  if (!idb_index)
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_, transaction_id, NULL,
+      ViewHostMsg_IDBIndexGetObject::ID);
+  if (!idb_transaction || !idb_index)
     return;
-  idb_index->getObject(key, new IndexedDBCallbacks<WebSerializedScriptValue>(
-      parent_, response_id));
+
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id));
+  idb_index->getObject(key, callbacks.release(), *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnGet(
-    int idb_index_id, int32 response_id, const IndexedDBKey& key) {
+    int idb_index_id,
+    int32 response_id,
+    const IndexedDBKey& key,
+    int transaction_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
       &map_, idb_index_id, NULL, ViewHostMsg_IDBIndexGet::ID);
-  if (!idb_index)
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_, transaction_id, NULL,
+      ViewHostMsg_IDBIndexGet::ID);
+  if (!idb_transaction || !idb_index)
     return;
-  idb_index->get(key, new IndexedDBCallbacks<WebSerializedScriptValue>(
-      parent_, response_id));
+
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id));
+  idb_index->get(key, callbacks.release(), *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnDestroyed(
@@ -686,39 +710,59 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndexNames(
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnGet(
-    int idb_object_store_id, int32 response_id, const IndexedDBKey& key) {
+    int idb_object_store_id,
+    int32 response_id,
+    const IndexedDBKey& key,
+    int transaction_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, idb_object_store_id, NULL, ViewHostMsg_IDBObjectStoreGet::ID);
-  if (!idb_object_store)
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_, transaction_id, NULL,
+      ViewHostMsg_IDBObjectStoreGet::ID);
+  if (!idb_transaction || !idb_object_store)
     return;
-  idb_object_store->get(key, new IndexedDBCallbacks<WebSerializedScriptValue>(
-      parent_, response_id));
+
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id));
+  idb_object_store->get(key, callbacks.release(), *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnPut(
-    int idb_object_store_id, int32 response_id,
-    const SerializedScriptValue& value, const IndexedDBKey& key,
-    bool add_only) {
+    const ViewHostMsg_IDBObjectStorePut_Params& params) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
-      &map_, idb_object_store_id, NULL, ViewHostMsg_IDBObjectStorePut::ID);
-  if (!idb_object_store)
+      &map_, params.idb_object_store_id_, NULL,
+      ViewHostMsg_IDBObjectStorePut::ID);
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_, params.transaction_id_,
+      NULL, ViewHostMsg_IDBObjectStorePut::ID);
+  if (!idb_transaction || !idb_object_store)
     return;
-  idb_object_store->put(
-      value, key, add_only, new IndexedDBCallbacks<WebIDBKey>(
-          parent_, response_id));
+
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebIDBKey>(parent_, params.response_id_));
+  idb_object_store->put(params.serialized_value_, params.key_, params.add_only_,
+                        callbacks.release(), *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemove(
-    int idb_object_store_id, int32 response_id, const IndexedDBKey& key) {
+    int idb_object_store_id,
+    int32 response_id,
+    const IndexedDBKey& key,
+    int transaction_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, idb_object_store_id, NULL, ViewHostMsg_IDBObjectStoreRemove::ID);
-  if (!idb_object_store)
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_, transaction_id, NULL,
+      ViewHostMsg_IDBObjectStoreRemove::ID);
+  if (!idb_transaction || !idb_object_store)
     return;
-  idb_object_store->remove(key, new IndexedDBCallbacks<void>(parent_,
-                                                             response_id));
+
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<void>(parent_, response_id));
+  idb_object_store->remove(key, callbacks.release(), *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(
@@ -768,12 +812,17 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnOpenCursor(
       &parent_->object_store_dispatcher_host_->map_,
       params.idb_object_store_id_, NULL,
       ViewHostMsg_IDBObjectStoreOpenCursor::ID);
-  if (!idb_object_store)
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &parent_->transaction_dispatcher_host_->map_, params.transaction_id_,
+      NULL, ViewHostMsg_IDBObjectStoreOpenCursor::ID);
+  if (!idb_transaction || !idb_object_store)
     return;
+
+  scoped_ptr<WebIDBCallbacks> callbacks(
+      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
   idb_object_store->openCursor(
       WebIDBKeyRange(params.left_key_, params.right_key_, params.flags_),
-      params.direction_,
-      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
+      params.direction_, callbacks.release(), *idb_transaction);
 }
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDestroyed(

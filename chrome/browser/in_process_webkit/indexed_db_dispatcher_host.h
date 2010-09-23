@@ -22,6 +22,7 @@ struct ViewHostMsg_IDBFactoryOpen_Params;
 struct ViewHostMsg_IDBIndexOpenCursor_Params;
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params;
 struct ViewHostMsg_IDBObjectStoreOpenCursor_Params;
+struct ViewHostMsg_IDBObjectStorePut_Params;
 
 namespace WebKit {
 class WebIDBCursor;
@@ -137,10 +138,12 @@ class IndexedDBDispatcherHost
     void OnOpenCursor(const ViewHostMsg_IDBIndexOpenCursor_Params& params);
     void OnGetObject(int idb_index_id,
                      int32 response_id,
-                     const IndexedDBKey& key);
+                     const IndexedDBKey& key,
+                     int transaction_id);
     void OnGet(int idb_index_id,
                int32 response_id,
-               const IndexedDBKey& key);
+               const IndexedDBKey& key,
+               int transaction_id);
     void OnDestroyed(int32 idb_index_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -158,13 +161,15 @@ class IndexedDBDispatcherHost
     void OnName(int32 idb_object_store_id, IPC::Message* reply_msg);
     void OnKeyPath(int32 idb_object_store_id, IPC::Message* reply_msg);
     void OnIndexNames(int32 idb_object_store_id, IPC::Message* reply_msg);
-    void OnGet(int idb_object_store_id, int32 response_id,
-               const IndexedDBKey& key);
-    void OnPut(int idb_object_store_id, int32 response_id,
-               const SerializedScriptValue& value, const IndexedDBKey& key,
-               bool add_only);
-    void OnRemove(int idb_object_store_id, int32 response_id,
-                  const IndexedDBKey& key);
+    void OnGet(int idb_object_store_id,
+               int32 response_id,
+               const IndexedDBKey& key,
+               int transaction_id);
+    void OnPut(const ViewHostMsg_IDBObjectStorePut_Params& params);
+    void OnRemove(int idb_object_store_id,
+                  int32 response_id,
+                  const IndexedDBKey& key,
+                  int transaction_id);
     void OnCreateIndex(
         const ViewHostMsg_IDBObjectStoreCreateIndex_Params& params);
     void OnIndex(int32 idb_object_store_id, const string16& name,

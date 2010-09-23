@@ -2462,16 +2462,18 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        ViewHostMsg_IDBIndexOpenCursor_Params)
 
   // WebIDBIndex::getObject() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBIndexGetObject,
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBIndexGetObject,
                        int32, /* idb_index_id */
                        int32, /* response_id */
-                       IndexedDBKey /* key */)
+                       IndexedDBKey, /* key */
+                       int /* transaction_id */)
 
   // WebIDBIndex::get() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBIndexGet,
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBIndexGet,
                        int32, /* idb_index_id */
                        int32, /* response_id */
-                       IndexedDBKey /* key */)
+                       IndexedDBKey, /* key */
+                       int /* transaction_id */)
 
   // WebIDBIndex::~WebIDBIndex() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexDestroyed,
@@ -2493,24 +2495,22 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::vector<string16> /* index_names */)
 
   // WebIDBObjectStore::get() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBObjectStoreGet,
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBObjectStoreGet,
                        int32, /* idb_object_store_id */
                        int32, /* response_id */
-                       IndexedDBKey /* key */)
+                       IndexedDBKey, /* key */
+                       int /* transaction_id */)
 
   // WebIDBObjectStore::put() message.
-  IPC_MESSAGE_CONTROL5(ViewHostMsg_IDBObjectStorePut,
-                       int32, /* idb_object_store_id */
-                       int32, /* response_id */
-                       SerializedScriptValue, /* serialized_value */
-                       IndexedDBKey, /* key */
-                       bool /* add_only */)
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStorePut,
+                       ViewHostMsg_IDBObjectStorePut_Params)
 
   // WebIDBObjectStore::remove() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBObjectStoreRemove,
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBObjectStoreRemove,
                        int32, /* idb_object_store_id */
                        int32, /* response_id */
-                       IndexedDBKey /* key */)
+                       IndexedDBKey, /* key */
+                       int /* transaction_id */)
 
   // WebIDBObjectStore::createIndex() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreCreateIndex,

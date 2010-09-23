@@ -150,8 +150,11 @@ void IndexedDBDispatcher::RequestIDBDatabaseSetVersion(
 }
 
 void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
-    const WebIDBKeyRange& idb_key_range, unsigned short direction,
-    WebIDBCallbacks* callbacks_ptr, int32 idb_index_id) {
+    const WebIDBKeyRange& idb_key_range,
+    unsigned short direction,
+    WebIDBCallbacks* callbacks_ptr,
+    int32 idb_index_id,
+    int transaction_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBIndexOpenCursor_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
@@ -160,13 +163,17 @@ void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
   params.key_flags_ = idb_key_range.flags();
   params.direction_ = direction;
   params.idb_index_id_ = idb_index_id;
+  params.transaction_id_ = transaction_id;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexOpenObjectCursor(params));
 }
 
 void IndexedDBDispatcher::RequestIDBIndexOpenCursor(
-    const WebIDBKeyRange& idb_key_range, unsigned short direction,
-    WebIDBCallbacks* callbacks_ptr, int32 idb_index_id) {
+    const WebIDBKeyRange& idb_key_range,
+    unsigned short direction,
+    WebIDBCallbacks* callbacks_ptr,
+    int32 idb_index_id,
+    int transaction_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBIndexOpenCursor_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
@@ -175,62 +182,79 @@ void IndexedDBDispatcher::RequestIDBIndexOpenCursor(
   params.key_flags_ = idb_key_range.flags();
   params.direction_ = direction;
   params.idb_index_id_ = idb_index_id;
+  params.transaction_id_ = transaction_id;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexOpenCursor(params));
 }
 
 void IndexedDBDispatcher::RequestIDBIndexGetObject(
-    const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks_ptr,
-    int32 idb_index_id) {
+    const IndexedDBKey& key,
+    WebKit::WebIDBCallbacks* callbacks_ptr,
+    int32 idb_index_id,
+    int transaction_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexGetObject(
-          idb_index_id, pending_callbacks_.Add(callbacks.release()), key));
+          idb_index_id, pending_callbacks_.Add(callbacks.release()), key,
+          transaction_id));
 }
 
 void IndexedDBDispatcher::RequestIDBIndexGet(
-    const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks_ptr,
-    int32 idb_index_id) {
+    const IndexedDBKey& key,
+    WebKit::WebIDBCallbacks* callbacks_ptr,
+    int32 idb_index_id,
+    int transaction_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexGet(
-          idb_index_id, pending_callbacks_.Add(callbacks.release()), key));
+          idb_index_id, pending_callbacks_.Add(callbacks.release()), key,
+          transaction_id));
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreGet(
-    const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id) {
+    const IndexedDBKey& key,
+    WebKit::WebIDBCallbacks* callbacks_ptr,
+    int32 idb_object_store_id,
+    int transaction_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   RenderThread::current()->Send(
       new ViewHostMsg_IDBObjectStoreGet(
           idb_object_store_id, pending_callbacks_.Add(callbacks.release()),
-          key));
+          key, transaction_id));
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStorePut(
-    const SerializedScriptValue& value, const IndexedDBKey& key,
-    bool add_only, WebKit::WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id) {
+    const SerializedScriptValue& value,
+    const IndexedDBKey& key,
+    bool add_only,
+    WebKit::WebIDBCallbacks* callbacks_ptr,
+    int32 idb_object_store_id,
+    int transaction_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-
-  RenderThread::current()->Send(
-      new ViewHostMsg_IDBObjectStorePut(
-          idb_object_store_id, pending_callbacks_.Add(callbacks.release()),
-          value, key, add_only));
+  ViewHostMsg_IDBObjectStorePut_Params params;
+  params.idb_object_store_id_ = idb_object_store_id;
+  params.response_id_ = pending_callbacks_.Add(callbacks.release());
+  params.serialized_value_ = value;
+  params.key_ = key;
+  params.add_only_ = add_only;
+  params.transaction_id_ = transaction_id;
+  RenderThread::current()->Send(new ViewHostMsg_IDBObjectStorePut(params));
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreRemove(
-    const IndexedDBKey& key, WebKit::WebIDBCallbacks* callbacks_ptr,
-    int32 idb_object_store_id) {
+    const IndexedDBKey& key,
+    WebKit::WebIDBCallbacks* callbacks_ptr,
+    int32 idb_object_store_id,
+    int transaction_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   RenderThread::current()->Send(
       new ViewHostMsg_IDBObjectStoreRemove(
           idb_object_store_id, pending_callbacks_.Add(callbacks.release()),
-          key));
+          key, transaction_id));
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreCreateIndex(
@@ -260,8 +284,11 @@ void IndexedDBDispatcher::RequestIDBObjectStoreRemoveIndex(
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
-    const WebIDBKeyRange& idb_key_range, unsigned short direction,
-    WebIDBCallbacks* callbacks_ptr, int32 idb_object_store_id) {
+    const WebIDBKeyRange& idb_key_range,
+    unsigned short direction,
+    WebIDBCallbacks* callbacks_ptr,
+    int32 idb_object_store_id,
+    int transaction_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBObjectStoreOpenCursor_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
@@ -270,6 +297,7 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
   params.flags_ = idb_key_range.flags();
   params.direction_ = direction;
   params.idb_object_store_id_ = idb_object_store_id;
+  params.transaction_id_ = transaction_id;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBObjectStoreOpenCursor(params));
 }
