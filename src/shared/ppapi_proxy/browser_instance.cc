@@ -13,7 +13,7 @@
 // Include file order cannot be observed because ppp_instance declares a
 // structure return type that causes an error on Windows.
 // TODO(sehr, brettw): fix the return types and include order in PPAPI.
-#include "ppapi/c/pp_event.h"
+#include "ppapi/c/pp_input_event.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
@@ -125,28 +125,37 @@ bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
   return false;
 }
 
-bool HandleEvent(PP_Instance instance, const PP_Event* event) {
-  DebugPrintf("BrowserInstance::HandleEvent(%"NACL_PRId64")\n");
+bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
+  DebugPrintf("BrowserInstance::HandleInputEvent(%"NACL_PRId64")\n");
   NaClSrpcChannel* channel = LookupBrowserPppForInstance(instance)->channel();
   int32_t success;
   char* event_data = const_cast<char*>(reinterpret_cast<const char*>(event));
   NaClSrpcError retval =
-      PppInstanceRpcClient::PPP_Instance_HandleEvent(channel,
-                                                     instance,
-                                                     sizeof(PP_Event),
-                                                     event_data,
-                                                     &success);
+      PppInstanceRpcClient::PPP_Instance_HandleInputEvent(channel,
+                                                          instance,
+                                                          sizeof(*event),
+                                                          event_data,
+                                                          &success);
   if (retval != NACL_SRPC_RESULT_OK) {
     return false;
   }
   return success != 0;
 }
 
+void FocusChanged(PP_Instance instance, bool has_focus) {
+  DebugPrintf("BrowserInstance::FocusChanged(%"NACL_PRId64")\n");
+  NaClSrpcChannel* channel = LookupBrowserPppForInstance(instance)->channel();
+  // FocusChanged() always succeeds, no need to check the SRPC return value.
+  (void) PppInstanceRpcClient::PPP_Instance_FocusChanged(channel,
+                                                         instance,
+                                                         has_focus);
+}
+
 PP_Var GetInstanceObject(PP_Instance instance) {
   DebugPrintf("BrowserInstance::GetInstanceObject(%"NACL_PRId64")\n");
   NaClSrpcChannel* channel = LookupBrowserPppForInstance(instance)->channel();
   ObjectCapability capability;
-  uint32_t capability_bytes = static_cast<uint32_t>(sizeof(ObjectCapability));
+  uint32_t capability_bytes = static_cast<uint32_t>(sizeof(capability));
   NaClSrpcError retval =
       PppInstanceRpcClient::PPP_Instance_GetInstanceObject(
           channel,
@@ -201,7 +210,8 @@ const PPP_Instance* BrowserInstance::GetInterface() {
     Delete,
     Initialize,
     HandleDocumentLoad,
-    HandleEvent,
+    HandleInputEvent,
+    FocusChanged,
     GetInstanceObject,
     ViewChanged,
     GetSelectedText

@@ -62,7 +62,6 @@ cpp_sources = [
     'cpp/dev/font_dev.cc',
     'cpp/dev/fullscreen_dev.cc',
     'cpp/dev/graphics_3d_dev.cc',
-    'cpp/dev/key_dev.cc',
     'cpp/dev/scrollbar_dev.cc',
     'cpp/dev/transport_dev.cc',
     'cpp/dev/url_loader_dev.cc',

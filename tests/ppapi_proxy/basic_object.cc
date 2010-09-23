@@ -494,6 +494,7 @@ static const void* GetInstanceInterface() {
     Initialize,
     NULL,
     NULL,
+    NULL,
     GetInstanceObject,
     NULL,
     NULL

@@ -150,7 +150,7 @@ NaClSrpcError PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
 }
 
 
-NaClSrpcError PppInstanceRpcServer::PPP_Instance_HandleEvent(
+NaClSrpcError PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
     NaClSrpcChannel* channel,
     int64_t instance,
     uint32_t event_data_bytes,
@@ -158,12 +158,29 @@ NaClSrpcError PppInstanceRpcServer::PPP_Instance_HandleEvent(
     int32_t* success) {
   *success = kMethodFailure;
   const PPP_Instance* instance_interface = GetInstanceInterface();
-  if (instance_interface == NULL || instance_interface->HandleEvent == NULL) {
+  if (instance_interface == NULL ||
+      instance_interface->HandleInputEvent == NULL) {
     return NACL_SRPC_RESULT_OK;
   }
-  const PP_Event* event = reinterpret_cast<const PP_Event*>(event_data);
-  bool event_result = instance_interface->HandleEvent(instance, event);
+  const PP_InputEvent* event =
+      reinterpret_cast<const PP_InputEvent*>(event_data);
+  bool event_result = instance_interface->HandleInputEvent(instance, event);
   *success = event_result ? kMethodSuccess : kMethodFailure;
+  return NACL_SRPC_RESULT_OK;
+}
+
+
+NaClSrpcError PppInstanceRpcServer::PPP_Instance_FocusChanged(
+    NaClSrpcChannel* channel,
+    int64_t instance,
+    bool has_focus) {
+  // FocusChanged() has a void return, so it always succeeds at this interface
+  // level.
+  const PPP_Instance* instance_interface = GetInstanceInterface();
+  if (instance_interface != NULL &&
+      instance_interface->FocusChanged != NULL) {
+    instance_interface->FocusChanged(instance, has_focus);
+  }
   return NACL_SRPC_RESULT_OK;
 }
 

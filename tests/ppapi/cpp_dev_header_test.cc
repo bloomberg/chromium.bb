@@ -26,9 +26,7 @@
 // From ppapi.gyp:ppapi_cpp_objects:cpp/dev/[^/]*\.h
 #include "ppapi/cpp/dev/audio_config_dev.h"
 #include "ppapi/cpp/dev/audio_dev.h"
-// TODO(dspringer): Add this file back in when
-// http://codereview.chromium.org/3455005/show lands.
-// #include "ppapi/cpp/dev/buffer_dev.h"
+#include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/dev/directory_entry_dev.h"
 #include "ppapi/cpp/dev/directory_reader_dev.h"
 #include "ppapi/cpp/dev/file_chooser_dev.h"

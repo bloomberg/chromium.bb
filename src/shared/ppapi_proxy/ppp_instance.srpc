@@ -38,12 +38,20 @@
            'outputs': [['success', 'int32_t'],
                       ]
           },
-          # PPP_Instance_HandleEvent processes an event sent to an instance.
-          {'name': 'PPP_Instance_HandleEvent',
+          # PPP_Instance_HandleInputEvent processes an event sent to an
+          # instance.
+          {'name': 'PPP_Instance_HandleInputEvent',
            'inputs': [['instance', 'int64_t'],
                       ['event_data', 'char[]']],
            'outputs': [['success', 'int32_t']
                       ]
+          },
+          # PPP_Instance_FocusChanged processes a bool indicating that the
+          # instance gained or lost focus.
+          {'name': 'PPP_Instance_FocusChanged',
+           'inputs': [['instance', 'int64_t'],
+                      ['has_focus', 'bool']],
+           'outputs': []
           },
           # PPP_Instance_GetInstanceObject gets the instance's scriptable
           # object.
