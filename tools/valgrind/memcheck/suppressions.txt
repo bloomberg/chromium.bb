@@ -2718,3 +2718,27 @@
    fun:_ZN4base21ScopedCallbackFactoryIN7fileapi19FileSystemOperationEE12CallbackImplIMS2_FvNS_17PlatformFileErrorERKSt6vectorINS_15file_util_proxy5EntryESaIS8_EEE6Tuple2IS5_SC_EE13RunWithParamsERKSG_
    fun:_ZN14CallbackRunnerI6Tuple2IN4base17PlatformFileErrorERKSt6vectorINS1_15file_util_proxy5EntryESaIS5_EEEE3RunIS2_S7_EEvRKT_RKT0_
 }
+{
+   bug_56704_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodIN8chromeos13OnlineAttemptEMS1_FvvEEP14CancelableTaskPT_T0_
+   fun:_ZN8chromeos13OnlineAttempt14TryClientLoginEv
+   fun:_ZN8chromeos13OnlineAttempt8InitiateEP7Profile
+   fun:_ZN8chromeos17OnlineAttemptTest13RunCancelTestEPNS_13OnlineAttemptEP7Profile
+}
+{
+   bug_56704_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodIN8chromeos13OnlineAttemptEMS1_FvvEEP14CancelableTaskPT_T0_
+   fun:_ZN8chromeos13OnlineAttempt14TryClientLoginEv
+   fun:_ZN8chromeos13OnlineAttempt20OnClientLoginFailureERK22GoogleServiceAuthError
+   fun:_ZN18GaiaAuthenticator220OnClientLoginFetchedERKSsRK16URLRequestStatusi
+   fun:_ZN18GaiaAuthenticator218OnURLFetchCompleteEPK10URLFetcherRK4GURLRK16URLRequestStatusiRKSt6vectorISsSaISsEERKSs
+   fun:_ZN8chromeos18GotCanceledFetcher5StartEv
+   fun:_ZN18GaiaAuthenticator216StartClientLoginERKSsS1_PKcS1_S1_
+   fun:_ZN8chromeos13OnlineAttempt14TryClientLoginEv
+   fun:_ZN8chromeos13OnlineAttempt8InitiateEP7Profile
+   fun:_ZN8chromeos17OnlineAttemptTest13RunCancelTestEPNS_13OnlineAttemptEP7Profile
+}
