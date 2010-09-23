@@ -390,7 +390,8 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
       return 0;
   }
 
-  return active_bookmark_bar_->height();
+  // Adjust for separator.
+  return active_bookmark_bar_->height() - kSeparationLineHeight;
 }
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
