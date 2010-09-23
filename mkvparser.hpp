@@ -74,8 +74,7 @@ public:
 
     Block(long long start, long long size, IMkvReader*);
 
-    unsigned long GetTrackNumber() const;
-
+    long long GetTrackNumber() const;
     long long GetTimeCode(Cluster*) const;  //absolute, but not scaled
     long long GetTime(Cluster*) const;      //absolute, and scaled (ns units)
     bool IsKey() const;
@@ -187,7 +186,7 @@ public:
     virtual ~Track();
 
     long long GetType() const;
-    unsigned long GetNumber() const;
+    long long GetNumber() const;
     const char* GetNameAsUTF8() const;
     const char* GetCodecNameAsUTF8() const;
     const char* GetCodecId() const;
@@ -338,6 +337,9 @@ private:
 class CuePoint
 {
 public:
+    CuePoint();
+    ~CuePoint();
+
     void Parse(IMkvReader*, long long start, long long size);
 
     long long m_timecode;               //absolute but unscaled
@@ -351,48 +353,14 @@ public:
         //codec_state  //defaults to 0
         //reference = clusters containing req'd referenced blocks
         //  reftime = timecode of the referenced block
+
+        void Parse(IMkvReader*, long long, long long);
     };
 
-#if 0  //TODO
-    typedef std::list<TrackPosition> track_positions_t;
-    track_positions_t m_track_positions;
+    TrackPosition* m_track_positions;
+    size_t m_track_positions_count;
 
     const TrackPosition* Find(const Track*) const;
-
-    class CompareTime : std::binary_function<long long, CuePoint, bool>
-    {
-        CompareTime& operator=(const CompareTime&);
-    public:
-        Segment* const m_pSegment;
-
-        explicit CompareTime(Segment* p) : m_pSegment(p) {}
-        CompareTime(const CompareTime& rhs) : m_pSegment(rhs.m_pSegment) {}
-
-        long long GetTime(const CuePoint& cp) const
-        {
-            return cp.GetTime(m_pSegment);
-        }
-
-        bool operator()(long long left_ns, const CuePoint& cp) const
-        {
-            return (left_ns < GetTime(cp));
-        }
-
-        bool operator()(const CuePoint& cp, long long right_ns) const
-        {
-            return (GetTime(cp) < right_ns);
-        }
-
-        bool operator()(const CuePoint& lhs, const CuePoint& rhs) const
-        {
-            return (lhs.m_timecode < rhs.m_timecode);
-        }
-    };
-#endif
-
-private:
-    void ParseTrackPosition(IMkvReader*, long long, long long);
-
 };
 
 
@@ -407,6 +375,7 @@ public:
     const long long m_size;
 
     Cues(Segment*, long long start, long long size);
+    ~Cues();
 
     bool Find(  //lower bound of time_ns
         long long time_ns,
@@ -422,7 +391,7 @@ public:
 
 private:
     CuePoint* m_cue_points;
-    size_t m_cue_counts_count;
+    size_t m_cue_points_count;
 
 };
 
@@ -452,14 +421,19 @@ public:
     const BlockEntry* GetLast();
     const BlockEntry* GetNext(const BlockEntry*) const;
     const BlockEntry* GetEntry(const Track*);
+    const BlockEntry* GetEntry(
+        const CuePoint&,
+        const CuePoint::TrackPosition&);
     const BlockEntry* GetMaxKey(const VideoTrack*);
 
 protected:
     Cluster(Segment*, size_t, long long off);
 
-private:
-    long long m_start;
+public:
+    long long m_pos;
     long long m_size;
+
+private:
     long long m_timecode;
     BlockEntry** m_pEntries;
     size_t m_entriesCount;
