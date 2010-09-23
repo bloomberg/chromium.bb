@@ -320,12 +320,13 @@ class RewriteChecker(GenericRegexChecker):
 
 
 VALID_INCLUDE_PREFIX = [
-    'native_client/',
-    'third_party/',
-    'gtest/',
-    'gen/native_client/',
     'base/',
-    'chrome/common',
+    'chrome/common/',
+    'gen/native_client/',
+    'gtest/',
+    'native_client/',
+    'ppapi/',
+    'third_party/',
     ]
 
 
