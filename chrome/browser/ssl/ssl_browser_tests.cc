@@ -415,16 +415,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
 
 // Visits a page with insecure content loaded by JS (after the initial page
 // load).
-#if defined(OS_WIN)
-// Flakily exceeds test timeout, http://crbug.com/52557.
-#define MAYBE_TestDisplaysInsecureContentLoadedFromJS \
-    FLAKY_TestDisplaysInsecureContentLoadedFromJS
-#else
-#define MAYBE_TestDisplaysInsecureContentLoadedFromJS \
-    TestDisplaysInsecureContentLoadedFromJS
-#endif
-IN_PROC_BROWSER_TEST_F(SSLUITest,
-                       MAYBE_TestDisplaysInsecureContentLoadedFromJS) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentLoadedFromJS) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
