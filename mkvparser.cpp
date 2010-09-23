@@ -2192,7 +2192,8 @@ bool Segment::SearchCues(
     assert(pLastCluster->m_index == last_idx);
     assert(pLastCluster->m_pos);
 
-    const long long last_pos = _abs64(pLastCluster->m_pos);
+    const long long last_pos_ = pLastCluster->m_pos;
+    const long long last_pos = last_pos_ * ((last_pos_ < 0) ? -1 : 1);
     last_pos;
 
     const long long last_ns = pLastCluster->GetTime();
@@ -2224,7 +2225,14 @@ bool Segment::SearchCues(
 
     Cluster** const ii = m_clusters;
     Cluster** i = ii;
-    assert(pTP->m_pos >= _abs64((*i)->m_pos));
+
+    Cluster* const pFirstCluster = *i;
+    assert(pFirstCluster);
+
+    const long long first_pos_ = pFirstCluster->m_pos;
+    const long long first_pos = first_pos_ * ((first_pos_ < 0) ? -1 : 1);
+    first_pos;
+    assert(pTP->m_pos >= first_pos);
 
     Cluster** const jj = ii + m_clusterCount;
     Cluster** j = jj;
@@ -2243,8 +2251,10 @@ bool Segment::SearchCues(
         pCluster = *k;
         assert(pCluster);
 
-        const long long pos = _abs64(pCluster->m_pos);
-        assert(pos);
+        const long long pos_ = pCluster->m_pos;
+        assert(pos_);
+
+        const long long pos = pos_ * ((pos_ < 0) ? -1 : 1);
 
         if (pos < pTP->m_pos)
             i = k + 1;
