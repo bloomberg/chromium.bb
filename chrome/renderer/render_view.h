@@ -220,6 +220,14 @@ class RenderView : public RenderWidget,
     return page_click_tracker_.get();
   }
 
+  // Returns true if we should display scrollbars for the given view size and
+  // false if the scrollbars should be hidden.
+  bool should_display_scrollbars(int width, int height) const {
+    return (!send_preferred_size_changes_ ||
+            (disable_scrollbars_size_limit_.width() <= width ||
+             disable_scrollbars_size_limit_.height() <= height));
+  }
+
   // Called from JavaScript window.external.AddSearchProvider() to add a
   // keyword for a provider described in the given OpenSearch document.
   void AddSearchProvider(const std::string& url);

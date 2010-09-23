@@ -4661,14 +4661,9 @@ void RenderView::OnResize(const gfx::Size& new_size,
                           const gfx::Rect& resizer_rect) {
   if (webview()) {
     webview()->hidePopups();
-
     if (send_preferred_size_changes_) {
-      // If resizing to a size larger than |disable_scrollbars_size_limit_| in
-      // either width or height, allow scroll bars.
-      bool allow_scrollbars = (
-          disable_scrollbars_size_limit_.width() <= new_size.width() ||
-          disable_scrollbars_size_limit_.height() <= new_size.height());
-      webview()->mainFrame()->setCanHaveScrollbars(allow_scrollbars);
+      webview()->mainFrame()->setCanHaveScrollbars(
+          should_display_scrollbars(new_size.width(), new_size.height()));
     }
   }
 
