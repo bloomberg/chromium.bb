@@ -66,7 +66,7 @@ TEST_F(OptionsUITest, CommandOpensOptionsTab) {
 }
 
 // TODO(csilv): Investigate why this fails and fix. http://crbug.com/48521
-TEST_F(OptionsUITest, FAILS_CommandAgainGoesBackToOptionsTab) {
+TEST_F(OptionsUITest, FLAKY_CommandAgainGoesBackToOptionsTab) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -86,7 +86,7 @@ TEST_F(OptionsUITest, FAILS_CommandAgainGoesBackToOptionsTab) {
   // Switch to first tab and run command again.
   ASSERT_TRUE(browser->ActivateTab(0));
   ASSERT_TRUE(browser->WaitForTabToBecomeActive(0, action_max_timeout_ms()));
-  ASSERT_TRUE(browser->RunCommandAsync(IDC_OPTIONS));
+  ASSERT_TRUE(browser->RunCommand(IDC_OPTIONS));
 
   // Ensure the options ui tab is active.
   ASSERT_TRUE(browser->WaitForTabToBecomeActive(1, action_max_timeout_ms()));
@@ -105,7 +105,7 @@ TEST_F(OptionsUITest, FLAKY_TwoCommandsOneTab) {
   ASSERT_EQ(1, tab_count);
 
   ASSERT_TRUE(browser->RunCommand(IDC_OPTIONS));
-  ASSERT_TRUE(browser->RunCommandAsync(IDC_OPTIONS));
+  ASSERT_TRUE(browser->RunCommand(IDC_OPTIONS));
   ASSERT_TRUE(browser->GetTabCount(&tab_count));
   ASSERT_EQ(2, tab_count);
 }
