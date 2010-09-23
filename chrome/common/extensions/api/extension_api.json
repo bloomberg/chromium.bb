@@ -3939,6 +3939,10 @@
             "description": "The name of this extension or app.",
             "type": "string"
           },
+          "version": {
+            "description": "The <a href='manifest.html#version'>version</a> of this extension or app.",
+            "type": "string"
+          },
           "enabled": {
             "description": "Whether it is currently enabled or disabled.",
             "type": "boolean"
@@ -4030,6 +4034,23 @@
             "optional": "true",
             "parameters": []
           }
+        ]
+      },
+      {
+        "name": "launchApp",
+        "description": "Launches an application.",
+        "parameters": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "The extension id of the application."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "true",
+            "parameters": []
+          }          
         ]
       }
     ],

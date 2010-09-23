@@ -24,6 +24,12 @@ class GetAllExtensionsFunction : public ExtensionManagementFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.management.getAll");
 };
 
+class LaunchAppFunction : public ExtensionManagementFunction {
+  ~LaunchAppFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.management.launchApp");
+};
+
 class SetEnabledFunction : public ExtensionManagementFunction {
   ~SetEnabledFunction() {}
   virtual bool RunImpl();

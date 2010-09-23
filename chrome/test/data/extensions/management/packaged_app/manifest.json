@@ -1,0 +1,9 @@
+{
+  "name": "packaged_app",
+  "version": "0.1",
+  "app": {
+    "launch": {
+      "local_path": "main.html"
+    }
+  }
+}

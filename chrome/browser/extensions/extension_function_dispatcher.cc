@@ -273,13 +273,14 @@ void FactoryRegistry::ResetFunctions() {
 
   // Management.
   RegisterFunction<GetAllExtensionsFunction>();
+  RegisterFunction<LaunchAppFunction>();
   RegisterFunction<SetEnabledFunction>();
-  RegisterFunction<InstallFunction>();
   RegisterFunction<UninstallFunction>();
 
   // WebstorePrivate.
   RegisterFunction<GetSyncLoginFunction>();
   RegisterFunction<GetStoreLoginFunction>();
+  RegisterFunction<InstallFunction>();
   RegisterFunction<SetStoreLoginFunction>();
 }
 

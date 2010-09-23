@@ -38,9 +38,10 @@ const char kNameKey[] = "name";
 const char kOptionsUrlKey[] = "optionsUrl";
 const char kSizeKey[] = "size";
 const char kUrlKey[] = "url";
+const char kVersionKey[] = "version";
 
 const char kNoExtensionError[] = "No extension with id *";
-
+const char kNotAnAppError[] = "Extension * is not an App";
 }
 
 ExtensionsService* ExtensionManagementFunction::service() {
@@ -54,6 +55,7 @@ static DictionaryValue* CreateExtensionInfo(const Extension& extension,
   info->SetBoolean(kIsAppKey, extension.is_app());
   info->SetString(kNameKey, extension.name());
   info->SetBoolean(kEnabledKey, enabled);
+  info->SetString(kVersionKey, extension.VersionString());
   if (!extension.options_url().is_empty())
     info->SetString(kOptionsUrlKey,
                     extension.options_url().possibly_invalid_spec());
@@ -98,6 +100,27 @@ bool GetAllExtensionsFunction::RunImpl() {
 
   AddExtensionInfo(result, *service()->extensions(), true);
   AddExtensionInfo(result, *service()->disabled_extensions(), false);
+
+  return true;
+}
+
+bool LaunchAppFunction::RunImpl() {
+  std::string extension_id;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id));
+  Extension* extension = service()->GetExtensionById(extension_id, true);
+  if (!extension) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(kNoExtensionError,
+                                                     extension_id);
+    return false;
+  }
+  if (!extension->is_app()) {
+    error_ = ExtensionErrorUtils::FormatErrorMessage(kNotAnAppError,
+                                                     extension_id);
+    return false;
+  }
+
+  extension_misc::LaunchContainer container = extension->launch_container();
+  Browser::OpenApplication(profile(), extension, container);
 
   return true;
 }

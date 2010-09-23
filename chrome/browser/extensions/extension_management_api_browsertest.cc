@@ -28,3 +28,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest, InstallEvent) {
       test_data_dir_.AppendASCII("api_test/management/enabled_extension")));
   ASSERT_TRUE(listener2.WaitUntilSatisfied());
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest, LaunchApp) {
+  ExtensionTestMessageListener listener1("app_launched");
+  ExtensionTestMessageListener listener2("got_expected_error");
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/simple_extension")));
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/packaged_app")));
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("management/launch_app")));
+  ASSERT_TRUE(listener1.WaitUntilSatisfied());
+  ASSERT_TRUE(listener2.WaitUntilSatisfied());
+}
