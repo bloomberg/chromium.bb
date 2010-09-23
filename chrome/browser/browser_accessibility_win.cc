@@ -46,6 +46,12 @@ void BrowserAccessibility::Initialize(
   location_ = src.location;
   InitRoleAndState(src.role, src.state);
 
+  // Expose headings levels to NVDA with the "level" object attribute.
+  if (src.role == WebAccessibility::ROLE_HEADING && role_name_.size() == 2 &&
+          IsAsciiDigit(role_name_[1])) {
+    html_attributes_.push_back(std::make_pair(L"level", role_name_.substr(1)));
+  }
+
   // If this object doesn't have a name but it does have a description,
   // use the description as its name - because some screen readers only
   // announce the name.
