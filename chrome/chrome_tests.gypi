@@ -1310,6 +1310,7 @@
         'browser/webdata/web_data_service_test_util.h',
         'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_unittest.cc',
+        'browser/web_resource/web_resource_service_unittest.cc',
         'browser/window_sizer_unittest.cc',
         'browser/wrench_menu_model_unittest.cc',
         'common/bzip2_unittest.cc',
