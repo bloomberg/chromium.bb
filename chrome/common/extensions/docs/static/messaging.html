@@ -218,7 +218,7 @@ chrome.extension.sendRequest(laserExtensionId, {getTargetData: true},
   });
 
 // Start a long-running conversation:
-var port = chrome.extension.connectExternal(laserExtensionId);
+var port = chrome.extension.connect(laserExtensionId);
 port.postMessage(...);
 </pre>
 
