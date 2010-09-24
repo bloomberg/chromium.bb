@@ -112,3 +112,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, SplitFilename) {
       test_on_webkit_thread->security_origin().toString().utf8();
   EXPECT_EQ("http://host:1", origin_str);
 }
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionGetTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
+}

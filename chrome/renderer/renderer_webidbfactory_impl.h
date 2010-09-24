@@ -29,8 +29,6 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin, WebKit::WebFrame* web_frame,
       const WebKit::WebString& dataDir);
-  virtual void abortPendingTransactions(
-      const WebKit::WebVector<int>& pendingIDs);
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_
