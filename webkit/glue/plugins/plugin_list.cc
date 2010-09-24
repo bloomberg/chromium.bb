@@ -12,7 +12,6 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
@@ -178,8 +177,6 @@ void PluginList::LoadPlugins(bool refresh) {
     internal_plugins = internal_plugins_;
   }
 
-  base::TimeTicks start_time = base::TimeTicks::Now();
-
   std::vector<WebPluginInfo> new_plugins;
   std::set<FilePath> visited_plugins;
 
@@ -218,10 +215,6 @@ void PluginList::LoadPlugins(bool refresh) {
   // Load the default plugin last.
   if (webkit_glue::IsDefaultPluginEnabled())
     LoadPlugin(FilePath(kDefaultPluginLibraryName), &new_plugins);
-
-  base::TimeTicks end_time = base::TimeTicks::Now();
-  base::TimeDelta elapsed = end_time - start_time;
-  DLOG(INFO) << "Loaded plugin list in " << elapsed.InMilliseconds() << " ms.";
 
   // Only update the data now since loading plugins can take a while.
   AutoLock lock(lock_);
