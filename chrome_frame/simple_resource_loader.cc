@@ -22,32 +22,38 @@ HINSTANCE SimpleResourceLoader::locale_dll_handle_;
 
 SimpleResourceLoader::SimpleResourceLoader() {
   // Find and load the resource DLL.
-  std::wstring locale = GetSystemLocale();
-  std::wstring locale_dll_path;
+  std::wstring language;
+  std::wstring region;
+  GetSystemLocale(&language, &region);
+  FilePath locale_dll_path;
 
-  if (GetLocaleFilePath(locale, &locale_dll_path)) {
+  if (GetLocaleFilePath(language, region, &locale_dll_path)) {
     DCHECK(locale_dll_handle_ == NULL) << "Locale DLL is already loaded!";
     locale_dll_handle_ = LoadLocaleDll(locale_dll_path);
     DCHECK(locale_dll_handle_ != NULL) << "Failed to load locale dll!";
   }
 }
 
+SimpleResourceLoader::~SimpleResourceLoader() {}
 
-std::wstring SimpleResourceLoader::GetSystemLocale() {
-  std::string language, region;
-  base::i18n::GetLanguageAndRegionFromOS(&language, &region);
-  std::string ret;
-  if (!language.empty())
-    ret.append(language);
-  if (!region.empty()) {
-    ret.append("-");
-    ret.append(region);
+void SimpleResourceLoader::GetSystemLocale(std::wstring* language,
+                                           std::wstring* region) {
+  DCHECK(language);
+  DCHECK(region);
+
+  std::string icu_language, icu_region;
+  base::i18n::GetLanguageAndRegionFromOS(&icu_language, &icu_region);
+  if (!icu_language.empty()) {
+    *language = ASCIIToWide(icu_language);
   }
-  return ASCIIToWide(ret);
+  if (!icu_region.empty()) {
+    *region = ASCIIToWide(icu_region);
+  }
 }
 
-bool SimpleResourceLoader::GetLocaleFilePath(const std::wstring& locale,
-                                             std::wstring* file_path) {
+bool SimpleResourceLoader::GetLocaleFilePath(const std::wstring& language,
+                                             const std::wstring& region,
+                                             FilePath* file_path) {
   DCHECK(file_path);
 
   FilePath module_path;
@@ -64,21 +70,38 @@ bool SimpleResourceLoader::GetLocaleFilePath(const std::wstring& locale,
 
   bool found_dll = false;
   if (file_util::DirectoryExists(locales_path)) {
-    std::wstring dll_name(locale);
-    dll_name += L".dll";
+    std::wstring dll_name(language);
+    FilePath look_path;
 
-    // First look for the named locale DLL.
-    FilePath look_path(locales_path.Append(dll_name));
-    if (file_util::PathExists(look_path)) {
-      *file_path = look_path.value();
-      found_dll = true;
-    } else {
+    // First look for the [language]-[region].DLL.
+    if (!region.empty()) {
+      dll_name += L"-";
+      dll_name += region;
+      dll_name += L".dll";
 
-      // If we didn't find it, try defaulting to en-US.dll.
-      dll_name = L"en-US.dll";
       look_path = locales_path.Append(dll_name);
       if (file_util::PathExists(look_path)) {
-        *file_path = look_path.value();
+        *file_path = look_path;
+        found_dll = true;
+      }
+    }
+
+    // Next look for just [language].DLL.
+    if (!found_dll) {
+      dll_name = language;
+      dll_name += L".dll";
+      look_path = locales_path.Append(dll_name);
+      if (file_util::PathExists(look_path)) {
+        *file_path = look_path;
+        found_dll = true;
+      }
+    }
+
+    // Finally, try defaulting to en-US.dll.
+    if (!found_dll) {
+      look_path = locales_path.Append(L"en-US.dll");
+      if (file_util::PathExists(look_path)) {
+        *file_path = look_path;
         found_dll = true;
       }
     }
@@ -89,7 +112,7 @@ bool SimpleResourceLoader::GetLocaleFilePath(const std::wstring& locale,
   return found_dll;
 }
 
-HINSTANCE SimpleResourceLoader::LoadLocaleDll(const std::wstring& dll_path) {
+HINSTANCE SimpleResourceLoader::LoadLocaleDll(const FilePath& dll_path) {
   DWORD load_flags = 0;
   if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
     load_flags = LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE |
@@ -99,7 +122,7 @@ HINSTANCE SimpleResourceLoader::LoadLocaleDll(const std::wstring& dll_path) {
   }
 
   // The dll should only have resources, not executable code.
-  HINSTANCE locale_dll_handle = LoadLibraryEx(dll_path.c_str(), NULL,
+  HINSTANCE locale_dll_handle = LoadLibraryEx(dll_path.value().c_str(), NULL,
                                               load_flags);
   DCHECK(locale_dll_handle != NULL) << "unable to load generated resources: "
                                      << GetLastError();
@@ -109,7 +132,7 @@ HINSTANCE SimpleResourceLoader::LoadLocaleDll(const std::wstring& dll_path) {
 
 std::wstring SimpleResourceLoader::GetLocalizedResource(int message_id) {
   if (!locale_dll_handle_) {
-    LOG(WARNING) << "locale resources are not loaded";
+    DLOG(ERROR) << "locale resources are not loaded";
     return std::wstring();
   }
 

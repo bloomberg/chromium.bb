@@ -233,7 +233,8 @@
         'chrome_frame_ie',
         'chrome_frame_npapi',
         'chrome_frame_strings',
-		'npchrome_frame',
+        'chrome_frame_utils',
+        'npchrome_frame',
         'xulrunner_sdk',
       ],
       'sources': [
@@ -257,6 +258,7 @@
         'test/proxy_factory_mock.cc',
         'test/proxy_factory_mock.h',
         'test/run_all_unittests.cc',
+        'test/simple_resource_loader_test.cc',
         'test/simulate_input.cc',
         'test/simulate_input.h',
         'test/test_server.cc',
