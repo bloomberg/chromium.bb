@@ -1073,9 +1073,8 @@ void NavigationController::NotifyNavigationEntryCommitted(
   // We don't set INVALIDATE_LOAD since that will be done separately for real
   // loads (by TabContents::SetIsLoading).
   tab_contents_->NotifyNavigationStateChanged(
-      kInvalidateAllButShelves &
-      ~TabContents::INVALIDATE_LOAD |
-      extra_invalidate_flags);
+      (kInvalidateAllButShelves & ~TabContents::INVALIDATE_LOAD) |
+          extra_invalidate_flags);
 
   NotificationService::current()->Notify(
       NotificationType::NAV_ENTRY_COMMITTED,
