@@ -373,17 +373,22 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
   AddSeparator();
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedOptions)) {
+    AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
+  } else {
 #if defined(OS_MACOSX)
-  AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES_MAC);
+    AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES_MAC);
 #elif defined(OS_LINUX)
-  string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
-  if (!preferences.empty())
-    AddItem(IDC_OPTIONS, preferences);
-  else
-    AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+    string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
+    if (!preferences.empty())
+      AddItem(IDC_OPTIONS, preferences);
+    else
+      AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #else
-  AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+    AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
+  }
 
 #if defined(OS_CHROMEOS)
   AddCheckItemWithStringId(IDC_TOGGLE_VERTICAL_TABS,
