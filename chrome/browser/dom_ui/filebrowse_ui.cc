@@ -166,8 +166,11 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void EnqueueMediaFile(const ListValue* args);
 
   void HandleDeleteFile(const ListValue* args);
+  void HandleCopyFile(const ListValue* value);
+  void CopyFile(const FilePath& src, const FilePath& dest);
   void DeleteFile(const FilePath& path);
   void FireDeleteComplete(const FilePath& path);
+  void FireCopyComplete(const FilePath& src, const FilePath& dest);
 
   void HandlePauseToggleDownload(const ListValue* args);
 
@@ -212,10 +215,15 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
 class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
  public:
-  explicit TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler,
-                     FilePath& path)
+  TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler,
+            const FilePath& path, const FilePath& dest)
       : handler_(handler),
-        path_(path) {}
+        src_(path),
+        dest_(dest) {}
+  TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler,
+            const FilePath& path)
+      : handler_(handler),
+        src_(path) {}
   void ReadInFileProxy() {
     if (handler_) {
       handler_->ReadInFile();
@@ -237,18 +245,30 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
 
   void DeleteFileProxy() {
     if (handler_) {
-      handler_->DeleteFile(path_);
+      handler_->DeleteFile(src_);
+    }
+  }
+
+  void CopyFileProxy() {
+    if (handler_) {
+      handler_->CopyFile(src_, dest_);
     }
   }
 
   void FireDeleteCompleteProxy() {
     if (handler_) {
-      handler_->FireDeleteComplete(path_);
+      handler_->FireDeleteComplete(src_);
+    }
+  }
+  void FireCopyCompleteProxy() {
+    if (handler_) {
+      handler_->FireCopyComplete(src_, dest_);
     }
   }
  private:
   base::WeakPtr<FilebrowseHandler> handler_;
-  FilePath path_;
+  FilePath src_;
+  FilePath dest_;
   friend class base::RefCountedThreadSafe<TaskProxy>;
   DISALLOW_COPY_AND_ASSIGN(TaskProxy);
 };
@@ -429,6 +449,8 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::HandlePauseToggleDownload));
   dom_ui_->RegisterMessageCallback("deleteFile",
       NewCallback(this, &FilebrowseHandler::HandleDeleteFile));
+  dom_ui_->RegisterMessageCallback("copyFile",
+      NewCallback(this, &FilebrowseHandler::HandleCopyFile));
   dom_ui_->RegisterMessageCallback("cancelDownload",
       NewCallback(this, &FilebrowseHandler::HandleCancelDownload));
   dom_ui_->RegisterMessageCallback("allowDownload",
@@ -443,6 +465,13 @@ void FilebrowseHandler::RegisterMessages() {
 void FilebrowseHandler::FireDeleteComplete(const FilePath& path) {
   // We notify the UI by telling it to refresh its contents.
   FilePath dir_path = path.DirName();
+  GetChildrenForPath(dir_path, true);
+};
+
+void FilebrowseHandler::FireCopyComplete(const FilePath& src,
+                                         const FilePath& dest) {
+  // Notify the UI somehow.
+  FilePath dir_path = dest.DirName();
   GetChildrenForPath(dir_path, true);
 };
 
@@ -617,6 +646,9 @@ void FilebrowseHandler::HandlePauseToggleDownload(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   int id;
   ExtractIntegerValue(args, &id);
+  if ((id - 1) >= (int)active_download_items_.size()) {
+    return;
+  }
   DownloadItem* item = active_download_items_[id];
   item->TogglePause();
 #endif
@@ -626,6 +658,10 @@ void FilebrowseHandler::HandleAllowDownload(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   int id;
   ExtractIntegerValue(args, &id);
+  if ((id - 1) >= (int)active_download_items_.size()) {
+    return;
+  }
+
   DownloadItem* item = active_download_items_[id];
   download_manager_->DangerousDownloadValidated(item);
 #endif
@@ -635,9 +671,12 @@ void FilebrowseHandler::HandleCancelDownload(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   int id;
   ExtractIntegerValue(args, &id);
+  if ((id - 1) >= (int)active_download_items_.size()) {
+    return;
+  }
   DownloadItem* item = active_download_items_[id];
-  item->Cancel(true);
   FilePath path = item->full_path();
+  item->Cancel(true);
   FilePath dir_path = path.DirName();
   item->Remove(true);
   GetChildrenForPath(dir_path, true);
@@ -883,6 +922,21 @@ void FilebrowseHandler::DeleteFile(const FilePath& path) {
       NewRunnableMethod(current_task_, &TaskProxy::FireDeleteCompleteProxy));
 }
 
+void FilebrowseHandler::CopyFile(const FilePath& src, const FilePath& dest) {
+  if (file_util::DirectoryExists(src)) {
+    if (!file_util::CopyDirectory(src, dest, true)) {
+      LOG(ERROR) << "unable to copy directory:" << src.value();
+    }
+  } else {
+    if (!file_util::CopyFile(src, dest)) {
+      LOG(ERROR) << "unable to copy file" << src.value();
+    }
+  }
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(current_task_, &TaskProxy::FireCopyCompleteProxy));
+}
+
 void FilebrowseHandler::HandleDeleteFile(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   std::string path = WideToUTF8(ExtractStringValue(args));
@@ -906,6 +960,35 @@ void FilebrowseHandler::HandleDeleteFile(const ListValue* args) {
           task, &TaskProxy::DeleteFileProxy));
 #endif
 }
+
+void FilebrowseHandler::HandleCopyFile(const ListValue* value) {
+#if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    std::string src;
+    std::string dest;
+
+    // Get path string.
+    if (list_value->GetString(0, &src) &&
+        list_value->GetString(1, &dest)) {
+      FilePath SrcPath = FilePath(src);
+      FilePath DestPath = FilePath(dest);
+
+      TaskProxy* task = new TaskProxy(AsWeakPtr(), SrcPath, DestPath);
+      task->AddRef();
+      current_task_ = task;
+      ChromeThread::PostTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              task, &TaskProxy::CopyFileProxy));
+    } else {
+      LOG(ERROR) << "Unable to get string";
+      return;
+    }
+  }
+#endif
+}
+
 
 void FilebrowseHandler::OnDownloadUpdated(DownloadItem* download) {
   DownloadList::iterator it = find(active_download_items_.begin(),

@@ -322,6 +322,12 @@ var localStrings;
  * Window onload handler, sets up the page.
  */
 function load() {
+  document.body.addEventListener('dragover', function(e) {
+    if (e.preventDefault) e.preventDefault();
+  });
+  document.body.addEventListener('drop', function(e) {
+    if (e.preventDefault) e.preventDefault();
+  });
   localStrings = new LocalStrings();
   chrome.send('getCurrentPlaylist', []);
 }

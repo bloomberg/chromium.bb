@@ -76,6 +76,12 @@ function pathIsAudioFile(path) {
 var currentPlaylist = null;
 var currentOffset = -1;
 function load() {
+  document.body.addEventListener('dragover', function(e) {
+    if (e.preventDefault) e.preventDefault();
+  });
+  document.body.addEventListener('drop', function(e) {
+    if (e.preventDefault) e.preventDefault();
+  });
   chrome.send("getCurrentPlaylist", []);
 };
 

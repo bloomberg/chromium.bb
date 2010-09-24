@@ -29,6 +29,15 @@ div.header {
   color: black;
 }
 
+*:-khtml-drag {
+  background-color: rgba(238,238,238, 0.5);
+}
+
+*[draggable] {
+  -khtml-user-drag: element;
+  cursor: move;
+}
+
 .rowlink {
   height: 100%;
   width: 90%;
@@ -172,7 +181,6 @@ li.filebrowserow div.icon {
 }
 
 .menuicon {
-  background: url('shared/images/filebrowse_menu.png');
   position: absolute;
   right: 4px;
   top: 5px;
@@ -184,6 +192,17 @@ li.filebrowserow div.icon {
   cursor: pointer;
   opacity: 0.3;
   -webkit-transition: opacity 0.2s ease-out ;
+}
+
+.spinicon {
+  position: absolute;
+  right: 4px;
+  top: 5px;
+  height: 100%;
+  width: 15px;
+  margin-left: 0;
+  margin-top: 5px;
+  background-repeat: no-repeat;
 }
 
 li.filebrowserow:hover .menuicon {
@@ -826,6 +845,31 @@ function browseFileResult(info, results) {
      }
    } else if (info.functionCall == 'getChildren') {
      var main = getCurrentContainer();
+     main.addEventListener('dragover', function(e) {
+       if (e.preventDefault) e.preventDefault();
+       e.dataTransfer.dropEffect = 'copy';
+       return false;
+     }, false);
+     main.addEventListener('drop', function(e) {
+       if (e.stopPropagation) e.stopPropagation();
+       var src = e.dataTransfer.getData('Text');
+       var path = getPathAndFilenameForPath(src);
+       var dest = currentSavedPath + '/' + path[2];
+       var dirId = $('list/dir/' + currentSavedPath);
+       if (dirId) {
+         
+         var element = $(dest);
+         if (!element) {
+           // TODO(dhg): We probably should do some checking for 
+           // existance.
+           element = createNewFakeItem(path[2], dest, false, true);
+         }
+         dirId.appendChild(element);
+         element.scrollIntoView();
+       }
+       chrome.send('copyFile', [src, dest]);
+       return false;
+     }, false);
      main.id = 'dir/' + info.path;
      divArray.push(main);
      document.location.hash = info.path;
@@ -1026,6 +1070,7 @@ function deleteFileConfirm(path) {
   no.className = 'deleteNo';
   askingDiv.appendChild(yes);
   askingDiv.appendChild(no);
+  yes.scrollIntoView();
   var element = menus[path];
   if (element) {
     element.firstChild.appendChild(askingDiv);
@@ -1082,6 +1127,7 @@ function newDownload(results) {
       var dirId = $('list/dir/' + extracted[1]);
       if (dirId) {
         element = createNewItem(extracted[2], results[x].file_path, false);
+        downloadList.push(element);
         if (dirId.firstChild) {
           dirId.insertBefore(element, dirId.firstChild);
         } else {
@@ -1093,7 +1139,52 @@ function newDownload(results) {
   }
 }
 
+function removeDownload(element) {
+  var status = undefined;
+  var pause = undefined;
+  for (var x = 0; x < element.children.length; x++) {
+    if (element.children[x].className == 'downloadstatus') {
+      var child = element.children[x];
+      status = child;
+    } else if (element.children[x].className == 'downloadpause') {
+       var child = element.children[x];
+       pause = child;
+    }
+  }
+  if (status) {
+    element.removeChild(status);
+  }
+  if (pause) {
+    element.removeChild(pause);
+  }
+  element.className = 'filebrowserow';
+  var elementList = [];
+  for (var x = 0; x < downloadList.length; x++) {
+    if (element != downloadList[x]) {
+      elementList.push(downloadList[x]);
+    }
+  }
+  downloadList = elementList;
+}
+
 function downloadUpdated(results) {
+  var removeDownloads = [];
+  for (var y = 0; y < downloadList.length; y++) {
+    var found = false;
+    for (var x = 0; x < results.length; x++) {
+      var element = $(results[x].file_path);
+      if (downloadList[y] == element) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      removeDownloads.push(downloadList[y]);
+    }
+  }
+  for (var x = 0; x < removeDownloads.length; x++) {
+    removeDownload(removeDownloads[x]);
+  }
   for (var x = 0; x < results.length; x++) {
     var element = $(results[x].file_path);
     if (!element && results[x].state != 'CANCELLED') {
@@ -1123,6 +1214,7 @@ function downloadUpdated(results) {
            }
         }
         if (progressDiv == null) {
+          downloadList.push(element);
           element.className = 'filebrowserow downloading';
           var progressDiv = document.createElement('div');
           progressDiv.className = 'downloadstatus';
@@ -1162,24 +1254,7 @@ function downloadUpdated(results) {
         }
 
       } else {
-        var status = undefined;
-        var pause = undefined;
-        for (var x = 0; x < element.children.length; x++) {
-           if (element.children[x].className == 'downloadstatus') {
-              var child = element.children[x];
-              status = child;
-           } else if (element.children[x].className == 'downloadpause') {
-              var child = element.children[x];
-              pause = child;
-           }
-        }
-        if (status) {
-          element.removeChild(status);
-        }
-        if (pause) {
-          element.removeChild(pause);
-        }
-        element.className = 'filebrowserow';
+        removeDownload(element);
       }
     }
   }
@@ -1320,6 +1395,7 @@ function showMenu(path) {
     element.firstChild.style.display = 'block';
     element.style.opacity = '1';
     currentMenu = element;
+    currentMenu.scrollIntoView();
   }
   window.event.stopPropagation();
 }
@@ -1452,8 +1528,47 @@ function getDoubleClickForItem(path, id, isDirectory) {
 
 var elementIdCounter = 0;
 
+function createNewFakeItem(title, path, isDirectory, hasspinner) {
+ var element = document.createElement('li');
+
+  element.className = 'filebrowserow';
+  element.id = path;
+  elementIdCounter++;
+  var link;
+  link = document.createElement('div');
+  link.className = 'rowlink';
+
+  var icon = document.createElement('div');
+  icon.className = getClassForPath(path, isDirectory);
+  link.appendChild(icon);
+
+  var span = document.createElement('span');
+  span.className = 'name';
+  span.textContent = title;
+  link.appendChild(span);
+
+  element.appendChild(link);
+
+  // Setup Menu
+  var currentPath = currentSavedPath;
+  if (hasspinner) {
+    var spinicon = document.createElement('div');
+    spinicon.align = 'right';
+    spinicon.className = 'spinicon';
+    element.appendChild(spinicon);
+  }
+  return element;
+}
+
 function createNewItem(title, path, isDirectory) {
   var element = document.createElement('li');
+  element.setAttribute('draggable', 'true');
+  
+  element.addEventListener('dragstart', function (e) {
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('Text', this.id);
+  }, false);
+
   element.className = 'filebrowserow';
   element.title = title;
   /*element.id = 'listItem' + elementIdCounter;*/
@@ -1540,6 +1655,7 @@ function popout(path) {
 }
 
 function createNewList(title, results, main, path) {
+  downloadList = [];
   clearChildren(main);
 
   var mainList = document.createElement('div');
@@ -1548,6 +1664,7 @@ function createNewList(title, results, main, path) {
   } else {
     mainList.className = 'columnlist';
   }
+
   var list = document.createElement('ul');
   list.className = 'filebrowselist';
   list.id = 'list/dir/' + path;
