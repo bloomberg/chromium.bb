@@ -227,11 +227,6 @@ bool DownloadManager::Init(Profile* profile) {
     DCHECK(file_manager_);
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&file_util::CreateDirectory,
-                          download_prefs()->download_path()));
-
   other_download_manager_observer_.reset(
       new OtherDownloadManagerObserver(this));
 
