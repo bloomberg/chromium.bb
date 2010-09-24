@@ -63,7 +63,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     # Test PListWriter in case of empty polices.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [],
+        'policy_definitions': [],
         'placeholders': [],
       }''', '''<messages />''' )
 
@@ -81,9 +81,10 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     # Tests a policy group with a single policy of type 'main'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'MainGroup',
+            'type': 'group',
             'policies': [{
               'name': 'MainPolicy',
               'type': 'main',
@@ -94,8 +95,10 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_MAINGROUP_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_GROUP_MAINGROUP_DESC">This is not tested here.</message>
+          <message name="IDS_POLICY_MAINGROUP_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_MAINGROUP_DESC">This is not tested here.</message>
+          <message name="IDS_POLICY_MAINPOLICY_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_MAINPOLICY_DESC">This is not tested here.</message>
         </messages>
       ''' )
     output = self.GetOutput(
@@ -127,9 +130,10 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     # Tests a policy group with a single policy of type 'string'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'StringGroup',
+            'type': 'group',
             'policies': [{
               'name': 'StringPolicy',
               'type': 'string',
@@ -140,8 +144,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_STRINGGROUP_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_GROUP_STRINGGROUP_DESC">This is not tested here.</message>
+          <message name="IDS_POLICY_STRINGGROUP_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_STRINGGROUP_DESC">This is not tested here.</message>
           <message name="IDS_POLICY_STRINGPOLICY_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_STRINGPOLICY_DESC">This is not tested here.</message>
         </messages>
@@ -175,9 +179,10 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     # Tests a policy group with a single policy of type 'enum'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'EnumGroup',
+            'type': 'group',
             'policies': [{
               'name': 'EnumPolicy',
               'type': 'enum',
@@ -192,8 +197,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_ENUMGROUP_CAPTION">This is not tested here.</message>
-          <message name="IDS_POLICY_GROUP_ENUMGROUP_DESC">This is not tested here.</message>
+          <message name="IDS_POLICY_ENUMGROUP_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_ENUMGROUP_DESC">This is not tested here.</message>
           <message name="IDS_POLICY_ENUMPOLICY_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_ENUMPOLICY_DESC">This is not tested here.</message>
           <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">This is not tested here.</message>
@@ -235,9 +240,10 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     # be included in the plist file.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'NonMacGroup',
+            'type': 'group',
             'policies': [{
               'name': 'NonMacPolicy',
               'type': 'string',
@@ -248,9 +254,10 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_NONMACGROUP_CAPTION">This is not tested here. (1)</message>
-          <message name="IDS_POLICY_GROUP_NONMACGROUP_DESC">This is not tested here. (2)</message>
+          <message name="IDS_POLICY_NONMACGROUP_CAPTION">This is not tested here. (1)</message>
+          <message name="IDS_POLICY_NONMACGROUP_DESC">This is not tested here. (2)</message>
           <message name="IDS_POLICY_NONMACPOLICY_CAPTION">This is not tested here. (3)</message>
+          <message name="IDS_POLICY_NONMACPOLICY_DESC">This is not tested here. (4)</message>
         </messages>
       ''' )
     output = self.GetOutput(

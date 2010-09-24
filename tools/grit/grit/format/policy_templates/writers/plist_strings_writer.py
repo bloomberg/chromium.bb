@@ -20,25 +20,6 @@ class PListStringsWriter(template_writer.TemplateWriter):
   [lang].lproj subdirectories of the manifest bundle.
   '''
 
-  # TODO(gfeher): This function is duplicated in DocWriter.
-  def _GetLocalizedPolicyMessage(self, policy, msg_id):
-    '''Looks up localized caption or description for a policy.
-    If the policy does not have the required message, then it is
-    inherited from the group.
-
-    Args:
-      policy: The data structure of the policy.
-      msg_id: Either 'caption' or 'desc'.
-
-    Returns:
-      The corresponding message for the policy.
-    '''
-    if msg_id in policy:
-      msg = policy[msg_id]
-    else:
-      msg = policy['parent'][msg_id]
-    return msg
-
   def _AddToStringTable(self, item_name, caption, desc):
     '''Add a title and a description of an item to the string table.
 
@@ -62,8 +43,7 @@ class PListStringsWriter(template_writer.TemplateWriter):
       policy: The policy for which the strings will be added to the
         string table.
     '''
-    desc = self._GetLocalizedPolicyMessage(policy, 'desc')
-    caption = self._GetLocalizedPolicyMessage(policy, 'caption')
+    desc = policy['desc']
     if (policy['type'] == 'enum'):
       # Append the captions of enum items to the description string.
       item_descs = []
@@ -71,7 +51,7 @@ class PListStringsWriter(template_writer.TemplateWriter):
         item_descs.append(item['value'] + ' - ' + item['caption'])
       desc = '\n'.join(item_descs) + '\n' + desc
 
-    self._AddToStringTable(policy['name'], caption, desc)
+    self._AddToStringTable(policy['name'], policy['label'], desc)
 
   def BeginTemplate(self):
     self._AddToStringTable(

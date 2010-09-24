@@ -67,17 +67,17 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testEmptyGroups(self):
     # Test that empty policy groups are not passed to the writer.
     messages_mock = {
-      'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP1_DESC': None,
-      'IDS_POLICY_GROUP_GROUP2_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP2_DESC': None,
-      'IDS_POLICY_GROUP_GROUP3_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP3_DESC': None,
+      'IDS_POLICY_GROUP1_CAPTION': '',
+      'IDS_POLICY_GROUP1_DESC': '',
+      'IDS_POLICY_GROUP2_CAPTION': '',
+      'IDS_POLICY_GROUP2_DESC': '',
+      'IDS_POLICY_GROUP3_CAPTION': '',
+      'IDS_POLICY_GROUP3_DESC': '',
     }
     policies_mock = [
-      {'name': 'Group1', 'policies': []},
-      {'name': 'Group2', 'policies': []},
-      {'name': 'Group3', 'policies': []},
+      {'name': 'Group1', 'type': 'group', 'policies': []},
+      {'name': 'Group2', 'type': 'group', 'policies': []},
+      {'name': 'Group3', 'type': 'group', 'policies': []},
     ]
     class LocalMockWriter(mock_writer.MockWriter):
       def __init__(self):
@@ -93,20 +93,23 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testGroups(self):
     # Test that policy groups are passed to the writer in the correct order.
     messages_mock = {
-      'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP1_DESC': None,
-      'IDS_POLICY_GROUP_GROUP2_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP2_DESC': None,
-      'IDS_POLICY_GROUP_GROUP3_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP3_DESC': None,
-      'IDS_POLICY_TAG1_CAPTION': None,
-      'IDS_POLICY_TAG2_CAPTION': None,
-      'IDS_POLICY_TAG3_CAPTION': None,
+      'IDS_POLICY_GROUP1_CAPTION': '',
+      'IDS_POLICY_GROUP1_DESC': '',
+      'IDS_POLICY_GROUP2_CAPTION': '',
+      'IDS_POLICY_GROUP2_DESC': '',
+      'IDS_POLICY_GROUP3_CAPTION': '',
+      'IDS_POLICY_GROUP3_DESC': '',
+      'IDS_POLICY_TAG1_CAPTION': '',
+      'IDS_POLICY_TAG1_DESC': '',
+      'IDS_POLICY_TAG2_CAPTION': '',
+      'IDS_POLICY_TAG2_DESC': '',
+      'IDS_POLICY_TAG3_CAPTION': '',
+      'IDS_POLICY_TAG3_DESC': '',
     }
     policies_mock = [
-      {'name': 'Group1', 'policies': [{'name': 'TAG1', 'type': 'mock'}]},
-      {'name': 'Group2', 'policies': [{'name': 'TAG2', 'type': 'mock'}]},
-      {'name': 'Group3', 'policies': [{'name': 'TAG3', 'type': 'mock'}]},
+      {'name': 'Group1', 'type': 'group', 'policies': [{'name': 'TAG1', 'type': 'mock'}]},
+      {'name': 'Group2', 'type': 'group', 'policies': [{'name': 'TAG2', 'type': 'mock'}]},
+      {'name': 'Group3', 'type': 'group', 'policies': [{'name': 'TAG3', 'type': 'mock'}]},
     ]
     class LocalMockWriter(mock_writer.MockWriter):
       def __init__(self):
@@ -122,14 +125,14 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testGroupTexts(self):
     # Test that GUI strings are assigned correctly to policy groups.
     messages_mock = {
-      'IDS_POLICY_GROUP_GROUP1_CAPTION': 'string1',
-      'IDS_POLICY_GROUP_GROUP1_DESC': 'string2',
-      'IDS_POLICY_GROUP_GROUP2_CAPTION': 'string3',
-      'IDS_POLICY_GROUP_GROUP2_DESC': 'string4',
+      'IDS_POLICY_GROUP1_CAPTION': 'string1',
+      'IDS_POLICY_GROUP1_DESC': 'string2',
+      'IDS_POLICY_GROUP2_CAPTION': 'string3',
+      'IDS_POLICY_GROUP2_DESC': 'string4',
     }
     policy_groups_mock = [
-      {'name': 'Group1'},
-      {'name': 'Group2'},
+      {'name': 'Group1', 'type': 'group', 'policies': []},
+      {'name': 'Group2', 'type': 'group', 'policies': []},
     ]
     class LocalMockWriter(mock_writer.MockWriter):
       def BeginPolicyGroup(self, group):
@@ -146,17 +149,21 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testPolicies(self):
     # Test that policies are passed to the writer in the correct order.
     messages_mock = {
-      'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP1_DESC': None,
-      'IDS_POLICY_GROUP_GROUP2_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP2_DESC': None,
-      'IDS_POLICY_GROUP1POLICY1_CAPTION': None,
-      'IDS_POLICY_GROUP1POLICY2_CAPTION': None,
-      'IDS_POLICY_GROUP2POLICY3_CAPTION': None,
+      'IDS_POLICY_GROUP1_CAPTION': '',
+      'IDS_POLICY_GROUP1_DESC': '',
+      'IDS_POLICY_GROUP2_CAPTION': '',
+      'IDS_POLICY_GROUP2_DESC': '',
+      'IDS_POLICY_GROUP1POLICY1_CAPTION': '',
+      'IDS_POLICY_GROUP1POLICY1_DESC': '',
+      'IDS_POLICY_GROUP1POLICY2_CAPTION': '',
+      'IDS_POLICY_GROUP1POLICY2_DESC': '',
+      'IDS_POLICY_GROUP2POLICY3_CAPTION': '',
+      'IDS_POLICY_GROUP2POLICY3_DESC': '',
     }
     policy_groups_mock = [
       {
         'name': 'Group1',
+        'type': 'group',
         'policies': [
           {'name': 'Group1Policy1', 'type': 'string'},
           {'name': 'Group1Policy2', 'type': 'string'},
@@ -164,6 +171,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       },
       {
         'name': 'Group2',
+        'type': 'group',
         'policies': [
           {'name': 'Group2Policy3', 'type': 'string'},
         ]
@@ -193,12 +201,13 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'IDS_POLICY_POLICY1_DESC': 'string2',
       'IDS_POLICY_POLICY2_CAPTION': 'string3',
       'IDS_POLICY_POLICY2_DESC': 'string4',
-      'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP1_DESC': None,
+      'IDS_POLICY_GROUP1_CAPTION': '',
+      'IDS_POLICY_GROUP1_DESC': '',
     }
     policy_groups_mock = [
       {
         'name': 'Group1',
+        'type': 'group',
         'policies': [
           {'name': 'Policy1', 'type': 'string'},
           {'name': 'Policy2', 'type': 'string'}
@@ -224,24 +233,20 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'IDS_POLICY_ENUM_ITEM1_CAPTION': 'string1',
       'IDS_POLICY_ENUM_ITEM2_CAPTION': 'string2',
       'IDS_POLICY_ENUM_ITEM3_CAPTION': 'string3',
-      'IDS_POLICY_POLICY1_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP1_DESC': None,
+      'IDS_POLICY_POLICY1_CAPTION': '',
+      'IDS_POLICY_POLICY1_DESC': '',
+
     }
-    policy_groups_mock = [
-      {
-        'name': 'Group1',
-        'policies': [{
-          'name': 'Policy1',
-          'type': 'enum',
-          'items': [
-            {'name': 'item1', 'value': '0'},
-            {'name': 'item2', 'value': '1'},
-            {'name': 'item3', 'value': '3'},
-          ]
-        }]
-      }
-    ]
+    policy_groups_mock = [{
+      'name': 'Policy1',
+      'type': 'enum',
+      'items': [
+        {'name': 'item1', 'value': '0'},
+        {'name': 'item2', 'value': '1'},
+        {'name': 'item3', 'value': '3'},
+      ]
+    }]
+
     class LocalMockWriter(mock_writer.MockWriter):
       def WritePolicy(self, policy):
         self.tester.assertEquals(policy['items'][0]['caption'], 'string1')
@@ -252,16 +257,20 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testPolicyFiltering(self):
     # Test that policies are filtered correctly based on their annotations.
     messages_mock = {
-      'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP1_DESC': None,
-      'IDS_POLICY_GROUP_GROUP2_CAPTION': None,
-      'IDS_POLICY_GROUP_GROUP2_DESC': None,
-      'IDS_POLICY_GROUP1POLICY1_CAPTION': None,
-      'IDS_POLICY_GROUP1POLICY2_CAPTION': None,
-      'IDS_POLICY_GROUP2POLICY3_CAPTION': None,
+      'IDS_POLICY_GROUP1_CAPTION': '',
+      'IDS_POLICY_GROUP1_DESC': '',
+      'IDS_POLICY_GROUP2_CAPTION': '',
+      'IDS_POLICY_GROUP2_DESC': '',
+      'IDS_POLICY_GROUP1POLICY1_CAPTION': '',
+      'IDS_POLICY_GROUP1POLICY1_DESC': '',
+      'IDS_POLICY_GROUP1POLICY2_CAPTION': '',
+      'IDS_POLICY_GROUP1POLICY2_DESC': '',
+      'IDS_POLICY_GROUP2POLICY3_CAPTION': '',
+      'IDS_POLICY_GROUP2POLICY3_DESC': '',
     }
     policy_groups_mock = [{
       'name': 'Group1',
+      'type': 'group',
       'policies': [
         {
           'name': 'Group1Policy1',
@@ -276,6 +285,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       ]
     },{
       'name': 'Group2',
+      'type': 'group',
       'policies': [
         {
           'name': 'Group2Policy3',

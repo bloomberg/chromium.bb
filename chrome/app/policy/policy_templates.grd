@@ -139,52 +139,61 @@ templates and will be translated for each locale. -->
 
     <!-- Strings for ADM/ADMX/MCX policy templates: -->
 
-    <message name="IDS_POLICY_GROUP_HOMEPAGELOCATION_DESC" desc="Description of the 'homepage' policy settings page.">
+    <message name="IDS_POLICY_HOMEPAGE_CAPTION" desc="Caption of the group of homepage-related policies.">
+      Configure the default home page
+    </message>
+    <message name="IDS_POLICY_HOMEPAGE_DESC" desc="Description of the group of homepage-related policies.">
+      Configure the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
+
+      The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.
+    </message>
+    <message name="IDS_POLICY_HOMEPAGELOCATION_DESC" desc="Description of the 'homepage location' policy.">
       Configures the default home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
 
-      The homepage type can either be set to a URL you specify here or set to the New Tab Page.
+      The home page type can either be set to a URL you specify here or set to the New Tab Page.
 
       If you select the New Tab Page, then this policy is ignored.
 
       If you enable this setting, users cannot change their home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they can still can choose the New Tab Page as their home page.
     </message>
-    <message name="IDS_POLICY_GROUP_HOMEPAGELOCATION_CAPTION" desc="Caption of the homepage URL text field in the homepage policy settings page.">
-      Configure the homepage URL
+    <message name="IDS_POLICY_HOMEPAGELOCATION_CAPTION" desc="Caption of the homepage URL policy">
+      Configure the home page URL
     </message>
-    <message name="IDS_POLICY_HOMEPAGELOCATION_CAPTION" desc="Caption of the homepage URL text field in the homepage policy settings page.">
-      Homepage URL
+    <message name="IDS_POLICY_HOMEPAGELOCATION_LABEL" desc="Caption of the homepage URL text field in the homepage policy settings page.">
+      Home page URL
     </message>
-    <message name="IDS_POLICY_GROUP_HOMEPAGEISNEWTABPAGE_DESC" desc="Description of the 'Use New Tab Page as homepage' policy settings page.">
-      Configures the type of the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing homepage preferences. The homepage can either be set to a URL you specify or set to the New Tab Page.
 
-      If you enable this setting, always the New Tab Page is used for the homepage, and the homepage URL location is ignored.
+    <message name="IDS_POLICY_HOMEPAGEISNEWTABPAGE_DESC" desc="Description of the 'Use New Tab Page as homepage' policy settings page.">
+      Configures the type of the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing home page preferences. The home page can either be set to a URL you specify or set to the New Tab Page.
+
+      If you enable this setting, always the New Tab Page is used for the home page, and the home page URL location is ignored.
 
       If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
 
       If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
-    <message name="IDS_POLICY_GROUP_HOMEPAGEISNEWTABPAGE_CAPTION" desc="Caption of the 'homepage type' selection dropdown menu in the 'homepage type' policy settings page.">
+    <message name="IDS_POLICY_HOMEPAGEISNEWTABPAGE_CAPTION" desc="Caption of the 'homepage type' selection dropdown menu in the 'homepage type' policy settings page.">
       Use New Tab Page as homepage
     </message>
 
-    <message name="IDS_POLICY_GROUP_APPLICATIONLOCALE_CAPTION" desc="Caption of the 'application locale' policy settings page.">
+    <message name="IDS_POLICY_APPLICATIONLOCALEVALUE_CAPTION" desc="Caption of the 'application locale' policy settings page.">
       Configure the application locale
     </message>
-    <message name="IDS_POLICY_GROUP_APPLICATIONLOCALE_DESC" desc="Description of the 'application locale' policy settings page.">
+    <message name="IDS_POLICY_APPLICATIONLOCALEVALUE_LABEL" desc="Caption of the text entry field of the 'application locale' policy.">
+      Application locale
+    </message>
+    <message name="IDS_POLICY_APPLICATIONLOCALEVALUE_DESC" desc="Description of the 'application locale' policy.">
       Configures the application locale in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing the locale.
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
 
       If this setting is disabled or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'.
     </message>
-    <message name="IDS_POLICY_APPLICATIONLOCALEVALUE_CAPTION" desc="Caption of the 'application locale' text field in the 'application locale' policy settings page.">
-      Application locale
-    </message>
 
-    <message name="IDS_POLICY_GROUP_ALTERNATEERRORPAGESENABLED_CAPTION" desc="Caption of the 'alternate error pages' policy settings page.">
+    <message name="IDS_POLICY_ALTERNATEERRORPAGESENABLED_CAPTION" desc="Caption of the 'alternate error pages' policy.">
       Enable alternate error pages
     </message>
-    <message name="IDS_POLICY_GROUP_ALTERNATEERRORPAGESENABLED_DESC" desc="Description of the 'alternate error pages' policy settings page.">
+    <message name="IDS_POLICY_ALTERNATEERRORPAGESENABLED_DESC" desc="Description of the 'alternate error pages' policy.">
       Enables the use of alternate error pages that are built into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> (such as 'page not found') and prevents users from changing this setting.
 
       If you enable this setting, alternate error pages are used.
@@ -194,10 +203,10 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
-    <message name="IDS_POLICY_GROUP_SEARCHSUGGESTENABLED_CAPTION" desc="Caption of the 'search suggestions' policy settings page.">
+    <message name="IDS_POLICY_SEARCHSUGGESTENABLED_CAPTION" desc="Caption of the 'search suggestions' policy.">
       Enable search suggestions
     </message>
-    <message name="IDS_POLICY_GROUP_SEARCHSUGGESTENABLED_DESC" desc="Description of the 'search suggestions' policy settings page.">
+    <message name="IDS_POLICY_SEARCHSUGGESTENABLED_DESC" desc="Description of the 'search suggestions' policy.">
       Enables search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Omnibox and prevents users from changing this setting.
 
       If you enable this setting, search suggestions are used.
@@ -207,19 +216,19 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
-    <message name="IDS_POLICY_GROUP_DNSPREFETCHINGENABLED_CAPTION" desc="Caption of the 'DNS prefetching' policy settings page.">
+    <message name="IDS_POLICY_DNSPREFETCHINGENABLED_CAPTION" desc="Caption of the 'DNS prefetching' policy.">
       Enable DNS prefetching
     </message>
-    <message name="IDS_POLICY_GROUP_DNSPREFETCHINGENABLED_DESC" desc="Description of the 'DNS prefetching' policy settings page.">
+    <message name="IDS_POLICY_DNSPREFETCHINGENABLED_DESC" desc="Description of the 'DNS prefetching' policy.">
       Enables DNS prefetching in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
-    <message name="IDS_POLICY_GROUP_JAVASCRIPTENABLED_CAPTION" desc="Caption of the 'JavaScript enabled' policy settings page.">
+    <message name="IDS_POLICY_JAVASCRIPTENABLED_CAPTION" desc="Caption of the 'JavaScript enabled' policy settings page.">
       Enable JavaScript
     </message>
-    <message name="IDS_POLICY_GROUP_JAVASCRIPTENABLED_DESC" desc="Description of the 'JavaScript enabled' policy settings page.">
+    <message name="IDS_POLICY_JAVASCRIPTENABLED_DESC" desc="Description of the 'JavaScript enabled' policy settings page.">
       Enables JavaScript in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If this setting is enabled or not configured, web pages can use JavaScript.
@@ -227,12 +236,10 @@ templates and will be translated for each locale. -->
       If this setting is disabled, web pages cannot use JavaScript.
     </message>
 
-    <message name="IDS_POLICY_GROUP_AUTOFILLENABLED_CAPTION" desc="Caption of
-      the 'autofill' policy settings page.">
-    Enable AutoFill
+    <message name="IDS_POLICY_AUTOFILLENABLED_CAPTION" desc="Caption of the 'autofill' policy.">
+      Enable AutoFill
     </message>
-    <message name="IDS_POLICY_GROUP_AUTOFILLENABLED_DESC" desc="Description of
-      the 'autofill' policy settings page.">
+    <message name="IDS_POLICY_AUTOFILLENABLED_DESC" desc="Description of the 'autofill' policy.">
     Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill
     feature and allows users to auto complete web forms using previously stored
     information such as address or credit card information.
@@ -244,12 +251,10 @@ templates and will be translated for each locale. -->
     If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
-   <message name="IDS_POLICY_GROUP_SHOWHOMEBUTTON_CAPTION" desc="Caption of
-      the 'show Home button' policy settings page.">
+   <message name="IDS_POLICY_SHOWHOMEBUTTON_CAPTION" desc="Caption of the 'show Home button' policy.">
     Show Home button on toolbar
     </message>
-    <message name="IDS_POLICY_GROUP_SHOWHOMEBUTTON_DESC" desc="Description of
-      the 'show Home button' policy settings page.">
+    <message name="IDS_POLICY_SHOWHOMEBUTTON_DESC" desc="Description of the 'show Home button' policy.">
     Shows the Home button on <ph name="PRODUCT_NAME">$1<ex>Google
         Chrome</ex></ph>'s toolbar.
 
@@ -261,10 +266,10 @@ templates and will be translated for each locale. -->
 
     </message>
 
-    <message name="IDS_POLICY_GROUP_SAFEBROWSINGENABLED_CAPTION" desc="Caption of the 'safe browsing' policy settings page.">
+    <message name="IDS_POLICY_SAFEBROWSINGENABLED_CAPTION" desc="Caption of the 'safe browsing' policy.">
       Enable Safe Browsing
     </message>
-    <message name="IDS_POLICY_GROUP_SAFEBROWSINGENABLED_DESC" desc="Description of the 'safe browsing' policy settings page.">
+    <message name="IDS_POLICY_SAFEBROWSINGENABLED_DESC" desc="Description of the 'safe browsing' policy.">
       Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature and prevents users from changing this setting.
 
       If you enable this setting, Safe Browsing is always active.
@@ -274,19 +279,19 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
-    <message name="IDS_POLICY_GROUP_SYNCDISABLED_CAPTION" desc="Caption of the 'disable sync' policy settings page.">
+    <message name="IDS_POLICY_SYNCDISABLED_CAPTION" desc="Caption of the 'disable sync' policy.">
       Disable synchronization of data with Google
     </message>
-    <message name="IDS_POLICY_GROUP_SYNCDISABLED_DESC" desc="Description of the 'disable sync' policy settings page.">
+    <message name="IDS_POLICY_SYNCDISABLED_DESC" desc="Description of the 'disable sync' policy.">
       Disables data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
 
       If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
-    <message name="IDS_POLICY_GROUP_PROXY_CAPTION" desc="Caption of the 'proxy' policy settings page.">
+    <message name="IDS_POLICY_PROXY_CAPTION" desc="Caption of the 'proxy' policy group.">
       Configure proxy server
     </message>
-    <message name="IDS_POLICY_GROUP_PROXY_DESC" desc="Description of the 'proxy' policy settings page.">
+    <message name="IDS_POLICY_PROXY_DESC" desc="Description of the 'proxy' policy group.">
       Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
       If you choose to never use a proxy server and always connect directly, all other options are ignored.
@@ -317,6 +322,9 @@ templates and will be translated for each locale. -->
       Address or URL of proxy server
     </message>
     <message name="IDS_POLICY_PROXYBYPASSLIST_CAPTION" desc="The label of the 'proxy bypass rules' text field in the 'proxy' policy settings page.">
+      Proxy bypass rules
+    </message>
+    <message name="IDS_POLICY_PROXYBYPASSLIST_LABEL" desc="The label of the 'proxy bypass rules' text field in the 'proxy' policy settings page.">
       Comma-separated list of proxy bypass rules
     </message>
     <message name="IDS_POLICY_PROXYPACURL_CAPTION" desc="The label of the 'proxy pac URL' text field in the 'proxy' policy settings page.">
@@ -361,10 +369,10 @@ templates and will be translated for each locale. -->
       <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
     </message>
 
-    <message name="IDS_POLICY_GROUP_METRICSREPORTINGENABLED_CAPTION" desc="Caption of the 'crash reporting' policy settings page.">
+    <message name="IDS_POLICY_METRICSREPORTINGENABLED_CAPTION" desc="Caption of the 'crash reporting' policy.">
       Enable reporting of usage and crash-related data
     </message>
-    <message name="IDS_POLICY_GROUP_METRICSREPORTINGENABLED_DESC" desc="Description of the 'crash reporting' policy settings page.">
+    <message name="IDS_POLICY_METRICSREPORTINGENABLED_DESC" desc="Description of the 'crash reporting' policy.">
       Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
 
       If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.
@@ -374,10 +382,17 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
-    <message name="IDS_POLICY_GROUP_PASSWORDMANAGERENABLED_CAPTION" desc="Caption of the 'password manager' policy settings page.">
+    <message name="IDS_POLICY_PASSWORDMANAGER_CAPTION" desc="Caption of the group of 'password manager' related policies.">
+      Configure the password manager
+    </message>
+    <message name="IDS_POLICY_PASSWORDMANAGER_DESC" desc="Description of the group of 'password manager' related policies.">
+      Configures the password manager. If the password manager is enabled, then you can choose to enable or disable whether the user may show stored passwords in clear text.
+    </message>
+
+    <message name="IDS_POLICY_PASSWORDMANAGERENABLED_CAPTION" desc="Caption of the 'password manager' policy.">
       Enable the password manager
     </message>
-    <message name="IDS_POLICY_GROUP_PASSWORDMANAGERENABLED_DESC" desc="Description of the 'password manager' policy settings page.">
+    <message name="IDS_POLICY_PASSWORDMANAGERENABLED_DESC" desc="Description of the 'password manager' policy.">
       Enables saving passwords and using saved passwords in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If you enable this setting, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time they log in to a site.
@@ -387,10 +402,10 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
-    <message name="IDS_POLICY_GROUP_PASSWORDMANAGERALLOWSHOWPASSWORDS_CAPTION" desc="Caption of the 'allow show passwords in password manager' policy settings page.">
+    <message name="IDS_POLICY_PASSWORDMANAGERALLOWSHOWPASSWORDS_CAPTION" desc="Caption of the 'allow show passwords in password manager' policy.">
       Allow users to show passwords in Password Manager
     </message>
-    <message name="IDS_POLICY_GROUP_PASSWORDMANAGERALLOWSHOWPASSWORDS_DESC" desc="Description of the 'allow show passwords in password manager' policy settings page.">
+    <message name="IDS_POLICY_PASSWORDMANAGERALLOWSHOWPASSWORDS_DESC" desc="Description of the 'allow show passwords in password manager' policy.">
       Controls whether the user may show passwords in clear text in the password manager.
 
       If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
@@ -398,37 +413,46 @@ templates and will be translated for each locale. -->
       If you enable or do not configure this setting, users can view their passwords in clear text in the password manager.
     </message>
 
-    <message name="IDS_POLICY_GROUP_DISABLEDPLUGINS_CAPTION" desc="Caption of the 'disable plugins' policy settings page.">
+    <message name="IDS_POLICY_DISABLEDPLUGINS_CAPTION" desc="Caption of the 'disable plugins' policy.">
       Specify a list of disabled plugins
     </message>
-    <message name="IDS_POLICY_GROUP_DISABLEDPLUGINS_DESC" desc="Description of the 'disable plugins' policy settings page.">
+    <message name="IDS_POLICY_DISABLEDPLUGINS_DESC" desc="Description of the 'disable plugins' policy.">
       Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
 
       If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users cannot enable them.
     </message>
-    <message name="IDS_POLICY_DISABLEDPLUGINS_CAPTION" desc="Label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
+    <message name="IDS_POLICY_DISABLEDPLUGINS_LABEL" desc="Label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
       List of disabled plugins
     </message>
 
-    <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLBLACKLIST_CAPTION" desc="Caption of the 'extension blacklist' policy settings page.">
+    <message name="IDS_POLICY_EXTENSIONS_CAPTION" desc="Caption of the group of extension-related policies.">
+      Configure allowed extensions
+    </message>
+    <message name="IDS_POLICY_EXTENSIONS_DESC" desc="Description of the group of extension-related policies.">
+      Configures extension installation blacklist and whitelist. The user is not allowed to install blacklisted extensions. If you add an already installed extension to the blacklist, then it gets automatically uninstalled from the user's machine.
+
+      A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the whitelist.
+    </message>
+
+    <message name="IDS_POLICY_EXTENSIONINSTALLBLACKLIST_CAPTION" desc="Caption of the 'extension blacklist' policy settings page.">
       Configure extension installation blacklist
     </message>
-    <message name="IDS_POLICY_EXTENSIONINSTALLBLACKLIST_CAPTION" desc="Label of the 'blacklisted extensions' list editor view in the 'extension blacklist' policy settings page.">
+    <message name="IDS_POLICY_EXTENSIONINSTALLBLACKLIST_LABEL" desc="Label of the 'blacklisted extensions' list editor view in the 'extension blacklist' policy settings page.">
       Extension IDs the user should be prevented from installing (or * for all)
     </message>
-    <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLBLACKLIST_DESC" desc="Description of the 'extension blacklist' policy settings page.">
+    <message name="IDS_POLICY_EXTENSIONINSTALLBLACKLIST_DESC" desc="Description of the 'extension blacklist' policy settings page.">
       Allows you to specify which extensions the users can NOT install.
 
       A blacklist value of * means all extensions are blacklisted unless they are explicitly listed in the whitelist.
     </message>
 
-    <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLWHITELIST_CAPTION" desc="Caption of the 'extension whitelist' policy settings page.">
+    <message name="IDS_POLICY_EXTENSIONINSTALLWHITELIST_CAPTION" desc="Caption of the 'extension whitelist' policy settings page.">
       Configure extension installation whitelist
     </message>
-    <message name="IDS_POLICY_EXTENSIONINSTALLWHITELIST_CAPTION" desc="Label of the 'whitelisted extensions' list editor view in the 'extension whitelist' policy settings page.">
+    <message name="IDS_POLICY_EXTENSIONINSTALLWHITELIST_LABEL" desc="Label of the 'whitelisted extensions' list editor view in the 'extension whitelist' policy settings page.">
       Extension IDs to exempt from the blacklist
     </message>
-    <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLWHITELIST_DESC" desc="Description of the 'extension whitelist' policy settings page.">
+    <message name="IDS_POLICY_EXTENSIONINSTALLWHITELIST_DESC" desc="Description of the 'extension whitelist' policy settings page.">
       Allows you to specify which extensions are not subject to the blacklist.
 
       A blacklist value of * means all extensions are blacklisted and users can only install extensions listed in the whitelist.
@@ -443,21 +467,15 @@ templates and will be translated for each locale. -->
       <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> preferences
     </message>
 
-    <message name="IDS_POLICY_GROUP_RESTOREONSTARTUP_CAPTION" desc="Caption of
+    <message name="IDS_POLICY_RESTOREONSTARTUPGROUP_CAPTION" desc="Caption of
       the 'restore on startup' policy settings page">
       Configure startup pages
     </message>
-    <message name="IDS_POLICY_GROUP_RESTOREONSTARTUP_DESC" desc="Description of
+    <message name="IDS_POLICY_RESTOREONSTARTUPGROUP_DESC" desc="Description of
       the 'restore on startup' policy settings page.">
       Allows you to configure the pages that are loaded on startup.
 
-      If you choose 'open home page on startup' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If you choose 'Reopen the URLs that were open last', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopened.
-
-      If you choose 'Open a list of URLs on startup', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      The contents of the list 'URLs to open at startup' are ignored unless you select 'Open a list of URLs' in 'Action on startup'.
     </message>
 
     <message name="IDS_POLICY_RESTOREONSTARTUP_CAPTION" desc="Caption of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'.">
@@ -465,6 +483,14 @@ templates and will be translated for each locale. -->
     </message>
     <message name="IDS_POLICY_RESTOREONSTARTUP_DESC" desc="Description of the dropbox 'restore on startup mode' of the policy settings page 'restore on startup'">
       Allows you to specify the behavior on startup.
+
+      If you choose 'Open home page' the home page will always be opened when you start <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If you choose 'Reopen the URLs that were open last', the URLs that were open last time <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was closed will be reopened.
+
+      If you choose 'Open a list of URLs', the list of 'URLs to open on startup' will be opened when a user starts <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
     <message name="IDS_POLICY_ENUM_RESTOREONSTARTUPISNONE_CAPTION" desc="Label in the dropdown menu 'restore on startup mode' for opening the home page on startup.">
@@ -491,7 +517,7 @@ templates and will be translated for each locale. -->
         Google Chrome Frame</ex></ph>
     </message>
     <message name="IDS_POLICY_GROUP_CHROMEFRAMERENDERERSETTINGS_DESC"
-             desc="Description of the 'Chrome Frame renderer' policy settings page.  TODO(gfeher): This text is only visible on Mac, but the corresponding policy is not supported on Mac.">
+             desc="Description of the 'Chrome Frame renderer' policy settings page.">
       Configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">
         $3<ex>Google Chrome Frame</ex>
       </ph> is installed.
@@ -504,6 +530,10 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_CAPTION"
              desc="Caption of Chrome Frame renderer policy settings page">
       Configure the default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>
+    </message>
+    <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_VALUE_APTION"
+             desc="Caption of Chrome Frame renderer policy settings page">
+      Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>
     </message>
     <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_DESC"
              desc="Description of the 'Chrome Frame renderer' policy settings page.">
@@ -528,10 +558,21 @@ templates and will be translated for each locale. -->
              desc="Caption for list of URLs that should always be displayed in Chrome Frame">
       Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>
     </message>
+    <message name="IDS_POLICY_RENDERINCHROMEFRAMELIST_DESC"
+             desc="Description for list of URLs that should always be displayed in Chrome Frame">
+      Customize the list of URL patterns that should always be rendered by <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>.
+
+      For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.
+    </message>
 
     <message name="IDS_POLICY_RENDERINHOSTLIST_CAPTION"
              desc="Caption for list of URLs that should always be displayed in the host browser">
       Always render the following URL patterns in the host browser
+    </message>
+    <message name="IDS_POLICY_RENDERINHOSTLIST_DESC"
+             desc="Description for list of URLs that should always be displayed in the host browser">
+      Customize the list of URL patterns that should always be rendered by the host browser.
+      For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.
     </message>
     <!-- End Chrome Frame messages -->
 

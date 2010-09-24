@@ -76,7 +76,7 @@ class TemplateFormatter(interface.ItemFormatter):
     '''
     policy_generator = policy_template_generator.PolicyTemplateGenerator(
         self._messages,
-        self._policy_data['policy_groups'])
+        self._policy_data['policy_definitions'])
     writer = self._writer_module.GetWriter(self._config, self._messages)
     str = policy_generator.GetTemplateText(writer)
     return str

@@ -25,27 +25,6 @@ class AdmWriter(template_writer.TemplateWriter):
     'list': 'LISTBOX'}
   NEWLINE = '\r\n'
 
-  # TODO(gfeher): Get rid of this logic by renaming the messages in the .grd
-  #               file. Before that, all the writers should switch to using
-  #               this logic.
-  def _GetLocalizedPolicyMessage(self, policy, msg_id):
-    '''Looks up localized caption or description for a policy.
-    If the policy does not have the required message, then it is
-    inherited from the group.
-
-    Args:
-      policy: The data structure of the policy.
-      msg_id: Either 'caption' or 'desc'.
-
-    Returns:
-      The corresponding message for the policy.
-    '''
-    if msg_id in policy:
-      msg = policy[msg_id]
-    else:
-      msg = policy['parent'][msg_id]
-    return msg
-
   def _AddGuiString(self, name, value):
     # Escape newlines in the value.
     value = value.replace('\n','\\n')
@@ -82,9 +61,8 @@ class AdmWriter(template_writer.TemplateWriter):
     Args:
       policy: The policy to write to the output.
     '''
-    policy_caption = self._GetLocalizedPolicyMessage(policy, 'caption')
     policy_part_name = policy['name'] + '_Part'
-    self._AddGuiString(policy_part_name, policy_caption)
+    self._AddGuiString(policy_part_name, policy['label'])
 
     # Print the PART ... END PART section:
     self._PrintLine()
@@ -108,14 +86,11 @@ class AdmWriter(template_writer.TemplateWriter):
     self._PrintLine('END PART', -1)
 
   def WritePolicy(self, policy):
-    policy_desc = self._GetLocalizedPolicyMessage(policy, 'desc')
-    policy_caption = self._GetLocalizedPolicyMessage(policy, 'caption')
-
-    self._AddGuiString(policy['name'] + '_Policy', policy_caption)
+    self._AddGuiString(policy['name'] + '_Policy', policy['caption'])
     self._PrintLine('POLICY !!%s_Policy' % policy['name'], 1)
     self._WriteSupported()
     policy_explain_name = policy['name'] + '_Explain'
-    self._AddGuiString(policy_explain_name, policy_desc)
+    self._AddGuiString(policy_explain_name, policy['desc'])
     self._PrintLine('EXPLAIN !!' + policy_explain_name)
 
     if policy['type'] == 'main':

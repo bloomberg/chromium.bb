@@ -28,7 +28,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     # Test PListStringsWriter in case of empty polices.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [],
+        'policy_definitions': [],
         'placeholders': [],
       }''', '''
         <messages>
@@ -51,9 +51,10 @@ Chromium.pfm_description = "Chromium preferen\\"ces";
     # Tests a policy group with a single policy of type 'main'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'MainGroup',
+            'type': 'group',
             'policies': [{
               'name': 'MainPolicy',
               'type': 'main',
@@ -64,8 +65,10 @@ Chromium.pfm_description = "Chromium preferen\\"ces";
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_MAINGROUP_CAPTION">Caption of main.</message>
-          <message name="IDS_POLICY_GROUP_MAINGROUP_DESC">Title of main.</message>
+          <message name="IDS_POLICY_MAINGROUP_CAPTION">Caption of main.</message>
+          <message name="IDS_POLICY_MAINGROUP_DESC">Title of main.</message>
+          <message name="IDS_POLICY_MAINPOLICY_CAPTION">Caption of main policy.</message>
+          <message name="IDS_POLICY_MAINPOLICY_DESC">Title of main policy.</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">Preferences of $1</message>
         </messages>
       ''' )
@@ -78,8 +81,8 @@ Chromium.pfm_description = "Chromium preferen\\"ces";
     expected_output = \
 '''Google Chrome.pfm_title = "Google Chrome";
 Google Chrome.pfm_description = "Preferences of Google Chrome";
-MainPolicy.pfm_title = "Caption of main.";
-MainPolicy.pfm_description = "Title of main.";
+MainPolicy.pfm_title = "Caption of main policy.";
+MainPolicy.pfm_description = "Title of main policy.";
 '''
     self.assertEquals(output.strip(), expected_output.strip())
 
@@ -88,9 +91,10 @@ MainPolicy.pfm_description = "Title of main.";
     # inheriting group description to policy description.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'StringGroup',
+            'type': 'group',
             'policies': [{
               'name': 'StringPolicy',
               'type': 'string',
@@ -101,10 +105,12 @@ MainPolicy.pfm_description = "Title of main.";
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_STRINGGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_GROUP_STRINGGROUP_DESC">Description of group.
+          <message name="IDS_POLICY_STRINGGROUP_CAPTION">Caption of group.</message>
+          <message name="IDS_POLICY_STRINGGROUP_DESC">Description of group.
 With a newline.</message>
           <message name="IDS_POLICY_STRINGPOLICY_CAPTION">Caption of policy.</message>
+          <message name="IDS_POLICY_STRINGPOLICY_DESC">Description of policy.
+With a newline.</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">Preferences Of $1</message>
         </messages>
       ''' )
@@ -118,7 +124,7 @@ With a newline.</message>
 '''Chromium.pfm_title = "Chromium";
 Chromium.pfm_description = "Preferences Of Chromium";
 StringPolicy.pfm_title = "Caption of policy.";
-StringPolicy.pfm_description = "Description of group.\\nWith a newline.";
+StringPolicy.pfm_description = "Description of policy.\\nWith a newline.";
         '''
     self.assertEquals(output.strip(), expected_output.strip())
 
@@ -126,9 +132,10 @@ StringPolicy.pfm_description = "Description of group.\\nWith a newline.";
     # Tests a policy group with a single policy of type 'enum'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'EnumGroup',
+            'type': 'group',
             'policies': [{
               'name': 'EnumPolicy',
               'type': 'enum',
@@ -143,8 +150,8 @@ StringPolicy.pfm_description = "Description of group.\\nWith a newline.";
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_ENUMGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_GROUP_ENUMGROUP_DESC">Description of group.</message>
+          <message name="IDS_POLICY_ENUMGROUP_CAPTION">Caption of group.</message>
+          <message name="IDS_POLICY_ENUMGROUP_DESC">Description of group.</message>
           <message name="IDS_POLICY_ENUMPOLICY_CAPTION">Caption of policy.</message>
           <message name="IDS_POLICY_ENUMPOLICY_DESC">Description of policy.</message>
           <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">Option1</message>
@@ -171,9 +178,10 @@ EnumPolicy.pfm_description = "0 - Option1\\n1 - Option2\\nDescription of policy.
     # be included in the plist string table.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'NonMacGroup',
+            'type': 'group',
             'policies': [{
               'name': 'NonMacPolicy',
               'type': 'string',
@@ -184,9 +192,10 @@ EnumPolicy.pfm_description = "0 - Option1\\n1 - Option2\\nDescription of policy.
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_NONMACGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_GROUP_NONMACGROUP_DESC">Description of group.</message>
+          <message name="IDS_POLICY_NONMACGROUP_CAPTION">Caption of group.</message>
+          <message name="IDS_POLICY_NONMACGROUP_DESC">Description of group.</message>
           <message name="IDS_POLICY_NONMACPOLICY_CAPTION">Caption of policy.</message>
+          <message name="IDS_POLICY_NONMACPOLICY_DESC">Description of policy.</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
         </messages>
       ''' )

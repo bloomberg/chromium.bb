@@ -69,7 +69,6 @@ class TemplateWriter(object):
     '''
     pass
 
-
   def WriteTemplate(self, template):
     '''Writes the given template definition.
 
@@ -81,14 +80,18 @@ class TemplateWriter(object):
     '''
     self.Init()
     self.BeginTemplate()
-    for group in template:
-      policies = self._GetPoliciesForWriter(group)
-      if policies:
-        # Only write nonempty groups.
-        self.BeginPolicyGroup(group)
-        for policy in policies:
-          self.WritePolicy(policy)
-        self.EndPolicyGroup()
+    for policy in template:
+      if policy['type'] == 'group':
+        child_policies = self._GetPoliciesForWriter(policy)
+        if child_policies:
+          # Only write nonempty groups.
+          self.BeginPolicyGroup(policy)
+          for child_policy in child_policies:
+            # Nesting of groups is currently not supported.
+            self.WritePolicy(child_policy)
+          self.EndPolicyGroup()
+      else:
+        self.WritePolicy(policy)
     self.EndTemplate()
     return self.GetTemplateText()
 

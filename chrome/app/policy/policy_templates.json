@@ -1,6 +1,8 @@
 {
 # policy_templates.json - Metafile for policy templates
 #
+# The content of this file is evaluated as a Python expression.
+#
 # This file is used as input to generate the following policy templates:
 # ADM,ADMX+ADML,MCX/plist
 #
@@ -11,63 +13,45 @@
 # related policies might appear together in policy groups. The grouping is not
 # visible to Chrome.
 #
-# This file contains a list of policy groups. Each group contains a list
-# of policies under the key 'policies'. If a policy does not belong to
-# any groups then it should be placed in its own separate group. All the
-# policies and all the groups must have unique names but it is not a problem
-# to have a group and policy with the same name. Group names are in fact
-# not exposed to Chrome at all.
+# This file contains a list of policies and groups. Each group contains a list
+# of policies under the key 'policies'. All the policies and groups must have
+# unique names. Group names are not exposed to Chrome at all.
 #
 # Each policy has a type. The currently implemented types:
+#   'group': - not a real policy, contains a list of policies
+#     NOTE: Currently nesting groups inside other groups is not supported.
 #   'string' - a string value
 #   'enum' - the user can select its value from a collection of items
-#   'main' - a boolean value with additional semantics:
-#     A group can have at most one main policy and it must have a value of True
-#     if the policy group is enabled, False if the group is disabled and not
-#     configured (not visible to Chrome at all) if the rest of the group is
-#     not configured. Chrome will see this policy no differently than other
-#     policies, but depending on the platform, the GUI of the templates might
-#     reflect the fact that these policies are 'main'. For example on Windows
-#     this policy will be assigned to the Enable/Disable buttons of the group,
-#     and if it is set to Disabled then other policies of the group will not be
-#     visible to Chrome.
+#   'main' - a boolean value
 #   'list' - a list of string values
 #
 # Policy group descriptions, policy captions and similar texts are localized
 # strings taken from the <message> nodes of the .grd file. Their name
 # attributes are generated from the JSON keys.
-# Each item (policy or group) may have a caption and/or a description. The
-# exact use of these strings depends on the platform:
-#   -On Windows the user sees a list of policy groups from which the pages of
-#    groups can be opened, and the values of policies can be edited on those.
-#   -Mac does not know about policy groups, the user sees a list of single
-#    policies and the values of policies can be edited by clicking on them.
-#   The source of the one-line texts that appear in the list of policies/groups:
-#    -On Windows the group caption is shown for each group in the list.
-#    -On Mac also the group caption is shown by default for each policy. But
-#     if a policy caption is specified then it overrides the group caption.
-#     (Note that the policy caption can only be omitted for policies of type
-#     'main'.)
-#   Descriptions:
-#    -On Windows the user sees the group description on the page of each
-#     group. In addition to this, the policy caption is shown for each
-#     policy on the group page. (Except for 'main' policies, they have no
-#     separate captions.)
-#    -On Mac the user sees each policy on a separate page. By default the
-#     group description is shown here, but if the policy description is
-#     specified then it overrides the group caption.
+# Each item (policy or group) may have the following messages:
+#   - description:
+#     Describes the item it applies to.
+#   - caption
+#     A short, one-line summary of the item it applies to. This can appear
+#     both in policy or group listings or on title bars of policy-setting
+#     windows.
+#   - label (Optional, defaults to caption if not specified.)
+#     A short, one-line summary of the item it applies to. The difference
+#     from caption is that label always appears next to the entry field
+#     where the value of the policy can be entered. 'main' policies on
+#     Windows ignore this. Policies on Mac are using this instead of caption.
 #
 # Generated grd names:
 #   Each name has two parts: the second part is either CAPTION or DESC,
 #   and the first part identifies the item the text applies to:
 #   -For policy groups:
-#     IDS_POLICY_GROUP_<NAME OF THE GROUP>
-#     e.g. the name of the description of group Homepage:
-#       IDS_POLICY_GROUP_HOMEPAGE_DESC
-#   -For policies:
-#     IDS_POLICY_<NAME OF THE POLICY>
+#   -For policies and groups:
+#     IDS_POLICY_<NAME OF THE POLICY OR GROUP>
 #     e.g. the name of the caption of policy HomepageLocation:
 #       IDS_POLICY_HOMEPAGELOCATION_CAPTION
+#     or other messages of the policy HomepageLocation:
+#       IDS_POLICY_HOMEPAGELOCATION_VALUE_CAPTION
+#       IDS_POLICY_HOMEPAGELOCATION_DESC
 #   -For enum items:
 #     IDS_POLICY_ENUM_<NAME OF THE ITEM>
 #     e.g. the name of the caption of ProxyServerDisabled:
@@ -82,132 +66,109 @@
 #     Windows: ADM,ADMX,ADML
 #     Mac: plist,plist_strings
 #
-  'policy_groups': [
-    # The homepage-related policies are split into two groups, because if they
-    # are in the same group, then Windows does not allow to set them undefined
-    # independently of each other.
+  'policy_definitions': [
     {
-      'name': 'HomepageLocation',
-      'policies': [{
-        'name':  'HomepageLocation',
-        'type': 'string',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 1},
-          'example_value': 'http://chromium.org',
-        }
-      }],
-    },
-    {
-      'name': 'HomepageIsNewTabPage',
-      'policies': [{
-        'name': 'HomepageIsNewTabPage',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 1},
-          'example_value': True,
-        }
-      }],
-    },
-    {
-      'name': 'ApplicationLocale',
-      'policies': [{
-        'name': 'ApplicationLocaleValue',
-        'type': 'string',
-        'annotations': {
-          'platforms': ['win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 0},
-          'example_value': 'en',
+      'name': 'Homepage',
+      'type': 'group',
+      'policies': [
+        {
+          'name':  'HomepageLocation',
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': 'http://chromium.org',
+          }
         },
-      }]
+        {
+          'name': 'HomepageIsNewTabPage',
+          'type': 'main',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': True,
+          }
+        }
+      ]
+    },
+    {
+      'name': 'ApplicationLocaleValue',
+      'type': 'string',
+      'annotations': {
+        'platforms': ['win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 0},
+        'example_value': 'en',
+      },
     },
     {
       'name': 'AlternateErrorPagesEnabled',
-      'policies': [{
-        'name': 'AlternateErrorPagesEnabled',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 1},
-          'example_value': True,
-        },
-      }]
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 1},
+        'example_value': True,
+      },
     },
     {
       'name': 'SearchSuggestEnabled',
-      'policies': [{
-        'name': 'SearchSuggestEnabled',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 1},
-          'example_value': True,
-        }
-      }],
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 1},
+        'example_value': True,
+      }
     },
     {
       'name': 'DnsPrefetchingEnabled',
-      'policies': [{
-        'name': 'DnsPrefetchingEnabled',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 0},
-          'example_value': True,
-        }
-      }],
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 0},
+        'example_value': True,
+      }
     },
     {
       'name': 'JavascriptEnabled',
-      'policies': [{
-        'name': 'JavascriptEnabled',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 0},
-          'example_value': True,
-        }
-      }],
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 0},
+        'example_value': True,
+      }
     },
     {
       'name': 'SafeBrowsingEnabled',
-      'policies': [{
-        'name': 'SafeBrowsingEnabled',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 0},
-          'example_value': True,
-        }
-      }]
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 0},
+        'example_value': True,
+      }
     },
     {
       'name': 'MetricsReportingEnabled',
-      'policies': [{
-        'name': 'MetricsReportingEnabled',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 0},
-          'example_value': True,
-          'problem_href':
-            'http://www.chromium.org/administrators/'
-            'policy-list-3/metrics-reporting-enabled',
-        }
-      }],
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 0},
+        'example_value': True,
+        'problem_href':
+          'http://www.chromium.org/administrators/'
+          'policy-list-3/metrics-reporting-enabled',
+      }
     },
     {
-      'name': 'PasswordManagerEnabled',
+      'name': 'PasswordManager',
+      'type': 'group',
       'policies': [{
         'name': 'PasswordManagerEnabled',
         'type': 'main',
@@ -217,11 +178,8 @@
           'features': {'dynamic_refresh': 1},
           'example_value': True,
         }
-      }]
-    },
-    {
-      'name': 'PasswordManagerAllowShowPasswords',
-      'policies': [{
+      },
+      {
         'name': 'PasswordManagerAllowShowPasswords',
         'type': 'main',
         'annotations': {
@@ -233,46 +191,38 @@
       }]
     },
     {
-      'name' : 'AutoFillEnabled',
-      'policies': [{
-        'name': 'AutoFillEnabled',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 1},
-          'example_value': False,
-        }
-      }]
+      'name': 'AutoFillEnabled',
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 1},
+        'example_value': False,
+      }
     },
     {
       'name': 'DisabledPlugins',
-      'policies': [{
-        'name': 'DisabledPlugins',
-        'type': 'list',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 1},
-          'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
-        }
-      }]
+      'type': 'list',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 1},
+        'example_value': ['Java', 'Shockwave Flash', 'Chrome PDF Viewer'],
+      }
     },
     {
       'name': 'SyncDisabled',
-      'policies': [{
-        'name': 'SyncDisabled',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 1},
-          'example_value': True,
-        }
-      }]
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 1},
+        'example_value': True,
+      }
     },
     {
       'name': 'Proxy',
+      'type': 'group',
       'policies': [
         {
           'name': 'ProxyServerMode',
@@ -323,7 +273,8 @@
       ]
     },
     {
-      'name': 'ExtensionInstallBlacklist',
+      'name': 'Extensions',
+      'type': 'group',
       'policies': [{
         'name': 'ExtensionInstallBlacklist',
         'type': 'list',
@@ -333,11 +284,8 @@
           'features': {'dynamic_refresh': 1},
           'example_value': ['extension_id1', 'extension_id2']
         }
-      }]
-    },
-    {
-      'name': 'ExtensionInstallWhitelist',
-      'policies': [{
+      },
+      {
         'name': 'ExtensionInstallWhitelist',
         'type': 'list',
         'annotations': {
@@ -350,19 +298,17 @@
     },
     {
       'name': 'ShowHomeButton',
-      'policies': [{
-        'name': 'ShowHomeButton',
-        'type': 'main',
-        'annotations': {
-          'platforms': ['linux', 'mac', 'win'],
-          'products': ['chrome'],
-          'features': {'dynamic_refresh': 1},
-          'example_value': True
-        }
-      }]
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 1},
+        'example_value': True
+      }
     },
     {
-      'name': 'RestoreOnStartup',
+      'name': 'RestoreOnStartupGroup',
+      'type': 'group',
       'policies': [{
         'name': 'RestoreOnStartup',
         'type': 'enum',
@@ -390,6 +336,7 @@
     },
     {
       'name': 'ChromeFrameRendererSettings',
+      'type': 'group',
       'policies': [{
         'name': 'ChromeFrameRendererSettings',
         'type': 'enum',

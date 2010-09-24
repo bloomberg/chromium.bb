@@ -104,21 +104,6 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           '<div/>'
         '</div>')
 
-  def testGetLocalizedPolicyMessage(self):
-    # Test if the message inheritance logic works well in
-    # DocWriter.GetLocalizedPolicyMessage()
-    policy = {'message_id1': '1hello, world'}
-    self.assertEquals(
-        self.writer._GetLocalizedPolicyMessage(policy, 'message_id1'),
-        '1hello, world')
-    self.assertRaises(
-        KeyError,
-        self.writer._GetLocalizedPolicyMessage, policy, 'message_id2')
-    policy['parent'] = {'message_id3': '3hello, world'}
-    self.assertEquals(
-        self.writer._GetLocalizedPolicyMessage(policy, 'message_id3'),
-        '3hello, world')
-
   def testGetLocalizedMessage(self):
     # Test if localized messages are retrieved correctly.
     self.writer.messages = {

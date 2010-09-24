@@ -32,25 +32,6 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
   files.
   '''
 
-  # TODO(gfeher): This function is duplicated in PListWriter.
-  def _GetLocalizedPolicyMessage(self, policy, msg_id):
-    '''Looks up localized caption or description for a policy.
-    If the policy does not have the required message, then it is
-    inherited from the group.
-
-    Args:
-      policy: The data structure of the policy.
-      msg_id: Either 'caption' or 'desc'.
-
-    Returns:
-      The corresponding message for the policy.
-    '''
-    if msg_id in policy:
-      msg = policy[msg_id]
-    else:
-      msg = policy['parent'][msg_id]
-    return msg
-
   def _GetLocalizedMessage(self, msg_id):
     '''Returns a localized message for this writer.
 
@@ -131,9 +112,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       parent: The DOM node for which the feature list will be added.
       policy: The data structure of a policy.
     '''
-    desc = self._GetLocalizedPolicyMessage(policy, 'desc')
     # Replace URLs with links in the description.
-    self._AddTextWithLinks(parent, desc)
+    self._AddTextWithLinks(parent, policy['desc'])
     # Add list of enum items.
     if policy['type'] == 'enum':
       ul = self.AddElement(parent, 'ul')
@@ -370,13 +350,12 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       parent: The DOM node of the summary table.
       policy: The data structure of the policy.
     '''
-    caption = self._GetLocalizedPolicyMessage(policy, 'caption')
     tr = self._AddStyledElement(parent, 'tr', ['tr'])
     name_td = self._AddStyledElement(tr, 'td', ['td', 'td.left'])
     self.AddElement(
         name_td, 'a',
         {'href': '#' + policy['name']}, policy['name'])
-    self._AddStyledElement(tr, 'td', ['td', 'td.right'], {}, caption)
+    self._AddStyledElement(tr, 'td', ['td', 'td.right'], {}, policy['caption'])
 
   def _AddPolicySection(self, parent, policy):
     '''Adds a section about the policy in the detailed policy listing.
@@ -386,10 +365,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       policy: The data structure of the policy.
     '''
     h2 = self.AddElement(parent, 'h2')
-    caption = self._GetLocalizedPolicyMessage(policy, 'caption')
     self.AddElement(h2, 'a', {'name': policy['name']})
     self.AddText(h2, policy['name'])
-    self.AddElement(parent, 'span', {}, caption)
+    self.AddElement(parent, 'span', {}, policy['caption'])
     self._AddPolicyNote(parent, policy)
 
     self._AddPolicyDetails(parent, policy)

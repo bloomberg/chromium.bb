@@ -42,7 +42,7 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     # Test PListWriter in case of empty polices.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [],
+        'policy_definitions': [],
         'placeholders': [],
       }''', '''
         <messages>
@@ -65,21 +65,18 @@ chromium="Chromium"'''
     # Tests a policy group with a single policy of type 'main'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
-            'name': 'MainGroup',
-            'policies': [{
-              'name': 'MainPolicy',
-              'type': 'main',
-              'annotations': {'platforms': ['win']}
-            }],
+            'name': 'MainPolicy',
+            'type': 'main',
+            'annotations': {'platforms': ['win']}
           },
         ],
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_MAINGROUP_CAPTION">Caption of main.</message>
-          <message name="IDS_POLICY_GROUP_MAINGROUP_DESC">Description of main.</message>
+          <message name="IDS_POLICY_MAINPOLICY_CAPTION">Caption of main.</message>
+          <message name="IDS_POLICY_MAINPOLICY_DESC">Description of main.</message>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.12</message>
         </messages>
       ''' )
@@ -114,23 +111,19 @@ MainPolicy_Explain="Description of main."'''
     # Tests a policy group with a single policy of type 'string'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
-            'name': 'StringGroup',
-            'policies': [{
-              'name': 'StringPolicy',
-              'type': 'string',
-              'annotations': {'platforms': ['win']}
-            }],
+            'name': 'StringPolicy',
+            'type': 'string',
+            'annotations': {'platforms': ['win']}
           },
         ],
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_STRINGGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_GROUP_STRINGGROUP_DESC">Description of group.
-With a newline.</message>
           <message name="IDS_POLICY_STRINGPOLICY_CAPTION">Caption of policy.</message>
+          <message name="IDS_POLICY_STRINGPOLICY_DESC">Description of group.
+With a newline.</message>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.13</message>
         </messages>
       ''' )
@@ -165,25 +158,20 @@ StringPolicy_Part="Caption of policy."
     # Tests a policy group with a single policy of type 'enum'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
-            'name': 'EnumGroup',
-            'policies': [{
-              'name': 'EnumPolicy',
-              'type': 'enum',
-              'items': [
-                {'name': 'ProxyServerDisabled', 'value': '0'},
-                {'name': 'ProxyServerAutoDetect', 'value': '1'},
-              ],
-              'annotations': {'platforms': ['win']}
-            }],
+            'name': 'EnumPolicy',
+            'type': 'enum',
+            'items': [
+              {'name': 'ProxyServerDisabled', 'value': '0'},
+              {'name': 'ProxyServerAutoDetect', 'value': '1'},
+            ],
+            'annotations': {'platforms': ['win']}
           },
         ],
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_ENUMGROUP_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_GROUP_ENUMGROUP_DESC">Description of group.</message>
           <message name="IDS_POLICY_ENUMPOLICY_CAPTION">Caption of policy.</message>
           <message name="IDS_POLICY_ENUMPOLICY_DESC">Description of policy.</message>
           <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">Option1</message>
@@ -231,23 +219,20 @@ ProxyServerAutoDetect_DropDown="Option2"
     # Tests a policy group with a single policy of type 'list'.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
-            'name': 'ListGroup',
-            'policies': [{
-              'name': 'ListPolicy',
-              'type': 'list',
-              'annotations': {'platforms': ['win']}
-            }],
+            'name': 'ListPolicy',
+            'type': 'list',
+            'annotations': {'platforms': ['win']}
           },
         ],
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_LISTGROUP_CAPTION">Caption of list group.</message>
-          <message name="IDS_POLICY_GROUP_LISTGROUP_DESC">Description of list group.
+          <message name="IDS_POLICY_LISTPOLICY_DESC">Description of list policy.
 With a newline.</message>
           <message name="IDS_POLICY_LISTPOLICY_CAPTION">Caption of list policy.</message>
+          <message name="IDS_POLICY_LISTPOLICY_LABEL">Value caption of list policy.</message>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.15</message>
         </messages>
       ''')
@@ -274,8 +259,8 @@ With a newline.</message>
 SUPPORTED_WINXPSP2="At least Windows 3.15"
 chromium="Chromium"
 ListPolicy_Policy="Caption of list policy."
-ListPolicy_Explain="Description of list group.\\nWith a newline."
-ListPolicy_Part="Caption of list policy."
+ListPolicy_Explain="Description of list policy.\\nWith a newline."
+ListPolicy_Part="Value caption of list policy."
 '''
     self.CompareOutputs(output, expected_output)
 
@@ -284,9 +269,10 @@ ListPolicy_Part="Caption of list policy."
     # be included in the ADM file.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'NonWinGroup',
+            'type': 'group',
             'policies': [{
               'name': 'NonWinPolicy',
               'type': 'list',
@@ -297,9 +283,10 @@ ListPolicy_Part="Caption of list policy."
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_NONWINGROUP_CAPTION">Group caption.</message>
-          <message name="IDS_POLICY_GROUP_NONWINGROUP_DESC">Group description.</message>
+          <message name="IDS_POLICY_NONWINGROUP_CAPTION">Group caption.</message>
+          <message name="IDS_POLICY_NONWINGROUP_DESC">Group description.</message>
           <message name="IDS_POLICY_NONWINPOLICY_CAPTION">Caption of list policy.</message>
+          <message name="IDS_POLICY_NONWINPOLICY_DESC">Desc of list policy.</message>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.16</message>
         </messages>
       ''')
@@ -320,9 +307,10 @@ chromium="Chromium"
     # Tests a policy group that has more than one policies.
     grd = self.PrepareTest('''
       {
-        'policy_groups': [
+        'policy_definitions': [
           {
             'name': 'Group1',
+            'type': 'group',
             'policies': [{
               'name': 'Policy1',
               'type': 'list',
@@ -337,8 +325,8 @@ chromium="Chromium"
         'placeholders': [],
       }''', '''
         <messages>
-          <message name="IDS_POLICY_GROUP_GROUP1_CAPTION">Caption of group.</message>
-          <message name="IDS_POLICY_GROUP_GROUP1_DESC">Description of group.</message>
+          <message name="IDS_POLICY_GROUP1_CAPTION">Caption of group.</message>
+          <message name="IDS_POLICY_GROUP1_DESC">Description of group.</message>
           <message name="IDS_POLICY_POLICY1_DESC">Description of policy1.
 With a newline.</message>
           <message name="IDS_POLICY_POLICY2_DESC">Description of policy2.

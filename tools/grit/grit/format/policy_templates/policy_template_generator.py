@@ -12,107 +12,81 @@ class PolicyTemplateGenerator:
   this data to policy template files using TemplateWriter objects.
   '''
 
-  def __init__(self, messages, policy_groups):
+  def __init__(self, messages, policy_definitions):
     '''Initializes this object with all the data necessary to output a
     policy template.
 
     Args:
       messages: An identifier to string dictionary of all the localized
         messages that might appear in the policy template.
-      policy_groups: The policies are organized into groups, and each policy
-        has a name and type. The user will see a GUI interface for assigning
-        values to policies, by using the templates generated here. The traversed
-        data structure is a list of policy groups. Each group is a dictionary
-        and has an embedded list of policies under the key 'policies'.
-        Example:
-        policy_groups = [
-          {
-            'name': 'PolicyGroup1',
-            'policies': [
-              {'name': 'Policy1Name', 'type': 'string'}
-              {'name': 'Policy2Name', 'type': 'main'}
-              {'name': 'Policy3Name', 'type': 'enum', 'items': [...]}
-            ]
-          },
-          {'name': 'PolicyGroup2', ...}
-        ]
-        See chrome/app/policy.policy_templates.json for an example and more
-        details.
+      policy_definitions: The list of defined policies and groups, as
+        parsed from the polify metafile.
+        See chrome/app/policy.policy_templates.json for description and
+        content.
     '''
     # List of all the policies:
-    self._policy_groups = policy_groups
+    self._policy_definitions = policy_definitions
     # Localized messages to be inserted to the policy_groups structure:
     self._messages = messages
-    self._AddMessagesToPolicies()
+    self._AddMessagesToPolicyList(self._policy_definitions)
 
-  def _AddMessagesToItem(self, item_name, item, needs_caption, needs_desc):
-    '''Adds localized message strings to an item of the policy data structure
-    (self._policy_groups).
+  def _AddMessageToItem(self, item_name, item, message_name, default=None):
+    '''Adds a localized message strings to an item of the policy data structure
 
     Args:
       item_name: The base of the grd name of the item.
-      item: The item which will get its message strings now.
-      needs_caption: A boolean value. If it is True, an exception will be raised
-        in case there is no caption string for item in self._messages.
-      needs_desc: A boolean value. If it is True, an exception will be raised
-        in case there is no description string for item in self._messages.
+      item: The policy, group, or enum item.
+      message_name: Identifier of the message: 'desc', 'caption' or 'label'.
+      default: If this is specified and the message is not found for item,
+        then this string will be added to the item.
 
     Raises:
-      Exception() if a required message string was not found.
+      Exception() if the message string was not found and no default was
+      specified..
     '''
     # The keys for the item's messages in self._messages:
-    caption_name = 'IDS_POLICY_%s_CAPTION' % item_name
-    desc_name = 'IDS_POLICY_%s_DESC' % item_name
+    long_message_name = ('IDS_POLICY_%s_%s' %
+                         (item_name.upper(), message_name.upper()))
     # Copy the messages from self._messages to item:
-    if caption_name in self._messages:
-      item['caption'] = self._messages[caption_name]
-    elif needs_caption:
-      raise Exception('No localized caption for %s (missing %s).' %
-                      (item_name, caption_name))
-    if desc_name in self._messages:
-      item['desc'] = self._messages[desc_name]
-    elif needs_desc:
-      raise Exception('No localized description for %s (missing %s).' %
-                      (item_name, desc_name))
+    if long_message_name in self._messages:
+      item[message_name] = self._messages[long_message_name]
+    elif default != None:
+      item[message_name] = default
+    else:
+      raise Exception('No localized message for %s (missing %s).' %
+                      (item_name, long_message_name))
 
   def _AddMessagesToPolicy(self, policy):
-    '''Adds localized message strings to a policy.
+    '''Adds localized message strings to a policy or group.
 
     Args:
-      policy: The data structure of the policy that will get message strings
-        here.
+      policy: The data structure of the policy or group, that will get message
+        strings here.
     '''
-    full_name = policy['name'].upper()
-    if policy['type'] == 'main':
-      # In this case, both caption and description are optional.
-      self._AddMessagesToItem(full_name, policy, False, False)
-    else:
-      # Add caption for this policy.
-      self._AddMessagesToItem(full_name, policy, True, False)
-    if policy['type'] == 'enum':
+    self._AddMessageToItem(policy['name'], policy, 'caption')
+    self._AddMessageToItem(policy['name'], policy, 'desc')
+    if policy['type'] != 'group':
+      # Real policies (that are not groups) might also have an optional
+      # 'label', that defaults to 'caption'.
+      self._AddMessageToItem(
+          policy['name'], policy, 'label', policy['caption'])
+    if policy['type'] == 'group':
+      self._AddMessagesToPolicyList(policy['policies'])
+    elif policy['type'] == 'enum':
       # Iterate through all the items of an enum-type policy, and add captions.
       for item in policy['items']:
-        self._AddMessagesToItem('ENUM_' + item['name'].upper(), item,
-                                True, False)
+        self._AddMessageToItem('ENUM_' + item['name'], item, 'caption')
 
-  def _AddMessagesToPolicies(self):
-    '''Adds localized message strings to each item of the policy data structure
-    (self._policy_groups).
+  def _AddMessagesToPolicyList(self, policy_list):
+    '''Adds localized message strings to each item in a list of policies and
+    groups.
+
+    Args:
+      policy_list: A list of policies and groups. Message strings will be added
+        for each item and to their child items, recursively.
     '''
-    # Iterate through all the policy groups.
-    for group in self._policy_groups:
-      # Get caption and description for this group.
-      group_name = 'GROUP_' + group['name'].upper()
-      self._AddMessagesToItem(group_name, group, True, True)
-      if 'policies' in group:
-        # Iterate through all the policies in the current group.
-        for policy in group['policies']:
-          # Add messages to the policy.
-          self._AddMessagesToPolicy(policy)
-          # Store a reference to the group of the policy. This makes
-          # it easier to look up messages of the group when we have
-          # a policy, like in PListStringsWriter and DocWriter.
-          policy['parent'] = group
+    for policy in policy_list:
+      self._AddMessagesToPolicy(policy)
 
   def GetTemplateText(self, template_writer):
     '''Generates the text of the template from the arguments given
@@ -125,4 +99,4 @@ class PolicyTemplateGenerator:
     Returns:
       The text of the generated template.
     '''
-    return template_writer.WriteTemplate(self._policy_groups)
+    return template_writer.WriteTemplate(self._policy_definitions)
