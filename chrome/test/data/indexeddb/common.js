@@ -22,9 +22,21 @@ function getLog()
   return "" + document.getElementById('status').innerHTML;
 }
 
+function unexpectedSuccessCallback()
+{
+  fail('unexpectedSuccessCallback');
+}
+
 function unexpectedErrorCallback()
 {
   fail('unexpectedErrorCallback');
+}
+
+function deleteAllObjectStores(db)
+{
+  objectStores = db.objectStores;
+  for (var i = 0; i < objectStores.length; ++i)
+    db.removeObjectStore(objectStores[i]);
 }
 
 // The following functions are based on
@@ -79,3 +91,8 @@ function shouldBeTrue(_a) { shouldBe(_a, "true"); }
 function shouldBeFalse(_a) { shouldBe(_a, "false"); }
 function shouldBeNaN(_a) { shouldBe(_a, "NaN"); }
 function shouldBeNull(_a) { shouldBe(_a, "null"); }
+function shouldBeEqualToString(a, b)
+{
+  var unevaledString = '"' + b.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+  shouldBe(a, unevaledString);
+}

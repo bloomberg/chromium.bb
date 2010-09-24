@@ -40,6 +40,8 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
   RenderThread::current()->Send(
       new ViewHostMsg_IDBTransactionObjectStore(
           idb_transaction_id_, name, &object_store_id));
+  if (!object_store_id)
+    return NULL;
   return new RendererWebIDBObjectStoreImpl(object_store_id);
 }
 
@@ -47,6 +49,13 @@ void RendererWebIDBTransactionImpl::abort()
 {
   RenderThread::current()->Send(new ViewHostMsg_IDBTransactionAbort(
       idb_transaction_id_));
+}
+
+void RendererWebIDBTransactionImpl::didCompleteTaskEvents()
+{
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBTransactionDidCompleteTaskEvents(
+          idb_transaction_id_));
 }
 
 int RendererWebIDBTransactionImpl::id() const

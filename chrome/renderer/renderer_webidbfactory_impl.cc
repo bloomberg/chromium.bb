@@ -33,13 +33,3 @@ void RendererWebIDBFactoryImpl::open(
   dispatcher->RequestIDBFactoryOpen(
       name, description, callbacks, origin.databaseIdentifier(), web_frame);
 }
-
-void RendererWebIDBFactoryImpl::abortPendingTransactions(
-    const WebKit::WebVector<int>& pendingIDs) {
-  std::vector<int> ids;
-  for (size_t i = 0; i < pendingIDs.size(); ++i) {
-    ids.push_back(pendingIDs[i]);
-  }
-  RenderThread::current()->Send(
-      new ViewHostMsg_IDBFactoryAbortPendingTransactions(ids));
-}
