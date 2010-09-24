@@ -121,6 +121,7 @@ struct wlsc_drm {
 
 struct wlsc_buffer {
 	struct wl_buffer base;
+	struct wlsc_compositor *compositor;
 	int32_t width, height;
 	EGLImageKHR image;
 	struct wl_visual *visual;

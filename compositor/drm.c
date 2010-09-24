@@ -43,12 +43,9 @@ destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 {
 	struct wlsc_buffer *buffer =
 		container_of(resource, struct wlsc_buffer, base.base);
+	struct wlsc_compositor *compositor = buffer->compositor;
 
-#if 0
-	/* FIXME: Need backlink to EGL display here */
-	eglDestroyImageKHR(ec->display, buffer->image);
-#endif
-
+	eglDestroyImageKHR(compositor->display, buffer->image);
 	free(buffer);
 }
 
@@ -101,6 +98,7 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	attribs[3] = height;
 	attribs[5] = stride / 4;
 
+	buffer->compositor = compositor;
 	buffer->width = width;
 	buffer->height = height;
 	buffer->visual = visual;
