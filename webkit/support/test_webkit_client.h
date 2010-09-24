@@ -56,6 +56,10 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& origin, const WebKit::WebURL& url,
       bool is_local_storage);
   virtual WebKit::WebIDBFactory* idbFactory();
+  virtual void createIDBKeysFromSerializedValuesAndKeyPath(
+      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+      const WebKit::WebString& keyPath,
+      WebKit::WebVector<WebKit::WebIDBKey>& keys_out);
 
 #if defined(OS_WIN)
   void SetThemeEngine(WebKit::WebThemeEngine* engine);

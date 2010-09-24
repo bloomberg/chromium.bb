@@ -17,10 +17,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKeyPath.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
@@ -251,6 +254,18 @@ void TestWebKitClient::dispatchStorageEvent(const WebKit::WebString& key,
 
 WebKit::WebIDBFactory* TestWebKitClient::idbFactory() {
   return WebKit::WebIDBFactory::create();
+}
+
+void TestWebKitClient::createIDBKeysFromSerializedValuesAndKeyPath(
+      const WebKit::WebVector<WebKit::WebSerializedScriptValue>& values,
+      const WebKit::WebString& keyPath,
+      WebKit::WebVector<WebKit::WebIDBKey>& keys_out) {
+  WebKit::WebVector<WebKit::WebIDBKey> keys(values.size());
+  for (size_t i = 0; i < values.size(); ++i) {
+    keys[i] = WebKit::WebIDBKey::createFromValueAndKeyPath(
+        values[i], WebKit::WebIDBKeyPath::create(keyPath));
+  }
+  keys_out.swap(keys);
 }
 
 #if defined(OS_WIN)
