@@ -32,12 +32,24 @@ class InternetOptionsHandler : public OptionsPageUIHandler,
   virtual void NetworkChanged(chromeos::NetworkLibrary* obj);
 
  private:
-  // Open a modal popup dialog.
-  void CreateModalPopup(views::WindowDelegate* view);
   // Open options dialog for network.
   // |args| will be [ network_type, service_path, command ]
   // And command is one of 'options', 'connect', disconnect', or 'forget'
   void ButtonClickCallback(const ListValue* args);
+
+  void LoginCallback(const ListValue* args);
+  void LoginCertCallback(const ListValue* args);
+  void LoginToOtherCallback(const ListValue* args);
+  void SetDetailsCallback(const ListValue* args);
+
+  bool is_certificate_in_pkcs11(const std::string& path);
+
+  // Populates the ui with the details of the given device path. This forces
+  // an overlay to be displayed in the UI.
+  void PopulateDictionaryDetails(const chromeos::Network& net,
+                                 chromeos::NetworkLibrary* cros);
+
+  void PopupWirelessPassword(const chromeos::WifiNetwork& network);
 
     // Creates the map of a network
   ListValue* GetNetwork(const std::string& service_path, const SkBitmap& icon,

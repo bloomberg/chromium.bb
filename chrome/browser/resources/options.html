@@ -175,6 +175,10 @@ function load() {
         localStrings.getString('languagePinyinPage'),
         'languagePinyinPage'));
     OptionsPage.registerSubPage(ProxyOptions.getInstance());
+    OptionsPage.registerOverlay(new OptionsPage(
+        'detailsInternetPage',
+        'detailsInternetPage',
+        'detailsInternetPage'));
   }
 
   var languageModifierKeysOverlay = new OptionsPage(
@@ -237,6 +241,7 @@ window.onpopstate = function(e) {
      <include src="options/chromeos_language_add_language_overlay.html">
      <include
          src="options/chromeos_language_customize_modifier_keys_overlay.html">
+     <include src="options/chromeos_internet_detail.html">
   </if>
 </div>
 <div id="main-content">

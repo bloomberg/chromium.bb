@@ -20,6 +20,16 @@
   padding: 2px;
 }
 
+.network-password {
+  left: 0px;
+  position: relative;
+}
+
+.other-network {
+  left: 0px;
+  position: relative;
+}
+
 .network-item {
   -webkit-box-align: center;
   -webkit-padding-start: 30px;
@@ -44,6 +54,15 @@
 .network-item[connected]:hover {
   background-color: hsl(214, 91%, 87%);
   border-color: hsl(214, 91%, 65%);
+}
+
+.network-item[connecting] {
+  background-color: hsl(214, 91%, 97%);
+  border-color: hsl(214, 91%, 85%);
+  padding-top: 5px;
+  height: 60px;
+  -webkit-box-align: start;
+  display: block;
 }
 
 .network-item-text {
@@ -76,6 +95,26 @@
   visibility: visible;
 }
 
+.network-item[connecting] > * > button {
+  visibility: hidden;
+}
+
 .network-item-box-spacer {
   -webkit-box-flex: 1;
+}
+
+#detailsInternetPage:not([connected]) > #advancedSection,
+#detailsInternetPage[connecting] > * > #detailsInternetLogin,
+#detailsInternetPage[connected] > * > #detailsInternetLogin,
+#detailsInternetPage[ethernet] > #wirelessOptions,
+#detailsInternetPage[ethernet] > #certNetwork,
+#detailsInternetPage[ethernet] > #certNetworkPkcs,
+#detailsInternetPage[ethernet] > #passwordNetwork,
+#detailsInternetPage:not([password]) > #passwordNetwork,
+#detailsInternetPage[cert] > #passwordNetwork,
+#detailsInternetPage:not([cert]) > #certNetwork,
+#detailsInternetPage:not([cert]) > #certNetworkPkcs,
+#detailsInternetPage:not([certPkcs]) > #certNetworkPkcs,
+#detailsInternetPage[certPkcs] > #certNetwork {
+  display: none;
 }

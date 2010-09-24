@@ -71,6 +71,57 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_FORGET));
 
+  localized_strings->SetString("inetAddress",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS));
+  localized_strings->SetString("inetSubnetAddress",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK));
+  localized_strings->SetString("inetGateway",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_GATEWAY));
+  localized_strings->SetString("inetDns",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER));
+
+  localized_strings->SetString("inetSsid",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
+  localized_strings->SetString("inetIdent",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY));
+  localized_strings->SetString("inetCert",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT));
+  localized_strings->SetString("inetCertPass",
+      l10n_util::GetStringUTF16(
+           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD));
+  localized_strings->SetString("inetPass",
+      l10n_util::GetStringUTF16(
+           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE));
+  localized_strings->SetString("inetRememberNetwork",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
+  localized_strings->SetString("inetCertPkcs",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED));
+  localized_strings->SetString("inetLogin",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN));
+  localized_strings->SetString("inetshowpass",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD));
+  localized_strings->SetString("inetPassPrompt",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD));
+  localized_strings->SetString("inetSsidPrompt",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID));
+
+  localized_strings->SetString("detailsInternetDismiss",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DONE));
+
   localized_strings->Set("wiredList", GetWiredList());
   localized_strings->Set("wirelessList", GetWirelessList());
   localized_strings->Set("rememberedList", GetRememberedList());
@@ -81,6 +132,15 @@ void InternetOptionsHandler::RegisterMessages() {
   DCHECK(dom_ui_);
   dom_ui_->RegisterMessageCallback("buttonClickCallback",
       NewCallback(this, &InternetOptionsHandler::ButtonClickCallback));
+  dom_ui_->RegisterMessageCallback("loginToNetwork",
+      NewCallback(this, &InternetOptionsHandler::LoginCallback));
+  dom_ui_->RegisterMessageCallback("loginToCertNetwork",
+      NewCallback(this, &InternetOptionsHandler::LoginCertCallback));
+  dom_ui_->RegisterMessageCallback("setDetails",
+      NewCallback(this, &InternetOptionsHandler::SetDetailsCallback));
+  dom_ui_->RegisterMessageCallback("loginToOtherNetwork",
+      NewCallback(this, &InternetOptionsHandler::LoginToOtherCallback));
+
 }
 
 void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
@@ -94,14 +154,233 @@ void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
   }
 }
 
-void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
-  // TODO(beng): This is an improper direct dependency on Browser. Route this
-  // through some sort of delegate.
-  Browser* browser = BrowserList::FindBrowserWithProfile(dom_ui_->GetProfile());
-  views::Window* window = views::Window::CreateChromeWindow(
-      browser->window()->GetNativeHandle(), gfx::Rect(), view);
-  window->SetIsAlwaysOnTop(true);
-  window->Show();
+void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
+
+  std::string service_path;
+
+  if (!args->GetString(0, &service_path)) {
+    NOTREACHED();
+    return;
+  }
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::WifiNetwork network;
+
+  if (cros->FindWifiNetworkByPath(service_path, &network)) {
+    bool changed = false;
+    if (network.encrypted()) {
+      if (network.encryption() == chromeos::SECURITY_8021X) {
+        std::string certpath;
+        std::string ident;
+        std::string certpass;
+        bool remember;
+
+        if (args->GetSize() != 5 ||
+            !args->GetBoolean(1, &remember) ||
+            !args->GetString(2, &ident) ||
+            !args->GetString(3, &certpath) ||
+            !args->GetString(4, &certpass)) {
+          NOTREACHED();
+          return;
+        }
+
+        bool auto_connect = remember;
+        if (auto_connect != network.auto_connect()) {
+          network.set_auto_connect(auto_connect);
+          changed = true;
+        }
+        if (ident != network.identity()) {
+          network.set_identity(ident);
+          changed = true;
+        }
+        if (certpass != network.passphrase()) {
+          network.set_passphrase(certpass);
+          changed = true;
+        }
+        if (certpath != network.cert_path()) {
+          network.set_cert_path(certpath);
+          changed = true;
+        }
+      } else {
+        std::string password;
+        std::string remember;
+
+        if (args->GetSize() != 5 ||
+            !args->GetString(1, &remember) ||
+            !args->GetString(4, &password)) {
+          NOTREACHED();
+          return;
+        }
+
+        bool auto_connect = (remember == "true");
+        if (auto_connect != network.auto_connect()) {
+          network.set_auto_connect(auto_connect);
+          changed = true;
+        }
+        if (password != network.passphrase()) {
+          network.set_passphrase(password);
+          changed = true;
+        }
+      }
+    }
+    if (changed) {
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary()->SaveWifiNetwork(
+          network);
+    }
+  }
+}
+
+// Parse 'path' to determine if the certificate is stored in a pkcs#11 device.
+// flimflam recognizes the string "SETTINGS:" to specify authentication
+// parameters. 'key_id=' indicates that the certificate is stored in a pkcs#11
+// device. See src/third_party/flimflam/files/doc/service-api.txt.
+bool InternetOptionsHandler::is_certificate_in_pkcs11(const std::string& path) {
+  static const std::string settings_string("SETTINGS:");
+  static const std::string pkcs11_key("key_id");
+  if (path.find(settings_string) == 0) {
+    std::string::size_type idx = path.find(pkcs11_key);
+    if (idx != std::string::npos)
+      idx = path.find_first_not_of(kWhitespaceASCII, idx + pkcs11_key.length());
+    if (idx != std::string::npos && path[idx] == '=')
+      return true;
+  }
+  return false;
+}
+
+void InternetOptionsHandler::PopulateDictionaryDetails(
+    const chromeos::Network& net, chromeos::NetworkLibrary* cros) {
+  DictionaryValue dictionary;
+  chromeos::ConnectionType type = net.type();
+  chromeos::NetworkIPConfigVector ipconfigs =
+      cros->GetIPConfigs(net.device_path());
+  for (chromeos::NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
+       it != ipconfigs.end(); ++it) {
+    const chromeos::NetworkIPConfig& ipconfig = *it;
+    dictionary.SetString("address", ipconfig.address);
+    dictionary.SetString("subnetAddress", ipconfig.netmask);
+    dictionary.SetString("gateway", ipconfig.gateway);
+    dictionary.SetString("dns", ipconfig.name_servers);
+    dictionary.SetInteger("type", type);
+    dictionary.SetString("servicePath", net.service_path());
+    dictionary.SetBoolean("connecting", net.connecting());
+    dictionary.SetBoolean("connected", net.connected());
+    if (type == chromeos::TYPE_WIFI) {
+      chromeos::WifiNetwork wireless;
+      cros->FindWifiNetworkByPath(net.service_path(), &wireless);
+      dictionary.SetString("ssid", wireless.name());
+      dictionary.SetBoolean("autoConnect",wireless.auto_connect());
+      if (wireless.encrypted()) {
+        dictionary.SetBoolean("encrypted", true);
+        if (wireless.encryption() == chromeos::SECURITY_8021X) {
+          bool certificate_in_pkcs11 =
+              is_certificate_in_pkcs11(wireless.cert_path());
+          if (certificate_in_pkcs11) {
+            dictionary.SetBoolean("certInPkcs", true);
+          } else {
+            dictionary.SetBoolean("certInPkcs", false);
+          }
+          dictionary.SetString("certPath",wireless.cert_path());
+          dictionary.SetString("ident",wireless.identity());
+          dictionary.SetBoolean("certNeeded", true);
+          dictionary.SetString("certPass",wireless.passphrase());
+        } else {
+          dictionary.SetBoolean("certNeeded", false);
+          dictionary.SetString("pass", wireless.passphrase());
+        }
+      } else {
+        dictionary.SetBoolean("encrypted", false);
+      }
+    }
+  }
+  dom_ui_->CallJavascriptFunction(
+      L"options.InternetOptions.showDetailedInfo", dictionary);
+}
+
+void InternetOptionsHandler::PopupWirelessPassword(
+    const chromeos::WifiNetwork& network) {
+  DictionaryValue dictionary;
+  dictionary.SetString("servicePath",network.service_path());
+  if (network.encryption() == chromeos::SECURITY_8021X) {
+    dictionary.SetBoolean("certNeeded", true);
+    dictionary.SetString("ident", network.identity());
+    dictionary.SetString("cert", network.cert_path());
+  } else {
+    dictionary.SetBoolean("certNeeded", false);
+    dictionary.SetString("pass", network.passphrase());
+  }
+  dom_ui_->CallJavascriptFunction(
+      L"options.InternetOptions.showPasswordEntry", dictionary);
+}
+
+void InternetOptionsHandler::LoginCallback(const ListValue* args) {
+
+  std::string service_path;
+  std::string password;
+
+  if (args->GetSize() != 2 ||
+      !args->GetString(0, &service_path) ||
+      !args->GetString(1, &password)) {
+    NOTREACHED();
+    return;
+  }
+
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::WifiNetwork network;
+
+  if (cros->FindWifiNetworkByPath(service_path, &network)) {
+    cros->ConnectToWifiNetwork(
+        network, password, std::string(), std::string());
+  } else {
+    // Must be an "other" login
+    cros->ConnectToWifiNetwork(
+        service_path, password, std::string(), std::string(), true);
+  }
+}
+
+void InternetOptionsHandler::LoginCertCallback(const ListValue* args) {
+
+  std::string service_path;
+  std::string identity;
+  std::string certpath;
+  std::string password;
+
+  if (args->GetSize() != 4 ||
+      !args->GetString(0, &service_path) ||
+      !args->GetString(1, &certpath) ||
+      !args->GetString(2, &identity) ||
+      !args->GetString(3, &password)) {
+    NOTREACHED();
+    return;
+  }
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::WifiNetwork network;
+
+  if (cros->FindWifiNetworkByPath(service_path, &network)) {
+    cros->ConnectToWifiNetwork(
+        network, password, identity, certpath);
+  } else {
+    // TODO(dhg): Send error back to UI
+  }
+}
+
+void InternetOptionsHandler::LoginToOtherCallback(const ListValue* args) {
+  std::string ssid;
+  std::string password;
+
+  if (args->GetSize() != 2 ||
+      !args->GetString(0, &ssid) ||
+      !args->GetString(1, &password)) {
+    NOTREACHED();
+    return;
+  }
+
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+
+  cros->ConnectToWifiNetwork(
+      ssid, password, std::string(), std::string(), true);
 }
 
 void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
@@ -119,23 +398,23 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
   int type = atoi(str_type.c_str());
   chromeos::NetworkLibrary* cros =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+
   if (type == chromeos::TYPE_ETHERNET) {
-    CreateModalPopup(new chromeos::NetworkConfigView(cros->ethernet_network()));
+    const chromeos::EthernetNetwork& ether = cros->ethernet_network();
+    PopulateDictionaryDetails(ether, cros);
   } else if (type == chromeos::TYPE_WIFI) {
     chromeos::WifiNetwork network;
     if (command == "forget") {
       cros->ForgetWirelessNetwork(service_path);
-    } else if (service_path == kOtherNetworksFakePath) {
-      // Other wifi networks.
-      CreateModalPopup(new chromeos::NetworkConfigView());
     } else if (cros->FindWifiNetworkByPath(service_path, &network)) {
       if (command == "connect") {
         // Connect to wifi here. Open password page if appropriate.
         if (network.encrypted()) {
-          chromeos::NetworkConfigView* view =
-              new chromeos::NetworkConfigView(network, true);
-          CreateModalPopup(view);
-          view->SetLoginTextfieldFocus();
+          if (network.encryption() == chromeos::SECURITY_8021X) {
+            PopulateDictionaryDetails(network, cros);
+          } else {
+            PopupWirelessPassword(network);
+          }
         } else {
           cros->ConnectToWifiNetwork(
               network, std::string(), std::string(), std::string());
@@ -143,7 +422,7 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
       } else if (command == "disconnect") {
         cros->DisconnectFromWirelessNetwork(network);
       } else if (command == "options") {
-        CreateModalPopup(new chromeos::NetworkConfigView(network, false));
+        PopulateDictionaryDetails(network, cros);
       }
     }
   } else if (type == chromeos::TYPE_CELLULAR) {
@@ -156,7 +435,7 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
       } else if (command == "disconnect") {
         cros->DisconnectFromWirelessNetwork(network);
       } else if (command == "options") {
-        CreateModalPopup(new chromeos::NetworkConfigView(network));
+        PopulateDictionaryDetails(network, cros);
       }
     }
   } else {

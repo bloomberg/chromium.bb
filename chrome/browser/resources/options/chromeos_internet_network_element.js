@@ -38,15 +38,22 @@ cr.define('options.internet', function() {
      * @param {!Event} e The click event object.
      */
     handleClick_: function(e) {
+      // We shouldn't respond to click events selecting an input,
+      // so return on those.
+      if (e.target.tagName == 'INPUT') {
+        return;
+      }
       // Handle left button click
       if (e.button == 0) {
         var el = e.target;
-
         // If click is on action buttons of a network item.
         if (el.buttonType && el.networkType && el.servicePath) {
           chrome.send('buttonClickCallback',
               [String(el.networkType), el.servicePath, el.buttonType]);
         } else {
+          if (el.className == 'other-network' || el.buttonType) {
+            return;
+          }
           // If click is on a network item or its label, walk up the DOM tree
           // to find the network item.
           var item = el;
@@ -56,11 +63,19 @@ cr.define('options.internet', function() {
 
           if (item) {
             var data = item.data;
-
+            for (var i = 0; i < this.childNodes.length; i++) {
+              this.childNodes[i].hidePassword();
+            }
             // If clicked on other networks item.
             if (data && data.servicePath == '?') {
-              chrome.send('buttonClickCallback',
-                  [String(data.networkType), data.servicePath, 'options']);
+              el.showOtherLogin();
+            } else if (data) {
+                if (!data.connecting && !data.connected) {
+                  chrome.send('buttonClickCallback',
+                              [String(data.networkType),
+                               data.servicePath,
+                               'connect']);
+                }
             }
           }
         }
@@ -108,7 +123,7 @@ cr.define('options.internet', function() {
 
       this.className = 'network-item';
       this.connected = this.data.connected;
-
+      this.id = this.data.servicePath;
       // textDiv holds icon, name and status text.
       var textDiv = this.ownerDocument.createElement('div');
       textDiv.className = 'network-item-text';
@@ -152,18 +167,103 @@ cr.define('options.internet', function() {
           // options button
           buttonsDiv.appendChild(this.createButton_('options_button',
               'options'));
-        } else if (!this.data.connecting) {
-          // connect button (if not ethernet)
-          if (this.data.networkType != 1) {
-            buttonsDiv.appendChild(this.createButton_('connect_button',
-                'connect'));
-          }
         }
       } else {
         // forget button
         buttonsDiv.appendChild(this.createButton_('forget_button', 'forget'));
       }
       this.appendChild(buttonsDiv);
+    },
+
+    showPassword: function(password) {
+      var passwordDiv = this.ownerDocument.createElement('div');
+      passwordDiv.className = 'network-password';
+      var passInput = this.ownerDocument.createElement('input');
+      passwordDiv.appendChild(passInput);
+      passInput.placeholder = localStrings.getString('inetpassprompt');
+      passInput.type = 'password';
+      var buttonEl = this.ownerDocument.createElement('button');
+      buttonEl.textContent = localStrings.getString('inetlogin');
+      buttonEl.addEventListener('click', this.handleLogin_);
+      buttonEl.servicePath = this.data.servicePath;
+      buttonEl.style.visibility = 'visible';
+
+      var togglePassLabel = this.ownerDocument.createElement('label');
+      togglePassLabel.style.display = 'inline';
+      var togglePassSpan = this.ownerDocument.createElement('span');
+      var togglePassCheckbox = this.ownerDocument.createElement('input');
+      togglePassCheckbox.type = 'checkbox';
+      togglePassCheckbox.checked = false;
+      togglePassCheckbox.target = passInput;
+      togglePassCheckbox.addEventListener('change', this.handleShowPass_);
+      togglePassSpan.textContent = localStrings.getString('inetshowpass');
+      togglePassLabel.appendChild(togglePassSpan);
+      passwordDiv.appendChild(togglePassCheckbox);
+      passwordDiv.appendChild(togglePassLabel);
+
+      passwordDiv.appendChild(buttonEl);
+      this.connecting = true;
+      this.appendChild(passwordDiv);
+    },
+
+    handleShowPass_: function(e) {
+      var target = e.target;
+      if (target.checked) {
+        target.target.type = 'text';
+      } else {
+        target.target.type = 'password';
+      }
+    },
+
+    hidePassword: function() {
+      this.connecting = false;
+      var children = this.childNodes;
+      for (var i = 0; i < children.length; i++) {
+        if (children[i].className == 'network-password' ||
+            children[i].className == 'other-network') {
+          this.removeChild(children[i]);
+          return;
+        }
+      }
+    },
+
+    showOtherLogin: function() {
+      var passwordDiv = this.ownerDocument.createElement('div');
+      passwordDiv.className = 'other-network';
+      var ssidInput = this.ownerDocument.createElement('input');
+      ssidInput.placeholder = localStrings.getString('inetssidprompt');
+      passwordDiv.appendChild(ssidInput);
+      var passInput = this.ownerDocument.createElement('input');
+      passInput.placeholder = localStrings.getString('inetpassprompt');
+      passwordDiv.appendChild(passInput);
+      var buttonEl = this.ownerDocument.createElement('button');
+      buttonEl.textContent = localStrings.getString('inetlogin');
+      buttonEl.buttonType = true;
+      buttonEl.addEventListener('click', this.handleOtherLogin_);
+      buttonEl.style.visibility = 'visible';
+      passwordDiv.appendChild(buttonEl);
+      this.connecting = true;
+      this.appendChild(passwordDiv);
+    },
+
+    handleLogin_: function(e) {
+      var el = e.target;
+      var parent = el.parentNode;
+      el.disabled = true;
+      var input = parent.firstChild;
+      input.disabled = true;
+      chrome.send('loginToNetwork', [el.servicePath, input.value]);
+    },
+
+    handleOtherLogin_: function(e) {
+      var el = e.target;
+      var parent = el.parentNode;
+      el.disabled = true;
+      var ssid = parent.childNodes[0];
+      var pass = parent.childNodes[1];
+      ssid.disabled = true;
+      pass.disabled = true;
+      chrome.send('loginToNetwork', [ssid.value, pass.value]);
     },
 
     /**
@@ -186,6 +286,13 @@ cr.define('options.internet', function() {
    * @type {boolean}
    */
   cr.defineProperty(NetworkItem, 'connected', cr.PropertyKind.BOOL_ATTR);
+
+  /**
+   * Whether the underlying network is currently connecting.
+   * Only used for display purpose.
+   * @type {boolean}
+   */
+  cr.defineProperty(NetworkItem, 'connecting', cr.PropertyKind.BOOL_ATTR);
 
   return {
     NetworkElement: NetworkElement
