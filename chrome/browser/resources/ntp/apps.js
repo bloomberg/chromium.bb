@@ -165,6 +165,12 @@ var apps = (function() {
         }, 500);
         div.addEventListener('webkitAnimationEnd', function(e) {
           div.removeAttribute('new');
+
+          // If we get new data (eg because something installs in another tab,
+          // or because we uninstall something here), don't run the install
+          // animation again.
+          document.documentElement.setAttribute("install-animation-enabled",
+                                                "false");
         });
         if ($('apps').classList.contains('hidden'))
           toggleSectionVisibilityAndAnimate('APPS');

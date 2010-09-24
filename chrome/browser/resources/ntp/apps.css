@@ -81,11 +81,11 @@
   }
 }
 
-.app[new=new] {
+html[install-animation-enabled=true] .app[new=new] {
   opacity: 0;
 }
 
-.app[new=installed] {
+html[install-animation-enabled=true] .app[new=installed] {
   -webkit-animation: bounce .5s ease-in-out;
   -webkit-transition: opacity .5s;
 }
