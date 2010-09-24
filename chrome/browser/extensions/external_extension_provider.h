@@ -32,8 +32,7 @@ class ExternalExtensionProvider {
 
      virtual void OnExternalExtensionUpdateUrlFound(
          const std::string& id,
-         const GURL& update_url,
-         bool enable_incognito_on_install) = 0;
+         const GURL& update_url) = 0;
 
    protected:
      virtual ~Visitor() {}

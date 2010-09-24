@@ -154,10 +154,6 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
   MockProviderVisitor() : ids_found_(0) {
   }
 
-  void SetIncognitoExtensions(const std::set<std::string>& incognito_list) {
-    incognito_list_ = incognito_list;
-  }
-
   int Visit(const std::string& json_data,
             const std::set<std::string>& ignore_list) {
     // Give the test json file to the provider for parsing.
@@ -213,10 +209,8 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
     }
   }
 
-  virtual void OnExternalExtensionUpdateUrlFound(
-      const std::string& id,
-      const GURL& update_url,
-      bool enable_incognito_on_install) {
+  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
+                                                 const GURL& update_url) {
     ++ids_found_;
     DictionaryValue* pref;
     // This tests is to make sure that the provider only notifies us of the
@@ -228,8 +222,6 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
     if (pref) {
       // Remove it so we won't count it again.
       prefs_->Remove(id, NULL);
-
-      EXPECT_EQ(incognito_list_.count(id) == 1, enable_incognito_on_install);
     }
   }
 
@@ -238,7 +230,6 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
 
   scoped_ptr<ExternalPrefExtensionProvider> provider_;
   scoped_ptr<DictionaryValue> prefs_;
-  std::set<std::string> incognito_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProviderVisitor);
 };
@@ -1604,7 +1595,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
 // or not.
 TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrx) {
   InitializeEmptyExtensionsService();
-  service_->AddPendingExtensionFromExternalUpdateUrl(theme_crx, GURL(), false);
+  service_->AddPendingExtensionFromExternalUpdateUrl(theme_crx, GURL());
 
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), theme_crx));
 
@@ -2333,17 +2324,11 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
       "    \"external_version\": \"2.0\""
       "  },"
       "  \"cccccccccccccccccccccccccccccccc\": {"
-      "    \"external_update_url\": \"http:\\\\foo.com/update\","
-      "    \"incognito\": true"
+      "    \"external_update_url\": \"http:\\\\foo.com/update\""
       "  }"
       "}";
 
   MockProviderVisitor visitor;
-
-  std::set<std::string> incognito_list;
-  incognito_list.insert("cccccccccccccccccccccccccccccccc");
-  visitor.SetIncognitoExtensions(incognito_list);
-
   std::set<std::string> ignore_list;
   EXPECT_EQ(3, visitor.Visit(json_data, ignore_list));
   ignore_list.insert("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");

@@ -220,10 +220,8 @@ class ExtensionsServiceBackend
                                             const FilePath& path,
                                             Extension::Location location);
 
-  virtual void OnExternalExtensionUpdateUrlFound(
-      const std::string& id,
-      const GURL& update_url,
-      bool enable_incognito_on_install);
+  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
+                                                 const GURL& update_url);
 
   // Reloads the given extensions from their manifests on disk (instead of what
   // we have cached in the prefs).
@@ -448,15 +446,13 @@ void ExtensionsServiceBackend::OnExternalExtensionFileFound(
 
 void ExtensionsServiceBackend::OnExternalExtensionUpdateUrlFound(
     const std::string& id,
-    const GURL& update_url,
-    bool enable_incognito_on_install) {
+    const GURL& update_url) {
   if (frontend_->GetExtensionById(id, true)) {
     // Already installed.  Do not change the update URL that the extension set.
     return;
   }
 
-  frontend_->AddPendingExtensionFromExternalUpdateUrl(id, update_url,
-      enable_incognito_on_install);
+  frontend_->AddPendingExtensionFromExternalUpdateUrl(id, update_url);
   external_extension_added_ |= true;
 }
 
@@ -677,8 +673,7 @@ void ExtensionsService::AddPendingExtensionFromSync(
 }
 
 void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
-    const std::string& id, const GURL& update_url,
-    bool enable_incognito_on_install) {
+    const std::string& id, const GURL& update_url) {
   // Add the extension to this list of extensions to update.
   // We do not know if the id refers to a theme, so make is_theme unknown.
   const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
@@ -686,6 +681,7 @@ void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
   const bool kIsFromSync = false;
   const bool kInstallSilently = true;
   const bool kEnableOnInstall = true;
+  const bool kEnableIncognitoOnInstall = false;
 
   if (GetExtensionByIdInternal(id, true, true)) {
     LOG(DFATAL) << "Trying to add extension " << id
@@ -695,7 +691,7 @@ void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
 
   AddPendingExtensionInternal(id, update_url, kExpectedCrxType, kIsFromSync,
                               kInstallSilently, kEnableOnInstall,
-                              enable_incognito_on_install);
+                              kEnableIncognitoOnInstall);
 }
 
 void ExtensionsService::AddPendingExtensionInternal(

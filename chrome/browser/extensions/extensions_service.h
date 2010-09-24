@@ -225,10 +225,8 @@ class ExtensionsService
 
   // Given an extension id and an update URL, schedule the extension
   // to be fetched, installed, and activated.
-  void AddPendingExtensionFromExternalUpdateUrl(
-      const std::string& id,
-      const GURL& update_url,
-      bool enable_incognito_on_install);
+  void AddPendingExtensionFromExternalUpdateUrl(const std::string& id,
+                                                const GURL& update_url);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
