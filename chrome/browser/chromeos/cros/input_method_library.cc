@@ -18,6 +18,9 @@
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 
 namespace {
 const char kIBusDaemonPath[] = "/usr/bin/ibus-daemon";
@@ -45,7 +48,8 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
 
 namespace chromeos {
 
-class InputMethodLibraryImpl : public InputMethodLibrary {
+class InputMethodLibraryImpl : public InputMethodLibrary,
+                               public NotificationObserver {
  public:
   InputMethodLibraryImpl()
       : input_method_status_connection_(NULL),
@@ -64,10 +68,16 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       current_input_method_id_ = chromeos::GetHardwareKeyboardLayoutName();
     }
+    // Observe APP_EXITING to stop input method processes gracefully.
+    // Note that even if we fail to stop input method processes from
+    // Chrome in case of a sudden crash, we have a way to do it from an
+    // upstart script. See crosbug.com/6515 and crosbug.com/6995 for
+    // details.
+    notification_registrar_.Add(this, NotificationType::APP_EXITING,
+                                NotificationService::AllSources());
   }
 
   ~InputMethodLibraryImpl() {
-    StopInputMethodProcesses();
   }
 
   void AddObserver(Observer* observer) {
@@ -488,6 +498,17 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     LOG(INFO) << "Setting DeferImeStartup to " << defer;
     defer_ime_startup_ = defer;
   }
+
+  // NotificationObserver implementation:
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    // Stop the input processes on browser shutdown.
+    if (type.value == NotificationType::APP_EXITING) {
+      StopInputMethodProcesses();
+    }
+  }
+
   // A reference to the language api, to allow callbacks when the input method
   // status changes.
   InputMethodStatusConnection* input_method_status_connection_;
@@ -518,6 +539,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   // method config daemon.
   base::OneShotTimer<InputMethodLibraryImpl> timer_;
 
+  // This is used to register this object to APP_EXITING notification.
+  NotificationRegistrar notification_registrar_;
+
   // True if we should launch the input method processes.
   bool should_launch_ime_;
   // True if the connection to the IBus daemon is alive.
@@ -536,7 +560,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   int ibus_daemon_process_id_;
   // The process id of the candidate window. 0 if it's not running.
   int candidate_window_process_id_;
-
+  // The failure count of config flush attempts.
   int failure_count_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryImpl);
