@@ -549,13 +549,13 @@ void WebDataService::InitializeDatabaseIfNecessary() {
     return;
 
   // In the rare case where the db fails to initialize a dialog may get shown
-  // the blocks the caller, yet allows other messages through. For this reason
+  // that blocks the caller, yet allows other messages through. For this reason
   // we only set db_ to the created database if creation is successful. That
   // way other methods won't do anything as db_ is still NULL.
   WebDatabase* db = new WebDatabase();
   sql::InitStatus init_status = db->Init(path_);
   if (init_status != sql::INIT_OK) {
-    NOTREACHED() << "Cannot initialize the web database";
+    LOG(ERROR) << "Cannot initialize the web database: " << init_status;
     failed_init_ = true;
     delete db;
     if (main_loop_) {
