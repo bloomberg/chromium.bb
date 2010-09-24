@@ -338,8 +338,12 @@ Browser* Browser::CreateForApp(const std::string& app_name,
                                bool is_panel) {
   Browser::Type type = TYPE_APP;
 
-  if (is_panel)
-    type = TYPE_APP_PANEL;
+  if (is_panel) {
+    // TYPE_APP_PANEL is the logical choice.  However, the panel UI
+    // is not fully implemented.  See crbug/55943.
+    type = TYPE_APP_POPUP;
+  }
+
   else if (extension)
     type = TYPE_EXTENSION_APP;
 
@@ -468,43 +472,6 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 // static
-Browser* Browser::FindAppWindowOrPanel(Profile* profile,
-                                       Extension* extension_app) {
-  // Test the focused browser first.
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser && BrowserHostsExtensionApp(browser, profile, extension_app))
-    return browser;
-
-  BrowserList::const_iterator browser_all;
-  for (browser_all = BrowserList::begin();
-       browser_all != BrowserList::end();
-       ++browser_all) {
-    if (BrowserHostsExtensionApp(*browser_all, profile, extension_app))
-      return *browser_all;
-  }
-  return NULL;
-}
-
-// static
-TabContents* Browser::FindAppTab(Browser* browser, Extension* extension_app) {
-  if (browser->type() != Browser::TYPE_NORMAL)
-    return NULL;
-
-  for (int tab_idx = 0; tab_idx < browser->tab_count(); ++tab_idx) {
-    TabContents* tab_contents = browser->GetTabContentsAt(tab_idx);
-    if (!tab_contents)
-      continue;
-
-    if (tab_contents->extension_app() != extension_app)
-      continue;
-
-    return tab_contents;
-  }
-
-  return NULL;
-}
-
-// static
 // TODO(erikkay): There are multiple reasons why this could fail.  Should
 // this function return an error reason as well so that callers can show
 // reasonable errors?
@@ -530,34 +497,15 @@ TabContents* Browser::OpenApplication(
     extension_misc::LaunchContainer container) {
   TabContents* tab = NULL;
 
-  // If the app is loaded in an existing window or panel, focus it.
-  Browser* browser = FindAppWindowOrPanel(profile, extension);
-  if (browser) {
-    browser->window()->Show();
-    return browser->GetSelectedTabContents();
-  }
-
-  // If an app is loaded in an app tab in the focused browser, select it.
-  browser = BrowserList::GetLastActive();
-  if (browser && browser->profile() == profile) {
-    tab = Browser::FindAppTab(browser, extension);
-    if (tab) {
-      int tab_idx = browser->tabstrip_model()->GetIndexOfTabContents(tab);
-      DCHECK(tab_idx != TabStripModel::kNoTab);
-      browser->SelectTabContentsAt(tab_idx, false);
-      return tab;
-    }
-  }
-
   // The app is not yet open.  Load it.
   switch (container) {
     case extension_misc::LAUNCH_WINDOW:
     case extension_misc::LAUNCH_PANEL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
-                                           GURL(), &browser);
+                                           GURL(), NULL);
       break;
     case extension_misc::LAUNCH_TAB: {
-      tab = Browser::OpenApplicationTab(profile, extension, &browser);
+      tab = Browser::OpenApplicationTab(profile, extension, NULL);
       break;
     }
     default:

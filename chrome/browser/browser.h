@@ -71,12 +71,16 @@ class Browser : public TabStripModelDelegate,
     TYPE_APP = 4,
     // The new-style app created by installing a crx. This kinda needs to be
     // separate because we require larger icons and an application name that
-    // are found in the crx. If we ever decide to create this kind of app using
-    // some other system (eg some web standard), maybe we should generalize this
-    // name to TYPE_MULTITAB or something.
+    // are found in the crx. If we ever decide to create this kind of app
+    // using some other system (eg some web standard), maybe we should
+    // generalize this name to TYPE_MULTITAB or something.
     TYPE_EXTENSION_APP = 8,
     TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
     TYPE_DEVTOOLS = TYPE_APP | 16,
+
+    // TODO(skerner): crbug/56776: Until the panel UI is complete on all
+    // platforms, apps that set app.launch.container = "panel" have type
+    // APP_POPUP.
     TYPE_APP_PANEL = TYPE_APP | 32,
     TYPE_ANY = TYPE_NORMAL |
                TYPE_POPUP |
@@ -211,13 +215,6 @@ class Browser : public TabStripModelDelegate,
   // If there is already an existing active incognito session for the specified
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
-
-  // Finds an app tab running a given app in a browser.
-  static TabContents* FindAppTab(Browser* browser, Extension* extension_app);
-
-  // Finds a browser running an app as an app window or panel.
-  static Browser* FindAppWindowOrPanel(Profile* profile,
-                                       Extension* extension_app);
 
   // Open an application specified by |app_id| in the appropriate launch
   // container.  Returns NULL if the app_id is invalid or if ExtensionsService
