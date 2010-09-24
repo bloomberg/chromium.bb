@@ -129,9 +129,6 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
     cmd_line->AppendSwitch(switches::kEnableExperimentalExtensionApis);
   }
 
-  if (browser_command_line.HasSwitch(switches::kIssue35198ExtraLogging))
-    cmd_line->AppendSwitch(switches::kIssue35198ExtraLogging);
-
 #if defined(OS_POSIX)
   // TODO(port): Sandbox this on Linux.  Also, zygote this to work with
   // Linux updating.

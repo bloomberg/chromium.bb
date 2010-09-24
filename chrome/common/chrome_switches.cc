@@ -678,10 +678,6 @@ const char kInternalNaCl[]                  = "internal-nacl";
 // Runs a trusted Pepper plugin inside the renderer process.
 const char kInternalPepper[]                = "internal-pepper";
 
-// The following flag allows users who can reproduce crbug/35198
-// to enable extra logging.  It will be removed once the issue is fixed.
-const char kIssue35198ExtraLogging[]        = "issue35198-logging";
-
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

@@ -197,7 +197,6 @@ extern const char kInProcessWebGL[];
 extern const char kIncognito[];
 extern const char kInternalNaCl[];
 extern const char kInternalPepper[];
-extern const char kIssue35198ExtraLogging[];
 extern const char kJavaScriptFlags[];
 extern const char kKeepAliveForTest[];
 extern const char kLoadExtension[];

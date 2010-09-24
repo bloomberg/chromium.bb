@@ -4,7 +4,6 @@
 
 #include "chrome/common/extensions/extension_unpacker.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
@@ -13,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/file_stream.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -151,33 +149,17 @@ bool ExtensionUnpacker::Run() {
   temp_install_dir_ =
     extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
 
-#if defined(OS_WIN)
-  // To understand crbug/35198, allow users who can reproduce the issue
-  // to enable extra logging while unpacking.
-  bool extra_logging = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kIssue35198ExtraLogging);
-  LOG(INFO) << "Extra logging for issue 35198: " << extra_logging;
-
-  std::ostringstream log_stream;
-  std::string dir_string = WideToUTF8(temp_install_dir_.value());
-  log_stream << kCouldNotCreateDirectoryError << dir_string << std::endl;
-
-  if (!file_util::CreateDirectoryExtraLogging(temp_install_dir_, log_stream)) {
-    if (extra_logging) {
-      log_stream.flush();
-      SetError(log_stream.str());
-    } else {
-      SetError(kCouldNotCreateDirectoryError + dir_string);
-    }
-    return false;
-  }
-#else
   if (!file_util::CreateDirectory(temp_install_dir_)) {
+
+#if defined(OS_WIN)
+    std::string dir_string = WideToUTF8(temp_install_dir_.value());
+#else
     std::string dir_string = temp_install_dir_.value();
+#endif
+
     SetError(kCouldNotCreateDirectoryError + dir_string);
     return false;
   }
-#endif
 
   if (!Unzip(extension_path_, temp_install_dir_)) {
     SetError(kCouldNotUnzipExtension);
@@ -189,15 +171,13 @@ bool ExtensionUnpacker::Run() {
   if (!parsed_manifest_.get())
     return false;  // Error was already reported.
 
-  // NOTE: Since the Unpacker doesn't have the extension's public_id, the
+  // NOTE: Since the unpacker doesn't have the extension's public_id, the
   // InitFromValue is allowed to generate a temporary id for the extension.
   // ANY CODE THAT FOLLOWS SHOULD NOT DEPEND ON THE CORRECT ID OF THIS
   // EXTENSION.
   Extension extension(temp_install_dir_);
   std::string error;
-  if (!extension.InitFromValue(*parsed_manifest_,
-                               false,
-                               &error)) {
+  if (!extension.InitFromValue(*parsed_manifest_, false, &error)) {
     SetError(error);
     return false;
   }
