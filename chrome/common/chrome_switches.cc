@@ -556,6 +556,9 @@ const char kEnableWin7Location[]            = "enable-win7-location";
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
 const char kEnableXSSAuditor[]              = "enable-xss-auditor";
 
+// Enables experimental features for the geolocation API.
+const char kExperimentalLocationFeatures[]  = "experimental-location-features";
+
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are
 // misppelled by typing the word with two consecutive letters swapped. The

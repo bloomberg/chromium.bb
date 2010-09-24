@@ -171,6 +171,7 @@ extern const char kEnableWatchdog[];
 extern const char kEnableWin7Location[];
 extern const char kEnableXSSAuditor[];
 // Experimental features.
+extern const char kExperimentalLocationFeatures[];
 extern const char kExperimentalSpellcheckerFeatures[];
 // End experimental features.
 extern const char kExplicitlyAllowedPorts[];

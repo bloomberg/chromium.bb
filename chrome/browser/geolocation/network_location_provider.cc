@@ -321,7 +321,7 @@ void NetworkLocationProvider::OnDeviceDataUpdated() {
 }
 
 bool NetworkLocationProvider::IsStarted() const {
-  DCHECK_EQ(!!gateway_data_provider_, !!radio_data_provider_);
+  DCHECK_EQ(!!gateway_data_provider_, !!wifi_data_provider_);
   DCHECK_EQ(!!radio_data_provider_, !!wifi_data_provider_);
   return wifi_data_provider_ != NULL;
 }
