@@ -255,19 +255,22 @@ bool IsTextHtml(const wchar_t* status_text) {
 }
 
 bool IsAdditionallySupportedContentType(const wchar_t* status_text) {
+  static const char* kHeaderContentTypes[] = {
+    "application/xhtml+xml",
+    "application/xml",
+    "image/svg",
+    "image/svg+xml",
+    "text/xml",
+    "video/ogg",
+    "video/webm",
+    "video/mp4"
+  };
+
   const std::wstring str = status_text;
-  if (LowerCaseEqualsASCII(str, "application/xhtml+xml"))
-    return true;
-  if (LowerCaseEqualsASCII(str, "image/svg"))
-    return true;
-  if (LowerCaseEqualsASCII(str, "image/svg+xml"))
-    return true;
-  if (LowerCaseEqualsASCII(str, "video/ogg"))
-    return true;
-  if (LowerCaseEqualsASCII(str, "video/webm"))
-    return true;
-  if (LowerCaseEqualsASCII(str, "video/mp4"))
-    return true;
+  for (int i = 0; i < arraysize(kHeaderContentTypes); ++i) {
+    if (LowerCaseEqualsASCII(str, kHeaderContentTypes[i]))
+      return true;
+  }
 
   return false;
 }
