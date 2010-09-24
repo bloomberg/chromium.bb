@@ -67,6 +67,9 @@ void AccessibilityEventRouterViews::RemoveView(views::View* view) {
 void AccessibilityEventRouterViews::HandleAccessibilityEvent(
     views::View* view, AccessibilityTypes::Event event_type) {
   switch (event_type) {
+    case AccessibilityTypes::EVENT_ALERT:
+      // TODO(dtseng): does this have any meaning in this context.
+      break;
     case AccessibilityTypes::EVENT_FOCUS:
       DispatchAccessibilityNotification(
           view, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);

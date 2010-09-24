@@ -47,6 +47,7 @@ class AccessibilityTypes {
   // must provide a conversion to its own roles (see e.g.
   // ViewAccessibility::get_accRole and ViewAccessibility::MSAARole).
   enum Role {
+    ROLE_ALERT,
     ROLE_APPLICATION,
     ROLE_BUTTONDROPDOWN,
     ROLE_BUTTONMENU,
@@ -82,6 +83,7 @@ class AccessibilityTypes {
   // events must provide a conversion to its own events (see e.g.
   // ViewAccessibility::MSAAEvent).
   enum Event {
+    EVENT_ALERT,
     EVENT_FOCUS,
     EVENT_MENUSTART,
     EVENT_MENUEND,
