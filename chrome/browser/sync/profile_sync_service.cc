@@ -777,15 +777,19 @@ void ProfileSyncService::GetPreferredDataTypes(
   // the preference can't be read.
   syncable::ModelTypeSet registered_types;
   GetRegisteredDataTypes(&registered_types);
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
-    syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-    if (!registered_types.count(model_type))
-      continue;
-    const char* pref_name = GetPrefNameForDataType(model_type);
-    if (!pref_name)
-      continue;
-    if (profile_->GetPrefs()->GetBoolean(pref_name))
-      preferred_types->insert(model_type);
+  if (profile_->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced)) {
+    *preferred_types = registered_types;
+  } else {
+    for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+      syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
+      if (!registered_types.count(model_type))
+        continue;
+      const char* pref_name = GetPrefNameForDataType(model_type);
+      if (!pref_name)
+        continue;
+      if (profile_->GetPrefs()->GetBoolean(pref_name))
+        preferred_types->insert(model_type);
+    }
   }
 }
 
