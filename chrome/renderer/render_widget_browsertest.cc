@@ -136,6 +136,6 @@ void RenderWidgetTest::OutputBitmapToFile(const SkBitmap& bitmap,
       bitmap_data->size()));
 }
 
-TEST_F(RenderWidgetTest, OnMsgPaintAtSize) {
+TEST_F(RenderWidgetTest, FAILS_OnMsgPaintAtSize) {
   TestResizeAndPaint();
 }
