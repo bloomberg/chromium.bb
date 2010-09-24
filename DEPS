@@ -47,7 +47,7 @@ deps = {
    "/trunk/deps/third_party/hunspell_dictionaries@51875",
 
   "src/third_party/protobuf2/src":
-    (Var("googlecode_url") % "protobuf") + "/trunk@327",
+    (Var("googlecode_url") % "protobuf") + "/trunk@346",
 
   "src/third_party/cacheinvalidation/files":
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@35",
