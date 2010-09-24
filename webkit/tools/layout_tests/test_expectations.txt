@@ -7,15 +7,3 @@
 
 // atwilson will upstream
 BUGATWILSON : svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE CRASH
-
-// atwilson will remove once we roll past 68193
-BUGATWILSON WIN : svg/dynamic-updates/SVGFEMorphologyElement-dom-in-attr.html = IMAGE
-BUGATWILSON WIN : svg/dynamic-updates/SVGFEMorphologyElement-dom-operator-attr.html = IMAGE
-BUGATWILSON WIN : svg/dynamic-updates/SVGFEMorphologyElement-dom-radius-attr.html = IMAGE
-BUGATWILSON WIN : svg/dynamic-updates/SVGFEMorphologyElement-svgdom-in-prop.html = IMAGE
-BUGATWILSON WIN : svg/dynamic-updates/SVGFEMorphologyElement-svgdom-operator-prop.html = IMAGE
-BUGATWILSON WIN : svg/dynamic-updates/SVGFEMorphologyElement-svgdom-radius-call.html = IMAGE
-
-// atwilson will upstream
-BUGATWILSON :   storage/indexeddb/transaction-basics.html = CRASH
-
