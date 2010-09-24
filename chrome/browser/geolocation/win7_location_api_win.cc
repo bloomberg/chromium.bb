@@ -42,7 +42,7 @@ Win7LocationApi::~Win7LocationApi() {
 
 Win7LocationApi* Win7LocationApi::Create() {
   if (!CommandLine::ForCurrentProcess()
-      ->HasSwitch(switches::kEnableWin7Location))
+      ->HasSwitch(switches::kExperimentalLocationFeatures))
     return NULL;
   // Load probsys.dll
   string16 lib_needed = L"propsys.dll";

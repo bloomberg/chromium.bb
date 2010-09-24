@@ -44,7 +44,7 @@ void CoreLocationProviderMac::SetPosition(Geoposition* position) {
 
 LocationProviderBase* NewSystemLocationProvider() {
   if(CommandLine::ForCurrentProcess()
-     ->HasSwitch(switches::kEnableCoreLocation)) {
+     ->HasSwitch(switches::kExperimentalLocationFeatures)) {
     return new CoreLocationProviderMac;
   }
   return NULL;

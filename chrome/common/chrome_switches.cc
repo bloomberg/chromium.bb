@@ -394,9 +394,6 @@ const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 // Link: headers.
 const char kEnableContentPrefetch[]         = "enable-content-prefetch";
 
-// Enable CoreLocation geoposition data provider
-const char kEnableCoreLocation[]            = "enable-core-location";
-
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
 
@@ -550,13 +547,14 @@ const char kEnableVideoLogging[]            = "enable-video-logging";
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
 
-// Enables Windows 7 Location Platform provider for geolocation API.
-const char kEnableWin7Location[]            = "enable-win7-location";
-
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
 const char kEnableXSSAuditor[]              = "enable-xss-auditor";
 
 // Enables experimental features for the geolocation API.
+// Current features:
+// - CoreLocation support for Mac OS X 10.6
+// - Gateway location for Windows
+// - Location platform support for Windows 7
 const char kExperimentalLocationFeatures[]  = "experimental-location-features";
 
 // Enables experimental features for Spellchecker. Right now, the first

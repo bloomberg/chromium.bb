@@ -122,7 +122,6 @@ extern const char kEnableCloudPrintProxy[];
 extern const char kEnableCloudPrint[];
 extern const char kEnableConnectBackupJobs[];
 extern const char kEnableContentPrefetch[];
-extern const char kEnableCoreLocation[];
 extern const char kEnableDeviceMotion[];
 extern const char kEnableDNSSECCerts[];
 extern const char kEnableExperimentalExtensionApis[];
@@ -168,7 +167,6 @@ extern const char kEnableVideoFullscreen[];
 extern const char kEnableVideoLayering[];
 extern const char kEnableVideoLogging[];
 extern const char kEnableWatchdog[];
-extern const char kEnableWin7Location[];
 extern const char kEnableXSSAuditor[];
 // Experimental features.
 extern const char kExperimentalLocationFeatures[];
