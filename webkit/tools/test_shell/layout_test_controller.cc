@@ -1224,6 +1224,8 @@ void LayoutTestController::overridePreference(
       preferences->tabs_to_links = CppVariantToBool(value);
     else if (key == "WebKitWebGLEnabled")
       preferences->experimental_webgl_enabled = CppVariantToBool(value);
+    else if (key == "WebKitEnableCaretBrowsing")
+      preferences->caret_browsing_enabled = CppVariantToBool(value);
     else if (key == "WebKitHyperlinkAuditingEnabled")
       preferences->hyperlink_auditing_enabled = CppVariantToBool(value);
     else {
