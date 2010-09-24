@@ -143,7 +143,8 @@ class ScopedDirectoryDelete {
 
 typedef scoped_ptr_malloc<FilePath, ScopedDirectoryDelete> ScopedDirectory;
 
-TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
+// Crashy, http://crbug.com/56765.
+TEST_F(MacDirAccessSandboxTest, DISABLED_SandboxAccess) {
   FilePath tmp_dir;
   ASSERT_TRUE(file_util::CreateNewTempDirectory("", &tmp_dir));
   // This step is important on OS X since the sandbox only understands "real"
