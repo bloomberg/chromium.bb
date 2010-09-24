@@ -43,7 +43,6 @@ class GpuThread : public ChildThread {
   void OnSynchronize();
   void OnCollectGraphicsInfo();
   void OnCrash();
-  void OnHang();
   void OnNewRenderWidgetHostView(GpuNativeWindowHandle parent_window,
                                  int32 routing_id);
 

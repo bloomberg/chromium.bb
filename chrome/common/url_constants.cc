@@ -50,7 +50,6 @@ const char kAboutCrashURL[] = "about:crash";
 const char kAboutCreditsURL[] = "about:credits";
 const char kAboutDNSURL[] = "about:dns";
 const char kAboutGpuCrashURL[] = "about:gpucrash";
-const char kAboutGpuHangURL[] = "about:gpuhang";
 const char kAboutHangURL[] = "about:hang";
 const char kAboutHistogramsURL[] = "about:histograms";
 const char kAboutLabsURL[] = "about:labs";

@@ -127,11 +127,6 @@ void GpuProcessHost::SendAboutGpuCrash() {
   Get()->Send(new GpuMsg_Crash());
 }
 
-// static
-void GpuProcessHost::SendAboutGpuHang() {
-  Get()->Send(new GpuMsg_Hang());
-}
-
 bool GpuProcessHost::Send(IPC::Message* msg) {
   if (!EnsureInitialized())
     return false;

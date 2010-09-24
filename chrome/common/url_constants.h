@@ -45,7 +45,6 @@ extern const char kAboutCrashURL[];
 extern const char kAboutCreditsURL[];
 extern const char kAboutDNSURL[];
 extern const char kAboutGpuCrashURL[];
-extern const char kAboutGpuHangURL[];
 extern const char kAboutHangURL[];
 extern const char kAboutHistogramsURL[];
 extern const char kAboutLabsURL[];
