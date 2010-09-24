@@ -207,7 +207,7 @@ void PolicyDirLoader::ReloadFromTask() {
 
 void PolicyDirWatcher::Init(PolicyDirLoader* loader) {
   // Initialization can happen early when the file thread is not yet available.
-  // So post a task to ourselves on th UI thread which will run after threading
+  // So post a task to ourselves on the UI thread which will run after threading
   // is up and schedule watch initialization on the file thread.
   ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this,
