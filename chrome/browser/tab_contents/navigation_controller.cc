@@ -1070,8 +1070,12 @@ void NavigationController::NotifyNavigationEntryCommitted(
   // TODO(pkasting): http://b/1113079 Probably these explicit notification paths
   // should be removed, and interested parties should just listen for the
   // notification below instead.
+  // We don't set INVALIDATE_LOAD since that will be done separately for real
+  // loads (by TabContents::SetIsLoading).
   tab_contents_->NotifyNavigationStateChanged(
-      kInvalidateAllButShelves | extra_invalidate_flags);
+      kInvalidateAllButShelves &
+      ~TabContents::INVALIDATE_LOAD |
+      extra_invalidate_flags);
 
   NotificationService::current()->Notify(
       NotificationType::NAV_ENTRY_COMMITTED,
