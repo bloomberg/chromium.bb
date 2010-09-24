@@ -205,8 +205,6 @@
         'renderer/safe_browsing/phishing_dom_feature_extractor.h',
         'renderer/safe_browsing/phishing_term_feature_extractor.cc',
         'renderer/safe_browsing/phishing_term_feature_extractor.h',
-        'renderer/safe_browsing/phishing_thumbnailer.cc',
-        'renderer/safe_browsing/phishing_thumbnailer.h',
         'renderer/safe_browsing/phishing_url_feature_extractor.cc',
         'renderer/safe_browsing/phishing_url_feature_extractor.h',
         'renderer/safe_browsing/scorer.cc',
