@@ -360,6 +360,7 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
   select_network_label_->SetVisible(!connecting);
   network_dropdown_->SetVisible(!connecting);
   continue_button_->SetVisible(!connecting);
+  proxy_settings_link_->SetVisible(!connecting);
   connecting_network_label_->SetVisible(connecting);
   InitLayout();
   Layout();
@@ -390,7 +391,7 @@ bool NetworkSelectionView::IsContinueEnabled() const {
 void NetworkSelectionView::LinkActivated(views::Link* source, int) {
   if (source == proxy_settings_link_) {
     if (!proxy_settings_dialog_.get()) {
-      static const char kProxySettingsURL[] = "chrome://options/proxy";
+      static const char kProxySettingsURL[] = "chrome://settings/proxy";
       proxy_settings_dialog_.reset(new LoginHtmlDialog(
           this,
           GetNativeWindow(),

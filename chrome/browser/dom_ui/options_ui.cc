@@ -167,7 +167,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   OptionsUIHTMLSource* html_source =
       new OptionsUIHTMLSource(localized_strings);
 
-  // Set up the chrome://options/ source.
+  // Set up the chrome://settings/ source.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
