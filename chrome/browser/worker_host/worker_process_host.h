@@ -18,6 +18,7 @@
 #include "ipc/ipc_channel.h"
 
 class AppCacheDispatcherHost;
+class BlobDispatcherHost;
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
 class DatabaseDispatcherHost;
@@ -195,6 +196,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   scoped_refptr<ChromeURLRequestContext> request_context_;
   scoped_ptr<AppCacheDispatcherHost> appcache_dispatcher_host_;
   scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;
+  scoped_ptr<BlobDispatcherHost> blob_dispatcher_host_;
 
   // A callback to create a routing id for the associated worker process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;

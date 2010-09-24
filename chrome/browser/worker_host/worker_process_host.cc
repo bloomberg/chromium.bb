@@ -18,6 +18,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -63,7 +64,10 @@ WorkerProcessHost::WorkerProcessHost(
     : BrowserChildProcessHost(WORKER_PROCESS, resource_dispatcher_host),
       request_context_(request_context),
       appcache_dispatcher_host_(
-          new AppCacheDispatcherHost(request_context)) {
+          new AppCacheDispatcherHost(request_context)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
+          new BlobDispatcherHost(
+              this->id(), request_context->blob_storage_context()))) {
   next_route_id_callback_.reset(NewCallbackWithReturnValue(
       WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   db_dispatcher_host_ = new DatabaseDispatcherHost(
@@ -75,6 +79,9 @@ WorkerProcessHost::WorkerProcessHost(
 WorkerProcessHost::~WorkerProcessHost() {
   // Shut down the database dispatcher host.
   db_dispatcher_host_->Shutdown();
+
+  // Shut down the blob dispatcher host.
+  blob_dispatcher_host_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -233,6 +240,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool handled =
       appcache_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
+      blob_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       MessagePortDispatcher::GetInstance()->OnMessageReceived(
           message, this, next_route_id_callback_.get(), &msg_is_ok);
 

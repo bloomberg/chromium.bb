@@ -7,7 +7,6 @@
 #include "base/ref_counted.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBlobData.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebBlobStorageData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "webkit/blob/blob_data.h"
