@@ -82,15 +82,8 @@ TEST_F(LoginPromptTest, MAYBE_TestBasicAuth) {
 }
 
 // FLAKY: http://crbug.com/56670
-#if defined(OS_WIN)
-#define MAYBE_TestDigestAuth FLAKY_TestDigestAuth
-#elif defined(OS_LINUX)
-#define MAYBE_TestDigestAuth FLAKY_TestDigestAuth
-#else
-#define MAYBE_TestDigestAuth TestDigestAuth
-#endif
 // Test that "Digest" HTTP authentication works.
-TEST_F(LoginPromptTest, MAYBE_TestDigestAuth) {
+TEST_F(LoginPromptTest, FLAKY_TestDigestAuth) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
