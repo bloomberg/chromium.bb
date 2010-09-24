@@ -15,7 +15,24 @@ if not (env['BUILD_ARCHITECTURE'] == 'x86' and
         env['BUILD_SUBARCH'] == '32'):
   Return()
 
+if 'TRUSTED_ENV' not in env:
+  Return()
+
+stubout_tool = env['TRUSTED_ENV'].File(
+    '${STAGING_DIR}/${PROGPREFIX}ncval_stubout${PROGSUFFIX}')
+
 env.ComponentProgram('partly_invalid.nexe', 'partly_invalid.c')
+
+node = env.Command(
+    target='partly_invalid_stubout.nexe',
+    source=[stubout_tool,
+            env.File('partly_invalid.nexe')],
+    action=[Action('${SOURCES[0]} ${SOURCES[1]} -o $TARGET')])
+# This alias is to ensure this test works with built_elsewhere=1,
+# because with that option CommandSelLdrTestNacl() assumes all its
+# inputs have already been built (which is not necessarily a good
+# idea, but apparently true for all other cases so far).
+env.Alias('all_test_programs', node)
 
 nodes = []
 
@@ -35,6 +52,14 @@ nodes.append(env.CommandSelLdrTestNacl(
         'partly_invalid_3.out', command=[env.File('partly_invalid.nexe')],
         stdout_golden=env.File('with_stubout.stdout'),
         sel_ldr_flags=['-s'],
+        exit_status='sigsegv_or_equivalent'))
+
+# Using the standalone ncval_stubout tool to rewrite the executable
+# offline should be equivalent to using sel_ldr's "-s" option.
+nodes.append(env.CommandSelLdrTestNacl(
+        'partly_invalid_stubout.out',
+        command=[env.File('partly_invalid_stubout.nexe')],
+        stdout_golden=env.File('with_stubout.stdout'),
         exit_status='sigsegv_or_equivalent'))
 
 env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_stubout_mode_test')
