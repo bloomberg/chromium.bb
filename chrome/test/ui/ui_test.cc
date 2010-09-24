@@ -189,7 +189,8 @@ void UITestBase::LaunchBrowserAndServer() {
                     TestTimeouts::command_execution_timeout_ms()));
 
   LaunchBrowser(launch_arguments_, clear_profile_);
-  server_->WaitForAppLaunch();
+  ASSERT_EQ(AUTOMATION_SUCCESS, server_->WaitForAppLaunch())
+      << "Error while awaiting automation ping from browser process";
   if (wait_for_initial_loads_)
     ASSERT_TRUE(server_->WaitForInitialLoads());
   else
