@@ -50,7 +50,7 @@ class ChromotingInstance : public pp::Instance {
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
   virtual void Connect(const ClientConfig& config);
-  virtual bool HandleEvent(const PP_InputEvent& event);
+  virtual bool HandleInputEvent(const PP_InputEvent& event);
   virtual pp::Var GetInstanceObject();
   virtual void ViewChanged(const pp::Rect& position, const pp::Rect& clip);
 

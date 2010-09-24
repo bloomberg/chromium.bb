@@ -25,7 +25,8 @@ void PepperInputHandler::HandleKeyEvent(bool keydown,
   SendKeyEvent(keydown, event.key_code);
 }
 
-void PepperInputHandler::HandleCharacterEvent(const PP_InputEvent_Character& event) {
+void PepperInputHandler::HandleCharacterEvent(
+    const PP_InputEvent_Character& event) {
   // TODO(garykac): Coordinate key and char events.
 }
 

@@ -112,7 +112,7 @@ bool ChromotingInstance::CurrentlyOnPluginThread() const {
   return pepper_main_loop_dont_post_to_me_ == MessageLoop::current();
 }
 
-bool ChromotingInstance::HandleEvent(const PP_InputEvent& event) {
+bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
   DCHECK(CurrentlyOnPluginThread());
 
   PepperInputHandler* pih
