@@ -24,6 +24,7 @@ class BrowserFileSystemCallbackDispatcher
   virtual void DidOpenFileSystem(const string16& name,
                                  const FilePath& root_path);
   virtual void DidFail(base::PlatformFileError error_code);
+  virtual void DidWrite(int64 bytes, bool complete);
 
  private:
   scoped_refptr<FileSystemDispatcherHost> dispatcher_host_;

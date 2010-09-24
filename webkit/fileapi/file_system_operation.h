@@ -15,6 +15,8 @@
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 
+class GURL;
+
 namespace fileapi {
 
 class FileSystemCallbackDispatcher;
@@ -55,6 +57,15 @@ class FileSystemOperation {
 
   void Remove(const FilePath& path);
 
+  void Write(
+      const FilePath& path, const GURL& blob_url, int64 offset);
+
+  void Truncate(const FilePath& path, int64 length);
+
+  // Used to attempt to cancel the current operation.  This currently does
+  // nothing for any operation other than Write().
+  void Cancel();
+
  protected:
   // Proxy for calling file_util_proxy methods.
   scoped_refptr<base::MessageLoopProxy> proxy_;
@@ -83,6 +94,11 @@ class FileSystemOperation {
   void DidReadDirectory(
       base::PlatformFileError rv,
       const std::vector<base::file_util_proxy::Entry>& entries);
+
+  void DidWrite(
+      base::PlatformFileError rv,
+      int64 bytes,
+      bool complete);
 
   scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
 

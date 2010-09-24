@@ -1046,6 +1046,10 @@ IPC_BEGIN_MESSAGES(View)
                        std::vector<base::file_util_proxy::Entry> /* entries */,
                        bool /* has_more */)
 
+  IPC_MESSAGE_CONTROL3(ViewMsg_FileSystem_DidWrite,
+                       int /* request_id */,
+                       int64 /* byte count */,
+                       bool /* complete */)
   IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_DidFail,
                        int /* request_id */,
                        base::PlatformFileError /* error_code */)
@@ -2184,7 +2188,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // processes (SharedWorkers are shut down when their last associated document
   // is detached).
   IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached,
-                       unsigned long long /* document_id */)
+                       uint64 /* document_id */)
 
   // A message sent to the browser on behalf of a renderer which wants to show
   // a desktop notification.
@@ -2855,6 +2859,24 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_ReadDirectory,
                        int /* request_id */,
                        FilePath /* path */)
+
+  // WebFileWriter::write() message.
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_FileSystem_Write,
+                       int /* request id */,
+                       FilePath /* file path */,
+                       GURL /* blob URL */,
+                       int64 /* position */)
+
+  // WebFileWriter::truncate() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Truncate,
+                       int /* request id */,
+                       FilePath /* file path */,
+                       int64 /* length */)
+
+  // WebFileWriter::cancel() message.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_CancelWrite,
+                       int /* request id */,
+                       int /* id of request to cancel */)
 
   //---------------------------------------------------------------------------
   // Blob messages:

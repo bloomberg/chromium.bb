@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_system_operation.h"
 
+#include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 namespace fileapi {
@@ -125,6 +126,43 @@ void FileSystemOperation::Remove(const FilePath& path) {
       &FileSystemOperation::DidFinishFileOperation));
 }
 
+
+void FileSystemOperation::Write(
+    const FilePath&,
+    const GURL&,
+    int64) {
+#ifndef NDEBUG
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
+#endif
+  NOTREACHED();
+  // TODO(ericu):
+  // Set up a loop that, via multiple callback invocations, reads from a
+  // URLRequest wrapping blob_url, writes the bytes to the file, reports
+  // progress events no more frequently than some set rate, and periodically
+  // checks to see if it's been cancelled.
+}
+
+void FileSystemOperation::Truncate(const FilePath& path, int64 length) {
+#ifndef NDEBUG
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
+#endif
+  // TODO(ericu):
+  NOTREACHED();
+}
+
+void FileSystemOperation::Cancel() {
+#ifndef NDEBUG
+  DCHECK(operation_pending_);
+#endif
+  NOTREACHED();
+  // TODO(ericu):
+  // Make sure this was done on a FileSystemOperation used for a Write.
+  // Then set a flag that ensures that the Write loop will exit without
+  // reporting any more progress, with a failure notification.
+}
+
 void FileSystemOperation::DidCreateFileExclusive(
     base::PlatformFileError rv,
     base::PassPlatformFile file,
@@ -190,6 +228,16 @@ void FileSystemOperation::DidReadDirectory(
     const std::vector<base::file_util_proxy::Entry>& entries) {
   if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidReadDirectory(entries, false /* has_more */);
+  else
+    dispatcher_->DidFail(rv);
+}
+
+void FileSystemOperation::DidWrite(
+    base::PlatformFileError rv,
+    int64 bytes,
+    bool complete) {
+  if (rv == base::PLATFORM_FILE_OK)
+    /* dispatcher_->DidWrite(bytes, complete) TODO(ericu): Coming soon. */ {}
   else
     dispatcher_->DidFail(rv);
 }

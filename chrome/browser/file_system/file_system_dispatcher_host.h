@@ -17,6 +17,7 @@
 #include "webkit/fileapi/file_system_operation.h"
 
 class FileSystemHostContext;
+class GURL;
 class HostContentSettingsMap;
 class Receiver;
 class ResourceMessageFilter;
@@ -49,6 +50,12 @@ class FileSystemDispatcherHost
                 bool recursive);
   void OnExists(int request_id, const FilePath& path, bool is_directory);
   void OnReadDirectory(int request_id, const FilePath& path);
+  void OnWrite(int request_id,
+               const FilePath& path,
+               const GURL& blob_url,
+               int64 offset);
+  void OnTruncate(int request_id, const FilePath& path, int64 length);
+  void OnCancel(int request_id, int request_to_cancel);
   void Send(IPC::Message* message);
   void RemoveCompletedOperation(int request_id);
 

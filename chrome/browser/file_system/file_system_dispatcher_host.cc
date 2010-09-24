@@ -115,6 +115,9 @@ bool FileSystemDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Create, OnCreate)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Exists, OnExists)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_ReadDirectory, OnReadDirectory)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Write, OnWrite)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Truncate, OnTruncate)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_CancelWrite, OnCancel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -204,6 +207,39 @@ void FileSystemDispatcherHost::OnReadDirectory(
   if (!CheckValidFileSystemPath(path, request_id))
     return;
   GetNewOperation(request_id)->ReadDirectory(path);
+}
+
+void FileSystemDispatcherHost::OnWrite(
+    int request_id,
+    const FilePath& path,
+    const GURL& blob_url,
+    int64 offset) {
+  if (!CheckValidFileSystemPath(path, request_id))
+    return;
+  GetNewOperation(request_id)->Write(path, blob_url, offset);
+}
+
+void FileSystemDispatcherHost::OnTruncate(
+    int request_id,
+    const FilePath& path,
+    int64 length) {
+  if (!CheckValidFileSystemPath(path, request_id))
+    return;
+  GetNewOperation(request_id)->Truncate(path, length);
+}
+
+void FileSystemDispatcherHost::OnCancel(
+    int request_id,
+    int request_id_to_cancel) {
+  fileapi::FileSystemOperation* write =
+      operations_.Lookup(request_id_to_cancel);
+  if (write) {
+    write->Cancel();
+    Send(new ViewMsg_FileSystem_DidSucceed(request_id));
+  } else {
+    Send(new ViewMsg_FileSystem_DidFail(
+        request_id, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
+  }
 }
 
 void FileSystemDispatcherHost::Send(IPC::Message* message) {

@@ -92,6 +92,10 @@ class TestShellFileSystemCallbackDispatcher
     file_system_->RemoveCompletedOperation(request_id_);
   }
 
+  virtual void DidWrite(int64, bool, fileapi::FileSystemOperation*) {
+    NOTREACHED();
+  }
+
  private:
   SimpleFileSystem* file_system_;
   WebFileSystemCallbacks* callbacks_;

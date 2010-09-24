@@ -43,3 +43,12 @@ void BrowserFileSystemCallbackDispatcher::DidFail(
       request_id_, error_code));
   dispatcher_host_->RemoveCompletedOperation(request_id_);
 }
+
+void BrowserFileSystemCallbackDispatcher::DidWrite(
+    int64 bytes,
+    bool complete) {
+  dispatcher_host_->Send(new ViewMsg_FileSystem_DidWrite(
+      request_id_, bytes, complete));
+  if (complete)
+    dispatcher_host_->RemoveCompletedOperation(request_id_);
+}
