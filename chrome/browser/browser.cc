@@ -1254,7 +1254,7 @@ void Browser::OpenCurrentURL() {
   // TODO(sky): support other dispositions.
   if (open_disposition == CURRENT_TAB && match_preview() &&
       match_preview()->is_active()) {
-    match_preview()->CommitCurrentPreview();
+    match_preview()->CommitCurrentPreview(MatchPreview::COMMIT_PRESSED_ENTER);
     return;
   }
 
@@ -3222,17 +3222,16 @@ void Browser::HideMatchPreview() {
   window_->HideMatchPreview();
 }
 
-void Browser::CommitMatchPreview() {
+void Browser::CommitMatchPreview(TabContents* preview_contents) {
   TabContents* tab_contents = match_preview_->tab_contents();
   int index = tabstrip_model_->GetIndexOfTabContents(tab_contents);
   DCHECK_NE(-1, index);
-  scoped_ptr<TabContents> preview_contents(
-      match_preview()->ReleasePreviewContents(true));
   preview_contents->controller().CopyStateFromAndPrune(
       tab_contents->controller());
   // TabStripModel takes ownership of preview_contents.
   tabstrip_model_->ReplaceTabContentsAt(
-      index, preview_contents.release(),
+      index,
+      preview_contents,
       TabStripModelObserver::REPLACE_MATCH_PREVIEW);
 }
 

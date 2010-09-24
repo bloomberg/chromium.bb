@@ -771,7 +771,7 @@ class Browser : public TabStripModelDelegate,
   // Overriden from MatchPreviewDelegate:
   virtual void ShowMatchPreview();
   virtual void HideMatchPreview();
-  virtual void CommitMatchPreview();
+  virtual void CommitMatchPreview(TabContents* preview_contents);
   virtual void SetSuggestedText(const string16& text);
   virtual gfx::Rect GetMatchPreviewBounds();
 

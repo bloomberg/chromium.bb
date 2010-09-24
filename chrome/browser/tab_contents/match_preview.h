@@ -29,6 +29,18 @@ class TabContents;
 // being invoked on the delegate.
 class MatchPreview {
  public:
+  enum CommitType {
+    // The commit is the result of the user pressing enter.
+    COMMIT_PRESSED_ENTER,
+
+    // The commit is the result of focus being lost. This typically corresponds
+    // to a mouse click event.
+    COMMIT_FOCUS_LOST,
+
+    // Used internally.
+    COMMIT_DESTROY
+  };
+
   explicit MatchPreview(MatchPreviewDelegate* delegate);
   ~MatchPreview();
 
@@ -55,12 +67,12 @@ class MatchPreview {
 
   // Invoked when the user does some gesture that should trigger making the
   // current previewed page the permanent page.
-  void CommitCurrentPreview();
+  void CommitCurrentPreview(CommitType type);
 
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
   // not notify the delegate.
-  TabContents* ReleasePreviewContents(bool commit_history);
+  TabContents* ReleasePreviewContents(CommitType type);
 
   // TabContents the match is being shown for.
   TabContents* tab_contents() const { return tab_contents_; }

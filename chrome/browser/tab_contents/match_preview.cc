@@ -36,26 +36,60 @@
 
 namespace {
 
+// Script sent as the user is typing and the provider supports instant.
+// Params:
+// . the text the user typed.
+// TODO: add support for the 2nd and 3rd params.
 const char kUserInputScript[] =
-    "if (window.chrome.userInput) window.chrome.userInput(\"$1\");";
+    "if (window.chrome.userInput) window.chrome.userInput(\"$1\", 0, 0);";
+
+// Script sent when the page is committed and the provider supports instant.
+// Params:
+// . the text the user typed.
+// . boolean indicating if the user pressed enter to accept the text.
 const char kUserDoneScript[] =
-    "if (window.chrome.userWantsQuery) window.chrome.userWantsQuery(\"$1\");";
+    "if (window.chrome.userWantsQuery) "
+      "window.chrome.userWantsQuery(\"$1\", $2);";
+
+// Script sent when the bounds of the omnibox changes and the provider supports
+// instant. The params are the bounds relative to the origin of the preview
+// (x, y, width, height).
 const char kSetOmniboxBoundsScript[] =
     "if (window.chrome.setOmniboxDimensions) "
     "window.chrome.setOmniboxDimensions($1, $2, $3, $4);";
 
-// Sends the user input script to |tab_contents|. |text| is the text the user
-// input into the omnibox.
-void SendUserInputScript(TabContents* tab_contents,
-                         const string16& text,
-                         bool done) {
+// Escapes quotes in the |text| so that it be passed to JavaScript as a quoted
+// string.
+string16 EscapeUserText(const string16& text) {
   string16 escaped_text(text);
   ReplaceSubstringsAfterOffset(&escaped_text, 0L, ASCIIToUTF16("\""),
                                ASCIIToUTF16("\\\""));
-  string16 script = ReplaceStringPlaceholders(
-      ASCIIToUTF16(done ? kUserDoneScript : kUserInputScript),
-      escaped_text,
-      NULL);
+  return escaped_text;
+}
+
+// Sends the script for when the user commits the preview. |pressed_enter| is
+// true if the user pressed enter to commit.
+void SendDoneScript(TabContents* tab_contents,
+                    const string16& text,
+                    bool pressed_enter) {
+  std::vector<string16> params;
+  params.push_back(EscapeUserText(text));
+  params.push_back(pressed_enter ? ASCIIToUTF16("true") :
+                   ASCIIToUTF16("false"));
+  string16 script = ReplaceStringPlaceholders(ASCIIToUTF16(kUserDoneScript),
+                                              params,
+                                              NULL);
+  tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
+      std::wstring(),
+      UTF16ToWide(script));
+}
+
+// Sends the user input script to |tab_contents|. |text| is the text the user
+// input into the omnibox.
+void SendUserInputScript(TabContents* tab_contents, const string16& text) {
+  string16 script = ReplaceStringPlaceholders(ASCIIToUTF16(kUserInputScript),
+                                              EscapeUserText(text),
+                                              NULL);
   tab_contents->render_view_host()->ExecuteJavascriptInWebFrame(
       std::wstring(),
       UTF16ToWide(script));
@@ -89,7 +123,7 @@ class MatchPreview::FrameLoadObserver : public NotificationObserver {
         tab_contents_(match_preview->preview_contents()),
         unique_id_(tab_contents_->controller().pending_entry()->unique_id()),
         text_(text),
-        send_done_(false) {
+        pressed_enter_(false) {
     registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                    Source<TabContents>(tab_contents_));
     registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
@@ -101,9 +135,9 @@ class MatchPreview::FrameLoadObserver : public NotificationObserver {
 
   // Invoked when the MatchPreview releases ownership of the TabContents and
   // the page hasn't finished loading.
-  void DetachFromPreview() {
+  void DetachFromPreview(bool pressed_enter) {
     match_preview_ = NULL;
-    send_done_ = true;
+    pressed_enter_ = pressed_enter;
   }
 
   // NotificationObserver:
@@ -126,10 +160,12 @@ class MatchPreview::FrameLoadObserver : public NotificationObserver {
             SendOmniboxBoundsScript(tab_contents_, bounds);
         }
 
-        SendUserInputScript(tab_contents_, text_, send_done_);
+        SendUserInputScript(tab_contents_, text_);
 
         if (match_preview_)
           match_preview_->PageFinishedLoading();
+        else
+          SendDoneScript(tab_contents_, text_, pressed_enter_);
 
         delete this;
         return;
@@ -158,8 +194,8 @@ class MatchPreview::FrameLoadObserver : public NotificationObserver {
   // Text to send down to the page.
   string16 text_;
 
-  // Passed to SendScript.
-  bool send_done_;
+  // Passed to SendDoneScript.
+  bool pressed_enter_;
 
   // Registers and unregisters us for notifications.
   NotificationRegistrar registrar_;
@@ -469,7 +505,7 @@ void MatchPreview::Update(TabContents* tab_contents,
         frame_load_observer_->set_text(user_text_);
         return;
       }
-      SendUserInputScript(preview_contents_.get(), user_text_, false);
+      SendUserInputScript(preview_contents_.get(), user_text_);
       if (complete_suggested_text_.size() > user_text_.size() &&
           !complete_suggested_text_.compare(0, user_text_.size(), user_text_)) {
         *suggested_text = complete_suggested_text_.substr(user_text_.size());
@@ -511,32 +547,39 @@ void MatchPreview::DestroyPreviewContents() {
   }
 
   delegate_->HideMatchPreview();
-  delete ReleasePreviewContents(false);
+  delete ReleasePreviewContents(COMMIT_DESTROY);
 }
 
-void MatchPreview::CommitCurrentPreview() {
+void MatchPreview::CommitCurrentPreview(CommitType type) {
   DCHECK(preview_contents_.get());
-  delegate_->CommitMatchPreview();
+  delegate_->CommitMatchPreview(ReleasePreviewContents(type));
 }
 
-TabContents* MatchPreview::ReleasePreviewContents(bool commit_history) {
+TabContents* MatchPreview::ReleasePreviewContents(CommitType type) {
+  if (!preview_contents_.get())
+    return NULL;
+
+  if (frame_load_observer_.get()) {
+    frame_load_observer_->DetachFromPreview(type == COMMIT_PRESSED_ENTER);
+    // FrameLoadObserver will delete itself either when the TabContents is
+    // deleted, or when the page finishes loading.
+    FrameLoadObserver* unused ALLOW_UNUSED = frame_load_observer_.release();
+  } else if (type != COMMIT_DESTROY && is_showing_instant()) {
+    SendDoneScript(preview_contents_.get(),
+                   user_text_,
+                   type == COMMIT_PRESSED_ENTER);
+  }
   omnibox_bounds_ = gfx::Rect();
   template_url_id_ = 0;
   url_ = GURL();
   user_text_.clear();
   complete_suggested_text_.clear();
-  if (frame_load_observer_.get()) {
-    frame_load_observer_->DetachFromPreview();
-    // FrameLoadObserver will delete itself either when the TabContents is
-    // deleted, or when the page finishes loading.
-    FrameLoadObserver* unused ALLOW_UNUSED = frame_load_observer_.release();
-  }
   if (preview_contents_.get()) {
-    if (commit_history)
+    if (type != COMMIT_DESTROY)
       preview_tab_contents_delegate_->CommitHistory();
     // Destroy the paint observer.
+    // RenderWidgetHostView may be null during shutdown.
     if (preview_contents_->GetRenderWidgetHostView()) {
-      // RenderWidgetHostView may be null during shutdown.
       preview_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->
           set_paint_observer(NULL);
     }

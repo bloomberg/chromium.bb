@@ -737,7 +737,7 @@ void LocationBarView::OnAutocompleteLosingFocus(
     return;
 
   if (ShouldCommitMatchPreviewOnFocusLoss(view_gaining_focus))
-    match_preview->CommitCurrentPreview();
+    match_preview->CommitCurrentPreview(MatchPreview::COMMIT_FOCUS_LOST);
   else
     match_preview->DestroyPreviewContents();
 }

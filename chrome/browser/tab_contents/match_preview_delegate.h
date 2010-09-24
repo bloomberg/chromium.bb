@@ -8,6 +8,8 @@
 
 #include "base/string16.h"
 
+class TabContents;
+
 namespace gfx {
 class Rect;
 }
@@ -23,8 +25,9 @@ class MatchPreviewDelegate {
   virtual void HideMatchPreview() = 0;
 
   // Invoked when the user does something that should result in the preview
-  // TabContents becoming the active TabContents.
-  virtual void CommitMatchPreview() = 0;
+  // TabContents becoming the active TabContents. The delegate takes ownership
+  // of the supplied TabContents.
+  virtual void CommitMatchPreview(TabContents* preview_contents) = 0;
 
   // Invoked when the suggested text is to change to |text|.
   virtual void SetSuggestedText(const string16& text) = 0;
