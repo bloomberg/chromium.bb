@@ -7,7 +7,6 @@
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
-#include "webkit/blob/blob_data.h"
 
 ResourceDispatcherHostRequestInfo::ResourceDispatcherHostRequestInfo(
     ResourceHandler* handler,
@@ -61,9 +60,4 @@ void ResourceDispatcherHostRequestInfo::set_login_handler(LoginHandler* lh) {
 void ResourceDispatcherHostRequestInfo::set_ssl_client_auth_handler(
     SSLClientAuthHandler* s) {
   ssl_client_auth_handler_ = s;
-}
-
-void ResourceDispatcherHostRequestInfo::set_requested_blob_data(
-    webkit_blob::BlobData* data) {
-  requested_blob_data_ = data;
 }

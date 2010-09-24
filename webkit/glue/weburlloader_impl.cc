@@ -284,7 +284,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   scoped_ptr<ResourceLoaderBridge> bridge_;
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
-  scoped_ptr<ResourceLoaderBridge> completed_bridge_;
 
   // TODO(japhet): Storing this is a temporary hack for site isolation logging.
   WebURL response_url_;
@@ -599,10 +598,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     multipart_delegate_.reset(NULL);
   }
 
-  // Prevent any further IPC to the browser now that we're complete, but
-  // don't delete it to keep any downloaded temp files alive.
-  DCHECK(!completed_bridge_.get());
-  completed_bridge_.swap(bridge_);
+  // Prevent any further IPC to the browser now that we're complete.
+  bridge_.reset();
 
   if (client_) {
     if (status.status() != URLRequestStatus::SUCCESS) {

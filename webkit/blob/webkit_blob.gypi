@@ -20,8 +20,6 @@
         'blob_storage_controller.h',
         'blob_url_request_job.cc',
         'blob_url_request_job.h',
-        'deletable_file_reference.cc',
-        'deletable_file_reference.h',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

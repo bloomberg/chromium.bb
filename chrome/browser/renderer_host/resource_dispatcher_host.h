@@ -47,10 +47,6 @@ struct GlobalRequestID;
 struct ViewHostMsg_Resource_Request;
 struct ViewMsg_ClosePage_Params;
 
-namespace webkit_blob {
-class DeletableFileReference;
-}
-
 class ResourceDispatcherHost : public URLRequest::Delegate {
  public:
   // Implemented by the client of ResourceDispatcherHost to receive messages in
@@ -268,15 +264,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // messages sent.
   void DataReceivedACK(int process_unique_id, int request_id);
 
-  // Maintains a collection of temp files created in support of
-  // the download_to_file capability. Used to grant access to the
-  // child process and to defer deletion of the file until it's
-  // no longer needed.
-  void RegisterDownloadedTempFile(
-      int receiver_id, int request_id,
-      webkit_blob::DeletableFileReference* reference);
-  void UnregisterDownloadedTempFile(int receiver_id, int request_id);
-
   // Needed for the sync IPC message dispatcher macros.
   bool Send(IPC::Message* message);
 
@@ -410,13 +397,11 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
                     IPC::Message* sync_result,  // only valid for sync
                     int route_id);  // only valid for async
   void OnDataReceivedACK(int request_id);
-  void OnDataDownloadedACK(int request_id);
   void OnUploadProgressACK(int request_id);
   void OnCancelRequest(int request_id);
   void OnFollowRedirect(int request_id,
                         bool has_new_first_party_for_cookies,
                         const GURL& new_first_party_for_cookies);
-  void OnResourceLoaderDeleted(int request_id);
 
   ResourceHandler* CreateSafeBrowsingResourceHandler(
       ResourceHandler* handler, int child_id, int route_id,
@@ -446,15 +431,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   static net::RequestPriority DetermineRequestPriority(ResourceType::Type type);
 
   PendingRequestList pending_requests_;
-
-  // Collection of temp files downloaded for child processes via
-  // the download_to_file mechanism. We avoid deleting them until
-  // the loader in the client has been deleted.
-  typedef std::map<int, scoped_refptr<webkit_blob::DeletableFileReference> >
-      DeletableFilesMap;  // key is request id
-  typedef std::map<int, DeletableFilesMap>
-      RegisteredTempFiles;  // key is child process id
-  RegisteredTempFiles registered_temp_files_;
 
   // A timer that periodically calls UpdateLoadStates while pending_requests_
   // is not empty.

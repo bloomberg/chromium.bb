@@ -143,11 +143,6 @@ IPCResourceLoaderBridge::~IPCResourceLoaderBridge() {
     // this operation may fail, as the dispatcher will have preemptively
     // removed us when the renderer sends the ReceivedAllData message.
     dispatcher_->RemovePendingRequest(request_id_);
-
-    // Tell the browser process we're deleted so it can reclaim resources its
-    // holding on our behalf, like a downloaded temp file.
-    dispatcher_->message_sender()->Send(
-        new ViewHostMsg_ResourceLoaderDeleted(request_id_));
   }
 }
 
@@ -265,7 +260,6 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   response->connection_reused = result.connection_reused;
   response->load_timing = result.load_timing;
   response->data.swap(result.data);
-  response->download_file_path = result.download_file_path;
 }
 
 }  // namespace webkit_glue
@@ -295,26 +289,30 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
     return true;
   }
 
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info) {
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    // This might happen for kill()ed requests on the webkit end, so perhaps it
+    // shouldn't be a warning...
+    DLOG(WARNING) << "Got response for a nonexistent or finished request";
     // Release resources in the message if it is a data message.
     ReleaseResourcesInDataMessage(message);
     return true;
   }
 
-  if (request_info->is_deferred) {
-    request_info->deferred_message_queue.push_back(new IPC::Message(message));
+  PendingRequestInfo& request_info = it->second;
+  if (request_info.is_deferred) {
+    request_info.deferred_message_queue.push_back(new IPC::Message(message));
     return true;
   }
   // Make sure any deferred messages are dispatched before we dispatch more.
-  if (!request_info->deferred_message_queue.empty()) {
+  if (!request_info.deferred_message_queue.empty()) {
     FlushDeferredMessages(request_id);
     // The request could have been deferred now. If yes then the current
     // message has to be queued up. The request_info instance should remain
     // valid here as there are pending messages for it.
     DCHECK(pending_requests_.find(request_id) != pending_requests_.end());
-    if (request_info->is_deferred) {
-      request_info->deferred_message_queue.push_back(new IPC::Message(message));
+    if (request_info.is_deferred) {
+      request_info.deferred_message_queue.push_back(new IPC::Message(message));
       return true;
     }
   }
@@ -323,27 +321,22 @@ bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
   return true;
 }
 
-ResourceDispatcher::PendingRequestInfo*
-ResourceDispatcher::GetPendingRequestInfo(int request_id) {
-  PendingRequestList::iterator it = pending_requests_.find(request_id);
-  if (it == pending_requests_.end()) {
-    // This might happen for kill()ed requests on the webkit end, so perhaps it
-    // shouldn't be a warning...
-    DLOG(WARNING) << "Received message for a nonexistent or finished request";
-    return NULL;
-  }
-  return &(it->second);
-}
-
 void ResourceDispatcher::OnUploadProgress(
     const IPC::Message& message, int request_id, int64 position, int64 size) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    // this might happen for kill()ed requests on the webkit end, so perhaps
+    // it shouldn't be a warning...
+    DLOG(WARNING) << "Got upload progress for a nonexistent or "
+        "finished request";
     return;
+  }
+
+  PendingRequestInfo& request_info = it->second;
 
   RESOURCE_LOG("Dispatching upload progress for " <<
-      request_info->peer->GetURLForDebugging().possibly_invalid_spec());
-  request_info->peer->OnUploadProgress(position, size);
+      request_info.peer->GetURLForDebugging().possibly_invalid_spec());
+  request_info.peer->OnUploadProgress(position, size);
 
   // Acknowledge receipt
   message_sender()->Send(
@@ -352,34 +345,44 @@ void ResourceDispatcher::OnUploadProgress(
 
 void ResourceDispatcher::OnReceivedResponse(
     int request_id, const ResourceResponseHead& response_head) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    // This might happen for kill()ed requests on the webkit end, so perhaps it
+    // shouldn't be a warning...
+    DLOG(WARNING) << "Got response for a nonexistent or finished request";
     return;
+  }
 
+  PendingRequestInfo& request_info = it->second;
   if (response_head.replace_extension_localization_templates) {
     webkit_glue::ResourceLoaderBridge::Peer* new_peer =
         ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-            request_info->peer, message_sender(), response_head.mime_type,
-            request_info->url);
+            request_info.peer, message_sender(), response_head.mime_type,
+            request_info.url);
     if (new_peer)
-      request_info->peer = new_peer;
+      request_info.peer = new_peer;
   }
 
   RESOURCE_LOG("Dispatching response for " <<
-      request_info->peer->GetURLForDebugging().possibly_invalid_spec());
-  request_info->peer->OnReceivedResponse(response_head, false);
+      request_info.peer->GetURLForDebugging().possibly_invalid_spec());
+  request_info.peer->OnReceivedResponse(response_head, false);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
       int request_id, const std::vector<char>& data) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    // this might happen for kill()ed requests on the webkit end, so perhaps
+    // it shouldn't be a warning...
+    DLOG(WARNING) << "Got metadata for a nonexistent or finished request";
     return;
+  }
 
   if (data.size()) {
+    PendingRequestInfo& request_info = it->second;
     RESOURCE_LOG("Dispatching " << data.size() << " metadata bytes for " <<
-        request_info->peer->GetURLForDebugging().possibly_invalid_spec());
-    request_info->peer->OnReceivedCachedMetadata(&data.front(), data.size());
+        request_info.peer->GetURLForDebugging().possibly_invalid_spec());
+    request_info.peer->OnReceivedCachedMetadata(&data.front(), data.size());
   }
 }
 
@@ -395,32 +398,22 @@ void ResourceDispatcher::OnReceivedData(const IPC::Message& message,
   DCHECK((shm_valid && data_len > 0) || (!shm_valid && !data_len));
   base::SharedMemory shared_mem(shm_handle, true);  // read only
 
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    // this might happen for kill()ed requests on the webkit end, so perhaps
+    // it shouldn't be a warning...
+    DLOG(WARNING) << "Got data for a nonexistent or finished request";
     return;
+  }
+
+  PendingRequestInfo& request_info = it->second;
 
   if (data_len > 0 && shared_mem.Map(data_len)) {
     RESOURCE_LOG("Dispatching " << data_len << " bytes for " <<
-        request_info->peer->GetURLForDebugging().possibly_invalid_spec());
+        request_info.peer->GetURLForDebugging().possibly_invalid_spec());
     const char* data = static_cast<char*>(shared_mem.memory());
-    request_info->peer->OnReceivedData(data, data_len);
+    request_info.peer->OnReceivedData(data, data_len);
   }
-}
-
-void ResourceDispatcher::OnDownloadedData(const IPC::Message& message,
-                                          int request_id,
-                                          int data_len) {
-  // Acknowledge the reception of this message.
-  message_sender()->Send(
-      new ViewHostMsg_DataDownloaded_ACK(message.routing_id(), request_id));
-
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
-    return;
-
-  RESOURCE_LOG("Dispatching " << data_len << " downloaded for " <<
-      request_info->peer->GetURLForDebugging().possibly_invalid_spec());
-  request_info->peer->OnDownloadedData(data_len);
 }
 
 void ResourceDispatcher::OnReceivedRedirect(
@@ -428,17 +421,22 @@ void ResourceDispatcher::OnReceivedRedirect(
     int request_id,
     const GURL& new_url,
     const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    // this might happen for kill()ed requests on the webkit end, so perhaps
+    // it shouldn't be a warning...
+    DLOG(WARNING) << "Got data for a nonexistent or finished request";
     return;
+  }
 
-  RESOURCE_LOG(
-      "Dispatching redirect for " <<
-      request_info->peer->GetURLForDebugging().possibly_invalid_spec());
+  PendingRequestInfo& request_info = it->second;
+
+  RESOURCE_LOG("Dispatching redirect for " <<
+               request_info.peer->GetURLForDebugging().possibly_invalid_spec());
 
   bool has_new_first_party_for_cookies = false;
   GURL new_first_party_for_cookies;
-  if (request_info->peer->OnReceivedRedirect(new_url, info,
+  if (request_info.peer->OnReceivedRedirect(new_url, info,
                                             &has_new_first_party_for_cookies,
                                             &new_first_party_for_cookies)) {
     message_sender()->Send(
@@ -454,25 +452,30 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
                                            const URLRequestStatus& status,
                                            const std::string& security_info,
                                            const base::Time& completion_time) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
+  PendingRequestList::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end()) {
+    // this might happen for kill()ed requests on the webkit end, so perhaps
+    // it shouldn't be a warning...
+    DLOG(WARNING) << "Got 'complete' for a nonexistent or finished request";
     return;
+  }
 
-  webkit_glue::ResourceLoaderBridge::Peer* peer = request_info->peer;
+  PendingRequestInfo& request_info = it->second;
+  webkit_glue::ResourceLoaderBridge::Peer* peer = request_info.peer;
 
   RESOURCE_LOG("Dispatching complete for " <<
-               peer->GetURLForDebugging().possibly_invalid_spec());
+               request_info.peer->GetURLForDebugging().possibly_invalid_spec());
 
   if (status.status() == URLRequestStatus::CANCELED &&
       status.os_error() != net::ERR_ABORTED) {
     // Resource canceled with a specific error are filtered.
     SecurityFilterPeer* new_peer =
         SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
-            request_info->resource_type,
-            request_info->peer,
+            request_info.resource_type,
+            request_info.peer,
             status.os_error());
     if (new_peer) {
-      request_info->peer = new_peer;
+      request_info.peer = new_peer;
       peer = new_peer;
     }
   }
@@ -549,7 +552,6 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
         ViewMsg_Resource_ReceivedCachedMetadata, OnReceivedCachedMetadata)
     IPC_MESSAGE_HANDLER(ViewMsg_Resource_ReceivedRedirect, OnReceivedRedirect)
     IPC_MESSAGE_HANDLER(ViewMsg_Resource_DataReceived, OnReceivedData)
-    IPC_MESSAGE_HANDLER(ViewMsg_Resource_DataDownloaded, OnDownloadedData)
     IPC_MESSAGE_HANDLER(ViewMsg_Resource_RequestComplete, OnRequestComplete)
   IPC_END_MESSAGE_MAP()
 }
@@ -602,7 +604,6 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
     case ViewMsg_Resource_ReceivedCachedMetadata::ID:
     case ViewMsg_Resource_ReceivedRedirect::ID:
     case ViewMsg_Resource_DataReceived::ID:
-    case ViewMsg_Resource_DataDownloaded::ID:
     case ViewMsg_Resource_RequestComplete::ID:
       return true;
 

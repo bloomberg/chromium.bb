@@ -82,10 +82,6 @@ class ResourceDispatcher {
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
 
-  // Helper to lookup the info based on the request_id.
-  // May return NULL if the request as been canceled from the client side.
-  PendingRequestInfo* GetPendingRequestInfo(int request_id);
-
   // Message response handlers, called by the message handler for this process.
   void OnUploadProgress(
       const IPC::Message& message,
@@ -103,10 +99,6 @@ class ResourceDispatcher {
       const IPC::Message& message,
       int request_id,
       base::SharedMemoryHandle data,
-      int data_len);
-  void OnDownloadedData(
-      const IPC::Message& message,
-      int request_id,
       int data_len);
   void OnRequestComplete(
       int request_id,

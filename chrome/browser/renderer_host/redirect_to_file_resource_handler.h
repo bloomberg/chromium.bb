@@ -21,10 +21,6 @@ class FileStream;
 class GrowableIOBuffer;
 }
 
-namespace webkit_blob {
-class DeletableFileReference;
-}
-
 // Redirects network data to a file.  This is intended to be layered in front
 // of either the AsyncResourceHandler or the SyncResourceHandler.
 class RedirectToFileResourceHandler : public ResourceHandler {
@@ -75,13 +71,10 @@ class RedirectToFileResourceHandler : public ResourceHandler {
   bool buf_write_pending_;
   int write_cursor_;
 
+  FilePath file_path_;
   scoped_ptr<net::FileStream> file_stream_;
   net::CompletionCallbackImpl<RedirectToFileResourceHandler> write_callback_;
   bool write_callback_pending_;
-
-  // We create a DeletableFileReference for the temp file created as
-  // a result of the download.
-  scoped_refptr<webkit_blob::DeletableFileReference> deletable_file_;
 
   DISALLOW_COPY_AND_ASSIGN(RedirectToFileResourceHandler);
 };
