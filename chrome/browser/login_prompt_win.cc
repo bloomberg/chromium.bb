@@ -12,6 +12,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/views/login_view.h"
 #include "chrome/common/notification_service.h"
@@ -104,7 +105,11 @@ class LoginHandlerWin : public LoginHandler,
                                            std::wstring explanation) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-    LoginView* view = new LoginView(explanation);
+    TabContents* tab_contents = GetTabContentsForLogin();
+    bool should_focus_view = !tab_contents->delegate() ||
+        tab_contents->delegate()->ShouldFocusConstrainedWindow(tab_contents);
+
+    LoginView* view = new LoginView(explanation, should_focus_view);
 
     // Set the model for the login view. The model (password manager) is owned
     // by the view's parent TabContents, so natural destruction order means we

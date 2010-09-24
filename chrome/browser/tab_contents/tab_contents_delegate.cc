@@ -17,6 +17,13 @@ TabContents* TabContentsDelegate::GetConstrainingContents(TabContents* source) {
   return source;
 }
 
+bool TabContentsDelegate::ShouldFocusConstrainedWindow(TabContents* source) {
+  return true;
+}
+
+void TabContentsDelegate::WillShowConstrainedWindow(TabContents* source) {
+}
+
 void TabContentsDelegate::ContentsMouseEvent(
     TabContents* source, const gfx::Point& location, bool motion) {
 }

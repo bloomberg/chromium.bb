@@ -96,9 +96,10 @@ class MatchPreview {
   // which results in updating the omnibox.
   void SetCompleteSuggestedText(const string16& suggested_text);
 
-  // Invoked when the preview paints. This notifies the delegate the preview is
-  // ready to be shown.
-  void PreviewDidPaint();
+  // Invoked to show the preview. This is invoked in two possible cases: when
+  // the renderer paints, or when an auth dialog is shown. This notifies the
+  // delegate the preview is ready to be shown.
+  void ShowPreview();
 
   // Invoked once the page has finished loading and the script has been sent.
   void PageFinishedLoading();

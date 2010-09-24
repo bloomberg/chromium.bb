@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,8 @@ using views::GridLayout;
 ///////////////////////////////////////////////////////////////////////////////
 // LoginView, public:
 
-LoginView::LoginView(const std::wstring& explanation)
+LoginView::LoginView(const std::wstring& explanation,
+                     bool focus_view)
     : username_field_(new views::Textfield),
       password_field_(new views::Textfield(views::Textfield::STYLE_PASSWORD)),
       username_label_(new views::Label(
@@ -34,7 +35,8 @@ LoginView::LoginView(const std::wstring& explanation)
       message_label_(new views::Label(explanation)),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       login_model_(NULL),
-      focus_delayed_(false) {
+      focus_delayed_(false),
+      focus_view_(focus_view) {
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   message_label_->SetAllowCharacterBreak(true);
@@ -100,6 +102,9 @@ void LoginView::SetModel(LoginModel* model) {
 }
 
 void LoginView::RequestFocus() {
+  if (!focus_view_)
+    return;
+
   MessageLoop::current()->PostTask(FROM_HERE,
     focus_grabber_factory_.NewRunnableMethod(&LoginView::FocusFirstField));
 }
@@ -108,7 +113,7 @@ void LoginView::RequestFocus() {
 // LoginView, views::View, views::LoginModelObserver overrides:
 
 void LoginView::ViewHierarchyChanged(bool is_add, View *parent, View *child) {
-  if (is_add && child == this) {
+  if (is_add && child == this && focus_view_) {
     MessageLoop::current()->PostTask(FROM_HERE,
         focus_grabber_factory_.NewRunnableMethod(&LoginView::FocusFirstField));
   }
@@ -117,7 +122,7 @@ void LoginView::ViewHierarchyChanged(bool is_add, View *parent, View *child) {
 void LoginView::NativeViewHierarchyChanged(bool attached,
                                            gfx::NativeView native_view,
                                            views::RootView* root_view) {
-  if (focus_delayed_ && attached) {
+  if (focus_delayed_ && attached && focus_view_) {
     focus_delayed_ = false;
     MessageLoop::current()->PostTask(FROM_HERE,
         focus_grabber_factory_.NewRunnableMethod(&LoginView::FocusFirstField));
@@ -137,6 +142,7 @@ void LoginView::OnAutofillDataAvailable(const std::wstring& username,
 // LoginView, private:
 
 void LoginView::FocusFirstField() {
+  DCHECK(focus_view_);
   if (GetFocusManager()) {
     username_field_->RequestFocus();
   } else {

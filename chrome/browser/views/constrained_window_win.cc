@@ -563,15 +563,19 @@ views::NonClientFrameView* ConstrainedWindowWin::CreateFrameViewForWindow() {
 }
 
 void ConstrainedWindowWin::FocusConstrainedWindow() {
-  if (GetDelegate() && GetDelegate()->GetInitiallyFocusedView())
+  if ((!owner_->delegate() ||
+       owner_->delegate()->ShouldFocusConstrainedWindow(owner_)) &&
+      GetDelegate() && GetDelegate()->GetInitiallyFocusedView()) {
     GetDelegate()->GetInitiallyFocusedView()->RequestFocus();
+  }
 }
 
 void ConstrainedWindowWin::ShowConstrainedWindow() {
+  if (owner_->delegate())
+    owner_->delegate()->WillShowConstrainedWindow(owner_);
   ActivateConstrainedWindow();
   FocusConstrainedWindow();
 }
-
 
 void ConstrainedWindowWin::CloseConstrainedWindow() {
   // Broadcast to all observers of NOTIFY_CWINDOW_CLOSED.

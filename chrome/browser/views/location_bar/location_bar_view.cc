@@ -1199,19 +1199,17 @@ void LocationBarView::OnTemplateURLModelChanged() {
 bool LocationBarView::ShouldCommitMatchPreviewOnFocusLoss(
     gfx::NativeView view_gaining_focus) {
   // The MatchPreview is active. Destroy it if the user didn't click on the
-  // RenderWidgetHostView (or one of its children).
+  // TabContents (or one of its children).
 #if defined(OS_WIN)
   MatchPreview* match_preview = delegate_->GetMatchPreview();
   if (!view_gaining_focus ||
       !match_preview->preview_contents()->GetRenderWidgetHostView()) {
     return false;
   }
-  RenderWidgetHostView* rwhv =
-      match_preview->preview_contents()->GetRenderWidgetHostView();
-  gfx::NativeView rwhv_native_view = rwhv->GetNativeView();
+  gfx::NativeView tab_view = match_preview->preview_contents()->GetNativeView();
   gfx::NativeView view_gaining_focus_ancestor = view_gaining_focus;
   while (view_gaining_focus_ancestor &&
-         view_gaining_focus_ancestor != rwhv_native_view) {
+         view_gaining_focus_ancestor != tab_view) {
     view_gaining_focus_ancestor = ::GetParent(view_gaining_focus_ancestor);
   }
   return view_gaining_focus_ancestor != NULL;

@@ -215,7 +215,7 @@ class MatchPreview::PaintObserverImpl : public RenderWidgetHost::PaintObserver {
   }
 
   virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh) {
-    match_preview_->PreviewDidPaint();
+    match_preview_->ShowPreview();
     rwh->set_paint_observer(NULL);
     // WARNING: we've been deleted.
   }
@@ -304,6 +304,24 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void DetachContents(TabContents* source) {}
   virtual bool IsPopup(const TabContents* source) const {
     return false;
+  }
+  virtual bool ShouldFocusConstrainedWindow(TabContents* source) {
+    // Return false so that constrained windows are not initially focused. If
+    // we did otherwise the preview would prematurely get committed when focus
+    // goes to the constrained window.
+    return false;
+  }
+  virtual void WillShowConstrainedWindow(TabContents* source) {
+    if (!match_preview_->is_active()) {
+      // A constrained window shown for an auth may not paint. Show the preview
+      // contents.
+      if (installed_paint_observer_) {
+        source->GetRenderWidgetHostView()->GetRenderWidgetHost()->
+            set_paint_observer(NULL);
+      }
+      installed_paint_observer_ = true;
+      match_preview_->ShowPreview();
+    }
   }
   virtual TabContents* GetConstrainingContents(TabContents* source) {
     return NULL;
@@ -608,7 +626,7 @@ void MatchPreview::SetCompleteSuggestedText(
       complete_suggested_text_.substr(user_text_.size()));
 }
 
-void MatchPreview::PreviewDidPaint() {
+void MatchPreview::ShowPreview() {
   DCHECK(!is_active_);
   is_active_ = true;
   delegate_->ShowMatchPreview();

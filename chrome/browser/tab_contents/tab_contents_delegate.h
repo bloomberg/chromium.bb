@@ -102,6 +102,12 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // returns |source|.
   virtual TabContents* GetConstrainingContents(TabContents* source);
 
+  // Returns true if constrained windows should be focused. Default is true.
+  virtual bool ShouldFocusConstrainedWindow(TabContents* source);
+
+  // Invoked prior to the TabContents showing a constrained window.
+  virtual void WillShowConstrainedWindow(TabContents* source);
+
   // Notification that some of our content has changed size as
   // part of an animation.
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) = 0;

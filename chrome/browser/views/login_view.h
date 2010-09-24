@@ -20,7 +20,8 @@ class LoginModel;
 // for HTTP/FTP authentication.
 class LoginView : public views::View, public LoginModelObserver {
  public:
-  explicit LoginView(const std::wstring& explanation);
+  // |focus_view| indicates if the view can be focused.
+  LoginView(const std::wstring& explanation, bool focus_view);
   virtual ~LoginView();
 
   // Access the data in the username/password text fields.
@@ -68,8 +69,11 @@ class LoginView : public views::View, public LoginModelObserver {
 
   ScopedRunnableMethodFactory<LoginView> focus_grabber_factory_;
 
+  // See description above constructor.
+  const bool focus_view_;
+
   // Indicates that this view was created when focus manager was unavailable
-  // (on the hidden tab, for example).
+  // (on the hidden tab, for example). This is only used if focus_view_ is true.
   bool focus_delayed_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginView);
