@@ -130,10 +130,6 @@ void DownloadManager::Shutdown() {
 
   download_history_.reset();
 
-  // If we had pending downloads, they're going to be canceled now.
-  // Make sure the icon reflects the new status.
-  UpdateAppIcon();
-
   shutdown_needed_ = false;
 }
 
