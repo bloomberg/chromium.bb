@@ -630,6 +630,11 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 #if !defined(OS_MACOSX)
   // Alt+D should move the focus to the location entry.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccessD));
+
+  // TODO(isherman): This is an experimental change to help diagnose
+  // http://crbug.com/55713
+  ui_test_utils::RunAllPendingInMessageLoop();
+
   EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
   // No element should be focused, as Alt+D was handled by the browser.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
