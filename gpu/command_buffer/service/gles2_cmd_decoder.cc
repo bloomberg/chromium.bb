@@ -2616,10 +2616,7 @@ bool GLES2DecoderImpl::GetHelper(
       return true;
     default:
       *num_written = util_.GLGetNumValuesReturned(pname);
-      if (params) {
-        glGetIntegerv(pname, params);
-      }
-      return true;
+      return false;
   }
 }
 

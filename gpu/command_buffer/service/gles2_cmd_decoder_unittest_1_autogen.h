@@ -1063,7 +1063,7 @@ TEST_F(GLES2DecoderTest1, GetBooleanvValidArgs) {
   SpecializedSetup<GetBooleanv, 0>(true);
   typedef GetBooleanv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(*gl_, GetIntegerv(GL_ACTIVE_TEXTURE, _));
+  EXPECT_CALL(*gl_, GetBooleanv(GL_ACTIVE_TEXTURE, result->GetData()));
   result->size = 0;
   GetBooleanv cmd;
   cmd.Init(GL_ACTIVE_TEXTURE, shared_memory_id_, shared_memory_offset_);
@@ -1075,7 +1075,7 @@ TEST_F(GLES2DecoderTest1, GetBooleanvValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest1, GetBooleanvInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(0);
+  EXPECT_CALL(*gl_, GetBooleanv(_, _)).Times(0);
   SpecializedSetup<GetBooleanv, 0>(false);
   GetBooleanv::Result* result =
       static_cast<GetBooleanv::Result*>(shared_memory_address_);
@@ -1088,7 +1088,7 @@ TEST_F(GLES2DecoderTest1, GetBooleanvInvalidArgs0_0) {
 }
 
 TEST_F(GLES2DecoderTest1, GetBooleanvInvalidArgs1_0) {
-  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(0);
+  EXPECT_CALL(*gl_, GetBooleanv(_, _)).Times(0);
   SpecializedSetup<GetBooleanv, 0>(false);
   GetBooleanv::Result* result =
       static_cast<GetBooleanv::Result*>(shared_memory_address_);
@@ -1100,7 +1100,7 @@ TEST_F(GLES2DecoderTest1, GetBooleanvInvalidArgs1_0) {
 }
 
 TEST_F(GLES2DecoderTest1, GetBooleanvInvalidArgs1_1) {
-  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(0);
+  EXPECT_CALL(*gl_, GetBooleanv(_, _)).Times(0);
   SpecializedSetup<GetBooleanv, 0>(false);
   GetBooleanv::Result* result =
       static_cast<GetBooleanv::Result*>(shared_memory_address_);
@@ -1217,7 +1217,7 @@ TEST_F(GLES2DecoderTest1, GetFloatvValidArgs) {
   SpecializedSetup<GetFloatv, 0>(true);
   typedef GetFloatv::Result Result;
   Result* result = static_cast<Result*>(shared_memory_address_);
-  EXPECT_CALL(*gl_, GetIntegerv(GL_ACTIVE_TEXTURE, _));
+  EXPECT_CALL(*gl_, GetFloatv(GL_ACTIVE_TEXTURE, result->GetData()));
   result->size = 0;
   GetFloatv cmd;
   cmd.Init(GL_ACTIVE_TEXTURE, shared_memory_id_, shared_memory_offset_);
@@ -1229,7 +1229,7 @@ TEST_F(GLES2DecoderTest1, GetFloatvValidArgs) {
 }
 
 TEST_F(GLES2DecoderTest1, GetFloatvInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(0);
+  EXPECT_CALL(*gl_, GetFloatv(_, _)).Times(0);
   SpecializedSetup<GetFloatv, 0>(false);
   GetFloatv::Result* result =
       static_cast<GetFloatv::Result*>(shared_memory_address_);
@@ -1242,7 +1242,7 @@ TEST_F(GLES2DecoderTest1, GetFloatvInvalidArgs0_0) {
 }
 
 TEST_F(GLES2DecoderTest1, GetFloatvInvalidArgs1_0) {
-  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(0);
+  EXPECT_CALL(*gl_, GetFloatv(_, _)).Times(0);
   SpecializedSetup<GetFloatv, 0>(false);
   GetFloatv::Result* result =
       static_cast<GetFloatv::Result*>(shared_memory_address_);
@@ -1254,7 +1254,7 @@ TEST_F(GLES2DecoderTest1, GetFloatvInvalidArgs1_0) {
 }
 
 TEST_F(GLES2DecoderTest1, GetFloatvInvalidArgs1_1) {
-  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(0);
+  EXPECT_CALL(*gl_, GetFloatv(_, _)).Times(0);
   SpecializedSetup<GetFloatv, 0>(false);
   GetFloatv::Result* result =
       static_cast<GetFloatv::Result*>(shared_memory_address_);

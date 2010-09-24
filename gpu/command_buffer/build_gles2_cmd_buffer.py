@@ -1233,7 +1233,7 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'result': ['SizedResult<GLboolean>'],
     'decoder_func': 'DoGetBooleanv',
-    'gl_test_func': 'glGetIntegerv',
+    'gl_test_func': 'glGetBooleanv',
   },
   'GetBufferParameteriv': {'type': 'GETn', 'result': ['SizedResult<GLint>']},
   'GetError': {
@@ -1246,7 +1246,7 @@ _FUNCTION_INFO = {
     'type': 'GETn',
     'result': ['SizedResult<GLfloat>'],
     'decoder_func': 'DoGetFloatv',
-    'gl_test_func': 'glGetIntegerv',
+    'gl_test_func': 'glGetFloatv',
   },
   'GetFramebufferAttachmentParameteriv': {
     'type': 'GETn',
