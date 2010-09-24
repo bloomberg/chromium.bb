@@ -505,11 +505,24 @@ void RenderWidget::DoDeferredUpdate() {
   gfx::Rect scroll_damage = update.GetScrollDamage();
   gfx::Rect bounds = update.GetPaintBounds().Union(scroll_damage);
 
+  // A plugin may be able to do an optimized paint. First check this, in which
+  // case we can skip all of the bitmap generation and regular paint code.
+  TransportDIB::Id dib_id = TransportDIB::Id();
+  TransportDIB* dib = NULL;
   std::vector<gfx::Rect> copy_rects;
-  if (!is_gpu_rendering_active_) {
+  gfx::Rect optimized_copy_rect, optimized_copy_location;
+  if (update.scroll_rect.IsEmpty() &&
+      !is_gpu_rendering_active_ &&
+      GetBitmapForOptimizedPluginPaint(bounds, &dib, &optimized_copy_location,
+                                       &optimized_copy_rect)) {
+    bounds = optimized_copy_location;
+    copy_rects.push_back(optimized_copy_rect);
+    dib_id = dib->id();
+  } else if (!is_gpu_rendering_active_) {
     // Compute a buffer for painting and cache it.
-    scoped_ptr<skia::PlatformCanvas> canvas
-      (RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_, bounds));
+    scoped_ptr<skia::PlatformCanvas> canvas(
+        RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
+                                                   bounds));
     if (!canvas.get()) {
       NOTREACHED();
       return;
@@ -538,6 +551,8 @@ void RenderWidget::DoDeferredUpdate() {
 
     for (size_t i = 0; i < copy_rects.size(); ++i)
       PaintRect(copy_rects[i], bounds.origin(), canvas.get());
+
+    dib_id = current_paint_buf_->id();
   } else {  // Accelerated compositing path
     // Begin painting.
     bool finish = next_paint_is_resize_ack();
@@ -546,8 +561,7 @@ void RenderWidget::DoDeferredUpdate() {
 
   // sending an ack to browser process that the paint is complete...
   ViewHostMsg_UpdateRect_Params params;
-  params.bitmap =
-      current_paint_buf_ ? current_paint_buf_->id() : TransportDIB::Id();
+  params.bitmap = dib_id;
   params.bitmap_rect = bounds;
   params.dx = update.scroll_delta.x();
   params.dy = update.scroll_delta.y();
@@ -887,6 +901,15 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (!webwidget_)
     return;
   webwidget_->setTextDirection(direction);
+}
+
+bool RenderWidget::GetBitmapForOptimizedPluginPaint(
+    const gfx::Rect& paint_bounds,
+    TransportDIB** dib,
+    gfx::Rect* location,
+    gfx::Rect* clip) {
+  // Normal RenderWidgets don't support optimized plugin painting.
+  return false;
 }
 
 void RenderWidget::SetHidden(bool hidden) {

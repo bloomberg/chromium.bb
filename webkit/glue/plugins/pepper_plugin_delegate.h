@@ -44,6 +44,8 @@ struct PP_VideoCompressedDataBuffer_Dev;
 struct PP_VideoDecoderConfig_Dev;
 struct PP_VideoUncompressedDataBuffer_Dev;
 
+class TransportDIB;
+
 namespace pepper {
 
 class FileIO;
@@ -67,6 +69,8 @@ class PluginDelegate {
     // this image. This is used by NativeClient to send the image to the
     // out-of-process plugin. Returns 0 on failure.
     virtual intptr_t GetSharedMemoryHandle() const = 0;
+
+    virtual TransportDIB* GetTransportDIB() const = 0;
   };
 
   class PlatformContext3D {

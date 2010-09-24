@@ -619,6 +619,11 @@ class RenderView : public RenderWidget,
                         const gfx::Rect& resizer_rect);
   virtual void DidInitiatePaint();
   virtual void DidFlushPaint();
+  virtual bool GetBitmapForOptimizedPluginPaint(
+      const gfx::Rect& paint_bounds,
+      TransportDIB** dib,
+      gfx::Rect* location,
+      gfx::Rect* clip);
   virtual void DidHandleKeyEvent();
   virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
   virtual void OnSetFocus(bool enable);

@@ -59,6 +59,7 @@
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_object.h"
 #include "webkit/glue/plugins/pepper_private.h"
+#include "webkit/glue/plugins/pepper_private2.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
 #include "webkit/glue/plugins/pepper_scrollbar.h"
 #include "webkit/glue/plugins/pepper_transport.h"
@@ -70,6 +71,7 @@
 #include "webkit/glue/plugins/pepper_video_decoder.h"
 #include "webkit/glue/plugins/pepper_widget.h"
 #include "webkit/glue/plugins/ppb_private.h"
+#include "webkit/glue/plugins/ppb_private2.h"
 
 #ifdef ENABLE_GPU
 #include "webkit/glue/plugins/pepper_graphics_3d.h"
@@ -257,6 +259,8 @@ const void* GetInterface(const char* name) {
     return UrlUtil::GetInterface();
   if (strcmp(name, PPB_PRIVATE_INTERFACE) == 0)
     return Private::GetInterface();
+  if (strcmp(name, PPB_PRIVATE2_INTERFACE) == 0)
+    return Private2::GetInterface();
   if (strcmp(name, PPB_FILECHOOSER_DEV_INTERFACE) == 0)
     return FileChooser::GetInterface();
   if (strcmp(name, PPB_VIDEODECODER_DEV_INTERFACE) == 0)

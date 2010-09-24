@@ -19,6 +19,10 @@
 class FilePath;
 class RenderView;
 
+namespace gfx {
+class Rect;
+}
+
 namespace pepper {
 class FileIO;
 class PluginInstance;
@@ -28,6 +32,8 @@ namespace WebKit {
 class WebFileChooserCompletion;
 struct WebFileChooserParams;
 }
+
+class TransportDIB;
 
 class PepperPluginDelegateImpl
     : public pepper::PluginDelegate,
@@ -40,6 +46,14 @@ class PepperPluginDelegateImpl
   // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
+
+  // Called by RenderView to implement the corresponding function in its base
+  // class RenderWidget (see that for more).
+  bool GetBitmapForOptimizedPluginPaint(
+      const gfx::Rect& paint_bounds,
+      TransportDIB** dib,
+      gfx::Rect* location,
+      gfx::Rect* clip);
 
   // Called by RenderView when ViewMsg_AsyncOpenFile_ACK.
   void OnAsyncFileOpened(base::PlatformFileError error_code,

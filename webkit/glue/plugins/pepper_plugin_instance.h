@@ -30,6 +30,7 @@ struct PPP_Instance;
 struct PPP_Zoom_Dev;
 
 class SkBitmap;
+class TransportDIB;
 
 namespace gfx {
 class Rect;
@@ -77,6 +78,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   int find_identifier() const { return find_identifier_; }
 
+  void set_always_on_top(bool on_top) { always_on_top_ = on_top; }
+
   PP_Instance GetPPInstance();
 
   // Paints the current backing store to the web page.
@@ -119,6 +122,16 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // the plugin for DeviceContext2D.
   void ViewInitiatedPaint();
   void ViewFlushedPaint();
+
+  // If this plugin can be painted merely by copying the backing store to the
+  // screen, and the plugin bounds encloses the given paint bounds, returns
+  // true. In this case, the location, clipping, and ID of the backing store
+  // will be filled into the given output parameters.
+  bool GetBitmapForOptimizedPluginPaint(
+      const gfx::Rect& paint_bounds,
+      TransportDIB** dib,
+      gfx::Rect* dib_bounds,
+      gfx::Rect* clip);
 
   string16 GetSelectedText(bool html);
   void Zoom(float factor, bool text_only);
@@ -231,6 +244,10 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // Containes the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;
+
+  // Set to true if this plugin thinks it will always be on top. This allows us
+  // to use a more optimized painting path in some cases.
+  bool always_on_top_;
 
   // Plugin container for fullscreen mode. NULL if not in fullscreen mode.
   FullscreenContainer* fullscreen_container_;

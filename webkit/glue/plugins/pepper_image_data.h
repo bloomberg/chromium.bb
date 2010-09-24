@@ -37,6 +37,10 @@ class ImageData : public Resource {
   // invalid or not mapped. See ImageDataAutoMapper below.
   bool is_mapped() const { return !!mapped_canvas_.get(); }
 
+  PluginDelegate::PlatformImage2D* platform_image() const {
+    return platform_image_.get();
+  }
+
   // Returns a pointer to the interface implementing PPB_ImageData that is
   // exposed to the plugin.
   static const PPB_ImageData* GetInterface();
