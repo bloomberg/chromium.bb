@@ -6,8 +6,8 @@
 Import('env')
 
 # TODO(mseaborn): Extend the ARM and x86-64 validators to support this.
-if not (env['BUILD_ARCHITECTURE'] == 'x86' and
-        env['BUILD_SUBARCH'] == '32'):
+if not (env['TARGET_ARCHITECTURE'] == 'x86' and
+        env['TARGET_SUBARCH'] == '32'):
   Return()
 
 env.ComponentProgram('ncval_stubout',
