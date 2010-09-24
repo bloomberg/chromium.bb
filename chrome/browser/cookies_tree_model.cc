@@ -182,6 +182,22 @@ CookieTreeSessionStorageNode::CookieTreeSessionStorageNode(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeIndexedDBNode, public:
+
+CookieTreeIndexedDBNode::CookieTreeIndexedDBNode(
+    BrowsingDataIndexedDBHelper::IndexedDBInfo* indexed_db_info)
+    : CookieTreeNode(indexed_db_info->database_name.empty() ?
+          l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
+          UTF8ToUTF16(indexed_db_info->database_name)),
+      indexed_db_info_(indexed_db_info) {
+}
+
+void CookieTreeIndexedDBNode::DeleteStoredObjects() {
+  GetModel()->indexed_db_helper_->DeleteIndexedDBFile(
+      indexed_db_info_->file_path);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeRootNode, public:
 
 CookieTreeOriginNode* CookieTreeRootNode::GetOrCreateOriginNode(
@@ -223,6 +239,7 @@ CookieTreeOriginNode::CookieTreeOriginNode(const GURL& url)
       local_storages_child_(NULL),
       session_storages_child_(NULL),
       appcaches_child_(NULL),
+      indexed_dbs_child_(NULL),
       url_(url) {}
 
 
@@ -266,6 +283,14 @@ CookieTreeAppCachesNode* CookieTreeOriginNode::GetOrCreateAppCachesNode() {
   appcaches_child_ = new CookieTreeAppCachesNode;
   AddChildSortedByTitle(appcaches_child_);
   return appcaches_child_;
+}
+
+CookieTreeIndexedDBsNode* CookieTreeOriginNode::GetOrCreateIndexedDBsNode() {
+  if (indexed_dbs_child_)
+    return indexed_dbs_child_;
+  indexed_dbs_child_ = new CookieTreeIndexedDBsNode;
+  AddChildSortedByTitle(indexed_dbs_child_);
+  return indexed_dbs_child_;
 }
 
 void CookieTreeOriginNode::CreateContentException(
@@ -319,6 +344,13 @@ CookieTreeSessionStoragesNode::CookieTreeSessionStoragesNode()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeIndexedDBsNode, public:
+
+CookieTreeIndexedDBsNode::CookieTreeIndexedDBsNode()
+    : CookieTreeNode(l10n_util::GetStringUTF16(IDS_COOKIES_INDEXED_DB)) {
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeNode, protected
 
 bool CookieTreeNode::NodeTitleComparator::operator() (
@@ -347,7 +379,8 @@ CookiesTreeModel::CookiesTreeModel(
     BrowsingDataDatabaseHelper* database_helper,
     BrowsingDataLocalStorageHelper* local_storage_helper,
     BrowsingDataLocalStorageHelper* session_storage_helper,
-    BrowsingDataAppCacheHelper* appcache_helper)
+    BrowsingDataAppCacheHelper* appcache_helper,
+    BrowsingDataIndexedDBHelper* indexed_db_helper)
     : ALLOW_THIS_IN_INITIALIZER_LIST(TreeNodeModel<CookieTreeNode>(
           new CookieTreeRootNode(this))),
       cookie_monster_(cookie_monster),
@@ -355,6 +388,7 @@ CookiesTreeModel::CookiesTreeModel(
       database_helper_(database_helper),
       local_storage_helper_(local_storage_helper),
       session_storage_helper_(session_storage_helper),
+      indexed_db_helper_(indexed_db_helper),
       batch_update_(0) {
   LoadCookies();
   DCHECK(database_helper_);
@@ -374,6 +408,11 @@ CookiesTreeModel::CookiesTreeModel(
     appcache_helper_->StartFetching(NewCallback(
         this, &CookiesTreeModel::OnAppCacheModelInfoLoaded));
   }
+
+  if (indexed_db_helper_) {
+    indexed_db_helper_->StartFetching(NewCallback(
+        this, &CookiesTreeModel::OnIndexedDBModelInfoLoaded));
+  }
 }
 
 CookiesTreeModel::~CookiesTreeModel() {
@@ -383,6 +422,8 @@ CookiesTreeModel::~CookiesTreeModel() {
     session_storage_helper_->CancelNotification();
   if (appcache_helper_)
     appcache_helper_->CancelNotification();
+  if (indexed_db_helper_)
+    indexed_db_helper_->CancelNotification();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -422,6 +463,9 @@ int CookiesTreeModel::GetIconIndex(TreeModelNode* node) {
       return DATABASE;  // ditto
       break;
     case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
+      return DATABASE;  // ditto
+      break;
+    case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
       return DATABASE;  // ditto
       break;
     default:
@@ -493,6 +537,7 @@ void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   PopulateLocalStorageInfoWithFilter(filter);
   PopulateSessionStorageInfoWithFilter(filter);
   PopulateAppCacheInfoWithFilter(filter);
+  PopulateIndexedDBInfoWithFilter(filter);
   NotifyObserverTreeNodeChanged(root);
   NotifyObserverEndBatch();
 }
@@ -639,6 +684,39 @@ void CookiesTreeModel::PopulateSessionStorageInfoWithFilter(
           origin_node->GetOrCreateSessionStoragesNode();
       session_storages_node->AddSessionStorageNode(
           new CookieTreeSessionStorageNode(&(*session_storage_info)));
+    }
+  }
+  NotifyObserverTreeNodeChanged(root);
+  NotifyObserverEndBatch();
+}
+
+void CookiesTreeModel::OnIndexedDBModelInfoLoaded(
+    const IndexedDBInfoList& indexed_db_info) {
+  indexed_db_info_list_ = indexed_db_info;
+  PopulateIndexedDBInfoWithFilter(std::wstring());
+}
+
+void CookiesTreeModel::PopulateIndexedDBInfoWithFilter(
+    const std::wstring& filter) {
+  if (indexed_db_info_list_.empty())
+    return;
+  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+  NotifyObserverBeginBatch();
+  for (IndexedDBInfoList::iterator indexed_db_info =
+       indexed_db_info_list_.begin();
+       indexed_db_info != indexed_db_info_list_.end();
+       ++indexed_db_info) {
+    GURL origin(indexed_db_info->origin);
+
+    if (!filter.size() ||
+        (CookieTreeOriginNode::TitleForUrl(origin).find(filter) !=
+         std::wstring::npos)) {
+      CookieTreeOriginNode* origin_node =
+          root->GetOrCreateOriginNode(origin);
+      CookieTreeIndexedDBsNode* indexed_dbs_node =
+          origin_node->GetOrCreateIndexedDBsNode();
+      indexed_dbs_node->AddIndexedDBNode(
+          new CookieTreeIndexedDBNode(&(*indexed_db_info)));
     }
   }
   NotifyObserverTreeNodeChanged(root);

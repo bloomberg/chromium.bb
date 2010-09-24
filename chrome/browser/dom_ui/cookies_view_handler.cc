@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
@@ -96,7 +97,7 @@ bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       const BrowsingDataDatabaseHelper::DatabaseInfo& database_info =
           *node.GetDetailedInfo().database_info;
 
-      dict->SetString(kKeyName,database_info.database_name.empty() ?
+      dict->SetString(kKeyName, database_info.database_name.empty() ?
           l10n_util::GetStringUTF8(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
           database_info.database_name);
       dict->SetString(kKeyDesc, database_info.description);
@@ -143,6 +144,26 @@ bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
           base::TimeFormatFriendlyDateAndTime(appcache_info.creation_time)));
       dict->SetString(kKeyAccessed, WideToUTF8(
           base::TimeFormatFriendlyDateAndTime(appcache_info.last_access_time)));
+
+      break;
+    }
+    case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB: {
+      dict->SetString(kKeyType, "indexed_db");
+      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
+
+      const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info =
+          *node.GetDetailedInfo().indexed_db_info;
+
+      dict->SetString(kKeyName, indexed_db_info.database_name.empty() ?
+          l10n_util::GetStringUTF8(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
+          indexed_db_info.database_name);
+      dict->SetString(kKeyOrigin, indexed_db_info.origin);
+      dict->SetString(kKeySize,
+          FormatBytes(indexed_db_info.size,
+                      GetByteDisplayUnits(indexed_db_info.size),
+                      true));
+      dict->SetString(kKeyModified, WideToUTF8(
+          base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified)));
 
       break;
     }
@@ -201,6 +222,14 @@ void CookiesViewHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
   localized_strings->SetString("label_local_storage_origin",
       l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL));
+  localized_strings->SetString("label_indexed_db_name",
+      l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL));
+  localized_strings->SetString("label_indexed_db_size",
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL));
+  localized_strings->SetString("label_indexed_db_last_modified",
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
+  localized_strings->SetString("label_indexed_db_origin",
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL));
   localized_strings->SetString("label_app_cache_manifest",
       l10n_util::GetStringUTF16(IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL));
   localized_strings->SetString("label_cookie_last_accessed",
@@ -229,7 +258,8 @@ void CookiesViewHandler::Initialize() {
       new BrowsingDataDatabaseHelper(profile),
       new BrowsingDataLocalStorageHelper(profile),
       NULL,
-      new BrowsingDataAppCacheHelper(profile)));
+      new BrowsingDataAppCacheHelper(profile),
+      BrowsingDataIndexedDBHelper::Create(profile)));
   cookies_tree_model_->AddObserver(this);
 }
 

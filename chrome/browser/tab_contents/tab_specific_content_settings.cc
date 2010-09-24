@@ -260,6 +260,10 @@ void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
 
 CookiesTreeModel*
 TabSpecificContentSettings::LocalSharedObjectsContainer::GetCookiesTreeModel() {
-  return new CookiesTreeModel(
-      cookies_, databases_, local_storages_, session_storages_, appcaches_);
+  return new CookiesTreeModel(cookies_,
+                              databases_,
+                              local_storages_,
+                              session_storages_,
+                              appcaches_,
+                              indexed_dbs_);
 }

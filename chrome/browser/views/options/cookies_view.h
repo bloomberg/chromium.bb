@@ -30,6 +30,7 @@ class AppCacheInfoView;
 class CookieInfoView;
 class CookiesTreeView;
 class DatabaseInfoView;
+class IndexedDBInfoView;
 class LocalStorageInfoView;
 class Profile;
 class Timer;
@@ -134,6 +135,7 @@ class CookiesView : public CookiesTreeModel::Observer,
   DatabaseInfoView* database_info_view_;
   LocalStorageInfoView* local_storage_info_view_;
   AppCacheInfoView* appcache_info_view_;
+  IndexedDBInfoView* indexed_db_info_view_;
   views::NativeButton* remove_button_;
   views::NativeButton* remove_all_button_;
 

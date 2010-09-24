@@ -50,11 +50,13 @@ void CookiesView::Show(
     Profile* profile,
     BrowsingDataDatabaseHelper* browsing_data_database_helper,
     BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper,
-    BrowsingDataAppCacheHelper* browsing_data_appcache_helper) {
+    BrowsingDataAppCacheHelper* browsing_data_appcache_helper,
+    BrowsingDataIndexedDBHelper* browsing_data_indexed_db_helper) {
   DCHECK(profile);
   DCHECK(browsing_data_database_helper);
   DCHECK(browsing_data_local_storage_helper);
   DCHECK(browsing_data_appcache_helper);
+  DCHECK(browsing_data_indexed_db_helper);
 
   // If there's already an existing editor window, activate it.
   if (instance_) {
@@ -64,7 +66,8 @@ void CookiesView::Show(
                                 profile,
                                 browsing_data_database_helper,
                                 browsing_data_local_storage_helper,
-                                browsing_data_appcache_helper);
+                                browsing_data_appcache_helper,
+                                browsing_data_indexed_db_helper);
   }
 }
 
@@ -73,11 +76,13 @@ CookiesView::CookiesView(
     Profile* profile,
     BrowsingDataDatabaseHelper* browsing_data_database_helper,
     BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper,
-    BrowsingDataAppCacheHelper* browsing_data_appcache_helper)
+    BrowsingDataAppCacheHelper* browsing_data_appcache_helper,
+    BrowsingDataIndexedDBHelper* browsing_data_indexed_db_helper)
     : profile_(profile),
       browsing_data_database_helper_(browsing_data_database_helper),
       browsing_data_local_storage_helper_(browsing_data_local_storage_helper),
       browsing_data_appcache_helper_(browsing_data_appcache_helper),
+      browsing_data_indexed_db_helper_(browsing_data_indexed_db_helper),
       filter_update_factory_(this),
       destroy_dialog_in_destructor_(false) {
   Init(parent);
@@ -90,7 +95,7 @@ CookiesView::CookiesView(
   gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_display_));
 }
 
-void CookiesView::TestDestroySyncrhonously() {
+void CookiesView::TestDestroySynchronously() {
   g_signal_handler_disconnect(dialog_, destroy_handler_);
   destroy_dialog_in_destructor_ = true;
 }
@@ -188,7 +193,8 @@ void CookiesView::Init(GtkWindow* parent) {
       browsing_data_database_helper_,
       browsing_data_local_storage_helper_,
       NULL,
-      browsing_data_appcache_helper_));
+      browsing_data_appcache_helper_,
+      browsing_data_indexed_db_helper_));
   cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, cookies_tree_model_.get()));
   tree_ = gtk_tree_view_new_with_model(
@@ -270,6 +276,11 @@ void CookiesView::EnableControls() {
       gtk_chrome_cookie_view_display_app_cache(
           GTK_CHROME_COOKIE_VIEW(cookie_display_),
           *detailed_info.appcache_info);
+    } else if (detailed_info.node_type ==
+               CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB) {
+      gtk_chrome_cookie_view_display_indexed_db(
+          GTK_CHROME_COOKIE_VIEW(cookie_display_),
+          *detailed_info.indexed_db_info);
     } else {
       gtk_chrome_cookie_view_clear(GTK_CHROME_COOKIE_VIEW(cookie_display_));
     }

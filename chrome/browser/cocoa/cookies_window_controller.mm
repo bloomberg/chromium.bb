@@ -165,7 +165,8 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 - (id)initWithProfile:(Profile*)profile
        databaseHelper:(BrowsingDataDatabaseHelper*)databaseHelper
         storageHelper:(BrowsingDataLocalStorageHelper*)storageHelper
-       appcacheHelper:(BrowsingDataAppCacheHelper*)appcacheHelper {
+       appcacheHelper:(BrowsingDataAppCacheHelper*)appcacheHelper
+      indexedDBHelper:(BrowsingDataIndexedDBHelper*)indexedDBHelper {
   DCHECK(profile);
   NSString* nibpath = [mac_util::MainAppBundle() pathForResource:@"Cookies"
                                                           ofType:@"nib"];
@@ -174,6 +175,7 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
     databaseHelper_ = databaseHelper;
     storageHelper_ = storageHelper;
     appcacheHelper_ = appcacheHelper;
+    indexedDBHelper_ = indexedDBHelper;
 
     [self loadTreeModelFromProfile];
 
@@ -414,7 +416,11 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 - (void)loadTreeModelFromProfile {
   treeModel_.reset(new CookiesTreeModel(
       profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
-      databaseHelper_, storageHelper_, NULL, appcacheHelper_));
+      databaseHelper_,
+      storageHelper_,
+      NULL,
+      appcacheHelper_,
+      indexedDBHelper_));
   modelObserver_.reset(new CookiesTreeModelObserverBridge(self));
   treeModel_->AddObserver(modelObserver_.get());
 

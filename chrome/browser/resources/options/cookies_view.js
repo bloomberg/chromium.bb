@@ -62,7 +62,11 @@ cr.define('options', function() {
      */
     updateVisibleDetailedInfo: function(name) {
       const infoPaneNames = [
-          'cookiesInfo', 'appCacheInfo', 'webDbInfo', 'localStorageInfo'];
+          'cookiesInfo',
+          'appCacheInfo',
+          'webDbInfo',
+          'localStorageInfo',
+          'indexedDBInfo'];
 
       for (var i = 0 ; i < infoPaneNames.length; ++i) {
         var paneName = infoPaneNames[i];
@@ -140,6 +144,16 @@ cr.define('options', function() {
       $('localStorageLastModified').textContent = localStorage.modified;
     },
 
+    /**
+     * Sets IndexedDB info to display.
+     */
+    setIndexedDBInfo: function(indexedDB) {
+      $('indexedDBName').textContent = indexedDB.name;
+      $('indexedDBOrigin').textContent = indexedDB.origin;
+      $('indexedDBSize').textContent = indexedDB.size;
+      $('indexedDBLastModified').textContent = indexedDB.modified;
+    },
+
     lastQuery_ : null,
 
     /**
@@ -180,6 +194,9 @@ cr.define('options', function() {
       } else if (data && data.type == 'app_cache') {
         this.setAppCacheInfo(data);
         this.updateVisibleDetailedInfo('appCacheInfo');
+      } else if (data && data.type == 'indexed_db') {
+        this.setIndexedDBInfo(data);
+        this.updateVisibleDetailedInfo('indexedDBInfo');
       } else {
         this.clearCookieInfo();
         this.updateVisibleDetailedInfo('cookiesInfo');

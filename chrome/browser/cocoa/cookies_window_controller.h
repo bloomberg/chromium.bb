@@ -103,6 +103,7 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
   BrowsingDataDatabaseHelper* databaseHelper_;  // weak
   BrowsingDataLocalStorageHelper* storageHelper_;  // weak
   BrowsingDataAppCacheHelper* appcacheHelper_;  // weak
+  BrowsingDataIndexedDBHelper* indexedDBHelper_;  // weak
 }
 @property (assign, nonatomic) BOOL removeButtonEnabled;
 @property (readonly, nonatomic) NSTreeController* treeController;
@@ -111,7 +112,8 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
 - (id)initWithProfile:(Profile*)profile
        databaseHelper:(BrowsingDataDatabaseHelper*)databaseHelper
         storageHelper:(BrowsingDataLocalStorageHelper*)storageHelper
-       appcacheHelper:(BrowsingDataAppCacheHelper*)appcacheHelper;
+       appcacheHelper:(BrowsingDataAppCacheHelper*)appcacheHelper
+      indexedDBHelper:(BrowsingDataIndexedDBHelper*)indexedDBHelper;
 
 // Shows the cookies window as a modal sheet attached to |window|.
 - (void)attachSheetTo:(NSWindow*)window;

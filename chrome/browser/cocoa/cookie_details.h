@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "base/scoped_nsobject.h"
 #include "net/base/cookie_monster.h"
@@ -21,31 +22,35 @@ enum CocoaCookieDetailsType {
 
   // Detailed information about a cookie, used both in the cookie
   // tree and the cookie prompt.
-  kCocoaCookieDetailsTypeCookie = 1,
+  kCocoaCookieDetailsTypeCookie,
 
   // Detailed information about a web database used for
   // display in the cookie tree.
-  kCocoaCookieDetailsTypeTreeDatabase = 2,
+  kCocoaCookieDetailsTypeTreeDatabase,
 
   // Detailed information about local storage used for
   // display in the cookie tree.
-  kCocoaCookieDetailsTypeTreeLocalStorage = 3,
+  kCocoaCookieDetailsTypeTreeLocalStorage,
 
   // Detailed information about an appcache used for display in the
   // cookie tree.
-  kCocoaCookieDetailsTypeTreeAppCache = 4,
+  kCocoaCookieDetailsTypeTreeAppCache,
+
+  // Detailed information about an IndexedDB used for display in the
+  // cookie tree.
+  kCocoaCookieDetailsTypeTreeIndexedDB,
 
   // Detailed information about a web database used for display
   // in the cookie prompt dialog.
-  kCocoaCookieDetailsTypePromptDatabase = 5,
+  kCocoaCookieDetailsTypePromptDatabase,
 
   // Detailed information about local storage used for display
   // in the cookie prompt dialog.
-  kCocoaCookieDetailsTypePromptLocalStorage = 6,
+  kCocoaCookieDetailsTypePromptLocalStorage,
 
   // Detailed information about app caches used for display
   // in the cookie prompt dialog.
-  kCocoaCookieDetailsTypePromptAppCache = 7
+  kCocoaCookieDetailsTypePromptAppCache
 };
 
 // This class contains all of the information that can be displayed in
@@ -67,48 +72,52 @@ enum CocoaCookieDetailsType {
   // it will expire with the session.
   BOOL hasExpiration_;
 
-  // These members are only set for type kCocoaCookieDetailsTypeCookie.
+  // Only set for type kCocoaCookieDetailsTypeCookie.
   scoped_nsobject<NSString> content_;
   scoped_nsobject<NSString> path_;
   scoped_nsobject<NSString> sendFor_;
   // Stringifed dates.
   scoped_nsobject<NSString> expires_;
 
-  // These members are only set for type kCocoaCookieDetailsTypeCookie and
+  // Only set for type kCocoaCookieDetailsTypeCookie and
   // kCocoaCookieDetailsTypeTreeAppCache nodes.
   scoped_nsobject<NSString> created_;
 
-  // These members are only set for types kCocoaCookieDetailsTypeCookie,
-  // kCocoaCookieDetailsTypePromptDatabase.
+  // Only set for types kCocoaCookieDetailsTypeCookie,
+  // kCocoaCookieDetailsTypePromptDatabase, and
+  // kCocoaCookieDetailsTypeTreeIndexedDB nodes.
   scoped_nsobject<NSString> name_;
 
   // Only set for type kCocoaCookieDetailsTypeTreeLocalStorage,
   // kCocoaCookieDetailsTypeTreeDatabase,
-  // kCocoaCookieDetailsTypePromptDatabase and
+  // kCocoaCookieDetailsTypePromptDatabase,
+  // kCocoaCookieDetailsTypeTreeIndexedDB, and
   // kCocoaCookieDetailsTypeTreeAppCache nodes.
   scoped_nsobject<NSString> fileSize_;
 
-  // Only set for types kCocoaCookieDetailsTypeTreeLocalStorage and
-  // kCocoaCookieDetailsTypeTreeDatabase nodes.
+  // Only set for types kCocoaCookieDetailsTypeTreeLocalStorage,
+  // kCocoaCookieDetailsTypeTreeDatabase, and
+  // kCocoaCookieDetailsTypeTreeIndexedDB nodes.
   scoped_nsobject<NSString> lastModified_;
 
   // Only set for type kCocoaCookieDetailsTypeTreeAppCache nodes.
   scoped_nsobject<NSString> lastAccessed_;
 
-  // These members are only set for types kCocoaCookieDetailsTypeCookie,
-  // kCocoaCookieDetailsTypePromptDatabase and
-  // kCocoaCookieDetailsTypePromptLocalStorage nodes.
+  // Only set for type kCocoaCookieDetailsTypeCookie,
+  // kCocoaCookieDetailsTypePromptDatabase,
+  // kCocoaCookieDetailsTypePromptLocalStorage, and
+  // kCocoaCookieDetailsTypeTreeIndexedDB nodes.
   scoped_nsobject<NSString> domain_;
 
-  // Used only for type kCocoaCookieTreeNodeTypeDatabaseStorage and
+  // Only set for type kCocoaCookieTreeNodeTypeDatabaseStorage and
   // kCocoaCookieDetailsTypePromptDatabase nodes.
   scoped_nsobject<NSString> databaseDescription_;
 
-  // Used only for type kCocoaCookieDetailsTypePromptLocalStorage.
+  // Only set for type kCocoaCookieDetailsTypePromptLocalStorage.
   scoped_nsobject<NSString> localStorageKey_;
   scoped_nsobject<NSString> localStorageValue_;
 
-  // Used only for type kCocoaCookieDetailsTypeTreeAppCache and
+  // Only set for type kCocoaCookieDetailsTypeTreeAppCache and
   // kCocoaCookieDetailsTypePromptAppCache.
   scoped_nsobject<NSString> manifestURL_;
 }
@@ -128,11 +137,12 @@ enum CocoaCookieDetailsType {
 // hidden value is |true|.
 - (BOOL)shouldHideCookieDetailsView;
 - (BOOL)shouldShowLocalStorageTreeDetailsView;
+- (BOOL)shouldShowLocalStoragePromptDetailsView;
 - (BOOL)shouldShowDatabaseTreeDetailsView;
 - (BOOL)shouldShowDatabasePromptDetailsView;
-- (BOOL)shouldShowLocalStoragePromptDetailsView;
 - (BOOL)shouldShowAppCachePromptDetailsView;
 - (BOOL)shouldShowAppCacheTreeDetailsView;
+- (BOOL)shouldShowIndexedDBTreeDetailsView;
 
 - (NSString*)name;
 - (NSString*)content;
@@ -184,6 +194,10 @@ enum CocoaCookieDetailsType {
 // -initWithAppCacheManifestURL: is called when the cookie prompt is displayed
 // for an appcache, at that time only the manifest URL of the appcache is known.
 - (id)initWithAppCacheManifestURL:(const std::string&)manifestURL;
+
+// Used for IndexedDB details in the cookie tree.
+- (id)initWithIndexedDBInfo:
+    (const BrowsingDataIndexedDBHelper::IndexedDBInfo*)indexedDB;
 
 // A factory method to create a configured instance given a node from
 // the cookie tree in |treeNode|.

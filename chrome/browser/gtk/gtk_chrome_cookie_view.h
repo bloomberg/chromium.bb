@@ -12,6 +12,7 @@
 
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "net/base/cookie_monster.h"
 
@@ -93,6 +94,13 @@ typedef struct {
   GtkWidget* appcache_created_entry_;
   GtkWidget* appcache_last_accessed_entry_;
 
+  // The IndexedDB details widgets.
+  GtkWidget* indexed_db_details_table_;
+  GtkWidget* indexed_db_name_entry_;
+  GtkWidget* indexed_db_origin_entry_;
+  GtkWidget* indexed_db_size_entry_;
+  GtkWidget* indexed_db_last_modified_entry_;
+
   // The local storage item widgets.
   GtkWidget* local_storage_item_table_;
   GtkWidget* local_storage_item_origin_entry_;
@@ -156,6 +164,11 @@ void gtk_chrome_cookie_view_display_local_storage(
 void gtk_chrome_cookie_view_display_app_cache(
     GtkChromeCookieView* widget,
     const appcache::AppCacheInfo& info);
+
+// Switches the display to showing the passed in IndexedDB data.
+void gtk_chrome_cookie_view_display_indexed_db(
+    GtkChromeCookieView* widget,
+    const BrowsingDataIndexedDBHelper::IndexedDBInfo& info);
 
 // Switches the display to an individual storage item.
 void gtk_chrome_cookie_view_display_local_storage_item(

@@ -193,12 +193,10 @@ void CookieFilterPageGtk::OnShowCookiesClicked(GtkWidget* button) {
   UserMetricsRecordAction(UserMetricsAction("Options_ShowCookies"), NULL);
   CookiesView::Show(GTK_WINDOW(gtk_widget_get_toplevel(button)),
                     profile(),
-                    new BrowsingDataDatabaseHelper(
-                        profile()),
-                    new BrowsingDataLocalStorageHelper(
-                        profile()),
-                    new BrowsingDataAppCacheHelper(
-                        profile()));
+                    new BrowsingDataDatabaseHelper(profile()),
+                    new BrowsingDataLocalStorageHelper(profile()),
+                    new BrowsingDataAppCacheHelper(profile()),
+                    BrowsingDataIndexedDBHelper::Create(profile()));
 }
 
 void CookieFilterPageGtk::OnFlashLinkClicked(GtkWidget* button) {

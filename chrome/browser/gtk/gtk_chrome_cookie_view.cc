@@ -179,6 +179,14 @@ void SetAppCacheDetailsSensitivity(GtkChromeCookieView *self,
   gtk_widget_set_sensitive(self->appcache_last_accessed_entry_, enabled);
 }
 
+void SetIndexedDBDetailsSensitivity(GtkChromeCookieView *self,
+                                    gboolean enabled) {
+  gtk_widget_set_sensitive(self->indexed_db_name_entry_, enabled);
+  gtk_widget_set_sensitive(self->indexed_db_origin_entry_, enabled);
+  gtk_widget_set_sensitive(self->indexed_db_size_entry_, enabled);
+  gtk_widget_set_sensitive(self->indexed_db_last_modified_entry_, enabled);
+}
+
 void SetLocalStorageItemSensitivity(GtkChromeCookieView* self,
                                     gboolean enabled) {
   gtk_widget_set_sensitive(self->local_storage_item_origin_entry_, enabled);
@@ -237,6 +245,8 @@ void UpdateVisibleDetailedInfo(GtkChromeCookieView *self, GtkWidget* table) {
   SetLocalStorageDetailsSensitivity(self,
       table == self->local_storage_details_table_);
   SetAppCacheDetailsSensitivity(self, table == self->appcache_details_table_);
+  SetIndexedDBDetailsSensitivity(self,
+      table == self->indexed_db_details_table_);
   SetLocalStorageItemSensitivity(self,
       table == self->local_storage_item_table_);
   SetDatabaseAccessedSensitivity(self,
@@ -256,6 +266,8 @@ void UpdateVisibleDetailedInfo(GtkChromeCookieView *self, GtkWidget* table) {
     gtk_widget_hide(self->local_storage_details_table_);
   if (table != self->appcache_details_table_)
     gtk_widget_hide(self->appcache_details_table_);
+  if (table != self->indexed_db_details_table_)
+    gtk_widget_hide(self->indexed_db_details_table_);
   if (table != self->local_storage_item_table_)
     gtk_widget_hide(self->local_storage_item_table_);
   if (table != self->database_accessed_table_)
@@ -362,6 +374,26 @@ void BuildWidgets(GtkChromeCookieView *self, gboolean editable_expiration) {
   InitDetailRow(row++, IDS_COOKIES_LAST_ACCESSED_LABEL,
                 self->appcache_details_table_,
                 &self->appcache_last_accessed_entry_);
+
+  // IndexedDB details.
+  self->indexed_db_details_table_ = gtk_table_new(4, 2, FALSE);
+  gtk_container_add(GTK_CONTAINER(self->table_box_),
+                    self->indexed_db_details_table_);
+  gtk_table_set_col_spacing(GTK_TABLE(self->indexed_db_details_table_), 0,
+                            gtk_util::kLabelSpacing);
+
+  row = 0;
+  InitDetailRow(row++, IDS_COOKIES_COOKIE_NAME_LABEL,
+                self->indexed_db_details_table_,
+                &self->indexed_db_name_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL,
+                self->indexed_db_details_table_,
+                &self->indexed_db_origin_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL,
+                self->indexed_db_details_table_, &self->indexed_db_size_entry_);
+  InitDetailRow(row++, IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL,
+                self->indexed_db_details_table_,
+                &self->indexed_db_last_modified_entry_);
 
   // Local storage item.
   self->local_storage_item_table_ = gtk_table_new(3, 2, FALSE);
@@ -562,6 +594,30 @@ void gtk_chrome_cookie_view_display_app_cache(
                      WideToUTF8(base::TimeFormatFriendlyDateAndTime(
                          info.last_access_time)).c_str());
   SetAppCacheDetailsSensitivity(self, TRUE);
+}
+
+// Switches the display to showing the passed in IndexedDB data.
+void gtk_chrome_cookie_view_display_indexed_db(
+    GtkChromeCookieView* self,
+    const BrowsingDataIndexedDBHelper::IndexedDBInfo& indexed_db_info) {
+  UpdateVisibleDetailedInfo(self, self->indexed_db_details_table_);
+
+  gtk_entry_set_text(GTK_ENTRY(self->indexed_db_name_entry_),
+                     indexed_db_info.database_name.empty() ?
+                         l10n_util::GetStringUTF8(
+                             IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME).c_str() :
+                         indexed_db_info.database_name.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->indexed_db_origin_entry_),
+                     indexed_db_info.origin.c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->indexed_db_size_entry_),
+                     UTF16ToUTF8(FormatBytes(
+                         indexed_db_info.size,
+                         GetByteDisplayUnits(indexed_db_info.size),
+                         true)).c_str());
+  gtk_entry_set_text(GTK_ENTRY(self->indexed_db_last_modified_entry_),
+                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                         indexed_db_info.last_modified)).c_str());
+  SetLocalStorageDetailsSensitivity(self, TRUE);
 }
 
 void gtk_chrome_cookie_view_display_local_storage_item(

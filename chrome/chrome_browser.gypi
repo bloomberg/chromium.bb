@@ -2930,6 +2930,8 @@
         'browser/views/importer_view.h',
         'browser/views/importing_progress_view.cc',
         'browser/views/importing_progress_view.h',
+        'browser/views/indexed_db_info_view.cc',
+        'browser/views/indexed_db_info_view.h',
         'browser/views/info_bubble.cc',
         'browser/views/info_bubble.h',
         'browser/views/infobars/after_translate_infobar.cc',

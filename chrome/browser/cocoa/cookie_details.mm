@@ -28,6 +28,10 @@
   return type_ == kCocoaCookieDetailsTypeTreeLocalStorage;
 }
 
+- (BOOL)shouldShowLocalStoragePromptDetailsView {
+  return type_ == kCocoaCookieDetailsTypePromptLocalStorage;
+}
+
 - (BOOL)shouldShowDatabaseTreeDetailsView {
   return type_ == kCocoaCookieDetailsTypeTreeDatabase;
 }
@@ -40,12 +44,12 @@
   return type_ == kCocoaCookieDetailsTypePromptDatabase;
 }
 
-- (BOOL)shouldShowLocalStoragePromptDetailsView {
-  return type_ == kCocoaCookieDetailsTypePromptLocalStorage;
-}
-
 - (BOOL)shouldShowAppCachePromptDetailsView {
   return type_ == kCocoaCookieDetailsTypePromptAppCache;
+}
+
+- (BOOL)shouldShowIndexedDBTreeDetailsView {
+  return type_ == kCocoaCookieDetailsTypeTreeIndexedDB;
 }
 
 - (NSString*)name {
@@ -233,25 +237,46 @@
   return self;
 }
 
+- (id)initWithIndexedDBInfo:
+    (const BrowsingDataIndexedDBHelper::IndexedDBInfo*)indexedDBInfo {
+  if ((self = [super init])) {
+    type_ = kCocoaCookieDetailsTypeTreeIndexedDB;
+    canEditExpiration_ = NO;
+    domain_.reset([base::SysUTF8ToNSString(indexedDBInfo->origin) retain]);
+    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(indexedDBInfo->size,
+        GetByteDisplayUnits(indexedDBInfo->size), true)) retain]);
+    lastModified_.reset([base::SysWideToNSString(
+        base::TimeFormatFriendlyDateAndTime(
+            indexedDBInfo->last_modified)) retain]);
+    name_.reset([base::SysUTF8ToNSString(indexedDBInfo->database_name) retain]);
+  }
+  return self;
+}
+
 + (CocoaCookieDetails*)createFromCookieTreeNode:(CookieTreeNode*)treeNode {
   CookieTreeNode::DetailedInfo info = treeNode->GetDetailedInfo();
   CookieTreeNode::DetailedInfo::NodeType nodeType = info.node_type;
-  if (nodeType == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
-    NSString* origin = base::SysWideToNSString(info.origin.c_str());
-    return [[[CocoaCookieDetails alloc] initWithCookie:info.cookie
-                                                origin:origin
-                                     canEditExpiration:NO] autorelease];
-  } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_DATABASE) {
-    return [[[CocoaCookieDetails alloc]
-        initWithDatabase:info.database_info] autorelease];
-  } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE) {
-    return [[[CocoaCookieDetails alloc]
-        initWithLocalStorage:info.local_storage_info] autorelease];
-  } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_APPCACHE) {
-    return [[[CocoaCookieDetails alloc]
-        initWithAppCacheInfo:info.appcache_info] autorelease];
-  } else {
-    return [[[CocoaCookieDetails alloc] initAsFolder] autorelease];
+  NSString* origin;
+  switch (nodeType) {
+    case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
+      origin = base::SysWideToNSString(info.origin.c_str());
+      return [[[CocoaCookieDetails alloc] initWithCookie:info.cookie
+                                                  origin:origin
+                                       canEditExpiration:NO] autorelease];
+    case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
+      return [[[CocoaCookieDetails alloc]
+          initWithDatabase:info.database_info] autorelease];
+    case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
+      return [[[CocoaCookieDetails alloc]
+          initWithLocalStorage:info.local_storage_info] autorelease];
+    case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
+      return [[[CocoaCookieDetails alloc]
+          initWithAppCacheInfo:info.appcache_info] autorelease];
+    case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
+      return [[[CocoaCookieDetails alloc]
+          initWithIndexedDBInfo:info.indexed_db_info] autorelease];
+    default:
+      return [[[CocoaCookieDetails alloc] initAsFolder] autorelease];
   }
 }
 

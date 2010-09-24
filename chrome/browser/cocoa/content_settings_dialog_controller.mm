@@ -293,11 +293,14 @@ class PrefObserverDisabler {
       new BrowsingDataLocalStorageHelper(profile_);
   BrowsingDataAppCacheHelper* appcacheHelper =
       new BrowsingDataAppCacheHelper(profile_);
+  BrowsingDataIndexedDBHelper* indexedDBHelper =
+      BrowsingDataIndexedDBHelper::Create(profile_);
   CookiesWindowController* controller =
       [[CookiesWindowController alloc] initWithProfile:profile_
                                         databaseHelper:databaseHelper
                                          storageHelper:storageHelper
-                                        appcacheHelper:appcacheHelper];
+                                        appcacheHelper:appcacheHelper
+                                       indexedDBHelper:indexedDBHelper];
   [controller attachSheetTo:[self window]];
 }
 
