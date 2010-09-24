@@ -202,6 +202,8 @@ class LayoutTestController : public CppBoundClass {
 
   void setDomainRelaxationForbiddenForURLScheme(
       const CppArgumentList& args, CppVariant* result);
+  void sampleSVGAnimationForElementAtTime(const CppArgumentList& args,
+                                          CppVariant* result);
   void setEditingBehavior(const CppArgumentList&, CppVariant*);
 
   // The following are only stubs.  TODO(pamg): Implement any of these that

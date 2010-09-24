@@ -166,6 +166,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("dumpSelectionRect", &LayoutTestController::dumpSelectionRect);
   BindMethod("grantDesktopNotificationPermission", &LayoutTestController::grantDesktopNotificationPermission);
   BindMethod("setDomainRelaxationForbiddenForURLScheme", &LayoutTestController::setDomainRelaxationForbiddenForURLScheme);
+  BindMethod("sampleSVGAnimationForElementAtTime", &LayoutTestController::sampleSVGAnimationForElementAtTime);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -975,6 +976,19 @@ void LayoutTestController::setDomainRelaxationForbiddenForURLScheme(
 
   shell_->webView()->setDomainRelaxationForbidden(
       CppVariantToBool(args[0]), WebString::fromUTF8(args[1].ToString()));
+}
+
+void LayoutTestController::sampleSVGAnimationForElementAtTime(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() != 3) {
+    result->SetNull();
+    return;
+  }
+  bool success = shell_->webView()->mainFrame()->pauseSVGAnimation(
+      WebString::fromUTF8(args[0].ToString()),
+      args[1].ToDouble(),
+      WebString::fromUTF8(args[2].ToString()));
+  result->Set(success);
 }
 
 //
