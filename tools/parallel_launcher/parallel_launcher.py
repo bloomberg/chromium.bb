@@ -69,6 +69,9 @@ class TestLauncher(object):
 
   def launch(self):
     env = os.environ.copy()
+
+    env['CHROME_LOG_FILE'] = 'chrome_log_%d' % self._shard
+
     if 'GTEST_TOTAL_SHARDS' in env:
       # Handle the requested sharding transparently.
       outer_shards = int(env['GTEST_TOTAL_SHARDS'])
