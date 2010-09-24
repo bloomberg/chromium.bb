@@ -40,7 +40,9 @@
 #include "client/minidump_file_writer-inl.h"
 #include "common/linux/linux_libc_support.h"
 #include "common/string_conversion.h"
+#if __linux__
 #include "third_party/lss/linux_syscall_support.h"
+#endif
 
 namespace google_breakpad {
 
