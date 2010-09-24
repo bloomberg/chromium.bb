@@ -176,13 +176,7 @@ SafeBrowsingDatabase* SafeBrowsingDatabase::Create() {
   } else {
     // Default.
     DCHECK(value.empty());
-#if defined(NDEBUG)
-    return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreSqlite);
-#else
-    // Turn on the file store for developers to get some early
-    // coverage.
     return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile);
-#endif
   }
 }
 
