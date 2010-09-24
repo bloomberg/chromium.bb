@@ -268,7 +268,8 @@ deps_os = {
       "/trunk/deps/third_party/swig/linux@" + Var("swig_revision"),
 
     "src/third_party/lss":
-      (Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@3",
+      ("http://%s.googlecode.com/svn" % "linux-syscall-support") +
+      "/trunk/lss@3",
   },
 }
 
