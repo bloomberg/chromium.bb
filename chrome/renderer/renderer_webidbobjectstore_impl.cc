@@ -14,7 +14,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBKeyRange.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
@@ -24,7 +23,6 @@ using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
-using WebKit::WebIDBTransaction;
 using WebKit::WebSerializedScriptValue;
 using WebKit::WebString;
 

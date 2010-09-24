@@ -74,6 +74,7 @@ class IndexedDBDispatcherHost
   // below.
   void OnMessageReceivedWebKit(const IPC::Message& message);
   void OnIDBFactoryOpen(const ViewHostMsg_IDBFactoryOpen_Params& p);
+  void OnIDBFactoryAbortPendingTransactions(const std::vector<int32>& ids);
 
   // Helper templates.
   template <class ReturnType>
@@ -220,7 +221,6 @@ class IndexedDBDispatcherHost
     void OnAbort(int32 transaction_id);
     void OnObjectStore(int32 transaction_id, const string16& name,
                        IPC::Message* reply_msg);
-    void OnDidCompleteTaskEvents(int transaction_id);
     void OnDestroyed(int32 idb_transaction_id);
 
     IndexedDBDispatcherHost* parent_;

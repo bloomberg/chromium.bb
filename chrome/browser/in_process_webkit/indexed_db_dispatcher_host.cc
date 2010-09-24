@@ -111,6 +111,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBCursorRemove::ID:
     case ViewHostMsg_IDBCursorDestroyed::ID:
     case ViewHostMsg_IDBFactoryOpen::ID:
+    case ViewHostMsg_IDBFactoryAbortPendingTransactions::ID:
     case ViewHostMsg_IDBDatabaseName::ID:
     case ViewHostMsg_IDBDatabaseDescription::ID:
     case ViewHostMsg_IDBDatabaseVersion::ID:
@@ -143,7 +144,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBObjectStoreDestroyed::ID:
     case ViewHostMsg_IDBTransactionAbort::ID:
     case ViewHostMsg_IDBTransactionDestroyed::ID:
-    case ViewHostMsg_IDBTransactionDidCompleteTaskEvents::ID:
     case ViewHostMsg_IDBTransactionObjectStore::ID:
       break;
     default:
@@ -198,6 +198,8 @@ void IndexedDBDispatcherHost::OnMessageReceivedWebKit(
     IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost, message, msg_is_ok)
       IPC_MESSAGE_HANDLER(ViewHostMsg_IDBFactoryOpen,
                           OnIDBFactoryOpen)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_IDBFactoryAbortPendingTransactions,
+                          OnIDBFactoryAbortPendingTransactions)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   }
@@ -269,6 +271,12 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL,
       webkit_glue::FilePathToWebString(indexed_db_path));
+}
+
+// TODO(andreip): remove this method entirely once WK rolls to r68143.
+void IndexedDBDispatcherHost::OnIDBFactoryAbortPendingTransactions(
+    const std::vector<int32>& ids) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -966,8 +974,6 @@ bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBTransactionAbort, OnAbort)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBTransactionObjectStore,
                                     OnObjectStore)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBTransactionDidCompleteTaskEvents,
-                        OnDidCompleteTaskEvents)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBTransactionDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -996,27 +1002,15 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnObjectStore(
     int32 transaction_id, const string16& name, IPC::Message* reply_msg) {
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
       &map_, transaction_id, reply_msg,
-      ViewHostMsg_IDBTransactionObjectStore::ID);
+      ViewHostMsg_IDBDatabaseObjectStore::ID);
   if (!idb_transaction)
     return;
 
   WebIDBObjectStore* object_store = idb_transaction->objectStore(name);
   int32 object_id = object_store ? parent_->Add(object_store) : 0;
   ViewHostMsg_IDBTransactionObjectStore::WriteReplyParams(
-      reply_msg, object_id);
+         reply_msg, object_id);
   parent_->Send(reply_msg);
-}
-
-void IndexedDBDispatcherHost::
-    TransactionDispatcherHost::OnDidCompleteTaskEvents(int transaction_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
-      &map_, transaction_id, 0,
-      ViewHostMsg_IDBTransactionDidCompleteTaskEvents::ID);
-  if (!idb_transaction)
-    return;
-
-  idb_transaction->didCompleteTaskEvents();
 }
 
 void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(

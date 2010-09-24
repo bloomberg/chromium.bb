@@ -2373,6 +2373,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBFactoryOpen,
                        ViewHostMsg_IDBFactoryOpen_Params)
 
+  // WebIDBFactory::abortPendingTransactions() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBFactoryAbortPendingTransactions,
+                       std::vector<int32> /* transaction_ids */)
+
   // WebIDBDatabase::name() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseName,
                               int32, /* idb_database_id */
@@ -2549,10 +2553,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // WebIDBTransaction::abort() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionAbort,
-                       int32 /* idb_transaction_id */)
-
-  // IDBTransaction::DidCompleteTaskEvents() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionDidCompleteTaskEvents,
                        int32 /* idb_transaction_id */)
 
   // WebIDBTransaction::~WebIDBTransaction() message.
