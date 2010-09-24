@@ -21,7 +21,7 @@ for path in os.environ.get("PATH").split(os.pathsep):
 if not depot_tools_path:
   # Grab a `which gclient', which gives first match
   # `which' also uses PATH, but is not restricted to specific directory name
-  path = Popen(["which", "gclient"], stdout=PIPE).communicate()[0]
+  path = Popen(["which", "gclient"], stdout=PIPE).communicate()[0].strip()
   if path:
     depot_tools_path = path.replace("/gclient","")
 
