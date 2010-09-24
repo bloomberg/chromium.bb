@@ -370,9 +370,17 @@ bool SavePackage::Init() {
   request_context_getter_ = profile->GetRequestContext();
 
   // Create the fake DownloadItem and display the view.
-  download_ = new DownloadItem(tab_contents_->profile()->GetDownloadManager(),
-                               saved_main_file_path_, page_url_,
+  DownloadManager* download_manager =
+      tab_contents_->profile()->GetDownloadManager();
+  download_ = new DownloadItem(download_manager,
+                               saved_main_file_path_,
+                               page_url_,
                                profile->IsOffTheRecord());
+
+  // Transfer the ownership to the download manager. We need the DownloadItem
+  // to be alive as long as the Profile is alive.
+  download_manager->SavePageAsDownloadStarted(download_);
+
   tab_contents_->OnStartDownload(download_);
 
   // Check save type and process the save page job.

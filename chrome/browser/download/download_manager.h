@@ -135,7 +135,8 @@ class DownloadManager
   // deleted is returned back to the caller.
   int RemoveAllDownloads();
 
-  // Called when a Save Page As download is started.
+  // Called when a Save Page As download is started. Transfers ownership
+  // of |download_item| to the DownloadManager.
   void SavePageAsDownloadStarted(DownloadItem* download_item);
 
   // Download the object at the URL. Used in cases such as "Save Link As..."
