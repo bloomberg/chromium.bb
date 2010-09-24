@@ -1421,18 +1421,32 @@ void LayoutTestController::forceRedSelectionColors(const CppArgumentList& args,
 void LayoutTestController::addUserScript(const CppArgumentList& args,
                                          CppVariant* result) {
   result->SetNull();
-  if (args.size() < 2 || !args[0].isString() || !args[1].isBool())
+  if (args.size() < 3 || !args[0].isString() || !args[1].isBool() ||
+      !args[2].isBool())
     return;
-  shell_->webView()->addUserScript(WebString::fromUTF8(args[0].ToString()),
-                                   args[1].ToBoolean());
+  WebKit::WebView::addUserScript(
+      WebString::fromUTF8(args[0].ToString()),
+      WebKit::WebVector<WebString>(),
+      args[1].ToBoolean() ?
+          WebKit::WebView::UserScriptInjectAtDocumentStart :
+          WebKit::WebView::UserScriptInjectAtDocumentEnd,
+      args[2].ToBoolean() ?
+          WebKit::WebView::UserContentInjectInAllFrames :
+          WebKit::WebView::UserContentInjectInTopFrameOnly);
 }
 
 void LayoutTestController::addUserStyleSheet(const CppArgumentList& args,
                                              CppVariant* result) {
   result->SetNull();
-  if (args.size() < 1 || !args[0].isString())
+  if (args.size() < 2 || !args[0].isString() || !args[1].isBool())
     return;
-  shell_->webView()->addUserStyleSheet(WebString::fromUTF8(args[0].ToString()));
+  WebKit::WebView::addUserStyleSheet(
+      WebString::fromUTF8(args[0].ToString()),
+      WebKit::WebVector<WebString>(),
+      args[1].ToBoolean() ?
+          WebKit::WebView::UserContentInjectInAllFrames :
+          WebKit::WebView::UserContentInjectInTopFrameOnly,
+      WebKit::WebView::UserStyleInjectInExistingDocuments);
 }
 
 void LayoutTestController::setEditingBehavior(const CppArgumentList& args,
