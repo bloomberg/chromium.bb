@@ -141,6 +141,10 @@ class TestingAutomationProvider : public AutomationProvider,
                                   bool* success,
                                   std::vector<AutocompleteMatchData>* matches);
 
+  // Waits for the autocomplete edit to receive focus
+  void WaitForAutocompleteEditFocus(int autocomplete_edit_handle,
+                                    IPC::Message* reply_message);
+
   // Deprecated.
   void ApplyAccelerator(int handle, int id);
 

@@ -26,6 +26,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/test/automation/automation_messages.h"
 
+class AutocompleteEditModel;
 class AutomationProvider;
 class Browser;
 class Extension;
@@ -860,6 +861,27 @@ class SavePackageNotificationObserver : public NotificationObserver {
   IPC::Message* reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackageNotificationObserver);
+};
+
+// Allows automation provider to wait until the autocomplete edit
+// has received focus
+class AutocompleteEditFocusedObserver : public NotificationObserver {
+ public:
+  AutocompleteEditFocusedObserver(AutomationProvider* automation,
+                                  AutocompleteEditModel* autocomplete_edit,
+                                  IPC::Message* reply_message);
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+  AutocompleteEditModel* autocomplete_edit_model_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutocompleteEditFocusedObserver);
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

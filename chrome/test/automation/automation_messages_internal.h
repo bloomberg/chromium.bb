@@ -1436,4 +1436,9 @@ IPC_BEGIN_MESSAGES(Automation)
                              int /* target count */,
                              bool /* success */)
 
+  // Waits for the autocomplete edit to receive focus.
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_WaitForAutocompleteEditFocus,
+                             int /* autocomplete edit handle */,
+                             bool /* success */)
+
 IPC_END_MESSAGES(Automation)

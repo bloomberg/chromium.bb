@@ -724,6 +724,9 @@ class NotificationType {
     // Sent by the autocomplete edit when it is destroyed.
     AUTOCOMPLETE_EDIT_DESTROYED,
 
+    // Sent by the autocomplete edit when it is focused.
+    AUTOCOMPLETE_EDIT_FOCUSED,
+
     // Sent when the main Google URL has been updated.  Some services cache
     // this value and need to update themselves when it changes.  See
     // google_util::GetGoogleURLAndUpdateIfNecessary().

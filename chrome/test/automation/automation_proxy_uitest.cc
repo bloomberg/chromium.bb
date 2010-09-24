@@ -1353,9 +1353,6 @@ TEST_F(AutomationProxyTest, AutocompleteParallelProxy) {
 #if defined(OS_MACOSX)
 // TODO(port): Implement AutocompleteEditProxy on Mac.
 #define AutocompleteMatchesTest DISABLED_AutocompleteMatchesTest
-#else
-// So flaky, http://crbug.com/19876.
-#define AutocompleteMatchesTest FLAKY_AutocompleteMatchesTest
 #endif
 TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -1363,8 +1360,9 @@ TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   scoped_refptr<AutocompleteEditProxy> edit(
       browser->GetAutocompleteEdit());
   ASSERT_TRUE(edit.get());
-  EXPECT_TRUE(browser->ApplyAccelerator(IDC_FOCUS_LOCATION));
   EXPECT_TRUE(edit->is_valid());
+  EXPECT_TRUE(browser->ApplyAccelerator(IDC_FOCUS_LOCATION));
+  ASSERT_TRUE(edit->WaitForFocus());
   EXPECT_TRUE(edit->SetText(L"Roflcopter"));
   EXPECT_TRUE(edit->WaitForQuery(action_max_timeout_ms()));
   bool query_in_progress;

@@ -306,6 +306,8 @@ void TestingAutomationProvider::OnMessageReceived(
                         AutocompleteEditIsQueryInProgress)
     IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditGetMatches,
                         AutocompleteEditGetMatches)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForAutocompleteEditFocus,
+                                    WaitForAutocompleteEditFocus)
     IPC_MESSAGE_HANDLER(AutomationMsg_ApplyAccelerator, ApplyAccelerator)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
                                     ExecuteJavascript)
@@ -1109,6 +1111,30 @@ void TestingAutomationProvider::AutocompleteEditGetMatches(
       matches->push_back(AutocompleteMatchData(*i));
     *success = true;
   }
+}
+
+// Waits for the autocomplete edit to receive focus
+void  TestingAutomationProvider::WaitForAutocompleteEditFocus(
+    int autocomplete_edit_handle,
+    IPC::Message* reply_message) {
+  if (!autocomplete_edit_tracker_->ContainsHandle(autocomplete_edit_handle)) {
+    AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
+        reply_message_, false);
+    Send(reply_message);
+    return;
+  }
+
+  AutocompleteEditModel* model = autocomplete_edit_tracker_->
+      GetResource(autocomplete_edit_handle)-> model();
+  if (model->has_focus()) {
+    AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
+        reply_message, true);
+    Send(reply_message);
+    return;
+  }
+
+  // The observer deletes itself when the notification arrives.
+  new AutocompleteEditFocusedObserver(this, model, reply_message);
 }
 
 void TestingAutomationProvider::GetAutocompleteEditForBrowser(

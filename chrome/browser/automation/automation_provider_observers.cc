@@ -1309,3 +1309,24 @@ void SavePackageNotificationObserver::Observe(
   }
 }
 
+AutocompleteEditFocusedObserver::AutocompleteEditFocusedObserver(
+    AutomationProvider* automation,
+    AutocompleteEditModel* autocomplete_edit,
+    IPC::Message* reply_message)
+    : automation_(automation),
+      reply_message_(reply_message),
+      autocomplete_edit_model_(autocomplete_edit) {
+  Source<AutocompleteEditModel> source(autocomplete_edit);
+  registrar_.Add(this, NotificationType::AUTOCOMPLETE_EDIT_FOCUSED, source);
+}
+
+void AutocompleteEditFocusedObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(type == NotificationType::AUTOCOMPLETE_EDIT_FOCUSED);
+  AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
+      reply_message_, true);
+  automation_->Send(reply_message_);
+  delete this;
+}

@@ -142,6 +142,9 @@ class AutocompleteEditProxy : public AutomationResourceProxy {
   // Gets a list of autocomplete matches that have been gathered so far.
   bool GetAutocompleteMatches(Matches* matches) const;
 
+  // Waits for the autocomplete edit to receive focus.
+  bool WaitForFocus() const;
+
   // Waits for all queries to autocomplete providers to complete.
   // |wait_timeout_ms| gives the number of milliseconds to wait for the query
   // to finish. Returns false if IPC call failed or if the function times out.

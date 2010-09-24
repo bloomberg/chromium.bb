@@ -20,23 +20,27 @@ bool AutocompleteEditProxy::GetText(std::wstring* text) const {
     NOTREACHED();
     return false;
   }
-
   bool result = false;
-
-  sender_->Send(new AutomationMsg_AutocompleteEditGetText(0, handle_, &result,
-                                                          text));
-
+  sender_->Send(new AutomationMsg_AutocompleteEditGetText(
+      0, handle_, &result, text));
   return result;
+}
+
+bool AutocompleteEditProxy::WaitForFocus() const {
+  if (!is_valid())
+    return false;
+  bool edit_exists = false;
+  sender_->Send(new AutomationMsg_WaitForAutocompleteEditFocus(
+      0, handle_, &edit_exists));
+  return edit_exists;
 }
 
 bool AutocompleteEditProxy::SetText(const std::wstring& text) {
   if (!is_valid())
     return false;
-
   bool result = false;
-
-  sender_->Send(new AutomationMsg_AutocompleteEditSetText(0, handle_, text,
-                                                          &result));
+  sender_->Send(new AutomationMsg_AutocompleteEditSetText(
+      0, handle_, text, &result));
   return result;
 }
 
@@ -47,18 +51,15 @@ bool AutocompleteEditProxy::IsQueryInProgress(bool* query_in_progress) const {
     NOTREACHED();
     return false;
   }
-
   bool edit_exists = false;
-
-  sender_->Send(
-      new AutomationMsg_AutocompleteEditIsQueryInProgress(
-          0, handle_, &edit_exists, query_in_progress));
-
+  sender_->Send(new AutomationMsg_AutocompleteEditIsQueryInProgress(
+      0, handle_, &edit_exists, query_in_progress));
   return edit_exists;
 }
 
-
 bool AutocompleteEditProxy::WaitForQuery(int wait_timeout_ms) const {
+  // TODO(jknotten): use a delayed message / observer instead.
+  // See, for example, AutocompleteEditProxy::WaitForFocus.
   const TimeTicks start = TimeTicks::Now();
   const TimeDelta timeout = TimeDelta::FromMilliseconds(wait_timeout_ms);
   bool query_in_progress;
@@ -78,11 +79,8 @@ bool AutocompleteEditProxy::GetAutocompleteMatches(Matches* matches) const {
     NOTREACHED();
     return false;
   }
-
   bool edit_exists = false;
-
   sender_->Send(new AutomationMsg_AutocompleteEditGetMatches(
       0, handle_, &edit_exists, matches));
-
   return edit_exists;
 }
