@@ -1210,6 +1210,8 @@ void LayoutTestController::overridePreference(
       preferences->tabs_to_links = CppVariantToBool(value);
     else if (key == "WebKitWebGLEnabled")
       preferences->experimental_webgl_enabled = CppVariantToBool(value);
+    else if (key == "WebKitHyperlinkAuditingEnabled")
+      preferences->hyperlink_auditing_enabled = CppVariantToBool(value);
     else {
       std::string message("Invalid name for preference: ");
       message.append(key);
