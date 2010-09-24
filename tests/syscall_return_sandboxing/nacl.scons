@@ -37,3 +37,11 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_syscall_return_sandboxing_test')
+
+env.ComponentProgram('thread_create_bad_address.nexe',
+                     env.RawSyscallObjects(['thread_create_bad_address.c']))
+node = env.CommandSelLdrTestNacl(
+    'thread_create_bad_address.out',
+    command=[env.File('thread_create_bad_address.nexe')])
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_thread_create_bad_address_test')

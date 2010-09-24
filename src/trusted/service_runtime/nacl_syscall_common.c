@@ -2079,7 +2079,7 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
   NaClSysCommonThreadSyscallEnter(natp);
 
   /* make sure that the thread start function is in the text region */
-  if ((uintptr_t) prog_ctr >= natp->nap->static_text_end) {
+  if ((uintptr_t) prog_ctr >= natp->nap->dynamic_text_end) {
     NaClLog(LOG_ERROR, "bad pc start\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
