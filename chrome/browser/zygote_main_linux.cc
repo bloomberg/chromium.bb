@@ -141,14 +141,15 @@ class Zygote {
     static const unsigned kMaxMessageLength = 1024;
     char buf[kMaxMessageLength];
     const ssize_t len = base::RecvMsg(fd, buf, sizeof(buf), &fds);
-    if (len == -1) {
-      LOG(WARNING) << "Error reading message from browser: " << errno;
+
+    if (len == 0 || (len == -1 && errno == ECONNRESET)) {
+      // EOF from the browser. We should die.
+      _exit(0);
       return false;
     }
 
-    if (len == 0) {
-      // EOF from the browser. We should die.
-      _exit(0);
+    if (len == -1) {
+      PLOG(ERROR) << "Error reading message from browser";
       return false;
     }
 
