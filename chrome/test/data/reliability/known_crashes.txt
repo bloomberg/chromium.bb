@@ -70,3 +70,11 @@ PREFIX : tabcontentsview::activate___renderwidgethost::onmessagereceived___rende
 # 54115
 PREFIX : ipc::sendtask::run___messageloop::runtask___messageloop::dowork___base::messagepumpforio::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::run___base::thread::run___base::thread::threadmain___`anonymous namespace'::threadfunc
 
+# 56747
+PREFIX : testingautomationprovider::getactivewindow
+
+# 56749
+PREFIX : executebrowsercommandobserver::observe___notificationservice::notify
+
+# 56750
+PREFIX : browserclosednotificationobserver::observe___notificationservice::notify
