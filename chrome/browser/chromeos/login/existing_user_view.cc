@@ -69,6 +69,15 @@ class UserEntryTextfield : public views::Textfield {
   DISALLOW_COPY_AND_ASSIGN(UserEntryTextfield);
 };
 
+ExistingUserView::ExistingUserView(UserController* uc)
+    : accel_login_off_the_record_(
+          views::Accelerator(app::VKEY_B, false, false, true)),
+      password_field_(NULL),
+      submit_button_(NULL),
+      user_controller_(uc) {
+  AddAccelerator(accel_login_off_the_record_);
+}
+
 void ExistingUserView::RecreateFields() {
   if (password_field_ == NULL) {
     password_field_ = new UserEntryTextfield(user_controller_,
@@ -109,6 +118,16 @@ void ExistingUserView::FocusPasswordField() {
 
 void ExistingUserView::OnLocaleChanged() {
   RecreateFields();
+}
+
+
+bool ExistingUserView::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  if (accelerator == accel_login_off_the_record_) {
+    user_controller_->OnLoginOffTheRecord();
+    return true;
+  }
+  return false;
 }
 
 }  // namespace chromeos

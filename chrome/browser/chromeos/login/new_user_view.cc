@@ -84,8 +84,10 @@ NewUserView::NewUserView(Delegate* delegate,
       browse_without_signin_link_(NULL),
       languages_menubutton_(NULL),
       throbber_(NULL),
-      accel_focus_user_(views::Accelerator(app::VKEY_U, false, false, true)),
       accel_focus_pass_(views::Accelerator(app::VKEY_P, false, false, true)),
+      accel_focus_user_(views::Accelerator(app::VKEY_U, false, false, true)),
+      accel_login_off_the_record_(
+          views::Accelerator(app::VKEY_B, false, false, true)),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       focus_delayed_(false),
@@ -142,8 +144,10 @@ void NewUserView::Init() {
   languages_menubutton_->SetFocusable(true);
   AddChildView(languages_menubutton_);
 
+  // Set up accelerators.
   AddAccelerator(accel_focus_user_);
   AddAccelerator(accel_focus_pass_);
+  AddAccelerator(accel_login_off_the_record_);
 
   UpdateLocalizedStrings();
   RequestFocus();
@@ -159,15 +163,14 @@ void NewUserView::Init() {
 bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   if (accelerator == accel_focus_user_) {
     username_field_->RequestFocus();
-    return true;
-  }
-
-  if (accelerator == accel_focus_pass_) {
+  } else if (accelerator == accel_focus_pass_) {
     password_field_->RequestFocus();
-    return true;
+  } else if (accelerator == accel_login_off_the_record_) {
+    delegate_->OnLoginOffTheRecord();
+  } else {
+    return false;
   }
-
-  return false;
+  return true;
 }
 
 void NewUserView::RecreateNativeControls() {

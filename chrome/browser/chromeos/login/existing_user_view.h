@@ -16,10 +16,7 @@ class UserController;
 
 class ExistingUserView : public views::View {
  public:
-  explicit ExistingUserView(UserController* uc)
-      : password_field_(NULL),
-        submit_button_(NULL),
-        user_controller_(uc) {}
+  explicit ExistingUserView(UserController* uc);
 
   void RecreateFields();
 
@@ -29,9 +26,14 @@ class ExistingUserView : public views::View {
 
   void FocusPasswordField();
 
+  // views::View
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+
  protected:
   // views::View overrides:
   virtual void OnLocaleChanged();
+
+  views::Accelerator accel_login_off_the_record_;
 
   // For editing the password.
   views::Textfield* password_field_;
@@ -47,4 +49,3 @@ class ExistingUserView : public views::View {
 }  // chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EXISTING_USER_VIEW_H_
-

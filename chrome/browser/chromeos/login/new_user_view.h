@@ -145,8 +145,9 @@ class NewUserView : public views::View,
   views::MenuButton* languages_menubutton_;
   views::Throbber* throbber_;
 
-  views::Accelerator accel_focus_user_;
   views::Accelerator accel_focus_pass_;
+  views::Accelerator accel_focus_user_;
+  views::Accelerator accel_login_off_the_record_;
 
   // Notifications receiver.
   Delegate* delegate_;
