@@ -54,9 +54,9 @@ SadTabView::SadTabView(TabContents* tab_contents)
 
 void SadTabView::Paint(gfx::Canvas* canvas) {
   SkPaint paint;
-  paint.setShader(gfx::CreateGradientShader(0, height(),
-                                            kBackgroundColor,
-                                            kBackgroundEndColor))->safeUnref();
+  SkSafeUnref(paint.setShader(gfx::CreateGradientShader(0, height(),
+                                                        kBackgroundColor,
+                                                        kBackgroundEndColor)));
   paint.setStyle(SkPaint::kFill_Style);
   canvas->AsCanvasSkia()->drawRectCoords(
       0, 0, SkIntToScalar(width()), SkIntToScalar(height()), paint);

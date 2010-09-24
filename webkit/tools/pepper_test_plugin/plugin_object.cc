@@ -252,9 +252,8 @@ void DrawSampleBitmap(void *region, int width, int height) {
   SkPoint grad_points[2];
   grad_points[0].set(SkIntToScalar(0), SkIntToScalar(0));
   grad_points[1].set(SkIntToScalar(0), SkIntToScalar(height));
-  paint.setShader(SkGradientShader::CreateLinear(
-      grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode))
-      ->safeUnref();
+  SkSafeUnref(paint.setShader(SkGradientShader::CreateLinear(
+      grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode)));
 
   canvas.drawPath(path, paint);
 }

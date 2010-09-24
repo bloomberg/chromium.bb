@@ -45,7 +45,7 @@ void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   matrix.setTranslate(SkIntToScalar(align_rect.left),
                       SkIntToScalar(align_rect.top));
   shader->setLocalMatrix(matrix);
-  paint->setShader(shader)->safeUnref();
+  SkSafeUnref(paint->setShader(shader));
 }
 
 }  // namespace

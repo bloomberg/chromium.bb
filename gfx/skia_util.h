@@ -22,9 +22,9 @@ gfx::Rect SkRectToRect(const SkRect& rect);
 
 // Creates a vertical gradient shader. The caller owns the shader.
 // Example usage to avoid leaks:
-//   paint.setShader(gfx::CreateGradientShader(0, 10, red, blue))->safeUnref();
+//   SkSafeUnref(paint.setShader(gfx::CreateGradientShader(0, 10, red, blue)));
 //
-// (The old shader in the paint, if any, needs to be freed, and safeUnref will
+// (The old shader in the paint, if any, needs to be freed, and SkSafeUnref will
 // handle the NULL case.)
 SkShader* CreateGradientShader(int start_point,
                                int end_point,

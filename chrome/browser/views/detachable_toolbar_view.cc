@@ -97,10 +97,10 @@ void DetachableToolbarView::PaintVerticalDivider(
     const SkColor& bottom_color) {
   // Draw the upper half of the divider.
   SkPaint paint;
-  paint.setShader(gfx::CreateGradientShader(vertical_padding + 1,
-                                            height / 2,
-                                            top_color,
-                                            middle_color))->safeUnref();
+  SkSafeUnref(paint.setShader(gfx::CreateGradientShader(vertical_padding + 1,
+                                                        height / 2,
+                                                        top_color,
+                                                        middle_color)));
   SkRect rc = { SkIntToScalar(x),
                 SkIntToScalar(vertical_padding + 1),
                 SkIntToScalar(x + 1),
@@ -109,10 +109,8 @@ void DetachableToolbarView::PaintVerticalDivider(
 
   // Draw the lower half of the divider.
   SkPaint paint_down;
-  paint_down.setShader(gfx::CreateGradientShader(height / 2,
-                                                 height - vertical_padding,
-                                                 middle_color,
-                                                 bottom_color))->safeUnref();
+  SkSafeUnref(paint_down.setShader(gfx::CreateGradientShader(
+          height / 2, height - vertical_padding, middle_color, bottom_color)));
   SkRect rc_down = { SkIntToScalar(x),
                      SkIntToScalar(height / 2),
                      SkIntToScalar(x + 1),
