@@ -11,6 +11,7 @@
     },
     "urls": [
       "*://chrome.google.com/extensions",
+      "*://chrome.google.com/webstore",
       "*://clients2.google.com/service/update2",
       "*://clients2.googleusercontent.com/crx"
     ]
