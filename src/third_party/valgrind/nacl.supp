@@ -3,14 +3,12 @@
    Memcheck:Addr4
    ...
    fun:_free_r
-   fun:free
 }
 
 {
    newlib_free1
    Memcheck:Addr1
    fun:_free_r
-   fun:free
 }
 
 {
@@ -18,7 +16,6 @@
    Memcheck:Addr4
    ...
    fun:_malloc_r
-   fun:malloc
 }
 
 {
@@ -26,7 +23,6 @@
    Memcheck:Addr1
    ...
    fun:_malloc_r
-   fun:malloc
 }
 
 # Generic ld.so suppressions.

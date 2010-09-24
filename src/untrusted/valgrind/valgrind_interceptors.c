@@ -178,13 +178,16 @@ INLINE static size_t handle_malloc_after(size_t ptr, size_t size) {
   return ptr + kRedZoneSize;
 }
 
-/* Generic free() handler. */
-INLINE static void handle_free(OrigFn fn, size_t ptr) {
+/* First part of the free handler.
+   ptr: the pointer to be deallocated, coming from the client code
+   returns the pointer that should be passed to the underlying free()
+*/
+INLINE static size_t handle_free_before(size_t ptr) {
   uint64_t base;
   size_t size, old_ptr;
   size_t orig_ptr = ptr;
   if (!ptr)
-    return;
+    return 0;
   start_ignore_all_accesses_and_sync();
   /* Get the size of allocated region, check sanity. */
   ptr -= kRedZoneSize;
@@ -216,49 +219,43 @@ INLINE static void handle_free(OrigFn fn, size_t ptr) {
   drq_begin = (drq_begin + 1) % kDelayReuseQueueSize;
   spinlock_unlock(&drq_lock);
 
-  /* Actually deallocate the old pointer. */
-  CALL_FN_v_W(fn, old_ptr);
+  return old_ptr;
+}
 
+/* Second part of the free handler. */
+INLINE static void handle_free_after() {
   stop_ignore_all_accesses_and_sync();
 }
 
-/* malloc() */
-size_t VG_NACL_FUNC(malloc)(size_t size) {
+/* _malloc_r() */
+size_t VG_NACL_FUNC(_malloc_r)(size_t reent, size_t size) {
   OrigFn fn;
   size_t ptr;
   VALGRIND_GET_ORIG_FN(fn);
   size_t allocSize = handle_malloc_before(size);
-  CALL_FN_W_W(ptr, fn, allocSize);
+  CALL_FN_W_WW(ptr, fn, reent, allocSize);
   return handle_malloc_after(ptr, size);
 }
 
-/* calloc() */
-/* We implement calloc() via malloc and memset because, for some
-   reason, Valgrind can not unwind stack traces originating in calloc
-   (or, more exactly, memset) guts. We need these stack traces to
-   suppress false reports that happen in all memory allocation
-   functions.
-   There is a comment for CALL_FN_W_v in nacl_valgrind.h about the importance
-   of luck in stack unwinding; it seems that in this case we ran out of it :)
-*/
-size_t VG_NACL_FUNC(calloc)(size_t nmemb, size_t size) {
+/* _calloc_r() */
+size_t VG_NACL_FUNC(_calloc_r)(size_t reent, size_t nmemb, size_t size) {
   size_t totalSize = nmemb * size;
-  void* ptr = malloc(totalSize);
+  void* ptr = _malloc_r((void*)reent, totalSize);
   if (ptr)
     memset(ptr, 0, totalSize);
   return (size_t)ptr;
 }
 
-/* realloc() */
-size_t VG_NACL_FUNC(realloc)(size_t origPtr, size_t size) {
+/* _realloc_r() */
+size_t VG_NACL_FUNC(_realloc_r)(void* reent, size_t origPtr, size_t size) {
   if (!origPtr) {
-    return (size_t)malloc(size);
+    return (size_t)_malloc_r(reent, size);
   }
   if (!size) {
     free((void*)origPtr);
     return 0;
   }
-  size_t newPtr = (size_t)malloc(size);
+  size_t newPtr = (size_t)_malloc_r(reent, size);
   if (!newPtr) {
     free((void*)origPtr);
     return 0;
@@ -270,23 +267,42 @@ size_t VG_NACL_FUNC(realloc)(size_t origPtr, size_t size) {
   size_t copySize = size < origSize ? size : origSize;
 
   memcpy((void*)newPtr, (void*)origPtr, copySize);
-  free((void*)origPtr);
+  _free_r(reent, (void*)origPtr);
   return newPtr;
 }
 
-/* free() */
-void VG_NACL_FUNC(free)(size_t ptr) {
+/* _free_r() */
+void VG_NACL_FUNC(_free_r)(size_t reent, size_t ptr) {
   OrigFn fn;
   VALGRIND_GET_ORIG_FN(fn);
-  handle_free(fn, ptr);
+  size_t old_ptr = handle_free_before(ptr);
+  if (old_ptr)
+    CALL_FN_v_WW(fn, reent, old_ptr);
+  handle_free_after();
 }
 
+/* Unoptimized string functions. Optimized versions often read several bytes
+   beyond the end of the string. This makes Memcheck sad. */
 /* strlen() */
 size_t VG_NACL_FUNC(strlen)(char* ptr) {
   size_t i = 0;
   while (ptr[i])
     ++i;
   return i;
+}
+
+/* strchr() */
+char* VG_NACL_FUNC(strchr)(char* s, int c) {
+  size_t i;
+  char *ret = 0;
+  for (i = 0; ; i++) {
+    if (s[i] == (char)c) {
+      ret = s + i;
+      break;
+    }
+    if (s[i] == 0) break;
+  }
+  return ret;
 }
 
 /* nc_allocate_memory_block_mu() - a cached malloc for thread stack & tls. */
