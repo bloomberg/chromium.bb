@@ -31,12 +31,13 @@ class KeyboardAccessTest : public UITest {
   //
   // If alternate_key_sequence is true, use "Alt" instead of "F10" to
   // open the menu bar, and "Down" instead of "Enter" to open a menu.
-  void TestMenuKeyboardAccess(bool alternate_key_sequence);
+  void TestMenuKeyboardAccess(bool alternate_key_sequence, int modifiers);
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardAccessTest);
 };
 
-void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
+void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
+                                                int modifiers) {
   scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window = browser->GetWindow();
@@ -66,7 +67,17 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
   // menu key there.
   menu_key = app::VKEY_MENU;
 #endif
-  ASSERT_TRUE(window->SimulateOSKeyPress(menu_key, 0));
+  ASSERT_TRUE(window->SimulateOSKeyPress(menu_key, modifiers));
+
+  if (modifiers) {
+    // Verify Chrome does not move the view focus. We should not move the view
+    // focus when typing a menu key with modifier keys, such as shift keys or
+    // control keys.
+    int new_view_id = -1;
+    ASSERT_TRUE(window->GetFocusedViewID(&new_view_id));
+    ASSERT_EQ(original_view_id, new_view_id);
+    return;
+  }
 
   int new_view_id = -1;
   ASSERT_TRUE(window->WaitForFocusedViewIDToChange(
@@ -95,11 +106,15 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence) {
 }
 
 TEST_F(KeyboardAccessTest, TestMenuKeyboardAccess) {
-  TestMenuKeyboardAccess(false);
+  TestMenuKeyboardAccess(false, 0);
 }
 
 TEST_F(KeyboardAccessTest, TestAltMenuKeyboardAccess) {
-  TestMenuKeyboardAccess(true);
+  TestMenuKeyboardAccess(true, 0);
+}
+
+TEST_F(KeyboardAccessTest, TestShiftAltMenuKeyboardAccess) {
+  TestMenuKeyboardAccess(true, views::Event::EF_SHIFT_DOWN);
 }
 
 // Fails, http://crbug.com/50760.
