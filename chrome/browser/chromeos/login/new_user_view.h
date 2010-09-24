@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
@@ -120,6 +120,7 @@ class NewUserView : public views::View,
                                           gfx::NativeView native_view,
                                           views::RootView* root_view);
   virtual void OnLocaleChanged();
+  void AddChildView(View* view);
 
  private:
   // Enables/disables input controls (textfields, buttons).
@@ -130,19 +131,20 @@ class NewUserView : public views::View,
   void InitLink(views::Link** link);
 
   // Delete and recreate native controls that fail to update preferred size
-  // after string update.
-  void RecreateNativeControls();
+  // after text/locale update.
+  void RecreatePeculiarControls();
 
   // Screen controls.
-  // NOTE: When adding new controls check RecreateNativeControls()
-  // that |sign_in_button_| is added with correct index.
+  // NOTE: sign_in_button_ and languages_menubutton_ are handled with
+  // special care: they are recreated on any text/locale change
+  // because they are not resized properly.
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* title_label_;
-  views::NativeButton* sign_in_button_;
+  scoped_ptr<views::NativeButton> sign_in_button_;
   views::Link* create_account_link_;
   views::Link* browse_without_signin_link_;
-  views::MenuButton* languages_menubutton_;
+  scoped_ptr<views::MenuButton> languages_menubutton_;
   views::Throbber* throbber_;
 
   views::Accelerator accel_focus_pass_;
@@ -172,6 +174,10 @@ class NewUserView : public views::View,
   // Whether create account link is needed. Set to false for now but we may
   // need it back in near future.
   bool need_create_account_;
+
+  // Ordinal position of controls inside view layout.
+  int languages_menubutton_order_;
+  int sign_in_button_order_;
 
   FRIEND_TEST_ALL_PREFIXES(LoginScreenTest, IncognitoLogin);
   friend class LoginScreenTest;

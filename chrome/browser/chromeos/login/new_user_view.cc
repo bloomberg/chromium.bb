@@ -37,14 +37,11 @@ using views::WidgetGtk;
 
 namespace {
 
-// NOTE: When adding new controls check RecreateNativeControls()
-// that |sign_in_button_| is added with correct index.
-const int kSignInButtonFocusOrderIndex = 3;
 const int kTextfieldWidth = 286;
 const int kRowPad = 7;
 const int kColumnPad = 7;
-const int kLanguagesMenuWidth = 200;
 const int kLanguagesMenuHeight = 30;
+const SkColor kLanguagesMenuTextColor = 0xFF999999;
 const SkColor kErrorColor = 0xFF8F384F;
 const char kDefaultDomain[] = "@gmail.com";
 
@@ -94,7 +91,9 @@ NewUserView::NewUserView(Delegate* delegate,
       login_in_process_(false),
       need_border_(need_border),
       need_browse_without_signin_(need_browse_without_signin),
-      need_create_account_(false) {
+      need_create_account_(false),
+      languages_menubutton_order_(-1),
+      sign_in_button_order_(-1) {
 }
 
 NewUserView::~NewUserView() {
@@ -136,13 +135,10 @@ void NewUserView::Init() {
   }
 
   language_switch_menu_.InitLanguageMenu();
-  languages_menubutton_ = new views::MenuButton(
-      NULL, std::wstring(), &language_switch_menu_, true);
-  languages_menubutton_->set_menu_marker(
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_MENU_DROPARROW_SHARP));
-  languages_menubutton_->SetFocusable(true);
-  AddChildView(languages_menubutton_);
+
+  RecreatePeculiarControls();
+  AddChildView(sign_in_button_.get());
+  AddChildView(languages_menubutton_.get());
 
   // Set up accelerators.
   AddAccelerator(accel_focus_user_);
@@ -173,21 +169,43 @@ bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   return true;
 }
 
-void NewUserView::RecreateNativeControls() {
+void NewUserView::RecreatePeculiarControls() {
+  // PreferredSize reported by MenuButton (and TextField) is not able
+  // to shrink, only grow; so recreate on text change.
+  languages_menubutton_.reset(new views::MenuButton(
+      NULL, std::wstring(), &language_switch_menu_, true));
+  languages_menubutton_->set_menu_marker(
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_MENU_DROPARROW_SHARP));
+  languages_menubutton_->SetEnabledColor(kLanguagesMenuTextColor);
+  languages_menubutton_->SetFocusable(true);
+
   // There is no way to get native button preferred size after the button was
   // sized so delete and recreate the button on text update.
-  delete sign_in_button_;
-  sign_in_button_ = new views::NativeButton(this, std::wstring());
-  // Add button after label, user & password fields.
-  DCHECK(GetChildViewCount() >= kSignInButtonFocusOrderIndex);
-  AddChildView(kSignInButtonFocusOrderIndex, sign_in_button_);
+  sign_in_button_.reset(new views::NativeButton(this, std::wstring()));
   if (!CrosLibrary::Get()->EnsureLoaded())
     sign_in_button_->SetEnabled(false);
 }
 
-void NewUserView::UpdateLocalizedStrings() {
-  RecreateNativeControls();
+void NewUserView::AddChildView(View* view) {
+  // languages_menubutton_ and sign_in_button_ are recreated on text change,
+  // so we restore their original position in layout.
+  if (view == languages_menubutton_.get()) {
+    if (languages_menubutton_order_ < 0) {
+      languages_menubutton_order_ = GetChildViewCount();
+    }
+    views::View::AddChildView(languages_menubutton_order_, view);
+  } else if (view == sign_in_button_.get()) {
+    if (sign_in_button_order_ < 0) {
+      sign_in_button_order_ = GetChildViewCount();
+    }
+    views::View::AddChildView(sign_in_button_order_, view);
+  } else {
+    views::View::AddChildView(view);
+  }
+}
 
+void NewUserView::UpdateLocalizedStrings() {
   title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
   username_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
@@ -207,7 +225,11 @@ void NewUserView::UpdateLocalizedStrings() {
 }
 
 void NewUserView::OnLocaleChanged() {
+  RecreatePeculiarControls();
   UpdateLocalizedStrings();
+  AddChildView(sign_in_button_.get());
+  AddChildView(languages_menubutton_.get());
+
   Layout();
   SchedulePaint();
 }
@@ -273,10 +295,11 @@ void NewUserView::Layout() {
 
   // Place language selection in top right corner.
   int x = std::max(0,
-      this->width() - insets.right() - kLanguagesMenuWidth - kColumnPad);
+      this->width() - insets.right() -
+          languages_menubutton_->GetPreferredSize().width() - kColumnPad);
   int y = insets.top() + kRowPad;
   int width = std::min(this->width() - insets.width() - 2 * kColumnPad,
-                       kLanguagesMenuWidth);
+                       languages_menubutton_->GetPreferredSize().width());
   int height = kLanguagesMenuHeight;
   languages_menubutton_->SetBounds(x, y, width, height);
 
@@ -304,7 +327,7 @@ void NewUserView::Layout() {
   y += (setViewBounds(username_field_, x, y, width, true) + kRowPad);
   y += (setViewBounds(password_field_, x, y, width, true) + kRowPad);
   int throbber_y = y;
-  y += (setViewBounds(sign_in_button_, x, y, width, false) + kRowPad);
+  y += (setViewBounds(sign_in_button_.get(), x, y, width, false) + kRowPad);
   setViewBounds(throbber_,
                 x + width - throbber_->GetPreferredSize().width(),
                 throbber_y + (sign_in_button_->GetPreferredSize().height() -
@@ -355,7 +378,7 @@ void NewUserView::Login() {
 // Sign in button causes a login attempt.
 void NewUserView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  DCHECK(sender == sign_in_button_);
+  DCHECK(sender == sign_in_button_.get());
   Login();
 }
 
