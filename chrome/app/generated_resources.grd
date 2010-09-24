@@ -8384,7 +8384,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Talk
       </message>
       <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
-        Timezone:
+        Time zone:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables tap-to-click.">
         Enable tap-to-click
