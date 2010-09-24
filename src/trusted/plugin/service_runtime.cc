@@ -77,20 +77,20 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   // module runs, and is private to the service runtime.  This channel
   // is used for a secure plugin<->service runtime communication path
   // that can be used to forcibly shut down the sel_ldr.
-  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
-                 " (connecting for SrtSocket)\n"));
   PortableHandle* portable_socket_address = default_socket_address_->handle();
   ScriptableHandle* raw_channel = portable_socket_address->Connect();
+  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (raw_channel=%p)\n",
+                 static_cast<void*>(raw_channel)));
   if (NULL == raw_channel) {
     const char* error = "service runtime connect failed";
-    PLUGIN_PRINTF(("ServiceRuntime::InitCommuncation (%s)\n", error));
+    PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
     browser_interface_->AddToConsole(plugin()->instance_id(), error);
     return false;
   }
-  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
-                 " (constructing runtime channel)\n"));
   runtime_channel_ = new(std::nothrow) SrtSocket(raw_channel,
                                                  browser_interface_);
+  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (runtime_channel=%p)\n",
+                 static_cast<void*>(runtime_channel_)));
   if (NULL == runtime_channel_) {
     raw_channel->Unref();
     return false;
@@ -130,16 +130,14 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   // subsystem since that is handled by user-level code (not secure!)
   // in libsrpc.
   int load_status;
-
-  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
-                 " (invoking start_module RPC)\n"));
   if (!runtime_channel_->StartModule(&load_status)) {
     const char* error = "could not start nacl module";
     PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
     browser_interface_->AddToConsole(plugin()->instance_id(), error);
     return false;
   }
-  PLUGIN_PRINTF((" start_module returned %d\n", load_status));
+  PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (load_status=%d)\n",
+                 load_status));
   if (LOAD_OK != load_status) {
     nacl::string error = "loading of module failed with status " + load_status;
     PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error.c_str()));
@@ -218,6 +216,8 @@ bool ServiceRuntime::Start(const char* nacl_file) {
 
 bool ServiceRuntime::StartUnderChromium(const char* url,
                                         nacl::DescWrapper* shm) {
+  PLUGIN_PRINTF(("ServiceRuntime::StartUnderChromium (url=%s, shm=%p)\n",
+                 url, reinterpret_cast<void*>(shm)));
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
     return false;
@@ -238,7 +238,7 @@ bool ServiceRuntime::StartUnderChromium(const char* url,
     return false;
   }
 
-  PLUGIN_PRINTF(("ServiceRuntime::Start (return 1)\n"));
+  PLUGIN_PRINTF(("ServiceRuntime::StartUnderChromium (return 1)\n"));
   return true;
 }
 
@@ -286,9 +286,8 @@ ScriptableHandle* ServiceRuntime::default_socket_address() const {
   return default_socket_address_;
 }
 
-ScriptableHandle* ServiceRuntime::GetSocketAddress(
-    Plugin* plugin,
-    nacl::Handle channel) {
+ScriptableHandle* ServiceRuntime::GetSocketAddress(Plugin* plugin,
+                                                   nacl::Handle channel) {
   nacl::DescWrapper::MsgHeader header;
   nacl::DescWrapper::MsgIoVec iovec[1];
   unsigned char bytes[NACL_ABI_IMC_USER_BYTES_MAX];

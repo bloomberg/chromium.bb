@@ -87,7 +87,8 @@ PluginNpapi* PluginNpapi::New(NPP npp,
                               int argc,
                               char* argn[],
                               char* argv[]) {
-  PLUGIN_PRINTF(("PluginNpapi::New(%p, %d)\n", static_cast<void*>(npp), argc));
+  PLUGIN_PRINTF(("PluginNpapi::New (npp=%p, argc=%d)\n",
+                 static_cast<void*>(npp), argc));
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   if (!NaClHandlePassBrowserCtor()) {
     return NULL;
@@ -117,13 +118,13 @@ PluginNpapi* PluginNpapi::New(NPP npp,
   }
   // Create the browser scriptable handle for plugin.
   ScriptableHandle* handle = browser_interface->NewScriptableHandle(plugin);
-  // handle will be NULL if plugin was NULL.
+  PLUGIN_PRINTF(("PluginNpapi::New (scriptable_handle=%p)\n",
+                 static_cast<void*>(handle)));
   if (NULL == handle) {
-    PLUGIN_PRINTF(("PluginNpapi::New: NewScriptableHandle returned null\n"));
     return NULL;
   }
   plugin->set_scriptable_handle(handle);
-  PLUGIN_PRINTF(("PluginNpapi::New(%p): done\n", static_cast<void*>(plugin)));
+  PLUGIN_PRINTF(("PluginNpapi::New (return %p)\n", static_cast<void*>(plugin)));
   return plugin;
 }
 
@@ -132,7 +133,8 @@ PluginNpapi::~PluginNpapi() {
   NaClHandlePassBrowserDtor();
 #endif
 
-  PLUGIN_PRINTF(("PluginNpapi::~PluginNpapi(%p)\n", static_cast<void* >(this)));
+  PLUGIN_PRINTF(("PluginNpapi::~PluginNpapi (this=%p)\n",
+                 static_cast<void* >(this)));
   // Delete the NPModule for this plugin.
   if (NULL != module_) {
     delete module_;
@@ -148,8 +150,8 @@ PluginNpapi::~PluginNpapi() {
 }
 
 NPError PluginNpapi::Destroy(NPSavedData** save) {
-  PLUGIN_PRINTF(("PluginNpapi::Destroy(%p, %p)\n", static_cast<void*>(this),
-                 static_cast<void*>(save)));
+  PLUGIN_PRINTF(("PluginNpapi::Destroy (this=%p, save=%p)\n",
+                 static_cast<void*>(this), static_cast<void*>(save)));
 
   ShutDownSubprocess();
 
@@ -160,6 +162,9 @@ NPError PluginNpapi::Destroy(NPSavedData** save) {
   module_ = NULL;
 
   // This has the indirect effect of doing "delete this".
+  PLUGIN_PRINTF(("PluginNpapi::Destroy (this=%p, scriptable_handle=%p)\n",
+                 static_cast<void*>(this),
+                 static_cast<void*>(scriptable_handle())));
   scriptable_handle()->Unref();
   return NPERR_NO_ERROR;
 }
@@ -386,7 +391,7 @@ NPError PluginNpapi::DestroyStream(NPStream* stream,
     // Here we handle only the default, src=...  streams (statically obtained)
     // Stream download completed so start the nexe load into the service
     // runtime.
-    PLUGIN_PRINTF(("default run\n"));
+    PLUGIN_PRINTF(("DestroyStream: default run\n"));
     StreamShmBuffer* stream_buffer =
         reinterpret_cast<StreamShmBuffer*>(stream->pdata);
     // We are running outside of Chrome, so StreamAsFile does the load.
@@ -504,8 +509,8 @@ bool PluginNpapi::InitializeModuleMultimedia(ScriptableHandle* raw_channel,
 }
 
 void PluginNpapi::ShutdownMultimedia() {
-  PLUGIN_PRINTF(("PluginNpapi::ShutdownMultimedia:"
-                 " deleting multimedia_channel_\n"));
+  PLUGIN_PRINTF(("PluginNpapi::ShutdownMultimedia (this=%p)\n",
+                 static_cast<void*>(this)));
   delete multimedia_channel_;
   multimedia_channel_ = NULL;
 }

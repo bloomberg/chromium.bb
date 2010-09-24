@@ -57,14 +57,13 @@ SrtSocket::~SrtSocket() {
 
 bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
   if (!(connected_socket()->HasMethod(kLoadModule, METHOD_CALL))) {
-    PLUGIN_PRINTF(("No load_module method was found\n"));
+    PLUGIN_PRINTF(("SrtSocket::LoadModule (no load_module method found)\n"));
     return false;
   }
   SrpcParams params;
-  bool success;
-  success = connected_socket()->InitParams(kLoadModule,
-                                           METHOD_CALL,
-                                           &params);
+  bool success = connected_socket()->InitParams(kLoadModule,
+                                                METHOD_CALL,
+                                                &params);
   if (!success) {
     return false;
   }
@@ -80,11 +79,11 @@ bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
 bool SrtSocket::InitHandlePassing(NaClDesc* desc,
                                   nacl::Handle sel_ldr_handle) {
   if (!(connected_socket()->HasMethod(kInitHandlePassing, METHOD_CALL))) {
-    PLUGIN_PRINTF(("No load_module method was found\n"));
+    PLUGIN_PRINTF(("SrtSocket::InitHandlePassing "
+                   "(no load_module method found)\n"));
     return false;
   }
   SrpcParams params;
-  bool success;
   DWORD my_pid = GetCurrentProcessId();
   nacl::Handle my_handle = GetCurrentProcess();
   nacl::Handle my_handle_in_selldr;
@@ -99,9 +98,9 @@ bool SrtSocket::InitHandlePassing(NaClDesc* desc,
     return false;
   }
 
-  success = connected_socket()->InitParams(kInitHandlePassing,
-                                           METHOD_CALL,
-                                           &params);
+  bool success = connected_socket()->InitParams(kInitHandlePassing,
+                                                METHOD_CALL,
+                                                &params);
   if (!success) {
     return false;
   }
