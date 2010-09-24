@@ -22,7 +22,7 @@ void SHA256HashString(const std::string& str, void* output, size_t len) {
 
 std::string SHA256HashString(const std::string& str) {
   std::string output(SHA256_LENGTH, 0);
-  SHA256HashString(str, string_as_array(&output), str.size());
+  SHA256HashString(str, string_as_array(&output), output.size());
   return output;
 }
 
