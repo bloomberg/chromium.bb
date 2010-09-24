@@ -17,6 +17,7 @@
 #include "base/process_util.h"
 #include "base/scoped_bstr_win.h"
 #include "base/singleton.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"

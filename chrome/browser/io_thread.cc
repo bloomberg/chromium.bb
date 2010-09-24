@@ -8,6 +8,7 @@
 #include "base/leak_tracker.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"

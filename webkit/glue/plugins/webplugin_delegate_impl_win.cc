@@ -16,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "skia/ext/platform_canvas.h"

@@ -22,6 +22,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/browser/extensions/extensions_service.h"

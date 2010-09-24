@@ -69,6 +69,7 @@
 #include "base/safe_strerror_posix.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/time.h"

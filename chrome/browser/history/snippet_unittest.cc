@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

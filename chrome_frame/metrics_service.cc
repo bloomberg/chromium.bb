@@ -53,6 +53,7 @@
 
 #include "base/file_version_info.h"
 #include "base/lock.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/string_number_conversions.h"

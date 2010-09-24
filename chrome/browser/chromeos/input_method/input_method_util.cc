@@ -16,6 +16,7 @@
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

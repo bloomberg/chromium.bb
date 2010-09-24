@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

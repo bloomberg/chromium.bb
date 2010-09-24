@@ -11,6 +11,7 @@
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"

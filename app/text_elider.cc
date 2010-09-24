@@ -7,6 +7,7 @@
 #include "app/text_elider.h"
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"

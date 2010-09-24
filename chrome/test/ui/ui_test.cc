@@ -24,6 +24,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"

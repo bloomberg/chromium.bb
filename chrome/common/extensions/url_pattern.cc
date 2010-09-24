@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/url_pattern.h"
 
 #include "base/string_piece.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"

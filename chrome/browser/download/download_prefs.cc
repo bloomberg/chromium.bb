@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_prefs.h"
 
 #include "base/file_util.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"

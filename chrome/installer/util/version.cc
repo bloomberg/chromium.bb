@@ -8,6 +8,7 @@
 
 #include "base/format_macros.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/version.h"

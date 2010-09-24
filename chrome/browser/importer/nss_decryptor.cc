@@ -17,6 +17,7 @@
 #endif  // defined(USE_NSS)
 
 #include "base/base64.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "webkit/glue/password_form.h"

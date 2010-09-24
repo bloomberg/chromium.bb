@@ -15,6 +15,7 @@
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_lib.h"

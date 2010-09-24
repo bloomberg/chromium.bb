@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sha2.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"

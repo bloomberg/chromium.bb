@@ -13,6 +13,7 @@
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"

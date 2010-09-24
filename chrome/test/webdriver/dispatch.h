@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/command.h"

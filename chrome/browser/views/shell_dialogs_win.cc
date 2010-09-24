@@ -16,6 +16,7 @@
 #include "base/message_loop.h"
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
+#include "base/string_split.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"

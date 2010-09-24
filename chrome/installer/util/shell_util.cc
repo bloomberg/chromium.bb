@@ -20,6 +20,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

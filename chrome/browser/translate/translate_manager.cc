@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/histogram.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
