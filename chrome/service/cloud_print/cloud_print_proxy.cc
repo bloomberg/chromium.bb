@@ -4,10 +4,38 @@
 
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 
+#include "base/command_line.h"
+#include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/values.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
+#include "chrome/service/service_process.h"
+
+// This method is invoked on the IO thread to launch the browser process to
+// display a desktop notification that the Cloud Print token is invalid and
+// needs re-authentication.
+static void ShowTokenExpiredNotificationInBrowser() {
+  DCHECK(g_service_process->io_thread()->message_loop_proxy()->
+      BelongsToCurrentThread());
+  FilePath exe_path;
+  PathService::Get(base::FILE_EXE, &exe_path);
+  if (exe_path.empty()) {
+    NOTREACHED() << "Unable to get browser process binary name.";
+  }
+  CommandLine cmd_line(exe_path);
+
+  const CommandLine& process_command_line = *CommandLine::ForCurrentProcess();
+  FilePath user_data_dir =
+      process_command_line.GetSwitchValuePath(switches::kUserDataDir);
+  if (!user_data_dir.empty())
+    cmd_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+  cmd_line.AppendSwitch(switches::kNotifyCloudPrintTokenExpired);
+
+  base::LaunchApp(cmd_line, false, false, NULL);
+}
 
 CloudPrintProxy::CloudPrintProxy() {
 }
@@ -128,5 +156,9 @@ void CloudPrintProxy::OnAuthenticationFailed() {
   DCHECK(CalledOnValidThread());
   // If authenticated failed, we will disable the cloud print proxy.
   DisableForUser();
+  // Launch the browser to display a notification that the credentials have
+  // expired.
+  g_service_process->io_thread()->message_loop_proxy()->PostTask(
+      FROM_HERE, NewRunnableFunction(&ShowTokenExpiredNotificationInBrowser));
 }
 
