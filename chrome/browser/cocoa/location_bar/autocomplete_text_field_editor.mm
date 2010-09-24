@@ -308,6 +308,33 @@
   }
 }
 
+- (void)doCommandBySelector:(SEL)cmd {
+  // TODO(shess): Review code for cases where we're fruitlessly attempting to
+  // work in spite of not having an observer.
+  AutocompleteTextFieldObserver* observer = [self observer];
+
+  if (observer && observer->OnDoCommandBySelector(cmd)) {
+    // The observer should already be aware of any changes to the text, so
+    // setting |textChangedByKeyEvents_| to NO to prevent its OnDidChange()
+    // method from being called unnecessarily.
+    textChangedByKeyEvents_ = NO;
+    return;
+  }
+
+  // If the escape key was pressed and no revert happened and we're in
+  // fullscreen mode, make it resign key.
+  if (cmd == @selector(cancelOperation:)) {
+    BrowserWindowController* windowController =
+        [BrowserWindowController browserWindowControllerForView:self];
+    if ([windowController isFullscreen]) {
+      [windowController focusTabContents];
+      return;
+    }
+  }
+
+  [super doCommandBySelector:cmd];
+}
+
 - (void)setAttributedString:(NSAttributedString*)aString {
   NSTextStorage* textStorage = [self textStorage];
   DCHECK(textStorage);
