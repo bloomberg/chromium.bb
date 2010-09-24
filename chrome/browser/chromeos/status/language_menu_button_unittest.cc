@@ -20,7 +20,8 @@ TEST(LanguageMenuButtonTest, GetTextForIndicatorTest) {
   }
   {
     InputMethodDescriptor desc("hangul", "Korean", "us", "ko");
-    EXPECT_EQ(L"KO", LanguageMenuButton::GetTextForIndicator(desc));
+    EXPECT_EQ(UTF8ToWide("\xea\xb0\x80"),
+              LanguageMenuButton::GetTextForIndicator(desc));
   }
   {
     InputMethodDescriptor desc("invalid-id", "unregistered string", "us", "xx");
@@ -60,7 +61,7 @@ TEST(LanguageMenuButtonTest, GetTextForIndicatorTest) {
   }
   {
     InputMethodDescriptor desc("m17n:zh:quick", "Quick", "us", "zh-TW");
-    EXPECT_EQ(UTF8ToWide("TW"),
+    EXPECT_EQ(UTF8ToWide("\xe9\x80\x9f"),
               LanguageMenuButton::GetTextForIndicator(desc));
   }
 }
