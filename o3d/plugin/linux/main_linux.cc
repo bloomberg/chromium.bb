@@ -916,7 +916,8 @@ gboolean PluginObject::OnGtkConfigure(GtkWidget *widget,
   client()->SendResizeEvent(renderer()->width(), renderer()->height(),
                             true);
   fullscreen_ = true;
-  return TRUE;
+  // Return false here so that the default handler in GTK will still be invoked.
+  return FALSE;
 }
 
 gboolean PluginObject::OnGtkDelete(GtkWidget *widget,
