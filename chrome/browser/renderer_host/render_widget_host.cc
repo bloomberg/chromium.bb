@@ -1138,22 +1138,6 @@ void RenderWidgetHost::AdvanceToNextMisspelling() {
   Send(new ViewMsg_AdvanceToNextMisspelling(routing_id_));
 }
 
-void RenderWidgetHost::RequestAccessibilityTree() {
-  Send(new ViewMsg_GetAccessibilityTree(routing_id()));
-}
-
-void RenderWidgetHost::SetDocumentLoaded(bool document_loaded) {
-  document_loaded_ = document_loaded;
-
-  if (!document_loaded_)
-    requested_accessibility_tree_ = false;
-
-  if (renderer_accessible_ && document_loaded_) {
-    RequestAccessibilityTree();
-    requested_accessibility_tree_ = true;
-  }
-}
-
 void RenderWidgetHost::EnableRendererAccessibility() {
   if (renderer_accessible_)
     return;
@@ -1165,9 +1149,9 @@ void RenderWidgetHost::EnableRendererAccessibility() {
 
   renderer_accessible_ = true;
 
-  if (document_loaded_ && !requested_accessibility_tree_) {
-    RequestAccessibilityTree();
-    requested_accessibility_tree_ = true;
+  if (process_->HasConnection()) {
+    // Renderer accessibility wasn't enabled on process launch. Enable it now.
+    Send(new ViewMsg_EnableAccessibility(routing_id()));
   }
 }
 

@@ -227,11 +227,21 @@ uint32 ConvertState(const WebAccessibilityObject& o) {
   if (o.isChecked())
     state |= (1 << WebAccessibility::STATE_CHECKED);
 
+  if (o.isCollapsed())
+    state |= (1 << WebAccessibility::STATE_COLLAPSED);
+
   if (o.canSetFocusAttribute())
     state |= (1 << WebAccessibility::STATE_FOCUSABLE);
 
   if (o.isFocused())
     state |= (1 << WebAccessibility::STATE_FOCUSED);
+
+  if (o.roleValue() == WebKit::WebAccessibilityRolePopUpButton) {
+    state |= (1 << WebAccessibility::STATE_HASPOPUP);
+
+    if (!o.isCollapsed())
+      state |= (1 << WebAccessibility::STATE_EXPANDED);
+  }
 
   if (o.isHovered())
     state |= (1 << WebAccessibility::STATE_HOTTRACKED);
@@ -239,7 +249,10 @@ uint32 ConvertState(const WebAccessibilityObject& o) {
   if (o.isIndeterminate())
     state |= (1 << WebAccessibility::STATE_INDETERMINATE);
 
-  if (o.isAnchor())
+  if (!o.isVisible())
+    state |= (1 << WebAccessibility::STATE_INVISIBLE);
+
+  if (o.isLinked())
     state |= (1 << WebAccessibility::STATE_LINKED);
 
   if (o.isMultiSelectable())
@@ -256,6 +269,12 @@ uint32 ConvertState(const WebAccessibilityObject& o) {
 
   if (o.isReadOnly())
     state |= (1 << WebAccessibility::STATE_READONLY);
+
+  if (o.canSetSelectedAttribute())
+    state |= (1 << WebAccessibility::STATE_SELECTABLE);
+
+  if (o.isSelected())
+    state |= (1 << WebAccessibility::STATE_SELECTED);
 
   if (o.isVisited())
     state |= (1 << WebAccessibility::STATE_TRAVERSED);

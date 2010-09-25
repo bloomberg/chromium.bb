@@ -992,8 +992,8 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_ExtensionsUpdated,
                        ViewMsg_ExtensionsUpdated_Params)
 
-  // Request a tree of Accessibility data from the render process.
-  IPC_MESSAGE_ROUTED0(ViewMsg_GetAccessibilityTree)
+  // Enable accessibility in the renderer process.
+  IPC_MESSAGE_ROUTED0(ViewMsg_EnableAccessibility)
 
   // Relay a request from assistive technology to set focus to a given node.
   IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityFocus,
@@ -2243,27 +2243,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_ExtensionCloseChannel,
                        int /* port_id */)
 
-  // Sent as a result of a focus change in the renderer (if accessibility is
-  // enabled), to notify the browser side that its accessibility focus needs to
-  // change as well. Takes the id of the accessibility object that now has
-  // focus.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityFocusChange,
-                      int /* accessibility object id */)
-
-  // Sent by the renderer when the state of an accessibility node changes.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityObjectStateChange,
-                      webkit_glue::WebAccessibility)
-
   // Sent to notify the browser about renderer accessibility notifications.
   // The browser responds with a ViewMsg_AccessibilityNotifications_ACK.
   IPC_MESSAGE_ROUTED1(
       ViewHostMsg_AccessibilityNotifications,
       std::vector<ViewHostMsg_AccessibilityNotification_Params>)
-
-  // Send the tree of accessibility data to the browser, where it's cached
-  // in order to respond to OS accessibility queries immediately.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_AccessibilityTree,
-                      webkit_glue::WebAccessibility)
 
   // Message sent from the renderer to the browser to request that the browser
   // close all sockets.  Used for debugging/testing.

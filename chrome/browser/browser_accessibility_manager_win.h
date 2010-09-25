@@ -36,7 +36,6 @@ class BrowserAccessibilityDelegate {
   virtual ~BrowserAccessibilityDelegate() {}
   virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
-  virtual void AccessibilityNotificationsAck() = 0;
 };
 
 // Manages a tree of BrowserAccessibility objects.
@@ -77,9 +76,8 @@ class BrowserAccessibilityManager {
   // Tell the renderer to do the default action for this node.
   void DoDefaultAction(const BrowserAccessibility& node);
 
-  // Called when the renderer process has notified us of a focus, state,
-  // or children change. Send a notification to MSAA clients of the change.
-  void OnAccessibilityFocusChange(int acc_obj_id);
+  // Called when the renderer process has notified us of about tree changes.
+  // Send a notification to MSAA clients of the change.
   void OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
 
@@ -93,6 +91,10 @@ class BrowserAccessibilityManager {
   void OnAccessibilityObjectStateChange(
       const webkit_glue::WebAccessibility& acc_obj);
   void OnAccessibilityObjectChildrenChange(
+      const webkit_glue::WebAccessibility& acc_obj);
+  void OnAccessibilityObjectFocusChange(
+      const webkit_glue::WebAccessibility& acc_obj);
+  void OnAccessibilityObjectLoadComplete(
       const webkit_glue::WebAccessibility& acc_obj);
   void OnAccessibilityObjectValueChange(
       const webkit_glue::WebAccessibility& acc_obj);

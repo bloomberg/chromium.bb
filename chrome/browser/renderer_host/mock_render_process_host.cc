@@ -20,7 +20,8 @@ MockRenderProcessHost::~MockRenderProcessHost() {
   delete transport_dib_;
 }
 
-bool MockRenderProcessHost::Init(bool is_extensions_process) {
+bool MockRenderProcessHost::Init(
+    bool is_accessibility_enabled, bool is_extensions_process) {
   return true;
 }
 

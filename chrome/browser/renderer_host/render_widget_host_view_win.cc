@@ -1477,31 +1477,18 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT, WPARAM, LPARAM,
   return MA_ACTIVATE;
 }
 
-void RenderWidgetHostViewWin::UpdateAccessibilityTree(
-    const webkit_glue::WebAccessibility& tree) {
-  browser_accessibility_manager_.reset(
-      new BrowserAccessibilityManager(m_hWnd, tree, this));
-
-  BrowserAccessibility* root = browser_accessibility_manager_.get()->GetRoot();
-  LONG root_id;
-  if (root && SUCCEEDED(root->get_uniqueID(&root_id))) {
-    ::NotifyWinEvent(
-        EVENT_OBJECT_FOCUS, m_hWnd, OBJID_CLIENT, root_id);
-    ::NotifyWinEvent(
-        IA2_EVENT_DOCUMENT_LOAD_COMPLETE, m_hWnd, OBJID_CLIENT, root_id);
-  }
-}
-
-void RenderWidgetHostViewWin::OnAccessibilityFocusChange(int acc_obj_id) {
-  if (browser_accessibility_manager_.get()) {
-    browser_accessibility_manager_->OnAccessibilityFocusChange(acc_obj_id);
-  }
-}
-
 void RenderWidgetHostViewWin::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
-  if (browser_accessibility_manager_.get())
-    browser_accessibility_manager_->OnAccessibilityNotifications(params);
+  if (!browser_accessibility_manager_.get()) {
+    // Use empty document to process notifications
+    webkit_glue::WebAccessibility empty_document;
+    empty_document.role = WebAccessibility::ROLE_DOCUMENT;
+    empty_document.state = 0;
+    browser_accessibility_manager_.reset(
+        new BrowserAccessibilityManager(m_hWnd, empty_document, this));
+  }
+
+  browser_accessibility_manager_->OnAccessibilityNotifications(params);
 }
 
 void RenderWidgetHostViewWin::Observe(NotificationType type,
@@ -1544,10 +1531,6 @@ void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
   }
 
   render_widget_host_->AccessibilityDoDefaultAction(acc_obj_id);
-}
-
-void RenderWidgetHostViewWin::AccessibilityNotificationsAck() {
-  render_widget_host_->AccessibilityNotificationsAck();
 }
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,

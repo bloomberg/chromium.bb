@@ -153,9 +153,6 @@ class RenderWidgetHostViewWin
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void SetVisuallyDeemphasized(bool deemphasized);
-  virtual void UpdateAccessibilityTree(
-      const webkit_glue::WebAccessibility& tree);
-  virtual void OnAccessibilityFocusChange(int acc_obj_id);
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
 
@@ -167,7 +164,6 @@ class RenderWidgetHostViewWin
   // Implementation of BrowserAccessibilityDelegate:
   virtual void SetAccessibilityFocus(int acc_obj_id);
   virtual void AccessibilityDoDefaultAction(int acc_obj_id);
-  virtual void AccessibilityNotificationsAck();
 
  protected:
   // Windows Message Handlers

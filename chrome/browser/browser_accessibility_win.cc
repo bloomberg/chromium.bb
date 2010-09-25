@@ -1092,22 +1092,35 @@ void BrowserAccessibility::InitRoleAndState(LONG web_role,
 
   if ((web_state >> WebAccessibility::STATE_CHECKED) & 1)
     state_ |= STATE_SYSTEM_CHECKED;
+  if ((web_state >> WebAccessibility::STATE_COLLAPSED) & 1)
+    state_ |= STATE_SYSTEM_COLLAPSED;
+  if ((web_state >> WebAccessibility::STATE_EXPANDED) & 1)
+    state_ |= STATE_SYSTEM_EXPANDED;
   if ((web_state >> WebAccessibility::STATE_FOCUSABLE) & 1)
     state_ |= STATE_SYSTEM_FOCUSABLE;
+  if ((web_state >> WebAccessibility::STATE_HASPOPUP) & 1)
+    state_ |= STATE_SYSTEM_HASPOPUP;
   if ((web_state >> WebAccessibility::STATE_HOTTRACKED) & 1)
     state_ |= STATE_SYSTEM_HOTTRACKED;
   if ((web_state >> WebAccessibility::STATE_INDETERMINATE) & 1)
     state_ |= STATE_SYSTEM_INDETERMINATE;
+  if ((web_state >> WebAccessibility::STATE_INVISIBLE) & 1)
+    state_ |= STATE_SYSTEM_INVISIBLE;
   if ((web_state >> WebAccessibility::STATE_LINKED) & 1)
     state_ |= STATE_SYSTEM_LINKED;
   if ((web_state >> WebAccessibility::STATE_MULTISELECTABLE) & 1)
     state_ |= STATE_SYSTEM_MULTISELECTABLE;
+  // TODO(ctguil): Support STATE_SYSTEM_EXTSELECTABLE/accSelect.
   if ((web_state >> WebAccessibility::STATE_OFFSCREEN) & 1)
     state_ |= STATE_SYSTEM_OFFSCREEN;
   if ((web_state >> WebAccessibility::STATE_PRESSED) & 1)
     state_ |= STATE_SYSTEM_PRESSED;
   if ((web_state >> WebAccessibility::STATE_PROTECTED) & 1)
     state_ |= STATE_SYSTEM_PROTECTED;
+  if ((web_state >> WebAccessibility::STATE_SELECTABLE) & 1)
+    state_ |= STATE_SYSTEM_SELECTABLE;
+  if ((web_state >> WebAccessibility::STATE_SELECTED) & 1)
+    state_ |= STATE_SYSTEM_SELECTED;
   if ((web_state >> WebAccessibility::STATE_READONLY) & 1)
     state_ |= STATE_SYSTEM_READONLY;
   if ((web_state >> WebAccessibility::STATE_TRAVERSED) & 1)

@@ -146,6 +146,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   RenderProcessHost* process() const { return process_; }
   int routing_id() const { return routing_id_; }
+  static bool renderer_accessible() { return renderer_accessible_; }
 
   // Set the PaintObserver on this object. Takes ownership.
   void set_paint_observer(PaintObserver* paint_observer) {
@@ -399,13 +400,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   }
 
  protected:
-  // Aid for determining when an accessibility tree request can be made. Set by
-  // TabContents to true on document load and to false on page navigation.
-  void SetDocumentLoaded(bool document_loaded);
-
-  // Requests a snapshot of an accessible DOM tree from the renderer.
-  void RequestAccessibilityTree();
-
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
                          int event_size, bool is_keyboard_shortcut);
@@ -687,14 +681,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
-
-  // Keep track of if we have a loaded document so that we can request an
-  // accessibility tree on demand when renderer accessibility is enabled.
-  bool document_loaded_;
-
-  // Keep track of if we've already requested the accessibility tree so
-  // we don't do it more than once.
-  bool requested_accessibility_tree_;
 
   // Optional video YUV layer for used for out-of-process compositing.
   scoped_ptr<VideoLayer> video_layer_;

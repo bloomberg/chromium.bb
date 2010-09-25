@@ -157,7 +157,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   // initialized it) or may not (we have our own process or the old process
   // crashed) have been initialized. Calling Init multiple times will be
   // ignored, so this is safe.
-  if (!process()->Init(is_extension_process_))
+  if (!process()->Init(renderer_accessible(), is_extension_process_))
     return false;
   DCHECK(process()->HasConnection());
   DCHECK(process()->profile());
@@ -844,8 +844,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionPostMessage,
                         OnExtensionPostMessage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityFocusChange,
-                        OnAccessibilityFocusChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityNotifications,
                         OnAccessibilityNotifications)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OnCSSInserted, OnCSSInserted)
@@ -854,7 +852,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContentBlocked, OnContentBlocked)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AccessibilityTree, OnAccessibilityTree)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetDisplayingPDFContent,
                         OnSetDisplayingPDFContent)
@@ -1023,12 +1020,6 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
   FilterURL(policy, renderer_id, &validated_params.password_form.origin);
   FilterURL(policy, renderer_id, &validated_params.password_form.action);
 
-  if (!validated_params.was_within_same_page) {
-    // Only set that the document is not loaded if the navigation was not within
-    // the current page. If it was within the same page, the document will not
-    // load again.
-    SetDocumentLoaded(false);
-  }
   delegate_->DidNavigate(this, validated_params);
 }
 
@@ -1326,7 +1317,6 @@ void RenderViewHost::OnMsgDocumentLoadedInFrame() {
       delegate_->GetResourceDelegate();
   if (resource_delegate)
     resource_delegate->DocumentLoadedInFrame();
-  SetDocumentLoaded(true);
 }
 
 void RenderViewHost::DisassociateFromPopupCount() {
@@ -1958,36 +1948,34 @@ void RenderViewHost::OnExtensionPostMessage(
   }
 }
 
-void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
-  if (view())
-    view()->OnAccessibilityFocusChange(acc_obj_id);
-}
-
 void RenderViewHost::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   if (view())
     view()->OnAccessibilityNotifications(params);
 
   if (params.size() > 0) {
+    for (unsigned i = 0; i < params.size(); i++) {
+      const ViewHostMsg_AccessibilityNotification_Params& param = params[i];
+
+      if (param.notification_type ==
+              ViewHostMsg_AccessibilityNotification_Params::
+                  NOTIFICATION_TYPE_LOAD_COMPLETE) {
+        // TODO(ctguil): Remove when mac processes OnAccessibilityNotifications.
+        if (view())
+          view()->UpdateAccessibilityTree(param.acc_obj);
+
+        if (save_accessibility_tree_for_testing_)
+          accessibility_tree_ = param.acc_obj;
+      }
+    }
+
     NotificationService::current()->Notify(
         NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
         Source<RenderViewHost>(this),
         NotificationService::NoDetails());
   }
-}
 
-void RenderViewHost::OnAccessibilityTree(
-    const webkit_glue::WebAccessibility& tree) {
-  if (view())
-    view()->UpdateAccessibilityTree(tree);
-
-  if (save_accessibility_tree_for_testing_)
-    accessibility_tree_ = tree;
-
-  NotificationService::current()->Notify(
-      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,
-      Source<RenderViewHost>(this),
-      NotificationService::NoDetails());
+  AccessibilityNotificationsAck();
 }
 
 void RenderViewHost::OnCSSInserted() {

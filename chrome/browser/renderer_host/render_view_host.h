@@ -657,10 +657,8 @@ class RenderViewHost : public RenderWidgetHost {
 
   void OnExtensionRequest(const ViewHostMsg_DomMessage_Params& params);
   void OnExtensionPostMessage(int port_id, const std::string& message);
-  void OnAccessibilityFocusChange(int acc_obj_id);
   void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
-  void OnAccessibilityTree(const webkit_glue::WebAccessibility& tree);
   void OnCSSInserted();
   void OnPageContents(const GURL& url,
                       int32 page_id,

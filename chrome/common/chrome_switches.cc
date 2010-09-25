@@ -359,6 +359,9 @@ extern const char kLogNetLog[]              = "log-net-log";
 // Enable gpu-accelerated 2d canvas.
 const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
+// Enables WebKit accessibility within the renderer process.
+const char kEnableAccessibility[]           = "enable-accessibility";
+
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
 

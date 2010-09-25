@@ -266,17 +266,15 @@ void AccessibleChecker::CheckAccessibleRole(IAccessible* accessible) {
   VARIANT var_role = {0};
   HRESULT hr =
       accessible->get_accRole(CreateI4Variant(CHILDID_SELF), &var_role);
-  EXPECT_EQ(hr, S_OK);
-  ASSERT_TRUE(role_ == var_role);
+  ASSERT_EQ(hr, S_OK);
+  EXPECT_TRUE(role_ == var_role);
 }
 
 void AccessibleChecker::CheckAccessibleValue(IAccessible* accessible) {
   CComBSTR value;
   HRESULT hr =
       accessible->get_accValue(CreateI4Variant(CHILDID_SELF), &value);
-  // TODO(ctguil): Use EXPECT_EQ when render widget isn't using prop service.
-  // EXPECT_EQ(hr, S_OK);
-  EXPECT_TRUE(SUCCEEDED(hr));
+  EXPECT_EQ(S_OK, hr);
 
   // Test that the correct string was returned.
   EXPECT_STREQ(value_.c_str(),
@@ -291,8 +289,8 @@ void AccessibleChecker::CheckAccessibleState(IAccessible* accessible) {
   HRESULT hr =
       accessible->get_accState(CreateI4Variant(CHILDID_SELF), &var_state);
   EXPECT_EQ(hr, S_OK);
-  EXPECT_EQ(VT_I4, V_VT(&var_state));
-  ASSERT_TRUE(state_ == V_I4(&var_state));
+  ASSERT_EQ(VT_I4, V_VT(&var_state));
+  EXPECT_EQ(state_, V_I4(&var_state));
 }
 
 void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
@@ -376,6 +374,55 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestNotificationActiveDescendantChanged) {
+  GURL tree_url("data:text/html,<ul tabindex='-1' role='radiogroup'><li id='li'"
+      ">li</li></ul>");
+  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  GetRendererAccessible();
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check the browser's copy of the renderer accessibility tree.
+  AccessibleChecker list_marker_checker(L"", ROLE_SYSTEM_LISTITEM, L"\x2022");
+  AccessibleChecker static_text_checker(L"", ROLE_SYSTEM_TEXT, L"li");
+  AccessibleChecker list_item_checker(L"", ROLE_SYSTEM_LISTITEM, L"");
+  list_item_checker.SetExpectedState(
+      STATE_SYSTEM_READONLY);
+  AccessibleChecker radio_group_checker(L"", ROLE_SYSTEM_GROUPING, L"");
+  radio_group_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
+  AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
+  list_item_checker.AppendExpectedChild(&list_marker_checker);
+  list_item_checker.AppendExpectedChild(&static_text_checker);
+  radio_group_checker.AppendExpectedChild(&list_item_checker);
+  document_checker.AppendExpectedChild(&radio_group_checker);
+  document_checker.CheckAccessible(GetRendererAccessible());
+
+  // Set focus to the radio group.
+  ExecuteScript(L"document.body.children[0].focus()");
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check that the accessibility tree of the browser has been updated.
+  radio_group_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSED);
+  document_checker.CheckAccessible(GetRendererAccessible());
+
+  // Set the active descendant of the radio group
+  ExecuteScript(
+      L"document.body.children[0].setAttribute('aria-activedescendant', 'li')");
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check that the accessibility tree of the browser has been updated.
+  list_item_checker.SetExpectedState(
+      STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSED);
+  radio_group_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
+  document_checker.CheckAccessible(GetRendererAccessible());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestNotificationCheckedStateChanged) {
   GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
@@ -406,9 +453,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestNotificationChildrenChanged) {
-  // The aria-help attribute causes the node to be in the accessibility tree.
+  // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
-      "data:text/html,<body aria-help='body'></body>");
+      "data:text/html,<body role=group></body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   GetRendererAccessible();
   ui_test_utils::WaitForNotification(
@@ -432,14 +479,63 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       SelectedChildrenChanged) {
-  GURL tree_url("data:text/html,<body><input type='text' value='old value'/>"
-      "</body>");
+                       TestNotificationFocusChanged) {
+  // The role attribute causes the node to be in the accessibility tree.
+  GURL tree_url(
+      "data:text/html,<div role=group tabindex='-1'></div>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   GetRendererAccessible();
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check the browser's copy of the renderer accessibility tree.
+  AccessibleChecker div_checker(L"", L"div", L"");
+  div_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_OFFSCREEN | STATE_SYSTEM_READONLY);
+  AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
+  document_checker.AppendExpectedChild(&div_checker);
+  document_checker.CheckAccessible(GetRendererAccessible());
+
+  // Focus the div in the document
+  ExecuteScript(L"document.body.children[0].focus()");
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check that the accessibility tree of the browser has been updated.
+  div_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSED);
+  document_checker.CheckAccessible(GetRendererAccessible());
 }
+
+// http://crbug.com/46209
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       DISABLED_TestNotificationChildrenChanged2) {
+  // The role attribute causes the node to be in the accessibility tree.
+  GURL tree_url(
+      "data:text/html,<div role=group style='visibility: hidden'>text"
+      "</div>");
+  browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+  GetRendererAccessible();
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check the accessible tree of the browser.
+  AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
+  document_checker.CheckAccessible(GetRendererAccessible());
+
+  // Change the children of the document body.
+  ExecuteScript(L"document.body.children[0].style.visibility='visible'");
+  ui_test_utils::WaitForNotification(
+      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check that the accessibility tree of the browser has been updated.
+  AccessibleChecker static_text_checker(L"", ROLE_SYSTEM_TEXT, L"text");
+  AccessibleChecker div_checker(L"", L"DIV", L"");
+  document_checker.AppendExpectedChild(&div_checker);
+  div_checker.AppendExpectedChild(&static_text_checker);
+  document_checker.CheckAccessible(GetRendererAccessible());
+}
+
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestNotificationValueChanged) {
   GURL tree_url("data:text/html,<body><input type='text' value='old value'/>"

@@ -997,6 +997,12 @@ struct ViewHostMsg_AccessibilityNotification_Params {
     // The node tree structure has changed.
     NOTIFICATION_TYPE_CHILDREN_CHANGED,
 
+    // The node in focus has changed.
+    NOTIFICATION_TYPE_FOCUS_CHANGED,
+
+    // The document node has loaded.
+    NOTIFICATION_TYPE_LOAD_COMPLETE,
+
     // The node value has changed.
     NOTIFICATION_TYPE_VALUE_CHANGED,
   };

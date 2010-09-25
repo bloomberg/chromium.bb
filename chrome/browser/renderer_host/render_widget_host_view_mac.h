@@ -219,8 +219,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void UpdateAccessibilityTree(
       const webkit_glue::WebAccessibility& tree);
-  virtual void OnAccessibilityFocusChange(int acc_obj_id);
-  virtual void OnAccessibilityObjectStateChange(int acc_obj_id);
   // Methods associated with GPU-accelerated plug-in instances and the
   // accelerated compositor.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,

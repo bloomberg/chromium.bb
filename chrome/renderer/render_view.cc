@@ -665,6 +665,8 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDomAutomationController))
     enabled_bindings_ |= BindingsPolicy::DOM_AUTOMATION;
+  if (command_line.HasSwitch(switches::kEnableAccessibility))
+    WebAccessibilityCache::enableAccessibility();
 
   audio_message_filter_ = new AudioMessageFilter(routing_id_);
   render_thread_->AddFilter(audio_message_filter_);
@@ -804,7 +806,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnCustomContextMenuAction)
     IPC_MESSAGE_HANDLER(ViewMsg_TranslatePage, OnTranslatePage)
     IPC_MESSAGE_HANDLER(ViewMsg_RevertTranslation, OnRevertTranslation)
-    IPC_MESSAGE_HANDLER(ViewMsg_GetAccessibilityTree, OnGetAccessibilityTree)
+    IPC_MESSAGE_HANDLER(ViewMsg_EnableAccessibility, OnEnableAccessibility)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityFocus, OnSetAccessibilityFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityDoDefaultAction,
                         OnAccessibilityDoDefaultAction)
@@ -1478,8 +1480,8 @@ void RenderView::UpdateURL(WebFrame* frame) {
   if (accessibility_.get() && !navigation_state->was_within_same_page()) {
     accessibility_->clear();
     accessibility_.reset();
+    pending_accessibility_notifications_.clear();
   }
-  pending_accessibility_notifications_.clear();
 }
 
 // Tell the embedding application that the title of the active page has changed
@@ -4398,16 +4400,20 @@ void RenderView::OnUpdateBrowserWindowId(int window_id) {
   browser_window_id_ = window_id;
 }
 
-void RenderView::OnGetAccessibilityTree() {
-  if (accessibility_.get())
-    accessibility_->clear();
-    accessibility_.reset(WebAccessibilityCache::create());
-    accessibility_->initialize(webview());
-  pending_accessibility_notifications_.clear();
+void RenderView::OnEnableAccessibility() {
+  if (WebAccessibilityCache::accessibilityEnabled())
+    return;
 
-  WebAccessibilityObject src_tree = webview()->accessibilityObject();
-  WebAccessibility dst_tree(src_tree, accessibility_.get());
-  Send(new ViewHostMsg_AccessibilityTree(routing_id_, dst_tree));
+  WebAccessibilityCache::enableAccessibility();
+
+  if (webview()) {
+    // It's possible that the webview has already loaded a webpage without
+    // accessibility being enabled. Initialize the browser's cached
+    // accessibility tree by sending it a 'load complete' notification.
+    postAccessibilityNotification(
+        webview()->accessibilityObject(),
+        WebKit::WebAccessibilityNotificationLoadComplete);
+  }
 }
 
 void RenderView::OnSetAccessibilityFocus(int acc_obj_id) {
@@ -5472,34 +5478,22 @@ void RenderView::LogNavigationState(const NavigationState* state,
             << url.spec();
 }
 
-void RenderView::focusAccessibilityObject(
-    const WebAccessibilityObject& acc_obj) {
-#if defined(OS_WIN)
-  // TODO(dglazkov): Current logic implies that focus change can only be made
-  // after at least one call to RenderView::OnGetAccessibilityInfo, which is
-  // where accessibility is initialized. We should determine whether that's
-  // right.
-  if (!accessibility_.get())
-    return;
-
-  // Retrieve the accessibility object id of the AccessibilityObject.
-  int acc_obj_id = accessibility_->addOrGetId(acc_obj);
-
-  // If id is valid, alert the browser side that an accessibility focus change
-  // occurred.
-  if (acc_obj_id >= 0)
-    Send(new ViewHostMsg_AccessibilityFocusChange(routing_id_, acc_obj_id));
-
-#else  // defined(OS_WIN)
-  // TODO(port): accessibility not yet implemented
-  NOTIMPLEMENTED();
-#endif
-}
-
 void RenderView::postAccessibilityNotification(
     const WebAccessibilityObject& obj,
     WebAccessibilityNotification notification) {
-  if (!accessibility_.get() || (accessibility_->addOrGetId(obj) < 0))
+  if (!accessibility_.get() && webview()) {
+    // Load complete should be our first notification sent.
+    // TODO(ctguil): Investigate if a different notification is a WebCore bug.
+    if (notification != WebKit::WebAccessibilityNotificationLoadComplete)
+      return;
+
+    // Create and initialize our accessibility cache
+    accessibility_.reset(WebAccessibilityCache::create());
+    accessibility_->initialize(webview());
+  }
+
+  // Add the accessibility object to our cache and ensure it's valid.
+  if (accessibility_->addOrGetId(obj) < 0)
     return;
 
   ViewHostMsg_AccessibilityNotification_Params param;
@@ -5513,6 +5507,16 @@ void RenderView::postAccessibilityNotification(
       param.notification_type =
           ViewHostMsg_AccessibilityNotification_Params::
               NOTIFICATION_TYPE_CHILDREN_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationFocusedUIElementChanged:
+      param.notification_type =
+          ViewHostMsg_AccessibilityNotification_Params::
+              NOTIFICATION_TYPE_FOCUS_CHANGED;
+      break;
+    case WebKit::WebAccessibilityNotificationLoadComplete:
+      param.notification_type =
+          ViewHostMsg_AccessibilityNotification_Params::
+              NOTIFICATION_TYPE_LOAD_COMPLETE;
       break;
     case WebKit::WebAccessibilityNotificationValueChanged:
       param.notification_type =

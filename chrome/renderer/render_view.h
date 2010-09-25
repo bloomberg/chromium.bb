@@ -412,8 +412,6 @@ class RenderView : public RenderWidget,
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
-  virtual void focusAccessibilityObject(
-      const WebKit::WebAccessibilityObject& acc_obj);
   virtual void postAccessibilityNotification(
       const WebKit::WebAccessibilityObject& obj,
       WebKit::WebAccessibilityNotification notification);
@@ -801,7 +799,7 @@ class RenderView : public RenderWidget,
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnFindReplyAck();
-  void OnGetAccessibilityTree();
+  void OnEnableAccessibility();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
   void OnGetApplicationInfo(int page_id);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(

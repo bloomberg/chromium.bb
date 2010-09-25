@@ -201,6 +201,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
+      accessibility_enabled_(false),
       extension_process_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -246,11 +247,14 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
   ClearTransportDIBCache();
 }
 
-bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
+bool BrowserRenderProcessHost::Init(
+    bool is_accessibility_enabled, bool is_extensions_process) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
   if (channel_.get())
     return true;
+
+  accessibility_enabled_ = is_accessibility_enabled;
 
   // It is possible for an extension process to be reused for non-extension
   // content, e.g. if an extension calls window.open.
@@ -448,6 +452,9 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
 
   if (logging::DialogsAreSuppressed())
     command_line->AppendSwitch(switches::kNoErrorDialogs);
+
+  if (accessibility_enabled_)
+    command_line->AppendSwitch(switches::kEnableAccessibility);
 
   // Now send any options from our own command line we want to propogate.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();

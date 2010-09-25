@@ -1099,14 +1099,6 @@ void RenderWidgetHostViewMac::UpdateAccessibilityTree(
   }
 }
 
-void RenderWidgetHostViewMac::OnAccessibilityFocusChange(int acc_obj_id) {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostViewMac::OnAccessibilityObjectStateChange(int acc_obj_id) {
-  NOTIMPLEMENTED();
-}
-
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (active) {
     if (text_input_type_ == WebKit::WebTextInputTypePassword)

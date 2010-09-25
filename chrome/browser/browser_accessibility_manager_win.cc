@@ -100,25 +100,8 @@ void BrowserAccessibilityManager::DoDefaultAction(
     delegate_->AccessibilityDoDefaultAction(node.renderer_id());
 }
 
-void BrowserAccessibilityManager::OnAccessibilityFocusChange(int renderer_id) {
-  base::hash_map<int, LONG>::iterator iter =
-      renderer_id_to_child_id_map_.find(renderer_id);
-  if (iter == renderer_id_to_child_id_map_.end())
-    return;
-
-  LONG child_id = iter->second;
-  base::hash_map<LONG, BrowserAccessibility*>::iterator uniq_iter =
-    child_id_map_.find(child_id);
-  if (uniq_iter != child_id_map_.end())
-    focus_ = uniq_iter->second;
-  ::NotifyWinEvent(EVENT_OBJECT_FOCUS, parent_hwnd_, OBJID_CLIENT, child_id);
-}
-
 void BrowserAccessibilityManager::OnAccessibilityNotifications(
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
-  if (delegate_)
-    delegate_->AccessibilityNotificationsAck();
-
   for (uint32 index = 0; index < params.size(); index++) {
     const ViewHostMsg_AccessibilityNotification_Params& param = params[index];
 
@@ -130,6 +113,14 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
       case ViewHostMsg_AccessibilityNotification_Params::
           NOTIFICATION_TYPE_CHILDREN_CHANGED:
         OnAccessibilityObjectChildrenChange(param.acc_obj);
+        break;
+      case ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_FOCUS_CHANGED:
+        OnAccessibilityObjectFocusChange(param.acc_obj);
+        break;
+      case ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_LOAD_COMPLETE:
+        OnAccessibilityObjectLoadComplete(param.acc_obj);
         break;
       case ViewHostMsg_AccessibilityNotification_Params::
           NOTIFICATION_TYPE_VALUE_CHANGED:
@@ -212,6 +203,33 @@ void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
   }
 
   NotifyWinEvent(EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, child_id);
+}
+
+void BrowserAccessibilityManager::OnAccessibilityObjectFocusChange(
+  const webkit_glue::WebAccessibility& acc_obj) {
+  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  if (!new_browser_acc)
+    return;
+
+  focus_ = new_browser_acc;
+  LONG child_id = new_browser_acc->child_id();
+  NotifyWinEvent(EVENT_OBJECT_FOCUS, parent_hwnd_, OBJID_CLIENT, child_id);
+}
+
+void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(
+  const webkit_glue::WebAccessibility& acc_obj) {
+  root_->InactivateTree();
+  root_->Release();
+  focus_ = NULL;
+
+  root_ = CreateAccessibilityTree(NULL, GetNextChildID(), acc_obj, 0);
+  if (!focus_)
+    focus_ = root_;
+
+  LONG root_id = root_->child_id();
+  NotifyWinEvent(EVENT_OBJECT_FOCUS, parent_hwnd_, OBJID_CLIENT, root_id);
+  NotifyWinEvent(
+    IA2_EVENT_DOCUMENT_LOAD_COMPLETE, parent_hwnd_, OBJID_CLIENT, root_id);
 }
 
 void BrowserAccessibilityManager::OnAccessibilityObjectValueChange(
