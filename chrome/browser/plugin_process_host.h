@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_handle.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
