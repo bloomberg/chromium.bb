@@ -52,6 +52,7 @@ class ClientSocket : public Socket {
   virtual bool IsConnectedAndIdle() const = 0;
 
   // Copies the peer address to |address| and returns a network error code.
+  // ERR_UNEXPECTED will be returned if the socket is not connected.
   virtual int GetPeerAddress(AddressList* address) const = 0;
 
   // Gets the NetLog for this socket.
