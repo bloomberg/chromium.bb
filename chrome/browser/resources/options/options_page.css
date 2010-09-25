@@ -316,3 +316,16 @@ list > .heading:hover {
 html[dir=rtl] .favicon-cell {
   background-position: right;
 }
+
+html[enable-background-mode=false] #background-mode-section {
+ display: none;
+}
+
+.multi-line-wrap input {
+  position: absolute;
+}
+
+.multi-line-wrap span {
+  -webkit-margin-start: 20px;
+  display: block;
+}

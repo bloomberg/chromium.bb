@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/dom_ui/options_managed_banner_handler.h"
@@ -22,6 +23,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -121,6 +123,21 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE));
   localized_strings->SetString("translateEnableTranslate",
       l10n_util::GetStringUTF16(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE));
+  // Add ChromeApps preferences if background mode is runtime-enabled.
+  bool background_mode_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundMode);
+  localized_strings->SetString("enable-background-mode",
+      background_mode_enabled ? "true" : "false");
+  localized_strings->SetString("advancedSectionTitleChromeApps",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_ADVANCED_SECTION_TITLE_CHROME_APPS));
+  localized_strings->SetString("chromeAppsEnableBackgroundMode",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CHROME_APPS_ENABLE_BACKGROUND_MODE));
+  localized_strings->SetString("chromeAppsLearnMoreBackgroundModeLabel",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_LEARN_MORE_LABEL));
+  localized_strings->SetString("chromeAppsLearnMoreBackgroundModeURL",
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE_BACKGROUND_MODE_URL));
   localized_strings->SetString("enableLogging",
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_LOGGING));
   localized_strings->SetString("disableServices",

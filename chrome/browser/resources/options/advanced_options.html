@@ -128,6 +128,21 @@
 <if expr="not pp_ifdef('chromeos')">
     </div>
   </section>
+  <section id="background-mode-section">
+    <h3 i18n-content="advancedSectionTitleChromeApps"></h3>
+    <div>
+      <label class="multi-line-wrap">
+        <input pref="background_mode.enabled"
+            metric="Options_BackgroundMode" type="checkbox">
+        <span i18n-content="chromeAppsEnableBackgroundMode"></span>
+      </label>
+      <div>
+        <a target="_blank"
+            i18n-content="chromeAppsLearnMoreBackgroundModeLabel"
+            i18n-values="href:chromeAppsLearnMoreBackgroundModeURL"></a>
+      </div>
+    </div>
+  </section>
   <div class="button-strip">
     <button id="optionsReset" i18n-content="optionsReset"></button>
   </div>
