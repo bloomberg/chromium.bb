@@ -25,8 +25,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-/* Enable Debuggging */
-#define NACL_DEBUG_STUB 1
+/* To enable debuggging */
+/* #define NACL_DEBUG_STUB 1 */
 
 using port::IPlatform;
 using port::IThread;
@@ -112,7 +112,11 @@ static NaClDebugState *NaClDebugGetState() {
 }
 
 void NaClDebugSetAllow(int val) throw() {
+#ifdef NACL_DEBUG_STUB
   nacl_debug_allowed = val;
+#else
+  UNREFERENCED_PARAMETER(val);
+#endif
 }
 
 
