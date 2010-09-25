@@ -84,7 +84,7 @@ const Experiment kExperiments[] = {
   {
     "remoting",  // Do not change; see above.
     IDS_LABS_REMOTING_NAME,
-#if defined(OS_WINDOWS)
+#if defined(OS_WIN)
     // Windows only supports host functionality at the moment.
     IDS_LABS_REMOTING_HOST_DESCRIPTION,
 #elif defined(OS_LINUX)
