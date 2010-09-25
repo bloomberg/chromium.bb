@@ -37,10 +37,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dom_ui/imageburner_ui.h"
+#include "chrome/browser/chromeos/dom_ui/mobile_setup_ui.h"
+#include "chrome/browser/chromeos/dom_ui/register_page_ui.h"
 #include "chrome/browser/chromeos/dom_ui/system_info_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
-#include "chrome/browser/dom_ui/register_page_ui.h"
 #endif
 
 const DOMUITypeID DOMUIFactory::kNoDOMUI = NULL;
@@ -145,16 +146,18 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
 #if defined(OS_CHROMEOS)
   if (url.host() == chrome::kChromeUIFileBrowseHost)
     return &NewDOMUI<FileBrowseUI>;
-  if (url.host() == chrome::kChromeUIMediaplayerHost)
-    return &NewDOMUI<MediaplayerUI>;
   if (url.host() == chrome::kChromeUIImageBurnerHost)
     return &NewDOMUI<ImageBurnUI>;
+  if (url.host() == chrome::kChromeUIMediaplayerHost)
+    return &NewDOMUI<MediaplayerUI>;
+  if (url.host() == chrome::kChromeUIMobileSetupHost)
+    return &NewDOMUI<MobileSetupUI>;
+  if (url.host() == chrome::kChromeUISettingsHost)
+    return &NewDOMUI<OptionsUI>;
   if (url.host() == chrome::kChromeUIRegisterPageHost)
     return &NewDOMUI<RegisterPageUI>;
   if (url.host() == chrome::kChromeUISlideshowHost)
     return &NewDOMUI<SlideshowUI>;
-  if (url.host() == chrome::kChromeUISettingsHost)
-    return &NewDOMUI<OptionsUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
     return &NewDOMUI<SystemInfoUI>;
 #else

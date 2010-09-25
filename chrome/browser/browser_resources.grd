@@ -71,6 +71,7 @@ without changes to the corresponding grd file. eeeeet -->
         <include name="IDR_IMAGEBURNER_HTML" file="resources\imageburner.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MEDIAPLAYER_HTML" file="resources\mediaplayer.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MEDIAPLAYERPLAYLIST_HTML" file="resources\playlist.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_MOBILE_SETUP_PAGE_HTML" file="resources\mobile_setup.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OFFLINE_LOAD_HTML" file="resources\offline_load.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OS_CREDITS_HTML" file="resources\about_os_credits.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_SLIDESHOW_HTML" file="resources\slideshow.html" flattenhtml="true" type="BINDATA" />

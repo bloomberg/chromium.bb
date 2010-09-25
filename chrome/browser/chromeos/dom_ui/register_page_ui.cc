@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/register_page_ui.h"
+#include "chrome/browser/chromeos/dom_ui/register_page_ui.h"
 
 #include <string>
 
@@ -15,20 +15,17 @@
 #include "base/weak_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/url_constants.h"
-#include "googleurl/src/gurl.h"
-#include "grit/browser_resources.h"
-
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/version_loader.h"
-#endif
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
+#include "grit/browser_resources.h"
 
 namespace {
 

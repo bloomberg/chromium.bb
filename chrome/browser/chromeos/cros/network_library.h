@@ -121,10 +121,29 @@ class CellularNetwork : public WirelessNetwork {
       : WirelessNetwork() {
     ConfigureFromService(service);
   }
+  // Starts device activation process. Returns false if the device state does
+  // not permit activation.
+  bool StartActivation() const;
+  const std::string& activation_state() const { return activation_state_; }
+  const std::string& payment_url() const { return payment_url_; }
+  const std::string& meid() const { return meid_; }
+  const std::string& imei() const { return imei_; }
+  const std::string& imsi() const { return imsi_; }
+  const std::string& esn() const { return esn_; }
+  const std::string& mdn() const { return mdn_; }
 
   // WirelessNetwork overrides.
   virtual void Clear();
   virtual void ConfigureFromService(const ServiceInfo& service);
+
+ protected:
+  std::string activation_state_;
+  std::string payment_url_;
+  std::string meid_;
+  std::string imei_;
+  std::string imsi_;
+  std::string esn_;
+  std::string mdn_;
 };
 
 class WifiNetwork : public WirelessNetwork {

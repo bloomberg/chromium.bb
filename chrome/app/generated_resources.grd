@@ -3886,8 +3886,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You are using an unsupported command-line flag: <ph name="BAD_FLAG">$1<ex>--no-sandbox</ex></ph>. Stability and security will suffer.
       </message>
 
-      <!-- about:system strings -->
       <if expr="pp_ifdef('chromeos')">
+        <!-- about:system strings -->
         <message name="IDS_ABOUT_SYS_TITLE" desc="about:system page title">
           About System
         </message>
@@ -3908,6 +3908,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_ABOUT_SYS_COLLAPSE" desc="name of a button that hides (collapses) specific system details">
           Collapse...
+        </message>
+
+        <!-- chrome://mobilesetup strings -->
+        <message name="IDS_MOBILE_SETUP_TITLE" desc="ChromeOS mobile device activation page title">
+          Activate your cellular connection
+        </message>
+        <message name="IDS_MOBILE_SETUP_HEADER" desc="ChromeOS mobile device activation page heade">
+          Cellular device activation
         </message>
       </if>
 

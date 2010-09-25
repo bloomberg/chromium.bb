@@ -156,12 +156,22 @@ void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
 ////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork
 
+
+bool CellularNetwork::StartActivation() const {
+  // TODO(ers, jglasgow): Kick of device activation process.
+  return true;
+}
+
 void CellularNetwork::Clear() {
   WirelessNetwork::Clear();
 }
 
 void CellularNetwork::ConfigureFromService(const ServiceInfo& service) {
   WirelessNetwork::ConfigureFromService(service);
+  if (service.activation_state)
+    activation_state_ = service.activation_state;
+  // TODO(ers): Set other cellular properties here once they get added
+  // to ServiceInfo.
 }
 
 ////////////////////////////////////////////////////////////////////////////////

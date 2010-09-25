@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title i18n-content="title"></title>
+<style>
+body {
+  font-family: sans-serif;
+  font-size: 10px;
+}
+
+#payment-form {
+  width: 600px;
+  height: 300px;
+  overflow: hidden;
+}
+
+#error-div {
+}
+</style>
+<script src="chrome://resources/js/cr.js"></script>
+<script src="chrome://resources/js/util.js"></script>
+<script src="mobile_setup.js"></script>
+<script>
+  mobile.MobileSetup.getInstance().initialize('payment-form');
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<h1 i18n-content="header"></h1>
+<div id="error-div"></div>
+<iframe id="payment-form" frameborder="0"></iframe></body>
+</html>

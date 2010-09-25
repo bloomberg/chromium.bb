@@ -67,21 +67,25 @@ extern const char kChromeUIDevToolsURL[];
 extern const char kChromeUIDownloadsURL[];
 extern const char kChromeUIExtensionsURL[];
 extern const char kChromeUIFavIconURL[];
-extern const char kChromeUIFileBrowseURL[];
 extern const char kChromeUIHistory2URL[];
 extern const char kChromeUIHistoryURL[];
-extern const char kChromeUIImageBurnerURL[];
 extern const char kChromeUIIPCURL[];
 extern const char kChromeUIKeyboardURL[];
 extern const char kChromeUILabsURL[];
-extern const char kChromeUIMediaplayerURL[];
 extern const char kChromeUINewTabURL[];
 extern const char kChromeUIPluginsURL[];
 extern const char kChromeUIPrintURL[];
-extern const char kChromeUIRegisterPageURL[];
 extern const char kChromeUISettingsURL[];
+
+#if defined(OS_CHROMEOS)
+extern const char kChromeUIFileBrowseURL[];
+extern const char kChromeUIImageBurnerURL[];
+extern const char kChromeUIMediaplayerURL[];
+extern const char kChromeUIMobileSetupURL[];
+extern const char kChromeUIRegisterPageURL[];
 extern const char kChromeUISlideshowURL[];
 extern const char kChromeUISystemInfoURL[];
+#endif
 
 // chrome components of URLs. Should be kept in sync with the full URLs
 // above.
@@ -92,29 +96,33 @@ extern const char kChromeUIDialogHost[];
 extern const char kChromeUIDownloadsHost[];
 extern const char kChromeUIExtensionsHost[];
 extern const char kChromeUIFavIconHost[];
-extern const char kChromeUIFileBrowseHost[];
 extern const char kChromeUIHistory2Host[];
 extern const char kChromeUIHistoryHost[];
-extern const char kChromeUIImageBurnerHost[];
 extern const char kChromeUIInspectorHost[];
 extern const char kChromeUIKeyboardHost[];
 extern const char kChromeUILabsHost[];
-extern const char kChromeUIMediaplayerHost[];
 extern const char kChromeUINetInternalsHost[];
 extern const char kChromeUINewTabHost[];
 extern const char kChromeUIPluginsHost[];
 extern const char kChromeUIPrintHost[];
-extern const char kChromeUIRegisterPageHost[];
 extern const char kChromeUIRemotingHost[];
 extern const char kChromeUIRemotingResourcesHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUISettingsHost[];
-extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISyncResourcesHost[];
-extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIThemePath[];
 extern const char kChromeUIThumbnailPath[];
+
+#if defined(OS_CHROMEOS)
+extern const char kChromeUIFileBrowseHost[];
+extern const char kChromeUIImageBurnerHost[];
+extern const char kChromeUIMediaplayerHost[];
+extern const char kChromeUIMobileSetupHost[];
+extern const char kChromeUIRegisterPageHost[];
+extern const char kChromeUISlideshowHost[];
+extern const char kChromeUISystemInfoHost[];
+#endif
 
 // AppCache related URL.
 extern const char kAppCacheViewInternalsURL[];
