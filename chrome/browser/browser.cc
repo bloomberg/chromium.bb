@@ -178,24 +178,6 @@ bool CompareURLsIgnoreRef(const GURL& url, const GURL& other) {
   return url_no_ref == other_no_ref;
 }
 
-// Return true if a browser is an app window or panel hosting
-// extension |extension_app|, and running under |profile|.
-bool BrowserHostsExtensionApp(Browser* browser,
-                              Profile* profile,
-                              Extension* extension_app) {
-  if (browser->profile() != profile)
-     return false;
-
-  if (browser->type() != Browser::TYPE_EXTENSION_APP &&
-      browser->type() != Browser::TYPE_APP_PANEL)
-    return false;
-
-  if (browser->extension_app() != extension_app)
-    return false;
-
-  return true;
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -348,10 +330,9 @@ Browser* Browser::CreateForApp(const std::string& app_name,
     // TYPE_APP_PANEL is the logical choice.  However, the panel UI
     // is not fully implemented.  See crbug/55943.
     type = TYPE_APP_POPUP;
-  }
-
-  else if (extension)
+  } else if (extension) {
     type = TYPE_EXTENSION_APP;
+  }
 
   Browser* browser = new Browser(type, profile);
   browser->app_name_ = app_name;
