@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
@@ -1042,7 +1043,7 @@ static void TestHostGarbageCollectHelper(int domain_max_cookies,
     scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL, NULL));
     cm->SetKeyScheme(new_key_scheme);
     for (int i = 0; i < more_than_enough_cookies; ++i) {
-      std::string cookie = StringPrintf("a%03d=b", i);
+      std::string cookie = base::StringPrintf("a%03d=b", i);
       EXPECT_TRUE(cm->SetCookie(url_google, cookie));
       std::string cookies = cm->GetCookies(url_google);
       // Make sure we find it in the cookies.
@@ -1063,9 +1064,9 @@ static void TestHostGarbageCollectHelper(int domain_max_cookies,
     scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(NULL, NULL));
     cm->SetKeyScheme(new_key_scheme);
     for (int i = 0; i < more_than_enough_cookies; ++i) {
-      std::string cookie_general = StringPrintf("a%03d=b", i);
+      std::string cookie_general = base::StringPrintf("a%03d=b", i);
       EXPECT_TRUE(cm->SetCookie(url_google, cookie_general));
-      std::string cookie_specific = StringPrintf("c%03d=b", i);
+      std::string cookie_specific = base::StringPrintf("c%03d=b", i);
       EXPECT_TRUE(cm->SetCookie(url_google_specific, cookie_specific));
       std::string cookies_general = cm->GetCookies(url_google);
       EXPECT_NE(cookies_general.find(cookie_general), std::string::npos);
@@ -1117,7 +1118,7 @@ TEST(CookieMonsterTest, TestTotalGarbageCollection) {
   // Add a bunch of cookies on a bunch of host, some should get purged.
   const GURL sticky_cookie("http://a0000.izzle");
   for (int i = 0; i < 4000; ++i) {
-    GURL url(StringPrintf("http://a%04d.izzle", i));
+    GURL url(base::StringPrintf("http://a%04d.izzle", i));
     EXPECT_TRUE(cm->SetCookie(url, "a=b"));
     EXPECT_EQ("a=b", cm->GetCookies(url));
 
@@ -1132,7 +1133,7 @@ TEST(CookieMonsterTest, TestTotalGarbageCollection) {
 
   // Check that cookies that still exist.
   for (int i = 0; i < 4000; ++i) {
-    GURL url(StringPrintf("http://a%04d.izzle", i));
+    GURL url(base::StringPrintf("http://a%04d.izzle", i));
     if ((i == 0) || (i > 1001)) {
       // Cookies should still be around.
       EXPECT_FALSE(cm->GetCookies(url).empty());

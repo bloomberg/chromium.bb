@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 
@@ -280,7 +281,7 @@ void WebSocketHandshake::Parameter::GenerateSecWebSocketKey(
   *number = rand_(0, max);
   uint32 product = *number * space;
 
-  std::string s = StringPrintf("%u", product);
+  std::string s = base::StringPrintf("%u", product);
   int n = rand_(1, 12);
   for (int i = 0; i < n; i++) {
     int pos = rand_(0, s.length());

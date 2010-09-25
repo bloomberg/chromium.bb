@@ -8,9 +8,10 @@
 #include "base/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "net/websockets/websocket_handshake.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 namespace net {
@@ -86,9 +87,9 @@ class WebSocketHandshakeTest : public testing::Test {
     std::string s;
     for (int i = 0; i < len; i++) {
       if (isprint(buf[i]))
-        s += StringPrintf("%c", buf[i]);
+        s += base::StringPrintf("%c", buf[i]);
       else
-        s += StringPrintf("\\x%02x", buf[i]);
+        s += base::StringPrintf("\\x%02x", buf[i]);
     }
     return s;
   }

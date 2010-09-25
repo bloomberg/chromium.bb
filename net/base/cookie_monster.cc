@@ -53,6 +53,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
 #include "net/base/net_util.h"
@@ -216,12 +217,12 @@ void CookieMonster::InitStore() {
     if (creation_times.insert(cookie_creation_time).second) {
       InternalInsertCookie(GetKey((*it)->Domain()), *it, false);
     } else {
-      LOG(ERROR) << StringPrintf("Found cookies with duplicate creation "
-                                 "times in backing store: "
-                                 "{name='%s', domain='%s', path='%s'}",
-                                 (*it)->Name().c_str(),
-                                 (*it)->Domain().c_str(),
-                                 (*it)->Path().c_str());
+      LOG(ERROR) << base::StringPrintf("Found cookies with duplicate creation "
+                                       "times in backing store: "
+                                       "{name='%s', domain='%s', path='%s'}",
+                                       (*it)->Name().c_str(),
+                                       (*it)->Domain().c_str(),
+                                       (*it)->Path().c_str());
       // We've been given ownership of the cookie and are throwing it
       // away; reclaim the space.
       delete (*it);
@@ -359,13 +360,14 @@ int CookieMonster::TrimDuplicateCookiesForKey(
     // is the most recent one, so we will keep it. The rest are duplicates.
     dupes.erase(dupes.begin());
 
-    LOG(ERROR) << StringPrintf("Found %d duplicate cookies for host='%s', "
-                               "with {name='%s', domain='%s', path='%s'}",
-                               static_cast<int>(dupes.size()),
-                               key.c_str(),
-                               signature.name.c_str(),
-                               signature.domain.c_str(),
-                               signature.path.c_str());
+    LOG(ERROR) << base::StringPrintf(
+        "Found %d duplicate cookies for host='%s', "
+        "with {name='%s', domain='%s', path='%s'}",
+        static_cast<int>(dupes.size()),
+        key.c_str(),
+        signature.name.c_str(),
+        signature.domain.c_str(),
+        signature.path.c_str());
 
     // Remove all the cookies identified by |dupes|. It is valid to delete our
     // list of iterators one at a time, since |cookies_| is a multimap (they
@@ -1883,11 +1885,12 @@ bool CookieMonster::CanonicalCookie::IsDomainMatch(
 }
 
 std::string CookieMonster::CanonicalCookie::DebugString() const {
-  return StringPrintf("name: %s value: %s domain: %s path: %s creation: %"
-                      PRId64,
-                      name_.c_str(), value_.c_str(),
-                      domain_.c_str(), path_.c_str(),
-                      static_cast<int64>(creation_date_.ToTimeT()));
+  return base::StringPrintf(
+      "name: %s value: %s domain: %s path: %s creation: %"
+      PRId64,
+      name_.c_str(), value_.c_str(),
+      domain_.c_str(), path_.c_str(),
+      static_cast<int64>(creation_date_.ToTimeT()));
 }
 
 }  // namespace

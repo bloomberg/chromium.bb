@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/cookie_monster.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/cookie_monster.h"
 #include "net/base/cookie_monster_store_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +47,7 @@ TEST(CookieMonsterTest, TestAddCookiesOnSingleHost) {
   scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
   std::vector<std::string> cookies;
   for (int i = 0; i < kNumCookies; i++) {
-    cookies.push_back(StringPrintf("a%03d=b", i));
+    cookies.push_back(base::StringPrintf("a%03d=b", i));
   }
 
   // Add a bunch of cookies on a single host
@@ -74,7 +75,7 @@ TEST(CookieMonsterTest, TestAddCookieOnManyHosts) {
   std::string cookie(kCookieLine);
   std::vector<GURL> gurls;  // just wanna have ffffuunnn
   for (int i = 0; i < kNumCookies; ++i) {
-    gurls.push_back(GURL(StringPrintf("http://a%04d.izzle", i)));
+    gurls.push_back(GURL(base::StringPrintf("http://a%04d.izzle", i)));
   }
 
   // Add a cookie on a bunch of host
@@ -136,8 +137,8 @@ TEST(CookieMonsterTest, TestDomainTree) {
   for (std::vector<std::string>::const_iterator it = domain_list.begin();
        it != domain_list.end(); it++) {
     GURL gurl("https://" + *it + "/");
-    const std::string cookie = StringPrintf(domain_cookie_format_tree,
-                                            it->c_str());
+    const std::string cookie = base::StringPrintf(domain_cookie_format_tree,
+                                                  it->c_str());
     EXPECT_TRUE(cm->SetCookie(gurl, cookie));
   }
   EXPECT_EQ(31u, cm->GetAllCookies().size());
@@ -178,8 +179,8 @@ TEST(CookieMonsterTest, TestDomainLine) {
     for (std::vector<std::string>::const_iterator it = domain_list.begin();
          it != domain_list.end(); it++) {
       GURL gurl("https://" + *it + "/");
-      const std::string cookie = StringPrintf(domain_cookie_format_line,
-                                              i, it->c_str());
+      const std::string cookie = base::StringPrintf(domain_cookie_format_line,
+                                                    i, it->c_str());
       EXPECT_TRUE(cm->SetCookie(gurl, cookie));
     }
   }
@@ -203,10 +204,11 @@ TEST(CookieMonsterTest, TestImport) {
   int64 time_tick(base::Time::Now().ToInternalValue());
 
   for (int domain_num = 0; domain_num < 300; domain_num++) {
-    std::string domain_name(StringPrintf(".Domain_%d.com", domain_num));
+    std::string domain_name(base::StringPrintf(".Domain_%d.com", domain_num));
     std::string gurl("www" + domain_name);
     for (int cookie_num = 0; cookie_num < 50; cookie_num++) {
-      std::string cookie_line(StringPrintf("Cookie_%d=1; Path=/", cookie_num));
+      std::string cookie_line(base::StringPrintf("Cookie_%d=1; Path=/",
+                                                 cookie_num));
       AddCookieToList(gurl, cookie_line,
                       base::Time::FromInternalValue(time_tick++),
                       &initial_cookies);

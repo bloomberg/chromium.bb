@@ -134,28 +134,28 @@ std::string FormatAddrinfoDetails(const struct addrinfo& ai,
   std::string ai_addr = net::NetAddressToString(&ai);
   std::string ai_canonname;
   if (ai.ai_canonname) {
-    ai_canonname = StringPrintf("%s  ai_canonname: %s\n",
-                                indent,
-                                ai.ai_canonname);
+    ai_canonname = base::StringPrintf("%s  ai_canonname: %s\n",
+                                      indent,
+                                      ai.ai_canonname);
   }
-  return StringPrintf("%saddrinfo {\n"
-                      "%s  ai_flags: %s\n"
-                      "%s  ai_family: %s\n"
-                      "%s  ai_socktype: %s\n"
-                      "%s  ai_protocol: %s\n"
-                      "%s  ai_addrlen: %d\n"
-                      "%s  ai_addr: %s\n"
-                      "%s"
-                      "%s}\n",
-                      indent,
-                      indent, ai_flags.c_str(),
-                      indent, ai_family,
-                      indent, ai_socktype,
-                      indent, ai_protocol,
-                      indent, ai.ai_addrlen,
-                      indent, ai_addr.c_str(),
-                      ai_canonname.c_str(),
-                      indent);
+  return base::StringPrintf("%saddrinfo {\n"
+                            "%s  ai_flags: %s\n"
+                            "%s  ai_family: %s\n"
+                            "%s  ai_socktype: %s\n"
+                            "%s  ai_protocol: %s\n"
+                            "%s  ai_addrlen: %d\n"
+                            "%s  ai_addr: %s\n"
+                            "%s"
+                            "%s}\n",
+                            indent,
+                            indent, ai_flags.c_str(),
+                            indent, ai_family,
+                            indent, ai_socktype,
+                            indent, ai_protocol,
+                            indent, ai.ai_addrlen,
+                            indent, ai_addr.c_str(),
+                            ai_canonname.c_str(),
+                            indent);
 }
 
 std::string FormatAddressList(const net::AddressList& address_list,

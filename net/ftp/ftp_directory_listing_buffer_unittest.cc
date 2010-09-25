@@ -61,7 +61,7 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
                                      &mock_current_time));
 
   for (size_t i = 0; i < arraysize(test_files); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, test_files[i]));
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i, test_files[i]));
 
     net::FtpDirectoryListingBuffer buffer(mock_current_time);
 
@@ -90,7 +90,7 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
       int64 size;
       base::StringToInt64(lines[8 * i + 2], &size);
 
-      SCOPED_TRACE(StringPrintf("Filename: %s", name.c_str()));
+      SCOPED_TRACE(base::StringPrintf("Filename: %s", name.c_str()));
 
       int year, month, day_of_month, hour, minute;
       base::StringToInt(lines[8 * i + 3], &year);

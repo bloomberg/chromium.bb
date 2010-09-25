@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "net/ftp/ftp_directory_listing_parser_mlsd.h"
 
 namespace {
@@ -31,7 +32,8 @@ TEST_F(FtpDirectoryListingParserMlsdTest, Good) {
       2001, 4, 14, 15, 52 },
   };
   for (size_t i = 0; i < arraysize(good_cases); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, good_cases[i].input));
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
+                                    good_cases[i].input));
 
     net::FtpDirectoryListingParserMlsd parser;
     RunSingleLineTestCase(&parser, good_cases[i]);

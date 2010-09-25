@@ -15,6 +15,7 @@
 #include "base/md5.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "net/server/http_listen_socket.h"
 #include "net/server/http_server_request_info.h"
 
@@ -109,14 +110,14 @@ void HttpListenSocket::AcceptWebSocket(const HttpServerRequestInfo& request) {
   std::string host = GetHeaderValue(request, "Host");
   std::string location = "ws://" + host + request.path;
   is_web_socket_ = true;
-  Send(StringPrintf("HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
-                    "Upgrade: WebSocket\r\n"
-                    "Connection: Upgrade\r\n"
-                    "Sec-WebSocket-Origin: %s\r\n"
-                    "Sec-WebSocket-Location: %s\r\n"
-                    "\r\n",
-                    origin.c_str(),
-                    location.c_str()));
+  Send(base::StringPrintf("HTTP/1.1 101 WebSocket Protocol Handshake\r\n"
+                          "Upgrade: WebSocket\r\n"
+                          "Connection: Upgrade\r\n"
+                          "Sec-WebSocket-Origin: %s\r\n"
+                          "Sec-WebSocket-Location: %s\r\n"
+                          "\r\n",
+                          origin.c_str(),
+                          location.c_str()));
   Send(reinterpret_cast<char*>(digest.a), 16);
 }
 
@@ -131,12 +132,12 @@ void HttpListenSocket::SendOverWebSocket(const std::string& data) {
 
 void HttpListenSocket::Send200(const std::string& data,
                                const std::string& content_type) {
-  Send(StringPrintf("HTTP/1.1 200 OK\r\n"
-                    "Content-Type:%s\r\n"
-                    "Content-Length:%d\r\n"
-                    "\r\n",
-                    content_type.c_str(),
-                    static_cast<int>(data.length())));
+  Send(base::StringPrintf("HTTP/1.1 200 OK\r\n"
+                          "Content-Type:%s\r\n"
+                          "Content-Length:%d\r\n"
+                          "\r\n",
+                          content_type.c_str(),
+                          static_cast<int>(data.length())));
   Send(data);
 }
 
@@ -147,13 +148,13 @@ void HttpListenSocket::Send404() {
 }
 
 void HttpListenSocket::Send500(const std::string& message) {
-  Send(StringPrintf("HTTP/1.1 500 Internal Error\r\n"
-                    "Content-Type:text/html\r\n"
-                    "Content-Length:%d\r\n"
-                    "\r\n"
-                    "%s",
-                    static_cast<int>(message.length()),
-                    message.c_str()));
+  Send(base::StringPrintf("HTTP/1.1 500 Internal Error\r\n"
+                          "Content-Type:text/html\r\n"
+                          "Content-Length:%d\r\n"
+                          "\r\n"
+                          "%s",
+                          static_cast<int>(message.length()),
+                          message.c_str()));
 }
 
 //
