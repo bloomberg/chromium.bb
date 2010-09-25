@@ -45,11 +45,6 @@ class WebGraphicsContext3DCommandBufferImpl
                           WebKit::WebView*,
                           bool renderDirectlyToWebView);
 
-  // TODO(kbr): remove this overload once upstream code no longer
-  // defines this virtual.
-  virtual bool initialize(WebGraphicsContext3D::Attributes attributes,
-                          WebKit::WebView*);
-
   virtual bool makeContextCurrent();
 
   virtual int width();

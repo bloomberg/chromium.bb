@@ -107,14 +107,6 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   return true;
 }
 
-// TODO(kbr): remove this entire method as soon as the compositor has
-// switched to use GraphicsContext3D.
-bool WebGraphicsContext3DCommandBufferImpl::initialize(
-    WebGraphicsContext3D::Attributes attributes,
-    WebKit::WebView* web_view) {
-  return false;
-}
-
 bool WebGraphicsContext3DCommandBufferImpl::makeContextCurrent() {
   return ggl::MakeCurrent(context_);
 }
