@@ -509,12 +509,16 @@ cr.define('bmm', function() {
         }
 
       } else {
-
         // Check that we have a valid URL and if not we do not change the
         // editing mode.
         if (!isFolder) {
           var urlInput = this.querySelector('.url input');
           var newUrl = urlInput.value;
+          if (!newUrl) {
+            cr.dispatchSimpleEvent(this, 'canceledit', true);
+            return;
+          }
+
           if (!urlInput.validity.valid) {
             // WebKit does not do URL fix up so we manually test if prepending
             // 'http://' would make the URL valid.
@@ -527,6 +531,12 @@ cr.define('bmm', function() {
               // In case the item was removed before getting here we should
               // not alert.
               if (listItem.parentNode) {
+                // Select the item again.
+                var dataModel = this.parentNode.dataModel;
+                var index = dataModel.indexOf(this.bookmarkNode);
+                var sm = this.parentNode.selectionModel;
+                sm.selectedIndex = sm.leadIndex = sm.anchorIndex = index;
+
                 alert(localStrings.getString('invalid_url'));
               }
               urlInput.focus();

@@ -1380,10 +1380,9 @@ list.addEventListener('canceledit', function(e) {
   var item = e.target;
   var bookmarkNode = item.bookmarkNode;
   if (bookmarkNode.id == 'new') {
-    list.remove(item);
-    list.selectionModel.leadItem = list.lastChild;
-    list.selectionModel.anchorItem = list.lastChild;
-    list.focus();
+    var dataModel = list.dataModel;
+    var index = dataModel.findIndexById('new');
+    dataModel.splice(index, 1);
   }
 });
 
