@@ -81,6 +81,15 @@ class MediatorThreadImpl
 
   virtual void OnDisconnect();
 
+  // These handle messages indicating an event happened in the outside
+  // world.  These are all called from the worker thread. They are protected
+  // so they can be used by subclasses.
+  void OnIncomingNotification(
+      const IncomingNotificationData& notification_data);
+  void OnOutgoingNotification(bool success);
+  void OnConnect(base::WeakPtr<talk_base::Task> parent);
+  void OnSubscriptionStateChange(bool success);
+
   Delegate* delegate_;
   MessageLoop* parent_message_loop_;
   base::WeakPtr<talk_base::Task> base_task_;
@@ -93,14 +102,6 @@ class MediatorThreadImpl
   void DoListenForUpdates();
   void DoSendNotification(
       const OutgoingNotificationData& data);
-
-  // These handle messages indicating an event happened in the outside
-  // world.  These are all called from the worker thread.
-  void OnIncomingNotification(
-      const IncomingNotificationData& notification_data);
-  void OnOutgoingNotification(bool success);
-  void OnConnect(base::WeakPtr<talk_base::Task> parent);
-  void OnSubscriptionStateChange(bool success);
 
   // Equivalents of the above functions called from the parent thread.
   void OnIncomingNotificationOnParentThread(
