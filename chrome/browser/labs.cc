@@ -91,8 +91,8 @@ const Experiment kExperiments[] = {
     // Linux only supports client functionality at the moment.
     IDS_LABS_REMOTING_CLIENT_DESCRIPTION,
 #else
-    // On other platforms, this lab isn't available at all
-    "",
+    // On other platforms, this lab isn't available at all.
+    0,
 #endif
     kOsWin | kOsLinux,
     switches::kEnableRemoting
