@@ -2441,8 +2441,6 @@
         'test/live_sync/many_client_live_preferences_sync_test.cc',
         'test/live_sync/multiple_client_live_bookmarks_sync_test.cc',
         'test/live_sync/multiple_client_live_preferences_sync_test.cc',
-        'test/live_sync/profile_sync_service_test_harness.cc',
-        'test/live_sync/profile_sync_service_test_harness.h',
         'test/live_sync/single_client_live_bookmarks_sync_test.cc',
         'test/live_sync/single_client_live_preferences_sync_test.cc',
         'test/live_sync/two_client_live_autofill_sync_test.cc',

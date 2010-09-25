@@ -176,7 +176,7 @@ Profile* LiveSyncTest::GetProfile(int index) {
   return profiles_[index];
 }
 
-ProfileSyncServiceTestHarness* LiveSyncTest::GetClient(int index) {
+ProfileSyncServiceHarness* LiveSyncTest::GetClient(int index) {
   EXPECT_FALSE(clients_.empty()) << "SetupClients() has not yet been called.";
   EXPECT_TRUE((index >= 0) && (index < static_cast<int>(clients_.size())))
       << "GetClient(): Index is out of bounds.";
@@ -199,7 +199,7 @@ bool LiveSyncTest::SetupClients() {
     profiles_.push_back(MakeProfile(
         StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
     EXPECT_FALSE(GetProfile(i) == NULL) << "GetProfile(" << i << ") failed.";
-    clients_.push_back(new ProfileSyncServiceTestHarness(
+    clients_.push_back(new ProfileSyncServiceHarness(
         GetProfile(i), username_, password_, i));
     EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
   }
