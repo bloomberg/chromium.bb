@@ -301,31 +301,36 @@ try the
 </p>
 
 <div id="faq-TOC">
-<h4>General</h4>
-      <ul>
-        <li><a href="#faq-gen-01">What are Google Chrome Extensions?</a></li>
-        <li><a href="#faq-gen-02">What technologies are used to write extensions for Google Chrome?</a></li>
-        <li><a href="#faq-gen-03">Are extensions fetched from the web every time the browser is loaded?</a></li>
-      </ul>
-<h4>Development</h4>
-      <ul>
-        <li><a href="#faq-dev-01">How can I set up Google Chrome for extension development?</a></li>
-        <li><a href="#faq-dev-02">Can I make cross-domain Ajax requests in an extension?</a></li>
-        <li><a href="#faq-dev-03">Can I use 3rd party web services in my extension?</a></li>
-        <li><a href="#faq-dev-04">Can I use OAuth in my extensions?</a></li>
-        <li><a href="#faq-dev-05">What UI controls can I create for my extension?</a></li>
-        <li><a href="#faq-dev-06">Can I load DLLs in my extension?</a></li>
-        <li><a href="#faq-dev-07">Can Google Chrome Extensions encode/decode JSON data?</a></li>
-        <li><a href="#faq-dev-08">Can I store data locally in my extension?</a></li>
-        <li><a href="#faq-dev-09">How much data can I store in localStorage?</a></li>
-        <li><a href="#faq-dev-10">Can I create an options menu for my application?</a></li>
-        <li><a href="#faq-dev-11">Can two extensions communicate with each other?</a></li>
-        <li><a href="#faq-dev-12">What debugging tools are available to extension developers?</a></li>
-        <li><a href="#faq-dev-13">Can extensions use Google Analytics?</a></li>
-        <li><a href="#faq-dev-14">How do I determine which version of Google Chrome is deployed to which channel?</a></li>
-        <li><a href="#faq-dev-15">Can I add a content script to chrome:// URLs?</a></li>
-        <li><a href="#faq-dev-16">Why do wildcard matches not work for top level domains (TLDs)?</a></li>
-      </ul>
+  <h4>General</h4>
+  <ul>
+    <li><a href="#faq-gen-01">What are Google Chrome Extensions?</a></li>
+    <li><a href="#faq-gen-02">What technologies are used to write extensions for Google Chrome?</a></li>
+    <li><a href="#faq-gen-03">Are extensions fetched from the web every time the browser is loaded?</a></li>
+  </ul>
+  <h4>Development</h4>
+  <ul>
+    <li><a href="#faq-dev-01">How can I set up Google Chrome for extension development?</a></li>
+    <li><a href="#faq-dev-02">Can I make cross-domain Ajax requests in an extension?</a></li>
+    <li><a href="#faq-dev-03">Can I use 3rd party web services in my extension?</a></li>
+    <li><a href="#faq-dev-04">Can I use OAuth in my extensions?</a></li>
+    <li><a href="#faq-dev-05">What UI controls can I create for my extension?</a></li>
+    <li><a href="#faq-dev-06">Can I load DLLs in my extension?</a></li>
+    <li><a href="#faq-dev-07">Can Google Chrome Extensions encode/decode JSON data?</a></li>
+    <li><a href="#faq-dev-08">Can I store data locally in my extension?</a></li>
+    <li><a href="#faq-dev-09">How much data can I store in localStorage?</a></li>
+    <li><a href="#faq-dev-10">Can I create an options menu for my application?</a></li>
+    <li><a href="#faq-dev-11">Can two extensions communicate with each other?</a></li>
+    <li><a href="#faq-dev-12">What debugging tools are available to extension developers?</a></li>
+    <li><a href="#faq-dev-13">Can extensions use Google Analytics?</a></li>
+    <li><a href="#faq-dev-14">How do I determine which version of Google Chrome is deployed to which channel?</a></li>
+    <li><a href="#faq-dev-15">Can I add a content script to chrome:// URLs?</a></li>
+    <li><a href="#faq-dev-16">Why do wildcard matches not work for top level domains (TLDs)?</a></li>
+  </ul>
+  <h4>Features and bugs</h4>
+  <ul>
+    <li><a href="#faq-fea-01">I think I've found a bug! How do I make sure it gets fixed?</a></li>
+    <li><a href="#faq-fea-02">I have a feature request! How can I report it?</a></li>
+  </ul>
 </div>
 
 <h2>General</h2>
@@ -487,25 +492,29 @@ try the
   <a href="http://omahaproxy.appspot.com">omahaproxy.appspot.com</a>.  On that
   site you will see data in a format similar to:
 </p>
-<pre>cf,dev,#.#.###.#
-cf,beta,#.#.###.#
-cf,stable,#.#.###.#
-linux,dev,#.#.###.#
-linux,beta,#.#.###.#
-linux,stable,#.#.###.#
-mac,dev,#.#.###.#
-mac,beta,#.#.###.#
-mac,stable,#.#.###.#
-win,dev,#.#.###.#
-win,beta,#.#.###.#
-win,stable,#.#.###.#</pre>
+<pre>cf,dev,#.#.###.#,#.#.###.#
+cf,beta,#.#.###.#,#.#.###.#
+cf,stable,#.#.###.#,#.#.###.#
+linux,dev,#.#.###.#,#.#.###.#
+linux,beta,#.#.###.#,#.#.###.#
+linux,stable,#.#.###.#,#.#.###.#
+mac,dev,#.#.###.#,#.#.###.#
+mac,beta,#.#.###.#,#.#.###.#
+mac,stable,#.#.###.#,#.#.###.#
+win,canary,#.#.###.#,#.#.###.#
+win,dev,#.#.###.#,#.#.###.#
+win,beta,#.#.###.#,#.#.###.#
+win,stable,#.#.###.#,#.#.###.#</pre>
+
 <p>
   Each line represents a different platform and channel combination. The
   listed platforms are <code>cf</code> (Google Chrome Frame),
   <code>linux</code>, <code>mac</code>, and <code>win</code>.  The listed
-  channels are <code>dev</code>, <code>beta</code>, and <code>stable</code>.
-  The four-part number at the end of each line represents the version of Google
-  Chrome currently deployed to that platform-channel combination.
+  channels are <code>canary</code>, <code>dev</code>, <code>beta</code>,
+  and <code>stable</code>.
+  The two four-part numbers at the end of each line represent the range of
+  versions of Google Chrome currently deployed to that platform-channel
+  combination.
 </p>
 
 <h3 id="faq-dev-15">Can I add a content script to chrome:// URLs?</h3>
@@ -552,7 +561,124 @@ win,stable,#.#.###.#</pre>
   You should explicitly enumerate the TLDs that you wish to run
   your extension on.
 </p>
-</div>
+
+<h2>Features and bugs</h2>
+
+<h3 id="faq-fea-01">I think I've found a bug! How do I make sure it gets
+  fixed?</h3>
+<p>
+  While developing an extension, you may find behavior that does not
+  match the extensions documentation and may be the result of a bug in
+  Google Chrome.  The best thing to do is to make sure an appropriate issue
+  report is filed, and the Chromium team has enough information to reproduce
+  the behavior.
+</p>
+
+<p>The steps you should follow to ensure this are:</p>
+
+<ol>
+  <li>
+    Come up with a <em>minimal</em> test extension that demonstrates the issue
+    you wish to report.  This extension should have as little code as possible
+    to demonstrate the bug—generally this should be 100 lines of
+    code or less.  Many times, developers find that they cannot reproduce their
+    issues this way, which is a good indicator that the bug is in their own
+    code.
+  </li>
+  <li>
+    Search the issue tracker at
+    <a href="http://www.crbug.com">http://www.crbug.com</a> to see whether
+    someone has reported a similar issue.  Most issues related to
+    extensions are filed under <strong>Feature=Extensions</strong>, so to
+    look for an extension bug related to the
+    chrome.tabs.executeScript function (for example), search for
+    "<code>Feature=Extensions Type=Bug chrome.tabs.executeScript</code>" which
+    will give you
+    <a href="http://code.google.com/p/chromium/issues/list?can=2&amp;q=Feature%3DExtensions+Type%3DBug+chrome.tabs.executeScript&amp;colspec=ID+Stars+Pri+Area+Feature+Type+Status+Summary+Modified+Owner+Mstone+OS&amp;x=mstone&amp;y=area&amp;cells=tiles">
+    this list of results</a>.
+  </li>
+  <li>
+    If you find a bug that describes your issue, click the star icon to be
+    notified when the bug receives an update.  <em>Do not respond to the
+    bug to say "me too" or ask "when will this be fixed?"</em>; such updates
+    can cause hundreds of emails to be sent.  Add a comment only if you have
+    information (such as a better test case or a suggested fix) that is likely
+    to be helpful.
+  </li>
+  <li>
+    If you found no appropriate bug to star, file a new issue report at
+    <a href="http://new.crbug.com">http://new.crbug.com</a>.  Be as explicit
+    as possible when filling out this form: choose a descriptive title,
+    explain the steps to reproduce the bug, and describe the expected and
+    actual behavior.  Attach your test example to the report and add
+    screenshots if appropriate.  The easier your report makes it for others
+    to reproduce your issue, the greater chance that your bug will be fixed
+    promptly.
+  </li>
+  <li>
+    Wait for the bug to be updated.  Most new bugs are triaged within a week,
+    although it can sometimes take longer for an update.  <em>Do not reply
+    to the bug to ask when the issue will be fixed.</em>  If your bug has not
+    been modified after two weeks, please post a message to the
+    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">
+    discussion group</a> with a link back to your bug.
+  </li>
+  <li>
+    If you originally reported your bug on the discussion group and were
+    directed to this FAQ entry, reply to your original thread with a link
+    to the bug you starred or reported.  This will make it easier for others
+    experiencing the same issue to find the correct bug.
+  </li>
+</ol>
+
+<h3 id="faq-fea-02">I have a feature request! How can I report it?</h3>
+
+<p>If you identify a feature (especially if it's related to an experimental
+  API) that could be added to improve the extension development experience,
+  make sure an appropriate request is filed in the issue tracker.</p>
+
+<p>The steps you should follow to ensure this are:</p>
+
+<ol>
+  <li>
+    Search the issue tracker at
+    <a href="http://www.crbug.com">http://www.crbug.com</a> to see whether
+    someone has requested a similar feature.  Most requests related to
+    extensions are filed under <strong>Feature=Extensions</strong>, so to
+    look for an extension feature request related to keyboard shortcuts
+    (for example), search
+    for "<code>Feature=Extensions Type=Feature shortcuts</code>" which will
+    give you
+    <a href="http://code.google.com/p/chromium/issues/list?can=2&amp;q=Feature%3DExtensions+Type%3DFeature+shortcuts&amp;colspec=ID+Stars+Pri+Area+Feature+Type+Status+Summary+Modified+Owner+Mstone+OS&amp;x=mstone&amp;y=area&amp;cells=tiles">
+    this list of results</a>.
+  </li>
+  <li>
+    If you find a ticket that matches your request, click the star icon to be
+    notified when the bug receives an update.  <em>Do not respond to the
+    bug to say "me too" or ask "when will this be implemented?"</em>; such
+    updates can cause hundreds of emails to be sent.
+  </li>
+  <li>
+    If you found no appropriate ticket to star, file a new request at
+    <a href="http://new.crbug.com">http://new.crbug.com</a>.  Be as detailed
+    as possible when filling out this form: choose a descriptive title
+    and explain exactly what feature you would like and how you plan to use it.
+  </li>
+  <li>
+    Wait for the ticket to be updated.  Most new requests are triaged within a
+    week, although it can sometimes take longer for an update.  <em>Do not reply
+    to the ticket to ask when the feature will be added.</em>  If your
+    ticket has not been modified after two weeks, please post a message to the
+    <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">
+    discussion group</a> with a link back to your request.
+  </li>
+  <li>
+    If you originally reported your request on the discussion group and were
+    directed to this FAQ entry, reply to your original thread with a link
+    to the ticket you starred or opened.  This will make it easier for others
+    with the same request to find the correct ticket.
+  </li>
+</ol></div>
 
         <!-- API PAGE -->
         <div class="apiPage" style="display: none; ">
