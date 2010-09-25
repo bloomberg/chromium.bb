@@ -1687,12 +1687,12 @@ class Main(object):
     # TODO(nirnimesh): Figure out a way to control this from here on Win too.
     if PyUITest.IsPosix():
       chrome_flags += ' --enable-crash-reporter'
-
-    # We add this so that pyauto can execute javascript in the renderer and
-    # read values back out.
-    chrome_flags += ' --dom-automation'
+    # --dom-automation added in PyUITestBase::PyUITestBase()
 
     suite_args.append('--extra-chrome-flags=%s' % chrome_flags)
+    # Note: The suite_args passed here are ignored on windows since it
+    # overrides to obtain the command line for the current process directly.
+    # Refer CommandLine::Init().
     pyauto_suite = PyUITestSuite(suite_args)
     loaded_tests = self._LoadTests(self._args)
     pyauto_suite.addTests(loaded_tests)
