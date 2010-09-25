@@ -133,19 +133,7 @@ cr.define('cr.ui', function() {
     var parentPadding = rtl ? parseInt(parentComputedStyle.paddingLeft, 10) :
         parseInt(parentComputedStyle.paddingRight, 10);
 
-    // The magic number 14 comes from trial and error :'( It consists of:
-    // border + padding + treeItem.paddingEnd + treeItem.borderEnd +
-    // tree.paddingEnd
     var max = parentEl.clientWidth - startPos - inner - parentPadding;
-
-    var pcs = getComputedStyle(parentEl);
-    console.log('pcs', 'borderLeft', pcs.borderLeftWidth,
-                'paddingLeft', pcs.paddingLeft,
-                'paddingRight', pcs.paddingRight,
-                'borderRight', pcs.borderRightWidth,
-                'width', pcs.width,
-                'clientWidth', parentEl.clientWidth,
-                'offsetWidth', parentEl.offsetWidth);
 
     function limit() {
       if (el.scrollWidth > max) {
