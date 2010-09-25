@@ -736,13 +736,11 @@ class Coverage(object):
       if start_dir.endswith('chrome'):
         print 'coverage_posix.py: doing a "cd .." to accomodate Linux/make PWD'
         os.chdir('..')
-    elif self.IsMac():
-      pass
-    else:
-      # windows
-      if start_dir.endswith('build'):
+      elif start_dir.endswith('build'):
         print 'coverage_posix.py: doing a "cd src" to accomodate buildbot PWD'
         os.chdir('src')
+    elif self.IsMac():
+      pass
 
     command = [self.mcov,
                '--directory',
