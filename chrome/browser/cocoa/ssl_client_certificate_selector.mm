@@ -174,11 +174,6 @@ void ShowSSLClientCertificateSelector(
 
   // Create and set up a system choose-identity panel.
   SFChooseIdentityPanel* panel = [[SFChooseIdentityPanel alloc] init];
-  NSString* domain = base::SysUTF8ToNSString(
-      "https://" + certRequestInfo_->host_and_port);
-  // Setting the domain causes the dialog to record the preferred
-  // identity in the system keychain.
-  [panel setDomain:domain];
   [panel setInformativeText:message];
   [panel setDefaultButtonTitle:l10n_util::GetNSString(IDS_OK)];
   [panel setAlternateButtonTitle:l10n_util::GetNSString(IDS_CANCEL)];
