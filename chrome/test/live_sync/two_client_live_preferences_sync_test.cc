@@ -30,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Race) {
 
   GetPrefs(0)->SetString(prefs::kHomePage, "http://www.google.com/1");
   GetPrefs(1)->SetString(prefs::kHomePage, "http://www.google.com/2");
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_EQ(GetPrefs(0)->GetString(prefs::kHomePage),
             GetPrefs(1)->GetString(prefs::kHomePage));
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kSyncPreferences) {
 
   GetPrefs(0)->SetBoolean(prefs::kPasswordManagerEnabled, 1);
   GetPrefs(1)->SetBoolean(prefs::kPasswordManagerEnabled, 0);
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_NE(GetPrefs(0)->GetBoolean(prefs::kPasswordManagerEnabled),
             GetPrefs(1)->GetBoolean(prefs::kPasswordManagerEnabled));
@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, SignInDialog) {
   GetClient(0)->DisableSyncForDatatype(syncable::THEMES);
   GetClient(1)->EnableSyncForDatatype(syncable::THEMES);
 
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_NE(GetPrefs(0)->GetBoolean(prefs::kSyncPreferences),
             GetPrefs(1)->GetBoolean(prefs::kSyncPreferences));

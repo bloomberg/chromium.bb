@@ -327,8 +327,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   const GURL& sync_service_url() const { return sync_service_url_; }
 
-  SigninManager* signin() { return &signin_; }
-
  protected:
   // Used by ProfileSyncServiceMock only.
   //
@@ -377,6 +375,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   friend class ProfileSyncServicePasswordTest;
   friend class ProfileSyncServicePreferenceTest;
   friend class ProfileSyncServiceSessionTest;
+  friend class ProfileSyncServiceTestHarness;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest,
                            UnrecoverableErrorSuspendsService);

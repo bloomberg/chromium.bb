@@ -14,7 +14,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientLiveBookmarksSyncTest, Sanity) {
         StringPrintf(L"Google URL %d", i),
         GURL(StringPrintf("http://www.google.com/%d", i)));
   }
-  ProfileSyncServiceHarness::AwaitQuiescence(clients());
+  ProfileSyncServiceTestHarness::AwaitQuiescence(clients());
   for (int i = 1; i < num_clients(); ++i) {
     BookmarkModelVerifier::ExpectModelsMatch(GetBookmarkModel(0),
         GetBookmarkModel(i));

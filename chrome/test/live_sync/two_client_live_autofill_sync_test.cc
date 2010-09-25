@@ -17,7 +17,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, Client1HasData) {
   AddFormFieldsToWebData(GetWebDataService(0), keys);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   AutofillKeys wd1_keys;
   GetAllAutofillKeys(GetWebDataService(1), &wd1_keys);
@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, BothHaveData) {
   AddFormFieldsToWebData(GetWebDataService(1), keys2);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  EXPECT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  EXPECT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   // Note: In this test, name0-value0 and name0-value1 were added in separate
   // transactions -- one on Client0 and the other on Client1. Therefore, we
@@ -153,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ProfileClient1HasData) {
   AddProfile(GetPersonalDataManager(0), *expected_profiles[1]);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   AutoFillProfile::AdjustInferredLabels(&expected_profiles);
   EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ConflictLabels) {
   AddProfile(GetPersonalDataManager(1), *profiles2[0]);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   // Since client1 associates first, client2's profile will
   // be overwritten by the one stored in the cloud by profile1.
@@ -208,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   AddProfile(GetPersonalDataManager(0), *expected_profiles[1]);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   // One of the duplicate profiles will have its label renamed to
   // the first label with "2" appended.
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddMultipleProfiles) {
   FillProfile(PROFILE_FRASIER, expected_profiles[3]);
   AddProfile(GetPersonalDataManager(0), *expected_profiles[3]);
 
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_TRUE(CompareAutoFillProfiles(
       GetAllAutoFillProfiles(GetPersonalDataManager(1)),
@@ -381,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddUnicodeProfile) {
   AddFormFieldsToWebData(GetWebDataService(0), expected_keys);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   AutofillKeys synced_keys;
   GetAllAutofillKeys(GetWebDataService(1), &synced_keys);
@@ -470,7 +470,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, UpdateFields) {
                 AutoFillType(NAME_FIRST), ASCIIToUTF16("Lisa"));
   UpdateProfile(GetPersonalDataManager(0), expected_profiles[0]->Label(),
                 AutoFillType(EMAIL_ADDRESS), ASCIIToUTF16("grrrl@TV.com"));
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_TRUE(CompareAutoFillProfiles(
       GetAllAutoFillProfiles(GetPersonalDataManager(0)),
@@ -497,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, UpdateLabel) {
   AddProfile(GetPersonalDataManager(0), *profiles0[0]);
   AddProfile(GetPersonalDataManager(1), *profiles1[0]);
 
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   AutoFillProfile::AdjustInferredLabels(&expected_profiles);
   EXPECT_TRUE(CompareAutoFillProfiles(expected_profiles,
@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ConflictFields) {
   UpdateProfile(GetPersonalDataManager(1), expected_profiles[0]->Label(),
                 AutoFillType(NAME_FIRST), ASCIIToUTF16("Bart"));
 
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   EXPECT_TRUE(CompareAutoFillProfiles(
       GetAllAutoFillProfiles(GetPersonalDataManager(0)),

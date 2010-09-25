@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
     bm1->SetTitle(google_two, ASCIIToUTF16("Google--"));
   }
 
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
 
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 }
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
         BookmarkEditor::EditDetails(google_two), title, third_url);
   }
 
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
 
   {
@@ -1879,7 +1879,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     ASSERT_TRUE(bm_foo4 != NULL);
   }
 
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
   BookmarkModelVerifier::VerifyNoDuplicates(bm0);
 }
@@ -1918,7 +1918,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
       profile1_bookmark_model);
   BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
@@ -1931,7 +1931,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   BookmarkModelVerifier* v = verifier_helper();
   BookmarkModel* bm0 = GetBookmarkModel(0);
   BookmarkModel* bm1 = GetBookmarkModel(1);
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   v->ExpectMatch(bm0);
   v->ExpectMatch(bm1);
 }
@@ -1981,7 +1981,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
       profile1_bookmark_model);
   BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
@@ -2041,7 +2041,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Wait for changes to propagate.
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   // Let's make sure there aren't any duplicates after sync.
   BookmarkModelVerifier::VerifyNoDuplicates(bm0);
   // Let's compare and make sure both bookmark models are same after sync.
@@ -2091,7 +2091,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Wait for changes to propagate.
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   // Let's make sure there aren't any duplicates after sync.
   BookmarkModelVerifier::VerifyNoDuplicates(bm0);
   // Let's compare and make sure both bookmark models are same after sync.
@@ -2128,7 +2128,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   // Set up sync on both clients.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // Wait for changes to propagate.
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   // Let's make sure there aren't any duplicates after sync.
   BookmarkModelVerifier::VerifyNoDuplicates(bm0);
   // Let's compare and make sure both bookmark models are same after sync.
@@ -2175,7 +2175,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(profile1_bookmark4 != NULL);
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
   BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
                                            profile1_bookmark_model);
@@ -2285,7 +2285,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
   BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
                                            profile1_bookmark_model);
@@ -2355,7 +2355,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients()));
+  ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
                                            profile1_bookmark_model);
 }
