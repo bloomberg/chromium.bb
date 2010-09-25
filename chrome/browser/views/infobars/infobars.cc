@@ -152,6 +152,14 @@ void InfoBar::ViewHierarchyChanged(bool is_add, views::View* parent,
       InfoBarRemoved();
     }
   }
+
+  // For accessibility, make the close button that the child view.
+  if (parent == this && child != close_button_ &&
+          HasChildView(close_button_) &&
+              GetChildViewAt(GetChildViewCount() - 1) != close_button_) {
+    RemoveChildView(close_button_);
+    AddChildView(close_button_);
+  }
 }
 
 // InfoBar, protected: ---------------------------------------------------------
