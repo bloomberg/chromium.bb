@@ -81,6 +81,22 @@ const Experiment kExperiments[] = {
     kOsWin,
     switches::kEnableMatchPreview
   },
+  {
+    "remoting",  // Do not change; see above.
+    IDS_LABS_REMOTING_NAME,
+#if defined(OS_WINDOWS)
+    // Windows only supports host functionality at the moment.
+    IDS_LABS_REMOTING_HOST_DESCRIPTION,
+#elif defined(OS_LINUX)
+    // Linux only supports client functionality at the moment.
+    IDS_LABS_REMOTING_CLIENT_DESCRIPTION,
+#else
+    // On other platforms, this lab isn't available at all
+    "",
+#endif
+    kOsWin | kOsLinux,
+    switches::kEnableRemoting
+  },
 };
 
 // Extracts the list of enabled lab experiments from a profile and stores them

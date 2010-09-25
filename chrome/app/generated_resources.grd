@@ -3864,6 +3864,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
      <message name="IDS_LABS_INSTANT_DESCRIPTION" desc="Description of the 'Instant' lab.">
         Makes the address bar load urls as you type.
       </message>
+     <message name="IDS_LABS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
+        Remoting
+      </message>
+     <message name="IDS_LABS_REMOTING_CLIENT_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
+        Enable Remoting Client support.
+      </message>
+     <message name="IDS_LABS_REMOTING_HOST_DESCRIPTION" desc="Description of the 'Remoting' host lab.">
+        Enable Remoting Host support.
+      </message>
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">

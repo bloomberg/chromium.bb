@@ -18,7 +18,6 @@ class LabsHandler : public OptionsPageUIHandler {
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(LabsHandler);
 };
 

@@ -5,18 +5,8 @@
 #include "chrome/browser/chromeos/dom_ui/labs_handler.h"
 
 #include "app/l10n_util.h"
-#include "base/basictypes.h"
-#include "base/callback.h"
-#include "base/stl_util-inl.h"
-#include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/notification_service.h"
-#include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
 
 LabsHandler::LabsHandler() {
 }
@@ -30,6 +20,7 @@ void LabsHandler::GetLocalizedValues(
   // Labs page - ChromeOS
   localized_strings->SetString("labsPage",
       l10n_util::GetStringUTF16(IDS_OPTIONS_LABS_TAB_LABEL));
+
   localized_strings->SetString("mediaplayer_title",
      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_MEDIAPLAYER));
   localized_strings->SetString("mediaplayer",
