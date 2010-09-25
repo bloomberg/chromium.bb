@@ -29,13 +29,23 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
+#include "chrome/browser/plugin_download_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "net/base/capturing_net_log.h"
+#include "net/base/host_resolver.h"
 #include "net/base/net_util.h"
+#include "net/base/ssl_config_service_defaults.h"
+#include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_cache.h"
+#include "net/http/http_network_layer.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_status.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -45,6 +55,23 @@
 #endif
 
 class PluginTest : public UITest {
+ public:
+  // Generate the URL for testing a particular test.
+  // HTML for the tests is all located in test_directory\plugin\<testcase>
+  // Set |mock_http| to true to use mock HTTP server.
+  static GURL GetTestUrl(const std::string &test_case, bool mock_http) {
+    static const FilePath::CharType kPluginPath[] = FILE_PATH_LITERAL("plugin");
+    if (mock_http) {
+      FilePath plugin_path = FilePath(kPluginPath).AppendASCII(test_case);
+      return URLRequestMockHTTPJob::GetMockUrl(plugin_path);
+    }
+
+    FilePath path;
+    PathService::Get(chrome::DIR_TEST_DATA, &path);
+    path = path.Append(kPluginPath).AppendASCII(test_case);
+    return net::FilePathToFileURL(path);
+  }
+
  protected:
 #if defined(OS_WIN)
   virtual void SetUp() {
@@ -78,22 +105,6 @@ class PluginTest : public UITest {
     GURL url = GetTestUrl(test_case, mock_http);
     NavigateToURL(url);
     WaitForFinish(timeout, mock_http);
-  }
-
-  // Generate the URL for testing a particular test.
-  // HTML for the tests is all located in test_directory\plugin\<testcase>
-  // Set |mock_http| to true to use mock HTTP server.
-  GURL GetTestUrl(const std::string &test_case, bool mock_http) {
-    static const FilePath::CharType kPluginPath[] = FILE_PATH_LITERAL("plugin");
-    if (mock_http) {
-      FilePath plugin_path = FilePath(kPluginPath).AppendASCII(test_case);
-      return URLRequestMockHTTPJob::GetMockUrl(plugin_path);
-    }
-
-    FilePath path;
-    PathService::Get(chrome::DIR_TEST_DATA, &path);
-    path = path.Append(kPluginPath).AppendASCII(test_case);
-    return net::FilePathToFileURL(path);
   }
 
   // Waits for the test case to finish.
@@ -182,5 +193,112 @@ TEST_F(PluginTest, DISABLED_Java) {
 
 TEST_F(PluginTest, Silverlight) {
   TestPlugin("silverlight.html", action_max_timeout_ms(), false);
+}
+
+// This class provides functionality to test the plugin installer download
+// file functionality.
+class PluginInstallerDownloadTest : public PluginDownloadUrlHelper::Delegate,
+                                    public testing::Test {
+ public:
+  // This class provides HTTP request context information for the downloads.
+  class UploadRequestContext : public URLRequestContext {
+   public:
+    UploadRequestContext() {
+      Initialize();
+    }
+
+    ~UploadRequestContext() {
+      DLOG(INFO) << __FUNCTION__;
+      delete http_transaction_factory_;
+      delete http_auth_handler_factory_;
+    }
+
+    void Initialize() {
+      host_resolver_ =
+          net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
+                                        NULL);
+      net::ProxyConfigService* proxy_config_service =
+          net::ProxyService::CreateSystemProxyConfigService(NULL, NULL);
+      DCHECK(proxy_config_service);
+
+      const size_t kNetLogBound = 50u;
+      net_log_.reset(new net::CapturingNetLog(kNetLogBound));
+
+      proxy_service_ = net::ProxyService::Create(proxy_config_service, false, 0,
+                                                 this, net_log_.get(),
+                                                 MessageLoop::current());
+      DCHECK(proxy_service_);
+
+      ssl_config_service_ = new net::SSLConfigServiceDefaults;
+      http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
+      http_transaction_factory_ = new net::HttpCache(
+          net::HttpNetworkLayer::CreateFactory(host_resolver_,
+                                               proxy_service_,
+                                               ssl_config_service_,
+                                               http_auth_handler_factory_,
+                                               network_delegate_,
+                                               NULL),
+          net::HttpCache::DefaultBackend::InMemory(0));
+    }
+
+   private:
+    scoped_ptr<net::NetLog> net_log_;
+    scoped_ptr<net::URLSecurityManager> url_security_manager_;
+  };
+
+  PluginInstallerDownloadTest()
+      : success_(false),
+        download_helper_(NULL) {}
+  ~PluginInstallerDownloadTest() {}
+
+  void Start() {
+    initial_download_path_ = PluginTest::GetTestUrl("flash.html", false);
+    download_helper_ = new PluginDownloadUrlHelper(
+        initial_download_path_.spec(), base::GetCurrentProcId(), NULL,
+        static_cast<PluginDownloadUrlHelper::Delegate*>(this));
+    download_helper_->InitiateDownload(new UploadRequestContext);
+
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, new MessageLoop::QuitTask,
+        TestTimeouts::action_max_timeout_ms());
+  }
+
+  virtual void OnDownloadCompleted(const FilePath& download_path,
+                                   bool success) {
+    success_ = success;
+    final_download_path_ = download_path;
+    MessageLoop::current()->Quit();
+    download_helper_ = NULL;
+  }
+
+  FilePath final_download_path() const {
+    return final_download_path_;
+  }
+
+  FilePath initial_download_path() const {
+    return final_download_path_;
+  }
+
+  bool success() const {
+    return success_;
+  }
+
+ private:
+  FilePath final_download_path_;
+  PluginDownloadUrlHelper* download_helper_;
+  bool success_;
+  GURL initial_download_path_;
+};
+
+// This test validates that the plugin downloader downloads the specified file
+// to a temporary path with the same file name.
+TEST_F(PluginInstallerDownloadTest, PluginInstallerDownloadPathTest) {
+  MessageLoop loop(MessageLoop::TYPE_IO);
+  Start();
+  loop.Run();
+
+  EXPECT_TRUE(success());
+  EXPECT_TRUE(initial_download_path().BaseName().value() ==
+              final_download_path().BaseName().value());
 }
 #endif  // defined(OS_WIN)
