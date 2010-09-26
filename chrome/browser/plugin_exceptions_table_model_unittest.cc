@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/plugin_group.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
@@ -68,30 +69,33 @@ class PluginExceptionsTableModelTest : public testing::Test {
     HostContentSettingsMap::Pattern moose_org("[*.]moose.org");
     map->SetContentSetting(example_com,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
-                           "foo",
+                           "a-foo",
                            CONTENT_SETTING_ALLOW);
     map->SetContentSetting(moose_org,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
-                           "bar",
+                           "b-bar",
                            CONTENT_SETTING_BLOCK);
     map->SetContentSetting(example_com,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
-                           "bar",
+                           "b-bar",
                            CONTENT_SETTING_ALLOW);
 
     table_model_.reset(new MockPluginExceptionsTableModel(map, NULL));
 
-    std::vector<WebPluginInfo> plugins;
+    PluginUpdater::PluginMap plugins;
     WebPluginInfo foo_plugin;
-    foo_plugin.path = FilePath(FILE_PATH_LITERAL("foo"));
+    foo_plugin.path = FilePath(FILE_PATH_LITERAL("a-foo"));
     foo_plugin.name = ASCIIToUTF16("FooPlugin");
     foo_plugin.enabled = true;
-    plugins.push_back(foo_plugin);
+    PluginGroup* foo_group = PluginGroup::FromWebPluginInfo(foo_plugin);
+    plugins[foo_group->identifier()] = linked_ptr<PluginGroup>(foo_group);
+
     WebPluginInfo bar_plugin;
-    bar_plugin.path = FilePath(FILE_PATH_LITERAL("bar"));
+    bar_plugin.path = FilePath(FILE_PATH_LITERAL("b-bar"));
     bar_plugin.name = ASCIIToUTF16("BarPlugin");
     bar_plugin.enabled = true;
-    plugins.push_back(bar_plugin);
+    PluginGroup* bar_group = PluginGroup::FromWebPluginInfo(bar_plugin);
+    plugins[bar_group->identifier()] = linked_ptr<PluginGroup>(bar_group);
 
     table_model_->set_plugins(plugins);
     table_model_->ReloadSettings();
@@ -177,7 +181,7 @@ TEST_F(PluginExceptionsTableModelTest, RemoveLastRowInGroup) {
   EXPECT_CALL(observer, OnModelChanged());
   map->SetContentSetting(HostContentSettingsMap::Pattern("[*.]blurp.net"),
                          CONTENT_SETTINGS_TYPE_PLUGINS,
-                         "bar",
+                         "b-bar",
                          CONTENT_SETTING_BLOCK);
   EXPECT_EQ(3, table_model_->RowCount());
 

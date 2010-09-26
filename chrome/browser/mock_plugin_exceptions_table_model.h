@@ -17,13 +17,13 @@ class MockPluginExceptionsTableModel : public PluginExceptionsTableModel {
       : PluginExceptionsTableModel(map, otr_map) {}
   virtual ~MockPluginExceptionsTableModel() {}
 
-  void set_plugins(const std::vector<WebPluginInfo>& plugins);
+  void set_plugins(const PluginUpdater::PluginMap& plugins);
 
  protected:
-  virtual void GetPlugins(std::vector<WebPluginInfo>* plugins);
+  virtual void GetPlugins(PluginUpdater::PluginMap* plugins);
 
  private:
-  std::vector<WebPluginInfo> plugins_;
+  PluginUpdater::PluginMap plugins_;
 };
 
 #endif  // CHROME_BROWSER_MOCK_PLUGIN_EXCEPTIONS_TABLE_MODEL_H_

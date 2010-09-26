@@ -10,8 +10,8 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/plugin_group.h"
 #include "grit/generated_resources.h"
-#include "webkit/glue/plugins/plugin_list.h"
 
 PluginExceptionsTableModel::PluginExceptionsTableModel(
     HostContentSettingsMap* content_settings_map,
@@ -128,22 +128,17 @@ void PluginExceptionsTableModel::ClearSettings() {
   resources_.clear();
 }
 
-void PluginExceptionsTableModel::GetPlugins(
-    std::vector<WebPluginInfo>* plugins) {
-  NPAPI::PluginList::Singleton()->GetPlugins(false, plugins);
+void PluginExceptionsTableModel::GetPlugins(PluginUpdater::PluginMap* plugins) {
+  PluginUpdater::GetPluginUpdater()->GetPluginGroups(plugins);
 }
 
 void PluginExceptionsTableModel::LoadSettings() {
   int group_id = 0;
-  std::vector<WebPluginInfo> plugins;
+  PluginUpdater::PluginMap plugins;
   GetPlugins(&plugins);
-  for (std::vector<WebPluginInfo>::iterator it = plugins.begin();
+  for (PluginUpdater::PluginMap::iterator it = plugins.begin();
        it != plugins.end(); ++it) {
-#if defined OS_POSIX
-    std::string plugin = it->path.value();
-#elif defined OS_WIN
-    std::string plugin = base::SysWideToUTF8(it->path.value());
-#endif
+    std::string plugin = it->first;
     HostContentSettingsMap::SettingsForOneType settings;
     map_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 plugin,
@@ -154,7 +149,7 @@ void PluginExceptionsTableModel::LoadSettings() {
                                       plugin,
                                       &otr_settings);
     }
-    std::wstring title = UTF16ToWide(it->name);
+    std::wstring title = UTF16ToWide(it->second->GetGroupName());
     for (HostContentSettingsMap::SettingsForOneType::iterator setting_it =
              settings.begin(); setting_it != settings.end(); ++setting_it) {
       SettingsEntry entry = {

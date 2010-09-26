@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/plugin_group.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,35 +39,38 @@ class TableModelArrayControllerTest : public CocoaTest {
     HostContentSettingsMap::Pattern moose_org("[*.]moose.org");
     map->SetContentSetting(example_com,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
-                           "foo",
+                           "a-foo",
                            CONTENT_SETTING_ALLOW);
     map->SetContentSetting(moose_org,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
-                           "bar",
+                           "b-bar",
                            CONTENT_SETTING_BLOCK);
     map->SetContentSetting(example_com,
                            CONTENT_SETTINGS_TYPE_PLUGINS,
-                           "bar",
+                           "b-bar",
                            CONTENT_SETTING_ALLOW);
 
     model_.reset(new MockPluginExceptionsTableModel(map, NULL));
 
-    std::vector<WebPluginInfo> plugins;
+    PluginUpdater::PluginMap plugins;
     WebPluginInfo foo_plugin;
-    foo_plugin.path = FilePath(FILE_PATH_LITERAL("foo"));
+    foo_plugin.path = FilePath(FILE_PATH_LITERAL("a-foo"));
     foo_plugin.name = ASCIIToUTF16("FooPlugin");
     foo_plugin.enabled = true;
-    plugins.push_back(foo_plugin);
+    PluginGroup* foo_group = PluginGroup::FromWebPluginInfo(foo_plugin);
+    plugins[foo_group->identifier()] = linked_ptr<PluginGroup>(foo_group);
     WebPluginInfo bar_plugin;
-    bar_plugin.path = FilePath(FILE_PATH_LITERAL("bar"));
+    bar_plugin.path = FilePath(FILE_PATH_LITERAL("b-bar"));
     bar_plugin.name = ASCIIToUTF16("BarPlugin");
     bar_plugin.enabled = true;
-    plugins.push_back(bar_plugin);
+    PluginGroup* bar_group = PluginGroup::FromWebPluginInfo(bar_plugin);
+    plugins[bar_group->identifier()] = linked_ptr<PluginGroup>(bar_group);
     WebPluginInfo blurp_plugin;
-    blurp_plugin.path = FilePath(FILE_PATH_LITERAL("blurp"));
+    blurp_plugin.path = FilePath(FILE_PATH_LITERAL("c-blurp"));
     blurp_plugin.name = ASCIIToUTF16("BlurpPlugin");
     blurp_plugin.enabled = true;
-    plugins.push_back(blurp_plugin);
+    PluginGroup* blurp_group = PluginGroup::FromWebPluginInfo(blurp_plugin);
+    plugins[blurp_group->identifier()] = linked_ptr<PluginGroup>(blurp_group);
 
     model_->set_plugins(plugins);
     model_->LoadSettings();
@@ -137,7 +141,7 @@ TEST_F(TableModelArrayControllerTest, AddException) {
   HostContentSettingsMap::Pattern example_com("[*.]example.com");
   map->SetContentSetting(example_com,
                          CONTENT_SETTINGS_TYPE_PLUGINS,
-                         "blurp",
+                         "c-blurp",
                          CONTENT_SETTING_BLOCK);
 
   NSArrayController* controller = controller_.get();

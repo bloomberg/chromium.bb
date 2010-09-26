@@ -8,8 +8,9 @@
 
 #include <deque>
 
-#include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/plugin_updater.h"
+#include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/common/notification_observer.h"
 
 namespace plugin_test_internal {
@@ -48,7 +49,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
 
  protected:
   // Subclasses can override this method for testing.
-  virtual void GetPlugins(std::vector<WebPluginInfo>* plugins);
+  virtual void GetPlugins(PluginUpdater::PluginMap* plugins);
 
  private:
   friend class plugin_test_internal::PluginExceptionsTableModelTest;
