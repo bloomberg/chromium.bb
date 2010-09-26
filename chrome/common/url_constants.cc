@@ -142,6 +142,7 @@ const char kDefaultOptionsSubPage[] =  "";
 const char kBrowserOptionsSubPage[] =  "browser";
 const char kPersonalOptionsSubPage[] =  "personal";
 const char kAdvancedOptionsSubPage[] =  "advanced";
+const char kAutoFillSubPage[] = "autoFillOptions";
 const char kSearchEnginesOptionsSubPage[] = "editSearchEngineOverlay";
 const char kClearBrowserDataSubPage[] = "clearBrowserDataOverlay";
 const char kImportDataSubPage[] = "importDataOverlay";

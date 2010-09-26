@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/stats_counters.h"
@@ -31,15 +32,16 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/result_codes.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/url_constants.h"
@@ -1690,12 +1692,20 @@ void RenderViewHost::OnRemoveAutocompleteEntry(const string16& field_name,
 }
 
 void RenderViewHost::OnShowAutoFillDialog() {
-  RenderViewHostDelegate::AutoFill* autofill_delegate =
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (!browser)
+      return;
+    browser->ShowOptionsTab(chrome::kAutoFillSubPage);
+  } else {
+    RenderViewHostDelegate::AutoFill* autofill_delegate =
       delegate_->GetAutoFillDelegate();
-  if (!autofill_delegate)
-    return;
+    if (!autofill_delegate)
+      return;
 
-  autofill_delegate->ShowAutoFillDialog();
+    autofill_delegate->ShowAutoFillDialog();
+  }
 }
 
 void RenderViewHost::OnFillAutoFillFormData(int query_id,
