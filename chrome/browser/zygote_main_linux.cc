@@ -246,7 +246,7 @@ class Zygote {
     int dummy_fd;
     ino_t dummy_inode;
     int pipe_fds[2] = { -1, -1 };
-    base::ProcessId pid;
+    base::ProcessId pid = 0;
 
     dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
     if (dummy_fd < 0) {
@@ -304,6 +304,11 @@ class Zygote {
       void* iter2 = NULL;
       if (!reply.ReadInt(&iter2, &real_pid))
         goto error;
+      if (real_pid <= 0) {
+        // METHOD_GET_CHILD_WITH_INODE failed. Did the child die already?
+        LOG(ERROR) << "METHOD_GET_CHILD_WITH_INODE failed";
+        goto error;
+      }
       real_pids_to_sandbox_pids[real_pid] = pid;
       if (HANDLE_EINTR(write(pipe_fds[1], "x", 1)) != 1) {
         LOG(ERROR) << "Failed to synchronise with child process";
@@ -314,6 +319,8 @@ class Zygote {
     }
 
    error:
+    if (pid > 0)
+      waitpid(pid, NULL, WNOHANG);
     if (dummy_fd >= 0)
       close(dummy_fd);
     if (pipe_fds[0] >= 0)

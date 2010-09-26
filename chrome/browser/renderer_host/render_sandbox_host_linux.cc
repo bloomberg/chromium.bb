@@ -343,8 +343,9 @@ class SandboxIPCProcess  {
       base::StringToInt(inode_output, &pid);
 
     if (!pid) {
+      // Even though the pid is invalid, we still need to reply to the zygote
+      // and not just return here.
       LOG(ERROR) << "Could not get pid";
-      return;
     }
 
     Pickle reply;

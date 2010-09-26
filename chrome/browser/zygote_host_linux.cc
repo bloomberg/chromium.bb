@@ -234,6 +234,8 @@ pid_t ZygoteHost::ForkRenderer(
 
     if (ReadReply(&pid, sizeof(pid)) != sizeof(pid))
       return base::kNullProcessHandle;
+    if (pid <= 0)
+      return base::kNullProcessHandle;
   }
 
   // 1) You can't change the oom_adj of a non-dumpable process (EPERM) unless
