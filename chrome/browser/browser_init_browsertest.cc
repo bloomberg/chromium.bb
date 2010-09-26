@@ -34,8 +34,7 @@ class OpenURLsPopupObserver : public BrowserList::Observer {
 // Test that when there is a popup as the active browser any requests to
 // BrowserInit::LaunchWithProfile::OpenURLsInBrowser don't crash because
 // there's no explicit profile given.
-// Flaky, http://crbug.com/42318.
-IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_OpenURLsPopup) {
+IN_PROC_BROWSER_TEST_F(BrowserInitTest, OpenURLsPopup) {
   std::vector<GURL> urls;
   urls.push_back(GURL("http://localhost"));
 
