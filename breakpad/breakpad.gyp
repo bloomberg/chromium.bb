@@ -301,7 +301,7 @@
             'src/common/linux/libcurl_wrapper.h',
             'src/common/linux/linux_libc_support.h',
             'src/common/linux/linux_syscall_support.h',
-            'src/common/linux/memory.h',
+            'src/common/memory.h',
             'src/common/string_conversion.cc',
             'src/common/string_conversion.h',
           ],
@@ -364,7 +364,7 @@
             'src/client/linux/minidump_writer/minidump_writer_unittest.cc',
             'src/common/linux/file_id_unittest.cc',
             'src/common/linux/linux_libc_support_unittest.cc',
-            'src/common/linux/memory_unittest.cc',
+            'src/common/memory_unittest.cc',
           ],
 
           'include_dirs': [
