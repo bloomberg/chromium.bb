@@ -30,7 +30,7 @@
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"
 #include "breakpad/src/common/linux/linux_libc_support.h"
-#include "breakpad/src/common/linux/memory.h"
+#include "breakpad/src/common/memory.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
