@@ -78,6 +78,30 @@ TransformationPatchGenerator* MakeGenerator(Element* old_element,
   }
 }
 
+// Checks to see if the proposed comparison is 'unsafe'.  Sometimes one element
+// from 'old' is matched as the closest element to multiple elements from 'new'.
+// Each time this happens, the old element is transformed and serialized.  This
+// is a problem when the old element is huge compared with the new element
+// because the mutliple serialized copies can be much bigger than the size of
+// either ensemble.
+//
+// The right way to avoid this is to ensure any one element from 'old' is
+// serialized once, which requires matching code in the patch application.
+//
+// This is a quick hack to avoid the problem by prohibiting a big difference in
+// size between matching elements.
+bool UnsafeDifference(Element* old_element, Element* new_element) {
+  double kMaxBloat = 2.0;
+  size_t kMinWorrysomeDifference = 2 << 20;  // 2MB
+  size_t old_size = old_element->region().length();
+  size_t new_size = new_element->region().length();
+  size_t low_size = std::min(old_size, new_size);
+  size_t high_size = std::max(old_size, new_size);
+  if (high_size - low_size < kMinWorrysomeDifference) return false;
+  if (high_size < low_size * kMaxBloat) return false;
+  return true;
+}
+
 // FindGenerators finds TransformationPatchGenerators for the elements of
 // |new_ensemble|.  For each element of |new_ensemble| we find the closest
 // matching element from |old_ensemble| and use that as the basis for
@@ -132,6 +156,9 @@ Status FindGenerators(Ensemble* old_ensemble, Ensemble* new_ensemble,
       Element* old_element = old_elements[old_index];
       // Elements of different kinds are incompatible.
       if (old_element->kind() != new_element->kind())
+        continue;
+
+      if (UnsafeDifference(old_element, new_element))
         continue;
 
       base::Time start_compare = base::Time::Now();
