@@ -715,6 +715,15 @@
           12
         </message>
 
+        <!-- The width and height of the TPM setting dialog box in -->
+        <!-- characters and lines (See above). -->
+        <message name="IDS_TPM_INFO_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+          60
+        </message>
+        <message name="IDS_TPM_INFO_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+          12
+        </message>
+
         <!-- The width and height of the password changed dialog box in -->
         <!-- characters and lines (See above). -->
         <message name="IDS_PASSWORD_CHANGED_DIALOG_WIDTH_CHARS" use_name_for_id="true">

@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
@@ -26,8 +27,10 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "cros/chromeos_cryptohome.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
@@ -36,6 +39,8 @@
 #include "views/layout_manager.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget_gtk.h"
+#include "views/window/dialog_delegate.h"
+#include "views/window/window.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
@@ -75,6 +80,63 @@ struct FillLayoutWithBorder : public views::LayoutManager {
   }
 };
 
+// System security setting dialog.
+class TpmInfoView : public views::View,
+                    public views::DialogDelegate {
+ public:
+  explicit TpmInfoView(std::wstring password) : password_(password) { }
+  void Init();
+
+ protected:
+  // views::DialogDelegate overrides:
+  virtual bool Accept() { return true; }
+  virtual bool IsModal() const { return true; }
+  virtual views::View* GetContentsView() { return this; }
+  virtual int GetDialogButtons() const {
+    return MessageBoxFlags::DIALOGBUTTON_OK;
+  }
+
+  // views::View overrides:
+  virtual std::wstring GetWindowTitle() const {
+    return l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING);
+  }
+
+  gfx::Size GetPreferredSize() {
+    return gfx::Size(views::Window::GetLocalizedContentsSize(
+        IDS_TPM_INFO_DIALOG_WIDTH_CHARS,
+        IDS_TPM_INFO_DIALOG_HEIGHT_LINES));
+  }
+
+ private:
+  std::wstring password_;
+  DISALLOW_COPY_AND_ASSIGN(TpmInfoView);
+};
+
+void TpmInfoView::Init() {
+  views::GridLayout* layout = CreatePanelGridLayout(this);
+  SetLayoutManager(layout);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                        views::GridLayout::USE_PREF, 0, 0);
+  layout->StartRow(0, 0);
+  views::Label* label = new views::Label(
+      l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION));
+  label->SetMultiLine(true);
+  layout->AddView(label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  column_set = layout->AddColumnSet(1);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                        views::GridLayout::USE_PREF, 0, 0);
+  layout->StartRow(0, 1);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Font password_font =
+      rb.GetFont(ResourceBundle::MediumFont).DeriveFont(0, gfx::Font::BOLD);
+  label = new views::Label(password_, password_font);
+  layout->AddView(label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -92,10 +154,14 @@ EulaView::EulaView(chromeos::ScreenObserver* observer)
       system_security_settings_link_(NULL),
       back_button_(NULL),
       continue_button_(NULL),
-      observer_(observer) {
+      observer_(observer),
+      bubble_(NULL) {
 }
 
 EulaView::~EulaView() {
+  // bubble_ will be set to NULL in callback.
+  if (bubble_)
+    bubble_->Close();
 }
 
 // Convenience function to set layout's columnsets for this screen.
@@ -229,6 +295,11 @@ void EulaView::Init() {
   layout->StartRow(0, LAST_ROW);
   system_security_settings_link_ = new views::Link();
   system_security_settings_link_->SetController(this);
+  if (!chromeos::CrosLibrary::Get()->EnsureLoaded() ||
+      !chromeos::CryptohomeTpmIsEnabled()) {
+    system_security_settings_link_->SetEnabled(false);
+    // TODO(glotov): add tooltip with description.
+  }
   layout->AddView(system_security_settings_link_);
 
   back_button_ = new views::NativeButton(this, std::wstring());
@@ -261,7 +332,7 @@ void EulaView::UpdateLocalizedStrings() {
   learn_more_link_->SetText(
       l10n_util::GetString(IDS_LEARN_MORE));
   system_security_settings_link_->SetText(
-      l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTINGS_LINK));
+      l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING));
   continue_button_->SetLabel(
       l10n_util::GetString(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON));
   back_button_->SetLabel(
@@ -305,7 +376,30 @@ void EulaView::LinkActivated(views::Link* source, int event_flags) {
       help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
     help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
   } else if (source == system_security_settings_link_) {
-    // TODO(glotov): Handle TPM link click.
+    // Pull the password from TPM.
+    std::string password;
+    if (!chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+      LOG(ERROR) << "Cros library not loaded. "
+                 << "We must have disabled the link that led here.";
+      return;
+    } else if (chromeos::CryptohomeTpmIsReady() &&
+               chromeos::CryptohomeTpmGetPassword(&password)) {
+      TpmInfoView* view = new TpmInfoView(ASCIIToWide(password));
+      view->Init();
+      views::Window* window = views::Window::CreateChromeWindow(
+          GetNativeWindow(), gfx::Rect(), view);
+      window->SetIsAlwaysOnTop(true);
+      window->Show();
+    } else {
+      if (!bubble_)
+        bubble_ = MessageBubble::Show(
+            system_security_settings_link_->GetWidget(),
+            system_security_settings_link_->GetScreenBounds(),
+            BubbleBorder::LEFT_TOP,
+            ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
+            l10n_util::GetString(IDS_EULA_TPM_BUSY),
+            std::wstring(), this);
+    }
   }
 }
 
@@ -355,6 +449,18 @@ void EulaView::LoadEulaView(DOMView* eula_view,
                   SiteInstance::CreateSiteInstanceForURL(profile, eula_url));
   eula_view->LoadURL(eula_url);
   eula_view->tab_contents()->set_delegate(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EulaView, private, views::View implementation:
+
+bool EulaView::OnKeyPressed(const views::KeyEvent&) {
+  // Close message bubble if shown. bubble_ will be set to NULL in callback.
+  if (bubble_) {
+    bubble_->Close();
+    return true;
+  }
+  return false;
 }
 
 }  // namespace chromeos
