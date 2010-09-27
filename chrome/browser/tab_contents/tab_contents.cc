@@ -157,6 +157,8 @@ namespace {
 // is queried for its state and pushed to the NavigationEntry.
 const int kQueryStateDelay = 5000;
 
+const int kSyncWaitDelay = 40;
+
 #if defined(OS_CHROMEOS)
 // If a popup window is bigger than this fraction of the screen on chrome os,
 // turn it into a tab
@@ -1501,6 +1503,8 @@ void TabContents::SetIsLoading(bool is_loading,
   is_loading_ = is_loading;
   waiting_for_response_ = is_loading;
 
+  if (delegate_)
+    delegate_->LoadingStateChanged(this);
   NotifyNavigationStateChanged(INVALIDATE_LOAD);
 
   NotificationType type = is_loading ? NotificationType::LOAD_START :

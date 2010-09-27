@@ -131,14 +131,8 @@
 
 using base::TimeDelta;
 
-// How long we wait before updating the browser chrome (except for loads, see
-// below).
+// How long we wait before updating the browser chrome while loading a page.
 static const int kUIUpdateCoalescingTimeMS = 200;
-
-// How long we wait before updating the browser chrome while loading a page
-// (generally lower than kUIUpdateCoalescingTimeMS to increase perceived
-// snappiness).
-static const int kUIUpdateCoalescingTimeForLoadsMS = 50;
 
 // The URL to be loaded to display Help.
 static const char* const kHelpContentUrl =
@@ -3479,17 +3473,15 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     changed_flags &= ~TabContents::INVALIDATE_URL;
   }
   if (changed_flags & TabContents::INVALIDATE_LOAD) {
-    // Update the loading state synchronously if we're done loading. This is so
-    // the throbber will stop, which gives a more snappy feel. We want to do
+    // Update the loading state synchronously. This is so the throbber will
+    // immediately start/stop, which gives a more snappy feel. We want to do
     // this for any tab so they start & stop quickly.
-    if (!source->is_loading()) {
-      LoadingStateChanged(const_cast<TabContents*>(source));
-      tabstrip_model_->UpdateTabContentsStateAt(
-          tabstrip_model_->GetIndexOfController(&source->controller()),
-          TabStripModelObserver::LOADING_ONLY);
-    }
-    // We don't strip INVALIDATE_LOAD from changed_flags so that we can update
-    // the trobber when stopping loads and the status bubble.
+    tabstrip_model_->UpdateTabContentsStateAt(
+        tabstrip_model_->GetIndexOfController(&source->controller()),
+        TabStripModelObserver::LOADING_ONLY);
+    // The status bubble needs to be updated during INVALIDATE_LOAD too, but
+    // we do that asynchronously by not stripping INVALIDATE_LOAD from
+    // changed_flags.
   }
 
   if (changed_flags & TabContents::INVALIDATE_TITLE && !source->is_loading()) {
@@ -3516,13 +3508,11 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
 
   if (chrome_updater_factory_.empty()) {
     // No task currently scheduled, start another.
-    int coalesce_time = changed_flags & TabContents::INVALIDATE_LOAD ?
-        kUIUpdateCoalescingTimeForLoadsMS : kUIUpdateCoalescingTimeMS;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         chrome_updater_factory_.NewRunnableMethod(
             &Browser::ProcessPendingUIUpdates),
-            coalesce_time);
+            kUIUpdateCoalescingTimeMS);
   }
 }
 
@@ -3558,19 +3548,9 @@ void Browser::ProcessPendingUIUpdates() {
       if (flags & TabContents::INVALIDATE_PAGE_ACTIONS)
         window()->GetLocationBar()->UpdatePageActions();
 
-      if (flags & TabContents::INVALIDATE_LOAD) {
-        // Updating the URL happens synchronously in ScheduleUIUpdate for loads
-        // that ended.
-        if (contents->is_loading()) {
-          LoadingStateChanged(GetSelectedTabContents());
-          tabstrip_model_->UpdateTabContentsStateAt(
-              tabstrip_model_->GetIndexOfController(&contents->controller()),
-              TabStripModelObserver::LOADING_ONLY);
-        }
-
-        if (GetStatusBubble())
-          GetStatusBubble()->SetStatus(WideToUTF16(contents->GetStatusText()));
-      }
+      // Updating the URL happens synchronously in ScheduleUIUpdate.
+      if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble())
+        GetStatusBubble()->SetStatus(WideToUTF16(contents->GetStatusText()));
 
       if (flags & (TabContents::INVALIDATE_TAB |
                    TabContents::INVALIDATE_TITLE)) {
