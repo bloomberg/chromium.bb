@@ -2136,7 +2136,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
       bm0, bm1, false);
 }
 
-// Test Scribe ID - 373504.
+// Test Scribe ID - 373504 - Merge bookmark folders with different bookmarks.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     MC_MergeBMFoldersWithDifferentBMs) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -2181,7 +2181,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
                                            profile1_bookmark_model);
 }
 
-// Test Scribe ID - 373509.
+// Test Scribe ID - 373509 - Merge moderately complex bookmark models.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     MC_MergeDifferentBMModelsModeratelyComplex) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -2291,7 +2291,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
                                            profile1_bookmark_model);
 }
 
-// Test Scribe ID - 386591.
+// Test Scribe ID - 386591 - Merge simple bookmark subset under bookmark folder.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     MC_MergeSimpleBMHierarchySubsetUnderBMFolder) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -2358,5 +2358,104 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
   BookmarkModelVerifier::ExpectModelsMatch(profile0_bookmark_model,
                                            profile1_bookmark_model);
+}
+
+// Test Scribe ID - 370639 - Add bookmarks with different name and same URL.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_DuplicateBookmarksWithSameURL) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  BookmarkModelVerifier* verifier = verifier_helper();
+  BookmarkModel* profile0_bookmark_model = GetBookmarkModel(0);
+  BookmarkModel* profile1_bookmark_model = GetBookmarkModel(1);
+
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+
+  const BookmarkNode* profile0_bookmark_bar =
+      profile0_bookmark_model->GetBookmarkBarNode();
+  verifier->AddURL(profile0_bookmark_model, profile0_bookmark_bar,
+      0, L"Bookmark0_name", GURL("http://www.bookmark-url.com"));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+
+  verifier->AddURL(profile0_bookmark_model, profile0_bookmark_bar,
+      1, L"Bookmark1_name", GURL("http://www.bookmark-url.com"));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+}
+
+// Test Scribe ID - 371818 - Renaming the same bookmark name twice.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_TwiceRenamingBookmarkName) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  BookmarkModelVerifier* verifier = verifier_helper();
+  BookmarkModel* profile0_bookmark_model = GetBookmarkModel(0);
+  BookmarkModel* profile1_bookmark_model = GetBookmarkModel(1);
+
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+
+  const BookmarkNode* profile0_bookmark_bar =
+      profile0_bookmark_model->GetBookmarkBarNode();
+  const BookmarkNode* profile0_bookmark = verifier->AddURL(
+      profile0_bookmark_model, profile0_bookmark_bar,
+      0, L"bookmark_name", GURL("http://www.bookmark-url.com"));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+
+  verifier->SetTitle(profile0_bookmark_model,
+      profile0_bookmark, L"bookmark_renamed");
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+
+  verifier->SetTitle(profile0_bookmark_model,
+      profile0_bookmark, L"bookmark_name");
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+}
+
+// Test Scribe ID - 371823 - Renaming the same bookmark URL twice.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_TwiceRenamingBookmarkURL) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  BookmarkModelVerifier* verifier = verifier_helper();
+  BookmarkModel* profile0_bookmark_model = GetBookmarkModel(0);
+  BookmarkModel* profile1_bookmark_model = GetBookmarkModel(1);
+
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+
+  const BookmarkNode* profile0_bookmark_bar =
+      profile0_bookmark_model->GetBookmarkBarNode();
+  const BookmarkNode* profile0_bookmark = verifier->AddURL(
+      profile0_bookmark_model, profile0_bookmark_bar,
+      0, L"bookmark_name", GURL("http://www.bookmark-url.com"));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+
+  verifier->SetURL(profile0_bookmark_model,
+                   profile0_bookmark,
+                   GURL("http://www.bookmark-renamed-url.com"));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
+
+  verifier->SetURL(profile0_bookmark_model,
+                   profile0_bookmark,
+                   GURL("http://www.bookmark-url.com"));
+  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+  BookmarkModelVerifier::VerifyNoDuplicates(profile0_bookmark_model);
+  verifier->ExpectMatch(profile0_bookmark_model);
+  verifier->ExpectMatch(profile1_bookmark_model);
 }
 
