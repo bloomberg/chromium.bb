@@ -88,4 +88,6 @@ const char kAllowExternalPages[] = "allow-external-pages";
 
 const char kEnableAccel2DCanvas[] = "enable-accelerated-2d-canvas";
 
+const char kEnableAccelCompositing[] = "enable-accelerated-compositing";
+
 }  // namespace test_shell

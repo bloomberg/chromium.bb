@@ -115,6 +115,7 @@ int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
 bool TestShell::test_is_preparing_ = false;
 bool TestShell::test_is_pending_ = false;
 bool TestShell::accelerated_2d_canvas_enabled_ = false;
+bool TestShell::accelerated_compositing_enabled_ = false;
 
 TestShell::TestShell()
     : m_mainWnd(NULL),
@@ -450,6 +451,11 @@ void TestShell::SetAccelerated2dCanvasEnabled(bool enabled) {
 }
 
 // static
+void TestShell::SetAcceleratedCompositingEnabled(bool enabled) {
+  accelerated_compositing_enabled_ = enabled;
+}
+
+// static
 void TestShell::ResetWebPreferences() {
     DCHECK(web_prefs_);
 
@@ -513,7 +519,8 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->tabs_to_links = false;
         web_prefs_->accelerated_2d_canvas_enabled =
             accelerated_2d_canvas_enabled_;
-
+        web_prefs_->accelerated_compositing_enabled =
+            accelerated_compositing_enabled_;
         // Allow those layout tests running as local files, i.e. under
         // LayoutTests/http/tests/local, to access http server.
         if (layout_test_mode_)

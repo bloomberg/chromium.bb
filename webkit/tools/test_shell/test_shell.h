@@ -279,6 +279,7 @@ public:
     static void SetAllowScriptsToCloseWindows();
 
     static void SetAccelerated2dCanvasEnabled(bool enabled);
+    static void SetAcceleratedCompositingEnabled(bool enabled);
 
     WebPreferences* GetWebPreferences() { return web_prefs_; }
 
@@ -436,6 +437,9 @@ private:
 
     // True if we're testing the accelerated canvas 2d path.
     static bool accelerated_2d_canvas_enabled_;
+
+    // True if we're testing the accelerated compositing.
+    static bool accelerated_compositing_enabled_;
 
     // True if driven from a nested message loop.
     bool is_modal_;

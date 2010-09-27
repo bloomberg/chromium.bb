@@ -128,6 +128,8 @@ int main(int argc, char* argv[]) {
 
   if (parsed_command_line.HasSwitch(test_shell::kEnableAccel2DCanvas))
     TestShell::SetAccelerated2dCanvasEnabled(true);
+  if (parsed_command_line.HasSwitch(test_shell::kEnableAccelCompositing))
+    TestShell::SetAcceleratedCompositingEnabled(true);
 
   TestShell::InitLogging(suppress_error_dialogs,
                          layout_test_mode,
