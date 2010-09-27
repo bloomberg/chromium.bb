@@ -91,14 +91,14 @@ void OnlineAttempt::OnClientLoginFailure(
 void OnlineAttempt::TryClientLogin() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   fetch_canceler_ = NewRunnableMethod(this, &OnlineAttempt::CancelClientLogin);
+  ChromeThread::PostDelayedTask(ChromeThread::IO, FROM_HERE,
+                                fetch_canceler_,
+                                kClientLoginTimeoutMs);
   gaia_authenticator_->StartClientLogin(attempt_->username,
                                         attempt_->password,
                                         GaiaConstants::kContactsService,
                                         attempt_->login_token,
                                         attempt_->login_captcha);
-  ChromeThread::PostDelayedTask(ChromeThread::IO, FROM_HERE,
-                                fetch_canceler_,
-                                kClientLoginTimeoutMs);
 }
 
 void OnlineAttempt::CancelClientLogin() {
