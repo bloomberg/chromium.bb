@@ -44,9 +44,9 @@ class SubprocessError(Error):
     return 'Failed with code %s: %s' % (self.message, repr(self.error_code))
 
 
-# Regular expression used to parse signatures in the input files. The regex
-# is built around identifying the "identifier" for the function name.  We
-# consider the identifier to be the string that follows these constraints:
+# Regular expression used to parse function signatures in the input files.
+# The regex is built around identifying the "identifier" for the function name.
+# We consider the identifier to be the string that follows these constraints:
 #
 #   1) Starts with [_a-ZA-Z] (C++ spec 2.10).
 #   2) Continues with [_a-ZA-Z0-9] (C++ spec 2.10).
@@ -78,6 +78,46 @@ STUB_FUNCTION_DEFINITION = (
     """extern %(return_type)s %(name)s(%(params)s) __attribute__((weak));
 %(return_type)s %(name)s(%(params)s) {
   %(return_prefix)s%(name)s_ptr(%(arg_list)s);
+}""")
+
+# Template for generating a variadic stub function definition with return
+# value.
+# Includes a forward declaration marking the symbol as weak.
+# This template takes the following named parameters.
+#   return_type: The return type.
+#   name: The name of the function.
+#   params: The parameters to the function.
+#   arg_list: The arguments used to call the stub function without the
+#             variadic argument.
+#   last_named_arg: Name of the last named argument before the variadic
+#                   argument.
+VARIADIC_STUB_FUNCTION_DEFINITION = (
+    """extern %(return_type)s %(name)s(%(params)s) __attribute__((weak));
+%(return_type)s %(name)s(%(params)s) {
+  va_list args___;
+  va_start(args___, %(last_named_arg)s);
+  %(return_type)s ret___ = %(name)s_ptr(%(arg_list)s, args___);
+  va_end(args___);
+  return ret___;
+}""")
+
+# Template for generating a variadic stub function definition without
+# return value.
+# Includes a forward declaration marking the symbol as weak.
+# This template takes the following named parameters.
+#   name: The name of the function.
+#   params: The parameters to the function.
+#   arg_list: The arguments used to call the stub function without the
+#             variadic argument.
+#   last_named_arg: Name of the last named argument before the variadic
+#                   argument.
+VOID_VARIADIC_STUB_FUNCTION_DEFINITION = (
+    """extern void %(name)s(%(params)s) __attribute__((weak));
+void %(name)s(%(params)s) {
+  va_list args___;
+  va_start(args___, %(last_named_arg)s);
+  %(name)s_ptr(%(arg_list)s, args___);
+  va_end(args___);
 }""")
 
 # Template for the preamble for the stub header file with the header guards,
@@ -560,12 +600,29 @@ class PosixStubWriter(object):
     if arg_list == 'void':
       arg_list = ''
 
-    return STUB_FUNCTION_DEFINITION % {
-        'return_type': signature['return_type'],
-        'name': signature['name'],
-        'params': ', '.join(signature['params']),
-        'return_prefix': return_prefix,
-        'arg_list': arg_list}
+    if arg_list != '' and len(arguments) > 1 and arguments[-1] == '...':
+      # If the last argment is ... then this is a variadic function.
+      if return_prefix != '':
+        return VARIADIC_STUB_FUNCTION_DEFINITION % {
+            'return_type': signature['return_type'],
+            'name': signature['name'],
+            'params': ', '.join(signature['params']),
+            'arg_list': ', '.join(arguments[0:-1]),
+            'last_named_arg': arguments[-2]}
+      else:
+        return VOID_VARIADIC_STUB_FUNCTION_DEFINITION % {
+            'name': signature['name'],
+            'params': ', '.join(signature['params']),
+            'arg_list': ', '.join(arguments[0:-1]),
+            'last_named_arg': arguments[-2]}
+    else:
+      # This is a regular function.
+      return STUB_FUNCTION_DEFINITION % {
+          'return_type': signature['return_type'],
+          'name': signature['name'],
+          'params': ', '.join(signature['params']),
+          'return_prefix': return_prefix,
+          'arg_list': arg_list}
 
   @classmethod
   def WriteImplementationPreamble(cls, header_path, outfile):
