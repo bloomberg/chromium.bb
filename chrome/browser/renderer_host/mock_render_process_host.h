@@ -7,9 +7,11 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/scoped_vector.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/ipc_test_sink.h"
 
+class MockRenderProcessHostFactory;
 class TransportDIB;
 class URLRequestContextGetter;
 
@@ -62,11 +64,18 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);
 
+  // Attaches the factory object so we can remove this object in its destructor
+  // and prevent MockRenderProcessHostFacotry from deleting it.
+  void SetFactory(const MockRenderProcessHostFactory* factory) {
+    factory_ = factory;
+  }
+
  private:
   // Stores IPC messages that would have been sent to the renderer.
   IPC::TestSink sink_;
   TransportDIB* transport_dib_;
   int bad_msg_count_;
+  const MockRenderProcessHostFactory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };
@@ -74,14 +83,21 @@ class MockRenderProcessHost : public RenderProcessHost {
 class MockRenderProcessHostFactory : public RenderProcessHostFactory {
  public:
   MockRenderProcessHostFactory() {}
-  virtual ~MockRenderProcessHostFactory() {}
+  virtual ~MockRenderProcessHostFactory();
 
-  virtual RenderProcessHost* CreateRenderProcessHost(
-      Profile* profile) const {
-    return new MockRenderProcessHost(profile);
-  }
+  virtual RenderProcessHost* CreateRenderProcessHost(Profile* profile) const;
+
+  // Removes the given MockRenderProcessHost from the MockRenderProcessHost list
+  // without deleting it. When a test deletes a MockRenderProcessHost, we need
+  // to remove it from |processes_| to prevent it from being deleted twice.
+  void Remove(MockRenderProcessHost* host) const;
 
  private:
+  // A list of MockRenderProcessHosts created by this object. This list is used
+  // for deleting all MockRenderProcessHosts that have not deleted by a test in
+  // the destructor and prevent them from being leaked.
+  mutable ScopedVector<MockRenderProcessHost> processes_;
+
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHostFactory);
 };
 

@@ -2547,42 +2547,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_52834_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZNK28MockRenderProcessHostFactory23CreateRenderProcessHostEP7Profile
-   fun:_ZN12SiteInstance10GetProcessEv
-   fun:_ZN14RenderViewHostC2EP12SiteInstanceP22RenderViewHostDelegateix
-}
-{
-   bug_52834_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN5IDMapIN3IPC7Channel8ListenerEL23IDMapOwnershipSemantics0EE9AddWithIDEPS2_i
-   fun:_ZN17RenderProcessHost6AttachEPN3IPC7Channel8ListenerEi
-   fun:_ZN16RenderWidgetHostC2EP17RenderProcessHosti
-   ...
-   fun:_ZN26RenderWidgetFullscreenHostC1EP17RenderProcessHosti
-}
-{
-   bug_52834_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNK28MockRenderProcessHostFactory23CreateRenderProcessHostEP7Profile
-   fun:_ZN12SiteInstance10GetProcessEv
-   fun:_ZN14RenderViewHostC2EP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
-   ...
-   fun:_ZN18TestRenderViewHostC1EP12SiteInstanceP22RenderViewHostDelegatei
-   fun:_ZN25TestRenderViewHostFactory20CreateRenderViewHostEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
-   fun:_ZN21RenderViewHostFactory6CreateEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
-   fun:_ZN21RenderViewHostManager4InitEP7ProfileP12SiteInstancei
-   fun:_ZN11TabContentsC2EP7ProfileP12SiteInstanceiPKS_P23SessionStorageNamespace
-   ...
-   fun:_ZN25RenderViewHostTestHarness5SetUpEv
-}
-{
    bug_52837
    Memcheck:Leak
    fun:_Znw*
