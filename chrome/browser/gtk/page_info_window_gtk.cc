@@ -152,7 +152,7 @@ GtkWidget* PageInfoWindowGtk::CreateSection(
   GtkWidget* image = gtk_image_new_from_pixbuf(
       section.state == PageInfoModel::SECTION_STATE_OK ?
       rb.GetPixbufNamed(IDR_PAGEINFO_GOOD) :
-      rb.GetPixbufNamed(IDR_PAGEINFO_BAD));
+      rb.GetPixbufNamed(IDR_PAGEINFO_WARNING_MAJOR));
   gtk_box_pack_start(GTK_BOX(section_box), image, FALSE, FALSE,
                      gtk_util::kControlSpacing);
   gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
