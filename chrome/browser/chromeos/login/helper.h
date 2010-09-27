@@ -68,6 +68,10 @@ const SkColor kTextColor = SK_ColorWHITE;
 const int kWizardScreenWidth = 700;
 const int kWizardScreenHeight = 416;
 
+const int kScreenCornerRadius = 10;
+const int kUserCornerRadius = 5;
+
+
 }  // namespace login
 
 }  // namespace chromeos

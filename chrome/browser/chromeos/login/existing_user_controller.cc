@@ -46,7 +46,7 @@ namespace {
 
 // Max number of users we'll show. The true max is the min of this and the
 // number of windows that fit on the screen.
-const size_t kMaxUsers = 6;
+const size_t kMaxUsers = 5;
 
 // Used to indicate no user has been selected.
 const size_t kNotSelected = -1;
@@ -65,10 +65,12 @@ void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
         controllers[i]->user().GetDisplayName();
     ++visible_display_names[display_name];
   }
-  for (size_t i = 0; i + 1 < controllers.size(); ++i) {
+  for (size_t i = 0; i < controllers.size(); ++i) {
     const std::string& display_name =
         controllers[i]->user().GetDisplayName();
-    bool show_tooltip = visible_display_names[display_name] > 1;
+    bool show_tooltip = controllers[i]->is_new_user() ||
+                        controllers[i]->is_bwsi() ||
+                        visible_display_names[display_name] > 1;
     controllers[i]->EnableNameTooltip(show_tooltip);
   }
 }
@@ -130,8 +132,11 @@ ExistingUserController::ExistingUserController(
     }
   }
 
-  // Add the view representing the guest user last.
-  controllers_.push_back(new UserController(this));
+  if (!controllers_.empty() && UserCrosSettingsProvider::cached_allow_bwsi())
+    controllers_.push_back(new UserController(this, true));
+
+  // Add the view representing the new user.
+  controllers_.push_back(new UserController(this, false));
 }
 
 void ExistingUserController::Init() {
@@ -148,17 +153,16 @@ void ExistingUserController::Init() {
     if (!WizardController::IsDeviceRegistered()) {
       background_view_->SetOobeProgressBarVisible(true);
       background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
-    } else {
-      background_view_->SetGoIncognitoButtonVisible(
-          UserCrosSettingsProvider::cached_allow_bwsi(), this);
     }
 
     background_window_->Show();
   }
+  // If there's only new user pod, show BWSI link on it.
+  bool show_bwsi_link = controllers_.size() == 1;
   for (size_t i = 0; i < controllers_.size(); ++i) {
     (controllers_[i])->Init(static_cast<int>(i),
                             static_cast<int>(controllers_.size()),
-                            background_view_->IsOobeProgressBarVisible());
+                            show_bwsi_link);
   }
 
   EnableTooltipsIfNeeded(controllers_);
@@ -182,7 +186,8 @@ void ExistingUserController::LoginNewUser(const std::string& username,
                                           const std::string& password) {
   SelectNewUser();
   UserController* new_user = controllers_.back();
-  if (!new_user->is_guest())
+  DCHECK(new_user->is_new_user());
+  if (!new_user->is_new_user())
     return;
   NewUserView* new_user_view = new_user->new_user_view();
   new_user_view->SetUsername(username);
@@ -407,7 +412,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
       }
     } else {
-      if (controllers_[selected_view_index_]->is_guest())
+      if (controllers_[selected_view_index_]->is_new_user())
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
       else
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
@@ -446,7 +451,7 @@ void ExistingUserController::ShowError(int error_id,
 
   gfx::Rect bounds = controllers_[selected_view_index_]->GetScreenBounds();
   BubbleBorder::ArrowLocation arrow;
-  if (controllers_[selected_view_index_]->is_guest()) {
+  if (controllers_[selected_view_index_]->is_new_user()) {
     arrow = BubbleBorder::LEFT_TOP;
   } else {
     // Point info bubble arrow to cursor position (approximately).

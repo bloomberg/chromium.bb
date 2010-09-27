@@ -67,7 +67,9 @@ void ScreenLockView::Init() {
                  NotificationType::LOGIN_USER_IMAGE_CHANGED,
                  NotificationService::AllSources());
 
-  user_view_ = new UserView(this, false);
+  user_view_ = new UserView(this,
+                            false,  // is_login
+                            true);  // need_background
   views::View* main = new views::View();
   // Use rounded rect background.
   views::Painter* painter =

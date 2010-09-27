@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "grit/app_resources.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
@@ -38,6 +39,7 @@ using views::WidgetGtk;
 namespace {
 
 const int kTextfieldWidth = 286;
+const int kSplitterHeight = 1;
 const int kRowPad = 7;
 const int kColumnPad = 7;
 const int kLanguagesMenuHeight = 30;
@@ -76,6 +78,8 @@ NewUserView::NewUserView(Delegate* delegate,
     : username_field_(NULL),
       password_field_(NULL),
       title_label_(NULL),
+      title_hint_label_(NULL),
+      splitter_(NULL),
       sign_in_button_(NULL),
       create_account_link_(NULL),
       browse_without_signin_link_(NULL),
@@ -111,12 +115,25 @@ void NewUserView::Init() {
   // Set up fonts.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font title_font = rb.GetFont(ResourceBundle::MediumBoldFont);
+  gfx::Font title_hint_font = rb.GetFont(ResourceBundle::BoldFont);
 
   title_label_ = new views::Label();
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetFont(title_font);
   title_label_->SetMultiLine(true);
   AddChildView(title_label_);
+
+  title_hint_label_ = new views::Label();
+  title_hint_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_hint_label_->SetFont(title_hint_font);
+  title_hint_label_->SetColor(SK_ColorGRAY);
+  title_hint_label_->SetMultiLine(true);
+  AddChildView(title_hint_label_);
+
+  splitter_ = new views::View();
+  splitter_->set_background(
+      views::Background::CreateSolidBackground(SK_ColorGRAY));
+  AddChildView(splitter_);
 
   username_field_ = new UsernameField();
   AddChildView(username_field_);
@@ -206,7 +223,9 @@ void NewUserView::AddChildView(View* view) {
 }
 
 void NewUserView::UpdateLocalizedStrings() {
-  title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
+  title_label_->SetText(l10n_util::GetStringF(
+      IDS_LOGIN_TITLE, l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
+  title_hint_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE_HINT));
   username_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
   password_field_->set_text_to_display_when_empty(
@@ -302,30 +321,42 @@ void NewUserView::Layout() {
                        languages_menubutton_->GetPreferredSize().width());
   int height = kLanguagesMenuHeight;
   languages_menubutton_->SetBounds(x, y, width, height);
+  y += height + kRowPad;
 
   width = std::min(this->width() - insets.width() - 2 * kColumnPad,
                    kTextfieldWidth);
   x = (this->width() - width) / 2;
   int max_width = this->width() - x - insets.right();
   title_label_->SizeToFit(max_width);
+  title_hint_label_->SizeToFit(max_width);
 
+  // Top align title and title hint.
+  y += setViewBounds(title_label_, x, y, max_width, false);
+  y += setViewBounds(title_hint_label_, x, y, max_width, false);
+  int title_end = y;
+
+  // Center align all other controls.
   int create_account_link_height = need_create_account_ ?
       create_account_link_->GetPreferredSize().height() : 0;
   int browse_without_signin_link_height = need_browse_without_signin_ ?
       browse_without_signin_link_->GetPreferredSize().height() : 0;
 
-  height = title_label_->GetPreferredSize().height() +
-           username_field_->GetPreferredSize().height() +
+  height = username_field_->GetPreferredSize().height() +
            password_field_->GetPreferredSize().height() +
            sign_in_button_->GetPreferredSize().height() +
            create_account_link_height +
            browse_without_signin_link_height +
-           4 * kRowPad;
-  y = (this->height() - height) / 2;
+           5 * kRowPad;
+  y += (this->height() - y - height) / 2;
 
-  y += (setViewBounds(title_label_, x, y, max_width, false) + kRowPad);
+  int corner_radius = need_border_ ? login::kScreenCornerRadius : 0;
+  splitter_->SetBounds(insets.left() - corner_radius / 2,
+                       title_end + (y - title_end) / 2,
+                       this->width() - insets.width() + corner_radius,
+                       kSplitterHeight);
+
   y += (setViewBounds(username_field_, x, y, width, true) + kRowPad);
-  y += (setViewBounds(password_field_, x, y, width, true) + kRowPad);
+  y += (setViewBounds(password_field_, x, y, width, true) + 3 * kRowPad);
   int throbber_y = y;
   y += (setViewBounds(sign_in_button_.get(), x, y, width, false) + kRowPad);
   setViewBounds(throbber_,

@@ -8304,8 +8304,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NETWORK_SELECTION_ERROR_HELP" desc="Help link that is shown when connection to network failed or timed out.">
         Fix network issues
       </message>
-      <message name="IDS_LOGIN_TITLE">
-        Sign in with your Google account
+      <message name="IDS_LOGIN_TITLE" desc="Title of sign in box">
+        Sign in to <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>
+      </message>
+      <message name="IDS_LOGIN_TITLE_HINT" desc="Hint under title 'Sign in to Chrome OS'">
+        with your Google Account
       </message>
       <message name="IDS_LOGIN_USERNAME">
         Email
@@ -9581,8 +9584,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTIFICATION_PANEL_TITLE" desc="Text for the title of the notification panel.">
         Notifications
       </message>
-      <message name="IDS_GUEST" desc="Shown in login panel for guest user">
-        New user
+      <message name="IDS_GUEST" desc="Shown in login panel for users that would like to browse without signin.">
+        Guest
+      </message>
+      <message name="IDS_ADD_USER" desc="Shown in login panel for adding new user to login screen.">
+        Add a user
       </message>
       <message name="IDS_LANGUAGES_MORE" desc="Main language list 'more' link. Expands all possible languages, not only the main ones.">
         More...

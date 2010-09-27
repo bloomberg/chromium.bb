@@ -141,6 +141,8 @@ class NewUserView : public views::View,
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* title_label_;
+  views::Label* title_hint_label_;
+  views::View* splitter_;
   scoped_ptr<views::NativeButton> sign_in_button_;
   views::Link* create_account_link_;
   views::Link* browse_without_signin_link_;

@@ -34,9 +34,8 @@ class MessageBubble;
 
 // ExistingUserController is used to handle login when someone has already
 // logged into the machine. When Init is invoked a UserController is created for
-// each of the Users's in the UserManager (including one for guest), and the
-// window manager is then told to show the windows. If the user clicks on the
-// guest entry the WizardWindow is swapped in.
+// each of the Users's in the UserManager (including one for new user and
+// one for BWSI login), and the window manager is then told to show the windows.
 //
 // To use ExistingUserController create an instance of it and invoke Init.
 //

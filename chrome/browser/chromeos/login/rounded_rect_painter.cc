@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "gfx/canvas_skia.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/border.h"
@@ -14,9 +15,6 @@
 namespace chromeos {
 
 namespace {
-
-const int kScreenCornerRadius = 10;
-const int kUserCornerRadius = 5;
 
 const SkColor kScreenTopColor = SkColorSetRGB(250, 251, 251);
 const SkColor kScreenBottomColor = SkColorSetRGB(204, 209, 212);
@@ -233,7 +231,7 @@ const BorderDefinition BorderDefinition::kScreenBorder = {
   SK_ColorBLACK,
   kScreenShadow,
   kScreenShadowColor,
-  kScreenCornerRadius,
+  login::kScreenCornerRadius,
   kScreenTopColor,
   kScreenBottomColor
 };
@@ -243,7 +241,7 @@ const BorderDefinition BorderDefinition::kUserBorder = {
   SK_ColorBLACK,
   0,
   kScreenShadowColor,
-  kUserCornerRadius,
+  login::kUserCornerRadius,
   kScreenTopColor,
   kScreenBottomColor
 };

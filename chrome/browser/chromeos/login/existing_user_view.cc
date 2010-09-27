@@ -48,7 +48,7 @@ class UserEntryTextfield : public views::Textfield {
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
     if (e.GetKeyCode() == app::VKEY_TAB) {
       int index = controller_->user_index() + (e.IsShiftDown() ? -1 : 1);
-      controller_->SelectUser(index);
+      controller_->SelectUser(index, false);
       return true;
     } else {
       return false;

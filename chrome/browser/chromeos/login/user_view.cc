@@ -175,7 +175,7 @@ class RemoveButton : public views::TextButton {
   DISALLOW_COPY_AND_ASSIGN(RemoveButton);
 };
 
-UserView::UserView(Delegate* delegate, bool is_login)
+UserView::UserView(Delegate* delegate, bool is_login, bool need_background)
     : delegate_(delegate),
       signout_view_(NULL),
       image_view_(new views::ImageView()),
@@ -185,12 +185,14 @@ UserView::UserView(Delegate* delegate, bool is_login)
   if (!is_login)
     signout_view_ = new SignoutView(this);
 
-  Init();
+  Init(need_background);
 }
 
-void UserView::Init() {
-  image_view_->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
+void UserView::Init(bool need_background) {
+  if (need_background) {
+    image_view_->set_background(
+        views::Background::CreateSolidBackground(kBackgroundColor));
+  }
   if (throbber_) {
     int w = throbber_->GetPreferredSize().width();
     int h = throbber_->GetPreferredSize().height();

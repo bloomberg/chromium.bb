@@ -87,7 +87,7 @@ void UserImageView::Init() {
       gfx::Size(kUserImageSize, kUserImageSize));
   selected_image_->SetImage(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_LOGIN_OTHER_USER));
+          IDR_LOGIN_DEFAULT_USER));
   AddChildView(selected_image_);
 
   UpdateLocalizedStrings();

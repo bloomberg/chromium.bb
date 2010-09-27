@@ -26,6 +26,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
@@ -57,7 +58,7 @@ class ClickNotifyingWidget : public views::WidgetGtk {
  private:
   gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
     if (!controller_->is_user_selected())
-      controller_->SelectUser(controller_->user_index());
+      controller_->SelectUser(controller_->user_index(), true);
 
     return views::WidgetGtk::OnButtonPress(widget, event);
   }
@@ -66,24 +67,6 @@ class ClickNotifyingWidget : public views::WidgetGtk {
 
   DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
 };
-
-// Returns tooltip text for user name. Tooltip contains user's display name
-// and his email domain to distinguish this user from the other one with the
-// same display name.
-std::string GetNameTooltip(const UserManager::User& user) {
-  const std::string& email = user.email();
-  size_t at_pos = email.rfind('@');
-  if (at_pos == std::string::npos) {
-    NOTREACHED();
-    return std::string();
-  }
-  size_t domain_start = at_pos + 1;
-  std::string domain = email.substr(domain_start,
-                                    email.length() - domain_start);
-  return base::StringPrintf("%s (%s)",
-                            user.GetDisplayName().c_str(),
-                            domain.c_str());
-}
 
 }  // namespace
 
@@ -98,10 +81,11 @@ const int UserController::kPadding = 20;
 // Max size needed when an entry is not selected.
 const int UserController::kUnselectedSize = 100;
 
-UserController::UserController(Delegate* delegate)
+UserController::UserController(Delegate* delegate, bool is_bwsi)
     : user_index_(-1),
       is_user_selected_(false),
-      is_guest_(true),
+      is_new_user_(!is_bwsi),
+      is_bwsi_(is_bwsi),
       show_name_tooltip_(false),
       delegate_(delegate),
       controls_window_(NULL),
@@ -124,7 +108,8 @@ UserController::UserController(Delegate* delegate,
                                const UserManager::User& user)
     : user_index_(-1),
       is_user_selected_(false),
-      is_guest_(false),
+      is_new_user_(false),
+      is_bwsi_(false),
       show_name_tooltip_(false),
       user_(user),
       delegate_(delegate),
@@ -166,14 +151,36 @@ void UserController::Init(int index,
 }
 
 void UserController::SetPasswordEnabled(bool enable) {
-  DCHECK(!is_guest_);
+  DCHECK(!is_new_user_);
   existing_user_view_->password_field()->SetEnabled(enable);
   existing_user_view_->submit_button()->SetEnabled(enable);
   enable ? user_view_->StopThrobber() : user_view_->StartThrobber();
 }
 
+std::wstring UserController::GetNameTooltip() const {
+  if (is_new_user_)
+    return l10n_util::GetString(IDS_ADD_USER);
+  if (is_bwsi_)
+    return l10n_util::GetString(IDS_GO_INCOGNITO_BUTTON);
+
+  // Tooltip contains user's display name and his email domain to distinguish
+  // this user from the other one with the same display name.
+  const std::wstring& email = UTF8ToWide(user_.email());
+  size_t at_pos = email.rfind('@');
+  if (at_pos == std::wstring::npos) {
+    NOTREACHED();
+    return std::wstring();
+  }
+  size_t domain_start = at_pos + 1;
+  std::wstring domain = email.substr(domain_start,
+                                     email.length() - domain_start);
+  return base::StringPrintf(L"%s (%s)",
+                            user_.GetDisplayName().c_str(),
+                            domain.c_str());
+}
+
 void UserController::ClearAndEnablePassword() {
-  if (is_guest_) {
+  if (is_new_user_) {
     new_user_view_->ClearAndEnablePassword();
   } else {
     existing_user_view_->password_field()->SetText(string16());
@@ -183,7 +190,7 @@ void UserController::ClearAndEnablePassword() {
 }
 
 void UserController::ClearAndEnableFields() {
-  if (is_guest_) {
+  if (is_new_user_) {
     new_user_view_->ClearAndEnableFields();
   } else {
     ClearAndEnablePassword();
@@ -191,12 +198,9 @@ void UserController::ClearAndEnableFields() {
 }
 
 void UserController::EnableNameTooltip(bool enable) {
-  if (is_guest_)
-    return;
-
   std::wstring tooltip_text;
   if (enable)
-    tooltip_text = UTF8ToWide(GetNameTooltip(user_));
+    tooltip_text = GetNameTooltip();
 
   if (user_view_)
     user_view_->SetTooltipText(tooltip_text);
@@ -218,10 +222,10 @@ bool UserController::HandleKeystroke(
     Login();
     return true;
   } else if (keystroke.GetKeyboardCode() == app::VKEY_LEFT) {
-    SelectUser(user_index() - 1);
+    SelectUser(user_index() - 1, false);
     return true;
   } else if (keystroke.GetKeyboardCode() == app::VKEY_RIGHT) {
-    SelectUser(user_index() + 1);
+    SelectUser(user_index() + 1, false);
     return true;
   }
   delegate_->ClearErrors();
@@ -245,20 +249,44 @@ void UserController::Observe(
 }
 
 void UserController::Login() {
-  // Delegate will reenable as necessary.
-  SetPasswordEnabled(false);
+  if (is_bwsi_) {
+    delegate_->LoginOffTheRecord();
+  } else {
+    // Delegate will reenable as necessary.
+    SetPasswordEnabled(false);
 
-  delegate_->Login(this, existing_user_view_->password_field()->text());
+    delegate_->Login(this, existing_user_view_->password_field()->text());
+  }
 }
 
 void UserController::IsActiveChanged(bool active) {
   is_user_selected_ = active;
   if (active) {
     delegate_->OnUserSelected(this);
-    user_view_->SetRemoveButtonVisible(!is_guest_);
+    user_view_->SetRemoveButtonVisible(!is_new_user_ && !is_bwsi_);
+    // Background is NULL for inactive new user pod to make it transparent.
+    if (is_new_user_ && !border_window_->GetRootView()->background()) {
+      views::Painter* painter = CreateWizardPainter(
+          &BorderDefinition::kUserBorder);
+      border_window_->GetRootView()->set_background(
+          views::Background::CreateBackgroundPainter(true, painter));
+      border_window_->GetRootView()->SchedulePaint();
+    }
   } else {
     user_view_->SetRemoveButtonVisible(false);
     delegate_->ClearErrors();
+    if (is_new_user_) {
+      gfx::Rect controls_bounds;
+      controls_window_->GetBounds(&controls_bounds, true);
+      gfx::Rect screen_bounds =
+          views::Screen::GetMonitorWorkAreaNearestWindow(NULL);
+      // The windows was moved out of screen so the pod was really deactivated,
+      // otherwise it just some dialog was shown and took focus.
+      if (!screen_bounds.Intersects(controls_bounds)) {
+        border_window_->GetRootView()->set_background(NULL);
+        border_window_->GetRootView()->SchedulePaint();
+      }
+    }
   }
 }
 
@@ -290,7 +318,7 @@ WidgetGtk* UserController::CreateControlsWindow(
     int* height,
     bool need_browse_without_signin) {
   views::View* control_view;
-  if (is_guest_) {
+  if (is_new_user_) {
     new_user_view_ =
         new NewUserView(this, false, need_browse_without_signin);
     new_user_view_->Init();
@@ -302,8 +330,10 @@ WidgetGtk* UserController::CreateControlsWindow(
   }
 
   *height = kControlsHeight;
-  if (is_guest_)
+  if (is_new_user_)
     *height += kUserImageSize + kUserNameGap;
+  if (is_bwsi_)
+    *height = 1;
 
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   ConfigureLoginWindow(window,
@@ -315,13 +345,16 @@ WidgetGtk* UserController::CreateControlsWindow(
 }
 
 WidgetGtk* UserController::CreateImageWindow(int index) {
-  user_view_ = new UserView(this, true);
+  user_view_ = new UserView(this, true, !is_new_user_);
 
-  if (!is_guest_) {
-    user_view_->SetImage(user_.image());
-  } else {
+  if (is_bwsi_) {
     user_view_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_LOGIN_OTHER_USER));
+        IDR_LOGIN_GUEST));
+  } else if (is_new_user_) {
+    user_view_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_LOGIN_ADD_USER));
+  } else {
+    user_view_->SetImage(user_.image());
   }
 
   WidgetGtk* window = new ClickNotifyingWidget(WidgetGtk::TYPE_WINDOW, this);
@@ -330,25 +363,33 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
                        gfx::Rect(user_view_->GetPreferredSize()),
                        WM_IPC_WINDOW_LOGIN_IMAGE,
                        user_view_);
+
+  if (is_new_user_)
+    window->MakeTransparent();
+
   return window;
 }
 
 void UserController::CreateBorderWindow(int index,
                                         int total_user_count,
                                         int controls_height) {
-  // Guest login controls window is much higher than existing user's controls
+  // New user login controls window is much higher than existing user's controls
   // window so window manager will place the control instead of image window.
   int width = kBorderSize * 2 + kUserImageSize;
   int height = kBorderSize * 2 + controls_height;
-  if (!is_guest_)
+  if (!is_new_user_)
     height += kBorderSize + kUserImageSize;
+  if (is_bwsi_)
+    height = kBorderSize * 2 + kUserImageSize + 1;
   border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   border_window_->MakeTransparent();
   border_window_->Init(NULL, gfx::Rect(0, 0, width, height));
-  views::Painter* painter = CreateWizardPainter(
-      &BorderDefinition::kUserBorder);
-  border_window_->GetRootView()->set_background(
-      views::Background::CreateBackgroundPainter(true, painter));
+  if (!is_new_user_) {
+    views::Painter* painter = CreateWizardPainter(
+        &BorderDefinition::kUserBorder);
+    border_window_->GetRootView()->set_background(
+        views::Background::CreateBackgroundPainter(true, painter));
+  }
   UpdateUserCount(index, total_user_count);
 
   GdkWindow* gdk_window = border_window_->GetNativeView()->window;
@@ -376,15 +417,18 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   const gfx::Font& font = (type == WM_IPC_WINDOW_LOGIN_LABEL) ?
       rb.GetFont(ResourceBundle::LargeFont).DeriveFont(0, gfx::Font::BOLD) :
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-  std::wstring text = is_guest_ ? l10n_util::GetString(IDS_GUEST) :
-      UTF8ToWide(user_.GetDisplayName());
-  if (index == 0 && is_guest_) {
-    // This is single guest login without any existing users around because
-    // non-single guest login is rightmost in current screen arrangement and
-    // hence indexed above zero.
-    // Such a single guest login should not be labelled.
-    text = std::wstring();
+  std::wstring text;
+  if (is_bwsi_) {
+    text = l10n_util::GetString(IDS_GUEST);
+  } else if (is_new_user_) {
+    // Add user should have label only in activated state.
+    // When new user is the only, label is not needed.
+    if (type != WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL || index != 0)
+      text = l10n_util::GetString(IDS_ADD_USER);
+  } else {
+    text = UTF8ToWide(user_.GetDisplayName());
   }
+
   views::Label* label = new views::Label(text);
   label->SetColor(kTextColor);
   label->SetFont(font);
@@ -406,7 +450,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
 }
 
 gfx::Rect UserController::GetScreenBounds() const {
-  if (is_guest_)
+  if (is_new_user_)
     return new_user_view_->GetUsernameBounds();
   else
     return existing_user_view_->password_field()->GetScreenBounds();
@@ -431,15 +475,18 @@ void UserController::ClearErrors() {
 }
 
 void UserController::NavigateAway() {
-  SelectUser(user_index() - 1);
+  SelectUser(user_index() - 1, false);
 }
 
 void UserController::OnRemoveUser() {
   delegate_->RemoveUser(this);
 }
 
-void UserController::SelectUser(int index) {
-  delegate_->SelectUser(index);
+void UserController::SelectUser(int index, bool is_click) {
+  if (is_click && is_bwsi_)
+    delegate_->LoginOffTheRecord();
+  else
+    delegate_->SelectUser(index);
 }
 
 void UserController::FocusPasswordField() {

@@ -41,8 +41,9 @@ class UserView : public views::View,
 
   // Creates UserView for login screen (|is_login| == true) or screen locker.
   // On login screen this will have addition menu with user specific actions.
-  // On screen locker it will have sign out button.
-  UserView(Delegate* delegate, bool is_login);
+  // On screen locker it will have sign out button. |need_background| is needed
+  // to show image with transparent areas.
+  UserView(Delegate* delegate, bool is_login, bool need_background);
 
   // view::View overrides.
   virtual gfx::Size GetPreferredSize();
@@ -72,7 +73,7 @@ class UserView : public views::View,
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
  private:
-  void Init();
+  void Init(bool need_background);
   void BuildMenu();
 
   Delegate* delegate_;
