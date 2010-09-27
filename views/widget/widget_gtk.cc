@@ -700,8 +700,7 @@ void WidgetGtk::Close() {
 
 void WidgetGtk::CloseNow() {
   if (widget_) {
-    gtk_widget_destroy(widget_);
-    widget_ = NULL;
+    gtk_widget_destroy(widget_);  // Triggers OnDestroy().
   }
 }
 
@@ -1229,7 +1228,10 @@ void WidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 
 void WidgetGtk::OnDestroy(GtkWidget* object) {
   // Note that this handler is hooked to GtkObject::destroy.
+  // NULL out pointers here since we might still be in an observerer list
+  // until delstion happens.
   widget_ = window_contents_ = NULL;
+  delegate_ = NULL;
   if (delete_on_destroy_) {
     // Delays the deletion of this WidgetGtk as we want its children to have
     // access to it when destroyed.
