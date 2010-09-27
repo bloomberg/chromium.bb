@@ -106,7 +106,7 @@ TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
 
-TEST_F(PPAPITest, URLLoader) {
+TEST_F(PPAPITest, FLAKY_URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
