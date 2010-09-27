@@ -83,6 +83,8 @@ PrepareTranslators() {
   # Pull in sources before building translators
   AnnotatedRun "hg-update-stable" \
     env UTMAN_DEBUG=true "${TC_SCRIPT}" hg-update-stable
+  # Clean build directories
+  AnnotatedRun "clean-build" "${TC_SCRIPT}" clean-build
   # Build translators
   AnnotatedRun "build-sandboxed-translators" \
     "${TC_SCRIPT}" build-sandboxed-translators
