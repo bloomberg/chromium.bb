@@ -78,7 +78,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   printing_context_.SetUseOverlays(use_overlays);
 
   if (ask_user_for_settings) {
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(USE_X11)
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &PrintJobWorker::GetSettingsWithUI,
@@ -90,7 +90,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
         document_page_count,
         has_selection,
         NewCallback(this, &PrintJobWorker::GetSettingsDone));
-#endif
+#endif  // defined(OS_MACOSX) || defined(USE_X11)
   } else {
     PrintingContext::Result result = printing_context_.UseDefaultSettings();
     GetSettingsDone(result);
@@ -112,7 +112,7 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
       result));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(USE_X11)
 void PrintJobWorker::GetSettingsWithUI(gfx::NativeView parent_view,
                                        int document_page_count,
                                        bool has_selection) {
@@ -129,7 +129,7 @@ void PrintJobWorker::GetSettingsWithUIDone(PrintingContext::Result result) {
   message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &PrintJobWorker::GetSettingsDone, result));
 }
-#endif
+#endif  // defined(OS_MACOSX) || defined(USE_X11)
 
 void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
