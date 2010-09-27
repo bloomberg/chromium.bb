@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ int32_t sk_atomic_inc(int32_t* addr) {
 }
 
 int32_t sk_atomic_dec(int32_t* addr) {
-  // sk_atomic_inc is expected to return the old value, Barrier_AtomicIncrement
+  // sk_atomic_dec is expected to return the old value, Barrier_AtomicIncrement
   // returns the new value.
   return base::subtle::Barrier_AtomicIncrement(addr, -1) + 1;
 }
