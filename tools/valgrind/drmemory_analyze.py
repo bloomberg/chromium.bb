@@ -65,6 +65,16 @@ class DrMemoryAnalyze:
         self.ReadLine()
         continue
 
+      # Dr. Memory sometimes prints adjacent malloc'ed regions next to the
+      # access address in the UNADDRESSABLE ACCESS reports like this:
+      # Note: next higher malloc: <address range>
+      # Note: prev lower malloc:  <address range>
+      match_malloc_info = re.search("Note: .* malloc: 0x.*", tmp_line)
+      if match_malloc_info:
+        result.append(tmp_line)
+        self.ReadLine()
+        continue
+
       match_binary_fname = re.search("(0x[0-9a-fA-F]+) <.*> (.*)!([^+]*)"
                                      "(?:\+0x[0-9a-fA-F]+)?\n", tmp_line)
       self.ReadLine()
