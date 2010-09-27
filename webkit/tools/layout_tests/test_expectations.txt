@@ -19,3 +19,6 @@ BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-dom-mode-attr.html  = IMAGE FAI
 BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-svgdom-in-prop.html = IMAGE FAIL
 BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-svgdom-in2-prop.html = IMAGE FAIL
 BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-svgdom-mode-prop.html = IMAGE FAIL
+
+// TODO(caseq): This needs to be removed once we're past r68386
+BUGCASEQ : fast/block/basic/016.html = FAIL
