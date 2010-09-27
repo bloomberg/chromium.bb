@@ -14,7 +14,6 @@
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
 
-#if defined(OS_WIN)
 namespace {
 
 void SimpleModifyWorldTransform(HDC context,
@@ -34,7 +33,6 @@ void DrawRect(HDC context, gfx::Rect rect) {
 }
 
 }  // namespace
-#endif  // OS_WIN
 
 namespace printing {
 
@@ -62,32 +60,6 @@ void PrintedDocument::RenderPrintedPage(
     // Save the state (again) to apply the necessary world transformation.
     int saved_state = SaveDC(context);
     DCHECK_NE(saved_state, 0);
-
-#if 0
-    // Debug code to visually verify margins (leaks GDI handles).
-    XFORM debug_xform = { 0 };
-    ModifyWorldTransform(context, &debug_xform, MWT_IDENTITY);
-    // Printable area:
-    SelectObject(context, CreatePen(PS_SOLID, 1, RGB(0, 0, 0)));
-    SelectObject(context, CreateSolidBrush(RGB(0x90, 0x90, 0x90)));
-    Rectangle(context,
-              0,
-              0,
-              page_setup.printable_area().width(),
-              page_setup.printable_area().height());
-    // Overlay area:
-    gfx::Rect debug_overlay_area(page_setup.overlay_area());
-    debug_overlay_area.Offset(-page_setup.printable_area().x(),
-                              -page_setup.printable_area().y());
-    SelectObject(context, CreateSolidBrush(RGB(0xb0, 0xb0, 0xb0)));
-    DrawRect(context, debug_overlay_area);
-    // Content area:
-    gfx::Rect debug_content_area(content_area());
-    debug_content_area.Offset(-page_setup.printable_area().x(),
-                              -page_setup.printable_area().y());
-    SelectObject(context, CreateSolidBrush(RGB(0xd0, 0xd0, 0xd0)));
-    DrawRect(context, debug_content_area);
-#endif
 
     // Setup the matrix to translate and scale to the right place. Take in
     // account the actual shrinking factor.
