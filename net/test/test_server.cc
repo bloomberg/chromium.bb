@@ -47,11 +47,15 @@ int GetPortBase(net::TestServer::Type type) {
     case net::TestServer::TYPE_HTTP:
       return 1337;
     case net::TestServer::TYPE_HTTPS:
-    case net::TestServer::TYPE_HTTPS_CLIENT_AUTH:
-    case net::TestServer::TYPE_HTTPS_EXPIRED_CERTIFICATE:
       return 9443;
-    case net::TestServer::TYPE_HTTPS_MISMATCHED_HOSTNAME:
+    case net::TestServer::TYPE_HTTPS_CLIENT_AUTH:
+      return 9543;
+    case net::TestServer::TYPE_HTTPS_EXPIRED_CERTIFICATE:
+      // TODO(phajdan.jr): Some tests rely on this hardcoded value.
+      // Some uses of this are actually in .html/.js files.
       return 9666;
+    case net::TestServer::TYPE_HTTPS_MISMATCHED_HOSTNAME:
+      return 9643;
     default:
       NOTREACHED();
   }
