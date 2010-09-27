@@ -377,6 +377,10 @@ class ExtensionsService
                                 NotificationType type,
                                 bool be_noisy);
 
+  // ExtensionHost of background page calls this method right after its render
+  // view has been created.
+  void DidCreateRenderViewForBackgroundPage(ExtensionHost* host);
+
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

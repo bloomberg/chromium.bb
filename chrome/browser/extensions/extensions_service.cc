@@ -540,8 +540,6 @@ ExtensionsService::ExtensionsService(Profile* profile,
     extensions_enabled_ = false;
   }
 
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
-                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   prefs->AddPrefObserver(prefs::kExtensionInstallAllowList, this);
@@ -1726,23 +1724,22 @@ void ExtensionsService::ReportExtensionLoadError(
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
 }
 
+void ExtensionsService::DidCreateRenderViewForBackgroundPage(
+    ExtensionHost* host) {
+  OrphanedDevTools::iterator iter =
+      orphaned_dev_tools_.find(host->extension()->id());
+  if (iter == orphaned_dev_tools_.end())
+    return;
+
+  DevToolsManager::GetInstance()->AttachClientHost(
+      iter->second, host->render_view_host());
+  orphaned_dev_tools_.erase(iter);
+}
+
 void ExtensionsService::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::EXTENSION_HOST_DID_STOP_LOADING: {
-      ExtensionHost* host = Details<ExtensionHost>(details).ptr();
-      OrphanedDevTools::iterator iter =
-          orphaned_dev_tools_.find(host->extension()->id());
-      if (iter == orphaned_dev_tools_.end())
-        return;
-
-      DevToolsManager::GetInstance()->AttachClientHost(
-          iter->second, host->render_view_host());
-      orphaned_dev_tools_.erase(iter);
-      break;
-    }
-
     case NotificationType::EXTENSION_PROCESS_TERMINATED: {
       if (profile_ != Source<Profile>(source).ptr()->GetOriginalProfile())
         break;

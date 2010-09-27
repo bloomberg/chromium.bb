@@ -210,6 +210,9 @@ void ExtensionHost::CreateRenderViewNow() {
   render_view_host_->CreateRenderView(string16());
   NavigateToURL(url_);
   DCHECK(IsRenderViewLive());
+  if (is_background_page())
+    profile_->GetExtensionsService()->DidCreateRenderViewForBackgroundPage(
+        this);
 }
 
 Browser* ExtensionHost::GetBrowser() const {
