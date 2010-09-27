@@ -48,18 +48,21 @@ Where <proxy-scheme> is the protocol of the proxy server, and is one of:
   "http", "socks", "socks4", "socks5".
 
 If the <proxy-scheme> is omitted, it defaults to "http". Also note that
-"socks" is equivlent to "socks4".
+"socks" is equivalent to "socks5".
 
 Examples:
 
   --proxy-server="foopy:99"
       Use the HTTP proxy "foopy:99" to load all URLs.
 
+  --proxy-server="socks://foobar:1080"
+      Use the SOCKS v5 proxy "foobar:1080" to load all URLs.
+
+  --proxy-server="sock4://foobar:1080"
+      Use the SOCKS v4 proxy "foobar:1080" to load all URLs.
+
   --proxy-server="socks5://foobar:66"
       Use the SOCKS v5 proxy "foobar:66" to load all URLs.
-
-  --proxy-server="socks://foobar:1080"
-      Use the SOCKS v4 proxy "foobar:1080" to load all URLs.
 
 It is also possible to specify a separate proxy server for different URL types,
 by prefixing the proxy server specifier with a URL specifier:
