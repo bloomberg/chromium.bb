@@ -244,8 +244,14 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (IBAction)handleButtonClick:(id)sender {
-  DownloadItem* download = bridge_->download_model()->download();
-  download->OpenDownload();
+  NSEvent* event = [NSApp currentEvent];
+  if ([event modifierFlags] & NSCommandKeyMask) {
+    // Let cmd-click show the file in Finder, like e.g. in Safari and Spotlight.
+    menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER);
+  } else {
+    DownloadItem* download = bridge_->download_model()->download();
+    download->OpenDownload();
+  }
 }
 
 - (NSSize)preferredSize {
