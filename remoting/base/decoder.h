@@ -90,30 +90,6 @@ class Decoder {
   // of BeginDecode() / EndDecode().
   virtual bool IsStarted() { return started_; }
 
-  // --- NEW API ---
-  // TODO(ajwong): This API is incorrect in the face of a streaming decode
-  // protocol like VP8.  However, it breaks the layering abstraction by
-  // depending on the network packet protocol buffer type. I'm going to go
-  // forward with it as is, and then refactor again to support streaming
-  // decodes.
-
-  // Initializes the decoder to draw into the given |frame|.  The |clip|
-  // specifies the region to draw into.  The clip region must fit inside
-  // the dimensions of frame. Failure to do so will CHECK Fail.
-  virtual void Initialize(scoped_refptr<media::VideoFrame> frame,
-                          const gfx::Rect& clip) {}
-
-  // Reset the decoder to an uninitialized state. Release all references to
-  // the initialized |frame|.  Initialize() must be called before the decoder
-  // is used again.
-  virtual void Reset() {}
-
-  // Feeds more data into the decoder.
-  virtual void DecodeBytes(const std::string& encoded_bytes) {}
-
-  // Returns true if decoder is ready to accept data via ProcessRectangleData.
-  virtual bool IsReadyForData() { return false; }
-
  protected:
   // Every decoder will have two internal states because there are three
   // kinds of messages send to PartialDecode().
