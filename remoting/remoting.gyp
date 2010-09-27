@@ -253,11 +253,14 @@
         'client/client_context.h',
         'client/client_util.cc',
         'client/client_util.h',
+        'client/frame_consumer.h',
         'client/host_connection.h',
         'client/input_handler.cc',
         'client/input_handler.h',
         'client/jingle_host_connection.cc',
         'client/jingle_host_connection.h',
+        'client/rectangle_update_decoder.cc',
+        'client/rectangle_update_decoder.h',
       ],
     },  # end of target 'chromoting_client'
 
