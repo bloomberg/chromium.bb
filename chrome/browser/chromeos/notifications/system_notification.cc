@@ -39,7 +39,9 @@ SystemNotification::~SystemNotification() {
   Hide();
 }
 
-void SystemNotification::Show(const string16& message, bool urgent) {
+void SystemNotification::Show(const string16& message,
+                              bool urgent,
+                              bool sticky) {
   Notification notify = SystemNotificationFactory::Create(icon_,
       title_, message, delegate_.get());
   if (visible_) {
@@ -50,7 +52,8 @@ void SystemNotification::Show(const string16& message, bool urgent) {
       collection_->UpdateNotification(notify);
     }
   } else {
-    collection_->AddSystemNotification(notify, profile_, true /* sticky */,
+    collection_->AddSystemNotification(notify, profile_,
+                                       sticky,
                                        false /* no controls */);
   }
   visible_ = true;

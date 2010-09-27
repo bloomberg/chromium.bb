@@ -75,7 +75,7 @@ class FeedbackNotification {
                                IDR_STATUSBAR_FEEDBACK,
                                l10n_util::GetStringUTF16(
                                    IDS_BUGREPORT_NOTIFICATION_TITLE)));
-    notification_->Show(message, urgent);
+    notification_->Show(message, urgent, false);
   }
 
  private:

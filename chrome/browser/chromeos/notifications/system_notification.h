@@ -30,12 +30,12 @@ class SystemNotification {
   SystemNotification(Profile* profile, std::string id, int icon_resource_id,
                      string16 title);
 
-  ~SystemNotification();
+  virtual ~SystemNotification();
 
   // Show will show or update the message for this notification
   // on a transition to urgent, the notification will be shown if it was
   // previously hidden or minimized by the user.
-  void Show(const string16& message, bool urgent);
+  void Show(const string16& message, bool urgent, bool sticky);
 
   // Hide will dismiss the notification, if the notification is already
   // hidden it does nothing
