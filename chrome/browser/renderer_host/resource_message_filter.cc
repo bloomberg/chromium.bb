@@ -776,9 +776,7 @@ void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
     info->enabled = info->enabled &&
         plugin_service_->PrivatePluginAllowedForURL(info->path, policy_url);
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-    PluginUpdater::PluginMap groups;
-    PluginUpdater::GetPluginUpdater()->GetPluginGroups(&groups);
-    PluginGroup* group = PluginGroup::FindGroupMatchingPlugin(groups, *info);
+    scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(*info));
     std::string resource = group->identifier();
     *setting = map->GetNonDefaultContentSetting(
         policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource);
