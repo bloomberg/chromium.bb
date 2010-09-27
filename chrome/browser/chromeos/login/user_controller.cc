@@ -364,9 +364,6 @@ WidgetGtk* UserController::CreateImageWindow(int index) {
                        WM_IPC_WINDOW_LOGIN_IMAGE,
                        user_view_);
 
-  if (is_new_user_)
-    window->MakeTransparent();
-
   return window;
 }
 
