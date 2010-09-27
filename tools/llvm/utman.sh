@@ -114,10 +114,10 @@ readonly PNACL_BC_X8632_ROOT="${PNACL_X8632_ROOT}-bc"
 readonly PNACL_BC_X8664_ROOT="${PNACL_X8664_ROOT}-bc"
 readonly PNACL_BC_ARM_ROOT="${PNACL_ARM_ROOT}-bc"
 
-# PNaCl client-toolchain (sandboxed) binary locations
-readonly PNACL_CLIENT_TC_ROOT="$(pwd)/toolchain/sandboxed_translators"
-readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
-readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
+# PNaCl client-translators (sandboxed) binary locations
+readonly PNACL_SB_ROOT="${INSTALL_ROOT}/tools-sb"
+readonly PNACL_SB_X8632="${PNACL_SB_ROOT}/x8632"
+readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
 
 # Current milestones in each repo
 readonly LLVM_REV=1baf6b5b69de
@@ -1544,7 +1544,7 @@ binutils-liberty-x86-configure() {
       PATH="/usr/bin:/bin" \
       CC=${CC} \
       CXX=${CXX} \
-      ${srcdir}/binutils-2.20/configure --prefix=${PNACL_CLIENT_TC_ROOT}
+      ${srcdir}/binutils-2.20/configure --prefix=${PNACL_SB_ROOT}
   spopd
 }
 
@@ -1652,7 +1652,7 @@ llvm-tools-sb-configure() {
   StepBanner "LLVM-TOOLS-SB" "Configure ${arch}"
   local srcdir="${TC_SRC_LLVM}"
   local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
-  local installdir="${PNACL_CLIENT_TC_ROOT}/${arch}"
+  local installdir="${PNACL_SB_ROOT}/${arch}"
   local bitsize=""
   local nacl=""
   local target""
@@ -1765,7 +1765,7 @@ binutils-sb() {
     exit -1
   fi
 
-  if [ ! -f ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ] ; then
+  if [ ! -f ${PNACL_SB_ROOT}/lib/libiberty.a ] ; then
     echo "ERROR: Missing lib. Run this script with  binutils-liberty-x86 option"
     exit -1
   fi
@@ -1810,11 +1810,11 @@ binutils-sb-configure() {
   local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH"
   local srcdir="${TC_SRC_BINUTILS}"
   local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
-  local installdir="${PNACL_CLIENT_TC_ROOT}/${arch}"
+  local installdir="${PNACL_SB_ROOT}/${arch}"
 
   mkdir ${objdir}/opcodes
   spushd ${objdir}
-  cp ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ./opcodes/.
+  cp ${PNACL_SB_ROOT}/lib/libiberty.a ./opcodes/.
   RunWithLog \
       binutils.${arch}.sandboxed.configure \
       env -i \
@@ -1914,45 +1914,34 @@ build-sandboxed-translators() {
 install-translators() {
   StepBanner "INSTALL UNSANDBOXED TRANSLATOR COMPONENTS"
 
-  assert-dir "${PNACL_CLIENT_TC_X8632}" \
+  assert-dir "${PNACL_SB_X8632}" \
         "Run this script with build-sandboxed-translators"
-  assert-dir "${PNACL_CLIENT_TC_X8664}" \
+  assert-dir "${PNACL_SB_X8664}" \
         "Run this script with build-sandboxed-translators"
 
   scons-build-sel_ldr x86-32
   cp "./scons-out/opt-linux-x86-32/staging/sel_ldr" \
-        "${PNACL_CLIENT_TC_X8632}/bin"
+        "${PNACL_SB_X8632}/bin"
 
   scons-build-sel_ldr x86-64
   cp "./scons-out/opt-linux-x86-64/staging/sel_ldr" \
-        "${PNACL_CLIENT_TC_X8664}/bin"
+        "${PNACL_SB_X8664}/bin"
 
-  mkdir -p ${PNACL_CLIENT_TC_X8632}/lib
-  mkdir -p ${PNACL_CLIENT_TC_X8664}/lib
-
-  assert-dir "${PNACL_TOOLCHAIN_ROOT}/libs-x8632" \
-        "Install PNaCl toolchain."
-  cp "${PNACL_TOOLCHAIN_ROOT}/libs-x8632/"* "${PNACL_CLIENT_TC_X8632}/lib/."
-
-  assert-dir "${PNACL_TOOLCHAIN_ROOT}/libs-x8664" \
-        "Install PNaCl toolchain."
-  cp "${PNACL_TOOLCHAIN_ROOT}/libs-x8664/"* "${PNACL_CLIENT_TC_X8664}/lib/."
-
-  mkdir -p ${PNACL_CLIENT_TC_X8632}/script
-  mkdir -p ${PNACL_CLIENT_TC_X8664}/script
+  mkdir -p ${PNACL_SB_X8632}/script
+  mkdir -p ${PNACL_SB_X8664}/script
 
   assert-file "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
         "Install NaCl toolchain."
   cp "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
-        "${PNACL_CLIENT_TC_X8632}/script/ld_script"
+        "${PNACL_SB_X8632}/script/ld_script"
 
   assert-file "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
         "Install NaCl toolchain."
   cp "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
-        "${PNACL_CLIENT_TC_X8664}/script/ld_script"
+        "${PNACL_SB_X8664}/script/ld_script"
 
-  cp tools/llvm/dummy_translator_x8632.sh "${PNACL_CLIENT_TC_X8632}/translator"
-  cp tools/llvm/dummy_translator_x8664.sh "${PNACL_CLIENT_TC_X8664}/translator"
+  cp tools/llvm/dummy_translator_x8632.sh "${PNACL_SB_X8632}/translator"
+  cp tools/llvm/dummy_translator_x8664.sh "${PNACL_SB_X8664}/translator"
 
   echo "Done"
 }

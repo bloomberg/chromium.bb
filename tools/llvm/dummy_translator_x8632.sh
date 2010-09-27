@@ -6,11 +6,12 @@
 set -o nounset
 set -o errexit
 
-readonly DEMO_ROOT=$(dirname $0)
+# 32-bit sandboxed translators root
+readonly SB_ROOT=$(dirname $0)
 
-readonly BIN_ROOT=${DEMO_ROOT}/bin
-readonly LIB_ROOT=${DEMO_ROOT}/lib
-readonly SCRIPT_ROOT=${DEMO_ROOT}/script
+readonly BIN_ROOT=${SB_ROOT}/bin
+readonly LIB_ROOT=${SB_ROOT}/../../libs-x8632
+readonly SCRIPT_ROOT=${SB_ROOT}/script
 
 # Executables
 readonly LLC=${BIN_ROOT}/llc

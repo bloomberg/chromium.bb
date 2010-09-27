@@ -151,7 +151,7 @@ $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
 # BITCODE - FRONTEND
 
 LLVM_FAKE_ROOT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi
-TRANSLATOR_ROOT=$(TC_ROOT)/sandboxed_translators
+TRANSLATOR_ROOT=$(TC_ROOT)/linux_arm-untrusted/tools-sb
 BC_GCC=$(LLVM_FAKE_ROOT)/llvm-fake-sfigcc -emit-llvm
 BC_GPP=$(LLVM_FAKE_ROOT)/llvm-fake-sfig++ -emit-llvm
 BC_OPT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/bin/opt
