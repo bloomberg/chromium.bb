@@ -45,6 +45,8 @@ class WebResourceService::WebResourceFetcher
   // Initializes the fetching of data from the resource server.  Data
   // load calls OnURLFetchComplete.
   void StartFetch() {
+    // Balanced in OnURLFetchComplete.
+    web_resource_service_->AddRef();
     // First, put our next cache load on the MessageLoop.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
       fetcher_factory_.NewRunnableMethod(&WebResourceFetcher::StartFetch),
@@ -82,6 +84,7 @@ class WebResourceService::WebResourceFetcher
       return;
 
     web_resource_service_->UpdateResourceCache(data);
+    web_resource_service_->Release();
   }
 
  private:
@@ -92,8 +95,8 @@ class WebResourceService::WebResourceFetcher
   // The tool that fetches the url data from the server.
   scoped_ptr<URLFetcher> url_fetcher_;
 
-  // Our owner and creator.
-  scoped_refptr<WebResourceService> web_resource_service_;
+  // Our owner and creator. Ref counted.
+  WebResourceService* web_resource_service_;
 };
 
 // This class coordinates a web resource unpack and parse task which is run in
@@ -203,7 +206,7 @@ WebResourceService::~WebResourceService() { }
 
 void WebResourceService::Init() {
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
-  web_resource_fetcher_ = new WebResourceFetcher(this);
+  web_resource_fetcher_.reset(new WebResourceFetcher(this));
   prefs_->RegisterStringPref(prefs::kNTPWebResourceCacheUpdate, "0");
   prefs_->RegisterRealPref(prefs::kNTPCustomLogoStart, 0);
   prefs_->RegisterRealPref(prefs::kNTPCustomLogoEnd, 0);

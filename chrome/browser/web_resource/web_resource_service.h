@@ -94,7 +94,7 @@ class WebResourceService
   // Server from which we are currently pulling web resource data.
   std::string web_resource_server_;
 
-  WebResourceFetcher* web_resource_fetcher_;
+  scoped_ptr<WebResourceFetcher> web_resource_fetcher_;
 
   ResourceDispatcherHost* resource_dispatcher_host_;
 
