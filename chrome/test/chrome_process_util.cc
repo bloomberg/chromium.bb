@@ -16,38 +16,20 @@ using base::TimeDelta;
 using base::TimeTicks;
 
 void TerminateAllChromeProcesses(base::ProcessId browser_pid) {
-  // Total time the function will wait for chrome processes
-  // to terminate after it told them to do so.
-  const TimeDelta kExitTimeout = TimeDelta::FromSeconds(30);
-
   ChromeProcessList process_pids(GetRunningChromeProcesses(browser_pid));
 
-  std::vector<base::ProcessHandle> handles;
-  {
-    ChromeProcessList::const_iterator it;
-    for (it = process_pids.begin(); it != process_pids.end(); ++it) {
-      base::ProcessHandle handle;
-      // Ignore processes for which we can't open the handle. We don't guarantee
-      // that all processes will terminate, only try to do so.
-      if (base::OpenPrivilegedProcessHandle(*it, &handle))
-        handles.push_back(handle);
+  ChromeProcessList::const_iterator it;
+  for (it = process_pids.begin(); it != process_pids.end(); ++it) {
+    base::ProcessHandle handle;
+    if (!base::OpenPrivilegedProcessHandle(*it, &handle)) {
+      // Ignore processes for which we can't open the handle. We don't
+      // guarantee that all processes will terminate, only try to do so.
+      continue;
     }
+
+    base::KillProcess(handle, ResultCodes::TASKMAN_KILL, true);
+    base::CloseProcessHandle(handle);
   }
-
-  std::vector<base::ProcessHandle>::const_iterator it;
-  for (it = handles.begin(); it != handles.end(); ++it)
-    base::KillProcess(*it, ResultCodes::TASKMAN_KILL, false);
-
-  const TimeTicks start = TimeTicks::Now();
-  for (it = handles.begin();
-       it != handles.end() && TimeTicks::Now() - start < kExitTimeout;
-       ++it) {
-    int64 wait_time_ms = (TimeTicks::Now() - start).InMilliseconds();
-    base::WaitForSingleProcess(*it, wait_time_ms);
-  }
-
-  for (it = handles.begin(); it != handles.end(); ++it)
-    base::CloseProcessHandle(*it);
 }
 
 class ChildProcessFilter : public base::ProcessFilter {
