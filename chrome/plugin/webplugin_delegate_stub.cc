@@ -337,29 +337,35 @@ void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,
 }
 
 void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
-  delegate_->SetContentAreaHasFocus(has_focus);
+  if (delegate_)
+    delegate_->SetContentAreaHasFocus(has_focus);
 }
 
 #if defined(OS_MACOSX)
 void WebPluginDelegateStub::OnSetWindowFocus(bool has_focus) {
-  delegate_->SetWindowHasFocus(has_focus);
+  if (delegate_)
+    delegate_->SetWindowHasFocus(has_focus);
 }
 
 void WebPluginDelegateStub::OnContainerHidden() {
-  delegate_->SetContainerVisibility(false);
+  if (delegate_)
+    delegate_->SetContainerVisibility(false);
 }
 
 void WebPluginDelegateStub::OnContainerShown(gfx::Rect window_frame,
                                              gfx::Rect view_frame,
                                              bool has_focus) {
-  delegate_->WindowFrameChanged(window_frame, view_frame);
-  delegate_->SetContainerVisibility(true);
-  delegate_->SetWindowHasFocus(has_focus);
+  if (delegate_) {
+    delegate_->WindowFrameChanged(window_frame, view_frame);
+    delegate_->SetContainerVisibility(true);
+    delegate_->SetWindowHasFocus(has_focus);
+  }
 }
 
 void WebPluginDelegateStub::OnWindowFrameChanged(const gfx::Rect& window_frame,
                                                  const gfx::Rect& view_frame) {
-  delegate_->WindowFrameChanged(window_frame, view_frame);
+  if (delegate_)
+    delegate_->WindowFrameChanged(window_frame, view_frame);
 }
 #endif  // OS_MACOSX
 
