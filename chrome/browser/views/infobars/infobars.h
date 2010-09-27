@@ -11,6 +11,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
+#include "views/focus/focus_manager.h"
 
 class InfoBarContainer;
 class SlideAnimation;
@@ -41,6 +42,7 @@ class InfoBarBackground : public views::Background {
 
 class InfoBar : public views::View,
                 public views::ButtonListener,
+                public views::FocusChangeListener,
                 public AnimationDelegate {
  public:
   explicit InfoBar(InfoBarDelegate* delegate);
@@ -98,6 +100,9 @@ class InfoBar : public views::View,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Overridden from views::FocusChangeListener:
+  virtual void FocusWillChange(View* focused_before, View* focused_now);
 
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const Animation* animation);

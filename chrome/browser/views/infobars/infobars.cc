@@ -193,6 +193,17 @@ void InfoBar::ButtonPressed(views::Button* sender, const views::Event& event) {
   }
 }
 
+// InfoBar, views::FocusChangeListener implementation: ------------------
+
+void InfoBar::FocusWillChange(View* focused_before, View* focused_now) {
+  // This will trigger some screen readers to read the entire contents of this
+  // infobar.
+  if (focused_before && focused_now &&
+      !this->IsParentOf(focused_before) && this->IsParentOf(focused_now)) {
+    NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
+  }
+}
+
 // InfoBar, AnimationDelegate implementation: ----------------------------------
 
 void InfoBar::AnimationProgressed(const Animation* animation) {
@@ -262,6 +273,9 @@ void InfoBar::InfoBarAdded() {
   }
 #endif
 
+  if (GetFocusManager())
+    GetFocusManager()->AddFocusChangeListener(this);
+
   NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
 }
 
@@ -275,6 +289,9 @@ void InfoBar::InfoBarRemoved() {
   // since no-one refers to us now.
   MessageLoop::current()->PostTask(FROM_HERE,
       delete_factory_.NewRunnableMethod(&InfoBar::DeleteSelf));
+
+  if (GetFocusManager())
+    GetFocusManager()->RemoveFocusChangeListener(this);
 }
 
 void InfoBar::DestroyFocusTracker(bool restore_focus) {
