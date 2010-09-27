@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/options_managed_banner_handler.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -150,10 +151,13 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_OKLABEL));
   localized_strings->SetString("optionsResetCancelLabel",
       l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_CANCELLABEL));
+  localized_strings->SetString("optionsRestartRequired",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED));
 }
 
 void AdvancedOptionsHandler::Initialize() {
   DCHECK(dom_ui_);
+  SetupMetricsReportingCheckbox(false);
   SetupDownloadLocationPath();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
@@ -174,6 +178,8 @@ DOMMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {
   // special behaviors that aren't handled by the standard prefs UI.
   DCHECK(dom_ui_);
   PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+  enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
+                                 g_browser_process->local_state(), this);
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
@@ -196,6 +202,9 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("resetToDefaults",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleResetToDefaults));
+  dom_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleMetricsReportingCheckbox));
 #if !defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("showManageSSLCertificates",
       NewCallback(this,
@@ -264,6 +273,23 @@ void AdvancedOptionsHandler::HandleResetToDefaults(const ListValue* args) {
   OptionsUtil::ResetToDefaults(dom_ui_->GetProfile());
 }
 
+void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
+    const ListValue* args) {
+#if defined(GOOGLE_CHROME_BUILD)
+  std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  bool enabled = (checked_str == "true");
+  UserMetricsRecordAction(
+      enabled ?
+          UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
+          UserMetricsAction("Options_MetricsReportingCheckbox_Disable"));
+  bool is_enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
+  enable_metrics_recording_.SetValue(is_enabled);
+
+  bool user_changed = (enabled == is_enabled);
+  SetupMetricsReportingCheckbox(user_changed);
+#endif
+}
+
 #if defined(OS_WIN)
 void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
     const ListValue* args) {
@@ -302,6 +328,17 @@ void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
   AdvancedOptionsUtilities::ShowManageSSLCertificates(dom_ui_->tab_contents());
 }
 #endif
+
+void AdvancedOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
+#if defined(GOOGLE_CHROME_BUILD)
+  FundamentalValue checked(enable_metrics_recording_.GetValue());
+  FundamentalValue disabled(enable_metrics_recording_.IsManaged());
+  FundamentalValue user_has_changed(user_changed);
+  dom_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.SetMetricsReportingCheckboxState", checked,
+      disabled, user_has_changed);
+#endif
+}
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {
   StringValue value(default_download_location_.GetValue().value());

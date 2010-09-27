@@ -50,6 +50,9 @@ class AdvancedOptionsHandler
   // they want to reset all options to their default values.
   void HandleResetToDefaults(const ListValue* args);
 
+  // Callback for the "metricsReportingCheckboxAction" message.  This is called
+  // if the user toggles the metrics reporting checkbox.
+  void HandleMetricsReportingCheckbox(const ListValue* args);
 #if defined(OS_WIN)
   // Callback for the "Check SSL Revocation" checkbox.  This is needed so we
   // can support manual handling on Windows.
@@ -73,6 +76,9 @@ class AdvancedOptionsHandler
   void ShowManageSSLCertificates(const ListValue* args);
 #endif
 
+  // Setup the checked state for the metrics reporting checkbox.
+  void SetupMetricsReportingCheckbox(bool user_changed);
+
   // Setup the download path based on user preferences.
   void SetupDownloadLocationPath();
 
@@ -83,11 +89,12 @@ class AdvancedOptionsHandler
   void SetupProxySettingsSection();
 
 #if defined(OS_WIN)
-  // Setup the checked state SSL related checkboxes.
+  // Setup the checked state for SSL related checkboxes.
   void SetupSSLConfigSettings();
 #endif
 
   scoped_refptr<SelectFileDialog> select_folder_dialog_;
+  BooleanPrefMember enable_metrics_recording_;
   FilePathPrefMember default_download_location_;
   StringPrefMember auto_open_files_;
   scoped_ptr<PrefSetObserver> proxy_prefs_;

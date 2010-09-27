@@ -21,7 +21,9 @@ var OptionsPage = options.OptionsPage;
     // Inherit AdvancedOptions from OptionsPage.
     __proto__: options.OptionsPage.prototype,
 
-    // Initialize AdvancedOptions page.
+    /**
+     * Initializes the page.
+     */
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
@@ -37,6 +39,14 @@ var OptionsPage = options.OptionsPage;
         OptionsPage.showOverlay('clearBrowserDataOverlay');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
+      // 'metricsReportingEnabled' element is only present on Chrome branded
+      // builds.
+      if ($('metricsReportingEnabled')) {
+        $('metricsReportingEnabled').onclick = function(event) {
+          chrome.send('metricsReportingCheckboxAction',
+              [String(event.target.checked)]);
+        };
+      }
       $('autoOpenFileTypesResetToDefault').onclick = function(event) {
         chrome.send('autoOpenFileTypesAction');
       };
@@ -89,12 +99,32 @@ var OptionsPage = options.OptionsPage;
           chrome.send('showGearsSettings');
         };
       }
+    },
+
+    /**
+     * Show a 'restart required' alert.
+     * @private
+     */
+    showRestartRequiredAlert_: function() {
+      AlertOverlay.show(undefined,
+          localStrings.getString('optionsRestartRequired'),
+          undefined, '', undefined);
     }
   };
 
   //
   // Chrome callbacks
   //
+
+  // Set the checked state of the metrics reporting checkbox.
+  AdvancedOptions.SetMetricsReportingCheckboxState = function(checked,
+      disabled, user_changed) {
+    $('metricsReportingEnabled').checked = checked;
+    $('metricsReportingEnabled').disabled = disabled;
+
+    if (user_changed)
+      AdvancedOptions.getInstance().showRestartRequiredAlert_();
+  }
 
   // Set the download path.
   AdvancedOptions.SetDownloadLocationPath = function(path) {

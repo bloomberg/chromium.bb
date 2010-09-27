@@ -94,10 +94,15 @@ cr.define('options', function() {
     }
     $('alertOverlayOk').textContent =
         (okTitle != undefined ? okTitle
-                              : LocalStrings.getString('ok'));
-    $('alertOverlayCancel').textContent =
-        (cancelTitle != undefined ? cancelTitle
-                                  : LocalStrings.getString('cancel'));
+                              : localStrings.getString('ok'));
+    if (cancelTitle != '') {
+      $('alertOverlayCancel').textContent =
+          (cancelTitle != undefined ? cancelTitle
+                                    : localStrings.getString('cancel'));
+      $('alertOverlayCancel').style.display = 'inline';
+    } else {
+      $('alertOverlayCancel').style.display = 'none';
+    }
 
     AlertOverlay.getInstance().okCallback = okCallback;
     AlertOverlay.getInstance().cancelCallback = cancelCallback;
