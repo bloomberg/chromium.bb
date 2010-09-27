@@ -78,3 +78,9 @@ PREFIX : executebrowsercommandobserver::observe___notificationservice::notify
 
 # 56750
 PREFIX : browserclosednotificationobserver::observe___notificationservice::notify
+
+# 57041
+PREFIX: `anonymous namespace'::invalidparameter____purecall___`anonymous namespace'::do_malloc___base::threadlocalplatform::getvaluefromslot___notificationservice::current
+
+# 57041
+PREFIX: `anonymous namespace'::invalidparameter____purecall___notificationservice::notify
