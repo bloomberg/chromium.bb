@@ -176,7 +176,7 @@ bool AutoFillDownloadManager::StartRequest(
                                            URLFetcher::POST,
                                            this);
   url_fetchers_[fetcher] = request_data;
-  fetcher->set_automatcally_retry_on_5xx(false);
+  fetcher->set_automatically_retry_on_5xx(false);
   fetcher->set_request_context(Profile::GetDefaultRequestContext());
   fetcher->set_upload_data("text/plain", form_xml);
   fetcher->Start();

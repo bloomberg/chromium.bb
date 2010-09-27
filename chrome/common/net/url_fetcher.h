@@ -146,7 +146,7 @@ class URLFetcher {
   // If |retry| is false, 5xx responses will be propagated to the observer,
   // if it is true URLFetcher will automatically re-execute the request,
   // after backoff_delay() elapses. URLFetcher has it set to true by default.
-  void set_automatcally_retry_on_5xx(bool retry);
+  void set_automatically_retry_on_5xx(bool retry);
 
   // Returns the back-off delay before the request will be retried,
   // when a 5xx response was received.

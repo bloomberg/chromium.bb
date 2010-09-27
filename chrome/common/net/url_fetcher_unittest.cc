@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -336,7 +336,7 @@ void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
   fetcher_ = new URLFetcher(url, URLFetcher::GET, this);
   fetcher_->set_request_context(new TestURLRequestContextGetter(
       io_message_loop_proxy()));
-  fetcher_->set_automatcally_retry_on_5xx(false);
+  fetcher_->set_automatically_retry_on_5xx(false);
   start_time_ = Time::Now();
   fetcher_->Start();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -356,7 +356,7 @@ void URLFetcher::set_request_context(
   core_->request_context_getter_ = request_context_getter;
 }
 
-void URLFetcher::set_automatcally_retry_on_5xx(bool retry) {
+void URLFetcher::set_automatically_retry_on_5xx(bool retry) {
   automatically_retry_on_5xx_ = retry;
 }
 
