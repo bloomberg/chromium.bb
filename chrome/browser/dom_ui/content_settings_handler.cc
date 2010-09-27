@@ -106,6 +106,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_REMOVE_BUTTON));
   localized_strings->SetString("editExceptionRow",
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_EDIT_BUTTON));
+  localized_strings->SetString("otr_exceptions_explanation",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_OTR_LABEL));
 
   // Cookies filter.
   localized_strings->SetString("cookies_tab_label",
@@ -201,10 +203,7 @@ void ContentSettingsHandler::GetLocalizedValues(
 }
 
 void ContentSettingsHandler::Initialize() {
-  UpdateAllExceptionsDefaultsFromModel();
-
-  const HostContentSettingsMap* settings_map =
-      dom_ui_->GetProfile()->GetHostContentSettingsMap();
+  const HostContentSettingsMap* settings_map = GetContentSettingsMap();
   scoped_ptr<Value> block_3rd_party(Value::CreateBooleanValue(
       settings_map->BlockThirdPartyCookies()));
   dom_ui_->CallJavascriptFunction(
@@ -232,19 +231,6 @@ void ContentSettingsHandler::Observe(NotificationType type,
     UpdateExceptionsViewFromModel(settings_details->type());
 }
 
-void ContentSettingsHandler::UpdateAllExceptionsDefaultsFromModel() {
-  DictionaryValue filter_settings;
-  for (int i = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
-       i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    filter_settings.SetString(ContentSettingsTypeToGroupName(type),
-                              GetExceptionsDefaultFromModel(type));
-  }
-
-  dom_ui_->CallJavascriptFunction(
-      L"ContentSettings.setContentFilterSettingsValue", filter_settings);
-}
-
 void ContentSettingsHandler::UpdateExceptionsDefaultFromModel(
     ContentSettingsType type) {
   DictionaryValue filter_settings;
@@ -258,8 +244,7 @@ void ContentSettingsHandler::UpdateExceptionsDefaultFromModel(
 std::string ContentSettingsHandler::GetExceptionsDefaultFromModel(
     ContentSettingsType type) {
   ContentSetting default_setting;
-  const HostContentSettingsMap* settings_map =
-      dom_ui_->GetProfile()->GetHostContentSettingsMap();
+  const HostContentSettingsMap* settings_map = GetContentSettingsMap();
   if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     default_setting = settings_map->GetDefaultContentSetting(type);
     if (settings_map->GetBlockNonsandboxedPlugins())
@@ -271,8 +256,7 @@ std::string ContentSettingsHandler::GetExceptionsDefaultFromModel(
     default_setting = dom_ui_->GetProfile()->
         GetDesktopNotificationService()->GetDefaultContentSetting();
   } else {
-    default_setting = dom_ui_->GetProfile()->GetHostContentSettingsMap()->
-        GetDefaultContentSetting(type);
+    default_setting = GetContentSettingsMap()->GetDefaultContentSetting(type);
   }
 
   return ContentSettingToString(default_setting);
@@ -288,9 +272,7 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     ContentSettingsType type) {
   HostContentSettingsMap::SettingsForOneType entries;
-  const HostContentSettingsMap* settings_map =
-      dom_ui_->GetProfile()->GetHostContentSettingsMap();
-  settings_map->GetSettingsForOneType(type, "", &entries);
+  GetContentSettingsMap()->GetSettingsForOneType(type, "", &entries);
 
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
@@ -305,9 +287,28 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setExceptions", type_string, exceptions);
 
-  // The default may also have changed (we won't get a separte notification).
+  // The default may also have changed (we won't get a separate notification).
   // If it hasn't changed, this call will be harmless.
   UpdateExceptionsDefaultFromModel(type);
+
+  const HostContentSettingsMap* otr_settings_map = GetOTRContentSettingsMap();
+  if (otr_settings_map && type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
+                          type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    HostContentSettingsMap::SettingsForOneType otr_entries;
+    otr_settings_map->GetSettingsForOneType(type, "", &otr_entries);
+
+    ListValue otr_exceptions;
+    for (size_t i = 0; i < otr_entries.size(); ++i) {
+      ListValue* exception = new ListValue();
+      exception->Append(new StringValue(otr_entries[i].first.AsString()));
+      exception->Append(
+          new StringValue(ContentSettingToString(otr_entries[i].second)));
+      otr_exceptions.Append(exception);
+    }
+
+    dom_ui_->CallJavascriptFunction(
+        L"ContentSettings.setOTRExceptions", type_string, otr_exceptions);
+  }
 }
 
 void ContentSettingsHandler::RegisterMessages() {
@@ -342,13 +343,11 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     if (default_setting == CONTENT_SETTING_ASK) {
       default_setting = CONTENT_SETTING_ALLOW;
-      dom_ui_->GetProfile()->GetHostContentSettingsMap()->
-          SetBlockNonsandboxedPlugins(true);
+      GetContentSettingsMap()->SetBlockNonsandboxedPlugins(true);
     } else {
-      dom_ui_->GetProfile()->GetHostContentSettingsMap()->
-          SetBlockNonsandboxedPlugins(false);
+      GetContentSettingsMap()->SetBlockNonsandboxedPlugins(false);
     }
-    dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+    GetContentSettingsMap()->
         SetDefaultContentSetting(content_type, default_setting);
   } else if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     dom_ui_->GetProfile()->GetGeolocationContentSettingsMap()->
@@ -357,7 +356,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
     dom_ui_->GetProfile()->GetDesktopNotificationService()->
         SetDefaultContentSetting(default_setting);
   } else {
-    dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+    GetContentSettingsMap()->
         SetDefaultContentSetting(content_type, default_setting);
   }
 }
@@ -365,8 +364,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
 void ContentSettingsHandler::SetAllowThirdPartyCookies(const ListValue* args) {
   std::wstring allow = ExtractStringValue(args);
 
-  dom_ui_->GetProfile()->GetHostContentSettingsMap()->SetBlockThirdPartyCookies(
-      allow == L"true");
+  GetContentSettingsMap()->SetBlockThirdPartyCookies(allow == L"true");
 }
 
 void ContentSettingsHandler::RemoveExceptions(const ListValue* args) {
@@ -405,14 +403,26 @@ void ContentSettingsHandler::RemoveExceptions(const ListValue* args) {
             ResetBlockedOrigin(GURL(origin));
       }
     } else {
-      std::string pattern;
-      bool rv = args->GetString(arg_i++, &pattern);
+      std::string mode;
+      bool rv = args->GetString(arg_i++, &mode);
       DCHECK(rv);
-      dom_ui_->GetProfile()->GetHostContentSettingsMap()->SetContentSetting(
-          HostContentSettingsMap::Pattern(pattern),
-          ContentSettingsTypeFromGroupName(type_string),
-          "",
-          CONTENT_SETTING_DEFAULT);
+
+      std::string pattern;
+      rv = args->GetString(arg_i++, &pattern);
+      DCHECK(rv);
+
+      HostContentSettingsMap* settings_map =
+          mode == "normal" ? GetContentSettingsMap() :
+                             GetOTRContentSettingsMap();
+      // The settings map could be null if the mode was OTR but the OTR profile
+      // got destroyed before we received this message.
+      if (settings_map) {
+        settings_map->SetContentSetting(
+            HostContentSettingsMap::Pattern(pattern),
+            ContentSettingsTypeFromGroupName(type_string),
+            "",
+            CONTENT_SETTING_DEFAULT);
+      }
     }
   }
 }
@@ -421,6 +431,8 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
   size_t arg_i = 0;
   std::string type_string;
   CHECK(args->GetString(arg_i++, &type_string));
+  std::string mode;
+  CHECK(args->GetString(arg_i++, &mode));
   std::string pattern;
   CHECK(args->GetString(arg_i++, &pattern));
   std::string setting;
@@ -432,7 +444,17 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
     NOTREACHED();
     return;
   }
-  dom_ui_->GetProfile()->GetHostContentSettingsMap()->
+
+  HostContentSettingsMap* settings_map =
+      mode == "normal" ? GetContentSettingsMap() :
+                         GetOTRContentSettingsMap();
+
+  // The settings map could be null if the mode was OTR but the OTR profile
+  // got destroyed before we received this message.
+  if (!settings_map)
+    return;
+
+  settings_map->
       SetContentSetting(HostContentSettingsMap::Pattern(pattern),
                         type,
                         "",
@@ -444,16 +466,20 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
   size_t arg_i = 0;
   Value* type;
   CHECK(args->Get(arg_i++, &type));
+  std::string mode_string;
+  CHECK(args->GetString(arg_i++, &mode_string));
   std::string pattern_string;
   CHECK(args->GetString(arg_i++, &pattern_string));
 
   HostContentSettingsMap::Pattern pattern(pattern_string);
 
+  scoped_ptr<Value> mode_value(Value::CreateStringValue(mode_string));
   scoped_ptr<Value> pattern_value(Value::CreateStringValue(pattern_string));
   scoped_ptr<Value> valid_value(Value::CreateBooleanValue(pattern.IsValid()));
 
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.patternValidityCheckComplete", *type,
+                                                       *mode_value.get(),
                                                        *pattern_value.get(),
                                                        *valid_value.get());
 }
@@ -481,4 +507,16 @@ std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
       NOTREACHED();
       return "";
   }
+}
+
+HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {
+  return dom_ui_->GetProfile()->GetHostContentSettingsMap();
+}
+
+HostContentSettingsMap*
+    ContentSettingsHandler::GetOTRContentSettingsMap() {
+  Profile* profile = dom_ui_->GetProfile();
+  if (profile->HasOffTheRecordProfile())
+    return profile->GetOffTheRecordProfile()->GetHostContentSettingsMap();
+  return NULL;
 }

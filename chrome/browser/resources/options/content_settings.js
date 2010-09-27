@@ -32,9 +32,17 @@ cr.define('options', function() {
       // Exceptions lists. -----------------------------------------------------
       function handleExceptionsLinkClickEvent(event) {
         var exceptionsArea = event.target.parentNode.
-            querySelector('div[contentType]');
+            querySelector('div[contentType][mode=normal]');
         exceptionsArea.classList.toggle('hidden');
         exceptionsArea.querySelector('list').redraw();
+
+        var otrExceptionsArea = event.target.parentNode.
+            querySelector('div[contentType][mode=otr]');
+        if (otrExceptionsArea.otrProfileExists) {
+          otrExceptionsArea.classList.toggle('hidden');
+          otrExceptionsArea.querySelector('list').redraw();
+        }
+
         return false;
       }
       var exceptionsLinks =
@@ -91,7 +99,20 @@ cr.define('options', function() {
    */
   ContentSettings.setExceptions = function(type, list) {
     var exceptionsList =
-        document.querySelector('div[contentType=' + type + '] list');
+        document.querySelector('div[contentType=' + type + ']' +
+                               '[mode=normal] list');
+    exceptionsList.clear();
+    for (var i = 0; i < list.length; i++) {
+      exceptionsList.addException(list[i]);
+    }
+  };
+
+  ContentSettings.setOTRExceptions = function(type, list) {
+    var exceptionsArea =
+        document.querySelector('div[contentType=' + type + '][mode=otr]');
+    exceptionsArea.otrProfileExists = true;
+
+    var exceptionsList = exceptionsArea.querySelector('list');
     exceptionsList.clear();
     for (var i = 0; i < list.length; i++) {
       exceptionsList.addException(list[i]);
@@ -109,14 +130,17 @@ cr.define('options', function() {
   /**
    * The browser's response to a request to check the validity of a given URL
    * pattern.
+   * @param {string} type The content type.
+   * @param {string} mode The browser mode.
    * @param {string} pattern The pattern.
    * @param {bool} valid Whether said pattern is valid in the context of
    *     a content exception setting.
    */
   ContentSettings.patternValidityCheckComplete =
-      function(type, pattern, valid) {
+      function(type, mode, pattern, valid) {
     var exceptionsList =
-        document.querySelector('div[contentType=' + type + '] list');
+        document.querySelector('div[contentType=' + type + '][mode=' + mode +
+                               '] list');
     exceptionsList.patternValidityCheckComplete(pattern, valid);
   };
 

@@ -10,14 +10,16 @@ cr.define('options.contentSettings', function() {
   /**
    * Creates a new exceptions list item.
    * @param {string} contentType The type of the list.
+   * @param {string} mode The browser mode, 'otr' or 'normal'.
    * @param {boolean} enableAskOption Whether to show an 'ask every time'
    *     option in the select.
    * @param {Array} exception A pair of the form [filter, setting].
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  function ExceptionsListItem(contentType, enableAskOption, exception) {
+  function ExceptionsListItem(contentType, mode, enableAskOption, exception) {
     var el = cr.doc.createElement('li');
+    el.mode = mode;
     el.contentType = contentType;
     el.enableAskOption = enableAskOption;
     el.dataItem = exception;
@@ -108,7 +110,7 @@ cr.define('options.contentSettings', function() {
       input.oninput = function(event) {
         listItem.inputValidityKnown = false;
         chrome.send('checkExceptionPatternValidity',
-                    [listItem.contentType, input.value]);
+                    [listItem.contentType, listItem.mode, input.value]);
       };
 
       // Handles enter and escape which trigger reset and commit respectively.
@@ -313,12 +315,13 @@ cr.define('options.contentSettings', function() {
         this.setting = newSetting;
         settingLabel.textContent = this.settingForDisplay();
 
-        var contentType = this.contentType;
+        if (pattern != this.pattern) {
+          chrome.send('removeExceptions',
+                      [this.contentType, this.mode, pattern]);
+        }
 
-        if (pattern != this.pattern)
-          chrome.send('removeExceptions', [contentType, pattern]);
-
-        chrome.send('setException', [contentType, this.pattern, this.setting]);
+        chrome.send('setException',
+                    [this.contentType, this.mode, this.pattern, this.setting]);
       }
     }
   };
@@ -351,6 +354,7 @@ cr.define('options.contentSettings', function() {
      */
     createItem: function(entry) {
       return new ExceptionsListItem(this.contentType,
+                                    this.mode,
                                     this.enableAskOption,
                                     entry);
     },
@@ -411,6 +415,7 @@ cr.define('options.contentSettings', function() {
           args.push(selectedItems[i][0]);   // origin (pattern)
           args.push(selectedItems[i][1]);   // setting
         } else {
+          args.push(this.mode);             // browser mode
           args.push(selectedItems[i][0]);   // pattern
         }
       }
@@ -438,6 +443,7 @@ cr.define('options.contentSettings', function() {
       // empty.
       this.exceptionsList = this.querySelector('list');
       this.exceptionsList.contentType = this.contentType;
+      this.exceptionsList.mode = this.mode;
 
       ExceptionsList.decorate(this.exceptionsList);
       this.exceptionsList.selectionModel.addEventListener(
@@ -476,6 +482,8 @@ cr.define('options.contentSettings', function() {
       this.updateButtonSensitivity();
 
       this.classList.add('hidden');
+
+      this.otrProfileExists = false;
     },
 
     /**
@@ -487,6 +495,17 @@ cr.define('options.contentSettings', function() {
     },
     set contentType(type) {
       return this.setAttribute('contentType', type);
+    },
+
+    /**
+     * The browser mode type for this exceptions area, 'otr' or 'normal'.
+     * @type {string}
+     */
+    get mode() {
+      return this.getAttribute('mode');
+    },
+    set mode(mode) {
+      return this.setAttribute('mode', mode);
     },
 
     /**

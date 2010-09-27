@@ -11,6 +11,8 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class HostContentSettingsMap;
+
 class ContentSettingsHandler : public OptionsPageUIHandler {
  public:
   ContentSettingsHandler();
@@ -32,7 +34,6 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   static std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
 
  private:
-  void UpdateAllExceptionsDefaultsFromModel();
   void UpdateExceptionsDefaultFromModel(ContentSettingsType type);
   std::string GetExceptionsDefaultFromModel(ContentSettingsType type);
   void UpdateAllExceptionsViewsFromModel();
@@ -42,6 +43,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   void RemoveExceptions(const ListValue* args);
   void SetException(const ListValue* args);
   void CheckExceptionPatternValidity(const ListValue* args);
+  HostContentSettingsMap* GetContentSettingsMap();
+  HostContentSettingsMap* GetOTRContentSettingsMap();
 
   NotificationRegistrar notification_registrar_;
 
