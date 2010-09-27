@@ -79,15 +79,8 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }
 
-void UserImageScreen::OnCancel() {
-  // Download user image from his Google account.
-  UserManager* user_manager = UserManager::Get();
-  if (user_manager) {
-    // TODO(avayvod): Check that there's logged in user actually.
-    const UserManager::User& user = user_manager->logged_in_user();
-    new UserImageDownloader(user.email(),
-                            LoginUtils::Get()->GetAuthToken());
-  }
+void UserImageScreen::OnSkip() {
+  // TODO(avayvod): Use one of the default images. See http://crosbug.com/5780.
   if (delegate())
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SKIPPED);
 }

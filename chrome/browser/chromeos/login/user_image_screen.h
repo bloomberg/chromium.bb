@@ -33,7 +33,7 @@ class UserImageScreen: public ViewScreen<UserImageView>,
 
   // UserImageView::Delegate implementation:
   virtual void OnOK(const SkBitmap& image);
-  virtual void OnCancel();
+  virtual void OnSkip();
 
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type,

@@ -548,6 +548,8 @@
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED_BLACK" file="statusbar_wiredb.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_NO_VIDEO" file="login_other.png" type="BINDATA" />
+        <include name="IDR_USER_IMAGE_CAPTURE" file="snapshot_wide.png" type="BINDATA" />
+        <include name="IDR_USER_IMAGE_RECYCLE" file="discard_wide.png" type="BINDATA" />
         <include name="IDR_VOLUMEBUBBLE_ICON" file="volume_icon.png" type="BINDATA" />
       </if>
     </includes>

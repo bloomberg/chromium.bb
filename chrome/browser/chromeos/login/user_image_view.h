@@ -12,10 +12,10 @@
 class SkBitmap;
 
 namespace views {
+class ImageButton;
 class ImageView;
 class Label;
 class NativeButton;
-class ImageButton;
 }  // namespace views
 
 namespace chromeos {
@@ -34,51 +34,40 @@ class UserImageView : public views::View,
     virtual void OnOK(const SkBitmap& image) = 0;
 
     // Called if user decides to skip image selection screen.
-    virtual void OnCancel() = 0;
+    virtual void OnSkip() = 0;
   };
 
   explicit UserImageView(Delegate* delegate);
   virtual ~UserImageView();
 
-  // Initialize view layout.
+  // Initializes this view, its children and layout.
   void Init();
 
-  // Update strings from the resources. Executed on language change.
-  void UpdateLocalizedStrings();
-
-  // Updates snapshot from camera on camera image view.
+  // Updates image from camera.
   void UpdateVideoFrame(const SkBitmap& frame);
-
-  // Called when user left-clicks video image control.
-  void OnVideoImageClicked();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
- protected:
-  // views::View overrides:
-  virtual void OnLocaleChanged();
-
  private:
-  // Delete and recreate native controls that fail to update preferred size
-  // after string update.
-  void RecreateNativeControls();
+  // Initializes layout manager for this view.
+  void InitLayout();
 
   views::Label* title_label_;
   views::NativeButton* ok_button_;
-  views::NativeButton* cancel_button_;
-  views::ImageButton* video_button_;
-  views::ImageView* selected_image_;
+  views::NativeButton* skip_button_;
+  views::ImageButton* snapshot_button_;
+  views::ImageView* user_image_;
 
   // Notifications receiver.
   Delegate* delegate_;
 
-  // Indicates that some image was selected and OK can be pressed.
-  bool image_selected_;
+  // Indicates that we're in capturing mode. When |false|, new video frames
+  // are not shown to user if received.
+  bool is_capturing_;
 
   // Last frame that was received from the camera in its original resolution.
   scoped_ptr<SkBitmap> last_frame_;

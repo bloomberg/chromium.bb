@@ -19,6 +19,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/grid_layout.h"
 
 namespace {
 
@@ -30,8 +31,15 @@ const int kVerticalMargin = 10;
 const int kHorizontalPadding = 10;
 // Padding between vertically neighboring elements.
 const int kVerticalPadding = 10;
-// Size for button with video image.
-const int kVideoImageSize = 256;
+// Size for user image shown on the screen.
+const int kUserImageSize = 256;
+
+// IDs of column sets for grid layout manager.
+enum ColumnSets {
+  kTitleRow,    // Column set for screen title.
+  kImageRow,    // Column set for image from camera and snapshot button.
+  kButtonsRow,  // Column set for Skip and OK buttons.
+};
 
 }  // namespace
 
@@ -42,11 +50,11 @@ using login::kUserImageSize;
 UserImageView::UserImageView(Delegate* delegate)
     : title_label_(NULL),
       ok_button_(NULL),
-      cancel_button_(NULL),
-      video_button_(NULL),
-      selected_image_(NULL),
+      skip_button_(NULL),
+      snapshot_button_(NULL),
+      user_image_(NULL),
       delegate_(delegate),
-      image_selected_(false) {
+      is_capturing_(true) {
 }
 
 UserImageView::~UserImageView() {
@@ -59,159 +67,100 @@ void UserImageView::Init() {
       &BorderDefinition::kScreenBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
 
-  // Set up fonts.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font title_font = rb.GetFont(ResourceBundle::MediumBoldFont);
-
-  title_label_ = new views::Label();
+  title_label_ =
+      new views::Label(l10n_util::GetString(IDS_USER_IMAGE_SCREEN_TITLE));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  title_label_->SetFont(title_font);
   title_label_->SetMultiLine(true);
-  AddChildView(title_label_);
 
-  SkBitmap video_button_image =
-      skia::ImageOperations::Resize(
-          *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-              IDR_USER_IMAGE_NO_VIDEO),
-          skia::ImageOperations::RESIZE_BOX,
-          kVideoImageSize,
-          kVideoImageSize);
-
-  video_button_ = new views::ImageButton(this);
-  video_button_->SetImage(views::CustomButton::BS_NORMAL, &video_button_image);
-  video_button_->SetFocusable(true);
-  AddChildView(video_button_);
-
-  selected_image_ = new views::ImageView();
-  selected_image_->SetImageSize(
+  user_image_ = new views::ImageView();
+  user_image_->SetImageSize(
       gfx::Size(kUserImageSize, kUserImageSize));
-  selected_image_->SetImage(
-      *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-          IDR_LOGIN_DEFAULT_USER));
-  AddChildView(selected_image_);
+  user_image_->SetImage(
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_USER_IMAGE_NO_VIDEO));
 
-  UpdateLocalizedStrings();
+  snapshot_button_ = new views::ImageButton(this);
+  snapshot_button_->SetFocusable(true);
+  snapshot_button_->SetImage(views::CustomButton::BS_NORMAL,
+                             ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                                IDR_USER_IMAGE_CAPTURE));
+
+  ok_button_ = new views::NativeButton(this, l10n_util::GetString(IDS_OK));
+  ok_button_->SetEnabled(!is_capturing_);
+
+  skip_button_ = new views::NativeButton(this, l10n_util::GetString(IDS_SKIP));
+  skip_button_->SetEnabled(true);
+
+  InitLayout();
+  // Request focus only after the button is added to views hierarchy.
+  snapshot_button_->RequestFocus();
 }
 
-void UserImageView::RecreateNativeControls() {
-  // There is no way to get native button preferred size after the button was
-  // sized so delete and recreate the button on text update.
-  delete ok_button_;
-  ok_button_ = new views::NativeButton(this, std::wstring());
-  AddChildView(ok_button_);
-  ok_button_->SetEnabled(image_selected_);
-  if (image_selected_)
-    ok_button_->RequestFocus();
+void UserImageView::InitLayout() {
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->SetInsets(GetInsets());
+  SetLayoutManager(layout);
 
-  delete cancel_button_;
-  cancel_button_ = new views::NativeButton(this, std::wstring());
-  AddChildView(cancel_button_);
-  cancel_button_->SetEnabled(true);
-}
+  // The title is left-top aligned.
+  views::ColumnSet* column_set = layout->AddColumnSet(kTitleRow);
+  column_set->AddPaddingColumn(0, kHorizontalMargin);
+  column_set->AddColumn(views::GridLayout::LEADING,
+                        views::GridLayout::LEADING,
+                        1,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kHorizontalMargin);
 
-void UserImageView::UpdateLocalizedStrings() {
-  RecreateNativeControls();
+  // User image and snapshot button are centered horizontally.
+  column_set = layout->AddColumnSet(kImageRow);
+  column_set->AddPaddingColumn(0, kHorizontalMargin);
+  column_set->AddColumn(views::GridLayout::CENTER,
+                        views::GridLayout::LEADING,
+                        1,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kHorizontalMargin);
 
-  title_label_->SetText(l10n_util::GetString(IDS_USER_IMAGE_SCREEN_TITLE));
-  ok_button_->SetLabel(l10n_util::GetString(IDS_OK));
-  cancel_button_->SetLabel(l10n_util::GetString(IDS_CANCEL));
-  selected_image_->SetTooltipText(
-      l10n_util::GetString(IDS_USER_IMAGE_SELECTED_TOOLTIP));
+  // OK and Skip buttons are in the right bottom corner of the view.
+  column_set = layout->AddColumnSet(kButtonsRow);
+  column_set->AddPaddingColumn(0, kHorizontalMargin);
+  // This column takes the empty space to the left of the buttons.
+  column_set->AddPaddingColumn(1, 1);
+  column_set->AddColumn(views::GridLayout::TRAILING,
+                        views::GridLayout::TRAILING,
+                        0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kHorizontalPadding);
+  column_set->AddColumn(views::GridLayout::TRAILING,
+                        views::GridLayout::TRAILING,
+                        0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kHorizontalMargin);
+
+  // Fill the layout with rows and views now.
+  layout->StartRowWithPadding(0, kTitleRow, 0, kVerticalMargin);
+  layout->AddView(title_label_);
+  layout->StartRowWithPadding(0, kImageRow, 0, kVerticalPadding);
+  layout->AddView(user_image_);
+  layout->StartRowWithPadding(1, kImageRow, 0, kVerticalPadding);
+  layout->AddView(snapshot_button_);
+  layout->StartRowWithPadding(0, kButtonsRow, 0, kVerticalPadding);
+  layout->AddView(skip_button_);
+  layout->AddView(ok_button_);
+  layout->AddPaddingRow(0, kVerticalMargin);
 }
 
 void UserImageView::UpdateVideoFrame(const SkBitmap& frame) {
+  if (!is_capturing_)
+    return;
+
   last_frame_.reset(new SkBitmap(frame));
-  SkBitmap video_button_image =
+  SkBitmap user_image =
       skia::ImageOperations::Resize(
           *last_frame_,
           skia::ImageOperations::RESIZE_BOX,
-          kVideoImageSize,
-          kVideoImageSize);
-
-  video_button_->SetImage(views::CustomButton::BS_NORMAL, &video_button_image);
-  video_button_->SchedulePaint();
-}
-
-void UserImageView::OnVideoImageClicked() {
-  // TODO(avayvod): Snapshot sound.
-  if (!last_frame_.get())
-    return;
-
-  selected_image_->SetImage(
-      skia::ImageOperations::Resize(
-          *last_frame_,
-          skia::ImageOperations::RESIZE_LANCZOS3,
           kUserImageSize,
-          kUserImageSize));
-  image_selected_ = true;
-  ok_button_->SetEnabled(true);
-  ok_button_->RequestFocus();
-}
+          kUserImageSize);
 
-void UserImageView::OnLocaleChanged() {
-  UpdateLocalizedStrings();
-  Layout();
-}
-
-void UserImageView::Layout() {
-  gfx::Insets insets = GetInsets();
-
-  // Place title at the top.
-  int title_x = insets.left() + kHorizontalMargin;
-  int title_y = insets.top() + kVerticalMargin;
-  int max_width = width() - insets.width() - kHorizontalMargin * 2;
-  title_label_->SizeToFit(max_width);
-
-  gfx::Size title_size = title_label_->GetPreferredSize();
-  title_label_->SetBounds(title_x,
-                          title_y,
-                          std::min(max_width, title_size.width()),
-                          title_size.height());
-
-  // Put OK button at the right bottom corner.
-  gfx::Size ok_size = ok_button_->GetPreferredSize();
-  int ok_x = width() - insets.right() - kHorizontalMargin - ok_size.width();
-  int ok_y = height() - insets.bottom() - kVerticalMargin - ok_size.height();
-  ok_button_->SetBounds(ok_x, ok_y, ok_size.width(), ok_size.height());
-
-  // Put Cancel button to the left from OK.
-  gfx::Size cancel_size = cancel_button_->GetPreferredSize();
-  int cancel_x = ok_x - kHorizontalPadding - cancel_size.width();
-  int cancel_y = ok_y;  // Height should be the same for both buttons.
-  cancel_button_->SetBounds(cancel_x,
-                            cancel_y,
-                            cancel_size.width(),
-                            cancel_size.height());
-
-  // The area between buttons and title is for images.
-  int title_bottom = title_label_->y() + title_label_->height();
-  gfx::Rect images_area(insets.left() + kHorizontalMargin,
-                        title_bottom + kVerticalPadding,
-                        max_width,
-                        ok_button_->y() - title_bottom -
-                            2 * kVerticalPadding);
-
-  // Selected image is floating in the middle between top and height, near
-  // the right border.
-  gfx::Size selected_image_size = selected_image_->GetPreferredSize();
-  int selected_image_x = images_area.right() - selected_image_size.width();
-  int selected_image_y = images_area.y() +
-      (images_area.height() - selected_image_size.height()) / 2;
-  selected_image_->SetBounds(selected_image_x,
-                             selected_image_y,
-                             selected_image_size.width(),
-                             selected_image_size.height());
-
-  // Video capture image is on the left side of the area, top aligned with
-  // selected image.
-  int video_button_x = images_area.x();
-  int video_button_y = selected_image_y;
-  video_button_->SetBounds(video_button_x,
-                           video_button_y,
-                           kVideoImageSize,
-                           kVideoImageSize);
-
-  SchedulePaint();
+  user_image_->SetImage(&user_image);
 }
 
 gfx::Size UserImageView::GetPreferredSize() {
@@ -221,16 +170,30 @@ gfx::Size UserImageView::GetPreferredSize() {
 void UserImageView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   DCHECK(delegate_);
-  if (sender == video_button_) {
-    OnVideoImageClicked();
-    return;
-  }
-  if (sender == ok_button_)
-    delegate_->OnOK(selected_image_->GetImage());
-  else if (sender == cancel_button_)
-    delegate_->OnCancel();
-  else
+  if (sender == snapshot_button_) {
+    if (is_capturing_) {
+      ok_button_->SetEnabled(true);
+      ok_button_->RequestFocus();
+      snapshot_button_->SetImage(
+          views::CustomButton::BS_NORMAL,
+          ResourceBundle::GetSharedInstance().GetBitmapNamed(
+              IDR_USER_IMAGE_RECYCLE));
+    } else {
+      ok_button_->SetEnabled(false);
+      snapshot_button_->SetImage(
+          views::CustomButton::BS_NORMAL,
+          ResourceBundle::GetSharedInstance().GetBitmapNamed(
+              IDR_USER_IMAGE_CAPTURE));
+    }
+    snapshot_button_->SchedulePaint();
+    is_capturing_ = !is_capturing_;
+  } else if (sender == ok_button_) {
+    delegate_->OnOK(user_image_->GetImage());
+  } else if (sender == skip_button_) {
+    delegate_->OnSkip();
+  } else {
     NOTREACHED();
+  }
 }
 
 }  // namespace chromeos

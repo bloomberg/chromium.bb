@@ -297,6 +297,9 @@ each locale. -->
       <message name="IDS_DONE" desc="A generic term for Done on buttons and menus.">
         Done
       </message>
+      <message name="IDS_SKIP" desc="A generic term for Skip on buttons and menus.">
+        Skip
+      </message>
 
       <!-- content area context menus -->
       <if expr="os == 'darwin'">
@@ -3217,7 +3220,7 @@ each locale. -->
       </message>
       <!-- User Image Selection Dialog -->
       <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the user image selection dialog">
-        Set your profile image
+        Smile! Take a picture of yourself and set it as your account profile.
       </message>
       <message name="IDS_USER_IMAGE_SELECTED_TOOLTIP" desc="Tooltip for preview of selected user image">
         Currently selected image
