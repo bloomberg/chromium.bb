@@ -45,9 +45,7 @@
 
 #if defined(OS_LINUX)
 #define MAYBE_FocusTraversal FocusTraversal
-// For some reason we hit an external DNS lookup in this test in Linux but not
-// on Windows. TODO(estade): investigate.
-#define MAYBE_FocusTraversalOnInterstitial DISABLED_FocusTraversalOnInterstitial
+#define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
 // TODO(jcampan): http://crbug.com/23683
 #define MAYBE_TabsRememberFocusFindInPage FAILS_TabsRememberFocusFindInPage
 #elif defined(OS_MACOSX)
