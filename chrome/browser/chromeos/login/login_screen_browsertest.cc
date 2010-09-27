@@ -85,10 +85,6 @@ IN_PROC_BROWSER_TEST_F(LoginScreenTest, TestBasic) {
 
   controller()->set_observer(mock_screen_observer.get());
   NewUserView* login = controller()->GetLoginScreen()->view();
-  // NOTE: When adding new controls check RecreateNativeControls()
-  // that |sign_in_button_| is added with correct index.
-  // See kSignInButtonFocusOrderIndex constant.
-  EXPECT_EQ(7, login->GetChildViewCount());
   login->SetUsername(kUsername);
   login->SetPassword(kPassword);
 
