@@ -22,6 +22,8 @@ void PrintedDocument::RenderPrintedPage(
   }
 #endif
 
+  DCHECK(context);
+
   NOTIMPLEMENTED();
 }
 

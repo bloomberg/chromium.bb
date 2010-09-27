@@ -263,9 +263,7 @@ void PrintJobWorker::OnDocumentDone() {
 void PrintJobWorker::SpoolPage(PrintedPage& page) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_NE(page_number_, PageNumber::npos());
-#if !defined(OS_MACOSX)
-  DCHECK(printing_context_.context());
-#endif
+
   // Signal everyone that the page is about to be printed.
   NotificationTask* task = new NotificationTask();
   task->Init(owner_,
@@ -280,10 +278,6 @@ void PrintJobWorker::SpoolPage(PrintedPage& page) {
     return;
   }
 
-#if defined(OS_MACOSX)
-  // Context is only valid between NewPage and PageDone, so we only check here.
-  DCHECK(printing_context_.context());
-#endif
   // Actual printing.
   document_->RenderPrintedPage(page, printing_context_.context());
 

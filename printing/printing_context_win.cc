@@ -301,6 +301,8 @@ PrintingContext::Result PrintingContext::NewDocument(
 PrintingContext::Result PrintingContext::NewPage() {
   if (abort_printing_)
     return CANCEL;
+
+  DCHECK(context_);
   DCHECK(in_print_job_);
 
   // Inform the driver that the application is about to begin sending data.

@@ -24,6 +24,8 @@ void PrintedDocument::RenderPrintedPage(
   }
 #endif
 
+  DCHECK(context);
+
   const printing::PageSetup& page_setup(
       immutable_.settings_.page_setup_device_units());
   gfx::Rect content_area;
