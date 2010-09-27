@@ -33,10 +33,10 @@ extern const char kTagsHashTagName[];
 extern const char kLocationTagName[];
 extern const char kDriverNameTagName[];
 extern const char kDefaultCloudPrintServerUrl[];
-extern const char kCloudPrintTalkServiceUrl[];
 extern const char kGaiaUrl[];
 extern const char kCloudPrintGaiaServiceId[];
 extern const char kSyncGaiaServiceId[];
+extern const char kCloudPrintPushNotificationsSource[];
 
 // Max interval between retrying connection to the server
 const int64 kMaxRetryInterval = 5*60*1000;  // 5 minutes in millseconds

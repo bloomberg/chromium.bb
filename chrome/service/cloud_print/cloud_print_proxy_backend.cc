@@ -18,13 +18,13 @@
 #include "chrome/service/gaia/service_gaia_authenticator.h"
 #include "chrome/service/service_process.h"
 #include "jingle/notifier/base/notifier_options.h"
-#include "jingle/notifier/listener/mediator_thread_impl.h"
+#include "jingle/notifier/listener/push_notifications_thread.h"
 #include "jingle/notifier/listener/talk_mediator_impl.h"
 
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 
-// The real guts of SyncBackendHost, to keep the public client API clean.
+// The real guts of CloudPrintProxyBackend, to keep the public client API clean.
 class CloudPrintProxyBackend::Core
     : public base::RefCountedThreadSafe<CloudPrintProxyBackend::Core>,
       public URLFetcherDelegate,
@@ -42,7 +42,7 @@ class CloudPrintProxyBackend::Core
   //
   // The Do* methods are the various entry points from CloudPrintProxyBackend
   // It calls us on a dedicated thread to actually perform synchronous
-  // (and potentially blocking) syncapi operations.
+  // (and potentially blocking) operations.
   //
   // Called on the CloudPrintProxyBackend core_thread_ to perform
   // initialization. When we are passed in an LSID we authenticate using that
@@ -179,6 +179,9 @@ class CloudPrintProxyBackend::Core
   bool notifications_enabled_;
   // Indicates whether a task to poll for jobs has been scheduled.
   bool job_poll_scheduled_;
+  // The channel we are interested in receiving push notifications for.
+  // This is "cloudprint.google.com/proxy/<proxy_id>"
+  std::string push_notifications_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -319,9 +322,13 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   const notifier::NotifierOptions kNotifierOptions;
   const bool kInvalidateXmppAuthToken = false;
   talk_mediator_.reset(new notifier::TalkMediatorImpl(
-      new notifier::MediatorThreadImpl(kNotifierOptions),
+      new notifier::PushNotificationsThread(kNotifierOptions,
+                                            kCloudPrintPushNotificationsSource),
       kInvalidateXmppAuthToken));
-  talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
+  push_notifications_channel_ = kCloudPrintPushNotificationsSource;
+  push_notifications_channel_.append("/proxy/");
+  push_notifications_channel_.append(proxy_id);
+  talk_mediator_->AddSubscribedServiceUrl(push_notifications_channel_);
   talk_mediator_->SetDelegate(this);
   talk_mediator_->SetAuthToken(email, cloud_print_xmpp_token,
                                kSyncGaiaServiceId);
@@ -727,8 +734,8 @@ void CloudPrintProxyBackend::Core::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
   LOG(INFO) << "CP_PROXY: Incoming notification.";
-  if (0 == base::strcasecmp(kCloudPrintTalkServiceUrl,
-                             notification_data.service_url.c_str())) {
+  if (0 == base::strcasecmp(push_notifications_channel_.c_str(),
+                            notification_data.service_url.c_str())) {
     HandlePrinterNotification(notification_data.service_specific_data);
   }
 }

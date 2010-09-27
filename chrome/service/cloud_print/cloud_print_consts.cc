@@ -33,8 +33,8 @@ const char kDriverNameTagName[] = "drivername";
 
 
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
-const char kCloudPrintTalkServiceUrl[] = "http://www.google.com/cloudprint";
 const char kGaiaUrl[] = "https://www.google.com/accounts/ClientLogin";
 const char kCloudPrintGaiaServiceId[] = "cloudprint";
 const char kSyncGaiaServiceId[] = "chromiumsync";
+const char kCloudPrintPushNotificationsSource[] = "cloudprint.google.com";
 
