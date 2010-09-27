@@ -629,7 +629,7 @@ bool DatabaseTracker::CloseIncognitoFileHandle(const string16& vfs_file_name) {
   bool handle_closed = false;
   FileHandlesMap::iterator it = incognito_file_handles_.find(vfs_file_name);
   if (it != incognito_file_handles_.end()) {
-    handle_closed = !base::ClosePlatformFile(it->second);
+    handle_closed = base::ClosePlatformFile(it->second);
     if (handle_closed)
       incognito_file_handles_.erase(it);
   }
