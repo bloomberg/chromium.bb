@@ -154,8 +154,8 @@ void NewUserView::Init() {
   language_switch_menu_.InitLanguageMenu();
 
   RecreatePeculiarControls();
-  AddChildView(sign_in_button_.get());
-  AddChildView(languages_menubutton_.get());
+  AddChildView(sign_in_button_);
+  AddChildView(languages_menubutton_);
 
   // Set up accelerators.
   AddAccelerator(accel_focus_user_);
@@ -189,8 +189,9 @@ bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
 void NewUserView::RecreatePeculiarControls() {
   // PreferredSize reported by MenuButton (and TextField) is not able
   // to shrink, only grow; so recreate on text change.
-  languages_menubutton_.reset(new views::MenuButton(
-      NULL, std::wstring(), &language_switch_menu_, true));
+  delete languages_menubutton_;
+  languages_menubutton_ = new views::MenuButton(
+      NULL, std::wstring(), &language_switch_menu_, true);
   languages_menubutton_->set_menu_marker(
       ResourceBundle::GetSharedInstance().GetBitmapNamed(
           IDR_MENU_DROPARROW_SHARP));
@@ -199,7 +200,8 @@ void NewUserView::RecreatePeculiarControls() {
 
   // There is no way to get native button preferred size after the button was
   // sized so delete and recreate the button on text update.
-  sign_in_button_.reset(new views::NativeButton(this, std::wstring()));
+  delete sign_in_button_;
+  sign_in_button_ = new views::NativeButton(this, std::wstring());
   if (!CrosLibrary::Get()->EnsureLoaded())
     sign_in_button_->SetEnabled(false);
 }
@@ -207,12 +209,12 @@ void NewUserView::RecreatePeculiarControls() {
 void NewUserView::AddChildView(View* view) {
   // languages_menubutton_ and sign_in_button_ are recreated on text change,
   // so we restore their original position in layout.
-  if (view == languages_menubutton_.get()) {
+  if (view == languages_menubutton_) {
     if (languages_menubutton_order_ < 0) {
       languages_menubutton_order_ = GetChildViewCount();
     }
     views::View::AddChildView(languages_menubutton_order_, view);
-  } else if (view == sign_in_button_.get()) {
+  } else if (view == sign_in_button_) {
     if (sign_in_button_order_ < 0) {
       sign_in_button_order_ = GetChildViewCount();
     }
@@ -246,8 +248,8 @@ void NewUserView::UpdateLocalizedStrings() {
 void NewUserView::OnLocaleChanged() {
   RecreatePeculiarControls();
   UpdateLocalizedStrings();
-  AddChildView(sign_in_button_.get());
-  AddChildView(languages_menubutton_.get());
+  AddChildView(sign_in_button_);
+  AddChildView(languages_menubutton_);
 
   Layout();
   SchedulePaint();
@@ -358,7 +360,7 @@ void NewUserView::Layout() {
   y += (setViewBounds(username_field_, x, y, width, true) + kRowPad);
   y += (setViewBounds(password_field_, x, y, width, true) + 3 * kRowPad);
   int throbber_y = y;
-  y += (setViewBounds(sign_in_button_.get(), x, y, width, false) + kRowPad);
+  y += (setViewBounds(sign_in_button_, x, y, width, false) + kRowPad);
   setViewBounds(throbber_,
                 x + width - throbber_->GetPreferredSize().width(),
                 throbber_y + (sign_in_button_->GetPreferredSize().height() -
@@ -409,7 +411,7 @@ void NewUserView::Login() {
 // Sign in button causes a login attempt.
 void NewUserView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  DCHECK(sender == sign_in_button_.get());
+  DCHECK(sender == sign_in_button_);
   Login();
 }
 

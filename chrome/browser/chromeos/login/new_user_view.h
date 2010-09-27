@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
@@ -143,10 +142,10 @@ class NewUserView : public views::View,
   views::Label* title_label_;
   views::Label* title_hint_label_;
   views::View* splitter_;
-  scoped_ptr<views::NativeButton> sign_in_button_;
+  views::NativeButton* sign_in_button_;
   views::Link* create_account_link_;
   views::Link* browse_without_signin_link_;
-  scoped_ptr<views::MenuButton> languages_menubutton_;
+  views::MenuButton* languages_menubutton_;
   views::Throbber* throbber_;
 
   views::Accelerator accel_focus_pass_;
