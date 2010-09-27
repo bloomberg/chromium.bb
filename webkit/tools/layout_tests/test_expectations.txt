@@ -12,3 +12,10 @@ BUGJOHNNYG LINUX : plugins/embed-attributes-style.html = IMAGE
 // atwilson will upstream
 BUGATWILSON :   storage/indexeddb/transaction-basics.html = CRASH
 
+// TODO(caseq): This needs to be removed once we're past r68383
+BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-dom-in-attr.html = IMAGE FAIL
+BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-dom-in2-attr.html = IMAGE FAIL
+BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-dom-mode-attr.html  = IMAGE FAIL
+BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-svgdom-in-prop.html = IMAGE FAIL
+BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-svgdom-in2-prop.html = IMAGE FAIL
+BUGCASEQ : svg/dynamic-updates/SVGFEBlendElement-svgdom-mode-prop.html = IMAGE FAIL
