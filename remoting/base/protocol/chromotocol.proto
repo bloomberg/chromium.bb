@@ -138,7 +138,7 @@ message RectangleUpdatePacket {
   optional int32 sequence_number = 2 [default = 0];
 
   // This is provided on the first packet of the rectangle data, when
-  // the sequence_number is 0.
+  // the flags has FIRST_PACKET set.
   optional RectangleFormat format = 3;
 
   optional bytes encoded_rect = 4;
