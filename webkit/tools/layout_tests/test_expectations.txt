@@ -12,3 +12,6 @@ BUGJOHNNYG LINUX : plugins/embed-attributes-style.html = IMAGE
 // atwilson will upstream
 BUGATWILSON :   storage/indexeddb/transaction-basics.html = CRASH
 
+// To be upstreamed.
+// Started failing in WebKit r68388:68412.
+BUGSENORBLANCO WIN DEBUG : media/video-size.html = CRASH
