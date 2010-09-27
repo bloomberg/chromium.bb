@@ -108,6 +108,17 @@ bool FileSystemDispatcher::ReadDirectory(
       new ViewHostMsg_FileSystem_ReadDirectory(request_id, path));
 }
 
+bool FileSystemDispatcher::TouchFile(
+    const FilePath& path,
+    const base::Time& last_access_time,
+    const base::Time& last_modified_time,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  int request_id = dispatchers_.Add(dispatcher);
+  return ChildThread::current()->Send(
+      new ViewHostMsg_FileSystem_TouchFile(
+          request_id, path, last_access_time, last_modified_time));
+}
+
 void FileSystemDispatcher::OnOpenFileSystemRequestComplete(
     int request_id, bool accepted, const std::string& name,
     const FilePath& root_path) {

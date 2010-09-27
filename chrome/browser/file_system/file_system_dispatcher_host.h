@@ -17,6 +17,10 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_types.h"
 
+namespace base {
+class Time;
+}
+
 class ChromeFileSystemOperation;
 class FileSystemHostContext;
 class GURL;
@@ -60,6 +64,10 @@ class FileSystemDispatcherHost
                const GURL& blob_url,
                int64 offset);
   void OnTruncate(int request_id, const FilePath& path, int64 length);
+  void OnTouchFile(int request_id,
+                   const FilePath& path,
+                   const base::Time& last_access_time,
+                   const base::Time& last_modified_time);
   void OnCancel(int request_id, int request_to_cancel);
   void Send(IPC::Message* message);
   void RemoveCompletedOperation(int request_id);

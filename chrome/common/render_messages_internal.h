@@ -2857,6 +2857,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        FilePath /* file path */,
                        int64 /* length */)
 
+  // Pepper's Touch() message.
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_FileSystem_TouchFile,
+                       int /* request_id */,
+                       FilePath /* path */,
+                       base::Time /* last_access_time */,
+                       base::Time /* last_modified_time */)
+
   // WebFileWriter::cancel() message.
   IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_CancelWrite,
                        int /* request id */,

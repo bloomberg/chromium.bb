@@ -56,6 +56,10 @@ class FileSystemDispatcher {
               fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool ReadDirectory(const FilePath& path,
                      fileapi::FileSystemCallbackDispatcher* dispatcher);
+  bool TouchFile(const FilePath& file_path,
+                 const base::Time& last_access_time,
+                 const base::Time& last_modified_time,
+                 fileapi::FileSystemCallbackDispatcher* dispatcher);
 
  private:
   // Message handler for OpenFileSystem.

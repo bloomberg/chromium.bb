@@ -110,6 +110,7 @@ bool FileSystemDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_ReadDirectory, OnReadDirectory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Write, OnWrite)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Truncate, OnTruncate)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_TouchFile, OnTouchFile)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_CancelWrite, OnCancel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -218,6 +219,17 @@ void FileSystemDispatcherHost::OnTruncate(
   if (!CheckValidFileSystemPath(path, request_id))
     return;
   GetNewOperation(request_id)->Truncate(path, length);
+}
+
+void FileSystemDispatcherHost::OnTouchFile(
+    int request_id,
+    const FilePath& path,
+    const base::Time& last_access_time,
+    const base::Time& last_modified_time) {
+  if (!CheckValidFileSystemPath(path, request_id))
+    return;
+  GetNewOperation(request_id)->TouchFile(
+      path, last_access_time, last_modified_time);
 }
 
 void FileSystemDispatcherHost::OnCancel(

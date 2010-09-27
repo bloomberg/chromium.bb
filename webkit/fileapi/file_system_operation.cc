@@ -4,6 +4,7 @@
 
 #include "webkit/fileapi/file_system_operation.h"
 
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
@@ -126,7 +127,6 @@ void FileSystemOperation::Remove(const FilePath& path) {
       &FileSystemOperation::DidFinishFileOperation));
 }
 
-
 void FileSystemOperation::Write(
     const FilePath&,
     const GURL&,
@@ -150,6 +150,19 @@ void FileSystemOperation::Truncate(const FilePath& path, int64 length) {
 #endif
   // TODO(ericu):
   NOTREACHED();
+}
+
+void FileSystemOperation::TouchFile(const FilePath& path,
+                                    const base::Time& last_access_time,
+                                    const base::Time& last_modified_time) {
+#ifndef NDEBUG
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
+#endif
+
+  base::FileUtilProxy::Touch(
+      proxy_, path, last_access_time, last_modified_time,
+      callback_factory_.NewCallback(&FileSystemOperation::DidTouchFile));
 }
 
 void FileSystemOperation::Cancel() {
@@ -238,6 +251,13 @@ void FileSystemOperation::DidWrite(
     bool complete) {
   if (rv == base::PLATFORM_FILE_OK)
     /* dispatcher_->DidWrite(bytes, complete) TODO(ericu): Coming soon. */ {}
+  else
+    dispatcher_->DidFail(rv);
+}
+
+void FileSystemOperation::DidTouchFile(base::PlatformFileError rv) {
+  if (rv == base::PLATFORM_FILE_OK)
+    dispatcher_->DidSucceed();
   else
     dispatcher_->DidFail(rv);
 }

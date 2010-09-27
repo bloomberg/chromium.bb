@@ -15,6 +15,10 @@
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 
+namespace base {
+class Time;
+}
+
 class GURL;
 
 namespace fileapi {
@@ -62,6 +66,10 @@ class FileSystemOperation {
 
   void Truncate(const FilePath& path, int64 length);
 
+  void TouchFile(const FilePath& path,
+                 const base::Time& last_access_time,
+                 const base::Time& last_modified_time);
+
   // Used to attempt to cancel the current operation.  This currently does
   // nothing for any operation other than Write().
   void Cancel();
@@ -99,6 +107,8 @@ class FileSystemOperation {
       base::PlatformFileError rv,
       int64 bytes,
       bool complete);
+
+  void DidTouchFile(base::PlatformFileError rv);
 
   scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
 
