@@ -419,7 +419,7 @@ void WizardController::ShowUpdateScreen() {
 
 void WizardController::ShowUserImageScreen() {
   LOG(INFO) << "Showing user image screen.";
-  SetStatusAreaVisible(true);
+  SetStatusAreaVisible(false);
   SetCurrentScreen(GetUserImageScreen());
   background_view_->SetOobeProgress(chromeos::BackgroundView::PICTURE);
 }
