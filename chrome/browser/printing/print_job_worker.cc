@@ -137,9 +137,7 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK_EQ(document_, new_document);
   DCHECK(document_.get());
   DCHECK(new_document->settings().Equals(printing_context_.settings()));
-#if !defined(OS_MACOSX)
-  DCHECK(printing_context_.context());
-#endif
+
   if (!document_.get() || page_number_ != PageNumber::npos() ||
       document_ != new_document) {
     return;
@@ -166,9 +164,7 @@ void PrintJobWorker::OnDocumentChanged(PrintedDocument* new_document) {
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK(!new_document ||
          new_document->settings().Equals(printing_context_.settings()));
-#if !defined(OS_MACOSX)
-  DCHECK(printing_context_.context());
-#endif
+
   if (page_number_ != PageNumber::npos())
     return;
 
@@ -182,11 +178,6 @@ void PrintJobWorker::OnNewPage() {
   }
   // message_loop() could return NULL when the print job is cancelled.
   DCHECK_EQ(message_loop(), MessageLoop::current());
-#if !defined(OS_MACOSX)
-  DCHECK(printing_context_.context());
-  if (!printing_context_.context())
-    return;
-#endif
 
   if (page_number_ == PageNumber::npos()) {
     // Find first page to print.
@@ -239,9 +230,6 @@ void PrintJobWorker::OnDocumentDone() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK(document_.get());
-#if !defined(OS_MACOSX)
-  DCHECK(printing_context_.context());
-#endif
 
   if (printing_context_.DocumentDone() != PrintingContext::OK) {
     OnFailure();

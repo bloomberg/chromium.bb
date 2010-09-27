@@ -330,6 +330,7 @@ PrintingContext::Result PrintingContext::DocumentDone() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
+  DCHECK(context_);
 
   // Inform the driver that document has ended.
   if (EndDoc(context_) <= 0)
