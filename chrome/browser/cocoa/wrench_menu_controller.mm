@@ -169,36 +169,6 @@ class ZoomLevelObserver : public NotificationObserver {
   return static_cast<WrenchMenuModel*>(model_);
 }
 
-// Inserts the update available notification menu item.
-- (void)insertUpdateAvailableItem {
-  WrenchMenuModel* model = [self wrenchMenuModel];
-  // Don't insert the item multiple times.
-  if (!model || model->GetIndexOfCommandId(IDC_ABOUT) != -1)
-    return;
-
-  // Update the model manually because the model is static because other
-  // platforms always have an About item.
-  int index = model->GetIndexOfCommandId(IDC_OPTIONS) + 1;
-  model->InsertItemAt(index, IDC_ABOUT,
-                      l10n_util::GetStringFUTF16(IDS_ABOUT,
-                          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-
-  // The model does not broadcast change notifications to its delegate, so
-  // insert the actual menu item ourselves.
-  NSInteger menuIndex = [[self menu] indexOfItemWithTag:index];
-  [self addItemToMenu:[self menu]
-              atIndex:menuIndex
-            fromModel:model
-           modelIndex:index];
-
-  // Since the tag of each menu item is the index within the model, they need
-  // to be adjusted after insertion.
-  for (NSInteger i = menuIndex + 1; i < [[self menu] numberOfItems]; ++i) {
-    NSMenuItem* item = [[self menu] itemAtIndex:i];
-    [item setTag:[item tag] + 1];
-  }
-}
-
 // Fit the localized strings into the Cut/Copy/Paste control, then resize the
 // whole menu item accordingly.
 - (void)adjustPositioning {
