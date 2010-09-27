@@ -255,29 +255,30 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     elif policy_type == 'list':
       parent = self._GetElements(policy_elem)
       self._AddListPolicy(parent, policy_name)
+    elif policy_type == 'group':
+      pass
     else:
       raise Exception('Unknown policy type %s.' % policy_type)
 
   def BeginPolicyGroup(self, group):
     '''Generates ADMX elements for a Policy-Group.
     '''
+    policy_group_name = group['name']
+    attributes = {
+      'name': policy_group_name,
+      'displayName': self._AdmlString(policy_group_name + '_group'),
+    }
+    category_elem = self.AddElement(self._categories_elem,
+                                    'category',
+                                    attributes)
+    attributes = {
+      'ref': self.config['win_category_path'][-1],
+    }
+    self.AddElement(category_elem, 'parentCategory', attributes)
+    self._active_policy_group_name = policy_group_name
+
+  def EndPolicyGroup(self):
     self._active_policy_group_name = self.config['win_category_path'][-1]
-    # If a policy group contains more than one policy then create a new
-    # category.
-    if len(group['policies']) > 1:
-      policy_group_name = group['name']
-      attributes = {
-        'name': policy_group_name,
-        'displayName': self._AdmlString(policy_group_name + '_group'),
-      }
-      category_elem = self.AddElement(self._categories_elem,
-                                      'category',
-                                      attributes)
-      attributes = {
-        'ref': self.config['win_category_path'][-1],
-      }
-      self.AddElement(category_elem, 'parentCategory', attributes)
-      self._active_policy_group_name = policy_group_name
 
   def BeginTemplate(self):
     '''Generates the skeleton of the ADMX template. An ADMX template contains
@@ -302,6 +303,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
                         self.config['win_category_path'])
     self._active_policies_elem = self.AddElement(policy_definitions_elem,
                                                  'policies')
+    self._active_policy_group_name = self.config['win_category_path'][-1]
 
   def GetTemplateText(self):
     return self._doc.toprettyxml(indent='  ')

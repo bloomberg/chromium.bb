@@ -67,10 +67,12 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
       policy_caption = policy_name
     if 'desc' in policy:
       policy_description = policy['desc']
-    elif 'desc' in self._active_group:
-      policy_description = self._active_group['desc']
     else:
       policy_description = policy_name
+    if 'label' in policy:
+      policy_label = policy['label']
+    else:
+      policy_label = policy_name
 
     self._AddString(self._string_table_elem, policy_name, policy_caption)
     self._AddString(self._string_table_elem, policy_name + '_Explain',
@@ -84,20 +86,22 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
       textbox_elem = self.AddElement(presentation_elem, 'textBox',
                                      {'refId': policy_name})
       label_elem = self.AddElement(textbox_elem, 'label')
-      label_elem.appendChild(self._doc.createTextNode(policy_caption))
+      label_elem.appendChild(self._doc.createTextNode(policy_label))
     elif policy_type == 'enum':
       for item in policy['items']:
         self._AddString(self._string_table_elem, item['name'], item['caption'])
       dropdownlist_elem = self.AddElement(presentation_elem, 'dropdownList',
                                           {'refId': policy_name})
-      dropdownlist_elem.appendChild(self._doc.createTextNode(policy_caption))
+      dropdownlist_elem.appendChild(self._doc.createTextNode(policy_label))
     elif policy_type == 'list':
       self._AddString(self._string_table_elem,
                       policy_name + 'Desc',
                       policy_caption)
       listbox_elem = self.AddElement(presentation_elem, 'listBox',
                                      {'refId': policy_name + 'Desc'})
-      listbox_elem.appendChild(self._doc.createTextNode(policy_caption))
+      listbox_elem.appendChild(self._doc.createTextNode(policy_label))
+    elif policy_type == 'group':
+      pass
     else:
       raise Exception('Unknown policy type %s.' % policy_type)
 
@@ -113,12 +117,10 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     Args:
       group: The Policy-Group to generate ADML elements for.
     '''
-    self._active_group = group;
-    if len(group['policies']) > 1:
-      # Add ADML "string" elements to the string-table that are required by a
-      # Policy-Group.
-      id = group['name'] + '_group'
-      self._AddString(self._string_table_elem, id, group['name'])
+    # Add ADML "string" elements to the string-table that are required by a
+    # Policy-Group.
+    self._AddString(self._string_table_elem, group['name'] + '_group',
+                    group['caption'])
 
   def _AddBaseStrings(self, string_table_elem, build):
     ''' Adds ADML "string" elements to the string-table that are referenced by
