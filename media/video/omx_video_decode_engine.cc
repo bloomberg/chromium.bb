@@ -515,7 +515,7 @@ bool OmxVideoDecodeEngine::CreateComponent() {
     client_state_ = kClientError;
     return false;
   }
-  input_buffer_count_ = port_format.nBufferCountMin;
+  input_buffer_count_ = port_format.nBufferCountActual;
   input_buffer_size_ = port_format.nBufferSize;
 
   // 8. Obtain the information about the output port.
