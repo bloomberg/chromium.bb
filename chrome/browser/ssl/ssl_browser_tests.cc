@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecuredContentRandomizeHash) {
 // - images and scripts are filtered out entirely
 // Marked as flaky, see bug 40932.
 IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestUnsafeContents) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
 
   ui_test_utils::NavigateToURL(browser(), https_server_.GetURL(
