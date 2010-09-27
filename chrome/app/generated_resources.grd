@@ -4942,6 +4942,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Print
       </message>
 
+      <!-- Cloud Print proxy strings -->
+      <message name="IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE" desc="Title of the cloud print setup dialog.">
+        Set up cloud printing
+      </message>
+
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_IDLE"></message>
       <message name="IDS_LOAD_STATE_WAITING_FOR_CACHE">
@@ -6381,6 +6386,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Change proxy settings
       </message>
 
+      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL" desc="The label of the cloud print setup button when it hasn't been set up yet.">
+        <ph name="CLOUD_PRINT_NAME">Cloud Print</ph> lets you access this computer's printers from anywhere. Sign in to enable.
+      </message>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON" desc="The label of the cloud proxy configure button when it hasn't been set up yet.">
+        Sign in to <ph name="CLOUD_PRINT_NAME">Cloud Print</ph>
+      </message>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
+        You are currently sharing your printers under the account <ph name="EMAIL">$1<ex>foo@bar.com</ex></ph>
+      </message>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_BUTTON" desc="The label of the cloud proxy configure button when it has been set up.">
+        Disable <ph name="CLOUD_PRINT_NAME">Cloud Print</ph>
+      </message>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON" desc="The label of the link item for the cloud print management URL.">
+        Manage Print Settings...
+      </message>
+
       <message name="IDS_OPTIONS_COOKIES_ACCEPT_LABEL" desc="The documentation string of the 'accept cookies' preference">
         Cookie settings:
       </message>
@@ -7162,6 +7183,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE">
         Translate
+      </message>
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT">
+        <ph name="CLOUD_PRINT_NAME">Cloud Print</ph>
       </message>
 
       <!-- Script Timeout Dialog -->

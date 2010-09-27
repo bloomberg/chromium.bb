@@ -171,11 +171,11 @@ void ServiceProcessControl::OnProcessLaunched(Task* task) {
 }
 
 void ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
-  if (!message_handler_)
-    return;
-
-  if (message.type() == ServiceHostMsg_GoodDay::ID)
-    message_handler_->OnGoodDay();
+  IPC_BEGIN_MESSAGE_MAP(ServiceProcessControl, message)
+      IPC_MESSAGE_HANDLER(ServiceHostMsg_GoodDay, OnGoodDay)
+      IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_IsEnabled,
+                          OnCloudPrintProxyIsEnabled)
+  IPC_END_MESSAGE_MAP()
 }
 
 void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
@@ -202,6 +202,22 @@ bool ServiceProcessControl::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+void ServiceProcessControl::OnGoodDay() {
+  if (!message_handler_)
+    return;
+
+  message_handler_->OnGoodDay();
+}
+
+void ServiceProcessControl::OnCloudPrintProxyIsEnabled(bool enabled,
+                                                       std::string email) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (cloud_print_status_callback_ != NULL) {
+    cloud_print_status_callback_->Run(enabled, email);
+    cloud_print_status_callback_.reset();
+  }
+}
+
 bool ServiceProcessControl::SendHello() {
   return Send(new ServiceMsg_Hello());
 }
@@ -219,6 +235,13 @@ bool ServiceProcessControl::EnableRemotingWithTokens(
   return Send(
       new ServiceMsg_EnableRemotingWithTokens(user, remoting_token,
                                               talk_token));
+}
+
+bool ServiceProcessControl::GetCloudPrintProxyStatus(
+    Callback2<bool, std::string>::Type* cloud_print_status_callback) {
+  DCHECK(cloud_print_status_callback);
+  cloud_print_status_callback_.reset(cloud_print_status_callback);
+  return Send(new ServiceMsg_IsCloudPrintProxyEnabled);
 }
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControl);

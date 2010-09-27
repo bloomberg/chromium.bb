@@ -40,7 +40,7 @@ class ServiceIPCServer : public IPC::Channel::Listener,
   void OnEnableCloudPrintProxy(const std::string& lsid);
   void OnEnableCloudPrintProxyWithTokens(const std::string& cloud_print_token,
                                          const std::string& talk_token);
-  void OnIsCloudPrintProxyEnabled(bool* is_enabled, std::string* email);
+  void OnIsCloudPrintProxyEnabled();
 
   void OnEnableRemotingWithTokens(const std::string& login,
                                   const std::string& remoting_token,

@@ -20,5 +20,7 @@ const char kSyncService[] = "chromiumsync";
 const char kTalkService[] = "talk";
 // Service name for remoting.
 const char kRemotingService[] = "chromoting";
+// Service name for cloud print.
+const char kCloudPrintService[] = "cloudprint";
 
 }  // namespace GaiaConstants

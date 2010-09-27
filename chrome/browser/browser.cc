@@ -62,6 +62,7 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -1931,6 +1932,10 @@ void Browser::OpenLanguageOptionsDialog() {
 }
 #endif
 
+void Browser::OpenCloudPrintProxySetupDialog() {
+  CloudPrintSetupFlow::OpenDialog(profile_);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 // static
@@ -1995,6 +2000,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, false);
   prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
   prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted, false);
+  prefs->RegisterStringPref(prefs::kCloudPrintEmail, std::string());
 }
 
 // static

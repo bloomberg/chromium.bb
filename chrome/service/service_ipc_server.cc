@@ -93,9 +93,11 @@ void ServiceIPCServer::OnEnableCloudPrintProxyWithTokens(
   NOTIMPLEMENTED();
 }
 
-void ServiceIPCServer::OnIsCloudPrintProxyEnabled(bool* is_enabled,
-                                                  std::string* email) {
-  *is_enabled = g_service_process->GetCloudPrintProxy()->IsEnabled(email);
+void ServiceIPCServer::OnIsCloudPrintProxyEnabled() {
+  std::string email;
+  bool is_enabled = g_service_process->GetCloudPrintProxy()->IsEnabled(&email);
+  channel_->Send(new ServiceHostMsg_CloudPrintProxy_IsEnabled(is_enabled,
+                                                              email));
 }
 
 void ServiceIPCServer::OnEnableRemotingWithTokens(

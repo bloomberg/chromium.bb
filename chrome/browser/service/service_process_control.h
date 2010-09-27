@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_SERVICE_SERVICE_PROCESS_CONTROL_H_
 
 #include <queue>
+#include <string>
 
 #include "base/id_map.h"
+#include "base/callback.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -69,6 +71,10 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // IPC::Channel::Sender implementation
   virtual bool Send(IPC::Message* message);
 
+  // Message handlers
+  void OnGoodDay();
+  void OnCloudPrintProxyIsEnabled(bool enabled, std::string email);
+
   // Send a hello message to the service process for testing purpose.
   // Return true if the message was sent.
   bool SendHello();
@@ -83,6 +89,13 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   bool EnableRemotingWithTokens(const std::string& user,
                                 const std::string& remoting_token,
                                 const std::string& talk_token);
+
+  // Send a message to the service process to request a response
+  // containing the enablement status of the cloud print proxy and the
+  // registered email address.  The callback gets the information when
+  // received.
+  bool GetCloudPrintProxyStatus(
+      Callback2<bool, std::string>::Type* cloud_print_status_callback);
 
   // Set the message handler for receiving messages from the service process.
   // TODO(hclam): Allow more than 1 handler.
@@ -113,8 +126,12 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // connect.
   scoped_ptr<Task> connect_done_task_;
 
+  // Callback that gets invoked when a status message is received from
+  // the cloud print proxy.
+  scoped_ptr<Callback2<bool, std::string>::Type> cloud_print_status_callback_;
+
   // Handler for messages from service process.
   MessageHandler* message_handler_;
 };
 
-#endif  // CHROME_BROWSER_SERVICE_SERVICE_PROCESS_H_
+#endif  // CHROME_BROWSER_SERVICE_SERVICE_PROCESS_CONTROL_H_
