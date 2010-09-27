@@ -84,6 +84,11 @@ class MatchPreview {
   // may return false yet preview_contents() returns non-NULL.
   bool is_active() const { return is_active_; }
 
+  // Returns the transition type of the last AutocompleteMatch passed to Update.
+  PageTransition::Type last_transition_type() const {
+    return last_transition_type_;
+  }
+
   const GURL& url() const { return url_; }
 
  private:
@@ -148,6 +153,9 @@ class MatchPreview {
   gfx::Rect omnibox_bounds_;
 
   scoped_ptr<FrameLoadObserver> frame_load_observer_;
+
+  // See description above getter.
+  PageTransition::Type last_transition_type_;
 
   DISALLOW_COPY_AND_ASSIGN(MatchPreview);
 };

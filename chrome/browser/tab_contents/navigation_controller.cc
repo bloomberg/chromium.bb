@@ -982,6 +982,43 @@ void NavigationController::CopyStateFromAndPrune(
   session_id_ = source.session_id_;
 }
 
+void NavigationController::PruneAllButActive() {
+  int prune_count = entry_count();
+  if (transient_entry_index_ != -1) {
+    // There is a transient entry. Prune up to it.
+    DCHECK_EQ(entry_count() - 1, transient_entry_index_);
+    prune_count = transient_entry_index_;
+    transient_entry_index_ = 0;
+    last_committed_entry_index_ = -1;
+    pending_entry_index_ = -1;
+  } else if (!pending_entry_) {
+    // There's no pending entry. Leave the last entry (if there is one).
+    if (!prune_count)
+      return;
+
+    prune_count--;
+    last_committed_entry_index_ = 0;
+  } else if (pending_entry_index_ != -1) {
+    DCHECK_EQ(pending_entry_index_, prune_count - 1);
+    pending_entry_index_ = 0;
+    last_committed_entry_index_ = 0;
+    prune_count--;
+  } else {
+    // There is a pending_entry, but it's not in entries_.
+    pending_entry_index_ = -1;
+    last_committed_entry_index_ = -1;
+  }
+
+  if (tab_contents_->interstitial_page()) {
+    // Normally the interstitial page hides itself if the user doesn't proceeed.
+    // This would result in showing a NavigationEntry we just removed. Set this
+    // so the interstitial triggers a reload if the user doesn't proceed.
+    tab_contents_->interstitial_page()->set_reload_on_dont_proceed(true);
+  }
+
+  entries_.erase(entries_.begin(), entries_.begin() + prune_count);
+}
+
 void NavigationController::DiscardNonCommittedEntries() {
   bool transient = transient_entry_index_ != -1;
   DiscardNonCommittedEntriesInternal();
@@ -1152,43 +1189,6 @@ NavigationEntry* NavigationController::GetTransientEntry() const {
   if (transient_entry_index_ == -1)
     return NULL;
   return entries_[transient_entry_index_].get();
-}
-
-void NavigationController::PruneAllButActive() {
-  int prune_count = entry_count();
-  if (transient_entry_index_ != -1) {
-    // There is a transient entry. Prune up to it.
-    DCHECK_EQ(entry_count() - 1, transient_entry_index_);
-    prune_count = transient_entry_index_;
-    transient_entry_index_ = 0;
-    last_committed_entry_index_ = -1;
-    pending_entry_index_ = -1;
-  } else if (!pending_entry_) {
-    // There's no pending entry. Leave the last entry (if there is one).
-    if (!prune_count)
-      return;
-
-    prune_count--;
-    last_committed_entry_index_ = 0;
-  } else if (pending_entry_index_ != -1) {
-    DCHECK_EQ(pending_entry_index_, prune_count - 1);
-    pending_entry_index_ = 0;
-    last_committed_entry_index_ = 0;
-    prune_count--;
-  } else {
-    // There is a pending_entry, but it's not in entries_.
-    pending_entry_index_ = -1;
-    last_committed_entry_index_ = -1;
-  }
-
-  if (tab_contents_->interstitial_page()) {
-    // Normally the interstitial page hides itself if the user doesn't proceeed.
-    // This would result in showing a NavigationEntry we just removed. Set this
-    // so the interstitial triggers a reload if the user doesn't proceed.
-    tab_contents_->interstitial_page()->set_reload_on_dont_proceed(true);
-  }
-
-  entries_.erase(entries_.begin(), entries_.begin() + prune_count);
 }
 
 void NavigationController::InsertEntriesFrom(

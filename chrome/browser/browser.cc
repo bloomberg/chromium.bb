@@ -1233,12 +1233,8 @@ void Browser::OpenCurrentURL() {
   LocationBar* location_bar = window_->GetLocationBar();
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
-  // TODO(sky): support other dispositions.
-  if (open_disposition == CURRENT_TAB && match_preview() &&
-      match_preview()->is_active()) {
-    match_preview()->CommitCurrentPreview(MatchPreview::COMMIT_PRESSED_ENTER);
+  if (OpenMatchPreview(open_disposition))
     return;
-  }
 
   GURL url(WideToUTF8(location_bar->GetInputString()));
 
@@ -4091,4 +4087,32 @@ void Browser::TabRestoreServiceDestroyed(TabRestoreService* service) {
   DCHECK_EQ(tab_restore_service_, service);
   tab_restore_service_->RemoveObserver(this);
   tab_restore_service_ = NULL;
+}
+
+bool Browser::OpenMatchPreview(WindowOpenDisposition disposition) {
+  if (!match_preview() || !match_preview()->is_active())
+    return false;
+
+  if (disposition == CURRENT_TAB) {
+    match_preview()->CommitCurrentPreview(MatchPreview::COMMIT_PRESSED_ENTER);
+    return true;
+  }
+  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
+    HideMatchPreview();
+    TabContents* preview_contents = match_preview()->ReleasePreviewContents(
+        MatchPreview::COMMIT_PRESSED_ENTER);
+    preview_contents->controller().PruneAllButActive();
+    tabstrip_model_->AddTabContents(
+        preview_contents,
+        -1,
+        match_preview()->last_transition_type(),
+        disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_SELECTED :
+                                            TabStripModel::ADD_NONE);
+    return true;
+  }
+  // The omnibox currently doesn't use other dispositions, so we don't attempt
+  // to handle them. If you hit this NOTREACHED file a bug and I'll (sky) add
+  // support for the new disposition.
+  NOTREACHED();
+  return false;
 }

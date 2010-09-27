@@ -454,7 +454,8 @@ MatchPreview::MatchPreview(MatchPreviewDelegate* delegate)
     : delegate_(delegate),
       tab_contents_(NULL),
       is_active_(false),
-      template_url_id_(0) {
+      template_url_id_(0),
+      last_transition_type_(PageTransition::LINK) {
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
 }
 
@@ -472,6 +473,7 @@ void MatchPreview::Update(TabContents* tab_contents,
     DestroyPreviewContents();
 
   tab_contents_ = tab_contents;
+  last_transition_type_ = match.transition;
 
   if (url_ == match.destination_url)
     return;

@@ -961,6 +961,10 @@ class Browser : public TabStripModelDelegate,
   // cancel closing of window.
   bool IsClosingPermitted();
 
+  // Commits the current match preview, returning true on success. This is
+  // intended for use from OpenCurrentURL.
+  bool OpenMatchPreview(WindowOpenDisposition disposition);
+
   // Data members /////////////////////////////////////////////////////////////
 
   NotificationRegistrar registrar_;

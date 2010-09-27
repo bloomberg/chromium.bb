@@ -374,6 +374,10 @@ class NavigationController {
   // This ignores the transient index of the source and honors that of 'this'.
   void CopyStateFromAndPrune(const NavigationController& source);
 
+  // Removes all the entries except the active entry. If there is a new pending
+  // navigation it is preserved.
+  void PruneAllButActive();
+
   // Random data ---------------------------------------------------------------
 
   // Returns the identifier used by session restore.
@@ -516,10 +520,6 @@ class NavigationController {
   void CreateNavigationEntriesFromTabNavigations(
       const std::vector<TabNavigation>& navigations,
       std::vector<linked_ptr<NavigationEntry> >* entries);
-
-  // Removes all the entries except the active entry. If there is a new pending
-  // navigation it is preserved.
-  void PruneAllButActive();
 
   // Inserts up to |max_index| entries from |source| into this. This does NOT
   // adjust any of the members that reference entries_
