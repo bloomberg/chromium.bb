@@ -22,44 +22,6 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "googleurl/src/gurl.h"
 
-namespace {
-
-// This class acts as an observer for the ImporterHost::Observer::ImportEnded
-// callback. When the import process is started, certain errors may cause
-// ImportEnded() to be called synchronously, but the typical case is that
-// ImportEnded() is called asynchronously. Thus we have to handle both cases.
-class ImportEndedObserver : public ImporterHost::Observer {
- public:
-   ImportEndedObserver()
-       : ended_(false),
-         quit_message_loop_(false) {
-   }
-   virtual ~ImportEndedObserver() {}
-
-   virtual void ImportItemStarted(importer::ImportItem item) {}
-   virtual void ImportItemEnded(importer::ImportItem item) {}
-   virtual void ImportStarted() {}
-   virtual void ImportEnded() {
-     ended_ = true;
-     if (quit_message_loop_)
-       MessageLoop::current()->Quit();
-   }
-
-   void set_quit_message_loop() {
-     quit_message_loop_ = true;
-   }
-
-   bool ended() {
-     return ended_;
-   }
-
- private:
-  bool ended_;
-  bool quit_message_loop_;
-};
-
-}  // namespace
-
 // TODO(port): This is just a piece of the silent import functionality from
 // ImportSettings for Windows.  It would be nice to get the rest of it ported.
 bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
@@ -120,29 +82,6 @@ double Upgrade::GetLastModifiedTimeOfExe() {
   return exe_file_info.last_modified.ToDoubleT();
 }
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-// At least for now, we do profile import in-process on Linux.
-// static
-bool FirstRun::ImportSettings(Profile* profile,
-                              scoped_refptr<ImporterHost> importer_host,
-                              int items_to_import) {
-  // Import data.
-  const ProfileInfo& source_profile = importer_host->GetSourceProfileInfoAt(0);
-  scoped_ptr<ImportEndedObserver> observer(new ImportEndedObserver);
-  importer_host->SetObserver(observer.get());
-  importer_host->StartImportSettings(source_profile,
-                                     profile,
-                                     items_to_import,
-                                     new ProfileWriter(profile),
-                                     true);
-  // If the import process has not errored out, block on it.
-  if (!observer->ended()) {
-    observer->set_quit_message_loop();
-    MessageLoop::current()->Run();
-  }
-  // Unfortunately there's no success/fail signal in ImporterHost.
-  return true;
-}
 
 // static
 void FirstRun::ShowFirstRunDialog(Profile* profile,

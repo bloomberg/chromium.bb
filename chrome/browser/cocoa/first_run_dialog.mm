@@ -1,18 +1,20 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/first_run_dialog.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/logging.h"
 #include "base/mac_util.h"
-#import "base/scoped_nsobject.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
+#include "base/message_loop.h"
+#include "base/ref_counted.h"
 #include "grit/locale_settings.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+
+@interface FirstRunDialogController (PrivateMethods)
+// Show the dialog.
+- (void)show;
+@end
 
 namespace {
 
@@ -29,18 +31,30 @@ NSInteger CompareFrameY(id view1, id view2, void* context) {
     return NSOrderedSame;
 }
 
+class FirstRunShowBridge : public base::RefCounted<FirstRunShowBridge> {
+ public:
+  FirstRunShowBridge(FirstRunDialogController* controller);
+
+  void ShowDialog();
+ private:
+  FirstRunDialogController* controller_;
+};
+
+FirstRunShowBridge::FirstRunShowBridge(
+    FirstRunDialogController* controller) : controller_(controller) {
+}
+
+void FirstRunShowBridge::ShowDialog() {
+  [controller_ show];
+  MessageLoop::current()->QuitNow();
+}
+
 };
 
 @implementation FirstRunDialogController
 
-@synthesize userDidCancel = userDidCancel_;
 @synthesize statsEnabled = statsEnabled_;
-@synthesize statsCheckboxHidden = statsCheckboxHidden_;
 @synthesize makeDefaultBrowser = makeDefaultBrowser_;
-@synthesize importBookmarks = importBookmarks_;
-@synthesize browserImportSelectedIndex = browserImportSelectedIndex_;
-@synthesize browserImportList = browserImportList_;
-@synthesize browserImportListHidden = browserImportListHidden_;
 
 - (id)init {
   NSString* nibpath =
@@ -50,31 +64,28 @@ NSInteger CompareFrameY(id view1, id view2, void* context) {
   if (self != nil) {
     // Bound to the dialog checkbox, default to true.
     statsEnabled_ = YES;
-    importBookmarks_ = YES;
-
-#if defined(GOOGLE_CHROME_BUILD)
-    // If the send stats option is controlled by enterprise configuration
-    // management, hide the checkbox.
-    const PrefService::Preference* metrics_reporting_pref =
-        g_browser_process->local_state()->FindPreference(
-            prefs::kMetricsReportingEnabled);
-    if (metrics_reporting_pref && metrics_reporting_pref->IsManaged())
-      statsCheckboxHidden_ = YES;
-#else
-    // In Chromium builds all stats reporting is disabled so there's no reason
-    // to display the checkbox - the setting is always OFF.
-    statsCheckboxHidden_ = YES;
-#endif // !GOOGLE_CHROME_BUILD
   }
   return self;
 }
 
 - (void)dealloc {
-  [browserImportList_ release];
   [super dealloc];
 }
 
 - (IBAction)showWindow:(id)sender {
+  // The main MessageLoop has not yet run, but has been spun. If we call
+  // -[NSApplication runModalForWindow:] we will hang <http://crbug.com/54248>.
+  // Therefore the main MessageLoop is run so things work.
+
+  scoped_refptr<FirstRunShowBridge> bridge = new FirstRunShowBridge(self);
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(bridge.get(),
+                        &FirstRunShowBridge::ShowDialog));
+  MessageLoop::current()->Run();
+}
+
+- (void)show {
   NSWindow* win = [self window];
 
   // Only support the sizing the window once.
@@ -106,15 +117,13 @@ NSInteger CompareFrameY(id view1, id view2, void* context) {
       [win setFrame:windowFrame display:NO];
     }
 
-    // The stats checkbox (if visible) gets some really long text, so it gets
-    // word wrapped and then sized.
+    // The stats checkbox gets some really long text, so it gets word wrapped
+    // and then sized.
     DCHECK(statsCheckbox_);
     CGFloat statsCheckboxHeightChange = 0.0;
-    if (![self statsCheckboxHidden]) {
-      [GTMUILocalizerAndLayoutTweaker wrapButtonTitleForWidth:statsCheckbox_];
-      statsCheckboxHeightChange =
-          [GTMUILocalizerAndLayoutTweaker sizeToFitView:statsCheckbox_].height;
-    }
+    [GTMUILocalizerAndLayoutTweaker wrapButtonTitleForWidth:statsCheckbox_];
+    statsCheckboxHeightChange =
+        [GTMUILocalizerAndLayoutTweaker sizeToFitView:statsCheckbox_].height;
 
     // Walk bottom up shuffling for all the hidden views.
     NSArray* subViews =
@@ -172,42 +181,15 @@ NSInteger CompareFrameY(id view1, id view2, void* context) {
   [NSApp runModalForWindow:win];
 }
 
-- (void)closeDialog {
+- (IBAction)ok:(id)sender {
   [[self window] close];
   [NSApp stopModal];
-}
-
-- (IBAction)ok:(id)sender {
-  [self closeDialog];
-}
-
-- (IBAction)cancel:(id)sender {
-  [self closeDialog];
-  [self setUserDidCancel:YES];
 }
 
 - (IBAction)learnMore:(id)sender {
   NSString* urlStr = l10n_util::GetNSString(IDS_LEARN_MORE_REPORTING_URL);
   NSURL* learnMoreUrl = [NSURL URLWithString:urlStr];
   [[NSWorkspace sharedWorkspace] openURL:learnMoreUrl];
-}
-
-// Custom property getters
-
-- (BOOL)importBookmarks {
-  // If the UI for browser import is hidden, report the choice as off.
-  if ([self browserImportListHidden]) {
-    return NO;
-  }
-  return importBookmarks_;
-}
-
-- (BOOL)statsEnabled {
-  // If the UI for stats is hidden, report the choice as off.
-  if ([self statsCheckboxHidden]) {
-    return NO;
-  }
-  return statsEnabled_;
 }
 
 @end

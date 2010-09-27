@@ -238,6 +238,7 @@
                 'app/nibs/ReportBug.xib',
                 'app/nibs/SaveAccessoryView.xib',
                 'app/nibs/SadTab.xib',
+                'app/nibs/SearchEngineDialog.xib',
                 'app/nibs/SimpleContentExceptionsWindow.xib',
                 'app/nibs/SpeechInputBubble.xib',
                 'app/nibs/TabContents.xib',

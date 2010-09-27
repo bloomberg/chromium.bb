@@ -306,31 +306,4 @@ class FirstRunImportObserver : public ImportObserver {
   DISALLOW_COPY_AND_ASSIGN(FirstRunImportObserver);
 };
 
-#if defined(OS_MACOSX)
-// Show the First Run UI to the user, allowing them to create shortcuts for
-// the app, import their bookmarks and other data from another browser into
-// |profile| and perhaps some other tasks.
-// |process_singleton| is used to lock the handling of CopyData messages
-// while the First Run UI is visible.
-// |homepage_defined| true indicates that homepage is defined in master
-// preferences and should not be imported from another browser.
-// |import_items| specifies the items to import, specified in master
-// preferences and will override default behavior of importer.
-// |dont_import_items| specifies the items *not* to import, specified in master
-// preferences and will override default behavior of importer.
-// |search_engine_experiment| indicates whether the experimental search engine
-// window should be shown.
-// |randomize_search_engine_experiment| is true if the logos in the search
-// engine window should be shown in randomized order.
-// Returns true if the user clicked "Start", false if the user pressed "Cancel"
-// or closed the dialog.
-bool OpenFirstRunDialog(Profile* profile,
-                        bool homepage_defined,
-                        int import_items,
-                        int dont_import_items,
-                        bool search_engine_experiment,
-                        bool randomize_search_engine_experiment,
-                        ProcessSingleton* process_singleton);
-#endif  // OS_MACOSX
-
 #endif  // CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_

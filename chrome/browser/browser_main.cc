@@ -1203,7 +1203,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if !defined(OS_MACOSX)
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
-  // TODO(port):  Port to Mac
+  // TODO(port): Port the Mac's IPC-based implementation to other platforms to
+  //             replace this implementation. http://crbug.com/22142
   if (parsed_command_line.HasSwitch(switches::kImport) ||
       parsed_command_line.HasSwitch(switches::kImportFromFile)) {
     return FirstRun::ImportNow(profile, parsed_command_line);
@@ -1248,7 +1249,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // touches reads preferences.
   if (is_first_run) {
     if (!first_run_ui_bypass) {
-#if defined(OS_WIN) || defined(OS_LINUX)
       FirstRun::AutoImport(profile,
                            master_prefs.homepage_defined,
                            master_prefs.do_import_items,
@@ -1257,17 +1257,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
                            master_prefs.randomize_search_engine_experiment,
                            master_prefs.make_chrome_default,
                            &process_singleton);
-#else
-      if (!OpenFirstRunDialog(profile,
-                              master_prefs.homepage_defined,
-                              master_prefs.do_import_items,
-                              master_prefs.dont_import_items,
-                              master_prefs.run_search_engine_experiment,
-                              master_prefs.randomize_search_engine_experiment,
-                              &process_singleton)) {
-        return ResultCodes::NORMAL_EXIT;
-      }
-#endif
 #if defined(OS_POSIX)
       // On Windows, the download is tagged with enable/disable stats so there
       // is no need for this code.

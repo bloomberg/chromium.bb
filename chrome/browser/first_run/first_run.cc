@@ -461,8 +461,6 @@ void FirstRunImportObserver::Finish() {
     MessageLoop::current()->Quit();
 }
 
-// TODO(avi): port the relevant pieces and enable this.
-#if !defined(OS_MACOSX)
 // static
 void FirstRun::AutoImport(
     Profile* profile,
@@ -487,7 +485,15 @@ void FirstRun::AutoImport(
   bool local_state_file_exists = file_util::PathExists(local_state_path);
 
   scoped_refptr<ImporterHost> importer_host;
-  importer_host = new ImporterHost();
+  // TODO(csilv,mirandac): Out-of-process import has only been qualified on
+  // MacOS X, so we will only use it on that platform since it is required.
+  // Remove this conditional logic once oop import is qualified for
+  // Linux/Windows. http://crbug.com/22142
+#if defined(OS_MACOSX)
+  importer_host = new ExternalProcessImporterHost;
+#else
+  importer_host = new ImporterHost;
+#endif
   // Do import if there is an available profile for us to import.
   if (importer_host->GetAvailableProfileCount() > 0) {
     // Don't show the warning dialog if import fails.
@@ -547,4 +553,73 @@ void FirstRun::AutoImport(
   process_singleton->Unlock();
   FirstRun::CreateSentinel();
 }
-#endif  // !defined(OS_MACOSX)
+
+#if defined(OS_POSIX)
+namespace {
+
+// This class acts as an observer for the ImporterHost::Observer::ImportEnded
+// callback. When the import process is started, certain errors may cause
+// ImportEnded() to be called synchronously, but the typical case is that
+// ImportEnded() is called asynchronously. Thus we have to handle both cases.
+class ImportEndedObserver : public ImporterHost::Observer {
+ public:
+  ImportEndedObserver() : ended_(false),
+                          should_quit_message_loop_(false) {}
+  virtual ~ImportEndedObserver() {}
+
+  virtual void ImportItemStarted(importer::ImportItem item) {}
+  virtual void ImportItemEnded(importer::ImportItem item) {}
+  virtual void ImportStarted() {}
+  virtual void ImportEnded() {
+    ended_ = true;
+    if (should_quit_message_loop_)
+      MessageLoop::current()->Quit();
+  }
+
+  void set_should_quit_message_loop() {
+    should_quit_message_loop_ = true;
+  }
+
+  bool ended() {
+    return ended_;
+  }
+
+ private:
+  // Set if the import has ended.
+  bool ended_;
+
+  // Set by the client (via set_should_quit_message_loop) if, when the import
+  // ends, this class should quit the message loop.
+  bool should_quit_message_loop_;
+};
+
+}  // namespace
+
+// static
+bool FirstRun::ImportSettings(Profile* profile,
+                              scoped_refptr<ImporterHost> importer_host,
+                              int items_to_import) {
+  const ProfileInfo& source_profile = importer_host->GetSourceProfileInfoAt(0);
+
+  // Ensure that importers aren't requested to import items that they do not
+  // support.
+  items_to_import &= source_profile.services_supported;
+
+  scoped_ptr<ImportEndedObserver> observer(new ImportEndedObserver);
+  importer_host->SetObserver(observer.get());
+  importer_host->StartImportSettings(source_profile,
+                                     profile,
+                                     items_to_import,
+                                     new ProfileWriter(profile),
+                                     true);
+  // If the import process has not errored out, block on it.
+  if (!observer->ended()) {
+    observer->set_should_quit_message_loop();
+    MessageLoop::current()->Run();
+  }
+
+  // Unfortunately there's no success/fail signal in ImporterHost.
+  return true;
+}
+
+#endif  // OS_POSIX
