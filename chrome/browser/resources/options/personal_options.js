@@ -64,8 +64,8 @@ cr.define('options', function() {
         $('stop-sync').onclick = function(event) {
           AlertOverlay.show(localStrings.getString('stop_syncing_title'),
               localStrings.getString('stop_syncing_explanation'),
-              localStrings.getString('yesButtonLabel'),
-              localStrings.getString('noButtonLabel'),
+              localStrings.getString('stop_syncing_confirm_button_label'),
+              undefined,
               function() { chrome.send('stopSyncing'); });
         };
         $('import_data').onclick = function(event) {
