@@ -1553,6 +1553,14 @@ std::wstring BrowserView::GetWindowTitle() const {
   return UTF16ToWideHack(browser_->GetWindowTitleForCurrentTab());
 }
 
+std::wstring BrowserView::GetAccessibleWindowTitle() const {
+  if (IsOffTheRecord()) {
+    return l10n_util::GetStringF(
+        IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT, GetWindowTitle());
+  }
+  return GetWindowTitle();
+}
+
 views::View* BrowserView::GetInitiallyFocusedView() {
   // We set the frame not focus on creation so this should never be called.
   NOTREACHED();

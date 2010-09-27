@@ -194,7 +194,7 @@ class WindowWin : public WidgetWin,
   void ResetWindowRegion(bool force);
 
   //  Update accessibility information via our WindowDelegate.
-  void UpdateAccessibleName(std::wstring name);
+  void UpdateAccessibleName();
   void UpdateAccessibleRole();
   void UpdateAccessibleState();
 

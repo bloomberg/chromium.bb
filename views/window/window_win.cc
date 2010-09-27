@@ -418,7 +418,7 @@ void WindowWin::UpdateWindowTitle() {
   SetWindowText(GetNativeView(), window_title.c_str());
 
   // Also update the accessibility name.
-  UpdateAccessibleName(window_title);
+  UpdateAccessibleName();
 }
 
 void WindowWin::UpdateWindowIcon() {
@@ -1408,14 +1408,15 @@ void WindowWin::ResetWindowRegion(bool force) {
   DeleteObject(current_rgn);
 }
 
-void WindowWin::UpdateAccessibleName(std::wstring name) {
+void WindowWin::UpdateAccessibleName() {
   ScopedComPtr<IAccPropServices> pAccPropServices;
+  std::wstring accessible_title = window_delegate_->GetAccessibleWindowTitle();
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
     IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {
     VARIANT var;
     var.vt = VT_BSTR;
-    var.bstrVal = SysAllocString(name.c_str());
+    var.bstrVal = SysAllocString(accessible_title.c_str());
     hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
       CHILDID_SELF, PROPID_ACC_NAME, var);
   }

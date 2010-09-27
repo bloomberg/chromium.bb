@@ -64,6 +64,11 @@ class WindowDelegate {
     return 0;
   }
 
+  // Returns the title to be read with screen readers.
+  virtual std::wstring GetAccessibleWindowTitle() const {
+    return GetWindowTitle();
+  }
+
   // Returns the text to be displayed in the window title.
   virtual std::wstring GetWindowTitle() const {
     return L"";
