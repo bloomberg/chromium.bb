@@ -28,6 +28,7 @@
 
 namespace {
 
+#if !defined(DISABLE_NACL)
 void SetCloseOnExec(nacl::Handle fd) {
 #if defined(OS_POSIX)
   int flags = fcntl(fd, F_GETFD);
@@ -36,6 +37,7 @@ void SetCloseOnExec(nacl::Handle fd) {
   CHECK(rc == 0);
 #endif
 }
+#endif
 
 }  // namespace
 

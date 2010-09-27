@@ -46,6 +46,7 @@
 
 namespace {
 
+#if !defined(DISABLE_NACL)
 bool LaunchNaClProcessMultiFD(const char* alleged_url,
                               int socket_count,
                               nacl::Handle* imc_handles,
@@ -71,6 +72,7 @@ bool LaunchNaClProcessMultiFD(const char* alleged_url,
   *nacl_process_handle = nacl_process;
   return true;
 }
+#endif
 
 }  // namespace
 
@@ -160,7 +162,7 @@ RenderProcessImpl::RenderProcessImpl()
     StatisticsRecorder::set_dump_on_exit(true);
   }
 
-#ifndef DISABLE_NACL
+#if !defined(DISABLE_NACL)
   if (command_line.HasSwitch(switches::kInternalNaCl)) {
     std::map<std::string, uintptr_t> funcs;
     funcs["launch_nacl_process_multi_fd"] =
