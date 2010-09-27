@@ -2266,6 +2266,7 @@
       'target_name': 'sync_unit_tests',
       'type': 'executable',
       'sources': [
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/test.pb.cc',
         'app/breakpad_mac_stubs.mm',
         'browser/sync/engine/apply_updates_command_unittest.cc',
         'browser/sync/engine/clear_data_command_unittest.cc',
@@ -2294,6 +2295,7 @@
         'browser/sync/util/crypto_helpers_unittest.cc',
         'browser/sync/util/data_encryption_unittest.cc',
         'browser/sync/util/extensions_activity_monitor_unittest.cc',
+        'browser/sync/util/protobuf_unittest.cc',
         'browser/sync/util/user_settings_unittest.cc',
         'test/file_test_utils.cc',
         'test/sync/engine/mock_connection_manager.cc',

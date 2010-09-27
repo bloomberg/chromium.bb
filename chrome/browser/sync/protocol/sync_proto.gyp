@@ -23,6 +23,7 @@
         'password_specifics.proto',
         'preference_specifics.proto',
         'session_specifics.proto',
+        'test.proto',
         'theme_specifics.proto',
         'typed_url_specifics.proto',
       ],

@@ -1,0 +1,24 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Protocol messages used only for testing.
+
+syntax = "proto2";
+
+// TODO(agl): In the future we hope that the lite runtime will be able to
+// handle unknown fields in messages. Until then, we use the full runtime.
+
+// option optimize_for = LITE_RUNTIME;
+// option retain_unknown_fields = true;
+
+package sync_pb;
+
+message UnknownFieldsTestA {
+  required bool foo = 1;
+}
+
+message UnknownFieldsTestB {
+  required bool foo = 1;
+  required bool bar = 2;
+}
