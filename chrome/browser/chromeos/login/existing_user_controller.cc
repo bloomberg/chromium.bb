@@ -356,14 +356,18 @@ void ExistingUserController::RemoveUser(UserController* source) {
 
   UserManager::Get()->RemoveUser(source->user().email());
 
-  // We need to unmap entry windows, the windows will be unmapped in destructor.
   controllers_.erase(controllers_.begin() + source->user_index());
-  delete source;
 
   EnableTooltipsIfNeeded(controllers_);
+
+  // Update user count before unmapping windows, otherwise window manager won't
+  // be in the right state.
   int new_size = static_cast<int>(controllers_.size());
   for (int i = 0; i < new_size; ++i)
     controllers_[i]->UpdateUserCount(i, new_size);
+
+  // We need to unmap entry windows, the windows will be unmapped in destructor.
+  delete source;
 }
 
 void ExistingUserController::SelectUser(int index) {
