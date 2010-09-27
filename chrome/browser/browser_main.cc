@@ -951,10 +951,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   CHECK(metrics_reporting_enabled);
   bool breakpad_enabled =
       local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-  if (!breakpad_enabled && metrics_reporting_enabled->IsUserModifiable()) {
-    breakpad_enabled = (getenv(env_vars::kHeadless) != NULL) ||
-        parsed_command_line.HasSwitch(switches::kEnableCrashReporter);
-  }
+  if (!breakpad_enabled && metrics_reporting_enabled->IsUserModifiable())
+    breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
   if (breakpad_enabled)
     InitCrashReporter();
 #endif

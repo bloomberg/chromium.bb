@@ -4,12 +4,10 @@
 
 #include "chrome/installer/util/google_update_settings.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 
 namespace google_update {
 std::string posix_guid;
@@ -20,16 +18,14 @@ static const char kConsentToSendStats[] = "Consent To Send Stats";
 
 // static
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
-  bool forced_enable = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableCrashReporter);
   FilePath consent_file;
   PathService::Get(chrome::DIR_USER_DATA, &consent_file);
   consent_file = consent_file.Append(kConsentToSendStats);
   std::string tmp_guid;
   bool consented = file_util::ReadFileToString(consent_file, &tmp_guid);
-  if (forced_enable || consented)
+  if (consented)
     google_update::posix_guid.assign(tmp_guid);
-  return forced_enable || consented;
+  return consented;
 }
 
 // static
