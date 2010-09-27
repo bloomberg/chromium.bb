@@ -301,6 +301,8 @@ if not ppapi_env.Bit('chrome'):
     # This places both ppNaClPlugin.bundle/ and sel_ldr into staging/.
     # One must either set $NACL_SEL_LDR=path/to/sel_ldr or manually
     # copy sel_ldr to path/to/ppNaClPlugin.bundle/Contents/Resources/.
+    # (the 2nd option has been disabled:
+    # see ../nonnacl_util/osx/get_plugin_dirname.mm).
     REZ = '/Developer/Tools/Rez'
     ppapi_env.Command(target='ppNaClPlugin.rsrc',
                       source='osx_ppapi/ppNaClPlugin.r',

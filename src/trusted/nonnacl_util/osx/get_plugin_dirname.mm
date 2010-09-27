@@ -12,11 +12,18 @@
 
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
+// TODO(polina): we need this to avoid hardcoding the bundle name, but it
+// causes the following error when building chrome:
+// ld: duplicate symbol nacl::PluginSelLdrLocator::GetDirectory(char*,
+// unsigned long) in
+// chrome/src/xcodebuild/Debug/libsel_ldr_launcher.a(get_plugin_dirname.o) and
+// chrome/src/xcodebuild/Debug/libnonnacl_util_chrome.a(get_plugin_dirname.o)
+//
 // Dummy class object to be used with bundleForClass below.
-@interface Dummy: NSObject {}
-@end
-@implementation Dummy
-@end
+//@interface Dummy: NSObject {}
+//@end
+//@implementation Dummy
+//@end
 
 namespace nacl {
 
@@ -30,8 +37,13 @@ void PluginSelLdrLocator::GetDirectory(char* buffer, size_t len) {
 
   // Find the executable path for the bundle the plugin was loaded from.
   // Expect the sel_ldr to be within the bundle directory.
-  NSString* nspath = [[NSBundle bundleForClass:[Dummy class] ]
+  NSString* ident = @"com.google.npGoogleNaClPlugin";  // Id from Info.plist.
+  NSString* nspath = [[NSBundle bundleWithIdentifier:ident]
                       pathForResource:@"sel_ldr" ofType:nil];
+  // TODO(polina): enable this instead when the error caused by Dummy is fixed
+  // NSString* nspath = [[NSBundle bundleForClass:[Dummy class] ]
+  //                     pathForResource:@"sel_ldr" ofType:nil];
+
   // Convert it to a C string.
   char const* pathname = [nspath fileSystemRepresentation];
   // If we were not able to find the plugin bundle, try the main bundle.
