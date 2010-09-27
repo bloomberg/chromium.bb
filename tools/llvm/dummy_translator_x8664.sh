@@ -34,14 +34,15 @@ readonly LD_FLAGS=(-nostdlib \
                    -T ${LD_SCRIPT} \
                    -static)
 
-# These have to synchronized with the llvm_fake script
 readonly NATIVE_OBJS=(${LIB_ROOT}/crt1.o \
                       ${LIB_ROOT}/crti.o \
                       ${LIB_ROOT}/crtbegin.o)
 
 readonly NATIVE_LIBS=(${LIB_ROOT}/libcrt_platform.a \
+                      ${LIB_ROOT}/crtend.o \
                       ${LIB_ROOT}/crtn.o \
                       -L ${LIB_ROOT} \
+                      -lgcc_eh \
                       -lgcc)
 
 # Main
