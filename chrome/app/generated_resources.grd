@@ -4482,7 +4482,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Network connection
         </message>
         <message name="IDS_BUGREPORT_STANDBY_RESUME" desc="In Title Case: Report a bug/problem type: Standby or Resume">
-          Network connection
+          Standby or Resume
         </message>
         <message name="IDS_BUGREPORT_SYNC" desc="In Title Case: Report a bug/problem type: Synced preferences">
           Synced preferences
