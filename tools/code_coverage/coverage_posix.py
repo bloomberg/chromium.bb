@@ -316,6 +316,8 @@ class Coverage(object):
     self.ConfirmPlatformAndPaths()
     self.tests = []
     self.xvfb_pid = 0
+    logging.info('self.directory: ' + self.directory)
+    logging.info('self.directory_parent: ' + self.directory_parent)
 
   def FindInPath(self, program):
     """Find program in our path.  Return abs path to it, or None."""
@@ -722,6 +724,7 @@ class Coverage(object):
   def GenerateLcovPosix(self):
     """Convert profile data to lcov on Mac or Linux."""
     start_dir = os.getcwd()
+    logging.info('GenerateLcovPosix: start_dir=' + start_dir)
     if self.IsLinux():
       # With Linux/make (e.g. the coverage_run target), the current
       # directory for this command is .../build/src/chrome but we need
@@ -734,11 +737,15 @@ class Coverage(object):
       # script be run in a specific directory for all cases (from
       # Makefile or from buildbot).
       if start_dir.endswith('chrome'):
-        print 'coverage_posix.py: doing a "cd .." to accomodate Linux/make PWD'
+        logging.info('coverage_posix.py: doing a "cd .." '
+                     'to accomodate Linux/make PWD')
         os.chdir('..')
       elif start_dir.endswith('build'):
-        print 'coverage_posix.py: doing a "cd src" to accomodate buildbot PWD'
+        logging.info('coverage_posix.py: doing a "cd src" '
+                     'to accomodate buildbot PWD')
         os.chdir('src')
+      else:
+        logging.info('coverage_posix.py: NOT changing directory.')
     elif self.IsMac():
       pass
 
