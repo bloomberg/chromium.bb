@@ -1710,6 +1710,20 @@ void ResourceMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
     return;
   }
 
+  // TODO(dumi): update this check once we have a security attribute
+  // that allows renderers to modify files.
+  int allowed_flags =
+      base::PLATFORM_FILE_OPEN |
+      base::PLATFORM_FILE_READ |
+      base::PLATFORM_FILE_EXCLUSIVE_READ |
+      base::PLATFORM_FILE_ASYNC;
+  if (flags & ~allowed_flags) {
+    DLOG(ERROR) << "Bad flags in ViewMsgHost_AsyncOpenFile message: " << flags;
+    BrowserRenderProcessHost::BadMessageTerminateProcess(
+        ViewHostMsg_AsyncOpenFile::ID, handle());
+    return;
+  }
+
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
           this, &ResourceMessageFilter::AsyncOpenFileOnFileThread,
