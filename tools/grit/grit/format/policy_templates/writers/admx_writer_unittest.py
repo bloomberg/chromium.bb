@@ -43,44 +43,107 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.writer = admx_writer.GetWriter(config, messages)
     self.writer.Init()
 
+  def _GetPoliciesElement(self, doc):
+    node_list = doc.getElementsByTagName('policies')
+    self.assertTrue(node_list.length == 1)
+    return node_list.item(0)
+
+  def _GetCategoriesElement(self, doc):
+    node_list = doc.getElementsByTagName('categories')
+    self.assertTrue(node_list.length == 1)
+    return node_list.item(0)
+
   def testEmpty(self):
     self.writer.BeginTemplate()
     self.writer.EndTemplate()
 
     output = self.writer.GetTemplateText()
     expected_output = (
-        '<?xml version="1.0" ?>\n<policyDefinitions revision="1.0"'
-        ' schemaVersion="1.0">\n  <policyNamespaces>\n    <target'
-        ' namespace="ADMXWriter.Test.Namespace" prefix="test_prefix"/>\n'
-        '    <using namespace="Microsoft.Policies.Windows" prefix="windows"/>'
-        '\n  </policyNamespaces>\n  <resources'
-        ' minRequiredRevision="1.0"/>\n  <supportedOn>\n'
-        '    <definitions>\n      <definition displayName="'
+        '<?xml version="1.0" ?>\n'
+        '<policyDefinitions revision="1.0" schemaVersion="1.0">\n'
+        '  <policyNamespaces>\n'
+        '    <target namespace="ADMXWriter.Test.Namespace"'
+        ' prefix="test_prefix"/>\n'
+        '    <using namespace="Microsoft.Policies.Windows" prefix="windows"/>\n'
+        '  </policyNamespaces>\n'
+        '  <resources minRequiredRevision="1.0"/>\n'
+        '  <supportedOn>\n'
+        '    <definitions>\n'
+        '      <definition displayName="'
         '$(string.SUPPORTED_TESTOS)" name="SUPPORTED_TESTOS"/>\n'
-        '    </definitions>\n  </supportedOn>\n  <categories>\n    <category'
-        ' displayName="$(string.test_category)" name="test_category"/>\n'
-        '  </categories>\n  <policies/>\n</policyDefinitions>')
+        '    </definitions>\n'
+        '  </supportedOn>\n'
+        '  <categories>\n'
+        '    <category displayName="$(string.test_category)"'
+        ' name="test_category"/>\n'
+        '  </categories>\n'
+        '  <policies/>\n'
+        '</policyDefinitions>')
     self.AssertXMLEquals(output, expected_output)
 
-  def testPolicyGroup(self):
-    parent_elem = self._CreateDocumentElement()
-    self.writer._active_policies_elem = parent_elem
-
+  def testEmptyPolicyGroup(self):
     empty_policy_group = {
-      'name': 'PolicyGroup'
+      'name': 'PolicyGroup',
+      'policies': []
     }
+    # Initialize writer to write a policy group.
+    self.writer.BeginTemplate()
+    # Write policy group
     self.writer.BeginPolicyGroup(empty_policy_group)
     self.writer.EndPolicyGroup()
 
-    output = self.GetXMLOfChildren(parent_elem)
-    expected_output = (
-        '<policy class="TestClass" displayName="$(string.PolicyGroup)"'
-        ' explainText="$(string.PolicyGroup_Explain)" key='
-        '"Software\Policies\Test" name="PolicyGroup"'
-        ' presentation="$(presentation.PolicyGroup)" valueName="PolicyGroup">'
-        '\n  <parentCategory ref="test_category"/>\n'
-        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n</policy>')
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
+    expected_output = ''
     self.AssertXMLEquals(output, expected_output)
+
+    output = self.GetXMLOfChildren(
+        self._GetCategoriesElement(self.writer._doc))
+    expected_output = (
+        '<category displayName="$(string.test_category)"'
+        ' name="test_category"/>')
+    self.AssertXMLEquals(output, expected_output)
+
+  def testPolicyGroup(self):
+    empty_policy_group = {
+      'name': 'PolicyGroup',
+      'policies': [
+          {'name': 'PolicyStub2',
+          'type': 'main'},
+          {'name': 'PolicyStub1',
+          'type': 'main'},
+      ]
+    }
+    # Initialize writer to write a policy group.
+    self.writer.BeginTemplate()
+    # Write policy group
+    self.writer.BeginPolicyGroup(empty_policy_group)
+    self.writer.EndPolicyGroup()
+
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
+    expected_output = ''
+    self.AssertXMLEquals(output, expected_output)
+
+    output = self.GetXMLOfChildren(
+        self._GetCategoriesElement(self.writer._doc))
+    expected_output = (
+        '<category displayName="$(string.test_category)"'
+        ' name="test_category"/>\n'
+        '<category displayName="$(string.PolicyGroup_group)"'
+        ' name="PolicyGroup">\n'
+        '  <parentCategory ref="test_category"/>\n'
+        '</category>')
+    self.AssertXMLEquals(output, expected_output)
+
+
+  def _initWriterForPolicy(self, writer, policy):
+    '''Initializes the writer to write the given policy next.
+    '''
+    policy_group = {
+      'name': 'PolicyGroup',
+      'policies': [policy]
+    }
+    writer.BeginTemplate()
+    writer.BeginPolicyGroup(policy_group)
 
   def testMainPolicy(self):
     main_policy = {
@@ -88,15 +151,27 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
       'type': 'main',
     }
 
-    parent_elem = self._CreateDocumentElement()
-    self.writer._active_policy_elem = parent_elem
+    self._initWriterForPolicy(self.writer, main_policy)
 
     self.writer.WritePolicy(main_policy)
 
-    output = self.GetXMLOfChildren(parent_elem)
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<enabledValue>\n  <decimal value="1"/>\n</enabledValue>\n'
-        '<disabledValue>\n  <decimal value="0"/>\n</disabledValue>')
+        '<policy class="TestClass" displayName="$(string.DummyMainPolicy)"'
+        ' explainText="$(string.DummyMainPolicy_Explain)"'
+        ' key="Software\\Policies\\Test" name="DummyMainPolicy"'
+        ' presentation="$(presentation.DummyMainPolicy)"'
+        ' valueName="DummyMainPolicy">\n'
+        '  <parentCategory ref="test_category"/>\n'
+        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
+        '  <enabledValue>\n'
+        '    <decimal value="1"/>\n'
+        '  </enabledValue>\n'
+        '  <disabledValue>\n'
+        '    <decimal value="0"/>\n'
+        '  </disabledValue>\n'
+        '</policy>')
+
     self.AssertXMLEquals(output, expected_output)
 
   def testStringPolicy(self):
@@ -104,21 +179,24 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
       'name': 'SampleStringPolicy',
       'type': 'string',
     }
-    parent_elem = self.writer.AddElement(self._CreateDocumentElement(),
-                                           'policy')
-    self.writer._active_policy_elem = parent_elem
+    self._initWriterForPolicy(self.writer, string_policy)
+
     self.writer.WritePolicy(string_policy)
-    output = self.GetXMLOfChildren(parent_elem)
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<elements>\n  <text id="SampleStringPolicy"'
-        ' valueName="SampleStringPolicy"/>\n</elements>')
+        '<policy class="TestClass" displayName="$(string.SampleStringPolicy)"'
+        ' explainText="$(string.SampleStringPolicy_Explain)"'
+        ' key="Software\\Policies\\Test" name="SampleStringPolicy"'
+        ' presentation="$(presentation.SampleStringPolicy)">\n'
+        '  <parentCategory ref="test_category"/>\n'
+        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
+        '  <elements>\n'
+        '    <text id="SampleStringPolicy" valueName="SampleStringPolicy"/>\n'
+        '  </elements>\n'
+        '</policy>')
     self.AssertXMLEquals(output, expected_output)
 
   def testEnumPolicy(self):
-    parent_elem = self.writer.AddElement(self._CreateDocumentElement(),
-                                           'policy')
-    self.writer._active_policy_elem = parent_elem
-
     enum_policy = {
       'name': 'SampleEnumPolicy',
       'type': 'enum',
@@ -127,15 +205,32 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
           {'name': 'item 2', 'value': '1'},
         ]
     }
+
+    self._initWriterForPolicy(self.writer, enum_policy)
     self.writer.WritePolicy(enum_policy)
-    output = self.GetXMLOfChildren(parent_elem)
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<elements>\n  <enum id="SampleEnumPolicy" valueName='
-        '"SampleEnumPolicy">\n    <item displayName="$(string.item 1)">\n'
-        '      <value>\n        <decimal value="0"/>\n      </value>\n'
-        '    </item>\n    <item displayName="$(string.item 2)">\n      <value>'
-        '\n        <decimal value="1"/>\n      </value>\n    </item>'
-        '\n  </enum>\n</elements>')
+        '<policy class="TestClass" displayName="$(string.SampleEnumPolicy)"'
+        ' explainText="$(string.SampleEnumPolicy_Explain)"'
+        ' key="Software\\Policies\\Test" name="SampleEnumPolicy"'
+        ' presentation="$(presentation.SampleEnumPolicy)">\n'
+        '  <parentCategory ref="test_category"/>\n'
+        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
+        '  <elements>\n'
+        '    <enum id="SampleEnumPolicy" valueName="SampleEnumPolicy">\n'
+        '      <item displayName="$(string.item 1)">\n'
+        '        <value>\n'
+        '          <decimal value="0"/>\n'
+        '        </value>\n'
+        '      </item>\n'
+        '      <item displayName="$(string.item 2)">\n'
+        '        <value>\n'
+        '          <decimal value="1"/>\n'
+        '        </value>\n'
+        '      </item>\n'
+        '    </enum>\n'
+        '  </elements>\n'
+        '</policy>')
     self.AssertXMLEquals(output, expected_output)
 
   def testListPolicy(self):
@@ -143,15 +238,21 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
       'name': 'SampleListPolicy',
       'type': 'list',
     }
-    parent_elem = self.writer.AddElement(self._CreateDocumentElement(),
-                                         'policy')
-    self.writer._active_policy_elem = parent_elem
+    self._initWriterForPolicy(self.writer, list_policy)
     self.writer.WritePolicy(list_policy)
-    output = self.GetXMLOfChildren(parent_elem)
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
     expected_output = (
-        '<elements>\n  <list id="SampleListPolicyDesc"'
-        ' key="Software\Policies\Test\SampleListPolicy"'
-        ' valuePrefix=""/>\n</elements>')
+        '<policy class="TestClass" displayName="$(string.SampleListPolicy)"'
+        ' explainText="$(string.SampleListPolicy_Explain)"'
+        ' key="Software\\Policies\\Test" name="SampleListPolicy"'
+        ' presentation="$(presentation.SampleListPolicy)">\n'
+        '  <parentCategory ref="test_category"/>\n'
+        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
+        '  <elements>\n'
+        '    <list id="SampleListPolicyDesc"'
+        ' key="Software\Policies\Test\SampleListPolicy" valuePrefix=""/>\n'
+        '  </elements>\n'
+        '</policy>')
 
     self.AssertXMLEquals(output, expected_output)
 

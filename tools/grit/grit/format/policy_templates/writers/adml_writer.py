@@ -29,11 +29,6 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
   # describe the presentation of Policy-Groups and Policies.
   _presentation_table_elem = None
 
-  # The active ADML "presentation" element. At any given point in time this
-  # contains the "presentation" element for the Policy-Group that is processed.
-  _active_presentation_elem = None
-
-
   def _AddString(self, parent, id, text):
     ''' Adds an ADML "string" element to the passed parent. The following
     ADML snippet contains an example:
@@ -48,140 +43,8 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     string_elem = self.AddElement(parent, 'string', {'id': id})
     string_elem.appendChild(self._doc.createTextNode(text))
 
-  def _AddStringPolicy(self, presentation_elem, policy_name, caption):
-    '''Generates ADML elements for a String-Policy. A String-Policy does not
-    require any ADML "string" elements. The presentation of a String-Policy is
-    defined by an ADML "textBox" element. The text-box contains an ADML "label"
-    element that contains the text of the text-box label. The following ADML
-    snipped shows an example:
-
-    <presentation ...>
-      ...
-      <textBox refId="$(policy_name)">
-        <label>$(caption)</label>
-      </textBox>
-    </presentation>
-
-    Args:
-      presentation_elem: The ADML "presentation" element of the policy group
-        that includes the policy.
-      policy_name: Policy name.
-      caption: Caption assisiated with the Policy.
-    '''
-    # A String-Policy requires no additional ADML "string" elements.
-
-    # Add ADML "presentation" elements that are required by a String-Policy to
-    # the presentation-table.
-    textbox_elem = self.AddElement(presentation_elem, 'textBox',
-                                   {'refId': policy_name})
-    label_elem = self.AddElement(textbox_elem, 'label')
-    label_elem.appendChild(self._doc.createTextNode(caption))
-
-  def _AddEnumPolicy(self, string_table_elem, presentation_elem,
-                     policy_name, caption, items):
-    '''Generates ADML elements for an Enum-Policy. For each enum item an ADML
-    "string" element is added to the string-table. The presentation of an
-    Enum-Policy is defined by the ADML "dropdownList" element. The following
-    ADML snippet shows an example:
-
-    <stringTable>
-      ...
-      <string id="$(item_name)">$(description)</string>
-    </stringTable>
-
-    <presentation ...>
-      ...
-      <dropdownList refId="$(policy_name)">$(caption)</dropdownlist>
-    </presentation>
-
-    Args:
-      string_table_elem: The ADML "stringTable" element to which the ADML
-        "string" elements are added.
-      presentation_elem: The ADML "presentation" element of the policy group
-        that includes the policy.
-      policy_name: Policy name.
-      caption: Caption associated with the Policy.
-      items: The enum items.
-    '''
-    # Add ADML "string" elements to the string-table that are required by an
-    # Enum-Policy.
-    for item in items:
-      self._AddString(string_table_elem, item['name'], item['caption'])
-
-    # Add ADML "presentation" elements to the presentation-table that are
-    # required by an Enum-Policy.
-    dropdownlist_elem = self.AddElement(presentation_elem, 'dropdownList',
-                                        {'refId': policy_name})
-    dropdownlist_elem.appendChild(self._doc.createTextNode(caption))
-
-  def _AddListPolicy(self, string_table_elem, presentation_elem, policy_name,
-                     caption):
-    '''Generates ADML elements for a List-Policy. Each List-Policy requires an
-    additional ADML "string" element that contains a description of the items
-    that can be added to the list. The presentation of a List-Policy is defined
-    by an ADML "listBox" element. The following ADML snippet shows an example:
-
-    <stringTable>
-      ...
-      <string id="$(policy_name)Desc">$(caption)</string>
-    </stringTable>
-
-    <presentation ...>
-      ...
-      <listBox refId="$(policy_name)Desc">$(caption)</listBox>
-    </presentation>
-
-    Args:
-      string_table_elem: The ADML "stringTable" element to which the ADML
-        "string" elements are added.
-      presentation_elem: The ADML "presentation" element of the policy group
-        that includes the policy.
-      policy_name: Policy name.
-        caption: Caption assisiated with the Policy.
-    '''
-    # Add ADML "string" elements to the string-table that are required by a
-    # List-Policy.
-    self._AddString(string_table_elem, policy_name + 'Desc', caption)
-
-    # Add ADML "presentation" elements to the presentation-table that are
-    # required by a List-Policy.
-    listbox_elem = self.AddElement(presentation_elem, 'listBox',
-                                   {'refId': policy_name + 'Desc'})
-    listbox_elem.appendChild(self._doc.createTextNode(caption))
-
   def WritePolicy(self, policy):
     '''Generates the ADML elements for a Policy.
-
-    Args:
-      policy: The Policy to generate ADML elements for.
-    '''
-    policy_type = policy['type']
-    policy_name = policy['name']
-    presentation_elem = self._active_presentation_elem
-    string_table_elem = self._string_table_elem
-    if policy_type == 'main':
-      # Nothing needs to be done for a Main-Policy.
-      pass
-    elif policy_type == 'string':
-      self._AddStringPolicy(presentation_elem, policy_name, policy['caption'])
-    elif policy_type == 'enum':
-      self._AddEnumPolicy(string_table_elem, presentation_elem, policy_name,
-                          policy['caption'], policy['items'])
-    elif policy_type == 'list':
-      self._AddListPolicy(string_table_elem, presentation_elem, policy_name,
-                          policy['caption'])
-    else:
-      raise Exception('Unknown policy type %s.' % policy_type)
-
-  def BeginPolicyGroup(self, group):
-    '''Generates ADML elements for a Policy-Group. For each Policy-Group two
-    ADML "string" elements are added to the string-table. One contains the
-    caption of the Policy-Group and the other a description. A Policy-Group also
-    requires an ADML "presentation" element that must be added to the
-    presentation-table. The "presentation" element is the container for the
-    elements that define the visual presentation of the Policy-Goup's Policies.
-    The following ADML snippet shows an example:
-
     <stringTable>
       ...
       <string id="$(policy_group_name)">$(caption)</string>
@@ -194,18 +57,68 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     </presentationTables>
 
     Args:
+      policy: The Policy to generate ADML elements for.
+    '''
+    policy_type = policy['type']
+    policy_name = policy['name']
+    if 'caption' in policy:
+      policy_caption = policy['caption']
+    else:
+      policy_caption = policy_name
+    if 'desc' in policy:
+      policy_description = policy['desc']
+    elif 'desc' in self._active_group:
+      policy_description = self._active_group['desc']
+    else:
+      policy_description = policy_name
+
+    self._AddString(self._string_table_elem, policy_name, policy_caption)
+    self._AddString(self._string_table_elem, policy_name + '_Explain',
+                    policy_description)
+    presentation_elem  = self.AddElement(
+        self._presentation_table_elem, 'presentation', {'id': policy_name})
+
+    if policy_type == 'main':
+      pass
+    elif policy_type == 'string':
+      textbox_elem = self.AddElement(presentation_elem, 'textBox',
+                                     {'refId': policy_name})
+      label_elem = self.AddElement(textbox_elem, 'label')
+      label_elem.appendChild(self._doc.createTextNode(policy_caption))
+    elif policy_type == 'enum':
+      for item in policy['items']:
+        self._AddString(self._string_table_elem, item['name'], item['caption'])
+      dropdownlist_elem = self.AddElement(presentation_elem, 'dropdownList',
+                                          {'refId': policy_name})
+      dropdownlist_elem.appendChild(self._doc.createTextNode(policy_caption))
+    elif policy_type == 'list':
+      self._AddString(self._string_table_elem,
+                      policy_name + 'Desc',
+                      policy_caption)
+      listbox_elem = self.AddElement(presentation_elem, 'listBox',
+                                     {'refId': policy_name + 'Desc'})
+      listbox_elem.appendChild(self._doc.createTextNode(policy_caption))
+    else:
+      raise Exception('Unknown policy type %s.' % policy_type)
+
+  def BeginPolicyGroup(self, group):
+    '''Generates ADML elements for a Policy-Group. For each Policy-Group two
+    ADML "string" elements are added to the string-table. One contains the
+    caption of the Policy-Group and the other a description. A Policy-Group also
+    requires an ADML "presentation" element that must be added to the
+    presentation-table. The "presentation" element is the container for the
+    elements that define the visual presentation of the Policy-Goup's Policies.
+    The following ADML snippet shows an example:
+
+    Args:
       group: The Policy-Group to generate ADML elements for.
     '''
-    # Add ADML "string" elements to the string-table that are required by a
-    # Policy-Group.
-    id = group['name']
-    self._AddString(self._string_table_elem, id, group['caption'])
-    self._AddString(self._string_table_elem, id + '_Explain', group['desc'])
-
-    # Add ADML "presentation" elements to the presentation-table that are
-    # required by a Policy-Group.
-    self._active_presentation_elem  = self.AddElement(
-        self._presentation_table_elem, 'presentation', {'id': id})
+    self._active_group = group;
+    if len(group['policies']) > 1:
+      # Add ADML "string" elements to the string-table that are required by a
+      # Policy-Group.
+      id = group['name'] + '_group'
+      self._AddString(self._string_table_elem, id, group['name'])
 
   def _AddBaseStrings(self, string_table_elem, build):
     ''' Adds ADML "string" elements to the string-table that are referenced by

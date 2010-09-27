@@ -43,3 +43,12 @@ class XMLFormattedWriter(template_writer.TemplateWriter):
     '''
     doc = parent.ownerDocument
     parent.appendChild(doc.createTextNode(text))
+
+  def AddAttribute(self, parent, name, value):
+    '''Adds a new attribute to the parent Element. If an attribute with the
+    given name already exists then it will be replaced.
+    '''
+    doc = parent.ownerDocument
+    attribute = doc.createAttribute(name)
+    attribute.value = value
+    parent.setAttributeNode(attribute)

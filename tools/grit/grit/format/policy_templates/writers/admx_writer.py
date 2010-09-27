@@ -26,11 +26,6 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
   # are generated.
   _active_policies_elem = None
 
-  # The active ADMX "policy" element. At any point in time, the active policy
-  # element contains the element being generated for the Policy-Group currently
-  # being processed.
-  _active_policy_elem = None
-
   def _AdmlString(self, name):
     '''Creates a reference to the named string in an ADML file.
     Args:
@@ -119,12 +114,12 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
         for the root level, each level refers to its parent. Since the root
         level category has no parent it does not require a parent reference.
     '''
-    categories_elem = self.AddElement(parent, 'categories')
+    self._categories_elem = self.AddElement(parent, 'categories')
     category_name = None
     for category in categories:
       parent_category_name = category_name
       category_name = category
-      self._AddCategory(categories_elem, category_name,
+      self._AddCategory(self._categories_elem, category_name,
                         self._AdmlString(category_name), parent_category_name)
 
   def _AddSupportedOn(self, parent, supported_os):
@@ -155,29 +150,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
 
   def _AddStringPolicy(self, parent, name):
     '''Generates ADMX elements for a String-Policy and adds them to the
-    passed parent node. A String-Policy is mapped to an ADMX "text" element.
-    The parent of the ADMX "text" element must be an ADMX "elements" element,
-    which must by a child of the ADMX "policy" element that corresponds to the
-    Policy-Group that contains the String-Policy. The following example shows
-    how the JSON specification of the String-Policy "DisabledPluginsList" of the
-    Policy-Group "DisabledPlugins" is mapped to ADMX:
-
-    {
-      'name': 'DisabledPlugins',
-      'policies': [{
-        'name': 'DisabledPluginsList',
-        'type' : 'string',
-      }, ... ]
-    }
-
-    <policy ... name="DisabledPlugins" ...>
-      ...
-      <elements>
-        <text id="DisabledPluginsList" valueName="DisabledPluginsList"/>
-        ...
-      </elements>
-    </policy>
-
+    passed parent node.
     '''
     attributes = {
       'id': name,
@@ -187,44 +160,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
 
   def _AddEnumPolicy(self, parent, name, items):
     '''Generates ADMX elements for an Enum-Policy and adds them to the
-    passed parent element. An Enum-Policy is mapped to an ADMX "enum" element.
-    The parent of the "enum" element must be the ADMX "elements" element of the
-    ADMX "policy" element that corresponds to the Policy-Group that contains the
-    Enum-Policy. The following example shows how the JSON specification of the
-    Enum-Policy "ProxyServerMode" of the Policy-Group "Proxy" is mapped to ADMX:
-
-    {
-      'name': 'Proxy',
-      'policies': [{
-        'name': 'ProxyServerMode',
-        'type': 'enum',
-        'items': [
-          {'name': 'ProxyServerDisabled', 'value': '0'},
-          {'name': 'ProxyServerAutoDetect', 'value': '1'},
-          ...
-        ],
-       }, ... ]
-    }
-
-    <policy ... name="Proxy" ...>
-      ...
-      <elements>
-        <enum id="ProxyServerMode" valueName="ProxyServerMode">
-          <item displayName="$(string.ProxyServerDisabled)">
-            <value>
-              <decimal value="0"/>
-            </value>
-          </item>
-          <item displayName="$(string.ProxyServerAutoDetect)">
-            <value>
-              <decimal value="1"/>
-            </value>
-          </item>
-          ...
-        </enum>
-      ...
-      </elements>
-    </policy>
+    passed parent element.
     '''
     attributes = {
       'id': name,
@@ -240,27 +176,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
 
   def _AddListPolicy(self, parent, name):
     '''Generates ADMX XML elements for a List-Policy and adds them to the
-    passed parent element. A List-Policy is mapped to an ADMX "list" element.
-    The parent of the "list" element must be the ADMX "elements" element of the
-    ADMX "policy" element that corresponds to the Policy-Group that contains the
-    List-Policy. The following example shows how the JSON specification of the
-    List-Policy "ExtensionInstallBlacklist" of the Policy-Group
-    "ExtensionInstallBlacklist" is mapped to ADMX:
-
-    {
-      'name': 'ExtensionInstallBlacklist',
-      'policies': [{
-        'name': 'ExtensionInstallBlacklist',
-        'type': 'list',
-      }]
-    },
-
-    <policy ... name="ExtensionInstallBlacklist" ...>
-      ...
-      <elements>
-        <list id="ExtensionInstallBlacklistDesc" valuePrefix=""/>
-      </elements>
-    </policy>
+    passed parent element.
     '''
     attributes = {
       # The ID must be in sync with ID of the corresponding element in the ADML
@@ -307,46 +223,61 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     '''Generates AMDX elements for a Policy. There are four different policy
     types: Main-Policy, String-Policy, Enum-Policy and List-Policy.
     '''
+    policies_elem = self._active_policies_elem
     policy_type = policy['type']
     policy_name = policy['name']
+
+    attributes = {
+      'name': policy_name,
+      'class': self.config['win_group_policy_class'],
+      'displayName': self._AdmlString(policy_name),
+      'explainText': self._AdmlStringExplain(policy_name),
+      'presentation': self._AdmlPresentation(policy_name),
+      'key': self.config['win_reg_key_name'],
+    }
+    # Store the current "policy" AMDX element in self for later use by the
+    # WritePolicy method.
+    policy_elem = self.AddElement(policies_elem, 'policy',
+                                  attributes)
+    self.AddElement(policy_elem, 'parentCategory',
+                    {'ref': self._active_policy_group_name})
+    self.AddElement(policy_elem, 'supportedOn',
+                    {'ref': self.config['win_supported_os']})
     if policy_type == 'main':
-      self._AddMainPolicy(self._active_policy_elem)
+      self.AddAttribute(policy_elem, 'valueName', policy_name)
+      self._AddMainPolicy(policy_elem)
     elif policy_type == 'string':
-      parent = self._GetElements(self._active_policy_elem)
+      parent = self._GetElements(policy_elem)
       self._AddStringPolicy(parent, policy_name)
     elif policy_type == 'enum':
-      parent = self._GetElements(self._active_policy_elem)
+      parent = self._GetElements(policy_elem)
       self._AddEnumPolicy(parent, policy_name, policy['items'])
     elif policy_type == 'list':
-      parent = self._GetElements(self._active_policy_elem)
+      parent = self._GetElements(policy_elem)
       self._AddListPolicy(parent, policy_name)
     else:
       raise Exception('Unknown policy type %s.' % policy_type)
 
   def BeginPolicyGroup(self, group):
-    '''Generates ADMX elements for a Policy-Group and adds them to the ADMX
-    policies element. A Policy-Group is mapped to an ADMX "policy" element. All
-    ADMX policy elements are grouped under the ADMX "policies" element.
+    '''Generates ADMX elements for a Policy-Group.
     '''
-    policies_elem = self._active_policies_elem
-    policy_group_name = group['name']
-    attributes = {
-      'name': policy_group_name,
-      'class': self.config['win_group_policy_class'],
-      'displayName': self._AdmlString(policy_group_name),
-      'explainText': self._AdmlStringExplain(policy_group_name),
-      'presentation': self._AdmlPresentation(policy_group_name),
-      'key': self.config['win_reg_key_name'],
-      'valueName': policy_group_name,
-    }
-    # Store the current "policy" AMDX element in self for later use by the
-    # WritePolicy method.
-    self._active_policy_elem = self.AddElement(policies_elem, 'policy',
-                                               attributes)
-    self.AddElement(self._active_policy_elem, 'parentCategory',
-                    {'ref': self.config['win_category_path'][-1]})
-    self.AddElement(self._active_policy_elem, 'supportedOn',
-                    {'ref': self.config['win_supported_os']})
+    self._active_policy_group_name = self.config['win_category_path'][-1]
+    # If a policy group contains more than one policy then create a new
+    # category.
+    if len(group['policies']) > 1:
+      policy_group_name = group['name']
+      attributes = {
+        'name': policy_group_name,
+        'displayName': self._AdmlString(policy_group_name + '_group'),
+      }
+      category_elem = self.AddElement(self._categories_elem,
+                                      'category',
+                                      attributes)
+      attributes = {
+        'ref': self.config['win_category_path'][-1],
+      }
+      self.AddElement(category_elem, 'parentCategory', attributes)
+      self._active_policy_group_name = policy_group_name
 
   def BeginTemplate(self):
     '''Generates the skeleton of the ADMX template. An ADMX template contains
