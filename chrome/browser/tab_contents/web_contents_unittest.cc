@@ -1378,6 +1378,45 @@ TEST_F(TabContentsTest, NavigateBeforeInterstitialShows) {
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
 }
 
+// Test that a new request to show an interstitial while an interstitial is
+// pending does not cause problems. htp://crbug/29655 and htp://crbug/9442.
+TEST_F(TabContentsTest, TwoQuickInterstitials) {
+  GURL interstitial_url("http://interstitial");
+
+  // Show a first interstitial.
+  TestInterstitialPage::InterstitialState state1 =
+      TestInterstitialPage::UNDECIDED;
+  bool deleted1 = false;
+  TestInterstitialPage* interstitial1 =
+      new TestInterstitialPage(contents(), true, interstitial_url,
+                               &state1, &deleted1);
+  TestInterstitialPageStateGuard state_guard1(interstitial1);
+  interstitial1->Show();
+
+  // Show another interstitial on that same tab before the first one had time
+  // to load.
+  TestInterstitialPage::InterstitialState state2 =
+      TestInterstitialPage::UNDECIDED;
+  bool deleted2 = false;
+  TestInterstitialPage* interstitial2 =
+      new TestInterstitialPage(contents(), true, interstitial_url,
+                               &state2, &deleted2);
+  TestInterstitialPageStateGuard state_guard2(interstitial2);
+  interstitial2->Show();
+
+  // The first interstitial should have been closed and deleted.
+  EXPECT_TRUE(deleted1);
+  EXPECT_EQ(TestInterstitialPage::CANCELED, state1);
+
+  // The 2nd one should still be OK.
+  ASSERT_FALSE(deleted2);
+  EXPECT_EQ(TestInterstitialPage::UNDECIDED, state2);
+
+  // Make the interstitial navigation commit it should be showing.
+  interstitial2->TestDidNavigate(1, interstitial_url);
+  EXPECT_EQ(interstitial2, contents()->interstitial_page());
+}
+
 // Test showing an interstitial and have its renderer crash.
 TEST_F(TabContentsTest, InterstitialCrasher) {
   // Show an interstitial.
