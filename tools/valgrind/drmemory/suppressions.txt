@@ -158,6 +158,20 @@ ADVAPI32.dll!StackTraceW
 UNADDRESSABLE ACCESS
 ntdll.dll!Rtl*CriticalSection*
 
+UNADDRESSABLE ACCESS
+*!Send
+
+UNADDRESSABLE ACCESS
+...
+*!tracked_objects::Tracked::Tracked
+
+UNADDRESSABLE ACCESS
+*!Pickle::Pickle
+
+UNADDRESSABLE ACCESS
+...
+*!IPC::ChannelProxy::Context::On*Message*
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
