@@ -19,6 +19,7 @@
 #include "base/timer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "ipc/ipc_message.h"
@@ -65,6 +66,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   virtual IntranetRedirectDetector* intranet_redirect_detector();
   virtual const std::string& GetApplicationLocale();
   virtual void SetApplicationLocale(const std::string& locale);
+  virtual DownloadStatusUpdater* download_status_updater();
   virtual base::WaitableEvent* shutdown_event();
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher();
   virtual void CheckForInspectorFiles();
@@ -185,6 +187,11 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   // This service just sits around and makes thumbnails for tabs. It does
   // nothing in the constructor so we don't have to worry about lazy init.
   ThumbnailGenerator thumbnail_generator_;
+
+  // Download status updates (like a changing application icon on dock/taskbar)
+  // are global per-application. DownloadStatusUpdater does no work in the ctor
+  // so we don't have to worry about lazy initialization.
+  DownloadStatusUpdater download_status_updater_;
 
   // An event that notifies when we are shutting-down.
   scoped_ptr<base::WaitableEvent> shutdown_event_;

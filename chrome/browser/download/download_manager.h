@@ -40,12 +40,14 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/download/download_status_updater_delegate.h"
 #include "chrome/browser/shell_dialogs.h"
 
 class DownloadFileManager;
 class DownloadHistory;
 class DownloadItem;
 class DownloadPrefs;
+class DownloadStatusUpdater;
 class GURL;
 class Profile;
 class ResourceDispatcherHost;
@@ -58,13 +60,14 @@ struct DownloadSaveInfo;
 class DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager,
                                         ChromeThread::DeleteOnUIThread>,
+      public DownloadStatusUpdaterDelegate,
       public SelectFileDialog::Listener {
   // For testing.
   friend class DownloadManagerTest;
   friend class MockDownloadManager;
 
  public:
-  DownloadManager();
+  explicit DownloadManager(DownloadStatusUpdater* status_updater);
 
   // Shutdown the download manager. Must be called before destruction.
   void Shutdown();
@@ -186,6 +189,12 @@ class DownloadManager
   // Tests if a file type should be opened automatically.
   bool ShouldOpenFileBasedOnExtension(const FilePath& path) const;
 
+  // Overridden from DownloadStatusUpdaterDelegate:
+  virtual bool IsDownloadProgressKnown();
+  virtual int64 GetInProgressDownloadCount();
+  virtual int64 GetReceivedDownloadBytes();
+  virtual int64 GetTotalDownloadBytes();
+
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);
   virtual void FileSelectionCanceled(void* params);
@@ -246,8 +255,7 @@ class DownloadManager
   // dangerous downloads are downloaded to temporary files that need to be
   // renamed on the file thread first.
   // Invoked on the UI thread.
-  // Marked virtual for testing.
-  virtual void ContinueDownloadFinished(DownloadItem* download);
+  void ContinueDownloadFinished(DownloadItem* download);
 
   // Renames a finished dangerous download from its temporary file name to its
   // real file name.
@@ -263,8 +271,7 @@ class DownloadManager
                                 int new_path_uniquifier);
 
   // Updates the app icon about the overall download progress.
-  // Marked virtual for testing.
-  virtual void UpdateAppIcon();
+  void UpdateAppIcon();
 
   // Changes the paths and file name of the specified |download|, propagating
   // the change to the history system.
@@ -331,6 +338,9 @@ class DownloadManager
 
   // Non-owning pointer for handling file writing on the download_thread_.
   DownloadFileManager* file_manager_;
+
+  // Non-owning pointer for updating the download status.
+  DownloadStatusUpdater* status_updater_;
 
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.

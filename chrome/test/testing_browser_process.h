@@ -149,6 +149,10 @@ class TestingBrowserProcess : public BrowserProcess {
     app_locale_ = app_locale;
   }
 
+  virtual DownloadStatusUpdater* download_status_updater() {
+    return NULL;
+  }
+
   virtual base::WaitableEvent* shutdown_event() {
     return shutdown_event_.get();
   }

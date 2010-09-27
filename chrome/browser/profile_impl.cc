@@ -1025,7 +1025,8 @@ void ProfileImpl::CreatePasswordStore() {
 
 DownloadManager* ProfileImpl::GetDownloadManager() {
   if (!created_download_manager_) {
-    scoped_refptr<DownloadManager> dlm(new DownloadManager);
+    scoped_refptr<DownloadManager> dlm(
+        new DownloadManager(g_browser_process->download_status_updater()));
     dlm->Init(this);
     created_download_manager_ = true;
     download_manager_.swap(dlm);

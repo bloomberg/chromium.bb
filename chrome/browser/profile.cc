@@ -304,7 +304,8 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual DownloadManager* GetDownloadManager() {
     if (!download_manager_.get()) {
-      scoped_refptr<DownloadManager> dlm(new DownloadManager);
+      scoped_refptr<DownloadManager> dlm(
+          new DownloadManager(g_browser_process->download_status_updater()));
       dlm->Init(this);
       download_manager_.swap(dlm);
     }

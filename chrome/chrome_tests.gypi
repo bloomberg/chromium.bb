@@ -1059,6 +1059,7 @@
         'browser/download/download_manager_unittest.cc',
         'browser/download/download_request_infobar_delegate_unittest.cc',
         'browser/download/download_request_limiter_unittest.cc',
+        'browser/download/download_status_updater_unittest.cc',
         'browser/download/download_util_unittest.cc',
         'browser/download/save_package_unittest.cc',
         'browser/encoding_menu_controller_unittest.cc',

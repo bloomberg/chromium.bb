@@ -21,6 +21,7 @@ class AutomationProviderList;
 class Clipboard;
 class DevToolsManager;
 class DownloadRequestLimiter;
+class DownloadStatusUpdater;
 class GoogleURLTracker;
 class IntranetRedirectDetector;
 class IconManager;
@@ -124,6 +125,7 @@ class BrowserProcess {
   virtual void SetApplicationLocale(const std::string& locale) = 0;
 
   DownloadRequestLimiter* download_request_limiter();
+  virtual DownloadStatusUpdater* download_status_updater() = 0;
 
   // Returns an event that is signaled when the browser shutdown.
   virtual base::WaitableEvent* shutdown_event() = 0;

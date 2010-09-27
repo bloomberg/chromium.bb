@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/history/download_create_info.h"
@@ -49,14 +50,19 @@
 #include "app/win_util.h"
 #endif
 
-DownloadManager::DownloadManager()
+DownloadManager::DownloadManager(DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),
       profile_(NULL),
-      file_manager_(NULL) {
+      file_manager_(NULL),
+      status_updater_(status_updater) {
+  if (status_updater_)
+    status_updater_->AddDelegate(this);
 }
 
 DownloadManager::~DownloadManager() {
   DCHECK(!shutdown_needed_);
+  if (status_updater_)
+    status_updater_->RemoveDelegate(this);
 }
 
 void DownloadManager::Shutdown() {
@@ -661,33 +667,8 @@ void DownloadManager::PauseDownload(int32 download_id, bool pause) {
 }
 
 void DownloadManager::UpdateAppIcon() {
-  int64 total_bytes = 0;
-  int64 received_bytes = 0;
-  int download_count = 0;
-  bool progress_known = true;
-
-  for (DownloadMap::iterator i = in_progress_.begin();
-       i != in_progress_.end();
-       ++i) {
-    ++download_count;
-    const DownloadItem* item = i->second;
-    if (item->total_bytes() > 0) {
-      total_bytes += item->total_bytes();
-      received_bytes += item->received_bytes();
-    } else {
-      // This download didn't specify a Content-Length, so the combined progress
-      // bar neeeds to be indeterminate.
-      progress_known = false;
-    }
-  }
-
-  float progress = 0;
-  if (progress_known && download_count)
-    progress = static_cast<float>(received_bytes) / total_bytes;
-
-  download_util::UpdateAppIconDownloadProgress(download_count,
-                                               progress_known,
-                                               progress);
+  if (status_updater_)
+    status_updater_->Update();
 }
 
 void DownloadManager::RenameDownload(DownloadItem* download,
@@ -834,6 +815,40 @@ bool DownloadManager::ShouldOpenFileBasedOnExtension(
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);
   return download_prefs_->IsAutoOpenEnabledForExtension(extension);
+}
+
+bool DownloadManager::IsDownloadProgressKnown() {
+  for (DownloadMap::iterator i = in_progress_.begin();
+       i != in_progress_.end(); ++i) {
+    if (i->second->total_bytes() <= 0)
+      return false;
+  }
+
+  return true;
+}
+
+int64 DownloadManager::GetInProgressDownloadCount() {
+  return in_progress_.size();
+}
+
+int64 DownloadManager::GetReceivedDownloadBytes() {
+  DCHECK(IsDownloadProgressKnown());
+  int64 received_bytes = 0;
+  for (DownloadMap::iterator i = in_progress_.begin();
+       i != in_progress_.end(); ++i) {
+    received_bytes += i->second->received_bytes();
+  }
+  return received_bytes;
+}
+
+int64 DownloadManager::GetTotalDownloadBytes() {
+  DCHECK(IsDownloadProgressKnown());
+  int64 total_bytes = 0;
+  for (DownloadMap::iterator i = in_progress_.begin();
+       i != in_progress_.end(); ++i) {
+    total_bytes += i->second->total_bytes();
+  }
+  return total_bytes;
 }
 
 void DownloadManager::FileSelected(const FilePath& path,

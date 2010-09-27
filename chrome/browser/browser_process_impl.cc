@@ -458,6 +458,10 @@ void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
   extension_l10n_util::SetProcessLocale(locale);
 }
 
+DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {
+  return &download_status_updater_;
+}
+
 base::WaitableEvent* BrowserProcessImpl::shutdown_event() {
   return shutdown_event_.get();
 }

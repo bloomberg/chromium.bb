@@ -22,8 +22,10 @@
 
 class MockDownloadManager : public DownloadManager {
  public:
+  MockDownloadManager() : DownloadManager(NULL) {
+  }
+
   // Override some functions.
-  virtual void UpdateAppIcon() { }
   virtual void UpdateHistoryForDownload(DownloadItem*) { }
   virtual void ContinueDownloadFinished(DownloadItem*) { }
 };
