@@ -14,7 +14,7 @@ found in the LICENSE file.
     <script src="testview.js"></script>
     <script src="main.js"></script>
     <script src="dnsview.js"></script>
-    <script src="requestsview.js"></script>
+    <script src="eventsview.js"></script>
     <script src="detailsview.js"></script>
     <script src="sourceentry.js"></script>
     <script src="resizableverticalsplitview.js"></script>
@@ -33,7 +33,7 @@ found in the LICENSE file.
       <ul>
         <li><a href="#data" id=dataTab>Data</a></li>
         <li><a href="#proxy" id=proxyTab>Proxy</a></li>
-        <li><a href="#requests" id=requestsTab>Requests</a></li>
+        <li><a href="#events" id=eventsTab>Events</a></li>
         <li><a href="#dns" id=dnsTab>DNS</a></li>
         <li><a href="#sockets" id=socketsTab>Sockets</a></li>
         <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
@@ -245,14 +245,13 @@ function displayHelpForBugDump() {
 <ul>
   <li>While the net-internals page is open, it will capture the network events
   that are happening in Chrome. You can view that in real-time by going to
-  the <i>Requests</i> tab.</li>
+  the <i>Events</i> tab.</li>
   <li>Once you close the net-internals window, the data it had captured will be
   discarded.</li>
-<li>Chrome keeps around a small buffer of network events for the
-  most recent requests even when the net-internals window is not open.
-  That way if you open chrome://net-internals/
-  <b>shortly after</b> encountering a problem, you may still find the relevant
-  data.
+<li>Chrome keeps around a small buffer of the most recent network events
+  even when the net-internals window is not open. That way if you open
+  chrome://net-internals/ <b>shortly after</b> encountering a problem,
+  you may still find the relevant data.
   These <i>passively captured</i> events are less accurate however, and will
   be prefixed in the log with <span style="font-family: monospace;">(P)</span>.
 </li>
@@ -273,7 +272,7 @@ function displayHelpForBugDump() {
       <div id=testSummary></div>
     </div>
 
-    <!-- ================= Requests view =================== -->
+    <!-- ================= Events view =================== -->
 
     <!-- Filter Box: This the top bar which contains the search box.  -->
     <div id=filterBox>
@@ -285,9 +284,9 @@ function displayHelpForBugDump() {
         </tr>
       </table>
     </div>
-    <!-- Requests Box: This the panel on the left which lists the requests -->
-    <div id=requestsBox>
-      <table id=requestsListTable cellspacing=0 cellpadding=0 width=100%>
+    <!-- Events Box: This the panel on the left which lists the sources -->
+    <div id=eventsBox>
+      <table id=eventsListTable cellspacing=0 cellpadding=0 width=100%>
         <thead>
           <tr>
             <td><input type=checkbox id=selectAll /></td>
@@ -296,13 +295,12 @@ function displayHelpForBugDump() {
             <td id=sortByDescription width=99%>Description</td>
           </tr>
         </thead>
-        <!-- Requests table body: This is where request rows go into -->
-        <tbody id=requestsListTableBody></tbody>
+        <!-- Events table body: This is where request rows go into -->
+        <tbody id=eventsListTableBody></tbody>
       </table>
     </div>
     <!-- Action Box: This is a button bar along the bottom -->
     <div id=actionBox>
-      <input type=button value="Stop capturing" onclick="alert('TODO')" />
       <input type=button value="Delete selected" id=deleteSelected />
       <input type=button value="Delete all" id=deleteAll />
     </div>

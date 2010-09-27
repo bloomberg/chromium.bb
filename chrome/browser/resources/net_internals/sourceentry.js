@@ -5,7 +5,7 @@
 /**
  * Each row in the filtered items list is backed by a SourceEntry. This
  * instance contains all of the data pertaining to that row, and notifies
- * its parent view (the RequestsView) whenever its data changes.
+ * its parent view (the EventsView) whenever its data changes.
  *
  * @constructor
  */

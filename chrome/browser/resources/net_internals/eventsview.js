@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * RequestsView displays a filtered list of all the requests, and a details
- * pane for the selected requests.
+ * EventsView displays a filtered list of all events sharing a source, and
+ * a details pane for the selected sources.
  *
  *  +----------------------++----------------+
  *  |      filter box      ||                |
@@ -13,7 +13,7 @@
  *  |                      ||                |
  *  |                      ||                |
  *  |                      ||                |
- *  |    requests list     ||    details     |
+ *  |     source list      ||    details     |
  *  |                      ||    view        |
  *  |                      ||                |
  *  |                      ||                |
@@ -25,12 +25,12 @@
  *
  * @constructor
  */
-function RequestsView(tableBodyId, filterInputId, filterCountId,
-                      deleteSelectedId, deleteAllId, selectAllId, sortByIdId,
-                      sortBySourceTypeId, sortByDescriptionId,
-                      tabHandlesContainerId, logTabId, timelineTabId,
-                      detailsLogBoxId, detailsTimelineBoxId,
-                      topbarId, middleboxId, bottombarId, sizerId) {
+function EventsView(tableBodyId, filterInputId, filterCountId,
+                    deleteSelectedId, deleteAllId, selectAllId, sortByIdId,
+                    sortBySourceTypeId, sortByDescriptionId,
+                    tabHandlesContainerId, logTabId, timelineTabId,
+                    detailsLogBoxId, detailsTimelineBoxId,
+                    topbarId, middleboxId, bottombarId, sizerId) {
   View.call(this);
 
   // Used for sorting entries with automatically assigned IDs.
@@ -84,13 +84,13 @@ function RequestsView(tableBodyId, filterInputId, filterCountId,
   this.initializeSourceList_();
 }
 
-inherits(RequestsView, View);
+inherits(EventsView, View);
 
 /**
  * Initializes the list of source entries.  If source entries are already,
  * being displayed, removes them all in the process.
  */
-RequestsView.prototype.initializeSourceList_ = function() {
+EventsView.prototype.initializeSourceList_ = function() {
   this.currentSelectedSources_ = [];
   this.sourceIdToEntryMap_ = {};
   this.tableBody_.innerHTML = '';
@@ -101,28 +101,28 @@ RequestsView.prototype.initializeSourceList_ = function() {
 };
 
 // How soon after updating the filter list the counter should be updated.
-RequestsView.REPAINT_FILTER_COUNTER_TIMEOUT_MS = 0;
+EventsView.REPAINT_FILTER_COUNTER_TIMEOUT_MS = 0;
 
-RequestsView.prototype.setGeometry = function(left, top, width, height) {
-  RequestsView.superClass_.setGeometry.call(this, left, top, width, height);
+EventsView.prototype.setGeometry = function(left, top, width, height) {
+  EventsView.superClass_.setGeometry.call(this, left, top, width, height);
   this.splitterView_.setGeometry(left, top, width, height);
 };
 
-RequestsView.prototype.show = function(isVisible) {
-  RequestsView.superClass_.show.call(this, isVisible);
+EventsView.prototype.show = function(isVisible) {
+  EventsView.superClass_.show.call(this, isVisible);
   this.splitterView_.show(isVisible);
 };
 
-RequestsView.prototype.getFilterText_ = function() {
+EventsView.prototype.getFilterText_ = function() {
   return this.filterInput_.value;
 };
 
-RequestsView.prototype.setFilterText_ = function(filterText) {
+EventsView.prototype.setFilterText_ = function(filterText) {
   this.filterInput_.value = filterText;
   this.onFilterTextChanged_();
 };
 
-RequestsView.prototype.onFilterTextChanged_ = function() {
+EventsView.prototype.onFilterTextChanged_ = function() {
   this.setFilter_(this.getFilterText_());
 };
 
@@ -132,7 +132,7 @@ RequestsView.prototype.onFilterTextChanged_ = function() {
  * which puts longer lived events at the top, and behaves better than using
  * duration or time of first event.
  */
-RequestsView.compareActive_ = function(source1, source2) {
+EventsView.compareActive_ = function(source1, source2) {
   if (source1.isActive() && !source2.isActive())
     return -1;
   if (!source1.isActive() && source2.isActive())
@@ -147,25 +147,25 @@ RequestsView.compareActive_ = function(source1, source2) {
     // If both ended at the same time, then odds are they were related events,
     // started one after another, so sort in the opposite order of their
     // source IDs to get a more intuitive ordering.
-    return -RequestsView.compareSourceId_(source1, source2);
+    return -EventsView.compareSourceId_(source1, source2);
   }
-  return RequestsView.compareSourceId_(source1, source2);
+  return EventsView.compareSourceId_(source1, source2);
 };
 
-RequestsView.compareDescription_ = function(source1, source2) {
+EventsView.compareDescription_ = function(source1, source2) {
   var source1Text = source1.getDescription().toLowerCase();
   var source2Text = source2.getDescription().toLowerCase();
   var compareResult = source1Text.localeCompare(source2Text);
   if (compareResult != 0)
     return compareResult;
-  return RequestsView.compareSourceId_(source1, source2);
+  return EventsView.compareSourceId_(source1, source2);
 };
 
-RequestsView.compareDuration_ = function(source1, source2) {
+EventsView.compareDuration_ = function(source1, source2) {
   var durationDifference = source2.getDuration() - source1.getDuration();
   if (durationDifference)
     return durationDifference;
-  return RequestsView.compareSourceId_(source1, source2);
+  return EventsView.compareSourceId_(source1, source2);
 };
 
 /**
@@ -174,7 +174,7 @@ RequestsView.compareDuration_ = function(source1, source2) {
  * before the sourceless entry. Any ambiguities are resolved by ordering
  * the entries without a source by the order in which they were received.
  */
-RequestsView.compareSourceId_ = function(source1, source2) {
+EventsView.compareSourceId_ = function(source1, source2) {
   var sourceId1 = source1.getSourceId();
   if (sourceId1 < 0)
     sourceId1 = source1.getMaxPreviousEntrySourceId();
@@ -190,35 +190,35 @@ RequestsView.compareSourceId_ = function(source1, source2) {
   return source2.getSourceId() - source1.getSourceId();
 };
 
-RequestsView.compareSourceType_ = function(source1, source2) {
+EventsView.compareSourceType_ = function(source1, source2) {
   var source1Text = source1.getSourceTypeString();
   var source2Text = source2.getSourceTypeString();
   var compareResult = source1Text.localeCompare(source2Text);
   if (compareResult != 0)
     return compareResult;
-  return RequestsView.compareSourceId_(source1, source2);
+  return EventsView.compareSourceId_(source1, source2);
 };
 
-RequestsView.prototype.comparisonFuncWithReversing_ = function(a, b) {
+EventsView.prototype.comparisonFuncWithReversing_ = function(a, b) {
   var result = this.comparisonFunction_(a, b);
   if (this.doSortBackwards_)
     result *= -1;
   return result;
 };
 
-RequestsView.comparisonFunctionTable_ = {
+EventsView.comparisonFunctionTable_ = {
   // sort: and sort:- are allowed
-  '':            RequestsView.compareSourceId_,
-  'active':      RequestsView.compareActive_,
-  'desc':        RequestsView.compareDescription_,
-  'description': RequestsView.compareDescription_,
-  'duration':    RequestsView.compareDuration_,
-  'id':          RequestsView.compareSourceId_,
-  'source':      RequestsView.compareSourceType_,
-  'type':        RequestsView.compareSourceType_
+  '':            EventsView.compareSourceId_,
+  'active':      EventsView.compareActive_,
+  'desc':        EventsView.compareDescription_,
+  'description': EventsView.compareDescription_,
+  'duration':    EventsView.compareDuration_,
+  'id':          EventsView.compareSourceId_,
+  'source':      EventsView.compareSourceType_,
+  'type':        EventsView.compareSourceType_
 };
 
-RequestsView.prototype.Sort_ = function() {
+EventsView.prototype.Sort_ = function() {
   var sourceEntries = [];
   for (var id in this.sourceIdToEntryMap_) {
     // Can only sort items with an actual row in the table.
@@ -245,7 +245,7 @@ RequestsView.prototype.Sort_ = function() {
  *
  * On failure, returns null.
  */
-RequestsView.prototype.parseDirective_ = function(sourceText, directive) {
+EventsView.prototype.parseDirective_ = function(sourceText, directive) {
   // Check if at start of string.  Doesn't need preceding whitespace.
   var regExp = new RegExp('^\\s*' + directive + ':(\\S*)\\s*', 'i');
   var matchInfo = regExp.exec(sourceText);
@@ -269,8 +269,8 @@ RequestsView.prototype.parseDirective_ = function(sourceText, directive) {
  * Returned value has the additional field |isNegated|, and a leading
  * '-' will be removed from |parameter|, if present.
  */
-RequestsView.prototype.parseNegatableDirective_ = function(sourceText,
-                                                           directive) {
+EventsView.prototype.parseNegatableDirective_ = function(sourceText,
+                                                         directive) {
   var matchInfo = this.parseDirective_(sourceText, directive);
   if (matchInfo == null)
     return null;
@@ -290,8 +290,8 @@ RequestsView.prototype.parseNegatableDirective_ = function(sourceText,
  * Returns |filterText| with all sort directives removed, including
  * invalid ones.
  */
-RequestsView.prototype.parseSortDirectives_ = function(filterText) {
-  this.comparisonFunction_ = RequestsView.compareSourceId_;
+EventsView.prototype.parseSortDirectives_ = function(filterText) {
+  this.comparisonFunction_ = EventsView.compareSourceId_;
   this.doSortBackwards_ = false;
 
   while (true) {
@@ -299,9 +299,9 @@ RequestsView.prototype.parseSortDirectives_ = function(filterText) {
     if (sortInfo == null)
       break;
     var comparisonName = sortInfo.parameter.toLowerCase();
-    if (RequestsView.comparisonFunctionTable_[comparisonName] != null) {
+    if (EventsView.comparisonFunctionTable_[comparisonName] != null) {
       this.comparisonFunction_ =
-          RequestsView.comparisonFunctionTable_[comparisonName];
+          EventsView.comparisonFunctionTable_[comparisonName];
       this.doSortBackwards_ = sortInfo.isNegated;
     }
     filterText = sortInfo.remainingText;
@@ -316,7 +316,7 @@ RequestsView.prototype.parseSortDirectives_ = function(filterText) {
  * Returns |filterText| with all "is:" directives removed, including
  * invalid ones.
  */
-RequestsView.prototype.parseRestrictDirectives_ = function(filterText, filter) {
+EventsView.prototype.parseRestrictDirectives_ = function(filterText, filter) {
   while (true) {
     var filterInfo = this.parseNegatableDirective_(filterText, 'is');
     if (filterInfo == null)
@@ -332,7 +332,7 @@ RequestsView.prototype.parseRestrictDirectives_ = function(filterText, filter) {
   return filterText;
 };
 
-RequestsView.prototype.setFilter_ = function(filterText) {
+EventsView.prototype.setFilter_ = function(filterText) {
   var lastComparisonFunction = this.comparisonFunction_;
   var lastDoSortBackwards = this.doSortBackwards_;
 
@@ -359,7 +359,7 @@ RequestsView.prototype.setFilter_ = function(filterText) {
  * Significantly faster than sorting the entire table again, when only
  * one entry has changed.
  */
-RequestsView.prototype.InsertionSort_ = function(sourceEntry) {
+EventsView.prototype.InsertionSort_ = function(sourceEntry) {
   // SourceEntry that should be after |sourceEntry|, if it needs
   // to be moved earlier in the list.
   var sourceEntryAfter = sourceEntry;
@@ -391,7 +391,7 @@ RequestsView.prototype.InsertionSort_ = function(sourceEntry) {
     sourceEntry.moveAfter(sourceEntryBefore);
 };
 
-RequestsView.prototype.onLogEntryAdded = function(logEntry) {
+EventsView.prototype.onLogEntryAdded = function(logEntry) {
   var id = logEntry.source.id;
 
   // Lookup the source.
@@ -421,7 +421,7 @@ RequestsView.prototype.onLogEntryAdded = function(logEntry) {
  * Called whenever some log events are deleted.  |sourceIds| lists
  * the source IDs of all deleted log entries.
  */
-RequestsView.prototype.onLogEntriesDeleted = function(sourceIds) {
+EventsView.prototype.onLogEntriesDeleted = function(sourceIds) {
   for (var i = 0; i < sourceIds.length; ++i) {
     var id = sourceIds[i];
     var entry = this.sourceIdToEntryMap_[id];
@@ -436,25 +436,25 @@ RequestsView.prototype.onLogEntriesDeleted = function(sourceIds) {
 /**
  * Called whenever all log events are deleted.
  */
-RequestsView.prototype.onAllLogEntriesDeleted = function(offset) {
+EventsView.prototype.onAllLogEntriesDeleted = function(offset) {
   this.initializeSourceList_();
 };
 
-RequestsView.prototype.incrementPrefilterCount = function(offset) {
+EventsView.prototype.incrementPrefilterCount = function(offset) {
   this.numPrefilter_ += offset;
   this.invalidateFilterCounter_();
 };
 
-RequestsView.prototype.incrementPostfilterCount = function(offset) {
+EventsView.prototype.incrementPostfilterCount = function(offset) {
   this.numPostfilter_ += offset;
   this.invalidateFilterCounter_();
 };
 
-RequestsView.prototype.onSelectionChanged = function() {
+EventsView.prototype.onSelectionChanged = function() {
   this.invalidateDetailsView_();
 };
 
-RequestsView.prototype.clearSelection = function() {
+EventsView.prototype.clearSelection = function() {
   var prevSelection = this.currentSelectedSources_;
   this.currentSelectedSources_ = [];
 
@@ -466,7 +466,7 @@ RequestsView.prototype.clearSelection = function() {
   this.onSelectionChanged();
 };
 
-RequestsView.prototype.deleteSelected_ = function() {
+EventsView.prototype.deleteSelected_ = function() {
   var sourceIds = [];
   for (var i = 0; i < this.currentSelectedSources_.length; ++i) {
     var entry = this.currentSelectedSources_[i];
@@ -475,7 +475,7 @@ RequestsView.prototype.deleteSelected_ = function() {
   g_browser.deleteEventsBySourceId(sourceIds);
 };
 
-RequestsView.prototype.selectAll_ = function(event) {
+EventsView.prototype.selectAll_ = function(event) {
   for (var id in this.sourceIdToEntryMap_) {
     var entry = this.sourceIdToEntryMap_[id];
     if (entry.isMatchedByFilter()) {
@@ -489,13 +489,13 @@ RequestsView.prototype.selectAll_ = function(event) {
  * If already using the specified sort method, flips direction.  Otherwise,
  * removes pre-existing sort parameter before adding the new one.
  */
-RequestsView.prototype.toggleSortMethod_ = function(sortMethod) {
+EventsView.prototype.toggleSortMethod_ = function(sortMethod) {
   // Remove old sort directives, if any.
   var filterText = this.parseSortDirectives_(this.getFilterText_());
 
   // If already using specified sortMethod, sort backwards.
   if (!this.doSortBackwards_ &&
-      RequestsView.comparisonFunctionTable_[sortMethod] ==
+      EventsView.comparisonFunctionTable_[sortMethod] ==
           this.comparisonFunction_)
     sortMethod = '-' + sortMethod;
 
@@ -503,19 +503,19 @@ RequestsView.prototype.toggleSortMethod_ = function(sortMethod) {
   this.setFilterText_(filterText.trim());
 };
 
-RequestsView.prototype.sortById_ = function(event) {
+EventsView.prototype.sortById_ = function(event) {
   this.toggleSortMethod_('id');
 };
 
-RequestsView.prototype.sortBySourceType_ = function(event) {
+EventsView.prototype.sortBySourceType_ = function(event) {
   this.toggleSortMethod_('source');
 };
 
-RequestsView.prototype.sortByDescription_ = function(event) {
+EventsView.prototype.sortByDescription_ = function(event) {
   this.toggleSortMethod_('desc');
 };
 
-RequestsView.prototype.modifySelectionArray = function(
+EventsView.prototype.modifySelectionArray = function(
     sourceEntry, addToSelection) {
   // Find the index for |sourceEntry| in the current selection list.
   var index = -1;
@@ -536,19 +536,19 @@ RequestsView.prototype.modifySelectionArray = function(
   }
 };
 
-RequestsView.prototype.invalidateDetailsView_ = function() {
+EventsView.prototype.invalidateDetailsView_ = function() {
   this.detailsView_.setData(this.currentSelectedSources_);
 };
 
-RequestsView.prototype.invalidateFilterCounter_ = function() {
+EventsView.prototype.invalidateFilterCounter_ = function() {
   if (!this.outstandingRepaintFilterCounter_) {
     this.outstandingRepaintFilterCounter_ = true;
     window.setTimeout(this.repaintFilterCounter_.bind(this),
-                      RequestsView.REPAINT_FILTER_COUNTER_TIMEOUT_MS);
+                      EventsView.REPAINT_FILTER_COUNTER_TIMEOUT_MS);
   }
 };
 
-RequestsView.prototype.repaintFilterCounter_ = function() {
+EventsView.prototype.repaintFilterCounter_ = function() {
   this.outstandingRepaintFilterCounter_ = false;
   this.filterCount_.innerHTML = '';
   addTextNode(this.filterCount_,

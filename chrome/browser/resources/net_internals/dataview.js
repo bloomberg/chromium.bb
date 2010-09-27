@@ -68,11 +68,10 @@ DataView.prototype.onAllLogEntriesDeleted = function() {
  * Updates the counters showing how many events have been captured.
  */
 DataView.prototype.updateEventCounts_ = function() {
-  var active = g_browser.getAllActivelyCapturedEvents();
-  var passive = g_browser.getAllPassivelyCapturedEvents();
-
-  this.activelyCapturedCountBox_.innerText = active.length;
-  this.passivelyCapturedCountBox_.innerText = passive.length;
+  this.activelyCapturedCountBox_.innerText =
+      g_browser.getNumActivelyCapturedEvents()
+  this.passivelyCapturedCountBox_.innerText =
+      g_browser.getNumPassivelyCapturedEvents();
 };
 
 /**
@@ -87,9 +86,9 @@ DataView.prototype.onExportToText_ = function() {
   text.push('Data exported on: ' + (new Date()).toLocaleString());
   text.push('');
   text.push('Number of passively captured events: ' +
-            g_browser.getAllPassivelyCapturedEvents().length);
+            g_browser.getNumPassivelyCapturedEvents());
   text.push('Number of actively captured events: ' +
-            g_browser.getAllActivelyCapturedEvents().length);
+            g_browser.getNumActivelyCapturedEvents());
   text.push('');
 
   text.push('Chrome version: ' + ClientInfo.version +
@@ -181,11 +180,11 @@ DataView.prototype.onExportToText_ = function() {
 
   text.push('');
   text.push('----------------------------------------------');
-  text.push(' Requests');
+  text.push(' Events');
   text.push('----------------------------------------------');
   text.push('');
 
-  this.appendRequestsPrintedAsText_(text);
+  this.appendEventsPrintedAsText_(text);
 
   text.push('');
   text.push('----------------------------------------------');
@@ -252,11 +251,8 @@ DataView.prototype.onExportToText_ = function() {
   this.selectText_();
 };
 
-DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
-  // Concatenate the passively captured events with the actively captured events
-  // into a single array.
-  var allEvents = g_browser.getAllPassivelyCapturedEvents().concat(
-      g_browser.getAllActivelyCapturedEvents());
+DataView.prototype.appendEventsPrintedAsText_ = function(out) {
+  var allEvents = g_browser.getAllCapturedEvents();
 
   // Group the events into buckets by source ID, and buckets by source type.
   var sourceIds = [];

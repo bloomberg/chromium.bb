@@ -24,30 +24,30 @@ var g_browser = null;
 function onLoaded() {
   g_browser = new BrowserBridge();
 
-  // Create the view which displays requests lists, and lets you select, filter
+  // Create the view which displays events lists, and lets you select, filter
   // and delete them.
-  var requestsView = new RequestsView('requestsListTableBody',
-                                      'filterInput',
-                                      'filterCount',
-                                      'deleteSelected',
-                                      'deleteAll',
-                                      'selectAll',
-                                      'sortById',
-                                      'sortBySource',
-                                      'sortByDescription',
+  var eventsView = new EventsView('eventsListTableBody',
+                                  'filterInput',
+                                  'filterCount',
+                                  'deleteSelected',
+                                  'deleteAll',
+                                  'selectAll',
+                                  'sortById',
+                                  'sortBySource',
+                                  'sortByDescription',
 
-                                      // IDs for the details view.
-                                      "detailsTabHandles",
-                                      "detailsLogTab",
-                                      "detailsTimelineTab",
-                                      "detailsLogBox",
-                                      "detailsTimelineBox",
+                                  // IDs for the details view.
+                                  "detailsTabHandles",
+                                  "detailsLogTab",
+                                  "detailsTimelineTab",
+                                  "detailsLogBox",
+                                  "detailsTimelineBox",
 
-                                      // IDs for the layout boxes.
-                                      "filterBox",
-                                      "requestsBox",
-                                      "actionBox",
-                                      "splitterBox");
+                                  // IDs for the layout boxes.
+                                  "filterBox",
+                                  "eventsBox",
+                                  "actionBox",
+                                  "splitterBox");
 
   // Create a view which will display info on the proxy setup.
   var proxyView = new ProxyView("proxyTabContent",
@@ -99,7 +99,7 @@ function onLoaded() {
       new TabSwitcherView(new DivView('categoryTabHandles'));
 
   // Populate the main tabs.
-  categoryTabSwitcher.addTab('requestsTab', requestsView, false);
+  categoryTabSwitcher.addTab('eventsTab', eventsView, false);
   categoryTabSwitcher.addTab('proxyTab', proxyView, false);
   categoryTabSwitcher.addTab('dnsTab', dnsView, false);
   categoryTabSwitcher.addTab('socketsTab', socketsView, false);
@@ -158,8 +158,8 @@ function BrowserBridge() {
   this.serviceProviders_ = new PollableDataHelper('onServiceProvidersChanged');
 
   // Cache of the data received.
-  this.passivelyCapturedEvents_ = [];
-  this.activelyCapturedEvents_ = [];
+  this.numPassivelyCapturedEvents_ = 0;
+  this.capturedEvents_ = [];
 
   // Next unique id to be assigned to a log entry without a source.
   // Needed to simplify deletion, identify associated GUI elements, etc.
@@ -245,8 +245,7 @@ BrowserBridge.prototype.receivedLogEntry = function(logEntry) {
     logEntry.source.id = this.nextSourcelessEventId_;
     --this.nextSourcelessEventId_;
   }
-  if (!logEntry.wasPassivelyCaptured)
-    this.activelyCapturedEvents_.push(logEntry);
+  this.capturedEvents_.push(logEntry);
   for (var i = 0; i < this.logObservers_.length; ++i)
     this.logObservers_[i].onLogEntryAdded(logEntry);
 };
@@ -304,8 +303,7 @@ BrowserBridge.prototype.receivedServiceProviders = function(serviceProviders) {
 };
 
 BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
-  this.passivelyCapturedEvents_ =
-      this.passivelyCapturedEvents_.concat(entries);
+  this.numPassivelyCapturedEvents_ += entries.length;
   for (var i = 0; i < entries.length; ++i) {
     var entry = entries[i];
     entry.wasPassivelyCaptured = true;
@@ -470,57 +468,58 @@ BrowserBridge.prototype.convertTimeTicksToDate = function(timeTicks) {
 };
 
 /**
- * Returns a list of all the events that were captured while we were
+ * Returns a list of all captured events.
+ */
+BrowserBridge.prototype.getAllCapturedEvents = function() {
+  return this.capturedEvents_;
+};
+
+/**
+ * Returns the number of events that were captured while we were
  * listening for events.
  */
-BrowserBridge.prototype.getAllActivelyCapturedEvents = function() {
-  return this.activelyCapturedEvents_;
+BrowserBridge.prototype.getNumActivelyCapturedEvents = function() {
+  return this.capturedEvents_.length - this.numPassivelyCapturedEvents_;
 };
 
 /**
- * Returns a list of all the events that were captured passively by the
+ * Returns the number of events that were captured passively by the
  * browser prior to when the net-internals page was started.
  */
-BrowserBridge.prototype.getAllPassivelyCapturedEvents = function() {
-  return this.passivelyCapturedEvents_;
+BrowserBridge.prototype.getNumPassivelyCapturedEvents = function() {
+  return this.numPassivelyCapturedEvents_;
 };
 
 /**
- * Deletes actively and passively captured events with source IDs in
- * |sourceIds|.
+ * Deletes captured events with source IDs in |sourceIds|.
  */
 BrowserBridge.prototype.deleteEventsBySourceId = function(sourceIds) {
-  sourceIdDict = {};
+  var sourceIdDict = {};
   for (var i = 0; i < sourceIds.length; i++)
     sourceIdDict[sourceIds[i]] = true;
 
-  // Returns a copy of |eventList| with all events with source IDs
-  // in |dict| removed.
-  var removeEventsInDict = function(eventList, dict) {
-    var newList = [];
-    for (var i = 0; i < eventList.length; ++i) {
-      var id = eventList[i].source.id;
-      if (!dict[id])
-        newList.push(eventList[i]);
+  var newEventList = [];
+  for (var i = 0; i < this.capturedEvents_.length; ++i) {
+    var id = this.capturedEvents_[i].source.id;
+    if (id in sourceIdDict) {
+      if (this.capturedEvents_[i].wasPassivelyCaptured)
+        --this.numPassivelyCapturedEvents_;
+      continue;
     }
-    return newList;
-  };
-
-  this.activelyCapturedEvents_ =
-    removeEventsInDict(this.activelyCapturedEvents_, sourceIdDict);
-  this.passivelyCapturedEvents_ =
-    removeEventsInDict(this.passivelyCapturedEvents_, sourceIdDict);
+    newEventList.push(this.capturedEvents_[i]);
+  }
+  this.capturedEvents_ = newEventList;
 
   for (var i = 0; i < this.logObservers_.length; ++i)
     this.logObservers_[i].onLogEntriesDeleted(sourceIds);
 };
 
 /**
- * Deletes all actively and passively captured events.
+ * Deletes all captured events.
  */
 BrowserBridge.prototype.deleteAllEvents = function() {
-  this.activelyCapturedEvents_ = [];
-  this.passivelyCapturedEvents_ = [];
+  this.capturedEvents_ = [];
+  this.numPassivelyCapturedEvents_ = 0;
   for (var i = 0; i < this.logObservers_.length; ++i)
     this.logObservers_[i].onAllLogEntriesDeleted();
 };

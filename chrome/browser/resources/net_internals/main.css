@@ -36,7 +36,7 @@ body {
   overflow: hidden;
 }
 
-#requestsBox {
+#eventsBox {
   overflow-x: hidden;
   overflow-y: auto
 }
@@ -55,17 +55,17 @@ body {
   user-select: none;
 }
 
-#requestsListTable {
+#eventsListTable {
   cursor: pointer;
 }
 
-#requestsListTable thead td {
+#eventsListTable thead td {
   text-align: left;
   font-weight: bold;
   background: rgb(229, 236, 249);
 }
 
-#requestsListTable td {
+#eventsListTable td {
   padding: 3px;
   border-left: 1px solid #afafaf;
   border-bottom: 1px solid #afafaf;
@@ -74,33 +74,33 @@ body {
   white-space: nowrap;
 }
 
-#requestsListTableBody .mouseover {
+#eventsListTableBody .mouseover {
   background: rgb(244,244,255);
 }
 
-#requestsListTableBody .selected,
-#requestsListTableBody .mouseover .selected {
+#eventsListTableBody .selected,
+#eventsListTableBody .mouseover .selected {
   background: #C3D9FF;
 }
 
-#requestsListTableBody .source_CONNECT_JOB {
+#eventsListTableBody .source_CONNECT_JOB {
   color: blue;
 }
 
-#requestsListTableBody .source_HOST_RESOLVER_IMPL_JOB,
-#requestsListTableBody .source_HOST_RESOLVER_IMPL_REQUEST {
+#eventsListTableBody .source_HOST_RESOLVER_IMPL_JOB,
+#eventsListTableBody .source_HOST_RESOLVER_IMPL_REQUEST {
   color: #308080;
 }
 
-#requestsListTableBody .source_SOCKET {
+#eventsListTableBody .source_SOCKET {
   color: purple;
 }
 
-#requestsListTableBody .source_INIT_PROXY_RESOLVER {
+#eventsListTableBody .source_INIT_PROXY_RESOLVER {
   color: green;
 }
 
-#requestsListTableBody .source_NONE {
+#eventsListTableBody .source_NONE {
   color: red;
 }
 
