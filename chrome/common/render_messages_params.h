@@ -30,7 +30,6 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
 #include "media/audio/audio_parameters.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/webplugin.h"
@@ -969,26 +968,6 @@ struct ViewHostMsg_DomMessage_Params {
   bool user_gesture;
 };
 
-struct ViewHostMsg_OpenFileSystemRequest_Params {
-  ViewHostMsg_OpenFileSystemRequest_Params();
-  ~ViewHostMsg_OpenFileSystemRequest_Params();
-
-  // The routing ID of the view initiating the request.
-  int routing_id;
-
-  // The response should have this id.
-  int request_id;
-
-  // The origin doing the initiating.
-  GURL origin_url;
-
-  // The requested FileSystem type.
-  WebKit::WebFileSystem::Type type;
-
-  // Indicates how much storage space (in bytes) the caller expects to need.
-  int64 requested_size;
-};
-
 struct ViewHostMsg_AccessibilityNotification_Params {
   enum NotificationType {
     // The node checked state has changed.
@@ -1270,14 +1249,6 @@ struct ParamTraits<ViewMsg_DeviceOrientationUpdated_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_DomMessage_Params> {
   typedef ViewHostMsg_DomMessage_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewHostMsg_OpenFileSystemRequest_Params> {
-  typedef ViewHostMsg_OpenFileSystemRequest_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

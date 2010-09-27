@@ -1029,11 +1029,11 @@ IPC_BEGIN_MESSAGES(View)
                       ViewMsg_DeviceOrientationUpdated_Params)
 
   // WebFrameClient::openFileSystem response messages.
-  IPC_MESSAGE_ROUTED4(ViewMsg_OpenFileSystemRequest_Complete,
-                      int /* request_id */,
-                      bool /* accepted */,
-                      string16 /* name */,
-                      string16 /* root_path */)
+  IPC_MESSAGE_CONTROL4(ViewMsg_OpenFileSystemRequest_Complete,
+                       int /* request_id */,
+                       bool /* accepted */,
+                       std::string /* name */,
+                       FilePath /* root_path */)
 
   // WebFileSystem response messages.
   IPC_MESSAGE_CONTROL1(ViewMsg_FileSystem_DidSucceed,
@@ -2797,8 +2797,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // These are messages sent from the renderer to the browser process.
 
   // WebFrameClient::openFileSystem() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_OpenFileSystemRequest,
-                       ViewHostMsg_OpenFileSystemRequest_Params)
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_OpenFileSystemRequest,
+                       int /* request_id */,
+                       GURL /* origin_url */,
+                       fileapi::FileSystemType /* type */,
+                       int64 /* requested_size */)
 
   // WebFileSystem::move() message.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Move,

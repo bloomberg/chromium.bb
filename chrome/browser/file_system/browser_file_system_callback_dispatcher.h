@@ -21,7 +21,7 @@ class BrowserFileSystemCallbackDispatcher
   virtual void DidReadDirectory(
       const std::vector<base::file_util_proxy::Entry>& entries,
       bool has_more);
-  virtual void DidOpenFileSystem(const string16& name,
+  virtual void DidOpenFileSystem(const std::string& name,
                                  const FilePath& root_path);
   virtual void DidFail(base::PlatformFileError error_code);
   virtual void DidWrite(int64 bytes, bool complete);

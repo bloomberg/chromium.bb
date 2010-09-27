@@ -7,9 +7,9 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profile.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 
 const FilePath::CharType FileSystemHostContext::kFileSystemDirectory[] =
@@ -25,21 +25,21 @@ FileSystemHostContext::FileSystemHostContext(
 }
 
 bool FileSystemHostContext::GetFileSystemRootPath(
-    const GURL& origin_url, WebKit::WebFileSystem::Type type,
+    const GURL& origin_url, fileapi::FileSystemType type,
     FilePath* root_path, std::string* name) const {
   // TODO(kinuko): should return an isolated temporary file system space.
   if (is_incognito_)
     return false;
   std::string storage_identifier = GetStorageIdentifierFromURL(origin_url);
   switch (type) {
-    case WebKit::WebFileSystem::TypeTemporary:
+    case fileapi::kFileSystemTypeTemporary:
       if (root_path)
         *root_path = base_path_.AppendASCII(storage_identifier)
                                .AppendASCII(kTemporaryName);
       if (name)
         *name = storage_identifier + ":" + kTemporaryName;
       return true;
-    case WebKit::WebFileSystem::TypePersistent:
+    case fileapi::kFileSystemTypePersistent:
       if (root_path)
         *root_path = base_path_.AppendASCII(storage_identifier)
                                .AppendASCII(kPersistentName);
@@ -63,3 +63,8 @@ std::string FileSystemHostContext::GetStorageIdentifierFromURL(
       WebKit::WebSecurityOrigin::createFromString(UTF8ToUTF16(url.spec()));
   return web_security_origin.databaseIdentifier().utf8();
 }
+
+COMPILE_ASSERT(int(WebKit::WebFileSystem::TypeTemporary) == \
+               int(fileapi::kFileSystemTypeTemporary), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebFileSystem::TypePersistent) == \
+               int(fileapi::kFileSystemTypePersistent), mismatching_enums);

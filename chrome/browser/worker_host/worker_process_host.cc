@@ -16,6 +16,7 @@
 #include "chrome/browser/appcache/appcache_dispatcher_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
@@ -67,7 +68,11 @@ WorkerProcessHost::WorkerProcessHost(
           new AppCacheDispatcherHost(request_context)),
       ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
           new BlobDispatcherHost(
-              this->id(), request_context->blob_storage_context()))) {
+              this->id(), request_context->blob_storage_context()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
+          new FileSystemDispatcherHost(this,
+              request_context->file_system_host_context(),
+              request_context->host_content_settings_map()))) {
   next_route_id_callback_.reset(NewCallbackWithReturnValue(
       WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   db_dispatcher_host_ = new DatabaseDispatcherHost(
@@ -82,6 +87,9 @@ WorkerProcessHost::~WorkerProcessHost() {
 
   // Shut down the blob dispatcher host.
   blob_dispatcher_host_->Shutdown();
+
+  // Shut down the file system dispatcher host.
+  file_system_dispatcher_host_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -129,6 +137,7 @@ bool WorkerProcessHost::Init() {
 #if defined(OS_WIN)
     switches::kDisableDesktopNotifications,
 #endif
+    switches::kEnableFileSystem,
   };
   cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(), kSwitchNames,
                              arraysize(kSwitchNames));
@@ -241,6 +250,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
       appcache_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       blob_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
+      file_system_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       MessagePortDispatcher::GetInstance()->OnMessageReceived(
           message, this, next_route_id_callback_.get(), &msg_is_ok);
 
@@ -289,6 +299,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
 void WorkerProcessHost::OnProcessLaunched() {
   db_dispatcher_host_->Init(handle());
+  file_system_dispatcher_host_->Init(handle());
 }
 
 CallbackWithReturnValue<int>::Type* WorkerProcessHost::GetNextRouteIdCallback(

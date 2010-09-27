@@ -83,7 +83,7 @@ class TestShellFileSystemCallbackDispatcher
     file_system_->RemoveCompletedOperation(request_id_);
   }
 
-  virtual void DidOpenFileSystem(const string16&, const FilePath&) {
+  virtual void DidOpenFileSystem(const std::string&, const FilePath&) {
     NOTREACHED();
   }
 

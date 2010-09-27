@@ -13,9 +13,11 @@
 #include "base/platform_file.h"
 #include "base/scoped_callback_factory.h"
 #include "base/ref_counted.h"
-#include "chrome/common/render_messages.h"
+#include "ipc/ipc_message.h"
 #include "webkit/fileapi/file_system_operation.h"
+#include "webkit/fileapi/file_system_types.h"
 
+class ChromeFileSystemOperation;
 class FileSystemHostContext;
 class GURL;
 class HostContentSettingsMap;
@@ -34,7 +36,10 @@ class FileSystemDispatcherHost
 
   bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
 
-  void OnOpenFileSystem(const ViewHostMsg_OpenFileSystemRequest_Params&);
+  void OnOpenFileSystem(int request_id,
+                        const GURL& origin_url,
+                        fileapi::FileSystemType type,
+                        int64 requested_size);
   void OnMove(int request_id,
               const FilePath& src_path,
               const FilePath& dest_path);

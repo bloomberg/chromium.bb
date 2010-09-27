@@ -29,6 +29,7 @@
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
+#include "webkit/fileapi/file_system_types.h"  // enum fileapi::FileSystemType
 #include "webkit/glue/resource_loader_bridge.h"   // nested classes
 
 #if defined(OS_MACOSX)
@@ -106,7 +107,6 @@ struct ViewMsg_ExtensionRendererInfo;
 struct ViewMsg_ExtensionsUpdated_Params;
 struct ViewMsg_DeviceOrientationUpdated_Params;
 struct ViewHostMsg_DomMessage_Params;
-struct ViewHostMsg_OpenFileSystemRequest_Params;
 struct ViewHostMsg_AccessibilityNotification_Params;
 
 // Values that may be OR'd together to form the 'flags' parameter of the
@@ -739,6 +739,11 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
 // Traits for base::PlatformFileError
 template <>
 struct SimilarTypeTraits<base::PlatformFileError> {
+  typedef int Type;
+};
+
+template <>
+struct SimilarTypeTraits<fileapi::FileSystemType> {
   typedef int Type;
 };
 

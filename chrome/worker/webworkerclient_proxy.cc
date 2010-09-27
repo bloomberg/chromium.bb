@@ -7,6 +7,8 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/file_system/file_system_dispatcher.h"
+#include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
 #include "chrome/renderer/webworker_proxy.h"
@@ -14,6 +16,7 @@
 #include "chrome/worker/worker_thread.h"
 #include "chrome/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_logging.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWorker.h"
@@ -121,6 +124,15 @@ WebApplicationCacheHost* WebWorkerClientProxy::createApplicationCacheHost(
   return host;
 }
 
+void WebWorkerClientProxy::openFileSystem(
+    WebKit::WebFileSystem::Type type,
+    long long size,
+    WebKit::WebFileSystemCallbacks* callbacks) {
+  ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
+      stub_->url().GetOrigin(), static_cast<fileapi::FileSystemType>(type),
+      size, new WebFileSystemCallbackDispatcher(callbacks));
+}
+
 bool WebWorkerClientProxy::Send(IPC::Message* message) {
   return WorkerThread::current()->Send(message);
 }
@@ -144,4 +156,3 @@ void WebWorkerClientProxy::EnsureWorkerContextTerminates() {
           &WebWorkerClientProxy::workerContextDestroyed),
           kMaxTimeForRunawayWorkerMs);
 }
-

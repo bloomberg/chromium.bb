@@ -302,18 +302,6 @@ ViewHostMsg_DomMessage_Params::ViewHostMsg_DomMessage_Params()
 ViewHostMsg_DomMessage_Params::~ViewHostMsg_DomMessage_Params() {
 }
 
-ViewHostMsg_OpenFileSystemRequest_Params::
-    ViewHostMsg_OpenFileSystemRequest_Params()
-    : routing_id(0),
-      request_id(0),
-      type(WebKit::WebFileSystem::TypeTemporary),
-      requested_size(0) {
-}
-
-ViewHostMsg_OpenFileSystemRequest_Params::
-    ~ViewHostMsg_OpenFileSystemRequest_Params() {
-}
-
 namespace IPC {
 
 // Self contained templates which are only used inside serializing Params
@@ -1797,44 +1785,6 @@ void ParamTraits<ViewHostMsg_DomMessage_Params>::Log(const param_type& p,
   LogParam(p.has_callback, l);
   l->append(", ");
   LogParam(p.user_gesture, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewHostMsg_OpenFileSystemRequest_Params>::Write(
-    Message* m,
-    const param_type& p) {
-  WriteParam(m, p.routing_id);
-  WriteParam(m, p.request_id);
-  WriteParam(m, p.origin_url);
-  WriteParam(m, p.type);
-  WriteParam(m, p.requested_size);
-}
-
-bool ParamTraits<ViewHostMsg_OpenFileSystemRequest_Params>::Read(
-    const Message* m,
-    void** iter,
-    param_type* p) {
-  return
-      ReadParam(m, iter, &p->routing_id) &&
-      ReadParam(m, iter, &p->request_id) &&
-      ReadParam(m, iter, &p->origin_url) &&
-      ReadParam(m, iter, &p->type) &&
-      ReadParam(m, iter, &p->requested_size);
-}
-
-void ParamTraits<ViewHostMsg_OpenFileSystemRequest_Params>::Log(
-    const param_type& p,
-    std::string* l) {
-  l->append("(");
-  LogParam(p.routing_id, l);
-  l->append(", ");
-  LogParam(p.request_id, l);
-  l->append(", ");
-  LogParam(p.origin_url, l);
-  l->append(", ");
-  LogParam(p.type, l);
-  l->append(", ");
-  LogParam(p.requested_size, l);
   l->append(")");
 }
 

@@ -9,7 +9,6 @@
 #include "chrome/browser/file_system/file_system_host_context.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 
 namespace {
 
@@ -24,19 +23,19 @@ const FilePath::CharType kTestDataPath[] = FILE_PATH_LITERAL(
         "//tmp/TestingProfilePath");
 
 const struct RootPathTest {
-  WebKit::WebFileSystem::Type type;
+  fileapi::FileSystemType type;
   bool off_the_record;
   const char* origin_url;
   bool expect_root_path;
   const char* expected_path;
 } kRootPathTestCases[] = {
-  { WebKit::WebFileSystem::TypeTemporary, false, "http://host:1/",
+  { fileapi::kFileSystemTypeTemporary, false, "http://host:1/",
     true, "FileSystem" PS "http_host_1" PS "Temporary" },
-  { WebKit::WebFileSystem::TypePersistent,  false, "http://host:2/",
+  { fileapi::kFileSystemTypePersistent,  false, "http://host:2/",
     true, "FileSystem" PS "http_host_2" PS "Persistent" },
-  { WebKit::WebFileSystem::TypeTemporary, true,  "http://host:3/",
+  { fileapi::kFileSystemTypeTemporary, true,  "http://host:3/",
     false, "" },
-  { WebKit::WebFileSystem::TypePersistent,  true,  "http://host:4/",
+  { fileapi::kFileSystemTypePersistent,  true,  "http://host:4/",
     false, "" },
 };
 
@@ -89,7 +88,7 @@ TEST(FileSystemHostContextTest, CheckValidPath) {
 
     FilePath root_path;
     EXPECT_TRUE(context->GetFileSystemRootPath(
-        GURL("http://foo.com/"), WebKit::WebFileSystem::TypePersistent,
+        GURL("http://foo.com/"), fileapi::kFileSystemTypePersistent,
         &root_path, NULL));
     FilePath path(kCheckValidPathTestCases[i].path);
     if (!path.IsAbsolute())

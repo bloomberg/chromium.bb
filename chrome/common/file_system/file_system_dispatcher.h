@@ -10,17 +10,17 @@
 #include "base/basictypes.h"
 #include "base/file_util_proxy.h"
 #include "base/id_map.h"
-#include "base/nullable_string16.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_system_types.h"
 
 namespace base {
 struct PlatformFileInfo;
 }
 
 class FilePath;
+class GURL;
 
 // Dispatches and sends file system related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
@@ -32,6 +32,10 @@ class FileSystemDispatcher {
 
   bool OnMessageReceived(const IPC::Message& msg);
 
+  void OpenFileSystem(const GURL& origin_url,
+                      fileapi::FileSystemType type,
+                      long long size,
+                      fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool Move(const FilePath& src_path,
             const FilePath& dest_path,
             fileapi::FileSystemCallbackDispatcher* dispatcher);
@@ -54,6 +58,14 @@ class FileSystemDispatcher {
                      fileapi::FileSystemCallbackDispatcher* dispatcher);
 
  private:
+  // Message handler for OpenFileSystem.
+  void OnOpenFileSystemRequestComplete(
+      int request_id,
+      bool accepted,
+      const std::string& name,
+      const FilePath& root_path);
+
+  // Message handlers for regular file system operations.
   void DidSucceed(int request_id);
   void DidReadMetadata(int request_id,
                        const base::PlatformFileInfo& file_info);

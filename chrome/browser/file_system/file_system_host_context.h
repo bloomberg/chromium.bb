@@ -8,8 +8,9 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
+#include "webkit/fileapi/file_system_types.h"
+
+class GURL;
 
 // This is owned by profile and shared by all the FileSystemDispatcherHost
 // that shared by the same profile.
@@ -23,11 +24,10 @@ class FileSystemHostContext
   // Returns the root path and name for the file system specified by given
   // |origin_url| and |type|.  Returns true if the file system is available
   // for the profile and |root_path| and |name| are filled successfully.
-  bool GetFileSystemRootPath(
-      const GURL& origin_url,
-      WebKit::WebFileSystem::Type type,
-      FilePath* root_path,
-      std::string* name) const;
+  bool GetFileSystemRootPath(const GURL& origin_url,
+                             fileapi::FileSystemType type,
+                             FilePath* root_path,
+                             std::string* name) const;
 
   // Check if the given |path| is in the FileSystem base directory.
   bool CheckValidFileSystemPath(const FilePath& path) const;

@@ -52,6 +52,8 @@
           'common/devtools_messages.cc',
           'common/devtools_messages.h',
           'common/devtools_messages_internal.h',
+          'common/file_system/webfilesystem_callback_dispatcher.cc',
+          'common/file_system/webfilesystem_callback_dispatcher.h',
           'common/file_system/webfilesystem_impl.cc',
           'common/file_system/webfilesystem_impl.h',
           'common/font_descriptor_mac.h',

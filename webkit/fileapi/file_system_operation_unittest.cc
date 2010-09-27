@@ -48,7 +48,7 @@ class MockDispatcher : public fileapi::FileSystemCallbackDispatcher {
     entries_ = entries;
   }
 
-  virtual void DidOpenFileSystem(const string16&, const FilePath&) {
+  virtual void DidOpenFileSystem(const std::string&, const FilePath&) {
     NOTREACHED();
   }
 

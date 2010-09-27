@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/file_util_proxy.h"
-#include "base/string16.h"
 
 namespace fileapi {
 
@@ -37,7 +36,7 @@ class FileSystemCallbackDispatcher {
 
   // Callback for opening a file system. Called with a name and root path for
   // the FileSystem when the request is accepted. Used by WebFileSystem API.
-  virtual void DidOpenFileSystem(const string16& name,
+  virtual void DidOpenFileSystem(const std::string& name,
                                  const FilePath& root_path) = 0;
 
   // Called with an error code when a requested operation has failed.

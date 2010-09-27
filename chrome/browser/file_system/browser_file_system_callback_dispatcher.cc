@@ -5,6 +5,7 @@
 #include "chrome/browser/file_system/browser_file_system_callback_dispatcher.h"
 
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
+#include "chrome/common/render_messages.h"
 
 BrowserFileSystemCallbackDispatcher::BrowserFileSystemCallbackDispatcher(
     FileSystemDispatcherHost* dispatcher_host, int request_id)
@@ -33,7 +34,7 @@ void BrowserFileSystemCallbackDispatcher::DidReadDirectory(
 }
 
 void BrowserFileSystemCallbackDispatcher::DidOpenFileSystem(
-    const string16&, const FilePath&) {
+    const std::string&, const FilePath&) {
   NOTREACHED();
 }
 

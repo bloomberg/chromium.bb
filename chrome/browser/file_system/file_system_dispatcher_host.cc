@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/file_system/browser_file_system_callback_dispatcher.h"
@@ -17,19 +16,17 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/glue/webkit_glue.h"
 
 // A class to hold an ongoing openFileSystem completion task.
 struct OpenFileSystemCompletionTask {
  public:
   static void Run(
       int request_id,
-      int routing_id,
       const std::string& name,
       const FilePath& root_path,
       FileSystemDispatcherHost* dispatcher_host) {
     // The task is self-destructed.
-    new OpenFileSystemCompletionTask(request_id, routing_id, name, root_path,
+    new OpenFileSystemCompletionTask(request_id, name, root_path,
         dispatcher_host);
   }
 
@@ -37,24 +34,21 @@ struct OpenFileSystemCompletionTask {
     if (error == base::PLATFORM_FILE_OK)
       dispatcher_host_->Send(
           new ViewMsg_OpenFileSystemRequest_Complete(
-              routing_id_, request_id_, true, UTF8ToUTF16(name_),
-              webkit_glue::FilePathToWebString(root_path_)));
+              request_id_, true, name_, root_path_));
     else
       dispatcher_host_->Send(
           new ViewMsg_OpenFileSystemRequest_Complete(
-              routing_id_, request_id_, false, string16(), string16()));
+              request_id_, false, std::string(), FilePath()));
     delete this;
   }
 
  private:
   OpenFileSystemCompletionTask(
       int request_id,
-      int routing_id,
       const std::string& name,
       const FilePath& root_path,
       FileSystemDispatcherHost* dispatcher_host)
     : request_id_(request_id),
-      routing_id_(routing_id),
       name_(name),
       root_path_(root_path),
       dispatcher_host_(dispatcher_host),
@@ -66,7 +60,6 @@ struct OpenFileSystemCompletionTask {
   }
 
   int request_id_;
-  int routing_id_;
   std::string name_;
   FilePath root_path_;
   scoped_refptr<FileSystemDispatcherHost> dispatcher_host_;
@@ -124,30 +117,29 @@ bool FileSystemDispatcherHost::OnMessageReceived(
 }
 
 void FileSystemDispatcherHost::OnOpenFileSystem(
-    const ViewHostMsg_OpenFileSystemRequest_Params& params) {
+    int request_id, const GURL& origin_url, fileapi::FileSystemType type,
+    int64 requested_size) {
 
   // TODO(kinuko): hook up ContentSettings cookies type checks.
 
   FilePath root_path;
   std::string name;
 
-  if (!context_->GetFileSystemRootPath(params.origin_url,
-                                       params.type,
+  if (!context_->GetFileSystemRootPath(origin_url,
+                                       type,
                                        &root_path,
                                        &name)) {
     Send(new ViewMsg_OpenFileSystemRequest_Complete(
-        params.routing_id,
-        params.request_id,
+        request_id,
         false,
-        string16(),
-        string16()));
+        std::string(),
+        FilePath()));
     return;
   }
 
   // Run the completion task that creates the root directory and sends
   // back the status code to the dispatcher.
-  OpenFileSystemCompletionTask::Run(
-      params.request_id, params.routing_id, name, root_path, this);
+  OpenFileSystemCompletionTask::Run(request_id, name, root_path, this);
 }
 
 void FileSystemDispatcherHost::OnMove(

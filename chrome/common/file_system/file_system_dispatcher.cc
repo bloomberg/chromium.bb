@@ -8,7 +8,6 @@
 #include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "webkit/glue/webkit_glue.h"
 
 FileSystemDispatcher::FileSystemDispatcher() {
 }
@@ -28,6 +27,8 @@ FileSystemDispatcher::~FileSystemDispatcher() {
 bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(FileSystemDispatcher, msg)
+    IPC_MESSAGE_HANDLER(ViewMsg_OpenFileSystemRequest_Complete,
+                        OnOpenFileSystemRequestComplete)
     IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidSucceed, DidSucceed)
     IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidReadDirectory, DidReadDirectory)
     IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidReadMetadata, DidReadMetadata)
@@ -35,6 +36,14 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void FileSystemDispatcher::OpenFileSystem(
+    const GURL& origin_url, fileapi::FileSystemType type,
+    long long size, fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  int request_id = dispatchers_.Add(dispatcher);
+  ChildThread::current()->Send(new ViewHostMsg_OpenFileSystemRequest(
+      request_id, origin_url, type, size));
 }
 
 bool FileSystemDispatcher::Move(
@@ -97,6 +106,19 @@ bool FileSystemDispatcher::ReadDirectory(
   int request_id = dispatchers_.Add(dispatcher);
   return ChildThread::current()->Send(
       new ViewHostMsg_FileSystem_ReadDirectory(request_id, path));
+}
+
+void FileSystemDispatcher::OnOpenFileSystemRequestComplete(
+    int request_id, bool accepted, const std::string& name,
+    const FilePath& root_path) {
+  fileapi::FileSystemCallbackDispatcher* dispatcher =
+      dispatchers_.Lookup(request_id);
+  DCHECK(dispatcher);
+  if (accepted)
+    dispatcher->DidOpenFileSystem(name, root_path);
+  else
+    dispatcher->DidFail(base::PLATFORM_FILE_ERROR_SECURITY);
+  dispatchers_.Remove(request_id);
 }
 
 void FileSystemDispatcher::DidSucceed(int request_id) {

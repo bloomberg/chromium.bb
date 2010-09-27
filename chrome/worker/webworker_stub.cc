@@ -5,7 +5,9 @@
 #include "chrome/worker/webworker_stub.h"
 
 #include "base/command_line.h"
+#include "chrome/common/child_thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
 #include "chrome/worker/nativewebworker_impl.h"
@@ -35,7 +37,8 @@ static bool UrlIsNativeWorker(const GURL& url) {
 
 WebWorkerStub::WebWorkerStub(const GURL& url, int route_id,
                              const WorkerAppCacheInitInfo& appcache_init_info)
-    : WebWorkerStubBase(route_id, appcache_init_info) {
+    : WebWorkerStubBase(route_id, appcache_init_info),
+      url_(url) {
   if (UrlIsNativeWorker(url)) {
     // Launch a native worker.
     impl_ = NativeWebWorkerImpl::create(client());

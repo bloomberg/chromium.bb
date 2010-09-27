@@ -55,6 +55,9 @@ WorkerThread::WorkerThread() {
 
   WebRuntimeFeatures::enableSockets(
       !command_line.HasSwitch(switches::kDisableWebSockets));
+
+  WebRuntimeFeatures::enableFileSystem(
+      command_line.HasSwitch(switches::kEnableFileSystem));
 }
 
 WorkerThread::~WorkerThread() {
@@ -111,4 +114,3 @@ void WorkerThread::RemoveWorkerStub(WebWorkerStubBase* stub) {
 void WorkerThread::AddWorkerStub(WebWorkerStubBase* stub) {
   worker_stubs_.insert(stub);
 }
-

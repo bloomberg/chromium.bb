@@ -25,10 +25,11 @@ class WebSharedWorkerStub : public WebWorkerStubBase {
   virtual void OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
 
+  virtual const GURL& url() const { return url_; }
+
  private:
   virtual ~WebSharedWorkerStub();
 
-  // Invoked when the WebWorkerClientProxy is shutting down.
   void OnConnect(int sent_message_port_id, int routing_id);
   void OnStartWorkerContext(
       const GURL& url, const string16& user_agent, const string16& source_code);
@@ -37,6 +38,7 @@ class WebSharedWorkerStub : public WebWorkerStubBase {
   WebKit::WebSharedWorker* impl_;
   string16 name_;
   bool started_;
+  GURL url_;
 
   typedef std::pair<int, int> PendingConnectInfo;
   typedef std::vector<PendingConnectInfo> PendingConnectInfoList;

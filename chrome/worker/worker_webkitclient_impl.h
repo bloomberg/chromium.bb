@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
+#include "chrome/common/file_system/webfilesystem_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMimeRegistry.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
@@ -17,6 +18,7 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
+  virtual WebKit::WebFileSystem* fileSystem();
   virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual bool sandboxEnabled();
@@ -72,6 +74,8 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
 
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
+
+  scoped_ptr<WebFileSystemImpl> web_file_system_;
 };
 
 #endif  // CHROME_WORKER_WORKER_WEBKITCLIENT_IMPL_H_

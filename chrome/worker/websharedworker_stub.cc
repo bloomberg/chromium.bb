@@ -4,6 +4,8 @@
 
 #include "chrome/worker/websharedworker_stub.h"
 
+#include "chrome/common/child_thread.h"
+#include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSharedWorker.h"
@@ -46,6 +48,7 @@ void WebSharedWorkerStub::OnStartWorkerContext(
 
   impl_->startWorkerContext(url, name_, user_agent, source_code, 0);
   started_ = true;
+  url_ = url;
 
   // Process any pending connections.
   for (PendingConnectInfoList::const_iterator iter = pending_connects_.begin();

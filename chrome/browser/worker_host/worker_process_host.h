@@ -22,6 +22,7 @@ class BlobDispatcherHost;
 class ChromeURLRequestContext;
 class ChromeURLRequestContextGetter;
 class DatabaseDispatcherHost;
+class FileSystemDispatcherHost;
 namespace webkit_database {
 class DatabaseTracker;
 }  // namespace webkit_database
@@ -197,6 +198,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   scoped_ptr<AppCacheDispatcherHost> appcache_dispatcher_host_;
   scoped_refptr<DatabaseDispatcherHost> db_dispatcher_host_;
   scoped_ptr<BlobDispatcherHost> blob_dispatcher_host_;
+  scoped_refptr<FileSystemDispatcherHost> file_system_dispatcher_host_;
 
   // A callback to create a routing id for the associated worker process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;

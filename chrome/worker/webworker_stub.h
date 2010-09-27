@@ -25,6 +25,8 @@ class WebWorkerStub : public WebWorkerStubBase {
   virtual void OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
 
+  virtual const GURL& url() const { return url_; }
+
  private:
   virtual ~WebWorkerStub();
 
@@ -34,6 +36,7 @@ class WebWorkerStub : public WebWorkerStubBase {
                      const std::vector<int>& new_routing_ids);
 
   WebKit::WebWorker* impl_;
+  GURL url_;
 
   DISALLOW_COPY_AND_ASSIGN(WebWorkerStub);
 };

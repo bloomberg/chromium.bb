@@ -17,6 +17,7 @@
 
 using WebKit::WebBlobRegistry;
 using WebKit::WebClipboard;
+using WebKit::WebFileSystem;
 using WebKit::WebKitClient;
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMimeRegistry;
@@ -33,6 +34,12 @@ WebClipboard* WorkerWebKitClientImpl::clipboard() {
 
 WebMimeRegistry* WorkerWebKitClientImpl::mimeRegistry() {
   return this;
+}
+
+WebKit::WebFileSystem* WorkerWebKitClientImpl::fileSystem() {
+  if (!web_file_system_.get())
+    web_file_system_.reset(new WebFileSystemImpl());
+  return web_file_system_.get();
 }
 
 WebKit::WebFileUtilities* WorkerWebKitClientImpl::fileUtilities() {

@@ -6,6 +6,7 @@
 #define CHROME_WORKER_WEBWORKER_STUB_BASE_H_
 #pragma once
 
+#include "base/scoped_ptr.h"
 #include "chrome/worker/webworkerclient_proxy.h"
 #include "chrome/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_channel.h"
@@ -30,6 +31,10 @@ class WebWorkerStubBase : public IPC::Channel::Listener {
   const WorkerAppCacheInitInfo& appcache_init_info() const {
     return appcache_init_info_;
   }
+
+  // Returns the script url of this worker.
+  virtual const GURL& url() const = 0;
+
  private:
   int route_id_;
   WorkerAppCacheInitInfo appcache_init_info_;

@@ -16,7 +16,6 @@
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/id_map.h"
 #include "base/linked_ptr.h"
 #include "base/timer.h"
 #include "base/weak_ptr.h"
@@ -818,10 +817,6 @@ class RenderView : public RenderWidget,
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnFillPasswordForm(
       const webkit_glue::PasswordFormFillData& form_data);
-  void OnOpenFileSystemRequestComplete(int request_id,
-                                       bool accepted,
-                                       const string16& name,
-                                       const string16& root_path);
   void OnPaste();
   void OnPrintingDone(int document_cookie, bool success);
   void OnPrintPages();
@@ -1343,11 +1338,6 @@ class RenderView : public RenderWidget,
 
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;
-
-  // Pending openFileSystem completion objects.
-  struct PendingOpenFileSystem;
-  IDMap<PendingOpenFileSystem, IDMapOwnPointer>
-      pending_file_system_requests_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

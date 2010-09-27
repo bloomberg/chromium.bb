@@ -31,6 +31,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/file_system/file_system_dispatcher.h"
+#include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_zoom.h"
@@ -407,17 +409,6 @@ static std::string DetermineTextLanguage(const string16& text) {
   }
   return language;
 }
-
-// Holds pending openFileSystem callbacks.
-struct RenderView::PendingOpenFileSystem {
-  explicit PendingOpenFileSystem(WebFileSystemCallbacks* c) : callbacks(c) {
-  }
-  ~PendingOpenFileSystem() {
-    if (callbacks)
-      callbacks->didFail(WebKit::WebFileErrorAbort);
-  }
-  WebFileSystemCallbacks* callbacks;
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -812,8 +803,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnAccessibilityDoDefaultAction)
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
                         OnAccessibilityNotificationsAck)
-    IPC_MESSAGE_HANDLER(ViewMsg_OpenFileSystemRequest_Complete,
-                        OnOpenFileSystemRequestComplete)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
 
     // Have the super handle all other messages.
@@ -3508,21 +3497,18 @@ void RenderView::openFileSystem(
     WebFileSystem::Type type,
     long long size,
     WebFileSystemCallbacks* callbacks) {
-  scoped_ptr<PendingOpenFileSystem> request(
-      new PendingOpenFileSystem(callbacks));
+  DCHECK(callbacks);
 
   WebSecurityOrigin origin = frame->securityOrigin();
-  if (origin.isEmpty())
-    return;  // Uninitialized document?
+  if (origin.isEmpty()) {
+    // Uninitialized document?
+    callbacks->didFail(WebKit::WebFileErrorAbort);
+    return;
+  }
 
-  ViewHostMsg_OpenFileSystemRequest_Params params;
-  params.routing_id = routing_id_;
-  params.request_id = pending_file_system_requests_.Add(request.release());
-  params.origin_url = GURL(origin.toString());
-  params.type = type;
-  params.requested_size = size;
-
-  Send(new ViewHostMsg_OpenFileSystemRequest(params));
+  ChildThread::current()->file_system_dispatcher()->OpenFileSystem(
+      GURL(origin.toString()), static_cast<fileapi::FileSystemType>(type),
+      size, new WebFileSystemCallbackDispatcher(callbacks));
 }
 
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
@@ -5834,20 +5820,6 @@ bool RenderView::IsNonLocalTopLevelNavigation(
       return true;
   }
   return false;
-}
-
-void RenderView::OnOpenFileSystemRequestComplete(
-    int request_id, bool accepted, const string16& name,
-    const string16& root_path) {
-  PendingOpenFileSystem* request = pending_file_system_requests_.Lookup(
-      request_id);
-  DCHECK(request);
-  if (accepted)
-    request->callbacks->didOpenFileSystem(name, root_path);
-  else
-    request->callbacks->didFail(WebKit::WebFileErrorSecurity);
-  request->callbacks = NULL;
-  pending_file_system_requests_.Remove(request_id);
 }
 
 void RenderView::OnAsyncFileOpened(base::PlatformFileError error_code,
