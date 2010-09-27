@@ -100,7 +100,8 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       personal_data_(NULL),
       download_manager_(tab_contents_->profile()),
-      disable_download_manager_requests_(false) {
+      disable_download_manager_requests_(false),
+      cc_infobar_(NULL) {
   DCHECK(tab_contents);
 
   // |personal_data_| is NULL when using TestTabContents.
@@ -480,7 +481,8 @@ AutoFillManager::AutoFillManager()
     : tab_contents_(NULL),
       personal_data_(NULL),
       download_manager_(NULL),
-      disable_download_manager_requests_(false) {
+      disable_download_manager_requests_(false),
+      cc_infobar_(NULL) {
 }
 
 AutoFillManager::AutoFillManager(TabContents* tab_contents,
@@ -488,7 +490,8 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents,
     : tab_contents_(tab_contents),
       personal_data_(personal_data),
       download_manager_(NULL),
-      disable_download_manager_requests_(false) {
+      disable_download_manager_requests_(false),
+      cc_infobar_(NULL) {
   DCHECK(tab_contents);
 }
 
