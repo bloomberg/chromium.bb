@@ -505,6 +505,23 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   div_checker.SetExpectedState(
       STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSED);
   document_checker.CheckAccessible(GetRendererAccessible());
+
+  // TODO(ctguil): The renderer should notify the browser when focus is cleared.
+  // Uncomment code below when fixed.
+  // Focus the document accessible. This will un-focus the current node.
+  // http://crbug.com/57045
+  ScopedComPtr<IAccessible> document_accessible(GetRendererAccessible());
+  ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
+  HRESULT hr = document_accessible->accSelect(
+    SELFLAG_TAKEFOCUS, CreateI4Variant(CHILDID_SELF));
+  ASSERT_EQ(hr, S_OK);
+  // ui_test_utils::WaitForNotification(
+  //     NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+
+  // Check that the accessibility tree of the browser has been updated.
+  // div_checker.SetExpectedState(
+  //     STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY);
+  // document_checker.CheckAccessible(GetRendererAccessible());
 }
 
 // http://crbug.com/46209
@@ -530,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Check that the accessibility tree of the browser has been updated.
   AccessibleChecker static_text_checker(L"", ROLE_SYSTEM_TEXT, L"text");
-  AccessibleChecker div_checker(L"", L"DIV", L"");
+  AccessibleChecker div_checker(L"", L"div", L"");
   document_checker.AppendExpectedChild(&div_checker);
   div_checker.AppendExpectedChild(&static_text_checker);
   document_checker.CheckAccessible(GetRendererAccessible());

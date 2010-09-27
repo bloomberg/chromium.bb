@@ -4419,24 +4419,29 @@ void RenderView::OnEnableAccessibility() {
 void RenderView::OnSetAccessibilityFocus(int acc_obj_id) {
   if (!accessibility_.get())
     return;
-  if (accessibility_->isValidId(acc_obj_id)) {
-    // TODO(dmazzoni) fix the cache so that id=1000 is not a magic number.
-    // By convention, calling SetFocus on the root of the tree (id = 1000)
-    // should clear the current focus. Otherwise set the focus to the new
-    // node.
-    if (acc_obj_id == 1000)
-      webview()->clearFocusedNode();
-    else
-      accessibility_->getObjectById(acc_obj_id).setFocused(true);
-  }
+
+  WebAccessibilityObject obj = accessibility_->getObjectById(acc_obj_id);
+  WebAccessibilityObject root = webview()->accessibilityObject();
+  if (!obj.isValid() || !root.isValid())
+    return;
+
+  // By convention, calling SetFocus on the root of the tree should clear the
+  // current focus. Otherwise set the focus to the new node.
+  if (accessibility_->addOrGetId(obj) == accessibility_->addOrGetId(root))
+    webview()->clearFocusedNode();
+  else
+    obj.setFocused(true);
 }
 
 void RenderView::OnAccessibilityDoDefaultAction(int acc_obj_id) {
   if (!accessibility_.get())
     return;
-  if (accessibility_->isValidId(acc_obj_id)) {
-    accessibility_->getObjectById(acc_obj_id).performDefaultAction();
-  }
+
+  WebAccessibilityObject obj = accessibility_->getObjectById(acc_obj_id);
+  if (!obj.isValid())
+    return;
+
+  obj.performDefaultAction();
 }
 
 void RenderView::OnAccessibilityNotificationsAck() {
