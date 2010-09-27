@@ -43,9 +43,9 @@ const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
 const char kChildProcessFlag[]   = "child";
 const char kHelpFlag[]   = "help";
 
-// This value was changed from 30000 (30sec) to 45000 due to
-// http://crbug.com/43862.
-const int64 kDefaultTestTimeoutMs = 45000;
+// How long we wait for the subprocess to exit (with a success/failure code).
+// See http://crbug.com/43862 for some discussion of the value.
+const int64 kDefaultTestTimeoutMs = 20000;
 
 class OutOfProcTestRunner : public tests::TestRunner {
  public:
