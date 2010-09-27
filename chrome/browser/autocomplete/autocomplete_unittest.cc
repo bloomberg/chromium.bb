@@ -217,6 +217,7 @@ TEST(AutocompleteTest, InputType) {
     { L"foo.com", AutocompleteInput::URL },
     { L"-.com", AutocompleteInput::UNKNOWN },
     { L"foo/bar", AutocompleteInput::URL },
+    { L"foo;bar", AutocompleteInput::QUERY },
     { L"foo/bar baz", AutocompleteInput::UNKNOWN },
     { L"foo bar.com", AutocompleteInput::QUERY },
     { L"foo bar", AutocompleteInput::QUERY },
