@@ -197,6 +197,8 @@
         'plugins/pepper_cursor_control.h',
         'plugins/pepper_directory_reader.cc',
         'plugins/pepper_directory_reader.h',
+ 	'plugins/pepper_error_util.cc',
+	'plugins/pepper_error_util.h',
         'plugins/pepper_event_conversion.cc',
         'plugins/pepper_event_conversion.h',
         'plugins/pepper_file_chooser.cc',

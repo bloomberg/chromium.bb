@@ -21,6 +21,11 @@ class AudioMessageFilter;
 
 namespace base {
 class MessageLoopProxy;
+class Time;
+}
+
+namespace fileapi {
+class FileSystemCallbackDispatcher;
 }
 
 namespace gfx {
@@ -169,6 +174,21 @@ class PluginDelegate {
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              AsyncOpenFileCallback* callback) = 0;
+  virtual bool MakeDirectory(
+      const FilePath& path,
+      bool recursive,
+      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+  virtual bool Query(const FilePath& path,
+                     fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+  virtual bool Touch(const FilePath& path,
+                     const base::Time& last_access_time,
+                     const base::Time& last_modified_time,
+                     fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+  virtual bool Delete(const FilePath& path,
+                      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
+  virtual bool Rename(const FilePath& file_path,
+                      const FilePath& new_file_path,
+                      fileapi::FileSystemCallbackDispatcher* dispatcher) = 0;
 
   // Returns a MessageLoopProxy instance associated with the message loop
   // of the file thread in this renderer.

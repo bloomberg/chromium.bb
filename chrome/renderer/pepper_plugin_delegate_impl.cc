@@ -10,6 +10,9 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "base/time.h"
+#include "chrome/common/child_thread.h"
+#include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/audio_message_filter.h"
@@ -22,6 +25,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
+#include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/glue/plugins/pepper_file_io.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/webplugin.h"
@@ -667,6 +671,52 @@ void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
          active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->SetContentAreaFocus(has_focus);
+}
+
+bool PepperPluginDelegateImpl::MakeDirectory(
+    const FilePath& path,
+    bool recursive,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->Create(
+      path, false, true, recursive, dispatcher);
+}
+
+bool PepperPluginDelegateImpl::Query(
+    const FilePath& path,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->ReadMetadata(path, dispatcher);
+}
+
+bool PepperPluginDelegateImpl::Touch(
+    const FilePath& path,
+    const base::Time& last_access_time,
+    const base::Time& last_modified_time,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->TouchFile(path, last_access_time,
+                                           last_modified_time, dispatcher);
+}
+
+bool PepperPluginDelegateImpl::Delete(
+    const FilePath& path,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->Remove(path, dispatcher);
+}
+
+bool PepperPluginDelegateImpl::Rename(
+    const FilePath& file_path,
+    const FilePath& new_file_path,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  FileSystemDispatcher* file_system_dispatcher =
+      ChildThread::current()->file_system_dispatcher();
+  return file_system_dispatcher->Move(file_path, new_file_path, dispatcher);
 }
 
 scoped_refptr<base::MessageLoopProxy>

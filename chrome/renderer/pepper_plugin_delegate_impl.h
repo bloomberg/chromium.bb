@@ -85,6 +85,20 @@ class PepperPluginDelegateImpl
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
                              AsyncOpenFileCallback* callback);
+  virtual bool MakeDirectory(const FilePath& path,
+                             bool recursive,
+                             fileapi::FileSystemCallbackDispatcher* dispatcher);
+  virtual bool Query(const FilePath& path,
+                     fileapi::FileSystemCallbackDispatcher* dispatcher);
+  virtual bool Touch(const FilePath& path,
+                     const base::Time& last_access_time,
+                     const base::Time& last_modified_time,
+                     fileapi::FileSystemCallbackDispatcher* dispatcher);
+  virtual bool Delete(const FilePath& path,
+                      fileapi::FileSystemCallbackDispatcher* dispatcher);
+  virtual bool Rename(const FilePath& file_path,
+                      const FilePath& new_file_path,
+                      fileapi::FileSystemCallbackDispatcher* dispatcher);
   virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
   virtual pepper::FullscreenContainer* CreateFullscreenContainer(
       pepper::PluginInstance* instance);
