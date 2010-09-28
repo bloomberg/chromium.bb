@@ -14,7 +14,6 @@
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/ppb_image_data.h"
-#include "third_party/ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
@@ -69,13 +68,6 @@ void Unmap(PP_Resource resource) {
     image_data->Unmap();
 }
 
-uint64_t GetNativeMemoryHandle2(PP_Resource resource) {
-  scoped_refptr<ImageData> image_data(Resource::GetAs<ImageData>(resource));
-  if (image_data)
-    return image_data->GetNativeMemoryHandle();
-  return 0;
-}
-
 const PPB_ImageData ppb_imagedata = {
   &GetNativeImageDataFormat,
   &Create,
@@ -83,10 +75,6 @@ const PPB_ImageData ppb_imagedata = {
   &Describe,
   &Map,
   &Unmap,
-};
-
-const PPB_ImageDataTrusted ppb_imagedata_trusted = {
-  &GetNativeMemoryHandle2,
 };
 
 }  // namespace
@@ -103,11 +91,6 @@ ImageData::~ImageData() {
 // static
 const PPB_ImageData* ImageData::GetInterface() {
   return &ppb_imagedata;
-}
-
-// static
-const PPB_ImageDataTrusted* ImageData::GetTrustedInterface() {
-  return &ppb_imagedata_trusted;
 }
 
 bool ImageData::Init(PP_ImageDataFormat format,
@@ -158,10 +141,6 @@ void ImageData::Unmap() {
   // be around once it's mapped. Chrome's TransportDIB isn't currently
   // unmappable without freeing it, but this may be something we want to support
   // in the future to save some memory.
-}
-
-uint64 ImageData::GetNativeMemoryHandle() const {
-  return platform_image_->GetSharedMemoryHandle();
 }
 
 const SkBitmap* ImageData::GetMappedBitmap() const {

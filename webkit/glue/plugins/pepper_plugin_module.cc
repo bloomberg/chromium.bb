@@ -34,7 +34,6 @@
 #include "third_party/ppapi/c/dev/ppb_url_util_dev.h"
 #include "third_party/ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "third_party/ppapi/c/dev/ppb_widget_dev.h"
-#include "third_party/ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/pp_var.h"
@@ -210,8 +209,6 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetInterface();
   if (strcmp(name, PPB_IMAGEDATA_INTERFACE) == 0)
     return ImageData::GetInterface();
-  if (strcmp(name, PPB_IMAGEDATA_TRUSTED_INTERFACE) == 0)
-    return ImageData::GetTrustedInterface();
   if (strcmp(name, PPB_AUDIO_CONFIG_DEV_INTERFACE) == 0)
     return AudioConfig::GetInterface();
   if (strcmp(name, PPB_AUDIO_DEV_INTERFACE) == 0)
