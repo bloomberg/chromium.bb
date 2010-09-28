@@ -78,9 +78,10 @@ class EncoderMessageTester {
 
   ~EncoderMessageTester() {
     EXPECT_EQ(begin_rect_, end_rect_);
+    EXPECT_GT(begin_rect_, 0);
     EXPECT_EQ(kWaitingForBeginRect, state_);
-    if (strict_){
-      EXPECT_EQ(begin_rect_, added_rects_);
+    if (strict_) {
+      EXPECT_EQ(added_rects_, begin_rect_);
     }
   }
 

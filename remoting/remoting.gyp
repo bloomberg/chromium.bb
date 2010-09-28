@@ -114,18 +114,15 @@
         '../gfx/gfx.gyp:gfx',
         '../media/media.gyp:media',
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../third_party/libvpx/libvpx.gyp:libvpx_include',
         '../third_party/zlib/zlib.gyp:zlib',
         'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
         'base/protocol/chromotocol.gyp:trace_proto_lib',
         'chromoting_jingle_glue',
-        # TODO(hclam): Enable VP8 in the build.
-        #'third_party/on2/on2.gyp:vp8',
       ],
       'export_dependent_settings': [
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
         'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
-        # TODO(hclam): Enable VP8 in the build.
-        #'third_party/on2/on2.gyp:vp8',
       ],
       # This target needs a hard dependency because dependent targets
       # depend on chromotocol_proto_lib for headers.
@@ -148,11 +145,10 @@
         'base/encoder.h',
         'base/encoder_verbatim.cc',
         'base/encoder_verbatim.h',
+        'base/encoder_vp8.cc',
+        'base/encoder_vp8.h',
         'base/encoder_zlib.cc',
         'base/encoder_zlib.h',
-        # TODO(hclam): Enable VP8 in the build.
-        #'base/encoder_vp8.cc',
-        #'base/encoder_vp8.h',
         'base/multiple_array_input_stream.cc',
         'base/multiple_array_input_stream.h',
         'base/protocol_decoder.cc',
@@ -407,8 +403,7 @@
         'base/decoder_zlib_unittest.cc',
         'base/decompressor_zlib_unittest.cc',
         'base/encoder_verbatim_unittest.cc',
-        # TODO(hclam): Enable VP8 in the build.
-        #'base/encoder_vp8_unittest.cc',
+        'base/encoder_vp8_unittest.cc',
         'base/encoder_zlib_unittest.cc',
         'base/mock_objects.h',
         'base/multiple_array_input_stream_unittest.cc',

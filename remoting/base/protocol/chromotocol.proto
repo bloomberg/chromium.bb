@@ -34,6 +34,7 @@ enum UpdateStreamEncoding {
   EncodingInvalid = -1;
   EncodingNone = 0;
   EncodingZlib = 1;
+  EncodingVp8 = 2;
 }
 
 // Identifies the pixel format.

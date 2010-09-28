@@ -5,20 +5,11 @@
 #ifndef REMOTING_BASE_ENCODER_VP8_H_
 #define REMOTING_BASE_ENCODER_VP8_H_
 
-#include "remoting/host/encoder.h"
-
+#include "remoting/base/encoder.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
 
-extern "C" {
-// TODO(garykac): fix this link with the correct path to on2
-#include "remoting/third_party/on2/include/on2_encoder.h"
-}  // extern "C"
-
-namespace media {
-
-class DataBuffer;
-
-}  // namespace media
+typedef struct vpx_codec_ctx vpx_codec_ctx_t;
+typedef struct vpx_image vpx_image_t;
 
 namespace remoting {
 
@@ -28,30 +19,26 @@ class EncoderVp8 : public Encoder {
   EncoderVp8();
   virtual ~EncoderVp8();
 
-  virtual void Encode(const DirtyRects& dirty_rects,
-                      const uint8** input_data,
-                      const int* strides,
+  virtual void Encode(scoped_refptr<CaptureData> capture_data,
                       bool key_frame,
-                      UpdateStreamPacketHeader* header,
-                      scoped_refptr<media::DataBuffer>* output_data,
-                      bool* encode_done,
-                      Task* data_available_task);
-  virtual void SetSize(int width, int height);
-  virtual void SetPixelFormat(PixelFormat pixel_format);
+                      DataAvailableCallback* data_available_callback);
 
  private:
-  // Setup the VP8 encoder.
-  bool Init();
+  // Initialize the encoder. Returns true if successful.
+  bool Init(int width, int height);
+
+  // Prepare |image_| for encoding. Returns true if successful.
+  bool PrepareImage(scoped_refptr<CaptureData> capture_data);
 
   // True if the encoder is initialized.
   bool initialized_;
 
-  int width_;
-  int height_;
-  PixelFormat pixel_format_;
-  on2_codec_ctx_t codec_;
-  on2_image_t image_;
+  scoped_ptr<vpx_codec_ctx_t> codec_;
+  scoped_ptr<vpx_image_t> image_;
   int last_timestamp_;
+
+  // Buffer for storing the yuv image.
+  scoped_array<uint8> yuv_image_;
 
   DISALLOW_COPY_AND_ASSIGN(EncoderVp8);
 };
