@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/time.h"
 
 class FilePath;
 struct sqlite3;
@@ -338,6 +339,9 @@ class Connection {
   // Called by Statement objects when an sqlite function returns an error.
   // The return value is the error code reflected back to client code.
   int OnSqliteError(int err, Statement* stmt);
+
+  // Like |Execute()|, but retries if the database is locked.
+  bool ExecuteWithTimeout(const char* sql, base::TimeDelta ms_timeout);
 
   // The actual sqlite database. Will be NULL before Init has been called or if
   // Init resulted in an error.
