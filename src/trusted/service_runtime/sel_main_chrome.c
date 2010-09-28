@@ -18,6 +18,7 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/expiration.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -68,6 +69,7 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   struct NaClApp *nap;
   NaClErrorCode errcode;
   int ret_code = 1;
+  struct NaClEnvCleanser env_cleanser;
 
 #if NACL_OSX
   /* Mac dynamic libraries cannot access the environ variable directly. */
@@ -172,14 +174,22 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
    */
   if (debug) NaClDebugSetAllow(1);
 
+  NaClEnvCleanserCtor(&env_cleanser);
+  if (!NaClEnvCleanserInit(&env_cleanser, envp)) {
+    NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
+  }
+
   /*
    * only nap->ehdrs.e_entry is usable, no symbol table is
    * available.
    */
-  if (!NaClCreateMainThread(nap, ac, av, envp)) {
+  if (!NaClCreateMainThread(nap, ac, av,
+                            NaClEnvCleanserEnvironment(&env_cleanser))) {
     fprintf(stderr, "creating main thread failed\n");
     goto done;
   }
+
+  NaClEnvCleanserDtor(&env_cleanser);
 
   ret_code = NaClWaitForMainThreadToExit(nap);
 
