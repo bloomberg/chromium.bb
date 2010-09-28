@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/google_authenticator.h"
+
 #include <string>
 #include <vector>
 
@@ -16,7 +18,6 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"
-#include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/issue_response_handler.h"
 #include "chrome/browser/chromeos/login/mock_auth_response_handler.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
@@ -169,51 +170,6 @@ TEST_F(GoogleAuthenticatorTest, SaltToAscii) {
       .RetiresOnSaturation();
 
   EXPECT_EQ("0a010000000000a0", auth->SaltAsAscii());
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressNoOp) {
-  const char lower_case[] = "user@what.com";
-  EXPECT_EQ(lower_case, GoogleAuthenticator::Canonicalize(lower_case));
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreCaps) {
-  EXPECT_EQ(GoogleAuthenticator::Canonicalize("user@what.com"),
-            GoogleAuthenticator::Canonicalize("UsEr@what.com"));
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreDomainCaps) {
-  EXPECT_EQ(GoogleAuthenticator::Canonicalize("user@what.com"),
-            GoogleAuthenticator::Canonicalize("UsEr@what.COM"));
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreOneUsernameDot) {
-  EXPECT_EQ(GoogleAuthenticator::Canonicalize("us.er@what.com"),
-            GoogleAuthenticator::Canonicalize("UsEr@what.com"));
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreManyUsernameDots) {
-  EXPECT_EQ(GoogleAuthenticator::Canonicalize("u.ser@what.com"),
-            GoogleAuthenticator::Canonicalize("Us.E.r@what.com"));
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreConsecutiveUsernameDots) {
-  EXPECT_EQ(GoogleAuthenticator::Canonicalize("use.r@what.com"),
-            GoogleAuthenticator::Canonicalize("Us....E.r@what.com"));
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressDifferentOnesRejected) {
-  EXPECT_NE(GoogleAuthenticator::Canonicalize("who@what.com"),
-            GoogleAuthenticator::Canonicalize("Us....E.r@what.com"));
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressIgnorePlusSuffix) {
-  EXPECT_EQ(GoogleAuthenticator::Canonicalize("user+cc@what.com"),
-            GoogleAuthenticator::Canonicalize("user@what.com"));
-}
-
-TEST_F(GoogleAuthenticatorTest, EmailAddressIgnoreMultiPlusSuffix) {
-  EXPECT_EQ(GoogleAuthenticator::Canonicalize("user+cc+bcc@what.com"),
-            GoogleAuthenticator::Canonicalize("user@what.com"));
 }
 
 TEST_F(GoogleAuthenticatorTest, ReadLocalaccount) {

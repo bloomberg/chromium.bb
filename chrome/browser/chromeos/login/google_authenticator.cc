@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sha2.h"
-#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
@@ -433,21 +432,6 @@ bool GoogleAuthenticator::BinaryToHex(const std::vector<unsigned char>& binary,
   for (uint i = 0, j = 0; i < binary_len; i++, j+=2)
     snprintf(hex_string + j, len - j, "%02x", binary[i]);
   return true;
-}
-
-// static
-std::string GoogleAuthenticator::Canonicalize(
-    const std::string& email_address) {
-  std::vector<std::string> parts;
-  char at = '@';
-  SplitString(email_address, at, &parts);
-  DCHECK_EQ(parts.size(), 2U) << "email_address should have only one @";
-  RemoveChars(parts[0], ".", &parts[0]);
-  if (parts[0].find('+') != std::string::npos)
-    parts[0].erase(parts[0].find('+'));
-  std::string new_email = StringToLowerASCII(JoinString(parts, at));
-  LOG(INFO) << "Canonicalized " << email_address << " to " << new_email;
-  return new_email;
 }
 
 }  // namespace chromeos

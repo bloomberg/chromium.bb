@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
@@ -24,10 +23,8 @@ namespace chromeos {
 // consumer_->OnPasswordChangeDetected() on the UI thread.
 class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
  public:
-  explicit Authenticator(LoginStatusConsumer* consumer)
-      : consumer_(consumer) {
-  }
-  virtual ~Authenticator() {}
+  explicit Authenticator(LoginStatusConsumer* consumer);
+  virtual ~Authenticator();
 
   // Given a |username| and |password|, this method attempts to authenticate
   // to login.
@@ -73,6 +70,13 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // data passed back through OnPasswordChangeDetected().
   virtual void ResyncEncryptedData(
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
+
+  // Perform basic canonicalization of |email_address|, taking into account
+  // that gmail does not consider '.' or caps inside a username to matter.
+  // It also ignores everything after a '+'.
+  // For example, c.masone+abc@gmail.com == cMaSone@gmail.com, per
+  // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
+  static std::string Canonicalize(const std::string& email_address);
 
  protected:
   LoginStatusConsumer* consumer_;

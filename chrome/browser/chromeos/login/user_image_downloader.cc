@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/chromeos/login/google_authenticator.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profile_manager.h"
@@ -158,7 +158,7 @@ bool UserImageDownloader::IsUserEntry(ListValue* email_list) const {
     if (!email_dictionary->GetStringASCII("address", &email))
       continue;
 
-    if (GoogleAuthenticator::Canonicalize(email) == username_)
+    if (Authenticator::Canonicalize(email) == username_)
       return true;
   }
   return false;

@@ -85,12 +85,6 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   void ResyncEncryptedData(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 
-  // Perform basic canonicalization of |email_address|, taking into account
-  // that gmail does not consider '.' or caps inside a username to matter.
-  // For example, c.masone@gmail.com == cMaSone@gmail.com, per
-  // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
-  static std::string Canonicalize(const std::string& email_address);
-
   // Callbacks from GaiaAuthenticator2
   virtual void OnClientLoginFailure(
       const GoogleServiceAuthError& error);

@@ -489,7 +489,8 @@
         'browser/chromeos/login/account_creation_view.h',
         'browser/chromeos/login/account_screen.cc',
         'browser/chromeos/login/account_screen.h',
-        'browser/chromeos/login/authentication_notification_details.h'
+        'browser/chromeos/login/authentication_notification_details.h',
+        'browser/chromeos/login/authenticator.cc',
         'browser/chromeos/login/authenticator.h',
         'browser/chromeos/login/auth_attempt_state.cc',
         'browser/chromeos/login/auth_attempt_state.h',

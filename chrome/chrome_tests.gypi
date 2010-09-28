@@ -865,6 +865,7 @@
         'browser/chromeos/gview_request_interceptor_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
         'browser/chromeos/language_preferences_unittest.cc',
+        'browser/chromeos/login/authenticator_unittest.cc',
         'browser/chromeos/login/cookie_fetcher_unittest.cc',
         'browser/chromeos/login/cryptohome_op_unittest.cc',
         'browser/chromeos/login/google_authenticator_unittest.cc',
