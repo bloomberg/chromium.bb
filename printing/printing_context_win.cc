@@ -255,7 +255,8 @@ PrintingContext::Result PrintingContext::NewDocument(
     return OnError();
 
   DOCINFO di = { sizeof(DOCINFO) };
-  di.lpszDocName = UTF16ToWide(document_name).c_str();
+  const std::wstring& document_name_wide = UTF16ToWide(document_name);
+  di.lpszDocName = document_name_wide.c_str();
 
   // Is there a debug dump directory specified? If so, force to print to a file.
   FilePath debug_dump_path = PrintedDocument::debug_dump_path();
