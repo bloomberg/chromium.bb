@@ -80,6 +80,12 @@ class ResourceHandler
   // This is a signal that the associated URLRequest isn't valid anymore.
   virtual void OnRequestClosed() = 0;
 
+  // This notification is synthesized by the RedirectToFileResourceHandler
+  // to indicate progress of 'download_to_file' requests. OnReadCompleted
+  // calls are consumed by the RedirectToFileResourceHandler and replaced
+  // with OnDataDownloaded calls.
+  virtual void OnDataDownloaded(int request_id, int bytes_downloaded) {}
+
  protected:
   friend class ChromeThread;
   friend class DeleteTask<ResourceHandler>;

@@ -16,6 +16,9 @@
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
+#include "webkit/blob/deletable_file_reference.h"
+
+using webkit_blob::DeletableFileReference;
 
 // TODO(darin): Use the buffer sizing algorithm from AsyncResourceHandler.
 static const int kReadBufSize = 32768;
@@ -56,8 +59,8 @@ bool RedirectToFileResourceHandler::OnResponseStarted(
     int request_id,
     ResourceResponse* response) {
   if (response->response_head.status.is_success()) {
-    DCHECK(!file_path_.empty());
-    response->response_head.download_file_path = file_path_;
+    DCHECK(deletable_file_ && !deletable_file_->path().empty());
+    response->response_head.download_file_path = deletable_file_->path();
   }
   return next_handler_->OnResponseStarted(request_id, response);
 }
@@ -66,7 +69,7 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
                                                 const GURL& url,
                                                 bool* defer) {
   request_id_ = request_id;
-  if (file_path_.empty()) {
+  if (!deletable_file_) {
     // Defer starting the request until we have created the temporary file.
     // TODO(darin): This is sub-optimal.  We should not delay starting the
     // network request like this.
@@ -123,6 +126,9 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
   if (BufIsFull())
     host_->PauseRequest(process_id_, request_id, true);
 
+  if (*bytes_read > 0)
+    next_handler_->OnDataDownloaded(request_id, *bytes_read);
+
   return WriteMore();
 }
 
@@ -134,21 +140,13 @@ bool RedirectToFileResourceHandler::OnResponseCompleted(
 }
 
 void RedirectToFileResourceHandler::OnRequestClosed() {
-  next_handler_->OnRequestClosed();
-
-  // The renderer no longer has a WebURLLoader open to this request, so we can
-  // close and unlink the file.
-
   // We require this explicit call to Close since file_stream_ was constructed
   // directly from a PlatformFile.
   file_stream_->Close();
   file_stream_.reset();
+  deletable_file_ = NULL;
 
-  // TODO(dumi): delete the temp file when it's no longer needed.
-  // TODO(dumi): revoke the privilege to upload this file.
-  // base::FileUtilProxy::Delete(
-  //       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
-  //       file_path_, NULL);
+  next_handler_->OnRequestClosed();
 }
 
 RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
@@ -159,12 +157,14 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     base::PlatformFileError /*error_code*/,
     base::PassPlatformFile file_handle,
     FilePath file_path) {
-  file_path_ = file_path;
+  deletable_file_ = DeletableFileReference::GetOrCreate(
+      file_path,
+      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
   file_stream_.reset(new net::FileStream(file_handle.ReleaseValue(),
                                          base::PLATFORM_FILE_WRITE |
                                          base::PLATFORM_FILE_ASYNC));
-  ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
-      process_id_, file_path);
+  host_->RegisterDownloadedTempFile(
+      process_id_, request_id_, deletable_file_.get());
   host_->StartDeferredRequest(process_id_, request_id_);
 }
 

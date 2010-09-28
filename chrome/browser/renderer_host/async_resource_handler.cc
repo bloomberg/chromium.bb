@@ -217,6 +217,12 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   return true;
 }
 
+void AsyncResourceHandler::OnDataDownloaded(
+    int request_id, int bytes_downloaded) {
+  receiver_->Send(new ViewMsg_Resource_DataDownloaded(
+      routing_id_, request_id, bytes_downloaded));
+}
+
 bool AsyncResourceHandler::OnResponseCompleted(
     int request_id,
     const URLRequestStatus& status,
