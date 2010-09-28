@@ -95,6 +95,11 @@ nouveau_device_open_existing(struct nouveau_device **dev, int close,
 	}
 	nvdev->base.chipset = value;
 
+	ret = nouveau_device_get_param(&nvdev->base,
+				       NOUVEAU_GETPARAM_HAS_BO_USAGE, &value);
+	if (!ret)
+		nvdev->has_bo_usage = value;
+
 	*dev = &nvdev->base;
 	return 0;
 }

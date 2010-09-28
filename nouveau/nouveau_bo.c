@@ -52,7 +52,8 @@ nouveau_bo_info(struct nouveau_bo_priv *nvbo, struct drm_nouveau_gem_info *arg)
 	nvbo->offset = arg->offset;
 	nvbo->map_handle = arg->map_handle;
 	nvbo->base.tile_mode = arg->tile_mode;
-	nvbo->base.tile_flags = arg->tile_flags;
+	/* XXX - flag inverted for backwards compatibility */
+	nvbo->base.tile_flags = arg->tile_flags ^ NOUVEAU_GEM_TILE_NONCONTIG;
 	return 0;
 }
 
@@ -140,6 +141,10 @@ nouveau_bo_kalloc(struct nouveau_bo_priv *nvbo, struct nouveau_channel *chan)
 
 	info->tile_mode = nvbo->base.tile_mode;
 	info->tile_flags = nvbo->base.tile_flags;
+	/* XXX - flag inverted for backwards compatibility */
+	info->tile_flags ^= NOUVEAU_GEM_TILE_NONCONTIG;
+	if (!nvdev->has_bo_usage)
+		info->tile_flags &= NOUVEAU_GEM_TILE_LAYOUT_MASK;
 
 	ret = drmCommandWriteRead(nvdev->fd, DRM_NOUVEAU_GEM_NEW,
 				  &req, sizeof(req));
