@@ -191,20 +191,6 @@ void BackgroundModeManager::SetLaunchOnStartupResetAllowed(bool allowed) {
                                    allowed);
 }
 
-namespace {
-
-bool HasBackgroundAppPermission(
-    const std::set<std::string>& api_permissions) {
-  return Extension::HasApiPermission(
-      api_permissions, Extension::kBackgroundPermission);
-}
-
-bool IsBackgroundApp(const Extension& extension) {
-  return HasBackgroundAppPermission(extension.api_permissions());
-}
-
-}  // namespace
-
 void BackgroundModeManager::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
@@ -219,21 +205,19 @@ void BackgroundModeManager::Observe(NotificationType type,
 #endif
       break;
     case NotificationType::EXTENSION_LOADED:
-      if (IsBackgroundApp(*Details<Extension>(details).ptr()))
+      if (IsBackgroundApp(Details<Extension>(details).ptr()))
         OnBackgroundAppLoaded();
       break;
     case NotificationType::EXTENSION_UNLOADED:
-      if (IsBackgroundApp(*Details<Extension>(details).ptr()))
+      if (IsBackgroundApp(Details<Extension>(details).ptr()))
         OnBackgroundAppUnloaded();
       break;
     case NotificationType::EXTENSION_INSTALLED:
-      if (IsBackgroundApp(*Details<Extension>(details).ptr()))
+      if (IsBackgroundApp(Details<Extension>(details).ptr()))
         OnBackgroundAppInstalled();
       break;
     case NotificationType::EXTENSION_UNINSTALLED:
-      if (HasBackgroundAppPermission(
-              Details<UninstalledExtensionInfo>(details).ptr()->
-              extension_api_permissions))
+      if (IsBackgroundApp(Details<Extension>(details).ptr()))
         OnBackgroundAppUninstalled();
       break;
     case NotificationType::APP_TERMINATING:
@@ -254,6 +238,11 @@ void BackgroundModeManager::Observe(NotificationType type,
       break;
   }
 }
+
+bool BackgroundModeManager::IsBackgroundApp(Extension* extension) {
+  return extension->HasApiPermission(Extension::kBackgroundPermission);
+}
+
 
 void BackgroundModeManager::OnBackgroundModePrefChanged() {
   // Background mode has been enabled/disabled in preferences, so update our
@@ -322,9 +311,9 @@ void BackgroundModeManager::OnBackgroundAppInstalled() {
 }
 
 void BackgroundModeManager::OnBackgroundAppUninstalled() {
-  // When uninstalling a background app, disable launch on startup if
-  // we have no more background apps.
-  if (IsBackgroundModeEnabled() && background_app_count_ == 0)
+  // When uninstalling a background app, disable launch on startup if it's the
+  // last one.
+  if (IsBackgroundModeEnabled() && background_app_count_ == 1)
     EnableLaunchOnStartup(false);
 }
 

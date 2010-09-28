@@ -85,6 +85,9 @@ class BackgroundModeManager
   // Invoked when the kBackgroundModeEnabled preference has changed.
   void OnBackgroundModePrefChanged();
 
+  // Returns true if the passed extension is a background app.
+  bool IsBackgroundApp(Extension* extension);
+
   // Returns true if the background mode preference is enabled
   bool IsBackgroundModeEnabled();
 

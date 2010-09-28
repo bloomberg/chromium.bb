@@ -56,15 +56,15 @@ TEST_F(BackgroundModeManagerTest, BackgroundAppInstallUninstall) {
   TestingProfile profile;
   TestBackgroundModeManager manager(&profile, command_line_.get());
   // Call to AppInstalled() will cause chrome to be set to launch on startup,
-  // and call to AppUninstalled() set chrome to not launch on startup.
+  // and call to AppUninstalling() set chrome to not launch on startup.
   EXPECT_CALL(manager, EnableLaunchOnStartup(true));
   EXPECT_CALL(manager, CreateStatusTrayIcon());
-  EXPECT_CALL(manager, RemoveStatusTrayIcon());
   EXPECT_CALL(manager, EnableLaunchOnStartup(false));
+  EXPECT_CALL(manager, RemoveStatusTrayIcon());
   manager.OnBackgroundAppInstalled();
   manager.OnBackgroundAppLoaded();
-  manager.OnBackgroundAppUnloaded();
   manager.OnBackgroundAppUninstalled();
+  manager.OnBackgroundAppUnloaded();
 }
 
 TEST_F(BackgroundModeManagerTest, BackgroundPrefDisabled) {
@@ -72,15 +72,15 @@ TEST_F(BackgroundModeManagerTest, BackgroundPrefDisabled) {
   TestingProfile profile;
   profile.GetPrefs()->SetBoolean(prefs::kBackgroundModeEnabled, false);
   TestBackgroundModeManager manager(&profile, command_line_.get());
-  EXPECT_CALL(manager, CreateStatusTrayIcon()).Times(0);
   // Should not change launch on startup status when installing/uninstalling
   // if background mode is disabled.
   EXPECT_CALL(manager, EnableLaunchOnStartup(true)).Times(0);
+  EXPECT_CALL(manager, CreateStatusTrayIcon()).Times(0);
   manager.OnBackgroundAppInstalled();
   manager.OnBackgroundAppLoaded();
   EXPECT_FALSE(BrowserList::WillKeepAlive());
-  manager.OnBackgroundAppUnloaded();
   manager.OnBackgroundAppUninstalled();
+  manager.OnBackgroundAppUnloaded();
 }
 
 TEST_F(BackgroundModeManagerTest, BackgroundPrefDynamicDisable) {
