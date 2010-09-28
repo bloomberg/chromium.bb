@@ -141,7 +141,7 @@ class BookmarksObserver : public BookmarksExportObserver {
 
 // Tests bookmark_html_writer by populating a BookmarkModel, writing it out by
 // way of bookmark_html_writer, then using the importer to read it back in.
-TEST_F(BookmarkHTMLWriterTest, Test) {
+TEST_F(BookmarkHTMLWriterTest, DISABLED_Test) {
   MessageLoop message_loop;
   ChromeThread fake_ui_thread(ChromeThread::UI, &message_loop);
   ChromeThread fake_file_thread(ChromeThread::FILE, &message_loop);
