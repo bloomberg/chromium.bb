@@ -18,7 +18,6 @@
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "gfx/native_widget_types.h"
@@ -34,6 +33,7 @@ class FilePath;
 class GURL;
 class MessageLoop;
 class NavigationController;
+class NotificationType;
 class Profile;
 class RenderViewHost;
 class ScopedTempDir;
@@ -178,26 +178,48 @@ bool IsViewFocused(const Browser* browser, ViewID vid);
 void ClickOnView(const Browser* browser, ViewID vid);
 
 // Blocks until a notification for given |type| is received.
-void WaitForNotification(NotificationType::Type type);
+void WaitForNotification(NotificationType type);
 
 // Register |observer| for the given |type| and |source| and run
 // the message loop until the observer posts a quit task.
 void RegisterAndWait(NotificationObserver* observer,
-                     NotificationType::Type type,
+                     NotificationType type,
                      const NotificationSource& source);
 
 // Blocks until |model| finishes loading.
 void WaitForBookmarkModelToLoad(BookmarkModel* model);
 
-// Sends a key press blocking until the key press is received or the test times
+// Puts the native window for |browser| in |native_window|. Returns true on
+// success.
+bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window)
+    WARN_UNUSED_RESULT;
+
+// Brings the native window for |browser| to the foreground. Returns true on
+// success.
+bool BringBrowserWindowToFront(const Browser* browser) WARN_UNUSED_RESULT;
+
+// Sends a key press, blocking until the key press is received or the test times
 // out. This uses ui_controls::SendKeyPress, see it for details. Returns true
 // if the event was successfully sent and received.
-bool SendKeyPressSync(gfx::NativeWindow window,
+bool SendKeyPressSync(const Browser* browser,
                       app::KeyboardCode key,
                       bool control,
                       bool shift,
                       bool alt,
                       bool command) WARN_UNUSED_RESULT;
+
+// Sends a key press, blocking until both the key press and a notification from
+// |source| of type |type| are received, or until the test times out. This uses
+// ui_controls::SendKeyPress, see it for details. Returns true if the event was
+// successfully sent and both the event and notification were received.
+bool SendKeyPressAndWait(const Browser* browser,
+                         app::KeyboardCode key,
+                         bool control,
+                         bool shift,
+                         bool alt,
+                         bool command,
+                         NotificationType type,
+                         const NotificationSource& source) WARN_UNUSED_RESULT;
 
 // Run a message loop only for the specified amount of time.
 class TimedMessageLoopRunner {
@@ -307,49 +329,29 @@ class TestNotificationObserver : public NotificationObserver {
 // and the observers getting registered, where a notification will be missed.
 //
 // Rather, one can do this:
-//   WindowedNotificationObserver<type> signal(...)
+//   WindowedNotificationObserver signal(...)
 //   PerformAction()
-//   wait_for_signal.Wait()
-template <class T>
+//   signal.Wait()
 class WindowedNotificationObserver : public NotificationObserver {
  public:
   /* Register to listen for notifications of the given type from either
-   * a specific source, of from all sources if |source| is NULL */
+   * a specific source, or from all sources if |source| is
+   * NotificationService::AllSources(). */
   WindowedNotificationObserver(NotificationType notification_type,
-                               T* source)
-      : seen_(false),
-        running_(false),
-        waiting_for_(source) {
-    if (source) {
-      registrar_.Add(this, notification_type, waiting_for_);
-    } else {
-      registrar_.Add(this, notification_type,
-                     NotificationService::AllSources());
-    }
-  }
+                               const NotificationSource& source);
 
-  /* Wait sleeps until the specified notification occurs. You must have
-   * specified a source in the arguments to the constructor in order to
-   * use this function. Otherwise, you should use WaitFor. */
-  void Wait() {
-    if (!waiting_for_.ptr()) {
-      LOG(FATAL) << "Wait called when monitoring all sources. You must use "
-                 << "WaitFor in this case.";
-    }
-
-    if (seen_)
-      return;
-
-    running_ = true;
-    ui_test_utils::RunMessageLoop();
-  }
+  /* Wait until the specified notification occurs. You must have specified a
+   * source in the arguments to the constructor in order to use this function.
+   * Otherwise, you should use WaitFor. */
+  void Wait();
 
   /* WaitFor waits until the given notification type is received from the
    * given object. If the notification was emitted between the construction of
    * this object and this call then it returns immediately.
    *
    * Beware that this is inheriently plagued by ABA issues. Consider:
-   *   WindowedNotificationObserver is created with NULL source
+   *   WindowedNotificationObserver is created, listening for notifications from
+   *     all sources
    *   Object A is created with address x and fires a notification
    *   Object A is freed
    *   Object B is created with the same address
@@ -359,37 +361,17 @@ class WindowedNotificationObserver : public NotificationObserver {
    * notification from A (because they shared an address), despite being
    * different objects.
    */
-  void WaitFor(T* source) {
-    if (waiting_for_.ptr()) {
-      LOG(FATAL) << "WaitFor called when already waiting on a specific "
-                 << "source. Use Wait in this case.";
-    }
-
-    waiting_for_ = Source<T>(source);
-    if (sources_seen_.count(waiting_for_.map_key()) > 0)
-      return;
-
-    running_ = true;
-    ui_test_utils::RunMessageLoop();
-  }
+  void WaitFor(const NotificationSource& source);
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details) {
-    if (waiting_for_ == source) {
-      seen_ = true;
-      if (running_)
-        MessageLoopForUI::current()->Quit();
-    } else {
-      sources_seen_.insert(source.map_key());
-    }
-  }
+                       const NotificationDetails& details);
 
  private:
   bool seen_;
   bool running_;
   std::set<uintptr_t> sources_seen_;
-  Source<T> waiting_for_;
+  NotificationSource waiting_for_;
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);
@@ -401,11 +383,11 @@ class WindowedNotificationObserver : public NotificationObserver {
 // which is the case with most notifications.
 template <class T, class U>
 class WindowedNotificationObserverWithDetails
-    : public WindowedNotificationObserver<T> {
+    : public WindowedNotificationObserver {
  public:
   WindowedNotificationObserverWithDetails(NotificationType notification_type,
-                                          T* source)
-      : WindowedNotificationObserver<T>(notification_type, source) {}
+                                          const T* source)
+      : WindowedNotificationObserver(notification_type, Source<T>(source)) {}
 
   // Fills |details| with the details of the notification received for |source|.
   bool GetDetailsFor(T* source, U* details) {
@@ -420,7 +402,7 @@ class WindowedNotificationObserverWithDetails
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     details_[Source<T>(source).ptr()] = *Details<U>(details).ptr();
-    WindowedNotificationObserver<T>::Observe(type, source, details);
+    WindowedNotificationObserver::Observe(type, source, details);
   }
 
  private:

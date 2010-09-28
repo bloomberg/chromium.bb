@@ -17,6 +17,7 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
@@ -28,8 +29,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/bookmark_load_observer.h"
 #if defined(TOOLKIT_VIEWS)
@@ -527,13 +527,13 @@ int FindInPage(TabContents* tab_contents, const string16& search_string,
   return observer.number_of_matches();
 }
 
-void WaitForNotification(NotificationType::Type type) {
+void WaitForNotification(NotificationType type) {
   TestNotificationObserver observer;
   RegisterAndWait(&observer, type, NotificationService::AllSources());
 }
 
 void RegisterAndWait(NotificationObserver* observer,
-                     NotificationType::Type type,
+                     NotificationType type,
                      const NotificationSource& source) {
   NotificationRegistrar registrar;
   registrar.Add(observer, type, source);
@@ -550,12 +550,34 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   ASSERT_TRUE(model->IsLoaded());
 }
 
-bool SendKeyPressSync(gfx::NativeWindow window,
+bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window) {
+  BrowserWindow* window = browser->window();
+  if (!window)
+    return false;
+
+  *native_window = window->GetNativeHandle();
+  return *native_window;
+}
+
+bool BringBrowserWindowToFront(const Browser* browser) {
+  gfx::NativeWindow window = NULL;
+  if (!GetNativeWindow(browser, &window))
+    return false;
+
+  ui_test_utils::ShowAndFocusNativeWindow(window);
+  return true;
+}
+
+bool SendKeyPressSync(const Browser* browser,
                       app::KeyboardCode key,
                       bool control,
                       bool shift,
                       bool alt,
                       bool command) {
+  gfx::NativeWindow window = NULL;
+  if (!GetNativeWindow(browser, &window))
+    return false;
+
   if (!ui_controls::SendKeyPressNotifyWhenDone(
           window, key, control, shift, alt, command,
           new MessageLoop::QuitTask())) {
@@ -568,6 +590,24 @@ bool SendKeyPressSync(gfx::NativeWindow window,
   RunMessageLoop();
   return !testing::Test::HasFatalFailure();
 }
+
+bool SendKeyPressAndWait(const Browser* browser,
+                         app::KeyboardCode key,
+                         bool control,
+                         bool shift,
+                         bool alt,
+                         bool command,
+                         NotificationType type,
+                         const NotificationSource& source) {
+  WindowedNotificationObserver observer(type, source);
+
+  if (!SendKeyPressSync(browser, key, control, shift, alt, command))
+    return false;
+
+  observer.Wait();
+  return !testing::Test::HasFatalFailure();
+}
+
 
 TimedMessageLoopRunner::TimedMessageLoopRunner()
     : loop_(new MessageLoopForUI()),
@@ -679,6 +719,54 @@ TestWebSocketServer::~TestWebSocketServer() {
   cmd_line->AppendSwitch("chromium");
   cmd_line->AppendSwitchPath("pidfile", websocket_pid_file_);
   base::LaunchApp(*cmd_line.get(), true, false, NULL);
+}
+
+WindowedNotificationObserver::WindowedNotificationObserver(
+    NotificationType notification_type,
+    const NotificationSource& source)
+    : seen_(false),
+      running_(false),
+      waiting_for_(source) {
+  registrar_.Add(this, notification_type, waiting_for_);
+}
+
+void WindowedNotificationObserver::Wait() {
+  if (waiting_for_ == NotificationService::AllSources()) {
+    LOG(FATAL) << "Wait called when monitoring all sources. You must use "
+               << "WaitFor in this case.";
+  }
+
+  if (seen_)
+    return;
+
+  running_ = true;
+  ui_test_utils::RunMessageLoop();
+}
+
+void WindowedNotificationObserver::WaitFor(const NotificationSource& source) {
+  if (waiting_for_ != NotificationService::AllSources()) {
+    LOG(FATAL) << "WaitFor called when already waiting on a specific source."
+               << "Use Wait in this case.";
+  }
+
+  waiting_for_ = source;
+  if (sources_seen_.count(waiting_for_.map_key()) > 0)
+    return;
+
+  running_ = true;
+  ui_test_utils::RunMessageLoop();
+}
+
+void WindowedNotificationObserver::Observe(NotificationType type,
+                                           const NotificationSource& source,
+                                           const NotificationDetails& details) {
+  if (waiting_for_ == source) {
+    seen_ = true;
+    if (running_)
+      MessageLoopForUI::current()->Quit();
+  } else {
+    sources_seen_.insert(source.map_key());
+  }
 }
 
 }  // namespace ui_test_utils

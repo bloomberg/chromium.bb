@@ -6,8 +6,6 @@
 
 #include "app/keyboard_codes.h"
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
-#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -17,7 +15,6 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -105,13 +102,6 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     set_show_window(true);
   }
 
-  void GetNativeWindow(gfx::NativeWindow* native_window) {
-    BrowserWindow* window = browser()->window();
-    ASSERT_TRUE(window);
-    *native_window = window->GetNativeHandle();
-    ASSERT_TRUE(*native_window);
-  }
-
   void GetAutocompleteEditView(AutocompleteEditView** edit_view) {
     BrowserWindow* window = browser()->window();
     ASSERT_TRUE(window);
@@ -122,11 +112,9 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
   }
 
   void SendKey(app::KeyboardCode key, bool control, bool shift, bool alt) {
-    gfx::NativeWindow window = NULL;
-    ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
     ASSERT_TRUE(
         ui_test_utils::SendKeyPressSync(
-            window, key, control, shift, alt, false /* command */));
+            browser(), key, control, shift, alt, false /* command */));
   }
 
   void SendKeySequence(const wchar_t* keys) {
@@ -267,19 +255,6 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     }
     MessageLoopForUI::current()->Quit();
   }
-
-#if defined(OS_WIN)
-  virtual void CleanUpOnMainThread() {
-    // A hack to avoid hitting issue http://crbug.com/18372 and
-    // http://crbug.com/18373
-    // Weird that it only happens on Windows.
-    // TODO(suzhe): Remove this hack as soon as these bugs are fixed.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            new MessageLoop::QuitTask(),
-                                            2000);
-    ui_test_utils::RunMessageLoop();
-  }
-#endif
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.

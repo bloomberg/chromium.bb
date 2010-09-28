@@ -328,20 +328,17 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSExpiredCertAndGoForward) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
   ASSERT_TRUE(https_server_expired_.Start());
 
-  ui_test_utils::WindowedNotificationObserver<NavigationController>
-      load_stop_signal(NotificationType::LOAD_STOP, NULL);
-  Browser* used_browser = NULL;
-  TabContents* tab_contents = browser()->AddTabWithURL(
-      https_server_expired_.GetURL("files/ssl/google.htm"), GURL(),
-      PageTransition::TYPED, -1, TabStripModel::ADD_SELECTED,
-      NULL, std::string(), &used_browser);
-  load_stop_signal.WaitFor(&(tab_contents->controller()));
+  GURL url = https_server_expired_.GetURL("files/ssl/google.htm");
+  TabContents* tab2 = browser()->AddTabWithURL(
+      url, GURL(), PageTransition::TYPED, -1, TabStripModel::ADD_SELECTED, NULL,
+      std::string(), NULL);
+  ui_test_utils::WaitForLoadStop(&(tab2->controller()));
 
   // Verify our assumption that there was no prior navigation.
   EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_BACK));
 
   // We should have an interstitial page showing.
-  ASSERT_TRUE(tab_contents->interstitial_page());
+  ASSERT_TRUE(tab2->interstitial_page());
 }
 
 //

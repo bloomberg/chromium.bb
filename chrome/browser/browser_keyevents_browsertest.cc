@@ -11,9 +11,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -127,30 +125,6 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   BrowserKeyEventsTest() {
     set_show_window(true);
     EnableDOMAutomation();
-  }
-
-  void GetNativeWindow(gfx::NativeWindow* native_window) {
-    BrowserWindow* window = browser()->window();
-    ASSERT_TRUE(window);
-    *native_window = window->GetNativeHandle();
-    ASSERT_TRUE(*native_window);
-  }
-
-  void BringBrowserWindowToFront() {
-    gfx::NativeWindow window = NULL;
-    ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
-    ui_test_utils::ShowAndFocusNativeWindow(window);
-  }
-
-  void SendKey(app::KeyboardCode key,
-               bool control,
-               bool shift,
-               bool alt,
-               bool command) {
-    gfx::NativeWindow window = NULL;
-    ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
-    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-                    window, key, control, shift, alt, command));
   }
 
   bool IsViewFocused(ViewID vid) {
@@ -284,12 +258,12 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
     // We need to create a finish observer before sending the key event,
     // because the test finished message might be arrived before returning
-    // from the SendKey() method.
+    // from the SendKeyPressSync() method.
     TestFinishObserver finish_observer(
         browser()->GetTabContentsAt(tab_index)->render_view_host());
 
-    ASSERT_NO_FATAL_FAILURE(
-        SendKey(test.key, test.ctrl, test.shift, test.alt, test.command));
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser(), test.key, test.ctrl, test.shift, test.alt, test.command));
     ASSERT_TRUE(finish_observer.WaitForFinish());
     ASSERT_NO_FATAL_FAILURE(CheckResult(
         tab_index, test.result_length, test.result));
@@ -374,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
 
   ASSERT_TRUE(test_server()->Start());
 
-  BringBrowserWindowToFront();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -459,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
 
   ASSERT_TRUE(test_server()->Start());
 
-  BringBrowserWindowToFront();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -472,8 +446,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Press Escape to close the Find box and move the focus back to the web page.
-  ASSERT_NO_FATAL_FAILURE(
-      SendKey(app::VKEY_ESCAPE, false, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), app::VKEY_ESCAPE, false, false, false, false));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Press Ctrl+F with keydown suppressed shall not open the find box.
@@ -504,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 
   ASSERT_TRUE(test_server()->Start());
 
-  BringBrowserWindowToFront();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -517,8 +491,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Press Escape to close the Find box and move the focus back to the web page.
-  ASSERT_NO_FATAL_FAILURE(
-      SendKey(app::VKEY_ESCAPE, false, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), app::VKEY_ESCAPE, false, false, false, false));
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Press Cmd+F with keydown suppressed shall not open the find box.
@@ -607,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 
   ASSERT_TRUE(test_server()->Start());
 
-  BringBrowserWindowToFront();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -679,7 +653,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   ASSERT_TRUE(test_server()->Start());
 
-  BringBrowserWindowToFront();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -707,7 +681,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   // Reserved accelerators can't be suppressed.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
   // Press Ctrl+W, which will close the tab.
-  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_W, true, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), app::VKEY_W, true, false, false, false));
   EXPECT_EQ(1, browser()->tab_count());
 #elif defined(OS_MACOSX)
   static const KeyEventTestData kTestCmdT = {
@@ -730,7 +705,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
   // Reserved accelerators can't be suppressed.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
   // Press Cmd+W, which will close the tab.
-  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_W, false, false, false, true));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), app::VKEY_W, false, false, false, true));
   EXPECT_EQ(1, browser()->tab_count());
 #elif defined(TOOLKIT_GTK)
   // Ctrl-[a-z] are not treated as reserved accelerators on GTK.
@@ -800,7 +776,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
 
   // Ctrl+F4 to close the tab.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
-  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_F4, true, false, false, false));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), app::VKEY_F4, true, false, false, false));
   ASSERT_EQ(1, browser()->tab_count());
 #endif
 }
@@ -836,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
 
   ASSERT_TRUE(test_server()->Start());
 
-  BringBrowserWindowToFront();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -873,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
 
   ASSERT_TRUE(test_server()->Start());
 
-  BringBrowserWindowToFront();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -914,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FocusMenuBarByAltKey) {
 
   ASSERT_TRUE(test_server()->Start());
 
-  BringBrowserWindowToFront();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 

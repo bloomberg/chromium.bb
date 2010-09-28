@@ -43,7 +43,7 @@ template <class T>
 class Source : public NotificationSource {
  public:
   // TODO(erg): Our code hard relies on implicit conversion
-  Source(T* ptr) : NotificationSource(ptr) {}  // NOLINT
+  Source(const T* ptr) : NotificationSource(ptr) {}  // NOLINT
   Source(const NotificationSource& other)      // NOLINT
     : NotificationSource(other) {}
 

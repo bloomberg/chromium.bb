@@ -3,12 +3,9 @@
 // found in the LICENSE file.
 
 #include "app/keyboard_codes.h"
-#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -32,51 +29,6 @@ class FindInPageTest : public InProcessBrowserTest {
   FindInPageTest() {
     set_show_window(true);
     FindBarHost::disable_animations_during_testing_ = true;
-  }
-
-  void ClickOnView(ViewID view_id) {
-    BrowserWindow* browser_window = browser()->window();
-    ASSERT_TRUE(browser_window);
-#if defined(TOOLKIT_VIEWS)
-    views::View* view =
-        reinterpret_cast<BrowserView*>(browser_window)->GetViewByID(view_id);
-#elif defined(OS_LINUX)
-    gfx::NativeWindow window = browser_window->GetNativeHandle();
-    ASSERT_TRUE(window);
-    GtkWidget* view = ViewIDUtil::GetWidget(GTK_WIDGET(window), view_id);
-#endif
-    ASSERT_TRUE(view);
-    ui_controls::MoveMouseToCenterAndPress(view,
-                                           ui_controls::LEFT,
-                                           ui_controls::DOWN | ui_controls::UP,
-                                           new MessageLoop::QuitTask());
-    ASSERT_NO_FATAL_FAILURE(ui_test_utils::RunMessageLoop());
-  }
-
-  int GetFocusedViewID() {
-#if defined(TOOLKIT_VIEWS)
-#if defined(OS_LINUX)
-    // See http://crbug.com/26873 .
-    views::FocusManager* focus_manager =
-        views::FocusManager::GetFocusManagerForNativeView(
-            GTK_WIDGET(browser()->window()->GetNativeHandle()));
-#else
-    views::FocusManager* focus_manager =
-        views::FocusManager::GetFocusManagerForNativeView(
-            browser()->window()->GetNativeHandle());
-#endif
-
-    if (!focus_manager) {
-      NOTREACHED();
-      return -1;
-    }
-    views::View* focused_view = focus_manager->GetFocusedView();
-    if (!focused_view)
-      return -1;
-    return focused_view->GetID();
-#else
-    return -1;
-#endif
   }
 
   string16 GetFindBarText() {
@@ -105,7 +57,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   EXPECT_EQ(browser(), browser_used);
 
   browser()->Find();
-  EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Select tab A.
   browser()->SelectTabContentsAt(0, true);
@@ -114,16 +67,16 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   browser()->CloseTabContents(browser()->GetTabContentsAt(1));
 
   // Click on the location bar so that Find box loses focus.
-  ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_LOCATION_BAR));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
+                                                     VIEW_ID_LOCATION_BAR));
 #if defined(TOOLKIT_VIEWS) || defined(OS_WIN)
   // Check the location bar is focused.
-  EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
 #endif
 
   // This used to crash until bug 1303709 was fixed.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser()->window()->GetNativeHandle(), app::VKEY_ESCAPE,
-      false, false, false, false));
+      browser(), app::VKEY_ESCAPE, false, false, false, false));
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
@@ -135,35 +88,39 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
   // Focus the location bar, open and close the find-in-page, focus should
   // return to the location bar.
   browser()->FocusLocationBar();
-  EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
   // Ensure the creation of the find bar controller.
   browser()->GetFindBarController()->Show();
-  EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelection);
-  EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
 
   // Focus the location bar, find something on the page, close the find box,
   // focus should go to the page.
   browser()->FocusLocationBar();
   browser()->Find();
-  EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
                             ASCIIToUTF16("a"), true, false, NULL);
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelection);
-  EXPECT_EQ(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Focus the location bar, open and close the find box, focus should return to
   // the location bar (same as before, just checking that http://crbug.com/23599
   // is fixed).
   browser()->FocusLocationBar();
-  EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
   browser()->GetFindBarController()->Show();
-  EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),
+                                           VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
   browser()->GetFindBarController()->EndFindSession(
       FindBarController::kKeepSelection);
-  EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_LOCATION_BAR));
 }
 
 // This tests that whenever you clear values from the Find box and close it that
@@ -181,28 +138,26 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
-
   // Show the Find bar.
   browser()->GetFindBarController()->Show();
 
   // Search for "a".
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_A, false, false, false, false));  // No modifiers
+      browser(), app::VKEY_A, false, false, false, false));
 
   // We should find "a" here.
   EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarText());
 
   // Delete "a".
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_BACK, false, false, false, false));  // No modifiers.
+      browser(), app::VKEY_BACK, false, false, false, false));
 
   // Validate we have cleared the text.
   EXPECT_EQ(string16(), GetFindBarText());
 
   // Close the Find box.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_ESCAPE, false, false, false, false));  // No modifiers.
+      browser(), app::VKEY_ESCAPE, false, false, false, false));
 
   // Show the Find bar.
   browser()->GetFindBarController()->Show();
@@ -213,11 +168,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
 
   // Close the Find box.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_ESCAPE, false, false, false, false));  // No modifiers.
+      browser(), app::VKEY_ESCAPE, false, false, false, false));
 
   // Press F3 to trigger FindNext.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      window, app::VKEY_F3, false, false, false, false));  // No modifiers.
+      browser(), app::VKEY_F3, false, false, false, false));
 
   // After the Find box has been reopened, it should still have no prepopulate
   // value.
