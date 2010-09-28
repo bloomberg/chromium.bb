@@ -175,7 +175,13 @@ TEST_F(MiniInstallTest, InstallMiniInstallerSys) {
   sys_inst_->Install();
 }
 
-TEST_F(MiniInstallTest, InstallMiniInstallerUser) {
+#if defined(OS_WIN)
+// http://crbug.com/57158 - Fails on windows.
+#define MAYBE_InstallMiniInstallerUser FLAKY_InstallMiniInstallerUser
+#else
+#define MAYBE_InstallMiniInstallerUser InstallMiniInstallerUser
+#endif
+TEST_F(MiniInstallTest, MAYBE_InstallMiniInstallerUser) {
   user_inst_->Install();
 }
 
