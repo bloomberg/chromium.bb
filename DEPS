@@ -51,6 +51,9 @@ deps = {
   "src/third_party/protobuf2/src":
     (Var("googlecode_url") % "protobuf") + "/trunk@346",
 
+  "src/third_party/safe_browsing/testing":
+    "http://google-safe-browsing.googlecode.com/svn/trunk/testing@99",
+
   "src/third_party/cacheinvalidation/files":
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@35",
 

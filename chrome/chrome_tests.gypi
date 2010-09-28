@@ -1966,6 +1966,8 @@
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+        # This is the safebrowsing test server.
+        '../third_party/safe_browsing/safe_browsing.gyp:safe_browsing',
       ],
       'include_dirs': [
         '..',
