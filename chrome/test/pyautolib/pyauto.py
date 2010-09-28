@@ -1027,42 +1027,39 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       profiles: (optional) a list of dictionaries representing each profile to
       add. Example:
       [{
-        'label': 'Profile 1', # Note: 'label' must be present
         'NAME_FIRST': 'Bob',
         'NAME_LAST': 'Smith',
         'ADDRESS_HOME_ZIP': '94043',
       },
       {
-        'label': 'Profile 2',
         'EMAIL_ADDRESS': 'sue@example.com',
         'COMPANY_NAME': 'Company X',
       }]
 
-      Each dictionary must have a key 'label'. Other possible keys are:
+      Other possible keys are:
       'NAME_FIRST', 'NAME_MIDDLE', 'NAME_LAST', 'EMAIL_ADDRESS',
       'COMPANY_NAME', 'ADDRESS_HOME_LINE1', 'ADDRESS_HOME_LINE2',
       'ADDRESS_HOME_CITY', 'ADDRESS_HOME_STATE', 'ADDRESS_HOME_ZIP',
-      'ADDRESS_HOME_COUNTRY', 'PHONE_HOME_NUMBER', 'PHONE_FAX_NUMBER'
+      'ADDRESS_HOME_COUNTRY', 'PHONE_HOME_WHOLE_NUMBER',
+      'PHONE_FAX_WHOLE_NUMBER'
 
       All values must be strings.
 
       credit_cards: (optional) a list of dictionaries representing each credit
       card to add. Example:
       [{
-        'label': 'Personal Credit Card', # Note: 'label' must be present
         'CREDIT_CARD_NAME': 'Bob C. Smith',
         'CREDIT_CARD_NUMBER': '5555555555554444',
         'CREDIT_CARD_EXP_MONTH': '12',
         'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2011'
       },
       {
-        'label': 'Work Credit Card',
         'CREDIT_CARD_NAME': 'Bob C. Smith',
         'CREDIT_CARD_NUMBER': '4111111111111111',
         'CREDIT_CARD_TYPE': 'Visa'
       }
 
-      Each dictionary must have a key 'label'. Other possible keys are:
+      Other possible keys are:
       'CREDIT_CARD_NAME', 'CREDIT_CARD_NUMBER', 'CREDIT_CARD_EXP_MONTH',
       'CREDIT_CARD_EXP_4_DIGIT_YEAR'
 
@@ -1081,14 +1078,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       'profiles': profiles,
       'credit_cards': credit_cards
     }
-    if profiles:
-      for profile in profiles:
-        if not 'label' in profile:
-          raise JSONInterfaceError('must specify label for all profiles')
-    if credit_cards:
-      for credit_card in credit_cards:
-        if not 'label' in credit_card:
-          raise JSONInterfaceError('must specify label for all credit cards')
     self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
   def GetAutoFillProfile(self, tab_index=0, window_index=0):

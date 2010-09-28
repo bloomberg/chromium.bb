@@ -3621,7 +3621,6 @@ ListValue* TestingAutomationProvider::GetListFromAutoFillProfiles(
        it != autofill_profiles.end(); ++it) {
     AutoFillProfile* profile = *it;
     DictionaryValue* profile_info = new DictionaryValue;
-    profile_info->SetString("label", profile->Label());
     // For each of the types, if it has a value, add it to the dictionary.
     for (std::map<AutoFillFieldType, std::wstring>::iterator
          type_it = autofill_type_to_string.begin();
@@ -3649,7 +3648,6 @@ ListValue* TestingAutomationProvider::GetListFromCreditCards(
        it != credit_cards.end(); ++it) {
     CreditCard* card = *it;
     DictionaryValue* card_info = new DictionaryValue;
-    card_info->SetString("label", card->Label());
     // For each of the types, if it has a value, add it to the dictionary.
     for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
         credit_card_type_to_string.begin();
@@ -3671,7 +3669,6 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
     const ListValue& profiles, std::string* error_message) {
   std::vector<AutoFillProfile> autofill_profiles;
   DictionaryValue* profile_info = NULL;
-  string16 profile_label;
   string16 current_value;
 
   std::map<AutoFillFieldType, std::wstring> autofill_type_to_string =
@@ -3680,9 +3677,8 @@ TestingAutomationProvider::GetAutoFillProfilesFromList(
   int num_profiles = profiles.GetSize();
   for (int i = 0; i < num_profiles; i++) {
     profiles.GetDictionary(i, &profile_info);
-    profile_info->GetString("label", &profile_label);
     // Choose an id of 0 so that a unique id will be created.
-    AutoFillProfile profile(profile_label, 0);
+    AutoFillProfile profile(string16(), 0);
     // Loop through the possible profile types and add those provided.
     for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
          autofill_type_to_string.begin();
@@ -3707,7 +3703,6 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
     const ListValue& cards, std::string* error_message) {
   std::vector<CreditCard> credit_cards;
   DictionaryValue* card_info = NULL;
-  string16 card_label;
   string16 current_value;
 
   std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string =
@@ -3716,8 +3711,7 @@ std::vector<CreditCard> TestingAutomationProvider::GetCreditCardsFromList(
   int num_credit_cards = cards.GetSize();
   for (int i = 0; i < num_credit_cards; i++) {
     cards.GetDictionary(i, &card_info);
-    card_info->GetString("label", &card_label);
-    CreditCard card(card_label, 0);
+    CreditCard card(string16(), 0);
     // Loop through the possible credit card fields and add those provided.
     for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
         credit_card_type_to_string.begin();
@@ -3751,8 +3745,9 @@ std::map<AutoFillFieldType, std::wstring>
   autofill_type_to_string[ADDRESS_HOME_STATE] = L"ADDRESS_HOME_STATE";
   autofill_type_to_string[ADDRESS_HOME_ZIP] = L"ADDRESS_HOME_ZIP";
   autofill_type_to_string[ADDRESS_HOME_COUNTRY] = L"ADDRESS_HOME_COUNTRY";
-  autofill_type_to_string[PHONE_HOME_NUMBER] = L"PHONE_HOME_NUMBER";
-  autofill_type_to_string[PHONE_FAX_NUMBER] = L"PHONE_FAX_NUMBER";
+  autofill_type_to_string[PHONE_HOME_WHOLE_NUMBER] =
+      L"PHONE_HOME_WHOLE_NUMBER";
+  autofill_type_to_string[PHONE_FAX_WHOLE_NUMBER] = L"PHONE_FAX_WHOLE_NUMBER";
   autofill_type_to_string[NAME_FIRST] = L"NAME_FIRST";
   return autofill_type_to_string;
 }

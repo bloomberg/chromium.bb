@@ -21,7 +21,7 @@
 
 {
   'all': [
-    # 'autofill',  crbug.com/56844
+    'autofill',
     'bookmark_bar',
     'bookmarks',
     'browser',
@@ -65,7 +65,7 @@
   'mac': [
     # Keychain popups make password & autofill tests difficult. crbug.com/49378
     '-passwords',
-    # '-autofill',  crbug.com/56844
+    '-autofill',
     # codesign tests should run *after* signing. crbug.com/50481
     '-codesign',
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
