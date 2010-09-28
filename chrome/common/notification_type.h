@@ -797,11 +797,8 @@ class NotificationType {
     // details about why the install failed.
     EXTENSION_INSTALL_ERROR,
 
-    // Sent when a new extension is being uninstalled. When this notification
-    // is sent, the ExtensionsService still is tracking this extension (it has
-    // not been unloaded yet). This will be followed by an EXTENSION_UNLOADED
-    // or EXTENSION_UNLOADED_DISABLED when the extension is actually unloaded.
-    // The details are an Extension and the source is a Profile.
+    // Sent when an extension has been uninstalled.  The details are
+    // an UninstalledExtensionInfo struct and the source is a Profile.
     EXTENSION_UNINSTALLED,
 
     // Sent when an extension is unloaded. This happens when an extension is
