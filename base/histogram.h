@@ -272,6 +272,8 @@ class Histogram : public base::RefCountedThreadSafe<Histogram> {
   class SampleSet {
    public:
     explicit SampleSet();
+    ~SampleSet();
+
     // Adjust size of counts_ for use with given histogram.
     void Resize(const Histogram& histogram);
     void CheckSize(const Histogram& histogram) const;
@@ -489,6 +491,8 @@ class LinearHistogram : public Histogram {
   static scoped_refptr<Histogram> FactoryTimeGet(const std::string& name,
       base::TimeDelta minimum, base::TimeDelta maximum, size_t bucket_count,
       Flags flags);
+
+  virtual ~LinearHistogram();
 
  protected:
   LinearHistogram(const std::string& name, Sample minimum,

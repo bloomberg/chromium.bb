@@ -18,6 +18,7 @@ namespace net {
 class SpdySettingsStorage {
  public:
   SpdySettingsStorage();
+  ~SpdySettingsStorage();
 
   // Get a copy of the SpdySettings stored for a host.
   // If no settings are stored, returns an empty set of settings.

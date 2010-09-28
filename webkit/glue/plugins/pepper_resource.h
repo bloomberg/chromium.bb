@@ -38,8 +38,8 @@ class Widget;
 
 class Resource : public base::RefCountedThreadSafe<Resource> {
  public:
-  explicit Resource(PluginModule* module)  : resource_id_(0), module_(module) {}
-  virtual ~Resource() {}
+  explicit Resource(PluginModule* module);
+  virtual ~Resource();
 
   // Returns NULL if the resource is invalid or is a different type.
   template<typename T>

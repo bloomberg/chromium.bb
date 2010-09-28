@@ -78,6 +78,8 @@ class Connection;
 // corruption, low-level IO errors or locking violations.
 class ErrorDelegate : public base::RefCounted<ErrorDelegate> {
  public:
+  ErrorDelegate();
+
   // |error| is an sqlite result code as seen in sqlite\preprocessed\sqlite3.h
   // |connection| is db connection where the error happened and |stmt| is
   // our best guess at the statement that triggered the error.  Do not store
@@ -94,7 +96,7 @@ class ErrorDelegate : public base::RefCounted<ErrorDelegate> {
  protected:
   friend class base::RefCounted<ErrorDelegate>;
 
-  virtual ~ErrorDelegate() {}
+  virtual ~ErrorDelegate();
 };
 
 class Connection {

@@ -24,6 +24,9 @@ ActiveWindowWatcherX::ActiveWindowWatcherX() {
   Init();
 }
 
+ActiveWindowWatcherX::~ActiveWindowWatcherX() {
+}
+
 void ActiveWindowWatcherX::Init() {
   GdkAtom kNetActiveWindow = gdk_atom_intern("_NET_ACTIVE_WINDOW", FALSE);
   kNetActiveWindowAtom = gdk_x11_atom_to_xatom_for_display(

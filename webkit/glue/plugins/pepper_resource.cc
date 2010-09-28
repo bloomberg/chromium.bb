@@ -9,6 +9,13 @@
 
 namespace pepper {
 
+Resource::Resource(PluginModule* module)
+    : resource_id_(0), module_(module) {
+}
+
+Resource::~Resource() {
+}
+
 PP_Resource Resource::GetReference() {
   ResourceTracker *tracker = ResourceTracker::Get();
   if (resource_id_)

@@ -503,6 +503,9 @@ Histogram::SampleSet::SampleSet()
       square_sum_(0) {
 }
 
+Histogram::SampleSet::~SampleSet() {
+}
+
 void Histogram::SampleSet::Resize(const Histogram& histogram) {
   counts_.resize(histogram.bucket_count(), 0);
 }
@@ -623,6 +626,9 @@ scoped_refptr<Histogram> LinearHistogram::FactoryTimeGet(
     size_t bucket_count, Flags flags) {
   return FactoryGet(name, minimum.InMilliseconds(), maximum.InMilliseconds(),
                     bucket_count, flags);
+}
+
+LinearHistogram::~LinearHistogram() {
 }
 
 LinearHistogram::LinearHistogram(const std::string& name, Sample minimum,

@@ -12,6 +12,9 @@ WebPluginGeometry::WebPluginGeometry()
       visible(false) {
 }
 
+WebPluginGeometry::~WebPluginGeometry() {
+}
+
 bool WebPluginGeometry::Equals(const WebPluginGeometry& rhs) const {
   return window == rhs.window &&
          window_rect == rhs.window_rect &&

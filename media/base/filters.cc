@@ -77,4 +77,6 @@ void MediaFilter::OnAudioRendererDisabled() {
 
 MediaFilter::~MediaFilter() {}
 
+DemuxerStream::~DemuxerStream() {}
+
 }  // namespace media

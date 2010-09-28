@@ -33,6 +33,7 @@ class WebPluginResourceClient;
 // Describes the new location for a plugin window.
 struct WebPluginGeometry {
   WebPluginGeometry();
+  ~WebPluginGeometry();
 
   bool Equals(const WebPluginGeometry& rhs) const;
 

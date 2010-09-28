@@ -63,7 +63,8 @@ std::wstring ElideFilename(const FilePath& filename,
 class SortedDisplayURL {
  public:
   SortedDisplayURL(const GURL& url, const std::wstring& languages);
-  SortedDisplayURL() {}
+  SortedDisplayURL();
+  ~SortedDisplayURL();
 
   // Compares this SortedDisplayURL to |url| using |collator|. Returns a value
   // < 0, = 1 or > 0 as to whether this url is less then, equal to or greater

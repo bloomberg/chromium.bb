@@ -4,6 +4,12 @@
 
 #include "chrome/common/message_router.h"
 
+MessageRouter::MessageRouter() {
+}
+
+MessageRouter::~MessageRouter() {
+}
+
 void MessageRouter::OnControlMessageReceived(const IPC::Message& msg) {
   NOTREACHED() <<
       "should override in subclass if you care about control messages";

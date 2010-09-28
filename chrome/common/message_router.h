@@ -30,8 +30,8 @@
 class MessageRouter : public IPC::Channel::Listener,
                       public IPC::Message::Sender {
  public:
-  MessageRouter() {}
-  virtual ~MessageRouter() {}
+  MessageRouter();
+  virtual ~MessageRouter();
 
   // Implemented by subclasses to handle control messages
   virtual void OnControlMessageReceived(const IPC::Message& msg);

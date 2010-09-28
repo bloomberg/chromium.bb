@@ -223,6 +223,13 @@ void ConvolveVertically(const ConvolutionFilter1D::Fixed* filter_values,
 
 // ConvolutionFilter1D ---------------------------------------------------------
 
+ConvolutionFilter1D::ConvolutionFilter1D()
+    : max_filter_(0) {
+}
+
+ConvolutionFilter1D::~ConvolutionFilter1D() {
+}
+
 void ConvolutionFilter1D::AddFilter(int filter_offset,
                                     const float* filter_values,
                                     int filter_length) {

@@ -335,6 +335,15 @@ size_t WaitableEvent::EnqueueMany
 // -----------------------------------------------------------------------------
 // Private functions...
 
+WaitableEvent::WaitableEventKernel::WaitableEventKernel(bool manual_reset,
+                                                        bool initially_signaled)
+    : manual_reset_(manual_reset),
+      signaled_(initially_signaled) {
+}
+
+WaitableEvent::WaitableEventKernel::~WaitableEventKernel() {
+}
+
 // -----------------------------------------------------------------------------
 // Wake all waiting waiters. Called with lock held.
 // -----------------------------------------------------------------------------

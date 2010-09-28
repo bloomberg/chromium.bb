@@ -214,6 +214,9 @@ ResourceBundle::LoadedDataPack::LoadedDataPack(const FilePath& path)
   Load();
 }
 
+ResourceBundle::LoadedDataPack::~LoadedDataPack() {
+}
+
 void ResourceBundle::LoadedDataPack::Load() {
   DCHECK(!data_pack_.get());
   data_pack_.reset(new base::DataPack);

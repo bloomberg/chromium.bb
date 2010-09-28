@@ -49,6 +49,12 @@ bool StatementID::operator<(const StatementID& other) const {
   return strcmp(str_, other.str_) < 0;
 }
 
+ErrorDelegate::ErrorDelegate() {
+}
+
+ErrorDelegate::~ErrorDelegate() {
+}
+
 Connection::StatementRef::StatementRef()
     : connection_(NULL),
       stmt_(NULL) {

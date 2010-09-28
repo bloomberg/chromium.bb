@@ -27,8 +27,8 @@ class RefCountedMemory : public base::RefCountedThreadSafe<RefCountedMemory> {
 
  protected:
   friend class base::RefCountedThreadSafe<RefCountedMemory>;
-
-  virtual ~RefCountedMemory() {}
+  RefCountedMemory();
+  virtual ~RefCountedMemory();
 };
 
 // An implementation of RefCountedMemory, where the ref counting does not

@@ -226,7 +226,7 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
   virtual void* QueryInterface(const char* interface_id) { return NULL; }
 
   friend class base::RefCountedThreadSafe<DemuxerStream>;
-  virtual ~DemuxerStream() {}
+  virtual ~DemuxerStream();
 };
 
 

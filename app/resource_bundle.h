@@ -161,6 +161,7 @@ class ResourceBundle {
   class LoadedDataPack {
    public:
     explicit LoadedDataPack(const FilePath& path);
+    ~LoadedDataPack();
     bool GetStringPiece(int resource_id, base::StringPiece* data) const;
     RefCountedStaticMemory* GetStaticMemory(int resource_id) const;
 

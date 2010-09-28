@@ -396,6 +396,12 @@ SortedDisplayURL::SortedDisplayURL(const GURL& url,
   }
 }
 
+SortedDisplayURL::SortedDisplayURL() {
+}
+
+SortedDisplayURL::~SortedDisplayURL() {
+}
+
 int SortedDisplayURL::Compare(const SortedDisplayURL& other,
                               icu::Collator* collator) const {
   // Compare on hosts first. The host won't contain 'www.'.

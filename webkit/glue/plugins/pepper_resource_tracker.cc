@@ -21,6 +21,13 @@ scoped_refptr<Resource> ResourceTracker::GetResource(PP_Resource res) const {
   return result->second.first;
 }
 
+ResourceTracker::ResourceTracker()
+    : last_id_(0) {
+}
+
+ResourceTracker::~ResourceTracker() {
+}
+
 PP_Resource ResourceTracker::AddResource(Resource* resource) {
   // If the plugin manages to create 4B resources...
   if (last_id_ == std::numeric_limits<PP_Resource>::max()) {

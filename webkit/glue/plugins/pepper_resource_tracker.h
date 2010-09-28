@@ -53,8 +53,8 @@ class ResourceTracker {
   friend class Resource;
 
   // Prohibit creation other then by the Singleton class.
-  ResourceTracker() : last_id_(0) {}
-  ~ResourceTracker() {}
+  ResourceTracker();
+  ~ResourceTracker();
 
   // Adds the given resource to the tracker and assigns it a resource ID and
   // refcount of 1. The assigned resource ID will be returned. Used only by the

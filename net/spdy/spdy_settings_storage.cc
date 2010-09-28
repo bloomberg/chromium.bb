@@ -11,6 +11,9 @@ namespace net {
 SpdySettingsStorage::SpdySettingsStorage() {
 }
 
+SpdySettingsStorage::~SpdySettingsStorage() {
+}
+
 const spdy::SpdySettings& SpdySettingsStorage::Get(
     const HostPortPair& host_port_pair) const {
   SettingsMap::const_iterator it = settings_map_.find(host_port_pair);

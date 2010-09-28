@@ -67,34 +67,25 @@ class FilterFactory : public base::RefCountedThreadSafe<FilterFactory> {
                               const MediaFormat& media_format) = 0;
 
   friend class base::RefCountedThreadSafe<FilterFactory>;
-  virtual ~FilterFactory() {}
+  FilterFactory();
+  virtual ~FilterFactory();
 };
 
 
 // Maintains a collection of FilterFactories.
 class FilterFactoryCollection : public FilterFactory {
  public:
-  FilterFactoryCollection() {}
+  FilterFactoryCollection();
 
   // Adds a factory to the end of the collection.
-  void AddFactory(FilterFactory* factory) {
-    factories_.push_back(factory);
-  }
+  void AddFactory(FilterFactory* factory);
 
  protected:
   // Attempts to create a filter by walking down the list of filter factories.
-  MediaFilter* Create(FilterType filter_type, const MediaFormat& media_format) {
-    MediaFilter* filter = NULL;
-    for (FactoryVector::iterator factory = factories_.begin();
-         !filter && factory != factories_.end();
-         ++factory) {
-      filter = (*factory)->Create(filter_type, media_format);
-    }
-    return filter;
-  }
+  MediaFilter* Create(FilterType filter_type, const MediaFormat& media_format);
 
  private:
-  ~FilterFactoryCollection() {}
+  ~FilterFactoryCollection();
 
   typedef std::vector< scoped_refptr<FilterFactory> > FactoryVector;
   FactoryVector factories_;
