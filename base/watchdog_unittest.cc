@@ -1,16 +1,19 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Tests for Watchdog class.
 
+#include "base/watchdog.h"
+
+#include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/spin_wait.h"
 #include "base/time.h"
-#include "base/watchdog.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
+using base::TimeTicks;
 
 namespace {
 
@@ -104,12 +107,26 @@ TEST_F(WatchdogTest, ConstructorDisabledTest) {
 
 // Make sure Disarming will prevent firing, even after Arming.
 TEST_F(WatchdogTest, DisarmTest) {
-  WatchdogCounter watchdog(TimeDelta::FromSeconds(5), "Enabled3", true);
+  WatchdogCounter watchdog(TimeDelta::FromSeconds(1), "Enabled3", true);
+
+  TimeTicks start = TimeTicks::Now();
   watchdog.Arm();
-  PlatformThread::Sleep(100);  // Don't sleep too long
+  PlatformThread::Sleep(100);  // Sleep a bit, but not past the alarm point.
   watchdog.Disarm();
-  // Alarm should not fire.
-  PlatformThread::Sleep(5500);
+  TimeTicks end = TimeTicks::Now();
+
+  if (end - start > TimeDelta::FromMilliseconds(500)) {
+    LOG(WARNING) << "100ms sleep took over 500ms, making the results of this "
+                 << "timing-sensitive test suspicious.  Aborting now.";
+    return;
+  }
+
+  // Alarm should not have fired before it was disarmed.
+  EXPECT_EQ(0, watchdog.alarm_counter());
+
+  // Sleep past the point where it would have fired if it wasn't disarmed,
+  // and verify that it didn't fire.
+  PlatformThread::Sleep(1000);
   EXPECT_EQ(0, watchdog.alarm_counter());
 
   // ...but even after disarming, we can still use the alarm...
