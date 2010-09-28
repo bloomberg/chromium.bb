@@ -234,32 +234,6 @@ static CommandLine* CreateHttpServerCommandLine() {
   return cmd_line;
 }
 
-static void RunCommand(const CommandLine& cmd_line) {
-#if defined(OS_WIN)
-  // For Win32, use this 'version' of base::LaunchApp() with bInheritHandles
-  // parameter to CreateProcess set to TRUE. This is needed in test harness
-  // because it launches all the processes with 'chained' standard i/o pipes.
-  STARTUPINFO startup_info = {0};
-  startup_info.cb = sizeof(startup_info);
-  PROCESS_INFORMATION process_info;
-  if (!CreateProcess(
-           NULL,
-           const_cast<wchar_t*>(cmd_line.command_line_string().c_str()),
-           NULL, NULL,
-           TRUE,  // Inherit the standard pipes, needed when
-                  // running in test harnesses.
-           0, NULL, NULL, &startup_info, &process_info))
-    return;
-
-  // Handles must be closed or they will leak
-  CloseHandle(process_info.hThread);
-  WaitForSingleObject(process_info.hProcess, INFINITE);
-  CloseHandle(process_info.hProcess);
-#else
-  base::LaunchApp(cmd_line, true, false, NULL);
-#endif
-}
-
 void UITestBase::StartHttpServer(const FilePath& root_directory) {
   StartHttpServerWithPort(root_directory, 0);
 }
@@ -282,14 +256,32 @@ void UITestBase::StartHttpServerWithPort(const FilePath& root_directory,
 
   if (port)
     cmd_line->AppendSwitchASCII("port", base::IntToString(port));
-  RunCommand(*cmd_line.get());
+
+#if defined(OS_WIN)
+  // TODO(phajdan.jr): is this needed?
+  base::LaunchAppWithHandleInheritance(cmd_line->command_line_string(),
+                                       true,
+                                       false,
+                                       NULL);
+#else
+  base::LaunchApp(*cmd_line.get(), true, false, NULL);
+#endif
 }
 
 void UITestBase::StopHttpServer() {
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
   cmd_line->AppendSwitchASCII("server", "stop");
-  RunCommand(*cmd_line.get());
+
+#if defined(OS_WIN)
+  // TODO(phajdan.jr): is this needed?
+  base::LaunchAppWithHandleInheritance(cmd_line->command_line_string(),
+                                       true,
+                                       false,
+                                       NULL);
+#else
+  base::LaunchApp(*cmd_line.get(), true, false, NULL);
+#endif
 }
 
 void UITestBase::LaunchBrowser(const CommandLine& arguments,
