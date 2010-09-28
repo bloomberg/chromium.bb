@@ -15,3 +15,7 @@ BUGATWILSON :   storage/indexeddb/transaction-basics.html = CRASH
 // To be upstreamed.
 // Started failing in WebKit r68388:68412.
 BUGSENORBLANCO WIN DEBUG : media/video-size.html = CRASH
+
+// There are duplicate expectations upstream; placing here to override until 
+// upstream duplicate is removed.
+BUGSENORBLANCO LINUX DEBUG : http/tests/multipart/invalid-image-data.html = IMAGE PASS
