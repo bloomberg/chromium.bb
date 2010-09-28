@@ -146,17 +146,17 @@ void NewUserView::Init() {
   throbber_ = CreateDefaultSmoothedThrobber();
   AddChildView(throbber_);
 
+  language_switch_menu_.InitLanguageMenu();
+
+  RecreatePeculiarControls();
+
+  AddChildView(sign_in_button_);
   if (need_create_account_) {
     InitLink(&create_account_link_);
   }
   if (need_browse_without_signin_) {
     InitLink(&browse_without_signin_link_);
   }
-
-  language_switch_menu_.InitLanguageMenu();
-
-  RecreatePeculiarControls();
-  AddChildView(sign_in_button_);
   AddChildView(languages_menubutton_);
 
   // Set up accelerators.
