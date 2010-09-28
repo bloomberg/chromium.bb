@@ -58,7 +58,7 @@ bool BlobDispatcherHost::CheckPermission(
            blob_data->items().begin();
        iter != blob_data->items().end(); ++iter) {
     if (iter->type() == webkit_blob::BlobData::TYPE_FILE) {
-      if (!policy->CanUploadFile(process_id_, iter->file_path()))
+      if (!policy->CanReadFile(process_id_, iter->file_path()))
         return false;
     }
   }

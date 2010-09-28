@@ -463,7 +463,7 @@ void RenderViewHost::DragTargetDragEnter(
     FilePath path = FilePath::FromWStringHack(UTF16ToWideHack(*iter));
     policy->GrantRequestURL(process()->id(),
                             net::FilePathToFileURL(path));
-    policy->GrantUploadFile(process()->id(), path);
+    policy->GrantReadFile(process()->id(), path);
   }
   Send(new ViewMsg_DragTargetDragEnter(routing_id(), drop_data, client_pt,
                                        screen_pt, operations_allowed));
@@ -675,7 +675,7 @@ void RenderViewHost::FilesSelectedInChooser(
   // Grant the security access requested to the given files.
   for (std::vector<FilePath>::const_iterator file = files.begin();
        file != files.end(); ++file) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantUploadFile(
+    ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
         process()->id(), *file);
   }
   Send(new ViewMsg_RunFileChooserResponse(routing_id(), files));

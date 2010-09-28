@@ -153,7 +153,7 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
     std::vector<net::UploadData::Element>::const_iterator iter;
     for (iter = uploads->begin(); iter != uploads->end(); ++iter) {
       if (iter->type() == net::UploadData::TYPE_FILE &&
-          !policy->CanUploadFile(child_id, iter->file_path())) {
+          !policy->CanReadFile(child_id, iter->file_path())) {
         NOTREACHED() << "Denied unauthorized upload of "
                      << iter->file_path().value();
         return false;

@@ -163,7 +163,7 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
   file_stream_.reset(new net::FileStream(file_handle.ReleaseValue(),
                                          base::PLATFORM_FILE_WRITE |
                                          base::PLATFORM_FILE_ASYNC));
-  ChildProcessSecurityPolicy::GetInstance()->GrantUploadFile(
+  ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
       process_id_, file_path);
   host_->StartDeferredRequest(process_id_, request_id_);
 }

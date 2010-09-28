@@ -379,7 +379,7 @@ void PluginProcessHost::OnAccessFiles(int renderer_id,
 
   for (size_t i = 0; i < files.size(); ++i) {
     const FilePath path = FilePath::FromWStringHack(UTF8ToWide(files[i]));
-    if (!policy->CanUploadFile(renderer_id, path)) {
+    if (!policy->CanReadFile(renderer_id, path)) {
       LOG(INFO) << "Denied unauthorized request for file " << files[i];
       *allowed = false;
       return;

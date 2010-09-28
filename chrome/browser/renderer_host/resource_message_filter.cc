@@ -1449,7 +1449,7 @@ void ResourceMessageFilter::OnGetFileSize(const FilePath& path,
                                           IPC::Message* reply_msg) {
   // Get file size only when the child process has been granted permission to
   // upload the file.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path)) {
     ViewHostMsg_GetFileSize::WriteReplyParams(
         reply_msg, static_cast<int64>(-1));
     Send(reply_msg);
@@ -1469,7 +1469,7 @@ void ResourceMessageFilter::OnGetFileModificationTime(const FilePath& path,
                                                       IPC::Message* reply_msg) {
   // Get file modification time only when the child process has been granted
   // permission to upload the file.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path)) {
     ViewHostMsg_GetFileModificationTime::WriteReplyParams(reply_msg,
                                                           base::Time());
     Send(reply_msg);
@@ -1508,7 +1508,7 @@ void ResourceMessageFilter::OnOpenFile(const FilePath& path,
   // Open the file only when the child process has been granted permission to
   // upload the file.
   // TODO(jianli): Do we need separate permission to control opening the file?
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path)) {
     ViewHostMsg_OpenFile::WriteReplyParams(
         reply_msg,
 #if defined(OS_WIN)
@@ -1702,7 +1702,7 @@ void ResourceMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
                                             int message_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanUploadFile(id(), path)) {
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path)) {
     IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
         msg.routing_id(), base::PLATFORM_FILE_ERROR_ACCESS_DENIED,
         IPC::InvalidPlatformFileForTransit(), message_id);

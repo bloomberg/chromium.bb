@@ -6,12 +6,19 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+
+const int kReadFilePermissions =
+    base::PLATFORM_FILE_OPEN |
+    base::PLATFORM_FILE_READ |
+    base::PLATFORM_FILE_EXCLUSIVE_READ |
+    base::PLATFORM_FILE_ASYNC;
 
 // The SecurityState class is used to maintain per-renderer security state
 // information.
@@ -34,9 +41,9 @@ class ChildProcessSecurityPolicy::SecurityState {
     scheme_policy_[scheme] = false;
   }
 
-  // Grant permission to upload the specified file to the web.
-  void GrantUploadFile(const FilePath& file) {
-    uploadable_files_.insert(file);
+  // Grant certain permissions to a file.
+  void GrantPermissionsForFile(const FilePath& file, int permissions) {
+    file_permissions_[file.StripTrailingSeparators()] |= permissions;
   }
 
   void GrantBindings(int bindings) {
@@ -62,10 +69,18 @@ class ChildProcessSecurityPolicy::SecurityState {
     return judgment->second;
   }
 
-  // Determine whether permission has been granted to upload file.
-  // Files that have not been granted default to being denied.
-  bool CanUploadFile(const FilePath& file) {
-    return uploadable_files_.find(file) != uploadable_files_.end();
+  // Determine if the certain permissions have been granted to a file.
+  bool HasPermissionsForFile(const FilePath& file, int permissions) {
+    FilePath current_path = file.StripTrailingSeparators();
+    FilePath last_path;
+    while (current_path != last_path) {
+      if (file_permissions_.find(current_path) != file_permissions_.end())
+        return (file_permissions_[current_path] & permissions) == permissions;
+      last_path = current_path;
+      current_path = current_path.DirName();
+    }
+
+    return false;
   }
 
   bool has_dom_ui_bindings() const {
@@ -82,7 +97,7 @@ class ChildProcessSecurityPolicy::SecurityState {
 
  private:
   typedef std::map<std::string, bool> SchemeMap;
-  typedef std::set<FilePath> FileSet;
+  typedef std::map<FilePath, int> FileMap; // bit-set of PlatformFileFlags
 
   // Maps URL schemes to whether permission has been granted or revoked:
   //   |true| means the scheme has been granted.
@@ -92,7 +107,7 @@ class ChildProcessSecurityPolicy::SecurityState {
   SchemeMap scheme_policy_;
 
   // The set of files the renderer is permited to upload to the web.
-  FileSet uploadable_files_;
+  FileMap file_permissions_;
 
   int enabled_bindings_;
 
@@ -215,15 +230,20 @@ void ChildProcessSecurityPolicy::GrantRequestURL(
   }
 }
 
-void ChildProcessSecurityPolicy::GrantUploadFile(int renderer_id,
-                                             const FilePath& file) {
+void ChildProcessSecurityPolicy::GrantReadFile(int renderer_id,
+                                               const FilePath& file) {
+  GrantPermissionsForFile(renderer_id, file, kReadFilePermissions);
+}
+
+void ChildProcessSecurityPolicy::GrantPermissionsForFile(
+    int renderer_id, const FilePath& file, int permissions) {
   AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(renderer_id);
   if (state == security_state_.end())
     return;
 
-  state->second->GrantUploadFile(file);
+  state->second->GrantPermissionsForFile(file, permissions);
 }
 
 void ChildProcessSecurityPolicy::GrantScheme(int renderer_id,
@@ -336,15 +356,20 @@ bool ChildProcessSecurityPolicy::CanRequestURL(
   }
 }
 
-bool ChildProcessSecurityPolicy::CanUploadFile(int renderer_id,
-                                               const FilePath& file) {
+bool ChildProcessSecurityPolicy::CanReadFile(int renderer_id,
+                                             const FilePath& file) {
+  return HasPermissionsForFile(renderer_id, file, kReadFilePermissions);
+}
+
+bool ChildProcessSecurityPolicy::HasPermissionsForFile(
+    int renderer_id, const FilePath& file, int permissions) {
   AutoLock lock(lock_);
 
   SecurityStateMap::iterator state = security_state_.find(renderer_id);
   if (state == security_state_.end())
     return false;
 
-  return state->second->CanUploadFile(file);
+  return state->second->HasPermissionsForFile(file, permissions);
 }
 
 bool ChildProcessSecurityPolicy::HasDOMUIBindings(int renderer_id) {
