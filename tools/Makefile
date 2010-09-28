@@ -565,7 +565,8 @@ BUILD/stamp-glibc-adhoc-files:
 		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libcrt_platform.so
 	echo '/* Intentionally empty */' > \
 		$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib/libnosys.so
-	cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) && rm -rf lib32 && ln -s lib lib32
+	cd $(DESTDIR)$(SDKROOT)/$(CROSSARCH) && \
+		rm -rf lib$(BITSPLATFORM) && ln -s lib lib$(BITSPLATFORM)
 	touch $@
 
 ##################################################################
@@ -587,6 +588,7 @@ BUILD/stamp-full-gcc: BUILD/stamp-glibc-adhoc-files
 	rm -rf BUILD/build-full-gcc-$(CROSSARCH)
 	mkdir BUILD/build-full-gcc-$(CROSSARCH)
 	# See http://code.google.com/p/nativeclient/issues/detail?id=854
+	rm -f $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 	ln -s include $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/sys-include
 	PATH=$(BUILDPATH) $(MAKE) \
 	    -C BUILD/build-full-gcc-$(CROSSARCH) \
@@ -878,7 +880,7 @@ nacl-check: ALWAYS
 	(cd .. && \
 	  ./$(SCONS) -k naclsdk_mode=custom:$(DESTDIR)$(SDKROOT) \
 	    --mode=dbg-linux,nacl platform=x86-$(BITSPLATFORM) \
-	    --nacl_glibc --verbose run_hello_world_test)
+	    sdl=none --nacl_glibc --verbose run_hello_world_test)
 
 
 ##################################################################
