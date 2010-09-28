@@ -180,10 +180,11 @@ class ExtensionsServiceBackend
     : public base::RefCountedThreadSafe<ExtensionsServiceBackend>,
       public ExternalExtensionProvider::Visitor {
  public:
-  // |rdh| can be NULL in the case of test environment.
-  // |extension_prefs| contains a dictionary value that points to the extension
-  // preferences.
-  explicit ExtensionsServiceBackend(const FilePath& install_directory);
+  // |install_directory| is a path where to look for extensions to load.
+  // |load_external_extensions| indicates whether or not backend should load
+  // external extensions listed in JSON file and Windows registry.
+  ExtensionsServiceBackend(const FilePath& install_directory,
+                           bool load_external_extensions);
 
   // Loads a single extension from |path| where |path| is the top directory of
   // a specific extension where its manifest file lives.
@@ -285,11 +286,15 @@ class ExtensionsServiceBackend
 };
 
 ExtensionsServiceBackend::ExtensionsServiceBackend(
-    const FilePath& install_directory)
+    const FilePath& install_directory,
+    bool load_external_extensions)
         : frontend_(NULL),
           install_directory_(install_directory),
           alert_on_error_(false),
           external_extension_added_(false) {
+  if (!load_external_extensions)
+    return;
+
   // TODO(aa): This ends up doing blocking IO on the UI thread because it reads
   // pref data in the ctor and that is called on the UI thread. Would be better
   // to re-read data each time we list external extensions, anyway.
@@ -556,7 +561,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
     updater_ = new ExtensionUpdater(this, prefs, update_frequency);
   }
 
-  backend_ = new ExtensionsServiceBackend(install_directory_);
+  backend_ = new ExtensionsServiceBackend(install_directory_,
+                                          extensions_enabled_);
 
   // Use monochrome icons for Omnibox icons.
   omnibox_popup_icon_manager_.set_monochrome(true);
