@@ -263,7 +263,7 @@ class RenderThread : public RenderThreadBase,
   void OnDOMStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);
   void OnExtensionSetAPIPermissions(
       const std::string& extension_id,
-      const std::vector<std::string>& permissions);
+      const std::set<std::string>& permissions);
   void OnExtensionSetHostPermissions(
       const GURL& extension_url,
       const std::vector<URLPattern>& permissions);

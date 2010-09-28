@@ -58,7 +58,7 @@ namespace {
 typedef std::map< std::string, std::vector<std::string> > PageActionIdMap;
 
 // A list of permissions that are enabled for this extension.
-typedef std::vector<std::string> PermissionsList;
+typedef std::set<std::string> PermissionsList;
 
 // A map of extension ID to permissions map.
 typedef std::map<std::string, PermissionsList> ExtensionPermissionsList;
@@ -644,9 +644,10 @@ void ExtensionProcessBindings::SetPageActions(
 // static
 void ExtensionProcessBindings::SetAPIPermissions(
     const std::string& extension_id,
-    const std::vector<std::string>& permissions) {
+    const std::set<std::string>& permissions) {
   PermissionsList& permissions_list = *GetPermissionsList(extension_id);
-  permissions_list.assign(permissions.begin(), permissions.end());
+  permissions_list.clear();
+  permissions_list.insert(permissions.begin(), permissions.end());
 }
 
 // static

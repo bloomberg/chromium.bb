@@ -861,10 +861,8 @@ bool ChromeURLRequestContext::CheckURLAccessToExtensionPermission(
   if (info == extension_info_.end())
     return false;
 
-  std::vector<std::string>& api_permissions = info->second->api_permissions;
-  return std::find(api_permissions.begin(),
-                   api_permissions.end(),
-                   permission_name) != api_permissions.end();
+  std::set<std::string>& api_permissions = info->second->api_permissions;
+  return api_permissions.count(permission_name) != 0;
 }
 
 bool ChromeURLRequestContext::URLIsForExtensionIcon(const GURL& url) {

@@ -750,7 +750,7 @@ IPC_BEGIN_MESSAGES(View)
   // Extension::Permissions for which elements correspond to which permissions.
   IPC_MESSAGE_CONTROL2(ViewMsg_Extension_SetAPIPermissions,
                        std::string /* extension_id */,
-                       std::vector<std::string> /* permissions */)
+                       std::set<std::string> /* permissions */)
 
   // Tell the renderer process which host permissions the given extension has.
   IPC_MESSAGE_CONTROL2(

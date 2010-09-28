@@ -31,7 +31,6 @@ class Version;
 // Represents a Chrome extension.
 class Extension {
  public:
-  typedef std::vector<URLPattern> URLPatternList;
   typedef std::map<const std::string, GURL> URLOverrideMap;
 
   // What an extension was loaded from.
@@ -77,6 +76,22 @@ class Extension {
     EXTENSION_ICON_BITTY = 16,
   };
 
+  // A permission is defined by its |name| (what is used in the manifest),
+  // and the |message_id| that's used by install/update UI.
+  struct Permission {
+    const char* const name;
+    const int message_id;
+  };
+
+  // The install message id for |permission|.  Returns 0 if none exists.
+  static int GetPermissionMessageId(const std::string& permission);
+
+  // The set of unique API install messages that the extension has.
+  // NOTE: This only includes messages related to permissions declared in the
+  // "permissions" key in the manifest.  Permissions implied from other features
+  // of the manifest, like plugins and content scripts are not included.
+  std::set<string16> GetPermissionMessages();
+
   bool apps_enabled() const { return apps_enabled_; }
   void set_apps_enabled(bool val) { apps_enabled_ = val; }
 
@@ -89,10 +104,8 @@ class Extension {
 
   // Each permission is a module that the extension is permitted to use.
   //
-  // NOTE: If you add a permission, consider also changing:
-  // - Extension::GetSimplePermissions()
-  // - Extension::IsPrivilegeIncrease()
-  // - ExtensionInstallUI::GetV2Warnings()
+  // NOTE: To add a new permission, define it here, and add an entry to
+  // Extension::kPermissions.
   static const char kBackgroundPermission[];
   static const char kBookmarkPermission[];
   static const char kContextMenusPermission[];
@@ -107,7 +120,7 @@ class Extension {
   static const char kUnlimitedStoragePermission[];
   static const char kWebstorePrivatePermission[];
 
-  static const char* const kPermissionNames[];
+  static const Permission kPermissions[];
   static const size_t kNumPermissions;
   static const char* const kHostedAppPermissionNames[];
   static const size_t kNumHostedAppPermissions;
@@ -115,13 +128,6 @@ class Extension {
   // The old name for the unlimited storage permission, which is deprecated but
   // still accepted as meaning the same thing as kUnlimitedStoragePermission.
   static const char kOldUnlimitedStoragePermission[];
-
-  // A "simple permission" is one that has a one-to-one mapping with a message
-  // that is displayed in the install UI. This is in contrast to more complex
-  // permissions like http access, where the exact message displayed depends on
-  // several factors.
-  typedef std::map<std::string, string16> SimplePermissions;
-  static const SimplePermissions& GetSimplePermissions();
 
   // Returns true if the string is one of the known hosted app permissions (see
   // kHostedAppPermissionNames).
@@ -267,7 +273,7 @@ class Extension {
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
   const std::vector<GURL>& toolstrips() const { return toolstrips_; }
-  const std::vector<std::string>& api_permissions() const {
+  const std::set<std::string>& api_permissions() const {
     return api_permissions_;
   }
   const URLPatternList& host_permissions() const {
@@ -275,7 +281,7 @@ class Extension {
   }
 
   // Returns true if the extension has the specified API permission.
-  static bool HasApiPermission(const std::vector<std::string>& api_permissions,
+  static bool HasApiPermission(const std::set<std::string>& api_permissions,
                                const std::string& function_name);
 
   bool HasApiPermission(const std::string& function_name) const {
@@ -296,15 +302,12 @@ class Extension {
   // Whether the extension has access to the given URL.
   bool HasHostPermission(const GURL& url) const;
 
-  // Returns true if the extension effectively has access to the user's browsing
-  // history.  There are several permissions that we group together into this
-  // bucket.  For example: tabs, bookmarks, and history.
-  bool HasEffectiveBrowsingHistoryPermission() const;
-
-  // Whether the extension has access to all hosts. This is true if there is
-  // a content script that matches all hosts, or if there is a host permission
-  // for all hosts.
-  bool HasAccessToAllHosts() const;
+  // Whether the extension has effective access to all hosts. This is true if
+  // there is a content script that matches all hosts, if there is a host
+  // permission grants access to all hosts (like <all_urls>) or an api
+  // permission that effectively grants access to all hosts (e.g. proxy,
+  // network, etc.)
+  bool HasEffectiveAccessToAllHosts() const;
 
   const GURL& update_url() const { return update_url_; }
 
@@ -437,7 +440,7 @@ class Extension {
   bool ContainsNonThemeKeys(const DictionaryValue& source);
 
   // Returns true if the string is one of the known api permissions (see
-  // kPermissionNames).
+  // kPermissions).
   bool IsAPIPermission(const std::string& permission);
 
   // The absolute path to the directory the extension is stored in.
@@ -518,7 +521,7 @@ class Extension {
   bool is_theme_;
 
   // The set of module-level APIs this extension can use.
-  std::vector<std::string> api_permissions_;
+  std::set<std::string> api_permissions_;
 
   // The sites this extension has permission to talk to (using XHR, etc).
   URLPatternList host_permissions_;

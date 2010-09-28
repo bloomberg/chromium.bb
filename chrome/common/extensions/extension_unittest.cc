@@ -739,20 +739,20 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
 
   extension.reset(LoadManifest("effective_host_permissions", "empty.json"));
   EXPECT_EQ(0u, extension->GetEffectiveHostPermissions().patterns().size());
-  EXPECT_FALSE(extension->HasAccessToAllHosts());
+  EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions", "one_host.json"));
   hosts = extension->GetEffectiveHostPermissions();
   EXPECT_EQ(1u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
-  EXPECT_FALSE(extension->HasAccessToAllHosts());
+  EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "one_host_wildcard.json"));
   hosts = extension->GetEffectiveHostPermissions();
   EXPECT_EQ(1u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
-  EXPECT_FALSE(extension->HasAccessToAllHosts());
+  EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "two_hosts.json"));
@@ -760,21 +760,21 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_EQ(2u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.reddit.com")));
-  EXPECT_FALSE(extension->HasAccessToAllHosts());
+  EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "duplicate_host.json"));
   hosts = extension->GetEffectiveHostPermissions();
   EXPECT_EQ(1u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
-  EXPECT_FALSE(extension->HasAccessToAllHosts());
+  EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "https_not_considered.json"));
   hosts = extension->GetEffectiveHostPermissions();
   EXPECT_EQ(1u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
-  EXPECT_FALSE(extension->HasAccessToAllHosts());
+  EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "two_content_scripts.json"));
@@ -783,7 +783,7 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.reddit.com")));
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://news.ycombinator.com")));
-  EXPECT_FALSE(extension->HasAccessToAllHosts());
+  EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "duplicate_content_script.json"));
@@ -791,14 +791,14 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_EQ(3u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.reddit.com")));
-  EXPECT_FALSE(extension->HasAccessToAllHosts());
+  EXPECT_FALSE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "all_hosts.json"));
   hosts = extension->GetEffectiveHostPermissions();
   EXPECT_EQ(1u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://test/")));
-  EXPECT_TRUE(extension->HasAccessToAllHosts());
+  EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "all_hosts2.json"));
@@ -806,7 +806,7 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_EQ(2u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://test/")));
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
-  EXPECT_TRUE(extension->HasAccessToAllHosts());
+  EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "all_hosts3.json"));
@@ -814,11 +814,10 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_EQ(2u, hosts.patterns().size());
   EXPECT_TRUE(hosts.ContainsURL(GURL("https://test/")));
   EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
-  EXPECT_TRUE(extension->HasAccessToAllHosts());
+  EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 }
 
-// See http://crbug.com/54332
-TEST(ExtensionTest, DISABLED_IsPrivilegeIncrease) {
+TEST(ExtensionTest, IsPrivilegeIncrease) {
   const struct {
     const char* base_name;
     bool expect_success;
@@ -858,6 +857,46 @@ TEST(ExtensionTest, DISABLED_IsPrivilegeIncrease) {
               Extension::IsPrivilegeIncrease(old_extension.get(),
                                              new_extension.get()))
         << kTests[i].base_name;
+  }
+}
+
+TEST(ExtensionTest, PermissionMessages) {
+  // Ensure that all permissions that needs to show install UI actually have
+  // strings associated with them.
+
+  std::set<std::string> skip;
+
+  // These are considered "nuisance" or "trivial" permissions that don't need
+  // a prompt.
+  skip.insert(Extension::kContextMenusPermission);
+  skip.insert(Extension::kIdlePermission);
+  skip.insert(Extension::kNotificationPermission);
+  skip.insert(Extension::kUnlimitedStoragePermission);
+
+  // TODO(erikkay) add a string for this permission.
+  skip.insert(Extension::kBackgroundPermission);
+
+  // The cookie permission does nothing unless you have associated host
+  // permissions.
+  skip.insert(Extension::kCookiePermission);
+
+  // The proxy permission is warned as part of host permission checks.
+  skip.insert(Extension::kProxyPermission);
+
+  // If you've turned on the experimental command-line flag, we don't need
+  // to warn you further.
+  skip.insert(Extension::kExperimentalPermission);
+
+  // This is only usable by component extensions.
+  skip.insert(Extension::kWebstorePrivatePermission);
+
+  for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
+    int message_id = Extension::kPermissions[i].message_id;
+    std::string name = Extension::kPermissions[i].name;
+    if (skip.count(name))
+      EXPECT_EQ(0, message_id) << "unexpected message_id for " << name;
+    else
+      EXPECT_NE(0, message_id) << "missing message_id for " << name;
   }
 }
 

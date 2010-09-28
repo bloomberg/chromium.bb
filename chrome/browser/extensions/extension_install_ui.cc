@@ -78,7 +78,7 @@ static void GetV2Warnings(Extension* extension,
     return;
   }
 
-  if (extension->HasAccessToAllHosts()) {
+  if (extension->HasEffectiveAccessToAllHosts()) {
     warnings->push_back(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS));
   } else {
@@ -110,27 +110,14 @@ static void GetV2Warnings(Extension* extension,
     }
   }
 
-  if (extension->HasEffectiveBrowsingHistoryPermission()) {
-    warnings->push_back(
-        l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY));
-  }
-
-  const Extension::SimplePermissions& simple_permissions =
-      Extension::GetSimplePermissions();
-
-  for (Extension::SimplePermissions::const_iterator iter =
-           simple_permissions.begin();
-       iter != simple_permissions.end(); ++iter) {
-    if (extension->HasApiPermission(iter->first))
-      warnings->push_back(iter->second);
-  }
+  std::set<string16> api_messages = extension->GetPermissionMessages();
+  warnings->insert(warnings->end(), api_messages.begin(), api_messages.end());
 }
 
 }  // namespace
 
 std::vector<std::string> ExtensionInstallUI::GetDistinctHostsForDisplay(
-    const std::vector<URLPattern>& host_patterns) {
+    const URLPatternList& host_patterns) {
   // Vector because we later want to access these by index.
   std::vector<std::string> distinct_hosts;
 

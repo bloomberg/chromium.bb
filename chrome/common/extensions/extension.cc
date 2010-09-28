@@ -14,6 +14,7 @@
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
@@ -106,14 +107,14 @@ const char kTestModuleName[] = "test";
 // Names of modules that can be used without listing it in the permissions
 // section of the manifest.
 const char* kNonPermissionModuleNames[] = {
-    kBrowserActionModuleName,
-    kBrowserActionsModuleName,
-    kDevToolsModuleName,
-    kExtensionModuleName,
-    kI18NModuleName,
-    kPageActionModuleName,
-    kPageActionsModuleName,
-    kTestModuleName
+  kBrowserActionModuleName,
+  kBrowserActionsModuleName,
+  kDevToolsModuleName,
+  kExtensionModuleName,
+  kI18NModuleName,
+  kPageActionModuleName,
+  kPageActionsModuleName,
+  kTestModuleName
 };
 const size_t kNumNonPermissionModuleNames =
     arraysize(kNonPermissionModuleNames);
@@ -128,7 +129,38 @@ const char* kNonPermissionFunctionNames[] = {
 const size_t kNumNonPermissionFunctionNames =
     arraysize(kNonPermissionFunctionNames);
 
+
+// A map between permission name and its install warning message.
+class PermissionMap {
+ public:
+  static PermissionMap* GetSingleton() {
+    return Singleton<PermissionMap>::get();
+  }
+
+  int GetPermissionMessageId(const std::string& permission) {
+    return Extension::kPermissions[permission_map_[permission]].message_id;
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<PermissionMap>;
+
+  PermissionMap() {
+    for (size_t i = 0; i < Extension::kNumPermissions; ++i)
+      permission_map_[Extension::kPermissions[i].name] = i;
+  };
+
+  ~PermissionMap() { }
+
+  std::map<const std::string, size_t> permission_map_;
+};
+
+
+// Aliased to kTabPermission for purposes of API checks, but not allowed
+// in the permissions field of the manifest.
+static const char kWindowPermission[] = "windows";
+
 }  // namespace
+
 
 const FilePath::CharType Extension::kManifestFilename[] =
     FILE_PATH_LITERAL("manifest.json");
@@ -173,23 +205,26 @@ const char Extension::kTabPermission[] = "tabs";
 const char Extension::kUnlimitedStoragePermission[] = "unlimitedStorage";
 const char Extension::kWebstorePrivatePermission[] = "webstorePrivate";
 
-const char* const Extension::kPermissionNames[] = {
-  Extension::kBackgroundPermission,
-  Extension::kBookmarkPermission,
-  Extension::kContextMenusPermission,
-  Extension::kCookiePermission,
-  Extension::kExperimentalPermission,
-  Extension::kGeolocationPermission,
-  Extension::kIdlePermission,
-  Extension::kHistoryPermission,
-  Extension::kNotificationPermission,
-  Extension::kProxyPermission,
-  Extension::kTabPermission,
-  Extension::kUnlimitedStoragePermission,
-  Extension::kWebstorePrivatePermission,
+// In general, all permissions should have an install message.
+// See ExtensionsTest.PermissionMessages for an explanation of each
+// exception.
+const Extension::Permission Extension::kPermissions[] = {
+  { kBackgroundPermission, 0 },
+  { kBookmarkPermission, IDS_EXTENSION_PROMPT2_WARNING_BOOKMARKS },
+  { kContextMenusPermission, 0 },
+  { kCookiePermission, 0 },
+  { kExperimentalPermission, 0 },
+  { kGeolocationPermission, IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION },
+  { kIdlePermission, 0 },
+  { kHistoryPermission, IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY },
+  { kNotificationPermission, 0 },
+  { kProxyPermission, 0 },
+  { kTabPermission, IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY },
+  { kUnlimitedStoragePermission, 0 },
+  { kWebstorePrivatePermission, 0 },
 };
 const size_t Extension::kNumPermissions =
-    arraysize(Extension::kPermissionNames);
+    arraysize(Extension::kPermissions);
 
 const char* const Extension::kHostedAppPermissionNames[] = {
   Extension::kBackgroundPermission,
@@ -205,17 +240,19 @@ const size_t Extension::kNumHostedAppPermissions =
 const char Extension::kOldUnlimitedStoragePermission[] = "unlimited_storage";
 
 // static
-const Extension::SimplePermissions& Extension::GetSimplePermissions() {
-  static SimplePermissions permissions;
-  if (permissions.empty()) {
-    permissions[Extension::kBookmarkPermission] =
-        l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT2_WARNING_BOOKMARKS);
-    permissions[Extension::kGeolocationPermission] =
-        l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION);
+int Extension::GetPermissionMessageId(const std::string& permission) {
+  return PermissionMap::GetSingleton()->GetPermissionMessageId(permission);
+}
+
+std::set<string16> Extension::GetPermissionMessages() {
+  std::set<string16> messages;
+  std::set<std::string>::iterator i;
+  for (i = api_permissions_.begin(); i != api_permissions_.end(); ++i) {
+    int message_id = GetPermissionMessageId(*i);
+    if (message_id)
+      messages.insert(l10n_util::GetStringUTF16(message_id));
   }
-  return permissions;
+  return messages;
 }
 
 // static
@@ -913,8 +950,8 @@ bool Extension::IsPrivilegeIncrease(Extension* old_extension,
 
   // If we are increasing the set of hosts we have access to, it's a privilege
   // increase.
-  if (!old_extension->HasAccessToAllHosts()) {
-    if (new_extension->HasAccessToAllHosts())
+  if (!old_extension->HasEffectiveAccessToAllHosts()) {
+    if (new_extension->HasEffectiveAccessToAllHosts())
       return true;
 
     ExtensionExtent::PatternList old_hosts =
@@ -932,28 +969,18 @@ bool Extension::IsPrivilegeIncrease(Extension* old_extension,
       return true;
   }
 
-  if (!old_extension->HasEffectiveBrowsingHistoryPermission() &&
-      new_extension->HasEffectiveBrowsingHistoryPermission()) {
+  std::set<string16> old_messages = old_extension->GetPermissionMessages();
+  std::set<string16> new_messages = new_extension->GetPermissionMessages();
+  std::set<string16> new_only;
+  std::set_difference(new_messages.begin(), new_messages.end(),
+                      old_messages.begin(), old_messages.end(),
+                      std::inserter(new_only, new_only.end()));
+
+  // If there are any new permission messages, then it's an increase.
+  if (!new_only.empty())
     return true;
-  }
 
-  const SimplePermissions& simple_permissions = GetSimplePermissions();
-  for (SimplePermissions::const_iterator iter = simple_permissions.begin();
-       iter != simple_permissions.end(); ++iter) {
-    if (!old_extension->HasApiPermission(iter->first) &&
-        new_extension->HasApiPermission(iter->first)) {
-      return true;
-    }
-  }
-
-  // Nothing much has changed.
   return false;
-}
-
-// static
-bool Extension::HasEffectiveBrowsingHistoryPermission() const {
-  return HasApiPermission(kTabPermission) ||
-      HasApiPermission(kHistoryPermission);
 }
 
 // static
@@ -1508,13 +1535,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       if (web_extent().is_empty() || location() == Extension::COMPONENT) {
         // Check if it's a module permission.  If so, enable that permission.
         if (IsAPIPermission(permission_str)) {
-          api_permissions_.push_back(permission_str);
+          api_permissions_.insert(permission_str);
           continue;
         }
       } else {
         // Hosted apps only get access to a subset of the valid permissions.
         if (IsHostedAppPermission(permission_str)) {
-          api_permissions_.push_back(permission_str);
+          api_permissions_.insert(permission_str);
           continue;
         }
       }
@@ -1811,7 +1838,7 @@ bool Extension::CanAccessURL(const URLPattern pattern) const {
 
 // static.
 bool Extension::HasApiPermission(
-    const std::vector<std::string>& api_permissions,
+    const std::set<std::string>& api_permissions,
     const std::string& function_name) {
   std::string permission_name = function_name;
 
@@ -1828,11 +1855,10 @@ bool Extension::HasApiPermission(
     permission_name = function_name.substr(0, separator);
 
   // windows and tabs are the same permission.
-  if (permission_name == "windows")
+  if (permission_name == kWindowPermission)
     permission_name = Extension::kTabPermission;
 
-  if (std::find(api_permissions.begin(), api_permissions.end(),
-                permission_name) != api_permissions.end())
+  if (api_permissions.count(permission_name))
     return true;
 
   for (size_t i = 0; i < kNumNonPermissionModuleNames; ++i) {
@@ -1871,8 +1897,9 @@ const ExtensionExtent Extension::GetEffectiveHostPermissions() const {
   return effective_hosts;
 }
 
-bool Extension::HasAccessToAllHosts() const {
-  // Proxies effectively grant access to every site.
+bool Extension::HasEffectiveAccessToAllHosts() const {
+  // Some APIs effectively grant access to every site.  New ones should be
+  // added here.  (I'm looking at you, network API)
   if (HasApiPermission(kProxyPermission))
     return true;
 
@@ -1897,7 +1924,7 @@ bool Extension::HasAccessToAllHosts() const {
 
 bool Extension::IsAPIPermission(const std::string& str) {
   for (size_t i = 0; i < Extension::kNumPermissions; ++i) {
-    if (str == Extension::kPermissionNames[i]) {
+    if (str == Extension::kPermissions[i].name) {
       // Only allow the experimental API permission if the command line
       // flag is present, or if the extension is a component of Chrome.
       if (str == Extension::kExperimentalPermission) {

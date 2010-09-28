@@ -11,6 +11,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/common/extensions/url_pattern.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -19,7 +20,6 @@ class MessageLoop;
 class Profile;
 class InfoBarDelegate;
 class TabContents;
-class URLPattern;
 
 // Displays all the UI around extension installation and uninstallation.
 class ExtensionInstallUI : public ImageLoadingTracker::Observer {
@@ -54,7 +54,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // easy as possible to process by users. In particular we disregard the scheme
   // and path components of URLPatterns and de-dupe the result.
   static std::vector<std::string> GetDistinctHostsForDisplay(
-      const std::vector<URLPattern>& host_patterns);
+    const URLPatternList& host_patterns);
 
   explicit ExtensionInstallUI(Profile* profile);
 

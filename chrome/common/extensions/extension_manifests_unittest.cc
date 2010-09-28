@@ -318,7 +318,7 @@ TEST_F(ExtensionManifestTest, DisallowExtensionPermissions) {
   ListValue *permissions = new ListValue();
   manifest->Set(keys::kPermissions, permissions);
   for (size_t i = 0; i < Extension::kNumPermissions; i++) {
-    const char* name = Extension::kPermissionNames[i];
+    const char* name = Extension::kPermissions[i].name;
     StringValue* p = new StringValue(name);
     permissions->Clear();
     permissions->Append(p);

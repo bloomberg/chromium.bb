@@ -212,4 +212,6 @@ class URLPattern {
   mutable std::string path_escaped_;
 };
 
+typedef std::vector<URLPattern> URLPatternList;
+
 #endif  // CHROME_COMMON_EXTENSIONS_URL_PATTERN_H_

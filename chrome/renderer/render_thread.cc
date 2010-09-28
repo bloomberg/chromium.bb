@@ -535,7 +535,7 @@ void RenderThread::OnPageActionsUpdated(
 
 void RenderThread::OnExtensionSetAPIPermissions(
     const std::string& extension_id,
-    const std::vector<std::string>& permissions) {
+    const std::set<std::string>& permissions) {
   ExtensionProcessBindings::SetAPIPermissions(extension_id, permissions);
 
   // This is called when starting a new extension page, so start the idle

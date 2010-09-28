@@ -41,7 +41,7 @@ class ExtensionProcessBindings {
 
   // Sets the API permissions for a particular extension.
   static void SetAPIPermissions(const std::string& extension_id,
-                                const std::vector<std::string>& permissions);
+                                const std::set<std::string>& permissions);
 
   // Sets the host permissions for a particular extension.
   static void SetHostPermissions(const GURL& extension_url,

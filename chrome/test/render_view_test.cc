@@ -98,10 +98,10 @@ void RenderViewTest::SetUp() {
   ExtensionFunctionDispatcher::GetAllFunctionNames(&names);
   ExtensionProcessBindings::SetFunctionNames(names);
 
-  std::vector<std::string> permissions(
-      Extension::kPermissionNames,
-      Extension::kPermissionNames + Extension::kNumPermissions);
-  ExtensionProcessBindings::SetAPIPermissions("", permissions);
+  std::set<std::string> all_permissions;
+  for (size_t i = 0; i < Extension::kNumPermissions; ++i)
+    all_permissions.insert(Extension::kPermissions[i].name);
+  ExtensionProcessBindings::SetAPIPermissions("", all_permissions);
 
   mock_process_.reset(new MockRenderProcess);
 

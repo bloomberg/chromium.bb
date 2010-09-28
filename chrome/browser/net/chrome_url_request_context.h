@@ -59,7 +59,7 @@ class ChromeURLRequestContext : public URLRequestContext {
                   bool incognito_split_mode,
                   const ExtensionExtent& extent,
                   const ExtensionExtent& effective_host_permissions,
-                  const std::vector<std::string>& api_permissions,
+                  const std::set<std::string>& api_permissions,
                   const ExtensionIconSet& icons)
         : name(name),
           path(path),
@@ -76,7 +76,7 @@ class ChromeURLRequestContext : public URLRequestContext {
     const bool incognito_split_mode;
     const ExtensionExtent extent;
     const ExtensionExtent effective_host_permissions;
-    std::vector<std::string> api_permissions;
+    std::set<std::string> api_permissions;
     ExtensionIconSet icons;
   };
 
