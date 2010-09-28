@@ -34,6 +34,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClientMock.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputControllerMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
@@ -770,6 +771,20 @@ TestShell::device_orientation_client_mock() {
         WebKit::WebDeviceOrientationClientMock::create());
   }
   return device_orientation_client_mock_.get();
+}
+
+WebKit::WebSpeechInputControllerMock*
+TestShell::CreateSpeechInputControllerMock(
+    WebKit::WebSpeechInputListener* listener) {
+  DCHECK(!speech_input_controller_mock_.get());
+  speech_input_controller_mock_.reset(
+      WebKit::WebSpeechInputControllerMock::create(listener));
+  return speech_input_controller_mock_.get();
+}
+
+WebKit::WebSpeechInputControllerMock*
+TestShell::speech_input_controller_mock() {
+  return speech_input_controller_mock_.get();
 }
 
 //-----------------------------------------------------------------------------

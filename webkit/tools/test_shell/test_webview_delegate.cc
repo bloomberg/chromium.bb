@@ -40,6 +40,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupMenu.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputController.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputControllerMock.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputListener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -647,6 +650,11 @@ WebKit::WebGeolocationService* TestWebViewDelegate::geolocationService() {
 WebKit::WebDeviceOrientationClient*
 TestWebViewDelegate::deviceOrientationClient() {
   return shell_->device_orientation_client_mock();
+}
+
+WebKit::WebSpeechInputController* TestWebViewDelegate::speechInputController(
+    WebKit::WebSpeechInputListener* listener) {
+  return shell_->CreateSpeechInputControllerMock(listener);
 }
 
 // WebWidgetClient -----------------------------------------------------------

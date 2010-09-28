@@ -66,6 +66,8 @@ class StringPiece;
 
 namespace WebKit {
 class WebDeviceOrientationClientMock;
+class WebSpeechInputControllerMock;
+class WebSpeechInputListener;
 }
 
 class TestShell : public base::SupportsWeakPtr<TestShell>  {
@@ -342,6 +344,10 @@ public:
 
     WebKit::WebDeviceOrientationClientMock* device_orientation_client_mock();
 
+    WebKit::WebSpeechInputControllerMock* CreateSpeechInputControllerMock(
+        WebKit::WebSpeechInputListener* listener);
+    WebKit::WebSpeechInputControllerMock* speech_input_controller_mock();
+
 protected:
     void CreateDevToolsClient(TestShellDevToolsAgent* agent);
     bool Initialize(const GURL& starting_url);
@@ -423,6 +429,8 @@ private:
     scoped_ptr<TestShellDevToolsClient> dev_tools_client_;
     scoped_ptr<WebKit::WebDeviceOrientationClientMock>
         device_orientation_client_mock_;
+    scoped_ptr<WebKit::WebSpeechInputControllerMock>
+        speech_input_controller_mock_;
 
     // A temporary directory for FileSystem API.
     ScopedTempDir file_system_root_;

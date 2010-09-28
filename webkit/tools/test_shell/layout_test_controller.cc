@@ -32,6 +32,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputControllerMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/dom_operations.h"
@@ -204,6 +205,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("markerTextForListItem", &LayoutTestController::markerTextForListItem);
 
   BindMethod("setMockDeviceOrientation", &LayoutTestController::setMockDeviceOrientation);
+  BindMethod("setMockSpeechInputResult", &LayoutTestController::setMockSpeechInputResult);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -1119,6 +1121,15 @@ void LayoutTestController::setAllowFileAccessFromFileURLs(
     WebPreferences* prefs = shell_->GetWebPreferences();
     prefs->allow_file_access_from_file_urls = args[0].value.boolValue;
     prefs->Apply(shell_->webView());
+  }
+  result->SetNull();
+}
+
+void LayoutTestController::setMockSpeechInputResult(const CppArgumentList& args,
+                                                    CppVariant* result) {
+  if (args.size() > 0 && args[0].isString()) {
+    shell_->speech_input_controller_mock()->setMockRecognitionResult(
+        WebString::fromUTF8(args[0].ToString()));
   }
   result->SetNull();
 }

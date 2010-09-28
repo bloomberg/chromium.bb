@@ -52,6 +52,8 @@ class WebWidgetHost;
 
 namespace WebKit {
 class WebDeviceOrientationClient;
+class WebSpeechInputController;
+class WebSpeechInputListener;
 class WebStorageNamespace;
 struct WebWindowFeatures;
 }
@@ -141,6 +143,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
   virtual WebKit::WebGeolocationService* geolocationService();
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
+  virtual WebKit::WebSpeechInputController* speechInputController(
+      WebKit::WebSpeechInputListener*);
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect& rect);
