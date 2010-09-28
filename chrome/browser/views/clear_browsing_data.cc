@@ -241,13 +241,10 @@ int ClearBrowsingDataView::GetDefaultDialogButton() const {
 
 std::wstring ClearBrowsingDataView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
-  if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return l10n_util::GetString(IDS_CLEAR_BROWSING_DATA_COMMIT);
-  } else if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL) {
-    return l10n_util::GetString(IDS_CLOSE);
-  } else {
-    return std::wstring();
-  }
+  DCHECK((button == MessageBoxFlags::DIALOGBUTTON_OK) ||
+         (button == MessageBoxFlags::DIALOGBUTTON_CANCEL));
+  return l10n_util::GetString((button == MessageBoxFlags::DIALOGBUTTON_OK) ?
+      IDS_CLEAR_BROWSING_DATA_COMMIT : IDS_CANCEL);
 }
 
 bool ClearBrowsingDataView::IsDialogButtonEnabled(
@@ -296,6 +293,19 @@ bool ClearBrowsingDataView::Accept() {
     return false;
   }
 
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(prefs::kDeleteBrowsingHistory,
+                    del_history_checkbox_->checked());
+  prefs->SetBoolean(prefs::kDeleteDownloadHistory,
+                    del_downloads_checkbox_->checked());
+  prefs->SetBoolean(prefs::kDeleteCache,
+                    del_cache_checkbox_->checked());
+  prefs->SetBoolean(prefs::kDeleteCookies,
+                    del_cookies_checkbox_->checked());
+  prefs->SetBoolean(prefs::kDeletePasswords,
+                    del_passwords_checkbox_->checked());
+  prefs->SetBoolean(prefs::kDeleteFormData,
+                    del_form_data_checkbox_->checked());
   OnDelete();
   return false;  // We close the dialog in OnBrowsingDataRemoverDone().
 }
@@ -363,27 +373,8 @@ void ClearBrowsingDataView::ItemChanged(views::Combobox* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // ClearBrowsingDataView, views::ButtonListener implementation:
 
-void ClearBrowsingDataView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  if (sender == del_history_checkbox_)
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteBrowsingHistory,
-        del_history_checkbox_->checked() ? true : false);
-  else if (sender == del_downloads_checkbox_)
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteDownloadHistory,
-        del_downloads_checkbox_->checked() ? true : false);
-  else if (sender == del_cache_checkbox_)
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteCache,
-        del_cache_checkbox_->checked() ? true : false);
-  else if (sender == del_cookies_checkbox_)
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteCookies,
-        del_cookies_checkbox_->checked() ? true : false);
-  else if (sender == del_passwords_checkbox_)
-    profile_->GetPrefs()->SetBoolean(prefs::kDeletePasswords,
-        del_passwords_checkbox_->checked() ? true : false);
-  else if (sender == del_form_data_checkbox_)
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteFormData,
-        del_form_data_checkbox_->checked() ? true : false);
-
+void ClearBrowsingDataView::ButtonPressed(views::Button* sender,
+                                          const views::Event& event) {
   // When no checkbox is checked we should not have the action button enabled.
   // This forces the button to evaluate what state they should be in.
   GetDialogClientView()->UpdateDialogButtons();

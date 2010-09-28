@@ -45,9 +45,9 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       NULL);
 
-  GtkWidget* close_button = gtk_dialog_add_button(GTK_DIALOG(dialog_),
-      GTK_STOCK_CLOSE, GTK_RESPONSE_REJECT);
-  gtk_widget_grab_focus(close_button);
+  GtkWidget* cancel_button = gtk_dialog_add_button(GTK_DIALOG(dialog_),
+      GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
+  gtk_widget_grab_focus(cancel_button);
 
   accessible_widget_helper_.reset(new AccessibleWidgetHelper(dialog_, profile));
   accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
@@ -188,6 +188,22 @@ ClearBrowsingDataDialogGtk::~ClearBrowsingDataDialogGtk() {
 void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,
                                                   int response) {
   if (response == GTK_RESPONSE_ACCEPT) {
+    PrefService* prefs = profile_->GetPrefs();
+    prefs->SetBoolean(prefs::kDeleteBrowsingHistory,
+                      IsChecked(del_history_checkbox_));
+    prefs->SetBoolean(prefs::kDeleteDownloadHistory,
+                      IsChecked(del_downloads_checkbox_));
+    prefs->SetBoolean(prefs::kDeleteCache,
+                      IsChecked(del_cache_checkbox_));
+    prefs->SetBoolean(prefs::kDeleteCookies,
+                      IsChecked(del_cookies_checkbox_));
+    prefs->SetBoolean(prefs::kDeletePasswords,
+                      IsChecked(del_passwords_checkbox_));
+    prefs->SetBoolean(prefs::kDeleteFormData,
+                      IsChecked(del_form_data_checkbox_));
+    prefs->SetInteger(prefs::kDeleteTimePeriod,
+        gtk_combo_box_get_active(GTK_COMBO_BOX(time_period_combobox_)));
+
     int period_selected = gtk_combo_box_get_active(
         GTK_COMBO_BOX(time_period_combobox_));
 
@@ -203,28 +219,6 @@ void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,
 }
 
 void ClearBrowsingDataDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {
-  if (widget == del_history_checkbox_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteBrowsingHistory,
-                                     IsChecked(widget));
-  } else if (widget == del_downloads_checkbox_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteDownloadHistory,
-                                     IsChecked(widget));
-  } else if (widget == del_cache_checkbox_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteCache,
-                                     IsChecked(widget));
-  } else if (widget == del_cookies_checkbox_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteCookies,
-                                     IsChecked(widget));
-  } else if (widget == del_passwords_checkbox_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kDeletePasswords,
-                                     IsChecked(widget));
-  } else if (widget == del_form_data_checkbox_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteFormData,
-                                     IsChecked(widget));
-  } else if (widget == time_period_combobox_) {
-    profile_->GetPrefs()->SetInteger(prefs::kDeleteTimePeriod,
-        gtk_combo_box_get_active(GTK_COMBO_BOX(widget)));
-  }
   UpdateDialogButtons();
 }
 
