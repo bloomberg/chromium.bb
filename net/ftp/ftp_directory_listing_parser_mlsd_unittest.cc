@@ -48,6 +48,7 @@ TEST_F(FtpDirectoryListingParserMlsdTest, Bad) {
     ";",
     "; ",
     " ;",
+    " foo",
     "garbage",
     "total 5",
     "type=file;size=380565;modify=20030606190749;README",
