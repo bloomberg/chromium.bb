@@ -679,6 +679,9 @@ class RenderViewHost : public RenderWidgetHost {
                              bool blocked_by_policy);
   void OnSetDisplayingPDFContent();
   void OnSetSuggestResult(int32 page_id, const std::string& result);
+  void OnDetectedPhishingSite(const GURL& phishing_url,
+                              double phishing_score,
+                              const SkBitmap& thumbnail);
 
  private:
   friend class TestRenderViewHost;

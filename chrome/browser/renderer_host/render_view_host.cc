@@ -858,6 +858,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetDisplayingPDFContent,
                         OnSetDisplayingPDFContent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestResult, OnSetSuggestResult)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
+                        OnDetectedPhishingSite)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -2057,4 +2059,11 @@ void RenderViewHost::OnSetSuggestResult(int32 page_id,
   if (!integration_delegate)
     return;
   integration_delegate->OnSetSuggestResult(page_id, result);
+}
+
+void RenderViewHost::OnDetectedPhishingSite(const GURL& phishing_url,
+                                            double phishing_score,
+                                            const SkBitmap& thumbnail) {
+  // TODO(noelutz): send an HTTP request to the client-side detection frontends
+  // to confirm that the URL is really phishing.
 }

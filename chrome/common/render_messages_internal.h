@@ -2892,4 +2892,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int32 /* page_id */,
                       std::string /* suggest */)
 
+  // Client-Side Phishing Detector ---------------------------------------------
+  // Inform the browser that the current URL is phishing according to the
+  // client-side phishing detector.
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_DetectedPhishingSite,
+                      GURL /* phishing_url */,
+                      double /* phishing_score */,
+                      SkBitmap /* thumbnail */)
+
 IPC_END_MESSAGES(ViewHost)
