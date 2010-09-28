@@ -1958,3 +1958,8 @@ ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
 
 ExtensionInfo::~ExtensionInfo() {
 }
+
+UninstalledExtensionInfo::UninstalledExtensionInfo(
+    const Extension& extension)
+    : extension_id(extension.id()),
+      extension_api_permissions(extension.api_permissions()) {}
