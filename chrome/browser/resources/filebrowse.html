@@ -1601,21 +1601,6 @@ function createNewItem(title, path, isDirectory) {
     var menuicon = document.createElement('div');
     var menu = document.createElement('div');
     menu.className = 'menu';
-    if (pathIsImageFile(path)) {
-      var picasaitem = document.createElement('div');
-      var flickritem = document.createElement('div');
-      var emailitem = document.createElement('div');
-      picasaitem.textContent = localStrings.getString('picasaweb');
-      flickritem.textContent = localStrings.getString('flickr');
-      emailitem.textContent = localStrings.getString('email');
-      picasaitem.className = 'menuitem';
-      flickritem.className = 'menuitemdisabled';
-      emailitem.className = 'menuitemdisabled';
-      picasaitem.onclick = partial(uploadImage, path);
-      menu.appendChild(picasaitem);
-      menu.appendChild(flickritem);
-      menu.appendChild(emailitem);
-    }
     if ((pathIsVideoFile(path) || pathIsAudioFile(path)) &&
          mediaPlayerEnabled) {
       var enqueueitem = document.createElement('div');
