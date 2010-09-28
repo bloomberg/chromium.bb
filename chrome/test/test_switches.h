@@ -17,7 +17,6 @@ extern const char kTestLargeTimeout[];
 extern const char kUiTestActionTimeout[];
 extern const char kUiTestActionMaxTimeout[];
 extern const char kUiTestCommandExecutionTimeout[];
-extern const char kUiTestSleepTimeout[];
 extern const char kUiTestTerminateTimeout[];
 extern const char kUiTestTimeout[];
 

@@ -48,9 +48,6 @@ int TestTimeouts::large_test_timeout_ms_ = 3 * 60 * 1000;
 int TestTimeouts::huge_test_timeout_ms_ = 10 * 60 * 1000;
 
 // static
-int TestTimeouts::sleep_timeout_ms_ = 2000;
-
-// static
 int TestTimeouts::command_execution_timeout_ms_ = 25000;
 
 // static
@@ -82,7 +79,6 @@ void TestTimeouts::Initialize() {
   CHECK(action_max_timeout_ms_ <= large_test_timeout_ms_);
   CHECK(large_test_timeout_ms_ <= huge_test_timeout_ms_);
 
-  InitializeTimeout(switches::kUiTestSleepTimeout, &sleep_timeout_ms_);
   InitializeTimeout(switches::kUiTestCommandExecutionTimeout,
                     &command_execution_timeout_ms_);
   InitializeTimeout(switches::kUiTestTerminateTimeout,

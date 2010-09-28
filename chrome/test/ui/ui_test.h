@@ -374,7 +374,8 @@ class UITestBase {
     return TestTimeouts::action_max_timeout_ms();
   }
   static int sleep_timeout_ms() {
-    return TestTimeouts::sleep_timeout_ms();
+    // TODO(phajdan.jr): Fix all callers and remove sleep_timeout_ms.
+    return TestTimeouts::action_timeout_ms();
   }
   static int test_timeout_ms() {
     return TestTimeouts::huge_test_timeout_ms();

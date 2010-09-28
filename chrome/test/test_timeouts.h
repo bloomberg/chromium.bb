@@ -32,11 +32,6 @@ class TestTimeouts {
   // Do not use multiple times in a single test.
   static int huge_test_timeout_ms() { return huge_test_timeout_ms_; }
 
-  // Timeout used when calling Sleep. Deprecated (recommended
-  // replacement is action_timeout_ms).
-  // TODO(phajdan.jr): Remove sleep_timeout_ms.
-  static int sleep_timeout_ms() { return sleep_timeout_ms_; }
-
   // Timeout to use for AutomationProxy. Do not use in other places.
   // TODO(phajdan.jr): Remove command_execution_timeout_ms.
   static int command_execution_timeout_ms() {
@@ -61,7 +56,6 @@ class TestTimeouts {
   static int action_max_timeout_ms_;
   static int large_test_timeout_ms_;
   static int huge_test_timeout_ms_;
-  static int sleep_timeout_ms_;
   static int command_execution_timeout_ms_;
   static int wait_for_terminate_timeout_ms_;
   static int live_operation_timeout_ms_;

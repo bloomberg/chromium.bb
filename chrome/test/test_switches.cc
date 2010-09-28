@@ -22,6 +22,5 @@ const char switches::kTestLargeTimeout[] = "test-large-timeout";
 const char switches::kUiTestActionTimeout[] = "ui-test-action-timeout";
 const char switches::kUiTestActionMaxTimeout[] = "ui-test-action-max-timeout";
 const char switches::kUiTestCommandExecutionTimeout[] = "ui-test-timeout";
-const char switches::kUiTestSleepTimeout[] = "ui-test-sleep-timeout";
 const char switches::kUiTestTerminateTimeout[] = "ui-test-terminate-timeout";
 const char switches::kUiTestTimeout[] = "test-timeout";
