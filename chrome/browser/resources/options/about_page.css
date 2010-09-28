@@ -1,3 +1,7 @@
+#aboutPage {
+  -webkit-user-select: text;
+}
+
 .loading {
   font-style: italic;
 }
