@@ -38,7 +38,7 @@ cr.define('options', function() {
 
         var otrExceptionsArea = event.target.parentNode.
             querySelector('div[contentType][mode=otr]');
-        if (otrExceptionsArea.otrProfileExists) {
+        if (otrExceptionsArea && otrExceptionsArea.otrProfileExists) {
           otrExceptionsArea.classList.toggle('hidden');
           otrExceptionsArea.querySelector('list').redraw();
         }
