@@ -15,6 +15,7 @@ namespace skia {
 class PlatformCanvas;
 }
 
+class PPB_ImageDataTrusted;
 class SkBitmap;
 
 namespace pepper {
@@ -44,6 +45,7 @@ class ImageData : public Resource {
   // Returns a pointer to the interface implementing PPB_ImageData that is
   // exposed to the plugin.
   static const PPB_ImageData* GetInterface();
+  static const PPB_ImageDataTrusted* GetTrustedInterface();
 
   // Resource overrides.
   virtual ImageData* AsImageData() { return this; }
@@ -55,6 +57,9 @@ class ImageData : public Resource {
   void Describe(PP_ImageDataDesc* desc) const;
   void* Map();
   void Unmap();
+
+  // PPB_ImageDataTrusted implementation.
+  uint64 GetNativeMemoryHandle() const;
 
   // The mapped bitmap and canvas will be NULL if the image is not mapped.
   skia::PlatformCanvas* mapped_canvas() const { return mapped_canvas_.get(); }
