@@ -62,6 +62,7 @@ void PlatformThread::SetName(const char* name) {
   // hardcode it.
   const int kMaxNameLength = 63;
   std::string shortened_name = std::string(name).substr(0, kMaxNameLength);
-  if (dynamic_pthread_setname_np(shortened_name.c_str()) < 0)
-    PLOG(ERROR) << "pthread_setname_np";
+  // pthread_setname() fails (harmlessly) in the sandbox, ignore when it does.
+  // See http://crbug.com/47058
+  dynamic_pthread_setname_np(shortened_name.c_str());
 }
