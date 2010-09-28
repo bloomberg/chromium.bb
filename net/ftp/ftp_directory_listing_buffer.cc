@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 
 #include "net/ftp/ftp_directory_listing_buffer.h"
 
@@ -9,7 +9,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
-#include "net/ftp/ftp_directory_listing_parser_hprc.h"
 #include "net/ftp/ftp_directory_listing_parser_ls.h"
 #include "net/ftp/ftp_directory_listing_parser_mlsd.h"
 #include "net/ftp/ftp_directory_listing_parser_netware.h"
@@ -21,7 +20,6 @@ namespace net {
 FtpDirectoryListingBuffer::FtpDirectoryListingBuffer(
     const base::Time& current_time)
     : current_parser_(NULL) {
-  parsers_.insert(new FtpDirectoryListingParserHprc(current_time));
   parsers_.insert(new FtpDirectoryListingParserLs(current_time));
   parsers_.insert(new FtpDirectoryListingParserMlsd());
   parsers_.insert(new FtpDirectoryListingParserNetware(current_time));
