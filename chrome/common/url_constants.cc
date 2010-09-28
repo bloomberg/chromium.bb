@@ -94,6 +94,7 @@ const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 #endif
 
+// Keep this list sorted please.
 const char kChromeUIBookmarksHost[] = "bookmarks";
 const char kChromeUIBugReportHost[] = "bugreport";
 const char kChromeUIDevToolsHost[] = "devtools";
@@ -111,12 +112,12 @@ const char kChromeUINewTabHost[] = "newtab";
 const char kChromeUIPluginsHost[] = "plugins";
 const char kChromeUIPrintHost[] = "print";
 const char kChromeUIRemotingHost[] = "remoting";
+const char kChromeUIRemotingResourcesHost[] = "remotingresources";
 const char kChromeUIResourcesHost[] = "resources";
+const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISyncResourcesHost[] = "syncresources";
-const char kChromeUIRemotingResourcesHost[] = "remotingresources";
 const char kChromeUIThemePath[] = "theme";
-const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUIThumbnailPath[] = "thumb";
 
 #if defined(OS_CHROMEOS)
