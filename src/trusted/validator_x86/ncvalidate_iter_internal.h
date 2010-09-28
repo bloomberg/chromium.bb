@@ -102,6 +102,10 @@ struct NaClValidatorState {
    * validator state. Safe to use within registered validator functions.
    */
   Bool quit;
+  /* Define whether we should stub out instructions (i.e. replace with HALT),
+   * if they are found to be illegal.
+   */
+  Bool do_stub_out;
 };
 
 #endif

@@ -20,6 +20,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
+#include "native_client/src/trusted/validator_x86/ncdis_util.h"
 #include "native_client/src/trusted/validator_x86/ncfileutil.h"
 #include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
@@ -78,6 +79,20 @@ static void SegmentFatal(const char *fmt, ...) {
   exit(2);
 }
 
+/* Decode and print out code segment if stubout memory is specified
+ * command line.
+ */
+static void NaClMaybeDecodeDataSegment(
+    uint8_t* mbase, NaClPcAddress vbase, NaClMemorySize size) {
+  if (NACL_FLAGS_stubout_memory) {
+    /* Disassemble data segment to see how halts were inserted. */
+    if (!NACL_FLAGS_use_iter) {
+      NCDecodeRegisterCallbacks(PrintInstStdout, NULL, NULL, NULL);
+    }
+    NaClDisassembleSegment(mbase, vbase, size);
+  }
+}
+
 int AnalyzeSegmentSections(ncfile *ncf, struct NCValidatorState *vstate) {
   int badsections = 0;
   int ii;
@@ -134,6 +149,15 @@ static int AnalyzeSegmentCodeSegments(ncfile *ncf, const char *fname) {
 /******************************
  * Code to run SFI validator. *
  ******************************/
+
+/* Reports is module is safe. */
+static void NaClReportSafety(Bool success) {
+    if (success) {
+      gprintf(NaClLogGetGio(), "***module is safe***\n");
+    } else {
+      gprintf(NaClLogGetGio(), "***MODULE IS UNSAFE***\n");
+    }
+}
 
 /* Analyze each section in the given elf file, using the given validator
  * state.
@@ -352,6 +376,11 @@ static void usage() {
       "\tdoes not.\n"
       "--alignment=N\n"
       "\tSet block alignment to N bytes (only 16 or 32 allowed).\n"
+      "--stubout\n"
+      "\tRun using stubout mode, replacing bad instructions with halts.\n"
+      "\tStubbed out disassembly will be printed after validator\n"
+      "\terror messages. Note: Only applied if --hex_text option is\n"
+      "\talso specified\n"
       "\n"
       "Options (iterator model):\n"
       "--errors\n"
@@ -408,6 +437,7 @@ static int GrokFlags(int argc, const char* argv[]) {
         GrokBoolFlag("-t", arg, &NACL_FLAGS_print_timing) ||
         GrokIntFlag("--max_errors", arg, &NACL_FLAGS_max_reported_errors) ||
         GrokIntFlag("--attempts", arg, &NACL_FLAGS_validate_attempts) ||
+        GrokBoolFlag("--stubout", arg, &NACL_FLAGS_stubout_memory) ||
         GrokBoolFlag("--help", arg, &help)) {
       if (help) {
         usage();
@@ -449,6 +479,7 @@ int main(int argc, const char *argv[]) {
       success = NaClRunValidator(argc, argv, &data,
                                 (NaClValidateLoad) ValidateSfiLoad,
                                 (NaClValidateAnalyze) ValidateAnalyze);
+      NaClReportSafety(success);
       result = (success ? 0 : 1);
     } else {
       NaClValidatorByteArray data;
@@ -463,13 +494,10 @@ int main(int argc, const char *argv[]) {
           success = FALSE;
         }
       }
+      NaClReportSafety(success);
+      NaClMaybeDecodeDataSegment(&data.bytes[0], data.base, data.num_bytes);
       /* always succeed, so that the testing framework works. */
       result = 0;
-    }
-    if (success) {
-      gprintf(NaClLogGetGio(), "***module is safe***\n");
-    } else {
-      gprintf(NaClLogGetGio(), "***MODULE IS UNSAFE***\n");
     }
   } else if (64 == NACL_TARGET_SUBARCH) {
     SegmentFatal("Can only run %s using -use_iter=false flag on 64 bit code\n",
@@ -510,10 +538,13 @@ int main(int argc, const char *argv[]) {
     argc = ValidateSfiHexLoad(argc, argv, &data);
     vstate = NCValidateInit(data.base, data.num_bytes,
                             (uint8_t) NACL_FLAGS_block_alignment);
-    NCValidateSetStubOutMode(vstate, 1);
+    if (NACL_FLAGS_stubout_memory) {
+      NCValidateSetStubOutMode(vstate, 1);
+    }
     NCValidateSegment(&data.bytes[0], data.base, data.num_bytes, vstate);
     NCValidateResults(NCValidateFinish(vstate), "<hex_text>");
     NCValidateFreeState(&vstate);
+    NaClMaybeDecodeDataSegment(&data.bytes[0], data.base, data.num_bytes);
   }
   NaClLogModuleFini();
   GioFileDtor(gout);

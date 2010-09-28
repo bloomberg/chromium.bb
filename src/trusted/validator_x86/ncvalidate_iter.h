@@ -55,6 +55,9 @@ extern Bool NACL_FLAGS_validator_trace_instructions;
  */
 extern Bool NACL_FLAGS_validator_trace_inst_interals;
 
+/* Define the stop instruction. */
+extern const uint8_t kNaClFullStop;
+
 /* Changes all validator trace flags to true. */
 void NaClValidatorFlagsSetTraceVerbose();
 
@@ -157,7 +160,7 @@ void NaClValidatorStateSetTraceVerbose(NaClValidatorState* state);
  */
 int NaClValidatorStateGetLogVerbosity(NaClValidatorState* state);
 
-/* Changes the4 log verbosity for printed validator messages to the
+/* Changes the log verbosity for printed validator messages to the
  * new value. Legal values are defined by src/shared/platform/nacl_log.h.
  * Note: Should only be called between calls to NaClValidatorStateCreate
  * and NaClValidateSegment.
@@ -167,6 +170,17 @@ int NaClValidatorStateGetLogVerbosity(NaClValidatorState* state);
  */
 void NaClValidatorStateSetLogVerbosity(NaClValidatorState* state,
                                        Bool new_value);
+
+/* Return the value of the "do stub out" flag, i.e. whether instructions will
+ * be stubbed out with HLT if they are found to be illegal.
+ */
+Bool NaClValidatorStateGetDoStubOut(NaClValidatorState* state);
+
+/* Changes the "do stub out" flag to the given value. Note: Should only
+ * be called between calls to NaClValidatorStateCreate and NaClValidateSegment.
+ */
+void NaClValidatorStateSetDoStubOut(NaClValidatorState* state,
+                                    Bool new_value);
 
 /* Validate a code segment.
  * Parameters:

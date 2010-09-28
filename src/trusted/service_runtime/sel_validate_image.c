@@ -98,6 +98,20 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
     return LOAD_BAD_FILE;
   }
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
+
+  if (nap->validator_stub_out_mode) {
+    /* In stub out mode, we do two passes. The second pass acts as a sanity
+     * check, after illegal instructions have been stubbed out with allowable
+     * HLTs.
+     * Start pass one to find errors, and stub out illegal instructions.
+     */
+    NaClValidatorStateSetDoStubOut(vstate, TRUE);
+    NaClValidateSegment(data, guest_addr, size, vstate);
+    NaClValidatorStateDestroy(vstate);
+    vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
+                                      RegR15);
+    NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
+  }
   NaClValidateSegment(data, guest_addr, size, vstate);
   is_ok = NaClValidatesOk(vstate);
   NaClValidatorStateDestroy(vstate);

@@ -18,6 +18,9 @@
 /* Flag holding the (default) block alignment to use. */
 extern int NACL_FLAGS_block_alignment;
 
+/* Flag defining if stubout should be applied to loaded memory. */
+extern Bool NACL_FLAGS_stubout_memory;
+
 /* Define the value for the base register (Default's to R15 in 64-bit mode). */
 extern NaClOpKind nacl_base_register;
 

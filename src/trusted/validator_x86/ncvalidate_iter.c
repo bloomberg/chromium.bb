@@ -17,6 +17,7 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncval_driver.h"
@@ -38,6 +39,9 @@ int NACL_FLAGS_max_reported_errors = 100;
 Bool NACL_FLAGS_validator_trace_instructions = FALSE;
 
 Bool NACL_FLAGS_validator_trace_inst_internals = FALSE;
+
+/* Define the stop instruction. */
+const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
 
 void NaClValidatorFlagsSetTraceVerbose() {
   NACL_FLAGS_validator_trace_instructions = TRUE;
@@ -99,6 +103,14 @@ void NaClValidatorStateSetLogVerbosity(NaClValidatorState* state,
   state->log_verbosity = new_value;
 }
 
+Bool NaClValidatorStateGetDoStubOut(NaClValidatorState* state) {
+  return state->do_stub_out;
+}
+
+void NaClValidatorStateSetDoStubOut(NaClValidatorState* state,
+                                    Bool new_value) {
+  state->do_stub_out = new_value;
+}
 
 /* Returns true if an error message should be printed for the given level, in
  * the current validator state.
@@ -242,6 +254,9 @@ void NaClValidatorInstMessage(int level,
     NaClLogUnlock();
     NaClRecordErrorReported(state, level);
   }
+  if (state->do_stub_out && (level <= LOG_ERROR)) {
+    memset(inst->mpc, kNaClFullStop, inst->length);
+  }
 }
 
 Bool NaClValidatorQuit(NaClValidatorState* state) {
@@ -305,6 +320,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
     state->cur_inst = NULL;
     state->cur_inst_vector = NULL;
     state->quit = NaClValidatorQuit(return_value);
+    state->do_stub_out = FALSE;
   }
   return return_value;
 }

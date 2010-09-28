@@ -29,6 +29,7 @@ int NACL_FLAGS_block_alignment = 32;
 Bool NACL_FLAGS_warnings = FALSE;
 Bool NACL_FLAGS_errors = FALSE;
 Bool NACL_FLAGS_fatal = FALSE;
+Bool NACL_FLAGS_stubout_memory = FALSE;
 
 NaClOpKind nacl_base_register =
     (64 == NACL_TARGET_SUBARCH ? RegR15 : RegUnknown);
@@ -53,6 +54,7 @@ int NaClRunValidatorGrokFlags(int argc, const char* argv[]) {
         GrokBoolFlag("--fatal", arg, &NACL_FLAGS_fatal) ||
         GrokIntFlag("--alignment", arg, &NACL_FLAGS_block_alignment) ||
         GrokIntFlag("--max-errors", arg, &NACL_FLAGS_max_reported_errors) ||
+        GrokBoolFlag("--stubout", arg, &NACL_FLAGS_stubout_memory) ||
         GrokBoolFlag("--identity_mask", arg, &NACL_FLAGS_identity_mask)) {
       continue;
     } else if (GrokBoolFlag("-write_sfi", arg, &write_sandbox)) {
@@ -150,6 +152,9 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
                                    nacl_base_register);
   if (NULL == state) {
     NaClValidatorMessage(LOG_FATAL, NULL, "Unable to create validator state");
+  }
+  if (NACL_FLAGS_stubout_memory) {
+    NaClValidatorStateSetDoStubOut(state, TRUE);
   }
   NaClValidateSegment(data->bytes, data->base, data->num_bytes, state);
   return_value = NaClValidatesOk(state);

@@ -1,0 +1,22 @@
+VALIDATOR: 2: ret instruction (not allowed)
+VALIDATOR: 2: Illegal instruction
+VALIDATOR: 5: Bad prefix usage
+VALIDATOR: 10: Bad prefix usage
+D: ***MODULE <hex_text> IS UNSAFE***
+ 0:	00 00               	add [%eax], %eax
+ 2:	f4                  	hlt
+ 3:	01 c0               	add %eax, %eax
+ 5:	f4                  	hlt
+ 6:	f4                  	hlt
+ 7:	f4                  	hlt
+ 8:	f4                  	hlt
+ 9:	f4                  	hlt
+ a:	f4                  	hlt
+ b:	90                  	nop
+ c:	8d 74 26 00         	lea %esi, 0x0[%esi]
+ 10:	f4                  	hlt
+ 11:	f4                  	hlt
+ 12:	f4                  	hlt
+ 13:	f4                  	hlt
+ 14:	f4                  	hlt
+ 15:	f4                  	hlt

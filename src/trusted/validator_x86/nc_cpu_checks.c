@@ -22,9 +22,6 @@
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 
-/* Define the stop instruction. */
-static const uint8_t kNaClFullStop = 0xf4;   /* x86 HALT opcode */
-
 typedef struct NaClCpuCheckState {
   /* The standard CPU features. */
   CPUFeatures cpu_features;

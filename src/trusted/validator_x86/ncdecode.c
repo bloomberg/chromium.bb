@@ -407,6 +407,11 @@ void NCDecodeRegisterCallbacks(NCDecoderAction decoderaction,
                                NCDecoderStats newsegment,
                                NCDecoderStats segfault,
                                NCDecoderStats internalerror) {
+  /* Clear old definitions before continuing. */
+  g_DecoderAction = NullDecoderAction;
+  g_NewSegment = NullDecoderStats;
+  g_InternalError = DefaultInternalError;
+  g_SegFault = NullDecoderStats;
   if (decoderaction != NULL) g_DecoderAction = decoderaction;
   if (newsegment != NULL) g_NewSegment = newsegment;
   if (segfault != NULL) g_SegFault = segfault;
@@ -550,4 +555,3 @@ void NCDecodeSegmentPair(uint8_t *mbase_old, uint8_t *mbase_new,
     IncrementDecodeBuffer(&mstate_new);
   }
 }
-

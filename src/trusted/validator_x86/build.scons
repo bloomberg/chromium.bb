@@ -454,6 +454,31 @@ def __AddNcvalSegmentTests():
 
 __AddNcvalSegmentTests()
 
+# Run tests for stubout on test files. Assumes that the extension
+# sval implies to use the SFI model, while snval implies use of the
+# (32 bit) segment model. The input file uses extension hex.
+def __AddNcValStuboutTests(use_sfi):
+  if (env['TARGET_SUBARCH'] == '32') or use_sfi:
+    test = 'ncval_stubout'
+    options = ['--hex_text=-', '--stubout']
+    if use_sfi:
+      ext = 'sval'
+      options.append('--use_iter')
+    else:
+      ext = 'snval'
+      options.append('--use_iter=false')
+    for base in __GoldenBases(ext):
+      command = [ncval[0]] + options
+      node_stubout = env.CommandTest(
+          __OutTestFile(test, base, ext),
+          command,
+          stdin = __BaseTestFile(base, 'hex'),
+          stdout_golden = __BaseTestFile(base, ext))
+      __AddTest(test, base, ext, node_stubout, ['small_tests', 'validator_tests'])
+
+__AddNcValStuboutTests(True)
+__AddNcValStuboutTests(False)
+
 # Run test to see if we have changed the set of modeled instructions.
 def __AddModeledInstsTest():
   test = 'test'
