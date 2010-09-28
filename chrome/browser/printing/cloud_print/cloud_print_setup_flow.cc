@@ -14,6 +14,9 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/html_dialog_gtk.h"
+#endif  // defined(TOOLKIT_GTK)
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_message_handler.h"
@@ -23,6 +26,9 @@
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/browser_dialogs.h"
+#endif  // defined(TOOLKIT_GTK)
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -176,7 +182,8 @@ class CloudPrintServiceRefreshTask
 // CloudPrintSetupFlow implementation.
 
 // static
-CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(Profile* profile) {
+CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
+    Profile* profile, Delegate* delegate, gfx::NativeWindow parent_window) {
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
   args.SetString("iframeToShow", "login");
@@ -192,13 +199,25 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(Profile* profile) {
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  // Create a browser to run the dialog.  The new CloudPrintSetupFlow
-  // class takes ownership.
-  Browser* browser = Browser::CreateForPopup(profile);
-  DCHECK(browser);
-
-  CloudPrintSetupFlow* flow = new CloudPrintSetupFlow(json_args, browser);
-  browser->BrowserShowHtmlDialog(flow, NULL);
+  CloudPrintSetupFlow* flow = new CloudPrintSetupFlow(json_args, profile,
+                                                      delegate);
+  // We may not always have a browser. This can happen when we are being
+  // invoked in the context of a "token expired" notfication. If we don't have
+  // a brower, use the underlying dialog system to show the dialog without
+  // using a browser.
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser) {
+    browser->BrowserShowHtmlDialog(flow, parent_window);
+  } else {
+#if defined(TOOLKIT_VIEWS)
+    browser::ShowHtmlDialogView(parent_window, profile, flow);
+#elif defined(TOOLKIT_GTK)
+    HtmlDialogGtk* html_dialog =
+        new HtmlDialogGtk(profile, flow, parent_window);
+    html_dialog->InitDialog();
+#endif  // defined(TOOLKIT_VIEWS)
+  // TODO(sanjeevr): Implement the "no browser" scenario for the Mac.
+  }
   return flow;
 }
 
@@ -225,12 +244,14 @@ void CloudPrintSetupFlow::RefreshPreferencesFromService(
 }
 
 CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
-                                         Browser* browser)
+                                         Profile* profile,
+                                         Delegate* delegate)
     : dom_ui_(NULL),
       dialog_start_args_(args),
-      process_control_(NULL) {
+      process_control_(NULL),
+      delegate_(delegate) {
   // TODO(hclam): The data source should be added once.
-  browser_.reset(browser);
+  profile_ = profile;
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
@@ -262,7 +283,7 @@ void CloudPrintSetupFlow::GetDOMMessageHandlers(
 }
 
 void CloudPrintSetupFlow::GetDialogSize(gfx::Size* size) const {
-  PrefService* prefs = browser_->profile()->GetPrefs();
+  PrefService* prefs = profile_->GetPrefs();
   gfx::Font approximate_web_font(
       UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
@@ -286,6 +307,9 @@ void CloudPrintSetupFlow::OnDialogClosed(const std::string& json_retval) {
   // the service process helper to call us when the process is launched.
   if (service_process_helper_.get())
     service_process_helper_->Detach();
+  if (delegate_) {
+    delegate_->OnDialogClosed();
+  }
   delete this;
 }
 
@@ -302,7 +326,8 @@ std::wstring  CloudPrintSetupFlow::GetDialogTitle() const {
 }
 
 bool  CloudPrintSetupFlow::IsDialogModal() const {
-  return true;
+  // We are always modeless.
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -327,7 +352,7 @@ void CloudPrintSetupFlow::OnClientLoginSuccess(
   // to it to register the host.
   process_control_ =
       ServiceProcessControlManager::instance()->GetProcessControl(
-          browser_->profile(),
+          profile_,
           kServiceProcessCloudPrint);
 
 #if defined(OS_WIN)
@@ -361,7 +386,7 @@ void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
   // Start the authenticator.
   authenticator_.reset(
       new GaiaAuthenticator2(this, GaiaConstants::kChromeSource,
-                             browser_->profile()->GetRequestContext()));
+                             profile_->GetRequestContext()));
   authenticator_->StartClientLogin(user, password,
                                    GaiaConstants::kCloudPrintService,
                                    "", captcha);
@@ -378,7 +403,7 @@ void CloudPrintSetupFlow::OnProcessLaunched() {
 
   // Save the preference that we have completed the setup of cloud
   // print.
-  browser_->profile()->GetPrefs()->SetString(prefs::kCloudPrintEmail, login_);
+  profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, login_);
   ShowSetupDone();
 }
 

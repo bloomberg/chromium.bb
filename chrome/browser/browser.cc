@@ -1928,10 +1928,6 @@ void Browser::OpenLanguageOptionsDialog() {
 }
 #endif
 
-void Browser::OpenCloudPrintProxySetupDialog() {
-  CloudPrintSetupFlow::OpenDialog(profile_);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 // static

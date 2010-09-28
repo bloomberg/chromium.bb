@@ -14,7 +14,9 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
 // TODO(sanjeevr): Localize the product name?
@@ -93,25 +95,34 @@ bool CloudPrintProxyService::ShowTokenExpiredNotification() {
 }
 
 void CloudPrintProxyService::OnTokenExpiredNotificationError() {
-  TokenExpiredNotificationDone();
+  TokenExpiredNotificationDone(false);
 }
 
 void CloudPrintProxyService::OnTokenExpiredNotificationClosed(bool by_user) {
-  TokenExpiredNotificationDone();
+  TokenExpiredNotificationDone(false);
 }
 
 void CloudPrintProxyService::OnTokenExpiredNotificationClick() {
-  TokenExpiredNotificationDone();
-  // TODO(sanjeevr): Launch the cloud print setup flow.
+  TokenExpiredNotificationDone(true);
+  // Clear the cached cloud print email pref so that the cloud print setup
+  // flow happens.
+  profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
+  CloudPrintSetupFlow::OpenDialog(profile_, this, NULL);
 }
 
-void CloudPrintProxyService::TokenExpiredNotificationDone() {
+void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
   if (token_expired_delegate_.get()) {
     g_browser_process->notification_ui_manager()->Cancel(
         Notification(GURL(), GURL(), string16(), string16(),
                      token_expired_delegate_.get()));
     token_expired_delegate_ = NULL;
-    BrowserList::EndKeepAlive();
+    if (!keep_alive)
+      BrowserList::EndKeepAlive();
   }
+}
+
+void CloudPrintProxyService::OnDialogClosed() {
+  MessageLoop::current()->PostTask(
+      FROM_HERE, NewRunnableFunction(&BrowserList::EndKeepAlive));
 }
 

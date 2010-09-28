@@ -1425,7 +1425,8 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
           UserMetricsAction("Options_EnableCloudPrintProxy"), NULL);
       // We open a new browser window so the Options dialog doesn't
       // get lost behind other windows.
-      CloudPrintSetupFlow::OpenDialog(profile());
+      CloudPrintSetupFlow::OpenDialog(profile(), NULL,
+                                      GetWindow()->GetNativeWindow());
     }
   } else if (sender == manage_printer_button_) {
     // Open a new browser window for the management tab.  The browser

@@ -42,12 +42,19 @@ class Browser;
 class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
                             public GaiaAuthConsumer {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    // Called when the setup dialog is closed.
+    virtual void OnDialogClosed() = 0;
+  };
   virtual ~CloudPrintSetupFlow();
 
   // Runs a flow from |start| to |end|, and does the work of actually showing
   // the HTML dialog.  |container| is kept up-to-date with the lifetime of the
   // flow (e.g it is emptied on dialog close).
-  static CloudPrintSetupFlow* OpenDialog(Profile* service);
+  static CloudPrintSetupFlow* OpenDialog(Profile* service, Delegate* delegate,
+                                         gfx::NativeWindow parent_window);
 
   // Disables the cloud print proxy if it's enabled and running.
   static void DisableCloudPrintProxy(Profile* profile);
@@ -83,9 +90,9 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   friend class CloudPrintServiceProcessHelper;
   friend class CloudPrintSetupMessageHandler;
 
-  // Use static Run method to get an instance.  This class takes
-  // ownership of browser and is responsible for it's destruction.
-  CloudPrintSetupFlow(const std::string& args, Browser* browser);
+  // Use static Run method to get an instance.
+  CloudPrintSetupFlow(const std::string& args, Profile* profile,
+                      Delegate* delegate);
 
   // Called CloudPrintSetupMessageHandler when a DOM is attached. This method
   // is called when the HTML page is fully loaded. We then operate on this
@@ -115,7 +122,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
 
   // The args to pass to the initial page.
   std::string dialog_start_args_;
-  scoped_ptr<Browser> browser_;
+  Profile* profile_;
 
   // Fetcher to obtain the Chromoting Directory token.
   scoped_ptr<GaiaAuthenticator2> authenticator_;
@@ -125,6 +132,8 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   // Handle to the ServiceProcessControl which talks to the service process.
   ServiceProcessControl* process_control_;
   scoped_refptr<CloudPrintServiceProcessHelper> service_process_helper_;
+
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintSetupFlow);
 };

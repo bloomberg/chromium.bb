@@ -547,7 +547,6 @@ class Browser : public TabStripModelDelegate,
   void OpenLanguageOptionsDialog();
   void OpenSystemOptionsDialog();
 #endif
-  void OpenCloudPrintProxySetupDialog();
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
