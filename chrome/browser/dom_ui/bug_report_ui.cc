@@ -1,47 +1,35 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/dom_ui/bug_report_ui.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
-#include "base/string_util.h"
 #include "base/string_number_conversions.h"
-#include "base/thread.h"
-#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_screenshot_source.h"
-#include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/download/download_util.h"
-#include "chrome/browser/history/history_types.h"
-#include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/thumbnail_generator.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "gfx/codec/png_codec.h"
-#include "net/base/escape.h"
+#include "gfx/rect.h"
 #include "views/window/window.h"
 
 #include "grit/browser_resources.h"
@@ -49,15 +37,18 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_X11)
 #include "app/x11_util.h"
 #elif defined(OS_MACOSX)
 #include "base/mac_util.h"
-#else
+#elif defined(OS_WIN)
 #include "app/win_util.h"
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/file_util.h"
+#include "base/path_service.h"
+#include "base/waitable_event.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -121,8 +112,6 @@ std::string GetUserEmail() {
 }
 
 #endif
-
-
 }  // namespace
 
 
@@ -140,14 +129,14 @@ void RefreshLastScreenshot(views::Window* parent) {
   else
     last_screenshot_png = new std::vector<unsigned char>;
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(USE_X11)
   screen_size = parent->GetBounds();
   x11_util::GrabWindowSnapshot(parent->GetNativeWindow(), last_screenshot_png);
 #elif defined(OS_MACOSX)
   int width = 0, height = 0;
   mac_util::GrabWindowSnapshot(parent->GetNativeWindow(), last_screenshot_png,
                                &width, &height);
-#else
+#elif defined(OS_WIN)
   screen_size = parent->GetBounds();
   win_util::GrabWindowSnapshot(parent->GetNativeWindow(), last_screenshot_png);
 #endif
@@ -184,8 +173,6 @@ class BugReportUIHTMLSource : public ChromeURLDataManager::DataSource {
 
   DISALLOW_COPY_AND_ASSIGN(BugReportUIHTMLSource);
 };
-
-class TaskProxy;
 
 // The handler for Javascript messages related to the "bug report" dialog
 class BugReportHandler : public DOMMessageHandler,
@@ -455,7 +442,7 @@ base::StringPiece BugReportHandler::Init() {
   std::string params = page_url.substr(strlen(chrome::kChromeUIBugReportURL));
   // Erase the # - the first character.
   if (params.length())
-    params.erase(params.begin(),params.begin() + 1);
+    params.erase(params.begin(), params.begin() + 1);
 
   int index = 0;
   if (!base::StringToInt(params, &index)) {
@@ -613,7 +600,6 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
 #else
   SendReport();
 #endif
-
 }
 
 void BugReportHandler::SendReport() {
