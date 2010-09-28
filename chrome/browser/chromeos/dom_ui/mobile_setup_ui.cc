@@ -206,7 +206,7 @@ bool MobileSetupHandler::GetDeviceInfo(DictionaryValue* value) {
 
   value->SetString("carrier", UTF8ToUTF16(network.name()));
   value->SetString("payment_url", UTF8ToUTF16(network.payment_url()));
-  value->SetString("activation_state", UTF8ToUTF16(network.activation_state()));
+  value->SetInteger("activation_state", network.activation_state());
   value->SetString("MEID", UTF8ToUTF16(network.meid()));
   value->SetString("IMEI", UTF8ToUTF16(network.imei()));
   value->SetString("IMSI", UTF8ToUTF16(network.imsi()));

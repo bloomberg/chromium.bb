@@ -168,8 +168,7 @@ void CellularNetwork::Clear() {
 
 void CellularNetwork::ConfigureFromService(const ServiceInfo& service) {
   WirelessNetwork::ConfigureFromService(service);
-  if (service.activation_state)
-    activation_state_ = service.activation_state;
+  activation_state_ = service.activation_state;
   // TODO(ers): Set other cellular properties here once they get added
   // to ServiceInfo.
 }

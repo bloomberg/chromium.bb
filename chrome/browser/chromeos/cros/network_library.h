@@ -124,7 +124,7 @@ class CellularNetwork : public WirelessNetwork {
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation() const;
-  const std::string& activation_state() const { return activation_state_; }
+  const ActivationState activation_state() const { return activation_state_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& meid() const { return meid_; }
   const std::string& imei() const { return imei_; }
@@ -137,7 +137,7 @@ class CellularNetwork : public WirelessNetwork {
   virtual void ConfigureFromService(const ServiceInfo& service);
 
  protected:
-  std::string activation_state_;
+  ActivationState activation_state_;
   std::string payment_url_;
   std::string meid_;
   std::string imei_;
