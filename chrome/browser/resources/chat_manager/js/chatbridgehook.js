@@ -43,15 +43,25 @@ function forwardChatEvent(event) {
 }
 
 /**
+ * Triggered on opening/closing a central roster chat. Forward to extension.
+ * @param {MessageEvent} event the opened/closed event.
+ */
+function moleOpenedClosed(event) {
+  var eventType = event.type;
+  var chatJid = event.data;
+  chrome.extension.sendRequest({msg: eventType, jid: chatJid});
+}
+
+/**
  * Manage two-way communication with the central roster. Updated jid's are
  * forwarded to the background, while chats are forwarded to the page.
- * @param {string} chatType the chat event type.
+ * @param {string} eventType the event type.
  * @param {string} chatJid the jid to route the chat event to.
  */
-function dispatchChatEvent(chatType, chatJid) {
-  var showChatEvent = document.createEvent('MessageEvent');
-  showChatEvent.initMessageEvent(chatType, true, true, chatJid);
-  divRosterHandler.dispatchEvent(showChatEvent);
+function dispatchChatEvent(eventType, chatJid) {
+  var chatEvent = document.createEvent('MessageEvent');
+  chatEvent.initMessageEvent(eventType, true, true, chatJid);
+  divRosterHandler.dispatchEvent(chatEvent);
 }
 
 /**
@@ -59,11 +69,7 @@ function dispatchChatEvent(chatType, chatJid) {
  * @param {string} jid the central roster Jid.
  */
 function dispatchCentralJid(jid) {
-  var outgoingChatEvent = document.createEvent('MessageEvent');
-  outgoingChatEvent.initMessageEvent(
-      ChatBridgeEventTypes.CENTRAL_USER_UPDATE,
-      true, true, jid);
-  divRosterHandler.dispatchEvent(outgoingChatEvent);
+  dispatchChatEvent(ChatBridgeEventTypes.CENTRAL_USER_UPDATE, jid);
 }
 
 /**
@@ -76,8 +82,7 @@ function centralRosterHandler(event) {
     centralJidBroadcasterPort = chrome.extension.connect(
         {name: 'centralJidBroadcaster'});
     centralJidBroadcasterPort.onMessage.addListener(function(msg) {
-      var chatJid = msg.jid;
-      dispatchChatEvent(msg.chatType, chatJid);
+      dispatchChatEvent(msg.eventType, msg.jid);
     });
   }
   centralRosterJid = event.data;
@@ -96,8 +101,10 @@ function setupCentralRosterJidListener(event) {
     centralJidListenerChatPort = chrome.extension.connect(
         {name: 'centralJidListener'});
     centralJidListenerChatPort.onMessage.addListener(function(msg) {
-      centralRosterJid = msg.jid;
-      dispatchCentralJid(centralRosterJid);
+      if (msg.eventType == ChatBridgeEventTypes.CENTRAL_USER_UPDATE) {
+        centralRosterJid = msg.jid;
+      }
+      dispatchChatEvent(msg.eventType, msg.jid);
     });
   }
 }
@@ -123,6 +130,12 @@ function onPageLoaded() {
     divRosterHandler.addEventListener(
         ChatBridgeEventTypes.CENTRAL_USER_WATCHER,
         setupCentralRosterJidListener, false);
+    divRosterHandler.addEventListener(
+        ChatBridgeEventTypes.OPENED_MOLE_INCOMING,
+        moleOpenedClosed, false);
+    divRosterHandler.addEventListener(
+        ChatBridgeEventTypes.CLOSED_MOLE_INCOMING,
+        moleOpenedClosed, false);
   }
 }
 

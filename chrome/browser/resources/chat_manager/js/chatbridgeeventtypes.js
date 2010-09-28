@@ -14,5 +14,9 @@ var ChatBridgeEventTypes = {
   NEW_VOICE_CHAT: 'newVoiceChat',
   CENTRAL_USER_SET: 'centralJidSet',
   CENTRAL_USER_UPDATE: 'centralJidUpdate',
-  CENTRAL_USER_WATCHER: 'getCentralJid'
+  CENTRAL_USER_WATCHER: 'getCentralJid',
+  OPENED_MOLE_INCOMING: 'onMoleOpened',
+  OPENED_MOLE_OUTGOING: 'onCentralMoleOpened',
+  CLOSED_MOLE_INCOMING: 'onMoleClosed',
+  CLOSED_MOLE_OUTGOING: 'onCentralMoleClosed'
 };

@@ -25,15 +25,22 @@ function forwardChatEvent(event) {
 }
 
 /**
+ * @param {string} eventType the event type.
+ * @param {string} chatJid the jid to route the chat event to.
+ * TODO(seh): Move into a common JS file and reference from chatbridgehook.js.
+ */
+function dispatchChatEvent(eventType, chatJid) {
+  var chatEvent = document.createEvent('MessageEvent');
+  chatEvent.initMessageEvent(eventType, true, true, chatJid);
+  divGmailHandler.dispatchEvent(chatEvent);
+}
+
+/**
  * Forward central roster Jid to page.
  * @param {string} jid the central roster Jid.
  */
 function dispatchCentralJid(jid) {
-  var outgoingChatEvent = document.createEvent('MessageEvent');
-  outgoingChatEvent.initMessageEvent(
-      ChatBridgeEventTypes.CENTRAL_USER_UPDATE,
-      true, true, jid);
-  divGmailHandler.dispatchEvent(outgoingChatEvent);
+  dispatchChatEvent(ChatBridgeEventTypes.CENTRAL_USER_UPDATE, jid);
 }
 
 /**
@@ -48,8 +55,10 @@ function setupCentralRosterJidListener(event) {
     centralJidListenerGmailPort = chrome.extension.connect(
         {name: 'centralJidListener'});
     centralJidListenerGmailPort.onMessage.addListener(function(msg) {
-      centralRosterJid = msg.jid;
-      dispatchCentralJid(centralRosterJid);
+      if (msg.eventType == ChatBridgeEventTypes.CENTRAL_USER_UPDATE) {
+        centralRosterJid = msg.jid;
+      }
+      dispatchChatEvent(msg.eventType, msg.jid);
     });
   }
 }
