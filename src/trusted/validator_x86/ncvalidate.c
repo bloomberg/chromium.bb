@@ -58,7 +58,7 @@ void NCValidatorSetMaxDiagnostics(int new_value) {
 static void ValidatePrintError(const NaClPcAddress addr, const char *msg,
                                struct NCValidatorState *vstate) {
 
-  if (vstate->num_diagnostics > 0) {
+  if (vstate->num_diagnostics != 0) {
     printf("VALIDATOR: %"NACL_PRIxNaClPcAddress": %s\n", addr, msg);
     --(vstate->num_diagnostics);
     if (vstate->num_diagnostics == 0) {

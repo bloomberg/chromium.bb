@@ -471,3 +471,19 @@ def __AddModeledInstsTest():
                                      'validator_modeling'])
 
 __AddModeledInstsTest()
+
+
+# Run test to show that --max_errors=-1 works in 32 bit mode.
+def __AddNegMaxErrors():
+  if env['TARGET_SUBARCH'] == '32':
+    test = 'neg_max_errs'
+    base = 'ret'
+    ext = 'nval'
+    node_val = env.CommandTest(
+        __OutTestFile(test, base, ext),
+        [ncval[0], '--use_iter=false', '--max_errors=-1', '--hex_text=-'],
+        stdin = __BaseTestFile(base, 'hex'),
+        stdout_golden = __BaseTestFile(base, ext))
+    __AddTest(test, base, ext, node_val, ['small_tests', 'validator_tests'])
+
+__AddNegMaxErrors()
