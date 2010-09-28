@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/native_app_modal_dialog.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -30,9 +31,6 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     bool is_before_unload_dialog,
     IPC::Message* reply_msg)
     : AppModalDialog(client->AsTabContents(), title),
-#if defined(OS_MACOSX)
-      dialog_(NULL),
-#endif
       client_(client),
       extension_host_(client->AsExtensionHost()),
       dialog_flags_(dialog_flags),
@@ -52,6 +50,14 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
 JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
 }
 
+NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
+  gfx::NativeWindow parent_window = tab_contents_ ?
+      tab_contents_->GetMessageBoxRootWindow() :
+      extension_host_->GetMessageBoxRootWindow();
+  return NativeAppModalDialog::CreateNativeJavaScriptPrompt(this,
+                                                            parent_window);
+}
+
 void JavaScriptAppModalDialog::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
@@ -68,7 +74,7 @@ void JavaScriptAppModalDialog::Observe(NotificationType type,
   // Also clear the client, since it's now invalid.
   skip_this_dialog_ = true;
   client_ = NULL;
-  if (dialog_)
+  if (native_dialog_)
     CloseModalDialog();
 }
 
@@ -144,5 +150,4 @@ void JavaScriptAppModalDialog::Cleanup() {
       NOTREACHED();
 #endif
   }
-  AppModalDialog::Cleanup();
 }

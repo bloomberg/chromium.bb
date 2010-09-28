@@ -5,20 +5,20 @@
 #include "chrome/browser/app_modal_dialog.h"
 
 #include "chrome/browser/app_modal_dialog_queue.h"
+#include "chrome/browser/native_app_modal_dialog.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 
 AppModalDialog::AppModalDialog(TabContents* tab_contents,
                                const std::wstring& title)
-#if defined(OS_WIN) || defined(OS_LINUX)
-    : dialog_(NULL),
-#elif defined(OS_MACOSX)
-    :
-#endif
+    : skip_this_dialog_(false),
       tab_contents_(tab_contents),
-      title_(title),
-      skip_this_dialog_(false) {
+      native_dialog_(NULL),
+      title_(title) {
+}
+
+AppModalDialog::~AppModalDialog() {
 }
 
 void AppModalDialog::ShowModalDialog() {
@@ -33,11 +33,19 @@ void AppModalDialog::ShowModalDialog() {
       NotificationService::NoDetails());
 }
 
-void AppModalDialog::Cleanup() {
-  NotificationService::current()->Notify(
-      NotificationType::APP_MODAL_DIALOG_CLOSED,
-      Source<AppModalDialog>(this),
-      NotificationService::NoDetails());
+void AppModalDialog::CreateAndShowDialog() {
+  native_dialog_ = CreateNativeDialog();
+  native_dialog_->ShowAppModalDialog();
+}
+
+void AppModalDialog::ActivateModalDialog() {
+  DCHECK(native_dialog_);
+  native_dialog_->ActivateAppModalDialog();
+}
+
+void AppModalDialog::CloseModalDialog() {
+  DCHECK(native_dialog_);
+  native_dialog_->CloseAppModalDialog();
 }
 
 void AppModalDialog::CompleteDialog() {

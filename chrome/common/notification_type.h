@@ -294,10 +294,6 @@ class NotificationType {
     // is the dialog.
     APP_MODAL_DIALOG_SHOWN,
 
-    // Sent after an application-modal dialog has been closed. The source
-    // is the dialog.
-    APP_MODAL_DIALOG_CLOSED,
-
     // Tabs --------------------------------------------------------------------
 
     // Sent when a tab is added to a TabContentsDelegate. The source is the

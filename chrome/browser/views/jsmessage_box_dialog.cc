@@ -8,25 +8,24 @@
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "chrome/browser/app_modal_dialog.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// JavaScriptMessageBoxDialog, public:
+
 JavaScriptMessageBoxDialog::JavaScriptMessageBoxDialog(
-    JavaScriptAppModalDialog* parent,
-    const std::wstring& message_text,
-    const std::wstring& default_prompt_text,
-    bool display_suppress_checkbox)
+    JavaScriptAppModalDialog* parent)
     : parent_(parent),
       message_box_view_(new MessageBoxView(
           parent->dialog_flags() | MessageBoxFlags::kAutoDetectAlignment,
-          message_text, default_prompt_text)) {
+          parent->message_text(), parent->default_prompt_text())) {
   DCHECK(message_box_view_);
 
   message_box_view_->AddAccelerator(
       views::Accelerator(app::VKEY_C, false, true, false));
-  if (display_suppress_checkbox) {
+  if (parent->display_suppress_checkbox()) {
     message_box_view_->SetCheckBoxLabel(
         l10n_util::GetString(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION));
   }
@@ -35,8 +34,32 @@ JavaScriptMessageBoxDialog::JavaScriptMessageBoxDialog(
 JavaScriptMessageBoxDialog::~JavaScriptMessageBoxDialog() {
 }
 
-gfx::NativeWindow JavaScriptMessageBoxDialog::GetDialogRootWindow() {
-  return client()->GetMessageBoxRootWindow();
+////////////////////////////////////////////////////////////////////////////////
+// JavaScriptMessageBoxDialog, NativeAppModalDialog implementation:
+
+int JavaScriptMessageBoxDialog::GetAppModalDialogButtons() const {
+  return GetDialogButtons();
+}
+
+void JavaScriptMessageBoxDialog::ShowAppModalDialog() {
+  window()->Show();
+}
+
+void JavaScriptMessageBoxDialog::ActivateAppModalDialog() {
+  window()->Show();
+  window()->Activate();
+}
+
+void JavaScriptMessageBoxDialog::CloseAppModalDialog() {
+  window()->Close();
+}
+
+void JavaScriptMessageBoxDialog::AcceptAppModalDialog() {
+  GetDialogClientView()->AcceptWindow();
+}
+
+void JavaScriptMessageBoxDialog::CancelAppModalDialog() {
+  GetDialogClientView()->CancelWindow();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -115,4 +138,16 @@ views::View* JavaScriptMessageBoxDialog::GetInitiallyFocusedView() {
   if (message_box_view_->text_box())
     return message_box_view_->text_box();
   return views::DialogDelegate::GetInitiallyFocusedView();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeAppModalDialog, public:
+
+// static
+NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
+    JavaScriptAppModalDialog* dialog,
+    gfx::NativeWindow parent_window) {
+  JavaScriptMessageBoxDialog* d = new JavaScriptMessageBoxDialog(dialog);
+  views::Window::CreateChromeWindow(parent_window, gfx::Rect(), d);
+  return d;
 }

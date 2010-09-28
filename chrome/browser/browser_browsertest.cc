@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/js_modal_dialog.h"
+#include "chrome/browser/native_app_modal_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -290,12 +291,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   browser()->GetTabContentsAt(0)->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", L"w.close(); alert('bar');");
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-  alert->AcceptWindow();
+  alert->native_dialog()->AcceptAppModalDialog();
 
   alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_FALSE(static_cast<JavaScriptAppModalDialog*>(alert)->
                    is_before_unload_dialog());
-  alert->AcceptWindow();
+  alert->native_dialog()->AcceptAppModalDialog();
 }
 
 // Test that get_process_idle_time() returns reasonable values when compared

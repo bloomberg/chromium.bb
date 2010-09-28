@@ -9,6 +9,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/native_app_modal_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -282,7 +283,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   browser()->CloseWindow();
   AppModalDialog* confirm = ui_test_utils::WaitForAppModalDialog();
-  confirm->CancelWindow();
+  confirm->native_dialog()->CancelAppModalDialog();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(browser(), *(BrowserList::begin()));
@@ -292,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
   // Close the browser.
   browser()->CloseWindow();
   confirm = ui_test_utils::WaitForAppModalDialog();
-  confirm->AcceptWindow();
+  confirm->native_dialog()->AcceptAppModalDialog();
   ui_test_utils::RunAllPendingInMessageLoop();
 }
 
@@ -308,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(TabCloseableStateWatcherTest,
   // Close browser, click OK in BeforeUnload confirm dialog.
   browser()->CloseWindow();
   AppModalDialog* confirm = ui_test_utils::WaitForAppModalDialog();
-  confirm->AcceptWindow();
+  confirm->native_dialog()->AcceptAppModalDialog();
   NewTabObserver new_tab_observer(browser());
   EXPECT_EQ(1u, BrowserList::size());
   EXPECT_EQ(browser(), *(BrowserList::begin()));

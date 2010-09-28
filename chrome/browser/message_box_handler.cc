@@ -24,39 +24,41 @@
 #include "grit/chromium_strings.h"
 
 static std::wstring GetTitle(Profile* profile,
-                             ExtensionsService* extensions_service,
                              bool is_alert,
                              const GURL& frame_url) {
-  Extension* extension = extensions_service->GetExtensionByURL(frame_url);
-  if (!extension)
-    extension = extensions_service->GetExtensionByWebExtent(frame_url);
+  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  if (extensions_service) {
+    Extension* extension = extensions_service->GetExtensionByURL(frame_url);
+    if (!extension)
+      extension = extensions_service->GetExtensionByWebExtent(frame_url);
 
-  if (extension && (extension->location() == Extension::COMPONENT)) {
-    return l10n_util::GetString(IDS_PRODUCT_NAME);
-  } else if (extension && !extension->name().empty()) {
-    return UTF8ToWide(extension->name());
-  } else {
-    if (!frame_url.has_host())
-      return l10n_util::GetString(
-          is_alert ? IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE
-                   : IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE);
-
-    // TODO(brettw) it should be easier than this to do the correct language
-    // handling without getting the accept language from the profile.
-    string16 base_address = WideToUTF16(gfx::ElideUrl(frame_url.GetOrigin(),
-          gfx::Font(), 0,
-          UTF8ToWide(
-            profile->GetPrefs()->GetString(prefs::kAcceptLanguages))));
-
-    // Force URL to have LTR directionality.
-    base_address = base::i18n::GetDisplayStringInLTRDirectionality(
-        base_address);
-
-    return UTF16ToWide(l10n_util::GetStringFUTF16(
-        is_alert ? IDS_JAVASCRIPT_ALERT_TITLE :
-                   IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
-        base_address));
+    if (extension && (extension->location() == Extension::COMPONENT)) {
+      return l10n_util::GetString(IDS_PRODUCT_NAME);
+    } else if (extension && !extension->name().empty()) {
+      return UTF8ToWide(extension->name());
+    }
   }
+  if (!frame_url.has_host()) {
+    return l10n_util::GetString(
+        is_alert ? IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE
+                 : IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE);
+  }
+
+  // TODO(brettw) it should be easier than this to do the correct language
+  // handling without getting the accept language from the profile.
+  string16 base_address = WideToUTF16(gfx::ElideUrl(frame_url.GetOrigin(),
+      gfx::Font(), 0,
+      UTF8ToWide(
+          profile->GetPrefs()->GetString(prefs::kAcceptLanguages))));
+
+  // Force URL to have LTR directionality.
+  base_address = base::i18n::GetDisplayStringInLTRDirectionality(
+      base_address);
+
+  return UTF16ToWide(l10n_util::GetStringFUTF16(
+      is_alert ? IDS_JAVASCRIPT_ALERT_TITLE :
+                 IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
+      base_address));
 }
 
 void RunJavascriptMessageBox(Profile* profile,
@@ -67,13 +69,8 @@ void RunJavascriptMessageBox(Profile* profile,
                              const std::wstring& default_prompt_text,
                              bool display_suppress_checkbox,
                              IPC::Message* reply_msg) {
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
-  if (!extensions_service)
-    return;
-
   bool is_alert = dialog_flags == MessageBoxFlags::kIsJavascriptAlert;
-  std::wstring title = GetTitle(profile, extensions_service,
-                                is_alert, frame_url);
+  std::wstring title = GetTitle(profile, is_alert, frame_url);
   Singleton<AppModalDialogQueue>()->AddDialog(new JavaScriptAppModalDialog(
       client, title, dialog_flags, message_text, default_prompt_text,
       display_suppress_checkbox, false, reply_msg));

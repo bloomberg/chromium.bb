@@ -12,24 +12,26 @@
 
 #include "app/message_box_flags.h"
 #include "chrome/browser/jsmessage_box_client.h"
-#include "chrome/browser/views/modal_dialog_delegate.h"
+#include "chrome/browser/native_app_modal_dialog.h"
+#include "views/window/dialog_delegate.h"
 
 class MessageBoxView;
-class JavaScriptMessageBoxClient;
 
-class JavaScriptMessageBoxDialog : public ModalDialogDelegate {
+class JavaScriptMessageBoxDialog : public NativeAppModalDialog,
+                                   public views::DialogDelegate {
  public:
-  JavaScriptMessageBoxDialog(JavaScriptAppModalDialog* parent,
-                             const std::wstring& message_text,
-                             const std::wstring& default_prompt_text,
-                             bool display_suppress_checkbox);
-
+  explicit JavaScriptMessageBoxDialog(JavaScriptAppModalDialog* parent);
   virtual ~JavaScriptMessageBoxDialog();
 
-  // Overriden from ModalDialogDelegate:
-  virtual gfx::NativeWindow GetDialogRootWindow();
+  // Overridden from NativeAppModalDialog:
+  virtual int GetAppModalDialogButtons() const;
+  virtual void ShowAppModalDialog();
+  virtual void ActivateAppModalDialog();
+  virtual void CloseAppModalDialog();
+  virtual void AcceptAppModalDialog();
+  virtual void CancelAppModalDialog();
 
-  // Overriden from views::DialogDelegate:
+  // Overridden from views::DialogDelegate:
   virtual int GetDefaultDialogButton() const;
   virtual int GetDialogButtons() const;
   virtual std::wstring GetWindowTitle() const;
@@ -40,16 +42,14 @@ class JavaScriptMessageBoxDialog : public ModalDialogDelegate {
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
 
-  // Overriden from views::WindowDelegate:
+  // Overridden from views::WindowDelegate:
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView();
   virtual views::View* GetInitiallyFocusedView();
   virtual void OnClose();
 
  private:
-  JavaScriptMessageBoxClient* client() {
-    return parent_->client();
-  }
+  JavaScriptMessageBoxClient* client() const { return parent_->client(); }
 
   // A pointer to the AppModalDialog that owns us.
   JavaScriptAppModalDialog* parent_;

@@ -39,6 +39,7 @@
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/login_prompt.h"
+#include "chrome/browser/native_app_modal_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -1865,11 +1866,11 @@ void TestingAutomationProvider::SetBooleanPreference(int handle,
 
 void TestingAutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
                                                          int* dialog_button) {
-  AppModalDialog* dialog_delegate =
-      Singleton<AppModalDialogQueue>()->active_dialog();
-  *showing_dialog = (dialog_delegate != NULL);
+  NativeAppModalDialog* native_dialog =
+      Singleton<AppModalDialogQueue>()->active_dialog()->native_dialog();
+  *showing_dialog = (native_dialog != NULL);
   if (*showing_dialog)
-    *dialog_button = dialog_delegate->GetDialogButtons();
+    *dialog_button = native_dialog->GetAppModalDialogButtons();
   else
     *dialog_button = MessageBoxFlags::DIALOGBUTTON_NONE;
 }
@@ -1878,19 +1879,19 @@ void TestingAutomationProvider::ClickAppModalDialogButton(int button,
                                                           bool* success) {
   *success = false;
 
-  AppModalDialog* dialog_delegate =
-      Singleton<AppModalDialogQueue>()->active_dialog();
-  if (dialog_delegate &&
-      (dialog_delegate->GetDialogButtons() & button) == button) {
+  NativeAppModalDialog* native_dialog =
+      Singleton<AppModalDialogQueue>()->active_dialog()->native_dialog();
+  if (native_dialog &&
+      (native_dialog->GetAppModalDialogButtons() & button) == button) {
     if ((button & MessageBoxFlags::DIALOGBUTTON_OK) ==
         MessageBoxFlags::DIALOGBUTTON_OK) {
-      dialog_delegate->AcceptWindow();
+      native_dialog->AcceptAppModalDialog();
       *success =  true;
     }
     if ((button & MessageBoxFlags::DIALOGBUTTON_CANCEL) ==
         MessageBoxFlags::DIALOGBUTTON_CANCEL) {
       DCHECK(!*success) << "invalid param, OK and CANCEL specified";
-      dialog_delegate->CancelWindow();
+      native_dialog->CancelAppModalDialog();
       *success =  true;
     }
   }
