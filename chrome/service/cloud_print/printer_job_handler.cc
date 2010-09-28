@@ -634,14 +634,12 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
                                 const std::string& printer_name) {
   job_spooler_ = print_system_->CreateJobSpooler();
   DCHECK(job_spooler_);
-  if (job_spooler_) {
-    job_spooler_->Spool(job_details.print_ticket_,
-                        job_details.print_data_file_path_,
-                        job_details.print_data_mime_type_,
-                        printer_name,
-                        job_details.job_title_,
-                        this);
-  } else {
+  if (!job_spooler_ || !job_spooler_->Spool(job_details.print_ticket_,
+                                            job_details.print_data_file_path_,
+                                            job_details.print_data_mime_type_,
+                                            printer_name,
+                                            job_details.job_title_,
+                                            this)) {
     OnJobSpoolFailed();
   }
 }
