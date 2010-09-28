@@ -20,18 +20,32 @@ class PolicyTemplateGenerator:
       messages: An identifier to string dictionary of all the localized
         messages that might appear in the policy template.
       policy_definitions: The list of defined policies and groups, as
-        parsed from the polify metafile.
+        parsed from the policy metafile. Note that this list is passed by
+        reference and its contents are modified.
         See chrome/app/policy.policy_templates.json for description and
         content.
     '''
     # List of all the policies:
     self._policy_definitions = policy_definitions
-    # Localized messages to be inserted to the policy_groups structure:
+    # Localized messages to be inserted to the policy_definitions structure:
     self._messages = messages
+    self._SortPolicies(self._policy_definitions)
     self._AddMessagesToPolicyList(self._policy_definitions)
 
+  def _SortPolicies(self, policy_list):
+    '''Sorts a list of policies in-place alphabetically. The order is the
+    following: first groups alphabetically (a-z), then other policies
+    alphabetically (a-z). The order of policies inside groups is unchanged.
+
+    Args:
+      policy_list: The list of policies to sort. Sub-lists in groups will not
+        be sorted.
+    '''
+    policy_list.sort(
+        key=lambda(policy): (policy['type'] != 'group', policy['name']))
+
   def _AddMessageToItem(self, item_name, item, message_name, default=None):
-    '''Adds a localized message strings to an item of the policy data structure
+    '''Adds a localized message string to an item of the policy data structure
 
     Args:
       item_name: The base of the grd name of the item.
@@ -42,7 +56,7 @@ class PolicyTemplateGenerator:
 
     Raises:
       Exception() if the message string was not found and no default was
-      specified..
+      specified.
     '''
     # The keys for the item's messages in self._messages:
     long_message_name = ('IDS_POLICY_%s_%s' %

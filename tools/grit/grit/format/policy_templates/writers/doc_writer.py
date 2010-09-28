@@ -100,7 +100,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
 
     style = ''.join([self._STYLE[x] for x in style_ids])
     if style != '':
-      attrs['style'] = style
+      # Apply the style specified by style_ids.
+      attrs['style'] = style + attrs.get('style', '')
     return self.AddElement(parent, name, attrs, text)
 
   def _AddDescription(self, parent, policy):
@@ -351,11 +352,21 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       policy: The data structure of the policy.
     '''
     tr = self._AddStyledElement(parent, 'tr', ['tr'])
-    name_td = self._AddStyledElement(tr, 'td', ['td', 'td.left'])
-    self.AddElement(
-        name_td, 'a',
-        {'href': '#' + policy['name']}, policy['name'])
-    self._AddStyledElement(tr, 'td', ['td', 'td.right'], {}, policy['caption'])
+    indent = 'padding-left: %dpx;' % (7 + self._indent_level * 14)
+    if policy['type'] != 'group':
+      # Normal policies get two columns with name and caption.
+      name_td = self._AddStyledElement(tr, 'td', ['td', 'td.left'],
+                                       {'style': indent})
+      self.AddElement(name_td, 'a',
+                      {'href': '#' + policy['name']}, policy['name'])
+      self._AddStyledElement(tr, 'td', ['td', 'td.right'], {},
+                             policy['caption'])
+    else:
+      # Groups get one column with caption.
+      name_td = self._AddStyledElement(tr, 'td', ['td', 'td.left'],
+                                       {'style': indent, 'colspan': '2'})
+      self.AddElement(name_td, 'a', {'href': '#' + policy['name']},
+                      policy['caption'])
 
   def _AddPolicySection(self, parent, policy):
     '''Adds a section about the policy in the detailed policy listing.
@@ -364,15 +375,29 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       parent: The DOM node of the <div> of the detailed policy list.
       policy: The data structure of the policy.
     '''
-    h2 = self.AddElement(parent, 'h2')
-    self.AddElement(h2, 'a', {'name': policy['name']})
-    self.AddText(h2, policy['name'])
-    self.AddElement(parent, 'span', {}, policy['caption'])
-    self._AddPolicyNote(parent, policy)
+    # Set style according to group nesting level.
+    indent = 'margin-left: %dpx' % (self._indent_level * 28)
+    if policy['type'] == 'group':
+      heading = 'h2'
+    else:
+      heading = 'h3'
+    parent2 = self.AddElement(parent, 'div', {'style': indent})
 
-    self._AddPolicyDetails(parent, policy)
+    h2 = self.AddElement(parent2, heading)
+    self.AddElement(h2, 'a', {'name': policy['name']})
+    if policy['type'] != 'group':
+      # Normal policies get a full description.
+      self.AddText(h2, policy['name'])
+      self.AddElement(parent2, 'span', {}, policy['caption'])
+      self._AddPolicyNote(parent2, policy)
+      self._AddPolicyDetails(parent2, policy)
+    else:
+      # Groups get a more compact description.
+      self.AddText(h2, policy['caption'])
+      self._AddStyledElement(parent2, 'div', ['div.group_desc'],
+                             {}, policy['desc'])
     self.AddElement(
-        parent, 'a', {'href': '#top'},
+        parent2, 'a', {'href': '#top'},
         self._GetLocalizedMessage('back_to_top'))
 
   #
@@ -382,6 +407,13 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
   def WritePolicy(self, policy):
     self._AddPolicyRow(self._summary_tbody, policy)
     self._AddPolicySection(self._details_div, policy)
+
+  def BeginPolicyGroup(self, group):
+    self.WritePolicy(group)
+    self._indent_level += 1
+
+  def EndPolicyGroup(self):
+    self._indent_level -= 1
 
   def BeginTemplate(self):
     # Add a <div> for the summary section.
@@ -415,6 +447,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._doc = dom_impl.createDocument(None, 'html', None)
     body = self.AddElement(self._doc.documentElement, 'body')
     self._main_div = self.AddElement(body, 'div')
+    self._indent_level = 0
 
     # Human-readable names of supported platforms.
     self._PLATFORM_MAP = {
@@ -454,7 +487,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       'dd dl': 'margin-top: 0px; margin-bottom: 0px;',
       '.monospace': 'font-family: monospace;',
       '.pre': 'white-space: pre;',
-      'div.note': 'border: 2px solid black; padding: 5px; margin: 5px;'
+      'div.note': 'border: 2px solid black; padding: 5px; margin: 5px;',
+      'div.group_desc': 'margin-top: 20px; margin-bottom: 20px;',
     }
 
     # A simple regexp to search for URLs. It is enough for now.

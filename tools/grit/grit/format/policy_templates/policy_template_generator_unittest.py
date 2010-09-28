@@ -15,10 +15,20 @@ from grit.format.policy_templates.writers import mock_writer
 from grit.format.policy_templates.writers import template_writer
 
 
+class MessagesMock:
+  '''A mock dictionary that contains "all the keys". Used for tests
+  where the handling of GUI messages is irrelevant.
+  '''
+  def __getitem__(self, key):
+    return ''
+  def __contains__(self, key):
+    return True
+
+
 class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   '''Unit tests for policy_template_generator.py.'''
 
-  def do_test(self, messages, policy_groups, writer):
+  def do_test(self, messages, policy_definitions, writer):
     '''Executes a test case.
 
     Creates and invokes an instance of PolicyTemplateGenerator with
@@ -29,16 +39,16 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     test output.
 
     Args:
-      strings: The dictionary of localized strings.
-      policy_groups: The list of policy groups as it would be loaded from
-        policy_templates.json.
+      messages: The dictionary of localized messages.
+      policy_definitions: The list of policies and groups as it would be
+        loaded from policy_templates.json.
       writer: A writer used for this test. It is usually derived from
         mock_writer.MockWriter.
     '''
     writer.tester = self
     policy_generator = policy_template_generator.PolicyTemplateGenerator(
         messages,
-        policy_groups)
+        policy_definitions)
     res = policy_generator.GetTemplateText(writer)
     writer.Test()
     return res
@@ -61,19 +71,11 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       def Test(self):
         self.tester.assertEquals(self.log,
                                  'init;prepare;begin;end;get_text;')
-    result = self.do_test({}, {}, LocalMockWriter())
+    result = self.do_test({}, [], LocalMockWriter())
     self.assertEquals(result, 'writer_result_string')
 
   def testEmptyGroups(self):
     # Test that empty policy groups are not passed to the writer.
-    messages_mock = {
-      'IDS_POLICY_GROUP1_CAPTION': '',
-      'IDS_POLICY_GROUP1_DESC': '',
-      'IDS_POLICY_GROUP2_CAPTION': '',
-      'IDS_POLICY_GROUP2_DESC': '',
-      'IDS_POLICY_GROUP3_CAPTION': '',
-      'IDS_POLICY_GROUP3_DESC': '',
-    }
     policies_mock = [
       {'name': 'Group1', 'type': 'group', 'policies': []},
       {'name': 'Group2', 'type': 'group', 'policies': []},
@@ -88,28 +90,23 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         self.log += ']'
       def Test(self):
         self.tester.assertEquals(self.log, '')
-    self.do_test(messages_mock, policies_mock, LocalMockWriter())
+    self.do_test(MessagesMock(), policies_mock, LocalMockWriter())
 
   def testGroups(self):
     # Test that policy groups are passed to the writer in the correct order.
-    messages_mock = {
-      'IDS_POLICY_GROUP1_CAPTION': '',
-      'IDS_POLICY_GROUP1_DESC': '',
-      'IDS_POLICY_GROUP2_CAPTION': '',
-      'IDS_POLICY_GROUP2_DESC': '',
-      'IDS_POLICY_GROUP3_CAPTION': '',
-      'IDS_POLICY_GROUP3_DESC': '',
-      'IDS_POLICY_TAG1_CAPTION': '',
-      'IDS_POLICY_TAG1_DESC': '',
-      'IDS_POLICY_TAG2_CAPTION': '',
-      'IDS_POLICY_TAG2_DESC': '',
-      'IDS_POLICY_TAG3_CAPTION': '',
-      'IDS_POLICY_TAG3_DESC': '',
-    }
     policies_mock = [
-      {'name': 'Group1', 'type': 'group', 'policies': [{'name': 'TAG1', 'type': 'mock'}]},
-      {'name': 'Group2', 'type': 'group', 'policies': [{'name': 'TAG2', 'type': 'mock'}]},
-      {'name': 'Group3', 'type': 'group', 'policies': [{'name': 'TAG3', 'type': 'mock'}]},
+      {
+        'name': 'Group1', 'type': 'group',
+        'policies': [{'name': 'TAG1', 'type': 'mock'}]
+      },
+      {
+        'name': 'Group2', 'type': 'group',
+        'policies': [{'name': 'TAG2', 'type': 'mock'}]
+      },
+      {
+        'name': 'Group3', 'type': 'group',
+        'policies': [{'name': 'TAG3', 'type': 'mock'}]
+      },
     ]
     class LocalMockWriter(mock_writer.MockWriter):
       def __init__(self):
@@ -120,17 +117,17 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         self.log += ']'
       def Test(self):
         self.tester.assertEquals(self.log, '[TAG1][TAG2][TAG3]')
-    self.do_test(messages_mock, policies_mock, LocalMockWriter())
+    self.do_test(MessagesMock(), policies_mock, LocalMockWriter())
 
   def testGroupTexts(self):
-    # Test that GUI strings are assigned correctly to policy groups.
+    # Test that GUI messages are assigned correctly to policy groups.
     messages_mock = {
       'IDS_POLICY_GROUP1_CAPTION': 'string1',
       'IDS_POLICY_GROUP1_DESC': 'string2',
       'IDS_POLICY_GROUP2_CAPTION': 'string3',
       'IDS_POLICY_GROUP2_DESC': 'string4',
     }
-    policy_groups_mock = [
+    policy_defs_mock = [
       {'name': 'Group1', 'type': 'group', 'policies': []},
       {'name': 'Group2', 'type': 'group', 'policies': []},
     ]
@@ -144,23 +141,11 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           self.tester.assertEquals(group['desc'], 'string4')
         else:
           self.tester.fail()
-    self.do_test(messages_mock, policy_groups_mock, LocalMockWriter())
+    self.do_test(messages_mock, policy_defs_mock, LocalMockWriter())
 
   def testPolicies(self):
     # Test that policies are passed to the writer in the correct order.
-    messages_mock = {
-      'IDS_POLICY_GROUP1_CAPTION': '',
-      'IDS_POLICY_GROUP1_DESC': '',
-      'IDS_POLICY_GROUP2_CAPTION': '',
-      'IDS_POLICY_GROUP2_DESC': '',
-      'IDS_POLICY_GROUP1POLICY1_CAPTION': '',
-      'IDS_POLICY_GROUP1POLICY1_DESC': '',
-      'IDS_POLICY_GROUP1POLICY2_CAPTION': '',
-      'IDS_POLICY_GROUP1POLICY2_DESC': '',
-      'IDS_POLICY_GROUP2POLICY3_CAPTION': '',
-      'IDS_POLICY_GROUP2POLICY3_DESC': '',
-    }
-    policy_groups_mock = [
+    policy_defs_mock = [
       {
         'name': 'Group1',
         'type': 'group',
@@ -192,10 +177,10 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         self.tester.assertEquals(
           self.policy_list,
           ['Group1Policy1', 'Group1Policy2', 'Group2Policy3'])
-    self.do_test(messages_mock, policy_groups_mock, LocalMockWriter())
+    self.do_test(MessagesMock(), policy_defs_mock, LocalMockWriter())
 
   def testPolicyTexts(self):
-    # Test that GUI strings are assigned correctly to policies.
+    # Test that GUI messages are assigned correctly to policies.
     messages_mock = {
       'IDS_POLICY_POLICY1_CAPTION': 'string1',
       'IDS_POLICY_POLICY1_DESC': 'string2',
@@ -204,7 +189,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'IDS_POLICY_GROUP1_CAPTION': '',
       'IDS_POLICY_GROUP1_DESC': '',
     }
-    policy_groups_mock = [
+    policy_defs_mock = [
       {
         'name': 'Group1',
         'type': 'group',
@@ -224,10 +209,10 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           self.tester.assertEquals(policy['desc'], 'string4')
         else:
           self.tester.fail()
-    self.do_test(messages_mock, policy_groups_mock, LocalMockWriter())
+    self.do_test(messages_mock, policy_defs_mock, LocalMockWriter())
 
   def testEnumTexts(self):
-    # Test that GUI strings are assigned correctly to enums
+    # Test that GUI messages are assigned correctly to enums
     # (aka dropdown menus).
     messages_mock = {
       'IDS_POLICY_ENUM_ITEM1_CAPTION': 'string1',
@@ -237,7 +222,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'IDS_POLICY_POLICY1_DESC': '',
 
     }
-    policy_groups_mock = [{
+    policy_defs_mock = [{
       'name': 'Policy1',
       'type': 'enum',
       'items': [
@@ -252,23 +237,11 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         self.tester.assertEquals(policy['items'][0]['caption'], 'string1')
         self.tester.assertEquals(policy['items'][1]['caption'], 'string2')
         self.tester.assertEquals(policy['items'][2]['caption'], 'string3')
-    self.do_test(messages_mock, policy_groups_mock, LocalMockWriter())
+    self.do_test(messages_mock, policy_defs_mock, LocalMockWriter())
 
   def testPolicyFiltering(self):
     # Test that policies are filtered correctly based on their annotations.
-    messages_mock = {
-      'IDS_POLICY_GROUP1_CAPTION': '',
-      'IDS_POLICY_GROUP1_DESC': '',
-      'IDS_POLICY_GROUP2_CAPTION': '',
-      'IDS_POLICY_GROUP2_DESC': '',
-      'IDS_POLICY_GROUP1POLICY1_CAPTION': '',
-      'IDS_POLICY_GROUP1POLICY1_DESC': '',
-      'IDS_POLICY_GROUP1POLICY2_CAPTION': '',
-      'IDS_POLICY_GROUP1POLICY2_DESC': '',
-      'IDS_POLICY_GROUP2POLICY3_CAPTION': '',
-      'IDS_POLICY_GROUP2POLICY3_DESC': '',
-    }
-    policy_groups_mock = [{
+    policy_defs_mock = [{
       'name': 'Group1',
       'type': 'group',
       'policies': [
@@ -316,15 +289,75 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           self.result_list,
           self.expected_list)
     self.do_test(
-        messages_mock,
-        policy_groups_mock,
+        MessagesMock(),
+        policy_defs_mock,
         LocalMockWriter(['eee'], ['begin_Group2', 'Group2Policy3']))
     self.do_test(
-        messages_mock,
-        policy_groups_mock,
+        MessagesMock(),
+        policy_defs_mock,
         LocalMockWriter(
             ['ddd', 'bbb'],
             ['begin_Group1', 'Group1Policy1', 'Group1Policy2']))
+
+  def testSorting(self):
+    # Tests that policies are sorted correctly.
+    policy_defs = [
+      {'name': 'zp', 'type': 'string'},
+      {
+        'type': 'group',
+        'name': 'zg',
+        'policies': [
+          {'name': 'z0', 'type': 'string'},
+          {'name': 'a0', 'type': 'string'}
+        ]
+      },
+      {
+        'type': 'group',
+        'name': 'ag',
+        'policies': [{'name': 'q', 'type': 'string'}],
+      },
+      {'name': 'ap', 'type': 'string'}
+    ]
+    sorted_policy_defs = [
+      {
+        'type': 'group',
+        'name': 'ag',
+        'policies': [{'name': 'q', 'type': 'string'}],
+      },
+      {
+        'type': 'group',
+        'name': 'zg',
+        'policies': [
+          {'name': 'z0', 'type': 'string'},
+          {'name': 'a0', 'type': 'string'}
+        ]
+      },
+      {'name': 'ap', 'type': 'string'},
+      {'name': 'zp', 'type': 'string'},
+    ]
+    ptg = policy_template_generator.PolicyTemplateGenerator([], [])
+    ptg._SortPolicies(policy_defs)
+    self.assertEquals(
+        policy_defs,
+        sorted_policy_defs)
+
+  def testSortingInvoked(self):
+    # Tests that policy-sorting happens before passing policies to the writer.
+    policy_defs = [
+      {'name': 'zp', 'type': 'string'},
+      {'name': 'ap', 'type': 'string'}
+    ]
+    class LocalMockWriter(mock_writer.MockWriter):
+      def __init__(self):
+        self.result_list = []
+      def WritePolicy(self, policy):
+        self.result_list.append(policy['name'])
+      def Test(self):
+        self.tester.assertEquals(
+          self.result_list,
+          ['ap', 'zp'])
+    self.do_test(MessagesMock(), policy_defs, LocalMockWriter())
+
 
 if __name__ == '__main__':
   unittest.main()

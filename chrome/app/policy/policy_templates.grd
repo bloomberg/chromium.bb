@@ -8,7 +8,7 @@ templates and will be translated for each locale. -->
   <outputs>
     <output filename="app/policy/windows/admx/chrome.admx" type="admx" lang="en" />
     <output filename="app/policy/windows/admx/en-US/chrome.adml" type="adml" lang="en" />
-    <output filename="app/policy/common/html/policy_list.html" type="doc" lang="en" />
+    <output filename="app/policy/common/html/chrome_policy_list.html" type="doc" lang="en" />
 
     <output filename="app/policy/windows/adm/am/chrome.adm" type="adm" lang="am" />
     <output filename="app/policy/windows/adm/ar/chrome.adm" type="adm" lang="ar" />

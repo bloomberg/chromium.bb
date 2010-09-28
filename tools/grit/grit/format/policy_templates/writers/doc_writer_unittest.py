@@ -326,17 +326,90 @@ MockKey\\PolicyName\\1 = &quot;Bar&quot;</dd><dt>Linux:</dt><dd style="style_.mo
     # Test if policies are correctly added to the summary table.
     policy = {
       'name': 'PolicyName',
-      'caption': 'PolicyCaption'
+      'caption': 'PolicyCaption',
+      'type': 'string',
     }
+    self.writer._indent_level = 3
     self.writer._AddPolicyRow(self.doc_root, policy)
     self.assertEquals(
       self.doc_root.toxml(),
       '<root><tr style="style_tr;">'
-      '<td style="style_td;style_td.left;">'
+      '<td style="style_td;style_td.left;padding-left: 49px;">'
         '<a href="#PolicyName">PolicyName</a>'
       '</td>'
       '<td style="style_td;style_td.right;">PolicyCaption</td>'
       '</tr></root>')
+    self.setUp()
+    policy = {
+      'name': 'PolicyName',
+      'caption': 'PolicyCaption',
+      'type': 'group',
+    }
+    self.writer._indent_level = 2
+    self.writer._AddPolicyRow(self.doc_root, policy)
+    self.assertEquals(
+      self.doc_root.toxml(),
+      '<root><tr style="style_tr;">'
+      '<td colspan="2" style="style_td;style_td.left;padding-left: 35px;">'
+        '<a href="#PolicyName">PolicyCaption</a>'
+      '</td>'
+      '</tr></root>')
+
+  def testAddPolicySection(self):
+    # Test if policy details are correctly added to the document.
+    policy = {
+      'name': 'PolicyName',
+      'caption': 'PolicyCaption',
+      'desc': 'PolicyDesc',
+      'type': 'string',
+      'annotations': {
+        'platforms': ['win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 0},
+        'example_value': False
+      }
+    }
+    self.writer._AddPolicySection(self.doc_root, policy)
+    self.assertEquals(
+      self.doc_root.toxml(),
+      '<root>'
+        '<div style="margin-left: 0px">'
+          '<h3><a name="PolicyName"/>PolicyName</h3>'
+          '<span>PolicyCaption</span>'
+          '<dl>'
+            '<dt style="style_dt;">_test_data_type</dt>'
+            '<dd>String (REG_SZ)</dd>'
+            '<dt style="style_dt;">_test_win_reg_loc</dt>'
+            '<dd style="style_.monospace;">MockKey\\PolicyName</dd>'
+            '<dt style="style_dt;">_test_mac_linux_pref_name</dt>'
+            '<dd style="style_.monospace;">PolicyName</dd>'
+            '<dt style="style_dt;">_test_supported_on_platforms</dt>'
+            '<dd>Windows</dd>'
+            '<dt style="style_dt;">_test_supported_in_products</dt>'
+            '<dd>Chrome</dd>'
+            '<dt style="style_dt;">_test_supported_features</dt>'
+            '<dd>Dynamic Policy Refresh: _test_not_supported</dd>'
+            '<dt style="style_dt;">_test_description</dt>'
+            '<dd>PolicyDesc</dd>'
+            '<dt style="style_dt;">_test_example_value</dt>'
+            '<dd>&quot;False&quot;</dd>'
+          '</dl>'
+          '<a href="#top">_test_back_to_top</a>'
+        '</div>'
+      '</root>')
+    # Test for groups.
+    self.setUp()
+    policy['type'] = 'group'
+    self.writer._AddPolicySection(self.doc_root, policy)
+    self.assertEquals(
+      self.doc_root.toxml(),
+      '<root>'
+        '<div style="margin-left: 0px">'
+          '<h2><a name="PolicyName"/>PolicyCaption</h2>'
+          '<div style="style_div.group_desc;">PolicyDesc</div>'
+          '<a href="#top">_test_back_to_top</a>'
+        '</div>'
+      '</root>')
 
 
 if __name__ == '__main__':
