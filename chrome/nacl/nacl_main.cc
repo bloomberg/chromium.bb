@@ -88,12 +88,6 @@ static void HandleNaClTestParameters(const CommandLine& command_line) {
   }
 }
 
-static void LaunchNaClChildProcess() {
-  ChildProcess nacl_process;
-  nacl_process.set_main_thread(new NaClThread());
-  MessageLoop::current()->Run();
-}
-
 // main() routine for the NaCl loader process.
 int NaClMain(const MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line_;
@@ -124,7 +118,10 @@ int NaClMain(const MainFunctionParams& parameters) {
   bool sandbox_test_result = platform.RunSandboxTests();
 
   if (sandbox_test_result) {
-    LaunchNaClChildProcess();
+    ChildProcess nacl_process;
+    bool debug = parsed_command_line.HasSwitch(switches::kEnableNaClDebug);
+    nacl_process.set_main_thread(new NaClThread(debug));
+    MessageLoop::current()->Run();
   } else {
     // This indirectly prevents the test-harness-success-cookie from being set,
     // as a way of communicating test failure, because the nexe won't reply.

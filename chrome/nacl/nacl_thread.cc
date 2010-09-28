@@ -19,9 +19,11 @@ typedef int NaClHandle;
 
 // This is currently necessary because we have a conflict between
 // NaCl's "struct NaClThread" and Chromium's "class NaClThread".
-extern "C" int NaClMainForChromium(int handle_count, const NaClHandle* handles);
+extern "C" int NaClMainForChromium(int handle_count, const NaClHandle* handles,
+                                   int debug);
 
-NaClThread::NaClThread() {
+NaClThread::NaClThread(bool debug) {
+  debug_enabled_ = debug ? 1 : 0;
 }
 
 NaClThread::~NaClThread() {
@@ -42,5 +44,6 @@ void NaClThread::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
   for (size_t i = 0; i < handles.size(); i++) {
     array[i] = nacl::ToNativeHandle(handles[i]);
   }
-  NaClMainForChromium(static_cast<int>(handles.size()), array.get());
+  NaClMainForChromium(static_cast<int>(handles.size()), array.get(),
+                      debug_enabled_);
 }

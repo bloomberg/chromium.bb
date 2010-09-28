@@ -14,7 +14,7 @@
 // started.
 class NaClThread : public ChildThread {
  public:
-  NaClThread();
+  explicit NaClThread(bool debug);
   ~NaClThread();
   // Returns the one NaCl thread.
   static NaClThread* current();
@@ -22,6 +22,8 @@ class NaClThread : public ChildThread {
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
   void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles);
+
+  int debug_enabled_;
 
   // TODO(gregoryd): do we need to override Cleanup as in PluginThread?
   DISALLOW_COPY_AND_ASSIGN(NaClThread);
