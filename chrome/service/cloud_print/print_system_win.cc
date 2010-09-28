@@ -411,7 +411,7 @@ class PrintSystemWin : public PrintSystem {
         std::wstring doc_name = UTF8ToWide(job_title);
         di.lpszDocName = doc_name.c_str();
         job_id_ = StartDoc(dc, &di);
-        if (SP_ERROR == job_id_)
+        if (job_id_ <= 0)
           return false;
 
         printer_dc_.Set(dc);
