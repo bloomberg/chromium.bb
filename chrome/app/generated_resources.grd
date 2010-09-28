@@ -3855,26 +3855,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LABS_SIDE_TABS_DESCRIPTION" desc="Description of the 'Left Tabs' lab.">
         Adds a "Use Side Tabs" entry to the tabstrip's context menu. Use this to toggle between tabs on top (default) and tabs on the side. Useful on widescreen monitors.
       </message>
-     <message name="IDS_LABS_TABBED_OPTIONS_NAME" desc="Description of the 'Tabbed Settings' lab.">
+      <message name="IDS_LABS_TABBED_OPTIONS_NAME" desc="Description of the 'Tabbed Settings' lab.">
         Tabbed Settings
       </message>
-     <message name="IDS_LABS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Settings' lab.">
+      <message name="IDS_LABS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Settings' lab.">
         Uses an in-tab UI for the Settings (Options/Preferences) dialog instead of a stand-alone window.
       </message>
-     <message name="IDS_LABS_INSTANT_NAME" desc="Description of the 'Instant' lab.">
+      <message name="IDS_LABS_INSTANT_NAME" desc="Description of the 'Instant' lab.">
         Instant
       </message>
-     <message name="IDS_LABS_INSTANT_DESCRIPTION" desc="Description of the 'Instant' lab.">
+      <message name="IDS_LABS_INSTANT_DESCRIPTION" desc="Description of the 'Instant' lab.">
         Makes the address bar load urls as you type.
       </message>
-     <message name="IDS_LABS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
+      <message name="IDS_LABS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
         Remoting
       </message>
-     <message name="IDS_LABS_REMOTING_CLIENT_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
+      <message name="IDS_LABS_REMOTING_CLIENT_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
         Enable Remoting Client support.
       </message>
-     <message name="IDS_LABS_REMOTING_HOST_DESCRIPTION" desc="Description of the 'Remoting' host lab.">
+      <message name="IDS_LABS_REMOTING_HOST_DESCRIPTION" desc="Description of the 'Remoting' host lab.">
         Enable Remoting Host support.
+      </message>
+      <message name="IDS_LABS_PAGE_INFO_BUBBLE_NAME" desc="Description of the 'Page Info Bubble' lab.">
+        Page Info Bubble
+      </message>
+      <message name="IDS_LABS_PAGE_INFO_BUBBLE_DESCRIPTION" desc="Description of the 'Page Info Bubble' lab.">
+        Shows the Page Information as an info bubble instead of a dialog window.
       </message>
 
       <!-- Click-to-load -->

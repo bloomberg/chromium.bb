@@ -97,6 +97,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux,
     switches::kEnableRemoting
   },
+  {
+    "page-info-bubble",  // Do not change; see above.
+    IDS_LABS_PAGE_INFO_BUBBLE_NAME,
+    IDS_LABS_PAGE_INFO_BUBBLE_DESCRIPTION,
+    kOsWin | kOsLinux,
+    switches::kEnableNewPageInfoBubble
+  }
 };
 
 // Extracts the list of enabled lab experiments from a profile and stores them
