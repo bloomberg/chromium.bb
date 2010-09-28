@@ -1,0 +1,22 @@
+<html>
+<script>
+function openPopup() {
+  window.open("mshtml_refresh_test_popup.html","mypopup")
+  return false;
+}
+
+function onLoad() {
+  var request_id = $request_id$;
+  if (request_id != 0) {
+    location.href = "/quit?OK";
+  } else {
+    window.setTimeout(openPopup, 100);
+  }
+}
+window.onload = onLoad;
+</script>
+<body>
+  <p>$UA$</p>
+  <a href="#" onclick="return openPopup();">Open popup</a>
+</body>
+</html>

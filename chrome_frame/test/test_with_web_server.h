@@ -227,10 +227,11 @@ class SimpleWebServerTest {
     server_.DeleteAllResponses();
   }
 
-  void PopulateStaticFileList(const wchar_t* pages[], int count,
-                              const FilePath& directory) {
+  template <class ResponseClass>
+  void PopulateStaticFileListT(const wchar_t* pages[], int count,
+                               const FilePath& directory) {
     for (int i = 0; i < count; ++i) {
-      server_.AddResponse(new test_server::FileResponse(
+      server_.AddResponse(new ResponseClass(
           StringPrintf("/%ls", pages[i]).c_str(), directory.Append(pages[i])));
     }
   }

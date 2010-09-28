@@ -17,6 +17,7 @@
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "net/base/mime_util.h"
+#include "net/http/http_util.h"
 
 using chrome_frame_test::kChromeFrameLongNavigationTimeoutInSeconds;
 using testing::_;
@@ -944,7 +945,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestPostReissue) {
   };
 
   SimpleWebServerTest server(46664);
-  server.PopulateStaticFileList(kPages, arraysize(kPages), GetCFTestFilePath());
+  server.PopulateStaticFileListT<test_server::FileResponse>(kPages,
+      arraysize(kPages), GetCFTestFilePath());
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
@@ -980,7 +982,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestMultipleGet) {
 
   SimpleWebServerTest server(46664);
 
-  server.PopulateStaticFileList(kPages, arraysize(kPages), GetCFTestFilePath());
+  server.PopulateStaticFileListT<test_server::FileResponse>(kPages,
+      arraysize(kPages), GetCFTestFilePath());
 
   ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
@@ -1011,5 +1014,104 @@ const wchar_t kXHRConditionalHeaderTestUrl[] =
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRConditionalHeaderTest) {
   SimpleBrowserTest(IE, kXHRConditionalHeaderTestUrl);
+}
+
+std::string GetHeaderValue(const std::string& headers,
+                           const char* header_name) {
+  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(),
+                                    "\r\n");
+  while (it.GetNext()) {
+    if (lstrcmpiA(it.name().c_str(), header_name) == 0) {
+      return it.values();
+    }
+  }
+  return "";
+}
+
+// Specialized implementation of test_server::FileResponse that supports
+// adding the request's User-Agent header to the returned document.
+// The class also supports $request_id$ which will be replaced with an
+// id that's incremented each time the response is sent over a socket.
+class UaTemplateFileResponse : public test_server::FileResponse {
+ public:
+  typedef test_server::FileResponse SuperClass;
+
+  UaTemplateFileResponse(const char* request_path, const FilePath& file_path)
+      : test_server::FileResponse(request_path, file_path), request_id_(0) {
+  }
+
+  virtual bool Matches(const test_server::Request& r) const {
+    bool ret = SuperClass::Matches(r);
+    if (ret)
+      ua_ = GetHeaderValue(r.headers(), "User-Agent");
+    return ret;
+  }
+
+  virtual size_t ContentLength() const {
+    const char kRequestIdTemplate[] = "$request_id$";
+    const char kUserAgentTemplate[] = "$UA$";
+
+    size_t length = SuperClass::ContentLength();
+    DCHECK(length);
+    content_.assign(reinterpret_cast<const char*>(file_->data()),
+                    file_->length());
+    size_t i = content_.find(kUserAgentTemplate);
+    if (i != std::string::npos)
+      content_.replace(i, arraysize(kUserAgentTemplate) - 1, ua_);
+    i = content_.find(kRequestIdTemplate);
+    if (i != std::string::npos) {
+      content_.replace(i, arraysize(kRequestIdTemplate) - 1,
+                       StringPrintf("%i", request_id_));
+    }
+    return content_.length();
+  }
+
+  virtual void WriteContents(ListenSocket* socket) const {
+    DCHECK(content_.length());
+    socket->Send(content_.c_str(), content_.length(), false);
+    request_id_++;
+  }
+
+ protected:
+  mutable std::string ua_;
+  mutable std::string content_;
+  mutable int request_id_;
+};
+
+// This test simulates a URL that on first request returns a document
+// that should be rendered in mshtml, then pops up a sign-in page that
+// after signing in, refreshes the original page that should then return
+// a page that needs to be rendered in GCF.
+//
+// This test currently fails because GCF does not add the chromeframe header
+// to requests that mshtml initiates via IInternetSession::CreateBinding.
+TEST_F(ChromeFrameTestWithWebServer, FAILS_FullTabModeIE_RefreshMshtmlTest) {
+  const wchar_t* kPages[] = {
+    L"mshtml_refresh_test.html",
+    L"mshtml_refresh_test_popup.html",
+  };
+
+  SimpleWebServerTest server(46664);
+  server.PopulateStaticFileListT<UaTemplateFileResponse>(kPages,
+      arraysize(kPages), GetCFTestFilePath());
+
+  ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
+
+  loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  test_server::SimpleWebServer* ws = server.web_server();
+  const test_server::ConnectionList& connections = ws->connections();
+  test_server::ConnectionList::const_iterator it = connections.begin();
+  int requests_for_first_page = 0;
+  for (; it != connections.end(); ++it) {
+    test_server::Connection* c = (*it);
+    const test_server::Request& r = c->request();
+    if (ASCIIToWide(r.path().substr(1)).compare(kPages[0]) == 0) {
+      requests_for_first_page++;
+      std::string ua(GetHeaderValue(r.headers(), "User-Agent"));
+      EXPECT_NE(std::string::npos, ua.find("chromeframe"));
+    }
+  }
+  EXPECT_GT(requests_for_first_page, 1);
 }
 

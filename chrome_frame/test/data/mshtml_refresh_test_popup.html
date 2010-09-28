@@ -1,0 +1,20 @@
+<html>
+<script>
+function refreshOpener() {
+  window.opener.location.reload();
+  // Same behavior:
+  // window.opener.location.href = window.opener.location.href;
+  return false;
+}
+
+function onLoad() {
+  window.setTimeout(refreshOpener, 100);
+}
+
+window.onload = onLoad;
+</script>
+<body>
+  <p>$UA$</p>
+  <a href="#" onclick="return refreshOpener();">Refresh Opener</a>
+</body>
+</html>
