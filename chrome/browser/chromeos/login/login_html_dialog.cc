@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/profile_manager.h"
-#include "chrome/browser/views/browser_dialogs.h"
+#include "chrome/browser/views/html_dialog_view.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -18,6 +18,22 @@ namespace {
 // Default width/height ratio of screen size.
 const float kDefaultWidthRatio = 0.8;
 const float kDefaultHeightRatio = 0.8;
+
+// Custom HtmlDialogView with disabled context menu.
+class HtmlDialogWithoutContextMenuView : public HtmlDialogView {
+ public:
+  HtmlDialogWithoutContextMenuView(Profile* profile,
+                                   HtmlDialogUIDelegate* delegate)
+      : HtmlDialogView(profile, delegate) {}
+  virtual ~HtmlDialogWithoutContextMenuView() {}
+
+  // TabContentsDelegate implementation.
+  bool HandleContextMenu(const ContextMenuParams& params) {
+    // Disable context menu.
+    return true;
+  }
+};
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,9 +57,12 @@ LoginHtmlDialog::~LoginHtmlDialog() {
 }
 
 void LoginHtmlDialog::Show() {
-  browser::ShowHtmlDialogView(parent_window_,
-                              ProfileManager::GetDefaultProfile(),
-                              this);
+  HtmlDialogWithoutContextMenuView* html_view =
+      new HtmlDialogWithoutContextMenuView(ProfileManager::GetDefaultProfile(),
+                                           this);
+  views::Window::CreateChromeWindow(parent_window_, gfx::Rect(), html_view);
+  html_view->InitDialog();
+  html_view->window()->Show();
 }
 
 void LoginHtmlDialog::SetDialogSize(int width, int height) {
