@@ -19,9 +19,9 @@ const int kNoRouterInterval = 30 * 1000; // 30s
 }
 
 // Allows sharing and mocking of the update polling policy function.
-class PollingPolicyInterface {
+class GatewayPollingPolicyInterface {
  public:
-  virtual ~PollingPolicyInterface() {}
+  virtual ~GatewayPollingPolicyInterface() {}
 
   // Returns the polling interval to be used when we are connected to a router
   // via Ethernet.
@@ -62,14 +62,14 @@ class GatewayDataProviderCommon
   // Returns ownership. Will be called from the worker thread.
   virtual GatewayApiInterface* NewGatewayApi() = 0;
   // Returns ownership. Will be called from the worker thread.
-  virtual PollingPolicyInterface* NewPollingPolicy();
+  virtual GatewayPollingPolicyInterface* NewPollingPolicy();
 
  private:
-  class GenericPollingPolicy : public PollingPolicyInterface {
+  class GenericGatewayPollingPolicy : public GatewayPollingPolicyInterface {
    public:
-    GenericPollingPolicy() {}
+    GenericGatewayPollingPolicy() {}
 
-    // PollingPolicyInterface
+    // GatewayPollingPolicyInterface
     virtual int PollingInterval() { return kDefaultInterval; }
     virtual int NoRouterInterval() { return kNoRouterInterval; }
   };
@@ -91,7 +91,7 @@ class GatewayDataProviderCommon
   scoped_ptr<GatewayApiInterface> gateway_api_;
   GatewayData gateway_data_;
   // Controls the polling update interval.
-  scoped_ptr<PollingPolicyInterface> polling_policy_;
+  scoped_ptr<GatewayPollingPolicyInterface> polling_policy_;
   // Holder for the tasks which run on the thread; takes care of cleanup.
   ScopedRunnableMethodFactory<GatewayDataProviderCommon> task_factory_;
 

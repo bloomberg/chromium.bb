@@ -85,6 +85,6 @@ void GatewayDataProviderCommon::ScheduleNextScan(int interval) {
           &GatewayDataProviderCommon::DoRouterScanTask), interval);
 }
 
-PollingPolicyInterface* GatewayDataProviderCommon::NewPollingPolicy() {
-  return new GenericPollingPolicy;
+GatewayPollingPolicyInterface* GatewayDataProviderCommon::NewPollingPolicy() {
+  return new GenericGatewayPollingPolicy;
 }

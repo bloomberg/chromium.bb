@@ -57,7 +57,7 @@ class MessageLoopQuitListener
   DeviceDataProvider<GatewayData>* provider_;
 };
 
-class MockGatewayPollingPolicy : public PollingPolicyInterface {
+class MockGatewayPollingPolicy : public GatewayPollingPolicyInterface {
  public:
   MockGatewayPollingPolicy() {
     ON_CALL(*this, PollingInterval())
@@ -66,7 +66,7 @@ class MockGatewayPollingPolicy : public PollingPolicyInterface {
         .WillByDefault(Return(1));
   }
 
-  // PollingPolicyInterface
+  // GatewayPollingPolicyInterface
   MOCK_METHOD0(PollingInterval, int());
   MOCK_METHOD0(NoRouterInterval, int());
  };
@@ -83,7 +83,7 @@ class GatewayDataProviderCommonWithMock : public GatewayDataProviderCommon {
     CHECK(new_gateway_api_ != NULL);
     return new_gateway_api_.release();
   }
-  virtual PollingPolicyInterface* NewPollingPolicy() {
+  virtual GatewayPollingPolicyInterface* NewPollingPolicy() {
     CHECK(new_polling_policy_ != NULL);
     return new_polling_policy_.release();
   }
