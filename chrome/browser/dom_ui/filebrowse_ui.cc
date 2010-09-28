@@ -407,7 +407,7 @@ DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
 }
 
 void FilebrowseHandler::Init() {
-  download_manager_ = profile_->GetOriginalProfile()->GetDownloadManager();
+  download_manager_ = profile_->GetDownloadManager();
   download_manager_->AddObserver(this);
   TaskProxy* task = new TaskProxy(AsWeakPtr(), currentpath_);
   task->AddRef();
@@ -1049,7 +1049,7 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
                                  int width,
                                  int height) {
   // Get existing pop up for given hashArgument.
-  Browser* browser = GetPopupForPath(hashArgument);
+  Browser* browser = GetPopupForPath(hashArgument, profile);
 
   // Create new browser if no matching pop up found.
   if (browser == NULL) {
@@ -1079,7 +1079,8 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
   return browser;
 }
 
-Browser* FileBrowseUI::GetPopupForPath(const std::string& path) {
+Browser* FileBrowseUI::GetPopupForPath(const std::string& path,
+                                       Profile* profile) {
   std::string current_path = path;
   if (current_path.empty()) {
     Browser* browser = BrowserList::GetLastActive();
@@ -1111,7 +1112,8 @@ Browser* FileBrowseUI::GetPopupForPath(const std::string& path) {
 
       if (url.SchemeIs(chrome::kChromeUIScheme) &&
           url.host() == chrome::kChromeUIFileBrowseHost &&
-          url.ref() == current_path) {
+          url.ref() == current_path &&
+          (*it)->profile() == profile) {
         return (*it);
       }
     }

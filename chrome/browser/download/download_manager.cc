@@ -175,6 +175,13 @@ void DownloadManager::GetCurrentDownloads(
         (dir_path.empty() || it->second->full_path().DirName() == dir_path))
       result->push_back(it->second);
   }
+
+  // If we have a parent profile, let it add its downloads to the results.
+  Profile* original_profile = profile_->GetOriginalProfile();
+  if (original_profile != profile_)
+    original_profile->GetDownloadManager()->GetCurrentDownloads(dir_path,
+                                                                result);
+
 }
 
 void DownloadManager::SearchDownloads(const string16& query,

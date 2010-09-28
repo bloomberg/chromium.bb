@@ -29,7 +29,8 @@ class FileBrowseUI : public HtmlDialogUI {
                             const std::string& hashArgument,
                             int width,
                             int height);
-  static Browser* GetPopupForPath(const std::string& path);
+  static Browser* GetPopupForPath(const std::string& path,
+                                  Profile* profile);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileBrowseUI);
