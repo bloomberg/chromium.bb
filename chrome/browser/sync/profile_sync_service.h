@@ -110,14 +110,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     MAX_SYNC_EVENT_CODE
   };
 
-  // Keep track of where we are when clearing server data.
-  enum ClearServerDataState {
-    CLEAR_NOT_STARTED = 1,
-    CLEAR_CLEARING = 2,
-    CLEAR_FAILED = 3,
-    CLEAR_SUCCEEDED = 4,
-  };
-
   // Default sync server URL.
   static const char* kSyncServerUrl;
   // Sync server URL for dev channel users
@@ -153,10 +145,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // the associator is running.  If it is doing anything else, it will return
   // null.
   browser_sync::SessionModelAssociator* GetSessionModelAssociator();
-
-  // Maintain state of where we are in a server clear operation.
-  void ResetClearServerDataState();
-  ClearServerDataState GetClearServerDataState();
 
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
@@ -483,9 +471,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // we don't StartUp until we have a valid token, which happens after valid
   // credentials were provided.
   std::string cached_passphrase_;
-
-  // Keep track of where we are in a server clear operation
-  ClearServerDataState clear_server_data_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

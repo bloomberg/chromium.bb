@@ -4582,16 +4582,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for Autofill">
         Clear saved form data
       </message>
-      <message name="IDS_CLEAR_CHROME_DATA_TAB_LABEL" desc="Tab label for controls for clearing browser data">
-        Chrome data
-      </message>
-      <message name="IDS_CLEAR_OTHER_DATA_TAB_LABEL" desc="Tab label for controls for clearing other data (including server data)">
-        Other data
-      </message>
-       <message name="IDS_CLEAR_BROWSING_DATA_BUTTON" desc="Button for initiating clearing of browsing data">
-        Clear browsing data
-      </message>
-       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Text for OK button on dialog">
+      <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Text for OK button on dialog">
         Clear browsing data
       </message>
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
@@ -4615,37 +4606,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_DATA_DELETING" desc="The progress message">
         Clearing...
       </message>
-      <message name="IDS_CLEAR_DATA_ADOBE_FLASH_TITLE" desc="Title of Adobe flash section">
-        Adobe Flash
-      </message>
-      <message name="IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION" desc="Description of Adobe flash section">
-        Flash can store data associated with your computer you can access and control this data using a website provided by Adobe
-      </message>
-      <message name="IDS_CLEAR_DATA_CHROME_SYNC_TITLE" desc="Title of Chrome Sync section">
-        Chrome Sync
-      </message>
-      <message name="IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION" desc="Description of clearing server data">
-        Chrome stores information on Google servers when it syncs.  If you're absolutely sure you do not want to use sync anymore you can stop all syncing and delete the data from Google
-      </message>
-      <message name="IDS_CLEAR_DATA_CLEAR_BUTTON" desc="Button used to clear server data">
-        Stop sync and delete data from Google
-     </message>
-     <message name="IDS_CLEAR_DATA_SENDING" desc="Label text indicating that we are sending a clear to the server">
-        Sending
-     </message>
-     <message name="IDS_CLEAR_DATA_ERROR" desc="Label text indicating that an error occurred in sending a clear to the server">
-        Error
-     </message>
-     <message name="IDS_CLEAR_DASHBOARD_DESCRIPTION" desc="Description of Google dashboard">
-        The Google Dashboard has more details about what Google is storing when Chrome syncs your data.
-     </message>
-     <message name="IDS_CONFIRM_CLEAR_DESCRIPTION" desc="Clear confirmation dialog text">
-        You're about to stop sync on all your computers where you use Chrome.  Your data will also be deleted from Google, but will remain within Chrome
-     </message>
-     <message name="IDS_CONFIRM_CLEAR_TITLE" desc="Clear confirmation dialog title">
-        Clear Browsing Data
-     </message>
-
 
       <!-- Content Settings dialog data -->
       <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">

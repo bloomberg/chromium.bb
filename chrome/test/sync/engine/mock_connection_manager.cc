@@ -362,18 +362,17 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
 }
 
 void MockConnectionManager::SetClearUserDataResponseStatus(
-  sync_pb::ClientToServerResponse::ErrorType errortype ) {
+    sync_pb::UserDataStatus status) {
   // Note: this is not a thread-safe set, ok for now.  NOT ok if tests
   // run the syncer on the background thread while this method is called.
-  clear_user_data_response_errortype_ = errortype;
+  clear_user_data_response_.set_status(status);
 }
 
 void MockConnectionManager::ProcessClearData(ClientToServerMessage* csm,
   ClientToServerResponse* response) {
   CHECK(csm->has_clear_user_data());
   ASSERT_EQ(csm->message_contents(), ClientToServerMessage::CLEAR_DATA);
-  response->clear_user_data();
-  response->set_error_code(clear_user_data_response_errortype_);
+  response->mutable_clear_user_data()->CopyFrom(clear_user_data_response_);
 }
 
 void MockConnectionManager::ProcessAuthenticate(
