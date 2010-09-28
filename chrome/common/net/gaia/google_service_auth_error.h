@@ -30,43 +30,47 @@
 
 class GoogleServiceAuthError {
  public:
+  //
+  // These enumerations are referenced by integer value in HTML login code.
+  // Do not change the numeric values.
+  //
   enum State {
     // The user is authenticated.
     NONE = 0,
 
-    // The password is valid but we need two factor to get a token.
-    TWO_FACTOR,
-
     // The credentials supplied to GAIA were either invalid, or the locally
     // cached credentials have expired.
-    INVALID_GAIA_CREDENTIALS,
+    INVALID_GAIA_CREDENTIALS = 1,
 
     // The GAIA user is not authorized to use the service.
-    USER_NOT_SIGNED_UP,
+    USER_NOT_SIGNED_UP = 2,
 
     // Could not connect to server to verify credentials. This could be in
     // response to either failure to connect to GAIA or failure to connect to
     // the service needing GAIA tokens during authentication.
-    CONNECTION_FAILED,
-
-    // The requestor of the authentication step cancelled the request
-    // prior to completion.
-    REQUEST_CANCELED,
+    CONNECTION_FAILED = 3,
 
     // The user needs to satisfy a CAPTCHA challenge to unlock their account.
     // If no other information is available, this can be resolved by visiting
     // https://www.google.com/accounts/DisplayUnlockCaptcha. Otherwise,
     // captcha() will provide details about the associated challenge.
-    CAPTCHA_REQUIRED,
+    CAPTCHA_REQUIRED = 4,
 
     // The user account has been deleted.
-    ACCOUNT_DELETED,
+    ACCOUNT_DELETED = 5,
 
     // The user account has been disabled.
-    ACCOUNT_DISABLED,
+    ACCOUNT_DISABLED = 6,
 
     // The service is not available; try again later.
-    SERVICE_UNAVAILABLE,
+    SERVICE_UNAVAILABLE = 7,
+
+    // The password is valid but we need two factor to get a token.
+    TWO_FACTOR = 8,
+
+    // The requestor of the authentication step cancelled the request
+    // prior to completion.
+    REQUEST_CANCELED = 9,
   };
 
   // Additional data for CAPTCHA_REQUIRED errors.
