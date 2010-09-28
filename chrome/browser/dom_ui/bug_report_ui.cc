@@ -454,7 +454,8 @@ base::StringPiece BugReportHandler::Init() {
 
   std::string params = page_url.substr(strlen(chrome::kChromeUIBugReportURL));
   // Erase the # - the first character.
-  params.erase(params.begin(),params.begin() + 1);
+  if (params.length())
+    params.erase(params.begin(),params.begin() + 1);
 
   int index = 0;
   if (!base::StringToInt(params, &index)) {
