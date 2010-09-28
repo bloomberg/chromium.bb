@@ -180,12 +180,14 @@ cr.define('options.internet', function() {
       passwordDiv.className = 'network-password';
       var passInput = this.ownerDocument.createElement('input');
       passwordDiv.appendChild(passInput);
-      passInput.placeholder = localStrings.getString('inetpassprompt');
+      passInput.placeholder = localStrings.getString('inetPassPrompt');
       passInput.type = 'password';
       var buttonEl = this.ownerDocument.createElement('button');
-      buttonEl.textContent = localStrings.getString('inetlogin');
+      buttonEl.textContent = localStrings.getString('inetLogin');
       buttonEl.addEventListener('click', this.handleLogin_);
       buttonEl.servicePath = this.data.servicePath;
+      buttonEl.style.right = '0';
+      buttonEl.style.position = 'absolute';
       buttonEl.style.visibility = 'visible';
 
       var togglePassLabel = this.ownerDocument.createElement('label');
@@ -196,7 +198,7 @@ cr.define('options.internet', function() {
       togglePassCheckbox.checked = false;
       togglePassCheckbox.target = passInput;
       togglePassCheckbox.addEventListener('change', this.handleShowPass_);
-      togglePassSpan.textContent = localStrings.getString('inetshowpass');
+      togglePassSpan.textContent = localStrings.getString('inetShowPass');
       togglePassLabel.appendChild(togglePassSpan);
       passwordDiv.appendChild(togglePassCheckbox);
       passwordDiv.appendChild(togglePassLabel);
@@ -231,13 +233,13 @@ cr.define('options.internet', function() {
       var passwordDiv = this.ownerDocument.createElement('div');
       passwordDiv.className = 'other-network';
       var ssidInput = this.ownerDocument.createElement('input');
-      ssidInput.placeholder = localStrings.getString('inetssidprompt');
+      ssidInput.placeholder = localStrings.getString('inetSsidPrompt');
       passwordDiv.appendChild(ssidInput);
       var passInput = this.ownerDocument.createElement('input');
-      passInput.placeholder = localStrings.getString('inetpassprompt');
+      passInput.placeholder = localStrings.getString('inetPassPrompt');
       passwordDiv.appendChild(passInput);
       var buttonEl = this.ownerDocument.createElement('button');
-      buttonEl.textContent = localStrings.getString('inetlogin');
+      buttonEl.textContent = localStrings.getString('inetLogin');
       buttonEl.buttonType = true;
       buttonEl.addEventListener('click', this.handleOtherLogin_);
       buttonEl.style.visibility = 'visible';

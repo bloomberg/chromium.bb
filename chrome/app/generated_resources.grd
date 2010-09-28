@@ -8592,6 +8592,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
         Show password
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE" desc="In settings internet options, Title of the overlay when the user is connected.">
+        Connection Details
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings internet options, Title of the overlay when the user is not connected and can.">
+        Connect to network
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE" desc="In settings system options, the label for the customize button for languages and input">
         Customize languages and input...
       </message>

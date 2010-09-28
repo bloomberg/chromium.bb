@@ -110,6 +110,11 @@ cr.define('options', function() {
 
   InternetOptions.showDetailedInfo = function (data) {
     var page = $('detailsInternetPage');
+    if (data.connected) {
+      $('inetTitle').textContent = localStrings.getString('inetStatus');
+    } else {
+      $('inetTitle').textContent = localStrings.getString('inetConnect');
+    }
     if (data.connecting) {
       page.setAttribute('connecting', data.connecting);
     } else {

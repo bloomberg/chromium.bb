@@ -108,7 +108,7 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetLogin",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN));
-  localized_strings->SetString("inetshowpass",
+  localized_strings->SetString("inetShowPass",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOWPASSWORD));
   localized_strings->SetString("inetPassPrompt",
@@ -117,6 +117,13 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetSsidPrompt",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SSID));
+  localized_strings->SetString("inetStatus",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_STATUS_TITLE));
+  localized_strings->SetString("inetConnect",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE));
+
 
   localized_strings->SetString("detailsInternetDismiss",
       l10n_util::GetStringUTF16(
