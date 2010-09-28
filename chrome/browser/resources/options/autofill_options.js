@@ -42,6 +42,9 @@ cr.define('options', function() {
       $('profileList').onchange = function(event) {
         self.updateButtonState_();
       };
+      $('profileList').addEventListener('dblclick', function(event) {
+        self.editProfile_();
+      });
       $('addAddressButton').onclick = function(event) {
         self.showAddAddressOverlay_();
       };
