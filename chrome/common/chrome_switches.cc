@@ -381,6 +381,10 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 // Chromoting Host Process within the service process.
 const char kEnableRemoting[]                = "enable-remoting";
 
+// This flag enables UI for clearing server data.  Temporarily in place
+// until there's a server endpoint deployed.
+const char kEnableClearServerData[]         = "enable-clear-server-data";
+
 // This applies only when the process type is "service". Enables the
 // Cloud Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";

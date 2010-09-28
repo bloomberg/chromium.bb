@@ -128,7 +128,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
 
-  void SetClearUserDataResponseStatus(sync_pb::UserDataStatus status);
+  void SetClearUserDataResponseStatus(
+      sync_pb::ClientToServerResponse::ErrorType errortype);
 
   // A visitor class to allow a test to change some monitoring state atomically
   // with the action of overriding the response codes sent back to the Syncer
@@ -294,7 +295,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   MidCommitObserver* mid_commit_observer_;
 
   // The clear data response we'll return in the next response
-  sync_pb::ClearUserDataResponse clear_user_data_response_;
+  sync_pb::ClientToServerResponse::ErrorType
+      clear_user_data_response_errortype_;
 
   // The AUTHENTICATE response we'll return for auth requests.
   sync_pb::AuthenticateResponse auth_response_;

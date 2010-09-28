@@ -73,7 +73,7 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectFailed) {
   ScopedSessionContextSyncerEventChannel s_channel(context(), channel.get());
 
   dir->set_store_birthday(mock_server()->store_birthday());
-  mock_server()->SetClearUserDataResponseStatus(sync_pb::RETRIABLE_ERROR);
+  mock_server()->SetServerNotReachable();
   on_should_stop_syncing_permanently_called_ = false;
 
   command_.Execute(session());
@@ -100,7 +100,7 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectFailed) {
   EXPECT_FALSE(on_should_stop_syncing_permanently_called_);
 }
 
-TEST_F(ClearDataCommandTest, ClearDataCommandExpectSucess) {
+TEST_F(ClearDataCommandTest, ClearDataCommandExpectSuccess) {
   syncable::ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
 
@@ -112,7 +112,8 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectSucess) {
   ScopedSessionContextSyncerEventChannel s_channel(context(), channel.get());
 
   dir->set_store_birthday(mock_server()->store_birthday());
-  mock_server()->SetClearUserDataResponseStatus(sync_pb::SUCCESS);
+  mock_server()->SetClearUserDataResponseStatus(
+      sync_pb::ClientToServerResponse::SUCCESS);
   on_should_stop_syncing_permanently_called_ = false;
 
   command_.Execute(session());

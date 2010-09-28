@@ -15,11 +15,13 @@
 using syncable::ScopedDirLookup;
 
 namespace browser_sync {
+
 using sessions::StatusController;
 using sessions::SyncSession;
 using std::string;
 using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::MODEL_TYPE_COUNT;
+
 
 ClearDataCommand::ClearDataCommand() {}
 ClearDataCommand::~ClearDataCommand() {}
@@ -53,10 +55,10 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
   DLOG(INFO) << SyncerProtoUtil::ClientToServerResponseDebugString(
       client_to_server_response);
 
-  if (!ok || !client_to_server_response.has_clear_user_data() ||
-      !client_to_server_response.clear_user_data().has_status() ||
-      client_to_server_response.clear_user_data().status() !=
-      sync_pb::SUCCESS) {
+  // Clear pending indicates that the server has received our clear message
+  if (!ok || !client_to_server_response.has_error_code() ||
+      client_to_server_response.error_code() !=
+      sync_pb::ClientToServerResponse::SUCCESS) {
     // On failure, subsequent requests to the server will cause it to attempt
     // to resume the clear.  The client will handle disabling of sync in
     // response to a store birthday error from the server.
