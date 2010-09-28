@@ -145,7 +145,7 @@ int main(int argc, char**argv) {
       net::SSLConfigService::CreateSystemSSLConfigService());
   net::HttpTransactionFactory* factory = NULL;
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory(
-      net::HttpAuthHandlerFactory::CreateDefault());
+      net::HttpAuthHandlerFactory::CreateDefault(host_resolver));
   if (use_cache) {
     factory = new net::HttpCache(host_resolver, proxy_service,
         ssl_config_service, http_auth_handler_factory.get(), NULL, NULL,

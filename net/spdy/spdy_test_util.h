@@ -248,7 +248,6 @@ spdy::SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
 // Returns a SpdyFrame.
 spdy::SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id);
 
-
 // Constructs a standard SPDY POST SYN packet.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -304,7 +303,8 @@ class SpdySessionDependencies {
         ssl_config_service(new SSLConfigServiceDefaults),
         socket_factory(new MockClientSocketFactory),
         deterministic_socket_factory(new DeterministicMockClientSocketFactory),
-        http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
+        http_auth_handler_factory(
+            HttpAuthHandlerFactory::CreateDefault(host_resolver)),
         spdy_session_pool(new SpdySessionPool(NULL)) {
           // Note: The CancelledTransaction test does cleanup by running all
           // tasks in the message loop (RunAllPending).  Unfortunately, that
@@ -322,9 +322,11 @@ class SpdySessionDependencies {
         ssl_config_service(new SSLConfigServiceDefaults),
         socket_factory(new MockClientSocketFactory),
         deterministic_socket_factory(new DeterministicMockClientSocketFactory),
-        http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
+        http_auth_handler_factory(
+            HttpAuthHandlerFactory::CreateDefault(host_resolver)),
         spdy_session_pool(new SpdySessionPool(NULL)) {}
 
+  // NOTE: host_resolver must be ordered before http_auth_handler_factory.
   scoped_refptr<MockHostResolverBase> host_resolver;
   scoped_refptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
@@ -365,7 +367,8 @@ class SpdyURLRequestContext : public URLRequestContext {
     proxy_service_ = ProxyService::CreateDirect();
     spdy_session_pool_ = new SpdySessionPool(NULL);
     ssl_config_service_ = new SSLConfigServiceDefaults;
-    http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault();
+    http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault(
+        host_resolver_);
     http_transaction_factory_ = new net::HttpCache(
         new HttpNetworkLayer(&socket_factory_,
                              host_resolver_,
