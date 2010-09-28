@@ -226,6 +226,9 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
+        '../chrome/chrome.gyp:browser',
+        '../chrome/chrome.gyp:debugger',
+        '../chrome/chrome.gyp:renderer',
         '../net/net.gyp:net_test_support',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -247,6 +250,7 @@
         'test/chrome_frame_ui_test_utils.h',
         'test/chrome_frame_automation_mock.cc',
         'test/chrome_frame_automation_mock.h',
+        'test/delete_chrome_history_test.cc',
         'test/http_server.cc',
         'test/http_server.h',
         'test/ie_event_sink.cc',
@@ -274,7 +278,6 @@
         'test/win_event_receiver.h',
         'chrome_tab.h',
         'chrome_tab.idl',
-        'renderer_glue.cc',
         'test_utils.cc',
         'test_utils.h',
       ],
@@ -304,7 +307,23 @@
             '../chrome/chrome.gyp:automation',
             '../chrome/chrome.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
-          ]
+          ],
+          'configurations': {
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
         }],
       ],
     },

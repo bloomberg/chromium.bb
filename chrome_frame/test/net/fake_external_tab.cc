@@ -105,7 +105,8 @@ class SupplyProxyCredentials : public WindowObserver {
     HWND password_;
   };
 
-  virtual void OnWindowDetected(HWND hwnd, const std::string& caption);
+  virtual void OnWindowOpen(HWND hwnd);
+  virtual void OnWindowClose(HWND hwnd);
   static BOOL CALLBACK EnumChildren(HWND hwnd, LPARAM param);
 
  protected:
@@ -119,12 +120,9 @@ SupplyProxyCredentials::SupplyProxyCredentials(const char* username,
     : username_(username), password_(password) {
 }
 
-void SupplyProxyCredentials::OnWindowDetected(HWND hwnd,
-                                              const std::string& caption) {
-  // IE's dialog caption (en-US).
-  if (caption.compare("Windows Security") != 0)
-    return;
+void SupplyProxyCredentials::OnWindowClose(HWND hwnd) { }
 
+void SupplyProxyCredentials::OnWindowOpen(HWND hwnd) {
   DialogProps props = {0};
   ::EnumChildWindows(hwnd, EnumChildren, reinterpret_cast<LPARAM>(&props));
   DCHECK(::IsWindow(props.username_));
@@ -474,8 +472,7 @@ int main(int argc, char** argv) {
   WindowWatchdog watchdog;
   // See url_request_unittest.cc for these credentials.
   SupplyProxyCredentials credentials("user", "secret");
-  // Check for a dialog class ("#32770")
-  watchdog.AddObserver(&credentials, "#32770");
+  watchdog.AddObserver(&credentials, "Windows Security");
   testing::InitGoogleTest(&argc, argv);
   FilterDisabledTests();
   PluginService::EnableChromePlugins(false);
