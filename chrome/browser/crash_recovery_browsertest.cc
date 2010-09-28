@@ -32,6 +32,9 @@ class CrashRecoveryBrowserTest : public InProcessBrowserTest {
 #if defined(OS_MACOSX)
 #define MAYBE_Reload DISABLED_Reload
 #define MAYBE_LoadInNewTab DISABLED_LoadInNewTab
+#elif defined(OS_WIN)
+// http://crbug.com/57158 - Times out sometimes on windows.
+#define MAYBE_LoadInNewTab DISABLED_LoadInNewTab
 #else
 #define MAYBE_Reload Reload
 #define MAYBE_LoadInNewTab LoadInNewTab
