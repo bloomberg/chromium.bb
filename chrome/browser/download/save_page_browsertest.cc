@@ -146,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
   EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_SAVE_PAGE));
 }
 
-// See http://crbug.com/52292
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FLAKY_FileNameFromPageTitle) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   FilePath file_name(FILE_PATH_LITERAL("b.htm"));
 
   GURL url = URLRequestMockHTTPJob::GetMockUrl(

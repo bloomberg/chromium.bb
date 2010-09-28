@@ -224,7 +224,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DeletedFile)) {
 }
 
 // Verify that letting the watcher go out of scope stops notifications.
-TEST_F(FilePathWatcherTest, MAYBE(Unregister)) {
+TEST_F(FilePathWatcherTest, Unregister) {
   scoped_refptr<TestDelegate> delegate(new TestDelegate);
 
   {
@@ -260,7 +260,7 @@ class Deleter : public FilePathWatcher::Delegate {
 }  // anonymous namespace
 
 // Verify that deleting a watcher during the callback doesn't crash.
-TEST_F(FilePathWatcherTest, MAYBE(DeleteDuringNotify)) {
+TEST_F(FilePathWatcherTest, DeleteDuringNotify) {
   FilePathWatcher* watcher = new FilePathWatcher;
   // Takes ownership of watcher.
   scoped_refptr<Deleter> deleter(new Deleter(watcher, &loop_));
@@ -276,7 +276,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DeleteDuringNotify)) {
 
 // Verify that deleting the watcher works even if there is a pending
 // notification.
-TEST_F(FilePathWatcherTest, MAYBE(DestroyWithPendingNotification)) {
+TEST_F(FilePathWatcherTest, DestroyWithPendingNotification) {
   scoped_refptr<TestDelegate> delegate(new TestDelegate);
   FilePathWatcher* watcher = new FilePathWatcher;
   SetupWatch(test_file(), watcher, delegate.get());
@@ -349,7 +349,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DirectoryChain)) {
   EXPECT_LE(1, WaitForEvents(delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(DisappearingDirectory)) {
+TEST_F(FilePathWatcherTest, DisappearingDirectory) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_->path().AppendASCII("dir"));
   FilePath file(dir.AppendASCII("file"));
@@ -382,7 +382,7 @@ TEST_F(FilePathWatcherTest, MAYBE(DeleteAndRecreate)) {
   EXPECT_LE(1, WaitForEvents(delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(WatchDirectory)) {
+TEST_F(FilePathWatcherTest, WatchDirectory) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_->path().AppendASCII("dir"));
   FilePath file1(dir.AppendASCII("file1"));

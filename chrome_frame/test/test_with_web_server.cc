@@ -524,9 +524,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceSingleton) {
   SimpleBrowserTest(IE, kCFISingletonPage);
 }
 
-// This test randomly fails on the ChromeFrame builder.
-// Bug http://code.google.com/p/chromium/issues/detail?id=31532
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceSingleton) {
+TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceSingleton) {
   SimpleBrowserTest(FIREFOX, kCFISingletonPage);
 }
 
