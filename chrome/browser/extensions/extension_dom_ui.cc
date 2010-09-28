@@ -131,7 +131,7 @@ ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, GURL url)
   DCHECK(extension);
   // Only hide the url for internal pages (e.g. chrome-extension or packaged
   // component apps like bookmark manager.
-  should_hide_url_ = !extension->is_app();
+  should_hide_url_ = !extension->is_hosted_app();
 
   bindings_ = BindingsPolicy::EXTENSION;
   // Bind externalHost to Extension DOMUI loaded in Chrome Frame.
