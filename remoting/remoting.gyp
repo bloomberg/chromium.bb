@@ -308,6 +308,8 @@
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
       'sources': [
+        'jingle_glue/channel_socket_adapter.cc',
+        'jingle_glue/channel_socket_adapter.h',
         'jingle_glue/iq_request.cc',
         'jingle_glue/iq_request.h',
         'jingle_glue/jingle_channel.cc',
@@ -320,10 +322,14 @@
         'jingle_glue/jingle_thread.h',
         'jingle_glue/relay_port_allocator.cc',
         'jingle_glue/relay_port_allocator.h',
+        'jingle_glue/stream_socket_adapter.cc',
+        'jingle_glue/stream_socket_adapter.h',
         'jingle_glue/ssl_adapter.h',
         'jingle_glue/ssl_adapter.cc',
         'jingle_glue/ssl_socket_adapter.cc',
         'jingle_glue/ssl_socket_adapter.h',
+        'jingle_glue/utils.cc',
+        'jingle_glue/utils.h',
         'jingle_glue/xmpp_socket_adapter.cc',
         'jingle_glue/xmpp_socket_adapter.h',
       ],
@@ -341,6 +347,38 @@
         'jingle_glue/jingle_test_client.cc',
       ],
     },  # end of target 'chromoting_jingle_test_client'
+
+    {
+      'target_name': 'chromoting_protocol',
+      'type': '<(library)',
+      'dependencies': [
+        'chromoting_base',
+        'chromoting_jingle_glue',
+      ],
+      'export_dependent_settings': [
+        'chromoting_jingle_glue',
+      ],
+      'sources': [
+        'protocol/chromoting_connection.h',
+        'protocol/chromoting_server.h',
+        'protocol/jingle_chromoting_connection.cc',
+        'protocol/jingle_chromoting_connection.h',
+        'protocol/jingle_chromoting_server.cc',
+        'protocol/jingle_chromoting_server.h',
+      ],
+    },  # end of target 'chromoting_protocol'
+
+    {
+      'target_name': 'chromotocol_test_client',
+      'type': 'executable',
+      'dependencies': [
+        'chromoting_base',
+        'chromoting_protocol',
+      ],
+      'sources': [
+        'protocol/protocol_test_client.cc',
+      ],
+    },  # end of target 'chromotocol_test_client'
 
     # Remoting unit tests
     {

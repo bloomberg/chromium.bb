@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/waitable_event.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
@@ -106,6 +105,10 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // Message loop used by this object to execute tasks.
   MessageLoop* message_loop();
 
+  // The session manager used by this client. Must be called from the
+  // jingle thread only. Returns NULL if the client is not active.
+  cricket::SessionManager* session_manager();
+
  private:
   friend class HeartbeatSenderTest;
   friend class JingleClientTest;
@@ -126,6 +129,8 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
 
   // Used by Close().
   void DoClose();
+
+  void SetFullJid(const std::string& full_jid);
 
   // Updates current state of the connection. Must be called only in
   // the jingle thread.

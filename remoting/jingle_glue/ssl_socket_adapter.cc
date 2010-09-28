@@ -12,46 +12,9 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context.h"
+#include "remoting/jingle_glue/utils.h"
 
 namespace remoting {
-
-namespace {
-
-// Convert values from <errno.h> to values from "net/base/net_errors.h"
-int MapPosixError(int err) {
-  // There are numerous posix error codes, but these are the ones we thus far
-  // find interesting.
-  switch (err) {
-    case EAGAIN:
-#if EWOULDBLOCK != EAGAIN
-    case EWOULDBLOCK:
-#endif
-      return net::ERR_IO_PENDING;
-    case ENETDOWN:
-      return net::ERR_INTERNET_DISCONNECTED;
-    case ETIMEDOUT:
-      return net::ERR_TIMED_OUT;
-    case ECONNRESET:
-    case ENETRESET:  // Related to keep-alive
-      return net::ERR_CONNECTION_RESET;
-    case ECONNABORTED:
-      return net::ERR_CONNECTION_ABORTED;
-    case ECONNREFUSED:
-      return net::ERR_CONNECTION_REFUSED;
-    case EHOSTUNREACH:
-    case ENETUNREACH:
-      return net::ERR_ADDRESS_UNREACHABLE;
-    case EADDRNOTAVAIL:
-      return net::ERR_ADDRESS_INVALID;
-    case 0:
-      return net::OK;
-    default:
-      LOG(WARNING) << "Unknown error " << err << " mapped to net::ERR_FAILED";
-      return net::ERR_FAILED;
-  }
-}
-
-}  // namespace
 
 SSLSocketAdapter* SSLSocketAdapter::Create(AsyncSocket* socket) {
   return new SSLSocketAdapter(socket);
@@ -290,7 +253,7 @@ int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
   DCHECK(!read_buffer_.get());
   int result = socket_->Recv(buf->data(), buf_len);
   if (result < 0) {
-    result = MapPosixError(socket_->GetError());
+    result = MapPosixToChromeError(socket_->GetError());
     if (result == net::ERR_IO_PENDING) {
       read_callback_ = callback;
       read_buffer_ = buf;
@@ -309,7 +272,7 @@ int TransportSocket::Write(net::IOBuffer* buf, int buf_len,
   DCHECK(!write_buffer_.get());
   int result = socket_->Send(buf->data(), buf_len);
   if (result < 0) {
-    result = MapPosixError(socket_->GetError());
+    result = MapPosixToChromeError(socket_->GetError());
     if (result == net::ERR_IO_PENDING) {
       write_callback_ = callback;
       write_buffer_ = buf;
@@ -344,7 +307,7 @@ void TransportSocket::OnReadEvent(talk_base::AsyncSocket* socket) {
 
     int result = socket_->Recv(buffer->data(), buffer_len);
     if (result < 0) {
-      result = MapPosixError(socket_->GetError());
+      result = MapPosixToChromeError(socket_->GetError());
       if (result == net::ERR_IO_PENDING) {
         read_callback_ = callback;
         read_buffer_ = buffer;
@@ -370,7 +333,7 @@ void TransportSocket::OnWriteEvent(talk_base::AsyncSocket* socket) {
 
     int result = socket_->Send(buffer->data(), buffer_len);
     if (result < 0) {
-      result = MapPosixError(socket_->GetError());
+      result = MapPosixToChromeError(socket_->GetError());
       if (result == net::ERR_IO_PENDING) {
         write_callback_ = callback;
         write_buffer_ = buffer;
