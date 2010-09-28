@@ -3234,6 +3234,7 @@
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
+            '../third_party/undoview/undoview.gyp:undoview',
           ],
           'link_settings': {
             'libraries': [

@@ -282,6 +282,7 @@ include_rules = [
   "+build",
   "+ipc",
   "+rlz",
+  "+third_party/undoview",
 
   # For now, we allow ICU to be included by specifying "unicode/...", although
   # this should probably change.

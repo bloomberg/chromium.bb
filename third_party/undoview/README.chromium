@@ -1,0 +1,9 @@
+Name: undoview
+URL: http://projects.gnome.org/gtksourceview/
+
+This contains GtkUndoView, which is GtkTextView with undo/redo
+support. The code to add the support is borrowed from GtkSourceView.
+However since SV has a lot of other stuff we don't want, we borrow
+only the undo support and add it to GtkTextView to create a
+GtkUndoView.
+

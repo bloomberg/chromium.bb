@@ -32,6 +32,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "third_party/undoview/undo_view.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
@@ -216,7 +217,7 @@ void AutocompleteEditViewGtk::Init() {
   tag_table_ = gtk_text_tag_table_new();
   text_buffer_ = gtk_text_buffer_new(tag_table_);
   g_object_set_data(G_OBJECT(text_buffer_), kAutocompleteEditViewGtkKey, this);
-  text_view_ = gtk_text_view_new_with_buffer(text_buffer_);
+  text_view_ = gtk_undo_view_new(text_buffer_);
   if (popup_window_mode_)
     gtk_text_view_set_editable(GTK_TEXT_VIEW(text_view_), false);
 
