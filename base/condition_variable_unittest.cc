@@ -106,6 +106,11 @@ class WorkQueue : public PlatformThread::Delegate {
   void SetTaskCount(int count);
   void SetAllowHelp(bool allow);
 
+  // The following must be called without locking, and will spin wait until the
+  // threads are all in a wait state.
+  void SpinUntilAllThreadsAreWaiting();
+  void SpinUntilTaskCountLessThan(int task_count);
+
   // Caller must acquire lock before calling.
   void SetShutdown();
 
@@ -124,6 +129,7 @@ class WorkQueue : public PlatformThread::Delegate {
   ConditionVariable no_more_tasks_;  // Task count is zero.
 
   const int thread_count_;
+  int waiting_thread_count_;
   scoped_array<PlatformThreadHandle> thread_handles_;
   std::vector<int> assignment_history_;  // Number of assignment per worker.
   std::vector<int> completion_history_;  // Number of completions per worker.
@@ -184,8 +190,7 @@ TEST_F(ConditionVariableTest, TimeoutTest) {
 }
 
 // Test serial task servicing, as well as two parallel task servicing methods.
-// TODO(maruel): This test is flaky, see http://crbug.com/10607
-TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
+TEST_F(ConditionVariableTest, MultiThreadConsumerTest) {
   const int kThreadCount = 10;
   WorkQueue queue(kThreadCount);  // Start the threads.
 
@@ -199,10 +204,9 @@ TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
       queue.all_threads_have_ids()->Wait();
   }
 
-  // Wait a bit more to allow threads to reach their wait state.
   // If threads aren't in a wait state, they may start to gobble up tasks in
   // parallel, short-circuiting (breaking) this test.
-  PlatformThread::Sleep(100);
+  queue.SpinUntilAllThreadsAreWaiting();
 
   {
     // Since we have no tasks yet, all threads should be waiting by now.
@@ -224,7 +228,8 @@ TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
   }
 
   queue.work_is_available()->Signal();  // Start up one thread.
-
+  // Wait till we at least start to handle tasks (and we're not all waiting).
+  queue.SpinUntilTaskCountLessThan(kTaskCount);
 
   {
     // Wait until all 10 work tasks have at least been assigned.
@@ -244,14 +249,7 @@ TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
   }
 
   // Wait to be sure all tasks are done.
-  while (1) {
-    {
-      AutoLock auto_lock(*queue.lock());
-      if (kTaskCount == queue.GetNumberOfCompletedTasks())
-        break;
-    }
-    PlatformThread::Sleep(30);  // Wait a little.
-  }
+  queue.SpinUntilAllThreadsAreWaiting();
 
   {
     // Check that all work was done by one thread id.
@@ -274,29 +272,20 @@ TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
   }
 
   queue.work_is_available()->Signal();  // But each worker can signal another.
+  // Wait till we at least start to handle tasks (and we're not all waiting).
+  queue.SpinUntilTaskCountLessThan(kTaskCount);
   // Wait to allow the all workers to get done.
-  while (1) {
-    {
-      AutoLock auto_lock(*queue.lock());
-      if (kTaskCount == queue.GetNumberOfCompletedTasks())
-        break;
-    }
-    PlatformThread::Sleep(30);  // Wait a little.
-  }
+  queue.SpinUntilAllThreadsAreWaiting();
 
   {
     // Wait until all work tasks have at least been assigned.
     AutoLock auto_lock(*queue.lock());
     while (queue.task_count())
       queue.no_more_tasks()->Wait();
-    // Since they can all run almost in parallel, there is no guarantee that all
-    // tasks are finished, but we should have gotten here faster than it would
-    // take to run all tasks serially.
-    EXPECT_GT(queue.GetWorkTime().InMilliseconds() * (kTaskCount - 1),
-              (base::Time::Now() - start_time).InMilliseconds());
 
     // To avoid racy assumptions, we'll just assert that at least 2 threads
-    // did work.
+    // did work.  We know that the first worker should have gone to sleep, and
+    // hence a second worker should have gotten an assignment.
     EXPECT_LE(2, queue.GetNumThreadsTakingAssignments());
     EXPECT_EQ(kTaskCount, queue.GetNumberOfCompletedTasks());
 
@@ -307,8 +296,10 @@ TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
     queue.SetAllowHelp(false);
   }
   queue.work_is_available()->Broadcast();  // Make them all try.
+  // Wait till we at least start to handle tasks (and we're not all waiting).
+  queue.SpinUntilTaskCountLessThan(3);
   // Wait to allow the 3 workers to get done.
-  PlatformThread::Sleep(45);
+  queue.SpinUntilAllThreadsAreWaiting();
 
   {
     AutoLock auto_lock(*queue.lock());
@@ -325,9 +316,11 @@ TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
     queue.SetWorkTime(kThirtyMs);
     queue.SetAllowHelp(true);  // Allow (unnecessary) help requests.
   }
-  queue.work_is_available()->Broadcast();  // We already signal all threads.
+  queue.work_is_available()->Broadcast();  // Signal all threads.
+  // Wait till we at least start to handle tasks (and we're not all waiting).
+  queue.SpinUntilTaskCountLessThan(3);
   // Wait to allow the 3 workers to get done.
-  PlatformThread::Sleep(100);
+  queue.SpinUntilAllThreadsAreWaiting();
 
   {
     AutoLock auto_lock(*queue.lock());
@@ -340,40 +333,40 @@ TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
 
     // Set up to make each task get help from another worker.
     queue.ResetHistory();
-    queue.SetTaskCount(20);
+    queue.SetTaskCount(20);  // 2 tasks per thread.
     queue.SetWorkTime(kThirtyMs);
     queue.SetAllowHelp(true);
   }
   queue.work_is_available()->Signal();  // But each worker can signal another.
+  // Wait till we at least start to handle tasks (and we're not all waiting).
+  queue.SpinUntilTaskCountLessThan(20);
   // Wait to allow the 10 workers to get done.
-  PlatformThread::Sleep(100);  // Should take about 60 ms.
+  queue.SpinUntilAllThreadsAreWaiting();  // Should take about 60 ms.
 
   {
     AutoLock auto_lock(*queue.lock());
     EXPECT_EQ(10, queue.GetNumThreadsTakingAssignments());
     EXPECT_EQ(10, queue.GetNumThreadsCompletingTasks());
     EXPECT_EQ(0, queue.task_count());
-    EXPECT_EQ(2, queue.GetMaxCompletionsByWorkerThread());
-    EXPECT_EQ(2, queue.GetMinCompletionsByWorkerThread());
     EXPECT_EQ(20, queue.GetNumberOfCompletedTasks());
 
     // Same as last test, but with Broadcast().
     queue.ResetHistory();
-    queue.SetTaskCount(20);  // 2 tasks per process.
+    queue.SetTaskCount(20);  // 2 tasks per thread.
     queue.SetWorkTime(kThirtyMs);
     queue.SetAllowHelp(true);
   }
   queue.work_is_available()->Broadcast();
+  // Wait till we at least start to handle tasks (and we're not all waiting).
+  queue.SpinUntilTaskCountLessThan(20);
   // Wait to allow the 10 workers to get done.
-  PlatformThread::Sleep(100);  // Should take about 60 ms.
+  queue.SpinUntilAllThreadsAreWaiting();  // Should take about 60 ms.
 
   {
     AutoLock auto_lock(*queue.lock());
     EXPECT_EQ(10, queue.GetNumThreadsTakingAssignments());
     EXPECT_EQ(10, queue.GetNumThreadsCompletingTasks());
     EXPECT_EQ(0, queue.task_count());
-    EXPECT_EQ(2, queue.GetMaxCompletionsByWorkerThread());
-    EXPECT_EQ(2, queue.GetMinCompletionsByWorkerThread());
     EXPECT_EQ(20, queue.GetNumberOfCompletedTasks());
 
     queue.SetShutdown();
@@ -382,7 +375,6 @@ TEST_F(ConditionVariableTest, FLAKY_MultiThreadConsumerTest) {
 
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(1),
                                    queue.ThreadSafeCheckShutdown(kThreadCount));
-  PlatformThread::Sleep(10);  // Be sure they're all shutdown.
 }
 
 TEST_F(ConditionVariableTest, LargeFastTaskTest) {
@@ -400,7 +392,7 @@ TEST_F(ConditionVariableTest, LargeFastTaskTest) {
   }
 
   // Wait a bit more to allow threads to reach their wait state.
-  private_cv.TimedWait(kThirtyMs);
+  queue.SpinUntilAllThreadsAreWaiting();
 
   {
     // Since we have no tasks, all threads should be waiting by now.
@@ -427,11 +419,7 @@ TEST_F(ConditionVariableTest, LargeFastTaskTest) {
   }
 
   // Wait till the last of the tasks complete.
-  // Don't bother to use locks: We may not get info in time... but we'll see it
-  // eventually.
-  SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(1),
-                                    20 * kThreadCount ==
-                                      queue.GetNumberOfCompletedTasks());
+  queue.SpinUntilAllThreadsAreWaiting();
 
   {
     // With Broadcast(), every thread should have participated.
@@ -459,11 +447,7 @@ TEST_F(ConditionVariableTest, LargeFastTaskTest) {
   }
 
   // Wait till the last of the tasks complete.
-  // Don't bother to use locks: We may not get info in time... but we'll see it
-  // eventually.
-  SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(1),
-                                    4 * kThreadCount ==
-                                      queue.GetNumberOfCompletedTasks());
+  queue.SpinUntilAllThreadsAreWaiting();
 
   {
     // With Signal(), every thread should have participated.
@@ -482,7 +466,6 @@ TEST_F(ConditionVariableTest, LargeFastTaskTest) {
   // Wait for shutdowns to complete.
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(1),
                                    queue.ThreadSafeCheckShutdown(kThreadCount));
-  PlatformThread::Sleep(10);  // Be sure they're all shutdown.
 }
 
 //------------------------------------------------------------------------------
@@ -495,6 +478,7 @@ WorkQueue::WorkQueue(int thread_count)
     all_threads_have_ids_(&lock_),
     no_more_tasks_(&lock_),
     thread_count_(thread_count),
+    waiting_thread_count_(0),
     thread_handles_(new PlatformThreadHandle[thread_count]),
     assignment_history_(thread_count),
     completion_history_(thread_count),
@@ -525,6 +509,7 @@ WorkQueue::~WorkQueue() {
   for (int i = 0; i < thread_count_; ++i) {
     PlatformThread::Join(thread_handles_[i]);
   }
+  EXPECT_EQ(0, waiting_thread_count_);
 }
 
 int WorkQueue::GetThreadId() {
@@ -670,6 +655,29 @@ void WorkQueue::SetShutdown() {
   shutdown_ = true;
 }
 
+void WorkQueue::SpinUntilAllThreadsAreWaiting() {
+  while (true) {
+    {
+      AutoLock auto_lock(lock_);
+      if (waiting_thread_count_ == thread_count_)
+        break;
+    }
+    PlatformThread::Sleep(30);
+  }
+}
+
+void WorkQueue::SpinUntilTaskCountLessThan(int task_count) {
+  while (true) {
+    {
+      AutoLock auto_lock(lock_);
+      if (task_count_ < task_count)
+        break;
+    }
+    PlatformThread::Sleep(30);
+  }
+}
+
+
 //------------------------------------------------------------------------------
 // Define the standard worker task. Several tests will spin out many of these
 // threads.
@@ -704,7 +712,9 @@ void WorkQueue::ThreadMain() {
     {
       AutoLock auto_lock(lock_);
       while (0 == task_count() && !shutdown()) {
+        ++waiting_thread_count_;
         work_is_available()->Wait();
+        --waiting_thread_count_;
       }
       if (shutdown()) {
         // Ack the notification of a shutdown message back to the controller.
