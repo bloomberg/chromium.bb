@@ -43,10 +43,10 @@ deps = {
     "/trunk/deps/third_party/icu42@58904",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell@51690",
+   "/trunk/deps/third_party/hunspell@60758",
 
   "src/third_party/hunspell_dictionaries":
-   "/trunk/deps/third_party/hunspell_dictionaries@51875",
+   "/trunk/deps/third_party/hunspell_dictionaries@60756",
 
   "src/third_party/protobuf2/src":
     (Var("googlecode_url") % "protobuf") + "/trunk@346",
