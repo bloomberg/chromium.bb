@@ -420,7 +420,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   } else if (is_new_user_) {
     // Add user should have label only in activated state.
     // When new user is the only, label is not needed.
-    if (type != WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL || index != 0)
+    if (type == WM_IPC_WINDOW_LOGIN_LABEL && index != 0)
       text = l10n_util::GetString(IDS_ADD_USER);
   } else {
     text = UTF8ToWide(user_.GetDisplayName());
