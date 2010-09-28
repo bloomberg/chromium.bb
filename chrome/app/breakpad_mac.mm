@@ -22,6 +22,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/common/policy_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 
@@ -72,9 +73,12 @@ void InitCrashReporter() {
       // Controlled by configuration manangement.
       enable_breakpad = metrics_reporting_enabled;
     } else {
-      // Controlled by the user.
-      enable_breakpad = GoogleUpdateSettings::GetCollectStatsConsent() &&
-          !command_line->HasSwitch(switches::kDisableBreakpad);
+      // Controlled by the user. The crash reporter may be enabled by
+      // preference or through an environment variable, but the kDisableBreakpad
+      // switch overrides both.
+      enable_breakpad = GoogleUpdateSettings::GetCollectStatsConsent() ||
+          getenv(env_vars::kHeadless) != NULL;
+      enable_breakpad &= !command_line->HasSwitch(switches::kDisableBreakpad);
     }
   } else {
     // This is a helper process, check the command line switch.
