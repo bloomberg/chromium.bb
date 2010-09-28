@@ -15,9 +15,6 @@ namespace printing {
 PrintingContext::PrintingContext()
     : context_(NULL),
       print_info_(nil),
-#ifndef NDEBUG
-      page_number_(-1),
-#endif
       dialog_box_dismissed_(false),
       in_print_job_(false),
       abort_printing_(false) {
@@ -114,9 +111,6 @@ void PrintingContext::ResetSettings() {
   [print_info_ autorelease];
   print_info_ = nil;
   settings_.Clear();
-#ifndef NDEBUG
-  page_number_ = -1;
-#endif
   dialog_box_dismissed_ = false;
   abort_printing_ = false;
   in_print_job_ = false;
@@ -146,10 +140,6 @@ PrintingContext::Result PrintingContext::NewDocument(
   if (status != noErr)
     return OnError();
 
-#ifndef NDEBUG
-  page_number_ = 0;
-#endif
-
   return OK;
 }
 
@@ -170,10 +160,6 @@ PrintingContext::Result PrintingContext::NewPage() {
   status = PMSessionGetCGGraphicsContext(print_session, &context_);
   if (status != noErr)
     return OnError();
-
-#ifndef NDEBUG
-  ++page_number_;
-#endif
 
   return OK;
 }

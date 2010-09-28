@@ -180,11 +180,6 @@ class PrintingContext {
   // Complete print context settings.
   PrintSettings settings_;
 
-#ifndef NDEBUG
-  // Current page number in the print job.
-  int page_number_;
-#endif
-
 #if defined(OS_WIN)
   // The dialog box for the time it is shown.
   volatile HWND dialog_box_;

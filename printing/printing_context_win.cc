@@ -122,9 +122,6 @@ class PrintingContext::CallbackHandler : public IPrintDialogCallback,
 
 PrintingContext::PrintingContext()
     : context_(NULL),
-#ifndef NDEBUG
-      page_number_(-1),
-#endif
       dialog_box_(NULL),
       dialog_box_dismissed_(false),
       in_print_job_(false),
@@ -240,10 +237,6 @@ void PrintingContext::ResetSettings() {
   }
   settings_.Clear();
   in_print_job_ = false;
-
-#ifndef NDEBUG
-  page_number_ = -1;
-#endif
 }
 
 PrintingContext::Result PrintingContext::NewDocument(
@@ -292,9 +285,6 @@ PrintingContext::Result PrintingContext::NewDocument(
   if (StartDoc(context_, &di) <= 0)
     return OnError();
 
-#ifndef NDEBUG
-  page_number_ = 0;
-#endif
   return OK;
 }
 
@@ -308,10 +298,6 @@ PrintingContext::Result PrintingContext::NewPage() {
   // Inform the driver that the application is about to begin sending data.
   if (StartPage(context_) <= 0)
     return OnError();
-
-#ifndef NDEBUG
-  ++page_number_;
-#endif
 
   return OK;
 }

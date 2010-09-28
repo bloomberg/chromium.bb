@@ -13,9 +13,6 @@ namespace printing {
 
 PrintingContext::PrintingContext()
     :
-#ifndef NDEBUG
-      page_number_(-1),
-#endif
       dialog_box_dismissed_(false),
       in_print_job_(false),
       abort_printing_(false) {
@@ -66,9 +63,6 @@ PrintingContext::Result PrintingContext::InitWithSettings(
 }
 
 void PrintingContext::ResetSettings() {
-#ifndef NDEBUG
-  page_number_ = -1;
-#endif
   dialog_box_dismissed_ = false;
   abort_printing_ = false;
   in_print_job_ = false;
@@ -80,10 +74,6 @@ PrintingContext::Result PrintingContext::NewDocument(
 
   NOTIMPLEMENTED();
 
-#ifndef NDEBUG
-  page_number_ = 0;
-#endif
-
   return FAILED;
 }
 
@@ -93,10 +83,6 @@ PrintingContext::Result PrintingContext::NewPage() {
   DCHECK(in_print_job_);
 
   NOTIMPLEMENTED();
-
-#ifndef NDEBUG
-  ++page_number_;
-#endif
 
   return FAILED;
 }
