@@ -479,30 +479,31 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationChildrenChanged2) {
+                       TestNotificationFocusChanged) {
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
-      "data:text/html,<div role=group style='visibility: hidden'>text"
-      "</div>");
+      "data:text/html,<div role=group tabindex='-1'></div>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   GetRendererAccessible();
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
-  // Check the accessible tree of the browser.
+  // Check the browser's copy of the renderer accessibility tree.
+  AccessibleChecker div_checker(L"", L"div", L"");
+  div_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_OFFSCREEN | STATE_SYSTEM_READONLY);
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
+  document_checker.AppendExpectedChild(&div_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
 
-  // Change the children of the document body.
-  ExecuteScript(L"document.body.children[0].style.visibility='visible'");
+  // Focus the div in the document
+  ExecuteScript(L"document.body.children[0].focus()");
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
   // Check that the accessibility tree of the browser has been updated.
-  AccessibleChecker static_text_checker(L"", ROLE_SYSTEM_TEXT, L"text");
-  AccessibleChecker div_checker(L"", L"div", L"");
-  document_checker.AppendExpectedChild(&div_checker);
-  div_checker.AppendExpectedChild(&static_text_checker);
+  div_checker.SetExpectedState(
+      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSED);
   document_checker.CheckAccessible(GetRendererAccessible());
 
   // TODO(ctguil): The renderer should notify the browser when focus is cleared.
@@ -523,26 +524,24 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// http://crbug.com/46209
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationFocusChanged) {
+                       DISABLED_TestNotificationChildrenChanged2) {
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
-      "data:text/html,<div role=group tabindex='-1'></div>");
+      "data:text/html,<div role=group style='visibility: hidden'>text"
+      "</div>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   GetRendererAccessible();
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
-  // Check the browser's copy of the renderer accessibility tree.
-  AccessibleChecker div_checker(L"", L"div", L"");
-  div_checker.SetExpectedState(
-      STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_OFFSCREEN | STATE_SYSTEM_READONLY);
+  // Check the accessible tree of the browser.
   AccessibleChecker document_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
-  document_checker.AppendExpectedChild(&div_checker);
   document_checker.CheckAccessible(GetRendererAccessible());
 
-  // Focus the div in the document
-  ExecuteScript(L"document.body.children[0].focus()");
+  // Change the children of the document body.
+  ExecuteScript(L"document.body.children[0].style.visibility='visible'");
   ui_test_utils::WaitForNotification(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
 
