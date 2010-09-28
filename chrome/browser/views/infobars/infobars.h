@@ -66,7 +66,7 @@ class InfoBar : public views::View,
   static const int kButtonInLabelSpacing;
 
   // Overridden from views::View:
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
 

@@ -92,11 +92,8 @@ std::string Separator::GetClassName() const {
   return kViewClassName;
 }
 
-bool Separator::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_SEPARATOR;
-  return true;
+AccessibilityTypes::Role Separator::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_SEPARATOR;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

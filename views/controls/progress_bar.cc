@@ -183,16 +183,12 @@ void ProgressBar::SetEnabled(bool enabled) {
   // TODO(denisromanov): Need to switch progress bar color here?
 }
 
-bool ProgressBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-  *role = AccessibilityTypes::ROLE_PROGRESSBAR;
-  return true;
+AccessibilityTypes::Role ProgressBar::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PROGRESSBAR;
 }
 
-bool ProgressBar::GetAccessibleState(AccessibilityTypes::State* state) {
-  DCHECK(state);
-  *state = AccessibilityTypes::STATE_READONLY;
-  return true;
+AccessibilityTypes::State ProgressBar::GetAccessibleState() {
+  return AccessibilityTypes::STATE_READONLY;
 }
 
 }  // namespace views

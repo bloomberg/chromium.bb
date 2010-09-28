@@ -408,7 +408,7 @@ class BrowserView : public BrowserBubbleHost,
                                     views::View* parent,
                                     views::View* child);
   virtual void ChildPreferredSizeChanged(View* child);
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Factory Methods.
   // Returns a new LayoutManager for this browser view. A subclass may

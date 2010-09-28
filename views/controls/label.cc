@@ -247,18 +247,12 @@ void Label::SizeToFit(int max_width) {
   SizeToPreferredSize();
 }
 
-bool Label::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_STATICTEXT;
-  return true;
+AccessibilityTypes::Role Label::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_STATICTEXT;
 }
 
-bool Label::GetAccessibleState(AccessibilityTypes::State* state) {
-  DCHECK(state);
-
-  *state = AccessibilityTypes::STATE_READONLY;
-  return true;
+AccessibilityTypes::State Label::GetAccessibleState() {
+  return AccessibilityTypes::STATE_READONLY;
 }
 
 void Label::SetHasFocusBorder(bool has_focus_border) {

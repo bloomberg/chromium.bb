@@ -41,7 +41,7 @@ class PageActionImageView : public views::ImageView,
   }
 
   // Overridden from view.
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual bool OnKeyPressed(const views::KeyEvent& e);

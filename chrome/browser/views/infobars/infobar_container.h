@@ -46,7 +46,7 @@ class InfoBarContainer : public views::View,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
  protected:
   virtual void ViewHierarchyChanged(bool is_add,

@@ -60,7 +60,7 @@ class ScrollBar : public View {
   virtual ~ScrollBar();
 
   // Overridden from View:
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Return whether this scrollbar is horizontal
   bool IsHorizontal() const;

@@ -63,9 +63,8 @@ void ClientView::DidChangeBounds(const gfx::Rect& previous,
   // NonClientView::Layout.
 }
 
-bool ClientView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_CLIENT;
-  return true;
+AccessibilityTypes::Role ClientView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_CLIENT;
 }
 
 }  // namespace views

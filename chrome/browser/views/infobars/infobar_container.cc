@@ -78,11 +78,8 @@ void InfoBarContainer::Layout() {
   }
 }
 
-bool InfoBarContainer::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
+AccessibilityTypes::Role InfoBarContainer::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 void InfoBarContainer::ViewHierarchyChanged(bool is_add,

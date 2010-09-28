@@ -134,15 +134,8 @@ void NativeTabContentsContainerGtk::AboutToRequestFocusFromTabTraversal(
   container_->tab_contents()->FocusThroughTabTraversal(reverse);
 }
 
-bool NativeTabContentsContainerGtk::GetAccessibleRole(
-    AccessibilityTypes::Role* role) {
-  // TODO(port): figure out a11y
-#if defined(OS_WIN)
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_GROUPING;
-#endif
-  return true;
+AccessibilityTypes::Role NativeTabContentsContainerGtk::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

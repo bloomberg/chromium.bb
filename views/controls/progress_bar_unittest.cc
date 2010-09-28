@@ -47,9 +47,7 @@ TEST(ProgressBarTest, Accessibility) {
   ProgressBar bar;
   bar.SetProgress(62);
 
-  AccessibilityTypes::Role role;
-  EXPECT_TRUE(bar.GetAccessibleRole(&role));
-  EXPECT_EQ(AccessibilityTypes::ROLE_PROGRESSBAR, role);
+  EXPECT_EQ(AccessibilityTypes::ROLE_PROGRESSBAR, bar.GetAccessibleRole());
 
   std::wstring name;
   EXPECT_FALSE(bar.GetAccessibleName(&name));
@@ -59,10 +57,7 @@ TEST(ProgressBarTest, Accessibility) {
   EXPECT_TRUE(bar.GetAccessibleName(&name));
   EXPECT_EQ(accessible_name, name);
 
-
-  AccessibilityTypes::State state;
-  EXPECT_TRUE(bar.GetAccessibleState(&state));
-  EXPECT_TRUE(AccessibilityTypes::STATE_READONLY & state);
+  EXPECT_TRUE(AccessibilityTypes::STATE_READONLY & bar.GetAccessibleState());
 }
 
 }  // namespace views

@@ -342,11 +342,8 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
     return gfx::Size(kSeparatorWidth, 1);
   }
 
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role) {
-    DCHECK(role);
-
-    *role = AccessibilityTypes::ROLE_SEPARATOR;
-    return true;
+  virtual AccessibilityTypes::Role GetAccessibleRole() {
+    return AccessibilityTypes::ROLE_SEPARATOR;
   }
 
  private:

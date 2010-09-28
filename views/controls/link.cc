@@ -144,11 +144,8 @@ bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
       (e.GetKeyCode() == app::VKEY_RETURN);
 }
 
-bool Link::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_LINK;
-  return true;
+AccessibilityTypes::Role Link::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_LINK;
 }
 
 void Link::SetFont(const gfx::Font& font) {

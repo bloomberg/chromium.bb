@@ -20,7 +20,7 @@ class PageActionWithBadgeView : public views::View {
 
   PageActionImageView* image_view() { return image_view_; }
 
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual gfx::Size GetPreferredSize();
 
   void UpdateVisibility(TabContents* contents, const GURL& url);

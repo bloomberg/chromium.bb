@@ -75,11 +75,8 @@ void TabContentsContainer::Layout() {
   }
 }
 
-bool TabContentsContainer::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_WINDOW;
-  return true;
+AccessibilityTypes::Role TabContentsContainer::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_WINDOW;
 }
 
 void TabContentsContainer::ViewHierarchyChanged(bool is_add,

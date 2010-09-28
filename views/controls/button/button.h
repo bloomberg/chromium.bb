@@ -40,8 +40,8 @@ class Button : public View {
 
   // Overridden from View:
   virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
-  virtual bool GetAccessibleKeyboardShortcut(std::wstring* shortcut);
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual std::wstring GetAccessibleKeyboardShortcut();
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
  protected:
   // Construct the Button with a Listener. The listener can be NULL. This can be

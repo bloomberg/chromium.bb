@@ -53,22 +53,21 @@ void CustomButton::SetAnimationDuration(int duration) {
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, View overrides:
 
-bool CustomButton::GetAccessibleState(AccessibilityTypes::State* state) {
-  *state = 0;
+AccessibilityTypes::State CustomButton::GetAccessibleState() {
+  int state = 0;
   switch (state_) {
     case BS_HOT:
-      *state = AccessibilityTypes::STATE_HOTTRACKED;
+      state = AccessibilityTypes::STATE_HOTTRACKED;
     case BS_PUSHED:
-      *state = AccessibilityTypes::STATE_PRESSED;
+      state = AccessibilityTypes::STATE_PRESSED;
     case BS_DISABLED:
-      *state = AccessibilityTypes::STATE_UNAVAILABLE;
+      state = AccessibilityTypes::STATE_UNAVAILABLE;
     case BS_NORMAL:
     case BS_COUNT:
       // No additional accessibility state set for this button state.
       break;
   }
-
-  return true;
+  return state;
 }
 
 void CustomButton::SetEnabled(bool enabled) {

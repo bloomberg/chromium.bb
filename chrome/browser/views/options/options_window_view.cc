@@ -54,7 +54,7 @@ class OptionsWindowView : public views::View,
   virtual void TabSelectedAt(int index);
 
   // views::View overrides:
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
 
@@ -160,9 +160,8 @@ void OptionsWindowView::TabSelectedAt(int index) {
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsWindowView, views::View overrides:
 
-bool OptionsWindowView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_CLIENT;
-  return true;
+AccessibilityTypes::Role OptionsWindowView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_CLIENT;
 }
 
 void OptionsWindowView::Layout() {

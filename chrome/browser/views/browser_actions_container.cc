@@ -309,10 +309,8 @@ gfx::Canvas* BrowserActionView::GetIconWithBadge() {
   return canvas;
 }
 
-bool BrowserActionView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-  *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
+AccessibilityTypes::Role BrowserActionView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 void BrowserActionView::Layout() {
@@ -733,11 +731,8 @@ void BrowserActionsContainer::OnThemeChanged() {
   LoadImages();
 }
 
-bool BrowserActionsContainer::GetAccessibleRole(
-    AccessibilityTypes::Role* role) {
-  DCHECK(role);
-  *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
+AccessibilityTypes::Role BrowserActionsContainer::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {

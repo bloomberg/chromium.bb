@@ -230,9 +230,9 @@ class Textfield : public View {
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
 
   // Accessibility accessors, overridden from View:
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
-  virtual bool GetAccessibleValue(std::wstring* value);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::State GetAccessibleState();
+  virtual std::wstring GetAccessibleValue();
 
  protected:
   virtual void Focus();

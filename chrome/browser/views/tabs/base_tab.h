@@ -86,7 +86,7 @@ class BaseTab : public AnimationDelegate,
   virtual void OnMouseReleased(const views::MouseEvent& event,
                                bool canceled);
   virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual ThemeProvider* GetThemeProvider();
 
  protected:

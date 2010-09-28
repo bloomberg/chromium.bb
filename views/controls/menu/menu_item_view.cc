@@ -99,28 +99,25 @@ bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return !tooltip_.empty();
 }
 
-bool MenuItemView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-  *role = AccessibilityTypes::ROLE_MENUITEM;
-  return true;
+AccessibilityTypes::Role MenuItemView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_MENUITEM;
 }
 
-bool MenuItemView::GetAccessibleState(AccessibilityTypes::State* state) {
-  *state = 0;
-
+AccessibilityTypes::State MenuItemView::GetAccessibleState() {
+  int state = 0;
   switch (GetType()) {
     case SUBMENU:
-      *state |= AccessibilityTypes::STATE_HASPOPUP;
+      state |= AccessibilityTypes::STATE_HASPOPUP;
     case CHECKBOX:
     case RADIO:
-      *state |= GetDelegate()->IsItemChecked(GetCommand()) ?
+      state |= GetDelegate()->IsItemChecked(GetCommand()) ?
           AccessibilityTypes::STATE_CHECKED : 0;
     case NORMAL:
     case SEPARATOR:
       // No additional accessibility states currently for these menu states.
       break;
   }
-  return true;
+  return state;
 }
 
 void MenuItemView::RunMenuAt(gfx::NativeWindow parent,

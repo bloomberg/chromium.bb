@@ -13,10 +13,8 @@ PageActionWithBadgeView::PageActionWithBadgeView(
   AddChildView(image_view_);
 }
 
-bool PageActionWithBadgeView::GetAccessibleRole(
-    AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
+AccessibilityTypes::Role PageActionWithBadgeView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 gfx::Size PageActionWithBadgeView::GetPreferredSize() {

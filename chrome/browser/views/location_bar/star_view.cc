@@ -34,9 +34,8 @@ void StarView::SetToggled(bool on) {
       on ? IDR_STAR_LIT : IDR_STAR));
 }
 
-bool StarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_PUSHBUTTON;
-  return true;
+AccessibilityTypes::Role StarView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
 bool StarView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {

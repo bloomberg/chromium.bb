@@ -56,18 +56,12 @@ TreeView::~TreeView() {
     ImageList_Destroy(image_list_);
 }
 
-bool TreeView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_OUTLINE;
-  return true;
+AccessibilityTypes::Role TreeView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_OUTLINE;
 }
 
-bool TreeView::GetAccessibleState(AccessibilityTypes::State* state) {
-  DCHECK(state);
-
-  *state = AccessibilityTypes::STATE_READONLY;
-  return true;
+AccessibilityTypes::State TreeView::GetAccessibleState() {
+  return AccessibilityTypes::STATE_READONLY;
 }
 
 void TreeView::SetModel(TreeModel* model) {

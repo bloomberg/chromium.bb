@@ -555,7 +555,7 @@ class View : public AcceleratorTarget {
   virtual bool HasFocus();
 
   // Accessibility support
-  // TODO(klink): Move all this out to a AccessibleInfo wrapper class.
+  // TODO(ctguil): Move all this out to a AccessibleInfo wrapper class.
 
   // Notify the platform specific accessibility client of changes in the user
   // interface.  This will always raise native notifications.
@@ -569,17 +569,13 @@ class View : public AcceleratorTarget {
   // Returns the MSAA default action of the current view. The string returned
   // describes the default action that will occur when executing
   // IAccessible::DoDefaultAction. For instance, default action of a button is
-  // 'Press'. Sets the input string appropriately, and returns true if
-  // successful.
-  virtual bool GetAccessibleDefaultAction(std::wstring* action) {
-    return false;
-  }
+  // 'Press'.
+  virtual std::wstring GetAccessibleDefaultAction() { return std::wstring(); }
 
   // Returns a string containing the mnemonic, or the keyboard shortcut, for a
-  // given control. Sets the input string appropriately, and returns true if
-  // successful.
-  virtual bool GetAccessibleKeyboardShortcut(std::wstring* shortcut) {
-    return false;
+  // given control.
+  virtual std::wstring GetAccessibleKeyboardShortcut() {
+    return std::wstring();
   }
 
   // Returns a brief, identifying string, containing a unique, readable name of
@@ -589,26 +585,21 @@ class View : public AcceleratorTarget {
 
   // Returns the accessibility role of the current view. The role is what
   // assistive technologies (ATs) use to determine what behavior to expect from
-  // a given control. Sets the input Role appropriately, and returns true if
-  // successful.
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  // a given control.
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
-  // Returns the accessibility state of the current view. Sets the input State
-  // appropriately, and returns true if successful.
-  virtual bool GetAccessibleState(AccessibilityTypes::State* state) {
-    return false;
+  // Returns the accessibility state of the current view.
+  virtual AccessibilityTypes::State GetAccessibleState() {
+    return 0;
   }
 
-  // Returns the current value associated with a view. Sets the input string
-  // appropriately, and returns true if successful.
-  virtual bool GetAccessibleValue(std::wstring* value) { return false; }
+  // Returns the current value associated with a view.
+  virtual std::wstring GetAccessibleValue() { return std::wstring(); }
 
   // Assigns a string name to the given control. Needed as a View does not know
   // which name will be associated with it until it is created to be a
   // certain type.
   void SetAccessibleName(const std::wstring& name);
-
-  void SetAccessibleRole(const AccessibilityTypes::Role role);
 
   // Returns an instance of a wrapper class implementing the (platform-specific)
   // accessibility interface for a given View. If one exists, it will be
@@ -1304,9 +1295,6 @@ class View : public AcceleratorTarget {
 
   // Name for this view, which can be retrieved by accessibility APIs.
   std::wstring accessible_name_;
-
-  // Role for this view, which can be retrieved by accessibility APIs.
-  AccessibilityTypes::Role accessible_role_;
 
   // Next view to be focused when the Tab key is pressed.
   View* next_focusable_view_;

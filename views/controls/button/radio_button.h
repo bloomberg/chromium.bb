@@ -25,7 +25,7 @@ class RadioButton : public Checkbox {
   virtual void SetChecked(bool checked);
 
   // Overridden from View:
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual View* GetSelectedViewForGroup(int group_id);
   virtual bool IsGroupFocusTraversable() const;
   virtual void OnMouseReleased(const MouseEvent& event, bool canceled);

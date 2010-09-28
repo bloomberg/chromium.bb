@@ -63,7 +63,7 @@ class ClientView : public View {
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Accessors for private data members.
   Window* window() const { return window_; }

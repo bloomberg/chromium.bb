@@ -164,25 +164,16 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-bool ButtonDropDown::GetAccessibleDefaultAction(std::wstring* action) {
-  DCHECK(action);
-
-  action->assign(l10n_util::GetString(IDS_APP_ACCACTION_PRESS));
-  return true;
+std::wstring ButtonDropDown::GetAccessibleDefaultAction() {
+  return l10n_util::GetString(IDS_APP_ACCACTION_PRESS);
 }
 
-bool ButtonDropDown::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_BUTTONDROPDOWN;
-  return true;
+AccessibilityTypes::Role ButtonDropDown::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_BUTTONDROPDOWN;
 }
 
-bool ButtonDropDown::GetAccessibleState(AccessibilityTypes::State* state) {
-  DCHECK(state);
-
-  *state = AccessibilityTypes::STATE_HASPOPUP;
-  return true;
+AccessibilityTypes::State ButtonDropDown::GetAccessibleState() {
+  return AccessibilityTypes::STATE_HASPOPUP;
 }
 
 }  // namespace views

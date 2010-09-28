@@ -751,11 +751,8 @@ void RootView::ClearPaintRect() {
 //
 /////////////////////////////////////////////////////////////////////////////
 
-bool RootView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_APPLICATION;
-  return true;
+AccessibilityTypes::Role RootView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_APPLICATION;
 }
 
 View* RootView::GetDragView() {

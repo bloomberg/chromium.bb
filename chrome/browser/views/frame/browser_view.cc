@@ -1792,11 +1792,8 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
   Layout();
 }
 
-bool BrowserView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_CLIENT;
-  return true;
+AccessibilityTypes::Role BrowserView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_CLIENT;
 }
 
 void BrowserView::InfoBarSizeChanged(bool is_animating) {

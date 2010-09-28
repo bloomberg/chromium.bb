@@ -255,25 +255,16 @@ void MenuButton::OnMouseExited(const MouseEvent& event) {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-bool MenuButton::GetAccessibleDefaultAction(std::wstring* action) {
-  DCHECK(action);
-
-  action->assign(l10n_util::GetString(IDS_APP_ACCACTION_PRESS));
-  return true;
+std::wstring MenuButton::GetAccessibleDefaultAction() {
+  return l10n_util::GetString(IDS_APP_ACCACTION_PRESS);
 }
 
-bool MenuButton::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_BUTTONMENU;
-  return true;
+AccessibilityTypes::Role MenuButton::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_BUTTONMENU;
 }
 
-bool MenuButton::GetAccessibleState(AccessibilityTypes::State* state) {
-  DCHECK(state);
-
-  *state = AccessibilityTypes::STATE_HASPOPUP;
-  return true;
+AccessibilityTypes::State MenuButton::GetAccessibleState() {
+  return AccessibilityTypes::STATE_HASPOPUP;
 }
 
 std::string MenuButton::GetClassName() const {

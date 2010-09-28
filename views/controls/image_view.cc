@@ -125,12 +125,8 @@ void ImageView::Paint(gfx::Canvas* canvas) {
   }
 }
 
-bool ImageView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  if (!role)
-    return false;
-
-  *role = AccessibilityTypes::ROLE_GRAPHIC;
-  return true;
+AccessibilityTypes::Role ImageView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GRAPHIC;
 }
 
 void ImageView::SetHorizontalAlignment(Alignment ha) {

@@ -345,9 +345,8 @@ STDMETHODIMP ViewAccessibility::get_accDefaultAction(
   if (!view_)
     return E_FAIL;
 
-  std::wstring temp_action;
+  std::wstring temp_action = view_->GetAccessibleDefaultAction();
 
-  view_->GetAccessibleDefaultAction(&temp_action);
   if (!temp_action.empty()) {
     *def_action = SysAllocString(temp_action.c_str());
   } else {
@@ -422,9 +421,8 @@ STDMETHODIMP ViewAccessibility::get_accKeyboardShortcut(
   if (!view_)
     return E_FAIL;
 
-  std::wstring temp_key;
+  std::wstring temp_key = view_->GetAccessibleKeyboardShortcut();
 
-  view_->GetAccessibleKeyboardShortcut(&temp_key);
   if (!temp_key.empty()) {
     *acc_key = SysAllocString(temp_key.c_str());
   } else {
@@ -508,14 +506,8 @@ STDMETHODIMP ViewAccessibility::get_accRole(VARIANT var_id, VARIANT* role) {
   if (!IsValidId(var_id) || !role)
     return E_INVALIDARG;
 
-  AccessibilityTypes::Role acc_role;
-
-  // Retrieve parent role.
-  if (!view_->GetAccessibleRole(&acc_role))
-    return E_FAIL;
-
   role->vt = VT_I4;
-  role->lVal = MSAARole(acc_role);
+  role->lVal = MSAARole(view_->GetAccessibleRole());
   return S_OK;
 }
 
@@ -543,10 +535,9 @@ STDMETHODIMP ViewAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
   if (!view_)
     return E_FAIL;
 
-  std::wstring temp_value;
-
   // Retrieve the current view's value.
-  view_->GetAccessibleValue(&temp_value);
+  std::wstring temp_value = view_->GetAccessibleValue();
+
   if (!temp_value.empty()) {
     // Return value retrieved.
     *value = SysAllocString(temp_value.c_str());
@@ -618,9 +609,7 @@ void ViewAccessibility::SetState(VARIANT* msaa_state, views::View* view) {
     msaa_state->lVal |= STATE_SYSTEM_FOCUSED;
 
   // Add on any view-specific states.
-  AccessibilityTypes::State state;
-  if (view->GetAccessibleState(&state))
-    msaa_state->lVal |= MSAAState(state);
+  msaa_state->lVal |= MSAAState(view->GetAccessibleState());
 }
 
 // IAccessible functions not supported.

@@ -43,7 +43,7 @@ class TabContentsContainer : public views::View,
 
   // Overridden from views::View:
   virtual void Layout();
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
  protected:
   // Overridden from views::View:

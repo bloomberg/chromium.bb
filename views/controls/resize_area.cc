@@ -70,10 +70,8 @@ void ResizeArea::OnMouseReleased(const views::MouseEvent& event,
   ReportResizeAmount(canceled ? initial_position_ : event.x(), true);
 }
 
-bool ResizeArea::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-  *role = AccessibilityTypes::ROLE_SEPARATOR;
-  return true;
+AccessibilityTypes::Role ResizeArea::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_SEPARATOR;
 }
 
 void ResizeArea::ReportResizeAmount(int resize_amount, bool last_update) {

@@ -127,9 +127,8 @@ void SubmenuView::DidChangeBounds(const gfx::Rect& previous,
   SchedulePaint();
 }
 
-bool SubmenuView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_MENUPOPUP;
-  return true;
+AccessibilityTypes::Role SubmenuView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_MENUPOPUP;
 }
 
 void SubmenuView::PaintChildren(gfx::Canvas* canvas) {

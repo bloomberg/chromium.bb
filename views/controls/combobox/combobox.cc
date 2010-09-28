@@ -87,18 +87,12 @@ void Combobox::PaintFocusBorder(gfx::Canvas* canvas) {
     View::PaintFocusBorder(canvas);
 }
 
-bool Combobox::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_COMBOBOX;
-  return true;
+AccessibilityTypes::Role Combobox::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_COMBOBOX;
 }
 
-bool Combobox::GetAccessibleValue(std::wstring* value) {
-  DCHECK(value);
-
-  *value = UTF16ToWideHack(model_->GetItemAt(selected_item_));
-  return true;
+std::wstring Combobox::GetAccessibleValue() {
+  return UTF16ToWideHack(model_->GetItemAt(selected_item_));
 }
 
 void Combobox::Focus() {

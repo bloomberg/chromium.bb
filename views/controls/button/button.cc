@@ -32,17 +32,12 @@ bool Button::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return true;
 }
 
-bool Button::GetAccessibleKeyboardShortcut(std::wstring* shortcut) {
-  if (!accessible_shortcut_.empty()) {
-    *shortcut = accessible_shortcut_;
-    return true;
-  }
-  return false;
+std::wstring Button::GetAccessibleKeyboardShortcut() {
+  return accessible_shortcut_;
 }
 
-bool Button::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_PUSHBUTTON;
-  return true;
+AccessibilityTypes::Role Button::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

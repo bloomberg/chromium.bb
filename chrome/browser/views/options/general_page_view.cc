@@ -52,6 +52,21 @@ bool IsNewTabUIURLString(const GURL& url) {
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
+// OptionsGroupContents
+class OptionsGroupContents : public views::View {
+ public:
+  OptionsGroupContents() { }
+
+  // views::View overrides:
+  virtual AccessibilityTypes::Role GetAccessibleRole() {
+    return AccessibilityTypes::ROLE_GROUPING;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OptionsGroupContents);
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // SearchEngineListModel
 
 class SearchEngineListModel : public ComboboxModel,
@@ -488,7 +503,7 @@ void GeneralPageView::InitStartupGroup() {
   using views::GridLayout;
   using views::ColumnSet;
 
-  views::View* contents = new views::View;
+  views::View* contents = new OptionsGroupContents;
   GridLayout* layout = new GridLayout(contents);
   contents->SetLayoutManager(layout);
 

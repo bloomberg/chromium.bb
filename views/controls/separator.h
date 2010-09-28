@@ -26,7 +26,7 @@ class Separator : public View {
   // Overridden from View:
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
  protected:
   virtual void ViewHierarchyChanged(bool is_add, View* parent,

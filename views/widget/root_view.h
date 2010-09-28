@@ -180,7 +180,7 @@ class RootView : public View,
                                       int operation);
 
   // Accessibility accessors/mutators, overridden from View.
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
 #if defined(TOUCH_UI) && defined(UNIT_TEST)
   // For unit testing purposes, we use this method to set a mock

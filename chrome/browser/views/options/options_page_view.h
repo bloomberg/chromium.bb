@@ -40,8 +40,7 @@ class OptionsPageView : public views::View,
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
-
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
  private:
   // Whether or not the control layout has been initialized for this page.

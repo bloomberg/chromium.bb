@@ -59,9 +59,9 @@ class MenuButton : public TextButton {
   virtual bool OnKeyReleased(const KeyEvent& e);
 
   // Accessibility accessors, overridden from View.
-  virtual bool GetAccessibleDefaultAction(std::wstring* action);
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
+  virtual std::wstring GetAccessibleDefaultAction();
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::State GetAccessibleState();
 
   // Returns views/MenuButton.
   virtual std::string GetClassName() const;

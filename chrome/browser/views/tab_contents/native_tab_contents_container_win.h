@@ -30,7 +30,7 @@ class NativeTabContentsContainerWin : public NativeTabContentsContainer,
   virtual void Focus();
   virtual void RequestFocus();
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse);
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
  private:
   TabContentsContainer* container_;

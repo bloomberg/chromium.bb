@@ -267,20 +267,14 @@ gfx::Size MenuScrollViewContainer::GetPreferredSize() {
   return prefsize;
 }
 
-bool MenuScrollViewContainer::GetAccessibleRole(
-    AccessibilityTypes::Role* role) {
-  DCHECK(role);
-  *role = AccessibilityTypes::ROLE_MENUBAR;
-  return true;
+AccessibilityTypes::Role MenuScrollViewContainer::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_MENUBAR;
 }
 
-bool MenuScrollViewContainer::GetAccessibleState(
-    AccessibilityTypes::State* state) {
-  DCHECK(state);
+AccessibilityTypes::State MenuScrollViewContainer::GetAccessibleState() {
   // Some AT (like NVDA) will not process focus events on menu item children
   // unless a parent claims to be focused.
-  *state = AccessibilityTypes::STATE_FOCUSED;
-  return true;
+  return AccessibilityTypes::STATE_FOCUSED;
 }
 
 }  // namespace views

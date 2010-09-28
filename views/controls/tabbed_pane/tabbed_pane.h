@@ -71,7 +71,7 @@ class TabbedPane : public View {
   virtual void Layout();
   virtual void Focus();
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual gfx::Size GetPreferredSize();
 
   NativeTabbedPaneWrapper* native_wrapper() const {

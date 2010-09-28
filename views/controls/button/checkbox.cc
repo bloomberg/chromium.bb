@@ -167,18 +167,12 @@ void Checkbox::WillLoseFocus() {
   label_->set_paint_as_focused(false);
 }
 
-bool Checkbox::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_CHECKBUTTON;
-  return true;
+AccessibilityTypes::Role Checkbox::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_CHECKBUTTON;
 }
 
-bool Checkbox::GetAccessibleState(AccessibilityTypes::State* state) {
-  DCHECK(state);
-
-  *state = checked() ? AccessibilityTypes::STATE_CHECKED : 0;
-  return true;
+AccessibilityTypes::State Checkbox::GetAccessibleState() {
+  return checked() ? AccessibilityTypes::STATE_CHECKED : 0;
 }
 
 std::string Checkbox::GetClassName() const {

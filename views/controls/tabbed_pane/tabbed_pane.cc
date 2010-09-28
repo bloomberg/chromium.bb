@@ -129,11 +129,8 @@ void TabbedPane::PaintFocusBorder(gfx::Canvas* canvas) {
     View::PaintFocusBorder(canvas);
 }
 
-bool TabbedPane::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_PAGETABLIST;
-  return true;
+AccessibilityTypes::Role TabbedPane::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PAGETABLIST;
 }
 
 gfx::Size TabbedPane::GetPreferredSize() {

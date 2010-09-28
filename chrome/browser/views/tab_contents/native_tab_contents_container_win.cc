@@ -129,12 +129,8 @@ void NativeTabContentsContainerWin::AboutToRequestFocusFromTabTraversal(
   container_->tab_contents()->FocusThroughTabTraversal(reverse);
 }
 
-bool NativeTabContentsContainerWin::GetAccessibleRole(
-    AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
+AccessibilityTypes::Role NativeTabContentsContainerWin::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

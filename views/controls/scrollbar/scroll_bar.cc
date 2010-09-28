@@ -22,11 +22,8 @@ ScrollBar::ScrollBar(bool is_horiz) : is_horiz_(is_horiz),
 ScrollBar::~ScrollBar() {
 }
 
-bool ScrollBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_SCROLLBAR;
-  return true;
+AccessibilityTypes::Role ScrollBar::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_SCROLLBAR;
 }
 
 bool ScrollBar::IsHorizontal() const {

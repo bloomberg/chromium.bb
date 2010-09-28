@@ -54,8 +54,7 @@ class Link : public Label {
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
 
   // Accessibility accessors, overridden from View:
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual void SetFont(const gfx::Font& font);
 
   // Set whether the link is enabled.

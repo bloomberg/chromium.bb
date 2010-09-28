@@ -101,9 +101,8 @@ void PageActionImageView::ExecuteAction(int button,
   }
 }
 
-bool PageActionImageView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_PUSHBUTTON;
-  return true;
+AccessibilityTypes::Role PageActionImageView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PUSHBUTTON;
 }
 
 bool PageActionImageView::OnMousePressed(const views::MouseEvent& event) {

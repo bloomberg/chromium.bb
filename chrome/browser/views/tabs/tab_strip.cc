@@ -418,11 +418,8 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
   return GetDropEffect(event);
 }
 
-bool TabStrip::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_PAGETABLIST;
-  return true;
+AccessibilityTypes::Role TabStrip::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PAGETABLIST;
 }
 
 views::View* TabStrip::GetViewForPoint(const gfx::Point& point) {

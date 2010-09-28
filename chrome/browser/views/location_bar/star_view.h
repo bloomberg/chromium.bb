@@ -27,7 +27,7 @@ class StarView : public views::ImageView, public InfoBubbleDelegate {
 
  private:
   // views::ImageView overrides:
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
   virtual bool GetTooltipText(const gfx::Point& p, std::wstring* tooltip);
   virtual bool OnMousePressed(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);

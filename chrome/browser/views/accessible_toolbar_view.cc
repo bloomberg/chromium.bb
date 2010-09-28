@@ -185,11 +185,8 @@ void AccessibleToolbarView::SetVisible(bool flag) {
   View::SetVisible(flag);
 }
 
-bool AccessibleToolbarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_TOOLBAR;
-  return true;
+AccessibilityTypes::Role AccessibleToolbarView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_TOOLBAR;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

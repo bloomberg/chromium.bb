@@ -1028,13 +1028,9 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
 #endif
 }
 
-bool LocationBarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
+AccessibilityTypes::Role LocationBarView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
-
 
 void LocationBarView::WriteDragData(views::View* sender,
                                     const gfx::Point& press_pt,

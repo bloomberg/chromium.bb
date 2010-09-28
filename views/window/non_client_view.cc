@@ -174,9 +174,8 @@ views::View* NonClientView::GetViewForPoint(const gfx::Point& point) {
   return View::GetViewForPoint(point);
 }
 
-bool NonClientView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_WINDOW;
-  return true;
+AccessibilityTypes::Role NonClientView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_WINDOW;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -250,9 +249,8 @@ bool NonClientFrameView::ShouldPaintAsActive() const {
   return GetWindow()->IsActive() || paint_as_active_;
 }
 
-bool NonClientFrameView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_WINDOW;
-  return true;
+AccessibilityTypes::Role NonClientFrameView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_WINDOW;
 }
 
 }  // namespace views

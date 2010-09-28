@@ -124,11 +124,8 @@ InfoBar::~InfoBar() {
 
 // InfoBar, views::View overrides: ---------------------------------------------
 
-bool InfoBar::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_ALERT;
-  return true;
+AccessibilityTypes::Role InfoBar::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_ALERT;
 }
 
 gfx::Size InfoBar::GetPreferredSize() {

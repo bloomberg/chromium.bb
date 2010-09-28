@@ -36,8 +36,7 @@ void OptionsPageView::ViewHierarchyChanged(bool is_add,
   }
 }
 
-bool OptionsPageView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_PAGETAB;
-  return true;
+AccessibilityTypes::Role OptionsPageView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PAGETAB;
 }
 

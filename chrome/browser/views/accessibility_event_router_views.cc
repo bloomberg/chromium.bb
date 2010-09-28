@@ -157,8 +157,6 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
 
   most_recent_profile_ = profile;
 
-  AccessibilityTypes::Role role;
-  view->GetAccessibleRole(&role);
   std::string class_name = view->GetClassName();
 
   if (class_name == views::MenuButton::kViewClassName ||
@@ -245,8 +243,7 @@ bool AccessibilityEventRouterViews::IsMenuEvent(
     return true;
 
   while (view) {
-    AccessibilityTypes::Role role;
-    view->GetAccessibleRole(&role);
+    AccessibilityTypes::Role role = view->GetAccessibleRole();
     if (role == AccessibilityTypes::ROLE_MENUITEM ||
         role == AccessibilityTypes::ROLE_MENUPOPUP) {
       return true;

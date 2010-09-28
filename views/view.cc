@@ -1166,20 +1166,12 @@ bool View::GetAccessibleName(std::wstring* name) {
   return true;
 }
 
-bool View::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  if (accessible_role_) {
-    *role = accessible_role_;
-    return true;
-  }
-  return false;
+AccessibilityTypes::Role View::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_CLIENT;
 }
 
 void View::SetAccessibleName(const std::wstring& name) {
   accessible_name_ = name;
-}
-
-void View::SetAccessibleRole(const AccessibilityTypes::Role role) {
-  accessible_role_ = role;
 }
 
 // static

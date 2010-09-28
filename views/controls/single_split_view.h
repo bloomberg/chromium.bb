@@ -26,7 +26,7 @@ class SingleSplitView : public views::View {
 
   virtual void Layout();
 
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // SingleSplitView's preferred size is the sum of the preferred widths
   // and the max of the heights.

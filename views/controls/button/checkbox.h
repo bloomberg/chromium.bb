@@ -60,8 +60,8 @@ class Checkbox : public NativeButton {
   virtual void WillLoseFocus();
 
   // Accessibility accessors, overridden from View.
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::State GetAccessibleState();
 
   // Overridden from NativeButton:
   virtual void SetLabel(const std::wstring& label);

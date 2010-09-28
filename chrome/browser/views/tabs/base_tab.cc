@@ -304,11 +304,8 @@ bool BaseTab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   return false;
 }
 
-bool BaseTab::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_PAGETAB;
-  return true;
+AccessibilityTypes::Role BaseTab::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_PAGETAB;
 }
 
 ThemeProvider* BaseTab::GetThemeProvider() {

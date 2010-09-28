@@ -377,11 +377,8 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
   return browser_view_->IsPositionInWindowCaption(browser_view_point);
 }
 
-bool OpaqueBrowserFrameView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_TITLEBAR;
-  return true;
+AccessibilityTypes::Role OpaqueBrowserFrameView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_TITLEBAR;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

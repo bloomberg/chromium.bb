@@ -94,9 +94,8 @@ void SingleSplitView::Layout() {
   View::Layout();
 }
 
-bool SingleSplitView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
+AccessibilityTypes::Role SingleSplitView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 gfx::Size SingleSplitView::GetPreferredSize() {

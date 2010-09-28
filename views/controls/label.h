@@ -181,8 +181,8 @@ class Label : public View {
   void SizeToFit(int max_width);
 
   // Accessibility accessors, overridden from View.
-  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
-  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
+  virtual AccessibilityTypes::Role GetAccessibleRole();
+  virtual AccessibilityTypes::State GetAccessibleState();
 
   // Gets/sets the flag to determine whether the label should be collapsed when
   // it's hidden (not visible). If this flag is true, the label will return a

@@ -51,7 +51,6 @@ OptionsGroupView::OptionsGroupView(views::View* contents,
 
   SetAccessibleName(title);
   contents->SetAccessibleName(title);
-  contents->SetAccessibleRole(AccessibilityTypes::ROLE_GROUPING);
 }
 
 void OptionsGroupView::SetHighlighted(bool highlighted) {
@@ -66,9 +65,8 @@ int OptionsGroupView::GetContentsWidth() const {
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsGroupView, views::View overrides:
 
-bool OptionsGroupView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  *role = AccessibilityTypes::ROLE_GROUPING;
-  return true;
+AccessibilityTypes::Role OptionsGroupView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_GROUPING;
 }
 
 void OptionsGroupView::Paint(gfx::Canvas* canvas) {
