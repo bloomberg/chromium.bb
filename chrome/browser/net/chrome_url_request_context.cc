@@ -313,11 +313,6 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   appcache_service_->set_request_context(context);
 
-#if defined(USE_NSS)
-  // TODO(ukai): find a better way to set the URLRequestContext for OCSP.
-  net::SetURLRequestContextForOCSP(context);
-#endif
-
   context->set_net_log(io_thread_globals->net_log.get());
   return context;
 }
@@ -557,6 +552,14 @@ URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
   if (!url_request_context_) {
     DCHECK(factory_.get());
     url_request_context_ = factory_->Create();
+    if (is_main()) {
+      url_request_context_->set_is_main(true);
+#if defined(USE_NSS)
+      // TODO(ukai): find a better way to set the URLRequestContext for OCSP.
+      net::SetURLRequestContextForOCSP(url_request_context_);
+#endif
+    }
+
     factory_.reset();
   }
 
@@ -771,7 +774,8 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
   }
 
 #if defined(USE_NSS)
-  if (this == net::GetURLRequestContextForOCSP()) {
+  if (is_main()) {
+    DCHECK_EQ(this, net::GetURLRequestContextForOCSP());
     // We are releasing the URLRequestContext used by OCSP handlers.
     net::SetURLRequestContextForOCSP(NULL);
   }
