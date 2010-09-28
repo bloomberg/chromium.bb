@@ -5483,6 +5483,24 @@ void RenderView::postAccessibilityNotification(
     accessibility_->initialize(webview());
   }
 
+  if (!accessibility_->isCached(obj)) {
+    // The browser doesn't know about objects that are not in the cache. Send a
+    // children change for the first accestor that actually is in the cache.
+    WebAccessibilityObject parent = obj;
+    while (parent.isValid() && !accessibility_->isCached(parent))
+      parent = parent.parentObject();
+
+    DCHECK(parent.isValid() && accessibility_->isCached(parent));
+    if (!parent.isValid())
+      return;
+    postAccessibilityNotification(
+        parent, WebKit::WebAccessibilityNotificationChildrenChanged);
+
+    // The parent's children change takes care of the child's children change.
+    if (notification == WebKit::WebAccessibilityNotificationChildrenChanged)
+      return;
+  }
+
   // Add the accessibility object to our cache and ensure it's valid.
   if (accessibility_->addOrGetId(obj) < 0)
     return;
