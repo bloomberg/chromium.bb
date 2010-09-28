@@ -371,9 +371,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, ErrorOnPermissionDenied) {
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-// TODO(bulach): investigate why this fails on mac. It may be related to:
-// http://crbug.com/29424. This also fails on Vista: http://crbug.com/44589
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
+// http://crbug.com/44589. Hangs on Mac, crashes on Windows
+#if defined(OS_MAC) || defined(OS_WINDOWS)
+#define MAYBE_NoInfobarForSecondTab DISABLED_NoInfobarForSecondTab
+#else
+#define MAYBE_NoInfobarForSecondTab NoInfobarForSecondTab
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
@@ -386,7 +390,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForDeniedOrigin) {
+// http://crbug.com/44589. Hangs on Mac, crashes on Windows
+#if defined(OS_MAC) || defined(OS_WINDOWS)
+#define MAYBE_NoInfobarForDeniedOrigin DISABLED_NoInfobarForDeniedOrigin
+#else
+#define MAYBE_NoInfobarForDeniedOrigin NoInfobarForDeniedOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   current_browser_->profile()->GetGeolocationContentSettingsMap()->
       SetContentSetting(current_url_, current_url_, CONTENT_SETTING_BLOCK);
