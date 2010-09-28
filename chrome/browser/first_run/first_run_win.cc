@@ -84,6 +84,7 @@ bool InvokeGoogleUpdateForRename() {
                                        google_update::kRegRenameCmdField,
                                        id, &phandle))) {
       HANDLE handle = HANDLE(phandle);
+      WaitForSingleObject(handle, INFINITE);
       DWORD exit_code;
       ::GetExitCodeProcess(handle, &exit_code);
       ::CloseHandle(handle);
@@ -294,20 +295,7 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
   }
 
   // Rename didn't work so try to rename by calling Google Update
-  if (InvokeGoogleUpdateForRename())
-    return true;
-
-  // Rename still didn't work so just try to rename exe ourselves (for
-  // backward compatibility, can be deleted once the new process works).
-  std::wstring backup_exe;
-  if (!GetBackupChromeFile(&backup_exe))
-    return false;
-  if (::ReplaceFileW(curr_chrome_exe.c_str(), new_chrome_exe.value().c_str(),
-                     backup_exe.c_str(), REPLACEFILE_IGNORE_MERGE_ERRORS,
-                     NULL, NULL)) {
-    return true;
-  }
-  return false;
+  return InvokeGoogleUpdateForRename();
 }
 
 // static
