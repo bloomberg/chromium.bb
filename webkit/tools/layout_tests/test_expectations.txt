@@ -15,3 +15,6 @@ BUGATWILSON :   storage/indexeddb/transaction-basics.html = CRASH
 // To be upstreamed.
 // Started failing in WebKit r68388:68412.
 BUGSENORBLANCO WIN DEBUG : media/video-size.html = CRASH
+
+// Upstreamed; remove this on roll past r68543.
+BUGSENORBLANCO WIN : platform/win/plugins/window-geometry-initialized-before-set-window.html = TEXT
