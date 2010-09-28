@@ -23,11 +23,13 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
   };
 
   MockSpeechInputBubble(TabContents*, Delegate* delegate, const gfx::Rect&) {
+    LOG(INFO) << "MockSpeechInputBubble created";
     MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableFunction(&InvokeDelegate, delegate));
   }
 
   static void InvokeDelegate(Delegate* delegate) {
+    LOG(INFO) << "MockSpeechInputBubble invoking delegate for type " << type_;
     switch (type_) {
       case BUBBLE_TEST_FOCUS_CHANGED:
         delegate->InfoBubbleFocusChanged();
@@ -82,6 +84,7 @@ class SpeechInputBubbleControllerTest
   // SpeechInputBubbleControllerDelegate methods.
   virtual void InfoBubbleButtonClicked(int caller_id,
                                        SpeechInputBubble::Button button) {
+    LOG(INFO) << "Received InfoBubbleButtonClicked for button " << button;
     EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::IO));
     if (button == SpeechInputBubble::BUTTON_CANCEL) {
       cancel_clicked_ = true;
@@ -92,6 +95,7 @@ class SpeechInputBubbleControllerTest
   }
 
   virtual void InfoBubbleFocusChanged(int caller_id) {
+    LOG(INFO) << "Received InfoBubbleFocusChanged";
     EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::IO));
     focus_changed_ = true;
     MessageLoop::current()->Quit();
@@ -157,9 +161,10 @@ MockSpeechInputBubble::BubbleType MockSpeechInputBubble::type_ =
 // Test that the speech bubble UI gets created in the UI thread and that the
 // focus changed callback comes back in the IO thread.
 //
-// Crashes on Win only.  http://crbug.com/54044
+// This test times out sometimes on windows, see http://crbug.com/54044. To
+// help find the cause it is left running so we can collect logs when it fails.
 #if defined(OS_WIN)
-#define MAYBE_TestFocusChanged DISABLED_TestFocusChanged
+#define MAYBE_TestFocusChanged FLAKY_TestFocusChanged
 #else
 #define MAYBE_TestFocusChanged TestFocusChanged
 #endif
