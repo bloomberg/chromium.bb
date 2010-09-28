@@ -33,8 +33,7 @@ TEST(DecoderVerbatimTest, SimpleDecode) {
   begin_rect->set_pixel_format(PixelFormatAscii);
 
   // Prepare the rect data.
-  msg->mutable_update_stream_packet()->mutable_rect_data()->set_data(
-      kData, sizeof(kData));
+  msg->mutable_update_stream_packet()->mutable_rect_data()->set_data(kData);
 
   // Prepare the end rect.
   msg->mutable_update_stream_packet()->mutable_end_rect();

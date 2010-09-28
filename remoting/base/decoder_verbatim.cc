@@ -102,7 +102,20 @@ bool DecoderVerbatim::HandleRectData(ChromotingHostMessage* message) {
   // Copy the data line by line.
   const int src_stride = bytes_per_pixel_ * rect_width_;
   const char* src =
-      message->update_stream_packet().rect_data().data().c_str();
+      message->update_stream_packet().rect_data().data().data();
+
+  // Make sure there's enough data in |message|.
+  const int src_size =
+      message->update_stream_packet().rect_data().data().length();
+  if (src_size != src_stride * rect_height_)
+    return false;
+
+  // Make sure there's enough space for us to write to.
+  if (frame_->height() < static_cast<size_t>(rect_height_) ||
+      frame_->stride(media::VideoFrame::kRGBPlane) < src_stride) {
+    return false;
+  }
+
   int src_stride_dir = src_stride;
   if (reverse_rows_) {
     // Copy rows from bottom to top to flip the image vertically.
