@@ -23,9 +23,8 @@
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "chrome/browser/tabs/tab_handler.h"
-#include "chrome/browser/tabs/tab_strip_model_delegate.h"   // TODO(beng): remove
-#include "chrome/browser/tabs/tab_strip_model_observer.h"   // TODO(beng): remove
+#include "chrome/browser/tabs/tab_strip_model_delegate.h"
+#include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/tab_contents/match_preview_delegate.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -51,7 +50,8 @@ namespace gfx {
 class Point;
 }
 
-class Browser : public TabHandlerDelegate,
+class Browser : public TabStripModelDelegate,
+                public TabStripModelObserver,
                 public TabContentsDelegate,
                 public PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
@@ -316,8 +316,7 @@ class Browser : public TabHandlerDelegate,
   // TabStripModel pass-thrus /////////////////////////////////////////////////
 
   TabStripModel* tabstrip_model() const {
-    // TODO(beng): remove this accessor. It violates google style.
-    return tab_handler_->GetTabStripModel();
+    return const_cast<TabStripModel*>(tabstrip_model_.get());
   }
 
   int tab_count() const;
@@ -567,9 +566,6 @@ class Browser : public TabHandlerDelegate,
   static void RegisterPrefs(PrefService* prefs);
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Helper function to run unload listeners on a TabContents.
-  static bool RunUnloadEventsHelper(TabContents* contents);
-
   // Returns the Browser which contains the tab with the given
   // NavigationController, also filling in |index| (if valid) with the tab's
   // index in the tab strip.
@@ -614,7 +610,7 @@ class Browser : public TabHandlerDelegate,
 
   // Interface implementations ////////////////////////////////////////////////
 
-  // Overridden from PageNavigator:
+  // Overridden from PageNavigator
   virtual void OpenURL(const GURL& url, const GURL& referrer,
                        WindowOpenDisposition disposition,
                        PageTransition::Type transition);
@@ -622,13 +618,28 @@ class Browser : public TabHandlerDelegate,
   // Overridden from CommandUpdater::CommandUpdaterDelegate:
   virtual void ExecuteCommand(int id);
 
-  // Overridden from TabRestoreServiceObserver:
+  // Helper function to run unload listeners on a TabContents.
+  static bool RunUnloadEventsHelper(TabContents* contents);
+
+  // TabRestoreServiceObserver /////////////////////////////////////////////////
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
 
-  // Overridden from TabHandlerDelegate:
-  virtual Profile* GetProfile() const;
-  virtual Browser* AsBrowser();
+ private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
+
+  // Used to describe why a tab is being detached. This is used by
+  // TabDetachedAtImpl.
+  enum DetachType {
+    // Result of TabDetachedAt.
+    DETACH_TYPE_DETACH,
+
+    // Result of TabReplacedAt.
+    DETACH_TYPE_REPLACE,
+
+    // Result of the tab strip not having any significant tabs.
+    DETACH_TYPE_EMPTY
+  };
 
   // Overridden from TabStripModelDelegate:
   virtual TabContents* AddBlankTab(bool foreground);
@@ -682,22 +693,6 @@ class Browser : public TabHandlerDelegate,
                              int index);
   virtual void TabPinnedStateChanged(TabContents* contents, int index);
   virtual void TabStripEmpty();
-
- private:
-  FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
-
-  // Used to describe why a tab is being detached. This is used by
-  // TabDetachedAtImpl.
-  enum DetachType {
-    // Result of TabDetachedAt.
-    DETACH_TYPE_DETACH,
-
-    // Result of TabReplacedAt.
-    DETACH_TYPE_REPLACE,
-
-    // Result of the tab strip not having any significant tabs.
-    DETACH_TYPE_EMPTY
-  };
 
   // Overridden from TabContentsDelegate:
   virtual void OpenURLFromTab(TabContents* source,
@@ -982,8 +977,8 @@ class Browser : public TabHandlerDelegate,
   // This Browser's window.
   BrowserWindow* window_;
 
-  // This Browser's current TabHandler.
-  scoped_ptr<TabHandler> tab_handler_;
+  // This Browser's TabStripModel.
+  scoped_ptr<TabStripModel> tabstrip_model_;
 
   // The CommandUpdater that manages the browser window commands.
   CommandUpdater command_updater_;
