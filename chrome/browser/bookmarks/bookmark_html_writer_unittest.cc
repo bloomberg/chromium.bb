@@ -141,7 +141,7 @@ class BookmarksObserver : public BookmarksExportObserver {
 
 // Tests bookmark_html_writer by populating a BookmarkModel, writing it out by
 // way of bookmark_html_writer, then using the importer to read it back in.
-TEST_F(BookmarkHTMLWriterTest, DISABLED_Test) {
+TEST_F(BookmarkHTMLWriterTest, Test) {
   MessageLoop message_loop;
   ChromeThread fake_ui_thread(ChromeThread::UI, &message_loop);
   ChromeThread fake_file_thread(ChromeThread::FILE, &message_loop);
@@ -186,7 +186,7 @@ TEST_F(BookmarkHTMLWriterTest, DISABLED_Test) {
   GURL url1_favicon("http://url1/icon.ico");
   GURL url2("http://url2");
   GURL url3("http://url3");
-  GURL url4("http://\"&;\"");
+  GURL url4("javascript:alert(\"Hello!\");");
   base::Time t1(base::Time::Now());
   base::Time t2(t1 + base::TimeDelta::FromHours(1));
   base::Time t3(t1 + base::TimeDelta::FromHours(1));
