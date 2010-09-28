@@ -125,6 +125,7 @@ FirstRunDialog::~FirstRunDialog() {
 
 void FirstRunDialog::ShowSearchEngineWindow() {
   search_engine_window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_deletable(GTK_WINDOW(search_engine_window_), FALSE);
   gtk_window_set_title(
       GTK_WINDOW(search_engine_window_),
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_TITLE).c_str());
@@ -209,12 +210,11 @@ void FirstRunDialog::ShowDialog() {
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_TITLE).c_str(),
       NULL,  // No parent
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
-      GTK_STOCK_QUIT,
-      GTK_RESPONSE_REJECT,
       NULL);
   gtk_util::AddButtonToDialog(dialog_,
       l10n_util::GetStringUTF8(IDS_FIRSTRUN_DLG_OK).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
+  gtk_window_set_deletable(GTK_WINDOW(dialog_), FALSE);
 
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
 
@@ -223,30 +223,30 @@ void FirstRunDialog::ShowDialog() {
 
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
 
+  make_default_ = gtk_check_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_FR_CUSTOMIZE_DEFAULT_BROWSER).c_str());
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(make_default_), TRUE);
+  gtk_box_pack_start(GTK_BOX(content_area), make_default_, FALSE, FALSE, 0);
+
+  report_crashes_ = gtk_check_button_new();
   GtkWidget* check_label = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ENABLE_LOGGING).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(check_label), TRUE);
+  gtk_container_add(GTK_CONTAINER(report_crashes_), check_label);
+  GtkWidget* learn_more_vbox = gtk_vbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(learn_more_vbox), report_crashes_,
+                     FALSE, FALSE, 0);
 
   GtkWidget* learn_more_link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
-  // Stick it in an hbox so it doesn't expand to the whole width.
-  GtkWidget* learn_more_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(learn_more_hbox),
+  gtk_button_set_alignment(GTK_BUTTON(learn_more_link), 0.0, 0.5);
+  gtk_box_pack_start(GTK_BOX(learn_more_vbox),
                      gtk_util::IndentWidget(learn_more_link),
                      FALSE, FALSE, 0);
   g_signal_connect(learn_more_link, "clicked",
                    G_CALLBACK(OnLearnMoreLinkClickedThunk), this);
 
-  report_crashes_ = gtk_check_button_new();
-  gtk_container_add(GTK_CONTAINER(report_crashes_), check_label);
-
-  gtk_box_pack_start(GTK_BOX(content_area), report_crashes_, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(content_area), learn_more_hbox, FALSE, FALSE, 0);
-
-  make_default_ = gtk_check_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_FR_CUSTOMIZE_DEFAULT_BROWSER).c_str());
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(make_default_), TRUE);
-  gtk_box_pack_start(GTK_BOX(content_area), make_default_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(content_area), learn_more_vbox, FALSE, FALSE, 0);
 
   g_signal_connect(dialog_, "response",
                    G_CALLBACK(OnResponseDialogThunk), this);
@@ -359,26 +359,24 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
     gtk_widget_hide_all(dialog_);
   response_ = response;
 
-  if (response == GTK_RESPONSE_ACCEPT) {
-    // Mark that first run has ran.
-    FirstRun::CreateSentinel();
+  // Mark that first run has ran.
+  FirstRun::CreateSentinel();
 
-    // Check if user has opted into reporting.
-    if (report_crashes_ &&
-        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(report_crashes_))) {
+  // Check if user has opted into reporting.
+  if (report_crashes_ &&
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(report_crashes_))) {
 #if defined(USE_LINUX_BREAKPAD)
-      if (GoogleUpdateSettings::SetCollectStatsConsent(true))
-        InitCrashReporter();
+    if (GoogleUpdateSettings::SetCollectStatsConsent(true))
+      InitCrashReporter();
 #endif
-    } else {
-      GoogleUpdateSettings::SetCollectStatsConsent(false);
-    }
+  } else {
+    GoogleUpdateSettings::SetCollectStatsConsent(false);
+  }
 
-    // If selected set as default browser.
-    if (make_default_ &&
-        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(make_default_))) {
-      ShellIntegration::SetAsDefaultBrowser();
-    }
+  // If selected set as default browser.
+  if (make_default_ &&
+      gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(make_default_))) {
+    ShellIntegration::SetAsDefaultBrowser();
   }
 
   FirstRunDone();
