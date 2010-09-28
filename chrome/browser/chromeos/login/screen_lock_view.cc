@@ -12,6 +12,8 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_view.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
+#include "chrome/browser/profile_manager.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -215,4 +217,10 @@ void ScreenLockView::Observe(
   user_view_->SetImage(user->image());
 }
 
+void ScreenLockView::ViewHierarchyChanged(bool is_add,
+                                          views::View* parent,
+                                          views::View* child) {
+  if (is_add && this == child)
+    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
+}
 }  // namespace chromeos

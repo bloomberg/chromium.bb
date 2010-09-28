@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_ACCESSIBILITY_HELPER_H_
 #pragma once
 
+#include <map>
+#include <vector>
+
 #include "app/keyboard_codes.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -15,6 +18,7 @@
 
 class Profile;
 namespace views {
+class Accelerator;
 class View;
 }
 
@@ -25,25 +29,44 @@ class WizardAccessibilityHelper {
   // Get Singleton instance of WizardAccessibilityHelper.
   static WizardAccessibilityHelper* GetInstance();
 
-  // Enables Accessibility by setting the accessibility pref and
-  // registering the specified view_tree to raise UI notifications.
-  void EnableAccessibility(views::View* view_tree, Profile* profile);
+  // Get accelerator for enabling accessibility.
+  static views::Accelerator GetAccelerator();
 
-  // Enabled accessibility for the specified view_tree if the
-  // accessibility pref is already set.
-  void MaybeEnableAccessibility(views::View* view_tree, Profile* profile);
+  // Enables Accessibility by setting the accessibility pref and registers
+  // all views in the view buffer to raise accessibility notifications,
+  // including the specified |view_tree|.
+  void EnableAccessibility(views::View* view_tree);
 
-  // Keyboard accelerator key to enable accessibility.
-  static const app::KeyboardCode accelerator = app::VKEY_Z;
+  // Enables accessibility for the specified |view_tree| if the
+  // accessibility pref is already set. Otherwise the |view_tree| is
+  // added to a view buffer so that accessibility can be enabled for it
+  // later when requested.
+  void MaybeEnableAccessibility(views::View* view_tree);
+
+  // Speak the given text if the accessibility pref is already set. |queue|
+  // specifies whether this utterance will be queued or spoken immediately.
+  // |interruptible| specified whether this utterance can be flushed by a
+  // subsequent utterance.
+  void MaybeSpeak(const char* str, bool queue, bool interruptible);
 
  private:
   friend struct DefaultSingletonTraits<WizardAccessibilityHelper>;
-  WizardAccessibilityHelper();
-  ~WizardAccessibilityHelper() {}
 
-  scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
+  WizardAccessibilityHelper();
+
+  virtual ~WizardAccessibilityHelper() {}
+
+  static scoped_ptr<views::Accelerator> accelerator_;
+
+  void AddViewToBuffer(views::View* view_tree);
+
+  std::map<views::View*, bool> views_buffer_;
+
+  std::vector<AccessibleViewHelper*> accessible_view_helpers_;
 
   scoped_ptr<WizardAccessibilityHandler> accessibility_handler_;
+
+  Profile* profile_;
 
   // Used for tracking registrations to accessibility notifications.
   NotificationRegistrar registrar_;

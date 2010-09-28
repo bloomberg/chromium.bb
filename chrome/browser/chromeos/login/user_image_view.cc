@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
+#include "chrome/browser/profile_manager.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -161,6 +163,13 @@ void UserImageView::UpdateVideoFrame(const SkBitmap& frame) {
           kUserImageSize);
 
   user_image_->SetImage(&user_image);
+}
+
+void UserImageView::ViewHierarchyChanged(bool is_add,
+                                         views::View* parent,
+                                         views::View* child) {
+  if (is_add && this == child)
+    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
 }
 
 gfx::Size UserImageView::GetPreferredSize() {

@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -89,6 +90,7 @@ NewUserView::NewUserView(Delegate* delegate,
       accel_focus_user_(views::Accelerator(app::VKEY_U, false, false, true)),
       accel_login_off_the_record_(
           views::Accelerator(app::VKEY_B, false, false, true)),
+      accel_enable_accessibility_(WizardAccessibilityHelper::GetAccelerator()),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       focus_delayed_(false),
@@ -161,6 +163,7 @@ void NewUserView::Init() {
   AddAccelerator(accel_focus_user_);
   AddAccelerator(accel_focus_pass_);
   AddAccelerator(accel_login_off_the_record_);
+  AddAccelerator(accel_enable_accessibility_);
 
   UpdateLocalizedStrings();
   RequestFocus();
@@ -180,6 +183,8 @@ bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
     password_field_->RequestFocus();
   } else if (accelerator == accel_login_off_the_record_) {
     delegate_->OnLoginOffTheRecord();
+  } else if (accelerator == accel_enable_accessibility_) {
+    WizardAccessibilityHelper::GetInstance()->EnableAccessibility(this);
   } else {
     return false;
   }
@@ -268,6 +273,7 @@ void NewUserView::ViewHierarchyChanged(bool is_add,
     MessageLoop::current()->PostTask(FROM_HERE,
         focus_grabber_factory_.NewRunnableMethod(
             &NewUserView::FocusFirstField));
+    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
   }
 }
 

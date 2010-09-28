@@ -52,6 +52,12 @@ class UpdateView : public views::View {
   virtual void Layout();
   virtual bool AcceleratorPressed(const views::Accelerator& a);
 
+ protected:
+  // views::View implementation:
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child);
+
  private:
   // Creates Label control and adds it as a child.
   void InitLabel(views::Label** label);

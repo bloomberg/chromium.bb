@@ -13,9 +13,11 @@
 // Class that handles the accessibility notifications and generates
 // appropriate spoken/audio feedback.
 class WizardAccessibilityHandler : public NotificationObserver {
- private:
+ public:
   // Speaks the specified string.
-  void Speak(const char* speak_str);
+  void Speak(const char* speak_str, bool queue, bool interruptible);
+
+ private:
 
   // Override from NotificationObserver.
   virtual void Observe(NotificationType type,

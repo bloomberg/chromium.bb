@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/status/network_dropdown_button.h"
 #include "gfx/size.h"
 #include "grit/chromium_strings.h"
@@ -338,6 +339,13 @@ void NetworkSelectionView::OnLocaleChanged() {
 
   Layout();
   SchedulePaint();
+}
+
+void NetworkSelectionView::ViewHierarchyChanged(bool is_add,
+                                                View* parent,
+                                                View* child) {
+  if (is_add && this == child)
+    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

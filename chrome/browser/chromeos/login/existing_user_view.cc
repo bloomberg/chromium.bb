@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
 #include "views/focus/focus_manager.h"
 #include "views/grid_layout.h"
@@ -69,12 +70,13 @@ class UserEntryTextfield : public views::Textfield {
   DISALLOW_COPY_AND_ASSIGN(UserEntryTextfield);
 };
 
+
 ExistingUserView::ExistingUserView(UserController* uc)
-    : accel_login_off_the_record_(
-          views::Accelerator(app::VKEY_B, false, false, true)),
-      password_field_(NULL),
+    : password_field_(NULL),
       submit_button_(NULL),
-      user_controller_(uc) {
+      user_controller_(uc),
+      accel_enable_accessibility_(
+          WizardAccessibilityHelper::GetAccelerator()) {
   AddAccelerator(accel_login_off_the_record_);
 }
 
@@ -108,6 +110,26 @@ void ExistingUserView::RecreateFields() {
   SetLayoutManager(layout);
   layout->Layout(this);
   SchedulePaint();
+  AddAccelerator(accel_enable_accessibility_);
+}
+
+bool ExistingUserView::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  if (accelerator == accel_login_off_the_record_) {
+    user_controller_->OnLoginOffTheRecord();
+    return true;
+  } else if (accelerator == accel_enable_accessibility_) {
+    WizardAccessibilityHelper::GetInstance()->EnableAccessibility(this);
+    return true;
+  }
+  return false;
+}
+
+void ExistingUserView::ViewHierarchyChanged(bool is_add,
+                                            views::View* parent,
+                                            views::View* child) {
+  if (is_add && this == child)
+    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
 }
 
 void ExistingUserView::FocusPasswordField() {
@@ -119,15 +141,4 @@ void ExistingUserView::FocusPasswordField() {
 void ExistingUserView::OnLocaleChanged() {
   RecreateFields();
 }
-
-
-bool ExistingUserView::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
-  if (accelerator == accel_login_off_the_record_) {
-    user_controller_->OnLoginOffTheRecord();
-    return true;
-  }
-  return false;
-}
-
 }  // namespace chromeos

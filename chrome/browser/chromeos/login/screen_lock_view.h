@@ -68,6 +68,12 @@ class ScreenLockView : public views::View,
   // UserView::Delegate implementation:
   virtual void OnSignout();
 
+ protected:
+  // views::View implementation:
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child);
+
  private:
   friend class test::ScreenLockerTester;
 

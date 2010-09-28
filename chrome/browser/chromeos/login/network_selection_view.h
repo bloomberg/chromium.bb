@@ -71,6 +71,9 @@ class NetworkSelectionView : public views::View,
  protected:
   // Overridden from views::View.
   virtual void OnLocaleChanged();
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child);
 
   // LoginHtmlDialog::Delegate implementation:
   virtual void OnDialogClosed() {}

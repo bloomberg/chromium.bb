@@ -92,8 +92,8 @@ class ContentView : public views::View {
                                               false, true, true)),
         accel_register_screen_(views::Accelerator(app::VKEY_R,
                                                   false, true, true)),
-        accel_enable_accessibility_(views::Accelerator(
-            WizardAccessibilityHelper::accelerator, false, true, true)) {
+        accel_enable_accessibility_(
+            WizardAccessibilityHelper::GetAccelerator()) {
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
@@ -132,7 +132,7 @@ class ContentView : public views::View {
       controller->ShowRegistrationScreen();
     } else if (accel == accel_enable_accessibility_) {
       WizardAccessibilityHelper::GetInstance()->EnableAccessibility(
-          controller->contents(), ProfileManager::GetDefaultProfile());
+          controller->contents());
     } else {
       return false;
     }

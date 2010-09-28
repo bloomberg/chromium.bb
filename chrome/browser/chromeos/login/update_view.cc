@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/border.h"
@@ -207,6 +208,11 @@ bool UpdateView::AcceleratorPressed(const views::Accelerator& a) {
   }
 #endif
   return false;
+}
+
+void UpdateView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
+  if (is_add && this == child)
+    WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
 }
 
 void UpdateView::InitLabel(views::Label** label) {

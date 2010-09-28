@@ -52,6 +52,12 @@ class UserImageView : public views::View,
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
+ protected:
+  // views::View overrides:
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child);
+
  private:
   // Initializes layout manager for this view.
   void InitLayout();

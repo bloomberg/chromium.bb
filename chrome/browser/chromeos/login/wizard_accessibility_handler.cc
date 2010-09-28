@@ -17,7 +17,7 @@ void WizardAccessibilityHandler::Observe(
   info = Details<const AccessibilityControlInfo>(details).ptr();
   switch (type.value) {
     case NotificationType::ACCESSIBILITY_CONTROL_FOCUSED:
-      Speak(info->name().c_str());
+      Speak(info->name().c_str(), false, true);
       break;
     case NotificationType::ACCESSIBILITY_CONTROL_ACTION:
       break;
@@ -33,10 +33,19 @@ void WizardAccessibilityHandler::Observe(
   }
 }
 
-void WizardAccessibilityHandler::Speak(const char* speak_str) {
+void WizardAccessibilityHandler::Speak(const char* speak_str,
+                                       bool queue,
+                                       bool interruptible) {
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-        StopSpeaking();
+    if (queue || !interruptible) {
+      std::string props = "";
+      props.append("enqueue=");
+      props.append(queue ? "1;" : "0;");
+      props.append("interruptible=");
+      props.append(interruptible ? "1;" : "0;");
+      chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
+          SetSpeakProperties(props.c_str());
+    }
     chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
         Speak(speak_str);
   }

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EXISTING_USER_VIEW_H_
 #pragma once
 
+#include "views/accelerator.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
@@ -32,6 +33,9 @@ class ExistingUserView : public views::View {
  protected:
   // views::View overrides:
   virtual void OnLocaleChanged();
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View* parent,
+                                    views::View* child);
 
   views::Accelerator accel_login_off_the_record_;
 
@@ -42,6 +46,9 @@ class ExistingUserView : public views::View {
   views::NativeButton* submit_button_;
 
   UserController* user_controller_;
+
+ private:
+  views::Accelerator accel_enable_accessibility_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserView);
 };

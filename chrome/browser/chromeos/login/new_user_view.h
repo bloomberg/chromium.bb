@@ -113,7 +113,8 @@ class NewUserView : public views::View,
 
  protected:
   // views::View overrides:
-  virtual void ViewHierarchyChanged(bool is_add, views::View *parent,
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    views::View *parent,
                                     views::View *child);
   virtual void NativeViewHierarchyChanged(bool attached,
                                           gfx::NativeView native_view,
@@ -151,6 +152,7 @@ class NewUserView : public views::View,
   views::Accelerator accel_focus_pass_;
   views::Accelerator accel_focus_user_;
   views::Accelerator accel_login_off_the_record_;
+  views::Accelerator accel_enable_accessibility_;
 
   // Notifications receiver.
   Delegate* delegate_;
