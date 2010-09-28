@@ -25,6 +25,7 @@ class WebVideoFrameImpl : public WebVideoFrame {
   virtual unsigned planes() const;
   virtual int stride(unsigned plane) const;
   virtual const void* data(unsigned plane) const;
+  virtual unsigned texture(unsigned plane) const;
 
  private:
   scoped_refptr<media::VideoFrame> video_frame_;

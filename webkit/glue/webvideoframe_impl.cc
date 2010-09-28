@@ -87,4 +87,10 @@ const void* WebVideoFrameImpl::data(unsigned plane) const {
   return NULL;
 }
 
+unsigned WebVideoFrameImpl::texture(unsigned plane) const {
+  if (video_frame_.get())
+    return video_frame_->gl_texture(plane);
+  return NULL;
+}
+
 }  // namespace webkit_glue
