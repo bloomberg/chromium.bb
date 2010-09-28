@@ -69,6 +69,7 @@
     # codesign tests should run *after* signing. crbug.com/50481
     '-codesign',
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
+    '-crash_reporter',  # --enable-crash-reporter not working. crbug.com/57189
   ],
 
   'linux': [  # linux != chromeos
