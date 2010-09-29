@@ -74,6 +74,7 @@
     "chrome.bookmarks.search": "bookmarks.html#method-search", 
     "chrome.extension.onRequest": "extension.html#event-onRequest", 
     "chrome.extension.getBackgroundPage": "extension.html#method-getBackgroundPage", 
+    "chrome.experimental.management.launchApp": "experimental.management.html#method-launchApp", 
     "chrome.pageAction.hide": "pageAction.html#method-hide", 
     "chrome.experimental.omnibox.styleMatch": "experimental.omnibox.html#method-styleMatch", 
     "chrome.experimental.sidebar.expand": "experimental.sidebar.html#method-expand", 

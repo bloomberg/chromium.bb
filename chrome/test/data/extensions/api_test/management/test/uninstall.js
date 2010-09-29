@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 function uninstall(name) {
-  listenOnce(chrome.management.onUninstalled, function(info) {
-    assertEq(info.name, name);
+  var expected_id;
+  listenOnce(chrome.management.onUninstalled, function(id) {
+    assertEq(expected_id, id);
   });
 
   chrome.management.getAll(callback(function(items) {
     var old_count = items.length;
     var item = getItemNamed(items, name);
+    expected_id = item.id;
     chrome.management.uninstall(item.id, function() {
       assertNoLastError();
       chrome.management.getAll(function(items2) {

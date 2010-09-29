@@ -211,14 +211,21 @@ void ExtensionManagementEventRouter::Observe(
   }
 
   Profile* profile = Source<Profile>(source).ptr();
-  Extension* extension = Details<Extension>(details).ptr();
   CHECK(profile);
-  CHECK(extension);
 
-  ExtensionsService* service = profile->GetExtensionsService();
-  bool enabled = service->GetExtensionById(extension->id(), false) != NULL;
   ListValue args;
-  args.Append(CreateExtensionInfo(*extension, enabled));
+  if (event_name == events::kOnExtensionUninstalled) {
+    // TODO(akalin) - change this to get the id from UninstalledExtensionInfo
+    // when re-landing change to how we send the uninstall notification.
+    std::string extension_id = Details<Extension>(details).ptr()->id();
+    args.Append(Value::CreateStringValue(extension_id));
+  } else {
+    Extension* extension = Details<Extension>(details).ptr();
+    CHECK(extension);
+    ExtensionsService* service = profile->GetExtensionsService();
+    bool enabled = service->GetExtensionById(extension->id(), false) != NULL;
+    args.Append(CreateExtensionInfo(*extension, enabled));
+  }
 
   std::string args_json;
   base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);

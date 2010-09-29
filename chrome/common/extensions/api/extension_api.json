@@ -4065,7 +4065,13 @@
         "name": "onUninstalled",
         "description": "Fired when an app or extension has been uninstalled.",
         "type": "function",
-        "parameters": [{"name": "info", "$ref":"ExtensionInfo"}]
+        "parameters": [
+          {
+           "name": "id", 
+           "type": "string",
+           "description": "The id of the extension or app that was uninstalled."
+          }
+        ]
       },
       {
         "name": "onEnabled",
