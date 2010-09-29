@@ -18,6 +18,7 @@
 #include "base/process_util.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -468,7 +469,7 @@ std::string MakeURLErrorDescription(const WebKit::WebURLError& error) {
   } else
     DLOG(WARNING) << "Unknown error domain";
 
-  return StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
+  return base::StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
       domain.c_str(), code, error.unreachableURL.spec().data());
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "net/http/http_request_headers.h"
@@ -171,13 +172,13 @@ void AppCacheURLRequestJob::SetupRangeResponse() {
   headers->RemoveHeader(kRangeHeader);
   headers->ReplaceStatusLine(kPartialStatusLine);
   headers->AddHeader(
-      StringPrintf("%s: %d", kLengthHeader, length));
+      base::StringPrintf("%s: %d", kLengthHeader, length));
   headers->AddHeader(
-      StringPrintf("%s: bytes %d-%d/%d",
-                   kRangeHeader,
-                   offset,
-                   offset + length - 1,
-                   resource_size));
+      base::StringPrintf("%s: bytes %d-%d/%d",
+                         kRangeHeader,
+                         offset,
+                         offset + length - 1,
+                         resource_size));
 }
 
 void AppCacheURLRequestJob::OnReadComplete(int result) {

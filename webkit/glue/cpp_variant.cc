@@ -9,6 +9,7 @@
 #include "webkit/glue/cpp_variant.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
 using WebKit::WebBindings;
@@ -232,7 +233,7 @@ std::vector<std::wstring> CppVariant::ToStringVector() const {
       length = std::min(60000, length);
       for (int i = 0; i < length; ++i) {
         // Get each of the items.
-        std::string index = StringPrintf("%d", i);
+        std::string index = base::StringPrintf("%d", i);
         NPIdentifier index_id = WebBindings::getStringIdentifier(index.c_str());
         if (WebBindings::hasProperty(NULL, np_value, index_id)) {
           NPVariant index_value;

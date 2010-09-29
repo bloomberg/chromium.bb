@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
@@ -160,7 +161,7 @@ std::string GetAllHeaders(const WebURLResponse& response) {
     return result;
 
   // TODO(darin): Shouldn't we also report HTTP version numbers?
-  result = StringPrintf("HTTP %d ", response.httpStatusCode());
+  result = base::StringPrintf("HTTP %d ", response.httpStatusCode());
   result.append(status.utf8());
   result.append("\n");
 

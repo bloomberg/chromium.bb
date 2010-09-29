@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/format_macros.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 
 namespace {
 
@@ -61,12 +62,13 @@ const std::string MediaResourceLoaderBridgeFactory::GenerateHeaders (
   if (first_byte_position > kPositionNotSpecified &&
       last_byte_position > kPositionNotSpecified) {
     if (first_byte_position <= last_byte_position) {
-      header = StringPrintf("Range: bytes=%" PRId64 "-%" PRId64,
-                            first_byte_position,
-                            last_byte_position);
+      header = base::StringPrintf("Range: bytes=%" PRId64 "-%" PRId64,
+                                  first_byte_position,
+                                  last_byte_position);
     }
   } else if (first_byte_position > kPositionNotSpecified) {
-    header = StringPrintf("Range: bytes=%" PRId64 "-", first_byte_position);
+    header = base::StringPrintf("Range: bytes=%" PRId64 "-",
+                                first_byte_position);
   } else if (last_byte_position > kPositionNotSpecified) {
     NOTIMPLEMENTED() << "Suffix range not implemented";
   }

@@ -18,6 +18,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/win_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
@@ -1195,7 +1196,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
       parent_thread_id_ = GetWindowThreadProcessId(parent_, NULL);
     HKL parent_layout = GetKeyboardLayout(parent_thread_id_);
     if (keyboard_layout_ != parent_layout) {
-      std::wstring layout_name(StringPrintf(L"%08x", parent_layout));
+      std::wstring layout_name(base::StringPrintf(L"%08x", parent_layout));
       LoadKeyboardLayout(layout_name.c_str(), KLF_ACTIVATE);
       keyboard_layout_ = parent_layout;
     }

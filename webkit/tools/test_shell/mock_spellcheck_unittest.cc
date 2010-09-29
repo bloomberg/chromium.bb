@@ -4,6 +4,7 @@
 
 #include "base/format_macros.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
@@ -63,7 +64,7 @@ TEST_F(MockSpellCheckTest, SpellCheckStrings) {
 
   MockSpellCheck spellchecker;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    SCOPED_TRACE(StringPrintf("kTestCases[%" PRIuS "]", i));
+    SCOPED_TRACE(base::StringPrintf("kTestCases[%" PRIuS "]", i));
 
     std::wstring input(kTestCases[i].input);
     int misspelling_start;

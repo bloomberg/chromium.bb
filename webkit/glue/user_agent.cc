@@ -9,6 +9,7 @@
 #endif
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_info.h"
 
 // Generated
@@ -21,7 +22,8 @@ namespace webkit_glue {
 std::string GetProductVersion();
 
 std::string GetWebKitVersion() {
-  return StringPrintf("%d.%d", WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
+  return base::StringPrintf("%d.%d", WEBKIT_VERSION_MAJOR,
+                                     WEBKIT_VERSION_MINOR);
 }
 
 std::string BuildOSCpuInfo() {

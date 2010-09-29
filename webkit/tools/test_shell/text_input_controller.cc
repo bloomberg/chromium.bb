@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/tools/test_shell/text_input_controller.h"
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -140,7 +141,8 @@ void TextInputController::markedRange(
   WebRange range = main_frame->markedRange();
 
   std::string range_str;
-  SStringPrintf(&range_str, "%d,%d", range.startOffset(), range.endOffset());
+  base::SStringPrintf(&range_str, "%d,%d", range.startOffset(),
+                      range.endOffset());
   result->Set(range_str);
 }
 
@@ -155,7 +157,8 @@ void TextInputController::selectedRange(
   WebRange range = main_frame->selectionRange();
 
   std::string range_str;
-  SStringPrintf(&range_str, "%d,%d", range.startOffset(), range.endOffset());
+  base::SStringPrintf(&range_str, "%d,%d", range.startOffset(),
+                      range.endOffset());
   result->Set(range_str);
 }
 

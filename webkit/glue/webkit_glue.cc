@@ -16,6 +16,7 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -256,7 +257,7 @@ void ResetBeforeTestRun(WebView* view) {
 // code here what that would have inlined.
 void DumpLeakedObject(const char* file, int line, const char* object,
                       int count) {
-  std::string msg = StringPrintf("%s LEAKED %d TIMES", object, count);
+  std::string msg = base::StringPrintf("%s LEAKED %d TIMES", object, count);
   AppendToLog(file, line, msg.c_str());
 }
 #endif

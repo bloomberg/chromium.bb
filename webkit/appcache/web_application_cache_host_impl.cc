@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/singleton.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -108,7 +109,8 @@ void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
   const char* kFormatString = "Application Cache %s event";
-  std::string message = StringPrintf(kFormatString, kEventNames[event_id]);
+  std::string message = base::StringPrintf(kFormatString,
+                                           kEventNames[event_id]);
   OnLogMessage(LOG_INFO, message);
 
   // Most events change the status. Clear out what we know so that the latest
@@ -123,8 +125,8 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
   const char* kFormatString = "Application Cache Progress event (%d of %d) %s";
-  std::string message = StringPrintf(kFormatString, num_complete,
-                                     num_total, url.spec().c_str());
+  std::string message = base::StringPrintf(kFormatString, num_complete,
+                                           num_total, url.spec().c_str());
   OnLogMessage(LOG_INFO, message);
 
   client_->notifyProgressEventListener(url, num_total, num_complete);
@@ -135,7 +137,8 @@ void WebApplicationCacheHostImpl::OnErrorEventRaised(
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
   const char* kFormatString = "Application Cache Error event: %s";
-  std::string full_message = StringPrintf(kFormatString, message.c_str());
+  std::string full_message = base::StringPrintf(kFormatString,
+                                                message.c_str());
   OnLogMessage(LOG_ERROR, full_message);
 
   // Most events change the status. Clear out what we know so that the latest

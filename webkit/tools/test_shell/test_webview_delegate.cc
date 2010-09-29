@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/trace_event.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -210,9 +211,9 @@ std::string GetResponseDescription(const WebURLResponse& response) {
     return "(null)";
 
   const std::string url = GURL(response.url()).possibly_invalid_spec();
-  return StringPrintf("<NSURLResponse %s, http status code %d>",
-                      DescriptionSuitableForTestResult(url).c_str(),
-                      response.httpStatusCode());
+  return base::StringPrintf("<NSURLResponse %s, http status code %d>",
+                            DescriptionSuitableForTestResult(url).c_str(),
+                            response.httpStatusCode());
 }
 
 std::string GetErrorDescription(const WebURLError& error) {
@@ -240,7 +241,7 @@ std::string GetErrorDescription(const WebURLError& error) {
     DLOG(WARNING) << "Unknown error domain";
   }
 
-  return StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
+  return base::StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
       domain.c_str(), code, error.unreachableURL.spec().data());
 }
 
@@ -907,7 +908,7 @@ void TestWebViewDelegate::didFailProvisionalLoad(
   bool replace = extra_data && extra_data->pending_page_id != -1;
 
   const std::string& error_text =
-      StringPrintf("Error %d when loading url %s", error.reason,
+      base::StringPrintf("Error %d when loading url %s", error.reason,
       failed_ds->request().url().spec().data());
 
   // Make sure we never show errors in view source mode.

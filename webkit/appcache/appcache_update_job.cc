@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -532,13 +533,13 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
     std::string message;
     if (!is_valid_response_code) {
       const char* kFormatString = "Manifest fetch failed (%d) %s";
-      message = StringPrintf(kFormatString, response_code,
-                             manifest_url_.spec().c_str());
+      message = base::StringPrintf(kFormatString, response_code,
+                                   manifest_url_.spec().c_str());
     } else {
       DCHECK(!is_valid_mime_type);
       const char* kFormatString = "Invalid manifest mime type (%s) %s";
-      message = StringPrintf(kFormatString, mime_type.c_str(),
-                             manifest_url_.spec().c_str());
+      message = base::StringPrintf(kFormatString, mime_type.c_str(),
+                                   manifest_url_.spec().c_str());
     }
     HandleCacheFailure(message);
   }
@@ -576,8 +577,8 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   if (!ParseManifest(manifest_url_, manifest_data_.data(),
                      manifest_data_.length(), manifest)) {
     const char* kFormatString = "Failed to parse manifest %s";
-    const std::string message = StringPrintf(kFormatString,
-                                             manifest_url_.spec().c_str());
+    const std::string message = base::StringPrintf(kFormatString,
+        manifest_url_.spec().c_str());
     HandleCacheFailure(message);
     LOG(INFO) << message;
     return;
@@ -645,8 +646,8 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
         inprogress_cache_->AddOrModifyEntry(url, entry);
       } else {
         const char* kFormatString = "Resource fetch failed (%d) %s";
-        const std::string message = StringPrintf(kFormatString, response_code,
-                                                 request->url().spec().c_str());
+        const std::string message = base::StringPrintf(kFormatString,
+            response_code, request->url().spec().c_str());
         HandleCacheFailure(message);
         return;
       }
@@ -729,8 +730,8 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
     hosts.clear();
 
     const char* kFormatString = "Master entry fetch failed (%d) %s";
-    const std::string message = StringPrintf(kFormatString, response_code,
-                                             request->url().spec().c_str());
+    const std::string message = base::StringPrintf(kFormatString,
+        response_code, request->url().spec().c_str());
     host_notifier.SendErrorNotifications(message);
 
     // In downloading case, update result is different if all master entries

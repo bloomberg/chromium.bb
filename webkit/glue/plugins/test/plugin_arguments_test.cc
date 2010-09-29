@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 
 #include "webkit/glue/plugins/test/plugin_arguments_test.h"
 
@@ -45,7 +46,7 @@ NPError PluginArgumentsTest::New(uint16 mode, int16 argc,
       int size = atoi(size_string);
 
       for (int index = 1; index <= max_args; index++) {
-        std::string arg_name = StringPrintf("%s%d", "val", index);
+        std::string arg_name = base::StringPrintf("%s%d", "val", index);
         const char *val_string = GetArgValue(arg_name.c_str(), argc, argn,
                                              argv);
         ExpectAsciiStringNotEqual(val_string, (const char*)NULL);
