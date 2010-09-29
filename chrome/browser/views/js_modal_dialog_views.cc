@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/jsmessage_box_dialog.h"
+#include "chrome/browser/views/js_modal_dialog_views.h"
 
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
@@ -13,9 +13,9 @@
 #include "views/window/window.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// JavaScriptMessageBoxDialog, public:
+// JSModalDialogViews, public:
 
-JavaScriptMessageBoxDialog::JavaScriptMessageBoxDialog(
+JSModalDialogViews::JSModalDialogViews(
     JavaScriptAppModalDialog* parent)
     : parent_(parent),
       message_box_view_(new MessageBoxView(
@@ -31,41 +31,41 @@ JavaScriptMessageBoxDialog::JavaScriptMessageBoxDialog(
   }
 }
 
-JavaScriptMessageBoxDialog::~JavaScriptMessageBoxDialog() {
+JSModalDialogViews::~JSModalDialogViews() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// JavaScriptMessageBoxDialog, NativeAppModalDialog implementation:
+// JSModalDialogViews, NativeAppModalDialog implementation:
 
-int JavaScriptMessageBoxDialog::GetAppModalDialogButtons() const {
+int JSModalDialogViews::GetAppModalDialogButtons() const {
   return GetDialogButtons();
 }
 
-void JavaScriptMessageBoxDialog::ShowAppModalDialog() {
+void JSModalDialogViews::ShowAppModalDialog() {
   window()->Show();
 }
 
-void JavaScriptMessageBoxDialog::ActivateAppModalDialog() {
+void JSModalDialogViews::ActivateAppModalDialog() {
   window()->Show();
   window()->Activate();
 }
 
-void JavaScriptMessageBoxDialog::CloseAppModalDialog() {
+void JSModalDialogViews::CloseAppModalDialog() {
   window()->Close();
 }
 
-void JavaScriptMessageBoxDialog::AcceptAppModalDialog() {
+void JSModalDialogViews::AcceptAppModalDialog() {
   GetDialogClientView()->AcceptWindow();
 }
 
-void JavaScriptMessageBoxDialog::CancelAppModalDialog() {
+void JSModalDialogViews::CancelAppModalDialog() {
   GetDialogClientView()->CancelWindow();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// JavaScriptMessageBoxDialog, views::DialogDelegate implementation:
+// JSModalDialogViews, views::DialogDelegate implementation:
 
-int JavaScriptMessageBoxDialog::GetDefaultDialogButton() const {
+int JSModalDialogViews::GetDefaultDialogButton() const {
   if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasOKButton)
     return MessageBoxFlags::DIALOGBUTTON_OK;
 
@@ -75,7 +75,7 @@ int JavaScriptMessageBoxDialog::GetDefaultDialogButton() const {
   return MessageBoxFlags::DIALOGBUTTON_NONE;
 }
 
-int JavaScriptMessageBoxDialog::GetDialogButtons() const {
+int JSModalDialogViews::GetDialogButtons() const {
   int dialog_buttons = 0;
   if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasOKButton)
     dialog_buttons = MessageBoxFlags::DIALOGBUTTON_OK;
@@ -86,35 +86,35 @@ int JavaScriptMessageBoxDialog::GetDialogButtons() const {
   return dialog_buttons;
 }
 
-std::wstring JavaScriptMessageBoxDialog::GetWindowTitle() const {
+std::wstring JSModalDialogViews::GetWindowTitle() const {
   return parent_->title();
 }
 
 
-void JavaScriptMessageBoxDialog::WindowClosing() {
+void JSModalDialogViews::WindowClosing() {
 }
 
-void JavaScriptMessageBoxDialog::DeleteDelegate() {
+void JSModalDialogViews::DeleteDelegate() {
   delete parent_;
   delete this;
 }
 
-bool JavaScriptMessageBoxDialog::Cancel() {
+bool JSModalDialogViews::Cancel() {
   parent_->OnCancel();
   return true;
 }
 
-bool JavaScriptMessageBoxDialog::Accept() {
+bool JSModalDialogViews::Accept() {
   parent_->OnAccept(message_box_view_->GetInputText(),
                     message_box_view_->IsCheckBoxSelected());
   return true;
 }
 
-void JavaScriptMessageBoxDialog::OnClose() {
+void JSModalDialogViews::OnClose() {
   parent_->OnClose();
 }
 
-std::wstring JavaScriptMessageBoxDialog::GetDialogButtonLabel(
+std::wstring JSModalDialogViews::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (parent_->is_before_unload_dialog()) {
     if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
@@ -128,13 +128,13 @@ std::wstring JavaScriptMessageBoxDialog::GetDialogButtonLabel(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// JavaScriptMessageBoxDialog, views::WindowDelegate implementation:
+// JSModalDialogViews, views::WindowDelegate implementation:
 
-views::View* JavaScriptMessageBoxDialog::GetContentsView() {
+views::View* JSModalDialogViews::GetContentsView() {
   return message_box_view_;
 }
 
-views::View* JavaScriptMessageBoxDialog::GetInitiallyFocusedView() {
+views::View* JSModalDialogViews::GetInitiallyFocusedView() {
   if (message_box_view_->text_box())
     return message_box_view_->text_box();
   return views::DialogDelegate::GetInitiallyFocusedView();
@@ -147,7 +147,7 @@ views::View* JavaScriptMessageBoxDialog::GetInitiallyFocusedView() {
 NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
     JavaScriptAppModalDialog* dialog,
     gfx::NativeWindow parent_window) {
-  JavaScriptMessageBoxDialog* d = new JavaScriptMessageBoxDialog(dialog);
+  JSModalDialogViews* d = new JSModalDialogViews(dialog);
   views::Window::CreateChromeWindow(parent_window, gfx::Rect(), d);
   return d;
 }

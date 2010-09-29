@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_JSMESSAGE_BOX_DIALOG_H_
-#define CHROME_BROWSER_VIEWS_JSMESSAGE_BOX_DIALOG_H_
+#ifndef CHROME_BROWSER_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
+#define CHROME_BROWSER_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
 #pragma once
 
 #include "chrome/browser/js_modal_dialog.h"
@@ -17,11 +17,11 @@
 
 class MessageBoxView;
 
-class JavaScriptMessageBoxDialog : public NativeAppModalDialog,
+class JSModalDialogViews : public NativeAppModalDialog,
                                    public views::DialogDelegate {
  public:
-  explicit JavaScriptMessageBoxDialog(JavaScriptAppModalDialog* parent);
-  virtual ~JavaScriptMessageBoxDialog();
+  explicit JSModalDialogViews(JavaScriptAppModalDialog* parent);
+  virtual ~JSModalDialogViews();
 
   // Overridden from NativeAppModalDialog:
   virtual int GetAppModalDialogButtons() const;
@@ -57,7 +57,7 @@ class JavaScriptMessageBoxDialog : public NativeAppModalDialog,
   // The message box view whose commands we handle.
   MessageBoxView* message_box_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(JavaScriptMessageBoxDialog);
+  DISALLOW_COPY_AND_ASSIGN(JSModalDialogViews);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_JSMESSAGE_BOX_DIALOG_H_
+#endif  // CHROME_BROWSER_VIEWS_JS_MODAL_DIALOG_VIEWS_H_
