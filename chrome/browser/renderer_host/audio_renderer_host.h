@@ -144,8 +144,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
   virtual void OnError(media::AudioOutputController* controller,
                        int error_code);
   virtual void OnMoreData(media::AudioOutputController* controller,
-                          base::Time timestamp,
-                          uint32 pending_bytes);
+                          AudioBuffersState buffers_state);
 
  private:
   friend class AudioRendererHostTest;
@@ -207,8 +206,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
   // Request more data from the renderer. This method is used only in normal
   // latency mode.
   void DoRequestMoreData(media::AudioOutputController* controller,
-                         base::Time timestamp,
-                         uint32 pending_bytes);
+                         AudioBuffersState buffers_state);
 
   // Handle error coming from audio stream.
   void DoHandleError(media::AudioOutputController* controller, int error_code);

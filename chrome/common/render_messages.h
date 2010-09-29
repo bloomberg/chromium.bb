@@ -27,6 +27,7 @@
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
+#include "media/audio/audio_buffers_state.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
 #include "webkit/fileapi/file_system_types.h"  // enum fileapi::FileSystemType
@@ -745,6 +746,15 @@ struct SimilarTypeTraits<base::PlatformFileError> {
 template <>
 struct SimilarTypeTraits<fileapi::FileSystemType> {
   typedef int Type;
+};
+
+// Traits for AudioBuffersState structure.
+template <>
+struct ParamTraits<AudioBuffersState> {
+  typedef AudioBuffersState param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 }  // namespace IPC

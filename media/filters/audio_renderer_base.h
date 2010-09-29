@@ -78,7 +78,8 @@ class AudioRendererBase : public AudioRenderer {
   // Safe to call on any thread.
   uint32 FillBuffer(uint8* dest,
                     uint32 len,
-                    const base::TimeDelta& playback_delay);
+                    const base::TimeDelta& playback_delay,
+                    bool buffers_empty);
 
   // Helper to parse a media format and return whether we were successful
   // retrieving all the information we care about.

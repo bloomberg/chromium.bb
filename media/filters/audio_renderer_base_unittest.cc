@@ -210,7 +210,8 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   uint8 buffer[kDataSize];
   for (size_t i = 0; i < kMaxQueueSize; ++i) {
     EXPECT_EQ(kDataSize,
-              renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
+              renderer_->FillBuffer(buffer, kDataSize,
+                                    base::TimeDelta(), true));
     bytes_buffered -= kDataSize;
   }
 
@@ -234,7 +235,8 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
   EXPECT_EQ(0u, bytes_buffered % kDataSize);
   while (bytes_buffered > 0) {
     EXPECT_EQ(kDataSize,
-              renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
+              renderer_->FillBuffer(buffer, kDataSize,
+                                    base::TimeDelta(), true));
     bytes_buffered -= kDataSize;
   }
 
@@ -246,13 +248,15 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
 
   // Do an additional read to trigger NotifyEnded().
   EXPECT_CALL(host_, NotifyEnded());
-  EXPECT_EQ(0u, renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
+  EXPECT_EQ(0u, renderer_->FillBuffer(buffer, kDataSize,
+                                      base::TimeDelta(), true));
 
   // We should now report ended.
   EXPECT_TRUE(renderer_->HasEnded());
 
   // Further reads should return muted audio and not notify any more.
-  EXPECT_EQ(0u, renderer_->FillBuffer(buffer, kDataSize, base::TimeDelta()));
+  EXPECT_EQ(0u, renderer_->FillBuffer(buffer, kDataSize,
+                                      base::TimeDelta(), true));
 }
 
 }  // namespace media

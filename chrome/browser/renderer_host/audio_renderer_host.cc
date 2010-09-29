@@ -149,12 +149,11 @@ void AudioRendererHost::OnError(media::AudioOutputController* controller,
 }
 
 void AudioRendererHost::OnMoreData(media::AudioOutputController* controller,
-                                   base::Time timestamp,
-                                   uint32 pending_bytes) {
+                                   AudioBuffersState buffers_state) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &AudioRendererHost::DoRequestMoreData,
-                        controller, timestamp, pending_bytes));
+                        controller, buffers_state));
 }
 
 void AudioRendererHost::DoCompleteCreation(
@@ -243,8 +242,7 @@ void AudioRendererHost::DoSendPausedMessage(
 
 void AudioRendererHost::DoRequestMoreData(
     media::AudioOutputController* controller,
-    base::Time timestamp,
-    uint32 pending_bytes) {
+    AudioBuffersState buffers_state) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // If we already have a pending request then return.
@@ -256,10 +254,7 @@ void AudioRendererHost::DoRequestMoreData(
   entry->pending_buffer_request = true;
   SendMessage(
       new ViewMsg_RequestAudioPacket(
-          entry->render_view_id,
-          entry->stream_id,
-          pending_bytes,
-          timestamp.ToInternalValue()));
+          entry->render_view_id, entry->stream_id, buffers_state));
 }
 
 void AudioRendererHost::DoHandleError(media::AudioOutputController* controller,
@@ -467,12 +462,6 @@ void AudioRendererHost::OnNotifyPacketReady(
     NOTREACHED() << "Buffer received but no such pending request";
   }
   entry->pending_buffer_request = false;
-
-  // If the audio packet is empty then don't enqueue to controller. This will
-  // avoid excessive communication between browser and renderer when audio
-  // data is depleted.
-  if (!packet_size)
-    return;
 
   // Enqueue the data to media::AudioOutputController.
   entry->controller->EnqueueData(

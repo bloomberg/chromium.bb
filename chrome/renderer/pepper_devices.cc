@@ -208,8 +208,7 @@ void AudioDeviceContext::OnDestroy() {
   }
 }
 
-void AudioDeviceContext::OnRequestPacket(
-    uint32 bytes_in_buffer, const base::Time& message_timestamp) {
+void AudioDeviceContext::OnRequestPacket(AudioBuffersState buffers_state) {
   FireAudioCallback();
   filter_->Send(new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_,
                                                        shared_memory_size_));

@@ -243,8 +243,7 @@ class PlatformAudioImpl
   virtual void ShutDown();
 
  private:
-  virtual void OnRequestPacket(uint32 bytes_in_buffer,
-                               const base::Time& message_timestamp) {
+  virtual void OnRequestPacket(AudioBuffersState buffers_state) {
     LOG(FATAL) << "Should never get OnRequestPacket in PlatformAudioImpl";
   }
 

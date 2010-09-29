@@ -119,7 +119,7 @@ TEST_F(AudioRendererImplTest, Stop) {
 
   // Run AudioMessageFilter::Delegate methods, which can be executed after being
   // stopped.  AudioRendererImpl shouldn't create any messages.
-  renderer_->OnRequestPacket(kSize, base::Time());
+  renderer_->OnRequestPacket(AudioBuffersState(kSize, 0));
   renderer_->OnStateChanged(kError);
   renderer_->OnStateChanged(kPlaying);
   renderer_->OnStateChanged(kPaused);

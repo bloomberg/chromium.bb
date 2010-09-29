@@ -112,8 +112,7 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate,
  private:
 
   // AudioMessageFilter::Delegate implementation
-  virtual void OnRequestPacket(uint32 bytes_in_buffer,
-                               const base::Time& message_timestamp);
+  virtual void OnRequestPacket(AudioBuffersState buffers_state);
   virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state);
   virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length);
   virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
@@ -143,4 +142,3 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate,
 };
 
 #endif  // CHROME_RENDERER_PEPPER_DEVICES_H_
-

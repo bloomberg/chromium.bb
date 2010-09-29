@@ -45,9 +45,9 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   // A list of mock methods.
-  MOCK_METHOD4(OnRequestPacket,
+  MOCK_METHOD3(OnRequestPacket,
                void(int routing_id, int stream_id,
-                    uint32 bytes_in_buffer, int64 message_timestamp));
+                    AudioBuffersState buffers_state));
   MOCK_METHOD3(OnStreamCreated,
                void(int routing_id, int stream_id, int length));
   MOCK_METHOD3(OnLowLatencyStreamCreated,
@@ -90,9 +90,8 @@ class MockAudioRendererHost : public AudioRendererHost {
 
   // These handler methods do minimal things and delegate to the mock methods.
   void OnRequestPacket(const IPC::Message& msg, int stream_id,
-                       uint32 bytes_in_buffer, int64 message_timestamp) {
-    OnRequestPacket(msg.routing_id(), stream_id, bytes_in_buffer,
-                    message_timestamp);
+                       AudioBuffersState buffers_state) {
+    OnRequestPacket(msg.routing_id(), stream_id, buffers_state);
   }
 
   void OnStreamCreated(const IPC::Message& msg, int stream_id,
@@ -205,7 +204,7 @@ class AudioRendererHostTest : public testing::Test {
                 OnStreamCreated(kRouteId, kStreamId, _));
 
     // 2. First packet request will arrive.
-    EXPECT_CALL(*host_, OnRequestPacket(kRouteId, kStreamId, _, _))
+    EXPECT_CALL(*host_, OnRequestPacket(kRouteId, kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
     IPC::Message msg;
@@ -290,7 +289,7 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void NotifyPacketReady() {
-    EXPECT_CALL(*host_, OnRequestPacket(kRouteId, kStreamId, _, _))
+    EXPECT_CALL(*host_, OnRequestPacket(kRouteId, kStreamId, _))
         .WillOnce(QuitMessageLoop(message_loop_.get()));
 
     IPC::Message msg;

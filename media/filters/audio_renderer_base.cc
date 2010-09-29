@@ -182,7 +182,8 @@ void AudioRendererBase::ConsumeAudioSamples(scoped_refptr<Buffer> buffer_in) {
 
 uint32 AudioRendererBase::FillBuffer(uint8* dest,
                                      uint32 dest_len,
-                                     const base::TimeDelta& playback_delay) {
+                                     const base::TimeDelta& playback_delay,
+                                     bool buffers_empty) {
   // The timestamp of the last buffer written during the last call to
   // FillBuffer().
   base::TimeDelta last_fill_buffer_time;
@@ -209,7 +210,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
     // Use two conditions to determine the end of playback:
     // 1. Algorithm has no audio data.
     // 2. Browser process has no audio data.
-    if (algorithm_->IsQueueEmpty() && !playback_delay.ToInternalValue()) {
+    if (algorithm_->IsQueueEmpty() && buffers_empty) {
       if (recieved_end_of_stream_ && !rendered_end_of_stream_) {
         rendered_end_of_stream_ = true;
         host()->NotifyEnded();
@@ -232,8 +233,7 @@ uint32 AudioRendererBase::FillBuffer(uint8* dest,
     // end since we use decoded packets to trigger time updates. A better
     // solution is to start a timer when an audio packet is decoded to allow
     // finer time update events.
-    if (playback_delay < last_fill_buffer_time)
-      last_fill_buffer_time -= playback_delay;
+    last_fill_buffer_time -= playback_delay;
     host()->SetTime(last_fill_buffer_time);
   }
 

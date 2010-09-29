@@ -66,8 +66,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
-  void OnRequestPacket(uint32 bytes_in_buffer,
-                       const base::Time& message_timestamp);
+  void OnRequestPacket(AudioBuffersState buffers_state);
   void OnStateChanged(const ViewMsg_AudioStreamState_Params& state);
   void OnCreated(base::SharedMemoryHandle handle, uint32 length);
   void OnLowLatencyCreated(base::SharedMemoryHandle handle,
@@ -146,8 +145,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // Protects:
   // - |stopped_|
   // - |pending_request_|
-  // - |request_timestamp_|
-  // - |request_delay_|
+  // - |request_buffers_state_|
   Lock lock_;
 
   // A flag that indicates this filter is called to stop.
@@ -156,11 +154,8 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // A flag that indicates an outstanding packet request.
   bool pending_request_;
 
-  // The time when a request is made.
-  base::Time request_timestamp_;
-
-  // The delay for the requested packet to be played.
-  base::TimeDelta request_delay_;
+  // State of the audio buffers at time of the last request.
+  AudioBuffersState request_buffers_state_;
 
   // State variables for prerolling.
   bool prerolling_;

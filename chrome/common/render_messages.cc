@@ -845,4 +845,29 @@ void ParamTraits<webkit_glue::WebAccessibility>::Log(const param_type& p,
   l->append(")");
 }
 
+void ParamTraits<AudioBuffersState>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.pending_bytes);
+  WriteParam(m, p.hardware_delay_bytes);
+  WriteParam(m, p.timestamp);
+}
+
+bool ParamTraits<AudioBuffersState>::Read(const Message* m,
+                                    void** iter,
+                                    param_type* p) {
+  return
+      ReadParam(m, iter, &p->pending_bytes) &&
+      ReadParam(m, iter, &p->hardware_delay_bytes) &&
+      ReadParam(m, iter, &p->timestamp);
+}
+
+void ParamTraits<AudioBuffersState>::Log(const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.pending_bytes, l);
+  l->append(", ");
+  LogParam(p.hardware_delay_bytes, l);
+  l->append(", ");
+  LogParam(p.timestamp, l);
+  l->append(")");
+}
+
 }  // namespace IPC

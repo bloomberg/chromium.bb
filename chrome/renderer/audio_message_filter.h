@@ -16,6 +16,7 @@
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "media/audio/audio_buffers_state.h"
 
 struct ViewMsg_AudioStreamState_Params;
 
@@ -28,8 +29,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   class Delegate {
    public:
     // Called when an audio packet is requested from the browser process.
-    virtual void OnRequestPacket(uint32 bytes_in_buffer,
-                                 const base::Time& message_timestamp) = 0;
+    virtual void OnRequestPacket(AudioBuffersState buffers_state) = 0;
 
     // Called when state of an audio stream has changed in the browser process.
     virtual void OnStateChanged(
@@ -81,7 +81,7 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   // Received when browser process wants more audio packet.
   void OnRequestPacket(const IPC::Message& msg, int stream_id,
-                       uint32 bytes_in_buffer, int64 message_timestamp);
+                       AudioBuffersState buffers_state);
 
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
@@ -119,4 +119,3 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
 };
 
 #endif  // CHROME_RENDERER_AUDIO_MESSAGE_FILTER_H_
-

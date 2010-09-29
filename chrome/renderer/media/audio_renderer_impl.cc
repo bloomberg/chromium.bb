@@ -200,19 +200,14 @@ void AudioRendererImpl::OnLowLatencyCreated(base::SharedMemoryHandle,
   NOTREACHED();
 }
 
-void AudioRendererImpl::OnRequestPacket(uint32 bytes_in_buffer,
-                                        const base::Time& message_timestamp) {
+void AudioRendererImpl::OnRequestPacket(AudioBuffersState buffers_state) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   {
     AutoLock auto_lock(lock_);
     DCHECK(!pending_request_);
     pending_request_ = true;
-
-    // Use the information provided by the IPC message to adjust the playback
-    // delay.
-    request_timestamp_ = message_timestamp;
-    request_delay_ = ConvertToDuration(bytes_in_buffer);
+    request_buffers_state_ = buffers_state;
   }
 
   // Try to fill in the fulfill the packet request.
@@ -323,10 +318,13 @@ void AudioRendererImpl::NotifyPacketReadyTask() {
     // Adjust the playback delay.
     base::Time current_time = base::Time::Now();
 
-    // Save a local copy of the request delay.
-    base::TimeDelta request_delay = request_delay_;
-    if (current_time > request_timestamp_) {
-      base::TimeDelta receive_latency = current_time - request_timestamp_;
+    base::TimeDelta request_delay =
+        ConvertToDuration(request_buffers_state_.total_bytes());
+
+    // Add message delivery delay.
+    if (current_time > request_buffers_state_.timestamp) {
+      base::TimeDelta receive_latency =
+          current_time - request_buffers_state_.timestamp;
 
       // If the receive latency is too much it may offset all the delay.
       if (receive_latency >= request_delay) {
@@ -344,11 +342,9 @@ void AudioRendererImpl::NotifyPacketReadyTask() {
     }
 
     uint32 filled = FillBuffer(static_cast<uint8*>(shared_memory_->memory()),
-                               shared_memory_size_,
-                               request_delay);
+                               shared_memory_size_, request_delay,
+                               request_buffers_state_.pending_bytes == 0);
     pending_request_ = false;
-    request_delay_ = base::TimeDelta();
-    request_timestamp_ = base::Time();
     // Then tell browser process we are done filling into the buffer.
     filter_->Send(
         new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_, filled));

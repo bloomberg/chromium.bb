@@ -24,6 +24,7 @@
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/window_container_type.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/audio/audio_buffers_state.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -680,10 +681,9 @@ IPC_BEGIN_MESSAGES(View)
                       bool /* script_can_close */)
 
   // Sent by AudioRendererHost to renderer to request an audio packet.
-  IPC_MESSAGE_ROUTED3(ViewMsg_RequestAudioPacket,
+  IPC_MESSAGE_ROUTED2(ViewMsg_RequestAudioPacket,
                       int /* stream id */,
-                      uint32 /* bytes in buffer */,
-                      int64 /* message timestamp */)
+                      AudioBuffersState)
 
   // Tell the renderer process that the audio stream has been created, renderer
   // process would be given a ShareMemoryHandle that it should write to from
