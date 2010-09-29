@@ -160,6 +160,10 @@ void DisablePasswordInput() {
   // Cocoa methods can only be called on the main thread, so have a copy of the
   // view's size, since it's required on the displaylink thread.
   NSSize cachedSize_;
+
+  // -globalFrameDidChange: can be called recursively, this counts how often it
+  // holds the CGL lock.
+  int globalFrameDidChangeCGLLockCount_;
 }
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
@@ -284,6 +288,7 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)globalFrameDidChange:(NSNotification*)notification {
+  globalFrameDidChangeCGLLockCount_++;
   CGLLockContext(cglContext_);
   [glContext_ update];
 
@@ -293,10 +298,13 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   glViewport(0, 0, size.width, size.height);
 
   CGLUnlockContext(cglContext_);
+  globalFrameDidChangeCGLLockCount_--;
 
-  // Make sure the view is synchronized with the correct display.
-  CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
+  if (globalFrameDidChangeCGLLockCount_ == 0) {
+    // Make sure the view is synchronized with the correct display.
+    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
        displayLink_, cglContext_, cglPixelFormat_);
+  }
 }
 
 - (void)renewGState {
@@ -329,19 +337,6 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)viewWillMoveToWindow:(NSWindow*)newWindow {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableHolePunching)) {
-    return;
-  }
-
-  if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
-    [static_cast<id>([self window]) underlaySurfaceRemoved];
-  }
-
-  if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
-    [static_cast<id>(newWindow) underlaySurfaceAdded];
-  }
-
   // Stop the display link thread while the view is not visible.
   if (newWindow) {
     if (displayLink_ && !CVDisplayLinkIsRunning(displayLink_))
@@ -349,6 +344,19 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   } else {
     if (displayLink_ && CVDisplayLinkIsRunning(displayLink_))
       CVDisplayLinkStop(displayLink_);
+  }
+
+  // If hole pushing is enabled, inform the window hosing this accelerated view
+  // that it needs to be opaque.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHolePunching)) {
+    if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
+      [static_cast<id>([self window]) underlaySurfaceRemoved];
+    }
+
+    if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
+      [static_cast<id>(newWindow) underlaySurfaceAdded];
+    }
   }
 }
 
