@@ -97,6 +97,15 @@ class TsanAnalyzer(object):
     return result
 
   def ParseReportFile(self, filename):
+    '''Parses a report file and returns a list of ThreadSanitizer reports.
+
+
+    Args:
+      filename: report filename.
+    Returns:
+      list of (list of (str iff self._use_gdb, _StackTraceLine otherwise)).
+    '''
+    ret = []
     self.cur_fd_ = open(filename, 'r')
 
     while True:
@@ -114,11 +123,11 @@ class TsanAnalyzer(object):
         self.ReadLine()
       if re.search(TsanAnalyzer.TSAN_RACE_DESCRIPTION, self.line_):
         tmp.extend(self.ReadSection())
-        self.reports.append(tmp)
+        ret.append(tmp)
       if (re.search(TsanAnalyzer.TSAN_WARNING_DESCRIPTION, self.line_) and
           not common.IsWindows()): # workaround for http://crbug.com/53198
         tmp.extend(self.ReadSection())
-        self.reports.append(tmp)
+        ret.append(tmp)
 
       match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", self.line_)
       if match:
@@ -129,6 +138,7 @@ class TsanAnalyzer(object):
         else:
           self.used_suppressions[supp_name] = count
     self.cur_fd_.close()
+    return ret
 
   def GetReports(self, files):
     '''Extracts reports from a set of files.
@@ -143,13 +153,15 @@ class TsanAnalyzer(object):
       TheAddressTable = gdb_helper.AddressTable()
     else:
       TheAddressTable = None
-    self.reports = []
+    reports = []
     self.used_suppressions = {}
     for file in files:
-      self.ParseReportFile(file)
+      reports.extend(self.ParseReportFile(file))
     if self._use_gdb:
       TheAddressTable.ResolveAll()
-    return [''.join(map(str, report_lines)) for report_lines in self.reports]
+      # Make each line of each report a string.
+      reports = map(lambda(x): map(str, x), a)
+    return [''.join(report_lines) for report_lines in reports]
 
   def Report(self, files, check_sanity=False):
     '''Reads in a set of files and prints ThreadSanitizer report.
