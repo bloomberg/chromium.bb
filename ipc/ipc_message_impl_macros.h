@@ -22,11 +22,15 @@
 // don't understand #include MESSAGES_INTERNAL_FILE. See http://crbug.com/7828
 #if 0
 #include "ipc/ipc_sync_message_unittest.h"
+#include "chrome/common/devtools_messages_internal.h"
+#include "chrome/common/gpu_messages_internal.h"
+#include "chrome/common/nacl_messages_internal.h"
 #include "chrome/common/plugin_messages_internal.h"
 #include "chrome/common/render_messages_internal.h"
-#include "chrome/common/devtools_messages_internal.h"
-#include "chrome/test/automation/automation_messages_internal.h"
+#include "chrome/common/service_messages_internal.h"
+#include "chrome/common/utility_messages_internal.h"
 #include "chrome/common/worker_messages_internal.h"
+#include "chrome/test/automation/automation_messages_internal.h"
 #endif
 
 // These are probalby still defined because of ipc_message_macros.h should be
