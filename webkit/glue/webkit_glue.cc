@@ -313,26 +313,6 @@ WebString FilePathToWebString(const FilePath& file_path) {
   return FilePathStringToWebString(file_path.value());
 }
 
-WebKit::WebFileError PlatformFileErrorToWebFileError(
-    base::PlatformFileError error_code) {
-  switch (error_code) {
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
-      return WebKit::WebFileErrorNotFound;
-    case base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
-    case base::PLATFORM_FILE_ERROR_EXISTS:
-    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
-      return WebKit::WebFileErrorInvalidModification;
-    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-      return WebKit::WebFileErrorNoModificationAllowed;
-    case base::PLATFORM_FILE_ERROR_FAILED:
-      return WebKit::WebFileErrorInvalidState;
-    case base::PLATFORM_FILE_ERROR_ABORT:
-      return WebKit::WebFileErrorAbort;
-    default:
-      return WebKit::WebFileErrorInvalidModification;
-  }
-}
-
 namespace {
 
 struct UserAgentState {

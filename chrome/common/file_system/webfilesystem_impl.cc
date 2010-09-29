@@ -6,7 +6,6 @@
 
 #include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/file_system/webfilesystem_callback_dispatcher.h"
-#include "chrome/common/file_system/webfilewriter_impl.h"
 #include "chrome/common/child_thread.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
@@ -99,9 +98,3 @@ void WebFileSystemImpl::readDirectory(const WebString& path,
   dispatcher->ReadDirectory(webkit_glue::WebStringToFilePath(path),
                             new WebFileSystemCallbackDispatcher(callbacks));
 }
-
-WebKit::WebFileWriter* WebFileSystemImpl::createFileWriter(
-    const WebString& path, WebKit::WebFileWriterClient* client) {
-  return new WebFileWriterImpl(path, client);
-}
-

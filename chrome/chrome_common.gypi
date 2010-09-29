@@ -56,8 +56,6 @@
           'common/file_system/webfilesystem_callback_dispatcher.h',
           'common/file_system/webfilesystem_impl.cc',
           'common/file_system/webfilesystem_impl.h',
-          'common/file_system/webfilewriter_impl.cc',
-          'common/file_system/webfilewriter_impl.h',
           'common/font_descriptor_mac.h',
           'common/font_descriptor_mac.mm',
           'common/geoposition.cc',
