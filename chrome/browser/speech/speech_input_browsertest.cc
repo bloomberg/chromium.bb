@@ -4,14 +4,17 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/speech/speech_input_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 
 namespace speech_input {
 class FakeSpeechInputManager;
@@ -83,30 +86,45 @@ SpeechInputManager* fakeManagerAccessor() {
 class SpeechInputBrowserTest : public InProcessBrowserTest {
  public:
   // InProcessBrowserTest methods
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnableSpeechInput);
-  }
-
   GURL testUrl(const FilePath::CharType* filename) {
     const FilePath kTestDir(FILE_PATH_LITERAL("speech"));
     return ui_test_utils::GetTestUrl(kTestDir, FilePath(filename));
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, DISABLED_TestBasicRecognition) {
+IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestBasicRecognition) {
   // Inject the fake manager factory so that the test result is returned to the
   // web page.
   SpeechInputDispatcherHost::set_manager_accessor(&fakeManagerAccessor);
 
-  // The test page starts speech recognition and waits to receive the above
-  // defined test string as the result. Once it receives the result it either
-  // navigates to #pass or #fail depending on the result.
+  // The test page calculates the speech button's coordinate in the page on load
+  // and sets that coordinate in the URL fragment. We send mouse down & up
+  // events at that coordinate to trigger speech recognition.
   GURL test_url = testUrl(FILE_PATH_LITERAL("basic_recognition.html"));
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
-                                                            test_url,
-                                                            2);
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  std::string coords = browser()->GetSelectedTabContents()->GetURL().ref();
+  int comma_pos = coords.find(',');
+  ASSERT_NE(-1, comma_pos);
+  int x = 0;
+  ASSERT_TRUE(base::StringToInt(coords.substr(0, comma_pos).c_str(), &x));
+  int y = 0;
+  ASSERT_TRUE(base::StringToInt(coords.substr(comma_pos + 1).c_str(), &y));
 
-  // Check that the page got the result it expected.
+  WebKit::WebMouseEvent mouse_event;
+  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.x = x;
+  mouse_event.y = y;
+  mouse_event.clickCount = 1;
+  TabContents* tab_contents = browser()->GetSelectedTabContents();
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  tab_contents->render_view_host()->ForwardMouseEvent(mouse_event);
+
+  // The above defined fake speech input manager would receive the speech input
+  // request and return the test string as recognition result. The test page
+  // then sets the URL fragment as 'pass' if it received the expected string.
+  ui_test_utils::WaitForNavigations(&tab_contents->controller(), 1);
   EXPECT_EQ("pass", browser()->GetSelectedTabContents()->GetURL().ref());
 }
 

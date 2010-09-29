@@ -137,8 +137,6 @@ void SpeechInputDispatcherHost::OnStartRecognition(
     int render_view_id,
     int request_id,
     const gfx::Rect& element_rect) {
-  LOG(INFO) << "SpeechInputDispatcherHost: start recognition"
-            << render_view_id;
   int caller_id = callers_->CreateId(resource_message_filter_process_id_,
                                      render_view_id, request_id);
   manager()->StartRecognition(this, caller_id,
@@ -148,8 +146,6 @@ void SpeechInputDispatcherHost::OnStartRecognition(
 
 void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,
                                                     int request_id) {
-  LOG(INFO) << "SpeechInputDispatcherHost: cancel recognition"
-            << render_view_id;
   int caller_id = callers_->GetId(resource_message_filter_process_id_,
                                  render_view_id, request_id);
   manager()->CancelRecognition(caller_id);
@@ -158,8 +154,6 @@ void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,
 
 void SpeechInputDispatcherHost::OnStopRecording(int render_view_id,
                                                 int request_id) {
-  LOG(INFO) << "SpeechInputDispatcherHost: stop recording"
-            << render_view_id;
   int caller_id = callers_->GetId(resource_message_filter_process_id_,
                                   render_view_id, request_id);
   manager()->StopRecording(caller_id);

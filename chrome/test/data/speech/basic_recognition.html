@@ -11,15 +11,13 @@
         }
       }
       function run() {
-        // Send a click to the right corner of the input field where the speech
-        // button is rendered.
+        // Calculate a point inside the speech button and pass that to the
+        // c++ test code through the URL fragment. This calculation must
+        // get updated if the speech button rendering changes.
         var inputField = document.getElementById('inputField');
-        var evt = document.createEvent('MouseEvents');
-        evt.initMouseEvent('click', true, true, window,
-                           0, 0, 0,
-                           inputField.offsetWidth - 4, 4,
-                           false, false, false, false, 0, null);
-        inputField.dispatchEvent(evt);
+        var x = inputField.offsetLeft + inputField.offsetWidth - 10;
+        var y = inputField.offsetTop + inputField.offsetHeight / 2;
+        document.location = document.location + '#' + x + ',' + y;
       }
     </script>
   </head>
