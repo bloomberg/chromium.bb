@@ -455,6 +455,12 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
         !suggestion_val->GetAsString(&suggestion_str))
       return false;
 
+    // Google search may return empty suggestions for weird input characters,
+    // they make no sense at all and can cause problem in our code.
+    // See http://crbug.com/56214
+    if (!suggestion_str.length())
+      continue;
+
     Value* type_val;
     std::string type_str;
     if (type_list && type_list->Get(i, &type_val) &&
