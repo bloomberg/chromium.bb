@@ -107,8 +107,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
       full_file_name));
 }
 
-// See http://crbug.com/52292
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FLAKY_SaveCompleteHTML) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   FilePath file_name(FILE_PATH_LITERAL("b.htm"));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
       FilePath(kTestDir).Append(file_name));

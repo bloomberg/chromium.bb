@@ -88,8 +88,7 @@ class DownloadRequestLimiterTest
   ChromeThread io_thread_;
 };
 
-// http://code.google.com/p/chromium/issues/detail?id=39753
-TEST_F(DownloadRequestLimiterTest, FLAKY_Allow) {
+TEST_F(DownloadRequestLimiterTest, Allow) {
   // All tabs should initially start at ALLOW_ONE_DOWNLOAD.
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(

@@ -37,9 +37,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
 }
 
 // Insert a new window.
-// Failing on Chromium Mac: http://crbug/53584
-IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest,
-                       FLAKY_InsertWindow) {
+IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, InsertWindow) {
   // Emulate what applescript would do when creating a new window.
   // Emulate a script like |set var to make new window with properties
   // {visible:false}|.

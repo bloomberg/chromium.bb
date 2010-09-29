@@ -300,7 +300,7 @@ TEST_F(FilePathWatcherTest, MAYBE(MultipleWatchersSingleFile)) {
 
 // Verify that watching a file whose parent directory doesn't exist yet works if
 // the directory and file are created eventually.
-TEST_F(FilePathWatcherTest, MAYBE(NonExistentDirectory)) {
+TEST_F(FilePathWatcherTest, NonExistentDirectory) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_->path().AppendASCII("dir"));
   FilePath file(dir.AppendASCII("file"));
@@ -322,7 +322,7 @@ TEST_F(FilePathWatcherTest, MAYBE(NonExistentDirectory)) {
 
 // Exercises watch reconfiguration for the case that directories on the path
 // are rapidly created.
-TEST_F(FilePathWatcherTest, MAYBE(DirectoryChain)) {
+TEST_F(FilePathWatcherTest, DirectoryChain) {
   FilePath path(temp_dir_->path());
   std::vector<std::string> dir_names;
   for (int i = 0; i < 20; i++) {
@@ -369,7 +369,7 @@ TEST_F(FilePathWatcherTest, DisappearingDirectory) {
 }
 
 // Tests that a file that is deleted and reappears is tracked correctly.
-TEST_F(FilePathWatcherTest, MAYBE(DeleteAndRecreate)) {
+TEST_F(FilePathWatcherTest, DeleteAndRecreate) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
   FilePathWatcher watcher;
   scoped_refptr<TestDelegate> delegate(new TestDelegate);
@@ -407,7 +407,7 @@ TEST_F(FilePathWatcherTest, WatchDirectory) {
   EXPECT_LE(1, WaitForEvents(delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(MoveParent)) {
+TEST_F(FilePathWatcherTest, MoveParent) {
   FilePathWatcher file_watcher;
   FilePathWatcher subdir_watcher;
   FilePath dir(temp_dir_->path().AppendASCII("dir"));
@@ -437,7 +437,7 @@ TEST_F(FilePathWatcherTest, MAYBE(MoveParent)) {
   EXPECT_LE(1, WaitForEvents(subdir_delegate.get()));
 }
 
-TEST_F(FilePathWatcherTest, MAYBE(MoveChild)) {
+TEST_F(FilePathWatcherTest, MoveChild) {
   FilePathWatcher file_watcher;
   FilePathWatcher subdir_watcher;
   FilePath source_dir(temp_dir_->path().AppendASCII("source"));
