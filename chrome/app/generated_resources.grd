@@ -3139,8 +3139,8 @@ each locale. -->
       <message name="IDS_CERT_MANAGER_NAME_COLUMN_LABEL" desc="Label for the certificate name column of the certificate tree in the certificate manager">
         Certificate Name
       </message>
-      <message name="IDS_CERT_MANAGER_DEVICE_COLUMN_LABEL" desc="Label for the security device column of the certificate tree in the certificate manager">
-        Security Device
+      <message name="IDS_CERT_MANAGER_DEVICE_COLUMN_LABEL" desc="Label for the certificate store column of the certificate tree in the certificate manager">
+        Certificate Store
       </message>
       <message name="IDS_CERT_MANAGER_SERIAL_NUMBER_COLUMN_LABEL" desc="Label for the serial number column of the certificate tree in the certificate manager">
         Serial Number
@@ -3152,7 +3152,7 @@ each locale. -->
         Email Address
       </message>
       <message name="IDS_CERT_MANAGER_VIEW_CERT_BUTTON" desc="Label for the button in the certificate manager which launches the certificate viewer for the selected certificate">
-        &amp;View
+        View
       </message>
 
       <!-- Add Client Certificate Dialog -->

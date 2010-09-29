@@ -1,0 +1,106 @@
+<div class="page hidden" id="certificateManagerPage">
+  <h1>
+    <span i18n-content="advancedPage"></span>
+    &gt;
+    <span i18n-content="certificateManagerPage"></span>
+  </h1>
+
+  <!-- Navigation tabs -->
+  <div class="subpages-nav-tabs">
+    <span i18n-content="personalCertsTabTitle" id="personal-certs-nav-tab"
+        class="inactive-tab" tab-contents="personalCertsTab"></span><span
+        i18n-content="emailCertsTabTitle" id="email-certs-nav-tab"
+        class="inactive-tab" tab-contents="emailCertsTab"></span><span
+        i18n-content="serverCertsTabTitle" id="server-certs-nav-tab"
+        class="inactive-tab" tab-contents="serverCertsTab"></span><span
+        i18n-content="caCertsTabTitle" id="ca-certs-nav-tab"
+        class="inactive-tab" tab-contents="caCertsTab"></span><span
+        i18n-content="unknownCertsTabTitle" id="other-certs-nav-tab"
+        class="inactive-tab" tab-contents="otherCertsTab"></span>
+  </div>
+
+  <!-- TODO(mattm): get rid of use of tables? -->
+
+  <!-- Tab contents -->
+  <div id="personalCertsTab" class="subpages-tab-contents">
+    <table class="certificate-tree-table">
+      <tr><td>
+        <span i18n-content="personalCertsTabDescription"></span>
+      </td></tr>
+      <tr><td>
+        <tree id="personalCertsTab-tree" class="certificate-tree"></tree>
+      </td></tr>
+      <tr><td>
+        <button id="personalCertsTab-view" i18n-content="view_certificate"
+          disabled></button>
+        <!-- TODO other buttons -->
+      </td></tr>
+    </table>
+  </div>
+
+  <div id="emailCertsTab" class="subpages-tab-contents">
+    <table class="certificate-tree-table">
+      <tr><td>
+        <span i18n-content="emailCertsTabDescription"></span>
+      </td></tr>
+      <tr><td>
+        <tree id="emailCertsTab-tree" class="certificate-tree"></tree>
+      </td></tr>
+      <tr><td>
+        <button id="emailCertsTab-view" i18n-content="view_certificate"
+          disabled></button>
+        <!-- TODO other buttons -->
+      </td></tr>
+    </table>
+  </div>
+
+  <div id="serverCertsTab" class="subpages-tab-contents">
+    <table class="certificate-tree-table">
+      <tr><td>
+        <span i18n-content="serverCertsTabDescription"></span>
+      </td></tr>
+      <tr><td>
+        <tree id="serverCertsTab-tree" class="certificate-tree"></tree>
+      </td></tr>
+      <tr><td>
+        <button id="serverCertsTab-view" i18n-content="view_certificate"
+          disabled></button>
+        <!-- TODO other buttons -->
+      </td></tr>
+    </table>
+  </div>
+
+  <div id="caCertsTab" class="subpages-tab-contents">
+    <table class="certificate-tree-table">
+      <tr><td>
+        <span i18n-content="caCertsTabDescription"></span>
+      </td></tr>
+      <tr><td>
+        <tree id="caCertsTab-tree" class="certificate-tree"></tree>
+      </td></tr>
+      <tr><td>
+        <button id="caCertsTab-view" i18n-content="view_certificate"
+          disabled></button>
+        <!-- TODO other buttons -->
+      </td></tr>
+    </table>
+  </div>
+
+  <div id="otherCertsTab" class="subpages-tab-contents">
+    <table class="certificate-tree-table">
+      <tr><td>
+        <span i18n-content="unknownCertsTabDescription"></span>
+      </td></tr>
+      <tr><td>
+        <tree id="otherCertsTab-tree" class="certificate-tree"></tree>
+      </td></tr>
+      <tr><td>
+        <button id="otherCertsTab-view" i18n-content="view_certificate"
+          disabled></button>
+        <!-- TODO other buttons -->
+      </td></tr>
+    </table>
+  </div>
+
+</div>
+

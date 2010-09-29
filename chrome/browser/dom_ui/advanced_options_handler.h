@@ -70,7 +70,9 @@ class AdvancedOptionsHandler
   // Callback for the "showNetworkProxySettings" message. This will invoke
   // an appropriate dialog for configuring proxy settings.
   void ShowNetworkProxySettings(const ListValue* args);
+#endif
 
+#if !defined(USE_NSS)
   // Callback for the "showManageSSLCertificates" message. This will invoke
   // an appropriate certificate management action based on the platform.
   void ShowManageSSLCertificates(const ListValue* args);

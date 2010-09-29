@@ -20,6 +20,9 @@ namespace l10n_util {
 UCollationResult CompareStringWithCollator(const icu::Collator* collator,
                                            const std::wstring& lhs,
                                            const std::wstring& rhs);
+UCollationResult CompareString16WithCollator(const icu::Collator* collator,
+                                             const string16& lhs,
+                                             const string16& rhs);
 
 // Used by SortStringsUsingMethod. Invokes a method on the objects passed to
 // operator (), comparing the string results using a collator.

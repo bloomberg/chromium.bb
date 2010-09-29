@@ -29,11 +29,6 @@ const char* kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", NULL};
 // supported desktop environment.
 const char kLinuxProxyConfigUrl[] = "about:linux-proxy-config";
 
-// The URL for Linux ssl certificate configuration help.
-const char* const kLinuxCertificatesConfigUrl =
-    "http://code.google.com/p/chromium/wiki/LinuxCertManagement";
-
-
 struct ProxyConfigCommand {
   std::string binary;
   const char** argv;
@@ -121,12 +116,6 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
     tab_contents->OpenURL(GURL(kLinuxProxyConfigUrl), GURL(),
                           NEW_FOREGROUND_TAB, PageTransition::LINK);
   }
-}
-
-void AdvancedOptionsUtilities::ShowManageSSLCertificates(
-      TabContents* tab_contents) {
-  tab_contents->OpenURL(GURL(kLinuxCertificatesConfigUrl), GURL(),
-                        NEW_FOREGROUND_TAB, PageTransition::LINK);
 }
 
 #endif  // !defined(OS_CHROMEOS)

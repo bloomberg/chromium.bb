@@ -54,6 +54,18 @@ var OptionsPage = options.OptionsPage;
         OptionsPage.showPageByName('fontSettings');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
+      if (cr.isWindows || cr.isMac) {
+        $('certificatesManageButton').onclick = function(event) {
+          chrome.send('showManageSSLCertificates');
+        };
+      } else {
+        $('certificatesManageButton').onclick = function(event) {
+          OptionsPage.showPageByName('certificateManager');
+          OptionsPage.showTab($('personal-certs-nav-tab'));
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_ManageSSLCertificates']);
+        };
+      }
       if (!cr.isChromeOS) {
         $('optionsReset').onclick = function(event) {
           AlertOverlay.show(undefined,
@@ -64,9 +76,6 @@ var OptionsPage = options.OptionsPage;
         }
         $('proxiesConfigureButton').onclick = function(event) {
           chrome.send('showNetworkProxySettings');
-        };
-        $('certificatesManageButton').onclick = function(event) {
-          chrome.send('showManageSSLCertificates');
         };
         $('downloadLocationBrowseButton').onclick = function(event) {
           chrome.send('selectDownloadLocation');

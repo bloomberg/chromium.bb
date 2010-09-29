@@ -345,6 +345,8 @@
         'browser/cancelable_request.h',
         'browser/cert_store.cc',
         'browser/cert_store.h',
+        'browser/certificate_manager_model.cc',
+        'browser/certificate_manager_model.h',
         'browser/certificate_viewer.cc',
         'browser/certificate_viewer.h',
         'browser/character_encoding.cc',
@@ -1230,6 +1232,8 @@
         'browser/dom_ui/advanced_options_utils_win.cc',
         'browser/dom_ui/browser_options_handler.cc',
         'browser/dom_ui/browser_options_handler.h',
+        'browser/dom_ui/certificate_manager_handler.cc',
+        'browser/dom_ui/certificate_manager_handler.h',
         'browser/dom_ui/clear_browser_data_handler.cc',
         'browser/dom_ui/clear_browser_data_handler.h',
         'browser/dom_ui/content_settings_handler.cc',
@@ -3301,6 +3305,11 @@
           ],
         }, {  # OS != "linux"
           'sources!': [
+            # TODO(mattm): Cert manager stuff is really !USE_NSS.
+            'browser/certificate_manager_model.cc',
+            'browser/certificate_manager_model.h',
+            'browser/dom_ui/certificate_manager_handler.cc',
+            'browser/dom_ui/certificate_manager_handler.h',
             'browser/file_path_watcher_inotify.cc',
           ],
         }],

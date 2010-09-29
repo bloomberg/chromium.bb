@@ -90,14 +90,12 @@
 </if>
     </div>
   </section>
-<if expr="not pp_ifdef('chromeos')">
   <section>
     <h3 i18n-content="advancedSectionTitleSecurity"></h3>
     <div>
       <div i18n-content="certificatesLabel"></div>
       <div><button id="certificatesManageButton"
           i18n-content="certificatesManageButton"></button></div>
-</if>
 <if expr="os == 'win32'">
       <!-- Configure these options for manual handling on windows -->
       <label><input id="sslCheckRevocation"
@@ -123,9 +121,9 @@
           pref="ssl.tls1.enabled" metric="Options_TLS1" type="checkbox"><span
           i18n-content="sslUseTLS1"></span></label>
 </if>
-<if expr="not pp_ifdef('chromeos')">
     </div>
   </section>
+<if expr="not pp_ifdef('chromeos')">
   <section id="background-mode-section">
     <h3 i18n-content="advancedSectionTitleChromeApps"></h3>
     <div>

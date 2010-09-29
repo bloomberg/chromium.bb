@@ -34,6 +34,10 @@
   <link rel="stylesheet" href="options/chromeos_language_options.css">
 </if>
 
+<if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+  <link rel="stylesheet" href="options/certificate_manager.css">
+</if>
+
 <script src="chrome://resources/css/tree.css.js"></script>
 
 <script src="chrome://resources/js/class_list.js"></script>
@@ -73,6 +77,13 @@
     var LanguageHangulOptions = options.LanguageHangulOptions;
     var LanguageOptions = options.LanguageOptions;
     var SystemOptions = options.SystemOptions;
+  </script>
+</if>
+<if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+  <script src="options/certificate_tree.js"></script>
+  <script src="options/certificate_manager.js"></script>
+  <script>
+    var CertificateManager = options.CertificateManager;
   </script>
 </if>
 <script src="options/add_startup_page_overlay.js"></script>
@@ -146,6 +157,9 @@ function load() {
   OptionsPage.registerSubPage(PasswordsExceptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance());
   OptionsPage.registerSubPage(SyncOptions.getInstance());
+  if (!cr.isWindows && !cr.isMac) {
+    OptionsPage.registerSubPage(CertificateManager.getInstance());
+  }
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
@@ -274,6 +288,9 @@ window.onpopstate = function(e) {
          <include src="options/chromeos_labs.html">
          <include src="options/chromeos_accounts_options.html">
          <include src="options/chromeos_proxy.html">
+       </if>
+       <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+         <include src="options/certificate_manager.html">
        </if>
        <include src="options/advanced_options.html">
        <include src="options/autofill_options.html">

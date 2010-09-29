@@ -205,10 +205,12 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleMetricsReportingCheckbox));
-#if !defined(OS_CHROMEOS)
+#if !defined(USE_NSS)
   dom_ui_->RegisterMessageCallback("showManageSSLCertificates",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowManageSSLCertificates));
+#endif
+#if !defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("showNetworkProxySettings",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowNetworkProxySettings));
@@ -322,7 +324,9 @@ void AdvancedOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ShowProxySettings"));
   AdvancedOptionsUtilities::ShowNetworkProxySettings(dom_ui_->tab_contents());
 }
+#endif
 
+#if !defined(USE_NSS)
 void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ManageSSLCertificates"));
   AdvancedOptionsUtilities::ShowManageSSLCertificates(dom_ui_->tab_contents());

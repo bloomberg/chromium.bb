@@ -65,6 +65,10 @@
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
 
+#if defined(USE_NSS)
+#include "chrome/browser/dom_ui/certificate_manager_handler.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // OptionsUIHTMLSource
@@ -161,6 +165,9 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
                           new chromeos::LanguagePinyinOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new chromeos::ProxyHandler());
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
+#endif
+#if defined(USE_NSS)
+  AddOptionsPageUIHandler(localized_strings, new CertificateManagerHandler());
 #endif
 
   // |localized_strings| ownership is taken over by this constructor.
