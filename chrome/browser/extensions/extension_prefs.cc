@@ -14,7 +14,11 @@ using base::Time;
 
 namespace {
 
-// Additional preferences keys
+// Preferences keys
+
+// A preference that keeps track of per-extension settings. This is a dictionary
+// object read from the Preferences file, keyed off of extension id's.
+const char kExtensionsPref[] = "extensions.settings";
 
 // Where an extension was installed from. (see Extension::Location)
 const char kPrefLocation[] = "location";
@@ -75,10 +79,6 @@ const char kPrefAllowFileAccess[] = "allowFileAccess";
 // purchased apps.
 const char kWebStoreLogin[] = "extensions.webstore_login";
 
-// A preference set by the the NTP to persist the desired launch container type
-// used for apps.
-const char kPrefLaunchType[] = "launchType";
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,8 +90,7 @@ namespace {
 // id. We can remove this in a couple of months. (See http://crbug.com/40017
 // and http://crbug.com/39745 for more details).
 static void CleanupBadExtensionKeys(PrefService* prefs) {
-  DictionaryValue* dictionary =
-      prefs->GetMutableDictionary(ExtensionPrefs::kExtensionsPref);
+  DictionaryValue* dictionary = prefs->GetMutableDictionary(kExtensionsPref);
   std::set<std::string> bad_keys;
   for (DictionaryValue::key_iterator i = dictionary->begin_keys();
        i != dictionary->end_keys(); ++i) {
@@ -121,9 +120,6 @@ ExtensionPrefs::ExtensionPrefs(PrefService* prefs, const FilePath& root_dir)
 
   MakePathsRelative();
 }
-
-// static
-const char ExtensionPrefs::kExtensionsPref[] = "extensions.settings";
 
 static FilePath::StringType MakePathRelative(const FilePath& parent,
                                              const FilePath& child,
@@ -168,7 +164,7 @@ void ExtensionPrefs::MakePathsRelative() {
     }
   }
   if (dirty)
-    SavePrefsAndNotify();
+    prefs_->ScheduleSavePersistentPrefs();
 }
 
 void ExtensionPrefs::MakePathsAbsolute(DictionaryValue* dict) {
@@ -237,36 +233,6 @@ bool ExtensionPrefs::ReadExtensionPrefBoolean(
   return ReadBooleanFromPref(ext, pref_key);
 }
 
-bool ExtensionPrefs::ReadIntegerFromPref(
-    DictionaryValue* ext, const std::string& pref_key, int* out_value) {
-  if (!ext->HasKey(pref_key)) return false;
-  if (!ext->GetInteger(pref_key, out_value)) {
-    NOTREACHED() << "Failed to fetch " << pref_key << " flag.";
-    // In case we could not fetch the flag, we treat it as false.
-    return false;
-  }
-  return out_value;
-}
-
-bool ExtensionPrefs::ReadExtensionPrefInteger(
-    const std::string& extension_id, const std::string& pref_key,
-    int* out_value) {
-  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
-  if (!extensions)
-    return false;
-  DictionaryValue* ext = NULL;
-  if (!extensions->GetDictionary(extension_id, &ext)) {
-    // No such extension yet.
-    return false;
-  }
-  return ReadIntegerFromPref(ext, pref_key, out_value);
-}
-
-void ExtensionPrefs::SavePrefsAndNotify() {
-  prefs_->ScheduleSavePersistentPrefs();
-  prefs_->pref_notifier()->OnUserPreferenceSet(kExtensionsPref);
-}
-
 bool ExtensionPrefs::IsBlacklistBitSet(DictionaryValue* ext) {
   return ReadBooleanFromPref(ext, kPrefBlacklist);
 }
@@ -323,7 +289,7 @@ void ExtensionPrefs::SetDidExtensionEscalatePermissions(
     Extension* extension, bool did_escalate) {
   UpdateExtensionPref(extension->id(), kExtensionDidEscalatePermissions,
                       Value::CreateBooleanValue(did_escalate));
-  prefs_->ScheduleSavePersistentPrefs();
+  prefs_->SavePersistentPrefs();
 }
 
 void ExtensionPrefs::UpdateBlacklist(
@@ -377,7 +343,8 @@ void ExtensionPrefs::UpdateBlacklist(
   for (unsigned int i = 0; i < remove_pref_ids.size(); ++i) {
     DeleteExtensionPrefs(remove_pref_ids[i]);
   }
-  SavePrefsAndNotify();
+  // Update persistent registry
+  prefs_->ScheduleSavePersistentPrefs();
   return;
 }
 
@@ -401,7 +368,7 @@ void ExtensionPrefs::SetLastPingDayImpl(const Time& time,
   }
   std::string value = base::Int64ToString(time.ToInternalValue());
   dictionary->SetString(kLastPingDay, value);
-  SavePrefsAndNotify();
+  prefs_->ScheduleSavePersistentPrefs();
 }
 
 Time ExtensionPrefs::LastPingDay(const std::string& extension_id) const {
@@ -432,7 +399,7 @@ void ExtensionPrefs::SetIsIncognitoEnabled(const std::string& extension_id,
                                            bool enabled) {
   UpdateExtensionPref(extension_id, kPrefIncognitoEnabled,
                       Value::CreateBooleanValue(enabled));
-  SavePrefsAndNotify();
+  prefs_->SavePersistentPrefs();
 }
 
 bool ExtensionPrefs::AllowFileAccess(const std::string& extension_id) {
@@ -443,26 +410,7 @@ void ExtensionPrefs::SetAllowFileAccess(const std::string& extension_id,
                                         bool allow) {
   UpdateExtensionPref(extension_id, kPrefAllowFileAccess,
                       Value::CreateBooleanValue(allow));
-  SavePrefsAndNotify();
-}
-
-ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
-    const std::string& extension_id) {
-  int value;
-  if (ReadExtensionPrefInteger(extension_id, kPrefLaunchType, &value) && (
-      value == LAUNCH_PINNED ||
-      value == LAUNCH_REGULAR ||
-      value == LAUNCH_FULLSCREEN)) {
-    return static_cast<LaunchType>(value);
-  }
-  return LAUNCH_PINNED;
-}
-
-void ExtensionPrefs::SetLaunchType(const std::string& extension_id,
-                                   LaunchType launch_type) {
-  UpdateExtensionPref(extension_id, kPrefLaunchType,
-      Value::CreateIntegerValue(static_cast<int>(launch_type)));
-  SavePrefsAndNotify();
+  prefs_->SavePersistentPrefs();
 }
 
 void ExtensionPrefs::GetKilledExtensionIds(std::set<std::string>* killed_ids) {
@@ -514,7 +462,7 @@ void ExtensionPrefs::SetToolbarOrder(
        iter != extension_ids.end(); ++iter) {
     toolbar_order->Append(new StringValue(*iter));
   }
-  SavePrefsAndNotify();
+  prefs_->ScheduleSavePersistentPrefs();
 }
 
 void ExtensionPrefs::OnExtensionInstalled(
@@ -536,7 +484,7 @@ void ExtensionPrefs::OnExtensionInstalled(
     UpdateExtensionPref(id, kPrefManifest,
                         extension->manifest_value()->DeepCopy());
   }
-  SavePrefsAndNotify();
+  prefs_->SavePersistentPrefs();
 }
 
 void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
@@ -549,7 +497,7 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
   if (!external_uninstall && Extension::IsExternalLocation(location)) {
     UpdateExtensionPref(extension_id, kPrefState,
                         Value::CreateIntegerValue(Extension::KILLBIT));
-    SavePrefsAndNotify();
+    prefs_->ScheduleSavePersistentPrefs();
   } else {
     DeleteExtensionPrefs(extension_id);
   }
@@ -577,7 +525,7 @@ void ExtensionPrefs::SetExtensionState(Extension* extension,
                                        Extension::State state) {
   UpdateExtensionPref(extension->id(), kPrefState,
                       Value::CreateIntegerValue(state));
-  SavePrefsAndNotify();
+  prefs_->SavePersistentPrefs();
 }
 
 std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
@@ -598,7 +546,7 @@ void ExtensionPrefs::UpdateManifest(Extension* extension) {
   if (extension->location() != Extension::LOAD) {
     UpdateExtensionPref(extension->id(), kPrefManifest,
                         extension->manifest_value()->DeepCopy());
-    SavePrefsAndNotify();
+    prefs_->ScheduleSavePersistentPrefs();
   }
 }
 
@@ -629,7 +577,7 @@ void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
   DictionaryValue* dict = prefs_->GetMutableDictionary(kExtensionsPref);
   if (dict->HasKey(extension_id)) {
     dict->Remove(extension_id, NULL);
-    SavePrefsAndNotify();
+    prefs_->ScheduleSavePersistentPrefs();
   }
 }
 
@@ -769,7 +717,7 @@ void ExtensionPrefs::SetIdleInstallInfo(const std::string& extension_id,
   info->SetString(kIdleInstallInfoFetchTime,
                   base::Int64ToString(fetch_time.ToInternalValue()));
   extension_prefs->Set(kIdleInstallInfo, info);
-  SavePrefsAndNotify();
+  prefs_->ScheduleSavePersistentPrefs();
 }
 
 bool ExtensionPrefs::RemoveIdleInstallInfo(const std::string& extension_id) {
@@ -777,7 +725,7 @@ bool ExtensionPrefs::RemoveIdleInstallInfo(const std::string& extension_id) {
   if (!extension_prefs)
     return false;
   bool result = extension_prefs->Remove(kIdleInstallInfo, NULL);
-  SavePrefsAndNotify();
+  prefs_->ScheduleSavePersistentPrefs();
   return result;
 }
 
@@ -859,7 +807,7 @@ bool ExtensionPrefs::GetWebStoreLogin(std::string* result) {
 
 void ExtensionPrefs::SetWebStoreLogin(const std::string& login) {
   prefs_->SetString(kWebStoreLogin, login);
-  SavePrefsAndNotify();
+  prefs_->ScheduleSavePersistentPrefs();
 }
 
 // static

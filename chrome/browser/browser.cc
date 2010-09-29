@@ -47,7 +47,6 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/find_bar.h"
@@ -557,28 +556,16 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
                                          Extension* extension,
                                          Browser** browser) {
   Browser* local_browser = BrowserList::GetLastActiveWithProfile(profile);
-  TabContents* tab_contents = NULL;
   if (!local_browser || local_browser->type() != Browser::TYPE_NORMAL)
-    return tab_contents;
+    return NULL;
 
-  // Check the prefs for overridden mode.
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
-  DCHECK(extensions_service);
+  // TODO(erikkay): This doesn't seem like the right transition in all cases.
+  PageTransition::Type transition = PageTransition::START_PAGE;
 
-  ExtensionPrefs::LaunchType launch_type =
-      extensions_service->extension_prefs()->GetLaunchType(extension->id());
-  int add_type = TabStripModel::ADD_SELECTED;
-  if (launch_type == ExtensionPrefs::LAUNCH_PINNED)
-    add_type |= TabStripModel::ADD_PINNED;
-
-  // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
-  // cases.
-  tab_contents = local_browser->AddTabWithURL(extension->GetFullLaunchURL(),
-      GURL(), PageTransition::START_PAGE, -1, add_type, NULL, "", browser);
-  if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
-    local_browser->window()->SetFullscreen(true);
-
-  return tab_contents;
+  return local_browser->AddTabWithURL(
+      extension->GetFullLaunchURL(), GURL(), transition, -1,
+      TabStripModel::ADD_PINNED | TabStripModel::ADD_SELECTED,
+      NULL, "", browser);
 }
 
 // static

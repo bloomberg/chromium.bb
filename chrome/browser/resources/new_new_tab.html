@@ -176,19 +176,9 @@ if ('mode' in hashParams) {
 <command id="apps-launch-command">
 <command id="apps-options-command" i18n-values=".label:appoptions">
 <command id="apps-uninstall-command" i18n-values=".label:appuninstall">
-<command id="apps-launch-type-pinned" i18n-values=".label:applaunchtypepinned"
-    launch-type="0">
-<command id="apps-launch-type-regular" i18n-values=".label:applaunchtyperegular"
-    launch-type="1">
-<command id="apps-launch-type-fullscreen"
-    i18n-values=".label:applaunchtypefullscreen" launch-type="2">
 
 <menu id="app-context-menu">
   <button class="default" command="#apps-launch-command"></button>
-  <hr>
-  <button command="#apps-launch-type-pinned" launch-type="0"></button>
-  <button command="#apps-launch-type-regular" launch-type="1"></button>
-  <button command="#apps-launch-type-fullscreen" launch-type="2"></button>
   <hr>
   <button command="#apps-options-command"></button>
   <button command="#apps-uninstall-command"></button>

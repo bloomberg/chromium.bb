@@ -52,7 +52,6 @@ cr.define('cr.ui', function() {
         this.command_.removeEventListener('labelChange', this);
         this.command_.removeEventListener('disabledChange', this);
         this.command_.removeEventListener('hiddenChange', this);
-        this.command_.removeEventListener('checkedChange', this);
       }
 
       if (typeof command == 'string' && command[0] == '#') {
@@ -72,7 +71,6 @@ cr.define('cr.ui', function() {
         this.command_.addEventListener('labelChange', this);
         this.command_.addEventListener('disabledChange', this);
         this.command_.addEventListener('hiddenChange', this);
-        this.command_.addEventListener('checkedChange', this);
       }
     },
 
@@ -126,9 +124,6 @@ cr.define('cr.ui', function() {
         case 'labelChange':
           this.label = this.command.label;
           break;
-        case 'checkedChange':
-          this.checked = this.command.checked;
-          break;
       }
     }
   };
@@ -150,12 +145,6 @@ cr.define('cr.ui', function() {
    * @type {boolean}
    */
   cr.defineProperty(MenuItem, 'selected', cr.PropertyKind.BOOL_ATTR);
-
-  /**
-   * Whether the menu item is checked or not.
-   * @type {boolean}
-   */
-  cr.defineProperty(MenuItem, 'checked', cr.PropertyKind.BOOL_ATTR);
 
   // Export
   return {

@@ -9,15 +9,11 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class Extension;
-class ExtensionPrefs;
 class ExtensionsService;
-class NotificationRegistrar;
-class PrefChangeRegistrar;
 
 namespace gfx {
   class Rect;
@@ -42,21 +38,13 @@ class AppLauncherHandler
                       const NotificationDetails& details);
 
   // Populate a dictionary with the information from an extension.
-  static void CreateAppInfo(Extension* extension,
-                            ExtensionPrefs* extension_prefs,
-                            DictionaryValue* value);
-
-  // Populate the given dictionary with all installed app info.
-  void FillAppDictionary(DictionaryValue* value);
+  static void CreateAppInfo(Extension* extension, DictionaryValue* value);
 
   // Callback for the "getApps" message.
   void HandleGetApps(const ListValue* args);
 
   // Callback for the "launchApp" message.
   void HandleLaunchApp(const ListValue* args);
-
-  // Callback for the "setLaunchType" message.
-  void HandleSetLaunchType(const ListValue* args);
 
   // Callback for the "uninstallApp" message.
   void HandleUninstallApp(const ListValue* args);
@@ -80,9 +68,6 @@ class AppLauncherHandler
   // We monitor changes to the extension system so that we can reload the apps
   // when necessary.
   NotificationRegistrar registrar_;
-
-  // Monitor extension preference changes so that the DOM UI can be notified.
-  PrefChangeRegistrar pref_change_registrar_;
 
   // Used to show confirmation UI for uninstalling/enabling extensions in
   // incognito mode.
