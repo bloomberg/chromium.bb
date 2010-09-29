@@ -39,6 +39,13 @@
   fun:*media*PipelineImpl*GetCurrentTime*
 }
 
+{
+  bug_57266
+  ThreadSanitizer:Race
+  ...
+  fun:*vp8*_*
+}
+
 ############################
 # Real races in third_party
 {
