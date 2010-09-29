@@ -66,7 +66,8 @@ void TestShellRequestContext::Init(
                                              false, 0, NULL, NULL, NULL);
   ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
 
-  http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
+  http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
+      host_resolver_);
 
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       cache_path.empty() ? net::MEMORY_CACHE : net::DISK_CACHE,

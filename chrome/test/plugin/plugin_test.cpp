@@ -231,7 +231,8 @@ class PluginInstallerDownloadTest
       DCHECK(proxy_service_);
 
       ssl_config_service_ = new net::SSLConfigServiceDefaults;
-      http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
+      http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
+          host_resolver_);
       http_transaction_factory_ = new net::HttpCache(
           net::HttpNetworkLayer::CreateFactory(host_resolver_,
                                                proxy_service_,
