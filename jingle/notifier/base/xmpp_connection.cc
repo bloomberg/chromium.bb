@@ -121,12 +121,12 @@ void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
 
 void XmppConnection::OnInputLog(const char* data, int len) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  LOG(INFO) << "XMPP Input: " << base::StringPiece(data, len);
+  VLOG(2) << "XMPP Input: " << base::StringPiece(data, len);
 }
 
 void XmppConnection::OnOutputLog(const char* data, int len) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  LOG(INFO) << "XMPP Output: " << base::StringPiece(data, len);
+  VLOG(2) << "XMPP Output: " << base::StringPiece(data, len);
 }
 
 void XmppConnection::ClearClient() {

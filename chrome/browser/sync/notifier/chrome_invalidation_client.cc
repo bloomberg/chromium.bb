@@ -96,7 +96,7 @@ void ChromeInvalidationClient::Invalidate(
     invalidation::Closure* callback) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   DCHECK(invalidation::IsCallbackRepeatable(callback));
-  LOG(INFO) << "Invalidate: " << InvalidationToString(invalidation);
+  VLOG(1) << "Invalidate: " << InvalidationToString(invalidation);
   syncable::ModelType model_type;
   if (ObjectIdToRealModelType(invalidation.object_id(), &model_type)) {
     listener_->OnInvalidate(model_type);
@@ -112,7 +112,7 @@ void ChromeInvalidationClient::InvalidateAll(
     invalidation::Closure* callback) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   DCHECK(invalidation::IsCallbackRepeatable(callback));
-  LOG(INFO) << "InvalidateAll";
+  VLOG(1) << "InvalidateAll";
   listener_->OnInvalidateAll();
   RunAndDeleteClosure(callback);
 }
@@ -121,7 +121,7 @@ void ChromeInvalidationClient::AllRegistrationsLost(
     invalidation::Closure* callback) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   DCHECK(invalidation::IsCallbackRepeatable(callback));
-  LOG(INFO) << "AllRegistrationsLost";
+  VLOG(1) << "AllRegistrationsLost";
   registration_manager_->MarkAllRegistrationsLost();
   RunAndDeleteClosure(callback);
 }
@@ -131,7 +131,7 @@ void ChromeInvalidationClient::RegistrationLost(
     invalidation::Closure* callback) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   DCHECK(invalidation::IsCallbackRepeatable(callback));
-  LOG(INFO) << "RegistrationLost: " << ObjectIdToString(object_id);
+  VLOG(1) << "RegistrationLost: " << ObjectIdToString(object_id);
   syncable::ModelType model_type;
   if (ObjectIdToRealModelType(object_id, &model_type)) {
     registration_manager_->MarkRegistrationLost(model_type);
