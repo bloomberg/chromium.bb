@@ -22,7 +22,9 @@
     </script>
   </head>
   <body onLoad="run()">
-    <input id='inputField' speech onchange="onspeechresult(this.value);"><br>
+    <input id='inputField' speech webkitspeech
+           onchange="onspeechresult(this.value);">
+    <br>
     <div id="status">FAIL</div>
   </body>
 </html>
