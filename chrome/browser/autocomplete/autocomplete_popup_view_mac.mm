@@ -538,7 +538,7 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
 
   // Adjust the title position to be lined up under the field's text.
   NSAttributedString* title = [self attributedTitle];
-  if (title) {
+  if (title && [title length]) {
     NSRect titleRect = cellFrame;
     titleRect.size.width -= kTextXOffset;
     titleRect.origin.x += kTextXOffset;
