@@ -23,20 +23,6 @@ class CloudPrintHtmlDialogDelegateTest;
 
 namespace internal_cloud_print_helpers {
 
-// Centralize URL management for the cloud print service.
-class CloudPrintService {
- public:
-  explicit CloudPrintService(Profile* profile) : profile_(profile) {}
-
-  GURL GetCloudPrintServiceURL();
-  GURL GetCloudPrintServiceDialogURL();
-
- private:
-  void RegisterPreferences();
-
-  Profile* profile_;
-};
-
 // Small class to virtualize a few functions to aid with unit testing.
 class CloudPrintDataSenderHelper {
  public:
