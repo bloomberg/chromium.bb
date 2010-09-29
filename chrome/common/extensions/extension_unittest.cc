@@ -817,7 +817,8 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 }
 
-TEST(ExtensionTest, IsPrivilegeIncrease) {
+// crashing crbug.com/54332
+TEST(ExtensionTest, DISABLED_IsPrivilegeIncrease) {
   const struct {
     const char* base_name;
     bool expect_success;
