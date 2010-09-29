@@ -40,10 +40,17 @@
 }
 
 {
-  bug_57266
+  bug_57266a
   ThreadSanitizer:Race
   ...
   fun:*vp8*_*
+}
+
+{
+  bug_57266b
+  ThreadSanitizer:Race
+  obj:*libffmpegsumo.so
+  fun:ThreadSanitizerStartThread
 }
 
 ############################
