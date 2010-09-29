@@ -244,7 +244,25 @@ int Extension::GetPermissionMessageId(const std::string& permission) {
   return PermissionMap::GetSingleton()->GetPermissionMessageId(permission);
 }
 
-std::set<string16> Extension::GetPermissionMessages() {
+std::vector<string16> Extension::GetPermissionMessages() {
+  std::vector<string16> messages;
+  if (!plugins_.empty()) {
+    messages.push_back(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS));
+    return messages;
+  }
+
+  string16 host_msg = GetHostPermissionMessage();
+  if (!host_msg.empty())
+    messages.push_back(host_msg);
+
+  std::set<string16> simple_msgs = GetSimplePermissionMessages();
+  messages.insert(messages.end(), simple_msgs.begin(), simple_msgs.end());
+
+  return messages;
+}
+
+std::set<string16> Extension::GetSimplePermissionMessages() {
   std::set<string16> messages;
   std::set<std::string>::iterator i;
   for (i = api_permissions_.begin(); i != api_permissions_.end(); ++i) {
@@ -253,6 +271,56 @@ std::set<string16> Extension::GetPermissionMessages() {
       messages.insert(l10n_util::GetStringUTF16(message_id));
   }
   return messages;
+}
+
+std::vector<std::string> Extension::GetDistinctHosts() {
+  return GetDistinctHosts(GetEffectiveHostPermissions().patterns());
+}
+
+// static
+std::vector<std::string> Extension::GetDistinctHosts(
+    const URLPatternList& host_patterns) {
+
+  // Vector because we later want to access these by index.
+  std::vector<std::string> distinct_hosts;
+
+  for (size_t i = 0; i < host_patterns.size(); ++i) {
+    std::string candidate = host_patterns[i].host();
+    if (std::find(distinct_hosts.begin(), distinct_hosts.end(), candidate) ==
+                  distinct_hosts.end()) {
+      distinct_hosts.push_back(candidate);
+    }
+  }
+
+  return distinct_hosts;
+}
+
+string16 Extension::GetHostPermissionMessage() {
+  if (HasEffectiveAccessToAllHosts())
+    return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS);
+
+  std::vector<std::string> hosts = GetDistinctHosts();
+  if (hosts.size() == 1) {
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_1_HOST,
+                                      UTF8ToUTF16(hosts[0]));
+  } else if (hosts.size() == 2) {
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS,
+                                      UTF8ToUTF16(hosts[0]),
+                                      UTF8ToUTF16(hosts[1]));
+  } else if (hosts.size() == 3) {
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS,
+                                      UTF8ToUTF16(hosts[0]),
+                                      UTF8ToUTF16(hosts[1]),
+                                      UTF8ToUTF16(hosts[2]));
+  } else if (hosts.size() >= 4) {
+    return l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS,
+        UTF8ToUTF16(hosts[0]),
+        UTF8ToUTF16(hosts[1]),
+        base::IntToString16(hosts.size() - 2));
+  }
+
+  return string16();
 }
 
 // static
@@ -948,29 +1016,30 @@ bool Extension::IsPrivilegeIncrease(Extension* old_extension,
   if (new_extension->plugins().size() > 0)
     return true;
 
-  // If we are increasing the set of hosts we have access to, it's a privilege
-  // increase.
+  // If we are increasing the set of hosts we have access to (not
+  // counting scheme differences), it's a privilege increase.
   if (!old_extension->HasEffectiveAccessToAllHosts()) {
     if (new_extension->HasEffectiveAccessToAllHosts())
       return true;
 
-    ExtensionExtent::PatternList old_hosts =
-        old_extension->GetEffectiveHostPermissions().patterns();
-    ExtensionExtent::PatternList new_hosts =
-        new_extension->GetEffectiveHostPermissions().patterns();
-
-    std::set<URLPattern, URLPattern::EffectiveHostCompareFunctor> diff;
-    std::set_difference(new_hosts.begin(), new_hosts.end(),
-        old_hosts.begin(), old_hosts.end(),
-        std::insert_iterator<std::set<URLPattern,
-            URLPattern::EffectiveHostCompareFunctor> >(diff, diff.end()),
-        URLPattern::EffectiveHostCompare);
-    if (diff.size() > 0)
+    // TODO(erikkay) This will trip when you add a new distinct hostname,
+    // but we should unique based on RCD as well.  crbug.com/57042
+    std::vector<std::string> old_hosts = old_extension->GetDistinctHosts();
+    std::vector<std::string> new_hosts = new_extension->GetDistinctHosts();
+    std::set<std::string> old_hosts_set(old_hosts.begin(), old_hosts.end());
+    std::set<std::string> new_hosts_set(new_hosts.begin(), new_hosts.end());
+    std::set<std::string> new_only;
+    std::set_difference(new_hosts_set.begin(), new_hosts_set.end(),
+                      old_hosts_set.begin(), old_hosts_set.end(),
+                      std::inserter(new_only, new_only.end()));
+    if (new_only.size())
       return true;
   }
 
-  std::set<string16> old_messages = old_extension->GetPermissionMessages();
-  std::set<string16> new_messages = new_extension->GetPermissionMessages();
+  std::set<string16> old_messages =
+      old_extension->GetSimplePermissionMessages();
+  std::set<string16> new_messages =
+      new_extension->GetSimplePermissionMessages();
   std::set<string16> new_only;
   std::set_difference(new_messages.begin(), new_messages.end(),
                       old_messages.begin(), old_messages.end(),

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_install_ui.h"
 
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +28,7 @@ TEST(ExtensionInstallUITest, GetDistinctHostsForDisplay) {
   expected.push_back("www.baz.com");
 
   // Simple list with no dupes.
-  std::vector<URLPattern> actual;
+  URLPatternList actual;
   actual.push_back(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.com/path"));
   actual.push_back(
@@ -35,7 +36,7 @@ TEST(ExtensionInstallUITest, GetDistinctHostsForDisplay) {
   actual.push_back(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.baz.com/path"));
   CompareLists(expected,
-               ExtensionInstallUI::GetDistinctHostsForDisplay(actual));
+               Extension::GetDistinctHosts(actual));
 
   // Add some dupes.
   actual.push_back(
@@ -43,20 +44,20 @@ TEST(ExtensionInstallUITest, GetDistinctHostsForDisplay) {
   actual.push_back(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.baz.com/path"));
   CompareLists(expected,
-               ExtensionInstallUI::GetDistinctHostsForDisplay(actual));
+               Extension::GetDistinctHosts(actual));
 
 
   // Add a pattern that differs only by scheme. This should be filtered out.
   actual.push_back(
       URLPattern(URLPattern::SCHEME_HTTPS, "https://www.bar.com/path"));
   CompareLists(expected,
-               ExtensionInstallUI::GetDistinctHostsForDisplay(actual));
+               Extension::GetDistinctHosts(actual));
 
   // Add some dupes by path.
   actual.push_back(
       URLPattern(URLPattern::SCHEME_HTTP, "http://www.bar.com/pathypath"));
   CompareLists(expected,
-               ExtensionInstallUI::GetDistinctHostsForDisplay(actual));
+               Extension::GetDistinctHosts(actual));
 
   // We don't do anything special for subdomains.
   actual.push_back(
@@ -68,5 +69,5 @@ TEST(ExtensionInstallUITest, GetDistinctHostsForDisplay) {
   expected.push_back("bar.com");
 
   CompareLists(expected,
-               ExtensionInstallUI::GetDistinctHostsForDisplay(actual));
+               Extension::GetDistinctHosts(actual));
 }

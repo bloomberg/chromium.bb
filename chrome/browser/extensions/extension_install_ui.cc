@@ -68,69 +68,7 @@ namespace {
 // Size of extension icon in top left of dialog.
 const int kIconSize = 69;
 
-static void GetV2Warnings(Extension* extension,
-                          std::vector<string16>* warnings) {
-  if (!extension->plugins().empty()) {
-    // TODO(aa): This one is a bit awkward. Should we have a separate
-    // presentation for this case?
-    warnings->push_back(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS));
-    return;
-  }
-
-  if (extension->HasEffectiveAccessToAllHosts()) {
-    warnings->push_back(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS));
-  } else {
-    std::vector<std::string> hosts =
-        ExtensionInstallUI::GetDistinctHostsForDisplay(
-            extension->GetEffectiveHostPermissions().patterns());
-    if (hosts.size() == 1) {
-      warnings->push_back(
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_1_HOST,
-                                     UTF8ToUTF16(hosts[0])));
-    } else if (hosts.size() == 2) {
-      warnings->push_back(
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS,
-                                     UTF8ToUTF16(hosts[0]),
-                                     UTF8ToUTF16(hosts[1])));
-    } else if (hosts.size() == 3) {
-      warnings->push_back(
-          l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS,
-                                     UTF8ToUTF16(hosts[0]),
-                                     UTF8ToUTF16(hosts[1]),
-                                     UTF8ToUTF16(hosts[2])));
-    } else if (hosts.size() >= 4) {
-      warnings->push_back(
-          l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS,
-              UTF8ToUTF16(hosts[0]),
-              UTF8ToUTF16(hosts[1]),
-              base::IntToString16(hosts.size() - 2)));
-    }
-  }
-
-  std::set<string16> api_messages = extension->GetPermissionMessages();
-  warnings->insert(warnings->end(), api_messages.begin(), api_messages.end());
-}
-
 }  // namespace
-
-std::vector<std::string> ExtensionInstallUI::GetDistinctHostsForDisplay(
-    const URLPatternList& host_patterns) {
-  // Vector because we later want to access these by index.
-  std::vector<std::string> distinct_hosts;
-
-  for (size_t i = 0; i < host_patterns.size(); ++i) {
-    std::string candidate = host_patterns[i].host();
-    if (std::find(distinct_hosts.begin(), distinct_hosts.end(), candidate) ==
-                  distinct_hosts.end()) {
-      distinct_hosts.push_back(candidate);
-    }
-  }
-
-  return distinct_hosts;
-}
 
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile),
@@ -281,8 +219,7 @@ void ExtensionInstallUI::OnImageLoaded(
           Source<ExtensionInstallUI>(this),
           NotificationService::NoDetails());
 
-      std::vector<string16> warnings;
-      GetV2Warnings(extension_, &warnings);
+      std::vector<string16> warnings = extension_->GetPermissionMessages();
       ShowExtensionInstallUIPrompt2Impl(profile_, delegate_, extension_, &icon_,
                                         warnings);
       break;

@@ -86,11 +86,17 @@ class Extension {
   // The install message id for |permission|.  Returns 0 if none exists.
   static int GetPermissionMessageId(const std::string& permission);
 
-  // The set of unique API install messages that the extension has.
-  // NOTE: This only includes messages related to permissions declared in the
-  // "permissions" key in the manifest.  Permissions implied from other features
-  // of the manifest, like plugins and content scripts are not included.
-  std::set<string16> GetPermissionMessages();
+  // Returns the full list of permission messages that this extension
+  // should display at install time.
+  std::vector<string16> GetPermissionMessages();
+
+  // Returns the distinct hosts that should be displayed in the install UI. This
+  // discards some of the detail that is present in the manifest to make it as
+  // easy as possible to process by users. In particular we disregard the scheme
+  // and path components of URLPatterns and de-dupe the result.
+  static std::vector<std::string> GetDistinctHosts(
+      const URLPatternList& host_patterns);
+  std::vector<std::string> GetDistinctHosts();
 
   bool apps_enabled() const { return apps_enabled_; }
   void set_apps_enabled(bool val) { apps_enabled_ = val; }
@@ -442,6 +448,16 @@ class Extension {
   // Returns true if the string is one of the known api permissions (see
   // kPermissions).
   bool IsAPIPermission(const std::string& permission);
+
+  // The set of unique API install messages that the extension has.
+  // NOTE: This only includes messages related to permissions declared in the
+  // "permissions" key in the manifest.  Permissions implied from other features
+  // of the manifest, like plugins and content scripts are not included.
+  std::set<string16> GetSimplePermissionMessages();
+
+  // The permission message displayed related to the host permissions for
+  // this extension.
+  string16 GetHostPermissionMessage();
 
   // The absolute path to the directory the extension is stored in.
   FilePath path_;

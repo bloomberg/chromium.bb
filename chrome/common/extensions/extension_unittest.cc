@@ -829,6 +829,7 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     { "hosts2", false },  // http://a,http://b -> https://a,http://*.b
     { "hosts3", false },  // http://a,http://b -> http://a
     { "hosts4", true },  // http://a -> http://a,http://b
+    { "hosts5", false },  // http://a,b,c -> http://a,b,c + https://a,b,c
     { "permissions1", false },  // tabs -> tabs
     { "permissions2", true },  // tabs -> tabs,bookmarks
     { "permissions3", true },  // http://a -> http://a,tabs

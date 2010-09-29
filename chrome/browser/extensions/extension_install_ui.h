@@ -49,13 +49,6 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
     virtual ~Delegate() {}
   };
 
-  // Returns the distinct hosts that should be displayed in the install UI. This
-  // discards some of the detail that is present in the manifest to make it as
-  // easy as possible to process by users. In particular we disregard the scheme
-  // and path components of URLPatterns and de-dupe the result.
-  static std::vector<std::string> GetDistinctHostsForDisplay(
-    const URLPatternList& host_patterns);
-
   explicit ExtensionInstallUI(Profile* profile);
 
   virtual ~ExtensionInstallUI();
