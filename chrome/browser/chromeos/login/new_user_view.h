@@ -101,7 +101,7 @@ class NewUserView : public views::View,
   virtual bool HandleKeystroke(views::Textfield* sender,
                                const views::Textfield::Keystroke& keystroke);
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) {}
+                               const string16& new_contents);
 
   // Overridden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -133,6 +133,11 @@ class NewUserView : public views::View,
   // Delete and recreate native controls that fail to update preferred size
   // after text/locale update.
   void RecreatePeculiarControls();
+
+  // Enable or disable the |sign_in_button_| based on the contents of the
+  // |username_field_| and |password_field_|. If there is text in both the
+  // button is enabled, otherwise it's disabled.
+  void UpdateSignInButtonState();
 
   // Screen controls.
   // NOTE: sign_in_button_ and languages_menubutton_ are handled with

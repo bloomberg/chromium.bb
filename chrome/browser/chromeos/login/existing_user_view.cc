@@ -141,4 +141,5 @@ void ExistingUserView::FocusPasswordField() {
 void ExistingUserView::OnLocaleChanged() {
   RecreateFields();
 }
+
 }  // namespace chromeos

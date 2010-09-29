@@ -179,6 +179,13 @@ std::wstring UserController::GetNameTooltip() const {
                             domain.c_str());
 }
 
+void UserController::UpdateSubmitButtonState() {
+  if (!is_new_user_) {
+    existing_user_view_->submit_button()->SetEnabled(
+        !existing_user_view_->password_field()->text().empty());
+  }
+}
+
 void UserController::ClearAndEnablePassword() {
   if (is_new_user_) {
     new_user_view_->ClearAndEnablePassword();
@@ -230,6 +237,11 @@ bool UserController::HandleKeystroke(
   }
   delegate_->ClearErrors();
   return false;
+}
+
+void UserController::ContentsChanged(views::Textfield* sender,
+                                     const string16& new_contents) {
+  UpdateSubmitButtonState();
 }
 
 void UserController::Observe(

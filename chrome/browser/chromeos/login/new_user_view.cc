@@ -174,6 +174,10 @@ void NewUserView::Init() {
   if (!CrosLibrary::Get()->EnsureLoaded()) {
     EnableInputControls(false);
   }
+
+  // The 'Sign in' button should be disabled when there is no text in the
+  // username and password fields.
+  sign_in_button_->SetEnabled(false);
 }
 
 bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
@@ -207,8 +211,16 @@ void NewUserView::RecreatePeculiarControls() {
   // sized so delete and recreate the button on text update.
   delete sign_in_button_;
   sign_in_button_ = new views::NativeButton(this, std::wstring());
+  UpdateSignInButtonState();
+
   if (!CrosLibrary::Get()->EnsureLoaded())
     sign_in_button_->SetEnabled(false);
+}
+
+void NewUserView::UpdateSignInButtonState() {
+  bool enabled = !username_field_->text().empty() &&
+                 !password_field_->text().empty();
+  sign_in_button_->SetEnabled(enabled);
 }
 
 void NewUserView::AddChildView(View* view) {
@@ -415,8 +427,8 @@ void NewUserView::Login() {
 }
 
 // Sign in button causes a login attempt.
-void NewUserView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
+void NewUserView::ButtonPressed(views::Button* sender,
+                                const views::Event& event) {
   DCHECK(sender == sign_in_button_);
   Login();
 }
@@ -478,6 +490,11 @@ bool NewUserView::HandleKeystroke(views::Textfield* s,
   delegate_->ClearErrors();
   // Return false so that processing does not end
   return false;
+}
+
+void NewUserView::ContentsChanged(views::Textfield* sender,
+                                  const string16& new_contents) {
+  UpdateSignInButtonState();
 }
 
 void NewUserView::EnableInputControls(bool enabled) {

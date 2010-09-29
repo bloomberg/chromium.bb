@@ -105,7 +105,7 @@ class UserController : public views::ButtonListener,
 
   // Textfield::Controller:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) {}
+                               const string16& new_contents);
   virtual bool HandleKeystroke(views::Textfield* sender,
                                const views::Textfield::Keystroke& keystroke);
 
@@ -172,6 +172,10 @@ class UserController : public views::ButtonListener,
 
   // Returns tooltip text for user name.
   std::wstring GetNameTooltip() const;
+
+  // Enable or disable the 'Submit' button based on the contents of
+  // |password_field_|. Enabled if there is text, otherwise disabled.
+  void UpdateSubmitButtonState();
 
   // User index within all the users.
   int user_index_;

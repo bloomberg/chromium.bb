@@ -27,11 +27,11 @@ class ExistingUserView : public views::View {
 
   void FocusPasswordField();
 
-  // views::View
+  // Overridden from views::View:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
  protected:
-  // views::View overrides:
+  // Overridden from views::View:
   virtual void OnLocaleChanged();
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
