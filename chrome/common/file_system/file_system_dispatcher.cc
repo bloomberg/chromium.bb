@@ -33,6 +33,7 @@ bool FileSystemDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidReadDirectory, DidReadDirectory)
     IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidReadMetadata, DidReadMetadata)
     IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidFail, DidFail)
+    IPC_MESSAGE_HANDLER(ViewMsg_FileSystem_DidWrite, DidWrite)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -108,6 +109,46 @@ bool FileSystemDispatcher::ReadDirectory(
       new ViewHostMsg_FileSystem_ReadDirectory(request_id, path));
 }
 
+bool FileSystemDispatcher::Truncate(
+    const FilePath& path,
+    int64 offset,
+    int* request_id_out,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  int request_id = dispatchers_.Add(dispatcher);
+  if (ChildThread::current()->Send(
+      new ViewHostMsg_FileSystem_Truncate(request_id, path, offset))) {
+    if (request_id_out)
+      *request_id_out = request_id;
+    return true;
+  }
+  return false;
+}
+
+bool FileSystemDispatcher::Write(
+    const FilePath& path,
+    const GURL& blob_url,
+    int64 offset,
+    int* request_id_out,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  int request_id = dispatchers_.Add(dispatcher);
+  if (ChildThread::current()->Send(
+      new ViewHostMsg_FileSystem_Write(
+          request_id, path, blob_url, offset))) {
+    if (request_id_out)
+      *request_id_out = request_id;
+    return true;
+  }
+  return false;
+}
+
+bool FileSystemDispatcher::Cancel(
+    int request_id_to_cancel,
+    fileapi::FileSystemCallbackDispatcher* dispatcher) {
+  int request_id = dispatchers_.Add(dispatcher);
+  return ChildThread::current()->Send(
+      new ViewHostMsg_FileSystem_CancelWrite(request_id, request_id_to_cancel));
+}
+
 bool FileSystemDispatcher::TouchFile(
     const FilePath& path,
     const base::Time& last_access_time,
@@ -167,4 +208,15 @@ void FileSystemDispatcher::DidFail(
   DCHECK(dispatcher);
   dispatcher->DidFail(error_code);
   dispatchers_.Remove(request_id);
+}
+
+void FileSystemDispatcher::DidWrite(
+    int request_id, int64 bytes, bool complete) {
+  fileapi::FileSystemCallbackDispatcher* dispatcher =
+      dispatchers_.Lookup(request_id);
+  DCHECK(dispatcher);
+  // TODO(ericu): Coming soon.
+  // dispatcher->DidWrite(bytes, complete);
+  if (complete)
+    dispatchers_.Remove(request_id);
 }
