@@ -149,7 +149,7 @@ class TsanAnalyzer(object):
       self.ParseReportFile(file)
     if self._use_gdb:
       TheAddressTable.ResolveAll()
-    return [''.join(report_lines) for report_lines in self.reports]
+    return [''.join(map(str, report_lines)) for report_lines in self.reports]
 
   def Report(self, files, check_sanity=False):
     '''Reads in a set of files and prints ThreadSanitizer report.
