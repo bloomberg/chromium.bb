@@ -1382,7 +1382,7 @@
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.management.</span><span>onUninstalled</span><span class="subdued">.addListener</span>(function(<span>string id</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.experimental.management.</span><span>onUninstalled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -1395,7 +1395,7 @@
                   <div>
                     <div>
           <dt>
-            <var>id</var>
+            <var>info</var>
               <em>
 
                 <!-- TYPE -->
@@ -1404,15 +1404,15 @@
                     <span class="optional" style="display: none; ">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="experimental.management.html#type-ExtensionInfo">ExtensionInfo</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>string</span>
-                        <span style="display: none; "></span>
+                        <span>paramType</span>
+                        <span></span>
                       </span>
                     </span>
                   )
@@ -1420,10 +1420,12 @@
 
               </em>
           </dt>
-          <dd class="todo" style="display: none; ">
+          <dd class="todo">
             Undocumented.
           </dd>
-          <dd>The id of the extension or app that was uninstalled.</dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
