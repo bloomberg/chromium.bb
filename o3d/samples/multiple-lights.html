@@ -1,0 +1,208 @@
+<!--
+Copyright 2010, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!--
+O3D Multiple Lights example.
+
+Shows a simple cube with one light on each corner.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>
+Multiple Lights
+</title>
+<!-- Include sample javascript library functions-->
+<script type="text/javascript" src="../o3djs/base.js"></script>
+
+<!-- Our javascript code -->
+<script type="text/javascript" id="o3dscript">
+
+//o3djs.base.o3d = o3d;
+
+o3djs.require('o3djs.util');
+o3djs.require('o3djs.math');
+o3djs.require('o3djs.rendergraph');
+o3djs.require('o3djs.material');
+o3djs.require('o3djs.primitives');
+
+// Events
+// init() once the page has finished loading.
+// unload() when the page is unloaded.
+window.onload = init;
+window.onunload = unload;
+
+// global variables
+var g_o3d;
+var g_math;
+var g_client;
+var g_viewInfo;
+var g_pack;
+var g_transform = null;
+var g_finished = false;  // for selenium testing.
+var g_clock = 0;
+var g_timeMult = 1;
+
+/**
+ * Creates the client area.
+ */
+function init() {
+  o3djs.util.makeClients(initStep2);
+}
+
+/**
+ * Initializes O3D and creates one shape.
+ * @param {Array} clientElements Array of o3d object elements.
+ */
+function initStep2(clientElements) {
+  // Initializes global variables and libraries.
+  var o3dElement = clientElements[0];
+  g_o3d = o3dElement.o3d;
+  g_math = o3djs.math;
+  g_client = o3dElement.client;
+
+  // Creates a pack to manage our resources/assets
+  g_pack = g_client.createPack();
+
+  // Create the render graph for a view.
+  g_viewInfo = o3djs.rendergraph.createBasicView(
+      g_pack,
+      g_client.root,
+      g_client.renderGraphRoot);
+
+  // Set our projection matrix, with a vertical field of view of 45 degrees
+  // a near clipping plane of 0.1 and far clipping plane of 10000.
+  g_viewInfo.drawContext.projection = g_math.matrix4.perspective(
+      g_math.degToRad(45),
+      g_client.width / g_client.height,
+      0.1,
+      10000);
+
+  // Create a material.
+  var material = g_pack.createObject('Material');
+  material.drawList = g_viewInfo.performanceDrawList;
+
+  material.createParam('diffuse', 'ParamFloat4').value = [.5, .5, .5, 1];
+
+  // Create some suitable defaults for the material to save the user having
+  // to know all this stuff right off the bat.
+  material.createParam('emissive', 'ParamFloat4').value = [0, 0, 0, 1];
+  material.createParam('ambient', 'ParamFloat4').value = [0, 0, 0, 0];
+  material.createParam('specular', 'ParamFloat4').value = [1, 1, 1, 1];
+  material.createParam('shininess', 'ParamFloat').value = 10;
+  material.createParam('specularFactor', 'ParamFloat').value = 1;
+  o3djs.material.attachStandardEffect(
+      g_pack,
+      material,
+      g_viewInfo,
+      'blinn',
+      {lights: 8});
+  var materialColorParamList = material.getParam('lightColorList');
+  var colorParamList = g_pack.createObject('ParamArray');
+  var materialLightPositionList = material.getParam('lightWorldPosList');
+  var lightPositionParamList = g_pack.createObject('ParamArray');
+  // Create a cylinder.
+  var shape = o3djs.primitives.createCube(
+      g_pack,
+      material,
+      150);
+
+  g_transform = g_pack.createObject('Transform');
+  // Add the cylinder to the root transform.
+  g_transform.addShape(shape);
+  g_transform.parent = g_client.root;
+
+  var colors = [
+      [0, 0, 0, 1], // null light
+      [1, 0, 0, 1],
+      [0, 0, 1, 1],
+      [0, 1, 0, 1],
+      [1, 1, 1, 1],
+      [0, 1, 1, 1],
+      [1, 1, 0, 1],
+      [1, 0, 1, 1]];
+  var lightDist = 150;
+  for (var i = 0; i < 8; i++) {
+    colorParamList.createParam(i,'ParamFloat4').value = colors[i];
+    var position = [
+        (i&1)?lightDist:-lightDist,
+        (i&2)?lightDist:-lightDist,
+        (i&4)?lightDist:-lightDist
+        ];
+    lightPositionParamList.createParam(i,'ParamFloat3').value = position;
+  }
+  materialLightPositionList.value = lightPositionParamList;
+  materialColorParamList.value = colorParamList;
+  // Setup an onrender callback for animation.
+  g_client.setRenderCallback(onrender);
+
+  g_finished = true;  // for selenium testing.
+}
+
+/**
+ * Called every frame.
+ * @param {!o3d.RenderEvent} renderEvent Info for rendering.
+ */
+function onrender(renderEvent) {
+  // Get the number of seconds since the last render.
+  var elapsedTime = renderEvent.elapsedTime;
+  g_clock += elapsedTime * g_timeMult;
+
+  var x = Math.sin(g_clock * 0.3) * 400;
+  var z = Math.cos(g_clock * 0.3) * 400;
+  var y = Math.sin(g_clock * 0.7) * 200 + 100;
+
+  // spin the camera.
+  g_viewInfo.drawContext.view = g_math.matrix4.lookAt(
+      [x, y, z],   // eye
+      [0, 0, 0], // target
+      [0, 1, 0]);  // up
+}
+
+/**
+ * Removes any callbacks so they don't get called after the page has unloaded.
+ */
+function unload() {
+  if (g_client) {
+    g_client.cleanup();
+  }
+}
+</script>
+</head>
+<body>
+<h1>Multiple Lights</h1>
+<!-- Start of O3D plugin -->
+<div id="o3d" style="width: 600px; height: 400px;"></div>
+<!-- End of O3D plugin -->
+</body>
+</html>
