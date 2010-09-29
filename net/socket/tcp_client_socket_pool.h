@@ -115,10 +115,12 @@ class TCPClientSocketPool : public ClientSocketPool {
   TCPClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
-      const scoped_refptr<ClientSocketPoolHistograms>& histograms,
+      ClientSocketPoolHistograms* histograms,
       HostResolver* host_resolver,
       ClientSocketFactory* client_socket_factory,
       NetLog* net_log);
+
+  virtual ~TCPClientSocketPool();
 
   // ClientSocketPool methods:
 
@@ -159,12 +161,9 @@ class TCPClientSocketPool : public ClientSocketPool {
     return base_.ConnectionTimeout();
   }
 
-  virtual scoped_refptr<ClientSocketPoolHistograms> histograms() const {
+  virtual ClientSocketPoolHistograms* histograms() const {
     return base_.histograms();
   }
-
- protected:
-  virtual ~TCPClientSocketPool();
 
  private:
   typedef ClientSocketPoolBase<TCPSocketParams> PoolBase;

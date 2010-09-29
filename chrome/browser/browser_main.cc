@@ -90,9 +90,9 @@
 #include "net/base/net_module.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"
+#include "net/socket/client_socket_pool_manager.h"
 #include "net/spdy/spdy_session_pool.h"
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -226,15 +226,15 @@ void BrowserMainParts::ConnectionFieldTrial() {
   const int connect_trial_group = connect_trial->group();
 
   if (connect_trial_group == connect_5) {
-    net::HttpNetworkSession::set_max_sockets_per_group(5);
+    net::ClientSocketPoolManager::set_max_sockets_per_group(5);
   } else if (connect_trial_group == connect_6) {
-    net::HttpNetworkSession::set_max_sockets_per_group(6);
+    net::ClientSocketPoolManager::set_max_sockets_per_group(6);
   } else if (connect_trial_group == connect_7) {
-    net::HttpNetworkSession::set_max_sockets_per_group(7);
+    net::ClientSocketPoolManager::set_max_sockets_per_group(7);
   } else if (connect_trial_group == connect_8) {
-    net::HttpNetworkSession::set_max_sockets_per_group(8);
+    net::ClientSocketPoolManager::set_max_sockets_per_group(8);
   } else if (connect_trial_group == connect_9) {
-    net::HttpNetworkSession::set_max_sockets_per_group(9);
+    net::ClientSocketPoolManager::set_max_sockets_per_group(9);
   } else {
     NOTREACHED();
   }
@@ -310,11 +310,11 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
   const int proxy_connections_trial_group = proxy_connection_trial->group();
 
   if (proxy_connections_trial_group == proxy_connections_16) {
-    net::HttpNetworkSession::set_max_sockets_per_proxy_server(16);
+    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(16);
   } else if (proxy_connections_trial_group == proxy_connections_32) {
-    net::HttpNetworkSession::set_max_sockets_per_proxy_server(32);
+    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(32);
   } else if (proxy_connections_trial_group == proxy_connections_64) {
-    net::HttpNetworkSession::set_max_sockets_per_proxy_server(64);
+    net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(64);
   } else {
     NOTREACHED();
   }
