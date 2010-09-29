@@ -179,6 +179,7 @@ class WidgetGtk
   virtual Widget* GetRootWidget() const;
   virtual bool IsVisible() const;
   virtual bool IsActive() const;
+  virtual bool IsAccessibleWidget() const;
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point);
   virtual TooltipManager* GetTooltipManager();

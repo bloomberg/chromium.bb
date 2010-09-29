@@ -220,6 +220,7 @@ class WidgetWin : public gfx::WindowImpl,
   virtual Widget* GetRootWidget() const;
   virtual bool IsVisible() const;
   virtual bool IsActive() const;
+  virtual bool IsAccessibleWidget() const;
   virtual TooltipManager* GetTooltipManager();
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point);
@@ -437,6 +438,9 @@ class WidgetWin : public gfx::WindowImpl,
   // Called when the window size or non client metrics change.
   void LayoutRootView();
 
+  // Called when a MSAA screen reader cleint is detected.
+  void OnScreenReaderDetected();
+
   // Returns whether capture should be released on mouse release. The default
   // is true.
   virtual bool ReleaseCaptureOnMouseReleased();
@@ -567,6 +571,9 @@ class WidgetWin : public gfx::WindowImpl,
   // Non owned pointer to optional delegate.  May be NULL if no delegate is
   // being used.
   WidgetDelegate* delegate_;
+
+  // Value determines whether the Widget is customized for accessibility.
+  static bool screen_reader_active_;
 
   // The maximum number of view events in our vector below.
   static const int kMaxAccessibilityViewEvents = 20;

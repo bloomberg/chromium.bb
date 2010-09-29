@@ -777,6 +777,10 @@ bool WidgetGtk::IsActive() const {
   return is_active_;
 }
 
+bool WidgetGtk::IsAccessibleWidget() const {
+  return false;
+}
+
 void WidgetGtk::GenerateMousePressedForView(View* view,
                                             const gfx::Point& point) {
   NOTIMPLEMENTED();

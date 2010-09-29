@@ -411,14 +411,18 @@ void WindowWin::UpdateWindowTitle() {
 
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
-  std::wstring window_title = window_delegate_->GetWindowTitle();
+  std::wstring window_title;
+  if (IsAccessibleWidget())
+    window_title = window_delegate_->GetAccessibleWindowTitle();
+  else
+    window_title = window_delegate_->GetWindowTitle();
   std::wstring localized_text;
   if (base::i18n::AdjustStringForLocaleDirection(window_title, &localized_text))
     window_title.assign(localized_text);
   SetWindowText(GetNativeView(), window_title.c_str());
 
   // Also update the accessibility name.
-  UpdateAccessibleName();
+  UpdateAccessibleName(window_title);
 }
 
 void WindowWin::UpdateWindowIcon() {
@@ -1408,17 +1412,16 @@ void WindowWin::ResetWindowRegion(bool force) {
   DeleteObject(current_rgn);
 }
 
-void WindowWin::UpdateAccessibleName() {
+void WindowWin::UpdateAccessibleName(std::wstring& accessible_name) {
   ScopedComPtr<IAccPropServices> pAccPropServices;
-  std::wstring accessible_title = window_delegate_->GetAccessibleWindowTitle();
   HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
-    IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+      IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
   if (SUCCEEDED(hr)) {
     VARIANT var;
     var.vt = VT_BSTR;
-    var.bstrVal = SysAllocString(accessible_title.c_str());
+    var.bstrVal = SysAllocString(accessible_name.c_str());
     hr = pAccPropServices->SetHwndProp(GetNativeView(), OBJID_CLIENT,
-      CHILDID_SELF, PROPID_ACC_NAME, var);
+        CHILDID_SELF, PROPID_ACC_NAME, var);
   }
 }
 

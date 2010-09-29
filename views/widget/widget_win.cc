@@ -30,6 +30,12 @@ namespace views {
 static const wchar_t* const kRootViewWindowProperty = L"__ROOT_VIEW__";
 static const wchar_t* kWidgetKey = L"__VIEWS_WIDGET__";
 
+bool WidgetWin::screen_reader_active_ = false;
+
+// A custom MSAA object id used to determine if a screen reader is actively
+// listening for MSAA events.
+#define OBJID_CUSTOM 1
+
 bool SetRootViewForHWND(HWND hwnd, RootView* root_view) {
   return SetProp(hwnd, kRootViewWindowProperty, root_view) ? true : false;
 }
@@ -150,6 +156,10 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
   // Create the window.
   WindowImpl::Init(parent, bounds);
+
+  // Attempt to detect screen readers by sending an event with our custom id.
+  if (!IsAccessibleWidget())
+    NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), OBJID_CUSTOM, CHILDID_SELF);
 
   // See if the style has been overridden.
   opaque_ = !(window_ex_style() & WS_EX_TRANSPARENT);
@@ -381,6 +391,10 @@ bool WidgetWin::IsVisible() const {
 
 bool WidgetWin::IsActive() const {
   return win_util::IsWindowActive(hwnd());
+}
+
+bool WidgetWin::IsAccessibleWidget() const {
+  return screen_reader_active_;
 }
 
 TooltipManager* WidgetWin::GetTooltipManager() {
@@ -651,6 +665,16 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
     reference_result = LresultFromObject(IID_IAccessible, w_param,
         static_cast<IAccessible*>(accessibility_root_));
   }
+
+  if (OBJID_CUSTOM == l_param) {
+    // An MSAA client requestes our custom id. Assume that we have detected an
+    // active windows screen reader.
+    OnScreenReaderDetected();
+
+    // Return with failure.
+    return static_cast<LRESULT>(0L);
+  }
+
   return reference_result;
 }
 
@@ -1093,6 +1117,10 @@ void WidgetWin::LayoutRootView() {
 
   if (use_layered_buffer_)
     PaintNow(gfx::Rect(0, 0, size.width(), size.height()));
+}
+
+void WidgetWin::OnScreenReaderDetected() {
+  screen_reader_active_ = true;
 }
 
 bool WidgetWin::ReleaseCaptureOnMouseReleased() {

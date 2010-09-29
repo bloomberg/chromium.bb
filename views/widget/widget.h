@@ -182,6 +182,9 @@ class Widget {
   // Returns whether the Widget is the currently active window.
   virtual bool IsActive() const = 0;
 
+  // Returns whether the Widget is customized for accessibility.
+  virtual bool IsAccessibleWidget() const = 0;
+
   // Starts a drag operation for the specified view. |point| is a position in
   // |view| coordinates that the drag was initiated from.
   virtual void GenerateMousePressedForView(View* view,
