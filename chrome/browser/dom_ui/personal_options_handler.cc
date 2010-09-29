@@ -11,14 +11,19 @@
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/options_managed_banner_handler.h"
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/gtk_theme_provider.h"
+#endif  // defined(TOOLKIT_GTK)
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "grit/browser_resources.h"
@@ -35,9 +40,8 @@ PersonalOptionsHandler::~PersonalOptionsHandler() {
 
 void PersonalOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
-
   DCHECK(localized_strings);
-  // Personal Stuff page
+
   localized_strings->SetString("sync_section",
       l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
   localized_strings->SetString("sync_not_setup_info",
@@ -119,16 +123,48 @@ void PersonalOptionsHandler::RegisterMessages() {
 #endif
 }
 
+void PersonalOptionsHandler::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  if (type == NotificationType::BROWSER_THEME_CHANGED)
+    ObserveThemeChanged();
+  else
+    OptionsPageUIHandler::Observe(type, source, details);
+}
+
+void PersonalOptionsHandler::ObserveThemeChanged() {
+  Profile* profile = dom_ui_->GetProfile();
+#if defined(TOOLKIT_GTK)
+  GtkThemeProvider* provider = GtkThemeProvider::GetFrom(profile);
+  bool is_gtk_theme = provider->UseGtkTheme();
+  FundamentalValue gtk_enabled(!is_gtk_theme);
+  dom_ui_->CallJavascriptFunction(
+      L"options.PersonalOptions.setGtkThemeButtonEnabled", gtk_enabled);
+#else
+  BrowserThemeProvider* provider =
+      reinterpret_cast<BrowserThemeProvider*>(profile->GetThemeProvider());
+  bool is_gtk_theme = false;
+#endif
+
+  bool is_classic_theme = !is_gtk_theme && provider->GetThemeID().empty();
+  FundamentalValue classic_enabled(!is_classic_theme);
+  dom_ui_->CallJavascriptFunction(
+      L"options.PersonalOptions.setClassicThemeButtonEnabled", classic_enabled);
+}
+
 void PersonalOptionsHandler::Initialize() {
   banner_handler_.reset(
       new OptionsManagedBannerHandler(dom_ui_,
                                       ASCIIToUTF16("PersonalOptions"),
                                       OPTIONS_PAGE_CONTENT));
+
+  // Listen for theme installation.
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+  ObserveThemeChanged();
 }
 
 void PersonalOptionsHandler::SetSyncStatusUIString(const ListValue* args) {
-  DCHECK(dom_ui_);
-
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
   if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
     scoped_ptr<Value> status_string(Value::CreateStringValue(
@@ -143,23 +179,17 @@ void PersonalOptionsHandler::SetSyncStatusUIString(const ListValue* args) {
 }
 
 void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
-  DCHECK(dom_ui_);
-
   UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"));
   dom_ui_->GetProfile()->ClearTheme();
 }
 
 void PersonalOptionsHandler::ThemesGallery(const ListValue* args) {
-  DCHECK(dom_ui_);
-
   UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"));
   BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
 
 #if defined(TOOLKIT_GTK)
 void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
-  DCHECK(dom_ui_);
-
   UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"));
   dom_ui_->GetProfile()->SetNativeTheme();
 }

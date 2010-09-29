@@ -36,7 +36,7 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener('sync.has_setup_completed',
           function(event) {
-            if(event.value) {
+            if (event.value) {
               chrome.send('getSyncStatus');
               $('synced-controls').classList.remove('hidden');
               $('not-synced-controls').classList.add('hidden');
@@ -74,7 +74,7 @@ cr.define('options', function() {
         };
       }
 
-      if(!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
+      if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
         $('themes_GTK_button').onclick = function(event) {
           chrome.send('themesSetGTK');
         };
@@ -87,7 +87,7 @@ cr.define('options', function() {
         }
       }
 
-      if(cr.isMac || cr.isWindows || cr.isChromeOS) {
+      if (cr.isMac || cr.isWindows || cr.isChromeOS) {
         $('themes_reset').onclick = function(event) {
           chrome.send('themesReset');
         };
@@ -100,10 +100,28 @@ cr.define('options', function() {
     syncStatusCallback_: function(statusString) {
       $('synced_to_user_with_time').textContent = statusString;
     },
+
+    setGtkThemeButtonEnabled_: function(enabled) {
+      if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
+        $('themes_GTK_button').disabled = !enabled;
+      }
+    },
+
+    setClassicThemeButtonEnabled_: function(enabled) {
+      $('themes_set_classic').disabled = !enabled;
+    },
   };
 
   PersonalOptions.syncStatusCallback = function(statusString) {
     PersonalOptions.getInstance().syncStatusCallback_(statusString);
+  };
+
+  PersonalOptions.setGtkThemeButtonEnabled = function(enabled) {
+    PersonalOptions.getInstance().setGtkThemeButtonEnabled_(enabled);
+  };
+
+  PersonalOptions.setClassicThemeButtonEnabled = function(enabled) {
+    PersonalOptions.getInstance().setClassicThemeButtonEnabled_(enabled);
   };
 
   // Export

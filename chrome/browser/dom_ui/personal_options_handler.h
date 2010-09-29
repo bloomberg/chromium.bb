@@ -24,12 +24,18 @@ class PersonalOptionsHandler : public OptionsPageUIHandler {
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
-  virtual void SetSyncStatusUIString(const ListValue* args);
-  virtual void ThemesReset(const ListValue* args);
-  virtual void ThemesGallery(const ListValue* args);
+  void ObserveThemeChanged();
+  void SetSyncStatusUIString(const ListValue* args);
+  void ThemesReset(const ListValue* args);
+  void ThemesGallery(const ListValue* args);
 #if defined(TOOLKIT_GTK)
-  virtual void ThemesSetGTK(const ListValue* args);
+  void ThemesSetGTK(const ListValue* args);
 #endif
 
   scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
