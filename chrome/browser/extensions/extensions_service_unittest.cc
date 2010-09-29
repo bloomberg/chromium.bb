@@ -2321,6 +2321,18 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF);
 }
 
+TEST_F(ExtensionsServiceTest, ExternalInstallPrefUpdateUrl) {
+  // This should all work, even when normal extension installation is disabled.
+  InitializeEmptyExtensionsService();
+  set_extensions_enabled(false);
+
+  // Now add providers. Extension system takes ownership of the objects.
+  MockExtensionProvider* pref_provider =
+      new MockExtensionProvider(Extension::EXTERNAL_PREF_DOWNLOAD);
+  SetMockExternalProvider(Extension::EXTERNAL_PREF_DOWNLOAD, pref_provider);
+  TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF_DOWNLOAD);
+}
+
 TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
   InitializeEmptyExtensionsService();
   std::string json_data =

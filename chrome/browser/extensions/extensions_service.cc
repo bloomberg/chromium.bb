@@ -272,7 +272,9 @@ class ExtensionsServiceBackend
   // Whether errors result in noisy alerts.
   bool alert_on_error_;
 
-  // A map of all external extension providers.
+  // A map from external extension type to the external extension provider
+  // for that type.  Because a single provider may handle more than one
+  // external extension type, more than one key may map to the same object.
   typedef std::map<Extension::Location,
                    linked_ptr<ExternalExtensionProvider> > ProviderMap;
   ProviderMap external_extension_providers_;
@@ -301,6 +303,10 @@ ExtensionsServiceBackend::ExtensionsServiceBackend(
   external_extension_providers_[Extension::EXTERNAL_PREF] =
       linked_ptr<ExternalExtensionProvider>(
           new ExternalPrefExtensionProvider());
+  // EXTERNAL_PREF_DOWNLOAD and EXTERNAL_PREF extensions are handled by the
+  // same object.
+  external_extension_providers_[Extension::EXTERNAL_PREF_DOWNLOAD] =
+      external_extension_providers_[Extension::EXTERNAL_PREF];
 #if defined(OS_WIN)
   external_extension_providers_[Extension::EXTERNAL_REGISTRY] =
       linked_ptr<ExternalExtensionProvider>(
@@ -1024,8 +1030,7 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
 
   OnExtensionLoaded(extension, true);
 
-  if (info.extension_location == Extension::EXTERNAL_PREF ||
-      info.extension_location == Extension::EXTERNAL_REGISTRY) {
+  if (Extension::IsExternalLocation(info.extension_location)) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
