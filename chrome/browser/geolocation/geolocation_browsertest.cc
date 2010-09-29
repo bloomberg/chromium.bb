@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, ErrorOnPermissionDenied) {
 }
 
 // http://crbug.com/44589. Hangs on Mac, crashes on Windows
-#if defined(OS_MAC) || defined(OS_WINDOWS)
+#if defined(OS_MACOSX) || defined(OS_WINDOWS)
 #define MAYBE_NoInfobarForSecondTab DISABLED_NoInfobarForSecondTab
 #else
 #define MAYBE_NoInfobarForSecondTab NoInfobarForSecondTab
@@ -391,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
 }
 
 // http://crbug.com/44589. Hangs on Mac, crashes on Windows
-#if defined(OS_MAC) || defined(OS_WINDOWS)
+#if defined(OS_MACOSX) || defined(OS_WINDOWS)
 #define MAYBE_NoInfobarForDeniedOrigin DISABLED_NoInfobarForDeniedOrigin
 #else
 #define MAYBE_NoInfobarForDeniedOrigin NoInfobarForDeniedOrigin
