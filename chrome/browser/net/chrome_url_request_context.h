@@ -19,6 +19,7 @@
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_cookie_policy.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
@@ -382,8 +383,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   void GetCookieStoreAsyncHelper(base::WaitableEvent* completion,
                                  net::CookieStore** result);
 
-  // Access only from the UI thread.
-  PrefService* prefs_;
+  PrefChangeRegistrar registrar_;
 
   // Deferred logic for creating a ChromeURLRequestContext.
   // Access only from the IO thread.

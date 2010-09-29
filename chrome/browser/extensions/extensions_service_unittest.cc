@@ -287,23 +287,22 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   // Create a preference service that only contains user defined
   // preference values.
-  prefs_.reset(PrefService::CreateUserPrefService(pref_file));
+  PrefService* prefs = PrefService::CreateUserPrefService(pref_file);
+  Profile::RegisterUserPrefs(prefs);
+  browser::RegisterUserPrefs(prefs);
+  profile->SetPrefService(prefs);
 
-  Profile::RegisterUserPrefs(prefs_.get());
-  browser::RegisterUserPrefs(prefs_.get());
   profile_.reset(profile);
 
   // TODO(scherkus): Remove this when we no longer need to have Talk
   // component extension state as a preference http://crbug.com/56429
   DictionaryValue* dict =
-      prefs_->GetMutableDictionary("extensions.settings");
+      profile->GetPrefs()->GetMutableDictionary("extensions.settings");
   dict->Remove("ggnioahjipcehijkhpdjekioddnjoben", NULL);
 
-  service_ = new ExtensionsService(profile_.get(),
-                                   CommandLine::ForCurrentProcess(),
-                                   prefs_.get(),
-                                   extensions_install_dir,
-                                   false);
+  service_ = profile->CreateExtensionsService(
+      CommandLine::ForCurrentProcess(),
+      extensions_install_dir);
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
   profile->set_extensions_service(service_.get());
@@ -524,7 +523,7 @@ class ExtensionsServiceTest
 
   void ValidatePrefKeyCount(size_t count) {
     DictionaryValue* dict =
-        prefs_->GetMutableDictionary("extensions.settings");
+        profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL);
     EXPECT_EQ(count, dict->size());
   }
@@ -539,7 +538,9 @@ class ExtensionsServiceTest
     msg += " == ";
     msg += expected_val ? "true" : "false";
 
-    const DictionaryValue* dict = prefs_->GetDictionary("extensions.settings");
+    PrefService* prefs = profile_->GetPrefs();
+    const DictionaryValue* dict =
+        prefs->GetDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL) << msg;
     DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
@@ -551,7 +552,8 @@ class ExtensionsServiceTest
 
   bool IsPrefExist(const std::string& extension_id,
                    const std::string& pref_path) {
-    const DictionaryValue* dict = prefs_->GetDictionary("extensions.settings");
+    const DictionaryValue* dict =
+        profile_->GetPrefs()->GetDictionary("extensions.settings");
     if (dict == NULL) return false;
     DictionaryValue* pref = NULL;
     if (!dict->GetDictionary(extension_id, &pref)) {
@@ -577,7 +579,9 @@ class ExtensionsServiceTest
     msg += " == ";
     msg += base::IntToString(expected_val);
 
-    const DictionaryValue* dict = prefs_->GetDictionary("extensions.settings");
+    PrefService* prefs = profile_->GetPrefs();
+    const DictionaryValue* dict =
+        prefs->GetDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL) << msg;
     DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
@@ -597,7 +601,8 @@ class ExtensionsServiceTest
     msg += " == ";
     msg += expected_val;
 
-    const DictionaryValue* dict = prefs_->GetDictionary("extensions.settings");
+    const DictionaryValue* dict =
+        profile_->GetPrefs()->GetDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL) << msg;
     DictionaryValue* pref = NULL;
     std::string manifest_path = extension_id + ".manifest";
@@ -619,7 +624,7 @@ class ExtensionsServiceTest
     msg += base::IntToString(value);
 
     const DictionaryValue* dict =
-        prefs_->GetMutableDictionary("extensions.settings");
+        profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL) << msg;
     DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
@@ -845,7 +850,8 @@ TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
   InitializeInstalledExtensionsService(pref_path, source_install_dir);
 
   // Simulate that one of them got partially deleted by clearing its pref.
-  DictionaryValue* dict = prefs_->GetMutableDictionary("extensions.settings");
+  DictionaryValue* dict =
+      profile_->GetPrefs()->GetMutableDictionary("extensions.settings");
   ASSERT_TRUE(dict != NULL);
   dict->Remove("behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
 
@@ -1868,8 +1874,10 @@ TEST_F(ExtensionsServiceTest, WillNotLoadPluginExtensionsFromDirectory) {
 TEST_F(ExtensionsServiceTest, BlacklistedByPolicyWillNotInstall) {
   InitializeEmptyExtensionsService();
 
-  ListValue* whitelist = prefs_->GetMutableList("extensions.install.allowlist");
-  ListValue* blacklist = prefs_->GetMutableList("extensions.install.denylist");
+  ListValue* whitelist =
+      profile_->GetPrefs()->GetMutableList("extensions.install.allowlist");
+  ListValue* blacklist =
+      profile_->GetPrefs()->GetMutableList("extensions.install.denylist");
   ASSERT_TRUE(whitelist != NULL && blacklist != NULL);
 
   // Blacklist everything.
@@ -1906,16 +1914,18 @@ TEST_F(ExtensionsServiceTest, BlacklistedByPolicyRemovedIfRunning) {
   loop_.RunAllPending();
   EXPECT_EQ(1u, service_->extensions()->size());
 
-  ListValue* blacklist = prefs_->GetMutableList("extensions.install.denylist");
+  PrefService* prefs = profile_->GetPrefs();
+  ListValue* blacklist =
+      prefs->GetMutableList("extensions.install.denylist");
   ASSERT_TRUE(blacklist != NULL);
 
   // Blacklist this extension.
   blacklist->Append(Value::CreateStringValue(good_crx));
-  prefs_->ScheduleSavePersistentPrefs();
+  prefs->ScheduleSavePersistentPrefs();
 
   // Programmatically appending to the prefs doesn't seem to notify the
   // observers... :/
-  prefs_->pref_notifier()->FireObservers("extensions.install.denylist");
+  prefs->pref_notifier()->FireObservers("extensions.install.denylist");
 
   // Extension should not be running now.
   loop_.RunAllPending();
@@ -2233,7 +2243,7 @@ void ExtensionsServiceTest::TestExternalProvider(
 
   // Now clear the preference and reinstall.
   SetPrefInteg(good_crx, "state", Extension::ENABLED);
-  prefs_->ScheduleSavePersistentPrefs();
+  profile_->GetPrefs()->ScheduleSavePersistentPrefs();
 
   loaded_.clear();
   service_->CheckForExternalUpdates();
@@ -2461,8 +2471,8 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
-  service = new ExtensionsService(profile.get(), command_line.get(),
-      profile->GetPrefs(), install_dir, false);
+  service = profile->CreateExtensionsService(command_line.get(),
+                                             install_dir);
   EXPECT_TRUE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -2472,8 +2482,8 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   command_line->AppendSwitch(switches::kDisableExtensions);
-  service = new ExtensionsService(profile.get(), command_line.get(),
-      profile->GetPrefs(), install_dir, false);
+  service = profile->CreateExtensionsService(command_line.get(),
+                                             install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -2482,8 +2492,8 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  service = new ExtensionsService(profile.get(), command_line.get(),
-      profile->GetPrefs(), install_dir, false);
+  service = profile->CreateExtensionsService(command_line.get(),
+                                             install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -2493,8 +2503,8 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
-  service = new ExtensionsService(profile.get(), command_line.get(),
-      profile->GetPrefs(), install_dir, false);
+  service = profile->CreateExtensionsService(command_line.get(),
+                                             install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();

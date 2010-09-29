@@ -63,6 +63,7 @@ TEST_F(PrefChangeRegistrarTest, AddAndRemove) {
               AddPrefObserver(Eq(std::string("test.pref.2")), observer()));
   registrar.Add("test.pref.1", observer());
   registrar.Add("test.pref.2", observer());
+  EXPECT_FALSE(registrar.IsEmpty());
 
   // Test removing.
   Mock::VerifyAndClearExpectations(service());
@@ -72,6 +73,11 @@ TEST_F(PrefChangeRegistrarTest, AddAndRemove) {
               RemovePrefObserver(Eq(std::string("test.pref.2")), observer()));
   registrar.Remove("test.pref.1", observer());
   registrar.Remove("test.pref.2", observer());
+  EXPECT_TRUE(registrar.IsEmpty());
+
+  // Explicitly check the expectations now to make sure that the Removes
+  // worked (rather than the registrar destructor doing the work).
+  Mock::VerifyAndClearExpectations(service());
 }
 
 TEST_F(PrefChangeRegistrarTest, AutoRemove) {
@@ -83,8 +89,33 @@ TEST_F(PrefChangeRegistrarTest, AutoRemove) {
               AddPrefObserver(Eq(std::string("test.pref.1")), observer()));
   registrar.Add("test.pref.1", observer());
   Mock::VerifyAndClearExpectations(service());
+  EXPECT_FALSE(registrar.IsEmpty());
 
   // Test auto-removing.
   EXPECT_CALL(*service(),
               RemovePrefObserver(Eq(std::string("test.pref.1")), observer()));
+}
+
+TEST_F(PrefChangeRegistrarTest, RemoveAll) {
+  PrefChangeRegistrar registrar;
+  registrar.Init(service());
+
+  EXPECT_CALL(*service(),
+              AddPrefObserver(Eq(std::string("test.pref.1")), observer()));
+  EXPECT_CALL(*service(),
+              AddPrefObserver(Eq(std::string("test.pref.2")), observer()));
+  registrar.Add("test.pref.1", observer());
+  registrar.Add("test.pref.2", observer());
+  Mock::VerifyAndClearExpectations(service());
+
+  EXPECT_CALL(*service(),
+              RemovePrefObserver(Eq(std::string("test.pref.1")), observer()));
+  EXPECT_CALL(*service(),
+              RemovePrefObserver(Eq(std::string("test.pref.2")), observer()));
+  registrar.RemoveAll();
+  EXPECT_TRUE(registrar.IsEmpty());
+
+  // Explicitly check the expectations now to make sure that the RemoveAll
+  // worked (rather than the registrar destructor doing the work).
+  Mock::VerifyAndClearExpectations(service());
 }

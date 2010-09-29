@@ -528,11 +528,11 @@ bool ExtensionsService::IsDownloadFromMiniGallery(const GURL& download_url) {
 
 ExtensionsService::ExtensionsService(Profile* profile,
                                      const CommandLine* command_line,
-                                     PrefService* prefs,
                                      const FilePath& install_directory,
                                      bool autoupdate_enabled)
     : profile_(profile),
-      extension_prefs_(new ExtensionPrefs(prefs, install_directory)),
+      extension_prefs_(new ExtensionPrefs(profile->GetPrefs(),
+                                          install_directory)),
       install_directory_(install_directory),
       extensions_enabled_(true),
       show_extensions_prompts_(true),
@@ -547,8 +547,9 @@ ExtensionsService::ExtensionsService(Profile* profile,
 
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                  NotificationService::AllSources());
-  prefs->AddPrefObserver(prefs::kExtensionInstallAllowList, this);
-  prefs->AddPrefObserver(prefs::kExtensionInstallDenyList, this);
+  pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(prefs::kExtensionInstallAllowList, this);
+  pref_change_registrar_.Add(prefs::kExtensionInstallDenyList, this);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -558,7 +559,9 @@ ExtensionsService::ExtensionsService(Profile* profile,
           switches::kExtensionsUpdateFrequency),
           &update_frequency);
     }
-    updater_ = new ExtensionUpdater(this, prefs, update_frequency);
+    updater_ = new ExtensionUpdater(this,
+                                    profile->GetPrefs(),
+                                    update_frequency);
   }
 
   backend_ = new ExtensionsServiceBackend(install_directory_,
@@ -572,6 +575,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
 }
 
 ExtensionsService::~ExtensionsService() {
+  DCHECK(!profile_);  // Profile should have told us it's going away.
   UnloadAllExtensions();
   if (updater_.get()) {
     updater_->Stop();
@@ -1186,12 +1190,9 @@ void ExtensionsService::UpdateExtensionBlacklist(
 }
 
 void ExtensionsService::DestroyingProfile() {
-  profile_->GetPrefs()->RemovePrefObserver(
-      prefs::kExtensionInstallAllowList, this);
-  profile_->GetPrefs()->RemovePrefObserver(
-      prefs::kExtensionInstallDenyList, this);
-
+  pref_change_registrar_.RemoveAll();
   profile_ = NULL;
+  toolbar_model_.DestroyingProfile();
 }
 
 void ExtensionsService::CheckAdminBlacklist() {

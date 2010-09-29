@@ -38,7 +38,6 @@ class ExtensionsServiceTestBase : public testing::Test {
 
  protected:
   ScopedTempDir temp_dir_;
-  scoped_ptr<PrefService> prefs_;
   scoped_ptr<Profile> profile_;
   FilePath extensions_install_dir_;
   scoped_refptr<ExtensionsService> service_;

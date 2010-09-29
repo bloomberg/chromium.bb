@@ -330,7 +330,6 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 // Record the user performed a certain action and save the preferences.
 - (void)recordUserAction:(const UserMetricsAction&) action;
 - (void)registerPrefObservers;
-- (void)unregisterPrefObservers;
 
 // KVC setter methods.
 - (void)setNewTabPageIsHomePageIndex:(NSInteger)val;
@@ -761,7 +760,6 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
     syncService_->RemoveObserver(observer_.get());
   }
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [self unregisterPrefObservers];
   [animation_ setDelegate:nil];
   [animation_ stopAnimation];
   [super dealloc];
@@ -781,7 +779,8 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   if (!prefs_) return;
 
   // Basics panel
-  prefs_->AddPrefObserver(prefs::kURLsToRestoreOnStartup, observer_.get());
+  registrar_.Init(prefs_);
+  registrar_.Add(prefs::kURLsToRestoreOnStartup, observer_.get());
   restoreOnStartup_.Init(prefs::kRestoreOnStartup, prefs_, observer_.get());
   newTabPageIsHomePage_.Init(prefs::kHomePageIsNewTabPage,
                              prefs_, observer_.get());
@@ -821,17 +820,6 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
 
   // We don't need to observe changes in this value.
   lastSelectedPage_.Init(prefs::kOptionsWindowLastTabIndex, local, NULL);
-}
-
-// Clean up what was registered in -registerPrefObservers. We only have to
-// clean up the non-PrefMember registrations.
-- (void)unregisterPrefObservers {
-  if (!prefs_) return;
-
-  // Basics
-  prefs_->RemovePrefObserver(prefs::kURLsToRestoreOnStartup, observer_.get());
-
-  // Nothing to do for other panels...
 }
 
 // Called when the window wants to be closed.

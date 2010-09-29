@@ -28,6 +28,7 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
@@ -140,7 +141,6 @@ class ExtensionsService
 
   ExtensionsService(Profile* profile,
                     const CommandLine* command_line,
-                    PrefService* prefs,
                     const FilePath& install_directory,
                     bool autoupdate_enabled);
 
@@ -486,6 +486,7 @@ class ExtensionsService
   OrphanedDevTools orphaned_dev_tools_;
 
   NotificationRegistrar registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Keeps track of menu items added by extensions.
   ExtensionMenuManager menu_manager_;

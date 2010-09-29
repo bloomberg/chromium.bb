@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/notification_observer.h"
 
 // Observes the state of a set of preferences and allows to query their combined
@@ -19,7 +20,7 @@ class PrefSetObserver : public NotificationObserver {
   // Initialize with an empty set of preferences.
   PrefSetObserver(PrefService* pref_service,
                   NotificationObserver* observer);
-  virtual ~PrefSetObserver();
+  virtual ~PrefSetObserver() {}
 
   // Add a |pref| to the set of preferences to observe.
   void AddPref(const std::string& pref);
@@ -51,6 +52,7 @@ class PrefSetObserver : public NotificationObserver {
   PrefSet prefs_;
 
   PrefService* pref_service_;
+  PrefChangeRegistrar registrar_;
   NotificationObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefSetObserver);

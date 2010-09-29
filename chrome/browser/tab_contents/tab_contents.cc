@@ -400,9 +400,10 @@ TabContents::TabContents(Profile* profile,
 
   // Register for notifications about all interested prefs change.
   PrefService* prefs = profile->GetPrefs();
+  pref_change_registrar_.Init(prefs);
   if (prefs) {
     for (int i = 0; i < kPrefsToObserveLength; ++i)
-      prefs->AddPrefObserver(kPrefsToObserve[i], this);
+      pref_change_registrar_.Add(kPrefsToObserve[i], this);
   }
 
   // Register for notifications about URL starredness changing on any profile.
@@ -442,13 +443,7 @@ TabContents::~TabContents() {
 
   // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
-
-  // Unregister the notifications of all observed prefs change.
-  PrefService* prefs = profile()->GetPrefs();
-  if (prefs) {
-    for (int i = 0; i < kPrefsToObserveLength; ++i)
-      prefs->RemovePrefObserver(kPrefsToObserve[i], this);
-  }
+  pref_change_registrar_.RemoveAll();
 
   NotifyDisconnected();
   hung_renderer_dialog::HideForTabContents(this);

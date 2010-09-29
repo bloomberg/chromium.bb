@@ -20,6 +20,10 @@ class ExtensionToolbarModel : public NotificationObserver {
   explicit ExtensionToolbarModel(ExtensionsService* service);
   ~ExtensionToolbarModel();
 
+  // Notifies the toolbar model that the Profile that suplied its
+  // prefs is being destroyed.
+  void DestroyingProfile();
+
   // A class which is informed of changes to the model; represents the view of
   // MVC.
   class Observer {

@@ -8,6 +8,7 @@
 
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 
 class DOMUI;
 class Value;
@@ -25,7 +26,7 @@ class ShownSectionsHandler : public DOMMessageHandler,
                              public NotificationObserver {
  public:
   explicit ShownSectionsHandler(PrefService* pref_service);
-  virtual ~ShownSectionsHandler();
+  virtual ~ShownSectionsHandler() {}
 
   // Helper to get the current shown sections.
   static int GetShownSections(PrefService* pref_service);
@@ -52,6 +53,7 @@ class ShownSectionsHandler : public DOMMessageHandler,
 
  private:
   PrefService* pref_service_;
+  PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ShownSectionsHandler);
 };

@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/dummy_pref_store.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_observer_mock.h"
@@ -94,7 +95,10 @@ TEST(PrefServiceTest, NoObserverFire) {
 
   const std::string new_pref_value("http://www.google.com/");
   TestPrefObserver obs(&prefs, pref_name, new_pref_value);
-  prefs.AddPrefObserver(pref_name, &obs);
+
+  PrefChangeRegistrar registrar;
+  registrar.Init(&prefs);
+  registrar.Add(pref_name, &obs);
   // This should fire the checks in TestPrefObserver::Observe.
   prefs.SetString(pref_name, new_pref_value);
 
@@ -116,9 +120,6 @@ TEST(PrefServiceTest, NoObserverFire) {
   obs.Reset("");
   prefs.ClearPref(pref_name);
   EXPECT_FALSE(obs.observer_fired());
-
-  // Ok, clean up.
-  prefs.RemovePrefObserver(pref_name, &obs);
 }
 
 TEST(PrefServiceTest, HasPrefPath) {
@@ -148,7 +149,9 @@ TEST(PrefServiceTest, Observers) {
 
   const std::string new_pref_value("http://www.google.com/");
   TestPrefObserver obs(&prefs, pref_name, new_pref_value);
-  prefs.AddPrefObserver(pref_name, &obs);
+  PrefChangeRegistrar registrar;
+  registrar.Init(&prefs);
+  registrar.Add(pref_name, &obs);
   // This should fire the checks in TestPrefObserver::Observe.
   prefs.SetString(pref_name, new_pref_value);
 
@@ -159,23 +162,20 @@ TEST(PrefServiceTest, Observers) {
   const std::string new_pref_value2("http://www.youtube.com/");
   obs.Reset(new_pref_value2);
   TestPrefObserver obs2(&prefs, pref_name, new_pref_value2);
-  prefs.AddPrefObserver(pref_name, &obs2);
+  registrar.Add(pref_name, &obs2);
   // This should fire the checks in obs and obs2.
   prefs.SetString(pref_name, new_pref_value2);
   EXPECT_TRUE(obs.observer_fired());
   EXPECT_TRUE(obs2.observer_fired());
 
   // Make sure obs2 still works after removing obs.
-  prefs.RemovePrefObserver(pref_name, &obs);
+  registrar.Remove(pref_name, &obs);
   obs.Reset("");
   obs2.Reset(new_pref_value);
   // This should only fire the observer in obs2.
   prefs.SetString(pref_name, new_pref_value);
   EXPECT_FALSE(obs.observer_fired());
   EXPECT_TRUE(obs2.observer_fired());
-
-  // Ok, clean up.
-  prefs.RemovePrefObserver(pref_name, &obs2);
 }
 
 class PrefServiceSetValueTest : public testing::Test {
@@ -211,7 +211,11 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
   const char default_string[] = "default";
   scoped_ptr<Value> default_value(Value::CreateStringValue(default_string));
   prefs_.RegisterStringPref(name_, default_string);
-  prefs_.AddPrefObserver(name_, &observer_);
+
+  PrefChangeRegistrar registrar;
+  registrar.Init(&prefs_);
+  registrar.Add(name_, &observer_);
+
   // Changing the controlling store from default to user triggers notification.
   SetExpectPrefChanged();
   prefs_.Set(name_, *default_value);
@@ -225,13 +229,13 @@ TEST_F(PrefServiceSetValueTest, SetStringValue) {
   SetExpectPrefChanged();
   prefs_.Set(name_, *new_value);
   EXPECT_EQ(value_, prefs_.GetString(name_));
-
-  prefs_.RemovePrefObserver(name_, &observer_);
 }
 
 TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   prefs_.RegisterDictionaryPref(name_);
-  prefs_.AddPrefObserver(name_, &observer_);
+  PrefChangeRegistrar registrar;
+  registrar.Init(&prefs_);
+  registrar.Add(name_, &observer_);
 
   // Dictionary values are special: setting one to NULL is the same as clearing
   // the user value, allowing the NULL default to take (or keep) control.
@@ -259,13 +263,13 @@ TEST_F(PrefServiceSetValueTest, SetDictionaryValue) {
   Mock::VerifyAndClearExpectations(&observer_);
   dict = prefs_.GetMutableDictionary(name_);
   EXPECT_EQ(0U, dict->size());
-
-  prefs_.RemovePrefObserver(name_, &observer_);
 }
 
 TEST_F(PrefServiceSetValueTest, SetListValue) {
   prefs_.RegisterListPref(name_);
-  prefs_.AddPrefObserver(name_, &observer_);
+  PrefChangeRegistrar registrar;
+  registrar.Init(&prefs_);
+  registrar.Add(name_, &observer_);
 
   // List values are special: setting one to NULL is the same as clearing the
   // user value, allowing the NULL default to take (or keep) control.
@@ -293,6 +297,4 @@ TEST_F(PrefServiceSetValueTest, SetListValue) {
   Mock::VerifyAndClearExpectations(&observer_);
   list = prefs_.GetMutableList(name_);
   EXPECT_EQ(0U, list->GetSize());
-
-  prefs_.RemovePrefObserver(name_, &observer_);
 }

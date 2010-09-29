@@ -133,15 +133,9 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
                  NotificationService::AllSources());
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
-  PrefService* pref_service = profile_->GetPrefs();
-  pref_service->AddPrefObserver(prefs::kShowBookmarkBar, this);
-  pref_service->AddPrefObserver(prefs::kNTPShownSections, this);
-}
-
-NTPResourceCache::~NTPResourceCache() {
-  PrefService* pref_service = profile_->GetPrefs();
-  pref_service->RemovePrefObserver(prefs::kShowBookmarkBar, this);
-  pref_service->RemovePrefObserver(prefs::kNTPShownSections, this);
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
+  pref_change_registrar_.Add(prefs::kNTPShownSections, this);
 }
 
 RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_off_the_record) {

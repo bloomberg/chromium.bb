@@ -19,8 +19,13 @@
 
 class FilePath;
 class NotificationObserver;
+class PrefChangeObserver;
 class PrefNotifier;
 class Profile;
+
+namespace subtle {
+  class PrefMemberBase;
+};
 
 class PrefService : public NonThreadSafe {
  public:
@@ -161,11 +166,6 @@ class PrefService : public NonThreadSafe {
   const DictionaryValue* GetDictionary(const char* path) const;
   const ListValue* GetList(const char* path) const;
 
-  // If the pref at the given path changes, we call the observer's Observe
-  // method with NOTIFY_PREF_CHANGED.
-  virtual void AddPrefObserver(const char* path, NotificationObserver* obs);
-  virtual void RemovePrefObserver(const char* path, NotificationObserver* obs);
-
   // Removes a user pref and restores the pref to its default value.
   void ClearPref(const char* path);
 
@@ -229,6 +229,22 @@ class PrefService : public NonThreadSafe {
   scoped_ptr<PrefNotifier> pref_notifier_;
 
  private:
+  // Registration of pref change observers must be done using the
+  // PrefChangeRegistrar, which is declared as a friend here to grant it
+  // access to the otherwise protected members Add/RemovePrefObserver.
+  // PrefMember registers for preferences changes notification directly to
+  // avoid the storage overhead of the registrar, so its base class must be
+  // declared as a friend, too.
+  friend class PrefChangeRegistrar;
+  friend class subtle::PrefMemberBase;
+
+  // If the pref at the given path changes, we call the observer's Observe
+  // method with NOTIFY_PREF_CHANGED. Note that observers should not call
+  // these methods directly but rather use a PrefChangeRegistrar to make sure
+  // the observer gets cleaned up properly.
+  virtual void AddPrefObserver(const char* path, NotificationObserver* obs);
+  virtual void RemovePrefObserver(const char* path, NotificationObserver* obs);
+
   // Add a preference to the PreferenceMap.  If the pref already exists, return
   // false.  This method takes ownership of |default_value|.
   void RegisterPreference(const char* path, Value* default_value);

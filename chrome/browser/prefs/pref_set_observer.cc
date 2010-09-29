@@ -11,23 +11,19 @@ PrefSetObserver::PrefSetObserver(PrefService* pref_service,
                                  NotificationObserver* observer)
     : pref_service_(pref_service),
       observer_(observer) {
-}
-
-PrefSetObserver::~PrefSetObserver() {
-  for (PrefSet::const_iterator i(prefs_.begin()); i != prefs_.end(); ++i)
-    pref_service_->RemovePrefObserver(i->c_str(), this);
+  registrar_.Init(pref_service);
 }
 
 void PrefSetObserver::AddPref(const std::string& pref) {
   if (!prefs_.count(pref) && pref_service_->FindPreference(pref.c_str())) {
     prefs_.insert(pref);
-    pref_service_->AddPrefObserver(pref.c_str(), this);
+    registrar_.Add(pref.c_str(), this);
   }
 }
 
 void PrefSetObserver::RemovePref(const std::string& pref) {
   if (prefs_.erase(pref))
-    pref_service_->RemovePrefObserver(pref.c_str(), this);
+    registrar_.Remove(pref.c_str(), this);
 }
 
 bool PrefSetObserver::IsObserved(const std::string& pref) {

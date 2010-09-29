@@ -27,8 +27,7 @@ class ExtensionTestingProfile : public TestingProfile {
     manager_.reset(ExtensionProcessManager::Create(this));
     service_ = new ExtensionsService(this,
                                      CommandLine::ForCurrentProcess(),
-                                     GetPrefs(),
-                                     GetExtensionsInstallDir(),
+                                    GetExtensionsInstallDir(),
                                      false);
     service_->set_extensions_enabled(true);
     service_->set_show_extensions_prompts(false);
