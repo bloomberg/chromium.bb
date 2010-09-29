@@ -207,6 +207,8 @@ def _SetEnvForPnacl(env, arch):
                   '/llvm-fake-sfig++')
   pnacl_sdk_ld =  (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
                   '/llvm-fake-bcld')
+  pnacl_sdk_disass = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/bin/llvm-dis')
   # NOTE: XXX_flags start with space for easy concatenation
   pnacl_sdk_cxx_flags = ' -emit-llvm'
   pnacl_sdk_cc_flags = ' -emit-llvm  -std=gnu99'
@@ -227,6 +229,7 @@ def _SetEnvForPnacl(env, arch):
               LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,
               AR=pnacl_sdk_ar,
               RANLIB=pnacl_sdk_ranlib,
+              DISASS=pnacl_sdk_disass,
               )
 
 
