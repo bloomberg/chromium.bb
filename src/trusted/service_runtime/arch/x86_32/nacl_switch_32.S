@@ -10,6 +10,12 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+/*
+ * NB: why movl vs movw for moving to segment registers: movl is two
+ * bytes, movw is three. ISA manual say these should be semantically
+ * equivalent.  clang complains w/o explicit sizes.
+ */
+
         .text
 .globl  IDENTIFIER(NaClSwitch)
         HIDDEN(NaClSwitch)
@@ -26,8 +32,8 @@ IDENTIFIER(NaClSwitch):
         movl    0x4(%ecx), %esi /* esi */
         movl    0(%ecx), %ebx /* ebx */
 
-        mov     0x2e(%ecx), %gs /* gs */
-        mov     0x2c(%ecx), %fs /* fs */
-        mov     0x2a(%ecx), %es /* es */
+        movw    0x2e(%ecx), %gs /* gs */
+        movw    0x2c(%ecx), %fs /* fs */
+        movw    0x2a(%ecx), %es /* es */
 
         ljmp    *0x38(%ecx) /* springboard address */

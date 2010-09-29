@@ -52,7 +52,7 @@
 IDENTIFIER(NaClSyscallSeg):
         cld
         xor     %eax, %eax
-        mov     %gs, %ax
+        movw    %gs, %ax
         shr     $3, %eax
         movl    0(%ecx), %edx
         movl    0(%edx,%eax,4), %edx
@@ -75,12 +75,12 @@ IDENTIFIER(NaClSyscallSeg):
 
 #if 0
         movl    %eip, 0xc(%edx)
-        mov     %cs, 0x3c(%edx)
-        mov     %ds, 0x28(%edx)
-        mov     %es, 0x2a(%edx)
-        mov     %fs, 0x2c(%edx)
-        mov     %gs, 0x2e(%edx)
-        mov     %ss, 0x20(%edx)
+        movw    %cs, 0x3c(%edx)
+        movw    %ds, 0x28(%edx)
+        movw    %es, 0x2a(%edx)
+        movw    %fs, 0x2c(%edx)
+        movw    %gs, 0x2e(%edx)
+        movw    %ss, 0x20(%edx)
 #endif
         /*
          * load only the system segments; called code do not depend on
@@ -95,13 +95,13 @@ IDENTIFIER(NaClSyscallSeg):
          * %ebx need not be saved/restored even if -fpic were used, since
          * in that case %ebx is initialized on fn entry.
          */
-        mov     0x2a(%edx), %es
-        mov     0x2c(%edx), %fs
-        mov     0x2e(%edx), %gs
+        movw    0x2a(%edx), %es
+        movw    0x2c(%edx), %fs
+        movw    0x2e(%edx), %gs
 
-        mov     0x20(%edx), %ecx  /* ss */
+        movw    0x20(%edx), %cx  /* ss */
         movl    0x1c(%edx), %edx  /* esp */
-        mov     %ecx, %ss  /* disable intr */
+        movw    %cx, %ss  /* disable intr */
         movl    %edx, %esp
         push    %eax
         call    IDENTIFIER(NaClSyscallCSegHook)
@@ -142,12 +142,12 @@ IDENTIFIER(NaClSyscallSeg):
 
 #if 0
         movl    %eip, 0xc(%edx)
-        mov     %cs, 0x3c(%edx)
-        mov     %ds, 0x28(%edx)
-        mov     %es, 0x2a(%edx)
-        mov     %fs, 0x2c(%edx)
-        mov     %gs, 0x2e(%edx)
-        mov     %ss, 0x20(%edx)
+        movw    %cs, 0x3c(%edx)
+        movw    %ds, 0x28(%edx)
+        movw    %es, 0x2a(%edx)
+        movw    %fs, 0x2c(%edx)
+        movw    %gs, 0x2e(%edx)
+        movw    %ss, 0x20(%edx)
 #endif
         /*
          * load only the system segments; called code do not depend on
@@ -161,13 +161,13 @@ IDENTIFIER(NaClSyscallSeg):
          * %ebx need not be saved/restored even if -fpic were used, since
          * in that case %ebx is initialized on fn entry.
          */
-        mov     0x2a(%edx), %es
-        mov     0x2c(%edx), %fs
-        mov     0x2e(%edx), %gs
+        movw    0x2a(%edx), %es
+        movw    0x2c(%edx), %fs
+        movw    0x2e(%edx), %gs
 
-        mov     0x20(%edx), %ecx  /* ss */
+        movw    0x20(%edx), %cx  /* ss */
         movl    0x1c(%edx), %edx  /* esp */
-        mov     %ecx, %ss  /* disable intr */
+        movw    %cx, %ss  /* disable intr */
         movl    %edx, %esp
         push    %eax
         call    IDENTIFIER(NaClSyscallCSegHook)

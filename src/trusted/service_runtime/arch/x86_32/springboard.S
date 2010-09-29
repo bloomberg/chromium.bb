@@ -10,17 +10,17 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 
-        /*
-         * Assembly code template.  This is linked into the service runtime
-         * but is unused as code -- it is used as data to be patched into
-         * a NaCl app's address space as a "hidden" part of its trampoline
-         * region.
-         */
+/*
+ * Assembly code template.  This is linked into the service runtime
+ * but is unused as code -- it is used as data to be patched into
+ * a NaCl app's address space as a "hidden" part of its trampoline
+ * region.
+ */
 
-        /*
-         * NaCl_springboard is used for syscall return and any time we want
-         * to do an upcall into NaCl application.
-         */
+/*
+ * NaCl_springboard is used for syscall return and any time we want
+ * to do an upcall into NaCl application.
+ */
 
 .globl  IDENTIFIER(NaCl_springboard)
         HIDDEN(NaCl_springboard)
@@ -29,7 +29,7 @@ IDENTIFIER(NaCl_springboard):
         /* syscall return value, if any, from trusted stack */
         mov     0x34(%ecx), %eax /* sysret */
         lss     0x1c(%ecx), %esp /* stack_ptr.ptr_32.ptr */
-        mov     0x28(%ecx), %ds /* ds */
+        movw    0x28(%ecx), %ds /* ds */
         jmp     *%edx
 .globl  IDENTIFIER(NaCl_springboard_end)
         HIDDEN(NaCl_springboard_end)
