@@ -142,7 +142,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   // MB, it can fail to print and not send an error message.
   if (buf_size < 350*1024*1024) {
     // Allocate a shared memory buffer to hold the generated metafile data.
-    if (shared_buf.Create(L"", false, false, buf_size) &&
+    if (shared_buf.Create("", false, false, buf_size) &&
         shared_buf.Map(buf_size)) {
       // Copy the bits into shared memory.
       if (metafile.GetData(shared_buf.memory(), buf_size)) {

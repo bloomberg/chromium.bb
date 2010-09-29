@@ -1035,7 +1035,7 @@ void ResourceMessageFilter::OnAllocateSharedMemoryBuffer(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
   base::SharedMemory shared_buf;
-  shared_buf.Create(L"", false, false, buffer_size);
+  shared_buf.Create("", false, false, buffer_size);
   if (!shared_buf.Map(buffer_size)) {
     *handle = base::SharedMemory::NULLHandle();
     NOTREACHED() << "Cannot map shared memory buffer";

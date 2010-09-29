@@ -29,7 +29,7 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
 
   TransportDIB* dib = new TransportDIB;
 
-  if (!dib->shared_memory_.Create(L"", false /* read write */,
+  if (!dib->shared_memory_.Create("", false /* read write */,
                                   true /* open existing */, size)) {
     delete dib;
     return NULL;

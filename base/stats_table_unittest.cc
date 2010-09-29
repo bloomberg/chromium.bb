@@ -23,9 +23,9 @@ namespace base {
 
 class StatsTableTest : public MultiProcessTest {
  public:
-  void DeleteShmem(std::string name) {
+  void DeleteShmem(const std::string& name) {
     base::SharedMemory mem;
-    mem.Delete(UTF8ToWide(name));
+    mem.Delete(name);
   }
 };
 

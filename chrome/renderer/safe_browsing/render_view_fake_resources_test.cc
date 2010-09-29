@@ -140,8 +140,7 @@ void RenderViewFakeResourcesTest::OnRequestResource(
       message.routing_id(), request_id, response_head)));
 
   base::SharedMemory shared_memory;
-  ASSERT_TRUE(shared_memory.Create(std::wstring(), false,
-                                   false, body.size()));
+  ASSERT_TRUE(shared_memory.Create(std::string(), false, false, body.size()));
   ASSERT_TRUE(shared_memory.Map(body.size()));
   memcpy(shared_memory.memory(), body.data(), body.size());
 

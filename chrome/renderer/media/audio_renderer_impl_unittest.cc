@@ -29,7 +29,7 @@ class AudioRendererImplTest : public ::testing::Test {
     filter_->message_loop_ = message_loop_.get();
 
     // Create temporary shared memory.
-    CHECK(shared_mem_.Create(L"", false, false, kSize));
+    CHECK(shared_mem_.Create("", false, false, kSize));
 
     // Setup expectations for initialization.
     EXPECT_CALL(callback_, OnFilterCallback());

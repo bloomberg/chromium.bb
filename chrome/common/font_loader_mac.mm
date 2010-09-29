@@ -66,7 +66,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
   }
 
   int32 font_file_size_32 = static_cast<int32>(font_file_size_64);
-  if (!font_data->Create(L"", false, false, font_file_size_32)) {
+  if (!font_data->Create("", false, false, font_file_size_32)) {
     LOG(ERROR) << "Failed to create shmem area for " << font_name;
     return false;
   }

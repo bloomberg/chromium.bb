@@ -360,7 +360,7 @@ class SandboxIPCProcess  {
       return;
     int shm_fd = -1;
     base::SharedMemory shm;
-    if (shm.Create(L"", false, false, shm_size))
+    if (shm.Create("", false, false, shm_size))
       shm_fd = shm.handle().fd;
     Pickle reply;
     SendRendererReply(fds, reply, shm_fd);

@@ -43,7 +43,7 @@ bool CommandBufferService::Initialize(int32 size) {
   num_entries_ = size / sizeof(CommandBufferEntry);
 
   ring_buffer_.reset(new SharedMemory);
-  if (ring_buffer_->Create(std::wstring(), false, false, size)) {
+  if (ring_buffer_->Create(std::string(), false, false, size)) {
     if (ring_buffer_->Map(size))
       return true;
   }
@@ -100,7 +100,7 @@ void CommandBufferService::SetGetOffset(int32 get_offset) {
 
 int32 CommandBufferService::CreateTransferBuffer(size_t size) {
   linked_ptr<SharedMemory> buffer(new SharedMemory);
-  if (!buffer->Create(std::wstring(), false, false, size))
+  if (!buffer->Create(std::string(), false, false, size))
     return -1;
 
   if (unused_registered_object_elements_.empty()) {

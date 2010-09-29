@@ -46,7 +46,7 @@ class SharedIOBuffer : public net::IOBuffer {
         buffer_size_(buffer_size) {}
 
   bool Init() {
-    if (shared_memory_.Create(std::wstring(), false, false, buffer_size_) &&
+    if (shared_memory_.Create(std::string(), false, false, buffer_size_) &&
         shared_memory_.Map(buffer_size_)) {
       data_ = reinterpret_cast<char*>(shared_memory_.memory());
       DCHECK(data_);

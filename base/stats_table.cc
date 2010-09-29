@@ -170,7 +170,7 @@ StatsTablePrivate* StatsTablePrivate::New(const std::string& name,
                                           int max_threads,
                                           int max_counters) {
   scoped_ptr<StatsTablePrivate> priv(new StatsTablePrivate());
-  if (!priv->shared_memory_.Create(UTF8ToWide(name), false, true, size))
+  if (!priv->shared_memory_.Create(name, false, true, size))
     return NULL;
   if (!priv->shared_memory_.Map(size))
     return NULL;

@@ -331,7 +331,7 @@ void AudioRendererHost::OnCreateStream(
 
   scoped_ptr<AudioEntry> entry(new AudioEntry());
   // Create the shared memory and share with the renderer process.
-  if (!entry->shared_memory.Create(L"", false, false, hardware_packet_size) ||
+  if (!entry->shared_memory.Create("", false, false, hardware_packet_size) ||
       !entry->shared_memory.Map(entry->shared_memory.max_size())) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(msg.routing_id(), stream_id);

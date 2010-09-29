@@ -670,7 +670,7 @@ bool VisitedLinkMaster::CreateURLTable(int32 num_entries, bool init_to_empty) {
   if (!shared_memory_)
     return false;
 
-  if (!shared_memory_->Create(std::wstring() /* anonymous */,
+  if (!shared_memory_->Create(std::string() /* anonymous */,
                               false /* read-write */, false /* create */,
                               alloc_size)) {
     return false;

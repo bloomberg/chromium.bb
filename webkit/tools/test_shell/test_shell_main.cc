@@ -63,7 +63,7 @@ void RemoveSharedMemoryFile(std::string& filename) {
   // on disk.
 #if defined(OS_POSIX)
   base::SharedMemory memory;
-  memory.Delete(UTF8ToWide(filename));
+  memory.Delete(filename);
 #endif
 }
 
