@@ -257,6 +257,18 @@ class LocationBarView : public LocationBar,
  private:
   typedef std::vector<ContentSettingImageView*> ContentSettingViews;
 
+  // Enumeration of what should happen to the match preview on focus lost.
+  enum MatchPreviewCommitType {
+    // The match preview should be committed immediately.
+    COMMIT_MATCH_PREVIEW_IMMEDIATELY,
+
+    // The match preview should be committed on mouse up.
+    COMMIT_MATCH_PREVIEW_ON_MOUSE_UP,
+
+    // The match preview should be reverted.
+    REVERT_MATCH_PREVIEW
+  };
+
   friend class PageActionImageView;
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
@@ -299,10 +311,9 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
-  // Returns true if the CommitMatchPreview should be invoked on the
-  // MatchPreview as the result of a focus loss. If this returns false
-  // DestroyPreviewContents is invoked.
-  bool ShouldCommitMatchPreviewOnFocusLoss(gfx::NativeView view_gaining_focus);
+  // Returns what should happen to the MatchPreview as a result of focus being
+  // lost.
+  MatchPreviewCommitType GetCommitType(gfx::NativeView view_gaining_focus);
 
   // Current profile. Not owned by us.
   Profile* profile_;

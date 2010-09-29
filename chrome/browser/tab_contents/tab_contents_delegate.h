@@ -178,6 +178,10 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // new tab page.
   virtual void SetFocusToLocationBar(bool select_all);
 
+  // Returns whether the page should be focused when transitioning from crashed
+  // to live. Default is true.
+  virtual bool ShouldFocusPageAfterCrash();
+
   // Called when a popup select is about to be displayed. The delegate can use
   // this to disable inactive rendering for the frame in the window the select
   // is opened within if necessary.
@@ -193,6 +197,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // controls on the page. Provides a way for TabContentsDelegates to handle
   // this. Returns true if the delegate successfully handled it.
   virtual bool TakeFocus(bool reverse);
+
+  // Invoked when the page loses mouse capture.
+  virtual void LostCapture();
 
   // Changes the blocked state of the tab at |index|. TabContents are
   // considered blocked while displaying a tab modal dialog. During that time
@@ -242,6 +249,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Allows delegates to handle unhandled keyboard messages coming back from
   // the renderer.
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+
+  virtual void HandleMouseUp();
+  virtual void HandleMouseActivate();
 
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);

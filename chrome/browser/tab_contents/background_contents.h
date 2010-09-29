@@ -102,6 +102,7 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
   virtual void GotFocus() {}
   virtual void TakeFocus(bool reverse) {}
+  virtual void LostCapture() {}
   virtual void Activate() {}
   virtual void Deactivate() {}
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -112,6 +113,8 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual void HandleMouseMove() {}
   virtual void HandleMouseDown() {}
   virtual void HandleMouseLeave() {}
+  virtual void HandleMouseUp() {}
+  virtual void HandleMouseActivate() {}
   virtual void UpdatePreferredSize(const gfx::Size& new_size) {}
 
   // NotificationObserver

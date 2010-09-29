@@ -115,6 +115,9 @@ class TabContentsView : public RenderViewHostDelegate::View {
   // invoked, SetInitialFocus is invoked.
   virtual void RestoreFocus() = 0;
 
+  // RenderViewHostDelegate::View method. Forwards to the TabContentsDelegate.
+  virtual void LostCapture();
+
   // Keyboard events forwarding from the RenderViewHost.
   // The default implementation just forward the events to the
   // TabContentsDelegate object.
@@ -130,6 +133,8 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual void HandleMouseMove() {}
   virtual void HandleMouseDown() {}
   virtual void HandleMouseLeave() {}
+  virtual void HandleMouseUp();
+  virtual void HandleMouseActivate();
 
   // Notification that the preferred size of the contents has changed.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);

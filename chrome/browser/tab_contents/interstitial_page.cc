@@ -111,6 +111,7 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   virtual void UpdateDragCursor(WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
+  virtual void LostCapture();
   virtual void Activate();
   virtual void Deactivate();
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -119,6 +120,8 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   virtual void HandleMouseMove();
   virtual void HandleMouseDown();
   virtual void HandleMouseLeave();
+  virtual void HandleMouseUp();
+  virtual void HandleMouseActivate();
   virtual void OnFindReply(int request_id,
                            int number_of_matches,
                            const gfx::Rect& selection_rect,
@@ -638,6 +641,9 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::TakeFocus(
     interstitial_page_->tab()->GetViewDelegate()->TakeFocus(reverse);
 }
 
+void InterstitialPage::InterstitialPageRVHViewDelegate::LostCapture() {
+}
+
 void InterstitialPage::InterstitialPageRVHViewDelegate::Activate() {
   if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
     interstitial_page_->tab()->GetViewDelegate()->Activate();
@@ -675,6 +681,12 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseDown() {
 void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseLeave() {
   if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
     interstitial_page_->tab()->GetViewDelegate()->HandleMouseLeave();
+}
+
+void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseUp() {
+}
+
+void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseActivate() {
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::OnFindReply(

@@ -201,7 +201,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Tells the renderer it got/lost focus.
   void Focus();
   void Blur();
-  void LostCapture();
+  virtual void LostCapture();
 
   // Tells us whether the page is rendered directly via the GPU process.
   bool is_gpu_rendering_active() { return is_gpu_rendering_active_; }
@@ -270,6 +270,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Forwards the given message to the renderer. These are called by the view
   // when it has received a message.
   virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);
+  // Called when a mouse click activates the renderer.
+  virtual void OnMouseActivate();
   void ForwardWheelEvent(const WebKit::WebMouseWheelEvent& wheel_event);
   virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
   virtual void ForwardEditCommand(const std::string& name,

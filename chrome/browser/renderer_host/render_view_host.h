@@ -425,7 +425,9 @@ class RenderViewHost : public RenderWidgetHost {
   virtual bool IsRenderView() const { return true; }
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void GotFocus();
+  virtual void LostCapture();
   virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);
+  virtual void OnMouseActivate();
   virtual void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event);
   virtual void ForwardEditCommand(const std::string& name,
                                   const std::string& value);

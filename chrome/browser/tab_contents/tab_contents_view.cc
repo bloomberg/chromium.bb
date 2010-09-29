@@ -86,6 +86,11 @@ void TabContentsView::ShowCreatedFullscreenWidget(int route_id) {
   ShowCreatedFullscreenWidgetInternal(widget_host_view);
 }
 
+void TabContentsView::LostCapture() {
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->LostCapture();
+}
+
 bool TabContentsView::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   return tab_contents_->delegate() &&
@@ -101,6 +106,16 @@ void TabContentsView::UpdatePreferredSize(const gfx::Size& pref_size) {
 void TabContentsView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (tab_contents_->delegate())
     tab_contents_->delegate()->HandleKeyboardEvent(event);
+}
+
+void TabContentsView::HandleMouseUp() {
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->HandleMouseUp();
+}
+
+void TabContentsView::HandleMouseActivate() {
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->HandleMouseActivate();
 }
 
 RenderWidgetHostView* TabContentsView::CreateNewWidgetInternal(

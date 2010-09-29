@@ -69,6 +69,17 @@ class MatchPreview {
   // current previewed page the permanent page.
   void CommitCurrentPreview(CommitType type);
 
+  // Sets MatchPreview so that when the mouse is released the preview is
+  // committed.
+  void SetCommitOnMouseUp();
+
+  // Returns true if the preview will be committed on mouse up.
+  bool commit_on_mouse_up() const { return commit_on_mouse_up_; }
+
+  // Returns true if the mouse is down as the result of activating the preview
+  // content.
+  bool IsMouseDownFromActivate();
+
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
   // not notify the delegate.
@@ -90,6 +101,9 @@ class MatchPreview {
   }
 
   const GURL& url() const { return url_; }
+
+  // Are we showing instant results?
+  bool is_showing_instant() const { return template_url_id_ != 0; }
 
  private:
   class FrameLoadObserver;
@@ -116,9 +130,6 @@ class MatchPreview {
   bool is_waiting_for_load() const {
     return frame_load_observer_.get() != NULL;
   }
-
-  // Are we showing instant results?
-  bool is_showing_instant() const { return template_url_id_ != 0; }
 
   MatchPreviewDelegate* delegate_;
 
@@ -153,6 +164,9 @@ class MatchPreview {
   gfx::Rect omnibox_bounds_;
 
   scoped_ptr<FrameLoadObserver> frame_load_observer_;
+
+  // See description above CommitOnMouseUp.
+  bool commit_on_mouse_up_;
 
   // See description above getter.
   PageTransition::Type last_transition_type_;

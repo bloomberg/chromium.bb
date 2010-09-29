@@ -650,6 +650,14 @@ void RenderViewHost::GotFocus() {
     view->GotFocus();
 }
 
+void RenderViewHost::LostCapture() {
+  RenderWidgetHost::LostCapture();
+
+  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  if (view)
+    view->LostCapture();
+}
+
 void RenderViewHost::SetInitialFocus(bool reverse) {
   Send(new ViewMsg_SetInitialFocus(routing_id(), reverse));
 }
@@ -1826,11 +1834,19 @@ void RenderViewHost::ForwardMouseEvent(
         if (ignore_input_events() && delegate_)
           delegate_->OnIgnoredUIEvent();
         break;
+      case WebInputEvent::MouseUp:
+        view->HandleMouseUp();
       default:
         // For now, we don't care about the rest.
         break;
     }
   }
+}
+
+void RenderViewHost::OnMouseActivate() {
+  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  if (view)
+    view->HandleMouseActivate();
 }
 
 void RenderViewHost::ForwardKeyboardEvent(

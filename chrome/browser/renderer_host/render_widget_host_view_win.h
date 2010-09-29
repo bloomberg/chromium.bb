@@ -195,7 +195,10 @@ class RenderWidgetHostViewWin
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnWheelEvent(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
-  LRESULT OnMouseActivate(UINT, WPARAM, LPARAM, BOOL& handled);
+  LRESULT OnMouseActivate(UINT message,
+                          WPARAM wparam,
+                          LPARAM lparam,
+                          BOOL& handled);
   // Handle MSAA requests for accessibility information.
   LRESULT OnGetObject(UINT message, WPARAM wparam, LPARAM lparam,
                       BOOL& handled);

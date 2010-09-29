@@ -55,8 +55,8 @@ const char kUserDoneScript[] =
 // instant. The params are the bounds relative to the origin of the preview
 // (x, y, width, height).
 const char kSetOmniboxBoundsScript[] =
-    "if (window.chrome.setOmniboxDimensions) "
-    "window.chrome.setOmniboxDimensions($1, $2, $3, $4);";
+    "if (window.chrome.setDropdownDimensions) "
+    "window.chrome.setDropdownDimensions($1, $2, $3, $4);";
 
 // Escapes quotes in the |text| so that it be passed to JavaScript as a quoted
 // string.
@@ -231,7 +231,8 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   explicit TabContentsDelegateImpl(MatchPreview* match_preview)
       : match_preview_(match_preview),
         installed_paint_observer_(false),
-        waiting_for_new_page_(true) {
+        waiting_for_new_page_(true),
+        is_mouse_down_from_activate_(false) {
   }
 
   // Invoked prior to loading a new URL.
@@ -244,6 +245,11 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   // cleanup.
   void Reset() {
     installed_paint_observer_ = false;
+    is_mouse_down_from_activate_ = false;
+  }
+
+  bool is_mouse_down_from_activate() const {
+    return is_mouse_down_from_activate_;
   }
 
   // Commits the currently buffered history.
@@ -349,6 +355,7 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
                                             const std::string& target) {}
   virtual bool IsExternalTabContainer() const { return false; }
   virtual void SetFocusToLocationBar(bool select_all) {}
+  virtual bool ShouldFocusPageAfterCrash() { return false; }
   virtual void RenderWidgetShowing() {}
   virtual ExtensionFunctionDispatcher* CreateExtensionFunctionDispatcher(
       RenderViewHost* render_view_host,
@@ -356,6 +363,9 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
     return NULL;
   }
   virtual bool TakeFocus(bool reverse) { return false; }
+  virtual void LostCapture() {
+    CommitFromMouseReleaseIfNecessary();
+  }
   virtual void SetTabContentBlocked(TabContents* contents, bool blocked) {}
   virtual void TabContentsFocused(TabContents* tab_content) {
   }
@@ -378,7 +388,12 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
                                       bool* is_keyboard_shortcut) {
     return false;
   }
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
+  virtual void HandleMouseUp() {
+    CommitFromMouseReleaseIfNecessary();
+  }
+  virtual void HandleMouseActivate() {
+    is_mouse_down_from_activate_ = true;
+  }
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}
   virtual void ShowContentSettingsWindow(ContentSettingsType content_type) {}
   virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) {}
@@ -419,6 +434,13 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   typedef std::vector<scoped_refptr<history::HistoryAddPageArgs> >
       AddPageVector;
 
+  void CommitFromMouseReleaseIfNecessary() {
+    bool was_down = is_mouse_down_from_activate_;
+    is_mouse_down_from_activate_ = false;
+    if (was_down && match_preview_->commit_on_mouse_up_)
+      match_preview_->CommitCurrentPreview(MatchPreview::COMMIT_FOCUS_LOST);
+  }
+
   MatchPreview* match_preview_;
 
   // Has the paint observer been installed? See comment in
@@ -434,6 +456,9 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   // Are we we waiting for a NavigationType of NEW_PAGE? If we're waiting for
   // NEW_PAGE navigation we don't add history items to add_page_vector_.
   bool waiting_for_new_page_;
+
+  // Returns true if the mouse is down from an activate.
+  bool is_mouse_down_from_activate_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
 };
@@ -455,6 +480,7 @@ MatchPreview::MatchPreview(MatchPreviewDelegate* delegate)
       tab_contents_(NULL),
       is_active_(false),
       template_url_id_(0),
+      commit_on_mouse_up_(false),
       last_transition_type_(PageTransition::LINK) {
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
 }
@@ -473,6 +499,7 @@ void MatchPreview::Update(TabContents* tab_contents,
     DestroyPreviewContents();
 
   tab_contents_ = tab_contents;
+  commit_on_mouse_up_ = false;
   last_transition_type_ = match.transition;
 
   if (url_ == match.destination_url)
@@ -575,6 +602,14 @@ void MatchPreview::CommitCurrentPreview(CommitType type) {
   delegate_->CommitMatchPreview(ReleasePreviewContents(type));
 }
 
+void MatchPreview::SetCommitOnMouseUp() {
+  commit_on_mouse_up_ = true;
+}
+
+bool MatchPreview::IsMouseDownFromActivate() {
+  return preview_tab_contents_delegate_->is_mouse_down_from_activate();
+}
+
 TabContents* MatchPreview::ReleasePreviewContents(CommitType type) {
   if (!preview_contents_.get())
     return NULL;
@@ -589,6 +624,7 @@ TabContents* MatchPreview::ReleasePreviewContents(CommitType type) {
                    user_text_,
                    type == COMMIT_PRESSED_ENTER);
   }
+  commit_on_mouse_up_ = false;
   omnibox_bounds_ = gfx::Rect();
   template_url_id_ = 0;
   url_ = GURL();

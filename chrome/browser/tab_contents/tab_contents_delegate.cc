@@ -64,6 +64,10 @@ bool TabContentsDelegate::IsExternalTabContainer() const { return false; }
 
 void TabContentsDelegate::SetFocusToLocationBar(bool select_all) {}
 
+bool TabContentsDelegate::ShouldFocusPageAfterCrash() {
+  return true;
+}
+
 void TabContentsDelegate::RenderWidgetShowing() {}
 
 ExtensionFunctionDispatcher*
@@ -75,6 +79,9 @@ TabContentsDelegate::CreateExtensionFunctionDispatcher(
 
 bool TabContentsDelegate::TakeFocus(bool reverse) {
   return false;
+}
+
+void TabContentsDelegate::LostCapture() {
 }
 
 void TabContentsDelegate::SetTabContentBlocked(
@@ -123,6 +130,12 @@ bool TabContentsDelegate::PreHandleKeyboardEvent(
 
 void TabContentsDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
+}
+
+void TabContentsDelegate::HandleMouseUp() {
+}
+
+void TabContentsDelegate::HandleMouseActivate() {
 }
 
 void TabContentsDelegate::ShowRepostFormWarningDialog(

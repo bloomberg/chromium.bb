@@ -721,7 +721,7 @@ void LocationBarView::OnAutocompleteWillClosePopup() {
     return;
 
   MatchPreview* match_preview = delegate_->GetMatchPreview();
-  if (match_preview)
+  if (match_preview && !match_preview->commit_on_mouse_up())
     match_preview->DestroyPreviewContents();
 }
 
@@ -736,10 +736,19 @@ void LocationBarView::OnAutocompleteLosingFocus(
   if (!match_preview->is_active() || !match_preview->preview_contents())
     return;
 
-  if (ShouldCommitMatchPreviewOnFocusLoss(view_gaining_focus))
-    match_preview->CommitCurrentPreview(MatchPreview::COMMIT_FOCUS_LOST);
-  else
-    match_preview->DestroyPreviewContents();
+  switch (GetCommitType(view_gaining_focus)) {
+    case COMMIT_MATCH_PREVIEW_IMMEDIATELY:
+      match_preview->CommitCurrentPreview(MatchPreview::COMMIT_FOCUS_LOST);
+      break;
+    case COMMIT_MATCH_PREVIEW_ON_MOUSE_UP:
+      match_preview->SetCommitOnMouseUp();
+      break;
+    case REVERT_MATCH_PREVIEW:
+      match_preview->DestroyPreviewContents();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void LocationBarView::OnAutocompleteWillAccept() {
@@ -1192,26 +1201,44 @@ void LocationBarView::OnTemplateURLModelChanged() {
   ShowFirstRunBubble(bubble_type_);
 }
 
-bool LocationBarView::ShouldCommitMatchPreviewOnFocusLoss(
+LocationBarView::MatchPreviewCommitType LocationBarView::GetCommitType(
     gfx::NativeView view_gaining_focus) {
   // The MatchPreview is active. Destroy it if the user didn't click on the
   // TabContents (or one of its children).
 #if defined(OS_WIN)
   MatchPreview* match_preview = delegate_->GetMatchPreview();
-  if (!view_gaining_focus ||
-      !match_preview->preview_contents()->GetRenderWidgetHostView()) {
-    return false;
-  }
+  RenderWidgetHostView* rwhv =
+      match_preview->preview_contents()->GetRenderWidgetHostView();
+  if (!view_gaining_focus || !rwhv)
+    return REVERT_MATCH_PREVIEW;
+
   gfx::NativeView tab_view = match_preview->preview_contents()->GetNativeView();
+  if (rwhv->GetNativeView() == view_gaining_focus ||
+      tab_view == view_gaining_focus) {
+    // Focus is going to the renderer. Only commit the match preview if the
+    // mouse is down. If the mouse isn't down it means someone else moved focus
+    // and we shouldn't commit.
+    if (match_preview->IsMouseDownFromActivate()) {
+      if (match_preview->is_showing_instant()) {
+        // We're showing instant results. As instant results may shift when
+        // committing we commit on the mouse up. This way a slow click still
+        // works fine.
+        return COMMIT_MATCH_PREVIEW_ON_MOUSE_UP;
+      }
+      return COMMIT_MATCH_PREVIEW_IMMEDIATELY;
+    }
+    return REVERT_MATCH_PREVIEW;
+  }
   gfx::NativeView view_gaining_focus_ancestor = view_gaining_focus;
   while (view_gaining_focus_ancestor &&
          view_gaining_focus_ancestor != tab_view) {
     view_gaining_focus_ancestor = ::GetParent(view_gaining_focus_ancestor);
   }
-  return view_gaining_focus_ancestor != NULL;
+  return view_gaining_focus_ancestor != NULL ?
+      COMMIT_MATCH_PREVIEW_IMMEDIATELY : REVERT_MATCH_PREVIEW;
 #else
   // TODO: implement me.
   NOTIMPLEMENTED();
-  return false;
+  return REVERT_MATCH_PREVIEW;
 #endif
 }

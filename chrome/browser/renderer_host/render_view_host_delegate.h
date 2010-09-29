@@ -165,6 +165,9 @@ class RenderViewHostDelegate {
     // retrieved by doing a Shift-Tab.
     virtual void TakeFocus(bool reverse) = 0;
 
+    // Notification that the view has lost capture.
+    virtual void LostCapture() = 0;
+
     // The page wants the hosting window to activate/deactivate itself (it
     // called the JavaScript window.focus()/blur() method).
     virtual void Activate() = 0;
@@ -188,6 +191,8 @@ class RenderViewHostDelegate {
     virtual void HandleMouseMove() = 0;
     virtual void HandleMouseDown() = 0;
     virtual void HandleMouseLeave() = 0;
+    virtual void HandleMouseUp() = 0;
+    virtual void HandleMouseActivate() = 0;
 
     // The contents' preferred size changed.
     virtual void UpdatePreferredSize(const gfx::Size& pref_size) = 0;

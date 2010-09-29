@@ -1446,7 +1446,9 @@ LRESULT RenderWidgetHostViewWin::OnWheelEvent(UINT message, WPARAM wparam,
   return 0;
 }
 
-LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT, WPARAM, LPARAM,
+LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
+                                                 WPARAM wparam,
+                                                 LPARAM lparam,
                                                  BOOL& handled) {
   if (!IsActivatable())
     return MA_NOACTIVATE;
@@ -1465,7 +1467,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT, WPARAM, LPARAM,
     ::GetCursorPos(&cursor_pos);
     ::ScreenToClient(m_hWnd, &cursor_pos);
     HWND child_window = ::RealChildWindowFromPoint(m_hWnd, cursor_pos);
-    if (::IsWindow(child_window)) {
+    if (::IsWindow(child_window) && child_window != m_hWnd) {
       if (win_util::GetClassName(child_window) == kWrapperNativeWindowClassName)
         child_window = ::GetWindow(child_window, GW_CHILD);
 
@@ -1474,6 +1476,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT, WPARAM, LPARAM,
     }
   }
   handled = FALSE;
+  render_widget_host_->OnMouseActivate();
   return MA_ACTIVATE;
 }
 

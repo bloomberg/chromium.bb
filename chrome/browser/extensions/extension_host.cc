@@ -631,6 +631,9 @@ void ExtensionHost::GotFocus() {
 void ExtensionHost::TakeFocus(bool reverse) {
 }
 
+void ExtensionHost::LostCapture() {
+}
+
 void ExtensionHost::Activate() {
 }
 
@@ -677,6 +680,12 @@ void ExtensionHost::HandleMouseLeave() {
   if (view_.get())
     view_->HandleMouseLeave();
 #endif
+}
+
+void ExtensionHost::HandleMouseUp() {
+}
+
+void ExtensionHost::HandleMouseActivate() {
 }
 
 ViewType::Type ExtensionHost::GetRenderViewType() const {

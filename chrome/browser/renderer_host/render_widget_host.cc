@@ -437,6 +437,9 @@ void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   ForwardInputEvent(mouse_event, sizeof(WebMouseEvent), false);
 }
 
+void RenderWidgetHost::OnMouseActivate() {
+}
+
 void RenderWidgetHost::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
   if (ignore_input_events_ || process_->ignore_input_events())

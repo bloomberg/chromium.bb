@@ -2370,8 +2370,10 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
 
   // Restore the focus to the tab (otherwise the focus will be on the top
   // window).
-  if (was_crashed && !FocusLocationBarByDefault())
+  if (was_crashed && !FocusLocationBarByDefault() &&
+      (!delegate_ || delegate_->ShouldFocusPageAfterCrash())) {
     Focus();
+  }
 }
 
 void TabContents::RenderViewGone(RenderViewHost* rvh) {
