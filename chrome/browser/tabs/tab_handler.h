@@ -24,6 +24,8 @@ class TabHandlerDelegate {
 // example.
 class TabHandler {
  public:
+  virtual ~TabHandler() {}
+
   // Creates a TabHandler implementation and returns it, transferring ownership
   // to the caller.
   static TabHandler* CreateTabHandler(TabHandlerDelegate* delegate);
@@ -33,4 +35,3 @@ class TabHandler {
 };
 
 #endif  // CHROME_BROWSER_TABS_TAB_HANDLER_H_
-
