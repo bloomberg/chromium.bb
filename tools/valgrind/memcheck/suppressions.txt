@@ -688,7 +688,7 @@
    fun:_ZN23OffTheRecordProfileImpl30GetRequestContextForExtensionsEv
    ...
    fun:_ZN21ResourceMessageFilterC1EP22ResourceDispatcherHostiP17AudioRendererHostP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
-   fun:_ZN24BrowserRenderProcessHost4InitEb
+   fun:_ZN24BrowserRenderProcessHost4InitEbb
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
