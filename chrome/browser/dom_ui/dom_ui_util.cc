@@ -4,8 +4,13 @@
 
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 
+#include <vector>
+
+#include "app/resource_bundle.h"
+#include "base/base64.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "gfx/codec/png_codec.h"
 
 namespace dom_ui_util {
 
@@ -28,6 +33,32 @@ std::string GetJsonResponseFromArgumentList(const ListValue* args,
     NOTREACHED();
 
   return result;
+}
+
+std::string GetImageDataUrl(const SkBitmap& bitmap) {
+  std::vector<unsigned char> output;
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
+  std::string str_url;
+  std::copy(output.begin(), output.end(),
+            std::back_inserter(str_url));
+  base::Base64Encode(str_url, &str_url);
+  str_url.insert(0, "data:image/png;base64,");
+  return str_url;
+}
+
+std::string GetImageDataUrlFromResource(int res) {
+  // Load resource icon and covert to base64 encoded data url
+  RefCountedStaticMemory* icon_data =
+      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(res);
+  if (!icon_data)
+    return std::string();
+  scoped_refptr<RefCountedMemory> raw_icon(icon_data);
+  std::string str_url;
+  std::copy(raw_icon->front(), raw_icon->front() + raw_icon->size(),
+            std::back_inserter(str_url));
+  base::Base64Encode(str_url, &str_url);
+  str_url.insert(0, "data:image/png;base64,");
+  return str_url;
 }
 
 }  // end of namespace dom_ui_util

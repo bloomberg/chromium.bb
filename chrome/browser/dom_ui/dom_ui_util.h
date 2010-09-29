@@ -9,6 +9,7 @@
 #include <string>
 
 class ListValue;
+class SkBitmap;
 
 namespace dom_ui_util {
 
@@ -29,6 +30,19 @@ std::string GetJsonResponseFromFirstArgumentInList(const ListValue* args);
 // ListValue.
 std::string GetJsonResponseFromArgumentList(const ListValue* args,
                                             size_t list_index);
+
+
+// Convenience routine to convert SkBitmap object to data url
+// so that it can be used in DOMUI.
+std::string GetImageDataUrl(const SkBitmap& bitmap);
+
+// Convenience routine to get data url that corresponds to given
+// resource_id as an image. This function does not check if the
+// resource for the |resource_id| is an image, therefore it is the
+// caller's responsibility to make sure the resource is indeed an
+// image. Returns empty string if a resource does not exist for given
+// |resource_id|.
+std::string GetImageDataUrlFromResource(int resource_id);
 
 }  // end of namespace
 
