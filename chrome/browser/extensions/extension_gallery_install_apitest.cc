@@ -20,7 +20,7 @@ class ExtensionGalleryInstallApiTest : public ExtensionApiTest {
 
 // http://crbug.com/55642 - failing on XP.
 #if defined (OS_WIN)
-#define MAYBE_InstallAndUninstall FAILS_InstallAndUninstall
+#define MAYBE_InstallAndUninstall DISABLED_InstallAndUninstall
 #else
 #define MAYBE_InstallAndUninstall InstallAndUninstall
 #endif
