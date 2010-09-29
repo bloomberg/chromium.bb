@@ -96,6 +96,11 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { app::VKEY_F5,             false, true,  false, IDC_RELOAD_IGNORING_CACHE },
   { app::VKEY_F5,             true,  false, false, IDC_RELOAD_IGNORING_CACHE },
 #endif
+#if defined(OS_CHROMEOS)
+  { app::VKEY_F3,             false, false, false, IDC_RELOAD },
+  { app::VKEY_F3,             false, true,  false, IDC_RELOAD_IGNORING_CACHE },
+  { app::VKEY_F3,             true,  false, false, IDC_RELOAD_IGNORING_CACHE },
+#endif
   { app::VKEY_HOME,           false, false, true,  IDC_HOME },
   { app::VKEY_T,              true,  true,  false, IDC_RESTORE_TAB },
   { app::VKEY_S,              false, true,  false, IDC_SAVE_PAGE },
