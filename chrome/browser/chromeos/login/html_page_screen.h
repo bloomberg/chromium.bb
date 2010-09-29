@@ -57,6 +57,10 @@ class HTMLPageScreen : public ViewScreen<HTMLPageView>,
   virtual void OnPageLoaded();
   virtual void OnPageLoadFailed(const std::string& url);
 
+ protected:
+  // Overrides WebPageScreen:
+  virtual void OnNetworkTimeout();
+
  private:
   // ViewScreen implementation:
   virtual void CreateView();

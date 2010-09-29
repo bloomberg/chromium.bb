@@ -107,6 +107,14 @@ void HTMLPageScreen::OnPageLoadFailed(const std::string& url) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// HTMLPageScreen, WebPageScreen implementation:
+void HTMLPageScreen::OnNetworkTimeout() {
+  LOG(INFO) << "HTMLPageScreen::OnNetworkTimeout";
+  // Just show what we have now. We shouldn't exit from the screen on timeout.
+  OnPageLoaded();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // HTMLPageScreen, private:
 void HTMLPageScreen::CloseScreen(ScreenObserver::ExitCodes code) {
   StopTimeoutTimer();

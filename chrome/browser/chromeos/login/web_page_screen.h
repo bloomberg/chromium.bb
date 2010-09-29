@@ -53,7 +53,7 @@ class WebPageScreen : public TabContentsDelegate {
   virtual bool HandleContextMenu(const ContextMenuParams& params);
 
   // Called by |timeout_timer_|. Stops page fetching and closes screen.
-  void OnNetworkTimeout();
+  virtual void OnNetworkTimeout();
 
   // Start/stop timeout timer.
   void StartTimeoutTimer();
