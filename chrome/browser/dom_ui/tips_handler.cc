@@ -45,8 +45,9 @@ void TipsHandler::HandleGetTips(const ListValue* args) {
   // We need to check here because the new tab page calls for tips before
   // the tip service starts up.
   PrefService* current_prefs = dom_ui_->GetProfile()->GetPrefs();
-  if (current_prefs->HasPrefPath(prefs::kNTPWebResourceServer)) {
-    std::string server = current_prefs->GetString(prefs::kNTPWebResourceServer);
+  if (current_prefs->HasPrefPath(prefs::kNTPTipsResourceServer)) {
+    std::string server = current_prefs->GetString(
+        prefs::kNTPTipsResourceServer);
     std::string locale = g_browser_process->GetApplicationLocale();
     if (!EndsWith(server, locale, false)) {
       dom_ui_->CallJavascriptFunction(L"tips", list_value);
@@ -98,7 +99,7 @@ void TipsHandler::SendTip(const std::string& tip, const std::string& tip_type,
 // static
 void TipsHandler::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kNTPWebResourceCache);
-  prefs->RegisterStringPref(prefs::kNTPWebResourceServer,
+  prefs->RegisterStringPref(prefs::kNTPLogoResourceServer,
                             WebResourceService::kDefaultResourceServer);
 }
 

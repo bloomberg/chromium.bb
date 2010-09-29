@@ -885,8 +885,11 @@ const char kNTPWebResourceCache[] = "ntp.web_resource_cache";
 // Last time of update of web_resource_cache.
 const char kNTPWebResourceCacheUpdate[] = "ntp.web_resource_cache_update";
 
-// Last server used to fill web_resource_cache.
-const char kNTPWebResourceServer[] = "ntp.web_resource_server";
+// Last server used to fill tips.
+const char kNTPTipsResourceServer[] = "ntp.tips_resource_server";
+
+// Last server used to fill logo_resource_cache.
+const char kNTPLogoResourceServer[] = "ntp.logo_resource_server";
 
 // Which sections should be visible on the new tab page
 // 1 - Show the most visited sites in a grid

@@ -187,14 +187,9 @@ class WebResourceService::UnpackerClient
   bool got_response_;
 };
 
+// Server for custom logo signals.
 const char* WebResourceService::kDefaultResourceServer =
-#if defined(OS_MACOSX)
-  "https://clients2.google.com/tools/service/npredir?r=chrometips_mac&hl=";
-#elif defined(OS_LINUX)
-  "https://clients2.google.com/tools/service/npredir?r=chrometips_linux&hl=";
-#else
-  "https://clients2.google.com/tools/service/npredir?r=chrometips_win&hl=";
-#endif
+    "https://www.google.com/support/chrome/bin/topic/30248/inproduct";
 
 WebResourceService::WebResourceService(Profile* profile)
     : prefs_(profile->GetPrefs()),
@@ -210,19 +205,14 @@ void WebResourceService::Init() {
   prefs_->RegisterStringPref(prefs::kNTPWebResourceCacheUpdate, "0");
   prefs_->RegisterRealPref(prefs::kNTPCustomLogoStart, 0);
   prefs_->RegisterRealPref(prefs::kNTPCustomLogoEnd, 0);
-  std::string locale = g_browser_process->GetApplicationLocale();
 
-  if (prefs_->HasPrefPath(prefs::kNTPWebResourceServer)) {
-     web_resource_server_ = prefs_->GetString(prefs::kNTPWebResourceServer);
-     // If we are in the correct locale, initialization is done.
-     if (EndsWith(web_resource_server_, locale, false))
-       return;
+  if (prefs_->HasPrefPath(prefs::kNTPLogoResourceServer)) {
+    web_resource_server_ = prefs_->GetString(prefs::kNTPLogoResourceServer);
+    return;
   }
 
-  // If we have not yet set a server, or if the web resource server is set to
-  // the wrong locale, reset the server and force an immediate update.
+  // If we have not yet set a server, reset and force an immediate update.
   web_resource_server_ = kDefaultResourceServer;
-  web_resource_server_.append(locale);
   prefs_->SetString(prefs::kNTPWebResourceCacheUpdate, "");
 }
 
@@ -267,7 +257,7 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
   // Update resource server and cache update time in preferences.
   prefs_->SetString(prefs::kNTPWebResourceCacheUpdate,
       base::DoubleToString(base::Time::Now().ToDoubleT()));
-  prefs_->SetString(prefs::kNTPWebResourceServer, web_resource_server_);
+  prefs_->SetString(prefs::kNTPLogoResourceServer, web_resource_server_);
 }
 
 void WebResourceService::UnpackTips(const DictionaryValue& parsed_json) {
@@ -328,27 +318,35 @@ void WebResourceService::UnpackLogoSignal(const DictionaryValue& parsed_json) {
   // Check for newly received start and end values.
   if (parsed_json.GetDictionary("topic", &topic_dict)) {
     if (topic_dict->GetList("answers", &answer_list)) {
+      std::string logo_start_string = "";
+      std::string logo_end_string = "";
       for (ListValue::const_iterator tip_iter = answer_list->begin();
            tip_iter != answer_list->end(); ++tip_iter) {
         if (!(*tip_iter)->IsType(Value::TYPE_DICTIONARY))
           continue;
         DictionaryValue* a_dic =
             static_cast<DictionaryValue*>(*tip_iter);
-        std::string logo_start_string;
-        std::string logo_end_string;
-        if (a_dic->GetString("custom_logo_start", &logo_start_string) &&
-            a_dic->GetString("custom_logo_end", &logo_end_string)) {
-          // If both times can be correctly parsed, then set new logo
-          // start and end times.
-          base::Time start_time;
-          base::Time end_time;
-          if (base::Time::FromString(
-                  ASCIIToWide(logo_start_string).c_str(), &start_time) &&
-              base::Time::FromString(
-                  ASCIIToWide(logo_end_string).c_str(), &end_time)) {
-            logo_start = start_time.ToDoubleT();
-            logo_end = end_time.ToDoubleT();
+        std::string logo_signal;
+        if (a_dic->GetString("name", &logo_signal)) {
+          if (logo_signal == "custom_logo_start") {
+            a_dic->GetString("inproduct", &logo_start_string);
+          } else if (logo_signal == "custom_logo_end") {
+            a_dic->GetString("inproduct", &logo_end_string);
           }
+        }
+      }
+      if (!logo_start_string.empty() &&
+          logo_start_string.length() > 0 &&
+          !logo_end_string.empty() &&
+          logo_end_string.length() > 0) {
+        base::Time start_time;
+        base::Time end_time;
+        if (base::Time::FromString(
+                ASCIIToWide(logo_start_string).c_str(), &start_time) &&
+            base::Time::FromString(
+                ASCIIToWide(logo_end_string).c_str(), &end_time)) {
+          logo_start = start_time.ToDoubleT();
+          logo_end = end_time.ToDoubleT();
         }
       }
     }
