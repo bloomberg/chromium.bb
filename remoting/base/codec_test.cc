@@ -165,15 +165,15 @@ class DecoderTester {
 
   void ReceivedMessage(ChromotingHostMessage* message) {
     if (message->has_update_stream_packet()) {
-      decoder_->PartialDecode(message);
+      EXPECT_TRUE(decoder_->PartialDecode(message));
       return;
     }
 
     if (message->has_begin_update_stream()) {
-      decoder_->BeginDecode(
+      EXPECT_TRUE(decoder_->BeginDecode(
           frame_, &update_rects_,
           NewRunnableMethod(this, &DecoderTester::OnPartialDecodeDone),
-          NewRunnableMethod(this, &DecoderTester::OnDecodeDone));
+          NewRunnableMethod(this, &DecoderTester::OnDecodeDone)));
     }
 
     if (message->has_end_update_stream()) {
