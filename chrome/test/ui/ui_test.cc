@@ -997,6 +997,9 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
       command_line.AppendArgNative(flags[i]);
   }
 
+  // Turn off preconnects because they break the brittle python webserver.
+  command_line.AppendSwitch(switches::kDisablePreconnect);
+
   // No first-run dialogs, please.
   command_line.AppendSwitch(switches::kNoFirstRun);
 
