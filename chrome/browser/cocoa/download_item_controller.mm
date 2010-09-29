@@ -9,6 +9,7 @@
 #include "app/text_elider.h"
 #include "base/histogram.h"
 #include "base/mac_util.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -266,10 +267,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)updateToolTip {
-  std::wstring elidedFilename = gfx::ElideFilename(
+  string16 elidedFilename = gfx::ElideFilename(
       [self download]->GetFileName(),
       gfx::Font(), kToolTipMaxWidth);
-  [progressView_ setToolTip:base::SysWideToNSString(elidedFilename)];
+  [progressView_ setToolTip:base::SysUTF16ToNSString(elidedFilename)];
 }
 
 - (void)clearDangerousMode {

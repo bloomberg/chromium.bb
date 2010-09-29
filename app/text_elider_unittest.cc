@@ -181,9 +181,9 @@ TEST(TextEliderTest, TestFilenameEliding) {
     FilePath filepath(testcases[i].input);
     string16 expected = WideToUTF16(testcases[i].output);
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
-    EXPECT_EQ(expected, WideToUTF16(ElideFilename(filepath,
+    EXPECT_EQ(expected, ElideFilename(filepath,
         font,
-        font.GetStringWidth(testcases[i].output))));
+        font.GetStringWidth(testcases[i].output)));
   }
 }
 

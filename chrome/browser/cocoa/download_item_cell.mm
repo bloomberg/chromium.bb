@@ -398,7 +398,7 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   gfx::Font font_chr(base::SysNSStringToWide([font fontName]),
                      [font pointSize]);
 
-  return base::SysWideToNSString(
+  return base::SysUTF16ToNSString(
       ElideFilename(downloadPath_, font_chr, availableWidth));
 }
 

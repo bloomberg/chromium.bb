@@ -40,9 +40,8 @@ std::wstring CutString(const std::wstring& text,
 }
 
 // TODO(tony): Get rid of wstrings.
-std::wstring GetDisplayStringInLTRDirectionality(const std::wstring& text) {
-  return UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
-      WideToUTF16(text)));
+string16 GetDisplayStringInLTRDirectionality(const std::wstring& text) {
+  return base::i18n::GetDisplayStringInLTRDirectionality(WideToUTF16(text));
 }
 
 }  // namespace
@@ -287,9 +286,9 @@ std::wstring ElideUrl(const GURL& url,
   return ElideText(final_elided_url_string, font, available_pixel_width, false);
 }
 
-std::wstring ElideFilename(const FilePath& filename,
-                           const gfx::Font& font,
-                           int available_pixel_width) {
+string16 ElideFilename(const FilePath& filename,
+                       const gfx::Font& font,
+                       int available_pixel_width) {
   int full_width = font.GetStringWidth(filename.ToWStringHack());
   if (full_width <= available_pixel_width) {
     std::wstring elided_name = filename.ToWStringHack();

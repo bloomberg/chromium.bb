@@ -51,9 +51,9 @@ std::wstring ElideText(const std::wstring& text,
 // filename is forced to have LTR directionality, which means that in RTL UI
 // the elided filename is wrapped with LRE (Left-To-Right Embedding) mark and
 // PDF (Pop Directional Formatting) mark.
-std::wstring ElideFilename(const FilePath& filename,
-                           const gfx::Font& font,
-                           int available_pixel_width);
+string16 ElideFilename(const FilePath& filename,
+                       const gfx::Font& font,
+                       int available_pixel_width);
 
 // SortedDisplayURL maintains a string from a URL suitable for display to the
 // use. SortedDisplayURL also provides a function used for comparing two

@@ -206,12 +206,12 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
       l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL);
   if (base::i18n::IsRTL()) {
     const std::string reversed_percent("s%");
-    std::wstring::size_type percent_index =
-        description.find("%s", static_cast<std::string::size_type>(0));
-    if (percent_index != std::string::npos)
+    std::string::size_type percent_index = description.find("%s");
+    if (percent_index != std::string::npos) {
       description.replace(percent_index,
                           reversed_percent.length(),
                           reversed_percent);
+    }
   }
 
   GtkWidget* description_label = gtk_label_new(description.c_str());

@@ -596,7 +596,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
   // Last value of x was the end of the right image, just before the button.
   // Note that in dangerous mode we use a label (as the text is multi-line).
   if (!IsDangerousMode()) {
-    std::wstring filename;
+    string16 filename;
     if (!disabled_while_opening_) {
       filename = gfx::ElideFilename(download_->GetFileName(),
                                     font_, kTextWidth);
@@ -607,12 +607,12 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
           l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_OPENING, empty_string);
       int status_string_width = font_.GetStringWidth(status_string);
       // Then, elide the file name.
-      std::wstring filename_string =
+      string16 filename_string =
           gfx::ElideFilename(download_->GetFileName(), font_,
                              kTextWidth - status_string_width);
       // Last, concat the whole string.
-      filename = l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_OPENING,
-                                       filename_string);
+      filename = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING,
+                                            filename_string);
     }
 
     int mirrored_x = MirroredXWithWidthInsideView(
@@ -624,7 +624,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                                       (box_height_ - font_.GetHeight()) / 2);
 
     // Draw the file's name.
-    canvas->DrawStringInt(filename, font_,
+    canvas->DrawStringInt(UTF16ToWide(filename), font_,
                           IsEnabled() ? file_name_color :
                                         kFileNameDisabledColor,
                           mirrored_x, y, kTextWidth, font_.GetHeight());

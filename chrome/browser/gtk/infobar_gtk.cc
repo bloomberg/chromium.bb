@@ -151,7 +151,7 @@ void InfoBar::AddLabelAndLink(const string16& display_text,
   GtkWidget* link_button = NULL;
   if (link_text.empty()) {
     // No link text, so skip creating the link and splitting display_text.
-    link_offset = std::wstring::npos;
+    link_offset = string16::npos;
   } else {
     // If we have some link text, create the link button.
     link_button = gtk_chrome_link_button_new(UTF16ToUTF8(link_text).c_str());
@@ -170,7 +170,7 @@ void InfoBar::AddLabelAndLink(const string16& display_text,
 
   // If link_offset is npos, we right-align the link instead of embedding it
   // in the text.
-  if (link_offset == std::wstring::npos) {
+  if (link_offset == string16::npos) {
     if (link_button)
       gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
     GtkWidget* label = gtk_label_new(UTF16ToUTF8(display_text).c_str());
