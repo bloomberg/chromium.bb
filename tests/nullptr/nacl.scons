@@ -40,7 +40,4 @@ node = env.CommandSelLdrTestNacl('nullptr.out',
                                  command=[env.File('nullptr.nexe')],
                                  exit_status='segfault')
 
-# This test fails on Valgrind because Valgrind traps SIGSEGV and attempts to
-# die peacefully, but gets killed with SIGKILL instead.
-if not env.IsRunningUnderValgrind():
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_nullptr_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nullptr_test')

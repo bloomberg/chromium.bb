@@ -889,6 +889,10 @@ TEST_TIME_THRESHOLD = {
 
 TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/command_tester.py'
 
+# Valgrind handles SIGSEGV in a way our testing tools do not expect.
+UNSUPPORTED_VALGRIND_EXIT_STATUS = ['segfault',
+                                   'sigsegv_or_equivalent']
+
 # (To avoid breakage in the native_client/supplement tree, which
 # resides on a different Subversion server.)
 def CommandTestAgainstGoldenOutput(env, name, *args, **kwargs):
@@ -902,6 +906,11 @@ def CommandTest(env, name, command, size='small',
   if not  name.endswith('.out') or name.startswith('$'):
     print "ERROR: bad  test filename for test output ", name
     assert 0
+
+  if (env.IsRunningUnderValgrind() and
+      extra.get('exit_status') in UNSUPPORTED_VALGRIND_EXIT_STATUS):
+    print 'Skipping death test "%s" under Valgrind' % name
+    return []
 
   name = '${TARGET_ROOT}/test_results/' + name
   # NOTE: using the long version of 'name' helps distinguish opt vs dbg
