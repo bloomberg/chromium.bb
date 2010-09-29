@@ -170,7 +170,7 @@
   <release seq="1" allow_pseudo="false">
     <includes>
       <!-- The HTML for the about:terms page -->
-      <if expr="pp_ifdef('_google_chrome') and 'am' == lang"> <include name="IDR_TERMS_HTML" file="terms\terms_en.html" type="BINDATA" /></if>
+      <if expr="pp_ifdef('_google_chrome') and 'am' == lang"> <include name="IDR_TERMS_HTML" file="terms\terms_am.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'ar' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_ar.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'bg' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_bg.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'bn' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_bn.html" type="BINDATA" /></if>
@@ -184,7 +184,7 @@
       <if expr="pp_ifdef('_google_chrome') and 'es' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_es.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'es-419' == lang"><include name="IDR_TERMS_HTML" file="terms\terms_es-419.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'et' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_et.html" type="BINDATA" /></if>
-      <if expr="pp_ifdef('_google_chrome') and 'fa' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_en.html" type="BINDATA" /></if>
+      <if expr="pp_ifdef('_google_chrome') and 'fa' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_fa.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'fi' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_fi.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'fil' == lang">   <include name="IDR_TERMS_HTML" file="terms\terms_fil.html" type="BINDATA" /></if>
       <if expr="pp_ifdef('_google_chrome') and 'fr' == lang">    <include name="IDR_TERMS_HTML" file="terms\terms_fr.html" type="BINDATA" /></if>
