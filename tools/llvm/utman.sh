@@ -646,7 +646,6 @@ everything() {
   misc-tools
 
   verify
-  bitcode-to-native
 }
 
 #@ all                   - Alias for 'everything'
@@ -2521,6 +2520,13 @@ verify() {
 }
 
 #@ bitcode-to-native  -  Convert all bitcode libraries to native form
+# NOTE: this is left here for reference but is no longer used
+#       We may want to move the functionality into the fake driver at one point.
+#       Maybe using it as an elaborate "ar" step.
+#
+#       As is, this approach is not compatible with the build bots
+#       wanting to run and extra_sdk build but not being aware of the
+#       extra work being done in here in the utman script.
 bitcode-to-native() {
 
   StepBanner "BC-TO-NATIVE" "Converting bitcode libraries to native code"
