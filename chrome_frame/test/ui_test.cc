@@ -455,7 +455,9 @@ TEST_F(ContextMenuTest, CFSaveAs) {
 
   EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
       .WillOnce(testing::DoAll(
-          AccSetValue(AccObjectMatcher(L"File name:", L"", L"simple*"),
+          AccSendCharMessage(AccObjectMatcher(L"File name:", L"editable text"),
+                             L'a'),
+          AccSetValue(AccObjectMatcher(L"File name:", L"editable text"),
                       temp_file_path.value()),
           AccDoDefaultAction(AccObjectMatcher(L"Save", L"push button"))));
 

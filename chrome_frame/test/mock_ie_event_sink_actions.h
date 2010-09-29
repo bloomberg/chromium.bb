@@ -162,6 +162,14 @@ ACTION_P2(AccWatchForOneValueChange, observer, matcher) {
   observer->WatchForOneValueChange(matcher);
 }
 
+ACTION_P2(AccSendCharMessage, matcher, character_code) {
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(arg0, matcher, &object)) {
+    HWND window = NULL;
+    EXPECT_TRUE(object->GetWindow(&window));
+    ::SendMessage(window, WM_CHAR, character_code, 0);
+  }
+}
 // Various other actions
 
 ACTION(OpenContextMenuAsync) {
