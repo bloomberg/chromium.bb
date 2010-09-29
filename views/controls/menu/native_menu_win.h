@@ -33,6 +33,7 @@ class NativeMenuWin : public MenuWrapper {
   virtual MenuAction GetMenuAction() const;
   virtual void AddMenuListener(MenuListener* listener);
   virtual void RemoveMenuListener(MenuListener* listener);
+  virtual void SetMinimumWidth(int width);
 
  private:
   // IMPORTANT: Note about indices.

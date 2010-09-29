@@ -45,6 +45,7 @@ class NativeMenuGtk : public MenuWrapper,
   virtual MenuAction GetMenuAction() const;
   virtual void AddMenuListener(MenuListener* listener);
   virtual void RemoveMenuListener(MenuListener* listener);
+  virtual void SetMinimumWidth(int width);
 
   // Overriden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);

@@ -33,8 +33,7 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
   // Returns current locale name to be placed on the language menu-button.
   std::wstring GetCurrentLocaleName() const;
 
-  // Returns original width of the first level menu to be shown when called.
-  int GetFirstLevelMenuWidth() const;
+  // Sets the minimum width of the first level menu to be shown.
   void SetFirstLevelMenuWidth(int width);
 
   void set_menu_offset(int delta_x, int delta_y) {

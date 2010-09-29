@@ -64,6 +64,9 @@ class MenuWrapper {
   // Remove a menu listener.
   virtual void RemoveMenuListener(MenuListener* listener) = 0;
 
+  // Sets the minimum width of the menu.
+  virtual void SetMinimumWidth(int width) = 0;
+
   // Creates the appropriate instance of this wrapper for the current platform.
   static MenuWrapper* CreateWrapper(Menu2* menu);
 };

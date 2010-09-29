@@ -76,6 +76,9 @@ class Menu2 {
   // Accessors.
   menus::MenuModel* model() const { return model_; }
 
+  // Sets the minimum width of the menu.
+  void SetMinimumWidth(int width);
+
  private:
   friend class NativeMenuGtk;
 

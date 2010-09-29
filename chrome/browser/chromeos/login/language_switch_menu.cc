@@ -70,18 +70,9 @@ std::wstring LanguageSwitchMenu::GetCurrentLocaleName() const {
       language_list_->GetIndexFromLocale(locale));
 };
 
-// Currently, views::Menu is implemented directly with the Gtk
-// widgets. So we use native gtk callbacks to get its future size.
-int LanguageSwitchMenu::GetFirstLevelMenuWidth() const {
-  DCHECK(menu_ != NULL);
-  GtkRequisition box_size;
-  gtk_widget_size_request(menu_->GetNativeMenu(), &box_size);
-  return box_size.width;
-}
-
 void LanguageSwitchMenu::SetFirstLevelMenuWidth(int width) {
   DCHECK(menu_ != NULL);
-  gtk_widget_set_size_request(menu_->GetNativeMenu(), width, -1);
+  menu_->SetMinimumWidth(width);
 }
 
 // static

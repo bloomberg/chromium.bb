@@ -52,4 +52,8 @@ void Menu2::RemoveMenuListener(MenuListener* listener) {
   wrapper_->RemoveMenuListener(listener);
 }
 
+void Menu2::SetMinimumWidth(int width) {
+  wrapper_->SetMinimumWidth(width);
+}
+
 }  // namespace

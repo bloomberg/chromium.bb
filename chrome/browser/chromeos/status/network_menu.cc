@@ -167,7 +167,7 @@ void NetworkMenu::ActivatedAt(int index) {
 }
 
 void NetworkMenu::SetFirstLevelMenuWidth(int width) {
-  gtk_widget_set_size_request(network_menu_.GetNativeMenu(), width, -1);
+  network_menu_.SetMinimumWidth(width);
 }
 
 void NetworkMenu::CancelMenu() {

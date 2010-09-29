@@ -409,6 +409,10 @@ void NativeMenuWin::RemoveMenuListener(MenuListener* listener) {
   }
 }
 
+void NativeMenuWin::SetMinimumWidth(int width) {
+  NOTIMPLEMENTED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuWin, private:
 
