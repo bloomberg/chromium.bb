@@ -33,11 +33,11 @@ class EmfPrintingTest : public testing::Test {
   }
 };
 
+const uint32 EMF_HEADER_SIZE = 128;
+
 }  // namespace
 
 TEST(EmfTest, DC) {
-  static const uint32 EMF_HEADER_SIZE = 128;
-
   // Simplest use case.
   printing::Emf emf;
   RECT rect = {100, 100, 200, 200};
@@ -152,5 +152,38 @@ TEST_F(EmfPrintingTest, PageBreak) {
     ::SetJob(printer, job_id, 0, NULL, JOB_CONTROL_DELETE);
     ClosePrinter(printer);
   }
+}
+
+TEST(EmfTest, FileBackedDC) {
+  // Simplest use case.
+  printing::Emf emf;
+  RECT rect = {100, 100, 200, 200};
+  HDC hdc = CreateCompatibleDC(NULL);
+  EXPECT_TRUE(hdc != NULL);
+  FilePath metafile_path;
+  EXPECT_TRUE(file_util::CreateTemporaryFile(&metafile_path));
+  EXPECT_TRUE(emf.CreateFileBackedDc(hdc, &rect, metafile_path));
+  EXPECT_TRUE(emf.hdc() != NULL);
+  // In theory, you'd use the HDC with GDI functions here.
+  EXPECT_TRUE(emf.CloseDc());
+
+  uint32 size = emf.GetDataSize();
+  EXPECT_EQ(size, EMF_HEADER_SIZE);
+  std::vector<BYTE> data;
+  EXPECT_TRUE(emf.GetData(&data));
+  EXPECT_EQ(data.size(), size);
+  emf.CloseEmf();
+  int64 file_size = 0;
+  file_util::GetFileSize(metafile_path, &file_size);
+  EXPECT_EQ(size, file_size);
+  EXPECT_TRUE(DeleteDC(hdc));
+
+  // Playback the data.
+  hdc = CreateCompatibleDC(NULL);
+  EXPECT_TRUE(hdc);
+  EXPECT_TRUE(emf.CreateFromFile(metafile_path));
+  RECT output_rect = {0, 0, 10, 10};
+  EXPECT_TRUE(emf.Playback(hdc, &output_rect));
+  EXPECT_TRUE(DeleteDC(hdc));
 }
 

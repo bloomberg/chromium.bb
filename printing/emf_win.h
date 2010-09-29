@@ -10,6 +10,8 @@
 
 #include "base/basictypes.h"
 
+class FilePath;
+
 namespace gfx {
 class Rect;
 }
@@ -33,8 +35,14 @@ class Emf {
   // optional.
   bool CreateDc(HDC sibling, const RECT* rect);
 
+  // Similar to the above method but the metafile is backed by a file.
+  bool CreateFileBackedDc(HDC sibling, const RECT* rect, const FilePath& path);
+
   // Load a EMF data stream. buffer contains EMF data.
   bool CreateFromData(const void* buffer, uint32 size);
+
+    // Load an EMF file.
+  bool CreateFromFile(const FilePath& metafile_path);
 
   // TODO(maruel): CreateFromFile(). If ever used. Maybe users would like to
   // have the ability to save web pages to an EMF file? Afterward, it is easy to
