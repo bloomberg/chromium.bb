@@ -825,4 +825,10 @@
    fun:-[GTMWindowSheetController beginSystemSheet:modalForView:withParameters:]
    fun:-[GTMWindowSheetController beginSheet:modalForView:modalDelegate:didEndSelector:contextInfo:]
 }
-
+{
+   bug_57268
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base17LoadNativeLibraryERK8FilePath
+   fun:_ZN5media22InitializeMediaLibraryERK8FilePath
+}
