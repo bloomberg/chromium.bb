@@ -6447,6 +6447,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON" desc="The label of the link item for the cloud print management URL.">
         Manage Print Settings...
       </message>
+      <message name="IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON" desc="The label of the cloud proxy configure button while it is being set up.">
+        Signing in...
+      </message>
 
       <message name="IDS_OPTIONS_COOKIES_ACCEPT_LABEL" desc="The documentation string of the 'accept cookies' preference">
         Cookie settings:

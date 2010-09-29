@@ -1370,7 +1370,8 @@ void ChromeAppsSection::NotifyPrefChanged(const std::string* pref_name) {
 // CloudPrintProxySection
 
 class CloudPrintProxySection : public AdvancedSection,
-                               public views::ButtonListener {
+                               public views::ButtonListener,
+                               public CloudPrintSetupFlow::Delegate {
  public:
   explicit CloudPrintProxySection(Profile* profile);
   virtual ~CloudPrintProxySection() {}
@@ -1380,6 +1381,9 @@ class CloudPrintProxySection : public AdvancedSection,
 
   // Callback that gets the cloud print proxy status.
   void StatusCallback(bool enabled, std::string email);
+
+  // CloudPrintSetupFlow::Delegate implementation.
+  virtual void OnDialogClosed();
 
  protected:
   // OptionsPageView overrides:
@@ -1425,10 +1429,15 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
           UserMetricsAction("Options_EnableCloudPrintProxy"), NULL);
       // We open a new browser window so the Options dialog doesn't
       // get lost behind other windows.
-      CloudPrintSetupFlow::OpenDialog(profile(), NULL,
+      enable_disable_button_->SetEnabled(false);
+      enable_disable_button_->SetLabel(
+          l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON));
+      CloudPrintSetupFlow::OpenDialog(profile(), this,
                                       GetWindow()->GetNativeWindow());
     }
   } else if (sender == manage_printer_button_) {
+    UserMetricsRecordAction(
+        UserMetricsAction("Options_ManageCloudPrinters"), NULL);
     // Open a new browser window for the management tab.  The browser
     // will go away when the user closes that tab.
     Browser* browser = Browser::Create(profile());
@@ -1442,6 +1451,17 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
 void CloudPrintProxySection::StatusCallback(bool enabled, std::string email) {
   profile()->GetPrefs()->SetString(prefs::kCloudPrintEmail,
                                    enabled ? email : std::string());
+}
+
+void CloudPrintProxySection::OnDialogClosed() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  enable_disable_button_->SetEnabled(true);
+  // If the dialog is canceled, the preference won't change, and so we
+  // have to revert the button text back to the disabled state.
+  if (!Enabled()) {
+    enable_disable_button_->SetLabel(
+        l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON));
+  }
 }
 
 void CloudPrintProxySection::InitControlLayout() {
