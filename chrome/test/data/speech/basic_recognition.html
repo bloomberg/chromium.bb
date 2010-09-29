@@ -16,7 +16,7 @@
         // get updated if the speech button rendering changes.
         var inputField = document.getElementById('inputField');
         var x = inputField.offsetLeft + inputField.offsetWidth - 10;
-        var y = inputField.offsetTop + inputField.offsetHeight / 2;
+        var y = inputField.offsetTop + Math.floor(inputField.offsetHeight / 2);
         document.location = document.location + '#' + x + ',' + y;
       }
     </script>

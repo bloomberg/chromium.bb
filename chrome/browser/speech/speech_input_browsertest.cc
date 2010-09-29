@@ -92,7 +92,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestBasicRecognition) {
+IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, FLAKY_TestBasicRecognition) {
   // Inject the fake manager factory so that the test result is returned to the
   // web page.
   SpeechInputDispatcherHost::set_manager_accessor(&fakeManagerAccessor);
@@ -103,6 +103,7 @@ IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestBasicRecognition) {
   GURL test_url = testUrl(FILE_PATH_LITERAL("basic_recognition.html"));
   ui_test_utils::NavigateToURL(browser(), test_url);
   std::string coords = browser()->GetSelectedTabContents()->GetURL().ref();
+  LOG(INFO) << "Coordinates given by script: " << coords;
   int comma_pos = coords.find(',');
   ASSERT_NE(-1, comma_pos);
   int x = 0;
