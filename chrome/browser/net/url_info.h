@@ -92,7 +92,9 @@ class UrlInfo {
   // on how recently we've done DNS prefetching for hostname.
   bool NeedsDnsUpdate();
 
+  // FOR TEST ONLY: The following access the otherwise constant values.
   static void set_cache_expiration(base::TimeDelta time);
+  static base::TimeDelta get_cache_expiration();
 
   // The prefetching lifecycle.
   void SetQueuedState(ResolutionMotivation motivation);
@@ -157,7 +159,7 @@ class UrlInfo {
   std::string GetAsciiMotivation() const;
 
   // The next declaration is non-const to facilitate testing.
-  static base::TimeDelta kCacheExpirationDuration;
+  static base::TimeDelta cache_expiration_duration_;
 
   // The current state of this instance.
   DnsProcessingState state_;

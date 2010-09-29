@@ -64,14 +64,20 @@ const TimeDelta UrlInfo::kNullDuration(TimeDelta::FromMilliseconds(-1));
 // has a TON of copies of the same domain name, so that we don't thrash the OS
 // to death.  Hopefully it is small enough that we're not hurting our cache hit
 // rate (i.e., we could always ask the OS).
-TimeDelta UrlInfo::kCacheExpirationDuration(TimeDelta::FromSeconds(5));
+TimeDelta UrlInfo::cache_expiration_duration_(TimeDelta::FromSeconds(5));
 
 const TimeDelta UrlInfo::kMaxNonNetworkDnsLookupDuration(
     TimeDelta::FromMilliseconds(15));
 
 // Used by test ONLY.  The value is otherwise constant.
+// static
 void UrlInfo::set_cache_expiration(TimeDelta time) {
-  kCacheExpirationDuration = time;
+  cache_expiration_duration_ = time;
+}
+
+// static
+TimeDelta UrlInfo::get_cache_expiration() {
+  return cache_expiration_duration_;
 }
 
 void UrlInfo::SetQueuedState(ResolutionMotivation motivation) {
@@ -160,7 +166,7 @@ bool UrlInfo::IsStillCached() const {
 
   TimeDelta time_since_resolution = TimeTicks::Now() - time_;
 
-  return time_since_resolution < kCacheExpirationDuration;
+  return time_since_resolution < cache_expiration_duration_;
 }
 
 void UrlInfo::DLogResultsStats(const char* message) const {

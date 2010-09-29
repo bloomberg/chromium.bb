@@ -8,20 +8,24 @@
 #include <string>
 
 #include "base/platform_thread.h"
+#include "base/time.h"
 #include "chrome/browser/net/url_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
+using base::TimeTicks;
 
 namespace {
 
-class DnsHostInfoTest : public testing::Test {
+class UrlHostInfoTest : public testing::Test {
 };
 
 typedef chrome_browser_net::UrlInfo UrlInfo;
 
-// Flaky, http://crbug.com/55169.
-TEST(DnsHostInfoTest, FLAKY_StateChangeTest) {
+// Cycle throught the states held by a UrlInfo instance, and check to see that
+// states look reasonable as time ticks away.  If the test bots are too slow,
+// we'll just give up on this test and exit from it.
+TEST(UrlHostInfoTest, StateChangeTest) {
   UrlInfo info_practice, info;
   GURL url1("http://domain1.com:80"), url2("https://domain2.com:443");
 
@@ -32,54 +36,49 @@ TEST(DnsHostInfoTest, FLAKY_StateChangeTest) {
   info_practice.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
   info_practice.SetAssignedState();
   info_practice.SetFoundState();
-  PlatformThread::Sleep(500);  // Allow time for DLLs to fully load.
+
+  // Start test with actual (long/default) expiration time intact.
 
   // Complete the construction of real test object.
   info.SetUrl(url1);
-
   EXPECT_TRUE(info.NeedsDnsUpdate()) << "error in construction state";
   info.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
-  EXPECT_FALSE(info.NeedsDnsUpdate())
-    << "update needed after being queued";
+  EXPECT_FALSE(info.NeedsDnsUpdate()) << "update needed after being queued";
   info.SetAssignedState();
-  EXPECT_FALSE(info.NeedsDnsUpdate());
+  EXPECT_FALSE(info.NeedsDnsUpdate())  << "update needed during resolution";
+  base::TimeTicks before_resolution_complete = TimeTicks::Now();
   info.SetFoundState();
-  EXPECT_FALSE(info.NeedsDnsUpdate())
-    << "default expiration time is TOOOOO short";
+  // "Immediately" check to see if we need an update yet (we shouldn't).
+  if (info.NeedsDnsUpdate()) {
+    // The test bot must be really slow, so we can verify that.
+    EXPECT_GT((TimeTicks::Now() - before_resolution_complete).InMilliseconds(),
+              UrlInfo::get_cache_expiration().InMilliseconds());
+    return;  // Lets punt here, the test bot is too slow.
+  }
 
-  // Note that time from ASSIGNED to FOUND was VERY short (probably 0ms), so the
-  // object should conclude that no network activity was needed.  As a result,
-  // the required time till expiration will be halved (guessing that we were
-  // half way through having the cache expire when we did the lookup.
-  EXPECT_LT(info.resolve_duration().InMilliseconds(),
-    UrlInfo::kMaxNonNetworkDnsLookupDuration.InMilliseconds())
-    << "Non-net time is set too low";
-
-  info.set_cache_expiration(TimeDelta::FromMilliseconds(300));
-  EXPECT_FALSE(info.NeedsDnsUpdate()) << "expiration time not honored";
-  PlatformThread::Sleep(80);  // Not enough time to pass our 300ms mark.
-  EXPECT_FALSE(info.NeedsDnsUpdate()) << "expiration time not honored";
+  // Run similar test with a shortened expiration, so we can trigger it.
+  const int kMockExpirationTime(300);  // Vastly reduced expiration time.
+  info.set_cache_expiration(TimeDelta::FromMilliseconds(kMockExpirationTime));
 
   // That was a nice life when the object was found.... but next time it won't
   // be found.  We'll sleep for a while, and then come back with not-found.
   info.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);
+  EXPECT_FALSE(info.NeedsDnsUpdate());
   info.SetAssignedState();
   EXPECT_FALSE(info.NeedsDnsUpdate());
   // Greater than minimal expected network latency on DNS lookup.
   PlatformThread::Sleep(25);
+  before_resolution_complete = TimeTicks::Now();
   info.SetNoSuchNameState();
-  EXPECT_FALSE(info.NeedsDnsUpdate())
-    << "default expiration time is TOOOOO short";
-
-  // Note that now we'll actually utilize an expiration of 300ms,
-  // since there was detected network activity time during lookup.
-  // We're assuming the caching just started with our lookup.
-  PlatformThread::Sleep(80);  // Not enough time to pass our 300ms mark.
-  EXPECT_FALSE(info.NeedsDnsUpdate()) << "expiration time not honored";
-  // Still not past our 300ms mark (only about 4+2ms)
-  PlatformThread::Sleep(80);
-  EXPECT_FALSE(info.NeedsDnsUpdate()) << "expiration time not honored";
-  PlatformThread::Sleep(150);
+  // "Immediately" check to see if we need an update yet (we shouldn't).
+  if (info.NeedsDnsUpdate()) {
+    // The test bot must be really slow, so we can verify that.
+    EXPECT_GT((TimeTicks::Now() - before_resolution_complete).InMilliseconds(),
+              kMockExpirationTime);
+    return;
+  }
+  // Wait over 300ms, so it should definately be considered out of cache.
+  PlatformThread::Sleep(kMockExpirationTime + 20);
   EXPECT_TRUE(info.NeedsDnsUpdate()) << "expiration time not honored";
 }
 
@@ -92,7 +91,7 @@ TEST(DnsHostInfoTest, FLAKY_StateChangeTest) {
 // getting sent to a resolver thread) and reset our state to what it was before
 // the corresponding name was put in the work_queue_.  This test drives through
 // the state transitions used in such congestion handling.
-TEST(DnsHostInfoTest, CongestionResetStateTest) {
+TEST(UrlHostInfoTest, CongestionResetStateTest) {
   UrlInfo info;
   GURL url("http://domain1.com:80");
 
