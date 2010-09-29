@@ -78,22 +78,24 @@ const int kWaitForRebootTimeSec = 3;
 class ContentView : public views::View {
  public:
   ContentView()
-      : accel_account_screen_(views::Accelerator(app::VKEY_A,
-                                                 false, true, true)),
-        accel_login_screen_(views::Accelerator(app::VKEY_L,
-                                               false, true, true)),
-        accel_network_screen_(views::Accelerator(app::VKEY_N,
-                                                 false, true, true)),
-        accel_update_screen_(views::Accelerator(app::VKEY_U,
-                                                false, true, true)),
-        accel_image_screen_(views::Accelerator(app::VKEY_I,
-                                               false, true, true)),
-        accel_eula_screen_(views::Accelerator(app::VKEY_E,
-                                              false, true, true)),
-        accel_register_screen_(views::Accelerator(app::VKEY_R,
-                                                  false, true, true)),
-        accel_enable_accessibility_(
+      : accel_enable_accessibility_(
             WizardAccessibilityHelper::GetAccelerator()) {
+    AddAccelerator(accel_enable_accessibility_);
+#if !defined(OFFICIAL_BUILD)
+    accel_account_screen_ = views::Accelerator(app::VKEY_A,
+                                               false, true, true);
+    accel_login_screen_ = views::Accelerator(app::VKEY_L,
+                                             false, true, true);
+    accel_network_screen_ = views::Accelerator(app::VKEY_N,
+                                               false, true, true);
+    accel_update_screen_ = views::Accelerator(app::VKEY_U,
+                                              false, true, true);
+    accel_image_screen_ = views::Accelerator(app::VKEY_I,
+                                             false, true, true);
+    accel_eula_screen_ = views::Accelerator(app::VKEY_E,
+                                            false, true, true);
+    accel_register_screen_ = views::Accelerator(app::VKEY_R,
+                                                false, true, true);
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
@@ -101,7 +103,7 @@ class ContentView : public views::View {
     AddAccelerator(accel_image_screen_);
     AddAccelerator(accel_eula_screen_);
     AddAccelerator(accel_register_screen_);
-    AddAccelerator(accel_enable_accessibility_);
+#endif
   }
 
   ~ContentView() {
@@ -116,7 +118,11 @@ class ContentView : public views::View {
     if (!controller)
       return false;
 
-    if (accel == accel_account_screen_) {
+    if (accel == accel_enable_accessibility_) {
+      WizardAccessibilityHelper::GetInstance()->EnableAccessibility(
+          controller->contents());
+#if !defined(OFFICIAL_BUILD)
+    } else if (accel == accel_account_screen_) {
       controller->ShowAccountScreen();
     } else if (accel == accel_login_screen_) {
       controller->ShowLoginScreen();
@@ -130,9 +136,7 @@ class ContentView : public views::View {
       controller->ShowEulaScreen();
     } else if (accel == accel_register_screen_) {
       controller->ShowRegistrationScreen();
-    } else if (accel == accel_enable_accessibility_) {
-      WizardAccessibilityHelper::GetInstance()->EnableAccessibility(
-          controller->contents());
+#endif
     } else {
       return false;
     }
@@ -151,6 +155,7 @@ class ContentView : public views::View {
  private:
   scoped_ptr<views::Painter> painter_;
 
+#if !defined(OFFICIAL_BUILD)
   views::Accelerator accel_account_screen_;
   views::Accelerator accel_login_screen_;
   views::Accelerator accel_network_screen_;
@@ -158,6 +163,7 @@ class ContentView : public views::View {
   views::Accelerator accel_image_screen_;
   views::Accelerator accel_eula_screen_;
   views::Accelerator accel_register_screen_;
+#endif
   views::Accelerator accel_enable_accessibility_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
