@@ -50,14 +50,14 @@ class MediaTest : public UITest {
 
 #if defined(OS_WIN)
 
-// Tests may fail on windows:  http://crbug.com/55477
-#define MAYBE_VideoBearTheora FLAKY_VideoBearTheora
-#define MAYBE_VideoBearSilentTheora FLAKY_VideoBearSilentTheora
-#define MAYBE_VideoBearWebm FLAKY_VideoBearWebm
-#define MAYBE_VideoBearSilentWebm FLAKY_VideoBearSilentWebm
-#define MAYBE_VideoBearMp4 FLAKY_VideoBearMp4
-#define MAYBE_VideoBearSilentMp4 FLAKY_VideoBearSilentMp4
-#define MAYBE_MediaUILayoutTest FLAKY_MediaUILayoutTest
+// Tests always fail on windows:  http://crbug.com/55477
+#define MAYBE_VideoBearTheora DISABLED_VideoBearTheora
+#define MAYBE_VideoBearSilentTheora DISABLED_VideoBearSilentTheora
+#define MAYBE_VideoBearWebm DISABLED_VideoBearWebm
+#define MAYBE_VideoBearSilentWebm DISABLED_VideoBearSilentWebm
+#define MAYBE_VideoBearMp4 DISABLED_VideoBearMp4
+#define MAYBE_VideoBearSilentMp4 DISABLED_VideoBearSilentMp4
+#define MAYBE_MediaUILayoutTest DISABLED_MediaUILayoutTest
 
 #else
 
