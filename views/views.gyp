@@ -146,6 +146,8 @@
         'controls/menu/native_menu_gtk.h',
         'controls/menu/native_menu_win.cc',
         'controls/menu/native_menu_win.h',
+        'controls/menu/radio_button_image_gtk.cc',
+        'controls/menu/radio_button_image_gtk.h',
         'controls/menu/submenu_view.cc',
         'controls/menu/submenu_view.h',
         'controls/menu/view_menu_delegate.h',
