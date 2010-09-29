@@ -6,15 +6,21 @@
 
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
+using WebKit::WebBindings;
 using WebKit::WebFrame;
 using WebKit::WebRange;
+using WebKit::WebRect;
 using WebKit::WebString;
+using WebKit::WebVector;
 
 TestShell* TextInputController::shell_ = NULL;
 
@@ -164,8 +170,26 @@ void TextInputController::selectedRange(
 
 void TextInputController::firstRectForCharacterRange(
     const CppArgumentList& args, CppVariant* result) {
-  NOTIMPLEMENTED();
   result->SetNull();
+
+  WebFrame* main_frame = GetMainFrame();
+  if (!main_frame)
+    return;
+
+  if (args.size() < 2 || !args[0].isNumber() || !args[1].isNumber())
+    return;
+
+  WebRect rect;
+  if (!main_frame->firstRectForCharacterRange(
+      args[0].ToInt32(), args[1].ToInt32(), rect))
+    return;
+
+  WebVector<int> intArray(static_cast<size_t>(4));
+  intArray[0] = rect.x;
+  intArray[1] = rect.y;
+  intArray[2] = rect.width;
+  intArray[3] = rect.height;
+  result->Set(WebBindings::makeIntArray(intArray));
 }
 
 void TextInputController::characterIndexForPoint(
