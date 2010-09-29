@@ -259,6 +259,7 @@
         'command_buffer/service/program_manager_unittest.cc',
         'command_buffer/service/renderbuffer_manager_unittest.cc',
         'command_buffer/service/shader_manager_unittest.cc',
+        'command_buffer/service/shader_translator_unittest.cc',
         'command_buffer/service/test_helper.h',
         'command_buffer/service/test_helper.cc',
         'command_buffer/service/texture_manager_unittest.cc',

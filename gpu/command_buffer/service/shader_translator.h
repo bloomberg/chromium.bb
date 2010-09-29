@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHADER_TRANSLATOR_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHADER_TRANSLATOR_H_
 
+#include <map>
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
@@ -32,7 +35,14 @@ class ShaderTranslator {
   const char* translated_shader() { return translated_shader_.get(); }
   const char* info_log() { return info_log_.get(); }
 
-  // TODO(alokp): Add functions for returning attribs and uniforms.
+  struct VariableInfo {
+    int type;
+    int size;
+  };
+  // Mapping between variable name and info.
+  typedef std::map<std::string, VariableInfo> VariableMap;
+  const VariableMap& attrib_map() { return attrib_map_; }
+  const VariableMap& uniform_map() { return uniform_map_; }
 
  private:
   void ClearResults();
@@ -41,6 +51,8 @@ class ShaderTranslator {
   ShHandle compiler_;
   scoped_array<char> translated_shader_;
   scoped_array<char> info_log_;
+  VariableMap attrib_map_;
+  VariableMap uniform_map_;
 };
 
 }  // namespace gles2

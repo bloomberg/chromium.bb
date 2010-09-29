@@ -20,6 +20,45 @@ bool InitializeShaderTranslator() {
   }
   return initialized;
 }
+
+using gpu::gles2::ShaderTranslator;
+void GetVariableInfo(ShHandle compiler, EShInfo var_type,
+                     ShaderTranslator::VariableMap* var_map) {
+  int name_len = 0;
+  switch (var_type) {
+    case SH_ACTIVE_ATTRIBUTES:
+      ShGetInfo(compiler, SH_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_len);
+      break;
+    case SH_ACTIVE_UNIFORMS:
+      ShGetInfo(compiler, SH_ACTIVE_UNIFORM_MAX_LENGTH, &name_len);
+      break;
+    default: NOTREACHED();
+  }
+  if (name_len <= 1) return;
+  scoped_array<char> name(new char[name_len]);
+
+  int num_vars = 0;
+  ShGetInfo(compiler, var_type, &num_vars);
+  for (int i = 0; i < num_vars; ++i) {
+    int size = 0;
+    EShDataType type = SH_NONE;
+
+    switch (var_type) {
+      case SH_ACTIVE_ATTRIBUTES:
+        ShGetActiveAttrib(compiler, i, NULL, &size, &type, name.get());
+        break;
+      case SH_ACTIVE_UNIFORMS:
+        ShGetActiveUniform(compiler, i, NULL, &size, &type, name.get());
+        break;
+      default: NOTREACHED();
+    }
+
+    ShaderTranslator::VariableInfo info = {0};
+    info.type = type;
+    info.size = size;
+    (*var_map)[name.get()] = info;
+  }
+}
 }  // namespace
 
 namespace gpu {
@@ -54,23 +93,28 @@ bool ShaderTranslator::Translate(const char* shader) {
   ClearResults();
 
   bool success = false;
-  int compile_options = EShOptObjectCode;
+  int compile_options = EShOptObjectCode | EShOptAttribsUniforms;
   if (ShCompile(compiler_, &shader, 1, compile_options)) {
+    success = true;
     // Get translated shader.
     int obj_code_len = 0;
     ShGetInfo(compiler_, SH_OBJECT_CODE_LENGTH, &obj_code_len);
-    translated_shader_.reset(new char[obj_code_len]);
-    ShGetObjectCode(compiler_, translated_shader_.get());
-
-    // TODO(alokp): Get attribs and uniforms.
-    success = true;
+    if (obj_code_len > 1) {
+      translated_shader_.reset(new char[obj_code_len]);
+      ShGetObjectCode(compiler_, translated_shader_.get());
+    }
+    // Get info for attribs and uniforms.
+    GetVariableInfo(compiler_, SH_ACTIVE_ATTRIBUTES, &attrib_map_);
+    GetVariableInfo(compiler_, SH_ACTIVE_UNIFORMS, &uniform_map_);
   }
 
   // Get info log.
   int info_log_len = 0;
   ShGetInfo(compiler_, SH_INFO_LOG_LENGTH, &info_log_len);
-  info_log_.reset(new char[info_log_len]);
-  ShGetInfoLog(compiler_, info_log_.get());
+  if (info_log_len > 1) {
+    info_log_.reset(new char[info_log_len]);
+    ShGetInfoLog(compiler_, info_log_.get());
+  }
 
   return success;
 }
@@ -78,6 +122,8 @@ bool ShaderTranslator::Translate(const char* shader) {
 void ShaderTranslator::ClearResults() {
   translated_shader_.reset();
   info_log_.reset();
+  attrib_map_.clear();
+  uniform_map_.clear();
 }
 
 }  // namespace gles2
