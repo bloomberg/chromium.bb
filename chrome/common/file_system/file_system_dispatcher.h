@@ -56,17 +56,6 @@ class FileSystemDispatcher {
               fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool ReadDirectory(const FilePath& path,
                      fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Truncate(const FilePath& path,
-                int64 offset,
-                int* request_id_out,
-                fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Write(const FilePath& path,
-             const GURL& blob_url,
-             int64 offset,
-             int* request_id_out,
-             fileapi::FileSystemCallbackDispatcher* dispatcher);
-  bool Cancel(int request_id_to_cancel,
-              fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool TouchFile(const FilePath& file_path,
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time,
@@ -89,7 +78,6 @@ class FileSystemDispatcher {
       const std::vector<base::file_util_proxy::Entry>& entries,
       bool has_more);
   void DidFail(int request_id, base::PlatformFileError error_code);
-  void DidWrite(int request_id, int64 bytes, bool complete);
 
   IDMap<fileapi::FileSystemCallbackDispatcher, IDMapOwnPointer> dispatchers_;
 
