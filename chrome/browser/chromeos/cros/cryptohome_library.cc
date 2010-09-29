@@ -65,7 +65,11 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
                   const std::string& passhash,
                   Delegate* d) {
     return CacheCallback(
-        chromeos::CryptohomeAsyncMount(user_email.c_str(), passhash.c_str()),
+        chromeos::CryptohomeAsyncMount(user_email.c_str(),
+                                       passhash.c_str(),
+                                       true,
+                                       "",
+                                       std::vector<std::string>()),
         d,
         "Couldn't initiate async mount of cryptohome.");
   }
