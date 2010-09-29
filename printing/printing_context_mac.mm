@@ -60,12 +60,12 @@ void PrintingContext::AskUserForSettings(gfx::NativeView parent_view,
   // TODO(stuartmorgan): We really want a tab sheet here, not a modal window.
   // Will require restructuring the PrintingContext API to use a callback.
   NSInteger selection = [panel runModalWithPrintInfo:printInfo];
-  if (selection != NSOKButton) {
+  if (selection == NSOKButton) {
+    ParsePrintInfo([panel printInfo]);
+    callback->Run(OK);
+  } else {
     callback->Run(CANCEL);
   }
-
-  ParsePrintInfo([panel printInfo]);
-  callback->Run(OK);
 }
 
 PrintingContext::Result PrintingContext::UseDefaultSettings() {
