@@ -12,6 +12,9 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#if defined(OS_WIN)
+#include "chrome/browser/views/clear_browsing_data_view.h"
+#endif
 #include "chrome/common/pref_names.h"
 #include "gfx/insets.h"
 #include "grit/generated_resources.h"
@@ -37,15 +40,20 @@ using views::GridLayout;
 static const int kExtraMarginForTimePeriodLabel = 3;
 
 namespace browser {
-
 // Defined in browser_dialogs.h for creation of the view.
 void ShowClearBrowsingDataView(gfx::NativeWindow parent,
                                Profile* profile) {
+#if defined(OS_WIN)
+  views::Window::CreateChromeWindow(parent, gfx::Rect(),
+                                    new ClearDataView(profile))->Show();
+#else
   views::Window::CreateChromeWindow(parent, gfx::Rect(),
                                     new ClearBrowsingDataView(profile))->Show();
+#endif
 }
 
 }  // namespace browser
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClearBrowsingDataView, public:

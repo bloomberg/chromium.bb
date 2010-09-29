@@ -72,7 +72,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
-      token_migrator_(NULL) {
+      token_migrator_(NULL),
+      clear_server_data_state_(CLEAR_NOT_STARTED) {
   DCHECK(factory);
   DCHECK(profile);
   registrar_.Add(this,
@@ -220,6 +221,15 @@ browser_sync::SessionModelAssociator*
   return static_cast<browser_sync::SessionDataTypeController*>(
       data_type_controllers_.find(
       syncable::SESSIONS)->second.get())->GetModelAssociator();
+}
+
+void ProfileSyncService::ResetClearServerDataState() {
+  clear_server_data_state_ = CLEAR_NOT_STARTED;
+}
+
+ProfileSyncService::ClearServerDataState
+    ProfileSyncService::GetClearServerDataState() {
+  return clear_server_data_state_;
 }
 
 void ProfileSyncService::GetDataTypeControllerStates(
@@ -422,6 +432,7 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
 }
 
 void ProfileSyncService::ClearServerData() {
+  clear_server_data_state_ = CLEAR_CLEARING;
   backend_->RequestClearServerData();
 }
 
@@ -584,11 +595,13 @@ void ProfileSyncService::OnStopSyncingPermanently() {
 }
 
 void ProfileSyncService::OnClearServerDataFailed() {
-  // TODO(raz): Bug#54349 Wire up to ui when available
+  clear_server_data_state_ = CLEAR_FAILED;
+  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
 void ProfileSyncService::OnClearServerDataSucceeded() {
-    // TODO(raz): Bug#54349 Wire up to ui when available
+  clear_server_data_state_ = CLEAR_SUCCEEDED;
+  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
@@ -814,7 +827,7 @@ void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
   // TODO(tim): This should be encryption-specific instead of passwords
   // specific.  For now we have to do this to avoid NIGORI node lookups when
   // we haven't downloaded that node.
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncPasswords) ) {
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncPasswords)) {
     LOG(WARNING) << "Silently dropping SetPassphrase request.";
     return;
   }

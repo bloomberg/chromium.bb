@@ -39,7 +39,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/views/browser_dialogs.h"
-#include "chrome/browser/views/clear_browsing_data.h"
+#include "chrome/browser/views/clear_data_view.h"
 #include "chrome/browser/views/list_background.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
@@ -537,7 +537,7 @@ void PrivacySection::ButtonPressed(
     views::Window::CreateChromeWindow(
         GetWindow()->GetNativeWindow(),
         gfx::Rect(),
-        new ClearBrowsingDataView(profile()))->Show();
+        new ClearDataView(profile()))->Show();
   }
 }
 
