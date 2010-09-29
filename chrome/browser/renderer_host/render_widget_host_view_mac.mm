@@ -290,6 +290,8 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 - (void)globalFrameDidChange:(NSNotification*)notification {
   globalFrameDidChangeCGLLockCount_++;
   CGLLockContext(cglContext_);
+  // This call to -update can call -globalFrameDidChange: again, see
+  // http://crbug.com/55754 comments 22 and 24.
   [glContext_ update];
 
   // You would think that -update updates the viewport. You would be wrong.
@@ -346,8 +348,8 @@ static CVReturn DrawOneAcceleratedPluginCallback(
       CVDisplayLinkStop(displayLink_);
   }
 
-  // If hole pushing is enabled, inform the window hosing this accelerated view
-  // that it needs to be opaque.
+  // If hole punching is enabled, inform the window hosting this accelerated
+  // view that it needs to be opaque.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHolePunching)) {
     if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
