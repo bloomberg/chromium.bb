@@ -49,7 +49,8 @@
 {
   bug_57266b
   ThreadSanitizer:Race
-  obj:*libffmpegsumo.so
+  ...
+  obj:*libffmpegsumo.*
   fun:ThreadSanitizerStartThread
 }
 
