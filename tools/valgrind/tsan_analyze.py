@@ -160,7 +160,7 @@ class TsanAnalyzer(object):
     if self._use_gdb:
       TheAddressTable.ResolveAll()
       # Make each line of each report a string.
-      reports = map(lambda(x): map(str, x), a)
+      reports = map(lambda(x): map(str, x), reports)
     return [''.join(report_lines) for report_lines in reports]
 
   def Report(self, files, check_sanity=False):
