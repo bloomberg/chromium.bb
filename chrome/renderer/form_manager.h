@@ -122,8 +122,10 @@ class FormManager {
     std::vector<WebKit::WebFormControlElement> control_elements;
   };
 
-  // Type for cache of FormElement objects.
-  typedef std::vector<FormElement*> FormElementList;
+  // A map of vectors of FormElements keyed by the WebFrame containing each
+  // form.
+  typedef std::map<const WebKit::WebFrame*, std::vector<FormElement*> >
+      WebFrameFormElementMap;
 
   // The callback type used by ForEachMatchingFormField().
   typedef Callback2<WebKit::WebFormControlElement*,
@@ -174,8 +176,8 @@ class FormManager {
   void PreviewFormField(WebKit::WebFormControlElement* field,
                         const webkit_glue::FormField* data);
 
-  // The cached FormElement objects.
-  FormElementList form_elements_;
+  // The map of form elements.
+  WebFrameFormElementMap form_elements_map_;
 
   DISALLOW_COPY_AND_ASSIGN(FormManager);
 };
