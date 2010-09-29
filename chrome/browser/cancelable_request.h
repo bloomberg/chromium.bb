@@ -99,6 +99,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "build/build_config.h"
 
 class CancelableRequestBase;
 class CancelableRequestConsumerBase;
@@ -209,90 +210,48 @@ class CancelableRequestConsumerBase {
 template<class T>
 class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
  public:
-  CancelableRequestConsumerTSimple() {
-  }
+  CancelableRequestConsumerTSimple();
 
   // Cancel any outstanding requests so that we do not get called back after we
   // are destroyed. As these requests are removed, the providers will call us
   // back on OnRequestRemoved, which will then update the list. To iterate
   // successfully while the list is changing out from under us, we make a copy.
-  virtual ~CancelableRequestConsumerTSimple() {
-    CancelAllRequests();
-  }
+  virtual ~CancelableRequestConsumerTSimple();
 
   // Associates some random data with a specified request. The request MUST be
   // outstanding, or it will assert. This is intended to be called immediately
   // after a request is issued.
   void SetClientData(CancelableRequestProvider* p,
                      CancelableRequestProvider::Handle h,
-                     T client_data) {
-    PendingRequest request(p, h);
-    DCHECK(pending_requests_.find(request) != pending_requests_.end());
-    pending_requests_[request] = client_data;
-  }
+                     T client_data);
 
   // Retrieves previously associated data for a specified request. The request
   // MUST be outstanding, or it will assert. This is intended to be called
   // during processing of a callback to retrieve extra data.
   T GetClientData(CancelableRequestProvider* p,
-                  CancelableRequestProvider::Handle h) {
-    PendingRequest request(p, h);
-    DCHECK(pending_requests_.find(request) != pending_requests_.end());
-    return pending_requests_[request];
-  }
+                  CancelableRequestProvider::Handle h);
 
   // Returns the data associated with the current request being processed. This
   // is only valid during the time a callback is being processed.
-  T GetClientDataForCurrentRequest() {
-    DCHECK(current_request_.is_valid());
-    return GetClientData(current_request_.provider, current_request_.handle);
-  }
+  T GetClientDataForCurrentRequest();
 
   // Returns true if there are any pending requests.
-  bool HasPendingRequests() const {
-    return !pending_requests_.empty();
-  }
+  bool HasPendingRequests() const;
 
   // Returns the number of pending requests.
-  size_t PendingRequestCount() const {
-    return pending_requests_.size();
-  }
+  size_t PendingRequestCount() const;
 
   // Cancels all requests outstanding.
-  void CancelAllRequests() {
-    PendingRequestList copied_requests(pending_requests_);
-    for (typename PendingRequestList::iterator i = copied_requests.begin();
-         i != copied_requests.end(); ++i)
-      i->first.provider->CancelRequest(i->first.handle);
-    copied_requests.clear();
-
-    // That should have cleared all the pending items.
-    DCHECK(pending_requests_.empty());
-  }
+  void CancelAllRequests();
 
   // Returns the handle for the first request that has the specified client data
   // (in |handle|). Returns true if there is a request for the specified client
   // data, false otherwise.
   bool GetFirstHandleForClientData(T client_data,
-                                   CancelableRequestProvider::Handle* handle) {
-    for (typename PendingRequestList::const_iterator i =
-             pending_requests_.begin(); i != pending_requests_.end(); ++i) {
-      if (i->second == client_data) {
-        *handle = i->first.handle;
-        return true;
-      }
-    }
-    *handle = 0;
-    return false;
-  }
+                                   CancelableRequestProvider::Handle* handle);
 
   // Gets the client data for all pending requests.
-  void GetAllClientData(std::vector<T>* data) {
-    DCHECK(data);
-    for (typename PendingRequestList::iterator i = pending_requests_.begin();
-         i != pending_requests_.end(); ++i)
-      data->push_back(i->second);
-  }
+  void GetAllClientData(std::vector<T>* data);
 
  protected:
   struct PendingRequest {
@@ -317,38 +276,19 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
   };
   typedef std::map<PendingRequest, T> PendingRequestList;
 
-  virtual T get_initial_t() const {
-    return 0;
-  }
+  virtual T get_initial_t() const;
 
   virtual void OnRequestAdded(CancelableRequestProvider* provider,
-                              CancelableRequestProvider::Handle handle) {
-    DCHECK(pending_requests_.find(PendingRequest(provider, handle)) ==
-           pending_requests_.end());
-    pending_requests_[PendingRequest(provider, handle)] = get_initial_t();
-  }
+                              CancelableRequestProvider::Handle handle);
 
   virtual void OnRequestRemoved(CancelableRequestProvider* provider,
-                                CancelableRequestProvider::Handle handle) {
-    typename PendingRequestList::iterator i =
-        pending_requests_.find(PendingRequest(provider, handle));
-    if (i == pending_requests_.end()) {
-      NOTREACHED() << "Got a complete notification for a nonexistent request";
-      return;
-    }
-
-    pending_requests_.erase(i);
-  }
+                                CancelableRequestProvider::Handle handle);
 
   virtual void WillExecute(CancelableRequestProvider* provider,
-                           CancelableRequestProvider::Handle handle) {
-    current_request_ = PendingRequest(provider, handle);
-  }
+                           CancelableRequestProvider::Handle handle);
 
   virtual void DidExecute(CancelableRequestProvider* provider,
-                          CancelableRequestProvider::Handle handle) {
-    current_request_ = PendingRequest();
-  }
+                          CancelableRequestProvider::Handle handle);
 
   // Lists all outstanding requests.
   PendingRequestList pending_requests_;
@@ -358,20 +298,168 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
   PendingRequest current_request_;
 };
 
+template<class T>
+CancelableRequestConsumerTSimple<T>::CancelableRequestConsumerTSimple() {
+}
+
+template<class T>
+CancelableRequestConsumerTSimple<T>::~CancelableRequestConsumerTSimple() {
+  CancelAllRequests();
+}
+
+template<class T>
+void CancelableRequestConsumerTSimple<T>::SetClientData(
+    CancelableRequestProvider* p,
+    CancelableRequestProvider::Handle h,
+    T client_data) {
+  PendingRequest request(p, h);
+  DCHECK(pending_requests_.find(request) != pending_requests_.end());
+  pending_requests_[request] = client_data;
+}
+
+template<class T>
+T CancelableRequestConsumerTSimple<T>::GetClientData(
+    CancelableRequestProvider* p,
+    CancelableRequestProvider::Handle h) {
+  PendingRequest request(p, h);
+  DCHECK(pending_requests_.find(request) != pending_requests_.end());
+  return pending_requests_[request];
+}
+
+template<class T>
+T CancelableRequestConsumerTSimple<T>::GetClientDataForCurrentRequest() {
+  DCHECK(current_request_.is_valid());
+  return GetClientData(current_request_.provider, current_request_.handle);
+}
+
+template<class T>
+bool CancelableRequestConsumerTSimple<T>::HasPendingRequests() const {
+  return !pending_requests_.empty();
+}
+
+template<class T>
+size_t CancelableRequestConsumerTSimple<T>::PendingRequestCount() const {
+  return pending_requests_.size();
+}
+
+template<class T>
+void CancelableRequestConsumerTSimple<T>::CancelAllRequests() {
+  PendingRequestList copied_requests(pending_requests_);
+  for (typename PendingRequestList::iterator i = copied_requests.begin();
+       i != copied_requests.end(); ++i)
+    i->first.provider->CancelRequest(i->first.handle);
+  copied_requests.clear();
+
+  // That should have cleared all the pending items.
+  DCHECK(pending_requests_.empty());
+}
+
+template<class T>
+bool CancelableRequestConsumerTSimple<T>::GetFirstHandleForClientData(
+    T client_data,
+    CancelableRequestProvider::Handle* handle) {
+  for (typename PendingRequestList::const_iterator i =
+           pending_requests_.begin(); i != pending_requests_.end(); ++i) {
+    if (i->second == client_data) {
+      *handle = i->first.handle;
+      return true;
+    }
+  }
+  *handle = 0;
+  return false;
+}
+
+template<class T>
+void CancelableRequestConsumerTSimple<T>::GetAllClientData(
+    std::vector<T>* data) {
+  DCHECK(data);
+  for (typename PendingRequestList::iterator i = pending_requests_.begin();
+       i != pending_requests_.end(); ++i)
+    data->push_back(i->second);
+}
+
+template<class T>
+T CancelableRequestConsumerTSimple<T>::get_initial_t() const {
+  return 0;
+}
+
+template<class T>
+void CancelableRequestConsumerTSimple<T>::OnRequestAdded(
+    CancelableRequestProvider* provider,
+    CancelableRequestProvider::Handle handle) {
+  DCHECK(pending_requests_.find(PendingRequest(provider, handle)) ==
+         pending_requests_.end());
+  pending_requests_[PendingRequest(provider, handle)] = get_initial_t();
+}
+
+template<class T>
+void CancelableRequestConsumerTSimple<T>::OnRequestRemoved(
+    CancelableRequestProvider* provider,
+    CancelableRequestProvider::Handle handle) {
+  typename PendingRequestList::iterator i =
+      pending_requests_.find(PendingRequest(provider, handle));
+  if (i == pending_requests_.end()) {
+    NOTREACHED() << "Got a complete notification for a nonexistent request";
+    return;
+  }
+
+  pending_requests_.erase(i);
+}
+
+template<class T>
+void CancelableRequestConsumerTSimple<T>::WillExecute(
+    CancelableRequestProvider* provider,
+    CancelableRequestProvider::Handle handle) {
+  current_request_ = PendingRequest(provider, handle);
+}
+
+template<class T>
+void CancelableRequestConsumerTSimple<T>::DidExecute(
+    CancelableRequestProvider* provider,
+    CancelableRequestProvider::Handle handle) {
+  current_request_ = PendingRequest();
+}
+
 // See CancelableRequestConsumerTSimple. The default value for T
 // is given in |initial_t|.
 template<class T, T initial_t>
 class CancelableRequestConsumerT : public CancelableRequestConsumerTSimple<T> {
+ public:
+  CancelableRequestConsumerT();
+  virtual ~CancelableRequestConsumerT();
+
  protected:
-  virtual T get_initial_t() const {
-    return initial_t;
-  }
+  virtual T get_initial_t() const;
 };
+
+template<class T, T initial_t>
+CancelableRequestConsumerT<T, initial_t>::CancelableRequestConsumerT() {
+}
+
+template<class T, T initial_t>
+CancelableRequestConsumerT<T, initial_t>::~CancelableRequestConsumerT() {
+}
+
+template<class T, T initial_t>
+T CancelableRequestConsumerT<T, initial_t>::get_initial_t() const {
+  return initial_t;
+}
 
 // Some clients may not want to store data. Rather than do some complicated
 // thing with virtual functions to allow some consumers to store extra data and
 // some not to, we just define a default one that stores some dummy data.
 typedef CancelableRequestConsumerT<int, 0> CancelableRequestConsumer;
+
+// MSVC doesn't like complex extern templates and DLLs.
+#if !defined(COMPILER_MSVC)
+// The vast majority of CancelableRequestConsumers are instantiated on <int>,
+// so prevent that template from being expanded in normal code.
+extern template class CancelableRequestConsumerTSimple<int>;
+
+// We'll also want to extern-template the most common, typedef-ed
+// CancelableRequestConsumerT.
+extern template class CancelableRequestConsumerT<int, 0>;
+#endif
 
 // CancelableRequest ----------------------------------------------------------
 //
@@ -420,12 +508,7 @@ class CancelableRequestBase
   //
   // In addition, not all of the information (for example, the handle) is known
   // at construction time.
-  CancelableRequestBase()
-      : provider_(NULL),
-        consumer_(NULL),
-        handle_(0) {
-    callback_thread_ = MessageLoop::current();
-  }
+  CancelableRequestBase();
 
   CancelableRequestConsumerBase* consumer() const {
     return consumer_;
@@ -447,18 +530,13 @@ class CancelableRequestBase
 
  protected:
   friend class base::RefCountedThreadSafe<CancelableRequestBase>;
-  virtual ~CancelableRequestBase() {}
+  virtual ~CancelableRequestBase();
 
   // Initializes the object with the particulars from the provider. It may only
   // be called once (it is called by the provider, which is a friend).
   void Init(CancelableRequestProvider* provider,
             CancelableRequestProvider::Handle handle,
-            CancelableRequestConsumerBase* consumer) {
-    DCHECK(handle_ == 0 && provider_ == NULL && consumer_ == NULL);
-    provider_ = provider;
-    consumer_ = consumer;
-    handle_ = handle;
-  }
+            CancelableRequestConsumerBase* consumer);
 
   // Tells the provider that the request is complete, which then tells the
   // consumer.

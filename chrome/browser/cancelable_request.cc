@@ -76,3 +76,31 @@ void CancelableRequestProvider::RequestCompleted(Handle handle) {
   // Notify the consumer that the request is gone
   consumer->OnRequestRemoved(this, handle);
 }
+
+// MSVC doesn't like complex extern templates and DLLs.
+#if !defined(COMPILER_MSVC)
+// Emit our most common CancelableRequestConsumer.
+template class CancelableRequestConsumerTSimple<int>;
+
+// And the most common subclass of it.
+template class CancelableRequestConsumerT<int, 0>;
+#endif
+
+CancelableRequestBase::CancelableRequestBase()
+    : provider_(NULL),
+      consumer_(NULL),
+      handle_(0) {
+  callback_thread_ = MessageLoop::current();
+}
+
+CancelableRequestBase::~CancelableRequestBase() {
+}
+
+void CancelableRequestBase::Init(CancelableRequestProvider* provider,
+                                 CancelableRequestProvider::Handle handle,
+                                 CancelableRequestConsumerBase* consumer) {
+  DCHECK(handle_ == 0 && provider_ == NULL && consumer_ == NULL);
+  provider_ = provider;
+  consumer_ = consumer;
+  handle_ = handle;
+}
