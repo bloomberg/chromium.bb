@@ -27,8 +27,8 @@ class IMutex {
   virtual void Unlock() = 0;     // Unlock the mutext
   virtual bool Try() = 0;        // Try to lock, but return immediately
 
-  static IMutex* Allocate();      // Allocate a mutex
-  static void Free(IMutex* mtx);  // Free a mutex
+  static IMutex *Allocate();      // Allocate a mutex
+  static void Free(IMutex *mtx);  // Free a mutex
 
  protected:
   virtual ~IMutex() {}            // Prevent delete of base pointer
@@ -40,7 +40,7 @@ class IMutex {
 // unlock on destruction of the object as the object goes out of scope.
 class MutexLock {
  public:
-  explicit MutexLock(IMutex* mutex) : mutex_(mutex) {
+  explicit MutexLock(IMutex *mutex) : mutex_(mutex) {
     assert(NULL != mutex_);
     mutex_->Lock();
   }
@@ -49,7 +49,7 @@ class MutexLock {
   }
 
  private:
-  IMutex* mutex_;
+  IMutex *mutex_;
   MutexLock(const MutexLock&);
   MutexLock &operator=(const MutexLock&);
 };

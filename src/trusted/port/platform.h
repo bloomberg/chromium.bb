@@ -27,17 +27,10 @@ class IPlatform {
   static uint32_t GetCurrentThread();
 
   //  Called to request the platform start/stop the thread
-  static uint32_t CreateThread(ThreadFunc_t func, void* cookie);
-  static void KillThread(uint32_t id);
+  static uint32_t CreateThread(ThreadFunc_t func, void *cookie);
 
   //  Request the current thread relinquish execution of msec milliseconds
   static void Relinquish(uint32_t msec);
-
-  //  Called to add and remove breakpoints.  These functions will return
-  //  false on Add if the breakpoint exists, or false on Del if the a
-  //  breakpoint was not set.
-  static bool AddBreakPoint(uint64_t address);
-  static bool DelBreakPoint(uint64_t address);
 
   //  Called to get or set process memory.
   //  NOTE:  These functions should change the protection of the underlying

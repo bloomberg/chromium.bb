@@ -56,7 +56,7 @@ class SessionMock : public Session {
   bool GetPacket(gdb_rsp::Packet *packet);
   bool DataAvailable();
   ActionType PeekAction();
-  Action* GetAction();
+  Action *GetAction();
 
   void AddAction(ActionType act, const char *str);
   void AddTransaction(const char *snd, const char *rcv);
@@ -68,8 +68,8 @@ class SessionMock : public Session {
 };
 
 SessionMock *GetGoldenSessionMock(bool target, bool debug);
-void AddMockInit(SessionMock* ses);
-void AddMockUpdate(SessionMock* ses, uint8_t sig);
+void AddMockInit(SessionMock *ses);
+void AddMockUpdate(SessionMock *ses, uint8_t sig);
 
 
 

@@ -85,6 +85,56 @@ void Target::Destroy() {
   delete[] ctx_;
 }
 
+bool Target::AddTemporaryBreakpoint(uint64_t address) {
+  const Abi::BPDef *bp = abi_->GetBreakpointDef();
+
+  // If this ABI does not support breakpoints then fail
+  if (NULL == bp) return false;
+
+  // If we alreay have a breakpoint here then don't add it
+  BreakMap_t::iterator itr = breakMap_.find(address);
+  if (itr != breakMap_.end()) return false;
+
+  uint8_t *data = new uint8_t[bp->size_];
+  if (NULL == data) return false;
+
+  // Copy the old code from here
+  if (IPlatform::GetMemory(address, bp->size_, data) == false) {
+    delete[] data;
+    return false;
+  }
+  if (IPlatform::SetMemory(address, bp->size_, bp->code_) == false) {
+    delete[] data;
+    return false;
+  }
+
+  breakMap_[address] = data;
+  return true;
+}
+
+bool Target::RemoveTemporaryBreakpoints() {
+  const Abi::BPDef *bp = abi_->GetBreakpointDef();
+
+  // Iterate through the map, removing breakpoints
+  while (!breakMap_.empty()) {
+    // Copy the key/value locally
+    BreakMap_t::iterator cur = breakMap_.begin();
+    uint64_t addr = cur->first;
+    uint8_t *data = cur->second;
+  
+    // Then remove it from the map
+    breakMap_.erase(cur);
+
+    // Copy back the old code, and free the data
+    IPlatform::SetMemory(addr, bp->size_, data);
+    delete[] data;
+  }
+
+  return true;
+}
+
+
+
 void Target::Signal(uint32_t id, int8_t sig, bool wait) {
   // Wait for this signal's turn in the signal Q.
   sig_start_->Wait();
@@ -97,7 +147,7 @@ void Target::Signal(uint32_t id, int8_t sig, bool wait) {
     bool more = GetFirstThreadId(&curId);
     while (more) {
       if (curId != id) {
-        IThread *thread = threads_[id];
+        IThread *thread = threads_[curId];
         thread->Suspend();
       }
       more = GetNextThreadId(&curId);
@@ -111,12 +161,12 @@ void Target::Signal(uint32_t id, int8_t sig, bool wait) {
     cur_signal_ = sig;
   }
 
-
   // Wait for permission to continue
   if (wait) sig_done_->Wait();
 }
 
 void Target::Run(Session *ses) {
+  bool first = true;
   do {
     // Give everyone else a chance to use the lock
     IPlatform::Relinquish(100);
@@ -154,11 +204,27 @@ void Target::Run(Session *ses) {
       id = GetRegThreadId();
     }
 
-    // If we got this far, then there is some kind of signal
+    // If we got this far, then there is some kind of signal.
+    // So first, remove the breakpoints
+    RemoveTemporaryBreakpoints();
+
+    // Next update the current thread info
     char tmp[16];
     snprintf(tmp, sizeof(tmp), "QC%x", id);
     properties_["C"] = tmp;
 
+    if (first) {
+      // First time on a connection, we don't sent the signal
+      first = false;
+    } else {
+      // All other times, send the signal that triggered us
+      Packet pktOut;
+      pktOut.AddRawChar('S');
+      pktOut.AddWord8(cur_signal_);
+      ses->SendPacketOnly(&pktOut);
+    }
+
+    // Now we are ready to process commands
     // Loop through packets until we process a continue
     // packet.
     do {
@@ -204,8 +270,15 @@ void Target::Run(Session *ses) {
       more = GetNextThreadId(&curId);
     }
 
-    // Finally, allow the exception to be reported.
-    sig_start_->Signal();
+    // Reset the signal value
+    cur_signal_ = -1;
+
+    // If we took an exception, let the handler resume and allow
+    // the next exception to come in.
+    if (cur_signal_) {
+      sig_done_->Signal();
+      sig_start_->Signal();
+    }
 
     // Continue running until the connection is lost.
   } while (ses->Connected());

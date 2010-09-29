@@ -204,6 +204,7 @@ int main(int  ac,
   int                           debug_mode_ignore_validator = 0;
   int                           stub_out_mode = 0;
   int                           skip_qualification = 0;
+  int                           start_broken = 0;
 
   struct NaClEnvCleanser        filtered_env;
 
@@ -255,7 +256,7 @@ int main(int  ac,
     exit(1);
   }
 
-  while ((opt = getopt(ac, av, "acf:gh:i:Il:mMQr:svw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "abcf:gh:i:Il:mMQr:svw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -264,6 +265,9 @@ int main(int  ac,
       case 'a':
         fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
         debug_mode_bypass_acl_checks = 1;
+        break;
+      case 'b':
+        start_broken = 1;
         break;
       case 'g':
         NaClDebugSetAllow(1);
@@ -335,6 +339,9 @@ int main(int  ac,
        exit(-1);
     }
   }
+
+  /* Check if we should start broken */
+  if (start_broken) NaClDebugSetStartBroken(1);
 
   if (NACL_DANGEROUS_STUFF_ENABLED) {
     fprintf(stderr,

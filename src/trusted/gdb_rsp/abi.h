@@ -43,6 +43,7 @@ class Abi {
     REG_TYPE_CNT
   };
 
+  // Defines an individual register
   struct RegDef {
     const char *name_;
     uint32_t bytes_;
@@ -51,8 +52,20 @@ class Abi {
     uint32_t offset_;
   };
 
+  // Defines how breakpoints work.
+  // code_ points to a series of bytes which will be placed in the code to
+  // create the breakpoint.  size_ is the size of that array.  We use a 32b
+  // size since the memory modification API only supports a 32b size.
+  struct BPDef {
+    uint32_t size_;
+    uint8_t *code_;
+  };
+
   // Returns the registered name of this ABI.
   const char *GetName() const;
+
+  // Returns a pointer to the breakpoint definition.
+  const BPDef *GetBreakpointDef() const;
 
   // Returns the size of the thread context.
   uint32_t GetContextSize() const;
@@ -70,7 +83,8 @@ class Abi {
 
   // Called to assign a set of register definitions to an ABI.
   // This function is non-reentrant.
-  static void Register(const char *name, RegDef *defs, uint32_t cnt);
+  static void Register(const char *name, RegDef *defs,
+                       uint32_t cnt, const BPDef *bp);
 
   // Called to search the map for a matching Abi by name.
   // This function is reentrant.
@@ -84,6 +98,7 @@ class Abi {
   const RegDef *regDefs_;
   uint32_t regCnt_;
   uint32_t ctxSize_;
+  const BPDef *bpDef_;
 
  private:
   Abi();

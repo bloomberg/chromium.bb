@@ -77,7 +77,8 @@ extern "C" {
 }
 
 struct NaClDebugState {
-  NaClDebugState() : errCode_(0) {
+  NaClDebugState() : target_(NULL), app_(NULL), break_(false),
+                     errCode_(0), status_(NDS_DISABLED) {
 #ifdef _DEBUG
     /*
      * When compiling DEBUG we allow an environment variable to enable
@@ -89,17 +90,27 @@ struct NaClDebugState {
     status_ = nacl_debug_allowed ? NDS_ENABLED : NDS_DISABLED;
 
     /* Initialize the stub if and only if debugging is enabled. */
-    if (status_) NaClDebugStubInit();
-    break_ = 0;
+    if (status_) {
+      NaClDebugStubInit();
+      target_ = new Target();
+
+      /* If we failed to initialize the target, turn off debugging */
+      if ((NULL == target_) || (!target_->Init())) status_ = NDS_DISABLED;
+    }
+  }
+
+  ~NaClDebugState() {
+    delete target_;
   }
 
   Target* target_;
-  uint64_t break_;
+  struct NaClApp *app_;
+  bool break_;
+  volatile int errCode_;
   NaClDebugStatus status_;
   nacl::string path_;
   std::vector<const char *> arg_;
   std::vector<const char *> env_;
-  volatile int errCode_;
 };
 
 /*
@@ -111,13 +122,23 @@ static NaClDebugState *NaClDebugGetState() {
   return &state;
 }
 
-void NaClDebugSetAllow(int val) throw() {
+void NaClDebugSetAllow(int enable) throw() {
 #ifdef NACL_DEBUG_STUB
-  nacl_debug_allowed = val;
+  nacl_debug_allowed = enable;
 #else
-  UNREFERENCED_PARAMETER(val);
+  UNREFERENCED_PARAMETER(enable);
 #endif
 }
+
+void NaClDebugSetStartBroken(int enable) throw() {
+#ifdef NACL_DEBUG_STUB
+  NaClDebugState* state = NaClDebugGetState();
+  state->break_ = enable ? true : false;
+#else
+  UNREFERENCED_PARAMETER(enable);
+#endif
+}
+
 
 
 void WINAPI NaClStubThread(void *ptr) {
@@ -156,14 +177,6 @@ void NaClExceptionCatcher(uint32_t id, int8_t sig, void *cookie) {
 
   /* Signal the target that we caught something */
   IPlatform::LogWarning("Caught signal %d on thread %Xh.\n", sig, id);
-
-  /* Remove startup breakpoint */
-  NaClDebugState *state = NaClDebugGetState();
-  if (state->break_) {
-    port::IPlatform::DelBreakPoint(state->break_);
-    state->break_ = 0;
-  }
-
   targ->Signal(id, sig, true);
 #else
   UNREFERENCED_PARAMETER(id);
@@ -191,20 +204,14 @@ void NaClDebugSetAppPath(const char *path) throw() {
 
 
 void NaClDebugSetAppInfo(struct NaClApp *app) throw() {
+#ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
     NaClDebugState *state = NaClDebugGetState();
-
-    /* Set a breakpoint */
-    state->break_ = app->entry_pt + app->mem_start;
-
-#ifdef NACL_DEBUG_STUB
-    /*
-     * TODO(noelallen) We need a mechanism to enable "broken on start"
-     * including adding a command-line switch.
-     */
-//    port::IPlatform::AddBreakPoint(state->break_);
-#endif
+    state->app_ = app;
   }
+#else
+  UNREFERENCED_PARAMETER(app);
+#endif
 }
 
 
@@ -267,26 +274,29 @@ void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) throw() {
 int NaClDebugStart(void) throw() {
 #ifdef NACL_DEBUG_STUB
   if (NaClDebugIsEnabled()) {
-    Target *targ = new Target();
     NaClThread *thread = new NaClThread;
 
-    if (NULL == targ) return false;
     if (NULL == thread) return false;
-
     NaClDebugState *state = NaClDebugGetState();
-    state->target_ = targ;
 
-    targ->Init();
+    /* If break on start has been requested, add a temp breakpoint. */
+    if (state->break_) {
+      struct NaClApp* app = state->app_;
+      state->target_->AddTemporaryBreakpoint(app->entry_pt + app->mem_start);
+    }
 
     NaClLog(LOG_WARNING, "nacl_debug(%d) : Debugging started.\n", __LINE__);
-    IThread::SetExceptionCatch(NaClExceptionCatcher, targ);
-    return NaClThreadCtor(thread, NaClStubThread, targ, NACL_KERN_STACK_SIZE);
+    IThread::SetExceptionCatch(NaClExceptionCatcher, state->target_);
+    return NaClThreadCtor(thread, NaClStubThread, state->target_,
+                          NACL_KERN_STACK_SIZE);
   }
 #endif
   return 0;
 }
 
 void NaClDebugStop(int ErrCode) throw() {
+#ifdef NACL_DEBUG_STUB
+
   /*
    * We check if debugging is enabled since this check is the only
    * mechanism for allocating the state object.  We free the
@@ -297,5 +307,8 @@ void NaClDebugStop(int ErrCode) throw() {
     NaClDebugGetState()->status_ = NDS_STOPPED;
     NaClDebugGetState()->errCode_ = ErrCode;
   }
+#else
+  UNREFERENCED_PARAMETER(ErrCode);
+#endif
 }
 

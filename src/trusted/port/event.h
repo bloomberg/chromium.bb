@@ -19,8 +19,8 @@ class IEvent {
   virtual void Signal() = 0;    // Free one waiting thread
   virtual void Wait() = 0;      // Suspend this thread waiting for signal
 
-  static IEvent* Allocate();    // Allocate an IEvent
-  static void Free(IEvent* e);  // Free the IEvent
+  static IEvent *Allocate();    // Allocate an IEvent
+  static void Free(IEvent *e);  // Free the IEvent
 
  protected:
   virtual ~IEvent() {}          // Prevent delete of base pointer

@@ -47,7 +47,7 @@ class Host {
 
     public:
      uint32_t GetId() const;
-     const Abi* GetAbi() const;
+     const Abi *GetAbi() const;
      void GetRegister(uint32_t index, void *dst) const;
      void SetRegister(uint32_t index, const void *src);
 
@@ -87,10 +87,10 @@ class Host {
   int32_t GetSignal();
 
   // Get a list of currently active threads
-  bool GetThreads(ThreadVector_t* threads) const;
+  bool GetThreads(ThreadVector_t *threads) const;
 
   // Get a thread object by ID.
-  Thread* GetThread(uint32_t id);
+  Thread *GetThread(uint32_t id);
 
   // Get and set a block of target memory.
   bool GetMemory(void *dst, uint64_t addr, uint32_t size);
@@ -98,10 +98,10 @@ class Host {
 
   // Read locally cached properties
   bool HasProperty(const char *name) const;
-  bool ReadProperty(const char *name, std::string* val) const;
+  bool ReadProperty(const char *name, std::string *val) const;
 
   // Read remote object
-  bool ReadObject(const char *type, const char *name, std::string* val);
+  bool ReadObject(const char *type, const char *name, std::string *val);
 
   // Set the SINGLE STEP flag on the current thread context, and
   // putting the target back into the RUN state.
@@ -125,16 +125,16 @@ class Host {
   bool Send(Packet *req, Packet *resp);
   bool SendOnly(Packet *req);
 
-  bool Request(const std::string& req, std::string* resp);
-  bool RequestOnly(const std::string& req);
-  bool RequestThreadList(ThreadVector_t* ids);
+  bool Request(const std::string &req, std::string *resp);
+  bool RequestOnly(const std::string &req);
+  bool RequestThreadList(ThreadVector_t *ids);
 
   // Parse a string, returning true and update if a valid stop packet
   bool ParseStopPacket(const char *data);
 
  private:
   Session *session_;
-  const Abi* abi_;
+  const Abi *abi_;
 
   PropertyMap_t properties_;
   ThreadMap_t threads_;

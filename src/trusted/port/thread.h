@@ -34,9 +34,8 @@ class IThread {
     SYSCALL  = 3   // In a sys call, it's registers can not be modified.
   };
 
-  typedef std::map<uint32_t, IThread*> ThreadMap_t;
   typedef void (*CatchFunc_t)(uint32_t id, int8_t sig, void *cookie);
-
+  typedef std::map<uint32_t, IThread*> ThreadMap_t;
 
   virtual uint32_t GetId() = 0;
   virtual State GetState() = 0;
@@ -51,9 +50,9 @@ class IThread {
 
   virtual void *GetContext() = 0;
 
-  static IThread* Acquire(uint32_t id, bool create = true);
-  static void Release(IThread* thread);
-  static void SetExceptionCatch(CatchFunc_t func, void* cookie);
+  static IThread *Acquire(uint32_t id, bool create = true);
+  static void Release(IThread *thread);
+  static void SetExceptionCatch(CatchFunc_t func, void *cookie);
 
  protected:
   virtual ~IThread() {}  // Prevent delete of base pointer

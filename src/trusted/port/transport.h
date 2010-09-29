@@ -32,9 +32,9 @@ class ITransport {
   virtual void Disconnect() = 0;
 
   // Attempt to connect to, or accept connection at the specified address
-  static ITransport* Connect(const char *addr);
-  static ITransport* Accept(const char *addr);
-  static void Free(ITransport* transport);
+  static ITransport *Connect(const char *addr);
+  static ITransport *Accept(const char *addr);
+  static void Free(ITransport *transport);
 
  protected:
   virtual ~ITransport() {}  // Prevent delete of base pointer

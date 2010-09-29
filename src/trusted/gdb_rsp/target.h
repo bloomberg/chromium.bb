@@ -54,10 +54,10 @@ class Target {
     STOPPED = 2
   };
 
- public:
   typedef ErrDef (*QFunc_t)(Target *, stringvec&, std::string);
   typedef std::map<uint32_t, port::IThread*> ThreadMap_t;
   typedef std::map<std::string, std::string> PropertyMap_t;
+  typedef std::map<uint64_t, uint8_t*> BreakMap_t;
 
  public:
   // Contruct a Target object.  By default use the native ABI.
@@ -67,6 +67,13 @@ class Target {
   // Init must be the first function called to correctlty
   // build the Target internal structures.
   bool Init();
+
+  // Add and remove temporary breakpoints.  These breakpoints
+  // must be added just before we start running, and removed
+  // just before we stop running to prevent the debugger from
+  // seeing the modified memory.
+  bool AddTemporaryBreakpoint(uint64_t address);
+  bool RemoveTemporaryBreakpoints();
 
   // This function should be called by a tracked thread when it takes
   // an exception.  It takes sig_start_ to prevent other exceptions
@@ -106,7 +113,7 @@ class Target {
 
   uint32_t GetRegThreadId() const;
   uint32_t GetRunThreadId() const;
-  port::IThread* GetThread(uint32_t id);
+  port::IThread *GetThread(uint32_t id);
 
  public:
   const Abi *abi_;
@@ -126,6 +133,8 @@ class Target {
 
   ThreadMap_t threads_;
   ThreadMap_t::const_iterator threadItr_;
+  BreakMap_t breakMap_;
+
 
   PropertyMap_t properties_;
 

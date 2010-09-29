@@ -41,6 +41,12 @@ struct NaClAppThread;
 void NaClDebugSetAllow(int val) NO_THROW;
 
 /*
+ * If debugging is enabled, setting this to true will cause the NEXE
+ * to break immediately to allow a debugger to attach.
+ */
+void NaClDebugSetStartBroken(int val) NO_THROW;
+
+/*
  * Returns non-zero if debugging is allowed.  This check is done via the
  * NACL_DEBUG_ENABLE environment variable.
  */
@@ -73,7 +79,7 @@ void NaClDebugThreadPrepDebugging(struct NaClAppThread *natp) NO_THROW;
 /*
  * This function notifies the debug stub that the provided thread
  * should no longer be debugged.  This is typically because the thread
- * is about to halt.  TODO(noelallen) Unlike "Prep", this function can 
+ * is about to halt.  TODO(noelallen) Unlike "Prep", this function can
  * be called by any thread.
  */
 void NaClDebugThreadStopDebugging(struct NaClAppThread *natp) NO_THROW;

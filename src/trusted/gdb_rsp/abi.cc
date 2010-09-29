@@ -17,6 +17,7 @@ using port::IPlatform;
 namespace gdb_rsp {
 
 #define MINIDEF(x, name, purpose) { #name, sizeof(x), Abi::purpose, 0, 0 }
+#define BPDEF(x) { sizeof(x), x }
 
 static Abi::RegDef RegsX86_64[] = {
   MINIDEF(uint64_t, rax, GENERAL),
@@ -83,6 +84,10 @@ static Abi::RegDef RegsArm[] = {
   MINIDEF(uint32_t, pc, INST_PTR),
 };
 
+static uint8_t BPCodeX86[] = { 0xCC };
+
+static Abi::BPDef BPX86 = BPDEF(BPCodeX86);
+
 static AbiMap_t s_Abis;
 
 // AbiInit & AbiIsAvailable
@@ -91,11 +96,11 @@ static AbiMap_t s_Abis;
 // dependant functions should call AbiIsAvailable to ensure
 // the module is ready.
 static bool AbiInit() {
-  Abi::Register("i386", RegsX86_32, sizeof(RegsX86_32));
-  Abi::Register("i386:x86-64", RegsX86_64, sizeof(RegsX86_64));
+  Abi::Register("i386", RegsX86_32, sizeof(RegsX86_32), &BPX86);
+  Abi::Register("i386:x86-64", RegsX86_64, sizeof(RegsX86_64), &BPX86);
 
-  // TODO(cbiffle) Figure out how to REALLY detect ARM
-  Abi::Register("iwmmxt", RegsArm, sizeof(RegsArm));
+  // TODO(cbiffle) Figure out how to REALLY detect ARM, and define Breakpoint
+  Abi::Register("iwmmxt", RegsArm, sizeof(RegsArm), NULL);
 
   return true;
 }
@@ -110,7 +115,8 @@ static bool AbiIsAvailable() {
 Abi::Abi() {}
 Abi::~Abi() {}
 
-void Abi::Register(const char *name, RegDef *regs, uint32_t bytes) {
+void Abi::Register(const char *name, RegDef *regs,
+                   uint32_t bytes, const BPDef *bp) {
   uint32_t offs = 0;
   const uint32_t cnt = bytes / sizeof(RegDef);
 
@@ -127,6 +133,7 @@ void Abi::Register(const char *name, RegDef *regs, uint32_t bytes) {
   abi->regCnt_ = cnt;
   abi->regDefs_= regs;
   abi->ctxSize_ = offs;
+  abi->bpDef_ = bp;
 
   s_Abis[name] = abi;
 }
@@ -163,6 +170,10 @@ const Abi* Abi::Get() {
 
 const char* Abi::GetName() const {
   return name_;
+}
+
+const Abi::BPDef *Abi::GetBreakpointDef() const {
+  return bpDef_;
 }
 
 uint32_t Abi::GetContextSize() const {

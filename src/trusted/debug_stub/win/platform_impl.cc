@@ -57,11 +57,6 @@ uint32_t IPlatform::CreateThread(IPlatform::ThreadFunc_t func, void* cookie) {
   return id;
 }
 
-// TODO(noelallen) Remove this unused function from the base imlementation.
-void IPlatform::KillThread(uint32_t id) {
-  UNREFERENCED_PARAMETER(id);
-}
-
 void IPlatform::Relinquish(uint32_t msec) {
   Sleep(msec);
 }
