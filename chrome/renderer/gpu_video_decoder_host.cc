@@ -9,21 +9,21 @@
 #include "chrome/renderer/render_thread.h"
 
 GpuVideoDecoderHost::GpuVideoDecoderHost(GpuVideoServiceHost* service_host,
-                                         IPC::Message::Sender* ipc_sender,
+                                         GpuChannelHost* channel_host,
                                          int context_route_id)
     : gpu_video_service_host_(service_host),
-      ipc_sender_(ipc_sender),
+      channel_host_(channel_host),
       context_route_id_(context_route_id),
       event_handler_(NULL),
       buffer_id_serial_(0),
       state_(kStateUninitialized),
       input_buffer_busy_(false) {
-  memset(&config_, 0, sizeof(config_));
+  memset(&init_param_, 0, sizeof(init_param_));
   memset(&done_param_, 0, sizeof(done_param_));
 }
 
 void GpuVideoDecoderHost::OnChannelError() {
-  ipc_sender_ = NULL;
+  channel_host_ = NULL;
 }
 
 void GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
@@ -42,44 +42,48 @@ void GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-void GpuVideoDecoderHost::Initialize(
-    MessageLoop* message_loop, VideoDecodeEngine::EventHandler* event_handler,
-    media::VideoDecodeContext* context, const media::VideoCodecConfig& config) {
-  // TODO(hclam): Call |event_handler| here.
+bool GpuVideoDecoderHost::Initialize(EventHandler* event_handler,
+                                     const GpuVideoDecoderInitParam& param) {
   DCHECK_EQ(state_, kStateUninitialized);
 
   // Save the event handler before we perform initialization operations so
   // that we can report initialization events.
   event_handler_ = event_handler;
 
+  // TODO(hclam): Pass the context route ID here.
   // TODO(hclam): This create video decoder operation is synchronous, need to
   // make it asynchronous.
   decoder_info_.context_id = context_route_id_;
-  if (!ipc_sender_->Send(
+  if (!channel_host_->Send(
           new GpuChannelMsg_CreateVideoDecoder(&decoder_info_))) {
     LOG(ERROR) << "GpuChannelMsg_CreateVideoDecoder failed";
-    return;
+    return false;
   }
 
   // Add the route so we'll receive messages.
   gpu_video_service_host_->AddRoute(my_route_id(), this);
 
-  // Save the configuration parameters.
-  config_ = config;
-
-  // TODO(hclam): Initialize |param| with the right values.
-  GpuVideoDecoderInitParam param;
-  param.width = config.width;
-  param.height = config.height;
-
-  if (!ipc_sender_ || !ipc_sender_->Send(
+  init_param_ = param;
+  if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_Initialize(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_Initialize failed";
-    return;
+    return false;
   }
+  return true;
 }
 
-void GpuVideoDecoderHost::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
+bool GpuVideoDecoderHost::Uninitialize() {
+  if (!channel_host_ || !channel_host_->Send(
+      new GpuVideoDecoderMsg_Destroy(route_id()))) {
+    LOG(ERROR) << "GpuVideoDecoderMsg_Destroy failed";
+    return false;
+  }
+
+  gpu_video_service_host_->RemoveRoute(my_route_id());
+  return true;
+}
+
+void GpuVideoDecoderHost::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
   DCHECK_NE(state_, kStateUninitialized);
   DCHECK_NE(state_, kStateFlushing);
 
@@ -92,7 +96,7 @@ void GpuVideoDecoderHost::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
   SendInputBufferToGpu();
 }
 
-void GpuVideoDecoderHost::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
+void GpuVideoDecoderHost::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
   DCHECK_NE(state_, kStateUninitialized);
 
   // Depends on who provides buffer. client could return buffer to
@@ -105,34 +109,19 @@ void GpuVideoDecoderHost::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
   // This eliminates one conversion step.
 }
 
-void GpuVideoDecoderHost::Uninitialize() {
-  if (!ipc_sender_ || !ipc_sender_->Send(
-      new GpuVideoDecoderMsg_Destroy(route_id()))) {
-    LOG(ERROR) << "GpuVideoDecoderMsg_Destroy failed";
-    return;
-  }
-
-  gpu_video_service_host_->RemoveRoute(my_route_id());
-  return;
-}
-
-void GpuVideoDecoderHost::Flush() {
+bool GpuVideoDecoderHost::Flush() {
   state_ = kStateFlushing;
-  if (!ipc_sender_ || !ipc_sender_->Send(
+  if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_Flush(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_Flush failed";
-    return;
+    return false;
   }
   input_buffer_queue_.clear();
   // TODO(jiesun): because GpuVideoDeocder/GpuVideoDecoder are asynchronously.
   // We need a way to make flush logic more clear. but I think ring buffer
   // should make the busy flag obsolete, therefore I will leave it for now.
   input_buffer_busy_ = false;
-  return;
-}
-
-void GpuVideoDecoderHost::Seek() {
-  // TODO(hclam): Implement.
+  return true;
 }
 
 void GpuVideoDecoderHost::OnInitializeDone(
@@ -155,29 +144,23 @@ void GpuVideoDecoderHost::OnInitializeDone(
   } while (0);
 
   state_ = success ? kStateNormal : kStateError;
-
-  media::VideoCodecInfo info;
-  info.success = success;
-  // TODO(hclam): There's too many unnecessary copies for width and height!
-  // Need to clean it up.
-  // TODO(hclam): Need to fill in more information.
-  info.stream_info.surface_width = config_.width;
-  info.stream_info.surface_height = config_.height;
-  event_handler_->OnInitializeComplete(info);
+  event_handler_->OnInitializeDone(success, param);
 }
 
 void GpuVideoDecoderHost::OnUninitializeDone() {
   input_transfer_buffer_.reset();
-  event_handler_->OnUninitializeComplete();
+
+  event_handler_->OnUninitializeDone();
 }
 
 void GpuVideoDecoderHost::OnFlushDone() {
   state_ = kStateNormal;
-  event_handler_->OnFlushComplete();
+  event_handler_->OnFlushDone();
 }
 
 void GpuVideoDecoderHost::OnEmptyThisBufferDone() {
-  event_handler_->ProduceVideoSample(NULL);
+  scoped_refptr<Buffer> buffer;
+  event_handler_->OnEmptyBufferDone(buffer);
 }
 
 void GpuVideoDecoderHost::OnConsumeVideoFrame(int32 frame_id, int64 timestamp,
@@ -188,10 +171,16 @@ void GpuVideoDecoderHost::OnConsumeVideoFrame(int32 frame_id, int64 timestamp,
     VideoFrame::CreateEmptyFrame(&frame);
   } else {
     // TODO(hclam): Use |frame_id| to find the VideoFrame.
+    VideoFrame::GlTexture textures[3] = { 0, 0, 0 };
+    media::VideoFrame::CreateFrameGlTexture(
+        media::VideoFrame::RGBA, init_param_.width, init_param_.height,
+        textures,
+        base::TimeDelta::FromMicroseconds(timestamp),
+        base::TimeDelta::FromMicroseconds(duration),
+        &frame);
   }
 
-  // TODO(hclam): Call the event handler.
-  event_handler_->ConsumeVideoFrame(frame);
+  event_handler_->OnFillBufferDone(frame);
 }
 
 void GpuVideoDecoderHost::OnEmptyThisBufferACK() {
@@ -215,7 +204,7 @@ void GpuVideoDecoderHost::SendInputBufferToGpu() {
   param.size = buffer->GetDataSize();
   param.timestamp = buffer->GetTimestamp().InMicroseconds();
   memcpy(input_transfer_buffer_->memory(), buffer->GetData(), param.size);
-  if (!ipc_sender_ || !ipc_sender_->Send(
+  if (!channel_host_ || !channel_host_->Send(
       new GpuVideoDecoderMsg_EmptyThisBuffer(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBuffer failed";
   }

@@ -16,13 +16,7 @@
 #include "gfx/size.h"
 
 class GpuChannelHost;
-
-namespace media {
-
-class VideoDecodeContext;
-class VideoDecodeEngine;
-
-}
+class GpuVideoDecoderHost;
 
 namespace ggl {
 
@@ -121,16 +115,8 @@ bool SwapBuffers(Context* context);
 // Destroy the given GGL context.
 bool DestroyContext(Context* context);
 
-// Create a hardware video decode engine corresponding to the context.
-media::VideoDecodeEngine* CreateVideoDecodeEngine(Context* context);
-
-// Create a hardware video decode context to pair with the hardware video
-// decode engine. It can also be used with a software decode engine.
-//
-// Set |hardware_decoder| to true if this context is for a hardware video
-// engine.
-media::VideoDecodeContext* CreateVideoDecodeContext(Context* context,
-                                                    bool hardware_decoder);
+// Create a hardware video decoder corresponding to the context.
+GpuVideoDecoderHost* CreateVideoDecoder(Context* context);
 
 // TODO(gman): Remove this
 void DisableShaderTranslation(Context* context);

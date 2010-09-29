@@ -6,11 +6,10 @@
 #define CHROME_RENDERER_MEDIA_IPC_VIDEO_DECODER_H_
 
 #include "base/time.h"
+#include "chrome/renderer/gpu_video_service_host.h"
 #include "media/base/pts_heap.h"
 #include "media/base/video_frame.h"
 #include "media/filters/decoder_base.h"
-#include "media/video/video_decode_engine.h"
-#include "media/video/video_decode_context.h"
 
 struct AVRational;
 
@@ -19,7 +18,7 @@ class Context;
 }  // namespace ggl
 
 class IpcVideoDecoder : public media::VideoDecoder,
-                        public media::VideoDecodeEngine::EventHandler {
+                        public GpuVideoDecoderHost::EventHandler {
  public:
   explicit IpcVideoDecoder(MessageLoop* message_loop,
                            ggl::Context* ggl_context);
@@ -41,37 +40,51 @@ class IpcVideoDecoder : public media::VideoDecoder,
   virtual const media::MediaFormat& media_format() { return media_format_; }
   virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
 
-  // TODO(hclam): Remove this method.
-  virtual bool ProvidesBuffer() { return true; }
-
-  // VideoDecodeEngine::EventHandler implementation.
-  virtual void OnInitializeComplete(const media::VideoCodecInfo& info);
-  virtual void OnUninitializeComplete();
-  virtual void OnFlushComplete();
-  virtual void OnSeekComplete();
-  virtual void OnError();
-  virtual void OnFormatChange(media::VideoStreamInfo stream_info);
-  virtual void ProduceVideoSample(scoped_refptr<media::Buffer> buffer);
-  virtual void ConsumeVideoFrame(scoped_refptr<media::VideoFrame> frame);
+  // GpuVideoDecoderHost::EventHandler.
+  virtual void OnInitializeDone(bool success,
+                                const GpuVideoDecoderInitDoneParam& param);
+  virtual void OnUninitializeDone();
+  virtual void OnFlushDone();
+  virtual void OnEmptyBufferDone(scoped_refptr<media::Buffer> buffer);
+  virtual void OnFillBufferDone(scoped_refptr<media::VideoFrame> frame);
+  virtual void OnDeviceError();
+  virtual bool ProvidesBuffer();
 
  private:
+  enum DecoderState {
+    kUnInitialized,
+    kPlaying,
+    kFlushing,
+    kPausing,
+    kFlushCodec,
+    kEnded,
+    kStopped,
+  };
+
+  void OnSeekComplete(media::FilterCallback* callback);
   void OnReadComplete(media::Buffer* buffer);
-  void OnDestroyComplete();
+  void ReadCompleteTask(scoped_refptr<media::Buffer> buffer);
 
   int32 width_;
   int32 height_;
   media::MediaFormat media_format_;
 
   scoped_ptr<media::FilterCallback> flush_callback_;
-  scoped_ptr<media::FilterCallback> seek_callback_;
   scoped_ptr<media::FilterCallback> initialize_callback_;
   scoped_ptr<media::FilterCallback> stop_callback_;
+
+  DecoderState state_;
+
+  // Tracks the number of asynchronous reads issued to |demuxer_stream_|.
+  // Using size_t since it is always compared against deque::size().
+  size_t pending_reads_;
+  // Tracks the number of asynchronous reads issued from renderer.
+  size_t pending_requests_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<media::DemuxerStream> demuxer_stream_;
 
-  // This is the message loop that we should assign to VideoDecodeEngine.
-  MessageLoop* decode_engine_message_loop_;
+  MessageLoop* renderer_thread_message_loop_;
 
   // A context for allocating textures and issuing GLES2 commands.
   // TODO(hclam): A ggl::Context lives on the Render Thread while this object
@@ -79,14 +92,14 @@ class IpcVideoDecoder : public media::VideoDecoder,
   // and destruction of the context.
   ggl::Context* ggl_context_;
 
-  // This VideoDecodeEngine translate our requests to IPC commands to the
-  // GPU process.
-  // VideoDecodeEngine should run on IO Thread instead of Render Thread to
-  // avoid dead lock during tear down of the media pipeline.
-  scoped_ptr<media::VideoDecodeEngine> decode_engine_;
+  // Handle to the hardware video decoder. This object will use IPC to
+  // communicate with the decoder in the GPU process.
+  scoped_refptr<GpuVideoDecoderHost> gpu_video_decoder_host_;
 
-  // Decoding context to be used by VideoDecodeEngine.
-  scoped_ptr<media::VideoDecodeContext> decode_context_;
+  // Texture that contains the video frame.
+  // TODO(hclam): Instead of one texture, we should have a set of textures
+  // as requested by the hardware video decode engine in the GPU process.
+  unsigned int texture_;
 
   DISALLOW_COPY_AND_ASSIGN(IpcVideoDecoder);
 };

@@ -66,7 +66,6 @@ struct VideoCodecInfo {
   bool success;
 
   // Whether decoder provides output buffer pool.
-  // TODO(hclam): This is not important anymore. Remove this.
   bool provides_buffers;
 
   // Initial Stream Info. Only part of them could be valid.

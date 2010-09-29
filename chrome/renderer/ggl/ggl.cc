@@ -12,8 +12,6 @@
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/gpu_video_service_host.h"
-#include "chrome/renderer/media/gles2_video_decode_context.h"
-#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_widget.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -101,10 +99,7 @@ class Context : public base::SupportsWeakPtr<Context> {
   bool SwapBuffers();
 
   // Create a hardware accelerated video decoder associated with this context.
-  media::VideoDecodeEngine* CreateVideoDecodeEngine();
-
-  // Create a hardware video decode context associated with this context.
-  media::VideoDecodeContext* CreateVideoDecodeContext(bool hardware_decoder);
+  GpuVideoDecoderHost* CreateVideoDecoder();
 
   // Get the current error code.
   Error GetError();
@@ -329,15 +324,9 @@ bool Context::SwapBuffers() {
   return true;
 }
 
-media::VideoDecodeEngine* Context::CreateVideoDecodeEngine() {
+GpuVideoDecoderHost* Context::CreateVideoDecoder() {
   return GpuVideoServiceHost::get()->CreateVideoDecoder(
       command_buffer_->route_id());
-}
-
-media::VideoDecodeContext* Context::CreateVideoDecodeContext(
-    bool hardware_decoder) {
-  return new Gles2VideoDecodeContext(
-      RenderThread::current()->message_loop(), hardware_decoder, this);
 }
 
 Error Context::GetError() {
@@ -476,13 +465,8 @@ bool DestroyContext(Context* context) {
 #endif
 }
 
-media::VideoDecodeEngine* CreateVideoDecodeEngine(Context* context) {
-  return context->CreateVideoDecodeEngine();
-}
-
-media::VideoDecodeContext* CreateVideoDecodeContext(
-    Context* context, bool hardware_decoder) {
-  return context->CreateVideoDecodeContext(hardware_decoder);
+GpuVideoDecoderHost* CreateVideoDecoder(Context* context) {
+  return context->CreateVideoDecoder();
 }
 
 Error GetError() {
