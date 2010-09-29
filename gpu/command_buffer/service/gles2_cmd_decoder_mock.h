@@ -43,6 +43,8 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
                                        unsigned int arg_count,
                                        const void* cmd_data));
+  MOCK_METHOD2(GetServiceTextureId, bool(uint32 client_texture_id,
+                                         uint32* service_texture_id));
   MOCK_CONST_METHOD1(GetCommandName, const char*(unsigned int command_id));
 
   DISALLOW_COPY_AND_ASSIGN(MockGLES2Decoder);

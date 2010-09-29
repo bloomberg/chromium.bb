@@ -49,7 +49,8 @@ bool GpuVideoService::CreateVideoDecoder(
   int32 decoder_id = GetNextAvailableDecoderID();
   param->decoder_id = decoder_id;
   base::ProcessHandle handle = channel->renderer_handle();
-  decoder_info.decoder_ = new GpuVideoDecoder(param, channel, handle,
+  decoder_info.decoder_ = new GpuVideoDecoder(MessageLoop::current(),
+                                              param, channel, handle,
                                               gles2_decoder);
   decoder_info.channel_ = channel;
   decoder_info.param = *param;

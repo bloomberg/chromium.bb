@@ -1366,6 +1366,7 @@
         'common/zip_unittest.cc',
         'gpu/gpu_idirect3d9_mock_win.h',
         'gpu/gpu_info_unittest_win.cc',
+        'gpu/gpu_video_decoder_unittest.cc',
         'renderer/audio_message_filter_unittest.cc',
         'renderer/extensions/extension_api_json_validity_unittest.cc',
         'renderer/extensions/extension_renderer_info_unittest.cc',

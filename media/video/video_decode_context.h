@@ -29,7 +29,7 @@ class VideoFrame;
 //    in the VideoDecodeEngine and VideoDecodeContext pair.
 class VideoDecodeContext {
  public:
-  virtual ~VideoDecodeContext() {};
+  virtual ~VideoDecodeContext() {}
 
   // Obtain a handle to the hardware video decoder device. The type of the
   // handle is a contract between the implementation of VideoDecodeContext and

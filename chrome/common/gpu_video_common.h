@@ -10,6 +10,12 @@
 #include "chrome/common/common_param_traits.h"
 #include "media/base/video_frame.h"
 
+// Flags assigned to a video buffer for both input and output.
+enum GpuVideoBufferFlag {
+  kGpuVideoEndOfStream = 1 << 0,
+  kGpuVideoDiscontinuous = 1 << 1,
+};
+
 struct GpuVideoServiceInfoParam {
   // route id for GpuVideoService on GPU process side for this channel.
   int32 video_service_route_id;
@@ -56,21 +62,7 @@ struct GpuVideoDecoderInputBufferParam {
   int64 timestamp;  // In unit of microseconds.
   int32 offset;
   int32 size;
-  int32 flags;      // miscellaneous flag bit mask
-};
-
-// A message that contains formation of a video frame that is ready to be
-// rendered by the Renderer process.
-struct GpuVideoDecoderOutputBufferParam {
-  int32 frame_id;   // ID of the video frame that is ready to be rendered.
-  int64 timestamp;  // In unit of microseconds.
-  int64 duration;   // In unit of microseconds.
-  int32 flags;      // miscellaneous flag bit mask
-
-  enum {
-    kFlagsEndOfStream     = 0x00000001,
-    kFlagsDiscontinuous   = 0x00000002,
-  };
+  int32 flags;  // Miscellaneous flag bit mask.
 };
 
 struct GpuVideoDecoderErrorInfoParam {
@@ -120,14 +112,6 @@ struct ParamTraits<GpuVideoDecoderInitDoneParam> {
 template <>
 struct ParamTraits<GpuVideoDecoderInputBufferParam> {
   typedef GpuVideoDecoderInputBufferParam param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<GpuVideoDecoderOutputBufferParam> {
-  typedef GpuVideoDecoderOutputBufferParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

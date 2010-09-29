@@ -70,7 +70,8 @@ class GpuVideoDecoderHost
   void OnUninitializeDone();
   void OnFlushDone();
   void OnEmptyThisBufferDone();
-  void OnFillThisBufferDone(const GpuVideoDecoderOutputBufferParam& param);
+  void OnConsumeVideoFrame(int32 frame_id, int64 timestamp,
+                           int64 duration, int32 flags);
   void OnEmptyThisBufferACK();
 
   // Helper function.

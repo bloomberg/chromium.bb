@@ -28,10 +28,10 @@ void GpuVideoDecoder::OnMessageReceived(const IPC::Message& msg) {
                         OnFlush)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_EmptyThisBuffer,
                         OnEmptyThisBuffer)
-    IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_FillThisBuffer,
-                        OnFillThisBuffer)
-    IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_FillThisBufferDoneACK,
-                        OnFillThisBufferDoneACK)
+    IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_ProduceVideoFrame,
+                        OnProduceVideoFrame)
+    IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_VideoFrameAllocated,
+                        OnVideoFrameAllocated)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -103,12 +103,19 @@ void GpuVideoDecoder::ProduceVideoSample(scoped_refptr<Buffer> buffer) {
 }
 
 void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
-  GpuVideoDecoderOutputBufferParam output_param;
-  output_param.timestamp = frame->GetTimestamp().InMicroseconds();
-  output_param.duration = frame->GetDuration().InMicroseconds();
-  output_param.flags = frame->IsEndOfStream() ?
-      GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream : 0;
-  SendFillBufferDone(output_param);
+  int32 frame_id = -1;
+  for (VideoFrameMap::iterator i = video_frame_map_.begin();
+       i != video_frame_map_.end(); ++i) {
+    if (i->second == frame) {
+      frame_id = i->first;
+      break;
+    }
+  }
+  DCHECK_NE(-1, frame_id) << "VideoFrame not recognized";
+
+  SendConsumeVideoFrame(frame_id, frame->GetTimestamp().InMicroseconds(),
+                        frame->GetDuration().InMicroseconds(),
+                        frame->IsEndOfStream() ? kGpuVideoEndOfStream : 0);
 }
 
 void* GpuVideoDecoder::GetDevice() {
@@ -192,14 +199,23 @@ void GpuVideoDecoder::Destroy(Task* task) {
   //  TODO(hclam): I still need to think what I should do here.
 }
 
+void GpuVideoDecoder::SetVideoDecodeEngine(media::VideoDecodeEngine* engine) {
+    decode_engine_.reset(engine);
+}
+
+void GpuVideoDecoder::SetGpuVideoDevice(GpuVideoDevice* device) {
+  video_device_.reset(device);
+}
+
 GpuVideoDecoder::GpuVideoDecoder(
+    MessageLoop* message_loop,
     const GpuVideoDecoderInfoParam* param,
-    GpuChannel* channel,
+    IPC::Message::Sender* sender,
     base::ProcessHandle handle,
     gpu::gles2::GLES2Decoder* decoder)
-    : decoder_host_route_id_(param->decoder_host_route_id),
-      pending_output_requests_(0),
-      channel_(channel),
+    : message_loop_(message_loop),
+      decoder_host_route_id_(param->decoder_host_route_id),
+      sender_(sender),
       renderer_handle_(handle),
       gles2_decoder_(decoder) {
   memset(&config_, 0, sizeof(config_));
@@ -212,7 +228,6 @@ GpuVideoDecoder::GpuVideoDecoder(
 }
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
-  // TODO(hclam): Initialize the VideoDecodeContext first.
   // TODO(jiesun): codec id should come from |param|.
   config_.codec = media::kCodecH264;
   config_.width = param.width;
@@ -226,8 +241,6 @@ void GpuVideoDecoder::OnUninitialize() {
 }
 
 void GpuVideoDecoder::OnFlush() {
-  pending_output_requests_ = 0;
-
   decode_engine_->Flush();
 }
 
@@ -243,32 +256,25 @@ void GpuVideoDecoder::OnEmptyThisBuffer(
   memcpy(dst, src, buffer.size);
   SendEmptyBufferACK();
 
+  // Delegate the method call to VideoDecodeEngine.
   decode_engine_->ConsumeVideoSample(input_buffer);
 }
 
-void GpuVideoDecoder::OnFillThisBuffer(
-    const GpuVideoDecoderOutputBufferParam& param) {
-  // Switch context before calling to the decode engine.
-  bool ret = gles2_decoder_->MakeCurrent();
-  DCHECK(ret) << "Failed to switch context";
-
-  if (info_.stream_info.surface_type == VideoFrame::TYPE_SYSTEM_MEMORY) {
-    pending_output_requests_++;
-  } else {
+void GpuVideoDecoder::OnProduceVideoFrame(int32 frame_id) {
+  VideoFrameMap::iterator i = video_frame_map_.find(frame_id);
+  if (i == video_frame_map_.end()) {
+    NOTREACHED() << "Received a request of unknown frame ID.";
   }
-}
 
-void GpuVideoDecoder::OnFillThisBufferDoneACK() {
-  if (info_.stream_info.surface_type == VideoFrame::TYPE_SYSTEM_MEMORY) {
-    pending_output_requests_--;
-    if (pending_output_requests_) {
-      decode_engine_->ProduceVideoFrame(frame_);
-    }
-  }
+  // Delegate the method call to VideoDecodeEngine.
+  decode_engine_->ProduceVideoFrame(i->second);
 }
 
 void GpuVideoDecoder::OnVideoFrameAllocated(int32 frame_id,
                                             std::vector<uint32> textures) {
+  bool ret = gles2_decoder_->MakeCurrent();
+  DCHECK(ret) << "Failed to switch context";
+
   // This method is called in response to a video frame allocation request sent
   // to the Renderer process.
   // We should use the textures to generate a VideoFrame by using
@@ -278,13 +284,15 @@ void GpuVideoDecoder::OnVideoFrameAllocated(int32 frame_id,
   for (size_t i = 0; i < textures.size(); ++i) {
     media::VideoFrame::GlTexture gl_texture;
     // Translate the client texture id to service texture id.
-    bool ret = gles2_decoder_->GetServiceTextureId(textures[i], &gl_texture);
+    ret = gles2_decoder_->GetServiceTextureId(textures[i], &gl_texture);
     DCHECK(ret) << "Cannot translate client texture ID to service ID";
     textures[i] = gl_texture;
   }
 
+  // Use GpuVideoDevice to allocate VideoFrame objects.
   scoped_refptr<media::VideoFrame> frame;
-  bool ret = video_device_->CreateVideoFrameFromGlTextures(
+
+  ret = video_device_->CreateVideoFrameFromGlTextures(
       pending_allocation_->width, pending_allocation_->height,
       pending_allocation_->format, textures, &frame);
 
@@ -301,53 +309,58 @@ void GpuVideoDecoder::OnVideoFrameAllocated(int32 frame_id,
 
 void GpuVideoDecoder::SendInitializeDone(
     const GpuVideoDecoderInitDoneParam& param) {
-  if (!channel_->Send(
+  if (!sender_->Send(
           new GpuVideoDecoderHostMsg_InitializeACK(route_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_InitializeACK failed";
   }
 }
 
 void GpuVideoDecoder::SendUninitializeDone() {
-  if (!channel_->Send(new GpuVideoDecoderHostMsg_DestroyACK(route_id()))) {
+  if (!sender_->Send(new GpuVideoDecoderHostMsg_DestroyACK(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_DestroyACK failed";
   }
 }
 
 void GpuVideoDecoder::SendFlushDone() {
-  if (!channel_->Send(new GpuVideoDecoderHostMsg_FlushACK(route_id()))) {
+  if (!sender_->Send(new GpuVideoDecoderHostMsg_FlushACK(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FlushACK failed";
   }
 }
 
 void GpuVideoDecoder::SendEmptyBufferDone() {
-  if (!channel_->Send(
+  if (!sender_->Send(
           new GpuVideoDecoderHostMsg_EmptyThisBufferDone(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBufferDone failed";
   }
 }
 
 void GpuVideoDecoder::SendEmptyBufferACK() {
-  if (!channel_->Send(
+  if (!sender_->Send(
           new GpuVideoDecoderHostMsg_EmptyThisBufferACK(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBufferACK failed";
   }
 }
 
-void GpuVideoDecoder::SendFillBufferDone(
-    const GpuVideoDecoderOutputBufferParam& param) {
-  if (!channel_->Send(
-          new GpuVideoDecoderHostMsg_FillThisBufferDone(route_id(), param))) {
-    LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBufferDone failed";
+void GpuVideoDecoder::SendConsumeVideoFrame(
+    int32 frame_id, int64 timestamp, int64 duration, int32 flags) {
+  if (!sender_->Send(
+          new GpuVideoDecoderHostMsg_ConsumeVideoFrame(
+              route_id(), frame_id, timestamp, duration, flags))) {
+    LOG(ERROR) << "GpuVideoDecodeHostMsg_ConsumeVideoFrame failed.";
   }
 }
 
 void GpuVideoDecoder::SendAllocateVideoFrames(
     int n, size_t width, size_t height, media::VideoFrame::Format format) {
-  // TODO(hclam): Actually send the message.
+  if (!sender_->Send(
+          new GpuVideoDecoderHostMsg_AllocateVideoFrames(
+              route_id(), n, width, height, static_cast<int32>(format)))) {
+    LOG(ERROR) << "GpuVideoDecoderMsg_AllocateVideoFrames failed";
+  }
 }
 
 void GpuVideoDecoder::SendReleaseAllVideoFrames() {
-  if (!channel_->Send(
+  if (!sender_->Send(
           new GpuVideoDecoderHostMsg_ReleaseAllVideoFrames(route_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_ReleaseAllVideoFrames failed";
   }

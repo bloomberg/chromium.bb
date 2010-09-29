@@ -38,8 +38,6 @@ void GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
                         OnEmptyThisBufferACK)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderHostMsg_EmptyThisBufferDone,
                         OnEmptyThisBufferDone)
-    IPC_MESSAGE_HANDLER(GpuVideoDecoderHostMsg_FillThisBufferDone,
-                        OnFillThisBufferDone)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -109,13 +107,6 @@ void GpuVideoDecoderHost::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
   // TODO(hclam): We should keep an IDMap to convert between a frame a buffer
   // ID so that we can signal GpuVideoDecoder in GPU process to use the buffer.
   // This eliminates one conversion step.
-  // TODO(hclam): Fill the param.
-  GpuVideoDecoderOutputBufferParam param;
-
-  if (!channel_host_ || !channel_host_->Send(
-      new GpuVideoDecoderMsg_FillThisBuffer(route_id(), param))) {
-    LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBuffer failed";
-  }
 }
 
 bool GpuVideoDecoderHost::Flush() {
@@ -172,30 +163,24 @@ void GpuVideoDecoderHost::OnEmptyThisBufferDone() {
   event_handler_->OnEmptyBufferDone(buffer);
 }
 
-void GpuVideoDecoderHost::OnFillThisBufferDone(
-    const GpuVideoDecoderOutputBufferParam& param) {
+void GpuVideoDecoderHost::OnConsumeVideoFrame(int32 frame_id, int64 timestamp,
+                                              int64 duration, int32 flags) {
   scoped_refptr<VideoFrame> frame;
 
-  if (param.flags & GpuVideoDecoderOutputBufferParam::kFlagsEndOfStream) {
+  if (flags & kGpuVideoEndOfStream) {
     VideoFrame::CreateEmptyFrame(&frame);
   } else {
-    // TODO(hclam): The logic in buffer allocation is pretty much around
-    // using shared memory for output buffer which needs to be adjusted.
-    // Fake the texture ID until we implement it properly.
+    // TODO(hclam): Use |frame_id| to find the VideoFrame.
     VideoFrame::GlTexture textures[3] = { 0, 0, 0 };
     media::VideoFrame::CreateFrameGlTexture(
         media::VideoFrame::RGBA, init_param_.width, init_param_.height,
         textures,
-        base::TimeDelta::FromMicroseconds(param.timestamp),
-        base::TimeDelta::FromMicroseconds(param.duration),
+        base::TimeDelta::FromMicroseconds(timestamp),
+        base::TimeDelta::FromMicroseconds(duration),
         &frame);
   }
 
   event_handler_->OnFillBufferDone(frame);
-  if (!channel_host_ || !channel_host_->Send(
-      new GpuVideoDecoderMsg_FillThisBufferDoneACK(route_id()))) {
-    LOG(ERROR) << "GpuVideoDecoderMsg_FillThisBufferDoneACK failed";
-  }
 }
 
 void GpuVideoDecoderHost::OnEmptyThisBufferACK() {

@@ -131,35 +131,6 @@ void ParamTraits<GpuVideoDecoderInputBufferParam>::Log(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParamTraits<GpuVideoDecoderOutputBufferParam>::Write(
-    Message* m, const GpuVideoDecoderOutputBufferParam& p) {
-  WriteParam(m, p.frame_id);
-  WriteParam(m, p.timestamp);
-  WriteParam(m, p.duration);
-  WriteParam(m, p.flags);
-}
-
-bool ParamTraits<GpuVideoDecoderOutputBufferParam>::Read(
-    const Message* m, void** iter, GpuVideoDecoderOutputBufferParam* r) {
-  if (!ReadParam(m, iter, &r->frame_id) ||
-      !ReadParam(m, iter, &r->timestamp) ||
-      !ReadParam(m, iter, &r->duration) ||
-      !ReadParam(m, iter, &r->flags))
-    return false;
-  return true;
-}
-
-void ParamTraits<GpuVideoDecoderOutputBufferParam>::Log(
-    const GpuVideoDecoderOutputBufferParam& p, std::string* l) {
-  l->append(StringPrintf("(%d %d %d %x)",
-                         p.frame_id,
-                         static_cast<int>(p.timestamp),
-                         static_cast<int>(p.duration),
-                         p.flags));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void ParamTraits<GpuVideoDecoderErrorInfoParam>::Write(
     Message* m, const GpuVideoDecoderErrorInfoParam& p) {
   WriteParam(m, p.error_id);

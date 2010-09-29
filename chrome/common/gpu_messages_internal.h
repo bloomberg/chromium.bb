@@ -297,14 +297,9 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoder)
   IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_EmptyThisBuffer,
                       GpuVideoDecoderInputBufferParam)
 
-  // Require output buffer from GpuVideoDecoder.
-  IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_FillThisBuffer,
-                      GpuVideoDecoderOutputBufferParam)
-
-  // GpuVideoDecoderHost has consumed the output buffer.
-  // NOTE: this may only useful for copy back solution
-  // where output transfer buffer had to be guarded.
-  IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_FillThisBufferDoneACK)
+  // Ask the GPU process to produce a video frame with the ID.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_ProduceVideoFrame,
+                      int32) /* Video Frame ID */
 
   // Sent from Renderer process to the GPU process to notify that textures are
   // generated for a video frame.
@@ -334,16 +329,19 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
   // GpuVideoDecoder require new input buffer.
   IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_EmptyThisBufferDone)
 
-  // GpuVideoDecoder report output buffer ready.
-  IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_FillThisBufferDone,
-                      GpuVideoDecoderOutputBufferParam)
+  // GpuVideoDecoder reports that a video frame is ready to be consumed.
+  IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_ConsumeVideoFrame,
+                      int32, /* Video Frame ID */
+                      int64, /* Timestamp in ms */
+                      int64, /* Duration in ms */
+                      int32) /* Flags */
 
   // Allocate video frames for output of the hardware video decoder.
   IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_AllocateVideoFrames,
-                      int32, /* Numer of video frames to generate */
-                      int32, /* Width of the video frame */
-                      int32, /* Height of the video frame */
-                      media::VideoFrame::Format /* Format of the video frame */)
+                      int32,  /* Numer of video frames to generate */
+                      uint32, /* Width of the video frame */
+                      uint32, /* Height of the video frame */
+                      int32   /* Format of the video frame */)
 
   // Release all video frames allocated for a hardware video decoder.
   IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_ReleaseAllVideoFrames)
