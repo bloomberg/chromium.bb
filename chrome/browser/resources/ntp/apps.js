@@ -36,6 +36,15 @@ function getAppsCallback(data) {
   }
 }
 
+function appsPrefChangeCallback(data) {
+  // Currently the only pref that is watched is the launch type.
+  data.apps.forEach(function(app) {
+    var appLink = document.querySelector('.app a[app-id=' + app['id'] + ']');
+    if (appLink)
+      appLink.setAttribute('launch-type', app['launch_type']);
+  });
+}
+
 var apps = (function() {
 
   function createElement(app) {
@@ -44,6 +53,7 @@ var apps = (function() {
 
     var a = div.appendChild(document.createElement('a'));
     a.setAttribute('app-id', app['id']);
+    a.setAttribute('launch-type', app['launch_type']);
     a.xtitle = a.textContent = app['name'];
     a.href = app['launch_url'];
 
@@ -99,6 +109,20 @@ var apps = (function() {
     return false;
   }
 
+  // Keep in sync with LaunchType in extension_prefs.h
+  var LaunchType = {
+    LAUNCH_PINNED: 0,
+    LAUNCH_REGULAR: 1,
+    LAUNCH_FULLSCREEN: 2
+  };
+
+  // Keep in sync with LaunchContainer in extension.h
+  var LaunchContainer = {
+    LAUNCH_WINDOW: 0,
+    LAUNCH_PANEL: 1,
+    LAUNCH_TAB: 2
+  };
+
   var currentApp;
 
   function addContextMenu(el, app) {
@@ -113,6 +137,24 @@ var apps = (function() {
         $('apps-launch-command').label = app['name'];
         $('apps-options-command').canExecuteChange();
 
+        var appLinkSel = '.app a[app-id=' + app['id'] + ']';
+        var launchType = 
+            el.querySelector(appLinkSel).getAttribute('launch-type');
+
+        var launchContainer = app['launch_container'];
+        var isPanel = launchContainer == LaunchContainer.LAUNCH_PANEL;
+
+        // Update the commands related to the launch type.
+        var launchTypeIds = ['apps-launch-type-pinned',
+                             'apps-launch-type-regular',
+                             'apps-launch-type-fullscreen'];
+        launchTypeIds.forEach(function(id) {
+          var command = $(id);
+          command.disabled = isPanel;
+          command.checked = !isPanel &&
+              launchType == command.getAttribute('launch-type');
+        });
+
         return $('app-context-menu');
       }
     });
@@ -122,7 +164,8 @@ var apps = (function() {
     if (!currentApp)
       return;
 
-    switch (e.command.id) {
+    var commandId = e.command.id;
+    switch (commandId) {
       case 'apps-options-command':
         window.location = currentApp['options_url'];
         break;
@@ -131,6 +174,12 @@ var apps = (function() {
         break;
       case 'apps-uninstall-command':
         chrome.send('uninstallApp', [currentApp['id']]);
+        break;
+      case 'apps-launch-type-pinned':
+      case 'apps-launch-type-regular':
+      case 'apps-launch-type-fullscreen':
+        chrome.send('setLaunchType',
+            [currentApp['id'], e.command.getAttribute('launch-type')]);
         break;
     }
   });

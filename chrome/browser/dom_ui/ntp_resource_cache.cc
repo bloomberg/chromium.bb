@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -268,11 +268,11 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TIPS));
   localized_strings.SetString("close", l10n_util::GetStringUTF16(IDS_CLOSE));
   localized_strings.SetString("history",
-                              l10n_util::GetStringUTF16(IDS_NEW_TAB_HISTORY));
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_HISTORY));
   localized_strings.SetString("downloads",
-                              l10n_util::GetStringUTF16(IDS_NEW_TAB_DOWNLOADS));
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_DOWNLOADS));
   localized_strings.SetString("help",
-                              l10n_util::GetStringUTF16(IDS_NEW_TAB_HELP));
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_HELP));
   localized_strings.SetString("helpurl",
       GetUrlWithLang(GURL(kHelpContentUrl)));
   localized_strings.SetString("appsettings",
@@ -281,6 +281,12 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_UNINSTALL));
   localized_strings.SetString("appoptions",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
+  localized_strings.SetString("applaunchtypepinned",
+      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
+  localized_strings.SetString("applaunchtyperegular",
+      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_REGULAR));
+  localized_strings.SetString("applaunchtypefullscreen",
+      l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
   localized_strings.SetString("web_store_title",
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
   localized_strings.SetString("web_store_url",

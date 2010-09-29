@@ -172,6 +172,12 @@ cr.define('cr.ui', function() {
   cr.defineProperty(Command, 'hidden', cr.PropertyKind.BOOL_ATTR);
 
   /**
+   * Whether the command is checked or not.
+   * @type {boolean}
+   */
+  cr.defineProperty(Command, 'checked', cr.PropertyKind.BOOL_ATTR);
+
+  /**
    * Dispatches a canExecute event on the target.
    * @param {cr.ui.Command} command The command that we are testing for.
    * @param {Element} target The target element to dispatch the event on.

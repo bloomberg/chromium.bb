@@ -136,12 +136,12 @@ def InlineFile(input_filename, output_filename, grd_node):
     """Helper function to inline external script files"""
     return InlineFileContents(src_match, '<script>%s</script>')
 
-  def InlineCssText(text, css_filepath):
+  def InlineCSSText(text, css_filepath):
     """Helper function that inlines external resources in CSS text"""
     filepath = os.path.dirname(css_filepath)
-    return InlineCssBackgroundImages(text, filepath)
+    return InlineCSSImages(text, filepath)
 
-  def InlineCssFile(src_match, inlined_files=inlined_files):
+  def InlineCSSFile(src_match, inlined_files=inlined_files):
     """Helper function to inline external css files.
 
     Args:
@@ -157,11 +157,11 @@ def InlineFile(input_filename, output_filename, grd_node):
     inlined_files.add(filepath)
     # When resolving CSS files we need to pass in the path so that relative URLs
     # can be resolved.
-    return '<style>%s</style>' % InlineCssText(ReadFile(filepath), filepath)
+    return '<style>%s</style>' % InlineCSSText(ReadFile(filepath), filepath)
 
-  def InlineCssBackgroundImages(text, filepath=input_filepath):
+  def InlineCSSImages(text, filepath=input_filepath):
     """Helper function that inlines external images in CSS backgrounds."""
-    return re.sub('background(?:-image)?:[ ]*url\((?:\'|\")' +
+    return re.sub('(?:content|background(?:-image)?):[ ]*url\((?:\'|\")' +
                   '(?P<filename>[^"\'\)\(]*)(?:\'|\")',
                   lambda m: SrcReplace(m, filepath),
                   text)
@@ -174,7 +174,7 @@ def InlineFile(input_filename, output_filename, grd_node):
 
   flat_text = re.sub(
       '<link rel="stylesheet".+?href="(?P<filename>[^"\']*)".*?>',
-      InlineCssFile,
+      InlineCSSFile,
       flat_text)
 
   flat_text = re.sub(
@@ -194,7 +194,7 @@ def InlineFile(input_filename, output_filename, grd_node):
                      flat_text)
 
   # TODO(arv): Only do this inside <style> tags.
-  flat_text = InlineCssBackgroundImages(flat_text)
+  flat_text = InlineCSSImages(flat_text)
 
   flat_text = re.sub('<link rel="icon".+?href="(?P<filename>[^"\']*)"',
                      SrcReplace,
