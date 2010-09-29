@@ -15,14 +15,11 @@
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros_settings_provider_user.h"
-#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -30,9 +27,8 @@
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -102,9 +98,7 @@ ExistingUserController::ExistingUserController(
       background_view_(NULL),
       selected_view_index_(kNotSelected),
       num_login_attempts_(0),
-      bubble_(NULL),
-      last_login_error_(GoogleServiceAuthError::NONE),
-      login_timed_out_(false) {
+      bubble_(NULL) {
   if (delete_scheduled_instance_)
     delete_scheduled_instance_->Delete();
 
@@ -196,7 +190,6 @@ void ExistingUserController::LoginNewUser(const std::string& username,
     return;
 
   new_user_view->SetPassword(password);
-  LOG(INFO) << "Password: " << password;
   new_user_view->Login();
 }
 
@@ -248,52 +241,27 @@ void ExistingUserController::Login(UserController* source,
     num_login_attempts_ = 0;
   }
 
-  password_ = password;
-
-  if (UserCrosSettingsProvider::cached_allow_guest()) {
-    // Starts authentication if guest login is allowed.
-    StartAuthentication();
-  } else {
-    // Otherwise, do whitelist check first.
-    SignedSettingsHelper::Get()->StartCheckWhitelistOp(
-        controllers_[selected_view_index_]->user().email(), this);
-  }
-
   // Disable clicking on other windows.
   SendSetLoginState(false);
-}
 
-void ExistingUserController::OnCheckWhiteListCompleted(
-    bool success, const std::string& email) {
-  if (success) {
-    // Whitelist check passed, continue with authentication.
-    StartAuthentication();
-  } else {
-    // Otherwise, show whitelist check error.
-    ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
-
-    // Reenable userview and use ClearAndEnablePassword to keep username on
-    // screen with the error bubble.
-    controllers_[selected_view_index_]->ClearAndEnablePassword();
-
-    // Reenable clicking on other windows.
-    SendSetLoginState(true);
+  // Use the same LoginPerformer for subsequent login as it has state
+  // such as CAPTCHA challenge token & corresponding user input.
+  if (!login_performer_.get() || num_login_attempts_ <= 1) {
+    login_performer_.reset(new LoginPerformer(this));
   }
+  login_performer_->Login(controllers_[selected_view_index_]->user().email(),
+                          UTF16ToUTF8(password));
 }
 
-void ExistingUserController::StartAuthentication() {
-  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-  Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::AuthenticateToLogin,
-                        profile,
-                        controllers_[selected_view_index_]->user().email(),
-                        UTF16ToUTF8(password_),
-                        login_token_,
-                        login_captcha_));
-  password_.clear();
+void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
+  ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
+
+  // Reenable userview and use ClearAndEnablePassword to keep username on
+  // screen with the error bubble.
+  controllers_[selected_view_index_]->ClearAndEnablePassword();
+
+  // Reenable clicking on other windows.
+  SendSetLoginState(true);
 }
 
 void ExistingUserController::LoginOffTheRecord() {
@@ -301,14 +269,11 @@ void ExistingUserController::LoginOffTheRecord() {
   if (!UserCrosSettingsProvider::cached_allow_bwsi())
     return;
 
-  authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::LoginOffTheRecord));
-
   // Disable clicking on other windows.
   SendSetLoginState(false);
+
+  login_performer_.reset(new LoginPerformer(this));
+  login_performer_->LoginOffTheRecord();
 }
 
 void ExistingUserController::ClearErrors() {
@@ -325,7 +290,7 @@ void ExistingUserController::OnUserSelected(UserController* source) {
   if (new_selected_index != selected_view_index_ &&
       selected_view_index_ != kNotSelected) {
     controllers_[selected_view_index_]->ClearAndEnableFields();
-    ClearCaptchaState();
+    login_performer_.reset(NULL);
     num_login_attempts_ = 0;
   }
   selected_view_index_ = new_selected_index;
@@ -384,11 +349,6 @@ void ExistingUserController::OnGoIncognitoButton() {
 }
 
 void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
-  LOG(INFO) << "OnLoginFailure";
-  ClearCaptchaState();
-
-  last_login_error_ = failure.error();
-  login_timed_out_ = failure.reason() == LoginFailure::LOGIN_TIMED_OUT;
   std::string error = failure.GetErrorString();
 
   // Check networking after trying to login in case user is
@@ -402,8 +362,6 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
     if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
         failure.error().state() == GoogleServiceAuthError::CAPTCHA_REQUIRED) {
       if (!failure.error().captcha().image_url.is_empty()) {
-        // Save token for next login retry.
-        login_token_ = failure.error().captcha().token;
         CaptchaView* view =
             new CaptchaView(failure.error().captcha().image_url);
         view->set_delegate(this);
@@ -432,11 +390,6 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
 void ExistingUserController::AppendStartUrlToCmdline() {
   if (start_url_.is_valid())
     CommandLine::ForCurrentProcess()->AppendArg(start_url_.spec());
-}
-
-void ExistingUserController::ClearCaptchaState() {
-  login_token_.clear();
-  login_captcha_.clear();
 }
 
 gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
@@ -513,15 +466,10 @@ void ExistingUserController::OnPasswordChangeDetected(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
   // When signing in as a "New user" always remove old cryptohome.
   if (selected_view_index_ == controllers_.size() - 1) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(authenticator_.get(),
-                          &Authenticator::ResyncEncryptedData,
-                          credentials));
+    login_performer_->ResyncEncryptedData();
     return;
   }
 
-  cached_credentials_ = credentials;
   PasswordChangedView* view = new PasswordChangedView(this);
   views::Window* window = views::Window::CreateChromeWindow(GetNativeWindow(),
                                                             gfx::Rect(),
@@ -531,10 +479,10 @@ void ExistingUserController::OnPasswordChangeDetected(
 }
 
 void ExistingUserController::OnHelpLinkActivated() {
-  DCHECK(last_login_error_.state() != GoogleServiceAuthError::NONE);
+  DCHECK(login_performer_->error().state() != GoogleServiceAuthError::NONE);
   if (!help_app_.get())
     help_app_.reset(new HelpAppLauncher(GetNativeWindow()));
-  switch (last_login_error_.state()) {
+  switch (login_performer_->error().state()) {
     case(GoogleServiceAuthError::CONNECTION_FAILED):
       help_app_->ShowHelpTopic(
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE);
@@ -544,7 +492,7 @@ void ExistingUserController::OnHelpLinkActivated() {
             HelpAppLauncher::HELP_ACCOUNT_DISABLED);
         break;
     default:
-      help_app_->ShowHelpTopic(login_timed_out_ ?
+      help_app_->ShowHelpTopic(login_performer_->login_timed_out() ?
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE :
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
       break;
@@ -552,27 +500,16 @@ void ExistingUserController::OnHelpLinkActivated() {
 }
 
 void ExistingUserController::OnCaptchaEntered(const std::string& captcha) {
-  login_captcha_ = captcha;
+  login_performer_->set_captcha(captcha);
 }
 
 void ExistingUserController::RecoverEncryptedData(
     const std::string& old_password) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::RecoverEncryptedData,
-                        old_password,
-                        cached_credentials_));
-  cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
+  login_performer_->RecoverEncryptedData(old_password);
 }
 
 void ExistingUserController::ResyncEncryptedData() {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(authenticator_.get(),
-                        &Authenticator::ResyncEncryptedData,
-                        cached_credentials_));
-  cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
+  login_performer_->ResyncEncryptedData();
 }
 
 }  // namespace chromeos

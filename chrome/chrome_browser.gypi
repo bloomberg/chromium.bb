@@ -533,6 +533,8 @@
         'browser/chromeos/login/language_switch_menu.h',
         'browser/chromeos/login/login_html_dialog.cc',
         'browser/chromeos/login/login_html_dialog.h',
+        'browser/chromeos/login/login_performer.cc',
+        'browser/chromeos/login/login_performer.h',
         'browser/chromeos/login/login_screen.cc',
         'browser/chromeos/login/login_screen.h',
         'browser/chromeos/login/login_status_consumer.h',
