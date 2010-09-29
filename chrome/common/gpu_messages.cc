@@ -15,10 +15,6 @@
 
 #if defined(OS_MACOSX)
 
-// TODO(hclam): This is a dummy comment just to get Mac build bots to pick
-// up changes to gpu_messages_internal.h. Remove me after it builds
-// correctly.
-
 // Parameters for the GpuHostMsg_AcceleratedSurfaceSetIOSurface
 // message, which has too many parameters to be sent with the
 // predefined IPC macros.

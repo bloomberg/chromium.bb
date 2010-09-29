@@ -10,59 +10,64 @@
 #include "base/singleton.h"
 #include "chrome/common/gpu_video_common.h"
 #include "chrome/renderer/gpu_channel_host.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_message.h"
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
+#include "media/video/video_decode_engine.h"
 
 using media::VideoFrame;
 using media::Buffer;
 
 class GpuVideoServiceHost;
 
-class GpuVideoDecoderHost
-    : public base::RefCountedThreadSafe<GpuVideoDecoderHost>,
-      public IPC::Channel::Listener {
+// This class is used to talk to GpuVideoDecoder in the GPU process through
+// IPC messages. It implements the interface of VideoDecodeEngine so users
+// view it as a regular video decode engine, the implementation is a portal
+// to the GPU process.
+//
+// THREAD SEMANTICS
+//
+// All methods of this class can be accessed on any thread. A message loop
+// needs to be provided to class through Initialize() for accessing the
+// IPC channel. Event handlers are called on that message loop.
+//
+// Since this class is not refcounted, it is important to delete this
+// object only after OnUninitializeCompelte() is called.
+class GpuVideoDecoderHost : public media::VideoDecodeEngine,
+                            public IPC::Channel::Listener {
  public:
-  class EventHandler {
-   public:
-    virtual void OnInitializeDone(
-        bool success,
-        const GpuVideoDecoderInitDoneParam& param) = 0;
-    virtual void OnUninitializeDone() = 0;
-    virtual void OnFlushDone() = 0;
-    virtual void OnEmptyBufferDone(scoped_refptr<Buffer> buffer) = 0;
-    virtual void OnFillBufferDone(scoped_refptr<VideoFrame> frame) = 0;
-    virtual void OnDeviceError() = 0;
-  };
-
-  typedef enum {
-    kStateUninitialized,
-    kStateNormal,
-    kStateError,
-    kStateFlushing,
-  } GpuVideoDecoderHostState;
+  virtual ~GpuVideoDecoderHost() {}
 
   // IPC::Channel::Listener.
   virtual void OnChannelConnected(int32 peer_pid) {}
   virtual void OnChannelError();
   virtual void OnMessageReceived(const IPC::Message& message);
 
-  bool Initialize(EventHandler* handler, const GpuVideoDecoderInitParam& param);
-  bool Uninitialize();
-  void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
-  void FillThisBuffer(scoped_refptr<VideoFrame> frame);
-  bool Flush();
-
-  int32 decoder_id() { return decoder_info_.decoder_id; }
-  int32 route_id() { return decoder_info_.decoder_route_id; }
-  int32 my_route_id() { return decoder_info_.decoder_host_route_id; }
-
-  virtual ~GpuVideoDecoderHost() {}
+  // media::VideoDecodeEngine implementation.
+  virtual void Initialize(MessageLoop* message_loop,
+                          VideoDecodeEngine::EventHandler* event_handler,
+                          media::VideoDecodeContext* context,
+                          const media::VideoCodecConfig& config);
+  virtual void ConsumeVideoSample(scoped_refptr<Buffer> buffer);
+  virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
+  virtual void Uninitialize();
+  virtual void Flush();
+  virtual void Seek();
 
  private:
   friend class GpuVideoServiceHost;
+
+  // Internal states.
+  enum GpuVideoDecoderHostState {
+    kStateUninitialized,
+    kStateNormal,
+    kStateError,
+    kStateFlushing,
+  };
+
+  // Private constructor.
   GpuVideoDecoderHost(GpuVideoServiceHost* service_host,
-                      GpuChannelHost* channel_host,
+                      IPC::Message::Sender* ipc_sender,
                       int context_route_id);
 
   // Input message handler.
@@ -77,10 +82,16 @@ class GpuVideoDecoderHost
   // Helper function.
   void SendInputBufferToGpu();
 
+  // Getter methods for IDs.
+  int32 decoder_id() { return decoder_info_.decoder_id; }
+  int32 route_id() { return decoder_info_.decoder_route_id; }
+  int32 my_route_id() { return decoder_info_.decoder_host_route_id; }
+
   // We expect that GpuVideoServiceHost's always available during our life span.
   GpuVideoServiceHost* gpu_video_service_host_;
 
-  GpuChannelHost* channel_host_;
+  // Sends IPC messages to the GPU process.
+  IPC::Message::Sender* ipc_sender_;
 
   // Route ID of the GLES2 context in the GPU process.
   int context_route_id_;
@@ -95,7 +106,7 @@ class GpuVideoDecoderHost
   int32 buffer_id_serial_;
 
   // Hold information about GpuVideoDecoder configuration.
-  GpuVideoDecoderInitParam init_param_;
+  media::VideoCodecConfig config_;
 
   // Hold information about output surface format, etc.
   GpuVideoDecoderInitDoneParam done_param_;

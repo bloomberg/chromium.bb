@@ -5,8 +5,10 @@
 #include "chrome/renderer/media/gles2_video_decode_context.h"
 
 Gles2VideoDecodeContext::Gles2VideoDecodeContext(
-    StorageType type, ggl::Context* context)
-    : message_loop_(MessageLoop::current()), type_(type), context_(context) {
+    MessageLoop* message_loop, bool memory_mapped, ggl::Context* context)
+    : message_loop_(message_loop),
+      memory_mapped_(memory_mapped),
+      context_(context) {
 }
 
 Gles2VideoDecodeContext::~Gles2VideoDecodeContext() {

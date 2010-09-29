@@ -72,10 +72,10 @@ class VideoDecodeContext {
                                   Task* task) = 0;
 
   // Destroy this context asynchronously. When the operation is done |task|
-  // is called.
+  // is called. It is safe to delete this object only after |task| is called.
   //
   // ReleaseVideoFrames() need to be called with all the video frames allocated
- // before making this call.
+  // before making this call.
   virtual void Destroy(Task* task) = 0;
 };
 
