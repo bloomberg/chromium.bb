@@ -20,10 +20,6 @@ UNADDRESSABLE ACCESS
 ntdll.dll!strchr
 KERNEL32.dll!LoadLibraryExW
 
-# http://code.google.com/p/drmemory/issues/detail?id=11
-UNADDRESSABLE ACCESS
-*!_chkstk
-
 # http://code.google.com/p/drmemory/issues/detail?id=12
 UNINITIALIZED READ
 ntdll.dll!Rtl*
@@ -46,10 +42,22 @@ UNADDRESSABLE ACCESS
 ...
 SHELL32.dll!SHFileOperation*
 
+UNINITIALIZED READ
+...
+SHELL32.dll!ILLoadFromStream*
+
+UNINITIALIZED READ
+...
+SHELL32.dll!ILSaveToStream*
+
 # http://code.google.com/p/drmemory/issues/detail?id=14
 UNINITIALIZED READ
 ...
-KERNEL32.dll!CreateProcess*
+*!CreateProcess*
+
+UNINITIALIZED READ
+...
+*!base::LaunchApp*
 
 # http://code.google.com/p/drmemory/issues/detail?id=15
 UNINITIALIZED READ
@@ -170,7 +178,17 @@ UNADDRESSABLE ACCESS
 
 UNADDRESSABLE ACCESS
 ...
-*!IPC::ChannelProxy::Context::On*Message*
+*!IPC::Channel*::*Message*
+
+# http://code.google.com/p/drmemory/issues/detail?id=58
+UNINITIALIZED READ
+...
+*!_cfltcvt_l
+
+# http://code.google.com/p/drmemory/issues/detail?id=59
+UNADDRESSABLE ACCESS
+...
+*!SetEnvironmentVariable*
 
 ############################
 # TODO(timurrrr): investigate these
@@ -180,7 +198,7 @@ UNINITIALIZED READ
 
 UNINITIALIZED READ
 ...
-ADVAPI32.dll!CryptAcquireContext*
+ADVAPI32.dll!Crypt*
 
 UNINITIALIZED READ
 ...
@@ -234,6 +252,30 @@ KERNEL32.dll!ExitProcess
 UNINITIALIZED READ
 ...
 *!SyncSocketClientListener::OnMsgClassResponse
+
+UNINITIALIZED READ
+WSHTCPIP.dll!WSHGetSockaddrType
+...
+WS2_32.dll!connect
+
+UNINITIALIZED READ
+...
+WS2_32.dll!socket
+
+UNINITIALIZED READ
+...
+*!*NSPRInitSingleton*
+
+UNINITIALIZED READ
+*!NdrSimpleStructFree
+
+UNINITIALIZED READ
+...
+*!SetSecurityDescriptorDacl
+
+UNINITIALIZED READ
+...
+MSWSOCK.dll!WSPStartup
 
 ############################
 # Intentional errors in Chromium tests (ToolsSanityTests)
@@ -289,5 +331,12 @@ base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 ############################
 # Real issues in Chromium
 
-# Currently - none found.
+# http://crbug.com/57266 (1)
+UNINITIALIZED READ
+...
+*!remoting::EncoderVp8::Encode
 
+# http://crbug.com/57266 (2)
+UNINITIALIZED READ
+...
+*!vp8_tokenize_mb
