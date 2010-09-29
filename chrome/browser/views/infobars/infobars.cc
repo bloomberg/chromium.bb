@@ -150,12 +150,17 @@ void InfoBar::ViewHierarchyChanged(bool is_add, views::View* parent,
     }
   }
 
-  // For accessibility, make the close button that the child view.
-  if (parent == this && child != close_button_ &&
-          HasChildView(close_button_) &&
-              GetChildViewAt(GetChildViewCount() - 1) != close_button_) {
-    RemoveChildView(close_button_);
-    AddChildView(close_button_);
+  if (GetWidget() && GetWidget()->IsAccessibleWidget()) {
+    // For accessibility, make the close button the last child view.
+    if (parent == this && child != close_button_ &&
+        HasChildView(close_button_) &&
+        GetChildViewAt(GetChildViewCount() - 1) != close_button_) {
+      RemoveChildView(close_button_);
+      AddChildView(close_button_);
+    }
+
+    // Allow screen reader users to focus the close button.
+    close_button_->SetFocusable(true);
   }
 }
 
