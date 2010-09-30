@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "chrome/browser/accessibility_events.h"
+#include "gfx/native_widget_types.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
@@ -66,6 +67,9 @@ class AccessibleViewHelper {
   void SetViewName(views::View* view, int string_id);
 
  private:
+  // Returns a native view if the given view has a native view in it.
+  gfx::NativeView GetNativeView(views::View* view) const;
+
   AccessibilityEventRouterViews* accessibility_event_router_;
   Profile* profile_;
   views::View* view_tree_;

@@ -79,7 +79,7 @@ class ContentView : public views::View {
  public:
   ContentView()
       : accel_enable_accessibility_(
-            WizardAccessibilityHelper::GetAccelerator()) {
+            chromeos::WizardAccessibilityHelper::GetAccelerator()) {
     AddAccelerator(accel_enable_accessibility_);
 #if !defined(OFFICIAL_BUILD)
     accel_account_screen_ = views::Accelerator(app::VKEY_A,
@@ -119,7 +119,7 @@ class ContentView : public views::View {
       return false;
 
     if (accel == accel_enable_accessibility_) {
-      WizardAccessibilityHelper::GetInstance()->EnableAccessibility(
+      chromeos::WizardAccessibilityHelper::GetInstance()->EnableAccessibility(
           controller->contents());
 #if !defined(OFFICIAL_BUILD)
     } else if (accel == accel_account_screen_) {

@@ -22,6 +22,8 @@ class Accelerator;
 class View;
 }
 
+namespace chromeos {
+
 // Class that provides convenience methods to enable accessibility for a
 // specified View.
 class WizardAccessibilityHelper {
@@ -73,5 +75,7 @@ class WizardAccessibilityHelper {
 
   DISALLOW_COPY_AND_ASSIGN(WizardAccessibilityHelper);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_ACCESSIBILITY_HELPER_H_

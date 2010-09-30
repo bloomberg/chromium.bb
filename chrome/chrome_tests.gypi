@@ -877,6 +877,7 @@
         'browser/chromeos/login/owner_key_utils_unittest.cc',
         'browser/chromeos/login/owner_manager_unittest.cc',
         'browser/chromeos/login/ownership_service_unittest.cc',
+        'browser/chromeos/login/wizard_accessibility_handler_unittest.cc',
         'browser/chromeos/login/signed_settings_unittest.cc',
         'browser/chromeos/login/signed_settings_helper_unittest.cc',
         'browser/chromeos/notifications/desktop_notifications_unittest.cc',

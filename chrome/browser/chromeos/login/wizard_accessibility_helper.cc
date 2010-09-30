@@ -17,6 +17,8 @@
 #include "views/accelerator.h"
 #include "views/view.h"
 
+namespace chromeos {
+
 scoped_ptr<views::Accelerator> WizardAccessibilityHelper::accelerator_;
 
 // static
@@ -114,3 +116,5 @@ void WizardAccessibilityHelper::AddViewToBuffer(views::View* view_tree) {
   if (!view_exists)
     views_buffer_[view_tree] = false;
 }
+
+}  // namespace chromeos

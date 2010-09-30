@@ -9480,6 +9480,83 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PROXY_PORT" desc="Label for the Port box.">
         Port
       </message>
+
+      <!-- Accessibility strings, to be spoken -->
+      <message name="IDS_CHROMEOS_ACC_BUTTON" desc="Label indicating that a control is a pushbutton.">
+        Button
+      </message>
+      <message name="IDS_CHROMEOS_ACC_CHECKBOX_UNCHECKED" desc="Label indicating that a control is an unchecked check box.">
+        Unchecked check box
+      </message>
+      <message name="IDS_CHROMEOS_ACC_CHECKBOX_CHECKED" desc="Label indicating that a control is a checked check box.">
+        Checked check box
+      </message>
+      <message name="IDS_CHROMEOS_ACC_RADIO_UNSELECTED" desc="Label indicating that a control is an unselected radio button.">
+        Unselected radio button
+      </message>
+      <message name="IDS_CHROMEOS_ACC_RADIO_SELECTED" desc="Label indicating that a control is a selected radio button.">
+        Selected radio button
+      </message>
+      <message name="IDS_CHROMEOS_ACC_COMBOBOX" desc="Label indicating that a control is a combo box, a control that pops down a list of options to choose from.">
+        Combo box
+      </message>
+      <message name="IDS_CHROMEOS_ACC_LISTBOX" desc="Label indicating that a control is a list box, a control that shows a fixed list of options to choose from.">
+        List box
+      </message>
+      <message name="IDS_CHROMEOS_ACC_LINK" desc="Label indicating that a control is a clickable link.">
+        Link
+      </message>
+      <message name="IDS_CHROMEOS_ACC_MENU" desc="Label indicating that a control is a menu that will drop down to reveal options if you click on it.">
+        Menu
+      </message>
+      <message name="IDS_CHROMEOS_ACC_TAB" desc="Label indicating that a control is one tab in a tabbed dialog or window.">
+        Tab
+      </message>
+      <message name="IDS_CHROMEOS_ACC_TEXTBOX" desc="Label indicating that a control is an editable text box.">
+        Text box
+      </message>
+      <message name="IDS_CHROMEOS_ACC_PASSWORDBOX" desc="Label indicating that a control is a secure editable text box for a password, where the keys you type will be obscured.">
+        Password text box
+      </message>
+      <message name="IDS_CHROMEOS_ACC_INDEX_OF_COUNT" desc="Phrase indicating that the current selected item is number INDEX out of a list of COUNT choices, for example if the list is A, B, C, D, E and the user has selected C the phrase would be '3 of 5'.">
+        <ph name="INDEX">$1<ex>3</ex></ph> of <ph name="COUNT">$2<ex>5</ex></ph>
+      </message>
+      <message name="IDS_CHROMEOS_ACC_HAS_SUBMENU" desc="Phrase indicating that a menu item has a submenu.">
+        Has submenu
+      </message>
+      <message name="IDS_CHROMEOS_ACC_SELECTED" desc="Phrase indicating that a control was selected or activated.">
+        Selected
+      </message>
+      <message name="IDS_CHROMEOS_ACC_EXCLAMATION_POINT" desc="The name of the exclamation point character.">
+        Exclamation point
+      </message>
+      <message name="IDS_CHROMEOS_ACC_LEFT_PAREN" desc="The name of the left parenthesis character, abbreviated or shortened if possible.">
+        Left paren
+      </message>
+      <message name="IDS_CHROMEOS_ACC_RIGHT_PAREN" desc="The name of the left parenthesis character, abbreviated or shortened if possible.">
+        Right paren
+      </message>
+      <message name="IDS_CHROMEOS_ACC_SEMICOLON" desc="The name of the semicolon character.">
+        Semicolon
+      </message>
+      <message name="IDS_CHROMEOS_ACC_COLON" desc="The name of the colon character.">
+        Colon
+      </message>
+      <message name="IDS_CHROMEOS_ACC_QUOTE" desc="The name of the quotation mark character, abbreviated or shortened if possible.">
+        Quote
+      </message>
+      <message name="IDS_CHROMEOS_ACC_COMMA" desc="The name of the comma character.">
+        Comma
+      </message>
+      <message name="IDS_CHROMEOS_ACC_PERIOD" desc="The name of the period character.">
+        Period
+      </message>
+      <message name="IDS_CHROMEOS_ACC_SPACE" desc="The name of a space character.">
+        Space
+      </message>
+      <message name="IDS_CHROMEOS_ACC_TEXT_UNSELECTED" desc="A phrase to indicate to the user that text has been unselected.">
+        Unselected
+      </message>
     </if>
     <if expr="pp_ifdef('chromeos') and lang == 'ja'">
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="In the language menu button, this shows a character set in use is set to Hiragana.">

@@ -64,6 +64,12 @@ void ExtensionAccessibilityEventRouter::ObserveProfile(Profile* profile) {
     registrar_.Add(this,
                    NotificationType::ACCESSIBILITY_TEXT_CHANGED,
                    NotificationService::AllSources());
+    registrar_.Add(this,
+                   NotificationType::ACCESSIBILITY_MENU_OPENED,
+                   NotificationService::AllSources());
+    registrar_.Add(this,
+                   NotificationType::ACCESSIBILITY_MENU_CLOSED,
+                   NotificationService::AllSources());
   }
 }
 

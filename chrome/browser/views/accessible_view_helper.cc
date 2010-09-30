@@ -9,6 +9,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/accessibility_event_router_views.h"
 #include "chrome/common/notification_service.h"
+#include "views/controls/native/native_view_host.h"
 #include "views/widget/widget.h"
 #include "views/view.h"
 
@@ -59,6 +60,12 @@ void AccessibleViewHelper::IgnoreView(views::View* view) {
 
   accessibility_event_router_->IgnoreView(view);
   managed_views_.push_back(view);
+
+ #if defined(OS_LINUX)
+  gfx::NativeView native_view = GetNativeView(view);
+  if (native_view)
+    widget_helper_->IgnoreWidget(native_view);
+ #endif
 }
 
 void AccessibleViewHelper::SetViewName(views::View* view, std::string name) {
@@ -67,13 +74,28 @@ void AccessibleViewHelper::SetViewName(views::View* view, std::string name) {
 
   accessibility_event_router_->SetViewName(view, name);
   managed_views_.push_back(view);
+
+ #if defined(OS_LINUX)
+  gfx::NativeView native_view = GetNativeView(view);
+  if (native_view)
+    widget_helper_->SetWidgetName(native_view, name);
+ #endif
 }
 
 void AccessibleViewHelper::SetViewName(views::View* view, int string_id) {
-  if (!view_tree_)
-    return;
+  const std::string name = l10n_util::GetStringUTF8(string_id);
+  SetViewName(view, name);
+}
 
-  std::string name = l10n_util::GetStringUTF8(string_id);
-  accessibility_event_router_->SetViewName(view, name);
-  managed_views_.push_back(view);
+gfx::NativeView AccessibleViewHelper::GetNativeView(views::View* view) const {
+  if (view->GetClassName() == views::NativeViewHost::kViewClassName)
+    return static_cast<views::NativeViewHost*>(view)->native_view();
+
+  for (int i = 0; i < view->GetChildViewCount(); i++) {
+    gfx::NativeView native_view = GetNativeView(view->GetChildViewAt(i));
+    if (native_view)
+      return native_view;
+  }
+
+  return NULL;
 }

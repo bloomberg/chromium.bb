@@ -101,6 +101,10 @@ class AccessibilityRadioButtonInfo : public AccessibilityControlInfo {
 
   void SetChecked(bool checked) { checked_ = checked; }
 
+  int item_index() const { return item_index_; }
+  int item_count() const { return item_count_; }
+  bool checked() const { return checked_; }
+
  private:
   bool checked_;
   // The 0-based index of this radio button and number of buttons in the group.
@@ -124,6 +128,8 @@ class AccessibilityCheckboxInfo : public AccessibilityControlInfo {
   virtual void SerializeToDict(DictionaryValue* dict) const;
 
   void SetChecked(bool checked) { checked_ = checked; }
+
+  bool checked() const { return checked_; }
 
  private:
   bool checked_;
@@ -150,6 +156,9 @@ class AccessibilityTabInfo : public AccessibilityControlInfo {
     tab_index_ = tab_index;
     name_ = tab_name;
   }
+
+  int tab_index() const { return tab_index_; }
+  int tab_count() const { return tab_count_; }
 
  private:
   // The 0-based index of this tab and number of tabs in the group.
@@ -180,6 +189,10 @@ class AccessibilityComboBoxInfo : public AccessibilityControlInfo {
     item_index_ = item_index;
     value_ = value;
   }
+
+  int item_index() const { return item_index_; }
+  int item_count() const { return item_count_; }
+  const std::string& value() const { return value_; }
 
  private:
   std::string value_;
@@ -214,6 +227,11 @@ class AccessibilityTextBoxInfo : public AccessibilityControlInfo {
     selection_end_ = selection_end;
   }
 
+  const std::string& value() const { return value_; }
+  bool password() const { return password_; }
+  int selection_start() const { return selection_start_; }
+  int selection_end() const { return selection_end_; }
+
  private:
   std::string value_;
   bool password_;
@@ -244,6 +262,10 @@ class AccessibilityListBoxInfo : public AccessibilityControlInfo {
     item_index_ = item_index;
     value_ = value;
   }
+
+  int item_index() const { return item_index_; }
+  int item_count() const { return item_count_; }
+  const std::string& value() const { return value_; }
 
  private:
   std::string value_;
@@ -282,6 +304,10 @@ class AccessibilityMenuItemInfo : public AccessibilityControlInfo {
   virtual const char* type() const;
 
   virtual void SerializeToDict(DictionaryValue* dict) const;
+
+  int item_index() const { return item_index_; }
+  int item_count() const { return item_count_; }
+  bool has_submenu() const { return has_submenu_; }
 
  private:
   bool has_submenu_;
