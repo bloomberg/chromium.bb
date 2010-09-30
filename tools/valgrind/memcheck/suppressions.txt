@@ -2669,3 +2669,10 @@
    fun:_ZN4base21ScopedCallbackFactoryIN7fileapi19FileSystemOperationEE12CallbackImplIMS2_FvNS_17PlatformFileErrorERKSt6vectorINS_15file_util_proxy5EntryESaIS8_EEE6Tuple2IS5_SC_EE13RunWithParamsERKSG_
    fun:_ZN14CallbackRunnerI6Tuple2IN4base17PlatformFileErrorERKSt6vectorINS1_15file_util_proxy5EntryESaIS5_EEEE3RunIS2_S7_EEvRKT_RKT0_
 }
+{
+   bug_57456
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net13DnsRRResolver7ResolveERKSsttP14CallbackRunnerI6Tuple1IiEEPNS_10RRResponseEiRKNS_11BoundNetLogE
+   fun:_ZN3net30DnsRRResolverTest_Resolve_Test8TestBodyEv
+}
