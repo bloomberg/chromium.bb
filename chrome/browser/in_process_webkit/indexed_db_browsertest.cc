@@ -67,15 +67,6 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
     return ui_test_utils::GetTestUrl(kTestDir, file_path);
   }
 
-  std::string GetTestLog() {
-    std::string script = "window.domAutomationController.send(getLog())";
-    std::string js_result;
-    ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser()->GetSelectedTabContents()->render_view_host(),
-        L"", UTF8ToWide(script), &js_result);
-    return js_result;
-  }
-
   void SimpleTest(const GURL& test_url) {
     // The test page will open a cursor on IndexedDB, then navigate to either a
     // #pass or #fail ref.
@@ -83,7 +74,10 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
         browser(), test_url, 2);
     std::string result = browser()->GetSelectedTabContents()->GetURL().ref();
     if (result != "pass") {
-      std::string js_result = GetTestLog();
+      std::string js_result;
+      ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+          browser()->GetSelectedTabContents()->render_view_host(), L"",
+          L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;
     }
   }

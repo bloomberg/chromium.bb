@@ -107,11 +107,13 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
 DOMElementProxyRef GetActiveDOMDocument(Browser* browser);
 
 // Executes the passed |script| in the frame pointed to by |frame_xpath| (use
-// empty string for main frame) and returns the value the evaluation of the
-// script returned.  The caller owns the returned value.
-Value* ExecuteJavaScript(RenderViewHost* render_view_host,
-                         const std::wstring& frame_xpath,
-                         const std::wstring& script);
+// empty string for main frame).  The |script| should not invoke
+// domAutomationController.send(); otherwise, your test will hang or be flaky.
+// If you want to extract a result, use one of the below functions.
+// Returns true on success.
+bool ExecuteJavaScript(RenderViewHost* render_view_host,
+                       const std::wstring& frame_xpath,
+                       const std::wstring& script) WARN_UNUSED_RESULT;
 
 // The following methods executes the passed |script| in the frame pointed to by
 // |frame_xpath| (use empty string for main frame) and sets |result| to the
@@ -123,15 +125,15 @@ Value* ExecuteJavaScript(RenderViewHost* render_view_host,
 bool ExecuteJavaScriptAndExtractInt(RenderViewHost* render_view_host,
                                     const std::wstring& frame_xpath,
                                     const std::wstring& script,
-                                    int* result);
+                                    int* result) WARN_UNUSED_RESULT;
 bool ExecuteJavaScriptAndExtractBool(RenderViewHost* render_view_host,
                                      const std::wstring& frame_xpath,
                                      const std::wstring& script,
-                                     bool* result);
+                                     bool* result) WARN_UNUSED_RESULT;
 bool ExecuteJavaScriptAndExtractString(RenderViewHost* render_view_host,
                                        const std::wstring& frame_xpath,
                                        const std::wstring& script,
-                                       std::string* result);
+                                       std::string* result) WARN_UNUSED_RESULT;
 
 // Generate the file path for testing a particular test.
 // The file for the tests is all located in

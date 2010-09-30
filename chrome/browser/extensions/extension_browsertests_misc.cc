@@ -98,19 +98,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
   ui_test_utils::NavigateToURL(
       browser(), origin_privileges_index.ReplaceComponents(make_host_a_com));
   std::string result;
-  ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
     browser()->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title)",
-      &result);
+    &result));
   EXPECT_EQ(result, "Loaded");
 
   // A web host that does not have permission.
   ui_test_utils::NavigateToURL(
       browser(), origin_privileges_index.ReplaceComponents(make_host_b_com));
-  ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->render_view_host(), L"",
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title)",
-      &result);
+      &result));
   EXPECT_EQ(result, "Image failed to load");
 
   // A data URL. Data URLs should always be able to load chrome-extension://
@@ -121,10 +121,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
                     .AppendASCII("index.html"), &file_source));
   ui_test_utils::NavigateToURL(browser(),
       GURL(std::string("data:text/html;charset=utf-8,") + file_source));
-  ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->render_view_host(), L"",
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title)",
-      &result);
+      &result));
   EXPECT_EQ(result, "Loaded");
 
   // A different extension. Extensions should always be able to load each
@@ -134,10 +134,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("chrome-extension://pbkkcbgdkliohhfaeefcijaghglkahja/index.html"));
-  ui_test_utils::ExecuteJavaScriptAndExtractString(
-    browser()->GetSelectedTabContents()->render_view_host(), L"",
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
       L"window.domAutomationController.send(document.title)",
-      &result);
+      &result));
   EXPECT_EQ(result, "Loaded");
 }
 
@@ -154,9 +154,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
 
   bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"testTabsAPI()", &result);
+      L"testTabsAPI()", &result));
   EXPECT_TRUE(result);
 
   // There was a bug where we would crash if we navigated to a page in the same
@@ -166,9 +166,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
       browser(),
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
   result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"testTabsAPI()", &result);
+      L"testTabsAPI()", &result));
   EXPECT_TRUE(result);
 }
 
@@ -610,22 +610,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
 
   bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testLastError()", &result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      host->render_view_host(), L"", L"testLastError()", &result));
   EXPECT_TRUE(result);
 }
 
 // Helper function for common code shared by the 3 WindowOpen tests below.
-static TabContents* WindowOpenHelper(Browser* browser, const GURL& start_url,
-                                    const std::string& newtab_url) {
+static void WindowOpenHelper(Browser* browser, const GURL& start_url,
+                             const std::string& newtab_url,
+                             TabContents** newtab_result) {
   ui_test_utils::NavigateToURL(browser, start_url);
 
-  bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       browser->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.open('" + UTF8ToWide(newtab_url) + L"');"
-      L"window.domAutomationController.send(true);", &result);
-  EXPECT_TRUE(result);
+      L"window.open('" + UTF8ToWide(newtab_url) + L"');"));
 
   // Now the active tab in last active window should be the new tab.
   Browser* last_active_browser = BrowserList::GetLastActive();
@@ -636,9 +634,10 @@ static TabContents* WindowOpenHelper(Browser* browser, const GURL& start_url,
   if (!newtab->controller().GetLastCommittedEntry() ||
       newtab->controller().GetLastCommittedEntry()->url() != expected_url)
     ui_test_utils::WaitForNavigation(&newtab->controller());
-  EXPECT_EQ(expected_url, newtab->controller().GetLastCommittedEntry()->url());
-
-  return newtab;
+  EXPECT_EQ(expected_url,
+            newtab->controller().GetLastCommittedEntry()->url());
+  if (newtab_result)
+    *newtab_result = newtab;
 }
 
 // Tests that an extension page can call window.open to an extension URL and
@@ -647,15 +646,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
-  TabContents* newtab = WindowOpenHelper(
+  TabContents* newtab;
+  ASSERT_NO_FATAL_FAILURE(WindowOpenHelper(
       browser(),
       GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
            "/test.html"),
-      "newtab.html");
+      "newtab.html", &newtab));
 
   bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      newtab->render_view_host(), L"", L"testExtensionApi()", &result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      newtab->render_view_host(), L"", L"testExtensionApi()", &result));
   EXPECT_TRUE(result);
 }
 
@@ -665,11 +665,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
-  WindowOpenHelper(
+  ASSERT_NO_FATAL_FAILURE(WindowOpenHelper(
       browser(),
       GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
            "/test.html"),
-      "chrome-extension://thisissurelynotavalidextensionid/newtab.html");
+      "chrome-extension://thisissurelynotavalidextensionid/newtab.html", NULL));
 
   // If we got to this point, we didn't crash, so we're good.
 }
@@ -682,16 +682,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
 
-  TabContents* newtab = WindowOpenHelper(
+  TabContents* newtab;
+  ASSERT_NO_FATAL_FAILURE(WindowOpenHelper(
       browser(),
       GURL("about:blank"),
       std::string("chrome-extension://") + last_loaded_extension_id_ +
-          "/newtab.html");
+          "/newtab.html",
+      &newtab));
 
   // Extension API should succeed.
   bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      newtab->render_view_host(), L"", L"testExtensionApi()", &result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      newtab->render_view_host(), L"", L"testExtensionApi()", &result));
   EXPECT_TRUE(result);
 }
 
@@ -717,8 +719,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   // With no extensions, the plugin should not be loaded.
   bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result));
   EXPECT_FALSE(result);
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
@@ -727,13 +729,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   // Now the plugin should be in the cache, but we have to reload the page for
   // it to work.
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result));
   EXPECT_FALSE(result);
   browser()->Reload(CURRENT_TAB);
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result));
   EXPECT_TRUE(result);
 
   EXPECT_EQ(size_before + 1, service->extensions()->size());
@@ -742,8 +744,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   // Now the plugin should be unloaded, and the page should be broken.
 
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result));
   EXPECT_FALSE(result);
 
   // If we reload the extension and page, it should work again.
@@ -752,8 +754,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   browser()->Reload(CURRENT_TAB);
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result));
   EXPECT_TRUE(result);
 }
 
@@ -764,7 +766,6 @@ static const wchar_t* jscript_click_option_button =
     L"      document, null, XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,"
     L"      null).snapshotItem(0);"
     L"  button.click();"
-    L"  window.domAutomationController.send(0);"
     L"})();";
 
 // Test that an extension with an options page makes an 'Options' button appear
@@ -782,9 +783,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   // Go to the chrome://extensions page and click the Options button.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
   TabStripModel* tab_strip = browser()->tabstrip_model();
-  TabContents* extensions_tab = browser()->GetSelectedTabContents();
-  ui_test_utils::ExecuteJavaScript(extensions_tab->render_view_host(), L"",
-                                   jscript_click_option_button);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      jscript_click_option_button));
 
   // If the options page hasn't already come up, wait for it.
   if (tab_strip->count() == 1) {
@@ -849,8 +850,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PropertyAppIsInstalled) {
 
   // Test that trying to set window.chrome.app.isInstalled throws
   // an exception.
-  ASSERT_TRUE(
-      ui_test_utils::ExecuteJavaScriptAndExtractString(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
           browser()->GetSelectedTabContents()->render_view_host(),
           L"",
           L"window.domAutomationController.send("

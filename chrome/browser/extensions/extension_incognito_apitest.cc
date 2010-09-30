@@ -35,10 +35,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
 
   // Verify the script didn't run.
   bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), L"",
       L"window.domAutomationController.send(document.title == 'Unmodified')",
-      &result);
+      &result));
   EXPECT_TRUE(result);
 }
 
@@ -71,10 +71,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
 
   // Verify the script ran.
   bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->render_view_host(), L"",
       L"window.domAutomationController.send(document.title == 'modified')",
-      &result);
+      &result));
   EXPECT_TRUE(result);
 }
 

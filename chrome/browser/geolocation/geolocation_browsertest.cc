@@ -62,9 +62,9 @@ class IFrameLoader : public NotificationObserver {
     script = StringPrintf(
         "window.domAutomationController.send(getIFrameSrc(%d))", iframe_id);
     std::string iframe_src;
-    ui_test_utils::ExecuteJavaScriptAndExtractString(
+    EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
         browser->GetSelectedTabContents()->render_view_host(),
-        L"", UTF8ToWide(script), &iframe_src);
+        L"", UTF8ToWide(script), &iframe_src));
     iframe_url_ = GURL(iframe_src);
   }
 
@@ -321,9 +321,9 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
     std::string script = StringPrintf(
         "window.domAutomationController.send(%s)", function.c_str());
     std::string result;
-    ui_test_utils::ExecuteJavaScriptAndExtractString(
+    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
         tab_contents->render_view_host(),
-        iframe_xpath_, UTF8ToWide(script), &result);
+        iframe_xpath_, UTF8ToWide(script), &result));
     EXPECT_EQ(expected, result);
   }
 

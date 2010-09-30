@@ -23,13 +23,8 @@ static void WindowOpenHelper(Browser* browser,
                              RenderViewHost* opener_host,
                              const GURL& url,
                              bool newtab_process_should_equal_opener) {
-  bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      opener_host, L"",
-      L"window.open('" + UTF8ToWide(url.spec()) + L"');"
-      L"window.domAutomationController.send(true);",
-      &result);
-  ASSERT_TRUE(result);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      opener_host, L"", L"window.open('" + UTF8ToWide(url.spec()) + L"');"));
 
   // The above window.open call is not user-initiated, it will create
   // a popup window instead of a new tab in current window.
@@ -51,13 +46,13 @@ static void WindowOpenHelper(Browser* browser,
 // Simulates a page navigating itself to an URL, and waits for the navigation.
 static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       contents->render_view_host(), L"",
       L"window.addEventListener('unload', function() {"
       L"    window.domAutomationController.send(true);"
       L"}, false);"
       L"window.location = '" + UTF8ToWide(url.spec()) + L"';",
-      &result);
+      &result));
   ASSERT_TRUE(result);
 
   if (!contents->controller().GetLastCommittedEntry() ||

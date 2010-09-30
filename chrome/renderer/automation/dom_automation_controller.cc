@@ -72,19 +72,17 @@ void DomAutomationController::Send(const CppArgumentList& args,
     }
   }
 
-  bool succeeded = serializer.Serialize(*value);
-  if (!succeeded) {
+  if (!serializer.Serialize(*value)) {
     result->SetNull();
     return;
   }
 
-  succeeded = sender_->Send(
-    new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_));
+  bool succeeded = sender_->Send(
+      new ViewHostMsg_DomOperationResponse(routing_id_, json, automation_id_));
+  result->Set(succeeded);
 
   automation_id_ = MSG_ROUTING_NONE;
 
-  result->Set(succeeded);
-  return;
 }
 
 void DomAutomationController::SendJSON(const CppArgumentList& args,
