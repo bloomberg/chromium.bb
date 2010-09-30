@@ -213,10 +213,6 @@ void InitChromeLogging(const CommandLine& command_line,
       command_line.HasSwitch(switches::kNoErrorDialogs))
     SuppressDialogs();
 
-  std::string log_filter_prefix =
-      command_line.GetSwitchValueASCII(switches::kLogFilterPrefix);
-  logging::SetLogFilterPrefix(log_filter_prefix.c_str());
-
   // Use a minimum log level if the command line has one, otherwise set the
   // default to LOG_WARNING.
   std::string log_level = command_line.GetSwitchValueASCII(

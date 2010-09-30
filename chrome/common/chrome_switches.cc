@@ -700,10 +700,6 @@ const char kLoadPlugin[]                    = "load-plugin";
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
-// Will filter log messages to show only the messages that are prefixed
-// with the specified value. See also kEnableLogging and kLoggingLevel.
-const char kLogFilterPrefix[]               = "log-filter-prefix";
-
 // Make plugin processes log their sent and received messages to LOG(INFO).
 const char kLogPluginMessages[]             = "log-plugin-messages";
 

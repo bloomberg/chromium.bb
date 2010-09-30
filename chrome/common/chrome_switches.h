@@ -204,7 +204,6 @@ extern const char kKeepAliveForTest[];
 extern const char kLoadExtension[];
 extern const char kLoadPlugin[];
 extern const char kExtraPluginDir[];
-extern const char kLogFilterPrefix[];
 extern const char kLogNetLog[];
 extern const char kLogPluginMessages[];
 extern const char kLoggingLevel[];
