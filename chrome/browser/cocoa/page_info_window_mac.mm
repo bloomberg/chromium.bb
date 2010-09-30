@@ -57,14 +57,6 @@ void ShowPageInfo(gfx::NativeWindow parent,
   PageInfoWindowMac::ShowPageInfo(parent, profile, url, ssl, show_history);
 }
 
-void ShowPageInfoBubble(gfx::NativeWindow parent,
-                        Profile* profile,
-                        const GURL& url,
-                        const NavigationEntry::SSLStatus& ssl,
-                        bool show_history) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace browser
 
 PageInfoWindowMac::PageInfoWindowMac(PageInfoWindowController* controller,

@@ -101,7 +101,7 @@ const Experiment kExperiments[] = {
     "page-info-bubble",  // Do not change; see above.
     IDS_LABS_PAGE_INFO_BUBBLE_NAME,
     IDS_LABS_PAGE_INFO_BUBBLE_DESCRIPTION,
-    kOsWin | kOsLinux,
+    kOsAll,
     switches::kEnableNewPageInfoBubble
   },
   {

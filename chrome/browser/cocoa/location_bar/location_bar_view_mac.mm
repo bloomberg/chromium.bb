@@ -409,6 +409,14 @@ NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
   return [field_ convertPoint:point toView:nil];
 }
 
+NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect frame = [cell frameForDecoration:location_icon_decoration_.get()
+                                        inFrame:[field_ bounds]];
+  const NSPoint point = location_icon_decoration_->GetBubblePointInFrame(frame);
+  return [field_ convertPoint:point toView:nil];
+}
+
 NSImage* LocationBarViewMac::GetKeywordImage(const std::wstring& keyword) {
   const TemplateURL* template_url =
       profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);

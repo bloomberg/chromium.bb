@@ -1010,6 +1010,7 @@
         'browser/cocoa/nsimage_cache_unittest.mm',
         'browser/cocoa/nsmenuitem_additions_unittest.mm',
         'browser/cocoa/objc_method_swizzle_unittest.mm',
+        'browser/cocoa/page_info_bubble_controller_unittest.mm',
         'browser/cocoa/page_info_window_mac_unittest.mm',
         'browser/cocoa/preferences_window_controller_unittest.mm',
         'browser/cocoa/reload_button_unittest.mm',

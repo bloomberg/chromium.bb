@@ -1056,6 +1056,8 @@
         'browser/cocoa/objc_method_swizzle.mm',
         'browser/cocoa/objc_zombie.h',
         'browser/cocoa/objc_zombie.mm',
+        'browser/cocoa/page_info_bubble_controller.h',
+        'browser/cocoa/page_info_bubble_controller.mm',
         'browser/cocoa/page_info_window_controller.h',
         'browser/cocoa/page_info_window_controller.mm',
         'browser/cocoa/page_info_window_mac.h',

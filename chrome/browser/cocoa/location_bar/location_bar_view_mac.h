@@ -91,6 +91,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Get the point on the star for the bookmark bubble to aim at.
   NSPoint GetBookmarkBubblePoint() const;
 
+  // Get the point in the security icon at which the page info bubble aims.
+  NSPoint GetPageInfoBubblePoint() const;
+
   // Updates the location bar.  Resets the bar's permanent text and
   // security style, and if |should_restore_state| is true, restores
   // saved state from the tab (for tab switching).

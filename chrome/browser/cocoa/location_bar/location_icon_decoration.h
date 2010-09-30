@@ -28,6 +28,10 @@ class LocationIconDecoration : public ImageDecoration {
     return GetDrawRectInFrame(frame);
   }
 
+  // Get the point where the page info bubble should point within the
+  // decoration's frame, in the |owner_|'s coordinates.
+  NSPoint GetBubblePointInFrame(NSRect frame);
+
   // Show the page info panel on click.
   virtual bool OnMousePressed(NSRect frame);
   virtual bool AcceptsMousePress() { return true; }

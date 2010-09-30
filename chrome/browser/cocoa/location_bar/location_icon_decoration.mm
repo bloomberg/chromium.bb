@@ -11,6 +11,12 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 
+// The info-bubble point should look like it points to the point
+// between the star's lower tips. The popup should be where the
+// Omnibox popup ends up (2px below field). Determined via Pixie.app
+// magnification.
+const CGFloat kBubblePointYOffset = 2.0;
+
 LocationIconDecoration::LocationIconDecoration(LocationBarViewMac* owner)
     : owner_(owner) {
 }
@@ -43,6 +49,12 @@ NSPasteboard* LocationIconDecoration::GetDragPasteboard() {
                                             owner:nil];
   [pboard setDataForURL:url title:title];
   return pboard;
+}
+
+NSPoint LocationIconDecoration::GetBubblePointInFrame(NSRect frame) {
+  const NSRect draw_frame = GetDrawRectInFrame(frame);
+  return NSMakePoint(NSMidX(draw_frame),
+                     NSMaxY(draw_frame) - kBubblePointYOffset);
 }
 
 bool LocationIconDecoration::OnMousePressed(NSRect frame) {

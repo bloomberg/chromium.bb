@@ -7,12 +7,14 @@
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #import "chrome/browser/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
 
 @implementation BaseBubbleController
 
+@synthesize parentWindow = parentWindow_;
 @synthesize bubble = bubble_;
 
 - (id)initWithWindowNibPath:(NSString*)nibPath
@@ -48,6 +50,32 @@
                           anchoredAt:anchor];
 }
 
+- (id)initWithWindow:(NSWindow*)theWindow
+        parentWindow:(NSWindow*)parentWindow
+          anchoredAt:(NSPoint)anchoredAt {
+  DCHECK(theWindow);
+  if ((self = [super initWithWindow:theWindow])) {
+    parentWindow_ = parentWindow;
+    anchor_ = anchoredAt;
+    DCHECK(![[self window] delegate]);
+    [theWindow setDelegate:self];
+
+    scoped_nsobject<InfoBubbleView> contentView(
+        [[InfoBubbleView alloc] initWithFrame:NSMakeRect(0, 0, 0, 0)]);
+    [theWindow setContentView:contentView.get()];
+    bubble_ = contentView.get();
+
+    // Watch to see if the parent window closes, and if so, close this one.
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(parentWindowWillClose:)
+                   name:NSWindowWillCloseNotification
+                 object:parentWindow_];
+
+    [self awakeFromNib];
+  }
+  return self;
+}
 
 - (void)awakeFromNib {
   // Check all connections have been made in Interface Builder.

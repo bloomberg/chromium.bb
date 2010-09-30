@@ -23,10 +23,9 @@ class PageInfoModel {
  public:
   class PageInfoModelObserver {
    public:
-    virtual void ModelChanged() = 0;
-
-   protected:
     virtual ~PageInfoModelObserver() {}
+
+    virtual void ModelChanged() = 0;
   };
 
   enum SectionInfoType {
