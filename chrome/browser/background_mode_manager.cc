@@ -400,20 +400,25 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
 
   // Create a context menu item for Chrome.
   menus::SimpleMenuModel* menu = new menus::SimpleMenuModel(this);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedOptions)) {
+    menu->AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
+  } else {
+#if defined(TOOLKIT_GTK)
+    string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
+    if (preferences.empty())
+      menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+    else
+      menu->AddItem(IDC_OPTIONS, preferences);
+#else
+    menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
+#endif
+  }
   menu->AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-
-#if defined(TOOLKIT_GTK)
-  string16 preferences = gtk_util::GetStockPreferencesMenuLabel();
-  if (preferences.empty())
-    menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
-  else
-    menu->AddItem(IDC_OPTIONS, preferences);
-#else
-  menu->AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
-#endif
   menu->AddSeparator();
   menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
+
   status_icon_->SetContextMenu(menu);
 }
 
