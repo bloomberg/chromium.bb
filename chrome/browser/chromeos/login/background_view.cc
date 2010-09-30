@@ -196,6 +196,7 @@ bool BackgroundView::ScreenSaverEnabled() {
 }
 
 void BackgroundView::OnOwnerChanged() {
+  delegate_ = NULL;
   if (go_incognito_button_) {
     // BackgroundView is passed among multiple controllers, so they should
     // explicitly enable "Go incognito" button if needed.

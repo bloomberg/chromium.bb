@@ -165,6 +165,8 @@ class BackgroundView : public views::View,
   // TODO(sky): nuke this when the wm knows when chrome has painted.
   bool did_paint_;
 
+  // NOTE: |delegate_| is assigned to NULL when the owner is changed. See
+  // 'OnOwnerChanged()' for more info.
   Delegate *delegate_;
 
   // DOMView for rendering a webpage as a background.
