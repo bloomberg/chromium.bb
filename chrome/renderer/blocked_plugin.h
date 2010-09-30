@@ -23,6 +23,7 @@ class BlockedPlugin : public CppBoundClass,
   BlockedPlugin(RenderView* render_view,
                 WebKit::WebFrame* frame,
                 const WebKit::WebPluginParams& params,
+                const WebPreferences& settings,
                 PluginGroup* group);
 
   WebViewPlugin* plugin() { return plugin_; }
@@ -37,20 +38,12 @@ class BlockedPlugin : public CppBoundClass,
                        const NotificationDetails& details);
 
  private:
-  virtual ~BlockedPlugin() { }
+  virtual ~BlockedPlugin();
 
   // Javascript callbacks:
   // Load the blocked plugin by calling LoadPlugin() below.
   // Takes no arguments, and returns nothing.
   void Load(const CppArgumentList& args, CppVariant* result);
-
-  // Update an outdated plugin. Takes one argument, the URL to download the
-  // latest version, and returns nothing.
-  void Update(const CppArgumentList& args, CppVariant* result);
-
-  // Tells the browser to navigate to |url| (to download the latest version of
-  // the plugin there).
-  void OpenURL(GURL& url);
 
   // Load the blocked plugin.
   void LoadPlugin();

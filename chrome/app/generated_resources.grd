@@ -3882,6 +3882,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LABS_PAGE_INFO_BUBBLE_DESCRIPTION" desc="Description of the 'Page Info Bubble' lab.">
         Shows the Page Information as an info bubble instead of a dialog window.
       </message>
+      <message name="IDS_LABS_DISABLE_OUTDATED_PLUGINS_NAME" desc="Name of the 'Disable outdated plug-ins' lab">
+        Disable outdated plug-ins
+      </message>
+      <message name="IDS_LABS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION" desc="Description of the 'Disable outdated plug-ins' lab">
+        Automatically disables plug-ins with known security vulnerabilities and offers update links for them.
+      </message>
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">
@@ -3892,6 +3898,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plug-in.">
         Update plug-in...
+      </message>
+      <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated disabled plug-in.">
+        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in is out of date.
       </message>
 
       <!-- Session Crashed Info Bar-->

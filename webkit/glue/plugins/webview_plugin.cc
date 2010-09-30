@@ -9,12 +9,12 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/webpreferences.h"
 
 #if WEBKIT_USING_CG
 #include <CoreGraphics/CGContext.h>
@@ -48,6 +48,18 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
   web_view_->initializeMainFrame(this);
 }
 
+// static
+WebViewPlugin* WebViewPlugin::Create(WebViewPlugin::Delegate* delegate,
+                                     const WebPreferences& preferences,
+                                     const std::string& html_data,
+                                     const GURL& url) {
+  WebViewPlugin* plugin = new WebViewPlugin(delegate);
+  WebView* web_view = plugin->web_view();
+  preferences.Apply(web_view);
+  web_view->mainFrame()->loadHTMLString(html_data, url);
+  return plugin;
+}
+
 WebViewPlugin::~WebViewPlugin() {
   web_view_->close();
 }
@@ -78,8 +90,10 @@ bool WebViewPlugin::initialize(WebPluginContainer* container) {
 }
 
 void WebViewPlugin::destroy() {
-  delegate_->WillDestroyPlugin();
-  delegate_ = NULL;
+  if (delegate_) {
+    delegate_->WillDestroyPlugin();
+    delegate_ = NULL;
+  }
   container_ = NULL;
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }

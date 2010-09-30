@@ -15,6 +15,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 
+struct WebPreferences;
+
 // This class implements the WebPlugin interface by forwarding drawing and
 // handling input events to a WebView.
 // It can be used as a placeholder for an actual plugin, using HTML for the UI.
@@ -38,6 +40,14 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   };
 
   explicit WebViewPlugin(Delegate* delegate);
+
+  // Convenience method to set up a new WebViewPlugin using |preferences|
+  // and displaying |html_data|. |url| should be a (fake) chrome:// URL; it is
+  // only used for navigation and never actually resolved.
+  static WebViewPlugin* Create(Delegate* delegate,
+                               const WebPreferences& preferences,
+                               const std::string& html_data,
+                               const GURL& url);
 
   WebKit::WebView* web_view() { return web_view_; }
 

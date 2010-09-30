@@ -104,6 +104,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux,
     switches::kEnableNewPageInfoBubble
   }
+  {
+    "disable-outdated-plugins",  // Do not change; see above.
+    IDS_LABS_DISABLE_OUTDATED_PLUGINS_NAME,
+    IDS_LABS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION,
+    kOsAll,
+    switches::kDisableOutdatedPlugins
+  },
 };
 
 // Extracts the list of enabled lab experiments from a profile and stores them

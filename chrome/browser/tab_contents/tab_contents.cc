@@ -286,13 +286,13 @@ class DisabledPluginInfoBar : public ConfirmInfoBarDelegate {
 
   virtual bool Accept() {
     tab_contents_->OpenURL(update_url_, GURL(),
-                           CURRENT_TAB, PageTransition::LINK);
+                           NEW_FOREGROUND_TAB, PageTransition::LINK);
     return false;
   }
 
   virtual bool Cancel() {
     tab_contents_->OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
-                           CURRENT_TAB, PageTransition::LINK);
+                           NEW_FOREGROUND_TAB, PageTransition::LINK);
     return false;
   }
 

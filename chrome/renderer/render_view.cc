@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "app/message_box_flags.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -2372,7 +2373,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
       Send(new ViewHostMsg_DisabledOutdatedPlugin(routing_id_,
                                                   group->GetGroupName(),
                                                   GURL(group->GetUpdateURL())));
-      return CreatePluginPlaceholder(frame, params, group.get());
+      return CreateOutdatedPluginPlaceholder(frame, params, group.get());
     }
     return NULL;
   }
@@ -2384,7 +2385,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     if (setting == CONTENT_SETTING_BLOCK) {
       DCHECK(!cmd->HasSwitch(switches::kDisableClickToPlay));
       DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
-      return CreatePluginPlaceholder(frame, params, NULL);
+      return CreateBlockedPluginPlaceholder(frame, params, group.get());
     }
     scoped_refptr<pepper::PluginModule> pepper_module =
         PepperPluginRegistry::GetInstance()->GetModule(info.path);
@@ -2395,7 +2396,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
       Send(new ViewHostMsg_NonSandboxedPluginBlocked(routing_id_,
                                                      resource,
                                                      group->GetGroupName()));
-      return CreatePluginPlaceholder(frame, params, NULL);
+      return CreateBlockedPluginPlaceholder(frame, params, group.get());
     }
   }
   return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
@@ -4023,15 +4024,40 @@ WebPlugin* RenderView::CreateNPAPIPlugin(WebFrame* frame,
                                         actual_mime_type, AsWeakPtr());
 }
 
-WebPlugin* RenderView::CreatePluginPlaceholder(WebFrame* frame,
-                                               const WebPluginParams& params,
-                                               PluginGroup* group) {
+WebPlugin* RenderView::CreateOutdatedPluginPlaceholder(
+    WebFrame* frame,
+    const WebPluginParams& params,
+    PluginGroup* group) {
+  int resource_id = IDR_OUTDATED_PLUGIN_HTML;
+  const base::StringPiece template_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
+
+  DCHECK(!template_html.empty()) << "unable to load template. ID: "
+                                 << resource_id;
+
+  DictionaryValue values;
+  values.SetString("pluginOutdated",
+      l10n_util::GetStringFUTF8(IDS_PLUGIN_OUTDATED, group->GetGroupName()));
+  values.Set("pluginGroup", group->GetDataForUI());
+
+  // "t" is the id of the templates root node.
+  std::string htmlData = jstemplate_builder::GetTemplatesHtml(
+      template_html, &values, "t");
+
+  return WebViewPlugin::Create(NULL,
+                               webkit_preferences_,
+                               htmlData,
+                               GURL("chrome://outdatedplugin/"));
+}
+
+WebPlugin* RenderView::CreateBlockedPluginPlaceholder(
+    WebFrame* frame,
+    const WebPluginParams& params,
+    PluginGroup* group) {
   // |blocked_plugin| will delete itself when the WebViewPlugin is destroyed.
-  BlockedPlugin* blocked_plugin = new BlockedPlugin(this, frame, params, group);
-  WebViewPlugin* plugin = blocked_plugin->plugin();
-  WebView* web_view = plugin->web_view();
-  webkit_preferences_.Apply(web_view);
-  return plugin;
+  BlockedPlugin* blocked_plugin =
+      new BlockedPlugin(this, frame, params, webkit_preferences_, group);
+  return blocked_plugin->plugin();
 }
 
 void RenderView::OnZoom(PageZoom::Function function) {
