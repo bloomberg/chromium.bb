@@ -82,7 +82,8 @@ class CryptohomeOpTest : public ::testing::Test {
   }
 
   void ExpectMount() {
-    EXPECT_CALL(*(mock_library_.get()), AsyncMount(username_, hash_ascii_, _))
+    EXPECT_CALL(*(mock_library_.get()),
+                AsyncMount(username_, hash_ascii_, true, _))
         .Times(1)
         .RetiresOnSaturation();
   }

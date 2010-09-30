@@ -63,11 +63,12 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
 
   bool AsyncMount(const std::string& user_email,
                   const std::string& passhash,
+                  const bool create_if_missing,
                   Delegate* d) {
     return CacheCallback(
         chromeos::CryptohomeAsyncMount(user_email.c_str(),
                                        passhash.c_str(),
-                                       true,
+                                       create_if_missing,
                                        "",
                                        std::vector<std::string>()),
         d,
@@ -193,6 +194,7 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
 
   bool AsyncMount(const std::string& user_email,
                   const std::string& passhash,
+                  const bool create_if_missing,
                   Delegate* callback) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,

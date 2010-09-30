@@ -46,7 +46,7 @@ MountAttempt::~MountAttempt() {}
 bool MountAttempt::Initiate() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
-  return lib->AsyncMount(attempt_->username, attempt_->ascii_hash, this);
+  return lib->AsyncMount(attempt_->username, attempt_->ascii_hash, true, this);
 }
 
 MountGuestAttempt::MountGuestAttempt(AuthAttemptState* current_attempt,

@@ -12,6 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::Invoke;
+using ::testing::WithArgs;
 using ::testing::_;
 
 namespace chromeos {
@@ -20,15 +21,20 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
  public:
   MockCryptohomeLibrary() {
     ON_CALL(*this, AsyncCheckKey(_, _, _))
-        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::TwoString));
+        .WillByDefault(
+            WithArgs<2>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
     ON_CALL(*this, AsyncMigrateKey(_, _, _, _))
-        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::ThreeString));
-    ON_CALL(*this, AsyncMount(_, _, _))
-        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::TwoString));
+        .WillByDefault(
+            WithArgs<3>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
+    ON_CALL(*this, AsyncMount(_, _, _, _))
+        .WillByDefault(
+            WithArgs<3>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
     ON_CALL(*this, AsyncMountForBwsi(_))
-        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::ZeroString));
+        .WillByDefault(
+            WithArgs<0>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
     ON_CALL(*this, AsyncRemove(_, _))
-        .WillByDefault(Invoke(this, &MockCryptohomeLibrary::OneString));
+        .WillByDefault(
+            WithArgs<1>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
   }
   virtual ~MockCryptohomeLibrary() {}
   MOCK_METHOD2(CheckKey, bool(const std::string& user_email,
@@ -46,8 +52,9 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD3(Mount, bool(const std::string& user_email,
                            const std::string& passhash,
                            int* error_code));
-  MOCK_METHOD3(AsyncMount, bool(const std::string& user_email,
+  MOCK_METHOD4(AsyncMount, bool(const std::string& user_email,
                                 const std::string& passhash,
+                                const bool create_if_missing,
                                 Delegate* callback));
   MOCK_METHOD1(MountForBwsi, bool(int*));
   MOCK_METHOD1(AsyncMountForBwsi, bool(Delegate* callback));
@@ -61,27 +68,7 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
     code_ = code;
   }
 
-  bool ThreeString(const std::string& user_email,
-                   const std::string& old_hash,
-                   const std::string& new_hash,
-                   Delegate* d) {
-    d->OnComplete(outcome_, code_);
-    return true;
-  }
-
-  bool TwoString(const std::string& user_email,
-                 const std::string& passhash,
-                 Delegate* d) {
-    d->OnComplete(outcome_, code_);
-    return true;
-  }
-
-  bool OneString(const std::string& user_email, Delegate* d) {
-    d->OnComplete(outcome_, code_);
-    return true;
-  }
-
-  bool ZeroString(Delegate* d) {
+  bool DoCallback(Delegate* d) {
     d->OnComplete(outcome_, code_);
     return true;
   }

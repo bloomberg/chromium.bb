@@ -64,10 +64,16 @@ class CryptohomeLibrary {
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then mount it using |passhash| to unlock the key.
+  // |create_if_missing| controls whether or not we ask cryptohomed to
+  // create a new home dir if one does not yet exist for |user_email|.
   // Returns true if the attempt is successfully initiated.
   // d->OnComplete() will be called with status info on completion.
+  // If |create_if_missing| is false, and no cryptohome exists for |user_email|,
+  // we'll get d->OnComplete(false, kCryptohomeMountErrorUserDoesNotExist).
+  // Otherwise, we expect the normal range of return codes.
   virtual bool AsyncMount(const std::string& user_email,
                           const std::string& passhash,
+                          const bool create_if_missing,
                           Delegate* callback) = 0;
 
   // Asks cryptohomed to mount a tmpfs for BWSI mode.
