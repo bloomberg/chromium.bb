@@ -1,0 +1,334 @@
+body {
+  font-size: 84%;
+  padding: 0.75em;
+  margin: 0;
+  min-width: 45em;
+}
+
+h1 {
+  font-size: 110%;
+  font-weight: bold;
+  color: #4a8ee6;
+  letter-spacing: -1px;
+  padding: 0;
+  margin: 0;
+}
+
+h2 {
+  font-size: 110%;
+  letter-spacing: -1px;
+  font-weight: normal;
+  color: #4a8ee6;
+  padding: 0;
+  margin: 0;
+  padding: 0.5em 1em;
+  color: #3a75bd;
+  margin-left: -38px;
+  padding-left: 38px;
+
+  border-top: 1px solid #3a75bd;
+  padding-top: 0.5em;
+
+}
+
+h2:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+span.th {
+  padding-left: 0.35em;
+}
+
+a {
+  color: black;
+}
+
+div#header {
+  padding: 0.75em 1em;
+  padding-top: 0.6em;
+  padding-left: 0;
+  margin-bottom: 0.75em;
+  position: relative;
+  overflow: hidden;
+  background: #5296de;
+  background-size: 100%;
+  border: 1px solid #3a75bd;
+  border-radius: 6px;
+  color: white;
+  text-shadow: 0 0 2px black;
+}
+
+div#header h1 {
+  padding-left: 37px;
+  margin: 0;
+  display: inline;
+  background: url('../images/gear.png') 12px 60% no-repeat;
+  color: white;
+}
+
+div#header p {
+  font-size: 84%;
+  font-style: italic;
+  padding: 0;
+  margin: 0;
+  color: white;
+  padding-left: 0.4em;
+  display: inline;
+}
+
+div#header div.navigation {
+  position: absolute;
+  top: 0;
+  right: 1em;
+  line-height: 3.5em;
+  font-size: 92%;
+}
+
+div#header select {
+  font-size: 100%;
+  border: 1px solid #3a75bd;
+  line-height: 140%;
+  color: #315d94;
+}
+
+div#header select option {
+  padding: 0 0.2em;
+}
+
+div#sidebar {
+  display: none;
+  float: left;
+  margin-left: 26px;
+  width: 45em;
+  min-height: 20em;
+  padding: 0.75em;
+  padding-top: 0;
+
+  border-right: 1px solid #cfcfcf;
+}
+
+div#content {
+  margin-left: 0px;
+}
+
+div.viewOptions {
+  float: right;
+  font-size: 92%;
+  color: #5f5f5f;
+  margin-top: 1em;
+}
+
+hr {
+  visibility: hidden;
+  display: inline;
+  padding: 0 0.5em;
+}
+
+div.viewOptions input {
+  font-size: 100%;
+  border: 1px solid #b5b5b5;
+  border-radius: 6px;
+  padding: 0.3em 0.4em;
+}
+
+div.viewOptions input:focus {
+  border-color: white;
+}
+
+.k {
+  opacity: 0.4;
+  font-weight: normal;
+  padding-left: 0.1em;
+}
+
+.legend {
+  font-size: 84%;
+  padding: 0;
+  padding-top: 0.4em;
+  margin-top: 2em;
+  text-align: right;
+  line-height: 140%;
+  color: #7f7f7f;
+}
+
+.legend h3 {
+  padding: 0;
+  padding-right: 0.5em;
+  margin: 0;
+  font-weight: normal;
+  color: black;
+  display: inline;
+  font-size: 100%;
+}
+
+.legend .swatch {
+  opacity: 0.66;
+  padding: 0 0.5em;
+  display: inline-block;
+  margin-right: 0.2em;
+  height: 0.9em;
+}
+
+.legend .swatch.heavyUse {
+  background: #cc0000;
+}
+
+table.list {
+  width: 100%;
+  line-height: 200%;
+  border-collapse: collapse;
+  font-size: 84%;
+  table-layout: fixed;
+}
+
+table.list:not([class*='filtered']) tr:nth-child(odd) td {
+  background: #eff3ff;
+}
+
+.hidden {
+  display: none;
+}
+
+table.list th {
+  padding: 0 0.5em;
+  vertical-align: top;
+  font-weight: bold;
+  color: #315d94;
+  color: black;
+  white-space: nowrap;
+}
+
+table.list .firstRow th {
+  text-align: left;
+  line-height: 100%;
+}
+
+table.list .secondRow * {
+  text-align: left;
+  border-bottom: 1px solid #b5c6de;
+}
+
+table.list td {
+  padding: 0 0.5em;
+  vertical-align: top;
+  line-height: 1.4em;
+  padding-top: 0.35em;
+}
+
+table.list tr td:nth-last-child(1),
+table.list tr th:nth-last-child(1) {
+  padding-right: 1em;
+}
+
+table.list:not([class*='filtered']) .tab .name {
+  padding-left: 1.5em;
+}
+
+table.list .name {
+  width: 100%;
+}
+
+table.list .name div {
+  height: 1.6em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+table.list .pid {
+  width: 4em;
+  text-align: right;
+}
+
+table.list .pid .th {
+  padding: 0;
+}
+
+table.list .type {
+  width: 5em;
+}
+
+table.list .number {
+  width: 7em;
+  text-align: right;
+}
+
+table.list .total {
+  font-weight: bold;
+}
+
+table.list .total .name {
+  color: #315d94;
+  text-align: right;
+}
+
+table.list .total td {
+  border-top: 1px solid #b5c6de;
+  background: white !important;
+}
+
+table.list .noResults {
+  display: none;
+}
+
+table.list.noResults .noResults {
+  display: table-row;
+}
+
+table.list .noResults td {
+  text-align: center;
+  padding: 3em 0;
+  color: #3f3f3f;
+}
+
+.heavyUse {
+  color: #cc0000;
+  font-weight: bold;
+}
+
+table.list#browserComparison .name {
+  padding-left: 25px;
+  background-position: 5px center;
+  background-repeat: no-repeat;
+}
+
+div.help {
+  display: inline-block;
+  width: 14px;
+  margin: -1px 0;
+  height: 14px;
+  background: url('../images/help.gif') center bottom no-repeat;
+  opacity: 0.33;
+}
+
+div.help:hover {
+  opacity: 1;
+}
+
+div.help div {
+  display: none;
+}
+
+#helpTooltip {
+  z-index: 1000;
+  position: absolute;
+  background: #d6e8ff;
+  padding: 0.3em 0.8em;
+  max-width: 30em;
+  -webkit-box-shadow: 3px 3px 4px rgba(0, 0, 0, 0.33);
+  border: 1px solid #a8cfff;
+  border-radius: 0;
+  line-height: 140%;
+  font-size: 92%;
+}
+
+#helpTooltip p {
+  margin: 0.6em 0;
+}
+
+div.otherbrowsers {
+  font-size: 84%;
+  width: 100%;
+  text-align: center;
+}

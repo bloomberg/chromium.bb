@@ -12,6 +12,8 @@ without changes to the corresponding grd file. paaaae -->
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_SHARED_CSS_ABOUT"
+               file="shared/css/about_memory.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_BUTTON"
                file="shared/css/button.css" type="BINDATA" />
       <include name="IDR_SHARED_CSS_LIST"
