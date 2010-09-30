@@ -166,7 +166,7 @@ class PageLoadHelper {
   testing::NiceMock<MockAccEventObserver> acc_observer_;
 };
 
-TEST_F(DeleteBrowsingHistoryTest, CFDeleteBrowsingHistory) {
+TEST_F(DeleteBrowsingHistoryTest, DISABLED_CFDeleteBrowsingHistory) {
   if (GetInstalledIEVersion() < IE_8) {
     LOG(ERROR) << "Test does not apply to IE versions < 8.";
     return;
