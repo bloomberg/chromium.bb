@@ -1,0 +1,19 @@
+{
+  "name": "allow silent update",
+  "version": "1.0",
+  "permissions": [
+    "tabs",
+    "notifications",
+    "http://*.example.com/"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*.example.com/*",
+        "http://*.example.co.uk/*",
+        "https://*.example.com.au/*"
+      ],
+      "js": ["404.js"]
+    }
+  ]
+}

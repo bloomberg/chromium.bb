@@ -37,6 +37,19 @@ namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 
+namespace {
+
+void CompareLists(const std::vector<std::string>& expected,
+                  const std::vector<std::string>& actual) {
+  ASSERT_EQ(expected.size(), actual.size());
+
+  for (size_t i = 0; i < expected.size(); ++i) {
+    EXPECT_EQ(expected[i], actual[i]);
+  }
+}
+
+}
+
 class ExtensionTest : public testing::Test {
 };
 
@@ -721,11 +734,13 @@ static Extension* LoadManifest(const std::string& dir,
              .AppendASCII(test_file);
 
   JSONFileValueSerializer serializer(path);
-  scoped_ptr<Value> result(serializer.Deserialize(NULL, NULL));
-  if (!result.get())
-    return NULL;
-
   std::string error;
+  scoped_ptr<Value> result(serializer.Deserialize(NULL, &error));
+  if (!result.get()) {
+    EXPECT_EQ("", error);
+    return NULL;
+  }
+
   scoped_ptr<Extension> extension(new Extension(path.DirName()));
   extension->InitFromValue(*static_cast<DictionaryValue*>(result.get()),
                            false, &error);
@@ -817,8 +832,7 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 }
 
-// crashing crbug.com/54332
-TEST(ExtensionTest, DISABLED_IsPrivilegeIncrease) {
+TEST(ExtensionTest, IsPrivilegeIncrease) {
   const struct {
     const char* base_name;
     bool expect_success;
@@ -831,6 +845,7 @@ TEST(ExtensionTest, DISABLED_IsPrivilegeIncrease) {
     { "hosts3", false },  // http://a,http://b -> http://a
     { "hosts4", true },  // http://a -> http://a,http://b
     { "hosts5", false },  // http://a,b,c -> http://a,b,c + https://a,b,c
+    { "hosts6", false },  // http://a.com -> http://a.com + http://a.co.uk
     { "permissions1", false },  // tabs -> tabs
     { "permissions2", true },  // tabs -> tabs,bookmarks
     { "permissions3", true },  // http://a -> http://a,tabs
@@ -854,6 +869,13 @@ TEST(ExtensionTest, DISABLED_IsPrivilegeIncrease) {
     scoped_ptr<Extension> new_extension(
         LoadManifest("allow_silent_upgrade",
                      std::string(kTests[i].base_name) + "_new.json"));
+
+    // TODO(erikkay) Seeing a random crash on the bots that I can't explain.
+    // This is an attempt to diagnose.
+    EXPECT_TRUE(old_extension.get()) << kTests[i].base_name << "_old.json";
+    EXPECT_TRUE(new_extension.get()) << kTests[i].base_name << "_new.json";
+    if (!old_extension.get() || !new_extension.get())
+      continue;
 
     EXPECT_EQ(kTests[i].expect_success,
               Extension::IsPrivilegeIncrease(old_extension.get(),
@@ -1052,5 +1074,102 @@ TEST(ExtensionTest, ApiPermissions) {
     EXPECT_EQ(kTests[i].expect_success,
               extension->HasApiPermission(kTests[i].permission_name))
                   << "Permission being tested: " << kTests[i].permission_name;
+  }
+}
+
+TEST(ExtensionTest, GetDistinctHosts) {
+  std::vector<std::string> expected;
+  expected.push_back("www.foo.com");
+  expected.push_back("www.bar.com");
+  expected.push_back("www.baz.com");
+  URLPatternList actual;
+
+  {
+    SCOPED_TRACE("no dupes");
+
+    // Simple list with no dupes.
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.com/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.bar.com/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.baz.com/path"));
+    CompareLists(expected,
+                 Extension::GetDistinctHosts(actual));
+  }
+
+  {
+    SCOPED_TRACE("two dupes");
+
+    // Add some dupes.
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.com/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.baz.com/path"));
+    CompareLists(expected,
+                 Extension::GetDistinctHosts(actual));
+  }
+
+  {
+    SCOPED_TRACE("schemes differ");
+
+    // Add a pattern that differs only by scheme. This should be filtered out.
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTPS, "https://www.bar.com/path"));
+    CompareLists(expected,
+                 Extension::GetDistinctHosts(actual));
+  }
+
+  {
+    SCOPED_TRACE("paths differ");
+
+    // Add some dupes by path.
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.bar.com/pathypath"));
+    CompareLists(expected,
+                 Extension::GetDistinctHosts(actual));
+  }
+
+  {
+    SCOPED_TRACE("subdomains differ");
+
+    // We don't do anything special for subdomains.
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://monkey.www.bar.com/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://bar.com/path"));
+
+    expected.push_back("monkey.www.bar.com");
+    expected.push_back("bar.com");
+
+    CompareLists(expected,
+                 Extension::GetDistinctHosts(actual));
+  }
+
+  {
+    SCOPED_TRACE("RCDs differ");
+
+    // Now test for RCD uniquing.
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.com/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.co.uk/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.de/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.ca.us/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.net/path"));
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.com.my/path"));
+
+    // This is an unknown RCD, which shouldn't be uniqued out.
+    actual.push_back(
+        URLPattern(URLPattern::SCHEME_HTTP, "http://www.foo.xyzzy/path"));
+
+    expected.push_back("www.foo.xyzzy");
+
+    CompareLists(expected,
+                 Extension::GetDistinctHosts(actual));
   }
 }

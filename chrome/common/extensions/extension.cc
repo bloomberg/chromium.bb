@@ -35,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/registry_controlled_domain.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
@@ -284,8 +285,17 @@ std::vector<std::string> Extension::GetDistinctHosts(
   // Vector because we later want to access these by index.
   std::vector<std::string> distinct_hosts;
 
+  std::set<std::string> rcd_set;
   for (size_t i = 0; i < host_patterns.size(); ++i) {
     std::string candidate = host_patterns[i].host();
+    size_t registry = net::RegistryControlledDomainService::GetRegistryLength(
+        candidate, false);
+    if (registry && registry != std::string::npos) {
+      std::string no_rcd(candidate, 0, candidate.size() - registry);
+      if (rcd_set.count(no_rcd))
+        continue;
+      rcd_set.insert(no_rcd);
+    }
     if (std::find(distinct_hosts.begin(), distinct_hosts.end(), candidate) ==
                   distinct_hosts.end()) {
       distinct_hosts.push_back(candidate);
