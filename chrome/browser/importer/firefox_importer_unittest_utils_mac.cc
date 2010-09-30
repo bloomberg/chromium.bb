@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
+#include "chrome/test/test_timeouts.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_message.h"
@@ -170,8 +171,6 @@ class CancellableQuitMsgLoop : public base::RefCounted<CancellableQuitMsgLoop> {
 
 // Spin until either a client response arrives or a timeout occurs.
 bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
-  const int64 kLoopTimeoutMS = 10 * 1000;  // 10 seconds.
-
   // What we're trying to do here is to wait for an RPC message to go over the
   // wire and the client to reply.  If the client does not replyy by a given
   // timeout we kill the message loop.
@@ -181,8 +180,10 @@ bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
   // a message comes in.
   scoped_refptr<CancellableQuitMsgLoop> quit_task =
       new CancellableQuitMsgLoop();
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
-      quit_task.get(), &CancellableQuitMsgLoop::QuitNow), kLoopTimeoutMS);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableMethod(quit_task.get(), &CancellableQuitMsgLoop::QuitNow),
+      TestTimeouts::action_max_timeout_ms());
 
   message_loop_->Run();
   bool ret = !quit_task->cancelled_;

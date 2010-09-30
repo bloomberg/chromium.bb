@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+
+#include "base/logging.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
-#import "base/logging.h"
+#include "chrome/test/test_timeouts.h"
 
 @implementation CocoaTestHelperWindow
 
@@ -99,9 +101,9 @@ void CocoaTest::TearDown() {
 
   while (windows_left.size() > 0) {
     // Cover delayed actions by spinning the loop at least once after
-    // this timeout.  Made large to accomocate valgrind and the wall
-    // clock delay of a [NSApplication endSheet:].
-    const NSTimeInterval kCloseTimeout = 5.0;
+    // this timeout.
+    const NSTimeInterval kCloseTimeoutSeconds =
+        TestTimeouts::action_timeout_ms() / 1000.0;
 
     // Cover chains of delayed actions by spinning the loop at least
     // this many times.
@@ -118,7 +120,7 @@ void CocoaTest::TearDown() {
            (spins < kCloseSpins || one_more_time)) {
       // Check the timeout before pumping events, so that we'll spin
       // the loop once after the timeout.
-      one_more_time = ([start_date timeIntervalSinceNow] > -kCloseTimeout);
+      one_more_time = ([start_date timeIntervalSinceNow] > -kCloseTimeoutSeconds);
 
       // Autorelease anything thrown up by the event loop.
       {
@@ -140,7 +142,7 @@ void CocoaTest::TearDown() {
     if (still_left.size() == windows_left.size()) {
       // NOTE(shess): Failing this expectation means that the test
       // opened windows which have not been fully released.  Either
-      // there is a leak, or perhaps one of |kCloseTimeout| or
+      // there is a leak, or perhaps one of |kCloseTimeoutSeconds| or
       // |kCloseSpins| needs adjustment.
       EXPECT_EQ(0U, windows_left.size());
       for (std::set<NSWindow*>::iterator iter = windows_left.begin();

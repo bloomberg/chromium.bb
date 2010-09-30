@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
+#include "chrome/test/test_timeouts.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -245,15 +246,12 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   fetcher = factory.GetFetcherByID(3);
   EXPECT_EQ(NULL, fetcher);
 
-  // Verify DOS attack back-offs.
-  const int kBackOffTimeout = 10000;
-
   // Request with id 3.
   EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures));
   fetcher = factory.GetFetcherByID(3);
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(
-      base::TimeDelta::FromMilliseconds(kBackOffTimeout));
+      base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
                                           500, ResponseCookies(),
                                           std::string(responses[0]));
@@ -277,7 +275,7 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   fetcher = factory.GetFetcherByID(4);
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(
-      base::TimeDelta::FromMilliseconds(kBackOffTimeout));
+      base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
   fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
                                           503, ResponseCookies(),
                                           std::string(responses[2]));

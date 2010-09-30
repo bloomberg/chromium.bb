@@ -10,6 +10,7 @@
 #endif
 
 #include "base/eintr_wrapper.h"
+#include "chrome/test/test_timeouts.h"
 #include "net/base/net_util.h"
 #include "testing/platform_test.h"
 
@@ -41,7 +42,6 @@ static const char* kTwoMessages =
 
 static const int kMaxQueueSize = 20;
 static const char* kLoopback = "127.0.0.1";
-static const int kDefaultTimeoutMs = 5000;
 #if defined(OS_POSIX)
 static const char* kSemaphoreName = "chromium.listen_socket";
 #endif
@@ -73,7 +73,7 @@ void DevToolsRemoteListenSocketTester::SetUp() {
       this, &DevToolsRemoteListenSocketTester::Listen));
 
   // verify Listen succeeded
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
   ASSERT_FALSE(server_ == NULL);
   ASSERT_EQ(ACTION_LISTEN, last_action_.type());
 
@@ -90,7 +90,7 @@ void DevToolsRemoteListenSocketTester::SetUp() {
   ASSERT_NE(ret, SOCKET_ERROR);
 
   net::SetNonBlocking(test_socket_);
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
   ASSERT_EQ(ACTION_ACCEPT, last_action_.type());
 }
 
@@ -102,12 +102,12 @@ void DevToolsRemoteListenSocketTester::TearDown() {
   int ret = HANDLE_EINTR(close(test_socket_));
   ASSERT_EQ(ret, 0);
 #endif
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());
 
   loop_->PostTask(FROM_HERE, NewRunnableMethod(
       this, &DevToolsRemoteListenSocketTester::Shutdown));
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
   ASSERT_EQ(ACTION_SHUTDOWN, last_action_.type());
 
 #if defined(OS_WIN)
@@ -263,7 +263,7 @@ void DevToolsRemoteListenSocketTester::TestClientSend() {
     // sleep for 10ms to test message split between \r and \n
     PlatformThread::Sleep(10);
     ASSERT_TRUE(Send(test_socket_, kSimpleMessagePart2));
-    ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+    ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
     ASSERT_EQ(ACTION_READ_MESSAGE, last_action_.type());
     const DevToolsRemoteMessage& message = last_action_.message();
     ASSERT_STREQ("V8Debugger", message.GetHeaderWithEmptyDefault(
@@ -276,7 +276,7 @@ void DevToolsRemoteListenSocketTester::TestClientSend() {
   }
   ASSERT_TRUE(Send(test_socket_, kTwoMessages));
   {
-    ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+    ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
     ASSERT_EQ(ACTION_READ_MESSAGE, last_action_.type());
     const DevToolsRemoteMessage& message = last_action_.message();
     ASSERT_STREQ("DevToolsService", message.tool().c_str());
@@ -289,7 +289,7 @@ void DevToolsRemoteListenSocketTester::TestClientSend() {
     }
   }
   {
-    ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+    ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
     ASSERT_EQ(ACTION_READ_MESSAGE, last_action_.type());
     const DevToolsRemoteMessage& message = last_action_.message();
     ASSERT_STREQ("V8Debugger", message.GetHeaderWithEmptyDefault(
@@ -306,7 +306,7 @@ void DevToolsRemoteListenSocketTester::TestClientSend() {
 void DevToolsRemoteListenSocketTester::TestServerSend() {
   loop_->PostTask(FROM_HERE, NewRunnableMethod(
       this, &DevToolsRemoteListenSocketTester::SendFromTester));
-  ASSERT_TRUE(NextAction(kDefaultTimeoutMs));
+  ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
   ASSERT_EQ(ACTION_SEND, last_action_.type());
   // TODO(erikkay): Without this sleep, the recv seems to fail a small amount
   // of the time.  I could fix this by making the socket blocking, but then
