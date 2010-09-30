@@ -23,6 +23,7 @@ class NativeButtonWin : public NativeControlWin,
   virtual void UpdateFont();
   virtual void UpdateEnabled();
   virtual void UpdateDefault();
+  virtual void UpdateAccessibleName();
   virtual View* GetView();
   virtual void SetFocus();
   virtual bool UsesNativeLabel() const;

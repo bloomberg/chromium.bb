@@ -38,8 +38,12 @@ class NativeButtonWrapper {
   // associated NativeCheckbox. Valid only for checkboxes and radio buttons.
   virtual void UpdateChecked() {}
 
+  // Update the native button's accessible name to the accessible name of
+  // the associated NativeButton.
+  virtual void UpdateAccessibleName() {}
+
   // Shows the pushed state for the button if |pushed| is true.
-  virtual void SetPushed(bool pushed) {};
+  virtual void SetPushed(bool pushed) {}
 
   // Retrieves the views::View that hosts the native control.
   virtual View* GetView() = 0;

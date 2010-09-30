@@ -91,6 +91,7 @@ class FirstRunSearchEngineView
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
+  virtual AccessibilityTypes::Role GetAccessibleRole();
 
   // Overridden from views::WindowDelegate:
   virtual std::wstring GetWindowTitle() const;

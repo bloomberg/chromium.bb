@@ -5,8 +5,10 @@
 #include "views/controls/button/native_button_win.h"
 
 #include <commctrl.h>
+#include <oleacc.h>
 
 #include "base/logging.h"
+#include "base/scoped_comptr_win.h"
 #include "base/win_util.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
@@ -64,6 +66,22 @@ void NativeButtonWin::UpdateDefault() {
                 native_button_->is_default() ? BS_DEFPUSHBUTTON : BS_PUSHBUTTON,
                 true);
     button_size_valid_ = false;
+  }
+}
+
+void NativeButtonWin::UpdateAccessibleName() {
+  std::wstring name;
+  if (native_button_->GetAccessibleName(&name)) {
+    ScopedComPtr<IAccPropServices> pAccPropServices;
+    HRESULT hr = CoCreateInstance(CLSID_AccPropServices, NULL, CLSCTX_SERVER,
+        IID_IAccPropServices, reinterpret_cast<void**>(&pAccPropServices));
+    if (SUCCEEDED(hr)) {
+      VARIANT var;
+      var.vt = VT_BSTR;
+      var.bstrVal = SysAllocString(name.c_str());
+      hr = pAccPropServices->SetHwndProp(native_view(), OBJID_WINDOW,
+          CHILDID_SELF, PROPID_ACC_NAME, var);
+    }
   }
 }
 
@@ -138,6 +156,7 @@ void NativeButtonWin::NativeControlCreated(HWND control_hwnd) {
   UpdateFont();
   UpdateLabel();
   UpdateDefault();
+  UpdateAccessibleName();
 }
 
 // We could obtain this from the theme, but that only works if themes are

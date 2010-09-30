@@ -32,6 +32,7 @@
 #include "views/controls/separator.h"
 #include "views/standard_layout.h"
 #include "views/view_text_utils.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
 
 using base::Time;
@@ -70,7 +71,7 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
     logo_image->SetImage(logo_bmp);
     if (use_small_logos)
       logo_image->SetImageSize(gfx::Size(kSmallLogoWidth, kSmallLogoHeight));
-    // Tooltip text provides accessibility.
+    // Tooltip text provides accessibility for low-vision users.
     logo_image->SetTooltipText(search_engine_->short_name());
     choice_view_ = logo_image;
   } else {
@@ -84,6 +85,12 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
     logo_label->SizeToFit(kSmallLogoWidth);
     choice_view_ = logo_label;
   }
+
+  // The accessible name of the button provides accessibility for
+  // screenreaders. It uses the browser name rather than the text of the
+  // button "Choose", since it's not obvious to a screenreader user which
+  // browser each button corresponds to.
+  SetAccessibleName(search_engine_->short_name());
 }
 
 int SearchEngineChoice::GetChoiceViewWidth() {
@@ -241,6 +248,23 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
   SetVisible(true);
   Layout();
   SchedulePaint();
+
+  // If the widget has detected that a screenreader is running, change the
+  // button names from "Choose" to the name of the search engine. This works
+  // around a bug that JAWS ignores the accessible name of a native button.
+  if (GetWidget() && GetWidget()->IsAccessibleWidget()) {
+    std::vector<SearchEngineChoice*>::iterator it;
+    for (it = search_engine_choices_.begin();
+         it != search_engine_choices_.end();
+         it++) {
+      (*it)->SetLabel((*it)->GetSearchEngine()->short_name());
+    }
+  }
+
+  // This will tell screenreaders that they should read the full text
+  // of this dialog to the user now (rather than waiting for the user
+  // to explore it).
+  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_ALERT);
 }
 
 gfx::Size FirstRunSearchEngineView::GetPreferredSize() {
@@ -396,6 +420,10 @@ void FirstRunSearchEngineView::Layout() {
                                            button_width, button_height);
     }
   }  // if (search_engine_choices.size() > 0)
+}
+
+AccessibilityTypes::Role FirstRunSearchEngineView::GetAccessibleRole() {
+  return AccessibilityTypes::ROLE_ALERT;
 }
 
 std::wstring FirstRunSearchEngineView::GetWindowTitle() const {
