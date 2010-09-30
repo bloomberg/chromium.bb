@@ -322,10 +322,12 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
   ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_X, true, false, false));
   EXPECT_EQ(L"Hello ", edit_view->GetText());
 
+#if !defined(OS_CHROMEOS)
   // Try alt-f4 to close the browser.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       browser(), app::VKEY_F4, false, false, true, false,
       NotificationType::BROWSER_CLOSED, Source<Browser>(browser())));
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PopupAccelerators) {
@@ -367,10 +369,12 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PopupAccelerators) {
                                             false));
   EXPECT_EQ(L"Hello world", edit_view->GetText());
 
+#if !defined(OS_CHROMEOS)
   // Try alt-f4 to close the popup.
   ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
       popup, app::VKEY_F4, false, false, true, false,
       NotificationType::BROWSER_CLOSED, Source<Browser>(popup)));
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
