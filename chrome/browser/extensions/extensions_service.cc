@@ -889,21 +889,6 @@ void ExtensionsService::LoadComponentExtensions() {
       return;
     }
 
-    // In order for the --apps-gallery-url switch to work with the gallery
-    // process isolation, we must insert any provided value into the component
-    // app's launch url and web extent.
-    if (extension->id() == extension_misc::kWebStoreAppId) {
-      GURL gallery_url(CommandLine::ForCurrentProcess()
-          ->GetSwitchValueASCII(switches::kAppsGalleryURL));
-      if (gallery_url.is_valid()) {
-        extension->set_launch_web_url(gallery_url.spec());
-        URLPattern pattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS);
-        pattern.Parse(gallery_url.spec());
-        pattern.set_path(pattern.path() + '*');
-        extension->web_extent().AddPattern(pattern);
-      }
-    }
-
     OnExtensionLoaded(extension.release(), false);  // Don't allow privilege
                                                     // increase.
   }

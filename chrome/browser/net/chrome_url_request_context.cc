@@ -655,17 +655,6 @@ void ChromeURLRequestContextGetter::CleanupOnUIThread() {
   registrar_.RemoveAll();
 }
 
-void ChromeURLRequestContextGetter::OnNewExtensions(
-    const std::string& id,
-    ChromeURLRequestContext::ExtensionInfo* info) {
-  GetIOContext()->OnNewExtensions(id, info);
-}
-
-void ChromeURLRequestContextGetter::OnUnloadedExtension(
-    const std::string& id) {
-  GetIOContext()->OnUnloadedExtension(id);
-}
-
 // NotificationObserver implementation.
 void ChromeURLRequestContextGetter::Observe(
     NotificationType type,
@@ -784,115 +773,9 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
   cookie_policy_ = NULL;
 }
 
-std::string ChromeURLRequestContext::GetNameForExtension(
-    const std::string& id) {
-  ExtensionInfoMap::iterator iter = extension_info_.find(id);
-  if (iter != extension_info_.end())
-    return iter->second->name;
-  else
-    return std::string();
-}
-
-FilePath ChromeURLRequestContext::GetPathForExtension(const std::string& id) {
-  ExtensionInfoMap::iterator iter = extension_info_.find(id);
-  if (iter != extension_info_.end())
-    return iter->second->path;
-  else
-    return FilePath();
-}
-
-bool ChromeURLRequestContext::ExtensionHasWebExtent(const std::string& id) {
-  ExtensionInfoMap::iterator iter = extension_info_.find(id);
-  return iter != extension_info_.end() && !iter->second->extent.is_empty();
-}
-
-bool ChromeURLRequestContext::ExtensionCanLoadInIncognito(
-    const std::string& id) {
-  ExtensionInfoMap::iterator iter = extension_info_.find(id);
-  // Only split-mode extensions can load in incognito profiles.
-  return iter != extension_info_.end() && iter->second->incognito_split_mode;
-}
-
-std::string ChromeURLRequestContext::GetDefaultLocaleForExtension(
-    const std::string& id) {
-  ExtensionInfoMap::iterator iter = extension_info_.find(id);
-  std::string result;
-  if (iter != extension_info_.end())
-    result = iter->second->default_locale;
-
-  return result;
-}
-
-ExtensionExtent
-    ChromeURLRequestContext::GetEffectiveHostPermissionsForExtension(
-        const std::string& id) {
-  ExtensionInfoMap::iterator iter = extension_info_.find(id);
-  ExtensionExtent result;
-  if (iter != extension_info_.end())
-    result = iter->second->effective_host_permissions;
-
-  return result;
-}
-
-bool ChromeURLRequestContext::CheckURLAccessToExtensionPermission(
-    const GURL& url,
-    const char* permission_name) {
-  ExtensionInfoMap::iterator info;
-  if (url.SchemeIs(chrome::kExtensionScheme)) {
-    // If the url is an extension scheme, we just look it up by extension id.
-    std::string id = url.host();
-    info = extension_info_.find(id);
-  } else {
-    // Otherwise, we scan for a matching extent. Overlapping extents are
-    // disallowed, so only one will match.
-    info = extension_info_.begin();
-    while (info != extension_info_.end() &&
-           !info->second->extent.ContainsURL(url))
-      ++info;
-  }
-
-  if (info == extension_info_.end())
-    return false;
-
-  std::set<std::string>& api_permissions = info->second->api_permissions;
-  return api_permissions.count(permission_name) != 0;
-}
-
-bool ChromeURLRequestContext::URLIsForExtensionIcon(const GURL& url) {
-  DCHECK(url.SchemeIs(chrome::kExtensionScheme));
-
-  ExtensionInfoMap::iterator iter = extension_info_.find(url.host());
-  if (iter == extension_info_.end())
-    return false;
-
-  std::string path = url.path();
-  DCHECK(path.length() > 0 && path[0] == '/');
-  path = path.substr(1);
-  return iter->second->icons.ContainsPath(path);
-}
-
 const std::string& ChromeURLRequestContext::GetUserAgent(
     const GURL& url) const {
   return webkit_glue::GetUserAgent(url);
-}
-
-void ChromeURLRequestContext::OnNewExtensions(const std::string& id,
-                                              ExtensionInfo* info) {
-  extension_info_[id] = linked_ptr<ExtensionInfo>(info);
-}
-
-void ChromeURLRequestContext::OnUnloadedExtension(const std::string& id) {
-  CheckCurrentlyOnIOThread();
-  ExtensionInfoMap::iterator iter = extension_info_.find(id);
-  if (iter != extension_info_.end()) {
-    extension_info_.erase(iter);
-  } else {
-    // NOTE: This can currently happen if we receive multiple unload
-    // notifications, e.g. setting incognito-enabled state for a
-    // disabled extension (e.g., via sync).  See
-    // http://code.google.com/p/chromium/issues/detail?id=50582 .
-    NOTREACHED() << id;
-  }
 }
 
 bool ChromeURLRequestContext::IsExternal() const {
@@ -925,7 +808,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   http_auth_handler_factory_ = other->http_auth_handler_factory_;
 
   // Set ChromeURLRequestContext members
-  extension_info_ = other->extension_info_;
   user_script_dir_path_ = other->user_script_dir_path_;
   appcache_service_ = other->appcache_service_;
   database_tracker_ = other->database_tracker_;
@@ -936,6 +818,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   is_off_the_record_ = other->is_off_the_record_;
   blob_storage_context_ = other->blob_storage_context_;
   file_system_host_context_ = other->file_system_host_context_;
+  extension_info_map_ = other->extension_info_map_;
 }
 
 void ChromeURLRequestContext::OnAcceptLanguageChange(
@@ -993,25 +876,6 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   host_zoom_map_ = profile->GetHostZoomMap();
   transport_security_state_ = profile->GetTransportSecurityState();
 
-  if (profile->GetExtensionsService()) {
-    const ExtensionList* extensions =
-        profile->GetExtensionsService()->extensions();
-    for (ExtensionList::const_iterator iter = extensions->begin();
-        iter != extensions->end(); ++iter) {
-      extension_info_[(*iter)->id()] =
-          linked_ptr<ChromeURLRequestContext::ExtensionInfo>(
-              new ChromeURLRequestContext::ExtensionInfo(
-                  (*iter)->name(),
-                  (*iter)->path(),
-                  (*iter)->default_locale(),
-                  (*iter)->incognito_split_mode(),
-                  (*iter)->web_extent(),
-                  (*iter)->GetEffectiveHostPermissions(),
-                  (*iter)->api_permissions(),
-                  (*iter)->icons()));
-    }
-  }
-
   if (profile->GetUserScriptMaster())
     user_script_dir_path_ = profile->GetUserScriptMaster()->user_script_dir();
 
@@ -1022,6 +886,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   database_tracker_ = profile->GetDatabaseTracker();
   blob_storage_context_ = profile->GetBlobStorageContext();
   file_system_host_context_ = profile->GetFileSystemHostContext();
+  extension_info_map_ = profile->GetExtensionInfoMap();
 }
 
 ChromeURLRequestContextFactory::~ChromeURLRequestContextFactory() {
@@ -1037,7 +902,6 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_accept_language(accept_language_);
   context->set_accept_charset(accept_charset_);
   context->set_referrer_charset(referrer_charset_);
-  context->set_extension_info(extension_info_);
   context->set_user_script_dir_path(user_script_dir_path_);
   context->set_host_content_settings_map(host_content_settings_map_);
   context->set_host_zoom_map(host_zoom_map_);
@@ -1048,6 +912,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_database_tracker(database_tracker_);
   context->set_blob_storage_context(blob_storage_context_);
   context->set_file_system_host_context(file_system_host_context_);
+  context->set_extension_info_map(extension_info_map_);
 }
 
 // ----------------------------------------------------------------------------

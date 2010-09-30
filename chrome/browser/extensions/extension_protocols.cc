@@ -91,8 +91,9 @@ bool AllowExtensionResourceLoad(URLRequest* request,
   // hybrid hosted/packaged apps. The one exception is access to icons, since
   // some extensions want to be able to do things like create their own
   // launchers.
-  if (context->ExtensionHasWebExtent(request->url().host())) {
-    if (!context->URLIsForExtensionIcon(request->url())) {
+  if (context->extension_info_map()->
+          ExtensionHasWebExtent(request->url().host())) {
+    if (!context->extension_info_map()->URLIsForExtensionIcon(request->url())) {
       LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
                  << "hosted app.";
       return false;
@@ -104,7 +105,8 @@ bool AllowExtensionResourceLoad(URLRequest* request,
   // incognito tab prevents that.
   if (context->is_off_the_record() &&
       info->resource_type() == ResourceType::MAIN_FRAME &&
-      !context->ExtensionCanLoadInIncognito(request->url().host())) {
+      !context->extension_info_map()->
+          ExtensionCanLoadInIncognito(request->url().host())) {
     LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
                << "incognito tab.";
     return false;
@@ -123,8 +125,8 @@ bool AllowExtensionResourceLoad(URLRequest* request,
       origin_url.SchemeIs(chrome::kDataScheme)) {
     return true;
   } else {
-    ExtensionExtent host_permissions =
-        context->GetEffectiveHostPermissionsForExtension(request->url().host());
+    ExtensionExtent host_permissions = context->extension_info_map()->
+        GetEffectiveHostPermissionsForExtension(request->url().host());
     if (host_permissions.ContainsURL(origin_url)) {
       return true;
     } else {
@@ -151,7 +153,8 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
 
   // chrome-extension://extension-id/resource/path.js
   const std::string& extension_id = request->url().host();
-  FilePath directory_path = context->GetPathForExtension(extension_id);
+  FilePath directory_path = context->extension_info_map()->
+      GetPathForExtension(extension_id);
   if (directory_path.value().empty()) {
     LOG(WARNING) << "Failed to GetPathForExtension: " << extension_id;
     return NULL;

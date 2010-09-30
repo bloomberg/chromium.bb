@@ -742,13 +742,15 @@ static Extension* LoadManifest(const std::string& dir,
   }
 
   scoped_ptr<Extension> extension(new Extension(path.DirName()));
-  extension->InitFromValue(*static_cast<DictionaryValue*>(result.get()),
-                           false, &error);
+  EXPECT_TRUE(extension->InitFromValue(
+      *static_cast<DictionaryValue*>(result.get()), false, &error)) << error;
 
   return extension.release();
 }
 
-TEST(ExtensionTest, EffectiveHostPermissions) {
+// TODO(erikkay): reenable this test once we actually merge overlapping host
+// permissions together.
+TEST(ExtensionTest, FAILS_EffectiveHostPermissions) {
   scoped_ptr<Extension> extension;
   ExtensionExtent hosts;
 

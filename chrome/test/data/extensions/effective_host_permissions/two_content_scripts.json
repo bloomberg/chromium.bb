@@ -3,8 +3,8 @@
   "version": "1.0",
   "permissions": [
     "http://*.google.com/",
-    "http://google.com",
-    "https://google.com"
+    "http://google.com/",
+    "https://google.com/"
   ],
   "content_scripts": [
     {

@@ -240,6 +240,21 @@ const size_t Extension::kNumHostedAppPermissions =
 // We purposefully don't put this into kPermissionNames.
 const char Extension::kOldUnlimitedStoragePermission[] = "unlimited_storage";
 
+//
+// Extension::StaticData
+//
+
+Extension::StaticData::StaticData()
+    : incognito_split_mode(false) {
+}
+
+Extension::StaticData::~StaticData() {
+}
+
+//
+// Extension
+//
+
 // static
 int Extension::GetPermissionMessageId(const std::string& permission) {
   return PermissionMap::GetSingleton()->GetPermissionMessageId(permission);
@@ -265,8 +280,8 @@ std::vector<string16> Extension::GetPermissionMessages() {
 
 std::set<string16> Extension::GetSimplePermissionMessages() {
   std::set<string16> messages;
-  std::set<std::string>::iterator i;
-  for (i = api_permissions_.begin(); i != api_permissions_.end(); ++i) {
+  std::set<std::string>::const_iterator i;
+  for (i = api_permissions().begin(); i != api_permissions().end(); ++i) {
     int message_id = GetPermissionMessageId(*i);
     if (message_id)
       messages.insert(l10n_util::GetStringUTF16(message_id));
@@ -810,7 +825,7 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
   }
 
   // If there is no extent, we default the extent based on the launch URL.
-  if (web_extent_.is_empty() && !launch_web_url_.empty()) {
+  if (web_extent().is_empty() && !launch_web_url_.empty()) {
     GURL launch_url(launch_web_url_);
     URLPattern pattern(kValidWebExtentSchemes);
     if (!pattern.SetScheme("*")) {
@@ -819,7 +834,23 @@ bool Extension::LoadLaunchURL(const DictionaryValue* manifest,
     }
     pattern.set_host(launch_url.host());
     pattern.set_path("/*");
-    web_extent_.AddPattern(pattern);
+    mutable_static_data_->extent.AddPattern(pattern);
+  }
+
+  // In order for the --apps-gallery-url switch to work with the gallery
+  // process isolation, we must insert any provided value into the component
+  // app's launch url and web extent.
+  if (id() == extension_misc::kWebStoreAppId) {
+    GURL gallery_url(CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kAppsGalleryURL));
+    if (gallery_url.is_valid()) {
+      launch_web_url_ = gallery_url.spec();
+
+      URLPattern pattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS);
+      pattern.Parse(gallery_url.spec());
+      pattern.set_path(pattern.path() + '*');
+      mutable_static_data_->extent.AddPattern(pattern);
+    }
   }
 
   return true;
@@ -897,17 +928,18 @@ bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
 }
 
 Extension::Extension(const FilePath& path)
-    : converted_from_user_script_(false),
+    : mutable_static_data_(new StaticData),
+      converted_from_user_script_(false),
       is_theme_(false),
       is_app_(false),
       launch_container_(extension_misc::LAUNCH_TAB),
       launch_width_(0),
       launch_height_(0),
-      incognito_split_mode_(true),
       background_page_ready_(false),
       being_upgraded_(false) {
   DCHECK(path.IsAbsolute());
 
+  static_data_ = mutable_static_data_;
   apps_enabled_ = AppsAreEnabled();
   location_ = INVALID;
 
@@ -920,9 +952,9 @@ Extension::Extension(const FilePath& path)
       path_str[1] == ':')
     path_str[0] += ('A' - 'a');
 
-  path_ = FilePath(path_str);
+  mutable_static_data_->path = FilePath(path_str);
 #else
-  path_ = path;
+  mutable_static_data_->path = path;
 #endif
 }
 
@@ -1121,11 +1153,15 @@ bool Extension::AppsAreEnabled() {
 
 bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
                               std::string* error) {
+  // Unit tests reuse Extension objects, so we need to reset mutable_static_data
+  // when we re-initialize.
+  mutable_static_data_ = const_cast<StaticData*>(static_data_.get());
+
   if (source.HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
     if (!source.GetString(keys::kPublicKey, &public_key_) ||
         !ParsePEMKeyBytes(public_key_, &public_key_bytes) ||
-        !GenerateId(public_key_bytes, &id_)) {
+        !GenerateId(public_key_bytes, &mutable_static_data_->id)) {
       *error = errors::kInvalidKey;
       return false;
     }
@@ -1136,7 +1172,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     // If there is a path, we generate the ID from it. This is useful for
     // development mode, because it keeps the ID stable across restarts and
     // reloading the extension.
-    if (!GenerateId(WideToUTF8(path_.ToWStringHack()), &id_)) {
+    if (!GenerateId(WideToUTF8(path().ToWStringHack()),
+                    &mutable_static_data_->id)) {
       NOTREACHED() << "Could not create ID from path.";
       return false;
     }
@@ -1146,7 +1183,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   manifest_value_.reset(static_cast<DictionaryValue*>(source.DeepCopy()));
 
   // Initialize the URL.
-  extension_url_ = Extension::GetBaseURLFromExtensionId(id_);
+  extension_url_ = Extension::GetBaseURLFromExtensionId(id());
 
   // Initialize version.
   std::string version_str;
@@ -1167,7 +1204,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     return false;
   }
   base::i18n::AdjustStringForLocaleDirection(localized_name, &localized_name);
-  name_ = UTF16ToUTF8(localized_name);
+  mutable_static_data_->name = UTF16ToUTF8(localized_name);
 
   // Initialize description (if present).
   if (source.HasKey(keys::kDescription)) {
@@ -1263,7 +1300,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
           return false;
         }
 
-        icons_.Add(kIconSizes[i], icon_path);
+        mutable_static_data_->icons.Add(kIconSizes[i], icon_path);
       }
     }
   }
@@ -1376,7 +1413,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
 
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
       DictionaryValue* plugin_value;
-      std::string path;
+      std::string path_str;
       bool is_public = false;
 
       if (!list_value->GetDictionary(i, &plugin_value)) {
@@ -1385,7 +1422,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       }
 
       // Get plugins[i].path.
-      if (!plugin_value->GetString(keys::kPluginsPath, &path)) {
+      if (!plugin_value->GetString(keys::kPluginsPath, &path_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPluginsPath, base::IntToString(i));
         return false;
@@ -1401,7 +1438,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       }
 
       plugins_.push_back(PluginInfo());
-      plugins_.back().path = path_.AppendASCII(path);
+      plugins_.back().path = path().AppendASCII(path_str);
       plugins_.back().is_public = is_public;
     }
   }
@@ -1541,7 +1578,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
 
   // Load App settings.
   if (!LoadIsApp(manifest_value_.get(), error) ||
-      !LoadExtent(manifest_value_.get(), keys::kWebURLs, &web_extent_,
+      !LoadExtent(manifest_value_.get(), keys::kWebURLs,
+                  &mutable_static_data_->extent,
                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
       !EnsureNotHybridApp(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
@@ -1614,13 +1652,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       if (web_extent().is_empty() || location() == Extension::COMPONENT) {
         // Check if it's a module permission.  If so, enable that permission.
         if (IsAPIPermission(permission_str)) {
-          api_permissions_.insert(permission_str);
+          mutable_static_data_->api_permissions.insert(permission_str);
           continue;
         }
       } else {
         // Hosted apps only get access to a subset of the valid permissions.
         if (IsHostedAppPermission(permission_str)) {
-          api_permissions_.insert(permission_str);
+          mutable_static_data_->api_permissions.insert(permission_str);
           continue;
         }
       }
@@ -1650,8 +1688,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   if (source.HasKey(keys::kDefaultLocale)) {
-    if (!source.GetString(keys::kDefaultLocale, &default_locale_) ||
-        default_locale_.empty()) {
+    if (!source.GetString(keys::kDefaultLocale,
+                          &mutable_static_data_->default_locale) ||
+        mutable_static_data_->default_locale.empty()) {
       *error = errors::kInvalidDefaultLocale;
       return false;
     }
@@ -1720,7 +1759,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
 
   // Initialize incognito behavior. Apps default to split mode, extensions
   // default to spanning.
-  incognito_split_mode_ = is_app_;
+  mutable_static_data_->incognito_split_mode = is_app_;
   if (source.HasKey(keys::kIncognito)) {
     std::string value;
     if (!source.GetString(keys::kIncognito, &value)) {
@@ -1728,14 +1767,16 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       return false;
     }
     if (value == values::kIncognitoSpanning) {
-      incognito_split_mode_ = false;
+      mutable_static_data_->incognito_split_mode = false;
     } else if (value == values::kIncognitoSplit) {
-      incognito_split_mode_ = true;
+      mutable_static_data_->incognito_split_mode = true;
     } else {
       *error = errors::kInvalidIncognitoBehavior;
       return false;
     }
   }
+
+  InitEffectiveHostPermissions();
 
   // Although |source| is passed in as a const, it's still possible to modify
   // it.  This is dangerous since the utility process re-uses |source| after
@@ -1743,6 +1784,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   // InitFromValue again.  As a result, we need to make sure that nobody
   // accidentally modifies it.
   DCHECK(source.Equals(manifest_value_.get()));
+
+  // Ensure we can't modify our static data anymore.
+  mutable_static_data_ = NULL;
 
   return true;
 }
@@ -1762,7 +1806,7 @@ GURL Extension::GalleryUrl() const {
   if (!update_url_.DomainIs("google.com"))
     return GURL();
 
-  GURL url(ChromeStoreURL() + std::string("/detail/") + id_);
+  GURL url(ChromeStoreURL() + std::string("/detail/") + id());
 
   return url;
 }
@@ -1773,8 +1817,8 @@ std::set<FilePath> Extension::GetBrowserImages() {
   // indicate that we're doing something wrong.
 
   // Extension icons.
-  for (ExtensionIconSet::IconMap::const_iterator iter = icons_.map().begin();
-       iter != icons_.map().end(); ++iter) {
+  for (ExtensionIconSet::IconMap::const_iterator iter = icons().map().begin();
+       iter != icons().map().end(); ++iter) {
     image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(iter->second)));
   }
 
@@ -1889,14 +1933,14 @@ SkBitmap* Extension::GetCachedImageImpl(const ExtensionResource& source,
 
 ExtensionResource Extension::GetIconResource(
     int size, ExtensionIconSet::MatchType match_type) {
-  std::string path = icons_.Get(size, match_type);
+  std::string path = icons().Get(size, match_type);
   if (path.empty())
     return ExtensionResource();
   return GetResource(path);
 }
 
 GURL Extension::GetIconURL(int size, ExtensionIconSet::MatchType match_type) {
-  std::string path = icons_.Get(size, match_type);
+  std::string path = icons().Get(size, match_type);
   if (path.empty())
     return GURL();
   else
@@ -1958,22 +2002,18 @@ bool Extension::HasHostPermission(const GURL& url) const {
   return false;
 }
 
-const ExtensionExtent Extension::GetEffectiveHostPermissions() const {
-  ExtensionExtent effective_hosts;
-
+void Extension::InitEffectiveHostPermissions() {
   for (URLPatternList::const_iterator host = host_permissions_.begin();
        host != host_permissions_.end(); ++host)
-    effective_hosts.AddPattern(*host);
+    mutable_static_data_->effective_host_permissions.AddPattern(*host);
 
   for (UserScriptList::const_iterator content_script = content_scripts_.begin();
        content_script != content_scripts_.end(); ++content_script) {
     UserScript::PatternList::const_iterator pattern =
         content_script->url_patterns().begin();
     for (; pattern != content_script->url_patterns().end(); ++pattern)
-      effective_hosts.AddPattern(*pattern);
+      mutable_static_data_->effective_host_permissions.AddPattern(*pattern);
   }
-
-  return effective_hosts;
 }
 
 bool Extension::HasEffectiveAccessToAllHosts() const {

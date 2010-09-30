@@ -6,14 +6,13 @@
 #define CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
 #pragma once
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/linked_ptr.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_registrar.h"
@@ -49,71 +47,7 @@ class ChromeURLRequestContextFactory;
 // including the constructor and destructor.
 class ChromeURLRequestContext : public URLRequestContext {
  public:
-  // Maintains some extension-related state we need on the IO thread.
-  // TODO(aa): It would be cool if the Extension objects in ExtensionsService
-  // could be immutable and ref-counted so that we could use them directly from
-  // both threads. There is only a small amount of mutable state in Extension.
-  struct ExtensionInfo {
-    ExtensionInfo(const std::string& name,
-                  const FilePath& path,
-                  const std::string& default_locale,
-                  bool incognito_split_mode,
-                  const ExtensionExtent& extent,
-                  const ExtensionExtent& effective_host_permissions,
-                  const std::set<std::string>& api_permissions,
-                  const ExtensionIconSet& icons)
-        : name(name),
-          path(path),
-          default_locale(default_locale),
-          incognito_split_mode(incognito_split_mode),
-          extent(extent),
-          effective_host_permissions(effective_host_permissions),
-          api_permissions(api_permissions),
-          icons(icons) {
-    }
-    const std::string name;
-    const FilePath path;
-    const std::string default_locale;
-    const bool incognito_split_mode;
-    const ExtensionExtent extent;
-    const ExtensionExtent effective_host_permissions;
-    std::set<std::string> api_permissions;
-    ExtensionIconSet icons;
-  };
-
-  // Map of extension info by extension id.
-  typedef std::map<std::string, linked_ptr<ExtensionInfo> > ExtensionInfoMap;
-
   ChromeURLRequestContext();
-
-  // Gets the name for the specified extension.
-  std::string GetNameForExtension(const std::string& id);
-
-  // Gets the path to the directory for the specified extension.
-  FilePath GetPathForExtension(const std::string& id);
-
-  // Returns true if the specified extension exists and has a non-empty web
-  // extent.
-  bool ExtensionHasWebExtent(const std::string& id);
-
-  // Returns true if the specified extension exists and can load in incognito
-  // contexts.
-  bool ExtensionCanLoadInIncognito(const std::string& id);
-
-  // Returns an empty string if the extension with |id| doesn't have a default
-  // locale.
-  std::string GetDefaultLocaleForExtension(const std::string& id);
-
-  // Gets the effective host permissions for the extension with |id|.
-  ExtensionExtent
-      GetEffectiveHostPermissionsForExtension(const std::string& id);
-
-  // Determine whether a URL has access to the specified extension permission.
-  bool CheckURLAccessToExtensionPermission(const GURL& url,
-                                           const char* permission_name);
-
-  // Returns true if the specified URL references the icon for an extension.
-  bool URLIsForExtensionIcon(const GURL& url);
 
   // Gets the path to the directory user scripts are stored in.
   FilePath user_script_dir_path() const {
@@ -156,12 +90,9 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   const HostZoomMap* host_zoom_map() const { return host_zoom_map_; }
 
-  // Callback for when new extensions are loaded. Takes ownership of
-  // |extension_info|.
-  void OnNewExtensions(const std::string& id, ExtensionInfo* extension_info);
-
-  // Callback for when an extension is unloaded.
-  void OnUnloadedExtension(const std::string& id);
+  const ExtensionInfoMap* extension_info_map() const {
+    return extension_info_map_;
+  }
 
   // Returns true if this context is an external request context, like
   // ChromeFrame.
@@ -185,10 +116,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   }
   void set_referrer_charset(const std::string& referrer_charset) {
     referrer_charset_ = referrer_charset;
-  }
-  void set_extension_info(
-      const ChromeURLRequestContext::ExtensionInfoMap& info) {
-    extension_info_ = info;
   }
   void set_transport_security_state(
       net::TransportSecurityState* state) {
@@ -247,6 +174,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_file_system_host_context(FileSystemHostContext* context) {
     file_system_host_context_ = context;
   }
+  void set_extension_info_map(ExtensionInfoMap* map) {
+    extension_info_map_ = map;
+  }
   void set_net_log(net::NetLog* net_log) {
     net_log_ = net_log;
   }
@@ -262,8 +192,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   void OnDefaultCharsetChange(const std::string& default_charset);
 
  protected:
-  ExtensionInfoMap extension_info_;
-
   // Path to the directory user scripts are stored in.
   FilePath user_script_dir_path_;
 
@@ -274,6 +202,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<FileSystemHostContext> file_system_host_context_;
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   bool is_media_;
   bool is_off_the_record_;
@@ -346,13 +275,6 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // Clean up UI thread resources. This is expected to get called on the UI
   // thread before the instance is deleted on the IO thread.
   void CleanupOnUIThread();
-
-  // These methods simply forward to the corresponding methods on
-  // ChromeURLRequestContext. Takes ownership of |extension_info|.
-  void OnNewExtensions(
-      const std::string& extension_id,
-      ChromeURLRequestContext::ExtensionInfo* extension_info);
-  void OnUnloadedExtension(const std::string& id);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -429,7 +351,7 @@ class ChromeURLRequestContextFactory {
   std::string accept_language_;
   std::string accept_charset_;
   std::string referrer_charset_;
-  ChromeURLRequestContext::ExtensionInfoMap extension_info_;
+
   // TODO(aa): I think this can go away now as we no longer support standalone
   // user scripts.
   FilePath user_script_dir_path_;
@@ -442,6 +364,7 @@ class ChromeURLRequestContextFactory {
   scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<FileSystemHostContext> file_system_host_context_;
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
   FilePath profile_dir_path_;
 

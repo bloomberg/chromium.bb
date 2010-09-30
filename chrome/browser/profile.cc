@@ -560,6 +560,10 @@ class OffTheRecordProfileImpl : public Profile,
     return blob_storage_context_;
   }
 
+  virtual ExtensionInfoMap* GetExtensionInfoMap() {
+    return profile_->GetExtensionInfoMap();
+  }
+
  private:
   NotificationRegistrar registrar_;
 

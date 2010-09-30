@@ -28,6 +28,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -163,38 +164,6 @@ FilePath GetMediaCachePath(const FilePath& base) {
 bool HasACacheSubdir(const FilePath &dir) {
   return file_util::PathExists(GetCachePath(dir)) ||
          file_util::PathExists(GetMediaCachePath(dir));
-}
-
-void PostExtensionLoadedToContextGetter(ChromeURLRequestContextGetter* getter,
-                                        Extension* extension) {
-  if (!getter)
-    return;
-  // Callee takes ownership of new ExtensionInfo struct.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(getter,
-                        &ChromeURLRequestContextGetter::OnNewExtensions,
-                        extension->id(),
-                        new ChromeURLRequestContext::ExtensionInfo(
-                        extension->name(),
-                        extension->path(),
-                        extension->default_locale(),
-                        extension->incognito_split_mode(),
-                        extension->web_extent(),
-                        extension->GetEffectiveHostPermissions(),
-                        extension->api_permissions(),
-                        extension->icons())));
-}
-
-void PostExtensionUnloadedToContextGetter(ChromeURLRequestContextGetter* getter,
-                                          Extension* extension) {
-  if (!getter)
-    return;
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(getter,
-                        &ChromeURLRequestContextGetter::OnUnloadedExtension,
-                        extension->id()));
 }
 
 // Returns true if the default apps should be loaded (so that the app panel is
@@ -362,6 +331,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
 
   background_contents_service_.reset(
       new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
+
+  extension_info_map_ = new ExtensionInfoMap();
 
   // Log the profile size after a reasonable startup delay.
   ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE,
@@ -767,65 +738,23 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
   return extensions_request_context_;
 }
 
-// TODO(mpcomplete): This is lame. 5+ copies of the extension data on the IO
-// thread. We should have 1 shared data object that all the contexts get access
-// to. Fix by M8.
-void ProfileImpl::RegisterExtensionWithRequestContexts(
-    Extension* extension) {
-  // Notify the default, extension and media contexts on the IO thread.
-  PostExtensionLoadedToContextGetter(
-      static_cast<ChromeURLRequestContextGetter*>(GetRequestContext()),
-                                                  extension);
-  PostExtensionLoadedToContextGetter(
-      static_cast<ChromeURLRequestContextGetter*>(
-          GetRequestContextForExtensions()),
-      extension);
-  PostExtensionLoadedToContextGetter(
-      static_cast<ChromeURLRequestContextGetter*>(
-          GetRequestContextForMedia()),
-      extension);
-
-  // Ditto for OTR if it's active, except for the media context which is the
-  // same as the regular context.
-  if (off_the_record_profile_.get()) {
-    PostExtensionLoadedToContextGetter(
-        static_cast<ChromeURLRequestContextGetter*>(
-            off_the_record_profile_->GetRequestContext()),
-        extension);
-    PostExtensionLoadedToContextGetter(
-        static_cast<ChromeURLRequestContextGetter*>(
-            off_the_record_profile_->GetRequestContextForExtensions()),
-        extension);
-  }
+void ProfileImpl::RegisterExtensionWithRequestContexts(Extension* extension) {
+  // AddRef to ensure the data lives until the other thread gets it. Balanced in
+  // OnNewExtensions.
+  extension->static_data()->AddRef();
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(extension_info_map_.get(),
+                        &ExtensionInfoMap::AddExtension,
+                        extension->static_data()));
 }
 
-void ProfileImpl::UnregisterExtensionWithRequestContexts(
-    Extension* extension) {
-  // Notify the default, extension and media contexts on the IO thread.
-  PostExtensionUnloadedToContextGetter(
-      static_cast<ChromeURLRequestContextGetter*>(GetRequestContext()),
-                                                  extension);
-  PostExtensionUnloadedToContextGetter(
-      static_cast<ChromeURLRequestContextGetter*>(
-          GetRequestContextForExtensions()),
-      extension);
-  PostExtensionUnloadedToContextGetter(
-      static_cast<ChromeURLRequestContextGetter*>(
-          GetRequestContextForMedia()),
-      extension);
-
-  // Ditto for OTR if it's active, except for the media context which is the
-  // same as the regular context.
-  if (off_the_record_profile_.get()) {
-    PostExtensionUnloadedToContextGetter(
-        static_cast<ChromeURLRequestContextGetter*>(
-            off_the_record_profile_->GetRequestContext()),
-        extension);
-    PostExtensionUnloadedToContextGetter(
-        static_cast<ChromeURLRequestContextGetter*>(
-            off_the_record_profile_->GetRequestContextForExtensions()),
-        extension);
-  }
+void ProfileImpl::UnregisterExtensionWithRequestContexts(Extension* extension) {
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(extension_info_map_.get(),
+                        &ExtensionInfoMap::RemoveExtension,
+                        extension->id()));
 }
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
@@ -1308,6 +1237,10 @@ ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
                           &ChromeBlobStorageContext::InitializeOnIOThread));
   }
   return blob_storage_context_;
+}
+
+ExtensionInfoMap* ProfileImpl::GetExtensionInfoMap() {
+  return extension_info_map_.get();
 }
 
 #if defined(OS_CHROMEOS)

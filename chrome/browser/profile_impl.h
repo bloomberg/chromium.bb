@@ -111,6 +111,7 @@ class ProfileImpl : public Profile,
   virtual CloudPrintProxyService* GetCloudPrintProxyService();
   void InitCloudPrintProxyService();
   virtual ChromeBlobStorageContext* GetBlobStorageContext();
+  virtual ExtensionInfoMap* GetExtensionInfoMap();
 
 #if defined(OS_CHROMEOS)
   virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
@@ -244,6 +245,8 @@ class ProfileImpl : public Profile,
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
 
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
+
+  scoped_refptr<ExtensionInfoMap> extension_info_map_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::Preferences> chromeos_preferences_;

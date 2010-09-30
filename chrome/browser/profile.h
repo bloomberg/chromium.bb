@@ -42,6 +42,7 @@ class BrowserThemeProvider;
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class ChromeURLRequestContextGetter;
+class CloudPrintProxyService;
 class DesktopNotificationService;
 class DownloadManager;
 class Extension;
@@ -64,6 +65,7 @@ class PasswordStore;
 class PersonalDataManager;
 class PinnedTabService;
 class PrefService;
+class ExtensionInfoMap;
 class ProfileSyncService;
 class ProfileSyncFactory;
 class SessionService;
@@ -86,7 +88,6 @@ class VisitedLinkEventListener;
 class WebDataService;
 class WebKitContext;
 class WebResourceService;
-class CloudPrintProxyService;
 
 typedef intptr_t ProfileId;
 
@@ -445,6 +446,9 @@ class Profile {
   // Returns a pointer to the ChromeBlobStorageContext instance for this
   // profile.
   virtual ChromeBlobStorageContext* GetBlobStorageContext() = 0;
+
+  // Returns the IO-thread-accessible profile data for this profile.
+  virtual ExtensionInfoMap* GetExtensionInfoMap() = 0;
 
 #if defined(OS_CHROMEOS)
   // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.

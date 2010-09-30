@@ -414,7 +414,7 @@ void WorkerProcessHost::UpdateTitle() {
     // the name of the extension.
     std::string extension_name = static_cast<ChromeURLRequestContext*>(
         Profile::GetDefaultRequestContext()->GetURLRequestContext())->
-        GetNameForExtension(title);
+        extension_info_map()->GetNameForExtension(title);
     if (!extension_name.empty()) {
       titles.insert(extension_name);
       continue;

@@ -1068,6 +1068,7 @@
         'browser/encoding_menu_controller_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
+        'browser/extensions/extension_info_map_unittest.cc',
         'browser/extensions/extension_menu_manager_unittest.cc',
         'browser/extensions/extension_prefs_unittest.cc',
         'browser/extensions/extension_pref_store_unittest.cc',

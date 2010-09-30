@@ -269,10 +269,8 @@ class TestingProfile : public Profile {
   virtual ProfileSyncService* GetProfileSyncService(
       const std::string& cros_notes);
   virtual CloudPrintProxyService* GetCloudPrintProxyService() { return NULL; }
-
-  virtual ChromeBlobStorageContext* GetBlobStorageContext() {
-    return NULL;
-  }
+  virtual ChromeBlobStorageContext* GetBlobStorageContext() { return NULL; }
+  virtual ExtensionInfoMap* GetExtensionInfoMap() { return NULL; }
 
  protected:
   base::Time start_time_;

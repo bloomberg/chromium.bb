@@ -3,6 +3,6 @@
   "version": "1.0",
   "permissions": [
     "http://*.google.com/",
-    "http://google.com"
+    "http://google.com/"
   ]
 }

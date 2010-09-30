@@ -1448,6 +1448,8 @@
         'browser/extensions/extension_idle_api_constants.h',
         'browser/extensions/extension_i18n_api.cc',
         'browser/extensions/extension_i18n_api.h',
+        'browser/extensions/extension_info_map.cc',
+        'browser/extensions/extension_info_map.h',
         'browser/extensions/extension_infobar_module.cc',
         'browser/extensions/extension_infobar_module.h',
         'browser/extensions/extension_infobar_module_constants.cc',

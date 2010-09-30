@@ -986,8 +986,8 @@ void ResourceMessageFilter::OnCheckNotificationPermission(
   *result = WebKit::WebNotificationPresenter::PermissionNotAllowed;
 
   ChromeURLRequestContext* context = GetRequestContextForURL(source_url);
-  if (context->CheckURLAccessToExtensionPermission(source_url,
-      Extension::kNotificationPermission)) {
+  if (context->extension_info_map()->CheckURLAccessToExtensionPermission(
+          source_url, Extension::kNotificationPermission)) {
     *result = WebKit::WebNotificationPresenter::PermissionAllowed;
     return;
   }
@@ -1653,9 +1653,10 @@ void ResourceMessageFilter::OnGetExtensionMessageBundle(
   ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
     request_context_->GetURLRequestContext());
 
-  FilePath extension_path = context->GetPathForExtension(extension_id);
+  FilePath extension_path =
+      context->extension_info_map()->GetPathForExtension(extension_id);
   std::string default_locale =
-    context->GetDefaultLocaleForExtension(extension_id);
+      context->extension_info_map()->GetDefaultLocaleForExtension(extension_id);
 
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
