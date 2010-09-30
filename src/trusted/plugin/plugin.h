@@ -33,14 +33,13 @@ class Plugin : public PortableHandle {
  public:
   void Invalidate();
 
-  // Load from the local URL saved in local_url.
-  // Updates local_url(), nacl_module_origin() and logical_url().
-  bool Load(nacl::string logical_url, const char* local_url);
-  // Load nexe binary from the provided buffer.
-  // Updates local_url(), nacl_module_origin() and logical_url().
-  bool Load(nacl::string logical_url,
-            const char* local_url,
-            plugin::StreamShmBuffer* buffer);
+  // Load support.
+  // NaCl module can be loaded given a local file name, a shared memory buffer,
+  // or a file descriptor. The functions update nacl_module_origin() and
+  // nacl_module_url().
+  bool LoadNaClModule(nacl::string full_url, nacl::string local_path);
+  bool LoadNaClModule(nacl::string full_url, StreamShmBuffer* shm_buffer);
+  bool LoadNaClModule(nacl::string full_url, int posix_file_desc);
 
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.
@@ -73,23 +72,20 @@ class Plugin : public PortableHandle {
   }
   virtual Plugin* plugin() const { return const_cast<Plugin*>(this); }
 
-  // Returns the URL of the locally-cached copy of the downloaded NaCl
-  // module, if any.  May be NULL, e.g. in Chrome.
-  const char* local_url() const { return local_url_; }
-  void set_local_url(const char* url);
-
-  // Returns the logical URL of NaCl module as defined by the "src" or
-  // "nexes" attribute (and thus seen by the user).
-  // TODO(sehr): this is derived from what the NPStream object reports, and
-  // we need to investigate how streams report redirection (or if they do)
-  // for our origin checks, etc.
-  const char* logical_url() const { return logical_url_; }
-  void set_logical_url(const char* url);
-
-  // Origin of page with the embed tag that created this plugin instance.
+  // Origin of the page with the <embed> tag that created this plugin instance.
   nacl::string origin() const { return origin_; }
 
-  // Origin of NaCl module.
+  // The full path of the locally-cached copy of the downloaded NaCl
+  // module, if any. May be unset, e.g. in Chrome. Set by LoadNaclModule().
+  nacl::string nacl_module_path() const { return nacl_module_path_; }
+  void set_nacl_module_path(nacl::string path) { nacl_module_path_ = path; }
+
+  // The full URL of the NaCl module as defined by the "src" or
+  // "nexes" attribute (and thus seen by the user). Set by LoadNaclModule().
+  nacl::string nacl_module_url() const { return nacl_module_url_; }
+  void set_nacl_module_url(nacl::string url) { nacl_module_url_ = url; }
+
+  // The origin of the NaCl module.
   nacl::string nacl_module_origin() const { return nacl_module_origin_; }
   void set_nacl_module_origin(nacl::string origin) {
     nacl_module_origin_ = origin;
@@ -165,6 +161,15 @@ class Plugin : public PortableHandle {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
+
+  // Helper function that consolidates all types of nacl module loads.
+  // The |full_url| is applicable to any loading approach and should always
+  // be set. The other 3 arguments are mutually exclusive.
+  bool LoadNaClModule(nacl::string full_url,
+                      nacl::string local_path,
+                      StreamShmBuffer* shm_buffer,
+                      int posix_file_desc);
+
   InstanceIdentifier instance_id_;
   BrowserInterface* browser_interface_;
   ScriptableHandle* scriptable_handle_;
@@ -177,13 +182,13 @@ class Plugin : public PortableHandle {
   ScriptableHandle* socket_address_;
   ScriptableHandle* socket_;
 
-  char* local_url_;  // (from malloc)
-  char* logical_url_;  // (from malloc)
-
   nacl::string origin_;
+  bool origin_valid_;
+
+  nacl::string nacl_module_path_;
+  nacl::string nacl_module_url_;
   nacl::string nacl_module_origin_;
 
-  bool origin_valid_;
   int32_t height_;
   int32_t width_;
   int32_t video_update_mode_;

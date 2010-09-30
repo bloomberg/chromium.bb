@@ -164,7 +164,7 @@ bool PluginPpapi::RequestNaClModule(const nacl::string& url) {
   local_path.replace(0, origin().size(), local_origin);
   PLUGIN_PRINTF(("PluginPpapi::RequestNaClModule (local_path='%s')\n",
                  local_path.c_str()));
-  return Load(full_url, local_path.c_str());
+  return LoadNaClModule(full_url, local_path.c_str());
 }
 
 

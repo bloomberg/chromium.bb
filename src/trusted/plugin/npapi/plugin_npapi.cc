@@ -183,9 +183,10 @@ NPError PluginNpapi::SetWindow(NPWindow* window) {
 // to trigger the download if the src property hasn't been specified.
 #if !defined(NACL_STANDALONE)
   // If the <embed src='...'> attr was defined, the browser would have
-  // implicitly called GET on it, which calls Load() and set_logical_url().
+  // implicitly called GET on it, which calls LoadNaClModule() and
+  // set_nacl_module_url().
   // In the absence of this attr, we use the "nexes" attribute if present.
-  if (logical_url() == NULL) {
+  if (nacl_module_url() == NACL_NO_URL) {
     const char* nexes_attr = LookupArgument("nexes");
     if (nexes_attr != NULL) {
       SetNexesPropertyImpl(nexes_attr);
@@ -359,7 +360,7 @@ void PluginNpapi::StreamAsFile(NPStream* stream,
     // NPN_GetURL{Notify}.  Hence this resource was downloaded by default,
     // typically through src=... in the embed/object tag.
     PLUGIN_PRINTF(("StreamAsFile: default run\n"));
-    Load(stream->url, fname);
+    LoadNaClModule(stream->url, fname);
   } else {
     // Otherwise, we invoke the Run on the closure that was set up by
     // the requestor.
@@ -401,7 +402,7 @@ NPError PluginNpapi::DestroyStream(NPStream* stream,
     // Note, we cannot access the HTTP status code, so we might have
     // been returned a 404 error page.  This is reported in the ELF
     // validity checks that Load precipitates.
-    Load(stream->url, stream->url, stream_buffer);
+    LoadNaClModule(stream->url, stream_buffer);
     delete(stream_buffer);
     stream->pdata = NULL;
   } else {

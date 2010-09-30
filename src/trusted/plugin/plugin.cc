@@ -123,13 +123,13 @@ bool SetNexesProperty(void* obj, plugin::SrpcParams* params) {
 
 bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
-  if (plugin->logical_url() != NULL) {
-    params->outs()[0]->u.sval = strdup(plugin->logical_url());
-    PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", plugin->logical_url()));
+  const char* url = plugin->nacl_module_url().c_str();
+  PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", url));
+  if (NACL_NO_URL != plugin->nacl_module_url()) {
+    params->outs()[0]->u.sval = strdup(url);
     return true;
   } else {
-    // (NULL is not an acceptable SRPC result.)
-    PLUGIN_PRINTF(("GetSrcProperty ('src' failed)\n"));
+    // No url to set 'src' to.
     return false;
   }
 }
@@ -413,9 +413,10 @@ bool Plugin::Init(BrowserInterface* browser_interface,
 // list here and start downloading the right nexe immediately.
 #if defined(NACL_STANDALONE)
   // If the <embed src='...'> attr was defined, the browser would have
-  // implicitly called GET on it, which calls Load() and set_logical_url().
+  // implicitly called GET on it, which calls LoadNaClModule() and
+  // set_nacl_module_url().
   // In the absence of this attr, we use the "nexes" attribute if present.
-  if (logical_url() == NULL) {
+  if (NACL_NO_URL == nacl_module_url()) {
     const char* nexes_attr = LookupArgument("nexes");
     if (nexes_attr != NULL) {
       SetNexesPropertyImpl(nexes_attr);
@@ -438,8 +439,6 @@ Plugin::Plugin()
     argv_(NULL),
     socket_address_(NULL),
     socket_(NULL),
-    local_url_(NULL),
-    logical_url_(NULL),
     origin_valid_(false),
     height_(0),
     width_(0),
@@ -501,8 +500,6 @@ Plugin::~Plugin() {
   // NPP_Destroy().
   ShutDownSubprocess();
 
-  free(local_url_);
-  free(logical_url_);
   delete wrapper_factory_;
   delete browser_interface_;
   delete[] argv_;
@@ -511,56 +508,68 @@ Plugin::~Plugin() {
                  static_cast<void*>(this)));
 }
 
-void Plugin::set_local_url(const char* url) {
-  if (local_url_ != NULL) free(local_url_);
-  local_url_ = strdup(url);
+bool Plugin::LoadNaClModule(nacl::string full_url, nacl::string local_path) {
+  return LoadNaClModule(full_url,
+                        local_path,
+                        static_cast<StreamShmBuffer*>(NULL),
+                        NACL_NO_FILE_DESC);
 }
 
-void Plugin::set_logical_url(const char* url) {
-  if (logical_url_ != NULL) free(logical_url_);
-  logical_url_ = strdup(url);
+bool Plugin::LoadNaClModule(nacl::string full_url, StreamShmBuffer* buffer) {
+  return LoadNaClModule(full_url,
+                        NACL_NO_FILE_PATH,
+                        buffer,
+                        NACL_NO_FILE_DESC);
 }
 
-// Create a new service node from a downloaded service.
-bool Plugin::Load(nacl::string logical_url, const char* local_url) {
-  return Load(logical_url, local_url, static_cast<StreamShmBuffer*>(NULL));
+bool Plugin::LoadNaClModule(nacl::string full_url, int posix_file_desc) {
+  return LoadNaClModule(full_url,
+                        NACL_NO_FILE_PATH,
+                        static_cast<StreamShmBuffer*>(NULL),
+                        posix_file_desc);
 }
 
-bool Plugin::Load(nacl::string logical_url,
-                  const char* local_url,
-                  StreamShmBuffer* shmbufp) {
-  PLUGIN_PRINTF(("Plugin::Load (logical_url='%s')\n", logical_url.c_str()));
-  PLUGIN_PRINTF(("Plugin::Load (local_url='%s')\n", local_url));
-  PLUGIN_PRINTF(("Plugin::Load (shmbufp=%p)\n",
-                 reinterpret_cast<void*>(shmbufp)));
-  BrowserInterface* browser_interface = this->browser_interface();
+bool Plugin::LoadNaClModule(nacl::string full_url,
+                            nacl::string local_path,
+                            StreamShmBuffer* shm_buffer,
+                            int posix_file_desc) {
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (full_url='%s')\n",
+                 full_url.c_str()));
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (local_path='%s')\n",
+                 local_path.c_str()));
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (shm_buffer=%p)\n",
+                 reinterpret_cast<void*>(shm_buffer)));
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (posix_file_desc=%d)\n",
+                 posix_file_desc));
 
-  // Save the origin and local_url.
-  set_nacl_module_origin(nacl::UrlToOrigin(logical_url));
-  set_logical_url(logical_url.c_str());
-  set_local_url(local_url);
-  bool nacl_module_origin_valid =
-      nacl::OriginIsInWhitelist(nacl_module_origin());
-  PLUGIN_PRINTF(("Plugin::Load (origin='%s', origin_valid=%d)\n",
+  CHECK(NACL_NO_URL != full_url);
+  set_nacl_module_origin(nacl::UrlToOrigin(full_url));
+  set_nacl_module_url(full_url);
+  set_nacl_module_path(local_path);
+
+  bool module_origin_valid = nacl::OriginIsInWhitelist(nacl_module_origin_);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule "
+                 "(page_origin='%s', page_origin_valid=%d)\n",
                  origin_.c_str(), origin_valid_));
-  PLUGIN_PRINTF(("Plugin::Load "
-                 "(nacl_module_origin_='%s', nacl_module_origin_valid=%d)\n",
-                 nacl_module_origin_.c_str(), nacl_module_origin_valid));
-  // If the page origin where the EMBED/OBJECT tag occurs is not in
-  // the whitelist, refuse to load.  If the NaCl module's origin is
-  // not in the whitelist, also refuse to load.
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule "
+                 "(module_origin='%s', module_origin_valid=%d)\n",
+                 nacl_module_origin_.c_str(), module_origin_valid));
+
+  // If the origin of the nacl module or of the page with <embed>/<object>
+  // NaCl plugin element is not in the whitelist, refuse to load.
   // TODO(adonovan): JavaScript permits cross-origin loading, and so
-  // does Chrome ; why don't we?
-  if (!origin_valid_ || !nacl_module_origin_valid) {
+  // does Chrome; why don't we?
+  if (!origin_valid_ || !module_origin_valid) {
     nacl::string message = nacl::string("Load failed: NaCl module ") +
-        logical_url + " does not come ""from a whitelisted source. "
+        nacl_module_url_ + " does not come from a whitelisted source. "
         "See native_client/src/trusted/plugin/origin.cc for the list.";
-    browser_interface->AddToConsole(instance_id(), message.c_str());
+    browser_interface_->AddToConsole(instance_id(), message.c_str());
     return false;
   }
-  // Catch any bad accesses, etc., while loading.
+
+  // Catch any bad accesses while loading.
   ScopedCatchSignals sigcatcher(
-      (ScopedCatchSignals::SigHandlerType) SignalHandler);
+      static_cast<ScopedCatchSignals::SigHandlerType>(SignalHandler));
   if (PLUGIN_SETJMP(g_LoaderEnv, 1)) {
     return false;
   }
@@ -568,74 +577,87 @@ bool Plugin::Load(nacl::string logical_url,
   // Check ELF magic and ABI version compatibility.
   bool might_be_elf_exe = false;
   nacl::string error_string;
-  if (NULL == shmbufp) {
-    might_be_elf_exe = browser_interface->MightBeElfExecutable(
-        local_url_, &error_string);
-  } else {
-    // Read out first chunk for MightBeElfExecutable; this suffices for
-    // ELF headers etc.
+  if (NACL_NO_FILE_PATH != local_path) {
+    CHECK(NULL == shm_buffer);
+    CHECK(NACL_NO_FILE_DESC == posix_file_desc);
+    might_be_elf_exe = browser_interface_->MightBeElfExecutable(
+        nacl_module_path_, &error_string);
+  } else if (NULL != shm_buffer) {
+    CHECK(NACL_NO_FILE_DESC == posix_file_desc);
+    // It suffices to read out just the 1st header chunk.
     char elf_hdr_buf[kAbiHeaderBuffer];
-    ssize_t result = shmbufp->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
+    ssize_t result = shm_buffer->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
     if (sizeof elf_hdr_buf == result) {  // (const char*)(elf_hdr_buf)
-      might_be_elf_exe = browser_interface->MightBeElfExecutable(
+      might_be_elf_exe = browser_interface_->MightBeElfExecutable(
           elf_hdr_buf, sizeof elf_hdr_buf, &error_string);
     }
+  } else if (posix_file_desc > NACL_NO_FILE_DESC) {
+    NACL_UNIMPLEMENTED();
+  } else {
+    NACL_NOTREACHED();
   }
-  PLUGIN_PRINTF(("Plugin::Load (might_be_elf_exe=%d)\n", might_be_elf_exe));
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (might_be_elf_exe=%d)\n",
+                 might_be_elf_exe));
   if (!might_be_elf_exe) {
-    browser_interface->AddToConsole(instance_id(), error_string);
+    browser_interface_->AddToConsole(instance_id(), error_string);
     return false;
   }
 
-  // Ensure that we do not leak the ServiceRuntime object for an
-  // existing subprocess.  Ensure that any associated listener threads
-  // do not go unjoined, because if they outlive the Plugin object,
-  // they will not be memory safe.
+  // Before forking a new sel_ldr process, ensure that we do not leak
+  // the ServiceRuntime object for an existing suprocess, and that any
+  // associated listener threads do not go unjoined because if they
+  // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocess();
-
-  // Load a file via a forked sel_ldr process.
-  service_runtime_ = new(std::nothrow) ServiceRuntime(browser_interface, this);
-  PLUGIN_PRINTF(("Plugin::Load (service_runtime=%p)\n",
+  service_runtime_ =
+      new(std::nothrow) ServiceRuntime(browser_interface_, this);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
                  static_cast<void*>(service_runtime_)));
   if (NULL == service_runtime_) {
-    browser_interface->AddToConsole(instance_id(),
-                                    "Load: ServiceRuntime Ctor failed");
+    const char* message = "Load: Failed to instantiate service runtime";
+    browser_interface_->AddToConsole(instance_id(), message);
     return false;
   }
 
   bool service_runtime_started = false;
-  if (NULL == shmbufp) {
-    service_runtime_started = service_runtime_->Start(local_url_);
-  } else {
+  if (NACL_NO_FILE_PATH != local_path) {
+    service_runtime_started = service_runtime_->Start(
+        nacl_module_path_.c_str());
+  } else if (NULL != shm_buffer) {
     int32_t size;
-    NaClDesc* raw_desc = shmbufp->shm(&size);
-    if (NULL == raw_desc) {
-      PLUGIN_PRINTF(("Plugin::Load (extracting shm failed)\n"));
+    NaClDesc* shm_nacl_desc = shm_buffer->shm(&size);
+    PLUGIN_PRINTF(("Plugin::LoadNaClModule (shm_nacl_desc=%p)\n",
+                   reinterpret_cast<void*>(shm_nacl_desc)));
+    if (NULL == shm_nacl_desc) {
       return false;
     }
     nacl::DescWrapper* wrapped_shm =
-        wrapper_factory_->MakeGeneric(NaClDescRef(raw_desc));
-    service_runtime_started =
-        service_runtime_->StartUnderChromium(local_url_, wrapped_shm);
+        wrapper_factory_->MakeGeneric(NaClDescRef(shm_nacl_desc));
+    service_runtime_started = service_runtime_->StartUnderChromium(
+        nacl_module_url_.c_str(), wrapped_shm);
     // Start consumes the wrapped_shm.
+  } else if (posix_file_desc > NACL_NO_FILE_DESC) {
+    NACL_UNIMPLEMENTED();
+  } else {
+    NACL_NOTREACHED();
   }
   PLUGIN_PRINTF(("Plugin::Load (service_runtime_started=%d)\n",
                  service_runtime_started));
+
   // Plugin takes ownership of socket_address_ from service_runtime_ and will
   // Unref it at deletion. This must be done here because service_runtime_
   // start-up might fail after default_socket_address() was already created.
   socket_address_ = service_runtime_->default_socket_address();
   if (!service_runtime_started) {
-    browser_interface->AddToConsole(instance_id(),
-                                    "Load: Failed to start service runtime");
+    const char* message = "Load: Failed to start service runtime";
+    browser_interface_->AddToConsole(instance_id(), message);
     return false;
   }
-  CHECK(socket_address_ != NULL);
+  CHECK(NULL != socket_address_);
   if (!StartSrpcServices(&error_string)) {  // sets socket_
     browser_interface_->AddToConsole(instance_id(), error_string);
     return false;
   }
-  PLUGIN_PRINTF(("Plugin::Load (socket_address=%p, socket=%p, return)\n",
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (socket_address=%p, socket=%p)\n",
                  static_cast<void*>(socket_address_),
                  static_cast<void*>(socket_)));
   return true;

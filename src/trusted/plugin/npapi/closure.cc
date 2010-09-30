@@ -30,7 +30,7 @@ struct NPObject;
 // In this file we perform the same-origin checks that the browser
 // normally performs for XMLHttpRequest because, with NPAPI, the
 // browser does not do these checks for us.
-// 
+//
 // We do the same-origin check when an HTTP request completes, rather
 // than before sending the request.  Hence the same-origin policy only
 // impedes receiving data from other origins, not sending messages to
@@ -102,7 +102,7 @@ void LoadNaClAppNotify::RunFromFile(NPStream* stream,
   PLUGIN_PRINTF(("LoadNaClAppNotify::RunFromFile(%p, %s)\n",
                  static_cast<void*>(stream),
                  fname.c_str()));
-  plugin()->Load(stream->url, fname.c_str());
+  plugin()->LoadNaClModule(stream->url, fname.c_str());
 }
 
 void LoadNaClAppNotify::RunFromBuffer(const nacl::string& url,
@@ -110,7 +110,7 @@ void LoadNaClAppNotify::RunFromBuffer(const nacl::string& url,
   PLUGIN_PRINTF(("LoadNaClAppNotify RunFromBuffer(%s, %p)\n", url.c_str(),
                  static_cast<void*>(shmbufp)));
   if (NULL != shmbufp) {
-    plugin()->Load(url.c_str(), url.c_str(), shmbufp);
+    plugin()->LoadNaClModule(url.c_str(), shmbufp);
   }
 }
 
