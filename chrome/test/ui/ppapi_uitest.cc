@@ -126,3 +126,7 @@ TEST_F(PPAPITest, UrlUtil) {
 TEST_F(PPAPITest, CharSet) {
   RunTest("CharSet");
 }
+
+TEST_F(PPAPITest, Var) {
+  RunTest("Var");
+}
