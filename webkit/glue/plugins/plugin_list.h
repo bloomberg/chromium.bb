@@ -60,6 +60,8 @@ struct PluginVersionInfo {
   PluginEntryPoints entry_points;
 };
 
+typedef void (*LoadPluginsFromDiskHookFunc)();
+
 // The PluginList is responsible for loading our NPAPI based plugins. It does
 // so in whatever manner is appropriate for the platform. On Windows, it loads
 // plugins from a known directory by looking for DLLs which start with "NP",
@@ -72,6 +74,9 @@ class PluginList {
  public:
   // Gets the one instance of the PluginList.
   static PluginList* Singleton();
+
+  // Set a hook that is called whenever we load plugins from the disk.
+  static void SetPluginLoadHook(LoadPluginsFromDiskHookFunc hook);
 
   // Returns true if we're in debug-plugin-loading mode. This is controlled
   // by a command line switch.

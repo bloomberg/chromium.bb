@@ -56,12 +56,24 @@ static void NotifyPluginsOfActivation() {
 // static
 bool PluginService::enable_chrome_plugins_ = true;
 
+void LoadPluginsFromDiskHook() {
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI) &&
+         !ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
+         "Can't load plugins on the IO/UI threads since it's very slow.";
+}
+
 // static
 void PluginService::InitGlobalInstance(Profile* profile) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
+  NPAPI::PluginList::Singleton()->SetPluginLoadHook(LoadPluginsFromDiskHook);
+
+  /*
+  Code is disabled since plugins shouldn't be loaded on the UI/IO threads.
+  See http://code.google.com/p/chromium/issues/detail?id=57425
   // We first group the plugins and then figure out which groups to disable.
   PluginUpdater::GetPluginUpdater()->DisablePluginGroupsFromPrefs(profile);
+  */
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableOutdatedPlugins)) {
