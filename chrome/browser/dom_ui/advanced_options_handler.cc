@@ -366,14 +366,15 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
   const PrefService::Preference* proxy_server =
       pref_service->FindPreference(prefs::kProxyServer);
-  DCHECK(proxy_server);
+  bool is_extension_controlled = (proxy_server &&
+                                  proxy_server->IsExtensionControlled());
 
   FundamentalValue disabled(proxy_prefs_->IsManaged() ||
-                            proxy_server->IsExtensionControlled());
+                            is_extension_controlled);
 
   // Get the appropriate info string to describe the button.
   string16 label_str;
-  if (proxy_server->IsExtensionControlled()) {
+  if (is_extension_controlled) {
     label_str = l10n_util::GetStringUTF16(IDS_OPTIONS_EXTENSION_PROXIES_LABEL);
   } else {
     label_str = l10n_util::GetStringFUTF16(IDS_OPTIONS_SYSTEM_PROXIES_LABEL,
