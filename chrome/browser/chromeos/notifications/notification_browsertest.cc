@@ -424,7 +424,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestCloseOpen) {
   EXPECT_EQ(NotificationPanel::CLOSED, tester->state());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationTest, TestScrollBalloonToVisible) {
+// TODO(oshima): bug chromium-os:7139 Fix this flaky test on ChromeOS.
+IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestScrollBalloonToVisible) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
   NotificationPanelTester* tester = panel->GetTester();

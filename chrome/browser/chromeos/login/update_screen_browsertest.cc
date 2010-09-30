@@ -151,8 +151,8 @@ IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestUpdateAvailable) {
 
   controller()->set_observer(NULL);
 }
-
-IN_PROC_BROWSER_TEST_F(UpdateScreenTest, TestErrorIssuingUpdateCheck) {
+// TODO(zelidrag): bug chromium-os:7140 Fix this flaky test on ChromeOS.
+IN_PROC_BROWSER_TEST_F(UpdateScreenTest, FLAKY_TestErrorIssuingUpdateCheck) {
   ASSERT_TRUE(controller() != NULL);
   scoped_ptr<MockScreenObserver> mock_screen_observer(new MockScreenObserver());
   controller()->set_observer(mock_screen_observer.get());
