@@ -2935,7 +2935,8 @@ bool MinidumpAssertion::Read(u_int32_t expected_size) {
 
     scoped_ptr<string> new_expression(UTF16ToUTF8(expression_utf16,
                                                   minidump_->swap()));
-    expression_ = *new_expression;
+    if (new_expression.get())
+      expression_ = *new_expression;
   }
   
   // assertion
@@ -2947,7 +2948,8 @@ bool MinidumpAssertion::Read(u_int32_t expected_size) {
     memcpy(&function_utf16[0], &assertion_.function[0], byte_length);
     scoped_ptr<string> new_function(UTF16ToUTF8(function_utf16,
                                                 minidump_->swap()));
-    function_ = *new_function;
+    if (new_function.get())
+      function_ = *new_function;
   }
 
   // file
@@ -2959,7 +2961,8 @@ bool MinidumpAssertion::Read(u_int32_t expected_size) {
     memcpy(&file_utf16[0], &assertion_.file[0], byte_length);
     scoped_ptr<string> new_file(UTF16ToUTF8(file_utf16,
                                             minidump_->swap()));
-    file_ = *new_file;
+    if (new_file.get())
+      file_ = *new_file;
   }
 
   if (minidump_->swap()) {
