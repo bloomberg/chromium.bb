@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_NETWORK_DROPDOWN_BUTTON_H_
 #pragma once
 
+#include "app/throb_animation.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "views/controls/button/menu_button.h"
@@ -23,6 +24,9 @@ class NetworkDropdownButton : public views::MenuButton,
   NetworkDropdownButton(bool browser_mode, gfx::NativeWindow parent_window);
   virtual ~NetworkDropdownButton();
 
+  // AnimationDelegate implementation.
+  virtual void AnimationProgressed(const Animation* animation);
+
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* obj);
 
@@ -38,6 +42,12 @@ class NetworkDropdownButton : public views::MenuButton,
 
  private:
   bool browser_mode_;
+
+  // The throb animation that does the wifi connecting animation.
+  ThrobAnimation animation_connecting_;
+
+  // The duration of the icon throbbing in milliseconds.
+  static const int kThrobDuration;
 
   gfx::NativeWindow parent_window_;
 

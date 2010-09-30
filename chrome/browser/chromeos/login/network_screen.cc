@@ -172,7 +172,7 @@ void NetworkScreen::UpdateStatus(NetworkLibrary* network) {
   } else if (network->cellular_connecting()) {
     WaitForConnection(ASCIIToUTF16(network->cellular_name()));
   } else {
-    view()->EnableContinue(network->Connected());
+    StopWaitingForConnection(network_id_);
   }
 }
 
@@ -193,13 +193,15 @@ void NetworkScreen::StopWaitingForConnection(const string16& network_id) {
 }
 
 void NetworkScreen::WaitForConnection(const string16& network_id) {
-  connection_timer_.Stop();
-  connection_timer_.Start(base::TimeDelta::FromSeconds(kConnectionTimeoutSec),
-                          this,
-                          &NetworkScreen::OnConnectionTimeout);
+  if (network_id_ != network_id || !connection_timer_.IsRunning()) {
+    connection_timer_.Stop();
+    connection_timer_.Start(base::TimeDelta::FromSeconds(kConnectionTimeoutSec),
+                            this,
+                            &NetworkScreen::OnConnectionTimeout);
+  }
 
   network_id_ = network_id;
-  view()->ShowConnectingStatus(true, network_id_);
+  view()->ShowConnectingStatus(continue_pressed_, network_id_);
 
   view()->EnableContinue(false);
 }

@@ -20,6 +20,9 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkDropdownButton
 
+// static
+const int NetworkDropdownButton::kThrobDuration = 1000;
+
 NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
                                              gfx::NativeWindow parent_window)
     : MenuButton(NULL,
@@ -27,13 +30,35 @@ NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
                  this,
                  true),
       browser_mode_(browser_mode),
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       parent_window_(parent_window) {
+  animation_connecting_.SetThrobDuration(kThrobDuration);
+  animation_connecting_.SetTweenType(Tween::LINEAR);
   NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
   CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
 }
 
 NetworkDropdownButton::~NetworkDropdownButton() {
   CrosLibrary::Get()->GetNetworkLibrary()->RemoveObserver(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuButton, AnimationDelegate implementation:
+
+void NetworkDropdownButton::AnimationProgressed(const Animation* animation) {
+  if (animation == &animation_connecting_) {
+    // Figure out which image to draw. We want a value between 0-100.
+    // 0 represents no signal and 100 represents full signal strength.
+    int value = static_cast<int>(animation_connecting_.GetCurrentValue()*100.0);
+    if (value < 0)
+      value = 0;
+    else if (value > 100)
+      value = 100;
+    SetIcon(IconForNetworkStrength(value, true));
+    SchedulePaint();
+  } else {
+    MenuButton::AnimationProgressed(animation);
+  }
 }
 
 void NetworkDropdownButton::Refresh() {
@@ -52,21 +77,37 @@ void NetworkDropdownButton::NetworkChanged(NetworkLibrary* cros) {
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // Always show the higher priority connection first. Ethernet then wifi.
     if (cros->ethernet_connected()) {
+      animation_connecting_.Stop();
       SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
       SetText(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
-    } else if (cros->wifi_connected() || cros->wifi_connecting()) {
+    } else if (cros->wifi_connected()) {
+      animation_connecting_.Stop();
       SetIcon(IconForNetworkStrength(cros->wifi_strength(), true));
       SetText(ASCIIToWide(cros->wifi_name()));
-    } else if (cros->cellular_connected() || cros->cellular_connecting()) {
+    } else if (cros->cellular_connected()) {
+      animation_connecting_.Stop();
       SetIcon(IconForNetworkStrength(cros->cellular_strength(), false));
       SetText(ASCIIToWide(cros->cellular_name()));
+    } else if (cros->wifi_connecting() || cros->cellular_connecting()) {
+      if (!animation_connecting_.is_animating()) {
+        animation_connecting_.Reset();
+        animation_connecting_.StartThrobbing(-1);
+        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS1_BLACK));
+      }
+
+      if (cros->wifi_connecting())
+        SetText(ASCIIToWide(cros->wifi_name()));
+      else if (cros->cellular_connecting())
+        SetText(ASCIIToWide(cros->cellular_name()));
     }
 
     if (!cros->Connected() && !cros->Connecting()) {
+      animation_connecting_.Stop();
       SetIcon(SkBitmap());
       SetText(l10n_util::GetString(IDS_NETWORK_SELECTION_NONE));
     }
   } else {
+    animation_connecting_.Stop();
     SetIcon(SkBitmap());
     SetText(l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
   }
