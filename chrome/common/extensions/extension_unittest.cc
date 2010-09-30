@@ -832,7 +832,8 @@ TEST(ExtensionTest, EffectiveHostPermissions) {
   EXPECT_TRUE(extension->HasEffectiveAccessToAllHosts());
 }
 
-TEST(ExtensionTest, IsPrivilegeIncrease) {
+// crbug.com/54332
+TEST(ExtensionTest, FLAKY_IsPrivilegeIncrease) {
   const struct {
     const char* base_name;
     bool expect_success;
