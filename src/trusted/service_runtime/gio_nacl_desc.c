@@ -17,7 +17,7 @@ const struct GioVtbl kNaClGioNaClDescVtbl;
 
 int NaClGioNaClDescCtor(struct NaClGioNaClDesc  *self,
                         struct NaClDesc         *wrapped) {
-  self->wrapped = wrapped;
+  self->wrapped = NaClDescRef(wrapped);
   self->base.vtbl = &kNaClGioNaClDescVtbl;
   return 1;
 }

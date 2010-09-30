@@ -856,7 +856,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
       break;
 
     case NACL_DESC_HOST_IO:
-      if (!NaClGioNaClDescCtor(&gio_desc, NaClDescRef(nexe_binary))) {
+      if (!NaClGioNaClDescCtor(&gio_desc, nexe_binary)) {
         errcode = NACL_SRPC_RESULT_NO_MEMORY;
         goto cleanup;
       }
@@ -881,30 +881,42 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
       goto cleanup;
   }
 
+  NaClXMutexLock(&nap->mu);
+
   suberr = NaClAppLoadFile(load_src, nap, NACL_ABI_CHECK_OPTION_CHECK);
-  (*load_src->vtbl->Close)(&gio_desc.base);
-  (*load_src->vtbl->Dtor)(&gio_desc.base);
+  (*load_src->vtbl->Close)(load_src);
+  (*load_src->vtbl->Dtor)(load_src);
 
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;
     errcode = NACL_SRPC_RESULT_APP_ERROR;
+    NaClXCondVarBroadcast(&nap->cv);
+    NaClXMutexUnlock(&nap->mu);
     goto cleanup;
   }
+  NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
+
   /*
    * Finish setting up the NaCl App.  This includes dup'ing
    * descriptors 0-2 and making them available to the NaCl App.
    */
   suberr = NaClAppPrepareToLaunch(nap, 0, 1, 2);
+  NaClXMutexLock(&nap->mu);
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;
     errcode = NACL_SRPC_RESULT_APP_ERROR;
-    goto cleanup;
+    goto cleanup_mu;
   }
+
+  nap->module_load_status = LOAD_OK;
+  errcode = NACL_SRPC_RESULT_OK;
+
+ cleanup_mu:
+  NaClXCondVarBroadcast(&nap->cv);
+  NaClXMutexUnlock(&nap->mu);
 
   /* Give debuggers a well known point at which xlate_base is known.  */
   NaClGdbHook(nap);
-
-  errcode = NACL_SRPC_RESULT_OK;
 
  cleanup:
 

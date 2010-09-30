@@ -26,8 +26,7 @@ struct NaClGioNaClDesc {
 };
 
 /*
- * The Ctor takes ownership of wrapped; use
- * NaClDescWrapped(actual_arg) if shared ownership is desired.
+ * The Ctor takes a new reference to wrapped.
  */
 int NaClGioNaClDescCtor(struct NaClGioNaClDesc  *self,
                         struct NaClDesc         *wrapped);
