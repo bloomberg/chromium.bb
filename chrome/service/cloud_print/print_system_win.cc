@@ -503,7 +503,12 @@ class PrintSystemWin : public PrintSystem {
           utility_host.release();
         }
       }
-      static const int kPageCountPerBatch = 10;
+      // Some Cairo-generated PDFs from Chrome OS result in huge metafiles.
+      // So the PageCountPerBatch is set to 1 for now.
+      // TODO(sanjeevr): Figure out a smarter way to determine the pages per
+      // batch. Filed a bug to track this at
+      // http://code.google.com/p/chromium/issues/detail?id=57350.
+      static const int kPageCountPerBatch = 1;
       int last_page_printed_;
       PlatformJobId job_id_;
       PrintSystem::JobSpooler::Delegate* delegate_;

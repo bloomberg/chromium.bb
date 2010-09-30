@@ -23,7 +23,7 @@ class ServiceChildProcessHost : public ChildProcessHost,
   explicit ServiceChildProcessHost(ProcessType type);
   // Derived classes call this to launch the child process synchronously.
   // TODO(sanjeevr): Determine whether we need to make the launch asynchronous.
-  bool Launch(CommandLine* cmd_line);
+  bool Launch(CommandLine* cmd_line, const FilePath& exposed_dir);
 };
 
 #endif  // CHROME_SERVICE_SERVICE_CHILD_PROCESS_HOST_H_

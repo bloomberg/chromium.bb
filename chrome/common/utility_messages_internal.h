@@ -47,8 +47,9 @@ IPC_BEGIN_MESSAGES(Utility)
                        std::vector<unsigned char>)  // encoded image contents
 
   // Tell the utility process to render the given PDF into a metafile.
-  IPC_MESSAGE_CONTROL4(UtilityMsg_RenderPDFPagesToMetafile,
+  IPC_MESSAGE_CONTROL5(UtilityMsg_RenderPDFPagesToMetafile,
                        base::PlatformFile,       // PDF file
+                       FilePath,                 // Location for output metafile
                        gfx::Rect,                // Render Area
                        int,                      // DPI
                        std::vector<printing::PageRange>)
@@ -115,9 +116,8 @@ IPC_BEGIN_MESSAGES(UtilityHost)
   IPC_MESSAGE_CONTROL0(UtilityHostMsg_DecodeImage_Failed)
 
   // Reply when the utility process has succeeded in rendering the PDF.
-  IPC_MESSAGE_CONTROL2(UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
-                       printing::NativeMetafile,  // Output metafile
-                       int)                      // Highest rendered page number
+  IPC_MESSAGE_CONTROL1(UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
+                       int)       // Highest rendered page number
 
   // Reply when an error occured rendering the PDF.
   IPC_MESSAGE_CONTROL0(UtilityHostMsg_RenderPDFPagesToMetafile_Failed)

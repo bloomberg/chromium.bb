@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/utility_messages.h"
 #include "gfx/rect.h"
@@ -38,7 +39,15 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   NOTIMPLEMENTED();
   return false;
 #else  // !defined(OS_WIN)
-  if (!StartProcess())
+  scratch_metafile_dir_.reset(new ScopedTempDir);
+  if (!scratch_metafile_dir_->CreateUniqueTempDir())
+    return false;
+  if (!file_util::CreateTemporaryFileInDir(scratch_metafile_dir_->path(),
+                                           &metafile_path_)) {
+    return false;
+  }
+
+  if (!StartProcess(scratch_metafile_dir_->path()))
     return false;
 
   ScopedHandle pdf_file(
@@ -60,13 +69,14 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   waiting_for_reply_ = true;
   return SendOnChannel(
       new UtilityMsg_RenderPDFPagesToMetafile(pdf_file_in_utility_process,
+                                              metafile_path_,
                                               render_area,
                                               render_dpi,
                                               page_ranges));
 #endif  // !defined(OS_WIN)
 }
 
-bool ServiceUtilityProcessHost::StartProcess() {
+bool ServiceUtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
   set_name(L"utility process");
@@ -85,7 +95,7 @@ bool ServiceUtilityProcessHost::StartProcess() {
   cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id());
   cmd_line.AppendSwitch(switches::kLang);
 
-  return Launch(&cmd_line);
+  return Launch(&cmd_line, exposed_dir);
 }
 
 FilePath ServiceUtilityProcessHost::GetUtilityProcessCmd() {
@@ -110,6 +120,8 @@ void ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN)  // This hack is Windows-specific.
     IPC_MESSAGE_HANDLER(UtilityHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
+                        OnRenderPDFPagesToMetafileSucceeded)
     IPC_MESSAGE_UNHANDLED(msg_is_ok__ = MessageForClient(message))
   IPC_END_MESSAGE_MAP_EX()
 }
@@ -130,16 +142,46 @@ void ServiceUtilityProcessHost::OnPreCacheFont(LOGFONT font) {
 }
 #endif  // OS_WIN
 
+void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
+    int highest_rendered_page_number) {
+  DCHECK(waiting_for_reply_);
+  // If the metafile was successfully created, we need to take our hands off the
+  // scratch metafile directory. The client will delete it when it is done with
+  // metafile.
+  scratch_metafile_dir_->Take();
+  client_message_loop_proxy_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(client_.get(),
+                        &Client::MetafileAvailable,
+                        metafile_path_,
+                        highest_rendered_page_number));
+  waiting_for_reply_ = false;
+}
 
 void ServiceUtilityProcessHost::Client::OnMessageReceived(
     const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(UtilityHostMsg_RenderPDFPagesToMetafile_Succeeded,
-                        Client::OnRenderPDFPagesToMetafileSucceeded)
-#endif  // OS_WIN
     IPC_MESSAGE_HANDLER(UtilityHostMsg_RenderPDFPagesToMetafile_Failed,
                         Client::OnRenderPDFPagesToMetafileFailed)
   IPC_END_MESSAGE_MAP_EX()
+}
+
+void ServiceUtilityProcessHost::Client::MetafileAvailable(
+    const FilePath& metafile_path,
+    int highest_rendered_page_number) {
+  // The metafile was created in a temp folder which needs to get deleted after
+  // we have processed it.
+  ScopedTempDir scratch_metafile_dir;
+  scratch_metafile_dir.Set(metafile_path.DirName());
+#if defined(OS_WIN)
+  printing::NativeMetafile metafile;
+  if (!metafile.CreateFromFile(metafile_path)) {
+    OnRenderPDFPagesToMetafileFailed();
+  } else {
+    OnRenderPDFPagesToMetafileSucceeded(metafile, highest_rendered_page_number);
+    // Close it so that ScopedTempDir can delete the folder.
+    metafile.CloseEmf();
+  }
+#endif  // defined(OS_WIN)
 }
 

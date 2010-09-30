@@ -53,6 +53,7 @@ class UtilityThread : public ChildThread {
   // IPC to render a PDF into a platform metafile.
   void OnRenderPDFPagesToMetafile(
       base::PlatformFile pdf_file,
+      const FilePath& metafile_path,
       const gfx::Rect& render_area,
       int render_dpi,
       const std::vector<printing::PageRange>& page_ranges);
@@ -62,6 +63,7 @@ class UtilityThread : public ChildThread {
   // |highest_rendered_page_number| is set to -1 on failure to render any page.
   bool RenderPDFToWinMetafile(
     base::PlatformFile pdf_file,
+    const FilePath& metafile_path,
     const gfx::Rect& render_area,
     int render_dpi,
     const std::vector<printing::PageRange>& page_ranges,

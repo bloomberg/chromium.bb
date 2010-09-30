@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "ipc/ipc_channel.h"
@@ -22,7 +23,7 @@
 #include "printing/native_metafile.h"
 
 class CommandLine;
-class FilePath;
+class ScopedTempDir;
 
 namespace base {
 class MessageLoopProxy;
@@ -67,6 +68,9 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
     friend class ServiceUtilityProcessHost;
 
     void OnMessageReceived(const IPC::Message& message);
+    // Invoked when a metafile file is ready.
+    void MetafileAvailable(const FilePath& metafile_path,
+                           int highest_rendered_page_number);
 
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
@@ -100,21 +104,28 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
 
  private:
   // Starts a process.  Returns true iff it succeeded.
-  bool StartProcess();
+  bool StartProcess(const FilePath& exposed_dir);
 
   // IPC messages:
   void OnMessageReceived(const IPC::Message& message);
+  // Called when at least one page in the specified PDF has been rendered
+  // successfully into metafile_path_;
+  void OnRenderPDFPagesToMetafileSucceeded(int highest_rendered_page_number);
+  // Any other messages to be handled by the client.
   bool MessageForClient(const IPC::Message& message);
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
   void OnPreCacheFont(LOGFONT font);
 #endif  // defined(OS_WIN)
 
-
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;
   scoped_refptr<base::MessageLoopProxy> client_message_loop_proxy_;
   bool waiting_for_reply_;
+  // The path to the temp file where the metafile will be written to.
+  FilePath metafile_path_;
+  // The temporary folder created for the metafile.
+  scoped_ptr<ScopedTempDir> scratch_metafile_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceUtilityProcessHost);
 };

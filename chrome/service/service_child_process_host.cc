@@ -22,13 +22,14 @@ ServiceChildProcessHost::~ServiceChildProcessHost() {
   base::KillProcess(handle(), ResultCodes::NORMAL_EXIT, false);
 }
 
-bool ServiceChildProcessHost::Launch(CommandLine* cmd_line) {
+bool ServiceChildProcessHost::Launch(CommandLine* cmd_line,
+                                     const FilePath& exposed_dir) {
 #if !defined(OS_WIN)
   // TODO(sanjeevr): Implement for non-Windows OSes.
   NOTIMPLEMENTED();
   return false;
 #else  // !defined(OS_WIN)
-  set_handle(sandbox::StartProcessWithAccess(cmd_line, FilePath()));
+  set_handle(sandbox::StartProcessWithAccess(cmd_line, exposed_dir));
   return (handle() != base::kNullProcessHandle);
 #endif  // !defined(OS_WIN)
 }
