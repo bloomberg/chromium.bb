@@ -9,95 +9,6 @@ var MAX_MINIVIEW_ITEMS = 15;
 // Extra spacing at the top of the layout.
 var LAYOUT_SPACING_TOP = 25;
 
-function getSectionCloseButton(sectionId) {
-  return document.querySelector('#' + sectionId + ' .section-close-button');
-}
-
-function getSectionMenuButton(sectionId) {
-  return $(sectionId + '-button');
-}
-
-function getSectionMenuButtonTextId(sectionId) {
-  return sectionId.replace(/-/g, '');
-}
-
-function setSectionVisible(sectionId, section, visible, hideMask) {
-  if (visible && !(shownSections & hideMask) ||
-      !visible && (shownSections & hideMask))
-    return;
-
-  if (visible) {
-    if (section) {
-      showOnlySection(section);
-    }
-    var el = $(sectionId);
-    el.classList.remove('disabled');
-    el = getSectionMenuButton(sectionId);
-    el.classList.add('disabled');
-    shownSections &= ~hideMask;
-  } else {
-    if (section) {
-      hideSection(section);
-    }
-    var el = $(sectionId);
-    el.classList.add('disabled');
-    el = getSectionMenuButton(sectionId);
-    el.classList.remove('disabled');
-    shownSections |= hideMask;
-  }
-  layoutSections();
-}
-
-function clearClosedMenu(menu) {
-  menu.innerHTML = '';
-}
-
-function addClosedMenuEntryWithLink(menu, a) {
-  var span = document.createElement('span');
-  a.className += ' item menuitem';
-  span.appendChild(a);
-  menu.appendChild(span);
-}
-
-function addClosedMenuEntry(menu, url, title, imageUrl) {
-  var a = document.createElement('a');
-  a.href = url;
-  a.textContent = title;
-  a.style.backgroundImage = 'url(' + imageUrl + ')';
-  addClosedMenuEntryWithLink(menu, a);
-}
-
-function addClosedMenuFooter(menu, sectionId, mask, opt_section) {
-  menu.appendChild(document.createElement('hr'));
-
-  var span = document.createElement('span');
-  var a = span.appendChild(document.createElement('a'));
-  a.href = '';
-  a.textContent =
-      localStrings.getString(getSectionMenuButtonTextId(sectionId));
-  a.className = 'item';
-  a.addEventListener(
-      'click',
-      function(e) {
-        getSectionMenuButton(sectionId).hideMenu();
-        e.preventDefault();
-        setSectionVisible(sectionId, opt_section, true, mask);
-        shownSections &= ~mask;
-        saveShownSections();
-      });
-  menu.appendChild(span);
-}
-
-function initializeSection(sectionId, mask, opt_section) {
-  var button = getSectionCloseButton(sectionId);
-  button.addEventListener(
-    'click',
-    function() {
-      setSectionVisible(sectionId, opt_section, false, mask);
-      saveShownSections();
-    });
-}
-
 function updateSimpleSection(id, section) {
   var elm = $(id);
   var maxiview = getSectionMaxiview(elm);
@@ -127,14 +38,10 @@ function renderRecentlyClosed() {
   var recentElement = $('recently-closed');
   var parentEl = recentElement.lastElementChild;
   parentEl.textContent = '';
-  var recentMenu = $('recently-closed-menu');
-  clearClosedMenu(recentMenu);
 
   recentItems.forEach(function(item) {
     parentEl.appendChild(createRecentItem(item));
-    addRecentMenuItem(recentMenu, item);
   });
-  addClosedMenuFooter(recentMenu, 'recently-closed', MINIMIZED_RECENT);
 
   layoutRecentlyClosed();
 }
@@ -161,26 +68,6 @@ function createRecentItem(data) {
   var wrapperEl = document.createElement('span');
   wrapperEl.appendChild(el);
   return wrapperEl;
-}
-
-function addRecentMenuItem(menu, data) {
-  var isWindow = data.type == 'window';
-  var a = document.createElement('a');
-  if (isWindow) {
-    a.textContent = formatTabsText(data.tabs.length);
-    a.className = 'window';  // To get the icon from the CSS .window rule.
-    a.href = '';  // To make underline show up.
-  } else {
-    a.href = data.url;
-    a.style.backgroundImage = 'url(chrome://favicon/' + data.url + ')';
-    a.textContent = data.title;
-  }
-  function clickHandler(e) {
-    chrome.send('reopenTab', [String(data.sessionId)]);
-    e.preventDefault();
-  }
-  a.addEventListener('click', clickHandler);
-  addClosedMenuEntryWithLink(menu, a);
 }
 
 function saveShownSections() {
@@ -315,9 +202,6 @@ function layoutSections() {
   for (; section = sections[i]; i++) {
     footerHeight += section.fixedHeight;
   }
-  // Leave room for bottom bar if it's visible.
-  footerHeight += $('closed-sections-bar').offsetHeight;
-
 
   // Determine the height to use for the expanded section. If there isn't enough
   // space to show the expanded section completely, this will be the available
@@ -421,7 +305,6 @@ function getSectionMaxiview(section) {
   return $(section.id + '-maxiview');
 }
 
-// You usually want to call |showOnlySection()| instead of this.
 function showSection(section) {
   if (!(section & shownSections)) {
     shownSections |= section;
@@ -442,17 +325,6 @@ function showSection(section) {
         mostVisited.layout();
         break;
     }
-  }
-}
-
-// Show this section and hide all other sections - at most one section can
-// be open at one time.
-function showOnlySection(section) {
-  for (var p in Section) {
-    if (p == section)
-      showSection(Section[p]);
-    else
-      hideSection(Section[p]);
   }
 }
 
@@ -502,15 +374,6 @@ function setShownSections(newShownSections) {
     else
       hideSection(Section[key]);
   }
-  setSectionVisible(
-      'apps', Section.APPS,
-      !(newShownSections & MINIMIZED_APPS), MINIMIZED_APPS);
-  setSectionVisible(
-      'most-visited', Section.THUMB,
-      !(newShownSections & MINIMIZED_THUMB), MINIMIZED_THUMB);
-  setSectionVisible(
-      'recently-closed', undefined,
-      !(newShownSections & MINIMIZED_RECENT), MINIMIZED_RECENT);
   layoutSections();
 }
 
@@ -536,9 +399,7 @@ function layoutRecentlyClosed() {
   });
 
   if (parentEl.hasChildNodes()) {
-    if (!(shownSections & MINIMIZED_RECENT)) {
-      recentElement.classList.remove('disabled');
-    }
+    recentElement.classList.remove('disabled');
   } else {
     recentElement.classList.add('disabled');
   }
@@ -837,7 +698,12 @@ function toggleSectionVisibilityAndAnimate(section) {
   if (shownSections & Section[section]) {
     hideSection(Section[section]);
   } else {
-    showOnlySection(section);
+    for (var p in Section) {
+      if (p == section)
+        showSection(Section[p]);
+      else
+        hideSection(Section[p]);
+    }
   }
   layoutSections();
   saveShownSections();
@@ -1075,7 +941,6 @@ updateAttribution();
 var mostVisited = new MostVisited(
     $('most-visited-maxiview'),
     document.querySelector('#most-visited .miniview'),
-    $('most-visited-menu'),
     useSmallGrid(),
     shownSections & Section.THUMB);
 

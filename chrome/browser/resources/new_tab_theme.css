@@ -102,8 +102,7 @@ body {
   color: $$5; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
-.section > h2,
-#closed-sections-bar > button {
+.section > h2 {
   color: $$7; /* COLOR_NTP_SECTION_HEADER_TEXT */
 }
 
@@ -111,8 +110,7 @@ body {
   color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT_HOVER */
 }
 
-.section.hidden:not([noexpand]) > h2:hover,
-#closed-sections-bar > button:hover {
+.section.hidden:not([noexpand]) > h2:hover {
   color: $$8; /* COLOR_NTP_SECTION_HEADER_TEXT_HOVER */
 }
 

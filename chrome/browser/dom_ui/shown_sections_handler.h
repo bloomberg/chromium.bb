@@ -18,16 +18,8 @@ class PrefService;
 // Currently, only the THUMB and APPS sections can be toggled by the user. Other
 // sections are shown automatically if they have data, and hidden otherwise.
 enum Section {
-  // If one of these is set, the corresponding section shows large thumbnails,
-  // else it shows only a small overview list.
-  THUMB = 1 << 0,
-  APPS = 1 << 6,
-
-  // If one of these is set, then the corresponding section is shown minimized
-  // at the bottom of the NTP and no data is directly visible on the NTP.
-  MINIMIZED_THUMB = 1 << (0 + 16),
-  MINIMIZED_RECENT = 1 << (2 + 16),
-  MINIMIZED_APPS = 1 << (6 + 16),
+  THUMB = 1,
+  APPS = 64
 };
 
 class ShownSectionsHandler : public DOMMessageHandler,

@@ -10,7 +10,6 @@ function getAppsCallback(data) {
   appsSectionContent.textContent = '';
   appsMiniview.textContent = '';
 
-  clearClosedMenu(apps.menu);
   if (data.apps.length == 0) {
     appsSection.classList.add('disabled');
     layoutSections();
@@ -23,14 +22,10 @@ function getAppsCallback(data) {
 
     data.apps.slice(0, MAX_MINIVIEW_ITEMS).forEach(function(app) {
       appsMiniview.appendChild(apps.createMiniviewElement(app));
-      addClosedMenuEntryWithLink(apps.menu, apps.createClosedMenuElement(app));
     });
 
-    if (!(shownSections & MINIMIZED_APPS)) {
-      appsSection.classList.remove('disabled');
-    }
+    appsSection.classList.remove('disabled');
   }
-  addClosedMenuFooter(apps.menu, 'apps', MINIMIZED_APPS, Section.APPS);
 
   apps.loaded = true;
   maybeDoneLoading();
@@ -204,8 +199,6 @@ var apps = (function() {
   return {
     loaded: false,
 
-    menu: $('apps-menu'),
-
     createElement: function(app) {
       var div = createElement(app);
       var a = div.firstChild;
@@ -256,17 +249,6 @@ var apps = (function() {
       addContextMenu(span, app);
 
       return span;
-    },
-
-    createClosedMenuElement: function(app) {
-      var a = document.createElement('a');
-      a.setAttribute('app-id', app['id']);
-      a.textContent = app['name'];
-      a.href = app['launch_url'];
-      a.onclick = handleClick;
-      a.style.backgroundImage = url(app['icon_small']);
-      a.className = 'item';
-      return a;
     },
 
     createWebStoreElement: function() {
