@@ -139,14 +139,17 @@ class OutOfProcTestRunner : public tests::TestRunner {
 
       // Ensure that the process terminates.
       base::KillProcess(process_handle, -1, true);
+    }
 
 #if defined(OS_POSIX)
-      // On POSIX, we need to clean up any child processes that the test might
-      // have created. On windows, child processes are automatically cleaned up
-      // using JobObjects.
+    if (exit_code != 0) {
+      // On POSIX, in case the test does not exit cleanly, either due to a crash
+      // or due to it timing out, we need to clean up any child processes that
+      // it might have created. On Windows, child processes are automatically
+      // cleaned up using JobObjects.
       base::KillProcessGroup(process_handle);
-#endif
     }
+#endif
 
     return exit_code == 0;
   }
