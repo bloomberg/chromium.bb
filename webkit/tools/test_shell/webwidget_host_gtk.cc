@@ -310,6 +310,19 @@ void WebWidgetHost::DidScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
   DidInvalidateRect(clip_rect);
 }
 
+void WebWidgetHost::ScheduleComposite() {
+  int width = logical_size_.width();
+  int height = logical_size_.height();
+  GdkRectangle grect = {
+    0,
+    0,
+    width,
+    height
+  };
+  GdkWindow* window = view_->window;
+  gdk_window_invalidate_rect(window, &grect, 0);
+}
+
 WebWidgetHost::WebWidgetHost()
     : view_(NULL),
       webwidget_(NULL),

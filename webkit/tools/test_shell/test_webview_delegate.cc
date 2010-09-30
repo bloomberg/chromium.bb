@@ -671,6 +671,11 @@ void TestWebViewDelegate::didScrollRect(int dx, int dy,
     host->DidScrollRect(dx, dy, clip_rect);
 }
 
+void TestWebViewDelegate::scheduleComposite() {
+  if (WebWidgetHost* host = GetWidgetHost())
+    host->ScheduleComposite();
+}
+
 void TestWebViewDelegate::didFocus() {
   if (WebWidgetHost* host = GetWidgetHost())
     shell_->SetFocus(host, true);

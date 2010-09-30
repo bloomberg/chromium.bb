@@ -130,6 +130,14 @@ void WebWidgetHost::DidScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
   [view_ setNeedsDisplayInRect:r];
 }
 
+void WebWidgetHost::ScheduleComposite() {
+  if (!webwidget_)
+    return;
+  WebSize size = webwidget_->size();
+  NSRect r = NSMakeRect(0, 0, size.width, size.height);
+  [view_ setNeedsDisplayInRect:r];
+}
+
 // void WebWidgetHost::SetCursor(HCURSOR cursor) {
 // }
 
