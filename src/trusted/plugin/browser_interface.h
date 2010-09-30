@@ -80,9 +80,6 @@ class BrowserInterface {
   static bool MightBeElfExecutable(const char* e_ident_bytes,
                                    size_t size,
                                    nacl::string* error);
-
-  static const char* kNoError;
-  static const char* kUnknownURL;
 };
 
 }  // namespace plugin

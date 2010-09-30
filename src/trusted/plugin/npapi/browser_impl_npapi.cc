@@ -158,9 +158,9 @@ bool BrowserImplNpapi::AddToConsole(InstanceIdentifier instance_id,
 
   success = LogToConsole(npp, &console_variant, text);
 
-cleanup_console_variant:
+ cleanup_console_variant:
   NPN_ReleaseVariantValue(&console_variant);
-cleanup_window:
+ cleanup_window:
   NPN_ReleaseObject(window);
   return success;
 #endif
@@ -198,7 +198,7 @@ bool BrowserImplNpapi::GetFullURL(InstanceIdentifier instance_id,
   NPVariant loc_value;
   NPVariant href_value;
 
-  *full_url = kUnknownURL;
+  *full_url = NACL_NO_URL;
 
   VOID_TO_NPVARIANT(loc_value);
   VOID_TO_NPVARIANT(href_value);
@@ -237,7 +237,7 @@ bool BrowserImplNpapi::GetFullURL(InstanceIdentifier instance_id,
   NPN_ReleaseVariantValue(&loc_value);
   NPN_ReleaseVariantValue(&href_value);
 
-  return (kUnknownURL != *full_url);
+  return (NACL_NO_URL != *full_url);
 }
 
 // Creates a browser scriptable handle for a given portable handle.

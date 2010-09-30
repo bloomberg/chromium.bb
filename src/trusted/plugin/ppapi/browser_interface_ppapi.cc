@@ -76,7 +76,7 @@ bool BrowserInterfacePpapi::EvalString(InstanceIdentifier instance_id,
 
 bool BrowserInterfacePpapi::GetFullURL(InstanceIdentifier instance_id,
                                        nacl::string* full_url) {
-  *full_url = kUnknownURL;
+  *full_url = NACL_NO_URL;
   pp::Var location = GetWindow(instance_id).GetProperty("location");
   PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (location=%s)\n",
                  location.DebugString().c_str()));
@@ -88,7 +88,7 @@ bool BrowserInterfacePpapi::GetFullURL(InstanceIdentifier instance_id,
   }
   PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (full_url='%s')\n",
                  full_url->c_str()));
-  return (kUnknownURL != *full_url);
+  return (NACL_NO_URL != *full_url);
 }
 
 

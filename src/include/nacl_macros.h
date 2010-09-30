@@ -218,6 +218,8 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 #define NACL_NO_URL                   ""
 #define NACL_NO_FILE_PATH             ""
 
+#define NACL_NO_ERROR                 ""
+
 /*****************************************************************************
  * C++ coding convention macros                                              *
  ****************************************************************************/

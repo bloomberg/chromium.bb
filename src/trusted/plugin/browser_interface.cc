@@ -21,10 +21,6 @@
 
 namespace plugin {
 
-const char* BrowserInterface::kNoError = "";
-
-const char* BrowserInterface::kUnknownURL = "";
-
 bool BrowserInterface::GetOrigin(InstanceIdentifier instance_id,
                                  nacl::string* origin) {
   nacl::string full_url;
@@ -32,7 +28,7 @@ bool BrowserInterface::GetOrigin(InstanceIdentifier instance_id,
     *origin = nacl::UrlToOrigin(full_url);
     return true;
   } else {
-    *origin = kUnknownURL;
+    *origin = NACL_NO_URL;
     return false;
   }
 }
@@ -74,7 +70,7 @@ bool BrowserInterface::MightBeElfExecutable(const char* e_ident_bytes,
     *error = ss.str();
     return false;
   }
-  *error = kNoError;
+  *error = NACL_NO_ERROR;
   return true;
 }
 
