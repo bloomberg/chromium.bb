@@ -8,6 +8,11 @@
 #include "base/basictypes.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 
+namespace WebKit {
+class WebFileWriter;
+class WebFileWriterClient;
+}
+
 class WebFileSystemImpl : public WebKit::WebFileSystem {
  public:
   WebFileSystemImpl();
@@ -52,6 +57,9 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
   virtual void readDirectory(
       const WebKit::WebString& path,
       WebKit::WebFileSystemCallbacks*);
+
+  virtual WebKit::WebFileWriter* createFileWriter(
+      const WebKit::WebString& path, WebKit::WebFileWriterClient*);
 };
 
 #endif  // CHROME_COMMON_FILE_SYSTEM_WEBFILESYSTEM_IMPL_H_

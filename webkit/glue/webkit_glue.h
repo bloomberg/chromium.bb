@@ -16,8 +16,10 @@
 
 #include "app/clipboard/clipboard.h"
 #include "base/file_path.h"
+#include "base/platform_file.h"
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 
 class GURL;
 class SkBitmap;
@@ -131,6 +133,10 @@ FilePath::StringType WebStringToFilePathString(const WebKit::WebString& str);
 WebKit::WebString FilePathStringToWebString(const FilePath::StringType& str);
 FilePath WebStringToFilePath(const WebKit::WebString& str);
 WebKit::WebString FilePathToWebString(const FilePath& file_path);
+
+// File error conversion
+WebKit::WebFileError PlatformFileErrorToWebFileError(
+    base::PlatformFileError error_code);
 
 // Returns a WebCanvas pointer associated with the given Skia canvas.
 WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);
