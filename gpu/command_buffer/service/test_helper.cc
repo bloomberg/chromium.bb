@@ -36,8 +36,11 @@ const GLint TestHelper::kNumTextureUnits;
 const GLint TestHelper::kMaxTextureImageUnits;
 const GLint TestHelper::kMaxVertexTextureImageUnits;
 const GLint TestHelper::kMaxFragmentUniformVectors;
+const GLint TestHelper::kMaxFragmentUniformComponents;
 const GLint TestHelper::kMaxVaryingVectors;
+const GLint TestHelper::kMaxVaryingFloats;
 const GLint TestHelper::kMaxVertexUniformVectors;
+const GLint TestHelper::kMaxVertexUniformComponents;
 #endif
 
 void TestHelper::SetupTextureManagerInitExpectations(
@@ -90,9 +93,8 @@ void TestHelper::SetupContextGroupInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions) {
   InSequence sequence;
 
-  EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
-      .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
-      .RetiresOnSaturation();
+  SetupFeatureInfoInitExpectations(gl, extensions);
+
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
       .WillOnce(SetArgumentPointee<1>(kNumVertexAttribs))
       .RetiresOnSaturation();
@@ -105,6 +107,7 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
       .RetiresOnSaturation();
+
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, _))
       .WillOnce(SetArgumentPointee<1>(kMaxTextureImageUnits))
       .RetiresOnSaturation();
@@ -112,16 +115,25 @@ void TestHelper::SetupContextGroupInitExpectations(
       .WillOnce(SetArgumentPointee<1>(kMaxVertexTextureImageUnits))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformVectors))
+      .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformComponents))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VARYING_FLOATS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVaryingVectors))
+      .WillOnce(SetArgumentPointee<1>(kMaxVaryingFloats))
       .RetiresOnSaturation();
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformVectors))
+      .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformComponents))
       .RetiresOnSaturation();
 
   SetupTextureManagerInitExpectations(gl);
+}
+
+void TestHelper::SetupFeatureInfoInitExpectations(
+      ::gfx::MockGLInterface* gl, const char* extensions) {
+  InSequence sequence;
+
+  EXPECT_CALL(*gl, GetString(GL_EXTENSIONS))
+      .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
+      .RetiresOnSaturation();
 }
 
 }  // namespace gles2

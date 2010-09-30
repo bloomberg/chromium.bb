@@ -57,6 +57,12 @@ bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
                                     decoder_.get()));
   }
 
+  if (!group_.Initialize(NULL)) {
+    LOG(ERROR) << "GPUProcessor::InitializeCommon failed because group "
+               << "failed to initialize.";
+    Destroy();
+  }
+
   // Initialize the decoder with either the view or pbuffer GLContext.
   if (!decoder_->Initialize(context,
                             size,

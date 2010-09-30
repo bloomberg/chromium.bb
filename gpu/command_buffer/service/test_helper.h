@@ -25,10 +25,16 @@ class TestHelper {
   static const GLint kMaxTextureImageUnits = 8;
   static const GLint kMaxVertexTextureImageUnits = 2;
   static const GLint kMaxFragmentUniformVectors = 16;
+  static const GLint kMaxFragmentUniformComponents =
+      kMaxFragmentUniformVectors * 4;
   static const GLint kMaxVaryingVectors = 8;
+  static const GLint kMaxVaryingFloats = kMaxVaryingVectors * 4;
   static const GLint kMaxVertexUniformVectors = 128;
+  static const GLint kMaxVertexUniformComponents = kMaxVertexUniformVectors * 4;
 
   static void SetupContextGroupInitExpectations(
+      ::gfx::MockGLInterface* gl, const char* extensions);
+  static void SetupFeatureInfoInitExpectations(
       ::gfx::MockGLInterface* gl, const char* extensions);
   static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl);
 };

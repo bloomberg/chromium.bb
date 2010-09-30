@@ -48,10 +48,13 @@ class GLES2Decoder : public CommonDecoder {
   // Parameters:
   //  context: the GL context to render to.
   //  size: the size if the GL context is offscreen.
+  //  allowed_features: A string in the same format as
+  //      glGetString(GL_EXTENSIONS) that lists the extensions this context
+  //      should allow. Passing NULL means allow all extensions.
   //  parent: the GLES2 decoder that can access this decoder's front buffer
-  //          through a texture ID in its namespace.
+  //      through a texture ID in its namespace.
   //  parent_client_texture_id: the texture ID of the front buffer in the
-  //                            parent's namespace.
+  //      parent's namespace.
   // Returns:
   //   true if successful.
   virtual bool Initialize(gfx::GLContext* context,

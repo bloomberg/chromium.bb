@@ -8,6 +8,7 @@
 #include <GLES2/gl2.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -375,7 +376,7 @@ class GLES2Implementation {
 
   // Map of GLenum to Strings for glGetString.  We need to cache these because
   // the pointer passed back to the client has to remain valid for eternity.
-  typedef std::map<uint32, std::string> GLStringMap;
+  typedef std::map<uint32, std::set<std::string> > GLStringMap;
   GLStringMap gl_strings_;
 
   typedef std::map<const void*, MappedBuffer> MappedBufferMap;

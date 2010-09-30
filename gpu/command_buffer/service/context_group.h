@@ -11,6 +11,7 @@
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/command_buffer/service/feature_info.h"
 
 namespace gpu {
 
@@ -30,21 +31,11 @@ class TextureManager;
 // resources.
 class ContextGroup {
  public:
-  struct ExtensionFlags {
-    ExtensionFlags()
-        : ext_framebuffer_multisample(false),
-          oes_standard_derivatives(false) {
-    }
-
-    bool ext_framebuffer_multisample;
-    bool oes_standard_derivatives;
-  };
-
   ContextGroup();
   ~ContextGroup();
 
   // This should only be called by GLES2Decoder.
-  bool Initialize();
+  bool Initialize(const char* allowed_features);
 
   // Destroys all the resources. MUST be called before destruction.
   void Destroy(bool have_context);
@@ -77,6 +68,10 @@ class ContextGroup {
     return max_vertex_uniform_vectors_;
   }
 
+  FeatureInfo* feature_info() {
+    return &feature_info_;
+  }
+
   BufferManager* buffer_manager() const {
     return buffer_manager_.get();
   }
@@ -103,21 +98,7 @@ class ContextGroup {
 
   IdAllocator* GetIdAllocator(unsigned namepsace_id);
 
-  const Validators* validators() const {
-    return &validators_;
-  }
-
-  const std::string& extensions() const {
-    return extensions_;
-  }
-
-  const ExtensionFlags& extension_flags() const {
-    return extension_flags_;
-  }
-
  private:
-  void AddExtensionString(const std::string& str);
-
   // Whether or not this context is initialized.
   bool initialized_;
 
@@ -144,13 +125,7 @@ class ContextGroup {
   typedef std::map<uint32, linked_ptr<IdAllocator> > IdAllocatorMap;
   IdAllocatorMap id_namespaces_;
 
-  Validators validators_;
-
-  // The extensions string returned by glGetString(GL_EXTENSIONS);
-  std::string extensions_;
-
-  // Flags for some extensions
-  ExtensionFlags extension_flags_;
+  FeatureInfo feature_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

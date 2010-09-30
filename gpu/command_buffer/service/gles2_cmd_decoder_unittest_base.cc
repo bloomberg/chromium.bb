@@ -42,7 +42,9 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
 
   InSequence sequence;
 
-  TestHelper::SetupContextGroupInitExpectations(gl_.get(), "");
+  TestHelper::SetupContextGroupInitExpectations(gl_.get(), extensions);
+
+  EXPECT_TRUE(group_.Initialize(extensions));
 
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)

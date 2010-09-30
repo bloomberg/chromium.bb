@@ -1144,22 +1144,32 @@ void GLES2Implementation::GetShaderPrecisionFormat(
 }
 
 const GLubyte* GLES2Implementation::GetString(GLenum name) {
-  const char* result;
-  GLStringMap::const_iterator it = gl_strings_.find(name);
-  if (it != gl_strings_.end()) {
-    result = it->second.c_str();
-  } else {
-    // Clear the bucket so if we the command fails nothing will be in it.
-    helper_->SetBucketSize(kResultBucketId, 0);
-    helper_->GetString(name, kResultBucketId);
-    std::string str;
-    if (GetBucketAsString(kResultBucketId, &str)) {
-      std::pair<GLStringMap::const_iterator, bool> insert_result =
-          gl_strings_.insert(std::make_pair(name, str));
+  const char* result = NULL;
+  // Clear the bucket so if the command fails nothing will be in it.
+  helper_->SetBucketSize(kResultBucketId, 0);
+  helper_->GetString(name, kResultBucketId);
+  std::string str;
+  if (GetBucketAsString(kResultBucketId, &str)) {
+    // Because of WebGL the extensions can change. We have to cache each
+    // unique result since we don't know when the client will stop referring to
+    // a previous one it queries.
+    GLStringMap::iterator it = gl_strings_.find(name);
+    if (it == gl_strings_.end()) {
+      std::set<std::string> strings;
+      std::pair<GLStringMap::iterator, bool> insert_result =
+          gl_strings_.insert(std::make_pair(name, strings));
       GPU_DCHECK(insert_result.second);
-      result = insert_result.first->second.c_str();
+      it = insert_result.first;
+    }
+    std::set<std::string>& string_set = it->second;
+    std::set<std::string>::const_iterator sit = string_set.find(str);
+    if (sit != string_set.end()) {
+      result = sit->c_str();
     } else {
-      result = NULL;
+      std::pair<std::set<std::string>::const_iterator, bool> insert_result =
+          string_set.insert(str);
+      GPU_DCHECK(insert_result.second);
+      result = insert_result.first->c_str();
     }
   }
   return reinterpret_cast<const GLubyte*>(result);

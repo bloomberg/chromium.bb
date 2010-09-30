@@ -32,8 +32,8 @@ class GLES2DecoderTestBase : public testing::Test {
         client_program_id_(102),
         client_renderbuffer_id_(103),
         client_shader_id_(104),
-        client_texture_id_(105),
-        client_element_buffer_id_(106) {
+        client_texture_id_(106),
+        client_element_buffer_id_(107) {
     memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
   }
 
@@ -56,7 +56,7 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLuint kServiceTextureId = 304;
   static const GLuint kServiceProgramId = 305;
   static const GLuint kServiceShaderId = 306;
-  static const GLuint kServiceElementBufferId = 307;
+  static const GLuint kServiceElementBufferId = 308;
 
   static const int32 kSharedMemoryId = 401;
   static const size_t kSharedBufferSize = 2048;

@@ -26,6 +26,7 @@
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
@@ -604,7 +605,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Creates a TextureInfo for the given texture.
   TextureManager::TextureInfo* CreateTextureInfo(
       GLuint client_id, GLuint service_id) {
-    return texture_manager()->CreateTextureInfo(client_id, service_id);
+    return texture_manager()->CreateTextureInfo(
+        feature_info_, client_id, service_id);
   }
 
   // Gets the texture info for the given texture. Returns NULL if none exists.
@@ -616,7 +618,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Deletes the texture info for the given texture.
   void RemoveTextureInfo(GLuint client_id) {
-    texture_manager()->RemoveTextureInfo(client_id);
+    texture_manager()->RemoveTextureInfo(feature_info_, client_id);
   }
 
   // Get the size (in pixels) of the currently bound frame buffer (either FBO
@@ -1264,8 +1266,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<ShaderTranslator> vertex_translator_;
   scoped_ptr<ShaderTranslator> fragment_translator_;
 
-  // Cached from the context group.
+  // Cached from ContextGroup
   const Validators* validators_;
+  FeatureInfo* feature_info_;
 
   // Supported extensions.
   bool depth24_stencil8_oes_supported_;
@@ -1515,7 +1518,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       anti_aliased_(false),
       current_decoder_error_(error::kNoError),
       use_shader_translator_(true),
-      validators_(group->validators()),
+      validators_(group_->feature_info()->validators()),
+      feature_info_(group_->feature_info()),
       depth24_stencil8_oes_supported_(false) {
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
@@ -1556,13 +1560,6 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   }
 
   CHECK_GL_ERROR();
-
-  if (!group_->Initialize()) {
-    LOG(ERROR) << "GLES2DecoderImpl::Initialize failed becaue "
-               << "ContextGroup failed to initialize.";
-    Destroy();
-    return false;
-  }
 
   vertex_attrib_manager_.Initialize(group_->max_vertex_attribs());
 
@@ -1669,7 +1666,7 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
         group_->max_fragment_uniform_vectors();
     resources.MaxDrawBuffers = 1;
     resources.OES_standard_derivatives =
-        group_->extension_flags().oes_standard_derivatives ? 1 : 0;
+        feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
     vertex_translator_.reset(new ShaderTranslator);
     if (!vertex_translator_->Init(EShLangVertex, &resources)) {
         LOG(ERROR) << "Could not initialize vertex shader translator.";
@@ -1827,7 +1824,7 @@ static void RebindCurrentFramebuffer(
 }
 
 void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
-  if (!group_->extension_flags().ext_framebuffer_multisample) {
+  if (!feature_info_->feature_flags().ext_framebuffer_multisample) {
     RebindCurrentFramebuffer(
         GL_FRAMEBUFFER,
         bound_draw_framebuffer_.get(),
@@ -1862,7 +1859,7 @@ gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
     int width = 0;
     int height = 0;
 
-    GLenum target = group_->extension_flags().ext_framebuffer_multisample ?
+    GLenum target = feature_info_->feature_flags().ext_framebuffer_multisample ?
         GL_READ_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
 
     // Assume we have to have COLOR_ATTACHMENT0. Should we check for depth and
@@ -2033,6 +2030,7 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     DCHECK(info);
 
     texture_manager()->SetLevelInfo(
+        feature_info_,
         info,
         GL_TEXTURE_2D,
         0,  // level
@@ -2107,7 +2105,7 @@ void GLES2DecoderImpl::Destroy() {
       GLuint service_id = offscreen_saved_color_texture_->id();
       GLuint client_id = 0;
       if (parent_->texture_manager()->GetClientId(service_id, &client_id)) {
-        parent_->texture_manager()->RemoveTextureInfo(client_id);
+        parent_->texture_manager()->RemoveTextureInfo(feature_info_, client_id);
       }
 
       glDeleteFramebuffersEXT(1, &copy_texture_to_parent_texture_fb_);
@@ -2435,7 +2433,7 @@ void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
 
 void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
-  if (!info || !texture_manager()->MarkMipmapsGenerated(info)) {
+  if (!info || !texture_manager()->MarkMipmapsGenerated(feature_info_, info)) {
     SetGLError(GL_INVALID_OPERATION,
                "glGenerateMipmaps: Can not generate mips for npot textures");
     return;
@@ -3131,7 +3129,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
     GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
     GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
     GLbitfield mask, GLenum filter) {
-  if (!group_->extension_flags().ext_framebuffer_multisample) {
+  if (!feature_info_->feature_flags().ext_framebuffer_multisample) {
     SetGLError(GL_INVALID_OPERATION,
                "glBlitFramebufferEXT: function not available");
   }
@@ -3142,7 +3140,7 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
 void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     GLenum target, GLsizei samples, GLenum internalformat,
     GLsizei width, GLsizei height) {
-  if (!group_->extension_flags().ext_framebuffer_multisample) {
+  if (!feature_info_->feature_flags().ext_framebuffer_multisample) {
     SetGLError(GL_INVALID_OPERATION,
                "glRenderbufferStorageMultisampleEXT: function not available");
     return;
@@ -3222,7 +3220,8 @@ void GLES2DecoderImpl::DoTexParameterf(
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameterf: unknown texture");
   } else {
-    texture_manager()->SetParameter(info, pname, static_cast<GLint>(param));
+    texture_manager()->SetParameter(
+        feature_info_, info, pname, static_cast<GLint>(param));
     glTexParameterf(target, pname, param);
   }
 }
@@ -3233,7 +3232,7 @@ void GLES2DecoderImpl::DoTexParameteri(
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameteri: unknown texture");
   } else {
-    texture_manager()->SetParameter(info, pname, param);
+    texture_manager()->SetParameter(feature_info_, info, pname, param);
     glTexParameteri(target, pname, param);
   }
 }
@@ -3245,7 +3244,7 @@ void GLES2DecoderImpl::DoTexParameterfv(
     SetGLError(GL_INVALID_VALUE, "glTexParameterfv: unknown texture");
   } else {
     texture_manager()->SetParameter(
-        info, pname, *reinterpret_cast<const GLint*>(params));
+        feature_info_, info, pname, *reinterpret_cast<const GLint*>(params));
     glTexParameterfv(target, pname, params);
   }
 }
@@ -3256,7 +3255,7 @@ void GLES2DecoderImpl::DoTexParameteriv(
   if (!info) {
     SetGLError(GL_INVALID_VALUE, "glTexParameteriv: unknown texture");
   } else {
-    texture_manager()->SetParameter(info, pname, *params);
+    texture_manager()->SetParameter(feature_info_, info, pname, *params);
     glTexParameteriv(target, pname, params);
   }
 }
@@ -3468,7 +3467,7 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
             uniform_info->type == GL_SAMPLER_2D ?
                 texture_unit.bound_texture_2d :
                 texture_unit.bound_texture_cube_map;
-        if (!texture_info || !texture_info->CanRender(texture_manager())) {
+        if (!texture_info || !texture_info->CanRender(feature_info_)) {
           textures_set = true;
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           glBindTexture(
@@ -3500,7 +3499,7 @@ void GLES2DecoderImpl::RestoreStateForNonRenderableTextures() {
             uniform_info->type == GL_SAMPLER_2D ?
                 texture_unit.bound_texture_2d :
                 texture_unit.bound_texture_cube_map;
-        if (!texture_info || !texture_info->CanRender(texture_manager())) {
+        if (!texture_info || !texture_info->CanRender(feature_info_)) {
           glActiveTexture(GL_TEXTURE0 + texture_unit_index);
           // Get the texture info that was previously bound here.
           texture_info = texture_unit.bind_target == GL_TEXTURE_2D ?
@@ -4491,7 +4490,7 @@ error::Error GLES2DecoderImpl::HandleGetString(
       str = "OpenGL ES GLSL ES 1.0 Chromium";
       break;
     case GL_EXTENSIONS:
-      str = group_->extensions().c_str();
+      str = feature_info_->extensions().c_str();
       break;
     default:
       str = gl_str;
@@ -4606,7 +4605,8 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
                "glCompressedTexImage2D: internal_format GL_INVALID_ENUM");
     return error::kNoError;
   }
-  if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
+  if (!texture_manager()->ValidForTarget(
+        feature_info_, target, level, width, height, 1) ||
       border != 0) {
     SetGLError(GL_INVALID_VALUE,
                "glCompressedTexImage2D: dimensions out of range");
@@ -4630,6 +4630,7 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(
+        feature_info_,
         info, target, level, internal_format, width, height, 1, border, 0, 0);
   }
   return error::kNoError;
@@ -4763,7 +4764,8 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     SetGLError(GL_INVALID_OPERATION, "glTexImage2D: format != internalFormat");
     return error::kNoError;
   }
-  if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
+  if (!texture_manager()->ValidForTarget(
+        feature_info_, target, level, width, height, 1) ||
       border != 0) {
     SetGLError(GL_INVALID_VALUE, "glTexImage2D: dimensions out of range");
     return error::kNoError;
@@ -4806,7 +4808,7 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
       pixels);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
-    texture_manager()->SetLevelInfo(info,
+    texture_manager()->SetLevelInfo(feature_info_, info,
         target, level, internal_format, width, height, 1, border, format, type);
   }
   return error::kNoError;
@@ -4912,7 +4914,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
                "glCopyTexImage2D: unknown texture for target");
     return;
   }
-  if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
+  if (!texture_manager()->ValidForTarget(
+        feature_info_, target, level, width, height, 1) ||
       border != 0) {
     SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: dimensions out of range");
     return;
@@ -4926,8 +4929,8 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(
-        info,  target, level, internal_format, width, height, 1, border,
-        internal_format, GL_UNSIGNED_BYTE);
+        feature_info_, info, target, level, internal_format, width, height, 1,
+        border, internal_format, GL_UNSIGNED_BYTE);
   }
 }
 

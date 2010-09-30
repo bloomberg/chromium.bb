@@ -28,7 +28,9 @@ class ValueValidator {
   }
 
   void AddValue(const T value) {
-    valid_values_.push_back(value);
+    if (!IsValid(value)) {
+      valid_values_.push_back(value);
+    }
   }
 
   bool IsValid(const T value) const {
