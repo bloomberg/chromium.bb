@@ -27,7 +27,7 @@
 #include "native_client/src/shared/ppapi_proxy/object_proxy.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 
-using nacl::scoped_ptr;
+using nacl::scoped_array;
 
 namespace ppapi_proxy {
 
@@ -90,12 +90,12 @@ bool Initialize(PP_Instance instance,
                 const char* argv[]) {
   DebugPrintf("BrowserInstance::Initialize(%"NACL_PRId64")\n");
   uint32_t argn_size;
-  scoped_ptr<char> argn_serial(ArgArraySerialize(argc, argn, &argn_size));
+  scoped_array<char> argn_serial(ArgArraySerialize(argc, argn, &argn_size));
   if (argn_serial.get() == NULL) {
     return false;
   }
   uint32_t argv_size;
-  scoped_ptr<char> argv_serial(ArgArraySerialize(argc, argv, &argv_size));
+  scoped_array<char> argv_serial(ArgArraySerialize(argc, argv, &argv_size));
   if (argv_serial.get() == NULL) {
     return false;
   }
