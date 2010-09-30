@@ -428,6 +428,13 @@ const struct {
    "http://www.example.com/.download.txt",
    "text/plain",
    L"download.txt"},
+
+  // Issue=56855.
+  {"",
+   "http://www.example.com/bar.sh",
+   "application/x-sh",
+   L"bar.sh"
+  },
 };
 
 // Tests to ensure that the file names we generate from hints from the server
@@ -527,7 +534,7 @@ const struct {
   { FILE_PATH_LITERAL("C:\\foo\\con"),
     "text/html",
     FILE_PATH_LITERAL("C:\\foo\\_con.htm") },
-#else
+#else  // !defined(OS_WIN)
   { FILE_PATH_LITERAL("/foo/bar.htm"),
     "text/html",
     FILE_PATH_LITERAL("/foo/bar.htm") },
@@ -563,7 +570,7 @@ const struct {
   { FILE_PATH_LITERAL("/foo/con"),
     "text/html",
     FILE_PATH_LITERAL("/foo/con.html") },
-#endif  // OS_WIN
+#endif  // !defined(OS_WIN)
 };
 
 TEST(DownloadUtilTest, GenerateSafeFileName) {

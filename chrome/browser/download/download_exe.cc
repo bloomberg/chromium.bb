@@ -202,6 +202,7 @@ static const char* kExecutableWhiteList[] = {
   // Registry files can cause critical changes to the MS OS behavior.
   // Addition of this mimetype also addresses bug 7337.
   "text/x-registry",
+  "text/x-sh",
   // Some sites use binary/octet-stream to mean application/octet-stream.
   // See http://code.google.com/p/chromium/issues/detail?id=1573
   "binary/octet-stream"
