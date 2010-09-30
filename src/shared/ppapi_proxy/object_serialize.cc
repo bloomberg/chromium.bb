@@ -160,6 +160,9 @@ bool SerializePpVar(const PP_Var* vars,
     char* p = bytes + offset;
     SerializedFixed* s = reinterpret_cast<SerializedFixed*>(p);
     s->type = static_cast<uint32_t>(vars[i].type);
+    // Set the rest of SerializedFixed to 0, in case the following serialization
+    // leaves some of it unchanged.
+    s->u.int32_value = 0;
 
     switch (vars[i].type) {
       case PP_VARTYPE_VOID:
@@ -188,6 +191,9 @@ bool SerializePpVar(const PP_Var* vars,
         memcpy(reinterpret_cast<void*>(ss->string_bytes),
                reinterpret_cast<const void*>(str),
                string_length);
+        // Fill padding bytes with zeros.
+        memset(reinterpret_cast<void*>(ss->string_bytes + string_length), 0,
+            RoundedStringBytes(string_length) - string_length);
         element_size =
               sizeof(SerializedFixed) + RoundedStringBytes(string_length);
         break;
@@ -320,7 +326,6 @@ bool SerializeTo(const PP_Var* var, char* bytes, uint32_t* length) {
   // Return success.
   *length = tmp_length;
   return true;
-
 }
 
 char* Serialize(const PP_Var* vars, uint32_t argc, uint32_t* length) {
