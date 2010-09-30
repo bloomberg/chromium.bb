@@ -33,7 +33,8 @@ class WebInputElementDelegate {
   virtual bool IsAutofilled() const;
   virtual void SetAutofilled(bool autofilled);
   virtual void SetSelectionRange(size_t start, size_t end);
-  virtual void RefreshAutofillPopup(const std::vector<string16>& suggestions);
+  virtual void RefreshAutoFillPopup(const std::vector<string16>& suggestions);
+  virtual void HideAutoFillPopup();
 
  private:
   // The underlying DOM element we're wrapping.

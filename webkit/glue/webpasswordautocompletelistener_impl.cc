@@ -53,7 +53,7 @@ void WebInputElementDelegate::SetSelectionRange(size_t start, size_t end) {
   element_.setSelectionRange(start, end);
 }
 
-void WebInputElementDelegate::RefreshAutofillPopup(
+void WebInputElementDelegate::RefreshAutoFillPopup(
     const std::vector<string16>& suggestions) {
   WebView* webview = element_.document().frame()->view();
   if (webview) {
@@ -71,6 +71,13 @@ void WebInputElementDelegate::RefreshAutofillPopup(
 
     webview->applyAutoFillSuggestions(
         element_, names, labels, icons, unique_ids, -1);
+  }
+}
+
+void WebInputElementDelegate::HideAutoFillPopup() {
+  WebView* webview = element_.document().frame()->view();
+  if (webview) {
+    webview->hidePopups();
   }
 }
 
@@ -131,8 +138,8 @@ void WebPasswordAutocompleteListenerImpl::performInlineAutocomplete(
     password_delegate_->SetAutofilled(false);
   }
 
-  if (show_suggestions)
-    showSuggestionPopup(user_input16);
+  if (show_suggestions && !showSuggestionPopup(user_input16))
+      username_delegate_->HideAutoFillPopup();
 
   if (backspace_or_delete_pressed)
     return;  // Don't inline autocomplete when the user deleted something.
@@ -166,7 +173,7 @@ bool WebPasswordAutocompleteListenerImpl::showSuggestionPopup(
   if (suggestions.empty())
     return false;
 
-  username_delegate_->RefreshAutofillPopup(suggestions);
+  username_delegate_->RefreshAutoFillPopup(suggestions);
   return true;
 }
 
