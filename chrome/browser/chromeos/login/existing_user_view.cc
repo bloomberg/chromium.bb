@@ -78,6 +78,7 @@ ExistingUserView::ExistingUserView(UserController* uc)
       accel_enable_accessibility_(
           WizardAccessibilityHelper::GetAccelerator()) {
   AddAccelerator(accel_login_off_the_record_);
+  AddAccelerator(accel_enable_accessibility_);
 }
 
 void ExistingUserView::RecreateFields() {
@@ -98,6 +99,7 @@ void ExistingUserView::RecreateFields() {
       l10n_util::GetString(IDS_LOGIN_BUTTON));
   submit_button_->SetFocusable(false);
   GridLayout* layout = new GridLayout(this);
+  SetLayoutManager(layout);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
@@ -107,10 +109,8 @@ void ExistingUserView::RecreateFields() {
   layout->StartRow(0, 0);
   layout->AddView(password_field_);
   layout->AddView(submit_button_);
-  SetLayoutManager(layout);
-  layout->Layout(this);
+  Layout();
   SchedulePaint();
-  AddAccelerator(accel_enable_accessibility_);
 }
 
 bool ExistingUserView::AcceleratorPressed(
