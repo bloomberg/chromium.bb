@@ -373,19 +373,24 @@ html[dir=rtl] .section-close-button {
   -webkit-appearance: none;
   background: none;
   border: 0;
+  cursor: pointer;
   font: inherit;
   margin: 0;
-  margin-right: 10px;
+  margin-right: 1.5em;
   padding: 0;
 
-  /* from .section > h2 */
+  /* Note: The font here should end up the same as .section > h2. A different
+  percentage is needed because the parent element here has a different size. */
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 133%;
+  font-size: 122%;
   font-weight: normal;
 }
 
 #closed-sections-bar > button > img {
   -webkit-transform: rotate(90deg);
+  position: relative;
+  top: -2px;
+  margin-left: 1px;
 }
 
 .maxiview {
