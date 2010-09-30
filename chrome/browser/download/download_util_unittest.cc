@@ -68,10 +68,6 @@ const struct {
    "application/octet-stream",
    L"My Downloaded File.exe"},
 
-  // This block tests whether we append extensions based on MIME types;
-  // we don't do this on Linux, so we skip the tests rather than #ifdef
-  // them up.
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
   {"filename=my-cat",
    "http://www.example.com/my-cat",
    "image/jpeg",
@@ -93,7 +89,6 @@ const struct {
    "http://www.example.com/my-cat",
    "dance/party",
    L"my-cat"},
-#endif  // !defined(OS_POSIX) || defined(OS_MACOSX)
 
   {"filename=my-cat.jpg",
    "http://www.example.com/my-cat.jpg",
@@ -356,22 +351,10 @@ const struct {
 #endif
   },
 
-  {"filename=source.srf",
-   "http://www.hotmail.com",
-   "image/jpeg",
-   L"source.srf" JPEG_EXT
-  },
-
   {"filename=source.jpg",
    "http://www.hotmail.com",
    "application/x-javascript",
-#if defined(OS_WIN)
    L"source.jpg"
-#elif defined(OS_MACOSX)
-   L"source.jpg.js"
-#else
-   L"source.jpg"
-#endif
   },
 
   // NetUtilTest.{GetSuggestedFilename, GetFileNameFromCD} test these
@@ -437,7 +420,7 @@ const struct {
   {"",
    "http://www.example.com/bar.bogus",
    "application/x-tar",
-   L"bar.bogus" TAR_EXT
+   L"bar.bogus"
   },
 
   // http://code.google.com/p/chromium/issues/detail?id=20337
@@ -451,12 +434,12 @@ const struct {
 // (content-disposition, URL name, etc) don't cause security holes.
 TEST(DownloadUtilTest, GenerateFileName) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // This test doesn't run when the locale is not UTF-8 becuase some of the
+  // This test doesn't run when the locale is not UTF-8 because some of the
   // string conversions fail. This is OK (we have the default value) but they
   // don't match our expectations.
   std::string locale = setlocale(LC_CTYPE, NULL);
   StringToLowerASCII(&locale);
-  ASSERT_NE(std::string::npos, locale.find("utf-8"))
+  EXPECT_NE(std::string::npos, locale.find("utf-8"))
       << "Your locale must be set to UTF-8 for this test to pass!";
 #endif
 
@@ -468,7 +451,7 @@ TEST(DownloadUtilTest, GenerateFileName) {
                                     kGenerateFileNameTestCases[i].mime_type,
                                     &generated_name);
     EXPECT_EQ(kGenerateFileNameTestCases[i].expected_name,
-              generated_name.ToWStringHack());
+              generated_name.ToWStringHack()) << i;
   }
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGenerateFileNameTestCases); ++i) {
@@ -479,7 +462,7 @@ TEST(DownloadUtilTest, GenerateFileName) {
                                     kGenerateFileNameTestCases[i].mime_type,
                                     &generated_name);
     EXPECT_EQ(kGenerateFileNameTestCases[i].expected_name,
-              generated_name.ToWStringHack());
+              generated_name.ToWStringHack()) << i;
   }
 
   // A couple of cases with raw 8bit characters in C-D.
@@ -529,14 +512,14 @@ const struct {
 
   { FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
     "text/html",
-    FILE_PATH_LITERAL("C:\\foo\\bar.htm") },
+    FILE_PATH_LITERAL("C:\\foo\\bar.exe") },
   { FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
     "image/gif",
     FILE_PATH_LITERAL("C:\\foo\\bar.gif") },
 
   { FILE_PATH_LITERAL("C:\\foo\\google.com"),
     "text/html",
-    FILE_PATH_LITERAL("C:\\foo\\google.htm") },
+    FILE_PATH_LITERAL("C:\\foo\\google.com") },
 
   { FILE_PATH_LITERAL("C:\\foo\\con.htm"),
     "text/html",
@@ -557,29 +540,22 @@ const struct {
 
   { FILE_PATH_LITERAL("/bar.html"),
     "image/png",
-    FILE_PATH_LITERAL("/bar.html.png") },
+    FILE_PATH_LITERAL("/bar.html") },
   { FILE_PATH_LITERAL("/bar"),
     "image/png",
     FILE_PATH_LITERAL("/bar.png") },
 
   { FILE_PATH_LITERAL("/foo/bar.exe"),
-    "text/html",
-#if defined(OS_MACOSX)
-    FILE_PATH_LITERAL("/foo/bar.exe.html") },
-#else
-    FILE_PATH_LITERAL("/foo/bar.html") },
-#endif
-  { FILE_PATH_LITERAL("/foo/bar.exe"),
     "image/gif",
 #if defined(OS_MACOSX)
-    FILE_PATH_LITERAL("/foo/bar.exe.gif") },
+    FILE_PATH_LITERAL("/foo/bar.exe") },
 #else
     FILE_PATH_LITERAL("/foo/bar.gif") },
 #endif
 
   { FILE_PATH_LITERAL("/foo/google.com"),
     "text/html",
-    FILE_PATH_LITERAL("/foo/google.com.html") },
+    FILE_PATH_LITERAL("/foo/google.com") },
 
   { FILE_PATH_LITERAL("/foo/con.htm"),
     "text/html",
@@ -594,7 +570,7 @@ TEST(DownloadUtilTest, GenerateSafeFileName) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSafeFilenameCases); ++i) {
     FilePath path(kSafeFilenameCases[i].path);
     download_util::GenerateSafeFileName(kSafeFilenameCases[i].mime_type, &path);
-    EXPECT_EQ(kSafeFilenameCases[i].expected_path, path.value());
+    EXPECT_EQ(kSafeFilenameCases[i].expected_path, path.value()) << i;
   }
 }
 

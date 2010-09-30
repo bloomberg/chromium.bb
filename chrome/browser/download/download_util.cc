@@ -156,15 +156,6 @@ void GenerateExtension(const FilePath& file_name,
     extension.assign(default_extension);
 #endif
 
-  std::string mime_type_from_extension;
-  net::GetMimeTypeFromFile(file_name,
-                           &mime_type_from_extension);
-  if (mime_type == mime_type_from_extension) {
-    // The hinted extension matches the mime type.  It looks like a winner.
-    generated_extension->swap(extension);
-    return;
-  }
-
   if (IsExecutableExtension(extension) && !IsExecutableMimeType(mime_type)) {
     // We want to be careful about executable extensions.  The worry here is
     // that a trusted web site could be tricked into dropping an executable file
@@ -176,34 +167,8 @@ void GenerateExtension(const FilePath& file_name,
     }
   }
 
-  if (extension.empty()) {
+  if (extension.empty())
     net::GetPreferredExtensionForMimeType(mime_type, &extension);
-  } else {
-    // Append extension generated from the mime type if:
-    // 1. New extension is not ".txt"
-    // 2. New extension is not the same as the already existing extension.
-    // 3. New extension is not executable. This action mitigates the case when
-    //    an executable is hidden in a benign file extension;
-    //    E.g. my-cat.jpg becomes my-cat.jpg.js if content type is
-    //         application/x-javascript.
-    // 4. New extension is not ".tar" for .tar.gz/tgz files. For misconfigured
-    //    web servers, i.e. bug 5772.
-    // 5. The original extension is not ".tgz" & the new extension is not "gz".
-    FilePath::StringType append_extension;
-    if (net::GetPreferredExtensionForMimeType(mime_type, &append_extension)) {
-      if (append_extension != FILE_PATH_LITERAL("txt") &&
-          append_extension != extension &&
-          !IsExecutableExtension(append_extension) &&
-          !(append_extension == FILE_PATH_LITERAL("gz") &&
-            extension == FILE_PATH_LITERAL("tgz")) &&
-          !(append_extension == FILE_PATH_LITERAL("tar") &&
-           (extension == FILE_PATH_LITERAL("tar.gz") ||
-            extension == FILE_PATH_LITERAL("tgz")))) {
-        extension += FILE_PATH_LITERAL(".");
-        extension += append_extension;
-      }
-    }
-  }
 
   generated_extension->swap(extension);
 }

@@ -198,6 +198,7 @@ static const char* kExecutableWhiteList[] = {
   // JavaScript is just as powerful as EXE.
   "text/javascript",
   "text/javascript;version=*",
+  "text/html",
   // Registry files can cause critical changes to the MS OS behavior.
   // Addition of this mimetype also addresses bug 7337.
   "text/x-registry",
