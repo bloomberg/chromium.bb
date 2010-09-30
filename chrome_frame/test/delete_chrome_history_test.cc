@@ -117,11 +117,65 @@ ACTION_P2(LaunchThisIEAndNavigate, ie_mock, url) {
                                                                       ie_mock));
 }
 
-TEST_F(DeleteBrowsingHistoryTest, DISABLED_CFDeleteBrowsingHistory) {
+// Listens for OnAccLoad and OnLoad events for an IE instance and
+// sends a single signal once both have been received.
+//
+// Allows tests to wait for both events to occur irrespective of their relative
+// ordering.
+class PageLoadHelper {
+ public:
+  explicit PageLoadHelper(testing::StrictMock<MockIEEventSink>* ie_mock)
+      : received_acc_load_(false),
+        received_on_load_(false),
+        ie_mock_(ie_mock) {
+    EXPECT_CALL(*ie_mock_, OnLoad(_, _))
+        .Times(testing::AnyNumber())
+        .WillRepeatedly(testing::InvokeWithoutArgs(
+            this, &PageLoadHelper::HandleOnLoad));
+    EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+        .Times(testing::AnyNumber())
+        .WillRepeatedly(testing::Invoke(this, &PageLoadHelper::HandleAccLoad));
+  }
+
+  void HandleAccLoad(HWND hwnd) {
+    ReconcileHwnds(hwnd, &acc_loaded_hwnds_, &on_loaded_hwnds_);
+  }
+
+  void HandleOnLoad() {
+    HWND hwnd = ie_mock_->event_sink()->GetRendererWindow();
+    ReconcileHwnds(hwnd, &on_loaded_hwnds_, &acc_loaded_hwnds_);
+  }
+
+  MOCK_METHOD0(OnLoadComplete, void());
+
+ private:
+  void ReconcileHwnds(HWND signaled_hwnd,
+                      std::set<HWND>* signaled_hwnd_set,
+                      std::set<HWND>* other_hwnd_set) {
+    if (other_hwnd_set->erase(signaled_hwnd) != 0) {
+      OnLoadComplete();
+    } else {
+      signaled_hwnd_set->insert(signaled_hwnd);
+    }
+  }
+  std::set<HWND> acc_loaded_hwnds_;
+  std::set<HWND> on_loaded_hwnds_;
+  bool received_acc_load_;
+  bool received_on_load_;
+  testing::StrictMock<MockIEEventSink>* ie_mock_;
+  testing::NiceMock<MockAccEventObserver> acc_observer_;
+};
+
+TEST_F(DeleteBrowsingHistoryTest, CFDeleteBrowsingHistory) {
   if (GetInstalledIEVersion() < IE_8) {
     LOG(ERROR) << "Test does not apply to IE versions < 8.";
     return;
   }
+
+  PageLoadHelper load_helper(&ie_mock_);
+  PageLoadHelper load_helper2(&ie_mock2_);
+  PageLoadHelper load_helper3(&ie_mock3_);
+
   delete_browsing_history_window_observer_mock_.WatchWindow(
       "Delete Browsing History");
 
@@ -148,7 +202,7 @@ TEST_F(DeleteBrowsingHistoryTest, DISABLED_CFDeleteBrowsingHistory) {
 
   // top.html contains a form. Fill in the username field and submit, causing
   // the value to be stored in Chrome's form data DB.
-  EXPECT_CALL(ie_mock_, OnLoad(_, _))
+  EXPECT_CALL(load_helper, OnLoadComplete())
       .WillOnce(testing::DoAll(
           AccLeftClickInRenderer(&ie_mock_, AccObjectMatcher(L"username")),
           PostCharMessagesToRenderer(&ie_mock_, WideToASCII(kFormFieldValue)),
@@ -158,7 +212,7 @@ TEST_F(DeleteBrowsingHistoryTest, DISABLED_CFDeleteBrowsingHistory) {
       .WillOnce(SendFast(kHtmlHttpHeaders, kFormResultHtml));
 
   // OnLoad of the result page from form submission. Now close the browser.
-  EXPECT_CALL(ie_mock_, OnLoad(_, _))
+  EXPECT_CALL(load_helper, OnLoadComplete())
       .WillOnce(testing::DoAll(
           WatchRendererProcess(&ie_process_exit_watcher_mock_, &ie_mock_),
           CloseBrowserMock(&ie_mock_)));
@@ -183,7 +237,7 @@ TEST_F(DeleteBrowsingHistoryTest, DISABLED_CFDeleteBrowsingHistory) {
   // Running it once with the option turned off is harmless.
 
   // Proceed to open up the "Safety" menu for the first time through the loop.
-  EXPECT_CALL(ie_mock2_, OnLoad(_, _))
+  EXPECT_CALL(load_helper2, OnLoadComplete())
       .WillOnce(AccDoDefaultActionInBrowser(&ie_mock2_,
                                             AccObjectMatcher(L"Safety")));
 
@@ -259,7 +313,7 @@ TEST_F(DeleteBrowsingHistoryTest, DISABLED_CFDeleteBrowsingHistory) {
           SendFast(kBlankPngResponse[0], std::string(kBlankPngResponse[1],
                                                      kBlankPngFileLength)));
 
-  EXPECT_CALL(ie_mock3_, OnLoad(_, _))
+  EXPECT_CALL(load_helper3, OnLoadComplete())
     .WillOnce(CloseBrowserMock(&ie_mock3_));
 
   EXPECT_CALL(ie_mock3_, OnQuit())
