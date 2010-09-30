@@ -45,16 +45,13 @@ cr.define('options', function() {
       this.addEventListener('visibleChange', this.handleVisibleChange_);
     },
 
-    userListInitalized_: false,
-
     /**
      * Handler for OptionsPage's visible property change event.
      * @private
      * @param {Event} e Property change event.
      */
     handleVisibleChange_: function(e) {
-      if (!this.userListInitalized_ && this.visible) {
-        this.userListInitalized_ = true;
+      if (this.visible) {
         $('userList').redraw();
       }
     },
