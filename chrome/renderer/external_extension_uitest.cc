@@ -112,7 +112,8 @@ void SearchProviderTest::FinishIsSearchProviderInstalledTest(
   EXPECT_STREQ("1\n", value.c_str());
 }
 
-TEST_F(SearchProviderTest, TestIsSearchProviderInstalled) {
+// Flaky, http://crbug.com/57405.
+TEST_F(SearchProviderTest, FLAKY_TestIsSearchProviderInstalled) {
   ASSERT_TRUE(test_server_.Start());
 
   // Use the default search provider, other installed search provider, and
