@@ -626,4 +626,13 @@ struct ExtensionInfo {
   DISALLOW_COPY_AND_ASSIGN(ExtensionInfo);
 };
 
+// Struct used for the details of the EXTENSION_UNINSTALLED
+// notification.
+struct UninstalledExtensionInfo {
+  explicit UninstalledExtensionInfo(const Extension& extension);
+
+  std::string extension_id;
+  std::set<std::string> extension_api_permissions;
+};
+
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_H_

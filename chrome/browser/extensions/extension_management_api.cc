@@ -215,9 +215,8 @@ void ExtensionManagementEventRouter::Observe(
 
   ListValue args;
   if (event_name == events::kOnExtensionUninstalled) {
-    // TODO(akalin) - change this to get the id from UninstalledExtensionInfo
-    // when re-landing change to how we send the uninstall notification.
-    std::string extension_id = Details<Extension>(details).ptr()->id();
+    const std::string& extension_id =
+        Details<UninstalledExtensionInfo>(details).ptr()->extension_id;
     args.Append(Value::CreateStringValue(extension_id));
   } else {
     Extension* extension = Details<Extension>(details).ptr();

@@ -768,16 +768,11 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
   // Callers should not send us nonexistent extensions.
   DCHECK(extension);
 
-  // Notify interested parties that we're uninstalling this extension.
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_UNINSTALLED,
-      Source<Profile>(profile_),
-      Details<Extension>(extension));
-
   // Get hold of information we need after unloading, since the extension
   // pointer will be invalid then.
   GURL extension_url(extension->url());
   Extension::Location location(extension->location());
+  UninstalledExtensionInfo uninstalled_extension_info(*extension);
 
   // Also copy the extension identifier since the reference might have been
   // obtained via Extension::id().
@@ -804,6 +799,12 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
   }
 
   ClearExtensionData(extension_url);
+
+  // Notify interested parties that we've uninstalled this extension.
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_UNINSTALLED,
+      Source<Profile>(profile_),
+      Details<UninstalledExtensionInfo>(&uninstalled_extension_info));
 }
 
 void ExtensionsService::ClearExtensionData(const GURL& extension_url) {
