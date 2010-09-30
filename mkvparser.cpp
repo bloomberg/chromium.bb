@@ -1216,7 +1216,7 @@ void Segment::AppendCluster(Cluster* pCluster)
     Cluster** const pp = p + m_clusterCount;
 
     while (p != pp)
-        *p++ = *q++;
+        *q++ = *p++;
 
     delete[] m_clusters;
 
@@ -1859,7 +1859,7 @@ const CuePoint::TrackPosition* CuePoint::Find(const Track* pTrack) const
             return &p;
     }
 
-    return 0;  //no matching track number found
+    return NULL;  //no matching track number found
 }
 
 
@@ -2030,6 +2030,8 @@ void Segment::GetCluster(
     {
         pCluster = *i;
         assert(pCluster);
+        assert(pCluster->m_index == 0);
+        assert(pCluster->m_pSegment == this);
 
         if (time_ns <= pCluster->GetTime())
         {
@@ -2062,6 +2064,8 @@ void Segment::GetCluster(
 
             Cluster* const pCluster = *mid;
             assert(pCluster);
+            assert(pCluster->m_index == size_t(mid - m_clusters));
+            assert(pCluster->m_pSegment == this);
 
             const long long t = pCluster->GetTime();
 
