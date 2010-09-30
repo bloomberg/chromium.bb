@@ -139,6 +139,10 @@ var SyncOptions = options.SyncOptions;
 function load() {
   var start = new Date();
 
+  var menuOffPattern = /(^\?|&)menu=off($|&)/;
+  var menuDisabled = menuOffPattern.test(window.location.search);
+  document.documentElement.setAttribute('hide-menu', menuDisabled);
+
   localStrings = new LocalStrings();
 
   if (cr.isChromeOS) {
@@ -230,6 +234,7 @@ function load() {
       OptionsPage.showTab(event.srcElement);
     }
   }
+
   var end = new Date();
   var total = end - start;
   console.log('time took to run load():'+ total);

@@ -198,7 +198,7 @@ OptionsUI::~OptionsUI() {
   for (std::vector<DOMMessageHandler*>::iterator iter = handlers_.begin();
        iter != handlers_.end();
        ++iter) {
-    reinterpret_cast<OptionsPageUIHandler*>(*iter)->Uninitialize();
+    static_cast<OptionsPageUIHandler*>(*iter)->Uninitialize();
   }
 }
 

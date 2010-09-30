@@ -88,6 +88,7 @@ html[dir='rtl'] #close-overlay {
   position: relative;
   width: 250px;
   z-index: 2;
+  display: none;
 }
 
 html[dir='rtl'] #navbar-container {
@@ -103,6 +104,10 @@ html[dir='rtl'] #navbar-container {
                                from(white),
                                color-stop(0.8, white),
                                to(#f3f3f3));
+}
+
+html[hide-menu=false] #navbar-container {
+  display: block;
 }
 
 #navbar-container > hr {
@@ -155,6 +160,10 @@ html[dir='rtl'] .navbar-item-selected {
   top: 0;
   bottom: 0;
   z-index: 1;
+}
+
+html[hide-menu=true] #mainview {
+  -webkit-padding-start: 0;
 }
 
 #mainview-content {

@@ -141,7 +141,7 @@ cr.define('options', function() {
 
   /**
    * Registers a new Overlay page.
-   * @param {OptionsPage} page Page to register, must be a class derviced from
+   * @param {OptionsPage} page Page to register, must be a class derived from
    * OptionsPage.
    */
   OptionsPage.registerOverlay = function(page) {

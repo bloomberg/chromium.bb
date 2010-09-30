@@ -399,7 +399,8 @@ bool NetworkSelectionView::IsContinueEnabled() const {
 void NetworkSelectionView::LinkActivated(views::Link* source, int) {
   if (source == proxy_settings_link_) {
     if (!proxy_settings_dialog_.get()) {
-      static const char kProxySettingsURL[] = "chrome://settings/proxy";
+      static const char kProxySettingsURL[] =
+          "chrome://settings/proxy?menu=off";
       proxy_settings_dialog_.reset(new LoginHtmlDialog(
           this,
           GetNativeWindow(),
