@@ -851,13 +851,11 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     { "permissions1", false },  // tabs -> tabs
     { "permissions2", true },  // tabs -> tabs,bookmarks
     { "permissions3", true },  // http://a -> http://a,tabs
-    { "permissions4", false },  // plugin -> plugin,tabs
     { "permissions5", true },  // bookmarks -> bookmarks,history
+#if !defined(OS_CHROMEOS)  // plugins aren't allowed in ChromeOS
+    { "permissions4", false },  // plugin -> plugin,tabs
     { "plugin1", false },  // plugin -> plugin
     { "plugin2", false },  // plugin -> none
-#if defined(OS_CHROMEOS)
-    { "plugin3", false },  // none -> plugin (illegal on Chrome OS)
-#else
     { "plugin3", true },  // none -> plugin
 #endif
     { "storage", false },  // none -> storage
@@ -872,8 +870,6 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
         LoadManifest("allow_silent_upgrade",
                      std::string(kTests[i].base_name) + "_new.json"));
 
-    // TODO(erikkay) Seeing a random crash on the bots that I can't explain.
-    // This is an attempt to diagnose.
     EXPECT_TRUE(old_extension.get()) << kTests[i].base_name << "_old.json";
     EXPECT_TRUE(new_extension.get()) << kTests[i].base_name << "_new.json";
     if (!old_extension.get() || !new_extension.get())
