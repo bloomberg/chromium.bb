@@ -203,9 +203,9 @@ string EncodeURL(string uri, string host, string method) {
   if (uri[0] == '/') {
     // uri is not fully qualified.
     filename = net::UrlToFilenameEncoder::Encode(
-        "http://" + host + uri, method + "_/");
+        "http://" + host + uri, method + "_/", false);
   } else {
-    filename = net::UrlToFilenameEncoder::Encode(uri, method + "_/");
+    filename = net::UrlToFilenameEncoder::Encode(uri, method + "_/", false);
   }
   return filename;
 }
@@ -567,7 +567,7 @@ class MemoryCache {
       return;
 
     string referrer_host_path =
-      net::UrlToFilenameEncoder::Encode(referrer, "GET_/");
+      net::UrlToFilenameEncoder::Encode(referrer, "GET_/", false);
 
     FileData* fd1 = GetFileData(string("GET_") + file_url);
     if (!fd1) {

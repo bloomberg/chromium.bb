@@ -471,7 +471,7 @@ class BalsaHeaders {
     // operator<< work for the classes it sees.  It would be better if there
     // was an additional traits-like system for the gUnit output... but oh
     // well.
-    std::ostream& operator<<(std::ostream& os, const iterator_base& it);
+    std::ostream& operator<<(std::ostream& os) const;
 
    protected:
     iterator_base(const BalsaHeaders* headers, HeaderLines::size_type index) :

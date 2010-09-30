@@ -71,9 +71,8 @@ namespace net {
 
 const size_t BalsaBuffer::kDefaultBlocksize;
 
-std::ostream& BalsaHeaders::iterator_base::operator<<(std::ostream& os,
-                                                      const iterator_base& it) {
-   os << "[" << it.headers_ << ", " << it.idx_ << "]";
+std::ostream& BalsaHeaders::iterator_base::operator<<(std::ostream& os) const {
+   os << "[" << this->headers_ << ", " << this->idx_ << "]";
    return os;
  }
 
