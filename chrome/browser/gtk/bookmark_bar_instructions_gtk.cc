@@ -16,23 +16,6 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 
-namespace {
-
-// Calculates the real size request of a label and set its ellipsize mode to
-// PANGO_ELLIPSIZE_END.
-// It must be done when the label is mapped (become visible on the screen),
-// to make sure the pango can get correct font information for the calculation.
-void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label) {
-  GtkRequisition size;
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_NONE);
-  gtk_widget_set_size_request(label, -1, -1);
-  gtk_widget_size_request(label, &size);
-  gtk_widget_set_size_request(label, size.width, size.height);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-}
-
-}  // namespace
-
 BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
                                                        Profile* profile)
     : delegate_(delegate),
@@ -47,7 +30,7 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
   gtk_util::CenterWidgetInHBox(instructions_hbox_, instructions_label_,
                                false, 1);
   g_signal_connect(instructions_label_, "map",
-                   G_CALLBACK(InitLabelSizeRequestAndEllipsizeMode),
+                   G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                    NULL);
 
   instructions_link_ = gtk_chrome_link_button_new(
@@ -64,7 +47,7 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
   gtk_util::CenterWidgetInHBox(instructions_hbox_, instructions_link_,
                                false, 6);
   g_signal_connect(GTK_CHROME_LINK_BUTTON(instructions_link_)->label, "map",
-                   G_CALLBACK(InitLabelSizeRequestAndEllipsizeMode),
+                   G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                    NULL);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,

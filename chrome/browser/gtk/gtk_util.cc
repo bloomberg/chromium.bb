@@ -1097,4 +1097,13 @@ void SetLabelWidth(GtkWidget* label, int pixel_width) {
   }
 }
 
+void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label) {
+  GtkRequisition size;
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_NONE);
+  gtk_widget_set_size_request(label, -1, -1);
+  gtk_widget_size_request(label, &size);
+  gtk_widget_set_size_request(label, size.width, size.height);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+}
+
 }  // namespace gtk_util

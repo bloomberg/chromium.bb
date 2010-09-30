@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/infobar_container_gtk.h"
@@ -16,6 +17,11 @@
 #include "gfx/gtk_util.h"
 
 namespace {
+
+// Spacing after message (and before buttons).
+const int kEndOfLabelSpacing = 6;
+// Spacing between buttons.
+const int kButtonButtonSpacing = 3;
 
 // The total height of the info bar.
 const int kInfoBarHeight = 37;
@@ -140,19 +146,51 @@ void InfoBar::Observe(NotificationType type,
   UpdateBorderColor();
 }
 
+void InfoBar::AddLabelWithInlineLink(const string16& display_text,
+                                     const string16& link_text,
+                                     size_t link_offset,
+                                     GCallback callback) {
+  GtkWidget* link_button = gtk_chrome_link_button_new(
+      UTF16ToUTF8(link_text).c_str());
+  gtk_chrome_link_button_set_use_gtk_theme(
+      GTK_CHROME_LINK_BUTTON(link_button), FALSE);
+  DCHECK(callback);
+  g_signal_connect(link_button, "clicked", callback, this);
+  gtk_util::SetButtonTriggersNavigation(link_button);
+
+  GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
+  // We want the link to be horizontally shrinkable, so that the Chrome
+  // window can be resized freely even with a very long link.
+  gtk_widget_set_size_request(hbox, 0, -1);
+  gtk_box_pack_start(GTK_BOX(hbox_), hbox, TRUE, TRUE, 0);
+
+  // Need to insert the link inside the display text.
+  GtkWidget* initial_label = gtk_label_new(
+      UTF16ToUTF8(display_text.substr(0, link_offset)).c_str());
+  GtkWidget* trailing_label = gtk_label_new(
+      UTF16ToUTF8(display_text.substr(link_offset)).c_str());
+
+  // TODO(joth): Unlike the AddLabalAndLink below, none of the label widgets
+  // are set as shrinkable here, meaning the text will run under the close
+  // button etc. when the width is restricted, rather than eliding.
+  gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+  gtk_widget_modify_fg(trailing_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+
+  // We don't want any spacing between the elements, so we pack them into
+  // this hbox that doesn't use kElementPadding.
+  gtk_box_pack_start(GTK_BOX(hbox), initial_label, FALSE, FALSE, 0);
+  gtk_util::CenterWidgetInHBox(hbox, link_button, false, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), trailing_label, FALSE, FALSE, 0);
+}
+
 // TODO(joth): This method factors out some common functionality between the
 // various derived infobar classes, however the class hierarchy itself could
 // use refactoring to reduce this duplication. http://crbug.com/38924
 void InfoBar::AddLabelAndLink(const string16& display_text,
                               const string16& link_text,
-                              size_t link_offset,
-                              guint link_padding,
                               GCallback callback) {
   GtkWidget* link_button = NULL;
-  if (link_text.empty()) {
-    // No link text, so skip creating the link and splitting display_text.
-    link_offset = string16::npos;
-  } else {
+  if (!link_text.empty()) {
     // If we have some link text, create the link button.
     link_button = gtk_chrome_link_button_new(UTF16ToUTF8(link_text).c_str());
     gtk_chrome_link_button_set_use_gtk_theme(
@@ -168,39 +206,16 @@ void InfoBar::AddLabelAndLink(const string16& display_text,
   gtk_widget_set_size_request(hbox, 0, -1);
   gtk_box_pack_start(GTK_BOX(hbox_), hbox, TRUE, TRUE, 0);
 
-  // If link_offset is npos, we right-align the link instead of embedding it
-  // in the text.
-  if (link_offset == string16::npos) {
-    if (link_button)
-      gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
-    GtkWidget* label = gtk_label_new(UTF16ToUTF8(display_text).c_str());
-    // In order to avoid the link_button and the label overlapping with each
-    // other, we make the label shrinkable.
-    gtk_widget_set_size_request(label, 0, -1);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-    gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-    gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-    gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
-  } else {
-    DCHECK(link_button);
-    // Need to insert the link inside the display text.
-    GtkWidget* initial_label = gtk_label_new(
-        UTF16ToUTF8(display_text.substr(0, link_offset)).c_str());
-    GtkWidget* trailing_label = gtk_label_new(
-        UTF16ToUTF8(display_text.substr(link_offset)).c_str());
-
-    // TODO(joth): Unlike the right-align case above, none of the label widgets
-    // are set as shrinkable here, meaning the text will run under the close
-    // button etc. when the width is restricted, rather than eliding.
-    gtk_widget_modify_fg(initial_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-    gtk_widget_modify_fg(trailing_label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
-
-    // We don't want any spacing between the elements, so we pack them into
-    // this hbox that doesn't use kElementPadding.
-    gtk_box_pack_start(GTK_BOX(hbox), initial_label, FALSE, FALSE, 0);
-    gtk_util::CenterWidgetInHBox(hbox, link_button, false, link_padding);
-    gtk_box_pack_start(GTK_BOX(hbox), trailing_label, FALSE, FALSE, 0);
-  }
+  if (link_button)
+    gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
+  GtkWidget* label = gtk_label_new(UTF16ToUTF8(display_text).c_str());
+  // In order to avoid the link_button and the label overlapping with each
+  // other, we make the label shrinkable.
+  gtk_widget_set_size_request(label, 0, -1);
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
+  gtk_box_pack_start(GTK_BOX(hbox), label, TRUE, TRUE, 0);
 }
 
 void InfoBar::GetTopColor(InfoBarDelegate::Type type,
@@ -282,7 +297,7 @@ class AlertInfoBar : public InfoBar {
  public:
   explicit AlertInfoBar(AlertInfoBarDelegate* delegate)
       : InfoBar(delegate) {
-    AddLabelAndLink(delegate->GetMessageText(), string16(), 0, 0, NULL);
+    AddLabelAndLink(delegate->GetMessageText(), string16(), NULL);
     gtk_widget_show_all(border_bin_.get());
   }
 };
@@ -294,11 +309,10 @@ class LinkInfoBar : public InfoBar {
   explicit LinkInfoBar(LinkInfoBarDelegate* delegate)
       : InfoBar(delegate) {
     size_t link_offset;
-    string16 display_text =
-        delegate->GetMessageTextWithOffset(&link_offset);
+    string16 display_text = delegate->GetMessageTextWithOffset(&link_offset);
     string16 link_text = delegate->GetLinkText();
-    AddLabelAndLink(display_text, link_text, link_offset, 0,
-                    G_CALLBACK(OnLinkClick));
+    AddLabelWithInlineLink(display_text, link_text, link_offset,
+                           G_CALLBACK(OnLinkClick));
     gtk_widget_show_all(border_bin_.get());
   }
 
@@ -315,64 +329,88 @@ class LinkInfoBar : public InfoBar {
 
 class ConfirmInfoBar : public InfoBar {
  public:
-  explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
-      : InfoBar(delegate) {
-    AddConfirmButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
-    AddConfirmButton(ConfirmInfoBarDelegate::BUTTON_OK);
-    string16 display_text = delegate->GetMessageText();
-    string16 link_text = delegate->GetLinkText();
-    AddLabelAndLink(display_text, link_text, display_text.size(),
-                    kElementPadding, G_CALLBACK(OnLinkClick));
-    gtk_widget_show_all(border_bin_.get());
-  }
+  explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate);
 
  private:
   // Adds a button to the info bar by type. It will do nothing if the delegate
   // doesn't specify a button of the given type.
-  void AddConfirmButton(ConfirmInfoBarDelegate::InfoBarButton type) {
-    if (delegate_->AsConfirmInfoBarDelegate()->GetButtons() & type) {
-      GtkWidget* button = gtk_button_new_with_label(UTF16ToUTF8(
-          delegate_->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
-      gtk_util::CenterWidgetInHBox(hbox_, button, true, 0);
-      g_signal_connect(button, "clicked",
-                       G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?
-                                  OnOkButton : OnCancelButton),
-                       this);
-    }
-  }
+  void AddButton(ConfirmInfoBarDelegate::InfoBarButton type);
 
-  static void OnCancelButton(GtkWidget* button, ConfirmInfoBar* info_bar) {
-    if (info_bar->delegate_->AsConfirmInfoBarDelegate()->Cancel())
-      info_bar->RemoveInfoBar();
-  }
+  CHROMEGTK_CALLBACK_0(ConfirmInfoBar, void, OnOkButton);
+  CHROMEGTK_CALLBACK_0(ConfirmInfoBar, void, OnCancelButton);
+  CHROMEGTK_CALLBACK_0(ConfirmInfoBar, void, OnLinkClicked);
 
-  static void OnOkButton(GtkWidget* button, ConfirmInfoBar* info_bar) {
-    if (info_bar->delegate_->AsConfirmInfoBarDelegate()->Accept())
-      info_bar->RemoveInfoBar();
-  }
+  GtkWidget* confirm_hbox_;
 
-  static void OnLinkClick(GtkWidget* button, ConfirmInfoBar* link_info_bar) {
-    if (link_info_bar->delegate_->AsConfirmInfoBarDelegate()->
-        LinkClicked(gtk_util::DispositionForCurrentButtonPressEvent())) {
-      link_info_bar->RemoveInfoBar();
-    }
-  }
+  DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);
 };
 
-// AlertInfoBarDelegate, InfoBarDelegate overrides: ----------------------------
+ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
+    : InfoBar(delegate) {
+  confirm_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_), confirm_hbox_, TRUE, TRUE, 0);
+  gtk_widget_set_size_request(confirm_hbox_, 0, -1);
+
+  std::string label_text = UTF16ToUTF8(delegate->GetMessageText());
+  GtkWidget* label = gtk_label_new(label_text.c_str());
+  gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
+  gtk_util::CenterWidgetInHBox(confirm_hbox_, label, false, kEndOfLabelSpacing);
+  g_signal_connect(label, "map",
+                   G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
+                   NULL);
+
+  AddButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
+  AddButton(ConfirmInfoBarDelegate::BUTTON_OK);
+
+  std::string link_text = UTF16ToUTF8(delegate->GetLinkText());
+  GtkWidget* link = gtk_chrome_link_button_new(link_text.c_str());
+  gtk_misc_set_alignment(GTK_MISC(GTK_CHROME_LINK_BUTTON(link)->label), 0, 0.5);
+  g_signal_connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
+  gtk_util::SetButtonTriggersNavigation(link);
+  // Until we switch to vector graphics, force the font size.
+  // 13.4px == 10pt @ 96dpi
+  gtk_util::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(link)->label, 13.4);
+  gtk_util::CenterWidgetInHBox(hbox_, link, true, kEndOfLabelSpacing);
+
+  gtk_widget_show_all(border_bin_.get());
+}
+
+void ConfirmInfoBar::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
+  if (delegate_->AsConfirmInfoBarDelegate()->GetButtons() & type) {
+    GtkWidget* button = gtk_button_new_with_label(UTF16ToUTF8(
+        delegate_->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
+    gtk_util::CenterWidgetInHBox(confirm_hbox_, button, false,
+                                 kButtonButtonSpacing);
+    g_signal_connect(button, "clicked",
+                     G_CALLBACK(type == ConfirmInfoBarDelegate::BUTTON_OK ?
+                                OnOkButtonThunk : OnCancelButtonThunk),
+                     this);
+  }
+}
+
+void ConfirmInfoBar::OnCancelButton(GtkWidget* widget) {
+  if (delegate_->AsConfirmInfoBarDelegate()->Cancel())
+    RemoveInfoBar();
+}
+
+void ConfirmInfoBar::OnOkButton(GtkWidget* widget) {
+  if (delegate_->AsConfirmInfoBarDelegate()->Accept())
+    RemoveInfoBar();
+}
+
+void ConfirmInfoBar::OnLinkClicked(GtkWidget* widget) {
+  if (delegate_->AsConfirmInfoBarDelegate()->LinkClicked(
+          gtk_util::DispositionForCurrentButtonPressEvent())) {
+    RemoveInfoBar();
+  }
+}
 
 InfoBar* AlertInfoBarDelegate::CreateInfoBar() {
   return new AlertInfoBar(this);
 }
-
-// LinkInfoBarDelegate, InfoBarDelegate overrides: -----------------------------
-
 InfoBar* LinkInfoBarDelegate::CreateInfoBar() {
   return new LinkInfoBar(this);
 }
-
-// ConfirmInfoBarDelegate, InfoBarDelegate overrides: --------------------------
-
 InfoBar* ConfirmInfoBarDelegate::CreateInfoBar() {
   return new ConfirmInfoBar(this);
 }

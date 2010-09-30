@@ -328,6 +328,13 @@ void SetGtkFont(const std::string& font_name);
 // and this function hides the complexity of the workaround.
 void SetLabelWidth(GtkWidget* label, int pixel_width);
 
+// Make the |label| shrinkable within a GthChromeShrinkableHBox
+// It calculates the real size request of a label and set its ellipsize mode to
+// PANGO_ELLIPSIZE_END.
+// It must be done when the label is mapped (become visible on the screen),
+// to make sure the pango can get correct font information for the calculation.
+void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_BROWSER_GTK_GTK_UTIL_H_
