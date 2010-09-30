@@ -47,14 +47,11 @@ var tests = [
     chrome.management.getAll(callback(function(items) {
       checkItem(items, "enabled_app", true, true);
       var enabled_app = getItemNamed(items, "enabled_app");
-      chrome.management.setEnabled(enabled_app.id, false, function() {
-        assertNoLastError();
-        chrome.management.getAll(function(items2) {
-          assertNoLastError();
+      chrome.management.setEnabled(enabled_app.id, false, callback(function() {
+        chrome.management.getAll(callback(function(items2) {
           checkItem(items2, "enabled_app", false, true);
-          assertTrue(event_fired);
-        });
-      });
+        }));
+      }));
     }));
   },
 
@@ -66,14 +63,11 @@ var tests = [
     chrome.management.getAll(callback(function(items) {
       checkItem(items, "disabled_extension", false, false);
       var disabled = getItemNamed(items, "disabled_extension");
-      chrome.management.setEnabled(disabled.id, true, function() {
-        assertNoLastError();
-        chrome.management.getAll(function(items2) {
-          assertNoLastError();
+      chrome.management.setEnabled(disabled.id, true, callback(function() {
+        chrome.management.getAll(callback(function(items2) {
           checkItem(items2, "disabled_extension", true, false);
-          assertTrue(event_fired);
-        });
-      });
+        }));
+      }));
     }));
   }
 ];

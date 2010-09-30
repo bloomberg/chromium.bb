@@ -3,24 +3,23 @@
 // found in the LICENSE file.
 
 function uninstall(name) {
-  listenOnce(chrome.management.onUninstalled, function(info) {
-    assertEq(info.name, name);
+  var expected_id;
+  listenOnce(chrome.management.onUninstalled, function(id) {
+    assertEq(expected_id, id);
   });
 
   chrome.management.getAll(callback(function(items) {
     var old_count = items.length;
     var item = getItemNamed(items, name);
-    chrome.management.uninstall(item.id, function() {
-      assertNoLastError();
-      chrome.management.getAll(function(items2) {
-        assertNoLastError();
+    expected_id = item.id;
+    chrome.management.uninstall(item.id, callback(function() {
+      chrome.management.getAll(callback(function(items2) {
         assertEq(old_count - 1, items2.length);
         for (var i = 0; i < items2.length; i++) {
           assertFalse(items2[i].name == name);
         }
-        assertTrue(event_fired);
-      });
-    });
+      }));
+    }));
   }));
 }
 
