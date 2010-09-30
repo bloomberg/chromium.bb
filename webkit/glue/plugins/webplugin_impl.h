@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/linked_ptr.h"
 #include "base/task.h"
 #include "base/weak_ptr.h"
 #include "gfx/native_widget_types.h"
@@ -256,13 +255,7 @@ class WebPluginImpl : public WebPlugin,
   // Delayed task for downloading the plugin source URL.
   void OnDownloadPluginSrcUrl();
 
-  struct ClientInfo {
-    unsigned long id;
-    WebPluginResourceClient* client;
-    WebKit::WebURLRequest request;
-    bool pending_failure_notification;
-    linked_ptr<WebKit::WebURLLoader> loader;
-  };
+  struct ClientInfo;
 
   // Helper functions
   WebPluginResourceClient* GetClientFromLoader(WebKit::WebURLLoader* loader);

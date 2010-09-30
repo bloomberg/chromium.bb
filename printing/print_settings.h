@@ -25,6 +25,7 @@ namespace printing {
 class PrintSettings {
  public:
   PrintSettings();
+  ~PrintSettings();
 
   // Reinitialize the settings to the default values.
   void Clear();

@@ -10,6 +10,10 @@ net::CookieStore* URLRequestContextGetter::GetCookieStore() {
   return GetURLRequestContext()->cookie_store();
 }
 
+URLRequestContextGetter::URLRequestContextGetter() {}
+
+URLRequestContextGetter::~URLRequestContextGetter() {}
+
 void URLRequestContextGetter::OnDestruct() {
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy =
       GetIOMessageLoopProxy();

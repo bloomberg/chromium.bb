@@ -14,7 +14,7 @@ class AppCacheService;
 
 class AppCacheBackendImpl {
  public:
-  AppCacheBackendImpl() : service_(NULL), frontend_(NULL), process_id_(0) {}
+  AppCacheBackendImpl();
   ~AppCacheBackendImpl();
 
   void Initialize(AppCacheService* service,

@@ -26,23 +26,24 @@
 #include "SkFontHost_fontconfig_impl.h"
 
 class FontConfigDirect : public FontConfigInterface {
-  public:
-    FontConfigDirect();
+ public:
+  FontConfigDirect();
+  virtual ~FontConfigDirect();
 
-    // FontConfigInterface implementation. Thread safe.
-    virtual bool Match(std::string* result_family, unsigned* result_filefaceid,
-                       bool filefaceid_valid, unsigned filefaceid,
-                       const std::string& family,
-                       const void* characters, size_t characters_bytes,
-                       bool* is_bold, bool* is_italic);
-    virtual int Open(unsigned filefaceid);
+  // FontConfigInterface implementation. Thread safe.
+  virtual bool Match(std::string* result_family, unsigned* result_filefaceid,
+                     bool filefaceid_valid, unsigned filefaceid,
+                     const std::string& family,
+                     const void* characters, size_t characters_bytes,
+                     bool* is_bold, bool* is_italic);
+  virtual int Open(unsigned filefaceid);
 
-  private:
-    SkMutex mutex_;
-    // fileid stored in two maps below are unique per font file.
-    std::map<unsigned, std::string> fileid_to_filename_;
-    std::map<std::string, unsigned> filename_to_fileid_;
-    unsigned next_file_id_;
+ private:
+  SkMutex mutex_;
+  // fileid stored in two maps below are unique per font file.
+  std::map<unsigned, std::string> fileid_to_filename_;
+  std::map<std::string, unsigned> filename_to_fileid_;
+  unsigned next_file_id_;
 };
 
 #endif  // FontConfigDirect_DEFINED

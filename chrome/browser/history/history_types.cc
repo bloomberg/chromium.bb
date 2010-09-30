@@ -95,6 +95,14 @@ VisitRow::VisitRow(URLID arg_url_id,
 VisitRow::~VisitRow() {
 }
 
+// Favicons -------------------------------------------------------------------
+
+ImportedFavIconUsage::ImportedFavIconUsage() {
+}
+
+ImportedFavIconUsage::~ImportedFavIconUsage() {
+}
+
 // StarredEntry ----------------------------------------------------------------
 
 StarredEntry::StarredEntry()
@@ -291,6 +299,33 @@ void QueryResults::AdjustResultMap(size_t begin, size_t end, ptrdiff_t delta) {
     }
   }
 }
+
+// QueryOptions ----------------------------------------------------------------
+
+QueryOptions::QueryOptions() : max_count(0) {}
+
+void QueryOptions::SetRecentDayRange(int days_ago) {
+  end_time = base::Time::Now();
+  begin_time = end_time - base::TimeDelta::FromDays(days_ago);
+}
+
+// KeywordSearchTermVisit -----------------------------------------------------
+
+KeywordSearchTermVisit::KeywordSearchTermVisit() {
+}
+
+KeywordSearchTermVisit::~KeywordSearchTermVisit() {
+}
+
+// Images ---------------------------------------------------------------------
+
+Images::Images() {
+}
+
+Images::~Images() {
+}
+
+// HistoryAddPageArgs ---------------------------------------------------------
 
 HistoryAddPageArgs::HistoryAddPageArgs(
     const GURL& arg_url,

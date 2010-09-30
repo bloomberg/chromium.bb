@@ -12,6 +12,10 @@
 
 namespace appcache {
 
+AppCacheInfoCollection::AppCacheInfoCollection() {}
+
+AppCacheInfoCollection::~AppCacheInfoCollection() {}
+
 // AsyncHelper -------
 
 class AppCacheService::AsyncHelper

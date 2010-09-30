@@ -36,6 +36,8 @@ class SendTask : public Task {
 
 //------------------------------------------------------------------------------
 
+ChannelProxy::MessageFilter::MessageFilter() {}
+
 ChannelProxy::MessageFilter::~MessageFilter() {}
 
 void ChannelProxy::MessageFilter::OnFilterAdded(Channel* channel) {}

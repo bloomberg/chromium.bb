@@ -200,6 +200,12 @@ void Snippet::ConvertMatchPositionsToWide(
   }
 }
 
+Snippet::Snippet() {
+}
+
+Snippet::~Snippet() {
+}
+
 void Snippet::ComputeSnippet(const MatchPositions& match_positions,
                              const std::string& document) {
   // The length of snippets we try to produce.
@@ -283,4 +289,9 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
 
   utext_close(document_utext);
   swap(text_, snippet);
+}
+
+void Snippet::Swap(Snippet* other) {
+  text_.swap(other->text_);
+  matches_.swap(other->matches_);
 }

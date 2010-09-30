@@ -242,6 +242,9 @@ typedef std::vector<VisitRow> VisitVector;
 
 // Used by the importer to set favicons for imported bookmarks.
 struct ImportedFavIconUsage {
+  ImportedFavIconUsage();
+  ~ImportedFavIconUsage();
+
   // The URL of the favicon.
   GURL favicon_url;
 
@@ -479,7 +482,7 @@ class QueryResults {
 // QueryOptions ----------------------------------------------------------------
 
 struct QueryOptions {
-  QueryOptions() : max_count(0) {}
+  QueryOptions();
 
   // The time range to search for matches in.
   //
@@ -497,10 +500,7 @@ struct QueryOptions {
   base::Time end_time;
 
   // Sets the query time to the last |days_ago| days to the present time.
-  void SetRecentDayRange(int days_ago) {
-    end_time = base::Time::Now();
-    begin_time = end_time - base::TimeDelta::FromDays(days_ago);
-  }
+  void SetRecentDayRange(int days_ago);
 
   // The maximum number of results to return. The results will be sorted with
   // the most recent first, so older results may not be returned if there is not
@@ -513,6 +513,9 @@ struct QueryOptions {
 // KeywordSearchTermVisit is returned from GetMostRecentKeywordSearchTerms. It
 // gives the time and search term of the keyword visit.
 struct KeywordSearchTermVisit {
+  KeywordSearchTermVisit();
+  ~KeywordSearchTermVisit();
+
   // The time of the visit.
   base::Time time;
 
@@ -537,6 +540,9 @@ struct MostVisitedURL {
 
 // Used by TopSites to store the thumbnails.
 struct Images {
+  Images();
+  ~Images();
+
   scoped_refptr<RefCountedBytes> thumbnail;
   ThumbnailScore thumbnail_score;
 

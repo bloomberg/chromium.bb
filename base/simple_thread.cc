@@ -37,15 +37,50 @@ void SimpleThread::ThreadMain() {
   Run();
 }
 
+SimpleThread::SimpleThread(const std::string& name_prefix)
+    : name_prefix_(name_prefix), name_(name_prefix),
+      thread_(), event_(true, false), tid_(0), joined_(false) {
+}
+
+SimpleThread::SimpleThread(const std::string& name_prefix,
+                           const Options& options)
+    : name_prefix_(name_prefix), name_(name_prefix), options_(options),
+      thread_(), event_(true, false), tid_(0), joined_(false) {
+}
+
 SimpleThread::~SimpleThread() {
   DCHECK(HasBeenStarted()) << "SimpleThread was never started.";
   DCHECK(HasBeenJoined()) << "SimpleThread destroyed without being Join()ed.";
+}
+
+DelegateSimpleThread::DelegateSimpleThread(Delegate* delegate,
+                                           const std::string& name_prefix)
+    : SimpleThread(name_prefix),
+      delegate_(delegate) {
+}
+
+DelegateSimpleThread::DelegateSimpleThread(Delegate* delegate,
+                                           const std::string& name_prefix,
+                                           const Options& options)
+    : SimpleThread(name_prefix, options),
+      delegate_(delegate) {
+}
+
+DelegateSimpleThread::~DelegateSimpleThread() {
 }
 
 void DelegateSimpleThread::Run() {
   DCHECK(delegate_) << "Tried to call Run without a delegate (called twice?)";
   delegate_->Run();
   delegate_ = NULL;
+}
+
+DelegateSimpleThreadPool::DelegateSimpleThreadPool(
+    const std::string& name_prefix,
+    int num_threads)
+    : name_prefix_(name_prefix),
+      num_threads_(num_threads),
+      dry_(true, false) {
 }
 
 DelegateSimpleThreadPool::~DelegateSimpleThreadPool() {

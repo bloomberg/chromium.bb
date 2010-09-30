@@ -19,6 +19,12 @@
 
 using webkit_glue::PasswordForm;
 
+ProfileWriter::BookmarkEntry::BookmarkEntry() : in_toolbar(false) {}
+
+ProfileWriter::BookmarkEntry::~BookmarkEntry() {}
+
+ProfileWriter::ProfileWriter(Profile* profile) : profile_(profile) {}
+
 bool ProfileWriter::BookmarkModelIsLoaded() const {
   return profile_->GetBookmarkModel()->IsLoaded();
 }
@@ -276,6 +282,8 @@ void ProfileWriter::ShowBookmarkBar() {
         NotificationService::NoDetails());
   }
 }
+
+ProfileWriter::~ProfileWriter() {}
 
 std::wstring ProfileWriter::GenerateUniqueFolderName(
     BookmarkModel* model,

@@ -69,6 +69,7 @@ class GtkNativeViewManager {
  private:
   // This object is a singleton:
   GtkNativeViewManager();
+  ~GtkNativeViewManager();
   friend struct DefaultSingletonTraits<GtkNativeViewManager>;
 
   struct NativeViewInfo {

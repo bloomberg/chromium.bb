@@ -53,7 +53,7 @@ class PlatformFontGtk : public PlatformFont {
                   const std::wstring& name,
                   int size,
                   int style);
-  virtual ~PlatformFontGtk() {}
+  virtual ~PlatformFontGtk();
 
   // Initialize this object.
   void InitWithNameAndSize(const std::wstring& font_name, int font_size);

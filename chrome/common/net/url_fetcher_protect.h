@@ -48,7 +48,7 @@ class URLFetcherProtectEntry {
                          int maximum_timeout);
 
 
-  virtual ~URLFetcherProtectEntry() { }
+  virtual ~URLFetcherProtectEntry();
 
   // When a connection event happens, log it to the queue, and recalculate
   // the timeout period. It returns the backoff time, in milliseconds, that
@@ -138,7 +138,7 @@ class URLFetcherProtectManager {
                                    URLFetcherProtectEntry* entry);
 
  private:
-  URLFetcherProtectManager() { }
+  URLFetcherProtectManager();
 
   typedef std::map<const std::string, URLFetcherProtectEntry*> ProtectService;
 

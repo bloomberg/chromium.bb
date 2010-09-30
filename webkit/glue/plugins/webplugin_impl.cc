@@ -4,6 +4,7 @@
 
 #include "webkit/glue/plugins/webplugin_impl.h"
 
+#include "base/linked_ptr.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -206,6 +207,14 @@ void GetResponseInfo(const WebURLResponse& response,
 }  // namespace
 
 // WebKit::WebPlugin ----------------------------------------------------------
+
+struct WebPluginImpl::ClientInfo {
+  unsigned long id;
+  WebPluginResourceClient* client;
+  WebKit::WebURLRequest request;
+  bool pending_failure_notification;
+  linked_ptr<WebKit::WebURLLoader> loader;
+};
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!page_delegate_)

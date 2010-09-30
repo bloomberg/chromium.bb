@@ -48,7 +48,7 @@ class AppCacheResponseInfo
 
  private:
   friend class base::RefCounted<AppCacheResponseInfo>;
-  ~AppCacheResponseInfo();
+  virtual ~AppCacheResponseInfo();
 
   const GURL manifest_url_;
   const int64 response_id_;
@@ -64,15 +64,12 @@ struct HttpResponseInfoIOBuffer
   scoped_ptr<net::HttpResponseInfo> http_info;
   int response_data_size;
 
-  HttpResponseInfoIOBuffer()
-      : response_data_size(kUnkownResponseDataSize) {}
-  explicit HttpResponseInfoIOBuffer(net::HttpResponseInfo* info)
-      : http_info(info), response_data_size(kUnkownResponseDataSize) {}
+  HttpResponseInfoIOBuffer();
+  explicit HttpResponseInfoIOBuffer(net::HttpResponseInfo* info);
 
  private:
   friend class base::RefCountedThreadSafe<HttpResponseInfoIOBuffer>;
-
-  ~HttpResponseInfoIOBuffer() {}
+  virtual ~HttpResponseInfoIOBuffer();
 };
 
 // Common base class for response reader and writer.

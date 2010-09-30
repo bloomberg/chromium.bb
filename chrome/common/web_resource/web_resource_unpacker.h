@@ -25,8 +25,8 @@ class WebResourceUnpacker {
   static const char* kInvalidDataTypeError;
   static const char* kUnexpectedJSONFormatError;
 
-  explicit WebResourceUnpacker(const std::string &resource_data)
-    : resource_data_(resource_data) {}
+  explicit WebResourceUnpacker(const std::string &resource_data);
+  ~WebResourceUnpacker();
 
   // This does the actual parsing.  In case of an error, error_message_
   // is set to an appropriate value.

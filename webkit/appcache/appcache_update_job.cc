@@ -123,6 +123,17 @@ class HostNotifier {
   NotifyHostMap hosts_to_notify;
 };
 
+AppCacheUpdateJob::UrlToFetch::UrlToFetch(const GURL& url,
+                                          bool checked,
+                                          AppCacheResponseInfo* info)
+    : url(url),
+      storage_checked(checked),
+      existing_response_info(info) {
+}
+
+AppCacheUpdateJob::UrlToFetch::~UrlToFetch() {
+}
+
 AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
                                      AppCacheGroup* group)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),

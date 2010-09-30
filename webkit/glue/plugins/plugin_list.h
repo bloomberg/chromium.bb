@@ -164,6 +164,8 @@ class PluginList {
   // will be disabled.
   bool DisablePlugin(const FilePath& filename);
 
+  ~PluginList();
+
  private:
   // Constructors are private for singletons
   PluginList();

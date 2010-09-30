@@ -44,12 +44,13 @@ namespace appcache {
 typedef std::pair<GURL, GURL> FallbackNamespace;
 
 struct Manifest {
+  Manifest();
+  ~Manifest();
+
   base::hash_set<std::string> explicit_urls;
   std::vector<FallbackNamespace> fallback_namespaces;
   std::vector<GURL> online_whitelist_namespaces;
   bool online_whitelist_all;
-
-  Manifest() : online_whitelist_all(false) {}
 };
 
 bool ParseManifest(const GURL& manifest_url, const char* data, int length,

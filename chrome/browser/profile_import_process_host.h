@@ -35,7 +35,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
   class ImportProcessClient :
       public base::RefCountedThreadSafe<ImportProcessClient> {
    public:
-    ImportProcessClient() {}
+    ImportProcessClient();
 
     // These methods are used by the ProfileImportProcessHost to pass messages
     // received from the external process back to the ImportProcessClient in
@@ -79,7 +79,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
    protected:
     friend class base::RefCountedThreadSafe<ImportProcessClient>;
 
-    virtual ~ImportProcessClient() {}
+    virtual ~ImportProcessClient();
 
    private:
     friend class ProfileImportProcessHost;
@@ -98,6 +98,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
   ProfileImportProcessHost(ResourceDispatcherHost* resource_dispatcher,
                            ImportProcessClient* import_process_client,
                            ChromeThread::ID thread_id);
+  virtual ~ProfileImportProcessHost();
 
   // |profile_info|, |items|, and |import_to_bookmark_bar| are all needed by
   // the external importer process.
@@ -126,12 +127,10 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
 
   // Overridden from BrowserChildProcessHost:
   virtual void OnProcessCrashed();
-  virtual bool CanShutdown() { return true; }
+  virtual bool CanShutdown();
   virtual URLRequestContext* GetRequestContext(
       uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data) {
-    return NULL;
-  }
+      const ViewHostMsg_Resource_Request& request_data);
 
   // Receives messages to be passed back to the importer host.
   scoped_refptr<ImportProcessClient> import_process_client_;

@@ -24,6 +24,9 @@ ProfileImportProcessHost::ProfileImportProcessHost(
       thread_id_(thread_id) {
 }
 
+ProfileImportProcessHost::~ProfileImportProcessHost() {
+}
+
 bool ProfileImportProcessHost::StartProfileImportProcess(
     const importer::ProfileInfo& profile_info, int items,
     bool import_to_bookmark_bar) {
@@ -131,6 +134,20 @@ void ProfileImportProcessHost::OnProcessCrashed() {
       NewRunnableMethod(import_process_client_.get(),
                         &ImportProcessClient::OnProcessCrashed));
 }
+
+bool ProfileImportProcessHost::CanShutdown() {
+  return true;
+}
+
+URLRequestContext* ProfileImportProcessHost::GetRequestContext(
+    uint32 request_id,
+    const ViewHostMsg_Resource_Request& request_data) {
+  return NULL;
+}
+
+ProfileImportProcessHost::ImportProcessClient::ImportProcessClient() {}
+
+ProfileImportProcessHost::ImportProcessClient::~ImportProcessClient() {}
 
 void ProfileImportProcessHost::ImportProcessClient::OnMessageReceived(
     const IPC::Message& message) {

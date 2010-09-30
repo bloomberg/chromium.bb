@@ -74,12 +74,8 @@ class SimpleThread : public PlatformThread::Delegate {
   // configuration involving the thread creation and management.
   // Every thread has a name, in the form of |name_prefix|/TID, for example
   // "my_thread/321".  The thread will not be created until Start() is called.
-  explicit SimpleThread(const std::string& name_prefix)
-      : name_prefix_(name_prefix), name_(name_prefix),
-        thread_(), event_(true, false), tid_(0), joined_(false) { }
-  SimpleThread(const std::string& name_prefix, const Options& options)
-      : name_prefix_(name_prefix), name_(name_prefix), options_(options),
-        thread_(), event_(true, false), tid_(0), joined_(false) { }
+  explicit SimpleThread(const std::string& name_prefix);
+  SimpleThread(const std::string& name_prefix, const Options& options);
 
   virtual ~SimpleThread();
 
@@ -127,14 +123,12 @@ class DelegateSimpleThread : public SimpleThread {
   };
 
   DelegateSimpleThread(Delegate* delegate,
-                       const std::string& name_prefix)
-      : SimpleThread(name_prefix), delegate_(delegate) { }
+                       const std::string& name_prefix);
   DelegateSimpleThread(Delegate* delegate,
                        const std::string& name_prefix,
-                       const Options& options)
-      : SimpleThread(name_prefix, options), delegate_(delegate) { }
+                       const Options& options);
 
-  virtual ~DelegateSimpleThread() { }
+  virtual ~DelegateSimpleThread();
   virtual void Run();
  private:
   Delegate* delegate_;
@@ -153,10 +147,8 @@ class DelegateSimpleThreadPool : public DelegateSimpleThread::Delegate {
  public:
   typedef DelegateSimpleThread::Delegate Delegate;
 
-  DelegateSimpleThreadPool(const std::string& name_prefix, int num_threads)
-      : name_prefix_(name_prefix), num_threads_(num_threads),
-        dry_(true, false) { }
-  ~DelegateSimpleThreadPool();
+  DelegateSimpleThreadPool(const std::string& name_prefix, int num_threads);
+  virtual ~DelegateSimpleThreadPool();
 
   // Start up all of the underlying threads, and start processing work if we
   // have any.

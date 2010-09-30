@@ -43,6 +43,9 @@ class Snippet {
       const std::string& utf8_string,
       Snippet::MatchPositions* match_positions);
 
+  Snippet();
+  ~Snippet();
+
   // Given |matches|, the match positions within |document|, compute the snippet
   // for the document.
   // Note that |document| is UTF-8 and the offsets in |matches| are byte
@@ -54,10 +57,7 @@ class Snippet {
   const MatchPositions& matches() const { return matches_; }
 
   // Efficiently swaps the contents of this snippet with the other.
-  void Swap(Snippet* other) {
-    text_.swap(other->text_);
-    matches_.swap(other->matches_);
-  }
+  void Swap(Snippet* other);
 
  private:
   // The text of the snippet.

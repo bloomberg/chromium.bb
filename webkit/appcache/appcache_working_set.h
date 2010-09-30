@@ -22,7 +22,7 @@ class AppCacheWorkingSet {
  public:
   typedef std::map<GURL, AppCacheGroup*> GroupMap;
 
-  AppCacheWorkingSet() : is_disabled_(false) {}
+  AppCacheWorkingSet();
   ~AppCacheWorkingSet();
 
   void Disable();

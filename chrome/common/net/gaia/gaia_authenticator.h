@@ -131,6 +131,9 @@ class GaiaAuthenticator {
   void SetAuthToken(const std::string& auth_token);
 
   struct AuthResults {
+    AuthResults();
+    ~AuthResults();
+
     std::string email;
     std::string password;
 
@@ -147,13 +150,14 @@ class GaiaAuthenticator {
     std::string auth_error_url;
     std::string captcha_token;
     std::string captcha_url;
-
-    AuthResults() : auth_error(None) {}
   };
 
  protected:
 
   struct AuthParams {
+    AuthParams();
+    ~AuthParams();
+
     GaiaAuthenticator* authenticator;
     uint32 request_id;
     std::string email;

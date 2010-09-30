@@ -53,6 +53,9 @@ enum LogLevel {
 };
 
 struct AppCacheInfo {
+  AppCacheInfo();
+  ~AppCacheInfo();
+
   GURL manifest_url;
   base::Time creation_time;
   base::Time last_update_time;
@@ -61,14 +64,15 @@ struct AppCacheInfo {
   Status status;
   int64 size;
   bool is_complete;
-  AppCacheInfo() : cache_id(kNoCacheId), status(UNCACHED),
-                   size(0), is_complete(false) { }
 };
 
 typedef std::vector<AppCacheInfo> AppCacheInfoVector;
 
-// POD type to hold information about a single appcache resource.
+// Type to hold information about a single appcache resource.
 struct AppCacheResourceInfo {
+  AppCacheResourceInfo();
+  ~AppCacheResourceInfo();
+
   GURL url;
   int64 size;
   bool is_master;

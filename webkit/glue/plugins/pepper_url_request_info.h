@@ -45,31 +45,7 @@ class URLRequestInfo : public Resource {
   WebKit::WebURLRequest ToWebURLRequest(WebKit::WebFrame* frame) const;
 
  private:
-  struct BodyItem {
-    BodyItem(const std::string& data)
-        : data(data),
-          start_offset(0),
-          number_of_bytes(-1),
-          expected_last_modified_time(0.0) {
-    }
-
-    BodyItem(FileRef* file_ref,
-             int64_t start_offset,
-             int64_t number_of_bytes,
-             PP_Time expected_last_modified_time)
-        : file_ref(file_ref),
-          start_offset(start_offset),
-          number_of_bytes(number_of_bytes),
-          expected_last_modified_time(expected_last_modified_time) {
-    }
-
-    std::string data;
-    scoped_refptr<FileRef> file_ref;
-    int64_t start_offset;
-    int64_t number_of_bytes;
-    PP_Time expected_last_modified_time;
-  };
-
+  struct BodyItem;
   typedef std::vector<BodyItem> Body;
 
   std::string url_;

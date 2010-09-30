@@ -32,7 +32,9 @@ class AppCachePolicy;
 // Refcounted container to avoid copying the collection in callbacks.
 struct AppCacheInfoCollection
     : public base::RefCountedThreadSafe<AppCacheInfoCollection> {
-  virtual ~AppCacheInfoCollection() {}
+  AppCacheInfoCollection();
+  virtual ~AppCacheInfoCollection();
+
   std::map<GURL, AppCacheInfoVector> infos_by_origin;
 };
 

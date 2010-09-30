@@ -11,6 +11,8 @@
 
 namespace appcache {
 
+AppCacheWorkingSet::AppCacheWorkingSet() : is_disabled_(false) {}
+
 AppCacheWorkingSet::~AppCacheWorkingSet() {
   DCHECK(caches_.empty());
   DCHECK(groups_.empty());

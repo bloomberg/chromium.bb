@@ -23,6 +23,29 @@ const char kHttpHEADMethod[] = "HEAD";
 
 const FilePath::CharType kAppCacheDatabaseName[] = FILE_PATH_LITERAL("Index");
 
+AppCacheInfo::AppCacheInfo()
+    : cache_id(kNoCacheId),
+      status(UNCACHED),
+      size(0),
+      is_complete(false) {
+}
+
+AppCacheInfo::~AppCacheInfo() {
+}
+
+AppCacheResourceInfo::AppCacheResourceInfo()
+    : url(),
+      size(0),
+      is_master(0),
+      is_manifest(0),
+      is_fallback(0),
+      is_foreign(0),
+      is_explicit(0) {
+}
+
+AppCacheResourceInfo::~AppCacheResourceInfo() {
+}
+
 bool IsSchemeSupported(const GURL& url) {
   bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme);
 #ifndef NDEBUG
@@ -85,4 +108,4 @@ COMPILE_ASSERT((int)WebConsoleMessage::LevelWarning ==
 COMPILE_ASSERT((int)WebConsoleMessage::LevelError ==
                (int)LOG_ERROR, LevelError);
 
-}  // namespace
+}  // namespace appcache

@@ -730,6 +730,9 @@ struct ParamTraits<XFORM> {
 #endif  // defined(OS_WIN)
 
 struct LogData {
+  LogData();
+  ~LogData();
+
   std::string channel;
   int32 routing_id;
   uint32 type;  // "User-defined" message type, from ipc_message.h.
@@ -746,30 +749,8 @@ struct LogData {
 template <>
 struct ParamTraits<LogData> {
   typedef LogData param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.channel);
-    WriteParam(m, p.routing_id);
-    WriteParam(m, static_cast<int>(p.type));
-    WriteParam(m, p.flags);
-    WriteParam(m, p.sent);
-    WriteParam(m, p.receive);
-    WriteParam(m, p.dispatch);
-    WriteParam(m, p.params);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int type;
-    bool result =
-      ReadParam(m, iter, &r->channel) &&
-      ReadParam(m, iter, &r->routing_id) &&
-      ReadParam(m, iter, &type) &&
-      ReadParam(m, iter, &r->flags) &&
-      ReadParam(m, iter, &r->sent) &&
-      ReadParam(m, iter, &r->receive) &&
-      ReadParam(m, iter, &r->dispatch) &&
-      ReadParam(m, iter, &r->params);
-    r->type = static_cast<uint16>(type);
-    return result;
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l) {
     // Doesn't make sense to implement this!
   }

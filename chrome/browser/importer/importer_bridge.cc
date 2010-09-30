@@ -21,6 +21,10 @@
 #include "chrome/profile_import/profile_import_thread.h"
 #include "webkit/glue/password_form.h"
 
+ImporterBridge::ImporterBridge() { }
+
+ImporterBridge::~ImporterBridge() { }
+
 InProcessImporterBridge::InProcessImporterBridge(ProfileWriter* writer,
                                                  ImporterHost* host)
     : writer_(writer), host_(host) {
@@ -116,6 +120,8 @@ std::wstring InProcessImporterBridge::GetLocalizedString(int message_id) {
   return l10n_util::GetString(message_id);
 }
 
+InProcessImporterBridge::~InProcessImporterBridge() {}
+
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
     ProfileImportThread* profile_import_thread,
     const DictionaryValue& localized_strings)
@@ -194,3 +200,5 @@ std::wstring ExternalProcessImporterBridge::GetLocalizedString(
   localized_strings_->GetString(base::IntToString(message_id), &message);
   return UTF16ToWideHack(message);
 }
+
+ExternalProcessImporterBridge::~ExternalProcessImporterBridge() {}

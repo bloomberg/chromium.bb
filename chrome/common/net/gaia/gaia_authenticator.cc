@@ -26,6 +26,14 @@ static const char kGaiaV1IssueAuthTokenPath[] = "/accounts/IssueAuthToken";
 
 static const char kGetUserInfoPath[] = "/accounts/GetUserInfo";
 
+GaiaAuthenticator::AuthResults::AuthResults() : auth_error(None) {}
+
+GaiaAuthenticator::AuthResults::~AuthResults() {}
+
+GaiaAuthenticator::AuthParams::AuthParams() {}
+
+GaiaAuthenticator::AuthParams::~AuthParams() {}
+
 // Sole constructor with initializers for all fields.
 GaiaAuthenticator::GaiaAuthenticator(const string& user_agent,
                                      const string& service_id,

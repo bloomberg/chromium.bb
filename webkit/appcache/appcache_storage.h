@@ -206,11 +206,7 @@ class AppCacheStorage {
     Delegate* delegate;
     AppCacheStorage* storage;
 
-    DelegateReference(Delegate* delegate, AppCacheStorage* storage)
-        : delegate(delegate), storage(storage) {
-      storage->delegate_references_.insert(
-        DelegateReferenceMap::value_type(delegate, this));
-    }
+    DelegateReference(Delegate* delegate, AppCacheStorage* storage);
 
     void CancelReference() {
       storage->delegate_references_.erase(delegate);
@@ -221,10 +217,7 @@ class AppCacheStorage {
    private:
     friend class base::RefCounted<DelegateReference>;
 
-    ~DelegateReference() {
-      if (delegate)
-        storage->delegate_references_.erase(delegate);
-    }
+    virtual ~DelegateReference();
   };
   typedef std::map<Delegate*, DelegateReference*> DelegateReferenceMap;
   typedef std::vector<scoped_refptr<DelegateReference> >
@@ -236,6 +229,7 @@ class AppCacheStorage {
    public:
     ResponseInfoLoadTask(const GURL& manifest_url, int64 response_id,
                          AppCacheStorage* storage);
+    ~ResponseInfoLoadTask();
 
     int64 response_id() const { return response_id_; }
     const GURL& manifest_url() const { return manifest_url_; }

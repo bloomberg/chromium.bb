@@ -38,6 +38,9 @@ static void OnDestroy(GtkObject* obj, void* arg) {
 GtkNativeViewManager::GtkNativeViewManager() {
 }
 
+GtkNativeViewManager::~GtkNativeViewManager() {
+}
+
 gfx::NativeViewId GtkNativeViewManager::GetIdForWidget(gfx::NativeView widget) {
   // This is just for unit tests:
   if (!widget)

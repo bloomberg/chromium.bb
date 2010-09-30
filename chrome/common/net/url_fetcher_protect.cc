@@ -52,6 +52,8 @@ URLFetcherProtectEntry::URLFetcherProtectEntry(int sliding_window_period,
   ResetBackoff();
 }
 
+URLFetcherProtectEntry::~URLFetcherProtectEntry() {}
+
 int64 URLFetcherProtectEntry::UpdateBackoff(EventType event_type) {
   // request may be sent in different threads
   AutoLock lock(lock_);
@@ -174,3 +176,5 @@ URLFetcherProtectEntry* URLFetcherProtectManager::Register(
   services_[id] = entry;
   return entry;
 }
+
+URLFetcherProtectManager::URLFetcherProtectManager() {}

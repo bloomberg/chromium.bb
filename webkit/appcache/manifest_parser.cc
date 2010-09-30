@@ -45,6 +45,10 @@ enum Mode {
   UNKNOWN,
 };
 
+Manifest::Manifest() : online_whitelist_all(false) {}
+
+Manifest::~Manifest() {}
+
 bool ParseManifest(const GURL& manifest_url, const char* data, int length,
                    Manifest& manifest) {
   static const std::wstring kSignature(L"CACHE MANIFEST");

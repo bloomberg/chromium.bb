@@ -445,6 +445,9 @@ bool PluginList::EnablePlugin(const FilePath& filename) {
   return did_enable;
 }
 
+PluginList::~PluginList() {
+}
+
 bool PluginList::DisablePlugin(const FilePath& filename) {
   AutoLock lock(lock_);
 

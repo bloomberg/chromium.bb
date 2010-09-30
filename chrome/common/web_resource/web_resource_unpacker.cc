@@ -13,6 +13,13 @@ const char* WebResourceUnpacker::kInvalidDataTypeError =
 const char* WebResourceUnpacker::kUnexpectedJSONFormatError =
     "Data from web resource server does not have expected format.";
 
+WebResourceUnpacker::WebResourceUnpacker(const std::string &resource_data)
+    : resource_data_(resource_data) {
+}
+
+WebResourceUnpacker::~WebResourceUnpacker() {
+}
+
 // TODO(mrc): Right now, this reads JSON data from the experimental popgadget
 // server.  Change so the format is based on a template, once we have
 // decided on final server format.

@@ -22,6 +22,18 @@ AppCacheStorage::~AppCacheStorage() {
   DCHECK(delegate_references_.empty());
 }
 
+AppCacheStorage::DelegateReference::DelegateReference(
+    Delegate* delegate, AppCacheStorage* storage)
+    : delegate(delegate), storage(storage) {
+  storage->delegate_references_.insert(
+      DelegateReferenceMap::value_type(delegate, this));
+}
+
+AppCacheStorage::DelegateReference::~DelegateReference() {
+  if (delegate)
+    storage->delegate_references_.erase(delegate);
+}
+
 AppCacheStorage::ResponseInfoLoadTask::ResponseInfoLoadTask(
     const GURL& manifest_url,
     int64 response_id,
@@ -34,6 +46,9 @@ AppCacheStorage::ResponseInfoLoadTask::ResponseInfoLoadTask(
           this, &ResponseInfoLoadTask::OnReadComplete)) {
   storage_->pending_info_loads_.insert(
       PendingResponseInfoLoads::value_type(response_id, this));
+}
+
+AppCacheStorage::ResponseInfoLoadTask::~ResponseInfoLoadTask() {
 }
 
 void AppCacheStorage::ResponseInfoLoadTask::StartIfNeeded() {

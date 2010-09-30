@@ -279,6 +279,8 @@ PlatformFontGtk::PlatformFontGtk(SkTypeface* typeface,
   InitWithTypefaceNameSizeAndStyle(typeface, name, size, style);
 }
 
+PlatformFontGtk::~PlatformFontGtk() {}
+
 void PlatformFontGtk::InitWithNameAndSize(const std::wstring& font_name,
                                           int font_size) {
   DCHECK_GT(font_size, 0);

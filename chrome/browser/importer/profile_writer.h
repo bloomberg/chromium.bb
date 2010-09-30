@@ -48,25 +48,27 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
     BOOKMARK_BAR_DISABLED = 1 << 2
   };
 
-  explicit ProfileWriter(Profile* profile) : profile_(profile) {}
-
-  // These functions return true if the corresponding model has been loaded.
-  // If the models haven't been loaded, the importer waits to run until they've
-  // completed.
-  virtual bool BookmarkModelIsLoaded() const;
-  virtual bool TemplateURLModelIsLoaded() const;
-
   // A bookmark entry.
   // TODO(mirandac): remove instances of wstring from ProfileWriter
   // (http://crbug.com/43460).
   struct BookmarkEntry {
-    BookmarkEntry() : in_toolbar(false) {}
+    BookmarkEntry();
+    ~BookmarkEntry();
+
     bool in_toolbar;
     GURL url;
     std::vector<std::wstring> path;
     std::wstring title;
     base::Time creation_time;
   };
+
+  explicit ProfileWriter(Profile* profile);
+
+  // These functions return true if the corresponding model has been loaded.
+  // If the models haven't been loaded, the importer waits to run until they've
+  // completed.
+  virtual bool BookmarkModelIsLoaded() const;
+  virtual bool TemplateURLModelIsLoaded() const;
 
   // Helper methods for adding data to local stores.
   virtual void AddPasswordForm(const webkit_glue::PasswordForm& form);
@@ -115,7 +117,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
  protected:
   friend class base::RefCountedThreadSafe<ProfileWriter>;
 
-  virtual ~ProfileWriter() {}
+  virtual ~ProfileWriter();
 
  private:
   // Generates a unique folder name. If folder_name is not unique, then this

@@ -39,7 +39,9 @@ class URLRequestContextGetter
   friend class DeleteTask<URLRequestContextGetter>;
   friend struct URLRequestContextGetterTraits;
 
-  virtual ~URLRequestContextGetter() {}
+  URLRequestContextGetter();
+  virtual ~URLRequestContextGetter();
+
  private:
   // OnDestruct is meant to ensure deletion on the thread on which the request
   // IO happens.

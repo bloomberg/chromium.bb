@@ -63,6 +63,15 @@ AppCacheResponseInfo::~AppCacheResponseInfo() {
   service_->storage()->working_set()->RemoveResponseInfo(this);
 }
 
+// HttpResponseInfoIOBuffer ------------------------------------------
+
+HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer()
+    : response_data_size(kUnkownResponseDataSize) {}
+
+HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer(net::HttpResponseInfo* info)
+    : http_info(info), response_data_size(kUnkownResponseDataSize) {}
+
+HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() {}
 
 // AppCacheResponseIO ----------------------------------------------
 

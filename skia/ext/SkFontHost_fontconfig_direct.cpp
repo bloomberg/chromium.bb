@@ -106,6 +106,9 @@ FontConfigDirect::FontConfigDirect()
   FcInit();
 }
 
+FontConfigDirect::~FontConfigDirect() {
+}
+
 // -----------------------------------------------------------------------------
 // Normally we only return exactly the font asked for. In last-resort
 // cases, the request either doesn't specify a font or is one of the

@@ -12,6 +12,12 @@
 
 namespace appcache {
 
+AppCacheBackendImpl::AppCacheBackendImpl()
+    : service_(NULL),
+      frontend_(NULL),
+      process_id_(0) {
+}
+
 AppCacheBackendImpl::~AppCacheBackendImpl() {
   STLDeleteValues(&hosts_);
   if (service_)

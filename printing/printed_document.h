@@ -111,7 +111,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
  private:
   friend class base::RefCountedThreadSafe<PrintedDocument>;
 
-  ~PrintedDocument();
+  virtual ~PrintedDocument();
 
   // Array of data for each print previewed page.
   typedef std::map<int, scoped_refptr<PrintedPage> > PrintedPages;
@@ -120,6 +120,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
   // lock held.
   struct Mutable {
     explicit Mutable(PrintedPagesSource* source);
+    ~Mutable();
 
     // Source that generates the PrintedPage's (i.e. a TabContents). It will be
     // set back to NULL if the source is deleted before this object.
@@ -146,6 +147,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
   struct Immutable {
     Immutable(const PrintSettings& settings, PrintedPagesSource* source,
               int cookie);
+    ~Immutable();
 
     // Print settings used to generate this document. Immutable.
     PrintSettings settings_;

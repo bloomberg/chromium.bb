@@ -303,6 +303,9 @@ PrintedDocument::Mutable::Mutable(PrintedPagesSource* source)
       shrink_factor(0) {
 }
 
+PrintedDocument::Mutable::~Mutable() {
+}
+
 PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
                                       PrintedPagesSource* source,
                                       int cookie)
@@ -325,6 +328,9 @@ PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
   date_ = WideToUTF16Hack(base::TimeFormatShortDateNumeric(now));
   time_ = WideToUTF16Hack(base::TimeFormatTimeOfDay(now));
 #endif  // OS_WIN
+}
+
+PrintedDocument::Immutable::~Immutable() {
 }
 
 }  // namespace printing

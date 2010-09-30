@@ -46,6 +46,9 @@ enum ProfileType {
 
 // Information about a profile needed by an importer to do import work.
 struct ProfileInfo {
+  ProfileInfo();
+  ~ProfileInfo();
+
   std::wstring description;
   importer::ProfileType browser_type;
   FilePath source_path;

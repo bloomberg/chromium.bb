@@ -55,6 +55,7 @@ class ChannelProxy : public Message::Sender {
   class MessageFilter
       : public base::RefCountedThreadSafe<MessageFilter, MessageFilterTraits> {
    public:
+    MessageFilter();
     virtual ~MessageFilter();
 
     // Called on the background thread to provide the filter with access to the

@@ -31,6 +31,9 @@ PrintSettings::PrintSettings()
       landscape_(false) {
 }
 
+PrintSettings::~PrintSettings() {
+}
+
 void PrintSettings::Clear() {
   ranges.clear();
   min_shrink = 1.25;

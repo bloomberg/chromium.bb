@@ -83,11 +83,12 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   };
 
   struct UrlToFetch {
+    UrlToFetch(const GURL& url, bool checked, AppCacheResponseInfo* info);
+    ~UrlToFetch();
+
     GURL url;
     bool storage_checked;
     scoped_refptr<AppCacheResponseInfo> existing_response_info;
-    UrlToFetch(const GURL& url, bool checked, AppCacheResponseInfo* info)
-        : url(url), storage_checked(checked), existing_response_info(info) {}
   };
 
   UpdateJobInfo* GetUpdateJobInfo(URLRequest* request);
