@@ -246,6 +246,11 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
       automation_client_->set_use_chrome_network(chrome_network_arg);
   }
 
+  static const wchar_t kHandleTopLevelRequests[] = L"HandleTopLevelRequests";
+  bool top_level_requests = GetConfigBool(true, kHandleTopLevelRequests);
+  automation_client_->set_handle_top_level_requests(top_level_requests);
+  automation_client_->set_route_all_top_level_navigations(true);
+
   // Setup Url fetcher.
   url_fetcher_.set_NPPInstance(instance_);
   url_fetcher_.set_frame_busting(!is_privileged_);
@@ -275,7 +280,7 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
   // host's in-private mode.
   return InitializeAutomation(profile_name, extra_arguments,
                               GetBrowserIncognitoMode(), true,
-                              GURL(src_), GURL());
+                              GURL(src_), GURL(), true);
 }
 
 void ChromeFrameNPAPI::Uninitialize() {
@@ -466,7 +471,9 @@ void ChromeFrameNPAPI::OnTabbedOut(int tab_handle, bool reverse) {
 }
 
 void ChromeFrameNPAPI::OnOpenURL(int tab_handle,
-                                 const GURL& url, int open_disposition) {
+                                 const GURL& url,
+                                 const GURL& referrer,
+                                 int open_disposition) {
   std::string target;
   switch (open_disposition) {
     case NEW_FOREGROUND_TAB:

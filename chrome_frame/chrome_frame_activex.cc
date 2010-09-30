@@ -460,17 +460,13 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
       WideToUTF8(url_, url_.Length(), &utf8_url);
     }
 
-    // Only privileged instances of ActiveX Chrome Frame controls may read
-    // the chrome-network, and top-level-navigation settings from the registry.
-    // See issue: 54920
-    if (is_privileged_)
-      InitializeAutomationSettings();
+    InitializeAutomationSettings();
 
     url_fetcher_->set_frame_busting(!is_privileged_);
     automation_client_->SetUrlFetcher(url_fetcher_.get());
     if (!InitializeAutomation(profile_name, chrome_extra_arguments,
                               IsIEInPrivate(), true, GURL(utf8_url),
-                              GURL())) {
+                              GURL(), false)) {
       DLOG(ERROR) << "Failed to navigate to url:" << utf8_url;
       return E_FAIL;
     }

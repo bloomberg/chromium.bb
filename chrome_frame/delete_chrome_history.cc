@@ -74,7 +74,7 @@ STDMETHODIMP DeleteChromeHistory::DeleteBrowsingHistory(DWORD flags) {
     return S_OK;
   }
   if (!InitializeAutomation(GetHostProcessName(false), L"", false, false,
-                            GURL(), GURL())) {
+                            GURL(), GURL(), true)) {
     return E_UNEXPECTED;
   }
 

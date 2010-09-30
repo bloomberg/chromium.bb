@@ -21,7 +21,7 @@ TEST(ProxyFactoryTest, CreateDestroy) {
   FilePath profile_path;
   scoped_refptr<ChromeFrameLaunchParams> params(
       new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Adam.N.Epilinter", L"", false, false));
+          L"Adam.N.Epilinter", L"", false, false, false));
   params->set_launch_timeout(0);
   params->set_version_check(false);
 
@@ -41,7 +41,7 @@ TEST(ProxyFactoryTest, CreateSameProfile) {
   FilePath profile_path;
   scoped_refptr<ChromeFrameLaunchParams> params(
       new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Dr. Gratiano Forbeson", L"", false, false));
+          L"Dr. Gratiano Forbeson", L"", false, false, false));
   params->set_launch_timeout(0);
   params->set_version_check(false);
 
@@ -65,13 +65,13 @@ TEST(ProxyFactoryTest, CreateDifferentProfiles) {
   FilePath profile_path;
   scoped_refptr<ChromeFrameLaunchParams> params1(
       new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Adam.N.Epilinter", L"", false, false));
+          L"Adam.N.Epilinter", L"", false, false, false));
   params1->set_launch_timeout(0);
   params1->set_version_check(false);
 
   scoped_refptr<ChromeFrameLaunchParams> params2(
       new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Dr. Gratiano Forbeson", L"", false, false));
+          L"Dr. Gratiano Forbeson", L"", false, false, false));
   params2->set_launch_timeout(0);
   params2->set_version_check(false);
 
@@ -95,7 +95,7 @@ TEST(ProxyFactoryTest, FastCreateDestroy) {
   FilePath profile_path;
   scoped_refptr<ChromeFrameLaunchParams> params(
       new ChromeFrameLaunchParams(empty, empty, profile_path,
-          L"Dr. Gratiano Forbeson", L"", false, false));
+          L"Dr. Gratiano Forbeson", L"", false, false, false));
   params->set_launch_timeout(10000);
   params->set_version_check(false);
 

@@ -565,7 +565,8 @@ ChromeFrameAutomationClient::ChromeFrameAutomationClient()
       external_tab_cookie_(0),
       url_fetcher_(NULL),
       url_fetcher_flags_(PluginUrlRequestManager::NOT_THREADSAFE),
-      navigate_after_initialization_(false) {
+      navigate_after_initialization_(false),
+      route_all_top_level_navigations_(false) {
 }
 
 ChromeFrameAutomationClient::~ChromeFrameAutomationClient() {
@@ -719,7 +720,8 @@ bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
     if (!chrome_launch_params_) {
       FilePath profile_path;
       chrome_launch_params_ = new ChromeFrameLaunchParams(parsed_url,
-          referrer_gurl, profile_path, L"", L"", false, false);
+          referrer_gurl, profile_path, L"", L"", false, false,
+          route_all_top_level_navigations_);
     } else {
       chrome_launch_params_->set_referrer(referrer_gurl);
       chrome_launch_params_->set_url(parsed_url);
@@ -937,7 +939,9 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
     handle_top_level_requests_,
     chrome_launch_params_->url(),
     chrome_launch_params_->referrer(),
-    !chrome_launch_params_->widget_mode()  // Infobars disabled in widget mode.
+    // Infobars disabled in widget mode.
+    !chrome_launch_params_->widget_mode(),
+    chrome_launch_params_->route_all_top_level_navigations(),
   };
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(

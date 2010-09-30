@@ -132,7 +132,8 @@ END_MSG_MAP()
   // instance.
   virtual void OnAcceleratorPressed(int tab_handle, const MSG& accel_message);
   virtual void OnTabbedOut(int tab_handle, bool reverse);
-  virtual void OnOpenURL(int tab_handle, const GURL& url, int open_disposition);
+  virtual void OnOpenURL(int tab_handle, const GURL& url,
+                         const GURL& referrer, int open_disposition);
   virtual void OnLoad(int tab_handle, const GURL& url);
   virtual void OnMessageFromChromeFrame(int tab_handle,
                                         const std::string& message,

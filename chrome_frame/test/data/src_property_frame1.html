@@ -1,7 +1,14 @@
 <html>
   <head><title>src property test - page 1</title>
+    <script type="text/javascript" src="chrome_frame_tester_helpers.js">
+    </script>
     <script type="text/javascript">
-      function redirect(){
+      function redirect() {
+        if (!isRunningInChrome()) {
+          onFailure("SrcProperty", 1,
+                    "src_property_frame1.html should not load in Chrome");
+          return;
+        }
         window.location = "src_property_frame2.html";
       }
     </script>

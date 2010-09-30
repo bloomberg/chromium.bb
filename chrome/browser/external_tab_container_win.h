@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_EXTERNAL_TAB_CONTAINER_WIN_H_
 #pragma once
 
-#include <vector>
 #include <map>
+#include <string>
+#include <vector>
+
 #include "base/lazy_instance.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser.h"
@@ -66,7 +68,8 @@ class ExternalTabContainer : public TabContentsDelegate,
             TabContents* existing_tab_contents,
             const GURL& initial_url,
             const GURL& referrer,
-            bool infobars_enabled);
+            bool infobars_enabled,
+            bool supports_full_tab_mode);
 
   // Unhook the keystroke listener and notify about the closing TabContents.
   // This function gets called from three places, which is fine.
@@ -209,6 +212,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   void RunUnloadHandlers(IPC::Message* reply_message);
 
  protected:
+  ~ExternalTabContainer();
   // Overridden from views::WidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
   virtual void OnDestroy();
@@ -219,10 +223,7 @@ class ExternalTabContainer : public TabContentsDelegate,
                           int relative_offset);
   void Navigate(const GURL& url, const GURL& referrer);
 
- private:
   friend class base::RefCounted<ExternalTabContainer>;
-
-  ~ExternalTabContainer();
 
   // Helper resource automation registration method, allowing registration of
   // pending RenderViewHosts.
@@ -326,7 +327,76 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   IPC::Message* unload_reply_message_;
 
+  // set to true if the host needs to get notified of all top level navigations
+  // in this page. This typically applies to hosts which would render the new
+  // page without chrome frame.
+  bool route_all_top_level_navigations_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
+};
+
+// This class is instantiated for handling requests to open popups for external
+// tabs hosted in browsers which need to be notified about all top level
+// navigations. An instance of this class is created for handling window.open
+// or link navigations with target blank, etc.
+class TemporaryPopupExternalTabContainer : public ExternalTabContainer {
+ public:
+  TemporaryPopupExternalTabContainer(AutomationProvider* automation,
+      AutomationResourceMessageFilter* filter);
+  virtual ~TemporaryPopupExternalTabContainer();
+
+  virtual bool OnGoToEntryOffset(int offset) {
+    NOTREACHED();
+    return false;
+  }
+
+  virtual bool ProcessUnhandledKeyStroke(HWND window, UINT message,
+                                         WPARAM wparam, LPARAM lparam) {
+    NOTREACHED();
+    return false;
+  }
+
+  virtual void Observe(NotificationType type, const NotificationSource& source,
+                       const NotificationDetails& details) {}
+
+  virtual void OpenURLFromTab(TabContents* source, const GURL& url,
+                              const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              PageTransition::Type transition);
+
+  virtual void NavigationStateChanged(const TabContents* source,
+                                      unsigned changed_flags) {
+    NOTREACHED();
+  }
+
+  virtual void CloseContents(TabContents* source) {
+    NOTREACHED();
+  }
+
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {
+    NOTREACHED();
+  }
+
+  void ForwardMessageToExternalHost(const std::string& message,
+                                    const std::string& origin,
+                                    const std::string& target) {
+    NOTREACHED();
+  }
+
+  virtual bool TakeFocus(bool reverse) {
+    NOTREACHED();
+    return false;
+  }
+
+  virtual bool HandleContextMenu(const ContextMenuParams& params) {
+    NOTREACHED();
+    return false;
+  }
+
+  virtual void BeforeUnloadFired(TabContents* tab, bool proceed,
+                                 bool* proceed_to_fire_unload) {
+    NOTREACHED();
+  }
 };
 
 #endif  // CHROME_BROWSER_EXTERNAL_TAB_CONTAINER_WIN_H_

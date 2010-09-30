@@ -258,7 +258,8 @@ void AutomationProvider::CreateExternalTab(
   external_tab_container->Init(profile, settings.parent, settings.dimensions,
       settings.style, settings.load_requests_via_automation,
       settings.handle_top_level_requests, NULL, settings.initial_url,
-      settings.referrer, settings.infobars_enabled);
+      settings.referrer, settings.infobars_enabled,
+      settings.route_all_top_level_navigations);
 
   if (AddExternalTab(external_tab_container)) {
     TabContents* tab_contents = external_tab_container->tab_contents();

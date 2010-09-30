@@ -7,43 +7,19 @@
         onFailure("ChromeFrame_SrcTest", 1, "ChromeFrame Navigation failed");
       }
 
-      var load_count = 2;
-
       function OnChromeFrameLoaded(url) {
-        try {
-          url = url.data;
+        url = url.data;
 
-          var chromeFrame = GetChromeFrame();
-          var frame_url = chromeFrame.src;
-          
-          appendStatus("Loaded URL: " + url + " Frame url: " + frame_url);
-          load_count--;
-
-          if (load_count) {
-            // For the first load, the URLs should match.
-            if (frame_url != url) {
-              onFailure("SrcProperty", 1, "Url: " + url);
-            }
-          } else {
-            // Previous versions changed the frame URL when internal navigation
-            // was performed. This does not match how iframes behave, and so we
-            // report success only in the case that they continue to match, even
-            // though the "internal" URL is different (and not visible) to the
-            // external host.
-            if (frame_url == url) {
-              onFailure("SrcProperty", 1, "Url: " + url);
-            } else {
-              onSuccess("SrcProperty", 1);
-            }
-          }
-        } catch (e) {
-          onFailure("SrcProperty", 1, "OnChromeFrameLoaded: " + e.description);
-        }
+        var chromeFrame = GetChromeFrame();
+        var frame_url = chromeFrame.src;
+        
+        appendStatus("Loaded URL: " + url + " Frame url: " + frame_url);
       }
 
       function GetChromeFrame() {
         return window.document.ChromeFrame;
       }
+
     </script>
   </head>
   <body>

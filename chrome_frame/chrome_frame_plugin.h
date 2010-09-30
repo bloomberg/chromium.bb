@@ -61,7 +61,8 @@ END_MSG_MAP()
   bool InitializeAutomation(const std::wstring& profile_name,
                             const std::wstring& extra_chrome_arguments,
                             bool incognito, bool is_widget_mode,
-                            const GURL& url, const GURL& referrer) {
+                            const GURL& url, const GURL& referrer,
+                            bool route_all_top_level_navigations) {
     DCHECK(IsValid());
     DCHECK(launch_params_ == NULL);
     // We don't want to do incognito when privileged, since we're
@@ -75,7 +76,7 @@ END_MSG_MAP()
     FilePath actual_profile_name = profile_path.BaseName();
     launch_params_ = new ChromeFrameLaunchParams(url, referrer, profile_path,
         actual_profile_name.value(), extra_chrome_arguments, incognito_mode,
-        is_widget_mode);
+        is_widget_mode, route_all_top_level_navigations);
     return automation_client_->Initialize(this, launch_params_);
   }
 

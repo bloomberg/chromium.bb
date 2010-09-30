@@ -61,7 +61,8 @@ ExternalTabContainer::ExternalTabContainer(
       infobars_enabled_(true),
       focus_manager_(NULL),
       external_tab_view_(NULL),
-      unload_reply_message_(NULL) {
+      unload_reply_message_(NULL),
+      route_all_top_level_navigations_(false) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -77,7 +78,8 @@ bool ExternalTabContainer::Init(Profile* profile,
                                 TabContents* existing_contents,
                                 const GURL& initial_url,
                                 const GURL& referrer,
-                                bool infobars_enabled) {
+                                bool infobars_enabled,
+                                bool route_all_top_level_navigations) {
   if (IsWindow()) {
     NOTREACHED();
     return false;
@@ -86,6 +88,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   load_requests_via_automation_ = load_requests_via_automation;
   handle_top_level_requests_ = handle_top_level_requests;
   infobars_enabled_ = infobars_enabled;
+  route_all_top_level_navigations_ = route_all_top_level_navigations;
 
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   views::WidgetWin::Init(NULL, bounds);
@@ -356,8 +359,22 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
     return;
   }
 
-  scoped_refptr<ExternalTabContainer> new_container =
-      new ExternalTabContainer(NULL, NULL);
+  scoped_refptr<ExternalTabContainer> new_container;
+  // If the host is a browser like IE8, then the URL being navigated to in the
+  // new tab contents could potentially navigate back to Chrome from a new
+  // IE process. We support full tab mode only for IE and hence we use that as
+  // a determining factor in whether the new ExternalTabContainer instance is
+  // created as pending or not.
+  if (!route_all_top_level_navigations_) {
+    new_container = new ExternalTabContainer(NULL, NULL);
+  } else {
+    // Reuse the same tab handle here as the new container instance is a dummy
+    // instance which does not have an automation client connected at the other
+    // end.
+    new_container = new TemporaryPopupExternalTabContainer(
+        automation_, automation_resource_message_filter_.get());
+    new_container->SetTabHandle(tab_handle_);
+  }
 
   // Make sure that ExternalTabContainer instance is initialized with
   // an unwrapped Profile.
@@ -371,9 +388,13 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
       new_contents,
       GURL(),
       GURL(),
-      true);
+      true,
+      route_all_top_level_navigations_);
 
   if (result) {
+    if (route_all_top_level_navigations_) {
+      return;
+    }
     uintptr_t cookie = reinterpret_cast<uintptr_t>(new_container.get());
     pending_tabs_.Get()[cookie] = new_container;
     new_container->set_pending(true);
@@ -545,7 +566,6 @@ bool ExternalTabContainer::HandleContextMenu(const ContextMenuParams& params) {
     NOTREACHED();
     return false;
   }
-
   external_context_menu_.reset(
       new RenderViewContextMenuViews(tab_contents(), params));
   external_context_menu_->SetExternal();
@@ -1020,3 +1040,30 @@ void ExternalTabContainer::SetupExternalTabView() {
   // Note that SetTabContents must be called after AddChildView is called
   tab_contents_container_->ChangeTabContents(tab_contents_);
 }
+
+TemporaryPopupExternalTabContainer::TemporaryPopupExternalTabContainer(
+    AutomationProvider* automation,
+    AutomationResourceMessageFilter* filter)
+    : ExternalTabContainer(automation, filter) {
+}
+
+TemporaryPopupExternalTabContainer::~TemporaryPopupExternalTabContainer() {
+  DLOG(INFO) << __FUNCTION__;
+}
+
+void TemporaryPopupExternalTabContainer::OpenURLFromTab(
+    TabContents* source, const GURL& url, const GURL& referrer,
+    WindowOpenDisposition disposition, PageTransition::Type transition) {
+  if (!automation_)
+    return;
+
+  if (disposition == CURRENT_TAB) {
+    DCHECK(route_all_top_level_navigations_);
+    disposition = NEW_FOREGROUND_TAB;
+  }
+  ExternalTabContainer::OpenURLFromTab(source, url, referrer, disposition,
+                                       transition);
+  // support only one navigation for a dummy tab before it is killed.
+  ::DestroyWindow(GetNativeView());
+}
+

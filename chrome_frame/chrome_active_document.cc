@@ -1042,7 +1042,8 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
     if (profile.empty())
       profile = GetHostProcessName(false);
     return InitializeAutomation(profile, L"", IsIEInPrivate(),
-                                false, cf_url.gurl(), GURL(referrer));
+                                false, cf_url.gurl(), GURL(referrer),
+                                false);
   }
 }
 

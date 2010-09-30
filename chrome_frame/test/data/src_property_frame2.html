@@ -1,7 +1,20 @@
 <html>
   <head><title>src property test - page 2</title>
+    <script type="text/javascript" src="chrome_frame_tester_helpers.js">
+    </script>
+    <script type="text/javascript">
+      function onLoad() {
+        if (isRunningInChrome()) {
+          onFailure("SrcProperty", 1,
+                    "src_property_frame2.html should not load in Chrome");
+          return;
+        } else {
+          onSuccess("SrcProperty", 1);
+        }
+      }
+  </script>
   </head>
-  <body>
+  <body onload="onLoad();">
     <h2>Redirected!</h2>
     <p>All finished.</p>
   </body>

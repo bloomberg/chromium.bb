@@ -137,7 +137,7 @@ class TestNPAPIPrivilegedApi: public ::testing::Test {
 
     scoped_refptr<ChromeFrameLaunchParams> launch_params(
         new ChromeFrameLaunchParams(GURL(), GURL(), FilePath(), profile_name,
-            extra_args, is_incognito, true));
+            extra_args, is_incognito, true, false));
 
     EXPECT_CALL(*mock_automation,
       Initialize(_, LaunchParamEq(true, extra_args, is_incognito, true)))

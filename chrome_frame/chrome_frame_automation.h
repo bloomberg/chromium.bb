@@ -110,12 +110,14 @@ class ChromeFrameLaunchParams :  // NOLINT
                           const FilePath& profile_path,
                           const std::wstring& profile_name,
                           const std::wstring& extra_arguments,
-                          bool incognito, bool widget_mode)
+                          bool incognito, bool widget_mode,
+                          bool route_all_top_level_navigations)
     : launch_timeout_(kCommandExecutionTimeout), url_(url),
       referrer_(referrer), profile_path_(profile_path),
       profile_name_(profile_name), extra_arguments_(extra_arguments),
       version_check_(true), incognito_mode_(incognito),
-      is_widget_mode_(widget_mode) {
+      is_widget_mode_(widget_mode),
+      route_all_top_level_navigations_(route_all_top_level_navigations) {
   }
 
   ~ChromeFrameLaunchParams() {
@@ -173,6 +175,15 @@ class ChromeFrameLaunchParams :  // NOLINT
     return is_widget_mode_;
   }
 
+  void set_route_all_top_level_navigations(
+      bool route_all_top_level_navigations) {
+    route_all_top_level_navigations_ = route_all_top_level_navigations;
+  }
+
+  bool route_all_top_level_navigations() const {
+    return route_all_top_level_navigations_;
+  }
+
  protected:
   int launch_timeout_;
   GURL url_;
@@ -183,6 +194,7 @@ class ChromeFrameLaunchParams :  // NOLINT
   bool version_check_;
   bool incognito_mode_;
   bool is_widget_mode_;
+  bool route_all_top_level_navigations_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameLaunchParams);
@@ -422,6 +434,11 @@ class ChromeFrameAutomationClient
   // the website to put up a confirmation dialog on unload.
   void OnUnload(bool* should_unload);
 
+  void set_route_all_top_level_navigations(
+      bool route_all_top_level_navigations) {
+    route_all_top_level_navigations_ = route_all_top_level_navigations;
+  }
+
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.
   virtual void LaunchComplete(ChromeFrameAutomationProxy* proxy,
@@ -522,6 +539,11 @@ class ChromeFrameAutomationClient
   // handling network requests.
   PluginUrlRequestManager* url_fetcher_;
   PluginUrlRequestManager::ThreadSafeFlags url_fetcher_flags_;
+
+  // set to true if the host needs to get notified of all top level navigations
+  // in this page. This typically applies to hosts which would render the new
+  // page without chrome frame. Defaults to false.
+  bool route_all_top_level_navigations_;
 
   friend class BeginNavigateContext;
   friend class CreateExternalTabContext;
