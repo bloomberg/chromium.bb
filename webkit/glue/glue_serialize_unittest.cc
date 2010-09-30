@@ -13,7 +13,6 @@
 #include "webkit/glue/glue_serialize.h"
 
 using WebKit::WebData;
-using WebKit::WebFileInfo;
 using WebKit::WebHistoryItem;
 using WebKit::WebHTTPBody;
 using WebKit::WebPoint;
