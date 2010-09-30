@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -344,7 +344,16 @@ def ExtractModuleName(infile_path):
     The module name as a string.
   """
   basename = os.path.basename(infile_path)
-  return os.path.splitext(basename)[0]
+
+  # This loop continously removes suffixes of the filename separated by a "."
+  # character.
+  while 1:
+    new_basename = os.path.splitext(basename)[0]
+    if basename == new_basename:
+      break
+    else:
+      basename = new_basename
+  return basename
 
 
 def ParseSignatures(infile):
