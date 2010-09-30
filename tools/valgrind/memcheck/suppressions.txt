@@ -2676,3 +2676,32 @@
    fun:_ZN3net13DnsRRResolver7ResolveERKSsttP14CallbackRunnerI6Tuple1IiEEPNS_10RRResponseEiRKNS_11BoundNetLogE
    fun:_ZN3net30DnsRRResolverTest_Resolve_Test8TestBodyEv
 }
+{
+   bug_57464
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
+   fun:_ZN3IPC16MessageWithReplyI6Tuple06Tuple2IRbRiEE8DispatchI25TestingAutomationProviderMS8_FvPbPiEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
+   fun:_ZN4base17AsyncCallbackTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+{
+   bug_57465
+   Memcheck:Addr4
+   fun:_ZNK14AppModalDialog13native_dialogEv
+   fun:_ZN25TestingAutomationProvider24GetShowingAppModalDialogEPbPi
+   fun:_Z16DispatchToMethodI25TestingAutomationProviderMS0_FvPbPiEbiEvPT_T0_RK6Tuple0P6Tuple2IT1_T2_E
+   fun:_ZN3IPC16MessageWithReplyI6Tuple06Tuple2IRbRiEE8DispatchI25TestingAutomationProviderMS8_FvPbPiEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
+   fun:_ZN4base17AsyncCallbackTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
