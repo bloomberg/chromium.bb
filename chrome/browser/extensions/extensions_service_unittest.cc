@@ -2521,6 +2521,10 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   service->Init();
   loop.RunAllPending();
   EXPECT_TRUE(recorder.ready());
+
+  // Explicitly delete all the resources used in this test.
+  profile.reset();
+  service = NULL;
 }
 
 // Test loading extensions that require limited and unlimited storage quotas.
