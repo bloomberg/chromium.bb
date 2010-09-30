@@ -848,10 +848,11 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
     return;
   }
 
-  // Don't do any painting if the GPU process is rendering directly
-  // into the View.
+  // If the GPU process is rendering directly into the View,
+  // call the compositor directly.
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
   if (render_widget_host->is_gpu_rendering_active()) {
+    host_->ScheduleComposite();
     return;
   }
 

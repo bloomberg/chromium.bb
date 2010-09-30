@@ -243,6 +243,11 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // renderer to send another paint.
   void DonePaintingToBackingStore();
 
+  // GPU accelerated version of GetBackingStore function. This will
+  // trigger a re-composite to the view. If a resize is pending, it will
+  // block briefly waiting for an ack from the renderer.
+  void ScheduleComposite();
+
   // Returns the video layer if it exists, NULL otherwise.
   VideoLayer* video_layer() const { return video_layer_.get(); }
 

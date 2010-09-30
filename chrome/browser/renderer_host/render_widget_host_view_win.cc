@@ -889,13 +889,14 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
     return;
   }
 
-  // Don't do any painting if the GPU process is rendering directly
-  // into the View.
+  // If the GPU process is rendering directly into the View,
+  // call the compositor directly.
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
   if (render_widget_host->is_gpu_rendering_active()) {
     // We initialize paint_dc here so that BeginPaint()/EndPaint()
     // get called to validate the region.
     CPaintDC paint_dc(m_hWnd);
+    render_widget_host_->ScheduleComposite();
     return;
   }
 

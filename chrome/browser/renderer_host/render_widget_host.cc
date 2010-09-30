@@ -374,6 +374,28 @@ void RenderWidgetHost::DonePaintingToBackingStore() {
   Send(new ViewMsg_UpdateRect_ACK(routing_id()));
 }
 
+void RenderWidgetHost::ScheduleComposite() {
+  DCHECK(!is_hidden_ || !is_gpu_rendering_active_) <<
+      "ScheduleCompositeAndSync called while hidden!";
+
+  // Send out a request to the renderer to paint the view if required.
+  if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_) {
+    repaint_start_time_ = TimeTicks::Now();
+    repaint_ack_pending_ = true;
+    Send(new ViewMsg_Repaint(routing_id_, current_size_));
+  }
+
+  // When we have asked the RenderWidget to resize, and we are still waiting on
+  // a response, block for a little while to see if we can't get a response.
+  // We always block on response because we do not have a backing store.
+  IPC::Message msg;
+  TimeDelta max_delay = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
+  if (process_->WaitForUpdateMsg(routing_id_, max_delay, &msg)) {
+    ViewHostMsg_UpdateRect::Dispatch(
+        &msg, this, &RenderWidgetHost::OnMsgUpdateRect);
+  }
+}
+
 void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHangMonitor)) {
