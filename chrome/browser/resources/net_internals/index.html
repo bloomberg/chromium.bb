@@ -83,6 +83,7 @@ found in the LICENSE file.
     </div>
     <!-- Host resolver info -->
     <div id=dnsTabContent>
+      <a href='#events&q=type:HOST_RESOLVER_IMPL_REQUEST%20type:HOST_RESOLVER_IMPL_JOB%20is:active'>View pending lookups</a>
       <h4>
         Host resolver cache
         <input type=button value="Clear host cache" id=clearHostResolverCache />
@@ -110,10 +111,15 @@ found in the LICENSE file.
     </div>
     <div id=socketsTabContent>
       <h4>Socket pools</h4>
-      <div id=socketPoolDiv>
-      </div>
-      <div id=socketPoolGroupsDiv>
-      </div>
+      <a href='#events&q=type:SOCKET%20is:active'>View live sockets</a>
+      <p>
+        <div id=socketPoolDiv>
+        </div>
+      </p>
+      <p>
+        <div id=socketPoolGroupsDiv>
+        </div>
+      </p>
     </div>
     <div id=httpCacheTabContent>
       <h4>Entries</h4>

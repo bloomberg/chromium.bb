@@ -149,8 +149,12 @@ function TablePrinter() {
   this.title_ = null;
 }
 
+/**
+ * Links are only used in HTML tables.
+ */
 function TablePrinterCell(value) {
   this.text = '' + value;
+  this.link = null;
   this.alignRight = false;
   this.allowOverflow = false;
 }
@@ -334,7 +338,7 @@ TablePrinter.prototype.toHTML = function(parent, style) {
     for (var c = 0; c < numColumns; ++c) {
       var cell = this.getCell_(r, c);
       if (cell) {
-        var tableCell = addNodeWithText(row, cellType, cell.text);
+        var tableCell = addNode(row, cellType, cell.text);
         if (cell.alignRight)
           tableCell.alignRight = true;
         // If allowing overflow on the rightmost cell of a row,
@@ -342,6 +346,12 @@ TablePrinter.prototype.toHTML = function(parent, style) {
         // ignore the flag.
         if (cell.allowOverflow && !this.getCell_(r, c + 1))
           tableCell.colSpan = numColumns - c;
+        if (cell.link) {
+          var linkNode = addNodeWithText(tableCell, 'a', cell.text);
+          linkNode.href = cell.link;
+        } else {
+          addTextNode(tableCell, cell.text);
+        }
       }
     }
   }

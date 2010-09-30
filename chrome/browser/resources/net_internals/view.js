@@ -57,6 +57,7 @@ View.prototype.getBottom = function() {
   return this.getTop() + this.getHeight();
 };
 
+View.prototype.setParameters = function(params) {};
 
 //-----------------------------------------------------------------------------
 

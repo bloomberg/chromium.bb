@@ -80,8 +80,8 @@ SocketPoolWrapper.createTablePrinter = function(socketPools) {
   var tablePrinter = new TablePrinter();
   tablePrinter.addHeaderCell('Name');
   tablePrinter.addHeaderCell('Handed Out');
-  tablePrinter.addHeaderCell('Connecting');
   tablePrinter.addHeaderCell('Idle');
+  tablePrinter.addHeaderCell('Connecting');
   tablePrinter.addHeaderCell('Max');
   tablePrinter.addHeaderCell('Max Per Group');
   tablePrinter.addHeaderCell('Generation');
@@ -91,9 +91,24 @@ SocketPoolWrapper.createTablePrinter = function(socketPools) {
 
     tablePrinter.addRow();
     tablePrinter.addCell(socketPools[i].fullName);
-    tablePrinter.addCell(origPool.connecting_socket_count);
+
     tablePrinter.addCell(origPool.handed_out_socket_count);
-    tablePrinter.addCell(origPool.idle_socket_count);
+    var idleCell = tablePrinter.addCell(origPool.idle_socket_count);
+    var connectingCell = tablePrinter.addCell(origPool.connecting_socket_count);
+
+    if (origPool.groups) {
+      var idleSources = [];
+      var connectingSources = [];
+      for (var groupName in origPool.groups) {
+        var group = origPool.groups[groupName];
+        idleSources = idleSources.concat(group.idle_sockets);
+        connectingSources = connectingSources.concat(group.connect_jobs);
+      }
+      idleCell.link = SocketPoolWrapper.sourceListLink(idleSources);
+      connectingCell.link =
+          SocketPoolWrapper.sourceListLink(connectingSources);
+    }
+
     tablePrinter.addCell(origPool.max_socket_count);
     tablePrinter.addCell(origPool.max_sockets_per_group);
     tablePrinter.addCell(origPool.pool_generation_number);
@@ -128,11 +143,27 @@ SocketPoolWrapper.prototype.createGroupTablePrinter = function() {
       tablePrinter.addCell(group.top_pending_priority);
     else
       tablePrinter.addCell('-');
+
     tablePrinter.addCell(group.active_socket_count);
-    tablePrinter.addCell(group.idle_socket_count);
-    tablePrinter.addCell(group.connect_job_count);
+    var idleCell = tablePrinter.addCell(group.idle_sockets.length);
+    var connectingCell = tablePrinter.addCell(group.connect_jobs.length);
+
+    idleCell.link = SocketPoolWrapper.sourceListLink(group.idle_sockets);
+    connectingCell.link =
+        SocketPoolWrapper.sourceListLink(group.connect_jobs);
+
     tablePrinter.addCell(group.has_backup_job);
     tablePrinter.addCell(group.is_stalled);
   }
   return tablePrinter;
 };
+
+/**
+ * Takes in a list of source IDs and returns a link that will select the
+ * specified sources.
+ */
+SocketPoolWrapper.sourceListLink = function(sources) {
+  if (!sources.length)
+    return null;
+  return "#events&q=id:" + sources.join("%20id:");
+}

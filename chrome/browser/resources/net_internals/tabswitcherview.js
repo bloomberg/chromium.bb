@@ -72,7 +72,7 @@ TabSwitcherView.prototype.addTab = function(id, contentView, switchOnClick) {
     // Attach a click handler, used to switch to the tab.
     var self = this;
     tab.getTabHandleNode().onclick = function() {
-      self.switchToTab(id);
+      self.switchToTab(id, null);
     };
   }
 
@@ -107,15 +107,18 @@ TabSwitcherView.prototype.findTabById = function(id) {
 };
 
 /**
- * Focuses on tab with ID |id|.
+ * Focuses on tab with ID |id|.  |params| is a dictionary that will be
+ * passed to the tab's setParameters function, if it's non-null.
  */
-TabSwitcherView.prototype.switchToTab = function(id) {
+TabSwitcherView.prototype.switchToTab = function(id, params) {
   var oldTab = this.findActiveTab();
   if (oldTab)
     oldTab.setSelected(false);
 
   var newTab = this.findTabById(id);
   newTab.setSelected(true);
+  if (params)
+    newTab.contentView.setParameters(params);
 };
 
 TabSwitcherView.prototype.getAllTabIds = function() {

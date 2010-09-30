@@ -97,8 +97,6 @@ SourceEntry.prototype.onCheckboxToggled_ = function() {
 };
 
 SourceEntry.prototype.matchesFilter = function(filter) {
-  // TODO(eroman): Support more advanced filter syntax.
-
   // Safety check.
   if (this.row_ == null)
     return false;
@@ -108,10 +106,23 @@ SourceEntry.prototype.matchesFilter = function(filter) {
   if (filter.isInactive && this.isActive_)
     return false;
 
+  // Check source type, if needed.
+  if (filter.type) {
+    var sourceType = this.getSourceTypeString().toLowerCase();
+    if (filter.type.indexOf(sourceType) == -1)
+      return false;
+  }
+
+  // Check source ID, if needed.
+  if (filter.id) {
+    if (filter.id.indexOf(this.getSourceId() + '') == -1)
+      return false;
+  }
+
   if (filter.text == '')
     return true;
 
-  var filterText = filter.text.toLowerCase();
+  var filterText = filter.text;
   var entryText = PrintSourceEntriesAsText(this.entries_).toLowerCase();
 
   return entryText.indexOf(filterText) != -1;

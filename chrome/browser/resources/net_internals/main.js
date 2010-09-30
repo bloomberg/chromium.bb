@@ -120,11 +120,8 @@ function onLoaded() {
   // Default the empty hash to the data tab.
   anchorMap['#'] = anchorMap[''] = 'dataTab';
 
-  window.onhashchange = function() {
-    var tabId = anchorMap[window.location.hash];
-    if (tabId)
-      categoryTabSwitcher.switchToTab(tabId);
-  };
+  window.onhashchange = onUrlHashChange.bind(null, anchorMap,
+                                             categoryTabSwitcher);
 
   // Make this category tab widget the primary view, that fills the whole page.
   var windowView = new WindowView(categoryTabSwitcher);
@@ -164,6 +161,37 @@ function BrowserBridge() {
   // Next unique id to be assigned to a log entry without a source.
   // Needed to simplify deletion, identify associated GUI elements, etc.
   this.nextSourcelessEventId_ = -1;
+}
+
+/*
+ * Takes the current hash in form of "#tab&param1=value1&param2=value2&...".
+ * Puts the parameters in an object, and passes the resulting object to
+ * |categoryTabSwitcher|.  Uses tab and |anchorMap| to find a tab ID,
+ * which it also passes to the tab switcher.
+ *
+ * Parameters and values are decoded with decodeURIComponent().
+ */
+function onUrlHashChange(anchorMap, categoryTabSwitcher) {
+  var parameters = window.location.hash.split('&');
+
+  var tabId = anchorMap[parameters[0]];
+  if (!tabId)
+    return;
+
+  // Split each string except the first around the '='.
+  var paramDict = null;
+  for (var i = 1; i < parameters.length; i++) {
+    var paramStrings = parameters[i].split('=');
+    if (paramStrings.length != 2)
+      continue;
+    if (paramDict == null)
+      paramDict = {};
+    var key = decodeURIComponent(paramStrings[0]);
+    var value = decodeURIComponent(paramStrings[1]);
+    paramDict[key] = value;
+  }
+
+  categoryTabSwitcher.switchToTab(tabId, paramDict);
 }
 
 /**

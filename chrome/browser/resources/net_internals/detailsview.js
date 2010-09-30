@@ -23,7 +23,7 @@ function DetailsView(tabHandlesContainerId,
   this.addTab(timelineTabId, this.timelineView_, true);
 
   // Default to the log view.
-  this.switchToTab(logTabId);
+  this.switchToTab(logTabId, null);
 };
 
 inherits(DetailsView, TabSwitcherView);
