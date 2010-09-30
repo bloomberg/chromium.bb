@@ -11,7 +11,11 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #endif
 #if defined(OS_LINUX)
+#if defined(TOUCH_UI)
+#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
+#else
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
+#endif
 #endif
 #include "views/widget/widget.h"
 #if defined(OS_WIN)
@@ -71,10 +75,17 @@ void BalloonViewHost::InitRenderWidgetHostView() {
   view_win->ShowWindow(SW_SHOW);
   native_host_->Attach(hwnd);
 #elif defined(OS_LINUX)
+#if defined(TOUCH_UI)
+  RenderWidgetHostViewViews* view_views =
+      static_cast<RenderWidgetHostViewViews*>(render_widget_host_view_);
+  view_views->InitAsChild();
+  native_host_->Attach(view_views->native_view());
+#else
   RenderWidgetHostViewGtk* view_gtk =
       static_cast<RenderWidgetHostViewGtk*>(render_widget_host_view_);
   view_gtk->InitAsChild();
   native_host_->Attach(view_gtk->native_view());
+#endif
 #else
   NOTIMPLEMENTED();
 #endif

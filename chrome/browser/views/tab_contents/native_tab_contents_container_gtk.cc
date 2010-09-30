@@ -59,6 +59,7 @@ views::View* NativeTabContentsContainerGtk::GetView() {
 
 void NativeTabContentsContainerGtk::TabContentsFocused(
     TabContents* tab_contents) {
+#if !defined(TOUCH_UI)
   // Called when the tab contents native view gets focused (typically through a
   // user click).  We make ourself the focused view, so the focus is restored
   // properly when the browser window is deactivated/reactivated.
@@ -68,6 +69,9 @@ void NativeTabContentsContainerGtk::TabContentsFocused(
     return;
   }
   focus_manager->SetFocusedView(this);
+#else
+  // no native views in TOUCH_UI, so don't steal the focus
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////

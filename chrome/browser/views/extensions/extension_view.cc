@@ -12,6 +12,8 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
+#elif defined(TOUCH_UI)
+#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
@@ -100,6 +102,11 @@ void ExtensionView::CreateWidgetHostView() {
   HWND hwnd = view_win->Create(GetWidget()->GetNativeView());
   view_win->ShowWindow(SW_SHOW);
   Attach(hwnd);
+#elif defined(TOUCH_UI)
+  RenderWidgetHostViewViews* view_views =
+      static_cast<RenderWidgetHostViewViews*>(view);
+  view_views->InitAsChild();
+  Attach(view_views->GetNativeView());
 #elif defined(OS_LINUX)
   RenderWidgetHostViewGtk* view_gtk =
       static_cast<RenderWidgetHostViewGtk*>(view);

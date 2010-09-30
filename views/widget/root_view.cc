@@ -611,6 +611,12 @@ View* RootView::GetFocusedView() {
   View* view = focus_manager->GetFocusedView();
   if (view && (view->GetRootView() == this))
     return view;
+#if defined(TOUCH_UI)
+  // hack to deal with two root views in touch
+  // should be fixed by eliminating one of them
+  if (view)
+    return view;
+#endif
   return NULL;
 }
 
