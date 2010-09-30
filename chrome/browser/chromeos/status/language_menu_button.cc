@@ -95,7 +95,7 @@ const struct {
   { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
   { "m17n:zh:quick", "\xe9\x80\x9f" },  // U+901F
   // For Hangul input method.
-  { "hangul", "\xea\xb0\x80" },  // U+AC00
+  { "hangul", "\xed\x95\x9c" },  // U+D55C
 };
 const size_t kMappingFromIdToIndicatorTextLen =
     ARRAYSIZE_UNSAFE(kMappingFromIdToIndicatorText);

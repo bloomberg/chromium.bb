@@ -20,7 +20,7 @@ TEST(LanguageMenuButtonTest, GetTextForIndicatorTest) {
   }
   {
     InputMethodDescriptor desc("hangul", "Korean", "us", "ko");
-    EXPECT_EQ(UTF8ToWide("\xea\xb0\x80"),
+    EXPECT_EQ(UTF8ToWide("\xed\x95\x9c"),
               LanguageMenuButton::GetTextForIndicator(desc));
   }
   {
