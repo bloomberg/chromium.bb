@@ -103,7 +103,7 @@ const Experiment kExperiments[] = {
     IDS_LABS_PAGE_INFO_BUBBLE_DESCRIPTION,
     kOsWin | kOsLinux,
     switches::kEnableNewPageInfoBubble
-  }
+  },
   {
     "disable-outdated-plugins",  // Do not change; see above.
     IDS_LABS_DISABLE_OUTDATED_PLUGINS_NAME,
