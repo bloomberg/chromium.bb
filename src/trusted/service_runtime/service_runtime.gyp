@@ -208,7 +208,7 @@
         'target_base': 'sel',
       },
       'dependencies': [
-        'gio_shm',
+        'gio_wrapped_desc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
@@ -269,11 +269,12 @@
         'fs/obj_proxy.c',
       ],
     }, {
-      'target_name': 'gio_shm',
+      'target_name': 'gio_wrapped_desc',
       'type': 'static_library',
       'sources': [
         'gio_shm.c',
         'gio_shm_unbounded.c',
+        'gio_nacl_desc.c',
       ],
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
@@ -288,7 +289,7 @@
       'dependencies': [
         'expiration',
         'sel',
-        'gio_shm',
+        'gio_wrapped_desc',
         '<(DEPTH)/native_client/src/trusted/perf_counter/perf_counter.gyp:*',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
@@ -310,7 +311,7 @@
             'win_target': 'x64',
           },
           'dependencies': [
-            'gio_shm64',
+            'gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
@@ -362,7 +363,7 @@
             'fs/obj_proxy.c',
           ],
         }, {
-          'target_name': 'gio_shm64',
+          'target_name': 'gio_wrapped_desc64',
           'type': 'static_library',
           'variables': {
             'win_target': 'x64',
@@ -370,6 +371,7 @@
           'sources': [
             'gio_shm.c',
             'gio_shm_unbounded.c',
+            'gio_nacl_desc.c',
           ],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
@@ -387,7 +389,7 @@
           'dependencies': [
             'expiration64',
             'sel64',
-            'gio_shm64',
+            'gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
           ],

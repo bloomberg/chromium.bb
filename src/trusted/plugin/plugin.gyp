@@ -93,7 +93,7 @@
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
-            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_wrapped_desc',
           ],
           'conditions': [
             ['OS=="win"', {
@@ -129,7 +129,7 @@
 
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
-            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm64',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_wrapped_desc64',
           ],
           'configurations': {
             'Common_Base': {
@@ -153,7 +153,7 @@
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
-            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_wrapped_desc',
             '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
           ],
           'sources': [
@@ -187,7 +187,7 @@
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
-            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_shm64',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:gio_wrapped_desc64',
             '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
           ],
           'configurations': {

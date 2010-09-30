@@ -22,6 +22,7 @@
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
+#include "native_client/src/trusted/service_runtime/gio_nacl_desc.h"
 #include "native_client/src/trusted/service_runtime/gio_shm.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
@@ -812,14 +813,16 @@ static NaClSrpcError NaClSecureChannelShutdownRpc(
 static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
                                        struct NaClSrpcArg      **in_args,
                                        struct NaClSrpcArg      **out_args) {
-  struct NaClApp        *nap = (struct NaClApp *) chan->server_instance_data;
-  struct NaClDesc       *nexe_binary = in_args[0]->u.hval;
-  struct NaClGioShm     gio_shm;
-  struct nacl_abi_stat  stbuf;
-  int                   rval;
-  NaClErrorCode         suberr;
-  NaClErrorCode         errcode;
-  size_t                rounded_size;
+  struct NaClApp          *nap = (struct NaClApp *) chan->server_instance_data;
+  struct NaClDesc         *nexe_binary = in_args[0]->u.hval;
+  struct NaClGioShm       gio_shm;
+  struct NaClGioNaClDesc  gio_desc;
+  struct Gio              *load_src = NULL;
+  struct nacl_abi_stat    stbuf;
+  int                     rval;
+  NaClErrorCode           suberr = LOAD_INTERNAL;
+  NaClErrorCode           errcode;
+  size_t                  rounded_size;
 
   UNREFERENCED_PARAMETER(out_args);
 
@@ -827,33 +830,60 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
 
   errcode = NACL_SRPC_RESULT_INTERNAL;
 
-  /*
-   * We don't know the actual size of the nexe, but it should not
-   * matter.  The shared memory object's size is rounded up to at
-   * least 4K, and we can map it in with uninitialized data (should be
-   * zero filled) at the end.
-   */
-  rval = (*((struct NaClDescVtbl const *)
-            nexe_binary->base.vtbl)->Fstat)(nexe_binary, &stbuf);
-  if (0 != rval) {
-    goto cleanup;
+  switch (((struct NaClDescVtbl const *) nexe_binary->base.vtbl)->typeTag) {
+    case NACL_DESC_SHM:
+      /*
+       * We don't know the actual size of the nexe, but it should not
+       * matter.  The shared memory object's size is rounded up to at
+       * least 4K, and we can map it in with uninitialized data (should be
+       * zero filled) at the end.
+       */
+      rval = (*((struct NaClDescVtbl const *)
+                nexe_binary->base.vtbl)->Fstat)(nexe_binary, &stbuf);
+      if (0 != rval) {
+        goto cleanup;
+      }
+
+      rounded_size = (size_t) stbuf.nacl_abi_st_size;
+
+      NaClLog(4, "NaClLoadModuleRpc: shm size 0x%"NACL_PRIxS"\n", rounded_size);
+
+      if (!NaClGioShmCtor(&gio_shm, nexe_binary, rounded_size)) {
+        errcode = NACL_SRPC_RESULT_NO_MEMORY;
+        goto cleanup;
+      }
+      load_src = (struct Gio *) &gio_shm;
+      break;
+
+    case NACL_DESC_HOST_IO:
+      if (!NaClGioNaClDescCtor(&gio_desc, NaClDescRef(nexe_binary))) {
+        errcode = NACL_SRPC_RESULT_NO_MEMORY;
+        goto cleanup;
+      }
+      load_src = (struct Gio *) &gio_desc;
+      break;
+
+    case NACL_DESC_INVALID:
+    case NACL_DESC_DIR:
+    case NACL_DESC_CONN_CAP:
+    case NACL_DESC_CONN_CAP_FD:
+    case NACL_DESC_BOUND_SOCKET:
+    case NACL_DESC_CONNECTED_SOCKET:
+    case NACL_DESC_SYSV_SHM:
+    case NACL_DESC_MUTEX:
+    case NACL_DESC_CONDVAR:
+    case NACL_DESC_SEMAPHORE:
+    case NACL_DESC_SYNC_SOCKET:
+    case NACL_DESC_TRANSFERABLE_DATA_SOCKET:
+    case NACL_DESC_IMC_SOCKET:
+      /* Unsupported stuff */
+      errcode = NACL_SRPC_RESULT_APP_ERROR;
+      goto cleanup;
   }
 
-  rounded_size = (size_t) stbuf.nacl_abi_st_size;
-
-  NaClLog(4, "NaClLoadModuleRpc: shm size 0x%"NACL_PRIxS"\n", rounded_size);
-
-  if (!NaClGioShmCtor(&gio_shm, nexe_binary, rounded_size)) {
-    errcode = NACL_SRPC_RESULT_NO_MEMORY;
-    goto cleanup;
-  }
-  /* henceforth gio_shm must be dtor'd */
-
-  suberr = NaClAppLoadFile((struct Gio *) &gio_shm,
-                           nap,
-                           NACL_ABI_CHECK_OPTION_CHECK);
-  (*gio_shm.base.vtbl->Close)(&gio_shm.base);
-  (*gio_shm.base.vtbl->Dtor)(&gio_shm.base);
+  suberr = NaClAppLoadFile(load_src, nap, NACL_ABI_CHECK_OPTION_CHECK);
+  (*load_src->vtbl->Close)(&gio_desc.base);
+  (*load_src->vtbl->Dtor)(&gio_desc.base);
 
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;

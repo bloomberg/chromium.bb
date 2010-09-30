@@ -100,7 +100,7 @@ struct NaClDescIoDesc *NaClDescIoDescOpen(char  *path,
   if (NULL == nhdp) {
     NaClLog(LOG_FATAL, "NaClDescIoDescOpen: no memory for %s\n", path);
   }
-  if (!NaClHostDescOpen(nhdp, path, mode, perms)) {
+  if (0 != NaClHostDescOpen(nhdp, path, mode, perms)) {
     NaClLog(LOG_FATAL, "NaClDescIoDescOpen: NaClHostDescOpen failed for %s\n",
             path);
   }

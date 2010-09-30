@@ -166,7 +166,7 @@
       'type': 'executable',
       'dependencies': [
         'service_runtime.gyp:sel',
-        'service_runtime.gyp:gio_shm',
+        'service_runtime.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
@@ -183,7 +183,7 @@
       'type': 'executable',
       'dependencies': [
         'service_runtime.gyp:sel',
-        'service_runtime.gyp:gio_shm',
+        'service_runtime.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
@@ -193,6 +193,22 @@
       ],
       'sources': [
         'gio_shm_unbounded_test.c',
+      ],
+    },
+    {
+      'target_name': 'gio_nacl_desc_test',
+      'type': 'executable',
+      'dependencies': [
+        'service_runtime.gyp:gio_wrapped_desc',
+        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+        '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+      ],
+      'sources': [
+        'gio_nacl_desc_test.c',
       ],
     },
     {
@@ -210,7 +226,7 @@
     'type': 'executable',
     'dependencies': [
       'service_runtime.gyp:sel',
-      'service_runtime.gyp:gio_shm',
+      'service_runtime.gyp:gio_wrapped_desc',
     ],
     'sources': [
       'env_cleanser_test.c',
@@ -231,7 +247,7 @@
       'type': 'executable',
       'dependencies': [
         'service_runtime.gyp:sel',
-        'service_runtime.gyp:gio_shm',
+        'service_runtime.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
       ],
@@ -245,7 +261,7 @@
       'type': 'executable',
       'dependencies': [
         'service_runtime.gyp:sel',
-        'service_runtime.gyp:gio_shm',
+        'service_runtime.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
