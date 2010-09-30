@@ -21,10 +21,11 @@ namespace {
 
 // Will cause an UMA notification if the mode of the new tab page
 // was changed to hide/show the most visited thumbnails.
+// TODO(aa): Needs to be updated to match newest NTP - http://crbug.com/57440
 void NotifySectionDisabled(int new_mode, int old_mode, Profile *profile) {
   // If the oldmode HAD either thumbs or lists visible.
-  bool old_had_it = old_mode & THUMB;
-  bool new_has_it = new_mode & THUMB;
+  bool old_had_it = (old_mode & THUMB) && !(old_mode & MINIMIZED_THUMB);
+  bool new_has_it = (new_mode & THUMB) && !(new_mode & MINIMIZED_THUMB);
 
   if (old_had_it && !new_has_it) {
     UserMetrics::RecordAction(

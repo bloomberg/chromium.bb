@@ -67,9 +67,15 @@ registerCallback('setShownSections');
  * @enum {number}
  */
 var Section = {
-  THUMB: 1,
-  APPS: 64
+  THUMB: 1 << 0,
+  APPS: 1 << 6
 };
+
+// These are used to hide sections and are part of the |shownSections| bitmask,
+// but are not sections themselves.
+var MINIMIZED_THUMB = 1 << (0 + 16);
+var MINIMIZED_RECENT = 1 << (2 + 16);
+var MINIMIZED_APPS = 1 << (6 + 16);
 
 var shownSections = templateData['shown_sections'];
 
@@ -135,6 +141,7 @@ if ('mode' in hashParams) {
         <img class="disclosure" img src="ntp/ntp_disclosure_triangle.png">
         <div class="back"></div>
         <span i18n-content="apps"></span>
+        <button class="section-close-button"></button>
       </h2>
       <div class="miniview"></div>
     </div>
@@ -146,6 +153,7 @@ if ('mode' in hashParams) {
         <span i18n-content="mostvisited"></span>
         <button id="most-visited-settings" i18n-content="restorethumbnails">
         </button>
+        <button class="section-close-button"></button>
       </h2>
       <div class="miniview"></div>
     </div>
@@ -157,6 +165,7 @@ if ('mode' in hashParams) {
       <h2>
         <div class="back"></div>
         <span i18n-content="recentlyclosed"></span>
+        <button class="section-close-button"></button>
       </h2>
       <div class="miniview"></div>
     </div>
@@ -167,6 +176,27 @@ if ('mode' in hashParams) {
         <span></span>
       </div>
     </div>
+  </div>
+
+  <div id="closed-sections-bar">
+    <!-- The default visibility of these buttons needs to be the opposite of the
+         default visibility of the corresponding sections. -->
+    <button id="apps-button"
+            menu="#apps-menu">
+      <span i18n-content="apps"></span>
+      <img src="ntp/ntp_disclosure_triangle.png">
+    </button>
+    <button id="most-visited-button"
+            class="disabled"
+            menu="#most-visited-menu">
+      <span i18n-content="mostvisited"></span>
+      <img src="ntp/ntp_disclosure_triangle.png">
+    </button>
+    <button id="recently-closed-button"
+            menu="#recently-closed-menu">
+      <span i18n-content="recentlyclosed"></span>
+      <img src="ntp/ntp_disclosure_triangle.png">
+    </button>
   </div>
 </div>  <!-- main -->
 
@@ -193,6 +223,11 @@ if ('mode' in hashParams) {
   <button command="#apps-options-command"></button>
   <button command="#apps-uninstall-command"></button>
 </menu>
+
+<!-- These are populated dynamically -->
+<menu id="apps-menu"></menu>
+<menu id="most-visited-menu"></menu>
+<menu id="recently-closed-menu"></menu>
 
 </body>
 
@@ -226,8 +261,27 @@ cr.ui.decorate('button[menu]', cr.ui.MenuButton);
 </script>
 
 <script>
+  initializeSection('apps', MINIMIZED_APPS, Section.APPS);
+  initializeSection('most-visited', MINIMIZED_THUMB, Section.THUMB);
+  initializeSection('recently-closed', MINIMIZED_RECENT);
+
   updateSimpleSection('apps', Section.APPS);
   updateSimpleSection('most-visited', Section.THUMB);
+  var appsInitiallyVisible = !(shownSections & MINIMIZED_APPS);
+  var mostVisitedInitiallyVisible = !(shownSections & MINIMIZED_THUMB);
+  var recentlyClosedInitiallyVisible = !(shownSections & MINIMIZED_RECENT);
+  // Apps and recently closed start as hidden in the HTML, most visited is
+  // initially visible. Adapt to the change received from the prefs by forcing
+  // all three sections to update.
+  shownSections &= ~MINIMIZED_THUMB;
+  shownSections |= MINIMIZED_APPS | MINIMIZED_RECENT;
+  setSectionVisible('apps', Section.APPS, appsInitiallyVisible, MINIMIZED_APPS);
+  setSectionVisible(
+      'most-visited', Section.THUMB,
+      mostVisitedInitiallyVisible, MINIMIZED_THUMB);
+  setSectionVisible(
+      'recently-closed', undefined,
+      recentlyClosedInitiallyVisible, MINIMIZED_RECENT);
   layoutSections();
 </script>
 </html>
