@@ -147,16 +147,7 @@ void InProcessBrowserTest::SetUp() {
   if (dom_automation_enabled_)
     command_line->AppendSwitch(switches::kDomAutomationController);
 
-  // Turn off tip loading for tests; see http://crbug.com/17725
-  command_line->AppendSwitch(switches::kDisableWebResources);
-
-  // Turn off preconnects because they break the brittle python webserver.
-  command_line->AppendSwitch(switches::kDisablePreconnect);
-
   command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
-
-  // Don't show the first run ui.
-  command_line->AppendSwitch(switches::kNoFirstRun);
 
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
@@ -193,13 +184,11 @@ void InProcessBrowserTest::SetUp() {
                                  subprocess_path);
 #endif
 
-  // Enable warning level logging so that we can see when bad stuff happens.
-  command_line->AppendSwitch(switches::kEnableLogging);
-  command_line->AppendSwitchASCII(switches::kLoggingLevel, "1");  // warning
-
   // If ncecessary, disable TabCloseableStateWatcher.
   if (!tab_closeable_state_watcher_enabled_)
     command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
+
+  test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
 
 #if defined(OS_CHROMEOS)
   chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();

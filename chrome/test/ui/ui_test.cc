@@ -997,12 +997,6 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
       command_line.AppendArgNative(flags[i]);
   }
 
-  // Turn off preconnects because they break the brittle python webserver.
-  command_line.AppendSwitch(switches::kDisablePreconnect);
-
-  // No first-run dialogs, please.
-  command_line.AppendSwitch(switches::kNoFirstRun);
-
   // No default browser check, it would create an info-bar (if we are not the
   // default browser) that could conflicts with some tests expectations.
   command_line.AppendSwitch(switches::kNoDefaultBrowserCheck);
@@ -1046,8 +1040,6 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
     command_line.AppendSwitch(switches::kDisableBreakpad);
   if (!homepage_.empty())
     command_line.AppendSwitchASCII(switches::kHomePage, homepage_);
-  // Don't try to fetch web resources during UI testing.
-  command_line.AppendSwitch(switches::kDisableWebResources);
 
   if (!js_flags_.empty())
     command_line.AppendSwitchASCII(switches::kJavaScriptFlags, js_flags_);
@@ -1075,6 +1067,8 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
 
   // Disable TabCloseableStateWatcher for tests.
   command_line.AppendSwitch(switches::kDisableTabCloseableStateWatcher);
+
+  test_launcher_utils::PrepareBrowserCommandLineForTests(&command_line);
 
   DebugFlags::ProcessDebugFlags(
       &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
