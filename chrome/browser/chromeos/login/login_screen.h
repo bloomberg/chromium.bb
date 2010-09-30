@@ -19,6 +19,8 @@ namespace chromeos {
 
 class MessageBubble;
 
+// This screen is obsolete, used only on test images. http://crosbug.com/7214
+// TODO(nkostylev): Use ExistingUserController sign in screen for test images.
 class LoginScreen : public ViewScreen<NewUserView>,
                     public NewUserView::Delegate,
                     public LoginStatusConsumer,
