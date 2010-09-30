@@ -57,3 +57,20 @@ menu > :not(hr)[selected]:active {
   background-color: #426dc9;
   color: #fff;
 }
+
+menu > [checked]:before {
+  content: url("../images/checkbox_black.png");
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  vertical-align: 50%;
+  margin: 0 5px;
+}
+
+menu > [checked] {
+  -webkit-padding-start: 0;
+}
+
+menu > [selected][checked]:active:before {
+  content: url("../images/checkbox_white.png");
+}

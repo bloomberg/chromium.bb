@@ -62,7 +62,7 @@ class CrosSettings : public NonThreadSafe {
   bool RemoveSettingsProvider(CrosSettingsProvider* provider);
 
   // If the pref at the given path changes, we call the observer's Observe
-  // method with NOTIFY_PREF_CHANGED.
+  // method with PREF_CHANGED.
   void AddSettingsObserver(const char* path, NotificationObserver* obs);
   void RemoveSettingsObserver(const char* path, NotificationObserver* obs);
 

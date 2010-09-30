@@ -71,7 +71,7 @@ class PrefNotifier : public NonThreadSafe,
   virtual void FireObservers(const char* path);
 
   // If the pref at the given path changes, we call the observer's Observe
-  // method with NOTIFY_PREF_CHANGED.
+  // method with PREF_CHANGED.
   void AddPrefObserver(const char* path, NotificationObserver* obs);
   void RemovePrefObserver(const char* path, NotificationObserver* obs);
 

@@ -239,9 +239,9 @@ class PrefService : public NonThreadSafe {
   friend class subtle::PrefMemberBase;
 
   // If the pref at the given path changes, we call the observer's Observe
-  // method with NOTIFY_PREF_CHANGED. Note that observers should not call
-  // these methods directly but rather use a PrefChangeRegistrar to make sure
-  // the observer gets cleaned up properly.
+  // method with PREF_CHANGED. Note that observers should not call these methods
+  // directly but rather use a PrefChangeRegistrar to make sure the observer
+  // gets cleaned up properly.
   virtual void AddPrefObserver(const char* path, NotificationObserver* obs);
   virtual void RemovePrefObserver(const char* path, NotificationObserver* obs);
 
