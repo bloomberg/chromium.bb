@@ -19,6 +19,9 @@ namespace {
 
 TEST(FtpDirectoryListingBufferTest, Parse) {
   const char* test_files[] = {
+    "dir-listing-hprc-1",
+    "dir-listing-hprc-2",
+    "dir-listing-hprc-3",
     "dir-listing-ls-1",
     "dir-listing-ls-1-utf8",
     "dir-listing-ls-2",
@@ -56,9 +59,14 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
   test_dir = test_dir.AppendASCII("data");
   test_dir = test_dir.AppendASCII("ftp");
 
-  base::Time mock_current_time;
-  ASSERT_TRUE(base::Time::FromString(L"Tue, 15 Nov 1994 12:45:26 GMT",
-                                     &mock_current_time));
+  base::Time::Exploded mock_current_time_exploded = { 0 };
+  mock_current_time_exploded.year = 1994;
+  mock_current_time_exploded.month = 11;
+  mock_current_time_exploded.day_of_month = 15;
+  mock_current_time_exploded.hour = 12;
+  mock_current_time_exploded.minute = 45;
+  base::Time mock_current_time(
+      base::Time::FromLocalExploded(mock_current_time_exploded));
 
   for (size_t i = 0; i < arraysize(test_files); i++) {
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i, test_files[i]));
@@ -122,8 +130,6 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
       EXPECT_EQ(day_of_month, time_exploded.day_of_month);
       EXPECT_EQ(hour, time_exploded.hour);
       EXPECT_EQ(minute, time_exploded.minute);
-      EXPECT_EQ(0, time_exploded.second);
-      EXPECT_EQ(0, time_exploded.millisecond);
     }
     EXPECT_FALSE(buffer.EntryAvailable());
   }

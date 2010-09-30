@@ -14,9 +14,6 @@ namespace {
 typedef net::FtpDirectoryListingParserTest FtpDirectoryListingParserMlsdTest;
 
 TEST_F(FtpDirectoryListingParserMlsdTest, Good) {
-  base::Time::Exploded now_exploded;
-  base::Time::Now().LocalExplode(&now_exploded);
-
   const struct SingleLineTestData good_cases[] = {
     { "type=file;size=380565;modify=20030606190749; README",
       net::FtpDirectoryListingEntry::FILE, "README", 380565,
@@ -48,6 +45,7 @@ TEST_F(FtpDirectoryListingParserMlsdTest, Bad) {
     ";",
     "; ",
     " ;",
+    " foo",
     "garbage",
     "total 5",
     "type=file;size=380565;modify=20030606190749;README",
