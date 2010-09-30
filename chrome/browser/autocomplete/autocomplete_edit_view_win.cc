@@ -1334,8 +1334,17 @@ LRESULT AutocompleteEditViewWin::OnImeNotify(UINT message,
 void AutocompleteEditViewWin::OnKeyDown(TCHAR key,
                                         UINT repeat_count,
                                         UINT flags) {
-  if (OnKeyDownAllModes(key, repeat_count, flags) || popup_window_mode_ ||
-      OnKeyDownOnlyWritable(key, repeat_count, flags))
+  if (OnKeyDownAllModes(key, repeat_count, flags))
+    return;
+
+  // Make sure that we handle system key events like Alt-F4.
+  if (popup_window_mode_) {
+    DefWindowProc(GetCurrentMessage()->message, key, MAKELPARAM(repeat_count,
+                                                                flags));
+    return;
+  }
+
+  if (OnKeyDownOnlyWritable(key, repeat_count, flags))
     return;
 
   // CRichEditCtrl changes its text on WM_KEYDOWN instead of WM_CHAR for many

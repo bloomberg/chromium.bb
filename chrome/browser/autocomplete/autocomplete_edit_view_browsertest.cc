@@ -102,8 +102,10 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     set_show_window(true);
   }
 
-  void GetAutocompleteEditView(AutocompleteEditView** edit_view) {
-    BrowserWindow* window = browser()->window();
+  static void GetAutocompleteEditViewForBrowser(
+      const Browser* browser,
+      AutocompleteEditView** edit_view) {
+    BrowserWindow* window = browser->window();
     ASSERT_TRUE(window);
     LocationBar* loc_bar = window->GetLocationBar();
     ASSERT_TRUE(loc_bar);
@@ -111,10 +113,21 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(*edit_view);
   }
 
+  void GetAutocompleteEditView(AutocompleteEditView** edit_view) {
+    GetAutocompleteEditViewForBrowser(browser(), edit_view);
+  }
+
+  static void SendKeyForBrowser(const Browser* browser,
+                                app::KeyboardCode key,
+                                bool control,
+                                bool shift,
+                                bool alt) {
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+        browser, key, control, shift, alt, false /* command */));
+  }
+
   void SendKey(app::KeyboardCode key, bool control, bool shift, bool alt) {
-    ASSERT_TRUE(
-        ui_test_utils::SendKeyPressSync(
-            browser(), key, control, shift, alt, false /* command */));
+    SendKeyForBrowser(browser(), key, control, shift, alt);
   }
 
   void SendKeySequence(const wchar_t* keys) {
@@ -123,8 +136,9 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
                                       false, false, false));
   }
 
-  void WaitForTabOpenOrClose(int expected_tab_count) {
-    int tab_count = browser()->tab_count();
+  void WaitForTabOpenOrCloseForBrowser(const Browser* browser,
+                                       int expected_tab_count) {
+    int tab_count = browser->tab_count();
     if (tab_count == expected_tab_count)
       return;
 
@@ -135,10 +149,14 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
                    NotificationType::TAB_CLOSED),
                    NotificationService::AllSources());
 
-    while (!HasFailure() && browser()->tab_count() != expected_tab_count)
+    while (!HasFailure() && browser->tab_count() != expected_tab_count)
       ui_test_utils::RunMessageLoop();
 
-    ASSERT_EQ(expected_tab_count, browser()->tab_count());
+    ASSERT_EQ(expected_tab_count, browser->tab_count());
+  }
+
+  void WaitForTabOpenOrClose(int expected_tab_count) {
+    WaitForTabOpenOrCloseForBrowser(browser(), expected_tab_count);
   }
 
   void WaitForAutocompleteControllerDone() {
@@ -259,9 +277,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
 // Test if ctrl-* accelerators are workable in omnibox.
 // See http://crbug.com/19193: omnibox blocks ctrl-* commands
-// This test is disabled. See bug 23213.
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
-  ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
   AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
@@ -284,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
 
   browser()->FocusLocationBar();
 
-  // Close a Tab.
+  // Try ctrl-w to close a Tab.
   ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_W, true, false, false));
   ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count));
 
@@ -293,6 +309,68 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
   EXPECT_FALSE(edit_view->IsSelectAll());
   ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_L, true, false, false));
   EXPECT_TRUE(edit_view->IsSelectAll());
+
+  // Try editing the location bar text.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_RIGHT, false, false, false));
+  EXPECT_FALSE(edit_view->IsSelectAll());
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_S, false, false, false));
+  EXPECT_EQ(L"Hello worlds", edit_view->GetText());
+
+  // Try ctrl-x to cut text.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_LEFT, true, true, false));
+  EXPECT_FALSE(edit_view->IsSelectAll());
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_X, true, false, false));
+  EXPECT_EQ(L"Hello ", edit_view->GetText());
+
+  // Try alt-f4 to close the browser.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      browser(), app::VKEY_F4, false, false, true, false,
+      NotificationType::BROWSER_CLOSED, Source<Browser>(browser())));
+}
+
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PopupAccelerators) {
+  // Create a popup.
+  Browser* popup = CreateBrowserForPopup(browser()->profile());
+  AutocompleteEditView* edit_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditViewForBrowser(popup, &edit_view));
+  popup->FocusLocationBar();
+  EXPECT_TRUE(edit_view->IsSelectAll());
+
+  // Try ctrl-w to close the popup.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      popup, app::VKEY_W, true, false, false, false,
+      NotificationType::BROWSER_CLOSED, Source<Browser>(popup)));
+
+  // Create another popup.
+  popup = CreateBrowserForPopup(browser()->profile());
+  ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditViewForBrowser(popup, &edit_view));
+
+  // Set the edit text to "Hello world".
+  edit_view->SetUserText(L"Hello world");
+  EXPECT_FALSE(edit_view->IsSelectAll());
+  popup->FocusLocationBar();
+  EXPECT_TRUE(edit_view->IsSelectAll());
+
+  // Try editing the location bar text -- should be disallowed.
+  ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, app::VKEY_RIGHT, false,
+                                            false, false));
+  EXPECT_FALSE(edit_view->IsSelectAll());
+  ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, app::VKEY_S, false, false,
+                                            false));
+  EXPECT_EQ(L"Hello world", edit_view->GetText());
+
+  // Try ctrl-x to cut text -- should be disallowed.
+  ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, app::VKEY_LEFT, true, true,
+                                            false));
+  EXPECT_FALSE(edit_view->IsSelectAll());
+  ASSERT_NO_FATAL_FAILURE(SendKeyForBrowser(popup, app::VKEY_X, true, false,
+                                            false));
+  EXPECT_EQ(L"Hello world", edit_view->GetText());
+
+  // Try alt-f4 to close the popup.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressAndWait(
+      popup, app::VKEY_F4, false, false, true, false,
+      NotificationType::BROWSER_CLOSED, Source<Browser>(popup)));
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
@@ -389,7 +467,6 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
   EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
 }
 
-// This test is disabled. See bug 23213.
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();

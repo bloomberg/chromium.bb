@@ -110,6 +110,10 @@ class InProcessBrowserTest : public testing::Test {
   // This is invoked from Setup.
   virtual Browser* CreateBrowser(Profile* profile);
 
+  // Creates a browser for a popup window with a single tab (about:blank), waits
+  // for the tab to finish loading, and shows the browser.
+  Browser* CreateBrowserForPopup(Profile* profile);
+
   // Returns the host resolver being used for the tests. Subclasses might want
   // to configure it inside tests.
   net::RuleBasedHostResolverProc* host_resolver() {

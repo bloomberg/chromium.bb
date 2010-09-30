@@ -71,6 +71,23 @@ class LinuxHostInit {
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #endif  // defined(OS_CHROMEOS)
 
+namespace {
+
+void InitializeBrowser(Browser* browser) {
+  browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
+                         PageTransition::START_PAGE, -1,
+                         TabStripModel::ADD_SELECTED, NULL, std::string(),
+                         &browser);
+
+  // Wait for the page to finish loading.
+  ui_test_utils::WaitForNavigation(
+      &browser->GetSelectedTabContents()->controller());
+
+  browser->window()->Show();
+}
+
+}  // namespace
+
 extern int BrowserMain(const MainFunctionParams&);
 
 const wchar_t kUnitTestShowWindows[] = L"show-windows";
@@ -259,18 +276,13 @@ void InProcessBrowserTest::TearDown() {
 // finish loading and shows the browser.
 Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   Browser* browser = Browser::Create(profile);
+  InitializeBrowser(browser);
+  return browser;
+}
 
-  browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
-                         PageTransition::START_PAGE, -1,
-                         TabStripModel::ADD_SELECTED, NULL, std::string(),
-                         &browser);
-
-  // Wait for the page to finish loading.
-  ui_test_utils::WaitForNavigation(
-      &browser->GetSelectedTabContents()->controller());
-
-  browser->window()->Show();
-
+Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
+  Browser* browser = Browser::CreateForPopup(profile);
+  InitializeBrowser(browser);
   return browser;
 }
 
