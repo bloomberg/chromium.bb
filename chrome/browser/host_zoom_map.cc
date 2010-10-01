@@ -250,6 +250,7 @@ void HostZoomMap::Observe(
         if (prefs::kPerHostZoomLevels == *name)
           Load();
       }
+      break;
     }
     default:
       NOTREACHED() << "Unexpected preference observed.";
