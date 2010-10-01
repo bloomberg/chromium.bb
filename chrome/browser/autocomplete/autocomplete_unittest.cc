@@ -17,6 +17,11 @@
 #define HISTORY_IDENTIFIER L"Chrome:History"
 #define SEARCH_IDENTIFIER L"google.com/websearch/en"
 
+static std::ostream& operator<<(std::ostream& os,
+                                const AutocompleteResult::const_iterator& it) {
+  return os << static_cast<const AutocompleteMatch*>(&(*it));
+}
+
 namespace {
 
 const size_t num_results_per_provider = 3;
@@ -166,11 +171,6 @@ void AutocompleteProviderTest::Observe(NotificationType type,
     result_.CopyFrom(*(Details<const AutocompleteResult>(details).ptr()));
     MessageLoop::current()->Quit();
   }
-}
-
-std::ostream& operator<<(std::ostream& os,
-                         const AutocompleteResult::const_iterator& iter) {
-  return os << static_cast<const AutocompleteMatch*>(&(*iter));
 }
 
 // Tests that the default selection is set properly when updating results.
