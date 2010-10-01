@@ -502,7 +502,9 @@ DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
 
   DictionaryValue* dict = NULL;
   Value* tmp_value = NULL;
-  if (!pref_value_store_->GetValue(path, &tmp_value) ||
+  // Look for an existing preference in the user store. If it doesn't
+  // exist or isn't the correct type, create a new user preference.
+  if (!pref_value_store_->GetUserValue(path, &tmp_value) ||
       !tmp_value->IsType(Value::TYPE_DICTIONARY)) {
     dict = new DictionaryValue;
     pref_value_store_->SetUserPrefValue(path, dict);
@@ -527,7 +529,9 @@ ListValue* PrefService::GetMutableList(const char* path) {
 
   ListValue* list = NULL;
   Value* tmp_value = NULL;
-  if (!pref_value_store_->GetValue(path, &tmp_value) ||
+  // Look for an existing preference in the user store. If it doesn't
+  // exist or isn't the correct type, create a new user preference.
+  if (!pref_value_store_->GetUserValue(path, &tmp_value) ||
       !tmp_value->IsType(Value::TYPE_LIST)) {
     list = new ListValue;
     pref_value_store_->SetUserPrefValue(path, list);

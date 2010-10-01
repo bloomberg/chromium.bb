@@ -66,19 +66,18 @@ bool PrefValueStore::GetValue(const std::string& name,
                               Value** out_value) const {
   // Check the |PrefStore|s in order of their priority from highest to lowest
   // to find the value of the preference described by the given preference name.
-  // If the found value is not the correct type, keep looking. This allows a
-  // default value to override an outdated user-pref setting.
   for (size_t i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
-    if (pref_stores_[i].get() &&
-        pref_stores_[i]->prefs()->Get(name.c_str(), out_value) &&
-        IsValidType(GetRegisteredType(name), (*out_value)->GetType(),
-                    static_cast<PrefNotifier::PrefStoreType>(i))) {
+    if (GetValueFromStore(name.c_str(),
+                          static_cast<PrefNotifier::PrefStoreType>(i),
+                          out_value))
       return true;
-    }
   }
-  // No valid value found for the given preference name: set the return false.
-  *out_value = NULL;
   return false;
+}
+
+bool PrefValueStore::GetUserValue(const std::string& name,
+                                  Value** out_value) const {
+  return GetValueFromStore(name.c_str(), PrefNotifier::USER_STORE, out_value);
 }
 
 void PrefValueStore::RegisterPreferenceType(const std::string& name,
@@ -225,17 +224,28 @@ PrefNotifier::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
   return PrefNotifier::INVALID_STORE;
 }
 
-bool PrefValueStore::PrefValueInStore(const char* name,
-                                      PrefNotifier::PrefStoreType store) const {
-  if (!pref_stores_[store].get()) {
-    // No store of that type, so this pref can't be in it.
-    return false;
-  }
+bool PrefValueStore::PrefValueInStore(
+    const char* name,
+    PrefNotifier::PrefStoreType store) const {
+  // Declare a temp Value* and call GetValueFromStore,
+  // ignoring the output value.
   Value* tmp_value = NULL;
-  if (pref_stores_[store]->prefs()->Get(name, &tmp_value) &&
-      IsValidType(GetRegisteredType(name), tmp_value->GetType(), store)) {
+  return GetValueFromStore(name, store, &tmp_value);
+}
+
+bool PrefValueStore::GetValueFromStore(
+    const char* name,
+    PrefNotifier::PrefStoreType store,
+    Value** out_value) const {
+  // Only return true if we find a value and it is the correct type, so stale
+  // values with the incorrect type will be ignored.
+  if (pref_stores_[store].get() &&
+      pref_stores_[store]->prefs()->Get(name, out_value) &&
+      IsValidType(GetRegisteredType(name), (*out_value)->GetType(), store)) {
     return true;
   }
+  // No valid value found for the given preference name: set the return false.
+  *out_value = NULL;
   return false;
 }
 

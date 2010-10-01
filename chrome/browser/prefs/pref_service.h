@@ -194,6 +194,8 @@ class PrefService : public NonThreadSafe {
   // WARNING: Changes to the dictionary or list will not automatically notify
   // pref observers.
   // Use a ScopedPrefUpdate to update observers on changes.
+  // These should really be GetUserMutable... since we will only ever get
+  // a mutable from the user preferences store.
   DictionaryValue* GetMutableDictionary(const char* path);
   ListValue* GetMutableList(const char* path);
 

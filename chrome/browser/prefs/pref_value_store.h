@@ -56,6 +56,9 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // Preference::GetValue() instead of calling this method directly.
   bool GetValue(const std::string& name, Value** out_value) const;
 
+  // Same as GetValue but only searches USER_STORE.
+  bool GetUserValue(const std::string& name, Value** out_value) const;
+
   // Adds a preference to the mapping of names to types.
   void RegisterPreferenceType(const std::string& name, Value::ValueType type);
 
@@ -197,6 +200,11 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // registered with.
   bool PrefValueInStore(const char* name,
                         PrefNotifier::PrefStoreType store) const;
+
+  // Get a value from the specified store type.
+  bool GetValueFromStore(const char* name,
+                         PrefNotifier::PrefStoreType store,
+                         Value** out_value) const;
 
   // Called during policy refresh after ReadPrefs completes on the thread
   // that initiated the policy refresh. RefreshPolicyPrefsCompletion takes
