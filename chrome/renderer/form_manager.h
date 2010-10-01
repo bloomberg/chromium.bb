@@ -39,9 +39,13 @@ class FormManager {
 
   // Fills out a FormField object from a given WebFormControlElement.
   // If |get_value| is true, |field| will have the value set from |element|.
+  // If |get_options| is true, |field| will have the select options set from
+  // |element|.
+  // TODO(jhawkins): Use a bit-field instead of two parameters.
   static void WebFormControlElementToFormField(
       const WebKit::WebFormControlElement& element,
       bool get_value,
+      bool get_options,
       webkit_glue::FormField* field);
 
   // Returns the corresponding label for |element|.  WARNING: This method can
@@ -49,35 +53,27 @@ class FormManager {
   // is loading.
   static string16 LabelForElement(const WebKit::WebFormControlElement& element);
 
-  // Fills out a FormData object from a given WebFormElement.  If |get_values|
-  // is true, the fields in |form| will have the values filled out.  Returns
-  // true if |form| is filled out; it's possible that |element| won't meet the
-  // requirements in |requirements|.  This also returns false if there are no
-  // fields in |form|.
+  // Fills out a FormData object from a given WebFormElement. If |get_values|
+  // is true, the fields in |form| will have the values filled out. If
+  // |get_options| is true, the fields in |form will have select options filled
+  // out. Returns true if |form| is filled out; it's possible that |element|
+  // won't meet the requirements in |requirements|. This also returns false if
+  // there are no fields in |form|.
   // TODO(jhawkins): Remove the user of this in RenderView and move this to
   // private.
   static bool WebFormElementToFormData(const WebKit::WebFormElement& element,
                                        RequirementsMask requirements,
                                        bool get_values,
+                                       bool get_options,
                                        webkit_glue::FormData* form);
 
   // Scans the DOM in |frame| extracting and storing forms.
   void ExtractForms(const WebKit::WebFrame* frame);
 
-  // Returns a vector of forms that match |requirements|.
-  void GetForms(RequirementsMask requirements,
-                std::vector<webkit_glue::FormData>* forms);
-
   // Returns a vector of forms in |frame| that match |requirements|.
   void GetFormsInFrame(const WebKit::WebFrame* frame,
                        RequirementsMask requirements,
                        std::vector<webkit_glue::FormData>* forms);
-
-  // Returns the cached FormData for |element|.  Returns true if the form was
-  // found in the cache.
-  bool FindForm(const WebKit::WebFormElement& element,
-                RequirementsMask requirements,
-                webkit_glue::FormData* form);
 
   // Finds the form that contains |element| and returns it in |form|. Returns
   // false if the form is not found.
@@ -128,14 +124,6 @@ class FormManager {
   // The callback type used by ForEachMatchingFormField().
   typedef Callback2<WebKit::WebFormControlElement*,
                     const webkit_glue::FormField*>::Type Callback;
-
-  // Converts a FormElement to FormData storage.  Returns false if the form does
-  // not meet all the requirements in the requirements mask.
-  // TODO(jhawkins): Modify FormElement so we don't need |frame|.
-  static bool FormElementToFormData(const WebKit::WebFrame* frame,
-                                    const FormElement* form_element,
-                                    RequirementsMask requirements,
-                                    webkit_glue::FormData* form);
 
   // Infers corresponding label for |element| from surrounding context in the
   // DOM.  Contents of preceding <p> tag or preceding text element found in

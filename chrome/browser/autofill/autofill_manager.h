@@ -155,13 +155,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                      AutoFillType type,
                      webkit_glue::FormField* field);
 
-  // Select matching data in the |field|. For now only fixes the cases of the
-  // wrong case, in the future should do extended matching (for example,
-  // Hawaii -> HI).
-  void FillSelectOneField(const AutoFillProfile* profile,
-                          AutoFillType type,
-                          webkit_glue::FormField* field);
-
   // Set |field| argument's value for phone number based on contents of the
   // |profile|.
   void FillPhoneNumberField(const AutoFillProfile* profile,

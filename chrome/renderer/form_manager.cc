@@ -245,7 +245,10 @@ FormManager::~FormManager() {
 
 // static
 void FormManager::WebFormControlElementToFormField(
-    const WebFormControlElement& element, bool get_value, FormField* field) {
+    const WebFormControlElement& element,
+    bool get_value,
+    bool get_options,
+    FormField* field) {
   DCHECK(field);
 
   // The label is not officially part of a WebFormControlElement; however, the
@@ -254,10 +257,12 @@ void FormManager::WebFormControlElementToFormField(
   field->set_name(element.nameForAutofill());
   field->set_form_control_type(element.formControlType());
 
-  // Set option strings on the field if available.
-  std::vector<string16> option_strings;
-  GetOptionStringsFromElement(element, &option_strings);
-  field->set_option_strings(option_strings);
+  if (get_options) {
+    // Set option strings on the field if available.
+    std::vector<string16> option_strings;
+    GetOptionStringsFromElement(element, &option_strings);
+    field->set_option_strings(option_strings);
+  }
 
   if (element.formControlType() == WebString::fromUTF8("text")) {
     const WebInputElement& input_element = element.toConst<WebInputElement>();
@@ -317,6 +322,7 @@ string16 FormManager::LabelForElement(const WebFormControlElement& element) {
 bool FormManager::WebFormElementToFormData(const WebFormElement& element,
                                            RequirementsMask requirements,
                                            bool get_values,
+                                           bool get_options,
                                            FormData* form) {
   DCHECK(form);
 
@@ -368,7 +374,8 @@ bool FormManager::WebFormElementToFormData(const WebFormElement& element,
 
     // Create a new FormField, fill it out and map it to the field's name.
     FormField* field = new FormField;
-    WebFormControlElementToFormField(control_element, get_values, field);
+    WebFormControlElementToFormField(
+        control_element, get_values, get_options, field);
     form_fields.push_back(field);
     // TODO(jhawkins): A label element is mapped to a form control element's id.
     // field->name() will contain the id only if the name does not exist.  Add
@@ -454,28 +461,12 @@ void FormManager::ExtractForms(const WebFrame* frame) {
   }
 }
 
-void FormManager::GetForms(RequirementsMask requirements,
-                           std::vector<FormData>* forms) {
-  DCHECK(forms);
-
-  for (FormElementList::iterator form_iter = form_elements_.begin();
-       form_iter != form_elements_.end(); ++form_iter) {
-    FormData form;
-    if (WebFormElementToFormData((*form_iter)->form_element,
-                                 requirements,
-                                 true,
-                                 &form))
-      forms->push_back(form);
-  }
-}
-
 void FormManager::GetFormsInFrame(const WebFrame* frame,
                                   RequirementsMask requirements,
                                   std::vector<FormData>* forms) {
   DCHECK(frame);
   DCHECK(forms);
 
-  // TODO(jhawkins): Factor this out and use it here and in GetForms.
   for (FormElementList::const_iterator form_iter =
            form_elements_.begin();
        form_iter != form_elements_.end(); ++form_iter) {
@@ -494,33 +485,11 @@ void FormManager::GetFormsInFrame(const WebFrame* frame,
       continue;
 
     FormData form;
-    FormElementToFormData(frame, form_element, requirements, &form);
+    WebFormElementToFormData(
+        form_element->form_element, requirements, true, false, &form);
     if (form.fields.size() >= kRequiredAutoFillFields)
       forms->push_back(form);
   }
-}
-
-bool FormManager::FindForm(const WebFormElement& element,
-                           RequirementsMask requirements,
-                           FormData* form) {
-  DCHECK(form);
-
-  const WebFrame* frame = element.document().frame();
-  if (!frame)
-    return false;
-
-  for (FormElementList::const_iterator iter = form_elements_.begin();
-       iter != form_elements_.end(); ++iter) {
-    if ((*iter)->form_element.document().frame() != frame)
-      continue;
-
-    if ((*iter)->form_element.name() != element.name())
-      continue;
-
-    return FormElementToFormData(frame, *iter, requirements, form);
-  }
-
-  return false;
 }
 
 bool FormManager::FindFormWithFormControlElement(
@@ -545,7 +514,7 @@ bool FormManager::FindFormWithFormControlElement(
          iter != form_element->control_elements.end(); ++iter) {
       if (iter->nameForAutofill() == element.nameForAutofill()) {
         WebFormElementToFormData(
-            form_element->form_element, requirements, true, form);
+            form_element->form_element, requirements, true, true, form);
         return true;
       }
     }
@@ -671,50 +640,6 @@ bool FormManager::FormWithNodeIsAutoFilled(const WebNode& node) {
   }
 
   return false;
-}
-
-// static
-bool FormManager::FormElementToFormData(const WebFrame* frame,
-                                        const FormElement* form_element,
-                                        RequirementsMask requirements,
-                                        FormData* form) {
-  if (requirements & REQUIRE_AUTOCOMPLETE &&
-      !form_element->form_element.autoComplete())
-    return false;
-
-  form->name = form_element->form_element.name();
-  form->method = form_element->form_element.method();
-  form->origin = frame->url();
-  form->action =
-      frame->document().completeURL(form_element->form_element.action());
-
-  // If the completed URL is not valid, just use the action we get from
-  // WebKit.
-  if (!form->action.is_valid())
-    form->action = GURL(form_element->form_element.action());
-
-  for (std::vector<WebFormControlElement>::const_iterator element_iter =
-           form_element->control_elements.begin();
-       element_iter != form_element->control_elements.end(); ++element_iter) {
-    const WebFormControlElement& control_element = *element_iter;
-
-    if (requirements & REQUIRE_AUTOCOMPLETE &&
-        control_element.formControlType() == WebString::fromUTF8("text")) {
-      const WebInputElement& input_element =
-          control_element.toConst<WebInputElement>();
-      if (!input_element.autoComplete())
-        continue;
-    }
-
-    if (requirements & REQUIRE_ENABLED && !control_element.isEnabled())
-      continue;
-
-    FormField field;
-    WebFormControlElementToFormField(control_element, false, &field);
-    form->fields.push_back(field);
-  }
-
-  return true;
 }
 
 // static
