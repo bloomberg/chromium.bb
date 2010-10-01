@@ -694,6 +694,9 @@ const char kKeepAliveForTest[]              = "keep-alive-for-test";
 // Load an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
+// Uninstall an extension with the specified extension id.
+const char kUninstallExtension[]            = "uninstall-extension";
+
 // Load an NPAPI plugin from the specified path.
 const char kLoadPlugin[]                    = "load-plugin";
 

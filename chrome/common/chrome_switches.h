@@ -202,6 +202,7 @@ extern const char kInternalPepper[];
 extern const char kJavaScriptFlags[];
 extern const char kKeepAliveForTest[];
 extern const char kLoadExtension[];
+extern const char kUninstallExtension[];
 extern const char kLoadPlugin[];
 extern const char kExtraPluginDir[];
 extern const char kLogNetLog[];

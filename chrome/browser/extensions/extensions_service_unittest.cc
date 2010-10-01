@@ -2034,6 +2034,47 @@ TEST_F(ExtensionsServiceTest, UninstallExtension) {
   EXPECT_FALSE(file_util::PathExists(extension_path));
 }
 
+// Tests the uninstaller helper.
+TEST_F(ExtensionsServiceTest, UninstallExtensionHelper) {
+  InitializeEmptyExtensionsService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+
+  // A simple extension that should install without error.
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  InstallExtension(path, true);
+
+  // The directory should be there now.
+  const char* extension_id = good_crx;
+  FilePath extension_path = extensions_install_dir_.AppendASCII(extension_id);
+  EXPECT_TRUE(file_util::PathExists(extension_path));
+
+  bool result = ExtensionsService::UninstallExtensionHelper(service_,
+                                                            extension_id);
+  total_successes_ = 0;
+
+  EXPECT_TRUE(result);
+
+  // We should get an unload notification.
+  ASSERT_TRUE(unloaded_id_.length());
+  EXPECT_EQ(extension_id, unloaded_id_);
+
+  ValidatePrefKeyCount(0);
+
+  // The extension should not be in the service anymore.
+  ASSERT_FALSE(service_->GetExtensionById(extension_id, false));
+  loop_.RunAllPending();
+
+  // The directory should be gone.
+  EXPECT_FALSE(file_util::PathExists(extension_path));
+
+  // Attempt to uninstall again. This should fail as we just removed the
+  // extension.
+  result = ExtensionsService::UninstallExtensionHelper(service_, extension_id);
+  EXPECT_FALSE(result);
+}
+
 // Verifies extension state is removed upon uninstall
 TEST_F(ExtensionsServiceTest, ClearExtensionData) {
   InitializeEmptyExtensionsService();

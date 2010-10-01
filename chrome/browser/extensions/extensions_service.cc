@@ -532,6 +532,25 @@ bool ExtensionsService::IsDownloadFromMiniGallery(const GURL& download_url) {
                          false);  // case_sensitive
 }
 
+// static
+bool ExtensionsService::UninstallExtensionHelper(
+    ExtensionsService* extensions_service,
+    const std::string& extension_id) {
+  DCHECK(extensions_service);
+
+  // We can't call UninstallExtension with an invalid extension ID, so check it
+  // first.
+  if (extensions_service->GetExtensionById(extension_id, true)) {
+    extensions_service->UninstallExtension(extension_id, false);
+  } else {
+    LOG(WARNING) << "Attempted uninstallation of non-existent extension with "
+      << "extension with id: " << extension_id;
+    return false;
+  }
+
+  return true;
+}
+
 ExtensionsService::ExtensionsService(Profile* profile,
                                      const CommandLine* command_line,
                                      const FilePath& install_directory,

@@ -909,54 +909,6 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
       ChromeThread::FILE, FROM_HERE, new CheckDefaultBrowserTask());
 }
 
-class PackExtensionLogger : public PackExtensionJob::Client {
- public:
-  PackExtensionLogger() {}
-  virtual void OnPackSuccess(const FilePath& crx_path,
-                             const FilePath& output_private_key_path);
-  virtual void OnPackFailure(const std::string& error_message);
-
- private:
-  void ShowPackExtensionMessage(const std::wstring& caption,
-                                const std::wstring& message);
-
-  DISALLOW_COPY_AND_ASSIGN(PackExtensionLogger);
-};
-
-void PackExtensionLogger::OnPackSuccess(const FilePath& crx_path,
-                                        const FilePath& output_private_key_path)
-{
-  ShowPackExtensionMessage(L"Extension Packaging Success",
-                           PackExtensionJob::StandardSuccessMessage(
-                               crx_path, output_private_key_path));
-}
-
-void PackExtensionLogger::OnPackFailure(const std::string& error_message) {
-  ShowPackExtensionMessage(L"Extension Packaging Error",
-                           UTF8ToWide(error_message));
-}
-
-void PackExtensionLogger::ShowPackExtensionMessage(const std::wstring& caption,
-                                                   const std::wstring& message)
-{
-#if defined(OS_WIN)
-  win_util::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
-#else
-  // Just send caption & text to stdout on mac & linux.
-  std::string out_text = WideToASCII(caption);
-  out_text.append("\n\n");
-  out_text.append(WideToASCII(message));
-  out_text.append("\n");
-  printf("%s", out_text.c_str());
-#endif
-
-  // We got the notification and processed it; we don't expect any further tasks
-  // to be posted to the current thread, so we should stop blocking and exit.
-  // This call to |Quit()| matches the call to |Run()| in
-  // |ProcessCmdLineImpl()|.
-  MessageLoop::current()->Quit();
-}
-
 bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
                                      const FilePath& cur_dir,
                                      bool process_startup,
@@ -991,34 +943,6 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
           testing_channel_id,
           profile,
           static_cast<size_t>(expected_tab_count));
-    }
-
-    if (command_line.HasSwitch(switches::kPackExtension)) {
-      // Input Paths.
-      FilePath src_dir = command_line.GetSwitchValuePath(
-          switches::kPackExtension);
-      FilePath private_key_path;
-      if (command_line.HasSwitch(switches::kPackExtensionKey)) {
-        private_key_path = command_line.GetSwitchValuePath(
-            switches::kPackExtensionKey);
-      }
-
-      // Launch a job to perform the packing on the file thread.
-      PackExtensionLogger pack_client;
-      scoped_refptr<PackExtensionJob> pack_job =
-          new PackExtensionJob(&pack_client, src_dir, private_key_path);
-      pack_job->Start();
-
-      // The job will post a notification task to the current thread's message
-      // loop when it is finished.  We manually run the loop here so that we
-      // block and catch the notification.  Otherwise, the process would exit;
-      // in particular, this would mean that |pack_client| would be destroyed
-      // and we wouldn't be able to report success or failure back to the user.
-      // This call to |Run()| is matched by a call to |Quit()| in the
-      // |PackExtensionLogger|'s notification handling code.
-      MessageLoop::current()->Run();
-
-      return false;
     }
   }
 

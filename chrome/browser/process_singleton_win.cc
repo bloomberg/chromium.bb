@@ -15,11 +15,13 @@
 #include "base/win_util.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
@@ -276,6 +278,15 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
       // We should only be able to get here if the profile already exists and
       // has been created.
       NOTREACHED();
+      return TRUE;
+    }
+
+    // Handle the --uninstall-extension startup action. This needs to done here
+    // in the process that is running with the target profile, otherwise the
+    // uninstall will fail to unload and remove all components.
+    if (parsed_command_line.HasSwitch(switches::kUninstallExtension)) {
+      extensions_startup::HandleUninstallExtension(parsed_command_line,
+                                                   profile);
       return TRUE;
     }
 

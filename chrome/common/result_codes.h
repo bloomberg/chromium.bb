@@ -57,6 +57,8 @@ class ResultCodes {
 
     PROFILE_IN_USE,             // The profile was in use on another host.
 
+    UNINSTALL_EXTENSION_ERROR,  // Failed to silently uninstall an extension.
+
     EXIT_LAST_CODE              // Last return code (keep it last).
   };
 };

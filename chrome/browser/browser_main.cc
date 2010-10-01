@@ -43,6 +43,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/jankometer.h"
 #include "chrome/browser/labs.h"
@@ -1095,6 +1096,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
         ResultCodes::NORMAL_EXIT : ResultCodes::SHELL_INTEGRATION_FAILED;
   }
 
+  // If the command line specifies --pack-extension, attempt the pack extension
+  // startup action and exit.
+  if (parsed_command_line.HasSwitch(switches::kPackExtension)) {
+    extensions_startup::HandlePackExtension(parsed_command_line);
+    return ResultCodes::NORMAL_EXIT;
+  }
+
 #if !defined(OS_MACOSX)
   // In environments other than Mac OS X we support import of settings
   // from other browsers. In case this process is a short-lived "import"
@@ -1382,6 +1390,18 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // This will initialize bookmarks. Call it after bookmark import is done.
     // See issue 40144.
     profile->GetExtensionsService()->InitEventRouters();
+  }
+
+  // The extension service may be available at this point. If the command line
+  // specifies --uninstall-extension, attempt the uninstall extension startup
+  // action.
+  if (parsed_command_line.HasSwitch(switches::kUninstallExtension)) {
+    if (extensions_startup::HandleUninstallExtension(parsed_command_line,
+                                                     profile)) {
+      return ResultCodes::NORMAL_EXIT;
+    } else {
+      return ResultCodes::UNINSTALL_EXTENSION_ERROR;
+    }
   }
 
 #if defined(OS_WIN)

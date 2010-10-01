@@ -139,6 +139,11 @@ class ExtensionsService
   // Used to test if we need to show the "Loading" dialog for themes.
   static bool IsDownloadFromMiniGallery(const GURL& download_url);
 
+  // Attempts to uninstall an extension from a given ExtensionService. Returns
+  // true iff the target extension exists.
+  static bool UninstallExtensionHelper(ExtensionsService* extensions_service,
+                                       const std::string& extension_id);
+
   ExtensionsService(Profile* profile,
                     const CommandLine* command_line,
                     const FilePath& install_directory,
