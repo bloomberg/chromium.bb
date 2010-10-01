@@ -21,6 +21,18 @@ cr.define('options', function() {
     // Inherit BrowserOptions from OptionsPage.
     __proto__: options.OptionsPage.prototype,
 
+    homepage_pref_: {
+      'name': 'homepage',
+      'value': '',
+      'managed': false
+    },
+
+    homepage_is_newtabpage_pref_: {
+      'name': 'homepage_is_newtabpage',
+      'value': true,
+      'managed': false
+    },
+
     /**
      * Initialize BrowserOptions page.
      */
@@ -42,6 +54,14 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ManageSearchEngines']);
       };
+
+      $('homepageUseNTPButton').onchange =
+          this.handleHomepageUseNTPButtonChange_.bind(this);
+      $('homepageUseURLButton').onchange =
+          this.handleHomepageUseURLButtonChange_.bind(this);
+      $('homepageURL').onchange =
+          this.handleHomepageURLChange_.bind(this)
+
       if (!cr.isChromeOS) {
         $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
           chrome.send('becomeDefaultBrowser');
@@ -63,9 +83,11 @@ cr.define('options', function() {
       Preferences.getInstance().addEventListener('session.restore_on_startup',
           this.updateCustomStartupPageControlStates_.bind(this));
       Preferences.getInstance().addEventListener('homepage_is_newtabpage',
-          this.updateHomepageFieldState_.bind(this));
+          this.handleHomepageIsNewTabPageChange_.bind(this));
+      Preferences.getInstance().addEventListener('homepage',
+          this.handleHomepageChange_.bind(this));
+
       this.updateCustomStartupPageControlStates_();
-      this.updateHomepageFieldState_();
 
       // Remove Windows-style accelerators from button labels.
       // TODO(stuartmorgan): Remove this once the strings are updated.
@@ -145,6 +167,155 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles change events of the radio button 'homepageUseURLButton'.
+     * @private
+     * @param {event} change event.
+     */
+    handleHomepageUseURLButtonChange_: function(event) {
+      Preferences.setBooleanPref('homepage_is_newtabpage', false);
+    },
+
+    /**
+     * Handles change events of the radio button 'homepageUseNTPButton'.
+     * @private
+     * @param {event} change event.
+     */
+    handleHomepageUseNTPButtonChange_: function(event) {
+      Preferences.setBooleanPref('homepage_is_newtabpage', true);
+    },
+
+    /**
+     * Handles change events of the text field 'homepageURL'.
+     * @private
+     * @param {event} change event.
+     */
+    handleHomepageURLChange_: function(event) {
+      Preferences.setStringPref('homepage', $('homepageURL').value);
+    },
+
+    /**
+     * Handle change events of the preference 'homepage'.
+     * @private
+     * @param {event} preference changed event.
+     */
+    handleHomepageChange_: function(event) {
+      this.homepage_pref_.value = event.value['value'];
+      this.homepage_pref_.managed = event.value['managed'];
+      if (this.isHomepageURLNewTabPageURL_() && !this.homepage_pref_.managed &&
+          !this.homepage_is_newtabpage_pref_.managed) {
+        var useNewTabPage = this.isHomepageIsNewTabPageChoiceSelected_();
+        Preferences.setStringPref('homepage', '')
+        Preferences.setBooleanPref('homepage_is_newtabpage', useNewTabPage)
+      }
+      this.updateHomepageControlStates_();
+    },
+
+    /**
+     * Handle change events of the preference homepage_is_newtabpage.
+     * @private
+     * @param {event} preference changed event.
+     */
+    handleHomepageIsNewTabPageChange_: function(event) {
+      this.homepage_is_newtabpage_pref_.value = event.value['value'];
+      this.homepage_is_newtabpage_pref_.managed = event.value['managed'];
+      this.updateHomepageControlStates_();
+    },
+
+    /**
+     * Update homepage preference UI controls.  Here's a table describing the
+     * desired characteristics of the homepage choice radio value, its enabled
+     * state and the URL field enabled state. They depend on the values of the
+     * managed bits for homepage (m_hp) and homepageIsNewTabPage (m_ntp)
+     * preferences, as well as the value of the homepageIsNewTabPage preference
+     * (ntp) and whether the homepage preference is equal to the new tab page
+     * URL (hpisntp).
+     *
+     * m_hp m_ntp ntp hpisntp| choice value| choice enabled| URL field enabled
+     * ------------------------------------------------------------------------
+     * 0    0     0   0      | homepage    | 1             | 1
+     * 0    0     0   1      | new tab page| 1             | 0
+     * 0    0     1   0      | new tab page| 1             | 0
+     * 0    0     1   1      | new tab page| 1             | 0
+     * 0    1     0   0      | homepage    | 0             | 1
+     * 0    1     0   1      | homepage    | 0             | 1
+     * 0    1     1   0      | new tab page| 0             | 0
+     * 0    1     1   1      | new tab page| 0             | 0
+     * 1    0     0   0      | homepage    | 1             | 0
+     * 1    0     0   1      | new tab page| 0             | 0
+     * 1    0     1   0      | new tab page| 1             | 0
+     * 1    0     1   1      | new tab page| 0             | 0
+     * 1    1     0   0      | homepage    | 0             | 0
+     * 1    1     0   1      | new tab page| 0             | 0
+     * 1    1     1   0      | new tab page| 0             | 0
+     * 1    1     1   1      | new tab page| 0             | 0
+     *
+     * thus, we have:
+     *
+     *    choice value is new tab page === ntp || (hpisntp && (m_hp || !m_ntp))
+     *    choice enabled === !m_ntp && !(m_hp && hpisntp)
+     *    URL field enabled === !ntp && !mhp && !(hpisntp && !m_ntp)
+     *
+     * which also make sense if you think about them.
+     * @private
+     */
+    updateHomepageControlStates_: function() {
+      $('homepageURL').disabled = !this.isHomepageURLFieldEnabled_();
+      $('homepageURL').value = this.homepage_pref_.value;
+      var disableChoice = !this.isHomepageChoiceEnabled_();
+      $('homepageUseURLButton').disabled = disableChoice;
+      $('homepageUseNTPButton').disabled = disableChoice;
+      var useNewTabPage = this.isHomepageIsNewTabPageChoiceSelected_();
+      $('homepageUseNTPButton').checked = useNewTabPage;
+      $('homepageUseURLButton').checked = !useNewTabPage;
+    },
+
+    /**
+     * Tests whether the value of the 'homepage' preference equls the new tab
+     * page url (chrome://newtab).
+     * @private
+     * @returns {boolean} True if the 'homepage' value equals the new tab page
+     *     url.
+     */
+    isHomepageURLNewTabPageURL_ : function() {
+      return (this.homepage_pref_.value.toLowerCase() == 'chrome://newtab');
+    },
+
+    /**
+     * Tests whether the Homepage choice "Use New Tab Page" is selected.
+     * @private
+     * @returns {boolean} True if "Use New Tab Page" is selected.
+     */
+    isHomepageIsNewTabPageChoiceSelected_: function() {
+      return (this.homepage_is_newtabpage_pref_.value ||
+              (this.isHomepageURLNewTabPageURL_() &&
+               (this.homepage_pref_.managed ||
+                !this.homepage_is_newtabpage_pref_.managed)));
+    },
+
+    /**
+     * Tests whether the home page choice controls are enabled.
+     * @private
+     * @returns {boolean} True if the home page choice controls are enabled.
+     */
+    isHomepageChoiceEnabled_: function() {
+      return (!this.homepage_is_newtabpage_pref_.managed &&
+              !(this.homepage_pref_.managed &&
+                this.isHomepageURLNewTabPageURL_()));
+    },
+
+    /**
+     * Checks whether the home page field should be enabled.
+     * @private
+     * @returns {boolean} True if the home page field should be enabled.
+     */
+    isHomepageURLFieldEnabled_: function() {
+      return (!this.homepage_is_newtabpage_pref_.value &&
+              !this.homepage_pref_.managed &&
+              !(this.isHomepageURLNewTabPageURL_() &&
+                !this.homepage_is_newtabpage_pref_.managed));
+    },
+
+    /**
      * Sets the enabled state of the custom startup page list controls
      * based on the current startup radio button selection.
      * @private
@@ -184,15 +355,6 @@ cr.define('options', function() {
     addStartupPage_: function(url) {
       var firstSelection = $('startupPages').selectionModel.selectedIndex;
       chrome.send('addStartupPage', [url, String(firstSelection)]);
-    },
-
-    /**
-     * Sets the enabled state of the homepage field based on the current
-     * homepage radio button selection.
-     * @private
-     */
-    updateHomepageFieldState_: function() {
-      $('homepageURL').disabled = !$('homepageUseURLButton').checked;
     },
 
     /**

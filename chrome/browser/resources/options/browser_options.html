@@ -35,16 +35,16 @@
   <section>
     <h3 i18n-content="homepageGroupName"></h3>
     <div>
-      <label><input type="radio" name="homepage"
-          pref="homepage_is_newtabpage" value="true"
+      <label><input type="radio" name="homepage" id="homepageUseNTPButton"
+          value="true"
           metric="Options_Homepage_IsNewTabPage">
           <span i18n-content="homepageUseNewTab"></span></label>
       <label><input type="radio" name="homepage" id="homepageUseURLButton"
-          pref="homepage_is_newtabpage" value="false"
+          value="false"
           metric="Options_Homepage_IsNewTabPage">
           <span i18n-content="homepageUseURL"></span></label>
       <div class="suboption">
-        <input id="homepageURL" type="url" pref="homepage">
+        <input id="homepageURL" type="url">
       </div>
       <div class="option">
         <label><input id="homepageShowButton"
