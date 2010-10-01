@@ -684,8 +684,6 @@
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    ...
    fun:*20FactoryForExtensionsC1EP7ProfileRK8FilePathb
-   fun:_ZN29ChromeURLRequestContextGetter31CreateOffTheRecordForExtensionsEP7Profile
-   fun:_ZN23OffTheRecordProfileImpl30GetRequestContextForExtensionsEv
    ...
    fun:_ZN21ResourceMessageFilterC1EP22ResourceDispatcherHostiP17AudioRendererHostP13PluginServicePN8printing15PrintJobManagerEP7ProfileP18RenderWidgetHelper
    fun:_ZN24BrowserRenderProcessHost4InitEbb
@@ -700,7 +698,6 @@
    fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
    fun:_ZNK7Browser23CreateTabContentsForURLERK4GURLS2_P7ProfilejbP12SiteInstance
    fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jiiP12SiteInstanceRKSsPPS_
-   fun:_ZN7Browser13AddBlankTabAtEib
 }
 
 #-----------------------------------------------------------------------
