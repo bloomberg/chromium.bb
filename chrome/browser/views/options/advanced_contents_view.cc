@@ -34,6 +34,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -1441,9 +1442,7 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
     // Open a new browser window for the management tab.  The browser
     // will go away when the user closes that tab.
     Browser* browser = Browser::Create(profile());
-    // FIXME(scottbyer): Refactor Cloud Print URL creation.
-    // http://code.google.com/p/chromium/issues/detail?id=56850
-    browser->OpenURL(GURL("https://www.google.com/cloudprint/manage.html"),
+    browser->OpenURL(CloudPrintURL(profile()).GetCloudPrintServiceManageURL(),
                      GURL(), NEW_WINDOW, PageTransition::LINK);
   }
 }

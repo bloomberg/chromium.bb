@@ -49,3 +49,13 @@ GURL CloudPrintURL::GetCloudPrintServiceDialogURL() {
       replacements);
   return cloud_print_dialog_url;
 }
+
+GURL CloudPrintURL::GetCloudPrintServiceManageURL() {
+  GURL cloud_print_service_url = GetCloudPrintServiceURL();
+  std::string path(cloud_print_service_url.path() + "/manage.html");
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
+  GURL cloud_print_manage_url = cloud_print_service_url.ReplaceComponents(
+      replacements);
+  return cloud_print_manage_url;
+}

@@ -16,6 +16,7 @@ class CloudPrintURL {
 
   GURL GetCloudPrintServiceURL();
   GURL GetCloudPrintServiceDialogURL();
+  GURL GetCloudPrintServiceManageURL();
 
  private:
   void RegisterPreferences();

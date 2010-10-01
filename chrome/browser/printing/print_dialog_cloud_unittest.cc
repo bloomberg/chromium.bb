@@ -177,6 +177,15 @@ TEST_F(CloudPrintURLTest, CheckDefaultURLs) {
   EXPECT_THAT(dialog_url, HasSubstr("/client/"));
   EXPECT_THAT(dialog_url, Not(HasSubstr("cloudprint/cloudprint")));
   EXPECT_THAT(dialog_url, HasSubstr("/dialog.html"));
+
+  std::string manage_url =
+      CloudPrintURL(profile_.get()).
+      GetCloudPrintServiceManageURL().spec();
+  EXPECT_THAT(manage_url, HasSubstr("www.google.com"));
+  EXPECT_THAT(manage_url, HasSubstr("/cloudprint/"));
+  EXPECT_THAT(manage_url, Not(HasSubstr("/client/")));
+  EXPECT_THAT(manage_url, Not(HasSubstr("cloudprint/cloudprint")));
+  EXPECT_THAT(manage_url, HasSubstr("/manage"));
 }
 
 // Testing for CloudPrintDataSender needs a mock DOMUI.
