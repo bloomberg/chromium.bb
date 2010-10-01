@@ -274,13 +274,17 @@ void AccessibilityEventRouterGtk::RemoveEventListeners() {
 
 void AccessibilityEventRouterGtk::AddRootWidget(
     GtkWidget* root_widget, Profile* profile) {
-  root_widget_profile_map_[root_widget] = profile;
+  root_widget_info_map_[root_widget].refcount++;
+  root_widget_info_map_[root_widget].profile = profile;
 }
 
 void AccessibilityEventRouterGtk::RemoveRootWidget(GtkWidget* root_widget) {
-  DCHECK(root_widget_profile_map_.find(root_widget) !=
-         root_widget_profile_map_.end());
-  root_widget_profile_map_.erase(root_widget);
+  DCHECK(root_widget_info_map_.find(root_widget) !=
+         root_widget_info_map_.end());
+  root_widget_info_map_[root_widget].refcount--;
+  if (root_widget_info_map_[root_widget].refcount == 0) {
+    root_widget_info_map_.erase(root_widget);
+  }
 }
 
 void AccessibilityEventRouterGtk::IgnoreWidget(GtkWidget* widget) {
@@ -302,14 +306,14 @@ void AccessibilityEventRouterGtk::FindWidget(
   *is_accessible = false;
 
   // First see if it's a descendant of a root widget.
-  for (base::hash_map<GtkWidget*, Profile*>::const_iterator iter =
-           root_widget_profile_map_.begin();
-       iter != root_widget_profile_map_.end();
+  for (base::hash_map<GtkWidget*, RootWidgetInfo>::const_iterator iter =
+           root_widget_info_map_.begin();
+       iter != root_widget_info_map_.end();
        ++iter) {
-    if (gtk_widget_is_ancestor(widget, iter->first)) {
+    if (widget == iter->first || gtk_widget_is_ancestor(widget, iter->first)) {
       *is_accessible = true;
       if (profile)
-        *profile = iter->second;
+        *profile = iter->second.profile;
       break;
     }
   }

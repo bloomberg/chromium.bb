@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/singleton.h"
 #include "base/task.h"
@@ -69,6 +70,21 @@ class AccessibilityEventRouterGtk {
 
     // If true, will ignore this widget and not send accessibility events.
     bool ignore;
+  };
+
+  // Internal information about a root widget
+  struct RootWidgetInfo {
+    RootWidgetInfo() : refcount(0), profile(NULL) { }
+
+    // The number of times that AddRootWidget has been called on this
+    // widget. When RemoveRootWidget has been called an equal number of
+    // times and the refcount reaches zero, this entry will be deleted.
+    int refcount;
+
+    // The profile associated with this root widget; accessibility
+    // notifications for any descendant of this root widget will get routed
+    // to this profile.
+    Profile* profile;
   };
 
   // Get the single instance of this class.
@@ -158,7 +174,7 @@ class AccessibilityEventRouterGtk {
 
   // The set of all root widgets; only descendants of these will generate
   // accessibility notifications.
-  base::hash_map<GtkWidget*, Profile*> root_widget_profile_map_;
+  base::hash_map<GtkWidget*, RootWidgetInfo> root_widget_info_map_;
 
   // Extra information about specific widgets.
   base::hash_map<GtkWidget*, WidgetInfo> widget_info_map_;
@@ -180,6 +196,9 @@ class AccessibilityEventRouterGtk {
   // Used to schedule invocations of StartListening() and to defer handling
   // of some events until the next time through the event loop.
   ScopedRunnableMethodFactory<AccessibilityEventRouterGtk> method_factory_;
+
+  friend class AccessibilityEventRouterGtkTest;
+  FRIEND_TEST_ALL_PREFIXES(AccessibilityEventRouterGtkTest, AddRootWidgetTwice);
 };
 
 #endif  // CHROME_BROWSER_GTK_ACCESSIBILITY_EVENT_ROUTER_GTK_H_
