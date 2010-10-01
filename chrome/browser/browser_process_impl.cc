@@ -638,12 +638,22 @@ void BrowserProcessImpl::CreateLocalState() {
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   local_state_.reset(PrefService::CreatePrefService(local_state_path, NULL));
 
+  pref_change_registrar_.Init(local_state_.get());
+
   // Make sure the the plugin updater gets notifications of changes
   // in the plugin blacklist.
   local_state_->RegisterListPref(prefs::kPluginsPluginsBlacklist);
-  plugin_state_change_registrar_.Init(local_state_.get());
-  plugin_state_change_registrar_.Add(prefs::kPluginsPluginsBlacklist,
-                                     PluginUpdater::GetPluginUpdater());
+  pref_change_registrar_.Add(prefs::kPluginsPluginsBlacklist,
+                             PluginUpdater::GetPluginUpdater());
+
+  // Initialize and set up notifications for the printing enabled
+  // preference.
+  local_state_->RegisterBooleanPref(prefs::kPrintingEnabled, true);
+  bool printing_enabled =
+      local_state_->GetBoolean(prefs::kPrintingEnabled);
+  print_job_manager_->set_printing_enabled(printing_enabled);
+  pref_change_registrar_.Add(prefs::kPrintingEnabled,
+                             print_job_manager_.get());
 }
 
 void BrowserProcessImpl::CreateIconManager() {

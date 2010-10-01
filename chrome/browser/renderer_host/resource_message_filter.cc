@@ -1144,6 +1144,12 @@ void ResourceMessageFilter::OnResolveProxyCompleted(
 
 void ResourceMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   scoped_refptr<printing::PrinterQuery> printer_query;
+  if (!print_job_manager_->printing_enabled()) {
+    // Reply with NULL query.
+    OnGetDefaultPrintSettingsReply(printer_query, reply_msg);
+    return;
+  }
+
   print_job_manager_->PopPrinterQuery(0, &printer_query);
   if (!printer_query.get()) {
     printer_query = new printing::PrinterQuery;
@@ -1168,7 +1174,8 @@ void ResourceMessageFilter::OnGetDefaultPrintSettingsReply(
     scoped_refptr<printing::PrinterQuery> printer_query,
     IPC::Message* reply_msg) {
   ViewMsg_Print_Params params;
-  if (printer_query->last_status() != printing::PrintingContext::OK) {
+  if (!printer_query.get() ||
+      printer_query->last_status() != printing::PrintingContext::OK) {
     memset(&params, 0, sizeof(params));
   } else {
     RenderParamsFromPrintSettings(printer_query->settings(), &params);
@@ -1176,11 +1183,14 @@ void ResourceMessageFilter::OnGetDefaultPrintSettingsReply(
   }
   ViewHostMsg_GetDefaultPrintSettings::WriteReplyParams(reply_msg, params);
   Send(reply_msg);
-  // If user hasn't cancelled.
-  if (printer_query->cookie() && printer_query->settings().dpi()) {
-    print_job_manager_->QueuePrinterQuery(printer_query.get());
-  } else {
-    printer_query->StopWorker();
+  // If printing was enabled.
+  if (printer_query.get()) {
+    // If user hasn't cancelled.
+    if (printer_query->cookie() && printer_query->settings().dpi()) {
+      print_job_manager_->QueuePrinterQuery(printer_query.get());
+    } else {
+      printer_query->StopWorker();
+    }
   }
 }
 

@@ -194,6 +194,17 @@ templates and will be translated for each locale. -->
       If this setting is disabled or not configured, browsing history is saved.
     </message>
 
+    <message name="IDS_POLICY_PRINTINGENABLED_CAPTION" desc="Caption of the 'Printing enabled' policy settings page.">
+      Enable printing
+    </message>
+    <message name="IDS_POLICY_PRINTINGENABLED_DESC" desc="Description of the 'Printing enabled' policy settings page.">
+      Enables printing in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      If this setting is enabled or not configured, users can print.
+
+      If this setting is disabled, users cannot print from <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Printing is disabled in the wrench menu, extensions, JavaScript applications, etc. It is still possible to print from plugins that bypass <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> while printing. For example certain Flash applications has the print option in their context menu, and that will not be disabled.
+    </message>
+
     <message name="IDS_POLICY_AUTOFILLENABLED_CAPTION" desc="Caption of the 'autofill' policy.">
       Enable AutoFill
     </message>

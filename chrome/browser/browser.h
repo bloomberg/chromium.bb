@@ -1059,6 +1059,9 @@ class Browser : public TabHandlerDelegate,
   // Keep track of the encoding auto detect pref.
   BooleanPrefMember encoding_auto_detect_;
 
+  // Keep track of the printing enabled pref.
+  BooleanPrefMember printing_enabled_;
+
   // Indicates if command execution is blocked.
   bool block_command_execution_;
 

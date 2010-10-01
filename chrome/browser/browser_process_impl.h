@@ -202,9 +202,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   // Our best estimate about the existence of the inspector directory.
   bool have_inspector_files_;
 
-  // Ensures that the observer of plugin disable/enable state
+  // Ensures that the observers of plugin/print disable/enable state
   // notifications are properly added and removed.
-  PrefChangeRegistrar plugin_state_change_registrar_;
+  PrefChangeRegistrar pref_change_registrar_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;

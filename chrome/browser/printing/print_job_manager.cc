@@ -4,9 +4,12 @@
 
 #include "chrome/browser/printing/print_job_manager.h"
 
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 #include "printing/printed_document.h"
 #include "printing/printed_page.h"
 
@@ -78,6 +81,14 @@ void PrintJobManager::Observe(NotificationType type,
                       *Details<JobEventDetails>(details).ptr());
       break;
     }
+    case NotificationType::PREF_CHANGED: {
+      const std::string* pref_name = Details<std::string>(details).ptr();
+      if (*pref_name == prefs::kPrintingEnabled) {
+        PrefService *local_state = g_browser_process->local_state();
+        set_printing_enabled(local_state->GetBoolean(prefs::kPrintingEnabled));
+      }
+      break;
+    }
     default: {
       NOTREACHED();
       break;
@@ -137,6 +148,16 @@ void PrintJobManager::OnPrintJobEvent(
       break;
     }
   }
+}
+
+bool PrintJobManager::printing_enabled() {
+  AutoLock lock(enabled_lock_);
+  return printing_enabled_;
+}
+
+void PrintJobManager::set_printing_enabled(bool printing_enabled) {
+  AutoLock lock(enabled_lock_);
+  printing_enabled_ = printing_enabled;
 }
 
 }  // namespace printing

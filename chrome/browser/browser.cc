@@ -244,6 +244,15 @@ Browser::Browser(Type type, Profile* profile)
       !profile->IsOffTheRecord()) {
     match_preview_.reset(new MatchPreview(this));
   }
+
+  PrefService *local_state = g_browser_process->local_state();
+  if (local_state) {
+    printing_enabled_.Init(prefs::kPrintingEnabled, local_state, this);
+    command_updater_.UpdateCommandEnabled(IDC_PRINT,
+                                          printing_enabled_.GetValue());
+  } else {
+    command_updater_.UpdateCommandEnabled(IDC_PRINT, true);
+  }
 }
 
 Browser::~Browser() {
@@ -3202,10 +3211,15 @@ void Browser::Observe(NotificationType type,
     }
 
     case NotificationType::PREF_CHANGED: {
-      if (*(Details<std::string>(details).ptr()) == prefs::kUseVerticalTabs)
+      const std::string& pref_name = *Details<std::string>(details).ptr();
+      if (pref_name == prefs::kUseVerticalTabs) {
         UseVerticalTabsChanged();
-      else
+      } else if (pref_name == prefs::kPrintingEnabled) {
+        command_updater_.UpdateCommandEnabled(IDC_PRINT,
+                                              printing_enabled_.GetValue());
+      } else {
         NOTREACHED();
+      }
       break;
     }
 
@@ -3289,7 +3303,6 @@ void Browser::InitCommandState() {
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);
-  command_updater_.UpdateCommandEnabled(IDC_PRINT, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_AUTO_DETECT, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF8, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF16LE, true);
