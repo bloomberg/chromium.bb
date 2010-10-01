@@ -1866,8 +1866,14 @@ void TestingAutomationProvider::SetBooleanPreference(int handle,
 
 void TestingAutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
                                                          int* dialog_button) {
-  NativeAppModalDialog* native_dialog =
-      Singleton<AppModalDialogQueue>()->active_dialog()->native_dialog();
+  AppModalDialog* active_dialog =
+      Singleton<AppModalDialogQueue>()->active_dialog();
+  if (!active_dialog) {
+    *showing_dialog = false;
+    *dialog_button = MessageBoxFlags::DIALOGBUTTON_NONE;
+    return;
+  }
+  NativeAppModalDialog* native_dialog = active_dialog->native_dialog();
   *showing_dialog = (native_dialog != NULL);
   if (*showing_dialog)
     *dialog_button = native_dialog->GetAppModalDialogButtons();
