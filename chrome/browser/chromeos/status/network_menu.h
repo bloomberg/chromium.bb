@@ -74,11 +74,6 @@ class NetworkMenu : public views::ViewMenuDelegate,
 
   void SetFirstLevelMenuWidth(int width);
 
-  void set_menu_offset(int delta_x, int delta_y) {
-    delta_x_ = delta_x;
-    delta_y_ = delta_y;
-  }
-
   // Cancels the active menu.
   void CancelMenu();
 
@@ -154,7 +149,8 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // The network menu.
   views::Menu2 network_menu_;
 
-  int delta_x_, delta_y_;
+  // Holds minimum width or -1 if it wasn't set up.
+  int min_width_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenu);
 };

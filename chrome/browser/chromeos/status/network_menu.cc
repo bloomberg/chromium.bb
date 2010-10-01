@@ -23,7 +23,8 @@ namespace chromeos {
 const int NetworkMenu::kNumWifiImages = 9;
 
 NetworkMenu::NetworkMenu()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
+      min_width_(-1) {
 }
 
 NetworkMenu::~NetworkMenu() {
@@ -167,6 +168,8 @@ void NetworkMenu::ActivatedAt(int index) {
 }
 
 void NetworkMenu::SetFirstLevelMenuWidth(int width) {
+  min_width_ = width;
+  // This actually has no effect since menu is rebuilt before showing.
   network_menu_.SetMinimumWidth(width);
 }
 
@@ -239,6 +242,11 @@ void NetworkMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   InitMenuItems();
   network_menu_.Rebuild();
   network_menu_.UpdateStates();
+  // Restore menu width, if it was set up.
+  // NOTE: width isn't checked for correctness here since all width-related
+  // logic implemented inside |network_menu_|.
+  if (min_width_ != -1)
+    network_menu_.SetMinimumWidth(min_width_);
   refreshing_menu_ = false;
   network_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
