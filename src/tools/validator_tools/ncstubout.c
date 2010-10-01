@@ -19,10 +19,55 @@
 
 #include "native_client/src/include/elf.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/trusted/validator_x86/ncdecode.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate.h"
-#include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
 
+
+#if NACL_TARGET_SUBARCH == 32
+
+# include "native_client/src/trusted/validator_x86/ncdecode.h"
+# include "native_client/src/trusted/validator_x86/ncvalidate.h"
+# include "native_client/src/trusted/validator_x86/ncvalidate_internaltypes.h"
+
+static void FixUpSection(uintptr_t load_address,
+                         unsigned char *code,
+                         size_t code_size) {
+  struct NCValidatorState *vstate;
+  int bundle_size = 32;
+  vstate = NCValidateInit(load_address, load_address + code_size, bundle_size);
+  CHECK(vstate != NULL);
+  vstate->do_stub_out = 1;
+
+  /*
+   * We should not stub out any instructions based on the features
+   * of the CPU we are executing on now.
+   */
+  memset(&vstate->cpufeatures, 0xff, sizeof(vstate->cpufeatures));
+
+  NCDecodeSegment(code, load_address, code_size, vstate);
+  /*
+   * We do not need to call NCValidateFinish() because it is
+   * normal for validation to fail.
+   */
+  NCValidateFreeState(&vstate);
+}
+
+#else
+
+# include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
+
+static void FixUpSection(uintptr_t load_address,
+                         unsigned char *code,
+                         size_t code_size) {
+  struct NaClValidatorState *vstate;
+  int bundle_size = 32;
+  vstate = NaClValidatorStateCreate(load_address, code_size, bundle_size,
+                                    RegR15);
+  CHECK(vstate != NULL);
+  NaClValidatorStateSetDoStubOut(vstate, TRUE);
+  NaClValidateSegment(code, load_address, code_size, vstate);
+  NaClValidatorStateDestroy(vstate);
+}
+
+#endif
 
 static void CheckBounds(unsigned char *data, size_t data_size,
                         void *ptr, size_t inside_size) {
@@ -31,40 +76,23 @@ static void CheckBounds(unsigned char *data, size_t data_size,
 }
 
 static void FixUpELF(unsigned char *data, size_t data_size) {
-  Elf32_Ehdr *header;
+  Elf_Ehdr *header;
   int index;
 
-  header = (Elf32_Ehdr *) data;
+  header = (Elf_Ehdr *) data;
   CheckBounds(data, data_size, header, sizeof(*header));
   CHECK(memcmp(header->e_ident, ELFMAG, strlen(ELFMAG)) == 0);
 
   for (index = 0; index < header->e_shnum; index++) {
-    Elf32_Shdr *section = (Elf32_Shdr *) (data + header->e_shoff +
-					  header->e_shentsize * index);
+    Elf_Shdr *section = (Elf_Shdr *) (data + header->e_shoff +
+                                      header->e_shentsize * index);
     CheckBounds(data, data_size, section, sizeof(*section));
 
     if ((section->sh_flags & SHF_EXECINSTR) != 0) {
-      struct NCValidatorState *vstate;
-      vstate = NCValidateInit(section->sh_addr,
-			      section->sh_addr + section->sh_size, 32);
-      CHECK(vstate != NULL);
-      vstate->do_stub_out = 1;
-
-      /*
-       * We should not stub out any instructions based on the features
-       * of the CPU we are executing on now.
-       */
-      memset(&vstate->cpufeatures, 0xff, sizeof(vstate->cpufeatures));
-
-      CheckBounds(data, data_size, data + section->sh_offset,
-                  section->sh_size);
-      NCDecodeSegment(data + section->sh_offset, section->sh_addr,
-		      section->sh_size, vstate);
-      /*
-       * We do not need to call NCValidateFinish() because it is
-       * normal for validation to fail.
-       */
-      NCValidateFreeState(&vstate);
+      CheckBounds(data, data_size,
+                  data + section->sh_offset, section->sh_size);
+      FixUpSection(section->sh_addr,
+                   data + section->sh_offset, section->sh_size);
     }
   }
 }

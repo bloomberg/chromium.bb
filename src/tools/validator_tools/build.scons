@@ -5,11 +5,19 @@
 
 Import('env')
 
-# TODO(mseaborn): Extend the ARM and x86-64 validators to support this.
-if not (env['TARGET_ARCHITECTURE'] == 'x86' and
-        env['TARGET_SUBARCH'] == '32'):
+# TODO(mseaborn): Extend the ARM validator to support this.
+if env['TARGET_ARCHITECTURE'] != 'x86':
   Return()
+
+# This is needed for #including "gen/..." files, which the header
+# files for the x86-64 validator use.
+env.Append(CPPPATH=['${TARGET_ROOT}'])
+
+if env['TARGET_SUBARCH'] == '64':
+  validator_libs = ['ncvalidate_sfi', 'ncvalidate']
+else:
+  validator_libs = ['ncvalidate']
 
 env.ComponentProgram('ncval_stubout',
                      'ncstubout.c',
-                     EXTRA_LIBS=['ncvalidate', 'platform', 'gio'])
+                     EXTRA_LIBS=validator_libs + ['platform', 'gio'])

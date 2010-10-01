@@ -8,7 +8,7 @@
 
 void unfixed_code(void);
 
-#ifdef __i386__
+#if defined(__i386__) || defined(__x86_64__)
 __asm__("unfixed_code: ret\n");
 #else
 # error "Unsupported architecture"
