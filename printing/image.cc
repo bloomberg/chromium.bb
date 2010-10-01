@@ -93,6 +93,8 @@ Image::Image(const Image& image)
       ignore_alpha_(image.ignore_alpha_) {
 }
 
+Image::~Image() {}
+
 std::string Image::checksum() const {
   MD5Digest digest;
   MD5Sum(&data_[0], data_.size(), &digest);

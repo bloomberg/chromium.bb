@@ -12,6 +12,9 @@
 // Represents the set of icons for an extension.
 class ExtensionIconSet {
  public:
+  ExtensionIconSet();
+  ~ExtensionIconSet();
+
   // Access to the underlying map from icon size->path.
   typedef std::map<int, std::string> IconMap;
   const IconMap& map() const { return map_; }

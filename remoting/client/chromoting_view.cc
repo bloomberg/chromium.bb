@@ -14,6 +14,7 @@ ChromotingView::ChromotingView()
       frame_height_(0) {
 }
 
+ChromotingView::~ChromotingView() {}
 
 // TODO(garykac): This assumes a single screen. This will need to be adjusted
 // to add support for mulitple monitors.

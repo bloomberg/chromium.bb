@@ -22,6 +22,8 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate)
   status_controller_.reset(new StatusController(routing_info_));
 }
 
+SyncSession::~SyncSession() {}
+
 SyncSessionSnapshot SyncSession::TakeSnapshot() const {
   syncable::ScopedDirLookup dir(context_->directory_manager(),
                                 context_->account_name());

@@ -17,6 +17,16 @@ using WebKit::WebString;
 
 namespace webkit_blob {
 
+BlobData::Item::Item()
+    : type_(TYPE_DATA),
+      offset_(0),
+      length_(0) {
+}
+
+BlobData::Item::~Item() {}
+
+BlobData::BlobData() {}
+
 BlobData::BlobData(const WebBlobData& data) {
   size_t i = 0;
   WebBlobData::Item item;
@@ -51,5 +61,7 @@ BlobData::BlobData(const WebBlobData& data) {
   content_type_= data.contentType().utf8().data();
   content_disposition_ = data.contentDisposition().utf8().data();
 }
+
+BlobData::~BlobData() {}
 
 }  // namespace webkit_blob

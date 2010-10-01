@@ -64,6 +64,8 @@ std::string FieldTrial::MakeName(const std::string& name_prefix,
   return big_string.append(FieldTrialList::FindFullName(trial_name));
 }
 
+FieldTrial::~FieldTrial() {}
+
 //------------------------------------------------------------------------------
 // FieldTrialList methods and members.
 

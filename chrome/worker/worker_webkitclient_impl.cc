@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/database_util.h"
+#include "chrome/common/file_system/webfilesystem_impl.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/webblobregistry_impl.h"
@@ -26,6 +27,12 @@ using WebKit::WebSharedWorkerRepository;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebURL;
+
+WorkerWebKitClientImpl::WorkerWebKitClientImpl() {
+}
+
+WorkerWebKitClientImpl::~WorkerWebKitClientImpl() {
+}
 
 WebClipboard* WorkerWebKitClientImpl::clipboard() {
   NOTREACHED();
@@ -149,8 +156,8 @@ WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsImageMIMEType(
   return WebMimeRegistry::IsSupported;
 }
 
-WebMimeRegistry::SupportsType WorkerWebKitClientImpl::supportsJavaScriptMIMEType(
-    const WebString&) {
+WebMimeRegistry::SupportsType
+WorkerWebKitClientImpl::supportsJavaScriptMIMEType(const WebString&) {
   NOTREACHED();
   return WebMimeRegistry::IsSupported;
 }

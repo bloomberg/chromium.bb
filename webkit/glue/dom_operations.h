@@ -64,6 +64,9 @@ bool GetAllSavableResourceLinksForCurrentPage(WebKit::WebView* view,
 // Structure used when installing a web page as an app. Populated via
 // GetApplicationInfo.
 struct WebApplicationInfo {
+  WebApplicationInfo();
+  ~WebApplicationInfo();
+
   struct IconInfo {
     GURL url;
     int width;
@@ -134,10 +137,11 @@ WebKit::WebString GetSubResourceLinkFromElement(
 
 // Puts the meta-elements of |document| that have the attribute |attribute_name|
 // with a value of |attribute_value| in |meta_elements|.
-void GetMetaElementsWithAttribute(WebKit::WebDocument* document,
-                                  const string16& attribute_name,
-                                  const string16& atribute_value,
-                                  std::vector<WebKit::WebElement>* meta_elements);
+void GetMetaElementsWithAttribute(
+    WebKit::WebDocument* document,
+    const string16& attribute_name,
+    const string16& atribute_value,
+    std::vector<WebKit::WebElement>* meta_elements);
 
 }  // namespace webkit_glue
 

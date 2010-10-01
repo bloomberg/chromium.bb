@@ -585,7 +585,7 @@ class CookieMonster::ParsedCookie {
 
   // Construct from a cookie string like "BLAH=1; path=/; domain=.google.com"
   ParsedCookie(const std::string& cookie_line);
-  ~ParsedCookie() { }
+  ~ParsedCookie();
 
   // You should not call any other methods on the class if !IsValid
   bool IsValid() const { return is_valid_; }

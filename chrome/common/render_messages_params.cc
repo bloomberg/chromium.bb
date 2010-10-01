@@ -188,6 +188,41 @@ ViewHostMsg_IDBDatabaseCreateObjectStore_Params::
     ~ViewHostMsg_IDBDatabaseCreateObjectStore_Params() {
 }
 
+ViewHostMsg_IDBIndexOpenCursor_Params::ViewHostMsg_IDBIndexOpenCursor_Params()
+    : response_id_(0),
+      key_flags_(0),
+      direction_(0),
+      idb_index_id_(0),
+      transaction_id_(0) {
+}
+
+ViewHostMsg_IDBIndexOpenCursor_Params::
+    ~ViewHostMsg_IDBIndexOpenCursor_Params() {
+}
+
+
+ViewHostMsg_IDBObjectStorePut_Params::ViewHostMsg_IDBObjectStorePut_Params()
+    : idb_object_store_id_(0),
+      response_id_(0),
+      add_only_(false),
+      transaction_id_(0) {
+}
+
+ViewHostMsg_IDBObjectStorePut_Params::~ViewHostMsg_IDBObjectStorePut_Params() {
+}
+
+ViewHostMsg_IDBObjectStoreCreateIndex_Params::
+ViewHostMsg_IDBObjectStoreCreateIndex_Params()
+    : response_id_(0),
+      unique_(false),
+      idb_object_store_id_(0) {
+}
+
+ViewHostMsg_IDBObjectStoreCreateIndex_Params::
+~ViewHostMsg_IDBObjectStoreCreateIndex_Params() {
+}
+
+
 ViewHostMsg_IDBObjectStoreOpenCursor_Params::
     ViewHostMsg_IDBObjectStoreOpenCursor_Params()
     : response_id_(0),

@@ -17,6 +17,8 @@ ProtocolDecoder::ProtocolDecoder()
       next_payload_known_(false) {
 }
 
+ProtocolDecoder::~ProtocolDecoder() {}
+
 void ProtocolDecoder::ParseClientMessages(scoped_refptr<media::DataBuffer> data,
                                           ClientMessageList* messages) {
   ParseMessages<ChromotingClientMessage>(data, messages);

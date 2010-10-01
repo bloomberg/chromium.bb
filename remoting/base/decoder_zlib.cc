@@ -26,6 +26,9 @@ DecoderZlib::DecoderZlib()
   encoding_ = EncodingZlib;
 }
 
+DecoderZlib::~DecoderZlib() {
+}
+
 bool DecoderZlib::BeginDecode(scoped_refptr<media::VideoFrame> frame,
                               UpdatedRects* updated_rects,
                               Task* partial_decode_done,

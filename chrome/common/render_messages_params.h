@@ -654,6 +654,9 @@ struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params {
 
 // Used to open both cursors and object cursors in IndexedDB.
 struct ViewHostMsg_IDBIndexOpenCursor_Params {
+  ViewHostMsg_IDBIndexOpenCursor_Params();
+  ~ViewHostMsg_IDBIndexOpenCursor_Params();
+
   // The response should have this id.
   int32 response_id_;
 
@@ -678,6 +681,9 @@ struct ViewHostMsg_IDBIndexOpenCursor_Params {
 
 // Used to set a value in an object store.
 struct ViewHostMsg_IDBObjectStorePut_Params {
+  ViewHostMsg_IDBObjectStorePut_Params();
+  ~ViewHostMsg_IDBObjectStorePut_Params();
+
   // The object store's id.
   int32 idb_object_store_id_;
 
@@ -699,6 +705,9 @@ struct ViewHostMsg_IDBObjectStorePut_Params {
 
 // Used to create an index.
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params {
+  ViewHostMsg_IDBObjectStoreCreateIndex_Params();
+  ~ViewHostMsg_IDBObjectStoreCreateIndex_Params();
+
   // The response should have this id.
   int32 response_id_;
 

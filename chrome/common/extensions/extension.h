@@ -672,6 +672,7 @@ struct ExtensionInfo {
 // notification.
 struct UninstalledExtensionInfo {
   explicit UninstalledExtensionInfo(const Extension& extension);
+  ~UninstalledExtensionInfo();
 
   std::string extension_id;
   std::set<std::string> extension_api_permissions;

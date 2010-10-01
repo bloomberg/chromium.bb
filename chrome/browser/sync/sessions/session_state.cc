@@ -13,6 +13,39 @@ using std::vector;
 namespace browser_sync {
 namespace sessions {
 
+SyncSessionSnapshot::SyncSessionSnapshot(
+    const SyncerStatus& syncer_status,
+    const ErrorCounters& errors,
+    int64 num_server_changes_remaining,
+    int64 max_local_timestamp,
+    bool is_share_usable,
+    const syncable::ModelTypeBitSet& initial_sync_ended,
+    bool more_to_sync,
+    bool is_silenced,
+    int64 unsynced_count,
+    int num_conflicting_updates,
+    bool did_commit_items)
+    : syncer_status(syncer_status),
+      errors(errors),
+      num_server_changes_remaining(num_server_changes_remaining),
+      max_local_timestamp(max_local_timestamp),
+      is_share_usable(is_share_usable),
+      initial_sync_ended(initial_sync_ended),
+      has_more_to_sync(more_to_sync),
+      is_silenced(is_silenced),
+      unsynced_count(unsynced_count),
+      num_conflicting_updates(num_conflicting_updates),
+      did_commit_items(did_commit_items) {
+}
+
+SyncSessionSnapshot::~SyncSessionSnapshot() {}
+
+ConflictProgress::ConflictProgress(bool* dirty_flag) : dirty_(dirty_flag) {}
+
+ConflictProgress::~ConflictProgress() {
+  CleanupSets();
+}
+
 IdToConflictSetMap::const_iterator ConflictProgress::IdToConflictSetFind(
     const syncable::Id& the_id) const {
   return id_to_conflict_set_.find(the_id);
@@ -131,6 +164,10 @@ void ConflictProgress::CleanupSets() {
   id_to_conflict_set_.clear();
 }
 
+UpdateProgress::UpdateProgress() {}
+
+UpdateProgress::~UpdateProgress() {}
+
 void UpdateProgress::AddVerifyResult(const VerifyResult& verify_result,
                                      const sync_pb::SyncEntity& entity) {
   verified_updates_.push_back(std::make_pair(verify_result, entity));
@@ -182,6 +219,30 @@ bool UpdateProgress::HasConflictingUpdates() const {
     }
   }
   return false;
+}
+
+AllModelTypeState::AllModelTypeState(bool* dirty_flag)
+    : unsynced_handles(dirty_flag),
+      syncer_status(dirty_flag),
+      error_counters(dirty_flag),
+      num_server_changes_remaining(dirty_flag, 0),
+      commit_set(ModelSafeRoutingInfo()) {
+}
+
+AllModelTypeState::~AllModelTypeState() {}
+
+PerModelSafeGroupState::PerModelSafeGroupState(bool* dirty_flag)
+    : conflict_progress(dirty_flag) {
+}
+
+PerModelSafeGroupState::~PerModelSafeGroupState() {
+}
+
+PerModelTypeState::PerModelTypeState(bool* dirty_flag)
+    : current_download_timestamp(dirty_flag, 0) {
+}
+
+PerModelTypeState::~PerModelTypeState() {
 }
 
 }  // namespace sessions

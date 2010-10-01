@@ -16,7 +16,7 @@ namespace remoting {
 class ChromotingView {
  public:
   ChromotingView();
-  virtual ~ChromotingView() {}
+  virtual ~ChromotingView();
 
   // Get screen dimensions.
   // TODO(garykac): This will need to be extended to support multi-monitors.

@@ -21,6 +21,10 @@ class RandomGenerator {
   }
 };
 
+ConnectionSettings::ConnectionSettings() : protocol_(cricket::PROTO_TCP) {}
+
+ConnectionSettings::~ConnectionSettings() {}
+
 void ConnectionSettings::FillXmppClientSettings(
     buzz::XmppClientSettings* xcs) const {
   DCHECK(xcs);
@@ -29,6 +33,10 @@ void ConnectionSettings::FillXmppClientSettings(
   xcs->set_proxy(talk_base::PROXY_NONE);
   xcs->set_use_proxy_auth(false);
 }
+
+ConnectionSettingsList::ConnectionSettingsList() {}
+
+ConnectionSettingsList::~ConnectionSettingsList() {}
 
 void ConnectionSettingsList::AddPermutations(const std::string& hostname,
                                              const std::vector<uint32>& iplist,

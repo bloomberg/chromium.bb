@@ -18,7 +18,8 @@
 // Parameters for a resource response header.
 struct ResourceResponseHead
     : webkit_glue::ResourceLoaderBridge::ResponseInfo {
-  ResourceResponseHead() : replace_extension_localization_templates(false) {}
+  ResourceResponseHead();
+  ~ResourceResponseHead();
 
   // The response status.
   URLRequestStatus status;
@@ -31,6 +32,9 @@ struct ResourceResponseHead
 
 // Parameters for a synchronous resource response.
 struct SyncLoadResult : ResourceResponseHead {
+  SyncLoadResult();
+  ~SyncLoadResult();
+
   // The final URL after any redirects.
   GURL final_url;
 
@@ -42,10 +46,11 @@ struct SyncLoadResult : ResourceResponseHead {
 struct ResourceResponse : public base::RefCounted<ResourceResponse> {
   ResourceResponseHead response_head;
 
+  ResourceResponse();
  private:
   friend class base::RefCounted<ResourceResponse>;
 
-  ~ResourceResponse() {}
+  virtual ~ResourceResponse();
 };
 
 #endif  // CHROME_COMMON_RESOURCE_RESPONSE_H_

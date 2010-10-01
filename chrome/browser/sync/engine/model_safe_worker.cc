@@ -38,4 +38,21 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
   }
 }
 
+ModelSafeWorker::ModelSafeWorker() {}
+
+ModelSafeWorker::~ModelSafeWorker() {}
+
+void ModelSafeWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
+  work->Run();  // For GROUP_PASSIVE, we do the work on the current thread.
+}
+
+ModelSafeGroup ModelSafeWorker::GetModelSafeGroup() {
+  return GROUP_PASSIVE;
+}
+
+bool ModelSafeWorker::CurrentThreadIsWorkThread() {
+  // The passive group is not the work thread for any browser model.
+  return false;
+}
+
 }  // namespace browser_sync

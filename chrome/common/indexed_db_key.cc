@@ -18,6 +18,9 @@ IndexedDBKey::IndexedDBKey(const WebIDBKey& key) {
   Set(key);
 }
 
+IndexedDBKey::~IndexedDBKey() {
+}
+
 void IndexedDBKey::SetNull() {
   type_ = WebIDBKey::NullType;
 }

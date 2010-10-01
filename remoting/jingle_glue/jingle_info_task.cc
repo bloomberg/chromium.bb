@@ -62,6 +62,12 @@ class JingleInfoTask::JingleInfoGetTask : public XmppTask {
 };
 
 
+JingleInfoTask::JingleInfoTask(talk_base::TaskParent* parent)
+    : XmppTask(parent, buzz::XmppEngine::HL_TYPE) {
+}
+
+JingleInfoTask::~JingleInfoTask() {}
+
 void JingleInfoTask::RefreshJingleInfoNow() {
   JingleInfoGetTask* get_task = new JingleInfoGetTask(this);
   get_task->Start();
