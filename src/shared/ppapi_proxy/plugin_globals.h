@@ -36,6 +36,9 @@ const PPB_Core* CoreInterface();
 // Get the PPB_Var interface passed in from the browser.
 const PPB_Var* VarInterface();
 
+// PPAPI constants used in the proxy.
+extern const PP_Resource kInvalidResourceId;
+
 }  // namespace ppapi_proxy
 
 #endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_

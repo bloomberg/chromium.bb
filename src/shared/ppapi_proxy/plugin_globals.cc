@@ -16,6 +16,8 @@ PP_Module module_id_for_plugin;
 
 }  // namespace;
 
+const PP_Resource kInvalidResourceId = 0;
+
 NaClSrpcChannel* GetMainSrpcChannel() {
   return main_srpc_channel;
 }
