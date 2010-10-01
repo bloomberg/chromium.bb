@@ -147,6 +147,12 @@ void WebCacheManager::SetGlobalSizeLimit(size_t bytes) {
   ReviseAllocationStrategyLater();
 }
 
+void WebCacheManager::ClearCache() {
+  // Tell each renderer process to clear the cache.
+  ClearRendederCache(active_renderers_);
+  ClearRendederCache(inactive_renderers_);
+}
+
 // static
 size_t WebCacheManager::GetDefaultGlobalSizeLimit() {
   PrefService* perf_service = g_browser_process->local_state();
@@ -295,6 +301,15 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
                                                 capacity));
     }
     ++allocation;
+  }
+}
+
+void WebCacheManager::ClearRendederCache(std::set<int> renderers) {
+  std::set<int>::const_iterator iter = renderers.begin();
+  for (; iter != renderers.end(); ++iter) {
+    RenderProcessHost* host = RenderProcessHost::FromID(*iter);
+    if (host)
+      host->Send(new ViewMsg_ClearCache());
   }
 }
 

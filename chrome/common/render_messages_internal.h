@@ -94,15 +94,18 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_New,
                        ViewMsg_New_Params)
 
-  // Tells the renderer to set its maximum cache size to the supplied value
+  // Tells the renderer to set its maximum cache size to the supplied value.
   IPC_MESSAGE_CONTROL3(ViewMsg_SetCacheCapacities,
                        size_t /* min_dead_capacity */,
                        size_t /* max_dead_capacity */,
                        size_t /* capacity */)
 
+  // Tells the renderer to cleat the cache.
+  IPC_MESSAGE_CONTROL0(ViewMsg_ClearCache)
+
   // Reply in response to ViewHostMsg_ShowView or ViewHostMsg_ShowWidget.
   // similar to the new command, but used when the renderer created a view
-  // first, and we need to update it
+  // first, and we need to update it.
   IPC_MESSAGE_ROUTED1(ViewMsg_CreatingNew_ACK,
                       gfx::NativeViewId /* parent_hwnd */)
 

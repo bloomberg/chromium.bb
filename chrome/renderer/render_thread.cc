@@ -594,6 +594,7 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCacheCapacities, OnSetCacheCapacities)
+    IPC_MESSAGE_HANDLER(ViewMsg_ClearCache, OnClearCache)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRendererHistograms,
                         OnGetRendererHistograms)
 #if defined(USE_TCMALLOC)
@@ -689,6 +690,11 @@ void RenderThread::OnSetCacheCapacities(size_t min_dead_capacity,
   EnsureWebKitInitialized();
   WebCache::setCapacities(
       min_dead_capacity, max_dead_capacity, capacity);
+}
+
+void RenderThread::OnClearCache() {
+  EnsureWebKitInitialized();
+  WebCache::clear();
 }
 
 void RenderThread::OnGetCacheResourceStats() {

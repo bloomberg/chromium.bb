@@ -17,6 +17,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -228,6 +229,9 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_CACHE) {
+    // Tell the renderers to clear their cache.
+    WebCacheManager::GetInstance()->ClearCache();
+
     // Invoke ClearBrowsingDataView::ClearCache on the IO thread.
     waiting_for_clear_cache_ = true;
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"),

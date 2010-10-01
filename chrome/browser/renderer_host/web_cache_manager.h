@@ -64,6 +64,9 @@ class WebCacheManager {
   // Sets the global size limit, forcing a recalculation of cache allocations.
   void SetGlobalSizeLimit(size_t bytes);
 
+  // Clears all in-memory caches.
+  void ClearCache();
+
   // Gets the default global size limit.  This interrogates system metrics to
   // tune the default size to the current system.
   static size_t GetDefaultGlobalSizeLimit();
@@ -167,6 +170,9 @@ class WebCacheManager {
   // Enact an allocation strategy by informing the renderers of their
   // allocations according to |strategy|.
   void EnactStrategy(const AllocationStrategy& strategy);
+
+  // Inform all |renderers| to clear their cache.
+  void ClearRendederCache(std::set<int> renderers);
 
   // Check to see if any active renderers have fallen inactive.
   void FindInactiveRenderers();
