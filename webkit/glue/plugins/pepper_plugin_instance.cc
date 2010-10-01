@@ -232,13 +232,11 @@ const PPB_Fullscreen_Dev ppb_fullscreen = {
 };
 
 void ZoomChanged(PP_Instance instance_id, double factor) {
-#ifdef ZOOM_LEVEL_IS_DOUBLE
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return;
   double zoom_level = WebView::zoomFactorToZoomLevel(factor);
   instance->container()->zoomLevelChanged(zoom_level);
-#endif
 }
 
 void ZoomLimitsChanged(PP_Instance instance_id,
@@ -249,12 +247,10 @@ void ZoomLimitsChanged(PP_Instance instance_id,
     return;
   }
 
-#ifdef ZOOM_LEVEL_IS_DOUBLE
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->ZoomLimitsChanged(minimum_factor, maximium_factor);
-#endif
 }
 
 const PPB_Zoom_Dev ppb_zoom = {

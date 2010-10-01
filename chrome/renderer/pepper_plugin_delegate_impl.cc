@@ -742,9 +742,7 @@ std::string PepperPluginDelegateImpl::GetDefaultEncoding() {
 
 void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
                                                  double maximum_factor) {
-#ifdef ZOOM_LEVEL_IS_DOUBLE
   double minimum_level = WebView::zoomFactorToZoomLevel(minimum_factor);
   double maximum_level = WebView::zoomFactorToZoomLevel(maximum_factor);
   render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
-#endif
 }

@@ -379,15 +379,10 @@ TabContents::TabContents(Profile* profile,
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
       language_state_(&controller_),
       closed_by_user_gesture_(false),
-#ifdef ZOOM_LEVEL_IS_DOUBLE
       minimum_zoom_percent_(
           static_cast<int>(WebKit::WebView::minTextSizeMultiplier * 100)),
       maximum_zoom_percent_(
           static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
-#else
-      minimum_zoom_percent_(50),
-      maximum_zoom_percent_(300),
-#endif
       temporary_zoom_settings_(false) {
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
@@ -1511,13 +1506,8 @@ int TabContents::GetZoomPercent(bool* enable_increment,
     zoom_level = zoom_map->GetZoomLevel(GetURL());
   }
 
-#ifdef ZOOM_LEVEL_IS_DOUBLE
   int percent = static_cast<int>(
       WebKit::WebView::zoomLevelToZoomFactor(zoom_level) * 100);
-#else
-  int percent = static_cast<int>(std::pow(1.2, zoom_level) * 100);
-#endif
-
   *enable_decrement = percent > minimum_zoom_percent_;
   *enable_increment = percent < maximum_zoom_percent_;
   return percent;

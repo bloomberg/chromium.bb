@@ -203,11 +203,7 @@ class RenderViewZoomer : public RenderViewVisitor {
       return true;
 
     if (net::GetHostOrSpecFromURL(GURL(webview->mainFrame()->url())) == host_)
-#ifdef ZOOM_LEVEL_IS_DOUBLE
       webview->setZoomLevel(false, zoom_level_);
-#else
-      webview->setZoomLevel(false, static_cast<int>(zoom_level_));
-#endif
     return true;
   }
 

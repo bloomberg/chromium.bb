@@ -69,7 +69,6 @@ void HostZoomMap::Load() {
         if (success) {
           zoom_level = static_cast<double>(int_zoom_level);
           // Since the values were once stored as non-clamped, clamp now.
-#ifdef ZOOM_LEVEL_IS_DOUBLE
           double zoom_factor = WebView::zoomLevelToZoomFactor(zoom_level);
           if (zoom_factor < WebView::minTextSizeMultiplier) {
             zoom_level =
@@ -78,14 +77,6 @@ void HostZoomMap::Load() {
             zoom_level =
                 WebView::zoomFactorToZoomLevel(WebView::maxTextSizeMultiplier);
           }
-#else
-          double zoom_factor = std::pow(1.2, zoom_level);
-          if (zoom_factor < 0.5) {
-            zoom_level = log(0.5) / log(1.2);
-          } else if (zoom_factor > 3.0) {
-            zoom_level = log(3.0) / log(1.2);
-          }
-#endif
         }
       }
       DCHECK(success);

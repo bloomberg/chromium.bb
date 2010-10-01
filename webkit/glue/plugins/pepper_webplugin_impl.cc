@@ -170,13 +170,7 @@ WebKit::WebString WebPluginImpl::selectionAsMarkup() const {
 }
 
 void WebPluginImpl::setZoomLevel(double level, bool text_only) {
-#ifdef ZOOM_LEVEL_IS_DOUBLE
-  double factor = WebView::zoomLevelToZoomFactor(level);
-#else
-  double factor = std::pow(1.2, level);
-#endif
-
-  instance_->Zoom(factor, text_only);
+  instance_->Zoom(WebView::zoomLevelToZoomFactor(level), text_only);
 }
 
 bool WebPluginImpl::startFind(const WebKit::WebString& search_text,
