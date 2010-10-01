@@ -333,10 +333,11 @@ SRC/stamp-glibc: | SRC
 # Create linux headers source directory, and mark that we've done that.
 SRC/stamp-linux-headers: | SRC
 	@echo "Fetching linux headers for glibc."
-	git clone http://repo.or.cz/r/linux-headers-for-nacl.git \
+	rm -rf SRC/linux-headers-for-nacl
+	git clone http://src.chromium.org/git/linux-headers-for-nacl.git \
 	  SRC/linux-headers-for-nacl
 	cd SRC/linux-headers-for-nacl && \
-	  git checkout 2dc04f8190a54defc0d59e693fa6cff3e8a916a9
+	  git checkout 0014b8d2e052dd3bf4cdc4be999d17e123c50dc2
 	touch $@
 
 # Unpack gdb, apply patches.
