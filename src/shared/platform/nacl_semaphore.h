@@ -12,6 +12,8 @@
 
 #include "native_client/src/include/nacl_base.h"
 
+#include "native_client/src/shared/platform/nacl_sync.h"
+
 #if NACL_WINDOWS
 #include "native_client/src/shared/platform/win/nacl_semaphore.h"
 #elif NACL_LINUX

@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -24,6 +25,9 @@
 * it defines PSEMNAMLEN to be 31 characters.  We'll use that value.
 */
 #define SEM_NAME_LEN 31
+
+
+#if NACL_USE_NATIVE_SEMAPHORES
 
 int NaClSemCtor(struct NaClSemaphore *sem, int32_t value) {
   /*
@@ -38,6 +42,7 @@ int NaClSemCtor(struct NaClSemaphore *sem, int32_t value) {
     sem->sem_descriptor = sem_open(sem_name, O_CREAT | O_EXCL, 700, value);
   } while ((SEM_FAILED == sem->sem_descriptor) && (EEXIST == errno));
   if (SEM_FAILED == sem->sem_descriptor) {
+    NaClLog(1, "NaClSemCtor: sem_open failed, errno %d\n", errno);
     return 0;
   }
   sem_unlink(sem_name);
@@ -84,3 +89,75 @@ int32_t NaClSemGetValue(struct NaClSemaphore *sem) {
   return value;
 #endif
 }
+
+#else  /* NACL_USE_NATIVE_SEMAPHORES */
+
+int NaClSemCtor(struct NaClSemaphore *sem, int32_t value) {
+  if (value < 0) {
+    return 0;
+  }
+  if (!NaClMutexCtor(&sem->mu)) {
+    return 0;
+  }
+  if (!NaClCondVarCtor(&sem->cv)) {
+    NaClMutexDtor(&sem->mu);
+    return 0;
+  }
+  sem->value = value;
+  return 1;
+}
+
+void NaClSemDtor(struct NaClSemaphore *sem) {
+  NaClCondVarDtor(&sem->cv);
+  NaClMutexDtor(&sem->mu);
+}
+
+NaClSyncStatus NaClSemWait(struct NaClSemaphore *sem) {
+  NaClXMutexLock(&sem->mu);
+  while (0 == sem->value) {
+    NaClXCondVarWait(&sem->cv, &sem->mu);
+  }
+  sem->value--;
+  NaClXMutexUnlock(&sem->mu);
+  return NACL_SYNC_OK;
+}
+
+NaClSyncStatus NaClSemTryWait(struct NaClSemaphore *sem) {
+  NaClSyncStatus rv = NACL_SYNC_INTERNAL_ERROR;
+
+  NaClXMutexLock(&sem->mu);
+  if (0 == sem->value) {
+    rv = NACL_SYNC_BUSY;
+  } else {
+    sem->value--;
+    rv = NACL_SYNC_OK;
+  }
+  NaClXMutexUnlock(&sem->mu);
+  return rv;
+}
+
+NaClSyncStatus NaClSemPost(struct NaClSemaphore *sem) {
+  NaClSyncStatus rv = NACL_SYNC_INTERNAL_ERROR;
+
+  NaClXMutexLock(&sem->mu);
+  if (NACL_MAX_VAL(int32_t) == sem->value) {
+    rv = NACL_SYNC_SEM_RANGE_ERROR;
+  } else {
+    sem->value++;
+    NaClXCondVarSignal(&sem->cv);
+    rv = NACL_SYNC_OK;
+  }
+  NaClXMutexUnlock(&sem->mu);
+  return rv;
+}
+
+int32_t NaClSemGetValue(struct NaClSemaphore *sem) {
+  int32_t val;
+
+  NaClXMutexLock(&sem->mu);
+  val = sem->value;
+  NaClXMutexUnlock(&sem->mu);
+  return val;
+}
+
+#endif  /* NACL_USE_NATIVE_SEMAPHORES */

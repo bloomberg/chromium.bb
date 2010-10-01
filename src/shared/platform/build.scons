@@ -98,6 +98,7 @@ platform_inputs += [
     'nacl_secure_random_common.c',
     'nacl_sync_checked.c',
     'nacl_sync.cc',
+    'platform_init.c',
     'time.cc',
     ]
 
@@ -124,5 +125,15 @@ node = env.CommandTest('port_test.out',
 env.AddNodeToTestSuite(node,
                        ['large_tests'],
                        'run_platform_tests')
+
+
+nacl_semaphore_test_exe = env.ComponentProgram('nacl_semaphore_test',
+                                               ['nacl_semaphore_test.c'],
+                                               EXTRA_LIBS=['platform',
+                                                           'gio'])
+node = env.CommandTest('nacl_semaphore_test.out',
+                       command=[nacl_semaphore_test_exe])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_semaphore_test');
+
 
 env.EnsureRequiredBuildWarnings()

@@ -82,7 +82,7 @@ NaClSyncStatus NaClSemWait(struct NaClSemaphore *sem) {
 NaClSyncStatus NaClSemTryWait(struct NaClSemaphore *sem) {
   DWORD rv;
   rv = WaitForSingleObject(sem->sem_handle, 0);
-  return (rv != WAIT_OBJECT_0);
+  return (rv == WAIT_OBJECT_0) ? NACL_SYNC_OK : NACL_SYNC_BUSY;
 }
 
 NaClSyncStatus NaClSemPost(struct NaClSemaphore *sem) {

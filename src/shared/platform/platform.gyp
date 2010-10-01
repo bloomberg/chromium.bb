@@ -55,6 +55,7 @@
       'nacl_threads.h',
       'nacl_time.h',
       'nacl_timestamp.h',
+      'platform_init.c',
       'time.cc',
       'time.h',
     ],
