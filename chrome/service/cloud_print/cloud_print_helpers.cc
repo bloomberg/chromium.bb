@@ -161,6 +161,8 @@ void CloudPrintHelpers::PrepCloudPrintRequest(URLFetcher* request,
   request->set_request_context(new ServiceURLRequestContextGetter());
   std::string headers = "Authorization: GoogleLogin auth=";
   headers += auth_token;
+  headers += "\r\n";
+  headers += kChromeCloudPrintProxyHeader;
   request->set_extra_request_headers(headers);
 }
 

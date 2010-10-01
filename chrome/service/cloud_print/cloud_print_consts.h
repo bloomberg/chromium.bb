@@ -37,7 +37,7 @@ extern const char kGaiaUrl[];
 extern const char kCloudPrintGaiaServiceId[];
 extern const char kSyncGaiaServiceId[];
 extern const char kCloudPrintPushNotificationsSource[];
-
+extern const char kChromeCloudPrintProxyHeader[];
 // Max interval between retrying connection to the server
 const int64 kMaxRetryInterval = 5*60*1000;  // 5 minutes in millseconds
 const int64 kBaseRetryInterval = 5*1000;  // 5 seconds
