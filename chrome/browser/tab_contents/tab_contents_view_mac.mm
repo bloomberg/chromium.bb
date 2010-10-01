@@ -234,7 +234,7 @@ void TabContentsViewMac::GotFocus() {
   // all subclasses. http://crbug.com/21875
 }
 
-// This is called when we the renderer asks us to take focus back (i.e., it has
+// This is called when the renderer asks us to take focus back (i.e., it has
 // iterated past the last focusable element on the page).
 void TabContentsViewMac::TakeFocus(bool reverse) {
   if (reverse) {
