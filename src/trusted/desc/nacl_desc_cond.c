@@ -54,15 +54,15 @@ int NaClDescCondVarCtor(struct NaClDescCondVar  *self) {
   return 1;
 }
 
-static void NaClDescCondVarDtor(struct NaClDesc *vself) {
+static void NaClDescCondVarDtor(struct NaClRefCount *vself) {
   struct NaClDescCondVar *self = (struct NaClDescCondVar *) vself;
 
   NaClLog(4, "NaClDescCondVarDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClIntrCondVarDtor(&self->cv);
 
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 static int NaClDescCondVarFstat(struct NaClDesc          *vself,
@@ -73,13 +73,6 @@ static int NaClDescCondVarFstat(struct NaClDesc          *vself,
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFCOND | NACL_ABI_S_IRWXU;
   return 0;
 }
-
-static int NaClDescCondVarClose(struct NaClDesc          *vself) {
-  NaClDescUnref(vself);
-  return 0;
-}
-
-
 
 static int NaClDescCondVarWait(struct NaClDesc         *vself,
                                struct NaClDesc         *mutex) {
@@ -133,7 +126,7 @@ static int NaClDescCondVarBroadcast(struct NaClDesc          *vself) {
 
 static struct NaClDescVtbl const kNaClDescCondVarVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescCondVarDtor,
+    NaClDescCondVarDtor,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -143,7 +136,6 @@ static struct NaClDescVtbl const kNaClDescCondVarVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescCondVarFstat,
-  NaClDescCondVarClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_CONDVAR,
   NaClDescExternalizeSizeNotImplemented,

@@ -301,17 +301,7 @@ static int NaClGioShmClose(struct Gio *vself) {
     return -1;
   }
 
-  /*
-   * NaClDesc objects are refcounted, and Close invokes Unref, so no
-   * explicit Dtor or NaClDescUnref is needed.  (Last Close actually
-   * Dtors.)
-   */
-  ret = (*((struct NaClDescVtbl const *) self->shmp->base.vtbl)->
-         Close)(self->shmp);
-  if (ret < 0) {
-    errno = EIO;
-    return -1;
-  }
+  NaClDescUnref(self->shmp);
   self->shmp = NULL;  /* double close will fault */
   return 0;
 }
@@ -488,15 +478,7 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
   rv = NaClGioShmCtorIntern(self, (struct NaClDesc *) shmp, shm_size);
 
   if (!rv) {
-    int close_result;
-    if (0 !=
-        (close_result = (*((struct NaClDescVtbl const *) shmp->base.base.vtbl)->
-                         Close)(&shmp->base))) {
-      NaClLog(LOG_ERROR,
-              ("NaClGioShmAllocCtor: failure cleanup close of shm failed,"
-               " returned %d\n"),
-              close_result);
-    }
+    NaClDescUnref((struct NaClDesc *) shmp);
     free(shmp);
     (*self->eff.base.vtbl->Dtor)(&self->eff.base);
   }

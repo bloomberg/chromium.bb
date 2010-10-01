@@ -44,13 +44,13 @@ int NaClDescImcBoundDescCtor(struct NaClDescImcBoundDesc  *self,
   return 1;
 }
 
-void NaClDescImcBoundDescDtor(struct NaClDesc *vself) {
+void NaClDescImcBoundDescDtor(struct NaClRefCount *vself) {
   struct NaClDescImcBoundDesc *self = (struct NaClDescImcBoundDesc *) vself;
 
   NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
@@ -59,11 +59,6 @@ int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFBOUNDSOCK;
-  return 0;
-}
-
-int NaClDescImcBoundDescClose(struct NaClDesc         *vself) {
-  NaClDescUnref(vself);
   return 0;
 }
 
@@ -156,7 +151,7 @@ cleanup:
 
 static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescImcBoundDescDtor,
+    NaClDescImcBoundDescDtor,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -166,7 +161,6 @@ static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescImcBoundDescFstat,
-  NaClDescImcBoundDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_BOUND_SOCKET,
   NaClDescExternalizeSizeNotImplemented,

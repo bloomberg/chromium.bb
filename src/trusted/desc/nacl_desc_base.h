@@ -85,7 +85,8 @@ enum NaClDescTypeTag {
   NACL_DESC_SEMAPHORE,
   NACL_DESC_SYNC_SOCKET,
   NACL_DESC_TRANSFERABLE_DATA_SOCKET,
-  NACL_DESC_IMC_SOCKET
+  NACL_DESC_IMC_SOCKET,
+  NACL_DESC_QUOTA
   /*
    * Add new NaClDesc subclasses here.
    *
@@ -93,7 +94,7 @@ enum NaClDescTypeTag {
    * also be updated to add new internalization functions.
    */
 };
-#define NACL_DESC_TYPE_MAX      (NACL_DESC_IMC_SOCKET + 1)
+#define NACL_DESC_TYPE_MAX      (NACL_DESC_QUOTA + 1)
 #define NACL_DESC_TYPE_END_TAG  (0xff)
 
 struct NaClInternalRealHeader {
@@ -219,8 +220,6 @@ struct NaClDescVtbl {
 
   int (*Fstat)(struct NaClDesc      *vself,
                struct nacl_abi_stat *statbuf);
-
-  int (*Close)(struct NaClDesc  *vself) NACL_WUR;
 
   /*
    * Directory access support.  Directories require support for getdents.
@@ -383,7 +382,7 @@ ssize_t NaClDescWriteToHandle(NaClHandle handle,
  * inappropriate for the descriptor type -- they just return
  * -NACL_ABI_EINVAL
  */
-void NaClDescDtorNotImplemented(struct NaClDesc  *vself);
+void NaClDescDtorNotImplemented(struct NaClRefCount  *vself);
 
 uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
                                     struct NaClDescEffector *effp,
@@ -421,8 +420,6 @@ int NaClDescIoctlNotImplemented(struct NaClDesc *vself,
 
 int NaClDescFstatNotImplemented(struct NaClDesc       *vself,
                                 struct nacl_abi_stat  *statbuf);
-
-int NaClDescCloseNotImplemented(struct NaClDesc *vself);
 
 ssize_t NaClDescGetdentsNotImplemented(struct NaClDesc  *vself,
                                        void             *dirp,

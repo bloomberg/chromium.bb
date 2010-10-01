@@ -63,13 +63,13 @@ int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,
   return 1;
 }
 
-static void NaClDescImcConnectedDescDtor(struct NaClDesc *vself) {
+static void NaClDescImcConnectedDescDtor(struct NaClRefCount *vself) {
   struct NaClDescImcConnectedDesc *self = ((struct NaClDescImcConnectedDesc *)
                                            vself);
   (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 int NaClDescImcDescCtor(struct NaClDescImcDesc  *self,
@@ -95,15 +95,15 @@ int NaClDescImcDescCtor(struct NaClDescImcDesc  *self,
   return retval;
 }
 
-static void NaClDescImcDescDtor(struct NaClDesc *vself) {
+static void NaClDescImcDescDtor(struct NaClRefCount *vself) {
   struct NaClDescImcDesc *self = ((struct NaClDescImcDesc *)
                                   vself);
   NaClMutexDtor(&self->sendmsg_mu);
   NaClMutexDtor(&self->recvmsg_mu);
 
-  vself->base.vtbl = (struct NaClRefCountVtbl const *)
+  vself->vtbl = (struct NaClRefCountVtbl const *)
       &kNaClDescImcConnectedDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  (*vself->vtbl->Dtor)(vself);
 }
 
 int NaClDescXferableDataDescCtor(struct NaClDescXferableDataDesc  *self,
@@ -119,10 +119,10 @@ int NaClDescXferableDataDescCtor(struct NaClDescXferableDataDesc  *self,
   return retval;
 }
 
-static void NaClDescXferableDataDescDtor(struct NaClDesc *vself) {
-  vself->base.vtbl = (struct NaClRefCountVtbl const *)
+static void NaClDescXferableDataDescDtor(struct NaClRefCount *vself) {
+  vself->vtbl = (struct NaClRefCountVtbl const *)
       &kNaClDescImcConnectedDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  (*vself->vtbl->Dtor)(vself);
 }
 
 int NaClDescImcDescFstat(struct NaClDesc          *vself,
@@ -142,11 +142,6 @@ static int NaClDescXferableDataDescFstat(struct NaClDesc          *vself,
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDSOCK;
-  return 0;
-}
-
-static int NaClDescImcConnectedDescClose(struct NaClDesc          *vself) {
-  NaClDescUnref(vself);
   return 0;
 }
 
@@ -340,7 +335,7 @@ static ssize_t NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
 
 static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescImcConnectedDescDtor,
+    NaClDescImcConnectedDescDtor,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -350,7 +345,6 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescFstatNotImplemented,
-  NaClDescImcConnectedDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_CONNECTED_SOCKET,
   NaClDescExternalizeSizeNotImplemented,
@@ -374,7 +368,7 @@ static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
 
 static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescImcDescDtor,  /* diff */
+    NaClDescImcDescDtor,  /* diff */
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -384,7 +378,6 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescImcDescFstat,  /* diff */
-  NaClDescImcConnectedDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_IMC_SOCKET,  /* diff */
   NaClDescExternalizeSizeNotImplemented,
@@ -408,7 +401,7 @@ static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
 
 static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescXferableDataDescDtor,  /* diff */
+    NaClDescXferableDataDescDtor,  /* diff */
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -418,7 +411,6 @@ static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescXferableDataDescFstat,  /* diff */
-  NaClDescImcConnectedDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_TRANSFERABLE_DATA_SOCKET,  /* diff */
   NaClDescXferableDataDescExternalizeSize,  /* diff */

@@ -27,8 +27,8 @@ struct NaClDescMutex {
   struct NaClIntrMutex mu;
 };
 
-extern int NaClDescMutexInternalize(struct NaClDesc          **baseptr,
-                                    struct NaClDescXferState *xfer) NACL_WUR;
+int NaClDescMutexInternalize(struct NaClDesc          **baseptr,
+                             struct NaClDescXferState *xfer) NACL_WUR;
 
 int NaClDescMutexCtor(struct NaClDescMutex  *self) NACL_WUR;
 

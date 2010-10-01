@@ -42,13 +42,13 @@ int NaClDescConnCapFdCtor(struct NaClDescConnCapFd  *self,
 }
 
 
-static void NaClDescConnCapFdDtor(struct NaClDesc *vself) {
+static void NaClDescConnCapFdDtor(struct NaClRefCount *vself) {
   struct NaClDescConnCapFd *self = (struct NaClDescConnCapFd *) vself;
 
   (void) NaClClose(self->connect_fd);
   self->connect_fd = NACL_INVALID_HANDLE;
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
   return;
 }
 
@@ -58,11 +58,6 @@ static int NaClDescConnCapFdFstat(struct NaClDesc       *vself,
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSOCKADDR | NACL_ABI_S_IRWXU;
-  return 0;
-}
-
-static int NaClDescConnCapFdClose(struct NaClDesc *vself) {
-  NaClDescUnref(vself);
   return 0;
 }
 
@@ -171,7 +166,7 @@ static int NaClDescConnCapFdAcceptConn(struct NaClDesc  *vself,
 
 static struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescConnCapFdDtor,
+    NaClDescConnCapFdDtor,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -181,7 +176,6 @@ static struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescConnCapFdFstat,
-  NaClDescConnCapFdClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_CONN_CAP_FD,
   NaClDescConnCapFdExternalizeSize,

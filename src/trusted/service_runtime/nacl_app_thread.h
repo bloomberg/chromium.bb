@@ -86,9 +86,12 @@ struct NaClAppThread {
    * If it is clear, then the thread is running in the application
    * space (or at least it has not yet touched any service runtime
    * resources), and we can directly pthread_kill it before we release
-   * the thread lock.  If it is set, we set the state flag to
+   * the thread lock, using a signal handler in the trampoline region,
+   * which can deal with segment registers (in the x86-32 case), prior
+   * to invoking pthread_exit.  If it is set, we set the state flag to
    * NACL_APP_THREAD_SUICIDE_PENDING and release the thread lock,
-   * possibly waking the blocked thread.
+   * possibly waking the blocked thread (which should be using
+   * interruptible mutexes/condvars).
    *
    * When the thread is about to leave service runtime code and return
    * to the NaCl application, it should have released all locks to
@@ -96,6 +99,11 @@ struct NaClAppThread {
    * to clear the holding_sr_locks flag, at which point it examines
    * the suicide flag; if it finds that set, it should gracefully
    * exit.
+   *
+   * Similarly, if a thread's synchronization operation is
+   * interrupted, it knows that it should abort.  It can fail up
+   * through the normal execution path, freeing up locks and other
+   * resources on the way, and handle thread death as above.
    */
   int                       holding_sr_locks;
 

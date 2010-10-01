@@ -44,7 +44,7 @@ static int NaClDescInvalidExternalize(struct NaClDesc          *vself,
 
 static struct NaClDescVtbl const kNaClDescInvalidVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescDtorNotImplemented,
+    NaClDescDtorNotImplemented,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -54,7 +54,6 @@ static struct NaClDescVtbl const kNaClDescInvalidVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescFstatNotImplemented,
-  NaClDescCloseNotImplemented,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_INVALID,
   NaClDescInvalidExternalizeSize,

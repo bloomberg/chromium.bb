@@ -57,14 +57,14 @@ int NaClDescMutexCtor(struct NaClDescMutex  *self) {
   return 1;
 }
 
-static void NaClDescMutexDtor(struct NaClDesc *vself) {
+static void NaClDescMutexDtor(struct NaClRefCount *vself) {
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
   NaClLog(4, "NaClDescMutexDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClIntrMutexDtor(&self->mu);
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 static int NaClDescMutexFstat(struct NaClDesc          *vself,
@@ -73,11 +73,6 @@ static int NaClDescMutexFstat(struct NaClDesc          *vself,
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFMUTEX;
-  return 0;
-}
-
-static int NaClDescMutexClose(struct NaClDesc          *vself) {
-  NaClDescUnref(vself);
   return 0;
 }
 
@@ -107,7 +102,7 @@ static int NaClDescMutexUnlock(struct NaClDesc         *vself) {
 
 static struct NaClDescVtbl const kNaClDescMutexVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescMutexDtor,
+    NaClDescMutexDtor,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -117,7 +112,6 @@ static struct NaClDescVtbl const kNaClDescMutexVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescMutexFstat,
-  NaClDescMutexClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_MUTEX,
   NaClDescExternalizeSizeNotImplemented,

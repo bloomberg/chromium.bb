@@ -99,6 +99,9 @@ void NaClVmmapDebug(struct NaClVmmap *self,
 
 int NaClVmmapCtor(struct NaClVmmap *self) {
   self->size = START_ENTRIES;
+  if (SIZE_T_MAX / sizeof *self->vmentry < self->size) {
+    return 0;
+  }
   self->vmentry = calloc(self->size, sizeof *self->vmentry);
   if (!self->vmentry) {
     return 0;

@@ -18,7 +18,7 @@ const struct GioVtbl kNaClGioNaClDescVtbl;
 int NaClGioNaClDescCtor(struct NaClGioNaClDesc  *self,
                         struct NaClDesc         *wrapped) {
   self->wrapped = NaClDescRef(wrapped);
-  self->base.vtbl = &kNaClGioNaClDescVtbl;
+  NACL_VTBL(Gio, self) = &kNaClGioNaClDescVtbl;
   return 1;
 }
 
@@ -27,7 +27,7 @@ static ssize_t NaClGioNaClDescRead(struct Gio *vself,
                                    size_t     count) {
   struct NaClGioNaClDesc *self = (struct NaClGioNaClDesc *) vself;
 
-  return (((struct NaClDescVtbl *) self->wrapped->base.vtbl)->
+  return (*NACL_VTBL(NaClDesc, self->wrapped)->
           Read)(self->wrapped, buf, count);
 }
 
@@ -36,7 +36,7 @@ static ssize_t NaClGioNaClDescWrite(struct Gio *vself,
                                     size_t     count) {
   struct NaClGioNaClDesc *self = (struct NaClGioNaClDesc *) vself;
 
-  return (((struct NaClDescVtbl *) self->wrapped->base.vtbl)->
+  return (*NACL_VTBL(NaClDesc, self->wrapped)->
           Write)(self->wrapped, buf, count);
 }
 
@@ -45,7 +45,7 @@ static off_t NaClGioNaClDescSeek(struct Gio *vself,
                                  int        whence) {
   struct NaClGioNaClDesc *self = (struct NaClGioNaClDesc *) vself;
 
-  return (off_t) (((struct NaClDescVtbl *) self->wrapped->base.vtbl)->
+  return (off_t) (*NACL_VTBL(NaClDesc, self->wrapped)->
                   Seek)(self->wrapped, (nacl_off64_t) offset, whence);
 }
 
@@ -69,7 +69,7 @@ static void NaClGioNaClDescDtor(struct Gio *vself) {
     NaClDescUnref(self->wrapped);
     self->wrapped = 0;
   }
-  self->base.vtbl = NULL;
+  NACL_VTBL(Gio, self) = NULL;
   /* Gio base class has no Dtor */
 }
 

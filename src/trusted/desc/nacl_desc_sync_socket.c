@@ -60,13 +60,13 @@ int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
   return retval;
 }
 
-static void NaClDescSyncSocketDtor(struct NaClDesc *vself) {
+static void NaClDescSyncSocketDtor(struct NaClRefCount *vself) {
   struct NaClDescSyncSocket  *self = ((struct NaClDescSyncSocket *) vself);
 
   (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 static int NaClDescSyncSocketFstat(struct NaClDesc          *vself,
@@ -75,11 +75,6 @@ static int NaClDescSyncSocketFstat(struct NaClDesc          *vself,
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDSOCK;
-  return 0;
-}
-
-static int NaClDescSyncSocketClose(struct NaClDesc          *vself) {
-  NaClDescUnref(vself);
   return 0;
 }
 
@@ -123,7 +118,7 @@ static int NaClDescSyncSocketExternalize(struct NaClDesc          *vself,
 
 static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescSyncSocketDtor,
+    NaClDescSyncSocketDtor,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -133,7 +128,6 @@ static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescSyncSocketFstat,
-  NaClDescSyncSocketClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_SYNC_SOCKET,
   NaClDescSyncSocketExternalizeSize,

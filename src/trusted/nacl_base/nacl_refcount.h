@@ -12,6 +12,21 @@
 
 #include "native_client/src/shared/platform/nacl_sync.h"
 
+EXTERN_C_BEGIN
+
+/*
+ * Yields an lvalue of the vtable pointer, when given a subclass of
+ * NaClRefCount and a pointer to an instance -- with the convention
+ * that the vtable pointer is at the first word.
+ *
+ * Since we have the naming convention that struct Type contains an
+ * element of type struct TypeVtbl *, we make it so that less typing
+ * is required for the use of the macro and automatically constructing
+ * the vtable type name from the subclass name.
+ */
+#define NACL_VTBL(type, ptr) \
+  (*(struct type ## Vtbl const **) (void *) ptr)
+
 struct NaClRefCountVtbl;
 
 struct NaClRefCount {
@@ -48,5 +63,7 @@ void NaClRefCountUnref(struct NaClRefCount *nrcp);
 void NaClRefCountSafeUnref(struct NaClRefCount *nrcp);
 
 extern struct NaClRefCountVtbl const kNaClRefCountVtbl;
+
+EXTERN_C_END
 
 #endif

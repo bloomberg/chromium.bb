@@ -35,8 +35,8 @@ struct NaClDescImcBoundDesc {
   NaClHandle                h;
 };
 
-extern int NaClDescImcBoundDescInternalize(struct NaClDesc          **baseptr,
-                                           struct NaClDescXferState *xfer)
+int NaClDescImcBoundDescInternalize(struct NaClDesc          **baseptr,
+                                    struct NaClDescXferState *xfer)
     NACL_WUR;
 
 int NaClDescImcBoundDescCtor(struct NaClDescImcBoundDesc  *self,

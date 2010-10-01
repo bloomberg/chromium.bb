@@ -27,6 +27,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
 #include "native_client/src/trusted/desc/nacl_desc_dir.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
+#include "native_client/src/trusted/desc/nrd_xfer_intern.h"
 
 #include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -54,6 +55,80 @@ static INLINE size_t min_size(size_t  a,
                               size_t  b) {
   if (a < b) return a;
   return b;
+}
+
+void NaClNrdXferIncrTagOverhead(size_t *byte_count,
+                                size_t *handle_count) {
+  UNREFERENCED_PARAMETER(handle_count);
+  ++*byte_count;
+}
+
+enum NaClDescTypeTag NaClNrdXferReadTypeTag(struct NaClDescXferState *xferp) {
+  return (enum NaClDescTypeTag) (0xff & *xferp->next_byte++);
+}
+
+void NaClNrdXferWriteTypeTag(struct NaClDescXferState *xferp,
+                             struct NaClDesc          *descp) {
+  *xferp->next_byte++ = NACL_VTBL(NaClDesc, descp)->typeTag;
+}
+
+/*
+ * Returns number of descriptors internalized, or an error code.
+ * Since only one descriptor can be internalized (out parameter is not
+ * an array), this means 0 or 1 are non-error conditions.
+ *
+ * Returns negative errno (syscall-style) on error.
+ */
+int NaClDescInternalizeFromXferBuffer(struct NaClDesc          **out_desc,
+                                      struct NaClDescXferState *xferp) {
+  int xfer_status;
+  size_t type_tag;
+
+  type_tag = NaClNrdXferReadTypeTag(xferp);
+  /* 0 <= type_tag */
+  if (NACL_DESC_TYPE_END_TAG == type_tag) {
+    return 0;
+  }
+  if (type_tag >= NACL_DESC_TYPE_MAX) {
+    NaClLog(4, ("illegal type tag %"NACL_PRIdS" (0x%"NACL_PRIxS")\n"),
+            type_tag, type_tag);
+    return -NACL_ABI_EIO;
+  }
+  if ((int (*)(struct NaClDesc **, struct NaClDescXferState *)) NULL ==
+      NaClDescInternalize[type_tag]) {
+    NaClLog(LOG_FATAL,
+            "No internalization function for type %"NACL_PRIdS"\n",
+            type_tag);
+    /* fatal, but in case we change it later */
+    return -NACL_ABI_EIO;
+  }
+  xfer_status = (*NaClDescInternalize[type_tag])(out_desc, xferp);
+  /* constructs new_desc, transferring ownership of any handles consumed */
+
+  if (xfer_status != 0) {
+    NaClLog(0,
+            "non-zero xfer_status %d, desc type tag %s (%"NACL_PRIdS")\n",
+            xfer_status,
+            NaClDescTypeString(type_tag),
+            type_tag);
+  }
+  return 0 == xfer_status;
+}
+
+int NaClDescExternalizeToXferBuffer(struct NaClDescXferState  *xferp,
+                                    struct NaClDesc           *out) {
+  /*
+   * Externalize should expose the object as NaClHandles that must
+   * be sent, but no ownership is transferred.  The NaClHandle
+   * objects cannot be deallocated until after the actual SendMsg
+   * completes, so multithreaded code beware!  By using
+   * NaClDescRef and NaClDescUnref properly, there shouldn't be
+   * any problems, since all entries in the ndescv should have had
+   * their refcount incremented, and the NaClHandles will not be
+   * closed until the NaClDesc objects' refcount goes to zero.
+   */
+  NaClNrdXferWriteTypeTag(xferp, out);
+  return (*NACL_VTBL(NaClDesc, out)->Externalize)(out, xferp);
 }
 
 ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
@@ -112,8 +187,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
    * ExternalizeSize virtual function call).
    */
   if (0 != nitmhp->ndesc_length
-      && NACL_DESC_IMC_SOCKET != ((struct NaClDescVtbl const *)
-                                  channel->base.vtbl)->typeTag) {
+      && NACL_DESC_IMC_SOCKET != NACL_VTBL(NaClDesc, channel)->typeTag) {
     NaClLog(4, "not an IMC socket and trying to send descriptors!\n");
     return -NACL_ABI_EINVAL;
   }
@@ -178,6 +252,8 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     sys_handles = 0;
     /* nitmhp->desc_length <= NACL_ABI_IMC_USER_DESC_MAX */
     for (i = 0; i < nitmhp->ndesc_length; ++i) {
+      desc_bytes = 0;
+      desc_handles = 0;
       retval = (*((struct NaClDescVtbl const *) kern_desc[i]->base.vtbl)->
                 ExternalizeSize)(kern_desc[i],
                                  &desc_bytes,
@@ -248,21 +324,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
         + NACL_ABI_IMC_DESC_MAX;
 
     for (i = 0; i < nitmhp->ndesc_length; ++i) {
-      *xfer_state.next_byte++ = (char) ((struct NaClDescVtbl const *)
-                                        kern_desc[i]->base.vtbl)->typeTag;
-      /*
-       * Externalize should expose the object as NaClHandles that must
-       * be sent, but no ownership is transferred.  The NaClHandle
-       * objects cannot be deallocated until after the actual SendMsg
-       * completes, so multithreaded code beware!  By using
-       * NaClDescRef and NaClDescUnref properly, there shouldn't be
-       * any problems, since all entries in the ndescv should have had
-       * their refcount incremented, and the NaClHandles will not be
-       * closed until the NaClDesc objects' refcount goes to zero.
-       */
-      retval = (*((struct NaClDescVtbl const *) kern_desc[i]->base.vtbl)->
-                Externalize)(kern_desc[i],
-                             &xfer_state);
+      retval = NaClDescExternalizeToXferBuffer(&xfer_state, kern_desc[i]);
       if (0 != retval) {
         NaClLog(4,
                 ("NaClImcSendTypedMessage: Externalize for"
@@ -329,6 +391,7 @@ cleanup:
   return retval;
 }
 
+
 ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
                                 struct NaClImcTypedMsgHdr *nitmhp,
                                 int                       flags) {
@@ -347,7 +410,6 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
   char                      *user_data;
   size_t                    iov_copy_size;
   struct NaClDescXferState  xfer;
-  size_t                    type_tag;
   struct NaClDesc           *new_desc[NACL_ABI_IMC_DESC_MAX];
   int                       xfer_status;
   size_t                    i;
@@ -565,9 +627,12 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
 
   i = 0;
   while (xfer.next_byte < xfer.byte_buffer_end) {
-    type_tag = 0xff & *xfer.next_byte++;
-    /* 0 <= type_tag */
-    if (NACL_DESC_TYPE_END_TAG == type_tag) {
+    struct NaClDesc *out;
+
+    xfer_status = NaClDescInternalizeFromXferBuffer(&out, &xfer);
+    NaClLog(4, "NaClDescInternalizeFromXferBuffer: returned %d\n", xfer_status);
+    if (0 == xfer_status) {
+      /* end of descriptors reached */
       break;
     }
     if (i >= NACL_ARRAY_SIZE(new_desc)) {
@@ -575,33 +640,13 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
               ("NaClImcRecvTypedMsg: trusted peer tried to send too many"
                " descriptors!\n"));
     }
-    if (type_tag >= NACL_DESC_TYPE_MAX) {
-      NaClLog(4, ("illegal type tag %"NACL_PRIdS" (0x%"NACL_PRIxS")\n"),
-              type_tag, type_tag);
+    if (1 != xfer_status) {
+      /* xfer_status < 0, out did not receive output */
       retval = -NACL_ABI_EIO;
       goto cleanup;
     }
-    if ((int (*)(struct NaClDesc **, struct NaClDescXferState *)) NULL ==
-        NaClDescInternalize[type_tag]) {
-      NaClLog(LOG_FATAL,
-              "No internalization function for type %"NACL_PRIdS"\n",
-              type_tag);
-      /* fatal, but in case we change it later */
-      retval = -NACL_ABI_EIO;
-      goto cleanup;
-    }
-    xfer_status = (*NaClDescInternalize[type_tag])(&new_desc[i], &xfer);
-    /* constructs new_desc, transferring ownership of any handles consumed */
-
-    if (xfer_status != 0) {
-      NaClLog(0,
-              "non-zero xfer_status %d, desc type tag %s (%"NACL_PRIdS")\n",
-              xfer_status,
-              NaClDescTypeString(type_tag),
-              type_tag);
-      retval = xfer_status;
-      goto cleanup;
-    }
+    new_desc[i] = out;
+    out = NULL;
     ++i;
   }
   num_user_desc = i;  /* actual number of descriptors received */

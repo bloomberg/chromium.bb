@@ -33,15 +33,16 @@ struct NaClDescSyncSocket {
   NaClHandle                h;
 };
 
-extern int NaClDescSyncSocketInternalize(struct NaClDesc          **baseptr,
-                                         struct NaClDescXferState *xfer)
-NACL_WUR;
+int NaClDescSyncSocketInternalize(struct NaClDesc          **baseptr,
+                                  struct NaClDescXferState *xfer)
+    NACL_WUR;
 
 static const size_t kMaxSyncSocketMessageLength = (size_t) INT_MAX;
 
 /* On success, NaClDescSyncSocket has ownership of h. */
 int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
-                           NaClHandle                 h) NACL_WUR;
+                           NaClHandle                 h)
+    NACL_WUR;
 
 EXTERN_C_END
 

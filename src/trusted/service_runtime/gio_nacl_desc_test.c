@@ -30,6 +30,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
+#include "native_client/src/trusted/nacl_base/nacl_refcount.h"
+
 #include "native_client/src/trusted/service_runtime/gio_nacl_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -51,9 +53,9 @@ int WriteAll(struct Gio *dst, char *buffer, size_t nbytes) {
   for (bytes_written = 0;
        bytes_written < nbytes;
        bytes_written += written) {
-    written = (*dst->vtbl->Write)(dst,
-                                  buffer + bytes_written,
-                                  nbytes - bytes_written);
+    written = (*NACL_VTBL(Gio, dst)->Write)(dst,
+                                            buffer + bytes_written,
+                                            nbytes - bytes_written);
     if (written < 0) {
       written = 0;
       ++num_errors;
@@ -71,9 +73,9 @@ int ReadAll(struct Gio *src, char *buffer, size_t nbytes) {
   for (bytes_read = 0;
        bytes_read < nbytes;
        bytes_read += readden) {
-    readden = (*src->vtbl->Read)(src,
-                                 buffer + bytes_read,
-                                 nbytes - bytes_read);
+    readden = (*NACL_VTBL(Gio, src)->Read)(src,
+                                           buffer + bytes_read,
+                                           nbytes - bytes_read);
     if (readden < 0) {
       readden = 0;
       ++num_errors;
@@ -91,7 +93,8 @@ int GioCopy(struct Gio *src, struct Gio *dst) {
   ssize_t bytes_read;
   int num_errors = 0;
 
-  while (0 != (bytes_read = (*src->vtbl->Read)(src, buffer, sizeof buffer))) {
+  while (0 != (bytes_read = (*NACL_VTBL(Gio, src)->
+                             Read)(src, buffer, sizeof buffer))) {
     if (bytes_read < 0) {
       fprintf(stderr, "negative read?!?\n");
       return ++num_errors;
@@ -146,7 +149,7 @@ int GioRevCopy(struct Gio *src, struct Gio *dst) {
   int num_errors = 0;
   size_t expected_bytes;
 
-  file_size = (*src->vtbl->Seek)(src, 0, SEEK_END);
+  file_size = (*NACL_VTBL(Gio, src)->Seek)(src, 0, SEEK_END);
   if (file_size <= 0) {
     fprintf(stderr, "non-positive file size?!?\n");
   }
@@ -159,13 +162,15 @@ int GioRevCopy(struct Gio *src, struct Gio *dst) {
       expected_bytes = start_offset + COPY_CHUNKSIZE;
       start_offset = 0;
     }
-    if (start_offset != (*src->vtbl->Seek)(src, start_offset, SEEK_SET)) {
+    if (start_offset != (*NACL_VTBL(Gio, src)->
+                         Seek)(src, start_offset, SEEK_SET)) {
       fprintf(stderr, "seek in source file failed, offset %"NACL_PRId64"\n",
               (int64_t) start_offset);
       return ++num_errors;
     }
     num_errors += ReadAll(src, buffer, expected_bytes);
-    if (start_offset != (*dst->vtbl->Seek)(dst, start_offset, SEEK_SET)) {
+    if (start_offset != (*NACL_VTBL(Gio, dst)->
+                         Seek)(dst, start_offset, SEEK_SET)) {
       fprintf(stderr, "seek in destination file failed, offset"
               " %"NACL_PRId64"\n", (int64_t) start_offset);
       return ++num_errors;
@@ -222,8 +227,8 @@ int main(int ac,
   num_errors += GioCopy((struct Gio *) &gsrc, (struct Gio *) &gdst);
   num_errors += ComparePosixFiles(av[1], av[2]);
 
-  (*gdst.base.vtbl->Close)(&gdst.base);
-  (*gdst.base.vtbl->Dtor)(&gdst.base);
+  (*NACL_VTBL(Gio, &gdst)->Close)(&gdst.base);
+  (*NACL_VTBL(Gio, &gdst)->Dtor)(&gdst.base);
 
   if (0 < num_errors) {
     return num_errors;
@@ -260,11 +265,11 @@ int main(int ac,
   num_errors += GioRevCopy((struct Gio *) &gsrc, (struct Gio *) &gdst);
   num_errors += ComparePosixFiles(av[1], av[2]);
 
-  (*gdst.base.vtbl->Close)(&gdst.base);
-  (*gdst.base.vtbl->Dtor)(&gdst.base);
+  (*NACL_VTBL(Gio, &gdst)->Close)((struct Gio *) &gdst);
+  (*NACL_VTBL(Gio, &gdst)->Dtor)((struct Gio *) &gdst);
 
-  (*gsrc.base.vtbl->Close)(&gsrc.base);
-  (*gsrc.base.vtbl->Dtor)(&gsrc.base);
+  (*NACL_VTBL(Gio, &gsrc)->Close)((struct Gio *) &gsrc);
+  (*NACL_VTBL(Gio, &gsrc)->Dtor)((struct Gio *) &gsrc);
 
   if (0 < num_errors) {
     return num_errors;

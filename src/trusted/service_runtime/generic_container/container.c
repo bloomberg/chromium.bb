@@ -204,9 +204,12 @@ static struct NaClContainerVtbl const  kNaClContainerHashTblVtbl = {
  */
 
 static struct NaClContainerHashTblEntry *NaClContainerHashTblMakeBucket(
-    unsigned int size) {
+    size_t size) {
   struct NaClContainerHashTblEntry    *bucket;
 
+  if (SIZE_T_MAX / sizeof *bucket < size) {
+    return NULL;
+  }
   bucket = calloc(size, sizeof *bucket);
   return bucket;
 }
@@ -222,7 +225,7 @@ static struct NaClContainerHashTblEntry *NaClContainerHashTblMakeBucket(
  */
 int NaClContainerHashTblCtor(struct NaClContainerHashTbl  *self,
                              struct NaClHashFunctor       *hash_functor,
-                             unsigned int                 num_buckets) {
+                             size_t                       num_buckets) {
   int success;
 
   self->base.vtbl = (struct NaClContainerVtbl *) NULL;
@@ -254,9 +257,9 @@ int NaClContainerHashTblCheckLoad(struct NaClContainerHashTbl *self) {
   struct NaClContainerHashTblEntry  *entry;
   struct NaClContainerHashTblEntry  *new_table;
   struct NaClContainerHashTblEntry  *old_table;
-  unsigned int                      new_size;
-  unsigned int                      old_size;
-  unsigned int                      i;
+  size_t                            new_size;
+  size_t                            old_size;
+  size_t                            i;
 
   /*
    * Check load factor.  If greater than THRESHOLD, double number of
@@ -301,10 +304,12 @@ int NaClContainerHashTblCheckLoad(struct NaClContainerHashTbl *self) {
 }
 
 
-static uintptr_t HashNext(uintptr_t     idx,
-                          unsigned int  modulus) {
+static uintptr_t HashNext(uintptr_t idx,
+                          size_t    modulus) {
   idx += HASH_TABLE_STRIDE;
-  while (idx >= modulus) idx -= modulus;
+  while (idx >= modulus) {
+    idx -= modulus;
+  }
   return idx;
 }
 

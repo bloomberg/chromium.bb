@@ -22,7 +22,11 @@
 #error "Unknown platform!!!"
 #endif
 
+#include "native_client/src/shared/platform/nacl_sync.h"
+
 EXTERN_C_BEGIN
+
+struct NaClSemaphore;
 
 int NaClSemCtor(struct NaClSemaphore *sem, int32_t value);
 

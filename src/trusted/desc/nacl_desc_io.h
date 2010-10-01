@@ -37,11 +37,11 @@ struct NaClDescIoDesc {
   struct NaClHostDesc       *hd;
 };
 
-extern int NaClDescIoInternalize(struct NaClDesc          **baseptr,
-                                 struct NaClDescXferState *xfer) NACL_WUR;
+int NaClDescIoInternalize(struct NaClDesc          **baseptr,
+                          struct NaClDescXferState *xfer) NACL_WUR;
 
 int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
-                       struct NaClHostDesc    *hd);
+                       struct NaClHostDesc    *hd) NACL_WUR;
 
 struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp);
 

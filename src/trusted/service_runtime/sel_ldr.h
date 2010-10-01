@@ -236,9 +236,6 @@ struct NaClApp {
   uintptr_t                 break_addr;   /* user addr */
   /* data_end <= break_addr is an invariant */
 
-  int                       freeze_thread_ops;
-  /* used when process is killed, or when address space move is needed */
-
   /*
    * Thread table lock threads_mu is higher in the locking order than
    * the thread locks, i.e., threads_mu must be acqured w/o holding
@@ -510,6 +507,24 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           uint32_t                  tls_info);
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
+
+
+/*
+ * Used in mmap code to prepare the untrusted module for mmap.
+ * Specifically, on *x this is a no-op, but on Windows where mmap does
+ * not atomically replace mappings and we have to unmap (VirtualFree
+ * or UnmapViewOfFile) before installing new mappings, we stop all
+ * other untrusted threads using SuspendThread in
+ * NaClAppBeginMapRaceProtection and then ResumeThread in
+ * NaClAppEndMapRaceProtection.  These functions must be called after
+ * all the necessary locks for the bracketed intervening operations,
+ * since no other thread that might otherwise release locks is able to
+ * run.
+ */
+void NaClAppBeginMapRaceProtection_AppMu(struct NaClAppThread *natp);
+
+void NaClAppEndMapRaceProtection_AppMu(struct NaClAppThread *natp);
+
 
 void NaClGdbHook(struct NaClApp const *nap);
 

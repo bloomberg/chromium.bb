@@ -22,6 +22,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
+#include "native_client/src/trusted/nacl_base/nacl_refcount.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
@@ -452,8 +453,8 @@ int DescWrapper::Fstat(struct nacl_abi_stat* statbuf) {
 }
 
 int DescWrapper::Close() {
-  return reinterpret_cast<struct NaClDescVtbl const *>(desc_->base.vtbl)->
-      Close(desc_);
+  NaClRefCountUnref(&desc_->base);
+  return 0;
 }
 
 ssize_t DescWrapper::Getdents(void* dirp, size_t count) {
@@ -515,7 +516,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
     goto cleanup;
   }
   header.iov = reinterpret_cast<NaClImcMsgIoVec*>(
-      calloc(dgram->iov_length, sizeof(*(header.iov))));
+      calloc(diov_length, sizeof(*(header.iov))));
   if (NULL == header.iov) {
     goto cleanup;
   }
@@ -532,7 +533,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
     goto cleanup;
   }
   header.ndescv = reinterpret_cast<NaClDesc**>(
-      calloc(dgram->ndescv_length, sizeof(*(header.ndescv))));
+      calloc(ddescv_length, sizeof(*(header.ndescv))));
   if (NULL == header.iov) {
     goto cleanup;
   }
@@ -567,7 +568,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
     goto cleanup;
   }
   header.iov = reinterpret_cast<NaClImcMsgIoVec*>(
-      calloc(dgram->iov_length, sizeof(*(header.iov))));
+      calloc(diov_length, sizeof(*(header.iov))));
   if (NULL == header.iov) {
     goto cleanup;
   }
@@ -584,7 +585,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
     goto cleanup;
   }
   header.ndescv = reinterpret_cast<NaClDesc**>(
-      calloc(dgram->ndescv_length, sizeof(*(header.ndescv))));
+      calloc(ddescv_length, sizeof(*(header.ndescv))));
   if (NULL == header.ndescv) {
     goto cleanup;
   }

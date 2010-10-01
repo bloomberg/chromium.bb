@@ -27,8 +27,8 @@ struct NaClDescSemaphore {
   struct NaClSemaphore sem;
 };
 
-extern int NaClDescSemaphoreInternalize(struct NaClDesc          **baseptr,
-                                        struct NaClDescXferState *xfer)
+int NaClDescSemaphoreInternalize(struct NaClDesc          **baseptr,
+                                 struct NaClDescXferState *xfer)
     NACL_WUR;
 
 int NaClDescSemaphoreCtor(struct NaClDescSemaphore  *self, int value)

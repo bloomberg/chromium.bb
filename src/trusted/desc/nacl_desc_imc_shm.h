@@ -41,8 +41,8 @@ struct NaClDescImcShm {
   /* note nacl_off64_t so struct stat incompatible */
 };
 
-extern int NaClDescImcShmInternalize(struct NaClDesc          **baseptr,
-                                     struct NaClDescXferState *xfer)
+int NaClDescImcShmInternalize(struct NaClDesc          **baseptr,
+                              struct NaClDescXferState *xfer)
     NACL_WUR;
 
 /*

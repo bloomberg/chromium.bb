@@ -134,21 +134,24 @@ struct NaClContainerHashTblEntry {
   int   flags;
   void  *datum;
 };
-#define NACL_CHTE_USED       (1<<0)  /* slot occupied, so keep probing */
-#define NACL_CHTE_DELETED    (1<<1)  /* slot occupied but deleted,
-                                        keep probing */
+
+#define NACL_CHTE_USED       (1<<0)
+/* slot occupied, so keep probing */
+
+#define NACL_CHTE_DELETED    (1<<1)
+/* slot occupied but deleted, keep probing */
 
 struct NaClContainerHashTbl {
   struct NaClContainer              base;
   struct NaClHashFunctor            *hash_functor;
-  unsigned int                      num_buckets;
-  unsigned int                      num_entries;
+  size_t                            num_buckets;
+  size_t                            num_entries;
   struct NaClContainerHashTblEntry  *bucket;
 };
 
 int NaClContainerHashTblCtor(struct NaClContainerHashTbl  *self,
                              struct NaClHashFunctor       *hash_functor,
-                             unsigned int                 num_buckets);
+                             size_t                       num_buckets);
 
 int NaClContainerHashTblInsert(struct NaClContainer *vself,
                                void                 *obj);

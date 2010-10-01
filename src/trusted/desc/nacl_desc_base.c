@@ -17,6 +17,10 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
 
+#include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
+
 #if NACL_LINUX
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 #endif  /* NACL_LINUX */
@@ -30,12 +34,10 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_mutex.h"
+#include "native_client/src/trusted/desc/nacl_desc_quota.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 
-
-#include "native_client/src/shared/platform/nacl_host_desc.h"
-#include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/platform/nacl_sync_checked.h"
+#include "native_client/src/trusted/nacl_base/nacl_refcount.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
@@ -81,9 +83,9 @@ int NaClDescCtor(struct NaClDesc *ndp) {
   return NaClRefCountCtor(&ndp->base);
 }
 
-static void NaClDescDtor(struct NaClDesc *ndp) {
-  ndp->base.vtbl = &kNaClRefCountVtbl;
-  (*ndp->base.vtbl->Dtor)(&ndp->base);
+static void NaClDescDtor(struct NaClRefCount *nrcp) {
+  nrcp->vtbl = &kNaClRefCountVtbl;
+  (*nrcp->vtbl->Dtor)(nrcp);
 }
 
 struct NaClDesc *NaClDescRef(struct NaClDesc *ndp) {
@@ -124,6 +126,7 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
   NaClDescSyncSocketInternalize,
   NaClDescXferableDataDescInternalize,
   NaClDescInternalizeNotImplemented,  /* imc socket */
+  NaClDescQuotaInternalize,           /* quota wrapper */
 };
 
 char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
@@ -145,12 +148,13 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_SYNC_SOCKET);
     MAP(NACL_DESC_TRANSFERABLE_DATA_SOCKET);
     MAP(NACL_DESC_IMC_SOCKET);
+    MAP(NACL_DESC_QUOTA);
   }
   return "BAD TYPE TAG";
 }
 
 
-void NaClDescDtorNotImplemented(struct NaClDesc  *vself) {
+void NaClDescDtorNotImplemented(struct NaClRefCount  *vself) {
   UNREFERENCED_PARAMETER(vself);
 
   NaClLog(LOG_FATAL, "Must implement a destructor!\n");
@@ -186,7 +190,7 @@ int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
   UNREFERENCED_PARAMETER(len);
 
   NaClLog(LOG_ERROR,
-    "Map method is not implemented for object of type %s\n",
+          "Map method is not implemented for object of type %s\n",
           NaClDescTypeString(((struct NaClDescVtbl const *)
                               vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
@@ -265,14 +269,6 @@ int NaClDescFstatNotImplemented(struct NaClDesc         *vself,
 
   NaClLog(LOG_ERROR,
           "Fstat method is not implemented for object of type %s\n",
-          NaClDescTypeString(((struct NaClDescVtbl const *)
-                              vself->base.vtbl)->typeTag));
-  return -NACL_ABI_EINVAL;
-}
-
-int NaClDescCloseNotImplemented(struct NaClDesc         *vself) {
-  NaClLog(LOG_ERROR,
-          "Close method is not implemented for object of type %s\n",
           NaClDescTypeString(((struct NaClDescVtbl const *)
                               vself->base.vtbl)->typeTag));
   return -NACL_ABI_EINVAL;
@@ -580,7 +576,7 @@ int NaClSafeCloseNaClHandle(NaClHandle h) {
 
 struct NaClDescVtbl const kNaClDescVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescDtor,
+    NaClDescDtor,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -590,7 +586,6 @@ struct NaClDescVtbl const kNaClDescVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescFstatNotImplemented,
-  NaClDescCloseNotImplemented,
   NaClDescGetdentsNotImplemented,
   (enum NaClDescTypeTag) -1,  /* NaClDesc is an abstract base class */
   NaClDescExternalizeSizeNotImplemented,

@@ -146,8 +146,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->data_seg_sel = 0;
 #endif
 
-  nap->freeze_thread_ops = 0;
-
   return 1;
 
 #if 0
@@ -592,7 +590,7 @@ void NaClSetDesc(struct NaClApp   *nap,
 }
 
 int32_t NaClSetAvail(struct NaClApp  *nap,
-                 struct NaClDesc *ndp) {
+                     struct NaClDesc *ndp) {
   int32_t pos;
 
   NaClXMutexLock(&nap->desc_mu);
@@ -830,7 +828,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
 
   errcode = NACL_SRPC_RESULT_INTERNAL;
 
-  switch (((struct NaClDescVtbl const *) nexe_binary->base.vtbl)->typeTag) {
+  switch (NACL_VTBL(NaClDesc, nexe_binary)->typeTag) {
     case NACL_DESC_SHM:
       /*
        * We don't know the actual size of the nexe, but it should not
@@ -838,8 +836,8 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
        * least 4K, and we can map it in with uninitialized data (should be
        * zero filled) at the end.
        */
-      rval = (*((struct NaClDescVtbl const *)
-                nexe_binary->base.vtbl)->Fstat)(nexe_binary, &stbuf);
+      rval = (*NACL_VTBL(NaClDesc, nexe_binary)->
+              Fstat)(nexe_binary, &stbuf);
       if (0 != rval) {
         goto cleanup;
       }
@@ -876,6 +874,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
     case NACL_DESC_SYNC_SOCKET:
     case NACL_DESC_TRANSFERABLE_DATA_SOCKET:
     case NACL_DESC_IMC_SOCKET:
+    case NACL_DESC_QUOTA:
       /* Unsupported stuff */
       errcode = NACL_SRPC_RESULT_APP_ERROR;
       goto cleanup;
@@ -884,8 +883,8 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   NaClXMutexLock(&nap->mu);
 
   suberr = NaClAppLoadFile(load_src, nap, NACL_ABI_CHECK_OPTION_CHECK);
-  (*load_src->vtbl->Close)(load_src);
-  (*load_src->vtbl->Dtor)(load_src);
+  (*NACL_VTBL(Gio, load_src)->Close)(load_src);
+  (*NACL_VTBL(Gio, load_src)->Dtor)(load_src);
 
   if (LOAD_OK != suberr) {
     nap->module_load_status = suberr;
@@ -920,12 +919,8 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
 
  cleanup:
 
-  rval = (*((struct NaClDescVtbl const *) nexe_binary->base.vtbl)->
-          Close)(nexe_binary);
-  if (0 != rval) {
-    /* Fail the request even though we could go on. */
-    errcode = NACL_SRPC_RESULT_NO_MEMORY;
-  }
+  NaClDescUnref(nexe_binary);
+  nexe_binary = NULL;
   return errcode;
 }
 
@@ -1033,7 +1028,7 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
   /*
    * this block until the plugin connects
    */
-  status = (*((struct NaClDescVtbl const *) nap->service_port->base.vtbl)->
+  status = (*NACL_VTBL(NaClDesc, nap->service_port)->
             AcceptConn)(nap->service_port, &nap->secure_channel);
   if (status != 0) {
     NaClLog(LOG_FATAL,
@@ -1049,6 +1044,7 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
                  NACL_KERN_STACK_SIZE);
   NaClLog(4, "NaClSecureCommandChannel: thread spawned, continuing\n");
 }
+
 
 
 #ifdef __GNUC__

@@ -26,12 +26,12 @@ EXTERN_C_BEGIN
  */
 struct NaClDescInvalid;
 
-extern int NaClDescInvalidInternalize(struct NaClDesc          **baseptr,
-                                      struct NaClDescXferState *xfer) NACL_WUR;
+int NaClDescInvalidInternalize(struct NaClDesc          **baseptr,
+                               struct NaClDescXferState *xfer) NACL_WUR;
 
 /* Initialize and tear down the state for maintaining the singleton. */
-extern void NaClDescInvalidInit();
-extern void NaClDescInvalidFini();
+void NaClDescInvalidInit();
+void NaClDescInvalidFini();
 
 /* A factory method for returning the singleton. */
 struct NaClDescInvalid const *NaClDescInvalidMake();

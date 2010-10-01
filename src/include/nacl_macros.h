@@ -181,6 +181,29 @@ static inline void *NaClArrayCheckHelper(void *arg) {
        (void) tested_types_are_not_the_same_size; } while (0)
 
 
+/*
+ * NACL_COMPILE_TIME_ASSERT(boolexp) verifies that the argument
+ * boolexp is true.  The check occurs at compile time, assuming
+ * -pedantic flag or similar is used so that the ISO C forbidden
+ * zero-sized array generates an error.  This is standard with NaCl
+ * code.  If the wrong compilation flags are used, then we would get a
+ * run-time abort.
+ *
+ * Example:
+ *
+ * NACL_COMPILE_TIME_ASSERT(NACL_MAX_VAL(int32_t) <= SIZE_T_MAX)
+ *
+ * to explicitly state the assumption that an int32_t expression -- if
+ * containing a non-negative number -- will fit in a size_t variable.
+ */
+#define NACL_COMPILE_TIME_ASSERT(boolexp)                          \
+  do {                                                             \
+    char compile_time_boolean_expression_is_false[0 != (boolexp)]; \
+    if (0 == sizeof compile_time_boolean_expression_is_false) {    \
+      abort();                                                     \
+    }                                                              \
+  } while (0)
+
 /*****************************************************************************
  * MAX/MIN macros for integral types                                         *
  ****************************************************************************/

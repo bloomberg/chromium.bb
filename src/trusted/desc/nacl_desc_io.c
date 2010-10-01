@@ -59,7 +59,7 @@ int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
   return 1;
 }
 
-static void NaClDescIoDescDtor(struct NaClDesc *vself) {
+static void NaClDescIoDescDtor(struct NaClRefCount *vself) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
 
   NaClLog(4, "NaClDescIoDescDtor(0x%08"NACL_PRIxPTR").\n",
@@ -67,8 +67,8 @@ static void NaClDescIoDescDtor(struct NaClDesc *vself) {
   NaClHostDescClose(self->hd);
   free(self->hd);
   self->hd = NULL;
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp) {
@@ -245,11 +245,6 @@ static int NaClDescIoDescFstat(struct NaClDesc         *vself,
   return NaClAbiStatHostDescStatXlateCtor(statbuf, &hstatbuf);
 }
 
-static int NaClDescIoDescClose(struct NaClDesc         *vself) {
-  NaClDescUnref(vself);
-  return 0;
-}
-
 static int NaClDescIoDescExternalizeSize(struct NaClDesc *vself,
                                          size_t          *nbytes,
                                          size_t          *nhandles) {
@@ -279,7 +274,7 @@ static int NaClDescIoDescExternalize(struct NaClDesc           *vself,
 
 static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescIoDescDtor,
+    NaClDescIoDescDtor,
   },
   NaClDescIoDescMap,
   NaClDescIoDescUnmapUnsafe,
@@ -289,7 +284,6 @@ static struct NaClDescVtbl const kNaClDescIoDescVtbl = {
   NaClDescIoDescSeek,
   NaClDescIoDescIoctl,
   NaClDescIoDescFstat,
-  NaClDescIoDescClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_HOST_IO,
   NaClDescIoDescExternalizeSize,

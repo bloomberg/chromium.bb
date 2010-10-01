@@ -55,14 +55,14 @@ int NaClDescSemaphoreCtor(struct NaClDescSemaphore  *self, int value) {
   return 1;
 }
 
-void NaClDescSemaphoreDtor(struct NaClDesc *vself) {
+void NaClDescSemaphoreDtor(struct NaClRefCount *vself) {
   struct NaClDescSemaphore *self = (struct NaClDescSemaphore *) vself;
 
   NaClLog(4, "NaClDescSemaphoreDtor(0x%08"NACL_PRIxPTR").\n",
           (uintptr_t) vself);
   NaClSemDtor(&self->sem);
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 int NaClDescSemaphoreFstat(struct NaClDesc          *vself,
@@ -71,11 +71,6 @@ int NaClDescSemaphoreFstat(struct NaClDesc          *vself,
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSEMA;
-  return 0;
-}
-
-int NaClDescSemaphoreClose(struct NaClDesc          *vself) {
-  NaClDescUnref(vself);
   return 0;
 }
 
@@ -122,7 +117,6 @@ static struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescSemaphoreFstat,
-  NaClDescSemaphoreClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_SEMAPHORE,
   NaClDescExternalizeSizeNotImplemented,

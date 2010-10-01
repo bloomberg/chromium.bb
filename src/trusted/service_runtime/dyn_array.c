@@ -47,6 +47,12 @@ int DynArrayCtor(struct DynArray  *dap,
     initial_size = 32;
   }
   dap->num_entries = 0u;
+  /* calloc should check internally, but we're paranoid */
+  if (SIZE_T_MAX / sizeof *dap->ptr_array < initial_size ||
+      SIZE_T_MAX/ sizeof *dap->available < BitsToAllocWords(initial_size)) {
+    /* would integer overflow */
+    return 0;
+  }
   dap->ptr_array = calloc(initial_size, sizeof *dap->ptr_array);
   if (NULL == dap->ptr_array) {
     return 0;

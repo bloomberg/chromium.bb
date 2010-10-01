@@ -56,7 +56,7 @@ int NaClDescDirDescCtor(struct NaClDescDirDesc  *self,
   return 1;
 }
 
-static void NaClDescDirDescDtor(struct NaClDesc *vself) {
+static void NaClDescDirDescDtor(struct NaClRefCount *vself) {
   struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
 
   NaClLog(4, "NaClDescDirDescDtor(0x%08"NACL_PRIxPTR").\n",
@@ -64,8 +64,8 @@ static void NaClDescDirDescDtor(struct NaClDesc *vself) {
   NaClHostDirClose(self->hd);
   free(self->hd);
   self->hd = NULL;
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 struct NaClDescDirDesc *NaClDescDirDescMake(struct NaClHostDir *nhdp) {
@@ -145,11 +145,6 @@ static int NaClDescDirDescFstat(struct NaClDesc          *vself,
   return 0;
 }
 
-static int NaClDescDirDescClose(struct NaClDesc          *vself) {
-  NaClDescUnref(vself);
-  return 0;
-}
-
 static int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
                                           size_t          *nbytes,
                                           size_t          *nhandles) {
@@ -161,7 +156,7 @@ static int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
 
 static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescDirDescDtor,
+    NaClDescDirDescDtor,
   },
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -171,7 +166,6 @@ static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescDirDescFstat,
-  NaClDescDirDescClose,
   NaClDescDirDescGetdents,
   NACL_DESC_DIR,
   NaClDescDirDescExternalizeSize,

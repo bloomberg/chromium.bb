@@ -576,8 +576,8 @@ int32_t NaClCommonSysClose(struct NaClAppThread *natp,
   NaClLog(5, "Invoking Close virtual function of object 0x%08"NACL_PRIxPTR"\n",
           (uintptr_t) ndp);
   if (NULL != ndp) {
-    retval = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->Close)(ndp);
-    /* Unref */
+    NaClDescUnref(ndp);
+    retval = 0;
   }
 
   NaClSysCommonThreadSyscallLeave(natp);

@@ -91,13 +91,13 @@ int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
   return rv;
 }
 
-static void NaClDescImcShmDtor(struct NaClDesc *vself) {
+static void NaClDescImcShmDtor(struct NaClRefCount *vself) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
   (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
-  vself->base.vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
-  (*vself->base.vtbl->Dtor)(&vself->base);
+  vself->vtbl = (struct NaClRefCountVtbl const *) &kNaClDescVtbl;
+  (*vself->vtbl->Dtor)(vself);
 }
 
 static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
@@ -361,11 +361,6 @@ static int NaClDescImcShmFstat(struct NaClDesc         *vself,
   return 0;
 }
 
-static int NaClDescImcShmClose(struct NaClDesc         *vself) {
-  NaClDescUnref(vself);
-  return 0;
-}
-
 static int NaClDescImcShmExternalizeSize(struct NaClDesc *vself,
                                          size_t          *nbytes,
                                          size_t          *nhandles) {
@@ -389,7 +384,7 @@ static int NaClDescImcShmExternalize(struct NaClDesc           *vself,
 
 static struct NaClDescVtbl const kNaClDescImcShmVtbl = {
   {
-    (void (*)(struct NaClRefCount *)) NaClDescImcShmDtor,
+    NaClDescImcShmDtor,
   },
   NaClDescImcShmMap,
   NaClDescImcShmUnmapUnsafe,
@@ -399,7 +394,6 @@ static struct NaClDescVtbl const kNaClDescImcShmVtbl = {
   NaClDescSeekNotImplemented,
   NaClDescIoctlNotImplemented,
   NaClDescImcShmFstat,
-  NaClDescImcShmClose,
   NaClDescGetdentsNotImplemented,
   NACL_DESC_SHM,
   NaClDescImcShmExternalizeSize,

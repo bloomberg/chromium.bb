@@ -157,16 +157,16 @@ elif env['BUILD_ARCHITECTURE'] == 'arm':
 if env.Bit('windows'):
   ldr_inputs += [
     'win/nacl_ldt.c',
+    'win/nacl_thread_nice.c',
     'win/sel_memory.c',
     'win/sel_segments.c',
-    'win/nacl_thread_nice.c',
   ]
 elif env.Bit('mac'):
   ldr_inputs += [
     'osx/nacl_ldt.c',
+    'osx/nacl_thread_nice.c',
     'linux/sel_memory.c',
     'linux/x86/sel_segments.c',
-    'osx/nacl_thread_nice.c',
     'osx/outer_sandbox.c',
   ]
 elif env.Bit('linux'):
