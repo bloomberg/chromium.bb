@@ -1440,15 +1440,8 @@
    fun:_ZNSt6vectorIN21NotificationRegistrar6RecordESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
    fun:_ZNSt6vectorIN21NotificationRegistrar6RecordESaIS1_EE9push_backERKS1_
    fun:_ZN21NotificationRegistrar3AddEP20NotificationObserver16NotificationTypeRK18NotificationSource
-   ...
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
 }
+
 {
    bug_32088
    Memcheck:Leak
@@ -2215,7 +2208,7 @@
    fun:_ZN12browser_sync19DataTypeManagerImpl10NotifyDoneENS_15DataTypeManager15ConfigureResultE
 }
 {
-   bug_49279
+   bug_49279_a
    Memcheck:Leak
    fun:_Znw*
    ...
@@ -2224,6 +2217,19 @@
    fun:_ZN29ChromeURLRequestContextGetter14CreateOriginalEP7ProfileRK8FilePathS4_i
    fun:_ZN11ProfileImpl17GetRequestContextEv
 }
+{
+   bug_49279_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
+   fun:_ZN12_GLOBAL__N_115FactoryForMediaC2EP7ProfileRK8FilePathib
+   fun:_ZN12_GLOBAL__N_115FactoryForMediaC1EP7ProfileRK8FilePathib
+   fun:_ZN29ChromeURLRequestContextGetter28CreateRequestContextForMediaEP7ProfileRK8FilePathib
+   fun:_ZN29ChromeURLRequestContextGetter22CreateOriginalForMediaEP7ProfileRK8FilePathi
+   fun:_ZN11ProfileImpl25GetRequestContextForMediaEv
+}
+
 {
    bug_50056
    Memcheck:Leak
@@ -2699,4 +2705,25 @@
    fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
    fun:_ZN4base17AsyncCallbackTask3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+{
+   bug_57539
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISsEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE14_M_create_nodeERKSs
+   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE9_M_insertEPSt18_Rb_tree_node_baseS7_RKSs
+   fun:_ZNSt8_Rb_treeISsSsSt9_IdentityISsESt4lessISsESaISsEE16_M_insert_uniqueERKSs
+   fun:_ZNSt3setISsSt4lessISsESaISsEE6insertERKSs
+   fun:*13ExtensionImpl16SetFunctionNamesERKSt6vectorISsSaISsEE
+   fun:_ZN24ExtensionProcessBindings16SetFunctionNamesERKSt6vectorISsSaISsEE
+   fun:_ZN12RenderThread27OnSetExtensionFunctionNamesERKSt6vectorISsSaISsEE
+   fun:_Z16DispatchToMethodI12RenderThreadMS0_FvRKSt6vectorISsSaISsEEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple1ISt6vectorISsSaISsEEEE8DispatchI12RenderThreadMS8_FvRKS4_EEEbPKNS_7MessageEPT_T0_
+   fun:_ZN12RenderThread24OnControlMessageReceivedERKN3IPC7MessageE
+   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
 }
