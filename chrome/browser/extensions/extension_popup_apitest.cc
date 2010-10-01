@@ -6,8 +6,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-// Flaky, http://crbug.com/46601.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Popup) {
+// Times out. See http://crbug.com/46601.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Popup) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
