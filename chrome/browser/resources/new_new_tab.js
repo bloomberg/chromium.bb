@@ -381,24 +381,11 @@ function setShownSections(newShownSections) {
 
 function layoutRecentlyClosed() {
   var recentElement = $('recently-closed');
-  // We cannot use clientWidth here since the width has a transition.
-  var availWidth = useSmallGrid() ? 692 : 920;
-  var parentEl = recentElement.lastElementChild;
+  var miniview = recentElement.getElementsByClassName('miniview')[0];
 
-  // Now go backwards and hide as many elements as needed.
-  var elementsToHide = [];
-  for (var el = parentEl.lastElementChild; el;
-       el = el.previousElementSibling) {
-    if (el.offsetLeft + el.offsetWidth > availWidth) {
-      elementsToHide.push(el);
-    }
-  }
+  updateMiniviewClipping(miniview);
 
-  elementsToHide.forEach(function(el) {
-    parentEl.removeChild(el);
-  });
-
-  if (parentEl.hasChildNodes()) {
+  if (miniview.hasChildNodes()) {
     recentElement.classList.remove('disabled');
   } else {
     recentElement.classList.add('disabled');
