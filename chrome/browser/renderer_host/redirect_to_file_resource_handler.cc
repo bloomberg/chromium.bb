@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/task.h"
-#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/file_stream.h"

@@ -14,7 +14,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
-const int kReadFilePermissions =
+static const int kReadFilePermissions =
     base::PLATFORM_FILE_OPEN |
     base::PLATFORM_FILE_READ |
     base::PLATFORM_FILE_EXCLUSIVE_READ |
@@ -44,6 +44,11 @@ class ChildProcessSecurityPolicy::SecurityState {
   // Grant certain permissions to a file.
   void GrantPermissionsForFile(const FilePath& file, int permissions) {
     file_permissions_[file.StripTrailingSeparators()] |= permissions;
+  }
+
+  // Revokes all permissions granted to a file.
+  void RevokeAllPermissionsForFile(const FilePath& file) {
+    file_permissions_.erase(file.StripTrailingSeparators());
   }
 
   void GrantBindings(int bindings) {
@@ -97,7 +102,7 @@ class ChildProcessSecurityPolicy::SecurityState {
 
  private:
   typedef std::map<std::string, bool> SchemeMap;
-  typedef std::map<FilePath, int> FileMap; // bit-set of PlatformFileFlags
+  typedef std::map<FilePath, int> FileMap;  // bit-set of PlatformFileFlags
 
   // Maps URL schemes to whether permission has been granted or revoked:
   //   |true| means the scheme has been granted.
@@ -244,6 +249,17 @@ void ChildProcessSecurityPolicy::GrantPermissionsForFile(
     return;
 
   state->second->GrantPermissionsForFile(file, permissions);
+}
+
+void ChildProcessSecurityPolicy::RevokeAllPermissionsForFile(
+    int renderer_id, const FilePath& file) {
+  AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  if (state == security_state_.end())
+    return;
+
+  state->second->RevokeAllPermissionsForFile(file);
 }
 
 void ChildProcessSecurityPolicy::GrantScheme(int renderer_id,

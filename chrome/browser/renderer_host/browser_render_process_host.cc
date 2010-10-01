@@ -20,6 +20,7 @@
 #include "base/field_trial.h"
 #include "base/histogram.h"
 #include "base/logging.h"
+#include "base/platform_file.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
@@ -222,6 +224,25 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 
   WebCacheManager::GetInstance()->Add(id());
   ChildProcessSecurityPolicy::GetInstance()->Add(id());
+
+  // Grant most file permissions to this renderer.
+  // PLATFORM_FILE_TEMPORARY, PLATFORM_FILE_HIDDEN and
+  // PLATFORM_FILE_DELETE_ON_CLOSE are not granted, because no existing API
+  // requests them.
+  ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
+      id(), profile->GetPath().Append(
+          FileSystemHostContext::kFileSystemDirectory),
+      base::PLATFORM_FILE_OPEN |
+      base::PLATFORM_FILE_CREATE |
+      base::PLATFORM_FILE_OPEN_ALWAYS |
+      base::PLATFORM_FILE_CREATE_ALWAYS |
+      base::PLATFORM_FILE_READ |
+      base::PLATFORM_FILE_WRITE |
+      base::PLATFORM_FILE_EXCLUSIVE_READ |
+      base::PLATFORM_FILE_EXCLUSIVE_WRITE |
+      base::PLATFORM_FILE_ASYNC |
+      base::PLATFORM_FILE_TRUNCATE |
+      base::PLATFORM_FILE_WRITE_ATTRIBUTES);
 
   // Note: When we create the BrowserRenderProcessHost, it's technically
   //       backgrounded, because it has no visible listeners.  But the process

@@ -591,8 +591,10 @@ void ResourceDispatcherHost::UnregisterDownloadedTempFile(
   DeletableFilesMap::iterator found = map.find(request_id);
   if (found == map.end())
     return;
+
+  ChildProcessSecurityPolicy::GetInstance()->RevokeAllPermissionsForFile(
+      receiver_id, found->second->path());
   map.erase(found);
-  // TODO(michaeln): Revoke access to this file.
 }
 
 bool ResourceDispatcherHost::Send(IPC::Message* message) {

@@ -1722,22 +1722,8 @@ void ResourceMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
                                             int message_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path)) {
-    IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
-        msg.routing_id(), base::PLATFORM_FILE_ERROR_ACCESS_DENIED,
-        IPC::InvalidPlatformFileForTransit(), message_id);
-    Send(reply);
-    return;
-  }
-
-  // TODO(dumi): update this check once we have a security attribute
-  // that allows renderers to modify files.
-  int allowed_flags =
-      base::PLATFORM_FILE_OPEN |
-      base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_EXCLUSIVE_READ |
-      base::PLATFORM_FILE_ASYNC;
-  if (flags & ~allowed_flags) {
+  if (!ChildProcessSecurityPolicy::GetInstance()->HasPermissionsForFile(
+          id(), path, flags)) {
     DLOG(ERROR) << "Bad flags in ViewMsgHost_AsyncOpenFile message: " << flags;
     BrowserRenderProcessHost::BadMessageTerminateProcess(
         ViewHostMsg_AsyncOpenFile::ID, handle());

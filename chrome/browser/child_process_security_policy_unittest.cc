@@ -275,6 +275,15 @@ TEST_F(ChildProcessSecurityPolicyTest, FilePermissions) {
                                         base::PLATFORM_FILE_OPEN));
   EXPECT_TRUE(p->HasPermissionsForFile(kRendererID, file,
                                        base::PLATFORM_FILE_TEMPORARY));
+
+  // Revoke all permissions for the file (it should inherit its permissions
+  // from the directory again).
+  p->RevokeAllPermissionsForFile(kRendererID, file);
+  EXPECT_TRUE(p->HasPermissionsForFile(kRendererID, file,
+                                       base::PLATFORM_FILE_OPEN |
+                                       base::PLATFORM_FILE_READ));
+  EXPECT_FALSE(p->HasPermissionsForFile(kRendererID, file,
+                                        base::PLATFORM_FILE_TEMPORARY));
   p->Remove(kRendererID);
 }
 

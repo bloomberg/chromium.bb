@@ -77,6 +77,9 @@ class ChildProcessSecurityPolicy {
                                const FilePath& file,
                                int permissions);
 
+  // Revokes all permissions granted to the given file.
+  void RevokeAllPermissionsForFile(int renderer_id, const FilePath& file);
+
   // Grants the renderer process the capability to access URLs of the provided
   // scheme.
   void GrantScheme(int renderer_id, const std::string& scheme);
@@ -108,7 +111,7 @@ class ChildProcessSecurityPolicy {
   // capability to upload the requested file.
   bool CanReadFile(int renderer_id, const FilePath& file);
 
-  // Determins if certain permissions were granted for a file. |permissions|
+  // Determines if certain permissions were granted for a file. |permissions|
   // must be a bit-set of base::PlatformFileFlags.
   bool HasPermissionsForFile(int renderer_id,
                              const FilePath& file,
