@@ -98,6 +98,11 @@ class MenuItemView : public View {
   // X-coordinate of where the label starts.
   static int label_start() { return label_start_; }
 
+  // Returns the accessible name to be used with screen readers. Mnemonics are
+  // removed and the menu item accelerator text is appended.
+  static std::wstring GetAccessibleNameForMenuItem(
+      const std::wstring& item_text, const std::wstring& accelerator_text);
+
   // Run methods. See description above class for details. Both Run methods take
   // a rectangle, which is used to position the menu. |has_mnemonics| indicates
   // whether the items have mnemonics. Mnemonics are identified by way of the

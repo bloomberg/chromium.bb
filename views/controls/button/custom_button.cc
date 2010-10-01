@@ -58,10 +58,13 @@ AccessibilityTypes::State CustomButton::GetAccessibleState() {
   switch (state_) {
     case BS_HOT:
       state = AccessibilityTypes::STATE_HOTTRACKED;
+      break;
     case BS_PUSHED:
       state = AccessibilityTypes::STATE_PRESSED;
+      break;
     case BS_DISABLED:
       state = AccessibilityTypes::STATE_UNAVAILABLE;
+      break;
     case BS_NORMAL:
     case BS_COUNT:
       // No additional accessibility state set for this button state.

@@ -244,61 +244,98 @@ class ScheduleAllView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ScheduleAllView);
 };
 
-TextButton* CreateAndConfigureButton(View* parent,
-                                     views::ButtonListener* listener,
-                                     int string_id,
-                                     MenuButtonBackground::ButtonType type,
-                                     MenuModel* model,
-                                     int index,
-                                     MenuButtonBackground** background) {
-  TextButton* button =
-      new TextButton(listener, l10n_util::GetString(string_id));
-  button->SetFocusable(true);
-  button->set_request_focus_on_press(false);
-  button->set_tag(index);
-  button->SetEnabled(model->IsEnabledAt(index));
-  button->set_prefix_type(TextButton::PREFIX_HIDE);
-  MenuButtonBackground* bg = new MenuButtonBackground(type);
-  button->set_background(bg);
-  button->SetEnabledColor(MenuConfig::instance().text_color);
-  if (background)
-    *background = bg;
-  button->set_border(new MenuButtonBorder());
-  button->set_alignment(TextButton::ALIGN_CENTER);
-  button->SetNormalHasBorder(true);
-  button->SetFont(views::MenuConfig::instance().font);
-  button->ClearMaxTextSize();
-  parent->AddChildView(button);
-  return button;
+std::wstring GetAccessibleNameForWrenchMenuItem(
+      MenuModel* model, int item_index, int accessible_string_id) {
+  std::wstring accessible_name = l10n_util::GetString(accessible_string_id);
+  std::wstring accelerator_text;
+
+  menus::Accelerator menu_accelerator;
+  if (model->GetAcceleratorAt(item_index, &menu_accelerator)) {
+    accelerator_text =
+        views::Accelerator(menu_accelerator.GetKeyCode(),
+                           menu_accelerator.modifiers()).GetShortcutText();
+  }
+
+  return MenuItemView::GetAccessibleNameForMenuItem(
+      accessible_name, accelerator_text);
 }
+
+// WrenchMenuView is a view that can contain text buttons.
+class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
+ public:
+  WrenchMenuView(WrenchMenu* menu, MenuModel* menu_model)
+      : menu_(menu), menu_model_(menu_model) { }
+
+  TextButton* CreateAndConfigureButton(int string_id,
+                                       MenuButtonBackground::ButtonType type,
+                                       int index,
+                                       MenuButtonBackground** background) {
+    return CreateButtonWithAccName(
+      string_id, type, index, background, string_id);
+  }
+
+  TextButton* CreateButtonWithAccName(int string_id,
+                                      MenuButtonBackground::ButtonType type,
+                                      int index,
+                                      MenuButtonBackground** background,
+                                      int acc_string_id) {
+    TextButton* button =
+        new TextButton(this, l10n_util::GetString(string_id));
+    button->SetAccessibleName(
+        GetAccessibleNameForWrenchMenuItem(menu_model_, index, acc_string_id));
+    button->SetFocusable(true);
+    button->set_request_focus_on_press(false);
+    button->set_tag(index);
+    button->SetEnabled(menu_model_->IsEnabledAt(index));
+    button->set_prefix_type(TextButton::PREFIX_HIDE);
+    MenuButtonBackground* bg = new MenuButtonBackground(type);
+    button->set_background(bg);
+    button->SetEnabledColor(MenuConfig::instance().text_color);
+    if (background)
+      *background = bg;
+    button->set_border(new MenuButtonBorder());
+    button->set_alignment(TextButton::ALIGN_CENTER);
+    button->SetNormalHasBorder(true);
+    button->SetFont(views::MenuConfig::instance().font);
+    button->ClearMaxTextSize();
+    AddChildView(button);
+    return button;
+  }
+
+ protected:
+  // Hosting WrenchMenu.
+  WrenchMenu* menu_;
+
+  // The menu model containing the increment/decrement/reset items.
+  MenuModel* menu_model_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WrenchMenuView);
+};
 
 }  // namespace
 
 // CutCopyPasteView ------------------------------------------------------------
 
 // CutCopyPasteView is the view containing the cut/copy/paste buttons.
-class WrenchMenu::CutCopyPasteView : public ScheduleAllView,
-                                     public views::ButtonListener {
+class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
  public:
   CutCopyPasteView(WrenchMenu* menu,
                    MenuModel* menu_model,
                    int cut_index,
                    int copy_index,
                    int paste_index)
-      : menu_(menu),
-        menu_model_(menu_model) {
+      : WrenchMenuView(menu, menu_model) {
     TextButton* cut = CreateAndConfigureButton(
-        this, this, IDS_CUT, MenuButtonBackground::LEFT_BUTTON, menu_model,
-        cut_index, NULL);
+        IDS_CUT, MenuButtonBackground::LEFT_BUTTON, cut_index, NULL);
 
     MenuButtonBackground* copy_background = NULL;
     CreateAndConfigureButton(
-        this, this, IDS_COPY, MenuButtonBackground::CENTER_BUTTON, menu_model,
-        copy_index, &copy_background);
+        IDS_COPY, MenuButtonBackground::CENTER_BUTTON, copy_index,
+        &copy_background);
 
     TextButton* paste = CreateAndConfigureButton(
-        this, this, IDS_PASTE, MenuButtonBackground::RIGHT_BUTTON, menu_model,
-        paste_index, NULL);
+        IDS_PASTE, MenuButtonBackground::RIGHT_BUTTON, paste_index, NULL);
 
     copy_background->SetOtherButtons(cut, paste);
   }
@@ -330,9 +367,6 @@ class WrenchMenu::CutCopyPasteView : public ScheduleAllView,
     return width;
   }
 
-  WrenchMenu* menu_;
-  MenuModel* menu_model_;
-
   DISALLOW_COPY_AND_ASSIGN(CutCopyPasteView);
 };
 
@@ -344,8 +378,7 @@ static const int kZoomPadding = 6;
 // ZoomView contains the various zoom controls: two buttons to increase/decrease
 // the zoom, a label showing the current zoom percent, and a button to go
 // full-screen.
-class WrenchMenu::ZoomView : public ScheduleAllView,
-                             public views::ButtonListener,
+class WrenchMenu::ZoomView : public WrenchMenuView,
                              public NotificationObserver {
  public:
   ZoomView(WrenchMenu* menu,
@@ -353,19 +386,16 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
            int decrement_index,
            int increment_index,
            int fullscreen_index)
-      : menu_(menu),
-        menu_model_(menu_model),
+      : WrenchMenuView(menu, menu_model),
         fullscreen_index_(fullscreen_index),
         increment_button_(NULL),
         zoom_label_(NULL),
         decrement_button_(NULL),
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
-    decrement_button_ = CreateAndConfigureButton(
-        this, this, IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON,
-        menu_model, decrement_index, NULL);
-    decrement_button_->SetAccessibleName(
-        l10n_util::GetString(IDS_ACCNAME_ZOOM_MINUS2));
+    decrement_button_ = CreateButtonWithAccName(
+        IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON, decrement_index,
+        NULL, IDS_ACCNAME_ZOOM_MINUS2);
 
     zoom_label_ = new Label(l10n_util::GetStringF(IDS_ZOOM_PERCENT, L"100"));
     zoom_label_->SetColor(MenuConfig::instance().text_color);
@@ -378,11 +408,9 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     AddChildView(zoom_label_);
     zoom_label_width_ = MaxWidthForZoomLabel();
 
-    increment_button_ = CreateAndConfigureButton(
-        this, this, IDS_ZOOM_PLUS2, MenuButtonBackground::RIGHT_BUTTON,
-        menu_model, increment_index, NULL);
-    increment_button_->SetAccessibleName(
-        l10n_util::GetString(IDS_ACCNAME_ZOOM_PLUS2));
+    increment_button_ = CreateButtonWithAccName(
+        IDS_ZOOM_PLUS2, MenuButtonBackground::RIGHT_BUTTON, increment_index,
+        NULL, IDS_ACCNAME_ZOOM_PLUS2);
 
     center_bg->SetOtherButtons(decrement_button_, increment_button_);
 
@@ -401,7 +429,8 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     fullscreen_button_->set_background(
         new MenuButtonBackground(MenuButtonBackground::SINGLE_BUTTON));
     fullscreen_button_->SetAccessibleName(
-        l10n_util::GetString(IDS_ACCNAME_FULLSCREEN));
+        GetAccessibleNameForWrenchMenuItem(
+            menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
     AddChildView(fullscreen_button_);
 
     UpdateZoomControls();
@@ -505,12 +534,6 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
 
     return max_w + insets.width();
   }
-
-  // Hosting WrenchMenu.
-  WrenchMenu* menu_;
-
-  // The menu model containing the increment/decrement/reset items.
-  MenuModel* menu_model_;
 
   // Index of the fullscreen menu item in the model.
   const int fullscreen_index_;

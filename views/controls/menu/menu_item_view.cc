@@ -108,16 +108,45 @@ AccessibilityTypes::State MenuItemView::GetAccessibleState() {
   switch (GetType()) {
     case SUBMENU:
       state |= AccessibilityTypes::STATE_HASPOPUP;
+      break;
     case CHECKBOX:
     case RADIO:
       state |= GetDelegate()->IsItemChecked(GetCommand()) ?
           AccessibilityTypes::STATE_CHECKED : 0;
+      break;
     case NORMAL:
     case SEPARATOR:
       // No additional accessibility states currently for these menu states.
       break;
   }
   return state;
+}
+
+// static
+std::wstring MenuItemView::GetAccessibleNameForMenuItem(
+      const std::wstring& item_text, const std::wstring& accelerator_text) {
+  std::wstring accessible_name = item_text;
+
+  // Filter out the "&" for accessibility clients.
+  size_t index = 0;
+  while ((index = accessible_name.find(L"&", index)) != std::wstring::npos &&
+         index + 1 < accessible_name.length()) {
+    accessible_name.replace(index, accessible_name.length() - index,
+                            accessible_name.substr(index + 1));
+
+    // Special case for "&&" (escaped for "&").
+    if (accessible_name[index] == '&')
+      ++index;
+  }
+
+  // Append accelerator text.
+  menus::Accelerator menu_accelerator;
+  if (!accelerator_text.empty()) {
+    accessible_name.append(L" ");
+    accessible_name.append(accelerator_text);
+  }
+
+  return accessible_name;
 }
 
 void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
@@ -237,27 +266,7 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 
 void MenuItemView::SetTitle(const std::wstring& title) {
   title_ = title;
-  std::wstring accessible_title(title);
-
-  // Filter out the "&" for accessibility clients.
-  size_t index = 0;
-  while ((index = accessible_title.find(L"&", index)) != std::wstring::npos &&
-         index + 1 < accessible_title.length()) {
-    accessible_title.replace(index, accessible_title.length() - index,
-                             accessible_title.substr(index + 1));
-
-    // Special case for "&&" (escaped for "&").
-    if (accessible_title[index] == '&')
-      ++index;
-  }
-
-  if (!GetAcceleratorText().empty()) {
-    std::wstring accelerator_text(L" ");
-    accelerator_text.append(GetAcceleratorText());
-    accessible_title.append(accelerator_text);
-  }
-
-  SetAccessibleName(accessible_title);
+  SetAccessibleName(GetAccessibleNameForMenuItem(title, GetAcceleratorText()));
 }
 
 void MenuItemView::SetSelected(bool selected) {
