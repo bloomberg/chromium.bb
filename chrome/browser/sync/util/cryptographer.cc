@@ -19,8 +19,6 @@ const char kNigoriKeyName[] = "nigori-key";
 Cryptographer::Cryptographer() : default_nigori_(NULL) {
 }
 
-Cryptographer::~Cryptographer() {}
-
 void Cryptographer::Bootstrap(const std::string& restored_bootstrap_token) {
   if (is_ready()) {
     NOTREACHED();

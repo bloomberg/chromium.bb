@@ -45,39 +45,6 @@ static const int kCurrentVersion = 2;
 static const int kCompatibleVersion = 1;
 static const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
 
-OriginInfo::OriginInfo(const OriginInfo& origin_info)
-    : origin_(origin_info.origin_),
-      total_size_(origin_info.total_size_),
-      quota_(origin_info.quota_),
-      database_info_(origin_info.database_info_) {}
-
-OriginInfo::~OriginInfo() {}
-
-void OriginInfo::GetAllDatabaseNames(std::vector<string16>* databases) const {
-  for (DatabaseInfoMap::const_iterator it = database_info_.begin();
-       it != database_info_.end(); it++) {
-    databases->push_back(it->first);
-  }
-}
-
-int64 OriginInfo::GetDatabaseSize(const string16& database_name) const {
-  DatabaseInfoMap::const_iterator it = database_info_.find(database_name);
-  if (it != database_info_.end())
-    return it->second.first;
-  return 0;
-}
-
-string16 OriginInfo::GetDatabaseDescription(
-    const string16& database_name) const {
-  DatabaseInfoMap::const_iterator it = database_info_.find(database_name);
-  if (it != database_info_.end())
-    return it->second.second;
-  return string16();
-}
-
-OriginInfo::OriginInfo(const string16& origin, int64 total_size, int64 quota)
-    : origin_(origin), total_size_(total_size), quota_(quota) {}
-
 DatabaseTracker::DatabaseTracker(const FilePath& profile_path,
                                  bool is_incognito)
     : is_initialized_(false),

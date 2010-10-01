@@ -77,7 +77,6 @@ class SyncSession {
 
   // Creates a new SyncSession with mandatory context and delegate.
   SyncSession(SyncSessionContext* context, Delegate* delegate);
-  ~SyncSession();
 
   // Builds a thread-safe and read-only copy of the current session state.
   SyncSessionSnapshot TakeSnapshot() const;

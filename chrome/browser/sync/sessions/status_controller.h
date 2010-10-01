@@ -45,7 +45,6 @@ namespace sessions {
 class StatusController {
  public:
   explicit StatusController(const ModelSafeRoutingInfo& routes);
-  ~StatusController();
 
   // Returns true if some portion of the session state has changed (is dirty)
   // since it was created or was last reset.

@@ -128,7 +128,6 @@
       # depend on chromotocol_proto_lib for headers.
       'hard_dependency': 1,
       'sources': [
-        'base/capture_data.cc',
         'base/capture_data.h',
         'base/compressor.h',
         'base/compressor_zlib.cc',

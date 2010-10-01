@@ -425,10 +425,6 @@ static gfx::Size ParseIconSize(const string16& text) {
                    ParseSingleIconSize(sizes[1]));
 }
 
-WebApplicationInfo::WebApplicationInfo() {}
-
-WebApplicationInfo::~WebApplicationInfo() {}
-
 bool ParseIconSizes(const string16& text,
                     std::vector<gfx::Size>* sizes,
                     bool* is_any) {

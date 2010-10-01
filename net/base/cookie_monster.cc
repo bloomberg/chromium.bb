@@ -1531,9 +1531,6 @@ CookieMonster::ParsedCookie::ParsedCookie(const std::string& cookie_line)
   }
 }
 
-CookieMonster::ParsedCookie::~ParsedCookie() {
-}
-
 // Returns true if |c| occurs in |chars|
 // TODO maybe make this take an iterator, could check for end also?
 static inline bool CharIsA(const char c, const char* chars) {

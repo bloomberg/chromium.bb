@@ -228,8 +228,7 @@ struct EntryKernel {
   std::bitset<BIT_TEMPS_COUNT> bit_temps;
 
  public:
-  EntryKernel();
-  ~EntryKernel();
+  EntryKernel() : dirty_(false) {}
 
   // Set the dirty bit, and optionally add this entry's metahandle to
   // a provided index on dirty bits in |dirty_index|. Parameter may be null,
@@ -660,9 +659,6 @@ class Directory {
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
   struct PersistedKernelInfo {
-    PersistedKernelInfo();
-    ~PersistedKernelInfo();
-
     // Last sync timestamp fetched from the server.
     int64 last_download_timestamp[MODEL_TYPE_COUNT];
     // true iff we ever reached the end of the changelog.
@@ -672,6 +668,11 @@ class Directory {
     std::string store_birthday;
     // The next local ID that has not been used with this cache-GUID.
     int64 next_id;
+    PersistedKernelInfo() : next_id(0) {
+      for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+        last_download_timestamp[i] = 0;
+      }
+    }
   };
 
   // What the Directory needs on initialization to create itself and its Kernel.
@@ -696,13 +697,12 @@ class Directory {
   // constructed and forms a consistent snapshot of what needs to be sent to
   // the backing store.
   struct SaveChangesSnapshot {
-    SaveChangesSnapshot();
-    ~SaveChangesSnapshot();
-
     KernelShareInfoStatus kernel_info_status;
     PersistedKernelInfo kernel_info;
     OriginalEntries dirty_metas;
     MetahandleSet metahandles_to_purge;
+    SaveChangesSnapshot() : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {
+    }
   };
 
   Directory();

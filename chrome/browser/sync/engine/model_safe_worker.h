@@ -41,21 +41,28 @@ std::string ModelSafeGroupToString(ModelSafeGroup group);
 // syncable::Directory due to a race.
 class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
  public:
-  ModelSafeWorker();
-  virtual ~ModelSafeWorker();
+  ModelSafeWorker() { }
+  virtual ~ModelSafeWorker() { }
 
   // Any time the Syncer performs model modifications (e.g employing a
   // WriteTransaction), it should be done by this method to ensure it is done
   // from a model-safe thread.
-  virtual void DoWorkAndWaitUntilDone(Callback0::Type* work);
+  virtual void DoWorkAndWaitUntilDone(Callback0::Type* work) {
+    work->Run();  // For GROUP_PASSIVE, we do the work on the current thread.
+  }
 
-  virtual ModelSafeGroup GetModelSafeGroup();
+  virtual ModelSafeGroup GetModelSafeGroup() {
+    return GROUP_PASSIVE;
+  }
 
   // Check the current thread and see if it's the thread associated with
   // this worker.  If this returns true, then it should be safe to operate
   // on models that are in this worker's group.  If this returns false,
   // such work should not be attempted.
-  virtual bool CurrentThreadIsWorkThread();
+  virtual bool CurrentThreadIsWorkThread() {
+    // The passive group is not the work thread for any browser model.
+    return false;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;

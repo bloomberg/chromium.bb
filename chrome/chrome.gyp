@@ -976,7 +976,6 @@
         'browser/sync/sessions/status_controller.h',
         'browser/sync/sessions/sync_session.cc',
         'browser/sync/sessions/sync_session.h',
-        'browser/sync/sessions/sync_session_context.cc',
         'browser/sync/sessions/sync_session_context.h',
         'browser/sync/syncable/blob.h',
         'browser/sync/syncable/dir_open_result.h',

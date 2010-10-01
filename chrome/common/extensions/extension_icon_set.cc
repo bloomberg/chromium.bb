@@ -6,10 +6,6 @@
 
 #include "base/logging.h"
 
-ExtensionIconSet::ExtensionIconSet() {}
-
-ExtensionIconSet::~ExtensionIconSet() {}
-
 void ExtensionIconSet::Clear() {
   map_.clear();
 }

@@ -17,16 +17,6 @@ DevToolsRemoteMessageBuilder& DevToolsRemoteMessageBuilder::instance() {
   return instance_;
 }
 
-DevToolsRemoteMessage::DevToolsRemoteMessage() {}
-
-DevToolsRemoteMessage::DevToolsRemoteMessage(const HeaderMap& headers,
-                                             const std::string& content)
-    : header_map_(headers),
-      content_(content) {
-}
-
-DevToolsRemoteMessage::~DevToolsRemoteMessage() {}
-
 const std::string DevToolsRemoteMessage::GetHeader(
     const std::string& header_name,
     const std::string& default_value) const {

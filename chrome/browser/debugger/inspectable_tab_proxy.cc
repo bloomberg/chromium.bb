@@ -15,18 +15,6 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/devtools_messages.h"
 
-DevToolsClientHostImpl::DevToolsClientHostImpl(
-    int32 id,
-    DebuggerRemoteService* service,
-    InspectableTabProxy::IdToClientHostMap* map)
-    : id_(id),
-      service_(service),
-      map_(map) {}
-
-DevToolsClientHostImpl::~DevToolsClientHostImpl() {
-  map_->erase(this->id_);
-}
-
 // The debugged tab has closed.
 void DevToolsClientHostImpl::InspectedTabClosing() {
   TabClosed();
@@ -60,10 +48,6 @@ void DevToolsClientHostImpl::FrameNavigate(const std::string& url) {
 void DevToolsClientHostImpl::TabClosed() {
   service_->TabClosed(id_);
 }
-
-InspectableTabProxy::InspectableTabProxy() {}
-
-InspectableTabProxy::~InspectableTabProxy() {}
 
 const InspectableTabProxy::ControllersMap&
     InspectableTabProxy::controllers_map() {

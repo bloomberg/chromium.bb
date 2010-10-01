@@ -30,8 +30,10 @@ class OrderedCommitSet {
   typedef std::vector<size_t> Projection;
 
   // TODO(chron): Reserve space according to batch size?
-  explicit OrderedCommitSet(const browser_sync::ModelSafeRoutingInfo& routes);
-  ~OrderedCommitSet();
+  explicit OrderedCommitSet(const browser_sync::ModelSafeRoutingInfo& routes)
+      : routes_(routes) {}
+
+  ~OrderedCommitSet() {}
 
   bool HaveCommitItem(const int64 metahandle) const {
     return inserted_metahandles_.count(metahandle) > 0;

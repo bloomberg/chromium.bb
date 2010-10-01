@@ -56,8 +56,7 @@ class GlobalDescriptors {
   }
 
  private:
-  GlobalDescriptors();
-  ~GlobalDescriptors();
+  GlobalDescriptors() { }
   friend struct DefaultSingletonTraits<GlobalDescriptors>;
 
   Mapping descriptors_;

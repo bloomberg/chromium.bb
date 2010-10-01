@@ -11,13 +11,6 @@
 namespace browser_sync {
 namespace sessions {
 
-OrderedCommitSet::OrderedCommitSet(
-    const browser_sync::ModelSafeRoutingInfo& routes)
-    : routes_(routes) {
-}
-
-OrderedCommitSet::~OrderedCommitSet() {}
-
 void OrderedCommitSet::AddCommitItem(const int64 metahandle,
                                      const syncable::Id& commit_id,
                                      syncable::ModelType type) {

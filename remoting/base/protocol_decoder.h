@@ -25,7 +25,7 @@ class ProtocolDecoder {
  public:
   ProtocolDecoder();
 
-  virtual ~ProtocolDecoder();
+  virtual ~ProtocolDecoder() {}
 
   // Parse data received from network into ClientMessages. Ownership of |data|
   // is passed to this object and output is written to |messages|.

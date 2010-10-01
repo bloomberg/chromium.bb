@@ -50,22 +50,30 @@ class CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   // Helpers to make the above interface simpler for some cases.
 
   // Sets a cookie for the given URL using default options.
-  bool SetCookie(const GURL& url, const std::string& cookie_line);
+  bool SetCookie(const GURL& url, const std::string& cookie_line) {
+    return SetCookieWithOptions(url, cookie_line, CookieOptions());
+  }
 
   // Gets cookies for the given URL using default options.
-  std::string GetCookies(const GURL& url);
+  std::string GetCookies(const GURL& url) {
+    return GetCookiesWithOptions(url, CookieOptions());
+  }
 
   // Sets a vector of response cookie values for the same URL.
   void SetCookiesWithOptions(const GURL& url,
                              const std::vector<std::string>& cookie_lines,
-                             const CookieOptions& options);
+                             const CookieOptions& options) {
+    for (size_t i = 0; i < cookie_lines.size(); ++i)
+      SetCookieWithOptions(url, cookie_lines[i], options);
+  }
   void SetCookies(const GURL& url,
-                  const std::vector<std::string>& cookie_lines);
+                  const std::vector<std::string>& cookie_lines) {
+    SetCookiesWithOptions(url, cookie_lines, CookieOptions());
+  }
 
  protected:
   friend class base::RefCountedThreadSafe<CookieStore>;
-  CookieStore();
-  virtual ~CookieStore();
+  virtual ~CookieStore() {}
 };
 
 }  // namespace net

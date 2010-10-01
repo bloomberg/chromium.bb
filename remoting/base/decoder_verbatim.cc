@@ -20,8 +20,6 @@ DecoderVerbatim::DecoderVerbatim()
   encoding_ = EncodingNone;
 }
 
-DecoderVerbatim::~DecoderVerbatim() {}
-
 bool DecoderVerbatim::BeginDecode(scoped_refptr<media::VideoFrame> frame,
                                   UpdatedRects* updated_rects,
                                   Task* partial_decode_done,

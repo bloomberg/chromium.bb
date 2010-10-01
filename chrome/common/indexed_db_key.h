@@ -14,7 +14,6 @@ class IndexedDBKey {
  public:
   IndexedDBKey(); // Defaults to WebKit::WebIDBKey::InvalidType.
   explicit IndexedDBKey(const WebKit::WebIDBKey& key);
-  ~IndexedDBKey();
 
   void SetNull();
   void SetInvalid();

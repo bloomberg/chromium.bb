@@ -32,7 +32,7 @@ class WebMessagePortChannelImpl
 
  private:
   friend class base::RefCountedThreadSafe<WebMessagePortChannelImpl>;
-  virtual ~WebMessagePortChannelImpl();
+  ~WebMessagePortChannelImpl();
 
   // WebMessagePortChannel implementation.
   virtual void setClient(WebKit::WebMessagePortChannelClient* client);

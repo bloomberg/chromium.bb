@@ -23,8 +23,6 @@ StatusController::StatusController(const ModelSafeRoutingInfo& routes)
       routing_info_(routes) {
 }
 
-StatusController::~StatusController() {}
-
 bool StatusController::TestAndClearIsDirty() {
   bool is_dirty = is_dirty_;
   is_dirty_ = false;

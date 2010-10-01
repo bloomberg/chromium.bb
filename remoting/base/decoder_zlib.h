@@ -14,7 +14,6 @@ class DecompressorZlib;
 class DecoderZlib : public Decoder {
  public:
   DecoderZlib();
-  virtual ~DecoderZlib();
 
   // Decoder implementations.
   virtual bool BeginDecode(scoped_refptr<media::VideoFrame> frame,

@@ -7,18 +7,14 @@
 #pragma once
 
 #include "base/scoped_ptr.h"
+#include "chrome/common/file_system/webfilesystem_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMimeRegistry.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
 
-class WebFileSystemImpl;
-
 class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
                                public WebKit::WebMimeRegistry {
  public:
-  WorkerWebKitClientImpl();
-  virtual ~WorkerWebKitClientImpl();
-
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();

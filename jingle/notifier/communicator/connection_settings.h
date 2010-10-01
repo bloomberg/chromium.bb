@@ -15,8 +15,7 @@ namespace notifier {
 
 class ConnectionSettings {
  public:
-  ConnectionSettings();
-  ~ConnectionSettings();
+  ConnectionSettings() : protocol_(cricket::PROTO_TCP) {}
 
   cricket::ProtocolType protocol() { return protocol_; }
   const talk_base::SocketAddress& server() const { return server_; }
@@ -34,8 +33,7 @@ class ConnectionSettings {
 
 class ConnectionSettingsList {
  public:
-  ConnectionSettingsList();
-  ~ConnectionSettingsList();
+  ConnectionSettingsList() {}
 
   int GetCount() { return list_.size(); }
   ConnectionSettings* GetSettings(size_t index) { return &list_[index]; }

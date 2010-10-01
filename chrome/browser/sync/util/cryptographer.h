@@ -43,7 +43,6 @@ struct KeyParams {
 class Cryptographer {
  public:
   Cryptographer();
-  ~Cryptographer();
 
   // |restored_bootstrap_token| can be provided via this method to bootstrap
   // Cryptographer instance into the ready state (is_ready will be true).

@@ -174,8 +174,9 @@ class URLPattern {
   };
 
   // Used for origin comparisons in a std::set.
-  class EffectiveHostCompareFunctor {
-   public:
+  class EffectiveHostCompareFunctor :
+      public std::binary_function<URLPattern, URLPattern, bool> {
+  public:
     bool operator()(const URLPattern& a, const URLPattern& b) const {
       return EffectiveHostCompare(a, b);
     };

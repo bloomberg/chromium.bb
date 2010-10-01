@@ -22,8 +22,9 @@ namespace remoting {
 // This is a copy of googleclient/talk/app/jingleinfotask.h .
 class JingleInfoTask : public buzz::XmppTask {
  public:
-  explicit JingleInfoTask(talk_base::TaskParent* parent);
-  virtual ~JingleInfoTask();
+  explicit JingleInfoTask(talk_base::TaskParent* parent)
+      : XmppTask(parent, buzz::XmppEngine::HL_TYPE) {
+  }
 
   virtual int ProcessStart();
   void RefreshJingleInfoNow();
