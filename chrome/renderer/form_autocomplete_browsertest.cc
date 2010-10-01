@@ -10,6 +10,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/web_io_operators.h"
 
 using webkit_glue::FormData;
 using WebKit::WebFrame;

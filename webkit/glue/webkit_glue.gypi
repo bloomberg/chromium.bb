@@ -346,6 +346,8 @@
         'webaccessibility.h',
         'webclipboard_impl.cc',
         'webclipboard_impl.h',
+        'web_io_operators.cc',
+        'web_io_operators.h',
         'webcookie.cc',
         'webcookie.h',
         'webcursor.cc',

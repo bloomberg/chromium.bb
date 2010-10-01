@@ -623,7 +623,7 @@ TEST(MultipartResponseTest, MultipartPayloadSet) {
             client.received_response_);
   EXPECT_EQ(string("response data"),
             client.data_);
-  EXPECT_EQ(false, client.response_.isMultipartPayload());
+  EXPECT_FALSE(client.response_.isMultipartPayload());
 
   string data2(
       "Content-type: text/plain\n\n"
@@ -634,7 +634,7 @@ TEST(MultipartResponseTest, MultipartPayloadSet) {
             client.received_response_);
   EXPECT_EQ(string("response data2"),
             client.data_);
-  EXPECT_EQ(true, client.response_.isMultipartPayload());
+  EXPECT_TRUE(client.response_.isMultipartPayload());
 }
 
 }  // namespace

@@ -16,6 +16,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/web_io_operators.h"
 
 using WebKit::WebDocument;
 using WebKit::WebElement;

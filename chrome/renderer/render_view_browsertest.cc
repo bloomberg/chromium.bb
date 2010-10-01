@@ -7,6 +7,7 @@
 #include "app/keyboard_codes.h"
 #include "base/file_util.h"
 #include "base/shared_memory.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -26,6 +27,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
+#include "webkit/glue/web_io_operators.h"
 
 using WebKit::WebDocument;
 using WebKit::WebFrame;
@@ -619,14 +621,15 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
         // our JavaScript function. (See the above comment for the format.)
         static char expected_result[1024];
         expected_result[0] = NULL;
-        sprintf(&expected_result[0],
-                "\n"       // texts in the <input> element
-                "%d,%s\n"  // texts in the first <div> element
-                "%d,%s\n"  // texts in the second <div> element
-                "%d,%s",   // texts in the third <div> element
-                key_code, kModifierData[j].expected_result,
-                char_code[0], kModifierData[j].expected_result,
-                key_code, kModifierData[j].expected_result);
+        base::snprintf(&expected_result[0],
+                       sizeof(expected_result),
+                       "\n"       // texts in the <input> element
+                       "%d,%s\n"  // texts in the first <div> element
+                       "%d,%s\n"  // texts in the second <div> element
+                       "%d,%s",   // texts in the third <div> element
+                       key_code, kModifierData[j].expected_result,
+                       char_code[0], kModifierData[j].expected_result,
+                       key_code, kModifierData[j].expected_result);
 
         // Retrieve the text in the test page and compare it with the expected
         // text created from a virtual-key code, a character code, and the

@@ -23,6 +23,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
+#include "webkit/glue/web_io_operators.h"
 
 using webkit_glue::FormData;
 using webkit_glue::FormField;
