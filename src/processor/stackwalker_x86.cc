@@ -491,7 +491,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByEBPAtBase(
     if (!ScanForReturnAddress(last_esp, &caller_esp, &caller_eip)) {
       // if we can't find an instruction pointer even with stack scanning,
       // give up.
-      return false;
+      return NULL;
     }
 
     // ScanForReturnAddress found a reasonable return address. Advance

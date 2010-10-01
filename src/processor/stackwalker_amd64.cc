@@ -142,6 +142,36 @@ StackFrameAMD64 *StackwalkerAMD64::GetCallerByCFIFrameInfo(
   return frame.release();
 }
 
+StackFrameAMD64 *StackwalkerAMD64::GetCallerByStackScan(
+    const vector<StackFrame *> &frames) {
+  StackFrameAMD64 *last_frame = static_cast<StackFrameAMD64 *>(frames.back());
+  u_int64_t last_rsp = last_frame->context.rsp;
+  u_int64_t caller_rsp, caller_rip;
+  
+  if (!ScanForReturnAddress(last_rsp, &caller_rsp, &caller_rip)) {
+    // No plausible return address was found.
+    return NULL;
+  }
+
+  // ScanForReturnAddress found a reasonable return address. Advance
+  // %rsp to the location above the one where the return address was
+  // found.
+  caller_rsp += 8;
+
+  // Create a new stack frame (ownership will be transferred to the caller)
+  // and fill it in.
+  StackFrameAMD64 *frame = new StackFrameAMD64();
+
+  frame->trust = StackFrame::FRAME_TRUST_SCAN;
+  frame->context = last_frame->context;
+  frame->context.rip = caller_rip;
+  frame->context.rsp = caller_rsp;
+  frame->context_validity = StackFrameAMD64::CONTEXT_VALID_RIP |
+                            StackFrameAMD64::CONTEXT_VALID_RSP;
+
+  return frame;
+}
+
 StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack *stack) {
   if (!memory_ || !stack) {
     BPLOG(ERROR) << "Can't get caller frame without memory or stack";
@@ -157,6 +187,12 @@ StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack *stack) {
       resolver_->FindCFIFrameInfo(last_frame));
   if (cfi_frame_info.get())
     new_frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info.get()));
+
+  // If CFI failed, or there wasn't CFI available, fall back
+  // to stack scanning.
+  if (!new_frame.get()) {
+    new_frame.reset(GetCallerByStackScan(frames));
+  }
 
   // If nothing worked, tell the caller.
   if (!new_frame.get())
@@ -184,6 +220,5 @@ StackFrame* StackwalkerAMD64::GetCallerFrame(const CallStack *stack) {
 
   return new_frame.release();
 }
-
 
 }  // namespace google_breakpad

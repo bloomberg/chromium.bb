@@ -75,23 +75,10 @@ StackFrame* StackwalkerARM::GetContextFrame() {
   return frame;
 }
 
-
-StackFrame* StackwalkerARM::GetCallerFrame(const CallStack *stack) {
-  if (!memory_ || !stack) {
-    BPLOG(ERROR) << "Can't get caller frame without memory or stack";
-    return NULL;
-  }
-
-  const vector<StackFrame *> &frames = *stack->frames();
+StackFrameARM *StackwalkerARM::GetCallerByCFIFrameInfo(
+    const vector<StackFrame *> &frames,
+    CFIFrameInfo *cfi_frame_info) {
   StackFrameARM *last_frame = static_cast<StackFrameARM *>(frames.back());
-
-  // See if we have DWARF call frame information covering this address.
-  scoped_ptr<CFIFrameInfo> cfi_frame_info(resolver_
-                                          ->FindCFIFrameInfo(last_frame));
-  if (cfi_frame_info == NULL)
-    // Unfortunately, CFI is our only option on the ARM for now. If we
-    // add a second strategy, we should put each one in its own function.
-    return NULL;
 
   static const char *register_names[] = {
     "r0",  "r1",  "r2",  "r3",  "r4",  "r5",  "r6",  "r7",
@@ -158,6 +145,67 @@ StackFrame* StackwalkerARM::GetCallerFrame(const CallStack *stack) {
   if ((frame->context_validity & essentials) != essentials)
     return NULL;
 
+  frame->trust = StackFrame::FRAME_TRUST_CFI;
+  return frame.release();
+}
+
+StackFrameARM *StackwalkerARM::GetCallerByStackScan(
+    const vector<StackFrame *> &frames) {
+  StackFrameARM *last_frame = static_cast<StackFrameARM *>(frames.back());
+  u_int32_t last_sp = last_frame->context.iregs[MD_CONTEXT_ARM_REG_SP];
+  u_int32_t caller_sp, caller_pc;
+  
+  if (!ScanForReturnAddress(last_sp, &caller_sp, &caller_pc)) {
+    // No plausible return address was found.
+    return NULL;
+  }
+
+  // ScanForReturnAddress found a reasonable return address. Advance
+  // %sp to the location above the one where the return address was
+  // found.
+  caller_sp += 4;
+
+  // Create a new stack frame (ownership will be transferred to the caller)
+  // and fill it in.
+  StackFrameARM *frame = new StackFrameARM();
+
+  frame->trust = StackFrame::FRAME_TRUST_SCAN;
+  frame->context = last_frame->context;
+  frame->context.iregs[MD_CONTEXT_ARM_REG_PC] = caller_pc;
+  frame->context.iregs[MD_CONTEXT_ARM_REG_SP] = caller_sp;
+  frame->context_validity = StackFrameARM::CONTEXT_VALID_PC |
+                            StackFrameARM::CONTEXT_VALID_SP;
+
+  return frame;
+}
+
+StackFrame* StackwalkerARM::GetCallerFrame(const CallStack *stack) {
+  if (!memory_ || !stack) {
+    BPLOG(ERROR) << "Can't get caller frame without memory or stack";
+    return NULL;
+  }
+
+  const vector<StackFrame *> &frames = *stack->frames();
+  StackFrameARM *last_frame = static_cast<StackFrameARM *>(frames.back());
+  scoped_ptr<StackFrameARM> frame;
+
+  // See if there is DWARF call frame information covering this address.
+  scoped_ptr<CFIFrameInfo> cfi_frame_info(resolver_
+                                          ->FindCFIFrameInfo(last_frame));
+  if (cfi_frame_info.get())
+    frame.reset(GetCallerByCFIFrameInfo(frames, cfi_frame_info.get()));
+
+  // If CFI failed, or there wasn't CFI available, fall back
+  // to stack scanning.
+  if (!frame.get()) {
+    frame.reset(GetCallerByStackScan(frames));
+  }
+
+  // If nothing worked, tell the caller.
+  if (!frame.get())
+    return NULL;
+
+
   // An instruction address of zero marks the end of the stack.
   if (frame->context.iregs[MD_CONTEXT_ARM_REG_PC] == 0)
     return NULL;
@@ -179,7 +227,6 @@ StackFrame* StackwalkerARM::GetCallerFrame(const CallStack *stack) {
   // frame->context.iregs[MD_CONTEXT_ARM_REG_PC].
   frame->instruction = frame->context.iregs[MD_CONTEXT_ARM_REG_PC] - 1;
 
-  frame->trust = StackFrame::FRAME_TRUST_CFI;
   return frame.release();
 }
 
