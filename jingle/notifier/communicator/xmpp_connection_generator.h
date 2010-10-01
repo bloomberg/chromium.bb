@@ -40,7 +40,7 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
   // server_list is the list of connections to attempt in priority order.
   // server_count is the number of items in the server list.
   XmppConnectionGenerator(
-      const scoped_refptr<net::HostResolver>& host_resolver,
+      net::HostResolver* host_resolver,
       const ConnectionOptions* options,
       bool try_ssltcp_first,
       const ServerInformation* server_list,

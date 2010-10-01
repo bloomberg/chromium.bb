@@ -270,8 +270,8 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // reduction mode, and discard all queued (but not yet assigned) resolutions.
   const base::TimeDelta max_dns_queue_delay_;
 
-  // The host resovler we warm DNS entries for.
-  scoped_refptr<net::HostResolver> host_resolver_;
+  // The host resolver we warm DNS entries for.
+  net::HostResolver* const host_resolver_;
 
   // Are we currently using preconnection, rather than just DNS resolution, for
   // subresources and omni-box search URLs.

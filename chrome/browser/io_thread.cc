@@ -169,9 +169,10 @@ void IOThread::Init() {
   network_change_observer_.reset(
       new LoggingNetworkChangeObserver(globals_->net_log.get()));
 
-  globals_->host_resolver = CreateGlobalHostResolver(globals_->net_log.get());
+  globals_->host_resolver.reset(
+      CreateGlobalHostResolver(globals_->net_log.get()));
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
-      globals_->host_resolver));
+      globals_->host_resolver.get()));
 }
 
 void IOThread::CleanUp() {
@@ -279,7 +280,7 @@ void IOThread::InitNetworkPredictorOnIOThread(
   chrome_browser_net::EnablePredictor(prefetching_enabled);
 
   predictor_ = new chrome_browser_net::Predictor(
-      globals_->host_resolver,
+      globals_->host_resolver.get(),
       max_dns_queue_delay,
       max_concurrent,
       preconnect_enabled);

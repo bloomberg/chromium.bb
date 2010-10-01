@@ -12,6 +12,7 @@
 #include "chrome/browser/importer/firefox_proxy_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -71,6 +72,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
     delete ftp_transaction_factory_;
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
+    delete host_resolver_;
   }
 
  private:
@@ -79,10 +81,10 @@ class ExperimentURLRequestContext : public URLRequestContext {
   // error code.
   int CreateHostResolver(
       ConnectionTester::HostResolverExperiment experiment,
-      scoped_refptr<net::HostResolver>* host_resolver) {
+      net::HostResolver** host_resolver) {
     // Create a vanilla HostResolver that disables caching.
     const size_t kMaxJobs = 50u;
-    scoped_refptr<net::HostResolverImpl> impl =
+    net::HostResolverImpl* impl =
         new net::HostResolverImpl(NULL, NULL, kMaxJobs, NULL);
 
     *host_resolver = impl;

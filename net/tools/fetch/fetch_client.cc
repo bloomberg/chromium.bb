@@ -135,7 +135,7 @@ int main(int argc, char**argv) {
   // Do work here.
   MessageLoop loop(MessageLoop::TYPE_IO);
 
-  scoped_refptr<net::HostResolver> host_resolver(
+  scoped_ptr<net::HostResolver> host_resolver(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     NULL));
 
@@ -145,16 +145,20 @@ int main(int argc, char**argv) {
       net::SSLConfigService::CreateSystemSSLConfigService());
   net::HttpTransactionFactory* factory = NULL;
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory(
-      net::HttpAuthHandlerFactory::CreateDefault(host_resolver));
+      net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
   if (use_cache) {
-    factory = new net::HttpCache(host_resolver, proxy_service,
+    factory = new net::HttpCache(host_resolver.get(), proxy_service,
         ssl_config_service, http_auth_handler_factory.get(), NULL, NULL,
         net::HttpCache::DefaultBackend::InMemory(0));
   } else {
     factory = new net::HttpNetworkLayer(
-        net::ClientSocketFactory::GetDefaultFactory(), host_resolver,
-        proxy_service, ssl_config_service, http_auth_handler_factory.get(),
-        NULL, NULL);
+        net::ClientSocketFactory::GetDefaultFactory(),
+        host_resolver.get(),
+        proxy_service,
+        ssl_config_service,
+        http_auth_handler_factory.get(),
+        NULL,
+        NULL);
   }
 
   {

@@ -37,7 +37,7 @@
 namespace notifier {
 
 XmppConnectionGenerator::XmppConnectionGenerator(
-    const scoped_refptr<net::HostResolver>& host_resolver,
+    net::HostResolver* host_resolver,
     const ConnectionOptions* options,
     bool try_ssltcp_first,
     const ServerInformation* server_list,

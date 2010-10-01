@@ -115,7 +115,7 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     ProtocolVersion version_;
     scoped_refptr<URLRequestContext> context_;
 
-    scoped_refptr<HostResolver> host_resolver_;
+    HostResolver* host_resolver_;
     ClientSocketFactory* client_socket_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Request);

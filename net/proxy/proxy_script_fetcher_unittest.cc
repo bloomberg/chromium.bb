@@ -49,6 +49,7 @@ class RequestContext : public URLRequestContext {
  private:
   ~RequestContext() {
     delete http_transaction_factory_;
+    delete host_resolver_;
   }
 };
 

@@ -215,7 +215,7 @@ class DelayedResolve : public base::RefCounted<DelayedResolve> {
   std::string host_;
   net::AddressList address_list_;
   bool is_async_;
-  scoped_refptr<net::HostResolver> resolver_;
+  net::HostResolver* const resolver_;
   ResolverInvoker* invoker_;
   net::CompletionCallbackImpl<DelayedResolve> io_callback_;
 };
@@ -289,7 +289,7 @@ class ResolverInvoker {
   }
 
   MessageLoop message_loop_;
-  scoped_refptr<net::HostResolver> resolver_;
+  net::HostResolver* const resolver_;
   int remaining_requests_;
 };
 
@@ -451,9 +451,8 @@ int main(int argc, char** argv) {
       base::TimeDelta::FromMilliseconds(options.cache_ttl),
       base::TimeDelta::FromSeconds(0));
 
-  scoped_refptr<net::HostResolver> host_resolver(
-      new net::HostResolverImpl(NULL, cache, 100u, NULL));
-  ResolverInvoker invoker(host_resolver.get());
+  net::HostResolverImpl host_resolver(NULL, cache, 100u, NULL);
+  ResolverInvoker invoker(&host_resolver);
   invoker.ResolveAll(hosts_and_times, options.async);
 
   CommandLine::Reset();

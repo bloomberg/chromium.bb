@@ -165,6 +165,7 @@ TEST_F(WebSocketTest, Connect) {
   StaticSocketDataProvider data(data_reads, arraysize(data_reads),
                                 data_writes, arraysize(data_writes));
   mock_socket_factory.AddSocketDataProvider(&data);
+  MockHostResolver host_resolver;
 
   WebSocket::Request* request(
       new WebSocket::Request(GURL("ws://example.com/demo"),
@@ -173,7 +174,7 @@ TEST_F(WebSocketTest, Connect) {
                              "ws://example.com/demo",
                              WebSocket::DRAFT75,
                              new TestURLRequestContext()));
-  request->SetHostResolver(new MockHostResolver());
+  request->SetHostResolver(&host_resolver);
   request->SetClientSocketFactory(&mock_socket_factory);
 
   TestCompletionCallback callback;
@@ -227,6 +228,7 @@ TEST_F(WebSocketTest, ServerSentData) {
   StaticSocketDataProvider data(data_reads, arraysize(data_reads),
                                 data_writes, arraysize(data_writes));
   mock_socket_factory.AddSocketDataProvider(&data);
+  MockHostResolver host_resolver;
 
   WebSocket::Request* request(
       new WebSocket::Request(GURL("ws://example.com/demo"),
@@ -235,7 +237,7 @@ TEST_F(WebSocketTest, ServerSentData) {
                              "ws://example.com/demo",
                              WebSocket::DRAFT75,
                              new TestURLRequestContext()));
-  request->SetHostResolver(new MockHostResolver());
+  request->SetHostResolver(&host_resolver);
   request->SetClientSocketFactory(&mock_socket_factory);
 
   TestCompletionCallback callback;

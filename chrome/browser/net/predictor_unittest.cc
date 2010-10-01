@@ -99,7 +99,7 @@ class PredictorTest : public testing::Test {
   ChromeThread io_thread_;
 
  protected:
-  scoped_refptr<net::MockCachingHostResolver> host_resolver_;
+  scoped_ptr<net::MockCachingHostResolver> host_resolver_;
 
   // Shorthand to access TimeDelta of PredictorInit::kMaxQueueingDelayMs.
   // (It would be a static constant... except style rules preclude that :-/ ).
@@ -109,10 +109,11 @@ class PredictorTest : public testing::Test {
 //------------------------------------------------------------------------------
 
 TEST_F(PredictorTest, StartupShutdownTest) {
-  scoped_refptr<Predictor> testing_master = new Predictor(host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
+  scoped_refptr<Predictor> testing_master =
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    false);
   testing_master->Shutdown();
 }
 
@@ -122,10 +123,11 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
       new net::WaitingHostResolverProc(NULL);
   host_resolver_->Reset(resolver_proc);
 
-  scoped_refptr<Predictor> testing_master = new Predictor(host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
+  scoped_refptr<Predictor> testing_master =
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    false);
 
   GURL localhost("http://localhost:80");
   UrlList names;
@@ -147,10 +149,11 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
 }
 
 TEST_F(PredictorTest, SingleLookupTest) {
-  scoped_refptr<Predictor> testing_master = new Predictor(host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
+  scoped_refptr<Predictor> testing_master =
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    false);
 
   GURL goog("http://www.google.com:80");
 
@@ -178,10 +181,11 @@ TEST_F(PredictorTest, SingleLookupTest) {
 TEST_F(PredictorTest, ConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  scoped_refptr<Predictor> testing_master = new Predictor(host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
+  scoped_refptr<Predictor> testing_master =
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    false);
 
   GURL goog("http://www.google.com:80"),
       goog2("http://gmail.google.com.com:80"),
@@ -228,11 +232,11 @@ TEST_F(PredictorTest, ConcurrentLookupTest) {
 TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
   host_resolver_->rules()->AddSimulatedFailure("*.notfound");
 
-  scoped_refptr<Predictor> testing_master = new Predictor(
-      host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
+  scoped_refptr<Predictor> testing_master =
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    false);
 
   UrlList names;
   for (int i = 0; i < 100; i++)
@@ -348,10 +352,11 @@ static bool GetDataFromSerialization(const GURL& motivation,
 
 // Make sure nil referral lists really have no entries, and no latency listed.
 TEST_F(PredictorTest, ReferrerSerializationNilTest) {
-  scoped_refptr<Predictor> predictor = new Predictor(host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
+  scoped_refptr<Predictor> predictor =
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    false);
   scoped_ptr<ListValue> referral_list(NewEmptySerializationList());
   predictor->SerializeReferrers(referral_list.get());
   EXPECT_EQ(1U, referral_list->GetSize());
@@ -366,10 +371,11 @@ TEST_F(PredictorTest, ReferrerSerializationNilTest) {
 // deserialized into the database, and can be extracted back out via
 // serialization without being changed.
 TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
-  scoped_refptr<Predictor> predictor = new Predictor(host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
+  scoped_refptr<Predictor> predictor =
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    false);
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
   const double kUseRate = 23.4;
@@ -393,10 +399,11 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
 
 // Make sure the Trim() functionality works as expected.
 TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
-  scoped_refptr<Predictor> predictor = new Predictor(host_resolver_,
-      default_max_queueing_delay_,
-      PredictorInit::kMaxPrefetchConcurrentLookups,
-      false);
+  scoped_refptr<Predictor> predictor =
+      new Predictor(host_resolver_.get(),
+                    default_max_queueing_delay_,
+                    PredictorInit::kMaxPrefetchConcurrentLookups,
+                    false);
   GURL motivation_url("http://www.google.com:110");
 
   GURL icon_subresource_url("http://icons.google.com:111");

@@ -24,7 +24,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "jingle/notifier/base/notifier_options.h"
@@ -115,7 +114,7 @@ class MediatorThreadImpl
   const NotifierOptions notifier_options_;
 
   base::Thread worker_thread_;
-  scoped_refptr<net::HostResolver> host_resolver_;
+  scoped_ptr<net::HostResolver> host_resolver_;
 
   scoped_ptr<notifier::Login> login_;
 

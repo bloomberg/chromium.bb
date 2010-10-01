@@ -132,7 +132,7 @@ class TestURLRequestContext : public URLRequestContext {
   }
 
   explicit TestURLRequestContext(const std::string& proxy) {
-    host_resolver_ =
+    host_resolver_  =
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                       NULL);
     net::ProxyConfig proxy_config;
@@ -150,6 +150,7 @@ class TestURLRequestContext : public URLRequestContext {
     delete ftp_transaction_factory_;
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
+    delete host_resolver_;
   }
 
  private:

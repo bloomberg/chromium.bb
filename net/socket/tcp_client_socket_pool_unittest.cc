@@ -285,7 +285,7 @@ class TCPClientSocketPoolTest : public testing::Test {
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               histograms_.get(),
-              host_resolver_,
+              host_resolver_.get(),
               &client_socket_factory_,
               NULL) {
   }
@@ -315,7 +315,7 @@ class TCPClientSocketPoolTest : public testing::Test {
   scoped_refptr<TCPSocketParams> params_;
   scoped_refptr<TCPSocketParams> low_params_;
   scoped_ptr<ClientSocketPoolHistograms> histograms_;
-  scoped_refptr<MockHostResolver> host_resolver_;
+  scoped_ptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
   TCPClientSocketPool pool_;
   ClientSocketPoolTest test_base_;

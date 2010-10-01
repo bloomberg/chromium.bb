@@ -254,7 +254,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   IOThread::Globals* io_thread_globals = io_thread()->globals();
 
   // Global host resolver for the context.
-  context->set_host_resolver(io_thread_globals->host_resolver);
+  context->set_host_resolver(io_thread_globals->host_resolver.get());
   context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
 

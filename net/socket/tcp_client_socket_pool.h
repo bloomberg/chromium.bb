@@ -191,7 +191,7 @@ class TCPClientSocketPool : public ClientSocketPool {
 
    private:
     ClientSocketFactory* const client_socket_factory_;
-    const scoped_refptr<HostResolver> host_resolver_;
+    HostResolver* const host_resolver_;
     NetLog* net_log_;
 
     DISALLOW_COPY_AND_ASSIGN(TCPConnectJobFactory);

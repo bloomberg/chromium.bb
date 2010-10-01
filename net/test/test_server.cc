@@ -204,7 +204,7 @@ std::string TestServer::GetScheme() const {
 bool TestServer::GetAddressList(AddressList* address_list) const {
   DCHECK(address_list);
 
-  scoped_refptr<HostResolver> resolver(
+  scoped_ptr<HostResolver> resolver(
       CreateSystemHostResolver(HostResolver::kDefaultParallelism, NULL));
   HostResolver::RequestInfo info(host_port_pair_);
   int rv = resolver->Resolve(info, address_list, NULL, NULL, BoundNetLog());

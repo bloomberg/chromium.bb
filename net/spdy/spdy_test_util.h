@@ -304,7 +304,7 @@ class SpdySessionDependencies {
         socket_factory(new MockClientSocketFactory),
         deterministic_socket_factory(new DeterministicMockClientSocketFactory),
         http_auth_handler_factory(
-            HttpAuthHandlerFactory::CreateDefault(host_resolver)) {
+            HttpAuthHandlerFactory::CreateDefault(host_resolver.get())) {
           // Note: The CancelledTransaction test does cleanup by running all
           // tasks in the message loop (RunAllPending).  Unfortunately, that
           // doesn't clean up tasks on the host resolver thread; and
@@ -322,10 +322,10 @@ class SpdySessionDependencies {
         socket_factory(new MockClientSocketFactory),
         deterministic_socket_factory(new DeterministicMockClientSocketFactory),
         http_auth_handler_factory(
-            HttpAuthHandlerFactory::CreateDefault(host_resolver)) {}
+            HttpAuthHandlerFactory::CreateDefault(host_resolver.get())) {}
 
   // NOTE: host_resolver must be ordered before http_auth_handler_factory.
-  scoped_refptr<MockHostResolverBase> host_resolver;
+  scoped_ptr<MockHostResolverBase> host_resolver;
   scoped_refptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
   scoped_ptr<MockClientSocketFactory> socket_factory;
@@ -334,7 +334,7 @@ class SpdySessionDependencies {
 
   static HttpNetworkSession* SpdyCreateSession(
       SpdySessionDependencies* session_deps) {
-    return new HttpNetworkSession(session_deps->host_resolver,
+    return new HttpNetworkSession(session_deps->host_resolver.get(),
                                   session_deps->proxy_service,
                                   session_deps->socket_factory.get(),
                                   session_deps->ssl_config_service,
@@ -345,7 +345,7 @@ class SpdySessionDependencies {
   }
   static HttpNetworkSession* SpdyCreateSessionDeterministic(
       SpdySessionDependencies* session_deps) {
-    return new HttpNetworkSession(session_deps->host_resolver,
+    return new HttpNetworkSession(session_deps->host_resolver.get(),
                                   session_deps->proxy_service,
                                   session_deps->
                                       deterministic_socket_factory.get(),
@@ -360,7 +360,7 @@ class SpdySessionDependencies {
 class SpdyURLRequestContext : public URLRequestContext {
  public:
   SpdyURLRequestContext() {
-    host_resolver_ = new MockHostResolver;
+    host_resolver_ = new MockHostResolver();
     proxy_service_ = ProxyService::CreateDirect();
     ssl_config_service_ = new SSLConfigServiceDefaults;
     http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault(
@@ -383,6 +383,7 @@ class SpdyURLRequestContext : public URLRequestContext {
   virtual ~SpdyURLRequestContext() {
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
+    delete host_resolver_;
   }
 
  private:

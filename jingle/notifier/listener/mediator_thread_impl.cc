@@ -126,9 +126,9 @@ void MediatorThreadImpl::DoLogin(
 
   // TODO(akalin): Use an existing HostResolver from somewhere (maybe
   // the IOThread one).
-  host_resolver_ =
+  host_resolver_.reset(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL);
+                                    NULL));
 
   notifier::ServerInformation server_list[2];
   int server_list_count = 0;
@@ -171,7 +171,7 @@ void MediatorThreadImpl::DoDisconnect() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   LOG(INFO) << "P2P: Thread logging out of talk network.";
   login_.reset();
-  host_resolver_ = NULL;
+  host_resolver_.reset();
   base_task_.reset();
 }
 

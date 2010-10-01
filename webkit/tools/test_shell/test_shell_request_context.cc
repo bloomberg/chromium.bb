@@ -90,6 +90,7 @@ TestShellRequestContext::~TestShellRequestContext() {
   delete http_transaction_factory_;
   delete http_auth_handler_factory_;
   delete static_cast<net::StaticCookiePolicy*>(cookie_policy_);
+  delete host_resolver_;
 }
 
 const std::string& TestShellRequestContext::GetUserAgent(
