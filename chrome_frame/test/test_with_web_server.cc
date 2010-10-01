@@ -902,11 +902,11 @@ TEST_F(ChromeFrameTestWithWebServer,
   SimpleBrowserTest(FIREFOX, kMultipleCFInstancesTestUrl);
 }
 
-const wchar_t kXHRAuthHeaderTestUrl[] =
-    L"xmlhttprequest_authorization_header_test.html";
+const wchar_t kXHRHeaderTestUrl[] =
+    L"xmlhttprequest_header_test.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRAuthHeaderTest) {
-  SimpleBrowserTest(IE, kXHRAuthHeaderTestUrl);
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRHeaderTest) {
+  SimpleBrowserTest(IE, kXHRHeaderTestUrl);
 }
 
 const wchar_t kDeleteCookieTest[] =

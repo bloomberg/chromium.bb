@@ -26,8 +26,6 @@ using base::TimeDelta;
 // The list of filtered headers that are removed from requests sent via
 // StartAsync(). These must be lower case.
 static const char* const kFilteredHeaderStrings[] = {
-  "accept",
-  "cache-control",
   "connection",
   "cookie",
   "expect",
