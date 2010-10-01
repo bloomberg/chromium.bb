@@ -7,6 +7,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "gfx/size.h"
@@ -59,6 +61,7 @@ class GLES2Decoder : public CommonDecoder {
   //   true if successful.
   virtual bool Initialize(gfx::GLContext* context,
                           const gfx::Size& size,
+                          const std::vector<int32>& attribs,
                           GLES2Decoder* parent,
                           uint32 parent_client_texture_id) = 0;
 

@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 
+#include <vector>
+
 #include "app/surface/transport_dib.h"
 #include "base/callback.h"
 #include "base/ref_counted.h"
@@ -46,12 +48,14 @@ class GPUProcessor : public CommandBufferEngine {
   // Perform platform specific and common initialization.
   bool Initialize(gfx::PluginWindowHandle hwnd,
                   const gfx::Size& size,
+                  const std::vector<int32>& attribs,
                   GPUProcessor* parent,
                   uint32 parent_texture_id);
 
   // Perform common initialization. Takes ownership of GLContext.
   bool InitializeCommon(gfx::GLContext* context,
                         const gfx::Size& size,
+                        const std::vector<int32>& attribs,
                         gles2::GLES2Decoder* parent_decoder,
                         uint32 parent_texture_id);
 

@@ -61,7 +61,8 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
 
   GPUProcessor* gpu_processor(
       new GPUProcessor(command_buffer.get()));
-  if (!gpu_processor->Initialize(hwnd, gfx::Size(), NULL, 0)) {
+  if (!gpu_processor->Initialize(hwnd, gfx::Size(), std::vector<int32>(),
+                                 NULL, 0)) {
     return false;
   }
 
@@ -91,4 +92,3 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
 
 }  // namespace demos
 }  // namespace gpu
-

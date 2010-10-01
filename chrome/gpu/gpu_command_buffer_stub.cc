@@ -18,6 +18,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(GpuChannel* channel,
                                            gfx::PluginWindowHandle handle,
                                            GpuCommandBufferStub* parent,
                                            const gfx::Size& size,
+                                           const std::vector<int32>& attribs,
                                            uint32 parent_texture_id,
                                            int32 route_id,
                                            int32 renderer_id,
@@ -27,6 +28,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(GpuChannel* channel,
       parent_(
           parent ? parent->AsWeakPtr() : base::WeakPtr<GpuCommandBufferStub>()),
       initial_size_(size),
+      requested_attribs_(attribs),
       parent_texture_id_(parent_texture_id),
       route_id_(route_id),
       renderer_id_(renderer_id),
@@ -84,6 +86,7 @@ void GpuCommandBufferStub::OnInitialize(
       if (processor_->Initialize(
           handle_,
           initial_size_,
+          requested_attribs_,
           parent_processor,
           parent_texture_id_)) {
         command_buffer_->SetPutOffsetChangeCallback(

@@ -39,6 +39,7 @@ GPUProcessor::~GPUProcessor() {
 
 bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
                                     const gfx::Size& size,
+                                    const std::vector<int32>& attribs,
                                     gles2::GLES2Decoder* parent_decoder,
                                     uint32 parent_texture_id) {
   DCHECK(context);
@@ -66,6 +67,7 @@ bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
   // Initialize the decoder with either the view or pbuffer GLContext.
   if (!decoder_->Initialize(context,
                             size,
+                            attribs,
                             parent_decoder,
                             parent_texture_id)) {
     LOG(ERROR) << "GPUProcessor::InitializeCommon failed because decoder "

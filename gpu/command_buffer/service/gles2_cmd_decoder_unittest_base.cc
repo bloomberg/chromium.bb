@@ -101,7 +101,7 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
   context_ = new gfx::StubGLContext;
 
   decoder_.reset(GLES2Decoder::Create(&group_));
-  decoder_->Initialize(context_, gfx::Size(), NULL, 0);
+  decoder_->Initialize(context_, gfx::Size(), std::vector<int32>(), NULL, 0);
   decoder_->set_engine(engine_.get());
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))
@@ -707,5 +707,3 @@ const char* GLES2DecoderWithShaderTestBase::kUniform3Name = "uniform3[0]";
 
 }  // namespace gles2
 }  // namespace gpu
-
-

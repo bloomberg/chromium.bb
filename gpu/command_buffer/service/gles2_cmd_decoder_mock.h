@@ -7,6 +7,8 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_MOCK_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_MOCK_H_
 
+#include <vector>
+
 #include "gfx/size.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "base/callback.h"
@@ -28,8 +30,9 @@ class MockGLES2Decoder : public GLES2Decoder {
       .WillByDefault(testing::Return(true));
   }
 
-  MOCK_METHOD4(Initialize, bool(gfx::GLContext* context,
+  MOCK_METHOD5(Initialize, bool(gfx::GLContext* context,
                                 const gfx::Size& size,
+                                const std::vector<int32>& attribs,
                                 GLES2Decoder* parent,
                                 uint32 parent_texture_id));
   MOCK_METHOD0(Destroy, void());

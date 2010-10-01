@@ -32,9 +32,22 @@ class Context;
 enum Error {
   SUCCESS             = 0x3000,
   NOT_INITIALIZED     = 0x3001,
+  BAD_ATTRIBUTE       = 0x3004,
   BAD_CONTEXT         = 0x3006,
   CONTEXT_LOST        = 0x300E
 };
+
+// Context configuration attributes. These are the same as used by EGL.
+// Attributes are matched using a closest fit algorithm.
+const int32 GGL_ALPHA_SIZE     = 0x3021;
+const int32 GGL_BLUE_SIZE      = 0x3022;
+const int32 GGL_GREEN_SIZE     = 0x3023;
+const int32 GGL_RED_SIZE       = 0x3024;
+const int32 GGL_DEPTH_SIZE     = 0x3025;
+const int32 GGL_STENCIL_SIZE   = 0x3026;
+const int32 GGL_SAMPLES        = 0x3031;
+const int32 GGL_SAMPLE_BUFFERS = 0x3032;
+const int32 GGL_NONE           = 0x3038;  // Attrib list = terminator
 
 // Initialize the GGL library. This must have completed before any other GGL
 // functions are invoked.
@@ -63,7 +76,8 @@ bool Terminate();
 // more cross-platform.
 Context* CreateViewContext(GpuChannelHost* channel,
                            gfx::NativeViewId view,
-                           int render_view_id);
+                           int render_view_id,
+                           const int32* attrib_list);
 
 #if defined(OS_MACOSX)
 // On Mac OS X only, view contexts actually behave like offscreen contexts, and
@@ -77,10 +91,12 @@ void ResizeOnscreenContext(Context* context, const gfx::Size& size);
 // context's frame buffer that is updated every time SwapBuffers is called. It
 // is not as general as shared contexts in other implementations of OpenGL. If
 // parent is not NULL, it must be used on the same thread as the parent. A child
-// context may not outlive its parent.
+// context may not outlive its parent.  attrib_list must be NULL or a
+// GGL_NONE-terminated list of attribute/value pairs.
 Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 Context* parent,
-                                const gfx::Size& size);
+                                const gfx::Size& size,
+                                const int32* attrib_list);
 
 // Resize an offscreen frame buffer. The resize occurs on the next call to
 // SwapBuffers. This is to avoid waiting until all pending GL calls have been

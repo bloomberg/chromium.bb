@@ -46,6 +46,11 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD4(BlendFuncSeparate, void(
       GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha));
 
+  MOCK_METHOD10(BlitFramebufferANGLE, void(
+      GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
+      GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
+      GLbitfield mask, GLenum filter));
+
   MOCK_METHOD10(BlitFramebufferEXT, void(
       GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
       GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
@@ -262,6 +267,10 @@ class MockGLInterface : public GLInterface {
   MOCK_METHOD4(RenderbufferStorageEXT, void(
       GLenum target, GLenum internalformat, GLsizei width, GLsizei height));
 
+  MOCK_METHOD5(RenderbufferStorageMultisampleANGLE, void(
+      GLenum target, GLsizei samples, GLenum internalformat,
+      GLsizei width, GLsizei height));
+
   MOCK_METHOD5(RenderbufferStorageMultisampleEXT, void(
       GLenum target, GLsizei samples, GLenum internalformat,
       GLsizei width, GLsizei height));
@@ -398,6 +407,3 @@ class MockGLInterface : public GLInterface {
 }  // namespace gfx
 
 #endif  // APP_GFX_GL_GL_MOCK_H_
-
-
-

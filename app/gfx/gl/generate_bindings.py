@@ -32,6 +32,10 @@ GL_FUNCTIONS = [
     'GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, '
     'GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, '
     'GLbitfield mask, GLenum filter'],
+['void', ['glBlitFramebufferANGLE', 'BlitFramebuffer'],
+    'GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, '
+    'GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, '
+    'GLbitfield mask, GLenum filter'],
 ['void', ['glBufferData'],
     'GLenum target, GLsizei size, const void* data, GLenum usage'],
 ['void', ['glBufferSubData'],
@@ -159,6 +163,10 @@ GL_FUNCTIONS = [
     'GLenum type, void* pixels'],
 ['void', ['glReleaseShaderCompiler'], 'void'],
 ['void', ['glRenderbufferStorageMultisampleEXT',
+    'glRenderbufferStorageMultisample'],
+    'GLenum target, GLsizei samples, GLenum internalformat, '
+    'GLsizei width, GLsizei height'],
+['void', ['glRenderbufferStorageMultisampleANGLE',
     'glRenderbufferStorageMultisample'],
     'GLenum target, GLsizei samples, GLenum internalformat, '
     'GLsizei width, GLsizei height'],

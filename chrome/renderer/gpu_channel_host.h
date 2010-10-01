@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
@@ -62,9 +63,11 @@ class GpuChannelHost : public IPC::Channel::Listener,
                                               int render_view_id);
 
   // Create and connect to a command buffer in the GPU process.
-  CommandBufferProxy* CreateOffscreenCommandBuffer(CommandBufferProxy* parent,
-                                                   const gfx::Size& size,
-                                                   uint32 parent_texture_id);
+  CommandBufferProxy* CreateOffscreenCommandBuffer(
+      CommandBufferProxy* parent,
+      const gfx::Size& size,
+      const std::vector<int32>& attribs,
+      uint32 parent_texture_id);
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);

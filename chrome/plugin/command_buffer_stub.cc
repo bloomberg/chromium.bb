@@ -93,7 +93,8 @@ void CommandBufferStub::OnInitialize(int32 size,
 
   // Initialize the GPUProcessor.
   processor_.reset(new gpu::GPUProcessor(command_buffer_.get()));
-  if (!processor_->Initialize(window_, gfx::Size(), NULL, 0)) {
+  if (!processor_->Initialize(window_, gfx::Size(), std::vector<int32>(),
+                              NULL, 0)) {
     Destroy();
     return;
   }

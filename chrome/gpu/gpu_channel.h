@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/id_map.h"
 #include "base/scoped_open_process.h"
@@ -69,6 +70,7 @@ class GpuChannel : public IPC::Channel::Listener,
                                  int32* route_id);
   void OnCreateOffscreenCommandBuffer(int32 parent_route_id,
                                       const gfx::Size& size,
+                                      const std::vector<int32>& attribs,
                                       uint32 parent_texture_id,
                                       int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);

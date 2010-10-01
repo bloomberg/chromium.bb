@@ -64,7 +64,8 @@ class Context : public base::SupportsWeakPtr<Context> {
   // channel acquired from a RenderWidget or RenderView.
   bool Initialize(gfx::NativeViewId view,
                   int render_view_id,
-                  const gfx::Size& size);
+                  const gfx::Size& size,
+                  const int32* attrib_list);
 
 #if defined(OS_MACOSX)
   // Asynchronously resizes an onscreen frame buffer.
@@ -106,8 +107,11 @@ class Context : public base::SupportsWeakPtr<Context> {
   // Create a hardware video decode context associated with this context.
   media::VideoDecodeContext* CreateVideoDecodeContext(bool hardware_decoder);
 
-  // Get the current error code.
+  // Get the current error code.  Clears context's error code afterwards.
   Error GetError();
+
+  // Replace the current error code with this.
+  void SetError(Error error);
 
   // TODO(gman): Remove this.
   void DisableShaderTranslation();
@@ -123,6 +127,7 @@ class Context : public base::SupportsWeakPtr<Context> {
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
   int32 transfer_buffer_id_;
   gpu::gles2::GLES2Implementation* gles2_implementation_;
+  Error last_error_;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
@@ -134,7 +139,8 @@ Context::Context(GpuChannelHost* channel, Context* parent)
       command_buffer_(NULL),
       gles2_helper_(NULL),
       transfer_buffer_id_(0),
-      gles2_implementation_(NULL) {
+      gles2_implementation_(NULL),
+      last_error_(SUCCESS) {
   DCHECK(channel);
 }
 
@@ -144,7 +150,8 @@ Context::~Context() {
 
 bool Context::Initialize(gfx::NativeViewId view,
                          int render_view_id,
-                         const gfx::Size& size) {
+                         const gfx::Size& size,
+                         const int32* attrib_list) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
   if (channel_->state() != GpuChannelHost::CONNECTED)
@@ -162,8 +169,37 @@ bool Context::Initialize(gfx::NativeViewId view,
     parent_texture_id_ = parent_->gles2_implementation_->MakeTextureId();
   }
 
+  std::vector<int32> attribs;
+  while (attrib_list) {
+    int32 attrib = *attrib_list++;
+    switch (attrib) {
+      // Known attributes
+      case ggl::GGL_ALPHA_SIZE:
+      case ggl::GGL_BLUE_SIZE:
+      case ggl::GGL_GREEN_SIZE:
+      case ggl::GGL_RED_SIZE:
+      case ggl::GGL_DEPTH_SIZE:
+      case ggl::GGL_STENCIL_SIZE:
+      case ggl::GGL_SAMPLES:
+      case ggl::GGL_SAMPLE_BUFFERS:
+        attribs.push_back(attrib);
+        attribs.push_back(*attrib_list++);
+        break;
+      case ggl::GGL_NONE:
+        attribs.push_back(attrib);
+        attrib_list = NULL;
+        break;
+      default:
+        SetError(ggl::BAD_ATTRIBUTE);
+        attribs.push_back(ggl::GGL_NONE);
+        attrib_list = NULL;
+        break;
+    }
+  }
+
   // Create a proxy to a command buffer in the GPU process.
   if (view) {
+    // TODO(enne): this call should also handle attribs
     command_buffer_ =
         channel_->CreateViewCommandBuffer(view, render_view_id);
   } else {
@@ -172,6 +208,7 @@ bool Context::Initialize(gfx::NativeViewId view,
     command_buffer_ = channel_->CreateOffscreenCommandBuffer(
         parent_command_buffer,
         size,
+        attribs,
         parent_texture_id_);
   }
   if (!command_buffer_) {
@@ -343,12 +380,18 @@ media::VideoDecodeContext* Context::CreateVideoDecodeContext(
 Error Context::GetError() {
   gpu::CommandBuffer::State state = command_buffer_->GetState();
   if (state.error == gpu::error::kNoError) {
-    return SUCCESS;
+    Error old_error = last_error_;
+    last_error_ = SUCCESS;
+    return old_error;
   } else {
     // All command buffer errors are unrecoverable. The error is treated as a
     // lost context: destroy the context and create another one.
     return CONTEXT_LOST;
   }
+}
+
+void Context::SetError(Error error) {
+  last_error_ = error;
 }
 
 // TODO(gman): Remove This
@@ -365,10 +408,11 @@ void Context::OnSwapBuffers() {
 
 Context* CreateViewContext(GpuChannelHost* channel,
                            gfx::NativeViewId view,
-                           int render_view_id) {
+                           int render_view_id,
+                           const int32* attrib_list) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, NULL));
-  if (!context->Initialize(view, render_view_id, gfx::Size()))
+  if (!context->Initialize(view, render_view_id, gfx::Size(), attrib_list))
     return NULL;
 
   return context.release();
@@ -387,10 +431,11 @@ void ResizeOnscreenContext(Context* context, const gfx::Size& size) {
 
 Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 Context* parent,
-                                const gfx::Size& size) {
+                                const gfx::Size& size,
+                                const int32* attrib_list) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, parent));
-  if (!context->Initialize(0, 0, size))
+  if (!context->Initialize(0, 0, size, attrib_list))
     return NULL;
 
   return context.release();

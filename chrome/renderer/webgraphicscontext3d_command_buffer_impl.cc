@@ -58,6 +58,21 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     return false;
   DCHECK(host->state() == GpuChannelHost::CONNECTED);
 
+  // Convert WebGL context creation attributes into GGL/EGL size requests.
+  const int alpha_size = attributes.alpha ? 8 : 0;
+  const int depth_size = attributes.depth ? 24 : 0;
+  const int stencil_size = attributes.stencil ? 8 : 0;
+  const int samples = attributes.antialias ? 4 : 0;
+  const int sample_buffers = attributes.antialias ? 1 : 0;
+  const int32 attribs[] = {
+    ggl::GGL_ALPHA_SIZE, alpha_size,
+    ggl::GGL_DEPTH_SIZE, depth_size,
+    ggl::GGL_STENCIL_SIZE, stencil_size,
+    ggl::GGL_SAMPLES, samples,
+    ggl::GGL_SAMPLE_BUFFERS, sample_buffers,
+    ggl::GGL_NONE,
+  };
+
   if (render_directly_to_web_view) {
     RenderView* renderview = RenderView::FromWebView(web_view);
     if (!renderview)
@@ -72,8 +87,10 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
 #endif
     web_view_ = web_view;
     context_ = ggl::CreateViewContext(
-        host, view_id,
-        renderview->routing_id());
+        host,
+        view_id,
+        renderview->routing_id(),
+        attribs);
   } else {
     bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableAcceleratedCompositing);
@@ -94,7 +111,8 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     }
     context_ = ggl::CreateOffscreenContext(host,
                                            parent_context,
-                                           gfx::Size(1, 1));
+                                           gfx::Size(1, 1),
+                                           attribs);
     web_view_ = NULL;
   }
   if (!context_)
@@ -104,6 +122,24 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   if (command_line.HasSwitch(switches::kDisableGLSLTranslator)) {
     DisableShaderTranslation(context_);
   }
+
+  // Set attributes_ from created offscreen context.
+  {
+    attributes_ = attributes;
+    GLint alpha_bits = 0;
+    getIntegerv(GL_ALPHA_BITS, &alpha_bits);
+    attributes_.alpha = alpha_bits > 0;
+    GLint depth_bits = 0;
+    getIntegerv(GL_DEPTH_BITS, &depth_bits);
+    attributes_.depth = depth_bits > 0;
+    GLint stencil_bits = 0;
+    getIntegerv(GL_STENCIL_BITS, &stencil_bits);
+    attributes_.stencil = stencil_bits > 0;
+    GLint samples = 0;
+    getIntegerv(GL_SAMPLES, &samples);
+    attributes_.antialias = samples > 0;
+  }
+
   return true;
 }
 
@@ -978,4 +1014,3 @@ void WebGraphicsContext3DCommandBufferImpl::copyTextureToCompositor(
 }
 
 #endif  // defined(ENABLE_GPU)
-

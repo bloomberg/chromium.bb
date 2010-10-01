@@ -8,6 +8,9 @@
 
 // This file needs to be included again, even though we're actually included
 // from it via utility_messages.h.
+
+#include <vector>
+
 #include "base/shared_memory.h"
 #include "chrome/common/gpu_video_common.h"
 #include "ipc/ipc_message_macros.h"
@@ -164,9 +167,10 @@ IPC_BEGIN_MESSAGES(GpuChannel)
   // the frame buffer is mapped into the corresponding parent command buffer's
   // namespace, with the name of parent_texture_id. This ID is in the parent's
   // namespace.
-  IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
+  IPC_SYNC_MESSAGE_CONTROL4_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
                               int32, /* parent_route_id */
                               gfx::Size, /* size */
+                              std::vector<int>, /* attribs */
                               uint32, /* parent_texture_id */
                               int32 /* route_id */)
 
