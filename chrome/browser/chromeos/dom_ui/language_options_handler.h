@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/browser/dom_ui/options/options_ui.h"
 
 class DictionaryValue;
 class ListValue;

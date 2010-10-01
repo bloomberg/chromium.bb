@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_CHEWING_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/browser/dom_ui/options/options_ui.h"
 
 class DictionaryValue;
 

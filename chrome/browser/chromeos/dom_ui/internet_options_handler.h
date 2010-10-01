@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/browser/dom_ui/options/options_ui.h"
 
 class SkBitmap;
 namespace views {
