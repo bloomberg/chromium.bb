@@ -22,7 +22,8 @@
     </script>
   </head>
   <body onLoad="run()">
-    <input id='inputField' speech webkitspeech
+    <input id='inputField' webkitspeech x-webkit-speech
+           onwebkitspeechchange="onspeechresult(this.value);"
            onchange="onspeechresult(this.value);">
     <br>
     <div id="status">FAIL</div>
