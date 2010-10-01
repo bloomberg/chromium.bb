@@ -144,6 +144,16 @@
       }
     },
     {
+      'name': 'SavingBrowserHistoryDisabled',
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux', 'mac', 'win'],
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 1},
+        'example_value': True,
+      }
+    },
+    {
       'name': 'SafeBrowsingEnabled',
       'type': 'main',
       'annotations': {

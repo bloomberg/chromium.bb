@@ -412,6 +412,9 @@ const char kEnabledLabsExperiments[] = "browser.enabled_labs_experiments";
 // Boolean pref to define the default values for using auto spell correct.
 const char kEnableAutoSpellCorrect[] = "browser.enable_autospellcorrect";
 
+// Boolean controlling whether history saving is disabled.
+const char kSavingBrowserHistoryDisabled[] = "history.saving_disabled";
+
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
 

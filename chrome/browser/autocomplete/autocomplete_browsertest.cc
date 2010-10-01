@@ -64,13 +64,6 @@ class AutocompleteBrowserTest : public InProcessBrowserTest {
     return GetLocationBar()->location_entry()->model()->popup_model()->
         autocomplete_controller();
   }
-
-  void WaitForHistoryBackendToLoad() {
-    HistoryService* history_service =
-        browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (!history_service->BackendLoaded())
-      ui_test_utils::WaitForNotification(NotificationType::HISTORY_LOADED);
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Basic) {
@@ -114,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Basic) {
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   // The results depend on the history backend being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  WaitForHistoryBackendToLoad();
+  ui_test_utils::WaitForHistoryToLoad(browser());
 
   LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();

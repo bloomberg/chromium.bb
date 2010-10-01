@@ -574,6 +574,13 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   ASSERT_TRUE(model->IsLoaded());
 }
 
+void WaitForHistoryToLoad(Browser* browser) {
+  HistoryService* history_service =
+      browser->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (!history_service->BackendLoaded())
+    WaitForNotification(NotificationType::HISTORY_LOADED);
+}
+
 bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window) {
   BrowserWindow* window = browser->window();
   if (!window)

@@ -183,6 +183,17 @@ templates and will be translated for each locale. -->
       If this setting is disabled, web pages cannot use JavaScript.
     </message>
 
+    <message name="IDS_POLICY_SAVINGBROWSERHISTORYDISABLED_CAPTION" desc="Caption of the 'Disable saving browser history' policy settings page.">
+      Disable saving browser history
+    </message>
+    <message name="IDS_POLICY_SAVINGBROWSERHISTORYDISABLED_DESC" desc="Description of the 'Disable saving browser history' policy settings page.">
+      Disables saving browser history in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      If this setting is enabled, browsing history is not saved.
+
+      If this setting is disabled or not configured, browsing history is saved.
+    </message>
+
     <message name="IDS_POLICY_AUTOFILLENABLED_CAPTION" desc="Caption of the 'autofill' policy.">
       Enable AutoFill
     </message>

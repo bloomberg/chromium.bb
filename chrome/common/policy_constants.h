@@ -48,6 +48,7 @@ extern const char kExtensionInstallDenyList[];
 extern const char kShowHomeButton[];
 extern const char kPrintingEnabled[];
 extern const char kJavascriptEnabled[];
+extern const char kSavingBrowserHistoryDisabled[];
 
 // Chrome Frame specific policy constants
 extern const char kChromeFrameRendererSettings[];

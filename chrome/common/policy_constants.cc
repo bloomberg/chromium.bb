@@ -51,6 +51,7 @@ const char kExtensionInstallDenyList[] = "ExtensionInstallBlacklist";
 const char kShowHomeButton[] = "ShowHomeButton";
 const char kPrintingEnabled[] = "PrintingEnabled";
 const char kJavascriptEnabled[] = "JavascriptEnabled";
+const char kSavingBrowserHistoryDisabled[] = "SavingBrowserHistoryDisabled";
 
 // Chrome Frame specific policy constants
 const char kChromeFrameRendererSettings[] = "ChromeFrameRendererSettings";

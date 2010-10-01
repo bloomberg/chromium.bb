@@ -191,6 +191,9 @@ void RegisterAndWait(NotificationObserver* observer,
 // Blocks until |model| finishes loading.
 void WaitForBookmarkModelToLoad(BookmarkModel* model);
 
+// Blocks until the |browser|'s history finishes loading.
+void WaitForHistoryToLoad(Browser* browser);
+
 // Puts the native window for |browser| in |native_window|. Returns true on
 // success.
 bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window)

@@ -18,6 +18,8 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class PrefService;
+
 #if defined(OS_CHROMEOS)
 namespace chromeos {
 class Preferences;
@@ -30,6 +32,8 @@ class ProfileImpl : public Profile,
                     public NotificationObserver {
  public:
   virtual ~ProfileImpl();
+
+  static void RegisterUserPrefs(PrefService* prefs);
 
   // Profile implementation.
   virtual ProfileId GetRuntimeId();

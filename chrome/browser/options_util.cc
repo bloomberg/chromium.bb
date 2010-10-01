@@ -43,6 +43,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
 #endif
     prefs::kDownloadDefaultDirectory,
     prefs::kDownloadExtensionsToOpen,
+    prefs::kSavingBrowserHistoryDisabled,
     prefs::kEnableSpellCheck,
     prefs::kEnableTranslate,
     prefs::kAutoFillEnabled,

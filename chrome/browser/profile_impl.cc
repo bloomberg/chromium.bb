@@ -235,6 +235,11 @@ Profile* Profile::CreateProfile(const FilePath& path) {
   return new ProfileImpl(path);
 }
 
+// static
+void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
+}
+
 ProfileImpl::ProfileImpl(const FilePath& path)
     : path_(path),
       visited_link_event_listener_(new VisitedLinkEventListener()),
@@ -801,6 +806,11 @@ FindBarState* ProfileImpl::GetFindBarState() {
 }
 
 HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
+  // If saving history is disabled, only allow explicit access.
+  if (GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
+      sat != EXPLICIT_ACCESS)
+    return NULL;
+
   if (!history_service_created_) {
     history_service_created_ = true;
     scoped_refptr<HistoryService> history(new HistoryService(this));

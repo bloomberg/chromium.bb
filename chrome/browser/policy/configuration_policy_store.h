@@ -53,6 +53,7 @@ class ConfigurationPolicyStore {
     kPolicyRenderInChromeFrameList,
     kPolicyRenderInHostList,
     kPolicyJavascriptEnabled,
+    kPolicySavingBrowserHistoryDisabled,
   };
 
   static const int kPolicyNoProxyServerMode = 0;

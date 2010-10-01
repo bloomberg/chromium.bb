@@ -159,7 +159,10 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(ConfigurationPolicyStore::kPolicyPrintingEnabled,
                     prefs::kPrintingEnabled),
         TypeAndName(ConfigurationPolicyStore::kPolicyJavascriptEnabled,
-                    prefs::kWebKitJavascriptEnabled)));
+                    prefs::kWebKitJavascriptEnabled),
+        TypeAndName(ConfigurationPolicyStore::
+                        kPolicySavingBrowserHistoryDisabled,
+                    prefs::kSavingBrowserHistoryDisabled)));
 
 // Test cases for integer-valued policy settings.
 class ConfigurationPolicyPrefStoreIntegerTest
