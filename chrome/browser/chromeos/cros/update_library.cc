@@ -8,6 +8,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 
 namespace chromeos {
 
@@ -74,6 +76,15 @@ class UpdateLibraryImpl : public UpdateLibrary {
 
     status_ = status;
     FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(this));
+
+    // If the update is ready to install, send a notification so that Chrome
+    // can update the UI.
+    if (status_.status == UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+      NotificationService::current()->Notify(
+          NotificationType::UPGRADE_RECOMMENDED,
+          Source<UpdateLibrary>(this),
+          NotificationService::NoDetails());
+    }
   }
 
   ObserverList<Observer> observers_;
@@ -119,4 +130,3 @@ UpdateLibrary* UpdateLibrary::GetImpl(bool stub) {
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::UpdateLibraryImpl);
-

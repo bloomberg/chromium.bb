@@ -129,6 +129,9 @@ class ToolbarView : public AccessibleToolbarView,
   virtual void RemoveToolbarFocus();
 
  private:
+  // Returns true if we should show the upgrade recommended dot.
+  bool IsUpgradeRecommended();
+
   // Returns the number of pixels above the location bar in non-normal display.
   int PopupTopSpacing() const;
 

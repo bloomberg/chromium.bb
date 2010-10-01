@@ -9,6 +9,10 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/update_library.h"
+#endif
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -90,7 +94,7 @@ ToolbarView::ToolbarView(Browser* browser)
         IDR_LOCATIONBG_POPUPMODE_EDGE);
   }
 
-  if (!Singleton<UpgradeDetector>::get()->notify_upgrade()) {
+  if (!IsUpgradeRecommended()) {
     registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
                    NotificationService::AllSources());
   }
@@ -162,7 +166,7 @@ void ToolbarView::Init(Profile* profile) {
   app_menu_->SetID(VIEW_ID_APP_MENU);
 
   // Catch the case where the window is created after we detect a new version.
-  if (Singleton<UpgradeDetector>::get()->notify_upgrade())
+  if (IsUpgradeRecommended())
     ShowUpgradeReminder();
 
   LoadImages();
@@ -513,6 +517,15 @@ void ToolbarView::RemoveToolbarFocus() {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, private:
 
+bool ToolbarView::IsUpgradeRecommended() {
+#if defined(OS_CHROMEOS)
+  return (chromeos::CrosLibrary::Get()->GetUpdateLibrary()->status().status ==
+          chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT);
+#else
+  return (Singleton<UpgradeDetector>::get()->notify_upgrade());
+#endif
+}
+
 int ToolbarView::PopupTopSpacing() const {
   return GetWindow()->GetNonClientView()->UseNativeFrame() ?
       0 : kPopupTopSpacingNonGlass;
@@ -590,7 +603,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   }
   SkBitmap icon = *tp->GetBitmapNamed(id);
 
-  if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
+  if (!IsUpgradeRecommended())
     return icon;
 
   // Draw the chrome app menu icon onto the canvas.
