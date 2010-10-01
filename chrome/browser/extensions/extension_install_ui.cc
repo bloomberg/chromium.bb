@@ -31,6 +31,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/cocoa/extension_installed_bubble_bridge.h"
@@ -123,48 +125,59 @@ void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
 }
 
 void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
-  if (extension->is_theme()) {
-    ShowThemeInfoBar(previous_theme_id_, previous_use_system_theme_,
-                     extension, profile_);
-    return;
-  }
-
   // GetLastActiveWithProfile will fail on the build bots. This needs to be
   // implemented differently if any test is created which depends on
   // ExtensionInstalledBubble showing.
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (!browser) {
+    NOTREACHED() << "Could not find an active browser to show extension install"
+                 << " success message in.";
+    return;
+  }
 
+  // For themes, we show an infobar with a button that allows undoing.
+  if (extension->is_theme()) {
+    ShowThemeInfoBar(browser, previous_theme_id_, previous_use_system_theme_,
+                     extension, profile_);
+    return;
+  }
+
+  // For apps, we open the new tab page and show the new app there. If the
+  // current browser doesn't have a tabstrip, we show an infobar instead.
   if (extension->GetFullLaunchURL().is_valid()) {
-    std::string hash_params = "app-id=";
-    hash_params += extension->id();
-
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsPanel)) {
-#if defined(TOOLKIT_VIEWS)
-      AppLauncher::ShowForNewTab(browser, hash_params);
-#else
-      NOTREACHED();
-#endif
-    } else {
+    if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)) {
+      std::string hash_params = "app-id=";
+      hash_params += extension->id();
       std::string url(chrome::kChromeUINewTabURL);
       url += "/#";
       url += hash_params;
       browser->AddTabWithURL(GURL(url), GURL(), PageTransition::TYPED, -1,
                              TabStripModel::ADD_SELECTED, NULL, std::string(),
                              NULL);
+    } else {
+      ShowGenericExtensionInstalledInfoBar(browser, extension);
     }
 
     return;
   }
 
-#if defined(TOOLKIT_VIEWS)
-  if (!browser)
+  // For extensions, we try to show a bubble that points to the newly installed
+  // extension. But if there is no obvious place to point at, we show an infobar
+  // instead.
+  if (!browser->SupportsWindowFeature(Browser::FEATURE_TOOLBAR)) {
+    ShowGenericExtensionInstalledInfoBar(browser, extension);
     return;
+  }
 
+#if defined(TOOLKIT_VIEWS)
   ExtensionInstalledBubble::Show(extension, browser, icon_);
 #elif defined(OS_MACOSX)
   DCHECK(browser);
   // Note that browser actions don't appear in incognito mode initially,
   // so fall back to the generic case.
+  // TODO(aa): Now that the mac always has a wrench menu, maybe we should do
+  // what the other platforms do. Or maybe on the other platforms, we should
+  // show an infobar like mac does, which in some ways is simpler.
   if ((extension->browser_action() && !browser->profile()->IsOffTheRecord()) ||
       (extension->page_action() &&
       !extension->page_action()->default_icon_path().empty())) {
@@ -175,11 +188,9 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
     // If the extension is of type GENERIC, meaning it doesn't have a UI
     // surface to display for this window, launch infobar instead of popup
     // bubble, because we have no guaranteed wrench menu button to point to.
-    ShowGenericExtensionInstalledInfoBar(extension);
+    ShowGenericExtensionInstalledInfoBar(browser, extension);
   }
 #elif defined(TOOLKIT_GTK)
-  if (!browser)
-    return;
   ExtensionInstalledBubbleGtk::Show(extension, browser, icon_);
 #endif  // TOOLKIT_VIEWS
 }
@@ -236,16 +247,9 @@ void ExtensionInstallUI::OnImageLoaded(
 }
 
 void ExtensionInstallUI::ShowThemeInfoBar(
-    const std::string& previous_theme_id, bool previous_use_system_theme,
-    Extension* new_theme, Profile* profile) {
+    Browser* browser, const std::string& previous_theme_id,
+    bool previous_use_system_theme, Extension* new_theme, Profile* profile) {
   if (!new_theme->is_theme())
-    return;
-
-  // Get last active normal browser of profile.
-  Browser* browser = BrowserList::FindBrowserWithType(profile,
-                                                      Browser::TYPE_NORMAL,
-                                                      true);
-  if (!browser)
     return;
 
   TabContents* tab_contents = browser->GetSelectedTabContents();
@@ -292,27 +296,38 @@ void ExtensionInstallUI::ShowConfirmation(PromptType prompt_type) {
                      ImageLoadingTracker::DONT_CACHE);
 }
 
-#if defined(OS_MACOSX)
 void ExtensionInstallUI::ShowGenericExtensionInstalledInfoBar(
-    Extension* new_extension) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  if (!browser)
-    return;
-
+    Browser* browser, Extension* new_extension) {
   TabContents* tab_contents = browser->GetSelectedTabContents();
   if (!tab_contents)
     return;
 
   string16 msg =
       l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALLED_HEADING,
-                                 UTF8ToUTF16(new_extension->name())) +
-      UTF8ToUTF16(" ") +
+                                 UTF8ToUTF16(new_extension->name()));
+
+  if (!new_extension->is_app()) {
+    msg += UTF8ToUTF16(" ") +
+#if defined(OS_MACOSX)
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
+#else
+      l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO);
+#endif
+  }
+
+  // TODO(aa): We should be using the smaller icons from the extension if they
+  // are available.
+  const int kInfobarIconSize = 24;
+  SkBitmap infobar_icon = skia::ImageOperations::Resize(
+      icon_,
+      skia::ImageOperations::RESIZE_LANCZOS3,
+      kInfobarIconSize,
+      kInfobarIconSize);
+
   InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
-      tab_contents, msg, new SkBitmap(icon_), true);
+      tab_contents, msg, &infobar_icon, true);
   tab_contents->AddInfoBar(delegate);
 }
-#endif
 
 InfoBarDelegate* ExtensionInstallUI::GetNewThemeInstalledInfoBarDelegate(
     TabContents* tab_contents, Extension* new_theme,
