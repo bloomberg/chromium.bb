@@ -38,7 +38,7 @@
         },
       ],
       'dependencies': [
-        '../../../third_party/protobuf2/protobuf.gyp:protoc#host',
+        '../../../third_party/protobuf/protobuf.gyp:protoc#host',
       ],
       # This target exports a hard dependency because it generates header
       # files.
@@ -49,11 +49,11 @@
       'target_name': 'chromotocol_proto_lib',
       'type': '<(library)',
       'export_dependent_settings': [
-        '../../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'chromotocol_proto',
       ],
       'dependencies': [
-        '../../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'chromotocol_proto',
       ],
       # This target exports a hard dependency because depedents require
@@ -101,7 +101,7 @@
         },
       ],
       'dependencies': [
-        '../../../third_party/protobuf2/protobuf.gyp:protoc#host',
+        '../../../third_party/protobuf/protobuf.gyp:protoc#host',
       ],
       # This target exports a hard dependency because it generates header
       # files.
@@ -112,11 +112,11 @@
       'target_name': 'trace_proto_lib',
       'type': '<(library)',
       'export_dependent_settings': [
-        '../../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'trace_proto',
       ],
       'dependencies': [
-        '../../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'trace_proto',
       ],
       # This target exports a hard dependency because depedents require

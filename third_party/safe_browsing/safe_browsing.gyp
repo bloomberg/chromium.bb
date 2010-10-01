@@ -13,10 +13,10 @@
         'testing/testing_input.dat',
       ],
       'export_dependent_settings': [
-        '../protobuf2/protobuf.gyp:py_proto',
+        '../protobuf/protobuf.gyp:py_proto',
       ],
       'dependencies': [
-        '../protobuf2/protobuf.gyp:py_proto',
+        '../protobuf/protobuf.gyp:py_proto',
       ],
      },
   ],

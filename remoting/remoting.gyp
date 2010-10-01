@@ -113,7 +113,7 @@
       'dependencies': [
         '../gfx/gfx.gyp:gfx',
         '../media/media.gyp:media',
-        '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/libvpx/libvpx.gyp:libvpx_include',
         '../third_party/zlib/zlib.gyp:zlib',
         'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
@@ -121,7 +121,7 @@
         'chromoting_jingle_glue',
       ],
       'export_dependent_settings': [
-        '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
       ],
       # This target needs a hard dependency because dependent targets

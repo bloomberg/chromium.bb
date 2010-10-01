@@ -51,7 +51,7 @@
         },
       ],
       'dependencies': [
-        '../../third_party/protobuf2/protobuf.gyp:protoc#host',
+        '../../third_party/protobuf/protobuf.gyp:protoc#host',
       ],
       # This target exports a hard dependency because it generates header
       # files.
@@ -97,7 +97,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'cacheinvalidation_proto',
       ],
       # This target exports a hard dependency because depedents require
@@ -111,7 +111,7 @@
         ],
       },
       'export_dependent_settings': [
-        '../../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+        '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'cacheinvalidation_proto',
       ],
     },

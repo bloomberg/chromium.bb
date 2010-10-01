@@ -3918,9 +3918,9 @@
                 ['exclude', '^browser/notifications/balloon_collection_linux.cc'],
               ],
               'dependencies': [
-                '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
-                #'../third_party/protobuf2/protobuf.gyp:protobuf',
-                '../third_party/protobuf2/protobuf.gyp:protoc#host',
+                '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+                #'../third_party/protobuf/protobuf.gyp:protobuf',
+                '../third_party/protobuf/protobuf.gyp:protoc#host',
               ],
               'conditions': [
                 ['system_libcros==0', {
@@ -3951,7 +3951,7 @@
                     '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
                   ],
                   'dependencies': [
-                    '../third_party/protobuf2/protobuf.gyp:protoc',
+                    '../third_party/protobuf/protobuf.gyp:protoc',
                   ],
                   'action': [
                     '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
@@ -4088,8 +4088,8 @@
         },
       ],
       'dependencies': [
-        '../third_party/protobuf2/protobuf.gyp:protobuf',
-        '../third_party/protobuf2/protobuf.gyp:protoc#host',
+        '../third_party/protobuf/protobuf.gyp:protobuf',
+        '../third_party/protobuf/protobuf.gyp:protoc#host',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -4097,7 +4097,7 @@
         ]
       },
       'export_dependent_settings': [
-        '../third_party/protobuf2/protobuf.gyp:protobuf',
+        '../third_party/protobuf/protobuf.gyp:protobuf',
       ],
     },
   ],
