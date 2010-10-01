@@ -3079,7 +3079,9 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
 void RenderView::didClearWindowObject(WebFrame* frame) {
   if (BindingsPolicy::is_dom_automation_enabled(enabled_bindings_))
     BindDOMAutomationController(frame);
-  if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_)) {
+  GURL frame_url = frame->url();
+  if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) &&
+      frame_url.SchemeIs(chrome::kChromeUIScheme)) {
     GetDOMUIBindings()->set_message_sender(this);
     GetDOMUIBindings()->set_routing_id(routing_id_);
     GetDOMUIBindings()->BindToJavascript(frame, L"chrome");
