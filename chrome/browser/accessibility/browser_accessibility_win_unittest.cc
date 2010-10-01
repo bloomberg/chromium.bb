@@ -4,30 +4,31 @@
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_comptr_win.h"
-#include "chrome/browser/browser_accessibility_manager_win.h"
-#include "chrome/browser/browser_accessibility_win.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager_win.h"
+#include "chrome/browser/accessibility/browser_accessibility_win.h"
 #include "chrome/common/render_messages_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using webkit_glue::WebAccessibility;
 
 // Subclass of BrowserAccessibility that counts the number of instances.
-class CountedBrowserAccessibility : public BrowserAccessibility {
+class CountedBrowserAccessibilityWin : public BrowserAccessibilityWin {
  public:
-  CountedBrowserAccessibility() { global_obj_count_++; }
-  virtual ~CountedBrowserAccessibility() { global_obj_count_--; }
+  CountedBrowserAccessibilityWin() { global_obj_count_++; }
+  virtual ~CountedBrowserAccessibilityWin() { global_obj_count_--; }
   static int global_obj_count_;
 };
 
-int CountedBrowserAccessibility::global_obj_count_ = 0;
+int CountedBrowserAccessibilityWin::global_obj_count_ = 0;
 
-// Factory that creates a CountedBrowserAccessibility.
-class CountedBrowserAccessibilityFactory : public BrowserAccessibilityFactory {
+// Factory that creates a CountedBrowserAccessibilityWin.
+class CountedBrowserAccessibilityWinFactory
+    : public BrowserAccessibilityWinFactory {
  public:
-  virtual ~CountedBrowserAccessibilityFactory() {}
-  virtual BrowserAccessibility* Create() {
-    CComObject<CountedBrowserAccessibility>* instance;
-    HRESULT hr = CComObject<CountedBrowserAccessibility>::CreateInstance(
+  virtual ~CountedBrowserAccessibilityWinFactory() {}
+  virtual BrowserAccessibilityWin* Create() {
+    CComObject<CountedBrowserAccessibilityWin>* instance;
+    HRESULT hr = CComObject<CountedBrowserAccessibilityWin>::CreateInstance(
         &instance);
     DCHECK(SUCCEEDED(hr));
     return instance->NewReference();
@@ -54,8 +55,7 @@ class BrowserAccessibilityTest : public testing::Test {
     ::CoInitialize(NULL);
   }
 
-  virtual void TearDown()
-  {
+  virtual void TearDown() {
     ::CoUninitialize();
   }
 };
@@ -90,24 +90,25 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
   // and a factory for an instance-counting BrowserAccessibility, and ensure
   // that exactly 3 instances were created. Note that the manager takes
   // ownership of the factory.
-  CountedBrowserAccessibility::global_obj_count_ = 0;
+  CountedBrowserAccessibilityWin::global_obj_count_ = 0;
+  // TODO: Use BrowserAccessibilityManager::Create instead of new below.
   BrowserAccessibilityManager* manager =
-      new BrowserAccessibilityManager(
+      new BrowserAccessibilityManagerWin(
           GetDesktopWindow(), root, NULL,
-          new CountedBrowserAccessibilityFactory());
-  ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
+          new CountedBrowserAccessibilityWinFactory());
+  ASSERT_EQ(3, CountedBrowserAccessibilityWin::global_obj_count_);
 
   // Delete the manager and test that all 3 instances are deleted.
   delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(0, CountedBrowserAccessibilityWin::global_obj_count_);
 
   // Construct a manager again, and this time use the IAccessible interface
   // to get new references to two of the three nodes in the tree.
-  manager = new BrowserAccessibilityManager(
+  manager = new BrowserAccessibilityManagerWin(
       GetDesktopWindow(), root, NULL,
-      new CountedBrowserAccessibilityFactory());
-  ASSERT_EQ(3, CountedBrowserAccessibility::global_obj_count_);
-  BrowserAccessibility* root_accessible = manager->GetRoot();
+      new CountedBrowserAccessibilityWinFactory());
+  ASSERT_EQ(3, CountedBrowserAccessibilityWin::global_obj_count_);
+  IAccessible* root_accessible = manager->GetRootAccessible();
   IDispatch* root_iaccessible = NULL;
   IDispatch* child1_iaccessible = NULL;
   VARIANT var_child;
@@ -122,14 +123,14 @@ TEST_F(BrowserAccessibilityTest, TestNoLeaks) {
   // Now delete the manager, and only one of the three nodes in the tree
   // should be released.
   delete manager;
-  ASSERT_EQ(2, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(2, CountedBrowserAccessibilityWin::global_obj_count_);
 
   // Release each of our references and make sure that each one results in
   // the instance being deleted as its reference count hits zero.
   root_iaccessible->Release();
-  ASSERT_EQ(1, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(1, CountedBrowserAccessibilityWin::global_obj_count_);
   child1_iaccessible->Release();
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(0, CountedBrowserAccessibilityWin::global_obj_count_);
 }
 
 TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
@@ -151,17 +152,17 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   // Construct a BrowserAccessibilityManager with this WebAccessibility tree
   // and a factory for an instance-counting BrowserAccessibility.
-  CountedBrowserAccessibility::global_obj_count_ = 0;
+  CountedBrowserAccessibilityWin::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
-      new BrowserAccessibilityManager(
+      new BrowserAccessibilityManagerWin(
           GetDesktopWindow(), root, NULL,
-          new CountedBrowserAccessibilityFactory());
+          new CountedBrowserAccessibilityWinFactory());
 
   // Query for the text IAccessible and verify that it returns "old text" as its
   // value.
   ScopedComPtr<IDispatch> text_dispatch;
-  HRESULT hr = manager->GetRoot()->get_accChild(CreateI4Variant(1),
-                                                text_dispatch.Receive());
+  HRESULT hr = manager->GetRootAccessible()->get_accChild(
+      CreateI4Variant(1), text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
 
   ScopedComPtr<IAccessible> text_accessible;
@@ -189,7 +190,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   // Query for the text IAccessible and verify that it now returns "new text"
   // as its value.
-  hr = manager->GetRoot()->get_accChild(
+  hr = manager->GetRootAccessible()->get_accChild(
       CreateI4Variant(1),
       text_dispatch.Receive());
   ASSERT_EQ(S_OK, hr);
@@ -207,7 +208,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
   delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(0, CountedBrowserAccessibilityWin::global_obj_count_);
 }
 
 TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
@@ -238,12 +239,12 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   // and a factory for an instance-counting BrowserAccessibility and ensure
   // that exactly 4 instances were created. Note that the manager takes
   // ownership of the factory.
-  CountedBrowserAccessibility::global_obj_count_ = 0;
+  CountedBrowserAccessibilityWin::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
-      new BrowserAccessibilityManager(
+      new BrowserAccessibilityManagerWin(
           GetDesktopWindow(), root, NULL,
-          new CountedBrowserAccessibilityFactory());
-  ASSERT_EQ(4, CountedBrowserAccessibility::global_obj_count_);
+          new CountedBrowserAccessibilityWinFactory());
+  ASSERT_EQ(4, CountedBrowserAccessibilityWin::global_obj_count_);
 
   // Notify the BrowserAccessibilityManager that the div node and its children
   // were removed and ensure that only one BrowserAccessibility instance exists.
@@ -256,10 +257,10 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   std::vector<ViewHostMsg_AccessibilityNotification_Params> notifications;
   notifications.push_back(param);
   manager->OnAccessibilityNotifications(notifications);
-  ASSERT_EQ(1, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(1, CountedBrowserAccessibilityWin::global_obj_count_);
 
   // Delete the manager and test that all BrowserAccessibility instances are
   // deleted.
   delete manager;
-  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+  ASSERT_EQ(0, CountedBrowserAccessibilityWin::global_obj_count_);
 }

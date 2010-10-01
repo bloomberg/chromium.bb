@@ -410,10 +410,10 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
-            'browser/accessibility_win_browsertest.cc',
+            'browser/accessibility/accessibility_win_browsertest.cc',
+            'browser/accessibility/browser_views_accessibility_browsertest.cc',
             # TODO: port sidebar.
             'browser/sidebar/sidebar_test.cc',
-            'browser/views/browser_views_accessibility_browsertest.cc',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -965,6 +965,7 @@
         'app/breakpad_mac_stubs.mm',
         'app/chrome_dll.rc',
         # All unittests in browser, common, renderer and service.
+        'browser/accessibility/browser_accessibility_win_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete_history_manager_unittest.cc',
         'browser/autocomplete/autocomplete_edit_unittest.cc',
@@ -1015,7 +1016,6 @@
         'browser/bookmarks/bookmark_model_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
         'browser/browser_about_handler_unittest.cc',
-        'browser/browser_accessibility_win_unittest.cc',
         'browser/browser_commands_unittest.cc',
         'browser/themes/browser_theme_pack_unittest.cc',
         'browser/themes/browser_theme_provider_unittest.cc',
@@ -1766,9 +1766,9 @@
         }, { # else: OS != "win"
           'sources!': [
             'app/chrome_dll.rc',
+            'browser/accessibility/browser_accessibility_win_unittest.cc',
             'browser/bookmarks/bookmark_codec_unittest.cc',
             'browser/bookmarks/bookmark_drag_data_unittest.cc',
-            'browser/browser_accessibility_win_unittest.cc',
             'browser/chrome_plugin_unittest.cc',
             'browser/extensions/extension_process_manager_unittest.cc',
             'browser/login_prompt_unittest.cc',

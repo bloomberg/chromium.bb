@@ -11,10 +11,11 @@
 #include "base/histogram.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
+#include "base/scoped_comptr_win.h"
 #include "base/thread.h"
 #include "base/win_util.h"
-#include "chrome/browser/browser_accessibility_win.h"
-#include "chrome/browser/browser_accessibility_manager_win.h"
+#include "chrome/browser/accessibility/browser_accessibility.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/chrome_thread.h"
@@ -1489,7 +1490,7 @@ void RenderWidgetHostViewWin::OnAccessibilityNotifications(
     empty_document.role = WebAccessibility::ROLE_DOCUMENT;
     empty_document.state = 0;
     browser_accessibility_manager_.reset(
-        new BrowserAccessibilityManager(m_hWnd, empty_document, this));
+        BrowserAccessibilityManager::Create(m_hWnd, empty_document, this));
   }
 
   browser_accessibility_manager_->OnAccessibilityNotifications(params);
@@ -1552,13 +1553,13 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
     loading_tree.role = WebAccessibility::ROLE_DOCUMENT;
     loading_tree.state = (1 << WebAccessibility::STATE_BUSY);
     browser_accessibility_manager_.reset(
-      new BrowserAccessibilityManager(m_hWnd, loading_tree, this));
+      BrowserAccessibilityManager::Create(m_hWnd, loading_tree, this));
   }
 
-  BrowserAccessibility* root = browser_accessibility_manager_->GetRoot();
-  if (root) {
-    return LresultFromObject(IID_IAccessible, wparam,
-        static_cast<IAccessible*>(root->NewReference()));
+  ScopedComPtr<IAccessible> root(
+      browser_accessibility_manager_->GetRootAccessible());
+  if (root.get()) {
+    return LresultFromObject(IID_IAccessible, wparam, root.Detach());
   }
 
   handled = false;

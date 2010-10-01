@@ -16,7 +16,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/browser_accessibility_manager_win.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/ime_input.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/notification_observer.h"

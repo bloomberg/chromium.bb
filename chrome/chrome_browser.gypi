@@ -59,6 +59,14 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for tests and
         # mocks.
+        'browser/accessibility/browser_accessibility.cc',
+        'browser/accessibility/browser_accessibility.h',
+        'browser/accessibility/browser_accessibility_manager.cc',
+        'browser/accessibility/browser_accessibility_manager.h',
+        'browser/accessibility/browser_accessibility_manager_win.cc',
+        'browser/accessibility/browser_accessibility_manager_win.h',
+        'browser/accessibility/browser_accessibility_win.cc',
+        'browser/accessibility/browser_accessibility_win.h',
         'browser/accessibility_events.h',
         'browser/accessibility_events.cc',
         'browser/aeropeek_manager.cc',
@@ -278,10 +286,6 @@
         'browser/browser.h',
         'browser/browser_about_handler.cc',
         'browser/browser_about_handler.h',
-        'browser/browser_accessibility_win.cc',
-        'browser/browser_accessibility_win.h',
-        'browser/browser_accessibility_manager_win.cc',
-        'browser/browser_accessibility_manager_win.h',
         'browser/browser_child_process_host.cc',
         'browser/browser_child_process_host.h',
         'browser/browser_init.cc',
@@ -3966,12 +3970,14 @@
           ],
           # Exclude files that should be excluded for all non-Windows platforms.
           'sources!': [
+            'browser/accessibility/browser_accessibility_win.cc',
+            'browser/accessibility/browser_accessibility_win.h',
+            'browser/accessibility/browser_accessibility_manager_win.cc',
+            'browser/accessibility/browser_accessibility_manager_win.h',
             'browser/aeropeek_manager.cc',
             'browser/autocomplete/autocomplete_accessibility.cc',
             'browser/bookmarks/bookmark_menu_controller.cc',
             'browser/bookmarks/bookmark_menu_controller.h',
-            'browser/browser_accessibility_win.cc',
-            'browser/browser_accessibility_manager_win.cc',
             'browser/extensions/extension_tts_api_win.cc',
             'browser/google/google_update.cc',
             'browser/history/history_indexer.idl',

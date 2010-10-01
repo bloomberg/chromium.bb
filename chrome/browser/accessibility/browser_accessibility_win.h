@@ -2,47 +2,49 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_ACCESSIBILITY_WIN_H_
-#define CHROME_BROWSER_BROWSER_ACCESSIBILITY_WIN_H_
+#ifndef CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
+#define CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_
 #pragma once
 
 #include <atlbase.h>
 #include <atlcom.h>
 #include <oleacc.h>
 
-#include <map>
 #include <vector>
 
-#include "chrome/browser/browser_accessibility_manager_win.h"
+#include "chrome/browser/accessibility/browser_accessibility.h"
 #include "ia2_api_all.h"  // Generated
 #include "ISimpleDOMDocument.h"  // Generated
 #include "ISimpleDOMNode.h"  // Generated
 #include "ISimpleDOMText.h"  // Generated
 #include "webkit/glue/webaccessibility.h"
 
+class BrowserAccessibilityManagerWin;
+
 using webkit_glue::WebAccessibility;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// BrowserAccessibility
+// BrowserAccessibilityWin
 //
-// Class implementing the MSAA IAccessible COM interface for the
-// Browser-Renderer communication of MSAA information, providing accessibility
+// Class implementing the windows accessible interface for the Browser-Renderer
+// communication of accessibility information, providing accessibility
 // to be used by screen readers and other assistive technology (AT).
 //
 ////////////////////////////////////////////////////////////////////////////////
-class ATL_NO_VTABLE BrowserAccessibility
-  : public CComObjectRootEx<CComMultiThreadModel>,
-    public IDispatchImpl<IAccessible2, &IID_IAccessible2,
-                         &LIBID_IAccessible2Lib>,
-    public IAccessibleImage,
-    public IAccessibleText,
-    public IServiceProvider,
-    public ISimpleDOMDocument,
-    public ISimpleDOMNode,
-    public ISimpleDOMText {
+class BrowserAccessibilityWin
+    : public BrowserAccessibility,
+      public CComObjectRootEx<CComMultiThreadModel>,
+      public IDispatchImpl<IAccessible2, &IID_IAccessible2,
+                           &LIBID_IAccessible2Lib>,
+      public IAccessibleImage,
+      public IAccessibleText,
+      public IServiceProvider,
+      public ISimpleDOMDocument,
+      public ISimpleDOMNode,
+      public ISimpleDOMText {
  public:
-  BEGIN_COM_MAP(BrowserAccessibility)
+  BEGIN_COM_MAP(BrowserAccessibilityWin)
     COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
     COM_INTERFACE_ENTRY2(IAccessible, IAccessible2)
     COM_INTERFACE_ENTRY(IAccessible2)
@@ -54,19 +56,19 @@ class ATL_NO_VTABLE BrowserAccessibility
     COM_INTERFACE_ENTRY(ISimpleDOMText)
   END_COM_MAP()
 
-  BrowserAccessibility();
+  BrowserAccessibilityWin();
 
-  virtual ~BrowserAccessibility();
+  virtual ~BrowserAccessibilityWin();
 
   // Initialize this object and mark it as active.
-  void Initialize(BrowserAccessibilityManager* manager,
-                  BrowserAccessibility* parent,
+  void Initialize(BrowserAccessibilityManagerWin* manager,
+                  BrowserAccessibilityWin* parent,
                   LONG child_id,
                   LONG index_in_parent,
                   const webkit_glue::WebAccessibility& src);
 
   // Add a child of this object.
-  void AddChild(BrowserAccessibility* child);
+  void AddChild(BrowserAccessibilityWin* child);
 
   // Mark this object as inactive, and remove references to all children.
   // When no other clients hold any references to this object it will be
@@ -74,30 +76,30 @@ class ATL_NO_VTABLE BrowserAccessibility
   void InactivateTree();
 
   // Return true if this object is equal to or a descendant of |ancestor|.
-  bool IsDescendantOf(BrowserAccessibility* ancestor);
+  bool IsDescendantOf(BrowserAccessibilityWin* ancestor);
 
-  // Returns the parent of this object, or NULL if it's the BrowserAccessibility
-  // root.
-  BrowserAccessibility* GetParent();
+  // Returns the parent of this object, or NULL if it's the
+  // BrowserAccessibilityWin root.
+  BrowserAccessibilityWin* GetParent();
 
-  // Returns the number of children of this BrowserAccessibility object.
+  // Returns the number of children of this BrowserAccessibilityWin object.
   uint32 GetChildCount();
 
   // Return a pointer to the child with the given index.
-  BrowserAccessibility* GetChild(uint32 child_index);
+  BrowserAccessibilityWin* GetChild(uint32 child_index);
 
   // Return the previous sibling of this object, or NULL if it's the first
   // child of its parent.
-  BrowserAccessibility* GetPreviousSibling();
+  BrowserAccessibilityWin* GetPreviousSibling();
 
   // Return the next sibling of this object, or NULL if it's the last child
   // of its parent.
-  BrowserAccessibility* GetNextSibling();
+  BrowserAccessibilityWin* GetNextSibling();
 
-  // Replace a child BrowserAccessibility object. Used when updating the
+  // Replace a child BrowserAccessibilityWin object. Used when updating the
   // accessibility tree.
   void ReplaceChild(
-      const BrowserAccessibility* old_acc, BrowserAccessibility* new_acc);
+      const BrowserAccessibilityWin* old_acc, BrowserAccessibilityWin* new_acc);
 
   // Accessors
   LONG child_id() const { return child_id_; }
@@ -105,9 +107,9 @@ class ATL_NO_VTABLE BrowserAccessibility
   LONG index_in_parent() const { return index_in_parent_; }
 
   // Add one to the reference count and return the same object. Always
-  // use this method when returning a BrowserAccessibility object as
+  // use this method when returning a BrowserAccessibilityWin object as
   // an output parameter to a COM interface, never use it otherwise.
-  BrowserAccessibility* NewReference();
+  BrowserAccessibilityWin* NewReference();
 
   //
   // IAccessible methods.
@@ -282,6 +284,7 @@ class ATL_NO_VTABLE BrowserAccessibility
                              LONG* start_offset,
                              LONG* end_offset);
 
+
   // IAccessibleText methods not implemented.
   STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) {
     return E_NOTIMPL;
@@ -297,26 +300,26 @@ class ATL_NO_VTABLE BrowserAccessibility
     return E_NOTIMPL;
   }
   STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
-                                 enum IA2CoordinateType coord_type,
-                                 LONG* offset) {
+                             enum IA2CoordinateType coord_type,
+                             LONG* offset) {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_textBeforeOffset(LONG offset,
-                                    enum IA2TextBoundaryType boundary_type,
-                                    LONG* start_offset, LONG* end_offset,
-                                    BSTR* text) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_textAfterOffset(LONG offset,
-                                   enum IA2TextBoundaryType boundary_type,
-                                   LONG* start_offset, LONG* end_offset,
-                                   BSTR* text) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_textAtOffset(LONG offset,
                                 enum IA2TextBoundaryType boundary_type,
                                 LONG* start_offset, LONG* end_offset,
                                 BSTR* text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_textAfterOffset(LONG offset,
+                               enum IA2TextBoundaryType boundary_type,
+                               LONG* start_offset, LONG* end_offset,
+                               BSTR* text) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_textAtOffset(LONG offset,
+                            enum IA2TextBoundaryType boundary_type,
+                            LONG* start_offset, LONG* end_offset,
+                            BSTR* text) {
     return E_NOTIMPL;
   }
   STDMETHODIMP removeSelection(LONG selection_index) {
@@ -491,7 +494,7 @@ class ATL_NO_VTABLE BrowserAccessibility
   // This method tries to figure out the target object from |var_id| and
   // returns a pointer to the target object if it exists, otherwise NULL.
   // Does not return a new reference.
-  BrowserAccessibility* GetTargetFromChildID(const VARIANT& var_id);
+  BrowserAccessibilityWin* GetTargetFromChildID(const VARIANT& var_id);
 
   // Initialize the role and state metadata from the role enum and state
   // bitmasks defined in webkit/glue/webaccessibility.h.
@@ -523,9 +526,9 @@ class ATL_NO_VTABLE BrowserAccessibility
 
   // The manager of this tree of accessibility objects; needed for
   // global operations like focus tracking.
-  BrowserAccessibilityManager* manager_;
+  BrowserAccessibilityManagerWin* manager_;
   // The parent of this object, may be NULL if we're the root object.
-  BrowserAccessibility* parent_;
+  BrowserAccessibilityWin* parent_;
   // The ID of this object; globally unique within the browser process.
   LONG child_id_;
   // The index of this within its parent object.
@@ -534,7 +537,7 @@ class ATL_NO_VTABLE BrowserAccessibility
   int32 renderer_id_;
 
   // The children of this object.
-  std::vector<BrowserAccessibility*> children_;
+  std::vector<BrowserAccessibilityWin*> children_;
 
   // Accessibility metadata from the renderer, used to respond to MSAA
   // events.
@@ -558,7 +561,7 @@ class ATL_NO_VTABLE BrowserAccessibility
   // failure.
   bool instance_active_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
+  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWin);
 };
 
-#endif  // CHROME_BROWSER_BROWSER_ACCESSIBILITY_WIN_H_
+#endif  // CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_WIN_H_

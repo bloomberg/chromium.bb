@@ -2,160 +2,144 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_
-#define CHROME_BROWSER_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_
+#ifndef CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_
+#define CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_
 #pragma once
 
 #include <atlbase.h>
 #include <atlcom.h>
 #include <oleacc.h>
 
-#include <hash_map>
 #include <vector>
 
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "base/hash_tables.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "webkit/glue/webaccessibility.h"
 
-class BrowserAccessibility;
+class BrowserAccessibilityWin;
 struct ViewHostMsg_AccessibilityNotification_Params;
 
-class BrowserAccessibilityFactory {
+class BrowserAccessibilityWinFactory {
  public:
-  virtual ~BrowserAccessibilityFactory() {}
+  virtual ~BrowserAccessibilityWinFactory() {}
 
-  // Create an instance of BrowserAccessibility and return a new
+  // Create an instance of BrowserAccessibilityWin and return a new
   // reference to it.
-  virtual BrowserAccessibility* Create();
+  virtual BrowserAccessibilityWin* Create();
 };
 
-// Class that can perform actions on behalf of the BrowserAccessibilityManager.
-class BrowserAccessibilityDelegate {
+// Manages a tree of BrowserAccessibilityWin objects.
+class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
  public:
-  virtual ~BrowserAccessibilityDelegate() {}
-  virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
-  virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
-};
-
-// Manages a tree of BrowserAccessibility objects.
-class BrowserAccessibilityManager {
- public:
-  BrowserAccessibilityManager(
-      HWND parent_hwnd,
+  BrowserAccessibilityManagerWin(
+      HWND parent_window,
       const webkit_glue::WebAccessibility& src,
       BrowserAccessibilityDelegate* delegate,
-      BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
+      BrowserAccessibilityWinFactory* factory =
+          new BrowserAccessibilityWinFactory());
 
-  virtual ~BrowserAccessibilityManager();
+  virtual ~BrowserAccessibilityManagerWin();
 
   // Return a pointer to the root of the tree, does not make a new reference.
-  BrowserAccessibility* GetRoot();
+  BrowserAccessibilityWin* GetRoot();
 
-  // Removes the BrowserAccessibility child_id from the manager.
+  // Removes the BrowserAccessibilityWin child_id from the manager.
   void Remove(LONG child_id);
 
   // Return a pointer to the object corresponding to the given child_id,
   // does not make a new reference.
-  BrowserAccessibility* GetFromChildID(LONG child_id);
+  BrowserAccessibilityWin* GetFromChildID(LONG child_id);
 
   // Get a the default IAccessible for the parent window, does not make a
   // new reference.
   IAccessible* GetParentWindowIAccessible();
 
-  // Get the parent window.
-  HWND GetParentHWND();
-
   // Return the object that has focus, if it's a descandant of the
   // given root (inclusive). Does not make a new reference.
-  BrowserAccessibility* GetFocus(BrowserAccessibility* root);
+  BrowserAccessibilityWin* GetFocus(BrowserAccessibilityWin* root);
 
   // Tell the renderer to set focus to this node.
-  void SetFocus(const BrowserAccessibility& node);
+  void SetFocus(const BrowserAccessibilityWin& node);
 
   // Tell the renderer to do the default action for this node.
-  void DoDefaultAction(const BrowserAccessibility& node);
+  void DoDefaultAction(const BrowserAccessibilityWin& node);
 
-  // Called when the renderer process has notified us of about tree changes.
-  // Send a notification to MSAA clients of the change.
-  void OnAccessibilityNotifications(
-    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
+  // BrowserAccessibilityManager Methods
+  virtual IAccessible* GetRootAccessible();
+  virtual void OnAccessibilityObjectStateChange(
+      const webkit_glue::WebAccessibility& acc_obj);
+  virtual void OnAccessibilityObjectChildrenChange(
+      const webkit_glue::WebAccessibility& acc_obj);
+  virtual void OnAccessibilityObjectFocusChange(
+      const webkit_glue::WebAccessibility& acc_obj);
+  virtual void OnAccessibilityObjectLoadComplete(
+      const webkit_glue::WebAccessibility& acc_obj);
+  virtual void OnAccessibilityObjectValueChange(
+      const webkit_glue::WebAccessibility& acc_obj);
+  virtual void OnAccessibilityObjectTextChange(
+      const webkit_glue::WebAccessibility& acc_obj);
 
  private:
   // Recursively compare the IDs of our subtree to a new subtree received
   // from the renderer and return true if their IDs match exactly.
   bool CanModifyTreeInPlace(
-      BrowserAccessibility* current_root,
+      BrowserAccessibilityWin* current_root,
       const webkit_glue::WebAccessibility& new_root);
 
   // Recursively modify a subtree (by reinitializing) to match a new
   // subtree received from the renderer process. Should only be called
   // if CanModifyTreeInPlace returned true.
   void ModifyTreeInPlace(
-      BrowserAccessibility* current_root,
+      BrowserAccessibilityWin* current_root,
       const webkit_glue::WebAccessibility& new_root);
 
   // Update the accessibility tree with an updated WebAccessibility tree or
   // subtree received from the renderer process. First attempts to modify
   // the tree in place, and if that fails, replaces the entire subtree.
   // Returns the updated node or NULL if no node was updated.
-  BrowserAccessibility* UpdateTree(
-      const webkit_glue::WebAccessibility& acc_obj);
-
-  void OnAccessibilityObjectStateChange(
-      const webkit_glue::WebAccessibility& acc_obj);
-  void OnAccessibilityObjectChildrenChange(
-      const webkit_glue::WebAccessibility& acc_obj);
-  void OnAccessibilityObjectFocusChange(
-      const webkit_glue::WebAccessibility& acc_obj);
-  void OnAccessibilityObjectLoadComplete(
-      const webkit_glue::WebAccessibility& acc_obj);
-  void OnAccessibilityObjectValueChange(
-      const webkit_glue::WebAccessibility& acc_obj);
-  void OnAccessibilityObjectTextChange(
+  BrowserAccessibilityWin* UpdateTree(
       const webkit_glue::WebAccessibility& acc_obj);
 
   // Returns the next MSAA child id.
   static LONG GetNextChildID();
 
-  // Recursively build a tree of BrowserAccessibility objects from
+  // Recursively build a tree of BrowserAccessibilityWin objects from
   // the WebAccessibility tree received from the renderer process.
-  BrowserAccessibility* CreateAccessibilityTree(
-      BrowserAccessibility* parent,
+  BrowserAccessibilityWin* CreateAccessibilityTree(
+      BrowserAccessibilityWin* parent,
       int child_id,
       const webkit_glue::WebAccessibility& src,
       int index_in_parent);
-
-  // The parent window.
-  HWND parent_hwnd_;
 
   // The object that can perform actions on our behalf.
   BrowserAccessibilityDelegate* delegate_;
 
   // Factory to create BrowserAccessibility objects (for dependency injection).
-  scoped_ptr<BrowserAccessibilityFactory> factory_;
+  scoped_ptr<BrowserAccessibilityWinFactory> factory_;
 
   // A default IAccessible instance for the parent window.
   ScopedComPtr<IAccessible> window_iaccessible_;
 
   // The root of the tree of IAccessible objects and the element that
   // currently has focus, if any.
-  BrowserAccessibility* root_;
-  BrowserAccessibility* focus_;
+  BrowserAccessibilityWin* root_;
+  BrowserAccessibilityWin* focus_;
 
   // A mapping from the IDs of objects in the renderer, to the child IDs
   // we use internally here.
   base::hash_map<int, LONG> renderer_id_to_child_id_map_;
 
-  // A mapping from child IDs to BrowserAccessibility objects.
-  base::hash_map<LONG, BrowserAccessibility*> child_id_map_;
+  // A mapping from child IDs to BrowserAccessibilityWin objects.
+  base::hash_map<LONG, BrowserAccessibilityWin*> child_id_map_;
 
   // The next child ID to use; static so that they're global to the process.
   // Screen readers cache these IDs to see if they've seen the same object
   // before so we should avoid reusing them within the same project.
   static LONG next_child_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
+  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };
 
-#endif  // CHROME_BROWSER_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_
+#endif  // CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_WIN_H_

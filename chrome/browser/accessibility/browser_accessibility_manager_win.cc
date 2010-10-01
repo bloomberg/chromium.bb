@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_accessibility_manager_win.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager_win.h"
 
-#include "chrome/browser/browser_accessibility_win.h"
+#include "chrome/browser/accessibility/browser_accessibility_win.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/render_messages.h"
@@ -12,10 +12,19 @@
 
 using webkit_glue::WebAccessibility;
 
+// static
+BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+    gfx::NativeWindow parent_window,
+    const webkit_glue::WebAccessibility& src,
+    BrowserAccessibilityDelegate* delegate) {
+  return new BrowserAccessibilityManagerWin(
+      parent_window, src, delegate, new BrowserAccessibilityWinFactory());
+}
+
 // Factory method to create an instance of BrowserAccessibility
-BrowserAccessibility* BrowserAccessibilityFactory::Create() {
-  CComObject<BrowserAccessibility>* instance;
-  HRESULT hr = CComObject<BrowserAccessibility>::CreateInstance(&instance);
+BrowserAccessibilityWin* BrowserAccessibilityWinFactory::Create() {
+  CComObject<BrowserAccessibilityWin>* instance;
+  HRESULT hr = CComObject<BrowserAccessibilityWin>::CreateInstance(&instance);
   DCHECK(SUCCEEDED(hr));
   return instance->NewReference();
 }
@@ -25,19 +34,19 @@ BrowserAccessibility* BrowserAccessibilityFactory::Create() {
 // child IDs of 1, 2, 3, ... to access the children of an object by
 // index, so we use negative IDs to clearly distinguish between indices
 // and unique IDs.
-LONG BrowserAccessibilityManager::next_child_id_ = -1;
+LONG BrowserAccessibilityManagerWin::next_child_id_ = -1;
 
-BrowserAccessibilityManager::BrowserAccessibilityManager(
-    HWND parent_hwnd,
+BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
+    HWND parent_window,
     const webkit_glue::WebAccessibility& src,
     BrowserAccessibilityDelegate* delegate,
-    BrowserAccessibilityFactory* factory)
-    : parent_hwnd_(parent_hwnd),
+    BrowserAccessibilityWinFactory* factory)
+    : BrowserAccessibilityManager(parent_window),
       delegate_(delegate),
       factory_(factory),
       focus_(NULL) {
   HRESULT hr = ::CreateStdAccessibleObject(
-      parent_hwnd_, OBJID_WINDOW, IID_IAccessible,
+      parent_window, OBJID_WINDOW, IID_IAccessible,
       reinterpret_cast<void **>(&window_iaccessible_));
   DCHECK(SUCCEEDED(hr));
   root_ = CreateAccessibilityTree(NULL, GetNextChildID(), src, 0);
@@ -45,7 +54,7 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
     focus_ = root_;
 }
 
-BrowserAccessibilityManager::~BrowserAccessibilityManager() {
+BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
   // Clients could still hold references to some nodes of the tree, so
   // calling Inactivate will make sure that as many nodes as possible are
   // released now, and remaining nodes are marked as inactive so that
@@ -54,17 +63,17 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
   root_->Release();
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
+BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetRoot() {
   return root_;
 }
 
-void BrowserAccessibilityManager::Remove(LONG child_id) {
+void BrowserAccessibilityManagerWin::Remove(LONG child_id) {
   child_id_map_.erase(child_id);
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetFromChildID(
+BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFromChildID(
     LONG child_id) {
-  base::hash_map<LONG, BrowserAccessibility*>::iterator iter =
+  base::hash_map<LONG, BrowserAccessibilityWin*>::iterator iter =
       child_id_map_.find(child_id);
   if (iter != child_id_map_.end()) {
     return iter->second;
@@ -73,72 +82,32 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromChildID(
   }
 }
 
-IAccessible* BrowserAccessibilityManager::GetParentWindowIAccessible() {
+IAccessible* BrowserAccessibilityManagerWin::GetParentWindowIAccessible() {
   return window_iaccessible_;
 }
 
-HWND BrowserAccessibilityManager::GetParentHWND() {
-  return parent_hwnd_;
-}
-
-BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
-    BrowserAccessibility* root) {
+BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFocus(
+    BrowserAccessibilityWin* root) {
   if (focus_ && (!root || focus_->IsDescendantOf(root)))
     return focus_;
 
   return NULL;
 }
 
-void BrowserAccessibilityManager::SetFocus(const BrowserAccessibility& node) {
+void BrowserAccessibilityManagerWin::SetFocus(
+    const BrowserAccessibilityWin& node) {
   if (delegate_)
     delegate_->SetAccessibilityFocus(node.renderer_id());
 }
 
-void BrowserAccessibilityManager::DoDefaultAction(
-    const BrowserAccessibility& node) {
+void BrowserAccessibilityManagerWin::DoDefaultAction(
+    const BrowserAccessibilityWin& node) {
   if (delegate_)
     delegate_->AccessibilityDoDefaultAction(node.renderer_id());
 }
 
-void BrowserAccessibilityManager::OnAccessibilityNotifications(
-    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
-  for (uint32 index = 0; index < params.size(); index++) {
-    const ViewHostMsg_AccessibilityNotification_Params& param = params[index];
-
-    switch (param.notification_type) {
-      case ViewHostMsg_AccessibilityNotification_Params::
-          NOTIFICATION_TYPE_CHECK_STATE_CHANGED:
-        OnAccessibilityObjectStateChange(param.acc_obj);
-        break;
-      case ViewHostMsg_AccessibilityNotification_Params::
-          NOTIFICATION_TYPE_CHILDREN_CHANGED:
-        OnAccessibilityObjectChildrenChange(param.acc_obj);
-        break;
-      case ViewHostMsg_AccessibilityNotification_Params::
-          NOTIFICATION_TYPE_FOCUS_CHANGED:
-        OnAccessibilityObjectFocusChange(param.acc_obj);
-        break;
-      case ViewHostMsg_AccessibilityNotification_Params::
-          NOTIFICATION_TYPE_LOAD_COMPLETE:
-        OnAccessibilityObjectLoadComplete(param.acc_obj);
-        break;
-      case ViewHostMsg_AccessibilityNotification_Params::
-          NOTIFICATION_TYPE_VALUE_CHANGED:
-        OnAccessibilityObjectValueChange(param.acc_obj);
-        break;
-      case ViewHostMsg_AccessibilityNotification_Params::
-          NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED:
-        OnAccessibilityObjectTextChange(param.acc_obj);
-        break;
-      default:
-        DCHECK(0);
-        break;
-    }
-  }
-}
-
-bool BrowserAccessibilityManager::CanModifyTreeInPlace(
-    BrowserAccessibility* current_root,
+bool BrowserAccessibilityManagerWin::CanModifyTreeInPlace(
+    BrowserAccessibilityWin* current_root,
     const webkit_glue::WebAccessibility& new_root) {
   if (current_root->renderer_id() != new_root.id)
     return false;
@@ -153,8 +122,8 @@ bool BrowserAccessibilityManager::CanModifyTreeInPlace(
   return true;
 }
 
-void BrowserAccessibilityManager::ModifyTreeInPlace(
-      BrowserAccessibility* current_root,
+void BrowserAccessibilityManagerWin::ModifyTreeInPlace(
+      BrowserAccessibilityWin* current_root,
       const webkit_glue::WebAccessibility& new_root) {
   DCHECK_EQ(current_root->renderer_id(), new_root.id);
   DCHECK_EQ(current_root->GetChildCount(), new_root.children.size());
@@ -168,7 +137,8 @@ void BrowserAccessibilityManager::ModifyTreeInPlace(
       new_root);
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
+
+BrowserAccessibilityWin* BrowserAccessibilityManagerWin::UpdateTree(
     const webkit_glue::WebAccessibility& acc_obj) {
   base::hash_map<int, LONG>::iterator iter =
       renderer_id_to_child_id_map_.find(acc_obj.id);
@@ -176,7 +146,7 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
     return NULL;
 
   LONG child_id = iter->second;
-  BrowserAccessibility* old_browser_acc = GetFromChildID(child_id);
+  BrowserAccessibilityWin* old_browser_acc = GetFromChildID(child_id);
   if (!old_browser_acc)
     return NULL;
 
@@ -185,41 +155,45 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
     return old_browser_acc;
   }
 
-  BrowserAccessibility* new_browser_acc = CreateAccessibilityTree(
-      old_browser_acc->GetParent(),
-      child_id,
-      acc_obj,
-      old_browser_acc->index_in_parent());
+  BrowserAccessibilityWin* new_browser_acc = CreateAccessibilityTree(
+        old_browser_acc->GetParent(),
+        child_id,
+        acc_obj,
+        old_browser_acc->index_in_parent());
 
-  if (old_browser_acc->GetParent()) {
-    old_browser_acc->GetParent()->ReplaceChild(
-        old_browser_acc,
-        new_browser_acc);
-  } else {
-    DCHECK_EQ(old_browser_acc, root_);
-    root_ = new_browser_acc;
-  }
-  old_browser_acc->InactivateTree();
-  old_browser_acc->Release();
-  child_id_map_[child_id] = new_browser_acc;
+    if (old_browser_acc->GetParent()) {
+      old_browser_acc->GetParent()->ReplaceChild(
+          old_browser_acc,
+          new_browser_acc);
+    } else {
+      DCHECK_EQ(old_browser_acc, root_);
+      root_ = new_browser_acc;
+    }
+    old_browser_acc->InactivateTree();
+    old_browser_acc->Release();
+    child_id_map_[child_id] = new_browser_acc;
 
-  return new_browser_acc;
+    return new_browser_acc;
 }
 
-void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
+IAccessible* BrowserAccessibilityManagerWin::GetRootAccessible() {
+  return root_;
+}
+
+void BrowserAccessibilityManagerWin::OnAccessibilityObjectStateChange(
     const webkit_glue::WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibilityWin* new_browser_acc = UpdateTree(acc_obj);
   if (!new_browser_acc)
     return;
 
   LONG child_id = new_browser_acc->child_id();
   NotifyWinEvent(
-      EVENT_OBJECT_STATECHANGE, parent_hwnd_, OBJID_CLIENT, child_id);
+      EVENT_OBJECT_STATECHANGE, GetParentWindow(), OBJID_CLIENT, child_id);
 }
 
-void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
+void BrowserAccessibilityManagerWin::OnAccessibilityObjectChildrenChange(
     const webkit_glue::WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibilityWin* new_browser_acc = UpdateTree(acc_obj);
   if (!new_browser_acc)
     return;
 
@@ -230,21 +204,22 @@ void BrowserAccessibilityManager::OnAccessibilityObjectChildrenChange(
     child_id = CHILDID_SELF;
   }
 
-  NotifyWinEvent(EVENT_OBJECT_REORDER, parent_hwnd_, OBJID_CLIENT, child_id);
+  NotifyWinEvent(
+      EVENT_OBJECT_REORDER, GetParentWindow(), OBJID_CLIENT, child_id);
 }
 
-void BrowserAccessibilityManager::OnAccessibilityObjectFocusChange(
+void BrowserAccessibilityManagerWin::OnAccessibilityObjectFocusChange(
   const webkit_glue::WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibilityWin* new_browser_acc = UpdateTree(acc_obj);
   if (!new_browser_acc)
     return;
 
   focus_ = new_browser_acc;
   LONG child_id = new_browser_acc->child_id();
-  NotifyWinEvent(EVENT_OBJECT_FOCUS, parent_hwnd_, OBJID_CLIENT, child_id);
+  NotifyWinEvent(EVENT_OBJECT_FOCUS, GetParentWindow(), OBJID_CLIENT, child_id);
 }
 
-void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(
+void BrowserAccessibilityManagerWin::OnAccessibilityObjectLoadComplete(
   const webkit_glue::WebAccessibility& acc_obj) {
   root_->InactivateTree();
   root_->Release();
@@ -255,34 +230,34 @@ void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(
     focus_ = root_;
 
   LONG root_id = root_->child_id();
-  NotifyWinEvent(EVENT_OBJECT_FOCUS, parent_hwnd_, OBJID_CLIENT, root_id);
+  NotifyWinEvent(EVENT_OBJECT_FOCUS, GetParentWindow(), OBJID_CLIENT, root_id);
   NotifyWinEvent(
-    IA2_EVENT_DOCUMENT_LOAD_COMPLETE, parent_hwnd_, OBJID_CLIENT, root_id);
+    IA2_EVENT_DOCUMENT_LOAD_COMPLETE, GetParentWindow(), OBJID_CLIENT, root_id);
 }
 
-void BrowserAccessibilityManager::OnAccessibilityObjectValueChange(
+void BrowserAccessibilityManagerWin::OnAccessibilityObjectValueChange(
     const webkit_glue::WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibilityWin* new_browser_acc = UpdateTree(acc_obj);
   if (!new_browser_acc)
     return;
 
   LONG child_id = new_browser_acc->child_id();
   NotifyWinEvent(
-      EVENT_OBJECT_VALUECHANGE, parent_hwnd_, OBJID_CLIENT, child_id);
+      EVENT_OBJECT_VALUECHANGE, GetParentWindow(), OBJID_CLIENT, child_id);
 }
 
-void BrowserAccessibilityManager::OnAccessibilityObjectTextChange(
+void BrowserAccessibilityManagerWin::OnAccessibilityObjectTextChange(
     const webkit_glue::WebAccessibility& acc_obj) {
-  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  BrowserAccessibilityWin* new_browser_acc = UpdateTree(acc_obj);
   if (!new_browser_acc)
     return;
 
   LONG child_id = new_browser_acc->child_id();
   NotifyWinEvent(
-      IA2_EVENT_TEXT_CARET_MOVED, parent_hwnd_, OBJID_CLIENT, child_id);
+      IA2_EVENT_TEXT_CARET_MOVED, GetParentWindow(), OBJID_CLIENT, child_id);
 }
 
-LONG BrowserAccessibilityManager::GetNextChildID() {
+LONG BrowserAccessibilityManagerWin::GetNextChildID() {
   // Get the next child ID, and wrap around when we get near the end
   // of a 32-bit integer range. It's okay to wrap around; we just want
   // to avoid it as long as possible because clients may cache the ID of
@@ -294,12 +269,13 @@ LONG BrowserAccessibilityManager::GetNextChildID() {
   return next_child_id_;
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
-    BrowserAccessibility* parent,
+BrowserAccessibilityWin*
+BrowserAccessibilityManagerWin::CreateAccessibilityTree(
+    BrowserAccessibilityWin* parent,
     int child_id,
     const webkit_glue::WebAccessibility& src,
     int index_in_parent) {
-  BrowserAccessibility* instance = factory_->Create();
+  BrowserAccessibilityWin* instance = factory_->Create();
 
   instance->Initialize(this, parent, child_id, index_in_parent, src);
   child_id_map_[child_id] = instance;
@@ -307,7 +283,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
   if ((src.state >> WebAccessibility::STATE_FOCUSED) & 1)
     focus_ = instance;
   for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
-    BrowserAccessibility* child = CreateAccessibilityTree(
+    BrowserAccessibilityWin* child = CreateAccessibilityTree(
         instance, GetNextChildID(), src.children[i], i);
     instance->AddChild(child);
   }
