@@ -132,9 +132,10 @@ def _GetNaclSdkRoot(env, sdk_mode):
 def _SetEnvForX86Sdk(env, sdk_path):
   """Initialize environment according to target architecture."""
 
+  bin_path = os.path.join(sdk_path, 'bin')
   # NOTE: attempts to eliminate this PATH setting and use
   #       absolute path have been futile
-  env.PrependENVPath('PATH', sdk_path + '/bin')
+  env.PrependENVPath('PATH', bin_path)
 
   if os.path.exists(os.path.join(sdk_path, 'nacl64')):
     arch = 'nacl64'
@@ -163,14 +164,14 @@ def _SetEnvForX86Sdk(env, sdk_path):
               # where to find/put nacl generic extra sdk libraries
               NACL_SDK_LIB='%s/%s/%s' % (sdk_path, arch, libsuffix),
               # Replace the normal unix tools with the NaCl ones.
-              CC='%s-gcc' % arch,
-              CXX='%s-g++' % arch,
-              AR='%s-ar' % arch,
-              AS='%s-as' % arch,
-              GDB='nacl-gdb',
+              CC=os.path.join(bin_path, '%s-gcc' % arch),
+              CXX=os.path.join(bin_path, '%s-g++' % arch),
+              AR=os.path.join(bin_path, '%s-ar' % arch),
+              AS=os.path.join(bin_path, '%s-as' % arch),
+              GDB=os.path.join(bin_path, 'nacl-gdb'),
               # NOTE: use g++ for linking so we can handle C AND C++.
-              LINK='%s-g++' % arch,
-              RANLIB='%s-ranlib' % arch,
+              LINK=os.path.join(bin_path, '%s-g++' % arch),
+              RANLIB=os.path.join(bin_path, '%s-ranlib' % arch),
               CFLAGS = ['-std=gnu99'],
               CCFLAGS=['-O3',
                        '-Werror',
