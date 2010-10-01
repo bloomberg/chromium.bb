@@ -273,6 +273,20 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     }
     MessageLoopForUI::current()->Quit();
   }
+
+#if defined(OS_WIN)
+  virtual void CleanUpOnMainThread() {
+    // A hack to avoid hitting issue http://crbug.com/18372 and
+    // http://crbug.com/18373. Note that without this, the tests will time out
+    // anyway; but they'll show up as failing on the main waterfall.  Weird that
+    // it only happens on Windows.
+    // TODO(suzhe): Remove this hack as soon as these bugs are fixed.
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+                                            new MessageLoop::QuitTask(),
+                                            2000);
+    ui_test_utils::RunMessageLoop();
+  }
+#endif
 };
 
 // Test if ctrl-* accelerators are workable in omnibox.
