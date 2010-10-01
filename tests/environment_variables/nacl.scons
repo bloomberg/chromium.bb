@@ -1,0 +1,18 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+env.ComponentProgram('env_var_test.nexe', 'env_var_test.c')
+
+# Note that we do not have a golden file for stdout because sel_ldr
+# passes through a few environment variables by default, but we do not
+# know what their values will be.
+node = env.CommandSelLdrTestNacl(
+    'env_var_test.out',
+    command=[env.File('env_var_test.nexe')],
+    osenv='NACL_SRPC_DEBUG=example_contents_of_env_var')
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_env_var_test')
