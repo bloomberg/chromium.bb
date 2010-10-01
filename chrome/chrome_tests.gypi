@@ -1972,7 +1972,6 @@
         'browser/service/service_process_control_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
         'browser/sessions/tab_restore_service_browsertest.cc',
-        'browser/speech/enable_speech_input_switch_browsertest.cc',
         'browser/speech/speech_input_browsertest.cc',
         'browser/speech/speech_input_bubble_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',

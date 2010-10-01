@@ -149,7 +149,6 @@ extern const char kEnablePreparsedJsCaching[];
 extern const char kEnablePrintPreview[];
 extern const char kEnableResourceContentSettings[];
 extern const char kEnableSearchProviderApiV2[];
-extern const char kEnableSpeechInput[];
 extern const char kEnableStatsTable[];
 extern const char kEnableSync[];
 extern const char kEnableSyncApps[];

@@ -487,9 +487,6 @@ const char kEnablePrintPreview[]            = "enable-print-preview";
 // parameter to indicate if the provider should be the default.
 const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
 
-// Enables speech input.
-const char kEnableSpeechInput[]             = "enable-speech-input";
-
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
