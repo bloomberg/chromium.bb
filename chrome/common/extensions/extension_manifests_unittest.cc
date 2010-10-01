@@ -153,6 +153,9 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
   LoadAndExpectError("web_urls_invalid_3.json",
                      ExtensionErrorUtils::FormatErrorMessage(
                          errors::kInvalidWebURL, "0"));
+  LoadAndExpectError("web_urls_invalid_4.json",
+                     ExtensionErrorUtils::FormatErrorMessage(
+                         errors::kInvalidWebURL, "0"));
 
   scoped_ptr<Extension> extension(
       LoadAndExpectSuccess("web_urls_default.json"));

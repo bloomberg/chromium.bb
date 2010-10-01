@@ -764,6 +764,13 @@ bool Extension::LoadExtent(const DictionaryValue* manifest,
       return false;
     }
 
+    // Do not allow authors to claim "<all_urls>". That would make no sense.
+    if (pattern.match_all_urls()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(value_error,
+                                                       base::UintToString(i));
+      return false;
+    }
+
     // We do not allow authors to put wildcards in their paths. Instead, we
     // imply one at the end.
     if (pattern.path().find('*') != std::string::npos) {
