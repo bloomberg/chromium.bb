@@ -8,8 +8,6 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -121,12 +119,9 @@ void SetCurrentThemeFromThemeSpecifics(
       // just set the current theme to it.
       profile->SetTheme(extension);
       // Pretend the theme was just installed.
-      Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
-      if (browser) {
-        ExtensionInstallUI::ShowThemeInfoBar(
-            browser, previous_theme_id, previous_use_system_theme,
-            extension, profile);
-      }
+      ExtensionInstallUI::ShowThemeInfoBar(
+          previous_theme_id, previous_use_system_theme,
+          extension, profile);
     } else {
       // No extension with this id exists -- we must install it; we do
       // so by adding it as a pending extension and then triggering an

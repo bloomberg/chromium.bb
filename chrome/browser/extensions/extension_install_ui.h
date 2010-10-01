@@ -15,7 +15,6 @@
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class Browser;
 class Extension;
 class MessageLoop;
 class Profile;
@@ -85,8 +84,8 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // TODO(akalin): Find a better home for this (and
   // GetNewThemeInstalledInfoBarDelegate()).
   static void ShowThemeInfoBar(
-      Browser* browser, const std::string& previous_theme_id,
-      bool previous_use_system_theme, Extension* new_theme, Profile* profile);
+      const std::string& previous_theme_id, bool previous_use_system_theme,
+      Extension* new_theme, Profile* profile);
 
  private:
   // Starts the process of showing a confirmation UI, which is split into two.
@@ -94,11 +93,11 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
   void ShowConfirmation(PromptType prompt_type);
 
-  // Shows an installation success message as an infobar instead of a popup
-  // bubble. We use this in cases where there is no sensible thing to point the
-  // popup bubble at.
-  void ShowGenericExtensionInstalledInfoBar(Browser* browser,
-                                            Extension* new_extension);
+#if defined(OS_MACOSX)
+  // When an extension is installed on Mac with neither browser action nor
+  // page action icons, show an infobar instead of a popup bubble.
+  void ShowGenericExtensionInstalledInfoBar(Extension* new_extension);
+#endif
 
   // Returns the delegate to control the browser's info bar. This is
   // within its own function due to its platform-specific nature.
