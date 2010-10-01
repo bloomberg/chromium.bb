@@ -455,7 +455,7 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
       value == LAUNCH_FULLSCREEN)) {
     return static_cast<LaunchType>(value);
   }
-  return LAUNCH_PINNED;
+  return LAUNCH_REGULAR;
 }
 
 void ExtensionPrefs::SetLaunchType(const std::string& extension_id,
