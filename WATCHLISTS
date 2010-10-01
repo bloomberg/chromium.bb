@@ -39,6 +39,9 @@
     'chromeos_login': {
       'filepath': 'chrome/browser/chromeos/login/.*',
     },
+    'download': {
+      'filepath': 'chrome/browser/download/.*',
+    },
     'history': {
       'filepath': 'chrome/browser/history/.*',
     },
@@ -167,6 +170,7 @@
     'browser_main': ['brettw-cc@chromium.org'],
     'browser_resources': ['arv@chromium.org'],
     'chromeos_login': ['nkostylev+cc@chromium.org'],
+    'download': ['phajdan.jr@chromium.org'],
     'history': ['brettw-cc@chromium.org'],
     'renderer': ['darin-cc@chromium.org',
                  'brettw-cc@chromium.org'],
