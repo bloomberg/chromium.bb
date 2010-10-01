@@ -86,10 +86,12 @@ class JingleChromotingServer
                                bool received_initiate);
   virtual void OnSessionDestroy(cricket::Session* session);
 
-  virtual bool ParseContent(const buzz::XmlElement* elem,
+  virtual bool ParseContent(cricket::SignalingProtocol protocol,
+                            const buzz::XmlElement* elem,
                             const cricket::ContentDescription** content,
                             cricket::ParseError* error);
-  virtual bool WriteContent(const cricket::ContentDescription* content,
+  virtual bool WriteContent(cricket::SignalingProtocol protocol,
+                            const cricket::ContentDescription* content,
                             buzz::XmlElement** elem,
                             cricket::WriteError* error);
 

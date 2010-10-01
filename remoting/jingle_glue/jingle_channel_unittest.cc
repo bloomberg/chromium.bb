@@ -7,6 +7,7 @@
 #include "media/base/data_buffer.h"
 #include "remoting/jingle_glue/jingle_channel.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/jingle_glue/mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
@@ -28,21 +29,6 @@ class MockJingleChannelCallback : public JingleChannel::Callback {
   MOCK_METHOD2(OnStateChange, void(JingleChannel*, JingleChannel::State));
   MOCK_METHOD2(OnPacketReceived, void(JingleChannel*,
                                       scoped_refptr<media::DataBuffer>));
-};
-
-class MockStream : public talk_base::StreamInterface {
- public:
-  virtual ~MockStream() {}
-  MOCK_CONST_METHOD0(GetState, talk_base::StreamState());
-
-  MOCK_METHOD4(Read, talk_base::StreamResult(void*, size_t, size_t*, int*));
-  MOCK_METHOD4(Write, talk_base::StreamResult(const void*, size_t,
-                                              size_t*, int*));
-  MOCK_CONST_METHOD1(GetAvailable, bool(size_t*));
-  MOCK_METHOD0(Close, void());
-
-  MOCK_METHOD3(PostEvent, void(talk_base::Thread*, int, int));
-  MOCK_METHOD2(PostEvent, void(int, int));
 };
 
 class JingleChannelTest : public testing::Test {

@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "net/base/net_errors.h"
+#include "remoting/base/constants.h"
 #include "remoting/jingle_glue/channel_socket_adapter.h"
 #include "remoting/jingle_glue/stream_socket_adapter.h"
 #include "remoting/protocol/jingle_chromoting_server.h"
@@ -173,16 +174,21 @@ void JingleChromotingConnection::OnInitiate(bool incoming) {
 }
 
 void JingleChromotingConnection::OnAccept() {
+  const cricket::ContentInfo* content =
+      session_->remote_description()->FirstContentByType(
+          kChromotingXmlNamespace);
+  ASSERT(content != NULL);
+
   // Create video RTP channels.
   video_rtp_channel_.reset(new TransportChannelSocketAdapter(
-      session_->CreateChannel(kVideoRtpChannelName)));
+      session_->CreateChannel(content->name, kVideoRtpChannelName)));
   video_rtcp_channel_.reset(new TransportChannelSocketAdapter(
-      session_->CreateChannel(kVideoRtcpChannelName)));
+      session_->CreateChannel(content->name, kVideoRtcpChannelName)));
 
   // Create events channel.
   events_channel_ =
       new PseudoTcpChannel(talk_base::Thread::Current(), session_);
-  events_channel_->Connect(kEventsChannelName);
+  events_channel_->Connect(content->name, kEventsChannelName);
   events_channel_adapter_.reset(new StreamSocketAdapter(
       events_channel_->GetStream()));
 
@@ -190,7 +196,7 @@ void JingleChromotingConnection::OnAccept() {
   // TODO(sergeyu): Remove video channel when we are ready to switch to RTP.
   video_channel_ =
       new PseudoTcpChannel(talk_base::Thread::Current(), session_);
-  video_channel_->Connect(kVideoChannelName);
+  video_channel_->Connect(content->name, kVideoChannelName);
   video_channel_adapter_.reset(new StreamSocketAdapter(
       video_channel_->GetStream()));
 

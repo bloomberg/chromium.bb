@@ -35,7 +35,7 @@ class LocalTunnelSessionClient : public cricket::TunnelSessionClient {
   virtual cricket::TunnelSession* MakeTunnelSession(
       cricket::Session* session, talk_base::Thread* stream_thread,
       cricket::TunnelSessionRole role) {
-    session->transport()->set_allow_local_ips(true);
+    session->set_allow_local_ips(true);
     return new cricket::TunnelSession(this, session, stream_thread);
   }
 };

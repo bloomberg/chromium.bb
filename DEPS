@@ -9,7 +9,7 @@ vars = {
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "40423",
   "nacl_revision": "3365",
-  "libjingle_revision": "29",
+  "libjingle_revision": "33",
   "libvpx_revision": "60399",
   "ffmpeg_revision": "60910",
 }
@@ -172,7 +172,7 @@ deps = {
     (Var("googlecode_url") % "ppapi") + "/trunk@267",
 
   "src/third_party/libjingle/source":
-    (Var("googlecode_url") % "libjingle") + "/branches/nextsnap@" +
+    (Var("googlecode_url") % "libjingle") + "/trunk@" +
     Var("libjingle_revision"),
 
   "src/third_party/speex":

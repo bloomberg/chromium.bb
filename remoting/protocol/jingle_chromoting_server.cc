@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
+#include "third_party/libjingle/source/talk/p2p/base/constants.h"
 #include "third_party/libjingle/source/talk/p2p/base/transport.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -125,7 +126,7 @@ void JingleChromotingServer::OnSessionCreate(
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Allow local connections if neccessary.
-  session->transport()->set_allow_local_ips(allow_local_ips_);
+  session->set_allow_local_ips(allow_local_ips_);
 
   // If this is an outcoming session, the the connection object is already
   // created.
@@ -161,10 +162,11 @@ void JingleChromotingServer::AcceptConnection(
   if (accept)
     session->Accept(CreateSessionDescription());
   else
-    session->Reject();
+    session->Reject(cricket::STR_TERMINATE_DECLINE);
 }
 
 bool JingleChromotingServer::ParseContent(
+    cricket::SignalingProtocol protocol,
     const buzz::XmlElement* element,
     const cricket::ContentDescription** content,
     cricket::ParseError* error) {
@@ -190,6 +192,7 @@ bool JingleChromotingServer::ParseContent(
 // TODO(sergeyu): Add more information to the content description. E.g.
 // protocol version, etc.
 bool JingleChromotingServer::WriteContent(
+    cricket::SignalingProtocol protocol,
     const cricket::ContentDescription* content,
     buzz::XmlElement** elem,
     cricket::WriteError* error) {
