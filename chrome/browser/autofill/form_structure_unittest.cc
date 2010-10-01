@@ -15,7 +15,7 @@
 using webkit_glue::FormData;
 using WebKit::WebInputElement;
 
-namespace {
+namespace webkit_glue {
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
   os << UTF16ToUTF8(form.name)
@@ -36,6 +36,10 @@ std::ostream& operator<<(std::ostream& os, const FormData& form) {
 
   return os;
 }
+
+}  // namespace webkit_glue
+
+namespace {
 
 TEST(FormStructureTest, FieldCount) {
   FormData form;
