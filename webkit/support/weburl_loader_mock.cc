@@ -30,7 +30,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
 
   client_->didReceiveResponse(this, response);
   client_->didReceiveData(this, data.data(), data.size());
-  client_->didFinishLoading(this);
+  client_->didFinishLoading(this, 0);
 }
 
 void WebURLLoaderMock::loadSynchronously(const WebKit::WebURLRequest& request,
