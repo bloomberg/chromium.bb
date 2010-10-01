@@ -209,10 +209,13 @@ class PageLoadTest : public UITest {
             scoped_refptr<WindowProxy> window(browser->GetWindow());
             if (window.get()) {
               if (browser->BringToFront()) {
+                // Sleep for 2 seconds between commands.
+                // This used to be settable but the flag went away.
+                int sleep_time_ms = 2000;
                 window->SimulateOSKeyPress(app::VKEY_NEXT, 0);
-                PlatformThread::Sleep(sleep_timeout_ms());
+                PlatformThread::Sleep(sleep_time_ms);
                 window->SimulateOSKeyPress(app::VKEY_NEXT, 0);
-                PlatformThread::Sleep(sleep_timeout_ms());
+                PlatformThread::Sleep(sleep_time_ms);
               }
             }
           }
