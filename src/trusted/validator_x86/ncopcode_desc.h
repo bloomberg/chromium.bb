@@ -53,7 +53,7 @@ void NaClOpFlagsPrint(struct Gio* out, NaClOpFlags flags);
 /* Defines integer to represent sets of possible instruction disallow
  * flags.
  */
-typedef uint8_t NaClDisallowsFlags;
+typedef uint16_t NaClDisallowsFlags;
 
 /* Converts a NaClDisallowsFlag to the corresponding bit
  * in NaClDisallowsFlags.

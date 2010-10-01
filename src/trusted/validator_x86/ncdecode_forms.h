@@ -614,16 +614,16 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *       size.
  *   vw - A word only when the effective operand size matches.
  *   vd - A doubleword only when the effective operand size matches.
- *   vo - A quadword only when the effective operand size matches.
+ *   vq - A quadword only when the effective operand size matches.
  *   w - A word, irrespective of the effective operand size.
  *   z - A word if the effective operand size is 16 bits, or a doubleword
  *       if the effective operand size is 32 or 64 bits.
  *   zw - A word only when the effective operand size matches.
  *   zd - A doubleword only when the effective operand size is 32 or 64 bits.
  *
- * Note: vw, vd, vo, zw, and zd are not in the manual cited above. However,
- * they have been added so that sub-variants of an instruction (not specified
- * in the manual) can be specified.
+ * Note: vw, vd, vq, zw, and zd are not in the manual cited above. However,
+ * they have been added so that sub-variants of an v/z instruction (not
+ * specified in the manual) can be specified.
  *
  * In addition, this code adds the following special print forms:
  *    One - The literal constant 1.

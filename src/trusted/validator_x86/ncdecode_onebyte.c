@@ -456,31 +456,17 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefOp(E_Operand, NACL_OPFLAG(OpUse));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
-  NaClDefInst(0x6c, NACLi_ILLEGAL, NACL_IFLAG(OperandSize_b), InstInsb);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("6c: Insb {$Yb}, {%dx}", NACLi_ILLEGAL, st, Move);
 
   NaClDefInstChoices(0x6D, 2);
-  NaClDefInst(0x6D, NACLi_ILLEGAL, NACL_IFLAG(OperandSize_w), InstInsw);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("6d: Insw {$Yzw}, {%dx}", NACLi_ILLEGAL, st, Move);
+  NaClDefine("6d: Insd {$Yzd}, {%dx}", NACLi_ILLEGAL, st, Move);
 
-  NaClDefInst(0x6D, NACLi_ILLEGAL, NACL_IFLAG(OperandSize_v), InstInsd);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0x6E, NACLi_ILLEGAL, NACL_IFLAG(OperandSize_b), InstOutsb);
-  NaClDefOp(RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("6e: Outsb {%dx}, {$Xb}", NACLi_ILLEGAL, st, Uses);
 
   NaClDefInstChoices(0x6F, 2);
-  NaClDefInst(0x6F, NACLi_ILLEGAL, NACL_IFLAG(OperandSize_w), InstOutsw);
-  NaClDefOp(RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0x6F, NACLi_ILLEGAL, NACL_IFLAG(OperandSize_v), InstOutsd);
-  NaClDefOp(RegDX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("6f: Outsw {%dx}, {$Xzw}", NACLi_ILLEGAL, st, Uses);
+  NaClDefine("6f: Outsd {%dx}, {$Xzd}", NACLi_ILLEGAL, st, Uses);
 
   NaClDefJump8Opcode(0x70, InstJo);
   NaClDefJump8Opcode(0x71, InstJno);
@@ -790,57 +776,19 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefOp(O_Operand, NACL_OPFLAG(OpSet));
   NaClDefOp(RegRAX, NACL_OPFLAG(OpUse));
 
-  NaClDefInst(0xa4, NACLi_386R,
-              NACL_IFLAG(OperandSize_b),
-              InstMovsb);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("a4: Movsb {$Yb}, {$Xb}", NACLi_386R, st, Move);
 
   NaClDefInstChoices_32_64(0xa5, 2, 3);
-  NaClDefInst(0xa5, NACLi_386R,
-              NACL_IFLAG(OperandSize_w),
-              InstMovsw);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("a5: Movsw {$Yvw}, {$Xvw}", NACLi_386R, st, Move);
+  NaClDefine("a5: Movsd {$Yvd}, {$Xvd}", NACLi_386R, st, Move);
+  NaClDef_64("a5: Movsq {$Yvq}, {$Xvq}", NACLi_386R, st, Move);
 
-  NaClDefInst(0xa5, NACLi_386R,
-              NACL_IFLAG(OperandSize_v),
-              InstMovsd);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xa5, NACLi_386R,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(OpcodeUsesRexW),
-              InstMovsq);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xa6, NACLi_386RE,
-              NACL_IFLAG(OperandSize_b),
-              InstCmpsb);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("a6: Cmpsb {$Xb}, {$Yb}", NACLi_386RE, st, Compare);
 
   NaClDefInstChoices_32_64(0xa7, 2, 3);
-  NaClDefInst(0xa7, NACLi_386RE,
-              NACL_IFLAG(OperandSize_w),
-              InstCmpsw);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xa7, NACLi_386RE,
-              NACL_IFLAG(OperandSize_v),
-              InstCmpsd);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xa7, NACLi_386RE,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(OpcodeUsesRexW),
-              InstCmpsq);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("a7: Cmpsw {$Xvw}, {$Yvw}", NACLi_386RE, st, Compare);
+  NaClDefine("a7: Cmpsd {$Xvd}, {$Yvd}", NACLi_386RE, st, Compare);
+  NaClDef_64("a7: Cmpsq {$Xvq}, {$Yvq}", NACLi_386RE, st, Compare);
 
   NaClDefInst(0xA8, NACLi_386,
               NACL_IFLAG(OperandSize_b) | NACL_IFLAG(OpcodeHasImmed),
@@ -868,85 +816,28 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefOp(RegRAX, NACL_OPFLAG(OpUse));
   NaClDefOp(I_Operand, NACL_OPFLAG(OpUse));
 
-  NaClDefInst(0xaa, NACLi_386R,
-              NACL_IFLAG(OperandSize_b),
-              InstStosb);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegAL, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("aa: Stosb {$Yb}, {%al}", NACLi_386R, st, Move);
 
   NaClDefInstChoices_32_64(0xab, 2, 3);
-  NaClDefInst(0xab, NACLi_386R,
-              NACL_IFLAG(OperandSize_w),
-              InstStosw);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xab, NACLi_386R,
-              NACL_IFLAG(OperandSize_v),
-              InstStosd);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegEAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xab, NACLi_386R,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(OpcodeUsesRexW),
-              InstStosq);
-  NaClDefOp(RegES_EDI, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegRAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("ab: Stosw {$Yvw}, {$rAXvw}", NACLi_386R, st, Move);
+  NaClDefine("ab: Stosd {$Yvd}, {$rAXvd}", NACLi_386R, st, Move);
+  NaClDef_64("ab: Stosq {$Yvq}, {$rAXvq}", NACLi_386R, st, Move);
 
   /* ISE reviewers suggested omitting lods */
-  NaClDefInst(0xac, NACLi_ILLEGAL,
-              NACL_IFLAG(OperandSize_b),
-              InstLodsb);
-  NaClDefOp(RegAL, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("ac: Lodsb {%al}, {$Xb}", NACLi_ILLEGAL, st, Move);
 
   NaClDefInstChoices_32_64(0xad, 2, 3);
-  NaClDefInst(0xad, NACLi_ILLEGAL,
-              NACL_IFLAG(OperandSize_w),
-              InstLodsw);
-  NaClDefOp(RegAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xad, NACLi_ILLEGAL,
-              NACL_IFLAG(OperandSize_v),
-              InstLodsd);
-  NaClDefOp(RegEAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xad, NACLi_ILLEGAL,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(OpcodeUsesRexW),
-              InstLodsq);
-  NaClDefOp(RegRAX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("ad: Lodsw {$rAXvw}, {$Xvw}", NACLi_ILLEGAL, st, Move);
+  NaClDefine("ad: Lodsd {$rAXvd}, {$Xvd}", NACLi_ILLEGAL, st, Move);
+  NaClDef_64("ad: Lodsq {$rAXvq}, {$Xvq}", NACLi_ILLEGAL, st, Move);
 
   /* ISE reviewers suggested omitting scas */
-  NaClDefInst(0xae, NACLi_386RE,
-              NACL_IFLAG(OperandSize_b),
-              InstScasb);
-  NaClDefOp(RegAL, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("ae: Scasb {%al}, {$Yb}", NACLi_386RE, st, Compare);
 
   NaClDefInstChoices_32_64(0xaf, 2, 3);
-  NaClDefInst(0xaf, NACLi_386RE,
-              NACL_IFLAG(OperandSize_w),
-              InstScasw);
-  NaClDefOp(RegAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xaf, NACLi_386RE,
-              NACL_IFLAG(OperandSize_v),
-              InstScasd);
-  NaClDefOp(RegEAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-
-  NaClDefInst(0xaf, NACLi_386RE,
-              NACL_IFLAG(Opcode64Only) | NACL_IFLAG(OperandSize_o) |
-              NACL_IFLAG(OpcodeUsesRexW),
-              InstScasq);
-  NaClDefOp(RegRAX, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegDS_EDI, NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpImplicit));
+  NaClDefine("af: Scasw {$rAXvw}, {$Yvw}", NACLi_386RE, st, Compare);
+  NaClDefine("af: Scasd {$rAXvd}, {$Yvd}", NACLi_386RE, st, Compare);
+  NaClDef_64("af: Scasq {$rAXvq}, {$Yvq}", NACLi_386RE, st, Compare);
 
   for (i = 0; i < 8; ++i) {
     NaClDefInstChoices_32_64(0xB0 + i, 1, 2);

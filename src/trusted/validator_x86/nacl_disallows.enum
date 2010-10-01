@@ -25,3 +25,9 @@ NaClCantUsePrefix67
 
 # Flag defining that instruction has multiple REX prefixes.
 NaClMultipleRexPrefix
+
+# Flag defining that instruction has REP prefix but isn't allowed.
+NaClRepDisallowed
+
+# Flag defining that instruction has REPNE prefix but isn't allowed.
+NaClRepneDisallowed

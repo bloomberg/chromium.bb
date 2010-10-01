@@ -88,6 +88,12 @@ OpcodeLegacy
 # Defines that the opcode can be prefixed with a lock prefix.
 OpcodeLockable
 
+# Defines that the opcode can be prefixed with a REP prefix.
+OpcodeAllowsRep
+
+# Defines that the opcode can be prefixed with a REPNE prefix.
+OpcodeAllowsRepne
+
 # Opcode only applies if running in 32-bit mode.
 Opcode32Only
 

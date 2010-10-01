@@ -21,6 +21,7 @@
 #include "native_client/src/trusted/validator_x86/defsize64.h"
 #include "native_client/src/trusted/validator_x86/lock_insts.h"
 #include "native_client/src/trusted/validator_x86/nacl_illegal.h"
+#include "native_client/src/trusted/validator_x86/nc_rep_prefix.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 #include "native_client/src/trusted/validator_x86/zero_extends.h"
@@ -206,6 +207,7 @@ static void NaClAddMiscellaneousFlags() {
   NaClLockableFlagIfApplicable();
   NaClAddSizeDefaultIs64();
   NaClAddNaClIllegalIfApplicable();
+  NaClAddRepPrefixFlagsIfApplicable();
 }
 
 /* Add set/use/dest flags to all operands of the current instruction,
@@ -542,6 +544,21 @@ void DEF_OPERAND(rAXv)() {
                 NACL_IFLAG(OperandSize_o));
 }
 
+void DEF_OPERAND(rAXvd)() {
+  NaClDefOp(RegEAX, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_v));
+}
+
+void DEF_OPERAND(rAXvq)() {
+  NaClDefOp(RegRAX, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_o));
+}
+
+void DEF_OPERAND(rAXvw)() {
+  NaClDefOp(RegAX, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_w));
+}
+
 void DEF_OPERAND(rBXv)() {
   NaClDefOp(RegREBX, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
@@ -669,6 +686,66 @@ void DEF_OPERAND(Wsd)() {
 
 void DEF_OPERAND(Wss)() {
   NaClDefOp(Xmm_E_Operand, NACL_EMPTY_OPFLAGS);
+}
+
+void DEF_OPERAND(Xb_)() {
+  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_b));
+}
+
+void DEF_OPERAND(Xvw)() {
+  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_w));
+}
+
+void DEF_OPERAND(Xvd)() {
+  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_v));
+}
+
+void DEF_OPERAND(Xvq)() {
+  NaClDefOp(RegDS_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_o));
+}
+
+void DEF_OPERAND(Xzd)() {
+  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
+}
+
+void DEF_OPERAND(Xzw)() {
+  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_w));
+}
+
+void DEF_OPERAND(Yb_)() {
+  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_b));
+}
+
+void DEF_OPERAND(Yvd)() {
+  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_v));
+}
+
+void DEF_OPERAND(Yvq)() {
+  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_o));
+}
+
+void DEF_OPERAND(Yvw)() {
+  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_w));
+}
+
+void DEF_OPERAND(Yzw)() {
+  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_w));
+}
+
+void DEF_OPERAND(Yzd)() {
+  NaClDefOp(RegES_EDI, NACL_EMPTY_OPFLAGS);
+  NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
 void DEF_NULL_OPRDS_INST(NaClInstType itype, uint8_t opbyte,
@@ -1242,6 +1319,9 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("Jzd",   DEF_OPERAND(Jzd),  defop_st);
     NaClSymbolTablePutDefOp("Jzw",   DEF_OPERAND(Jzw),  defop_st);
     NaClSymbolTablePutDefOp("rAXv",  DEF_OPERAND(rAXv), defop_st);
+    NaClSymbolTablePutDefOp("rAXvd", DEF_OPERAND(rAXvd), defop_st);
+    NaClSymbolTablePutDefOp("rAXvq", DEF_OPERAND(rAXvq), defop_st);
+    NaClSymbolTablePutDefOp("rAXvw", DEF_OPERAND(rAXvw), defop_st);
     NaClSymbolTablePutDefOp("rBXv",  DEF_OPERAND(rBXv), defop_st);
     NaClSymbolTablePutDefOp("rCXv",  DEF_OPERAND(rCXv), defop_st);
     NaClSymbolTablePutDefOp("rDXv",  DEF_OPERAND(rDXv), defop_st);
@@ -1249,7 +1329,19 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("rBPv",  DEF_OPERAND(rBPv), defop_st);
     NaClSymbolTablePutDefOp("rSIv",  DEF_OPERAND(rSIv), defop_st);
     NaClSymbolTablePutDefOp("rDIv",  DEF_OPERAND(rDIv), defop_st);
-    NaClSymbolTablePutDefOp("r8v",   DEF_OPERAND(r8v), defop_st);
+    NaClSymbolTablePutDefOp("r8v",   DEF_OPERAND(r8v),  defop_st);
+    NaClSymbolTablePutDefOp("Xb",    DEF_OPERAND(Xb_),  defop_st);
+    NaClSymbolTablePutDefOp("Xvd",   DEF_OPERAND(Xvd),  defop_st);
+    NaClSymbolTablePutDefOp("Xvq",   DEF_OPERAND(Xvq),  defop_st);
+    NaClSymbolTablePutDefOp("Xvw",   DEF_OPERAND(Xvw),  defop_st);
+    NaClSymbolTablePutDefOp("Xzw",   DEF_OPERAND(Xzw),  defop_st);
+    NaClSymbolTablePutDefOp("Xzd",   DEF_OPERAND(Xzd),  defop_st);
+    NaClSymbolTablePutDefOp("Yb",    DEF_OPERAND(Yb_),  defop_st);
+    NaClSymbolTablePutDefOp("Yvd",   DEF_OPERAND(Yvd),  defop_st);
+    NaClSymbolTablePutDefOp("Yvq",   DEF_OPERAND(Yvq),  defop_st);
+    NaClSymbolTablePutDefOp("Yvw",   DEF_OPERAND(Yvw),  defop_st);
+    NaClSymbolTablePutDefOp("Yzd",   DEF_OPERAND(Yzd),  defop_st);
+    NaClSymbolTablePutDefOp("Yzw",   DEF_OPERAND(Yzw),  defop_st);
   }
   value = NaClSymbolTableGet(form, defop_st);
   if (NULL == value || (value->kind != nacl_defop)) {

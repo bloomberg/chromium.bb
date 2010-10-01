@@ -1353,6 +1353,23 @@ void NaClDefPrefixInstChoices_32_64(const NaClInstPrefix prefix,
                                     count_32, count_64);
 }
 
+/* Adds opcode flags corresponding to REP/REPNE flags if defined by
+ * the prefix.
+ */
+static void NaClAddRepPrefixFlagsIfApplicable() {
+  switch (current_opcode_prefix) {
+    case PrefixF20F:
+    case PrefixF20F38:
+      current_inst->flags |= NACL_IFLAG(OpcodeAllowsRepne);
+      break;
+    case PrefixF30F:
+      current_inst->flags |= NACL_IFLAG(OpcodeAllowsRep);
+      break;
+    default:
+      break;
+  }
+}
+
 /* Define the next opcode (instruction), initializing with
  * no operands.
  */
@@ -1417,6 +1434,8 @@ static void NaClDefInstInternal(
   }
   /* Now reset number of operands to zero. */
   current_inst->num_operands = 0;
+
+  NaClAddRepPrefixFlagsIfApplicable();
 
   NaClApplySanityChecksToInst();
 
