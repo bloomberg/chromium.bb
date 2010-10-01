@@ -213,7 +213,7 @@ bool Plugin::SendAsyncMessage(void* obj, SrpcParams* params,
   message.ndescv = fds;
   message.ndescv_length = fds_count;
   message.flags = 0;
-  nacl::DescWrapper* socket = plugin->service_runtime_->async_send_desc;
+  nacl::DescWrapper* socket = plugin->service_runtime_->async_send_desc();
   ssize_t sent = socket->SendMsg(&message, 0);
   free(data);
   if (sent < 0) {

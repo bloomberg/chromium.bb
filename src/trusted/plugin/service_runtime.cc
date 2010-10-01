@@ -35,16 +35,15 @@ using std::vector;
 
 namespace plugin {
 
-ServiceRuntime::ServiceRuntime(
-    BrowserInterface* browser_interface,
-    Plugin* plugin) :
-    async_receive_desc(NULL),
-    async_send_desc(NULL),
-    browser_interface_(browser_interface),
-    default_socket_address_(NULL),
-    plugin_(plugin),
-    runtime_channel_(NULL),
-    subprocess_(NULL) {
+ServiceRuntime::ServiceRuntime(BrowserInterface* browser_interface,
+                               Plugin* plugin)
+    : browser_interface_(browser_interface),
+      default_socket_address_(NULL),
+      plugin_(plugin),
+      runtime_channel_(NULL),
+      subprocess_(NULL),
+      async_receive_desc_(NULL),
+      async_send_desc_(NULL) {
 }
 
 // shm is consumed (delete invoked).
@@ -178,7 +177,8 @@ bool ServiceRuntime::Start(const char* nacl_file) {
                                      "Failed to create async receive handle");
     return false;
   }
-  async_receive_desc = plugin()->wrapper_factory()->MakeImcSock(receive_handle);
+  async_receive_desc_ =
+      plugin()->wrapper_factory()->MakeImcSock(receive_handle);
 
   nacl::Handle send_handle = subprocess_->ExportImcFD(7);
   if (send_handle == nacl::kInvalidHandle) {
@@ -186,7 +186,7 @@ bool ServiceRuntime::Start(const char* nacl_file) {
                                      "Failed to create async send handle");
     return false;
   }
-  async_send_desc = plugin()->wrapper_factory()->MakeImcSock(send_handle);
+  async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(send_handle);
 
   nacl::Handle bootstrap_socket = subprocess_->ExportImcFD(5);
   if (bootstrap_socket == nacl::kInvalidHandle) {
@@ -231,8 +231,8 @@ bool ServiceRuntime::StartUnderChromium(const char* url,
   }
 
   nacl::Handle bootstrap_socket = sockets[0];
-  async_receive_desc = plugin()->wrapper_factory()->MakeImcSock(sockets[1]);
-  async_send_desc = plugin()->wrapper_factory()->MakeImcSock(sockets[2]);
+  async_receive_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[1]);
+  async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[2]);
 
   if (!InitCommunication(bootstrap_socket, shm)) {
     return false;
@@ -272,8 +272,8 @@ ServiceRuntime::~ServiceRuntime() {
   delete runtime_channel_;
 
   // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
-  delete async_receive_desc;
-  delete async_send_desc;
+  delete async_receive_desc_;
+  delete async_send_desc_;
 }
 
 ScriptableHandle* ServiceRuntime::default_socket_address() const {

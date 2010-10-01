@@ -560,7 +560,7 @@ bool PluginNpapi::SetAsyncCallback(void* obj, SrpcParams* params) {
   args->plugin = InstanceIdentifierToNPP(plugin->instance_id());
   args->callback = reinterpret_cast<NPObject*>(params->ins()[0]->u.oval);
   NPN_RetainObject(args->callback);
-  nacl::DescWrapper* socket = plugin->service_runtime_->async_receive_desc;
+  nacl::DescWrapper* socket = plugin->service_runtime_->async_receive_desc();
   NaClDescRef(socket->desc());
   args->socket = plugin->wrapper_factory()->MakeGeneric(socket->desc());
 

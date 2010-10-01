@@ -54,12 +54,8 @@ class ServiceRuntime {
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
 
-  // We need two IMC sockets rather than one because IMC sockets are
-  // not full-duplex on Windows.
-  // See http://code.google.com/p/nativeclient/issues/detail?id=690.
-  // TODO(mseaborn): We should not have to work around this.
-  nacl::DescWrapper* async_receive_desc;
-  nacl::DescWrapper* async_send_desc;
+  nacl::DescWrapper* async_receive_desc() { return async_receive_desc_; }
+  nacl::DescWrapper* async_send_desc() { return async_send_desc_; }
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
@@ -69,6 +65,13 @@ class ServiceRuntime {
   Plugin* plugin_;
   SrtSocket* runtime_channel_;
   nacl::SelLdrLauncher* subprocess_;
+
+  // We need two IMC sockets rather than one because IMC sockets are
+  // not full-duplex on Windows.
+  // See http://code.google.com/p/nativeclient/issues/detail?id=690.
+  // TODO(mseaborn): We should not have to work around this.
+  nacl::DescWrapper* async_receive_desc_;
+  nacl::DescWrapper* async_send_desc_;
 };
 
 }  // namespace plugin
