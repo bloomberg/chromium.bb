@@ -433,6 +433,10 @@ TabContents::TabContents(Profile* profile,
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
                  NotificationService::AllSources());
 
+  // Listen for Google URL changes
+  registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
+                 NotificationService::AllSources());
+
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(profile))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
@@ -3118,6 +3122,10 @@ void TabContents::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_UNLOADED:
     case NotificationType::EXTENSION_UNLOADED_DISABLED:
+      break;
+
+    case NotificationType::GOOGLE_URL_UPDATED:
+      UpdateAlternateErrorPageURL();
       break;
 
     default:
