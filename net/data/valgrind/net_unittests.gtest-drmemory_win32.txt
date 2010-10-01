@@ -1,12 +1,14 @@
+# See http://crbug.com/51145
+HttpNetworkTransactionTest.*
+HttpNetworkLayerTest.GET
+
 # TODO(timurrrr): investigate these
 ClientSocketPoolBaseTest.*
 SSLClientSocketTest.*
-ProxyResolver*
-DiskCache*Test.*
+ProxyResolverJS*
 X509CertificateTest.*
 UrlToFilenameEncoderTest.*
 DirectoryListerTest.*
 WebSocketHandshake*
 HTTPSRequestTest.*
 NetUtilTest.*
-*HTTP*

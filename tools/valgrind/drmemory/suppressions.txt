@@ -190,6 +190,19 @@ UNADDRESSABLE ACCESS
 ...
 *!SetEnvironmentVariable*
 
+# http://code.google.com/p/drmemory/issues/detail?id=60
+UNINITIALIZED READ
+...
+*!MessageBoxIndirect*
+
+UNINITIALIZED READ
+...
+*!IsDlgButtonChecked*
+
+UNADDRESSABLE ACCESS
+...
+*!MessageBoxIndirect*
+
 ############################
 # TODO(timurrrr): investigate these
 UNINITIALIZED READ
@@ -339,4 +352,7 @@ UNINITIALIZED READ
 # http://crbug.com/57266 (2)
 UNINITIALIZED READ
 ...
-*!vp8_tokenize_mb
+*!vp8_*
+
+# Empty line at EOF - workaround for
+# http://code.google.com/p/drmemory/issues/detail?id=41

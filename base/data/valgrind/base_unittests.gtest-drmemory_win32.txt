@@ -8,3 +8,4 @@ GmockTest.*
 EtwTrace*
 StatsTableTest.*
 ProcessUtilTest.EnableLFH
+ScopedNativeLibrary.Basic
