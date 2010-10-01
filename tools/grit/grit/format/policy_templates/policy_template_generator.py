@@ -3,6 +3,22 @@
 # found in the LICENSE file.
 
 
+def GetPolicySortingKey(policy):
+  '''Extracts a sorting key from a policy. These keys can be used for
+  list.sort() methods to sort policies.
+  See PolicyTemplateGenerator._SortPolicies for usage.
+  '''
+  is_group = policy['type'] == 'group'
+  if is_group:
+    # Groups are sorted by caption.
+    str_key = policy['caption']
+  else:
+    # Regular policies are sorted by name.
+    str_key = policy['name']
+  # Groups come before regular policies.
+  return (not is_group, str_key)
+
+
 class PolicyTemplateGenerator:
   '''Generates template text for a particular platform.
 
@@ -29,20 +45,19 @@ class PolicyTemplateGenerator:
     self._policy_definitions = policy_definitions
     # Localized messages to be inserted to the policy_definitions structure:
     self._messages = messages
-    self._SortPolicies(self._policy_definitions)
     self._AddMessagesToPolicyList(self._policy_definitions)
+    self._SortPolicies(self._policy_definitions)
 
   def _SortPolicies(self, policy_list):
     '''Sorts a list of policies in-place alphabetically. The order is the
-    following: first groups alphabetically (a-z), then other policies
-    alphabetically (a-z). The order of policies inside groups is unchanged.
+    following: first groups alphabetically by caption, then other policies
+    alphabetically by name. The order of policies inside groups is unchanged.
 
     Args:
       policy_list: The list of policies to sort. Sub-lists in groups will not
         be sorted.
     '''
-    policy_list.sort(
-        key=lambda(policy): (policy['type'] != 'group', policy['name']))
+    policy_list.sort(key=GetPolicySortingKey)
 
   def _AddMessageToItem(self, item_name, item, message_name, default=None):
     '''Adds a localized message string to an item of the policy data structure

@@ -9,60 +9,7 @@ templates and will be translated for each locale. -->
     <output filename="app/policy/windows/admx/chrome.admx" type="admx" lang="en" />
     <output filename="app/policy/windows/admx/en-US/chrome.adml" type="adml" lang="en" />
     <output filename="app/policy/common/html/chrome_policy_list.html" type="doc" lang="en" />
-
-    <output filename="app/policy/windows/adm/am/chrome.adm" type="adm" lang="am" />
-    <output filename="app/policy/windows/adm/ar/chrome.adm" type="adm" lang="ar" />
-    <output filename="app/policy/windows/adm/bg/chrome.adm" type="adm" lang="bg" />
-    <output filename="app/policy/windows/adm/bn/chrome.adm" type="adm" lang="bn" />
-    <output filename="app/policy/windows/adm/ca/chrome.adm" type="adm" lang="ca" />
-    <output filename="app/policy/windows/adm/cs/chrome.adm" type="adm" lang="cs" />
-    <output filename="app/policy/windows/adm/da/chrome.adm" type="adm" lang="da" />
-    <output filename="app/policy/windows/adm/de/chrome.adm" type="adm" lang="de" />
-    <output filename="app/policy/windows/adm/el/chrome.adm" type="adm" lang="el" />
-    <output filename="app/policy/windows/adm/en-GB/chrome.adm" type="adm" lang="en-GB" />
     <output filename="app/policy/windows/adm/en-US/chrome.adm" type="adm" lang="en" />
-    <output filename="app/policy/windows/adm/es/chrome.adm" type="adm" lang="es" />
-    <output filename="app/policy/windows/adm/es-419/chrome.adm" type="adm" lang="es-419" />
-    <output filename="app/policy/windows/adm/et/chrome.adm" type="adm" lang="et" />
-    <output filename="app/policy/windows/adm/fi/chrome.adm" type="adm" lang="fi" />
-    <output filename="app/policy/windows/adm/fil/chrome.adm" type="adm" lang="fil" />
-    <output filename="app/policy/windows/adm/fr/chrome.adm" type="adm" lang="fr" />
-    <output filename="app/policy/windows/adm/gu/chrome.adm" type="adm" lang="gu" />
-    <output filename="app/policy/windows/adm/he/chrome.adm" type="adm" lang="he" />
-    <output filename="app/policy/windows/adm/hi/chrome.adm" type="adm" lang="hi" />
-    <output filename="app/policy/windows/adm/hr/chrome.adm" type="adm" lang="hr" />
-    <output filename="app/policy/windows/adm/hu/chrome.adm" type="adm" lang="hu" />
-    <output filename="app/policy/windows/adm/id/chrome.adm" type="adm" lang="id" />
-    <output filename="app/policy/windows/adm/it/chrome.adm" type="adm" lang="it" />
-    <output filename="app/policy/windows/adm/ja/chrome.adm" type="adm" lang="ja" />
-    <output filename="app/policy/windows/adm/kn/chrome.adm" type="adm" lang="kn" />
-    <output filename="app/policy/windows/adm/ko/chrome.adm" type="adm" lang="ko" />
-    <output filename="app/policy/windows/adm/lt/chrome.adm" type="adm" lang="lt" />
-    <output filename="app/policy/windows/adm/lv/chrome.adm" type="adm" lang="lv" />
-    <output filename="app/policy/windows/adm/ml/chrome.adm" type="adm" lang="ml" />
-    <output filename="app/policy/windows/adm/mr/chrome.adm" type="adm" lang="mr" />
-    <output filename="app/policy/windows/adm/nl/chrome.adm" type="adm" lang="nl" />
-    <!-- The translation console uses 'no' for Norwegian Bokmål. It should
-         be 'nb'. -->
-    <output filename="app/policy/windows/adm/nb/chrome.adm" type="adm" lang="no" />
-    <output filename="app/policy/windows/adm/pl/chrome.adm" type="adm" lang="pl" />
-    <output filename="app/policy/windows/adm/pt-BR/chrome.adm" type="adm" lang="pt-BR" />
-    <output filename="app/policy/windows/adm/pt-PT/chrome.adm" type="adm" lang="pt-PT" />
-    <output filename="app/policy/windows/adm/ro/chrome.adm" type="adm" lang="ro" />
-    <output filename="app/policy/windows/adm/ru/chrome.adm" type="adm" lang="ru" />
-    <output filename="app/policy/windows/adm/sk/chrome.adm" type="adm" lang="sk" />
-    <output filename="app/policy/windows/adm/sl/chrome.adm" type="adm" lang="sl" />
-    <output filename="app/policy/windows/adm/sr/chrome.adm" type="adm" lang="sr" />
-    <output filename="app/policy/windows/adm/sv/chrome.adm" type="adm" lang="sv" />
-    <output filename="app/policy/windows/adm/sw/chrome.adm" type="adm" lang="sw" />
-    <output filename="app/policy/windows/adm/ta/chrome.adm" type="adm" lang="ta" />
-    <output filename="app/policy/windows/adm/te/chrome.adm" type="adm" lang="te" />
-    <output filename="app/policy/windows/adm/th/chrome.adm" type="adm" lang="th" />
-    <output filename="app/policy/windows/adm/tr/chrome.adm" type="adm" lang="tr" />
-    <output filename="app/policy/windows/adm/uk/chrome.adm" type="adm" lang="uk" />
-    <output filename="app/policy/windows/adm/vi/chrome.adm" type="adm" lang="vi" />
-    <output filename="app/policy/windows/adm/zh-CN/chrome.adm" type="adm" lang="zh-CN" />
-    <output filename="app/policy/windows/adm/zh-TW/chrome.adm" type="adm" lang="zh-TW" />
 
     <if expr="os == 'darwin'">
       <output filename="app/policy/mac/app-Manifest.plist" type="plist" lang="en" />
@@ -140,7 +87,7 @@ templates and will be translated for each locale. -->
     <!-- Strings for ADM/ADMX/MCX policy templates: -->
 
     <message name="IDS_POLICY_HOMEPAGE_CAPTION" desc="Caption of the group of homepage-related policies.">
-      Configure the default home page
+      Home page
     </message>
     <message name="IDS_POLICY_HOMEPAGE_DESC" desc="Description of the group of homepage-related policies.">
       Configure the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
@@ -177,7 +124,7 @@ templates and will be translated for each locale. -->
     </message>
 
     <message name="IDS_POLICY_APPLICATIONLOCALEVALUE_CAPTION" desc="Caption of the 'application locale' policy settings page.">
-      Configure the application locale
+      Application locale
     </message>
     <message name="IDS_POLICY_APPLICATIONLOCALEVALUE_LABEL" desc="Caption of the text entry field of the 'application locale' policy.">
       Application locale
@@ -289,7 +236,7 @@ templates and will be translated for each locale. -->
     </message>
 
     <message name="IDS_POLICY_PROXY_CAPTION" desc="Caption of the 'proxy' policy group.">
-      Configure proxy server
+      Proxy server
     </message>
     <message name="IDS_POLICY_PROXY_DESC" desc="Description of the 'proxy' policy group.">
       Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
@@ -383,7 +330,7 @@ templates and will be translated for each locale. -->
     </message>
 
     <message name="IDS_POLICY_PASSWORDMANAGER_CAPTION" desc="Caption of the group of 'password manager' related policies.">
-      Configure the password manager
+      Password manager
     </message>
     <message name="IDS_POLICY_PASSWORDMANAGER_DESC" desc="Description of the group of 'password manager' related policies.">
       Configures the password manager. If the password manager is enabled, then you can choose to enable or disable whether the user may show stored passwords in clear text.
@@ -426,7 +373,7 @@ templates and will be translated for each locale. -->
     </message>
 
     <message name="IDS_POLICY_EXTENSIONS_CAPTION" desc="Caption of the group of extension-related policies.">
-      Configure allowed extensions
+      Allowed extensions
     </message>
     <message name="IDS_POLICY_EXTENSIONS_DESC" desc="Description of the group of extension-related policies.">
       Configures extension installation blacklist and whitelist. The user is not allowed to install blacklisted extensions. If you add an already installed extension to the blacklist, then it gets automatically uninstalled from the user's machine.
@@ -469,7 +416,7 @@ templates and will be translated for each locale. -->
 
     <message name="IDS_POLICY_RESTOREONSTARTUPGROUP_CAPTION" desc="Caption of
       the 'restore on startup' policy settings page">
-      Configure startup pages
+      Startup pages
     </message>
     <message name="IDS_POLICY_RESTOREONSTARTUPGROUP_DESC" desc="Description of
       the 'restore on startup' policy settings page.">
@@ -511,32 +458,12 @@ templates and will be translated for each locale. -->
     </message>
 
     <!-- Begin Chrome Frame messages -->
-    <message name="IDS_POLICY_GROUP_CHROMEFRAMERENDERERSETTINGS_CAPTION"
-             desc="Caption of Chrome Frame renderer policy settings page">
-      Configure the default renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>
-        Google Chrome Frame</ex></ph>
-    </message>
-    <message name="IDS_POLICY_GROUP_CHROMEFRAMERENDERERSETTINGS_DESC"
-             desc="Description of the 'Chrome Frame renderer' policy settings page.">
-      Configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">
-        $3<ex>Google Chrome Frame</ex>
-      </ph> is installed.
-      The default setting is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME">$3<ex>
-        Google Chrome Frame</ex></ph> render HTML pages by default.
-      For example patterns for the lists, see <ph name="CF_GETTING_STARTED_URL">$4<ex>
-        http://www.chromium.org/developers/how-tos/chrome-frame-getting-started</ex></ph>.
-    </message>
-
     <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_CAPTION"
-             desc="Caption of Chrome Frame renderer policy settings page">
-      Configure the default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>
-    </message>
-    <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_VALUE_APTION"
-             desc="Caption of Chrome Frame renderer policy settings page">
+             desc="Caption of Chrome Frame renderer policy group">
       Default HTML renderer for <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph>
     </message>
     <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_DESC"
-             desc="Description of the 'Chrome Frame renderer' policy settings page.">
+             desc="Description of the 'Chrome Frame renderer' policy group">
       Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex>
       </ph> is installed.
       The default setting is to allow the host browser do the rendering, but you
@@ -611,11 +538,15 @@ templates and will be translated for each locale. -->
     </message>
     <message name="IDS_POLICY_DOC_INTRO"
              desc="Introduction text for the generated policy documentation">
-      This is the list of policies that Chromium respects.
+      This is the list of policies that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> respects.
 
       You don't need to change these settings by hand!  You can download easy-to-use templates from
       <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">$5<ex>
         http://www.chromium.org/administrators/policy-templates</ex></ph>.
+
+      The list of supported policies is the same for Chromium and Google Chrome, but their Windows registry locations differ.
+
+      It starts with <ph name="CHROMIUM_KEY">Software\Policies\Chromium</ph> for Chromium policies and with <ph name="GOOGLE_CHROME_KEY">Software\Policies\Google\Chrome</ph> for Google Chrome policies.
     </message>
     <message name="IDS_POLICY_DOC_NOTE"
              desc="Warning notice for policies in the generated policy documentation">

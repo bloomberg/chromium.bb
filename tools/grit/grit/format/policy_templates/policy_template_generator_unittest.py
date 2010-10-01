@@ -302,10 +302,11 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testSorting(self):
     # Tests that policies are sorted correctly.
     policy_defs = [
-      {'name': 'zp', 'type': 'string'},
+      {'name': 'zp', 'type': 'string', 'caption': 'a1'},
       {
         'type': 'group',
-        'name': 'zg',
+        'caption': 'z_group1_caption',
+        'name': 'group1',
         'policies': [
           {'name': 'z0', 'type': 'string'},
           {'name': 'a0', 'type': 'string'}
@@ -313,27 +314,30 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       },
       {
         'type': 'group',
-        'name': 'ag',
+        'caption': 'b_group2_caption',
+        'name': 'group2',
         'policies': [{'name': 'q', 'type': 'string'}],
       },
-      {'name': 'ap', 'type': 'string'}
+      {'name': 'ap', 'type': 'string', 'caption': 'a2'}
     ]
     sorted_policy_defs = [
       {
         'type': 'group',
-        'name': 'ag',
+        'caption': 'b_group2_caption',
+        'name': 'group2',
         'policies': [{'name': 'q', 'type': 'string'}],
       },
       {
         'type': 'group',
-        'name': 'zg',
+        'caption': 'z_group1_caption',
+        'name': 'group1',
         'policies': [
           {'name': 'z0', 'type': 'string'},
           {'name': 'a0', 'type': 'string'}
         ]
       },
-      {'name': 'ap', 'type': 'string'},
-      {'name': 'zp', 'type': 'string'},
+      {'name': 'ap', 'type': 'string', 'caption': 'a2'},
+      {'name': 'zp', 'type': 'string', 'caption': 'a1'},
     ]
     ptg = policy_template_generator.PolicyTemplateGenerator([], [])
     ptg._SortPolicies(policy_defs)
