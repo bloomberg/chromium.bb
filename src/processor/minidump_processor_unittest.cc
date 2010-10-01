@@ -244,24 +244,6 @@ TEST_F(MinidumpProcessorTest, TestSymbolSupplierLookupCounts) {
             google_breakpad::PROCESS_OK);
 }
 
-TEST_F(MinidumpProcessorTest, TestExploitilityEngine) {
-  TestSymbolSupplier supplier;
-  BasicSourceLineResolver resolver;
-  MinidumpProcessor processor(&supplier, &resolver, true);
-
-  string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
-                         "/src/processor/testdata/minidump2.dmp";
-
-  ProcessState state;
-  ASSERT_EQ(processor.Process(minidump_file, &state),
-            google_breakpad::PROCESS_OK);
-
-  // Test that the supplied dump registers as HIGH. This dump demonstrates
-  // a write access violation to an address which is not near null.
-  ASSERT_EQ(google_breakpad::EXPLOITABILITY_HIGH,
-            state.exploitability());
-}
-
 TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
   TestSymbolSupplier supplier;
   BasicSourceLineResolver resolver;
