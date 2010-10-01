@@ -782,8 +782,8 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 		       DRM_IOCTL_GEM_OPEN,
 		       &open_arg);
 	if (ret != 0) {
-		fprintf(stderr, "Couldn't reference %s handle 0x%08x: %s\n",
-			name, handle, strerror(errno));
+		DBG("Couldn't reference %s handle 0x%08x: %s\n",
+		    name, handle, strerror(errno));
 		free(bo_gem);
 		return NULL;
 	}
@@ -835,9 +835,8 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 	close.handle = bo_gem->gem_handle;
 	ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close);
 	if (ret != 0) {
-		fprintf(stderr,
-			"DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
-			bo_gem->gem_handle, bo_gem->name, strerror(errno));
+		DBG("DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
+		    bo_gem->gem_handle, bo_gem->name, strerror(errno));
 	}
 	free(bo);
 }
@@ -975,10 +974,9 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 			       &mmap_arg);
 		if (ret != 0) {
 			ret = -errno;
-			fprintf(stderr,
-				"%s:%d: Error mapping buffer %d (%s): %s .\n",
-				__FILE__, __LINE__, bo_gem->gem_handle,
-				bo_gem->name, strerror(errno));
+			DBG("%s:%d: Error mapping buffer %d (%s): %s .\n",
+			    __FILE__, __LINE__, bo_gem->gem_handle,
+			    bo_gem->name, strerror(errno));
 			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
@@ -998,9 +996,9 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 		       DRM_IOCTL_I915_GEM_SET_DOMAIN,
 		       &set_domain);
 	if (ret != 0) {
-		fprintf(stderr, "%s:%d: Error setting to CPU domain %d: %s\n",
-			__FILE__, __LINE__, bo_gem->gem_handle,
-			strerror(errno));
+		DBG("%s:%d: Error setting to CPU domain %d: %s\n",
+		    __FILE__, __LINE__, bo_gem->gem_handle,
+		    strerror(errno));
 	}
 
 	pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -1033,11 +1031,10 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 			       &mmap_arg);
 		if (ret != 0) {
 			ret = -errno;
-			fprintf(stderr,
-				"%s:%d: Error preparing buffer map %d (%s): %s .\n",
-				__FILE__, __LINE__,
-				bo_gem->gem_handle, bo_gem->name,
-				strerror(errno));
+			DBG("%s:%d: Error preparing buffer map %d (%s): %s .\n",
+			    __FILE__, __LINE__,
+			    bo_gem->gem_handle, bo_gem->name,
+			    strerror(errno));
 			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
@@ -1049,11 +1046,10 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 		if (bo_gem->gtt_virtual == MAP_FAILED) {
 			bo_gem->gtt_virtual = NULL;
 			ret = -errno;
-			fprintf(stderr,
-				"%s:%d: Error mapping buffer %d (%s): %s .\n",
-				__FILE__, __LINE__,
-				bo_gem->gem_handle, bo_gem->name,
-				strerror(errno));
+			DBG("%s:%d: Error mapping buffer %d (%s): %s .\n",
+			    __FILE__, __LINE__,
+			    bo_gem->gem_handle, bo_gem->name,
+			    strerror(errno));
 			pthread_mutex_unlock(&bufmgr_gem->lock);
 			return ret;
 		}
@@ -1072,9 +1068,9 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 		       DRM_IOCTL_I915_GEM_SET_DOMAIN,
 		       &set_domain);
 	if (ret != 0) {
-		fprintf(stderr, "%s:%d: Error setting domain %d: %s\n",
-			__FILE__, __LINE__, bo_gem->gem_handle,
-			strerror(errno));
+		DBG("%s:%d: Error setting domain %d: %s\n",
+		    __FILE__, __LINE__, bo_gem->gem_handle,
+		    strerror(errno));
 	}
 
 	pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -1148,10 +1144,9 @@ drm_intel_gem_bo_subdata(drm_intel_bo *bo, unsigned long offset,
 		       &pwrite);
 	if (ret != 0) {
 		ret = -errno;
-		fprintf(stderr,
-			"%s:%d: Error writing data to buffer %d: (%d %d) %s .\n",
-			__FILE__, __LINE__, bo_gem->gem_handle, (int)offset,
-			(int)size, strerror(errno));
+		DBG("%s:%d: Error writing data to buffer %d: (%d %d) %s .\n",
+		    __FILE__, __LINE__, bo_gem->gem_handle, (int)offset,
+		    (int)size, strerror(errno));
 	}
 
 	return ret;
@@ -1200,10 +1195,9 @@ drm_intel_gem_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
 		       &pread);
 	if (ret != 0) {
 		ret = -errno;
-		fprintf(stderr,
-			"%s:%d: Error reading data from buffer %d: (%d %d) %s .\n",
-			__FILE__, __LINE__, bo_gem->gem_handle, (int)offset,
-			(int)size, strerror(errno));
+		DBG("%s:%d: Error reading data from buffer %d: (%d %d) %s .\n",
+		    __FILE__, __LINE__, bo_gem->gem_handle, (int)offset,
+		    (int)size, strerror(errno));
 	}
 
 	return ret;
@@ -1238,11 +1232,10 @@ drm_intel_gem_bo_start_gtt_access(drm_intel_bo *bo, int write_enable)
 		       DRM_IOCTL_I915_GEM_SET_DOMAIN,
 		       &set_domain);
 	if (ret != 0) {
-		fprintf(stderr,
-			"%s:%d: Error setting memory domains %d (%08x %08x): %s .\n",
-			__FILE__, __LINE__, bo_gem->gem_handle,
-			set_domain.read_domains, set_domain.write_domain,
-			strerror(errno));
+		DBG("%s:%d: Error setting memory domains %d (%08x %08x): %s .\n",
+		    __FILE__, __LINE__, bo_gem->gem_handle,
+		    set_domain.read_domains, set_domain.write_domain,
+		    strerror(errno));
 	}
 }
 
@@ -1513,16 +1506,15 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 	if (ret != 0) {
 		ret = -errno;
 		if (errno == ENOSPC) {
-			fprintf(stderr,
-				"Execbuffer fails to pin. "
-				"Estimate: %u. Actual: %u. Available: %u\n",
-				drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
-								   bufmgr_gem->
-								   exec_count),
-				drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
-								  bufmgr_gem->
-								  exec_count),
-				(unsigned int)bufmgr_gem->gtt_size);
+			DBG("Execbuffer fails to pin. "
+			    "Estimate: %u. Actual: %u. Available: %u\n",
+			    drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
+							       bufmgr_gem->
+							       exec_count),
+			    drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
+							      bufmgr_gem->
+							      exec_count),
+			    (unsigned int)bufmgr_gem->gtt_size);
 		}
 	}
 	drm_intel_update_buffer_offsets(bufmgr_gem);
@@ -1583,14 +1575,13 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 	if (ret != 0) {
 		ret = -errno;
 		if (ret == -ENOSPC) {
-			fprintf(stderr,
-				"Execbuffer fails to pin. "
-				"Estimate: %u. Actual: %u. Available: %u\n",
-				drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
-								   bufmgr_gem->exec_count),
-				drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
-								  bufmgr_gem->exec_count),
-				(unsigned int) bufmgr_gem->gtt_size);
+			DBG("Execbuffer fails to pin. "
+			    "Estimate: %u. Actual: %u. Available: %u\n",
+			    drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
+							       bufmgr_gem->exec_count),
+			    drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
+							      bufmgr_gem->exec_count),
+			    (unsigned int) bufmgr_gem->gtt_size);
 		}
 	}
 	drm_intel_update_buffer_offsets2(bufmgr_gem);
