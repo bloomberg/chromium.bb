@@ -23,8 +23,10 @@ using WebKit::WebURLError;
 
 namespace {
 
-static const char* kRedirectLoopLearnMoreUrl =
+static const char kRedirectLoopLearnMoreUrl[] =
     "http://www.google.com/support/chrome/bin/answer.py?answer=95626";
+static const char kWeakDHKeyLearnMoreUrl[] =
+    "http://sites.google.com/a/chromium.org/dev/err_ssl_weak_server_ephemeral_dh_key";
 
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE     = 0,
@@ -112,6 +114,13 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_BAD_SSL_CLIENT_AUTH_CERT,
    IDS_ERRORPAGES_DETAILS_BAD_SSL_CLIENT_AUTH_CERT,
    SUGGEST_NONE,
+  },
+  {net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY,
+   IDS_ERRORPAGES_TITLE_LOAD_FAILED,
+   IDS_ERRORPAGES_HEADING_SSL_PROTOCOL_ERROR,
+   IDS_ERRORPAGES_SUMMARY_SSL_PROTOCOL_ERROR,
+   IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
+   SUGGEST_LEARNMORE,
   },
 };
 
@@ -349,6 +358,9 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
     switch (options.error_code) {
       case net::ERR_TOO_MANY_REDIRECTS:
         learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
+        break;
+      case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+        learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
         break;
       default:
         break;
