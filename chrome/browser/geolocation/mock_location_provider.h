@@ -6,6 +6,10 @@
 #define CHROME_BROWSER_GEOLOCATION_MOCK_LOCATION_PROVIDER_H_
 #pragma once
 
+
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "base/thread.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/common/geoposition.h"
 #include "googleurl/src/gurl.h"
@@ -18,7 +22,8 @@ class MockLocationProvider : public LocationProviderBase {
   explicit MockLocationProvider(MockLocationProvider** self_ref);
   ~MockLocationProvider();
 
-  using LocationProviderBase::UpdateListeners;
+  // Updates listeners with the new position.
+  void HandlePositionChanged();
 
   // LocationProviderBase implementation.
   virtual bool StartProvider(bool high_accuracy);
@@ -30,6 +35,8 @@ class MockLocationProvider : public LocationProviderBase {
   enum { STOPPED, LOW_ACCURACY, HIGH_ACCURACY } state_;
   GURL permission_granted_url_;
   MockLocationProvider** self_ref_;
+
+  scoped_refptr<base::MessageLoopProxy> provider_loop_;
 
   // Set when an instance of the mock is created via a factory function.
   static MockLocationProvider* instance_;

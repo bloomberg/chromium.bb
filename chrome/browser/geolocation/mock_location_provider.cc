@@ -10,13 +10,19 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/task.h"
+
+// The provider will always be destroyed before the thread it runs on, so ref
+// counting is not required.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(MockLocationProvider);
 
 MockLocationProvider* MockLocationProvider::instance_ = NULL;
 
 MockLocationProvider::MockLocationProvider(MockLocationProvider** self_ref)
     : state_(STOPPED),
-      self_ref_(self_ref) {
+      self_ref_(self_ref),
+      provider_loop_(base::MessageLoopProxy::CreateForCurrentThread()) {
   CHECK(self_ref_);
   CHECK(*self_ref_ == NULL);
   *self_ref_ = this;
@@ -25,6 +31,18 @@ MockLocationProvider::MockLocationProvider(MockLocationProvider** self_ref)
 MockLocationProvider::~MockLocationProvider() {
   CHECK(*self_ref_ == this);
   *self_ref_ = NULL;
+}
+
+void MockLocationProvider::HandlePositionChanged() {
+  if (provider_loop_->BelongsToCurrentThread()) {
+    // The location arbitrator unit tests rely on this method running
+    // synchronously.
+    UpdateListeners();
+  } else {
+    Task* task = NewRunnableMethod(
+        this, &MockLocationProvider::HandlePositionChanged);
+    provider_loop_->PostTask(FROM_HERE, task);
+  }
 }
 
 bool MockLocationProvider::StartProvider(bool high_accuracy) {
@@ -84,7 +102,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
       listeners_updated_ = true;
       MessageLoop::current()->PostTask(
           FROM_HERE, task_factory_.NewRunnableMethod(
-              &MockLocationProvider::UpdateListeners));
+          &MockLocationProvider::HandlePositionChanged));
     }
   }
 

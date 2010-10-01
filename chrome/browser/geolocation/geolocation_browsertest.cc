@@ -171,11 +171,10 @@ class GeolocationNotificationObserver : public NotificationObserver {
   std::string javascript_response_;
 };
 
-void NotifyGeopositionOnIOThread(const Geoposition& geoposition) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+void NotifyGeoposition(const Geoposition& geoposition) {
   DCHECK(MockLocationProvider::instance_);
   MockLocationProvider::instance_->position_ = geoposition;
-  MockLocationProvider::instance_->UpdateListeners();
+  MockLocationProvider::instance_->HandlePositionChanged();
   LOG(WARNING) << "MockLocationProvider listeners updated";
 }
 
@@ -456,8 +455,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   // MockLocationProvider must have been created.
   ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition fresh_position = GeopositionFromLatLong(3.17, 4.23);
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, NewRunnableFunction(
-      &NotifyGeopositionOnIOThread, fresh_position));
+  NotifyGeoposition(fresh_position);
   WaitForJSPrompt();
   CheckGeoposition(fresh_position);
 
@@ -486,8 +484,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
   // MockLocationProvider must have been created.
   ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition cached_position = GeopositionFromLatLong(5.67, 8.09);
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, NewRunnableFunction(
-      &NotifyGeopositionOnIOThread, cached_position));
+  NotifyGeoposition(cached_position);
   WaitForJSPrompt();
   CheckGeoposition(cached_position);
 
@@ -588,8 +585,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
 
   // The second watch will now have cancelled. Ensure an update still makes
   // its way through to the first watcher.
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, NewRunnableFunction(
-      &NotifyGeopositionOnIOThread, final_position));
+  NotifyGeoposition(final_position);
   WaitForJSPrompt();
   CheckGeoposition(final_position);
 }

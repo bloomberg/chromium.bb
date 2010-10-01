@@ -14,7 +14,6 @@ class GeolocationDispatcherHost;
 class GeolocationInfoBarQueueController;
 class GeolocationPermissionContext;
 class GURL;
-class GeolocationArbitrator;
 class InfoBarDelegate;
 class Profile;
 class RenderViewHost;
@@ -47,12 +46,10 @@ class GeolocationPermissionContext
       const GURL& requesting_frame, bool allowed);
 
   // Called when a geolocation object wants to start receiving location updates.
-  // Returns the location arbitrator that the caller (namely, the dispatcher
-  // host) will use to receive these updates. The arbitrator is ref counted.
   // This also applies global policy around which location providers may be
   // enbaled at a given time (e.g. prior to the user agreeing to any geolocation
   // permission requests).
-  GeolocationArbitrator* StartUpdatingRequested(
+  void StartUpdatingRequested(
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame);
 

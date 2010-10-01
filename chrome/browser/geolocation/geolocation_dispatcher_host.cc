@@ -10,7 +10,7 @@
 
 #include "chrome/common/geoposition.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
-#include "chrome/browser/geolocation/location_arbitrator.h"
+#include "chrome/browser/geolocation/geolocation_provider.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
@@ -20,7 +20,7 @@
 
 namespace {
 class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost,
-                                      public GeolocationArbitrator::Delegate {
+                                      public GeolocationObserver {
  public:
   GeolocationDispatcherHostImpl(
       int resource_message_filter_process_id,
@@ -53,7 +53,7 @@ class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost,
 
   // Updates the |location_arbitrator_| with the currently required update
   // options, based on |bridge_update_options_|.
-  void RefreshUpdateOptions();
+  void RefreshGeolocationObserverOptions();
 
   int resource_message_filter_process_id_;
   scoped_refptr<GeolocationPermissionContext> geolocation_permission_context_;
@@ -65,10 +65,10 @@ class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost,
   std::set<int> geolocation_renderer_ids_;
   // Maps <renderer_id, bridge_id> to the location arbitrator update options
   // that correspond to this particular bridge.
-  std::map<std::pair<int, int>, GeolocationArbitrator::UpdateOptions>
+  std::map<std::pair<int, int>, GeolocationObserverOptions>
       bridge_update_options_;
   // Only set whilst we are registered with the arbitrator.
-  scoped_refptr<GeolocationArbitrator> location_arbitrator_;
+  GeolocationProvider* location_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationDispatcherHostImpl);
 };
@@ -77,15 +77,16 @@ GeolocationDispatcherHostImpl::GeolocationDispatcherHostImpl(
     int resource_message_filter_process_id,
     GeolocationPermissionContext* geolocation_permission_context)
     : resource_message_filter_process_id_(resource_message_filter_process_id),
-      geolocation_permission_context_(geolocation_permission_context) {
+      geolocation_permission_context_(geolocation_permission_context),
+      location_provider_(NULL) {
   // This is initialized by ResourceMessageFilter. Do not add any non-trivial
   // initialization here, defer to OnRegisterBridge which is triggered whenever
   // a javascript geolocation object is actually initialized.
 }
 
 GeolocationDispatcherHostImpl::~GeolocationDispatcherHostImpl() {
-  if (location_arbitrator_)
-    location_arbitrator_->RemoveObserver(this);
+  if (location_provider_)
+    location_provider_->RemoveObserver(this);
 }
 
 bool GeolocationDispatcherHostImpl::OnMessageReceived(
@@ -169,12 +170,11 @@ void GeolocationDispatcherHostImpl::OnStartUpdating(
   DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
              << ":" << render_view_id << ":" << bridge_id;
   bridge_update_options_[std::make_pair(render_view_id, bridge_id)] =
-      GeolocationArbitrator::UpdateOptions(enable_high_accuracy);
-  location_arbitrator_ =
-      geolocation_permission_context_->StartUpdatingRequested(
-          resource_message_filter_process_id_, render_view_id, bridge_id,
-          requesting_frame);
-  RefreshUpdateOptions();
+      GeolocationObserverOptions(enable_high_accuracy);
+  geolocation_permission_context_->StartUpdatingRequested(
+      resource_message_filter_process_id_, render_view_id, bridge_id,
+      requesting_frame);
+  RefreshGeolocationObserverOptions();
 }
 
 void GeolocationDispatcherHostImpl::OnStopUpdating(
@@ -183,7 +183,7 @@ void GeolocationDispatcherHostImpl::OnStopUpdating(
   DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
              << ":" << render_view_id << ":" << bridge_id;
   if (bridge_update_options_.erase(std::make_pair(render_view_id, bridge_id)))
-    RefreshUpdateOptions();
+    RefreshGeolocationObserverOptions();
   geolocation_permission_context_->StopUpdatingRequested(
       resource_message_filter_process_id_, render_view_id, bridge_id);
 }
@@ -204,17 +204,20 @@ void GeolocationDispatcherHostImpl::OnResume(
   // TODO(bulach): connect this with GeolocationArbitrator.
 }
 
-void GeolocationDispatcherHostImpl::RefreshUpdateOptions() {
+void GeolocationDispatcherHostImpl::RefreshGeolocationObserverOptions() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(location_arbitrator_);
   if (bridge_update_options_.empty()) {
-    location_arbitrator_->RemoveObserver(this);
-    location_arbitrator_ = NULL;
+    if (location_provider_) {
+      location_provider_->RemoveObserver(this);
+      location_provider_ = NULL;
+    }
   } else {
-    location_arbitrator_->AddObserver(
-        this,
-        GeolocationArbitrator::UpdateOptions::Collapse(
-            bridge_update_options_));
+    if (!location_provider_)
+      location_provider_ = GeolocationProvider::GetInstance();
+    // Re-add to re-establish our options, in case they changed.
+    location_provider_->AddObserver(this,
+                                    GeolocationObserverOptions::Collapse(
+                                        bridge_update_options_));
   }
 }
 }  // namespace

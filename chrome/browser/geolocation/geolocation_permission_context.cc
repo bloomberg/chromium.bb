@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
-#include "chrome/browser/geolocation/location_arbitrator.h"
+#include "chrome/browser/geolocation/geolocation_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -420,23 +420,22 @@ void GeolocationPermissionContext::CancelGeolocationPermissionRequest(
   CancelPendingInfoBarRequest(render_process_id, render_view_id, bridge_id);
 }
 
-GeolocationArbitrator* GeolocationPermissionContext::StartUpdatingRequested(
+void GeolocationPermissionContext::StartUpdatingRequested(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   // Note we cannot store the arbitrator as a member as it is not thread safe.
-  GeolocationArbitrator* arbitrator = GeolocationArbitrator::GetInstance();
+  GeolocationProvider* provider = GeolocationProvider::GetInstance();
 
   // WebKit will not request permission until it has received a valid
   // location, but the google network location provider will not give a
   // valid location until the user has granted permission. So we cut the Gordian
   // Knot by reusing the the 'start updating' request to also trigger
   // a 'permission request' should the provider still be awaiting permission.
-  if (!arbitrator->HasPermissionBeenGranted()) {
+  if (!provider->HasPermissionBeenGranted()) {
     RequestGeolocationPermission(render_process_id, render_view_id, bridge_id,
                                  requesting_frame);
   }
-  return arbitrator;
 }
 
 void GeolocationPermissionContext::StopUpdatingRequested(
@@ -477,7 +476,7 @@ void GeolocationPermissionContext::NotifyPermissionSet(
 void GeolocationPermissionContext::NotifyArbitratorPermissionGranted(
     const GURL& requesting_frame) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  GeolocationArbitrator::GetInstance()->OnPermissionGranted(requesting_frame);
+  GeolocationProvider::GetInstance()->OnPermissionGranted(requesting_frame);
 }
 
 void GeolocationPermissionContext::CancelPendingInfoBarRequest(
