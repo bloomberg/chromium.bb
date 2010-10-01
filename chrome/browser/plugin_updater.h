@@ -27,11 +27,11 @@ class PluginUpdater : public NotificationObserver {
   typedef std::map<std::string, linked_ptr<PluginGroup> > PluginMap;
 
   // Get a map from identifier to plugin group for all plugin groups.
-  void GetPluginGroups(PluginMap* plugin_groups);
+  static void GetPluginGroups(PluginMap* plugin_groups);
 
   // Get a list of all the plugin groups. The caller should take ownership
   // of the returned ListValue.
-  ListValue* GetPluginGroupsData();
+  static ListValue* GetPluginGroupsData();
 
   // Enable or disable a plugin group.
   void EnablePluginGroup(bool enable, const string16& group_name);

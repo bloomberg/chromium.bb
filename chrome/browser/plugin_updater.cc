@@ -26,7 +26,7 @@
 PluginUpdater::PluginUpdater() : enable_internal_pdf_(true) {
 }
 
-// Convert to a List of Groups
+// static
 void PluginUpdater::GetPluginGroups(PluginMap* plugin_groups) {
   DCHECK(plugin_groups);
 
@@ -73,6 +73,7 @@ DictionaryValue* PluginUpdater::CreatePluginFileSummary(
   return data;
 }
 
+// static
 ListValue* PluginUpdater::GetPluginGroupsData() {
   PluginMap plugin_groups;
   GetPluginGroups(&plugin_groups);

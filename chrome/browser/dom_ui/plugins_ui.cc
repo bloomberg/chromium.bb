@@ -155,12 +155,33 @@ class PluginsDOMHandler : public DOMMessageHandler,
                const NotificationDetails& details);
 
  private:
+  // This extra wrapper is used to ensure we don't leak the ListValue* pointer
+  // if the PluginsDOMHandler object goes away before the task on the UI thread
+  // to give it the plugin list runs.
+  struct ListWrapper {
+    ListValue* list;
+  };
+  // Loads the plugins on the FILE thread.
+  static void LoadPluginsOnFileThread(ListWrapper* wrapper, Task* task);
+
+  // Used in conjunction with ListWrapper to avoid any memory leaks.
+  static void EnsureListDeleted(ListWrapper* wrapper);
+
+  // Call this to start getting the plugins on the UI thread.
+  void LoadPlugins();
+
+  // Called on the UI thread when the plugin information is ready.
+  void PluginsLoaded(ListWrapper* wrapper);
+
   NotificationRegistrar registrar_;
+
+  ScopedRunnableMethodFactory<PluginsDOMHandler> get_plugins_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginsDOMHandler);
 };
 
-PluginsDOMHandler::PluginsDOMHandler() {
+PluginsDOMHandler::PluginsDOMHandler()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(get_plugins_factory_(this)) {
   registrar_.Add(this,
                  NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
                  NotificationService::AllSources());
@@ -176,10 +197,7 @@ void PluginsDOMHandler::RegisterMessages() {
 }
 
 void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
-  DictionaryValue results;
-  results.Set("plugins",
-              PluginUpdater::GetPluginUpdater()->GetPluginGroupsData());
-  dom_ui_->CallJavascriptFunction(L"returnPluginsData", results);
+  LoadPlugins();
 }
 
 void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
@@ -227,9 +245,44 @@ void PluginsDOMHandler::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   DCHECK_EQ(NotificationType::PLUGIN_ENABLE_STATUS_CHANGED, type.value);
+  LoadPlugins();
+}
+
+void PluginsDOMHandler::LoadPluginsOnFileThread(ListWrapper* wrapper,
+                                                Task* task) {
+  wrapper->list = PluginUpdater::GetPluginUpdater()->GetPluginGroupsData();
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, task);
+  ChromeThread::PostTask(
+      ChromeThread::UI,
+      FROM_HERE,
+      NewRunnableFunction(&PluginsDOMHandler::EnsureListDeleted, wrapper));
+}
+
+void PluginsDOMHandler::EnsureListDeleted(ListWrapper* wrapper) {
+  delete wrapper->list;
+  delete wrapper;
+}
+
+void PluginsDOMHandler::LoadPlugins() {
+  if (!get_plugins_factory_.empty())
+    return;
+
+  ListWrapper* wrapper = new ListWrapper;
+  wrapper->list = NULL;
+  Task* task = get_plugins_factory_.NewRunnableMethod(
+          &PluginsDOMHandler::PluginsLoaded, wrapper);
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE,
+      FROM_HERE,
+      NewRunnableFunction(
+          &PluginsDOMHandler::LoadPluginsOnFileThread, wrapper, task));
+}
+
+void PluginsDOMHandler::PluginsLoaded(ListWrapper* wrapper) {
   DictionaryValue results;
-  results.Set("plugins",
-              PluginUpdater::GetPluginUpdater()->GetPluginGroupsData());
+  results.Set("plugins", wrapper->list);
+  wrapper->list = NULL;  // So it doesn't get deleted.
   dom_ui_->CallJavascriptFunction(L"returnPluginsData", results);
 }
 
