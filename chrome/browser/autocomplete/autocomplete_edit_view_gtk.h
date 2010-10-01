@@ -204,6 +204,8 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                        GdkEventExpose*);
   CHROMEGTK_CALLBACK_1(AutocompleteEditViewGtk, void,
                        HandleWidgetDirectionChanged, GtkTextDirection);
+  CHROMEGTK_CALLBACK_2(AutocompleteEditViewGtk, void,
+                       HandleDeleteFromCursor, GtkDeleteType, gint);
 
   // Callback for the PRIMARY selection clipboard.
   static void ClipboardGetSelectionThunk(GtkClipboard* clipboard,
@@ -402,6 +404,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // default and will only be set to false if the location bar view is not able
   // to show the tab to search hint.
   bool enable_tab_to_search_;
+
+  // Indicates if the selected text is suggested text or not. If the selection
+  // is not suggested text, that means the user manually made the selection.
+  bool selection_suggested_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };

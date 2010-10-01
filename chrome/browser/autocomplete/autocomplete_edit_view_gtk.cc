@@ -177,7 +177,8 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       tab_was_pressed_(false),
       paste_clipboard_requested_(false),
       enter_was_inserted_(false),
-      enable_tab_to_search_(true) {
+      enable_tab_to_search_(true),
+      selection_suggested_(false) {
   model_->SetPopupModel(popup_view_->GetModel());
 }
 
@@ -300,6 +301,8 @@ void AutocompleteEditViewGtk::Init() {
                          G_CALLBACK(&HandleExposeEventThunk), this);
   g_signal_connect(text_view_, "direction-changed",
                    G_CALLBACK(&HandleWidgetDirectionChangedThunk), this);
+  g_signal_connect(text_view_, "delete-from-cursor",
+                   G_CALLBACK(&HandleDeleteFromCursorThunk), this);
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
@@ -1076,6 +1079,9 @@ void AutocompleteEditViewGtk::HandleMarkSet(GtkTextBuffer* buffer,
     return;
   }
 
+  // If we are here, that means the user may be changing the selection
+  selection_suggested_ = false;
+
   // Get the currently-selected text, if there is any.
   std::string new_selected_text = GetSelectedText();
 
@@ -1508,6 +1514,11 @@ void AutocompleteEditViewGtk::SetSelectedRange(const CharRange& range) {
   GtkTextIter insert, bound;
   ItersFromCharRange(range, &bound, &insert);
   gtk_text_buffer_select_range(text_buffer_, &insert, &bound);
+
+  // This should be set *after* setting the selection range, in case setting the
+  // selection triggers HandleMarkSet which sets |selection_suggested_| to
+  // false.
+  selection_suggested_ = true;
 }
 
 void AutocompleteEditViewGtk::AdjustTextJustification() {
@@ -1549,6 +1560,16 @@ PangoDirection AutocompleteEditViewGtk::GetContentDirection() {
 void AutocompleteEditViewGtk::HandleWidgetDirectionChanged(
     GtkWidget* sender, GtkTextDirection previous_direction) {
   AdjustTextJustification();
+}
+
+void AutocompleteEditViewGtk::HandleDeleteFromCursor(GtkWidget *sender,
+    GtkDeleteType type, gint count) {
+  // If the selected text was suggested for autocompletion, then erase those
+  // first and then let the default handler take over.
+  if (selection_suggested_) {
+    gtk_text_buffer_delete_selection(text_buffer_, true, true);
+    selection_suggested_ = false;
+  }
 }
 
 void AutocompleteEditViewGtk::HandleKeymapDirectionChanged(GdkKeymap* sender) {
