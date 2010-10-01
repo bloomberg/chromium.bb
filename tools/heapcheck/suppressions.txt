@@ -998,3 +998,10 @@
    fun:::RelayReadDirectory::RunWork
    fun:::MessageLoopRelay::ProcessOnTargetThread
 }
+{
+   bug_57456
+   Heapcheck:Leak
+   fun:net::DnsRRResolver::Resolve
+   fun:net::DnsRRResolverTest_Resolve_Test::TestBody
+   fun:testing::Test::Run
+}
