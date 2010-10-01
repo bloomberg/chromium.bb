@@ -61,10 +61,16 @@ SpeechInputBubbleBase::SpeechInputBubbleBase()
   // horizontal/wide image. Each animation frame is square in shape within the
   // sprite.
   int frame_size = spinner_->height();
-  for (int x = 0; x < spinner_->width(); x += frame_size) {
+  SkRect dst_rect(SkRect::MakeWH(SkIntToScalar(frame_size),
+                                 SkIntToScalar(frame_size)));
+  for (SkIRect src_rect(SkIRect::MakeWH(frame_size, frame_size));
+       src_rect.fLeft < spinner_->width();
+       src_rect.offset(frame_size, 0)) {
     SkBitmap frame;
-    spinner_->extractSubset(&frame,
-                            SkIRect::MakeXYWH(x, 0, frame_size, frame_size));
+    frame.setConfig(SkBitmap::kARGB_8888_Config, frame_size, frame_size);
+    frame.allocPixels();
+    SkCanvas canvas(frame);
+    canvas.drawBitmapRect(*spinner_, &src_rect, dst_rect);
     animation_frames_.push_back(frame);
   }
 }
