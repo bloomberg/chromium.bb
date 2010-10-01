@@ -80,6 +80,7 @@ public:
     bool IsKey() const;
     void SetKey(bool);
 
+    long long GetOffset() const;
     long GetSize() const;
     long Read(IMkvReader*, unsigned char*) const;
 

@@ -3835,6 +3835,12 @@ void Block::SetKey(bool bKey)
 }
 
 
+long long Block::GetOffset() const
+{
+  return m_frameOff;
+}
+
+
 long Block::GetSize() const
 {
     return m_frameSize;
