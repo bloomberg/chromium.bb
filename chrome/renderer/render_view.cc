@@ -4086,7 +4086,7 @@ void RenderView::OnZoom(PageZoom::Function function) {
     // 100% with the keyboard/menu.
     if ((old_zoom_level > 1 && function > 0) ||
         (old_zoom_level < 1 && function < 0)) {
-      zoom_level = abs(old_zoom_level + function);
+      zoom_level = static_cast<int>(old_zoom_level + function);
     } else {
       // We're going towards 100%, so first go to the next whole number.
       zoom_level = static_cast<int>(old_zoom_level);
