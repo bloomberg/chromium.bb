@@ -15,7 +15,6 @@
 #include "base/sha2.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/renderer/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
@@ -125,8 +124,15 @@ TEST_F(PhishingClassifierTest, TestClassification) {
   EXPECT_GE(phishy_score, 0.0);
   EXPECT_LT(phishy_score, 0.5);
 
-  // Extraction should fail for this case, since there is no host.
-  LoadURL(chrome::kAboutBlankURL);
+  // Extraction should fail for this case, since there is no TLD.
+  responses_["http://localhost/"] = "<html><body>content</body></html>";
+  LoadURL("http://localhost/");
+  EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score));
+  EXPECT_EQ(phishy_score, PhishingClassifier::kInvalidScore);
+
+  // Extraction should also fail for this case, because the URL is not http.
+  responses_["https://host.net/"] = "<html><body>secure</body></html>";
+  LoadURL("https://host.net/");
   EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score));
   EXPECT_EQ(phishy_score, PhishingClassifier::kInvalidScore);
 }

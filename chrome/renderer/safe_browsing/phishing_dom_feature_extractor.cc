@@ -174,7 +174,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
       // and advance to the first element.
       if (!ResetFrameData()) {
         // Nothing in this frame, move on to the next one.
-        LOG(WARNING) << "No content in frame, skipping";
+        DLOG(WARNING) << "No content in frame, skipping";
         continue;
       }
       cur_node = cur_frame_data_->elements.firstItem();

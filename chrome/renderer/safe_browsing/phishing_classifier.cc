@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/sha2.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
@@ -87,8 +88,16 @@ void PhishingClassifier::BeginFeatureExtraction() {
     return;
   }
 
+  // Check whether the URL is one that we should classify.
+  // Currently, we only classify http: URLs.
+  GURL url(frame->url());
+  if (!url.SchemeIs(chrome::kHttpScheme)) {
+    RunFailureCallback();
+    return;
+  }
+
   features_.reset(new FeatureMap);
-  if (!url_extractor_->ExtractFeatures(GURL(frame->url()), features_.get())) {
+  if (!url_extractor_->ExtractFeatures(url, features_.get())) {
     RunFailureCallback();
     return;
   }

@@ -42,7 +42,7 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
             true /* allow_unknown_registries */);
 
     if (registry_length == 0 || registry_length == std::string::npos) {
-      LOG(ERROR) << "Could not find TLD for host: " << host;
+      DLOG(INFO) << "Could not find TLD for host: " << host;
       return false;
     }
     DCHECK_LT(registry_length, host.size())
@@ -62,7 +62,7 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
         std::remove(host_tokens.begin(), host_tokens.end(), "");
     host_tokens.erase(new_end, host_tokens.end());
     if (host_tokens.empty()) {
-      LOG(ERROR) << "Could not find domain for host: " << host;
+      DLOG(INFO) << "Could not find domain for host: " << host;
       return false;
     }
     if (!features->AddBooleanFeature(features::kUrlDomainToken +
