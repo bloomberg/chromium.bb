@@ -75,10 +75,10 @@ class PepperPluginDelegateImpl
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       const PP_VideoDecoderConfig_Dev& decoder_config);
-  virtual void DidChangeNumberOfFindResults(int identifier,
-                                            int total,
-                                            bool final_result);
-  virtual void DidChangeSelectedFindResult(int identifier, int index);
+  virtual void NumberOfFindResultsChanged(int identifier,
+                                          int total,
+                                          bool final_result);
+  virtual void SelectedFindResultChanged(int identifier, int index);
   virtual bool RunFileChooser(
       const WebKit::WebFileChooserParams& params,
       WebKit::WebFileChooserCompletion* chooser_completion);
@@ -103,6 +103,7 @@ class PepperPluginDelegateImpl
   virtual pepper::FullscreenContainer* CreateFullscreenContainer(
       pepper::PluginInstance* instance);
   virtual std::string GetDefaultEncoding();
+  virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor);
 
  private:
   // Pointer to the RenderView that owns us.

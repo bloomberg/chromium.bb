@@ -156,12 +156,12 @@ class PluginDelegate {
                                      PlatformAudio::Client* client) = 0;
 
   // Notifies that the number of find results has changed.
-  virtual void DidChangeNumberOfFindResults(int identifier,
-                                            int total,
-                                            bool final_result) = 0;
+  virtual void NumberOfFindResultsChanged(int identifier,
+                                          int total,
+                                          bool final_result) = 0;
 
   // Notifies that the index of the currently selected item has been updated.
-  virtual void DidChangeSelectedFindResult(int identifier, int index) = 0;
+  virtual void SelectedFindResultChanged(int identifier, int index) = 0;
 
   // Runs a file chooser.
   virtual bool RunFileChooser(
@@ -202,6 +202,10 @@ class PluginDelegate {
 
   // Returns a string with the name of the default 8-bit char encoding.
   virtual std::string GetDefaultEncoding() = 0;
+
+  // Sets the mininum and maximium zoom factors.
+  virtual void ZoomLimitsChanged(double minimum_factor,
+                                 double maximum_factor) = 0;
 };
 
 }  // namespace pepper

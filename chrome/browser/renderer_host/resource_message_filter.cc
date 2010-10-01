@@ -1095,28 +1095,37 @@ void ResourceMessageFilter::OnV8HeapStatsOnUIThread(
       static_cast<size_t>(v8_memory_used));
 }
 
-void ResourceMessageFilter::OnDidZoomURL(const GURL& url,
-                                         int zoom_level) {
+void ResourceMessageFilter::OnDidZoomURL(const IPC::Message& message,
+                                         double zoom_level,
+                                         bool remember,
+                                         const GURL& url) {
   ui_thread_helpers::PostTaskWhileRunningMenu(FROM_HERE,
-      NewRunnableMethod(this,
-                        &ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread,
-                        url, zoom_level));
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread,
+          zoom_level, remember, url, id(), message.routing_id()));
 }
 
 void ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread(
+    double zoom_level,
+    bool remember,
     const GURL& url,
-    int zoom_level) {
+    int render_process_id,
+    int render_view_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  host_zoom_map_->SetZoomLevel(url, zoom_level);
-
-  // Notify renderers from this profile.
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    RenderProcessHost* render_process_host = i.GetCurrentValue();
-    if (render_process_host->profile() == profile_) {
-      render_process_host->Send(
-          new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
+  if (remember) {
+    host_zoom_map_->SetZoomLevel(url, zoom_level);
+    // Notify renderers from this profile.
+    for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+         !i.IsAtEnd(); i.Advance()) {
+      RenderProcessHost* render_process_host = i.GetCurrentValue();
+      if (render_process_host->profile() == profile_) {
+        render_process_host->Send(
+            new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
+      }
     }
+  } else {
+    host_zoom_map_->SetTemporaryZoomLevel(
+        render_process_id, render_view_id, zoom_level);
   }
 }
 

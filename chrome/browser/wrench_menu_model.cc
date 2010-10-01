@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/encoding_menu_controller.h"
-#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -439,31 +438,15 @@ void WrenchMenuModel::CreateZoomFullscreen() {
 }
 
 void WrenchMenuModel::UpdateZoomControls() {
-  bool enable_increment, enable_decrement;
-  int zoom_percent =
-      static_cast<int>(GetZoom(&enable_increment, &enable_decrement) * 100);
+  bool enable_increment = false;
+  bool enable_decrement = false;
+  int zoom_percent = 100;
+  if (browser_->GetSelectedTabContents()) {
+    zoom_percent = browser_->GetSelectedTabContents()->GetZoomPercent(
+        &enable_increment, &enable_decrement);
+  }
   zoom_label_ = l10n_util::GetStringFUTF16(
       IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));
-}
-
-double WrenchMenuModel::GetZoom(bool* enable_increment,
-                                bool* enable_decrement) {
-  TabContents* selected_tab = browser_->GetSelectedTabContents();
-  *enable_decrement = *enable_increment = false;
-  if (!selected_tab)
-    return 1;
-
-  HostZoomMap* zoom_map = selected_tab->profile()->GetHostZoomMap();
-  if (!zoom_map)
-    return 1;
-
-  // This code comes from  WebViewImpl::setZoomLevel.
-  int zoom_level = zoom_map->GetZoomLevel(selected_tab->GetURL());
-  double value = static_cast<double>(
-      std::max(std::min(std::pow(1.2, zoom_level), 3.0), .5));
-  *enable_decrement = (value != .5);
-  *enable_increment = (value != 3.0);
-  return value;
 }
 
 string16 WrenchMenuModel::GetSyncMenuLabel() const {

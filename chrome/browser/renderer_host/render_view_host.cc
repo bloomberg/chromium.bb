@@ -863,8 +863,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebDatabaseAccessed, OnWebDatabaseAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetDisplayingPDFContent,
-                        OnSetDisplayingPDFContent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestResult, OnSetSuggestResult)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
                         OnDetectedPhishingSite)
@@ -2064,8 +2063,10 @@ void RenderViewHost::OnWebDatabaseAccessed(const GURL& url,
         url, name, display_name, estimated_size, blocked_by_policy);
 }
 
-void RenderViewHost::OnSetDisplayingPDFContent() {
-  delegate_->SetDisplayingPDFContent();
+void RenderViewHost::OnUpdateZoomLimits(int minimum_percent,
+                                        int maximum_percent,
+                                        bool remember) {
+  delegate_->UpdateZoomLimits(minimum_percent, maximum_percent, remember);
 }
 
 void RenderViewHost::OnSetSuggestResult(int32 page_id,

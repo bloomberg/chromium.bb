@@ -1157,9 +1157,7 @@ class NotificationType {
     BOOKMARK_CONTEXT_MENU_SHOWN,
 #endif
 
-    // Sent when the zoom level changes. The source is the profile, details the
-    // host as a std::string (see HostZoomMap::GetZoomLevel for details on the
-    // host as it not always just the host).
+    // Sent when the zoom level changes. The source is the profile.
     ZOOM_LEVEL_CHANGED,
 
     // Sent when the tab's closeable state has changed due to increase/decrease

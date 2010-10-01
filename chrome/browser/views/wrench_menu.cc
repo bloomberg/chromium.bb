@@ -12,7 +12,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_observer.h"
@@ -466,44 +465,19 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
 
  private:
   void UpdateZoomControls() {
-    bool enable_increment, enable_decrement;
-    int zoom_percent =
-        static_cast<int>(GetZoom(&enable_increment, &enable_decrement));
-    enable_increment = enable_increment &&
-        menu_model_->IsEnabledAt(increment_button_->tag());
-    enable_decrement = enable_decrement &&
-        menu_model_->IsEnabledAt(decrement_button_->tag());
+    bool enable_increment = false;
+    bool enable_decrement = false;
+    TabContents* selected_tab = menu_->browser_->GetSelectedTabContents();
+    int zoom = 100;
+    if (selected_tab)
+      zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
     increment_button_->SetEnabled(enable_increment);
     decrement_button_->SetEnabled(enable_decrement);
     zoom_label_->SetText(l10n_util::GetStringF(
                              IDS_ZOOM_PERCENT,
-                             UTF8ToWide(base::IntToString(zoom_percent))));
-    // If both increment and decrement are disabled, then we disable the zoom
-    // label too.
-    zoom_label_->SetEnabled(enable_increment || enable_decrement);
-  }
+                             UTF8ToWide(base::IntToString(zoom))));
 
-  double GetZoom(bool* enable_increment, bool* enable_decrement) {
-    // TODO(sky): move this somewhere it can be shared.
-    TabContents* selected_tab = menu_->browser_->GetSelectedTabContents();
-    *enable_decrement = *enable_increment = false;
-    if (!selected_tab)
-      return 1;
-
-    HostZoomMap* zoom_map = selected_tab->profile()->GetHostZoomMap();
-    if (!zoom_map)
-      return 1;
-
-    int zoom_level = zoom_map->GetZoomLevel(selected_tab->GetURL());
-    double value = ZoomPercentFromZoomLevel(zoom_level);
-    *enable_decrement = (value != 50);
-    *enable_increment = (value != 300);
-    return value;
-  }
-
-  double ZoomPercentFromZoomLevel(int level) {
-    return static_cast<double>(
-        std::max(std::min(std::pow(1.2, level), 3.0), .5)) * 100;
+    zoom_label_width_ = MaxWidthForZoomLabel();
   }
 
   // Calculates the max width the zoom string can be.
@@ -512,13 +486,24 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     gfx::Insets insets;
     if (zoom_label_->border())
       zoom_label_->border()->GetInsets(&insets);
+
     int max_w = 0;
-    for (int i = -4; i <= 7; ++i) {
-      int zoom_percent = static_cast<int>(ZoomPercentFromZoomLevel(i));
-      int w = font.GetStringWidth(
-          l10n_util::GetStringF(IDS_ZOOM_PERCENT, zoom_percent));
-      max_w = std::max(w, max_w);
+
+    TabContents* selected_tab = menu_->browser_->GetSelectedTabContents();
+    if (selected_tab) {
+      int min_percent = selected_tab->minimum_zoom_percent();
+      int max_percent = selected_tab->maximum_zoom_percent();
+
+      int step = (max_percent - min_percent) / 10;
+      for (int i = min_percent; i <= max_percent; i += step) {
+        int w = font.GetStringWidth(l10n_util::GetStringF(IDS_ZOOM_PERCENT, i));
+        max_w = std::max(w, max_w);
+      }
+    } else {
+      int max_w =
+          font.GetStringWidth(l10n_util::GetStringF(IDS_ZOOM_PERCENT, 100));
     }
+
     return max_w + insets.width();
   }
 

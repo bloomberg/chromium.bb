@@ -437,6 +437,8 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener* listener);
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
+  virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
+  virtual void zoomLevelChanged();
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
@@ -641,7 +643,7 @@ class RenderView : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, UpdateTargetURLWithInvalidURL);
 
   typedef std::map<GURL, ContentSettings> HostContentSettings;
-  typedef std::map<GURL, int> HostZoomLevels;
+  typedef std::map<GURL, double> HostZoomLevels;
 
   enum ErrorPageType {
     DNS_ERROR,
@@ -845,7 +847,7 @@ class RenderView : public RenderWidget,
 #if defined(OS_MACOSX)
   void OnSetWindowVisibility(bool visible);
 #endif
-  void OnSetZoomLevelForLoadingURL(const GURL& url, int zoom_level);
+  void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
   void OnShouldClose();
   void OnStop();
   void OnStopFinding(const ViewMsg_StopFinding_Params& params);

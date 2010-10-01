@@ -670,8 +670,6 @@ class TabContents : public PageNavigator,
   }
   bool closed_by_user_gesture() const { return closed_by_user_gesture_; }
 
-  bool is_displaying_pdf_content() const { return displaying_pdf_content_; }
-
   // JavaScriptMessageBoxClient ------------------------------------------------
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
@@ -710,6 +708,13 @@ class TabContents : public PageNavigator,
   // Sends the page title to the history service. This is called when we receive
   // the page title and we know we want to update history.
   void UpdateHistoryPageTitle(const NavigationEntry& entry);
+
+  // Gets the zoom percent for this tab.
+  int GetZoomPercent(bool* enable_increment, bool* enable_decrement);
+
+  // Gets the minimum/maximum zoom percent.
+  int minimum_zoom_percent() const { return minimum_zoom_percent_; }
+  int maximum_zoom_percent() const { return maximum_zoom_percent_; }
 
  private:
   friend class NavigationController;
@@ -986,7 +991,9 @@ class TabContents : public PageNavigator,
   virtual bool IsExternalTabContainer() const;
   virtual void DidInsertCSS();
   virtual void FocusedNodeChanged();
-  virtual void SetDisplayingPDFContent();
+  virtual void UpdateZoomLimits(int minimum_percent,
+                                int maximum_percent,
+                                bool remember);
 
   // RenderViewHostManager::Delegate -------------------------------------------
 
@@ -1274,8 +1281,13 @@ class TabContents : public PageNavigator,
   // See description above setter.
   bool closed_by_user_gesture_;
 
-  // See description in RenderViewHostDelegate::SetDisplayingPDFContent.
-  bool displaying_pdf_content_;
+  // Minimum/maximum zoom percent.
+  int minimum_zoom_percent_;
+  int maximum_zoom_percent_;
+  // If true, the default zoom limits have been overriden for this tab, in which
+  // case we don't want saved settings to apply to it and we don't want to
+  // remember it.
+  bool temporary_zoom_settings_;
 
   // ---------------------------------------------------------------------------
 

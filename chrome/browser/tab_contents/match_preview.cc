@@ -419,7 +419,6 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual bool infobars_enabled() { return false; }
   virtual bool ShouldEnablePreferredSizeNotifications() { return false; }
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
-  virtual void ContentTypeChanged(TabContents* source) {}
 
   virtual void OnSetSuggestResult(int32 page_id, const std::string& result) {
     TabContents* source = match_preview_->preview_contents();

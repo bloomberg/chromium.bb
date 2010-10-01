@@ -286,8 +286,15 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                                       int v8_memory_used,
                                       base::ProcessId renderer_id);
 
-  void OnDidZoomURL(const GURL& url, int zoom_level);
-  void UpdateHostZoomLevelsOnUIThread(const GURL& url, int zoom_level);
+  void OnDidZoomURL(const IPC::Message& message,
+                    double zoom_level,
+                    bool remember,
+                    const GURL& url);
+  void UpdateHostZoomLevelsOnUIThread(double zoom_level,
+                                      bool remember,
+                                      const GURL& url,
+                                      int render_process_id,
+                                      int render_view_id);
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 

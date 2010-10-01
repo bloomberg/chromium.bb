@@ -25,6 +25,7 @@ struct PP_Var;
 struct PPB_Instance;
 struct PPB_Find_Dev;
 struct PPB_Fullscreen_Dev;
+struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
 struct PPP_Instance;
 struct PPP_Zoom_Dev;
@@ -67,6 +68,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // exposed to the plugin.
   static const PPB_Find_Dev* GetFindInterface();
   static const PPB_Fullscreen_Dev* GetFullscreenInterface();
+  static const PPB_Zoom_Dev* GetZoomInterface();
 
   PluginDelegate* delegate() const { return delegate_; }
   PluginModule* module() const { return module_.get(); }
@@ -134,7 +136,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
       gfx::Rect* clip);
 
   string16 GetSelectedText(bool html);
-  void Zoom(float factor, bool text_only);
+  void Zoom(double factor, bool text_only);
   bool StartFind(const string16& search_text,
                  bool case_sensitive,
                  int identifier);

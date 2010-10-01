@@ -124,9 +124,6 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   void CreateCutCopyPaste();
   void CreateZoomFullscreen();
 
-  // Gets the current zoom information from the renderer.
-  double GetZoom(bool* enable_increment, bool* enable_decrement);
-
   string16 GetSyncMenuLabel() const;
 
   // Models for the special menu items with buttons.

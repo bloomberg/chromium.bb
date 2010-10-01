@@ -296,11 +296,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Only called if ShouldEnablePreferredSizeNotifications() returns true.
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);
 
-  // Notifies the delegate that something has changed about what content the
-  // TabContents is displaying. Currently this is only fired when displaying
-  // PDF using the internal PDF plugin.
-  virtual void ContentTypeChanged(TabContents* source);
-
   // Notifies the delegate that the page has a suggest result.
   virtual void OnSetSuggestResult(int32 page_id, const std::string& result);
 

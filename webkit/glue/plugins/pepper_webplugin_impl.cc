@@ -4,10 +4,13 @@
 
 #include "webkit/glue/plugins/pepper_webplugin_impl.h"
 
+#include <cmath>
+
 #include "base/message_loop.h"
 #include "third_party/ppapi/c/pp_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
@@ -19,6 +22,7 @@ using WebKit::WebPluginParams;
 using WebKit::WebRect;
 using WebKit::WebString;
 using WebKit::WebVector;
+using WebKit::WebView;
 
 namespace pepper {
 
@@ -165,8 +169,14 @@ WebKit::WebString WebPluginImpl::selectionAsMarkup() const {
   return instance_->GetSelectedText(true);
 }
 
-void WebPluginImpl::setZoomFactor(float scale, bool text_only) {
-  instance_->Zoom(scale, text_only);
+void WebPluginImpl::setZoomLevel(double level, bool text_only) {
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+  double factor = WebView::zoomLevelToZoomFactor(level);
+#else
+  double factor = std::pow(1.2, level);
+#endif
+
+  instance_->Zoom(factor, text_only);
 }
 
 bool WebPluginImpl::startFind(const WebKit::WebString& search_text,

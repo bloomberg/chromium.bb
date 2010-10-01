@@ -34,6 +34,7 @@
 #include "third_party/ppapi/c/dev/ppb_url_util_dev.h"
 #include "third_party/ppapi/c/dev/ppb_video_decoder_dev.h"
 #include "third_party/ppapi/c/dev/ppb_widget_dev.h"
+#include "third_party/ppapi/c/dev/ppb_zoom_dev.h"
 #include "third_party/ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_resource.h"
@@ -272,6 +273,8 @@ const void* GetInterface(const char* name) {
     return CharSet::GetInterface();
   if (strcmp(name, PPB_CURSOR_CONTROL_DEV_INTERFACE) == 0)
     return GetCursorControlInterface();
+  if (strcmp(name, PPB_ZOOM_DEV_INTERFACE) == 0)
+    return PluginInstance::GetZoomInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

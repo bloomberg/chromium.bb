@@ -182,9 +182,6 @@ bool TabContentsDelegate::ShouldEnablePreferredSizeNotifications() {
 void TabContentsDelegate::UpdatePreferredSize(const gfx::Size& pref_size) {
 }
 
-void TabContentsDelegate::ContentTypeChanged(TabContents* source) {
-}
-
 void TabContentsDelegate::OnSetSuggestResult(int32 page_id,
                                              const std::string& result) {
 }

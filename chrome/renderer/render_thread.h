@@ -251,7 +251,7 @@ class RenderThread : public RenderThreadBase,
   void OnUpdateVisitedLinks(base::SharedMemoryHandle table);
   void OnAddVisitedLinks(const VisitedLinkSlave::Fingerprints& fingerprints);
   void OnResetVisitedLinks();
-  void OnSetZoomLevelForCurrentURL(const GURL& url, int zoom_level);
+  void OnSetZoomLevelForCurrentURL(const GURL& url, double zoom_level);
   void OnSetContentSettingsForCurrentURL(
       const GURL& url, const ContentSettings& content_settings);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);

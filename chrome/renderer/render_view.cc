@@ -5,6 +5,7 @@
 #include "chrome/renderer/render_view.h"
 
 #include <algorithm>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -1385,16 +1386,39 @@ void RenderView::UpdateURL(WebFrame* frame) {
       }
     }
 
-    // Set zoom level.
+    // Set zoom level, but don't do it for full-page plugin since they don't use
+    // the same zoom settings.
     HostZoomLevels::iterator host_zoom =
         host_zoom_levels_.find(GURL(request.url()));
+    if (webview()->mainFrame()->document().isPluginDocument()) {
+      // Reset the zoom levels for plugins.
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+      webview()->setZoomLevel(false, 0);
+#endif
+    } else {
+      if (host_zoom != host_zoom_levels_.end())
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+        webview()->setZoomLevel(false, host_zoom->second);
+#else
+        webview()->setZoomLevel(false, static_cast<int>(host_zoom->second));
+#endif
+    }
+
     if (host_zoom != host_zoom_levels_.end()) {
-      webview()->setZoomLevel(false, host_zoom->second);
       // This zoom level was merely recorded transiently for this load.  We can
       // erase it now.  If at some point we reload this page, the browser will
       // send us a new, up-to-date zoom level.
       host_zoom_levels_.erase(host_zoom);
     }
+
+    // Reset the zoom limits in case a plugin had changed them previously. This
+    // will also call us back which will cause us to send a message to
+    // update TabContents.
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+    webview()->zoomLimitsChanged(
+        WebView::zoomFactorToZoomLevel(WebView::minTextSizeMultiplier),
+        WebView::zoomFactorToZoomLevel(WebView::maxTextSizeMultiplier));
+#endif
 
     // Update contents MIME type for main frame.
     params.contents_mime_type = ds->response().mimeType().utf8();
@@ -3996,20 +4020,8 @@ WebPlugin* RenderView::CreatePepperPlugin(WebFrame* frame,
                                           const WebPluginParams& params,
                                           const FilePath& path,
                                           pepper::PluginModule* pepper_module) {
-  WebPlugin* plugin = new pepper::WebPluginImpl(pepper_module, params,
-                                                pepper_delegate_.AsWeakPtr());
-  if (plugin && !frame->parent() && frame->document().isPluginDocument()) {
-    // If this is a full-page plugin hosting the internal PDF plugin, we want
-    // to notify the browser so that it can treat things like zooming
-    // differently.
-    // TODO(sanjeevr): Use a Pepper interface to determine this rather than
-    // hardcode this for the PDF plugin path.
-    FilePath pdf_path;
-    PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-    if (path == pdf_path)
-      Send(new ViewHostMsg_SetDisplayingPDFContent(routing_id_));
-  }
-  return plugin;
+  return new pepper::WebPluginImpl(
+      pepper_module, params, pepper_delegate_.AsWeakPtr());
 }
 
 WebPlugin* RenderView::CreateNPAPIPlugin(WebFrame* frame,
@@ -4066,13 +4078,36 @@ void RenderView::OnZoom(PageZoom::Function function) {
 
   webview()->hidePopups();
 
-  int zoom_level = webview()->zoomLevel();
-  int new_zoom_level = webview()->setZoomLevel(false,
-      (function == PageZoom::RESET) ? 0 : (zoom_level + function));
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+  double old_zoom_level = webview()->zoomLevel();
+  double zoom_level;
+  if (function == PageZoom::RESET) {
+    zoom_level = 0;
+  } else if (static_cast<int>(old_zoom_level) == old_zoom_level) {
+    // Previous zoom level is a whole number, so just increment/decrement.
+    zoom_level = old_zoom_level + function;
+  } else {
+    // Either the user hit the zoom factor limit and thus the zoom level is now
+    // not a whole number, or a plugin changed it to a custom value.  We want
+    // to go to the next whole number so that the user can always get back to
+    // 100% with the keyboard/menu.
+    if ((old_zoom_level > 1 && function > 0) ||
+        (old_zoom_level < 1 && function < 0)) {
+      zoom_level = abs(old_zoom_level + function);
+    } else {
+      // We're going towards 100%, so first go to the next whole number.
+      zoom_level = static_cast<int>(old_zoom_level);
+    }
+  }
 
-  // Tell the browser which url got zoomed so it can update the saved values.
-  Send(new ViewHostMsg_DidZoomURL(
-      GURL(webview()->mainFrame()->url()), new_zoom_level));
+  webview()->setZoomLevel(false, zoom_level);
+  zoomLevelChanged();
+#else
+  int zoom_level = webview()->zoomLevel();
+  webview()->setZoomLevel(false,
+      (function == PageZoom::RESET) ? 0 : (zoom_level + function));
+  zoomLevelChanged();
+#endif
 }
 
 void RenderView::OnSetContentSettingsForLoadingURL(
@@ -4082,7 +4117,7 @@ void RenderView::OnSetContentSettingsForLoadingURL(
 }
 
 void RenderView::OnSetZoomLevelForLoadingURL(const GURL& url,
-                                             int zoom_level) {
+                                             double zoom_level) {
   host_zoom_levels_[url] = zoom_level;
 }
 
@@ -5818,6 +5853,43 @@ WebKit::WebDeviceOrientationClient* RenderView::deviceOrientationClient() {
   if (!device_orientation_dispatcher_.get())
     device_orientation_dispatcher_.reset(new DeviceOrientationDispatcher(this));
   return device_orientation_dispatcher_.get();
+}
+
+void RenderView::zoomLimitsChanged(double minimum_level, double maximum_level) {
+  // For now, don't remember plugin zoom values.  We don't want to mix them with
+  // normal web content (i.e. a fixed layout plugin would usually want them
+  // different).
+  bool remember = !webview()->mainFrame()->document().isPluginDocument();
+
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+  int minimum_percent = static_cast<int>(
+      WebView::zoomLevelToZoomFactor(minimum_level) * 100);
+  int maximum_percent = static_cast<int>(
+      WebView::zoomLevelToZoomFactor(maximum_level) * 100);
+#else
+  int minimum_percent = static_cast<int>(std::pow(1.2, minimum_level) * 100);
+  int maximum_percent = static_cast<int>(std::pow(1.2, minimum_level) * 100);
+#endif
+
+  Send(new ViewHostMsg_UpdateZoomLimits(
+      routing_id_, minimum_percent, maximum_percent, remember));
+}
+
+void RenderView::zoomLevelChanged() {
+  bool remember = !webview()->mainFrame()->document().isPluginDocument();
+
+  double zoom_level = webview()->zoomLevel();
+#ifndef ZOOM_LEVEL_IS_DOUBLE
+  // Clamp down since we just got an integer.
+  double minimum_level = log(0.5) / log(1.2);
+  double maximum_level = log(3.0) / log(1.2);
+  zoom_level = std::max(std::min(zoom_level, maximum_level), minimum_level);
+#endif
+
+  // Tell the browser which url got zoomed so it can update the menu and the
+  // saved values if necessary
+  Send(new ViewHostMsg_DidZoomURL(
+      routing_id_, zoom_level, remember, GURL(webview()->mainFrame()->url())));
 }
 
 bool RenderView::IsNonLocalTopLevelNavigation(

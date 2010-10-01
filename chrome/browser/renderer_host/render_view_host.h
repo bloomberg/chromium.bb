@@ -679,7 +679,9 @@ class RenderViewHost : public RenderWidgetHost {
                              const string16& display_name,
                              unsigned long estimated_size,
                              bool blocked_by_policy);
-  void OnSetDisplayingPDFContent();
+  void OnUpdateZoomLimits(int minimum_percent,
+                          int maximum_percent,
+                          bool remember);
   void OnSetSuggestResult(int32 page_id, const std::string& result);
   void OnDetectedPhishingSite(const GURL& phishing_url,
                               double phishing_score,

@@ -24,6 +24,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/ppapi/c/dev/ppb_find_dev.h"
 #include "third_party/ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "third_party/ppapi/c/dev/ppb_zoom_dev.h"
 #include "third_party/ppapi/c/dev/ppp_find_dev.h"
 #include "third_party/ppapi/c/dev/ppp_zoom_dev.h"
 #include "third_party/ppapi/c/pp_input_event.h"
@@ -42,6 +43,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_graphics_2d.h"
 #include "webkit/glue/plugins/pepper_event_conversion.h"
@@ -59,6 +61,7 @@ using WebKit::WebCursorInfo;
 using WebKit::WebFrame;
 using WebKit::WebInputEvent;
 using WebKit::WebPluginContainer;
+using WebKit::WebView;
 
 namespace pepper {
 
@@ -189,7 +192,7 @@ void NumberOfFindResultsChanged(PP_Instance instance_id,
     return;
 
   DCHECK_NE(instance->find_identifier(), -1);
-  instance->delegate()->DidChangeNumberOfFindResults(
+  instance->delegate()->NumberOfFindResultsChanged(
       instance->find_identifier(), total, final_result);
 }
 
@@ -200,7 +203,7 @@ void SelectedFindResultChanged(PP_Instance instance_id,
     return;
 
   DCHECK_NE(instance->find_identifier(), -1);
-  instance->delegate()->DidChangeSelectedFindResult(
+  instance->delegate()->SelectedFindResultChanged(
       instance->find_identifier(), index);
 }
 
@@ -226,6 +229,37 @@ bool SetFullscreen(PP_Instance instance_id, bool fullscreen) {
 const PPB_Fullscreen_Dev ppb_fullscreen = {
   &IsFullscreen,
   &SetFullscreen,
+};
+
+void ZoomChanged(PP_Instance instance_id, double factor) {
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return;
+  double zoom_level = WebView::zoomFactorToZoomLevel(factor);
+  instance->container()->zoomLevelChanged(zoom_level);
+#endif
+}
+
+void ZoomLimitsChanged(PP_Instance instance_id,
+                       double minimum_factor,
+                       double maximium_factor) {
+  if (minimum_factor > maximium_factor) {
+    NOTREACHED();
+    return;
+  }
+
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  if (!instance)
+    return;
+  instance->delegate()->ZoomLimitsChanged(minimum_factor, maximium_factor);
+#endif
+}
+
+const PPB_Zoom_Dev ppb_zoom = {
+  &ZoomChanged,
+  &ZoomLimitsChanged
 };
 
 }  // namespace
@@ -280,6 +314,11 @@ const PPB_Find_Dev* PluginInstance::GetFindInterface() {
 // static
 const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
   return &ppb_fullscreen;
+}
+
+// static
+const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
+  return &ppb_zoom;
 }
 
 PP_Instance PluginInstance::GetPPInstance() {
@@ -555,7 +594,7 @@ string16 PluginInstance::GetSelectedText(bool html) {
   return UTF8ToUTF16(string->value());
 }
 
-void PluginInstance::Zoom(float factor, bool text_only) {
+void PluginInstance::Zoom(double factor, bool text_only) {
   if (!LoadZoomInterface())
     return;
   plugin_zoom_interface_->Zoom(GetPPInstance(), factor, text_only);

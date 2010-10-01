@@ -397,13 +397,13 @@ IPC_BEGIN_MESSAGES(View)
   // and ignored otherwise.
   IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForLoadingURL,
                       GURL /* url */,
-                      int /* zoom_level */)
+                      double /* zoom_level */)
 
   // Set the zoom level for a particular url, so all render views
   // displaying this url can update their zoom levels to match.
   IPC_MESSAGE_CONTROL2(ViewMsg_SetZoomLevelForCurrentURL,
                        GURL /* url */,
-                       int /* zoom_level */)
+                       double /* zoom_level */)
 
   // Set the content settings for a particular url that the renderer is in the
   // process of loading.  This will be stored, to be used if the load commits
@@ -1892,10 +1892,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int /* request_id */)
 
   // Sent when the renderer changes the zoom level for a particular url, so the
-  // browser can update its records.
-  IPC_MESSAGE_CONTROL2(ViewHostMsg_DidZoomURL,
-                       GURL /* url */,
-                       int /* zoom_level */)
+  // browser can update its records.  If remember is true, then url is used to
+  // update the zoom level for all pages in that site.  Otherwise, the render
+  // view's id is used so that only the menu is updated.
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_DidZoomURL,
+                      double /* zoom_level */,
+                      bool /* remember */,
+                      GURL /* url */)
 
 #if defined(OS_WIN)
   // Duplicates a shared memory handle from the renderer to the browser. Then
@@ -2758,9 +2761,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int /* render_view_id */,
                        int /* bridge_id */)
 
-  // Notifies the TabContents that the content being displayed is PDF.
-  // This allows the browser to handle things such as zooming differently.
-  IPC_MESSAGE_ROUTED0(ViewHostMsg_SetDisplayingPDFContent)
+  // Updates the minimum/maximum allowed zoom percent for this tab from the
+  // default values.  If |remember| is true, then the zoom setting is applied to
+  // other pages in the site and is saved, otherwise it only applies to this
+  // tab.
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateZoomLimits,
+                      int /* minimum_percent */,
+                      int /* maximum_percent */,
+                      bool /* remember */)
 
   // Requests the speech input service to start speech recognition on behalf of
   // the given |render_view_id|.

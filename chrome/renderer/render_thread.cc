@@ -78,6 +78,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebColor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFontCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
@@ -188,21 +189,31 @@ class RenderViewContentSettingsSetter : public RenderViewVisitor {
 
 class RenderViewZoomer : public RenderViewVisitor {
  public:
-  RenderViewZoomer(const GURL& url, int zoom_level)
+  RenderViewZoomer(const GURL& url, double zoom_level)
       : zoom_level_(zoom_level) {
     host_ = net::GetHostOrSpecFromURL(url);
   }
 
   virtual bool Visit(RenderView* render_view) {
     WebView* webview = render_view->webview();  // Guaranteed non-NULL.
+
+    // Don't set zoom level for full-page plugin since they don't use the same
+    // zoom settings.
+    if (webview->mainFrame()->document().isPluginDocument())
+      return true;
+
     if (net::GetHostOrSpecFromURL(GURL(webview->mainFrame()->url())) == host_)
+#ifdef ZOOM_LEVEL_IS_DOUBLE
       webview->setZoomLevel(false, zoom_level_);
+#else
+      webview->setZoomLevel(false, static_cast<int>(zoom_level_));
+#endif
     return true;
   }
 
  private:
   std::string host_;
-  int zoom_level_;
+  double zoom_level_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
 };
@@ -506,7 +517,7 @@ void RenderThread::OnSetContentSettingsForCurrentURL(
 }
 
 void RenderThread::OnSetZoomLevelForCurrentURL(const GURL& url,
-                                               int zoom_level) {
+                                               double zoom_level) {
   RenderViewZoomer zoomer(url, zoom_level);
   RenderView::ForEach(&zoomer);
 }

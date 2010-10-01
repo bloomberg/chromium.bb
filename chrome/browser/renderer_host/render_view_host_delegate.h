@@ -835,8 +835,10 @@ class RenderViewHostDelegate {
   // A different node in the page got focused.
   virtual void FocusedNodeChanged() {}
 
-  // The content being displayed is a PDF.
-  virtual void SetDisplayingPDFContent() {}
+  // Updates the minimum and maximum zoom percentages.
+  virtual void UpdateZoomLimits(int minimum_percent,
+                                int maximum_percent,
+                                bool remember) {}
 
  protected:
   virtual ~RenderViewHostDelegate() {}

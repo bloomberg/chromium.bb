@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tab_contents/tab_contents.h"
 
+#include <cmath>
+
 #if defined(OS_CHROMEOS)
 // For GdkScreen
 #include <gdk/gdk.h>
@@ -45,6 +47,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/find_bar_state.h"
@@ -109,6 +112,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/password_form.h"
 
@@ -375,7 +379,16 @@ TabContents::TabContents(Profile* profile,
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
       language_state_(&controller_),
       closed_by_user_gesture_(false),
-      displaying_pdf_content_(false) {
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+      minimum_zoom_percent_(
+          static_cast<int>(WebKit::WebView::minTextSizeMultiplier * 100)),
+      maximum_zoom_percent_(
+          static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
+#else
+      minimum_zoom_percent_(50),
+      maximum_zoom_percent_(300),
+#endif
+      temporary_zoom_settings_(false) {
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
 
@@ -1481,6 +1494,33 @@ void TabContents::UpdateHistoryPageTitle(const NavigationEntry& entry) {
   HistoryService* hs = profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
   if (hs)
     hs->SetPageTitle(entry.virtual_url(), entry.title());
+}
+
+int TabContents::GetZoomPercent(bool* enable_increment,
+                                bool* enable_decrement) {
+  *enable_decrement = *enable_increment = false;
+  HostZoomMap* zoom_map = profile()->GetHostZoomMap();
+  if (!zoom_map)
+    return 100;
+
+  double zoom_level;
+  if (temporary_zoom_settings_) {
+    zoom_level = zoom_map->GetTemporaryZoomLevel(
+        GetRenderProcessHost()->id(), render_view_host()->routing_id());
+  } else {
+    zoom_level = zoom_map->GetZoomLevel(GetURL());
+  }
+
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+  int percent = static_cast<int>(
+      WebKit::WebView::zoomLevelToZoomFactor(zoom_level) * 100);
+#else
+  int percent = static_cast<int>(std::pow(1.2, zoom_level) * 100);
+#endif
+
+  *enable_decrement = percent > minimum_zoom_percent_;
+  *enable_increment = percent < maximum_zoom_percent_;
+  return percent;
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
@@ -2618,9 +2658,6 @@ void TabContents::RequestMove(const gfx::Rect& new_bounds) {
 }
 
 void TabContents::DidStartLoading() {
-  // By default, we assume that the content is not PDF. The renderer
-  // will tell us if this is not the case.
-  displaying_pdf_content_ = false;
   SetIsLoading(true, NULL);
 }
 
@@ -2979,10 +3016,12 @@ void TabContents::FocusedNodeChanged() {
       NotificationService::NoDetails());
 }
 
-void TabContents::SetDisplayingPDFContent() {
-  displaying_pdf_content_ = true;
-  if (delegate())
-    delegate()->ContentTypeChanged(this);
+void TabContents::UpdateZoomLimits(int minimum_percent,
+                                   int maximum_percent,
+                                   bool remember) {
+  minimum_zoom_percent_ = minimum_percent;
+  maximum_zoom_percent_ = maximum_percent;
+  temporary_zoom_settings_ = !remember;
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(

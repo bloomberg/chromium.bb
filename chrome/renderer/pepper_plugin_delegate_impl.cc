@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "chrome/renderer/pepper_plugin_delegate_impl.h"
 
 #include "app/l10n_util.h"
@@ -25,6 +27,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/glue/plugins/pepper_file_io.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
@@ -34,6 +37,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #endif
+
+using WebKit::WebView;
 
 namespace {
 
@@ -612,14 +617,14 @@ PepperPluginDelegateImpl::CreateVideoDecoder(
   return decoder.release();
 }
 
-void PepperPluginDelegateImpl::DidChangeNumberOfFindResults(int identifier,
-                                                           int total,
-                                                           bool final_result) {
+void PepperPluginDelegateImpl::NumberOfFindResultsChanged(int identifier,
+                                                          int total,
+                                                          bool final_result) {
   render_view_->reportFindInPageMatchCount(identifier, total, final_result);
 }
 
-void PepperPluginDelegateImpl::DidChangeSelectedFindResult(int identifier,
-                                                          int index) {
+void PepperPluginDelegateImpl::SelectedFindResultChanged(int identifier,
+                                                         int index) {
   render_view_->reportFindInPageSelection(
       identifier, index + 1, WebKit::WebRect());
 }
@@ -733,4 +738,13 @@ std::string PepperPluginDelegateImpl::GetDefaultEncoding() {
   // TODO(brettw) bug 56615: Somehow get the preference for the default
   // encoding here rather than using the global default for the UI language.
   return l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING);
+}
+
+void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
+                                                 double maximum_factor) {
+#ifdef ZOOM_LEVEL_IS_DOUBLE
+  double minimum_level = WebView::zoomFactorToZoomLevel(minimum_factor);
+  double maximum_level = WebView::zoomFactorToZoomLevel(maximum_factor);
+  render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
+#endif
 }

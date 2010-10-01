@@ -115,12 +115,6 @@ class ZoomLevelObserver : public NotificationObserver {
       [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[zoomItem_ viewWithTag:IDC_ZOOM_PERCENT_DISPLAY] setTitle:title];
 
-  bool plusEnabled = [self wrenchMenuModel]->IsCommandIdEnabled(IDC_ZOOM_PLUS);
-  bool minusEnabled = [self wrenchMenuModel]->IsCommandIdEnabled(
-      IDC_ZOOM_MINUS);
-  [zoomPlus_ setEnabled:plusEnabled];
-  [zoomMinus_ setEnabled:minusEnabled];
-
   NSImage* icon = [self wrenchMenuModel]->browser()->window()->IsFullscreen() ?
       [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :
           [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];

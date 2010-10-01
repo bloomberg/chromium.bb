@@ -11,6 +11,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/lock.h"
@@ -37,14 +38,30 @@ class HostZoomMap : public NotificationObserver,
   // (to zoom in) or negative (to zoom out).
   //
   // This may be called on any thread.
-  int GetZoomLevel(const GURL& url) const;
+  double GetZoomLevel(const GURL& url) const;
 
   // Sets the zoom level for a given url to |level|.  If the level is 0,
   // the host is erased from the saved preferences; otherwise the new value is
   // written out.
   //
   // This should only be called on the UI thread.
-  void SetZoomLevel(const GURL& url, int level);
+  void SetZoomLevel(const GURL& url, double level);
+
+  // Returns the temporary zoom level that's only valid for the lifetime of
+  // the given tab (i.e. isn't saved and doesn't affect other tabs) if it
+  // exists, 0 otherwise.
+  //
+  // This may be called on any thread.
+  double GetTemporaryZoomLevel(int render_process_id,
+                               int render_view_id) const;
+
+  // Sets the temporary zoom level that's only valid for the lifetime of this
+  // tab.
+  //
+  // This should only be called on the UI thread.
+  void SetTemporaryZoomLevel(int render_process_id,
+                             int render_view_id,
+                             double level);
 
   // Resets all zoom levels.
   //
@@ -59,7 +76,7 @@ class HostZoomMap : public NotificationObserver,
  private:
   friend class base::RefCountedThreadSafe<HostZoomMap>;
 
-  typedef std::map<std::string, int> HostZoomLevels;
+  typedef std::map<std::string, double> HostZoomLevels;
 
   ~HostZoomMap();
 
@@ -76,7 +93,18 @@ class HostZoomMap : public NotificationObserver,
   // Copy of the pref data, so that we can read it on the IO thread.
   HostZoomLevels host_zoom_levels_;
 
-  // Used around accesses to |host_zoom_levels_| to guarantee thread safety.
+  struct TemporaryZoomLevel {
+    int render_process_id;
+    int render_view_id;
+    double zoom_level;
+  };
+
+  // Don't expect more than a couple of tabs that are using a temporary zoom
+  // level, so vector is fine for now.
+  std::vector<TemporaryZoomLevel> temporary_zoom_levels_;
+
+  // Used around accesses to |host_zoom_levels_| and |temporary_zoom_levels_| to
+  // guarantee thread safety.
   mutable Lock lock_;
 
   // Whether we are currently updating preferences, this is used to ignore
