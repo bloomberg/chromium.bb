@@ -461,6 +461,10 @@
                 '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
                ],
+               'export_dependent_settings': [
+                 '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
+               ],
             }],
           ],
         }],
