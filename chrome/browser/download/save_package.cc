@@ -183,26 +183,42 @@ bool GetSafePureFileName(const FilePath& dir_path,
   return false;
 }
 
-// This task creates a directory and then posts a task on the given thread.
+// This task creates a directory (if needed) and then posts a task on the given
+// thread.
 class CreateDownloadDirectoryTask : public Task {
  public:
-  CreateDownloadDirectoryTask(const FilePath& save_dir,
-                              Task* follow_up,
-                              MessageLoop* target_thread)
-      : save_dir_(save_dir),
-        follow_up_(follow_up),
-        target_thread_(target_thread) {
+  CreateDownloadDirectoryTask(SavePackage* save_package,
+                              const FilePath& default_save_file_dir,
+                              const FilePath& default_download_dir)
+    : save_package_(save_package),
+      default_save_file_dir_(default_save_file_dir),
+      default_download_dir_(default_download_dir){
   }
 
   virtual void Run() {
-    file_util::CreateDirectory(save_dir_);
-    target_thread_->PostTask(FROM_HERE, follow_up_);
+    // If the default html/websites save folder doesn't exist...
+    if (!file_util::DirectoryExists(default_save_file_dir_)) {
+      // If the default download dir doesn't exist, create it.
+      if (!file_util::DirectoryExists(default_download_dir_))
+        file_util::CreateDirectory(default_download_dir_);
+
+      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(save_package_,
+              &SavePackage::ContinueGetSaveInfo,
+              default_download_dir_));
+    } else {
+      // If it does exist, use the default save dir param.
+      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(save_package_,
+              &SavePackage::ContinueGetSaveInfo,
+              default_save_file_dir_));
+    }
   }
 
  private:
-  FilePath save_dir_;
-  Task* follow_up_;
-  MessageLoop* target_thread_;
+  SavePackage* save_package_;
+  FilePath default_save_file_dir_;
+  FilePath default_download_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDownloadDirectoryTask);
 };
@@ -1219,15 +1235,16 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
 }
 
 void SavePackage::GetSaveInfo() {
-  FilePath save_dir =
-      GetSaveDirPreference(tab_contents_->profile()->GetPrefs());
+  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+  FilePath website_save_dir = GetSaveDirPreference(prefs);
+  FilePath download_save_dir = prefs->GetFilePath(
+      prefs::kDownloadDefaultDirectory);
 
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      new CreateDownloadDirectoryTask(save_dir,
-          method_factory_.NewRunnableMethod(
-              &SavePackage::ContinueGetSaveInfo, save_dir),
-          MessageLoop::current()));
+      new CreateDownloadDirectoryTask(this,
+          website_save_dir,
+          download_save_dir));
   // CreateDownloadDirectoryTask calls ContinueGetSaveInfo() below.
 }
 
