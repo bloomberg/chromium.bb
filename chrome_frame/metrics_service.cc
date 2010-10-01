@@ -55,6 +55,7 @@
 #include "base/lock.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/thread.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -329,9 +330,10 @@ class ChromeFrameMetricsDataUploader
                                   const ResponseCookies& cookies,
                                   const std::string& data) {
     DLOG(INFO) << __FUNCTION__
-               << StringPrintf(": url : %hs, status:%d, response code: %d\n",
-                               url.spec().c_str(), status.status(),
-                               response_code);
+               << base::StringPrintf(
+                       ": url : %hs, status:%d, response code: %d\n",
+                       url.spec().c_str(), status.status(),
+                       response_code);
     delete fetcher_;
     fetcher_ = NULL;
 

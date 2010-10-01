@@ -87,7 +87,7 @@ bool SetRendererSettings(HKEY policy_root,
   EXPECT_TRUE(exclusion_key.Create(policy_key.Handle(), exclusion_list.c_str(),
                                    KEY_ALL_ACCESS));
   for (int i = 0; i < exclusion_count; ++i) {
-    EXPECT_TRUE(exclusion_key.WriteValue(StringPrintf(L"%i", i).c_str(),
+    EXPECT_TRUE(exclusion_key.WriteValue(base::StringPrintf(L"%i", i).c_str(),
                                          exclusions[i]));
   }
 

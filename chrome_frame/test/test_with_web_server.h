@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/http_server.h"
@@ -232,12 +233,14 @@ class SimpleWebServerTest {
                                const FilePath& directory) {
     for (int i = 0; i < count; ++i) {
       server_.AddResponse(new ResponseClass(
-          StringPrintf("/%ls", pages[i]).c_str(), directory.Append(pages[i])));
+          base::StringPrintf("/%ls", pages[i]).c_str(),
+                             directory.Append(pages[i])));
     }
   }
 
   std::wstring FormatHttpPath(const wchar_t* document_path) {
-    return StringPrintf(L"http://localhost:%i/%ls", port_, document_path);
+    return base::StringPrintf(L"http://localhost:%i/%ls", port_,
+                              document_path);
   }
 
   // Returns the last client request object.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,10 +9,9 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-
 #include "chrome_frame/test/test_server.h"
-
 #include "net/base/winsock_init.h"
 #include "net/http/http_util.h"
 
@@ -116,11 +115,12 @@ size_t FileResponse::ContentLength() const {
 }
 
 bool RedirectResponse::GetCustomHeaders(std::string* headers) const {
-  *headers = StringPrintf("HTTP/1.1 302 Found\r\n"
-                          "Connection: close\r\n"
-                          "Content-Length: 0\r\n"
-                          "Content-Type: text/html\r\n"
-                          "Location: %hs\r\n\r\n", redirect_url_.c_str());
+  *headers = base::StringPrintf("HTTP/1.1 302 Found\r\n"
+                                "Connection: close\r\n"
+                                "Content-Length: 0\r\n"
+                                "Content-Type: text/html\r\n"
+                                "Location: %hs\r\n\r\n",
+                                redirect_url_.c_str());
   return true;
 }
 
@@ -195,8 +195,9 @@ void SimpleWebServer::DidRead(ListenSocket* connection,
         std::string content_type;
         if (!response->GetContentType(&content_type))
           content_type = kDefaultContentType;
-        headers = StringPrintf(kDefaultHeaderTemplate, kStatusOk,
-                               content_type.c_str(), response->ContentLength());
+        headers = base::StringPrintf(kDefaultHeaderTemplate, kStatusOk,
+                                     content_type.c_str(),
+                                     response->ContentLength());
       }
 
       connection->Send(headers, false);
@@ -204,8 +205,10 @@ void SimpleWebServer::DidRead(ListenSocket* connection,
       response->IncrementAccessCounter();
     } else {
       std::string payload = "sorry, I can't find " + request.path();
-      std::string headers(StringPrintf(kDefaultHeaderTemplate, kStatusNotFound,
-                                       kDefaultContentType, payload.length()));
+      std::string headers(base::StringPrintf(kDefaultHeaderTemplate,
+                                             kStatusNotFound,
+                                             kDefaultContentType,
+                                             payload.length()));
       connection->Send(headers, false);
       connection->Send(payload, false);
     }
@@ -290,17 +293,17 @@ std::wstring HTTPTestServer::Resolve(const std::wstring& path) {
 
   if (port_ == 80) {
     if (stripped_path.empty()) {
-      return StringPrintf(L"http://%ls", address_.c_str());
+      return base::StringPrintf(L"http://%ls", address_.c_str());
     } else {
-      return StringPrintf(L"http://%ls/%ls", address_.c_str(),
+      return base::StringPrintf(L"http://%ls/%ls", address_.c_str(),
                           stripped_path.c_str());
     }
   } else {
     if (stripped_path.empty()) {
-      return StringPrintf(L"http://%ls:%d", address_.c_str(), port_);
+      return base::StringPrintf(L"http://%ls:%d", address_.c_str(), port_);
     } else {
-      return StringPrintf(L"http://%ls:%d/%ls", address_.c_str(), port_,
-                          stripped_path.c_str());
+      return base::StringPrintf(L"http://%ls:%d/%ls", address_.c_str(), port_,
+                                stripped_path.c_str());
     }
   }
 }
@@ -335,8 +338,8 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
   std::string content_length_header;
   if (!content.empty() &&
       std::string::npos == headers.find("Context-Length:")) {
-    content_length_header = StringPrintf("Content-Length: %u\r\n",
-                                         content.size());
+    content_length_header = base::StringPrintf("Content-Length: %u\r\n",
+                                               content.size());
   }
 
   // Save the options.

@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/ff_privilege_check.h"
@@ -425,7 +426,7 @@ void ChromeFrameNPAPI::UrlNotify(const char* url, NPReason reason,
 void ChromeFrameNPAPI::OnAcceleratorPressed(int tab_handle,
                                             const MSG& accel_message) {
   DLOG(INFO) << __FUNCTION__ << " msg:"
-      << StringPrintf("0x%04X", accel_message.message) << " key:"
+      << base::StringPrintf("0x%04X", accel_message.message) << " key:"
       << accel_message.wParam;
 
   // The host browser does call TranslateMessage on messages like WM_KEYDOWN

@@ -7,6 +7,7 @@
 #include <shlguid.h>
 
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
@@ -50,7 +51,7 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
       // If there's a referrer, preserve it.
       std::wstring headers;
       if (!referrer_.empty()) {
-        headers = StringPrintf(L"Referer: %ls\r\n\r\n",
+        headers = base::StringPrintf(L"Referer: %ls\r\n\r\n",
             ASCIIToWide(referrer_).c_str());
       }
 
@@ -63,7 +64,7 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
 
       hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
           bind_context, fragment.c_str());
-      DLOG(INFO) << StringPrintf("NavigateBrowserToMoniker: 0x%08X", hr);
+      DLOG(INFO) << base::StringPrintf("NavigateBrowserToMoniker: 0x%08X", hr);
     }
   }
 
@@ -105,7 +106,8 @@ bool MonikerPatch::Initialize() {
   DCHECK(SUCCEEDED(hr));
   if (SUCCEEDED(hr)) {
     hr = vtable_patch::PatchInterfaceMethods(moniker, IMoniker_PatchInfo);
-    DLOG_IF(ERROR, FAILED(hr)) << StringPrintf("patch failed 0x%08X", hr);
+    DLOG_IF(ERROR, FAILED(hr)) << base::StringPrintf(
+        "patch failed 0x%08X", hr);
   }
 
   return SUCCEEDED(hr);
@@ -120,7 +122,7 @@ bool ShouldWrapCallback(IMoniker* moniker, REFIID iid, IBindCtx* bind_context) {
   CComHeapPtr<WCHAR> url;
   HRESULT hr = moniker->GetDisplayName(bind_context, NULL, &url);
   if (!url) {
-    DLOG(INFO) << __FUNCTION__ << StringPrintf(
+    DLOG(INFO) << __FUNCTION__ << base::StringPrintf(
         " GetDisplayName failed. Error: 0x%x", hr);
     return false;
   }

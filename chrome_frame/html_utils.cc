@@ -9,6 +9,7 @@
 
 #include "base/string_util.h"
 #include "base/string_tokenizer.h"
+#include "base/stringprintf.h"
 #include "chrome_frame/utils.h"
 #include "net/base/net_util.h"
 #include "webkit/glue/user_agent.h"
@@ -365,7 +366,7 @@ std::string GetDefaultUserAgent() {
   }
 
   if (FAILED(hr)) {
-    NOTREACHED() << StringPrintf("ObtainUserAgentString==0x%08X", hr);
+    NOTREACHED() << base::StringPrintf("ObtainUserAgentString==0x%08X", hr);
     return std::string();
   }
 

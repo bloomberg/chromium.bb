@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -273,8 +274,8 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
 
   test_http_server_.reset(new test_server::SimpleWebServer(kTestServerPort));
   test_http_server_->AddResponse(&chrome_frame_html_);
-  std::wstring url(StringPrintf(L"http://localhost:%i/chrome_frame",
-                                kTestServerPort).c_str());
+  std::wstring url(base::StringPrintf(L"http://localhost:%i/chrome_frame",
+                                      kTestServerPort).c_str());
 
   // Launch IE.  This launches IE correctly on Vista too.
   ScopedHandle ie_process(chrome_frame_test::LaunchIE(url));

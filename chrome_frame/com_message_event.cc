@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 
 ComMessageEvent::ComMessageEvent() {
@@ -93,7 +94,7 @@ STDMETHODIMP ComMessageEvent::GetIDsOfNames(REFIID iid, LPOLESTR* names,
 
       if (FAILED(hr)) {
         DLOG(WARNING) << "member not found: " << names[i]
-                      << StringPrintf(L"0x%08X", hr);
+                      << base::StringPrintf(L"0x%08X", hr);
       }
     }
   }

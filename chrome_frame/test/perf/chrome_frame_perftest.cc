@@ -23,6 +23,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/trace_event_win.h"
 #include "base/utf_string_conversions.h"
@@ -174,7 +175,7 @@ class ChromeFrameActiveXContainer
 
     HRESULT hr = tab_->put_src(ScopedBstr(UTF8ToWide(url).c_str()));
     DCHECK(hr == S_OK) << "Chrome frame NavigateToURL(" << url
-                       << StringPrintf(L") failed 0x%08X", hr);
+                       << base::StringPrintf(L") failed 0x%08X", hr);
   }
 
   void SetupEventSinks() {

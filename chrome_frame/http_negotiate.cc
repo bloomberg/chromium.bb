@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-
 #include "chrome_frame/bho.h"
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/html_utils.h"
@@ -20,7 +20,6 @@
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
-
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 
@@ -242,10 +241,10 @@ HRESULT HttpNegotiatePatch::PatchHttpNegotiate(IUnknown* to_patch) {
   if (http) {
     hr = vtable_patch::PatchInterfaceMethods(http, IHttpNegotiate_PatchInfo);
     DLOG_IF(ERROR, FAILED(hr))
-        << StringPrintf("HttpNegotiate patch failed 0x%08X", hr);
+        << base::StringPrintf("HttpNegotiate patch failed 0x%08X", hr);
   } else {
     DLOG(WARNING)
-        << StringPrintf("IHttpNegotiate not supported 0x%08X", hr);
+        << base::StringPrintf("IHttpNegotiate not supported 0x%08X", hr);
   }
 
   ScopedComPtr<IBindStatusCallback> bscb;
@@ -255,10 +254,10 @@ HRESULT HttpNegotiatePatch::PatchHttpNegotiate(IUnknown* to_patch) {
     hr = vtable_patch::PatchInterfaceMethods(bscb,
                                              IBindStatusCallback_PatchInfo);
     DLOG_IF(ERROR, FAILED(hr))
-        << StringPrintf("BindStatusCallback patch failed 0x%08X", hr);
+        << base::StringPrintf("BindStatusCallback patch failed 0x%08X", hr);
   } else {
-    DLOG(WARNING) << StringPrintf("IBindStatusCallback not supported 0x%08X",
-                                  hr);
+    DLOG(WARNING) << base::StringPrintf(
+        "IBindStatusCallback not supported 0x%08X", hr);
   }
   return hr;
 }
@@ -347,7 +346,7 @@ HRESULT HttpNegotiatePatch::ReportProgress(
     IInternetProtocolSink_ReportProgress_Fn original, IInternetProtocolSink* me,
     ULONG status_code, LPCWSTR status_text) {
   DLOG(INFO) << __FUNCTION__
-      << StringPrintf(" %i %ls", status_code, status_text);
+      << base::StringPrintf(" %i %ls", status_code, status_text);
   bool updated_mime_type = false;
 
   if (status_code == BINDSTATUS_MIMETYPEAVAILABLE ||

@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/file_version_info.h"
 #include "base/path_service.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -1061,7 +1062,7 @@ class UaTemplateFileResponse : public test_server::FileResponse {
     i = content_.find(kRequestIdTemplate);
     if (i != std::string::npos) {
       content_.replace(i, arraysize(kRequestIdTemplate) - 1,
-                       StringPrintf("%i", request_id_));
+                       base::StringPrintf("%i", request_id_));
     }
     return content_.length();
   }

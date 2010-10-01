@@ -13,6 +13,7 @@
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -380,8 +381,8 @@ std::wstring AccObject::GetDescription() {
     value = L"'" + value + L"'";
   int state = 0;
   GetState(&state);
-  return StringPrintf(L"[%ls, %ls, %ls, 0x%x]", name.c_str(), role_text.c_str(),
-                      value.c_str(), state);
+  return base::StringPrintf(L"[%ls, %ls, %ls, 0x%x]", name.c_str(),
+                            role_text.c_str(), value.c_str(), state);
 }
 
 std::wstring AccObject::GetTree() {

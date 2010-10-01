@@ -8,6 +8,7 @@
 #include "base/scoped_handle.h"
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,7 +145,7 @@ void IEEventSink::Uninitialize() {
 
     if (!process.IsValid()) {
       DLOG_IF(WARNING, !process.IsValid())
-          << StringPrintf("OpenProcess failed: %i", ::GetLastError());
+          << base::StringPrintf("OpenProcess failed: %i", ::GetLastError());
       return;
     }
     // IE may not have closed yet. Wait here for the process to finish.
@@ -430,7 +431,7 @@ STDMETHODIMP IEEventSink::OnBeforeNavigate2(
     VARIANT* target_frame_name, VARIANT* post_data, VARIANT* headers,
     VARIANT_BOOL* cancel) {
   DLOG(INFO) << __FUNCTION__
-      << StringPrintf("%ls - 0x%08X", url->bstrVal, this);
+      << base::StringPrintf("%ls - 0x%08X", url->bstrVal, this);
   // Reset any existing reference to chrome frame since this is a new
   // navigation.
   DisconnectFromChromeFrame();
@@ -460,8 +461,8 @@ STDMETHODIMP_(void) IEEventSink::OnDocumentComplete(
 
 STDMETHODIMP_(void) IEEventSink::OnFileDownload(
     VARIANT_BOOL active_doc, VARIANT_BOOL* cancel) {
-  DLOG(INFO) << __FUNCTION__ << StringPrintf(" 0x%08X ad=%i", this,
-                                              active_doc);
+  DLOG(INFO) << __FUNCTION__ << base::StringPrintf(" 0x%08X ad=%i", this,
+                                                   active_doc);
   if (listener_)
     listener_->OnFileDownload(active_doc, cancel);
   // Always cancel file downloads in tests.

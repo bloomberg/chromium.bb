@@ -18,6 +18,7 @@
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -55,12 +56,12 @@ BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {
       DWORD results = 0;
       if (!::SendMessageTimeout(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0, SMTO_BLOCK,
                                 10000, &results)) {
-        LOG(WARNING) << "Window hung: " << StringPrintf(L"%08X", hwnd);
+        LOG(WARNING) << "Window hung: " << base::StringPrintf(L"%08X", hwnd);
       }
       count++;
     } else {
       DLOG(WARNING) << "Skipping disabled window: "
-                  << StringPrintf(L"%08X", hwnd);
+                    << base::StringPrintf(L"%08X", hwnd);
     }
   }
   return TRUE;  // continue enumeration
@@ -124,8 +125,9 @@ std::wstring GetExecutableAppPath(const std::wstring& file) {
 
 std::wstring FormatCommandForApp(const std::wstring& exe_name,
                                  const std::wstring& argument) {
-  std::wstring reg_path(StringPrintf(L"Applications\\%ls\\shell\\open\\command",
-                                     exe_name.c_str()));
+  std::wstring reg_path(
+      base::StringPrintf(L"Applications\\%ls\\shell\\open\\command",
+                         exe_name.c_str()));
   RegKey key(HKEY_CLASSES_ROOT, reg_path.c_str(), KEY_READ);
 
   std::wstring command;
@@ -216,7 +218,7 @@ base::ProcessHandle LaunchIEOnVista(const std::wstring& url) {
   if (SUCCEEDED(hr)) {
     CloseHandle(pi.hThread);
   } else {
-    LOG(ERROR) << ::StringPrintf("IELaunchURL failed: 0x%08X", hr);
+    LOG(ERROR) << base::StringPrintf("IELaunchURL failed: 0x%08X", hr);
   }
   return pi.hProcess;
 }

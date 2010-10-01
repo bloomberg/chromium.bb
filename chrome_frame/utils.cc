@@ -21,6 +21,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -324,10 +325,10 @@ void DisplayVersionMismatchWarning(HWND parent,
   }
   std::wstring title = SimpleResourceLoader::Get(IDS_VERSIONMISMATCH_HEADER);
   std::wstring message;
-  SStringPrintf(&message,
-                SimpleResourceLoader::Get(IDS_VERSIONMISMATCH).c_str(),
-                wide_server_version.c_str(),
-                version_string.c_str());
+  base::SStringPrintf(&message,
+                      SimpleResourceLoader::Get(IDS_VERSIONMISMATCH).c_str(),
+                      wide_server_version.c_str(),
+                      version_string.c_str());
 
   ::MessageBox(parent, message.c_str(), title.c_str(), MB_OK);
 }
@@ -782,7 +783,8 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
   HRESULT hr = DoQueryService(SID_SWebBrowserApp, browser,
                               web_browser2.Receive());
   DCHECK(web_browser2);
-  DLOG_IF(WARNING, FAILED(hr)) << StringPrintf(L"SWebBrowserApp 0x%08X", hr);
+  DLOG_IF(WARNING, FAILED(hr)) << base::StringPrintf(L"SWebBrowserApp 0x%08X",
+                                                     hr);
   if (FAILED(hr))
     return hr;
 
@@ -835,7 +837,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
                                                headers_var.AsInput(), bind_ctx,
                                                const_cast<wchar_t*>(fragment));
       DLOG_IF(WARNING, FAILED(hr))
-          << StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
+          << base::StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
     }
   } else {
     // IE6
@@ -865,13 +867,13 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
                                                bind_ctx,
                                                const_cast<wchar_t*>(fragment));
         DLOG_IF(WARNING, FAILED(hr))
-            << StringPrintf(L"NavigateWithBindCtx 0x%08X", hr);
+            << base::StringPrintf(L"NavigateWithBindCtx 0x%08X", hr);
       } else {
         NOTREACHED();
       }
       ::CoTaskMemFree(url);
     } else {
-      DLOG(ERROR) << StringPrintf("GetDisplayName: 0x%08X", hr);
+      DLOG(ERROR) << base::StringPrintf("GetDisplayName: 0x%08X", hr);
     }
   }
 
@@ -1248,7 +1250,7 @@ std::string BindStatus2Str(ULONG bind_status) {
   if (bind_status >= 1 && bind_status <= BINDSTATUS_64BIT_PROGRESS)
     s = bindstatus_txt[bind_status - 1];
   else
-    s = StringPrintf("UnDoc[%#x]", bind_status);
+    s = base::StringPrintf("UnDoc[%#x]", bind_status);
   return s;
 }
 
@@ -1277,7 +1279,7 @@ std::string PiFlags2Str(DWORD flags) {
   ADD_PI_FLAG(PI_PREFERDEFAULTHANDLER);
 
   if (flags)
-    s += StringPrintf("+UnDoc[%#x]", flags);
+    s += base::StringPrintf("+UnDoc[%#x]", flags);
   return s;
 #undef ADD_PI_FLAG
 }
@@ -1299,7 +1301,7 @@ std::string Bscf2Str(DWORD flags) {
   ADD_BSCF_FLAG(BSCF_64BITLENGTHDOWNLOAD)
 
   if (flags)
-    s += StringPrintf("+UnDoc[%#x]", flags);
+    s += base::StringPrintf("+UnDoc[%#x]", flags);
   return s;
 #undef ADD_BSCF_FLAG
 }

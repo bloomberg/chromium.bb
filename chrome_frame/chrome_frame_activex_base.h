@@ -21,6 +21,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "grit/chrome_frame_resources.h"
 #include "chrome/common/url_constants.h"
@@ -70,7 +71,7 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
                                     LOCALE_USER_DEFAULT, DISPATCH_METHOD,
                                     &disp_params, NULL, NULL, NULL);
         DLOG_IF(ERROR, FAILED(hr)) << "invoke(" << dispid << ") failed" <<
-            StringPrintf("0x%08X", hr);
+            base::StringPrintf("0x%08X", hr);
       }
     }
   }
@@ -489,17 +490,17 @@ END_MSG_MAP()
       host = "local_host";
     }
 
-    std::string url =
-        StringPrintf("%hs:%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
-                     scheme.c_str(),
-                     host.c_str(),
-                     params.cookie,
-                     params.disposition,
-                     params.dimensions.x(),
-                     params.dimensions.y(),
-                     params.dimensions.width(),
-                     params.dimensions.height(),
-                     params.profile_name.c_str());
+    std::string url = base::StringPrintf(
+        "%hs:%hs?attach_external_tab&%I64u&%d&%d&%d&%d&%d&%hs",
+        scheme.c_str(),
+        host.c_str(),
+        params.cookie,
+        params.disposition,
+        params.dimensions.x(),
+        params.dimensions.y(),
+        params.dimensions.width(),
+        params.dimensions.height(),
+        params.profile_name.c_str());
     HostNavigate(GURL(url), GURL(), params.disposition);
   }
 
@@ -912,7 +913,8 @@ END_MSG_MAP()
         hr = E_ACCESSDENIED;
       }
     } else {
-      Error(StringPrintf("Event type '%ls' not found", event_type).c_str());
+      Error(base::StringPrintf(
+          "Event type '%ls' not found", event_type).c_str());
       hr = E_INVALIDARG;
     }
 
@@ -1074,7 +1076,7 @@ END_MSG_MAP()
       hr = AllowFrameToTranslateAccelerator(accel_message);
 
     DLOG(INFO) << __FUNCTION__ << " browser response: "
-               << StringPrintf("0x%08x", hr);
+               << base::StringPrintf("0x%08x", hr);
 
     if (hr != S_OK) {
       // The WM_SYSCHAR message is not processed by the IOleControlSite

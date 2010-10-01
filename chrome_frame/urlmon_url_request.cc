@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
@@ -38,7 +39,7 @@ UrlmonUrlRequest::~UrlmonUrlRequest() {
 }
 
 std::string UrlmonUrlRequest::me() const {
-  return StringPrintf(" id: %i Obj: %X ", id(), this);
+  return base::StringPrintf(" id: %i Obj: %X ", id(), this);
 }
 
 bool UrlmonUrlRequest::Start() {
@@ -177,7 +178,7 @@ void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
         // Just drop the data.
       }
       DLOG_IF(WARNING, hr != E_PENDING) << __FUNCTION__ <<
-          StringPrintf(" expected E_PENDING but got 0x%08X", hr);
+          base::StringPrintf(" expected E_PENDING but got 0x%08X", hr);
     }
   }
 }
@@ -325,7 +326,8 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
 
     default:
       DLOG(INFO) << __FUNCTION__ << me()
-          << StringPrintf(L"code: %i status: %ls", status_code, status_text);
+          << base::StringPrintf(L"code: %i status: %ls", status_code,
+                                status_text);
       break;
   }
 
@@ -545,8 +547,9 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   if (post_data_len() > 0) {
     // Tack on the Content-Length header since when using an IStream type
     // STGMEDIUM, it looks like it doesn't get set for us :(
-    new_headers = StringPrintf("Content-Length: %s\r\n",
-                               base::Int64ToString(post_data_len()).c_str());
+    new_headers = base::StringPrintf(
+        "Content-Length: %s\r\n",
+        base::Int64ToString(post_data_len()).c_str());
   }
 
   if (!extra_headers().empty()) {
@@ -556,7 +559,7 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
 
   if (!referrer().empty()) {
     // Referrer is famously misspelled in HTTP:
-    new_headers += StringPrintf("Referer: %s\r\n", referrer().c_str());
+    new_headers += base::StringPrintf("Referer: %s\r\n", referrer().c_str());
   }
 
   // In the rare case if "User-Agent" string is already in |current_headers|.
@@ -785,7 +788,7 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
       // http://user2:secret@localhost:1337/auth-basic?set-cookie-if-challenged
       // when running the UrlRequest unit tests.
       DLOG(ERROR) << __FUNCTION__ << me() <<
-          StringPrintf("IUrlMoniker::BindToStorage failed 0x%08X.", hr);
+          base::StringPrintf("IUrlMoniker::BindToStorage failed 0x%08X.", hr);
       // In most cases we'll get a MK_E_SYNTAX error here but if we abort
       // the navigation ourselves such as in the case of seeing something
       // else than ALLOWALL in X-Frame-Options.
@@ -793,7 +796,7 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
   }
 
   DLOG_IF(ERROR, FAILED(hr)) << me() <<
-      StringPrintf(L"StartAsyncDownload failed: 0x%08X", hr);
+      base::StringPrintf(L"StartAsyncDownload failed: 0x%08X", hr);
 
   return hr;
 }
@@ -875,7 +878,8 @@ net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {
 
     default:
       DLOG(WARNING)
-          << StringPrintf("TODO: translate HRESULT 0x%08X to net::Error", hr);
+          << base::StringPrintf("TODO: translate HRESULT 0x%08X to net::Error",
+                                hr);
       break;
   }
   return ret;

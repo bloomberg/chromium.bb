@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/scoped_bstr_win.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/exception_barrier.h"
@@ -85,11 +85,11 @@ ProtData::ProtocolDataMap ProtData::datamap_;
 Lock ProtData::datamap_lock_;
 
 ProtocolSinkWrap::ProtocolSinkWrap() {
-  DLOG(INFO) << __FUNCTION__ << StringPrintf(" 0x%08X", this);
+  DLOG(INFO) << __FUNCTION__ << base::StringPrintf(" 0x%08X", this);
 }
 
 ProtocolSinkWrap::~ProtocolSinkWrap() {
-  DLOG(INFO) << __FUNCTION__ << StringPrintf(" 0x%08X", this);
+  DLOG(INFO) << __FUNCTION__ << base::StringPrintf(" 0x%08X", this);
 }
 
 ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::CreateNewSink(

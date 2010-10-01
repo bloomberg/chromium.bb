@@ -12,6 +12,7 @@
 
 #include "base/file_path.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
@@ -182,7 +183,7 @@ class MockPropertyNotifySinkListener : public PropertyNotifySinkListener {
     if (SUCCEEDED(hr)) {
       event_source_ = obj;
     } else {
-      LOG(ERROR) << StringPrintf("AtlAdvise: 0x%08X", hr);
+      LOG(ERROR) << base::StringPrintf("AtlAdvise: 0x%08X", hr);
       cookie_ = 0;
     }
 
