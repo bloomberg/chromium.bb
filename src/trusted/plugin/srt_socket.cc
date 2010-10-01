@@ -69,6 +69,10 @@ bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
   }
 
   params.ins()[0]->u.hval = desc;
+  params.ins()[1]->u.sval = strdup("place holder");
+  if (NULL == params.ins()[1]->u.sval) {
+    return false;
+  }
 
   bool rpc_result = connected_socket()->Invoke(kLoadModule,
                                                METHOD_CALL,
@@ -161,6 +165,9 @@ bool SrtSocket::Log(int severity, nacl::string msg) {
   }
   params.ins()[0]->u.ival = severity;
   params.ins()[1]->u.sval = strdup(msg.c_str());
+  if (NULL == params.ins()[1]->u.sval) {
+    return false;
+  }
   bool rpc_result = (connected_socket()->Invoke(kLogIdent,
                                                 METHOD_CALL,
                                                 &params));

@@ -74,7 +74,7 @@ struct NaClDynamicRegion;
 
 struct NaClApp {
   /*
-   * public, user settable.
+   * public, user settable prior to app start.
    */
   uint8_t                   addr_bits;
   uintptr_t                 max_data_alloc;
@@ -94,6 +94,14 @@ struct NaClApp {
    * populated (no MAP_POPULATE), so actual accesses will likely
    * incur page faults.
    */
+
+  /*
+   * aux_info can contain an arbitrary NUL terminated string.  It is
+   * set via the load_module RPC, and is intended to enable the
+   * browser plugin to provide information that would be useful for
+   * the debugger.
+   */
+  char                      *aux_info;
 
   /*
    * Determined at load time; OS-determined.

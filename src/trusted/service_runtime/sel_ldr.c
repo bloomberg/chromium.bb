@@ -4,6 +4,8 @@
  * be found in the LICENSE file.
  */
 
+#include <string.h>
+
 /*
  * NaCl Simple/secure ELF loader (NaCl SEL).
  */
@@ -47,6 +49,8 @@ int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->max_data_alloc = NACL_DEFAULT_ALLOC_MAX;
   nap->stack_size = NACL_DEFAULT_STACK_MAX;
+
+  nap->aux_info = NULL;
 
   nap->mem_start = 0;
   nap->static_text_end = 0;
@@ -817,6 +821,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   struct NaClGioNaClDesc  gio_desc;
   struct Gio              *load_src = NULL;
   struct nacl_abi_stat    stbuf;
+  char                    *aux;
   int                     rval;
   NaClErrorCode           suberr = LOAD_INTERNAL;
   NaClErrorCode           errcode;
@@ -827,6 +832,15 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   NaClLog(4, "NaClLoadModuleRpc: entered, finding shm size\n");
 
   errcode = NACL_SRPC_RESULT_INTERNAL;
+
+  aux = strdup(in_args[1]->u.sval);
+  if (NULL == aux) {
+    errcode = NACL_SRPC_RESULT_NO_MEMORY;
+    goto cleanup;
+  }
+  free(nap->aux_info);
+  nap->aux_info = aux;
+  NaClLog(4, "Received aux_info: %s\n", nap->aux_info);
 
   switch (NACL_VTBL(NaClDesc, nexe_binary)->typeTag) {
     case NACL_DESC_SHM:
@@ -1006,7 +1020,7 @@ void WINAPI NaClSecureChannelThread(void *state) {
     { "hard_shutdown::", NaClSecureChannelShutdownRpc, },
     { "start_module::i", NaClSecureChannelStartModuleRpc, },
     { "log:is:", NaClSecureChannelLog, },
-    { "load_module:h:", NaClLoadModuleRpc, },
+    { "load_module:hs:", NaClLoadModuleRpc, },
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     { "init_handle_passing:hii:", NaClInitHandlePassingRpc, },
 #endif
