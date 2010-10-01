@@ -111,6 +111,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     switches::kDisableOutdatedPlugins
   },
+  {
+    "xss-auditor",  // Do not change; see above.
+    IDS_LABS_XSS_AUDITOR_NAME,
+    IDS_LABS_XSS_AUDITOR_DESCRIPTION,
+    kOsAll,
+    switches::kEnableXSSAuditor
+  },
 };
 
 // Extracts the list of enabled lab experiments from a profile and stores them

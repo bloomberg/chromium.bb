@@ -3888,6 +3888,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LABS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION" desc="Description of the 'Disable outdated plug-ins' lab">
         Automatically disables plug-ins with known security vulnerabilities and offers update links for them.
       </message>
+      <message name="IDS_LABS_XSS_AUDITOR_NAME" desc="Description of the 'XSS Auditor' lab.">
+        XSS Auditor
+      </message>
+      <message name="IDS_LABS_XSS_AUDITOR_DESCRIPTION" desc="Description of the 'XSS Auditor' lab.">
+        Enables WebKit's XSS Auditor (cross-site scripting protection). This feature aims to protect you from certain attacks of malicious web sites. It improves your security, but it might not be compatible with all web sites.
+      </message>
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">
