@@ -156,7 +156,6 @@ void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
 ////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork
 
-
 bool CellularNetwork::StartActivation() const {
   // TODO(ers, jglasgow): Kick of device activation process.
   return true;
@@ -169,6 +168,9 @@ void CellularNetwork::Clear() {
 void CellularNetwork::ConfigureFromService(const ServiceInfo& service) {
   WirelessNetwork::ConfigureFromService(service);
   activation_state_ = service.activation_state;
+  network_technology_ = service.network_technology;
+  roaming_state_ = service.roaming_state;
+
   // TODO(ers): Set other cellular properties here once they get added
   // to ServiceInfo.
 }
@@ -216,6 +218,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
  public:
   NetworkLibraryImpl()
       : network_status_connection_(NULL),
+        data_plan_monitor_(NULL),
         available_devices_(0),
         enabled_devices_(0),
         connected_devices_(0),
@@ -230,6 +233,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   ~NetworkLibraryImpl() {
     if (network_status_connection_) {
       DisconnectMonitorNetwork(network_status_connection_);
+    }
+    if (data_plan_monitor_) {
+      DisconnectDataPlanUpdateMonitor(data_plan_monitor_);
     }
   }
 
@@ -251,6 +257,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual int wifi_strength() const { return wifi_.strength(); }
 
   virtual const std::string& cellular_name() const { return cellular_.name(); }
+  virtual const std::string& cellular_service_path() const {
+    return cellular_.service_path(); }
   virtual bool cellular_connecting() const { return cellular_.connecting(); }
   virtual bool cellular_connected() const { return cellular_.connected(); }
   virtual int cellular_strength() const { return cellular_.strength(); }
@@ -621,6 +629,19 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     network->UpdateNetworkStatus();
   }
 
+  static void DataPlanUpdateHandler(void* object,
+                                    const char* modem_service_path,
+                                    const CellularDataPlanList* dataplan) {
+    NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
+    DCHECK(network);
+    // Store data plan for currently connected cellular network.
+    if (network->cellular_service_path().compare(modem_service_path) == 0) {
+      if (dataplan != NULL) {
+        network->UpdateCellularDataPlan(*dataplan);
+      }
+    }
+  }
+
   static void ParseSystem(SystemInfo* system,
       EthernetNetwork* ethernet,
       WifiNetworkVector* wifi_networks,
@@ -685,6 +706,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     // Now, register to receive updates on network status.
     network_status_connection_ = MonitorNetwork(&NetworkStatusChangedHandler,
                                                 this);
+    LOG(INFO) << "Registering for cellular data plan updates.";
+    data_plan_monitor_ = MonitorCellularDataPlan(&DataPlanUpdateHandler, this);
   }
 
   void InitTestData() {
@@ -813,6 +836,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     FOR_EACH_OBSERVER(Observer, observers_, NetworkChanged(this));
   }
 
+  void NotifyCellularDataPlanChanged() {
+    FOR_EACH_OBSERVER(Observer, observers_, CellularDataPlanChanged(this));
+  }
+
   void UpdateNetworkStatus() {
     // Make sure we run on UI thread.
     if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
@@ -845,6 +872,11 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     for (size_t i = 0; i < cellular_networks_.size(); i++) {
       if (cellular_networks_[i].connecting_or_connected()) {
         cellular_ = cellular_networks_[i];
+
+        CellularDataPlanList list;
+        RetrieveCellularDataPlans(cellular_.service_path().c_str(), &list);
+        UpdateCellularDataPlan(list);
+
         break;  // There is only one connected or connecting cellular network.
       }
     }
@@ -858,10 +890,24 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     FreeSystemInfo(system);
   }
 
+  void UpdateCellularDataPlan(const CellularDataPlanList& dataplan) {
+    if (dataplan.empty()) {
+      // Set to an empty data plan.
+      cellular_data_plan_ = CellularDataPlan();
+    } else {
+      // The active data plan is the first one.
+      cellular_data_plan_ = dataplan[0];
+    }
+    NotifyCellularDataPlanChanged();
+  }
+
   ObserverList<Observer> observers_;
 
   // The network status connection for monitoring network status changes.
   MonitorNetworkConnection network_status_connection_;
+
+  // For monitoring data plan changes to the connected cellular network.
+  DataPlanUpdateMonitor data_plan_monitor_;
 
   // The ethernet network.
   EthernetNetwork ethernet_;
@@ -880,6 +926,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // The current connected (or connecting) cellular network.
   CellularNetwork cellular_;
+
+  // The data plan for the current cellular network.
+  CellularDataPlan cellular_data_plan_;
 
   // The remembered cellular networks.
   CellularNetworkVector remembered_cellular_networks_;
@@ -915,6 +964,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   virtual int wifi_strength() const { return 0; }
 
   virtual const std::string& cellular_name() const { return EmptyString(); }
+  virtual const std::string& cellular_service_path() const {
+    return EmptyString(); }
   virtual bool cellular_connecting() const { return false; }
   virtual bool cellular_connected() const { return false; }
   virtual int cellular_strength() const { return false; }

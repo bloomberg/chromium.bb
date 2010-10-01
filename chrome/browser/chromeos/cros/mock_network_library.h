@@ -28,6 +28,7 @@ class MockNetworkLibrary : public NetworkLibrary {
   MOCK_CONST_METHOD0(wifi_strength, int(void));
 
   MOCK_CONST_METHOD0(cellular_name, const std::string&(void));
+  MOCK_CONST_METHOD0(cellular_service_path, const std::string&(void));
   MOCK_CONST_METHOD0(cellular_connecting, bool(void));
   MOCK_CONST_METHOD0(cellular_connected, bool(void));
   MOCK_CONST_METHOD0(cellular_strength, int(void));

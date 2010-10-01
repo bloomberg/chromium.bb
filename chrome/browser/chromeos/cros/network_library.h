@@ -121,10 +121,14 @@ class CellularNetwork : public WirelessNetwork {
       : WirelessNetwork() {
     ConfigureFromService(service);
   }
+
   // Starts device activation process. Returns false if the device state does
   // not permit activation.
   bool StartActivation() const;
   const ActivationState activation_state() const { return activation_state_; }
+  const NetworkTechnology network_technology() const {
+    return network_technology_; }
+  const NetworkRoamingState roaming_state() const { return roaming_state_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& meid() const { return meid_; }
   const std::string& imei() const { return imei_; }
@@ -138,6 +142,8 @@ class CellularNetwork : public WirelessNetwork {
 
  protected:
   ActivationState activation_state_;
+  NetworkTechnology network_technology_;
+  NetworkRoamingState roaming_state_;
   std::string payment_url_;
   std::string meid_;
   std::string imei_;
@@ -255,6 +261,8 @@ class NetworkLibrary {
    public:
     // Called when the network has changed. (wifi networks, and ethernet)
     virtual void NetworkChanged(NetworkLibrary* obj) = 0;
+    // Called when the cellular data plan has changed.
+    virtual void CellularDataPlanChanged(NetworkLibrary* obj) {}
   };
 
   virtual ~NetworkLibrary() {}
@@ -271,6 +279,7 @@ class NetworkLibrary {
   virtual int wifi_strength() const = 0;
 
   virtual const std::string& cellular_name() const = 0;
+  virtual const std::string& cellular_service_path() const = 0;
   virtual bool cellular_connecting() const = 0;
   virtual bool cellular_connected() const = 0;
   virtual int cellular_strength() const = 0;
