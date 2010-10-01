@@ -68,8 +68,6 @@ static Extension* LoadManifest(const std::string& dir,
   return extension.release();
 }
 
-}  // namespace
-
 // Test that the ExtensionInfoMap handles refcounting properly.
 TEST_F(ExtensionInfoMapTest, RefCounting) {
   scoped_refptr<ExtensionInfoMap> info_map(new ExtensionInfoMap());
@@ -169,3 +167,5 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   EXPECT_FALSE(info_map->CheckURLAccessToExtensionPermission(
       GURL("http://evil.com/a.html"), Extension::kTabPermission));
 }
+
+}  // namespace
