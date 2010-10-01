@@ -11,6 +11,7 @@
 #include <list>
 
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -19,10 +20,6 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/webcursor.h"
-
-#if defined(OS_MACOSX)
-#include "app/surface/accelerated_surface_mac.h"
-#endif
 
 #if defined(USE_X11)
 #include "app/x11_util.h"
@@ -52,6 +49,9 @@ class QuickDrawDrawingManager;
 class CALayer;
 class CARenderer;
 #endif
+namespace webkit_glue {
+class WebPluginAcceleratedSurface;
+}
 #endif
 
 // An implementation of WebPluginDelegate that runs in the plugin process,
@@ -432,7 +432,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #endif
 
   CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
-  AcceleratedSurface* surface_;
+  webkit_glue::WebPluginAcceleratedSurface* surface_;  // Weak ref.
   CARenderer* renderer_;  // Renders layer_ to surface_.
   scoped_ptr<base::RepeatingTimer<WebPluginDelegateImpl> > redraw_timer_;
 

@@ -29,6 +29,9 @@ namespace webkit_glue {
 class WebPluginDelegate;
 class WebPluginParentView;
 class WebPluginResourceClient;
+#if defined(OS_MACOSX)
+class WebPluginAcceleratedSurface;
+#endif
 
 // Describes the new location for a plugin window.
 struct WebPluginGeometry {
@@ -151,19 +154,11 @@ class WebPlugin {
   // of plug-in content. The browser generates the handle which is then set on
   // the plug-in. |opaque| indicates whether the content should be treated as
   // opaque or translucent.
+  // TODO(stuartmorgan): Move this into WebPluginProxy.
   virtual void BindFakePluginWindowHandle(bool opaque) {}
 
-  // Tell the browser (via the renderer) to invalidate because the
-  // accelerated buffers have changed.
-  virtual void AcceleratedFrameBuffersDidSwap(gfx::PluginWindowHandle window) {}
-
-  // Tell the renderer and browser to associate the given plugin handle with
-  // |accelerated_surface_identifier|. The geometry is used to resize any
-  // native "window" (which on the Mac is a CALayer).
-  virtual void SetAcceleratedSurface(gfx::PluginWindowHandle window,
-                                     int32 width,
-                                     int32 height,
-                                     uint64 accelerated_surface_identifier) {}
+  // Returns the accelerated surface abstraction for accelerated plugins.
+  virtual WebPluginAcceleratedSurface* GetAcceleratedSurface() { return NULL; }
 #endif
 
   // Gets the WebPluginDelegate that implements the interface.

@@ -288,6 +288,7 @@
         'plugins/webplugin.h',
         'plugins/webplugin_2d_device_delegate.h',
         'plugins/webplugin_3d_device_delegate.h',
+        'plugins/webplugin_accelerated_surface_mac.h',
         'plugins/webplugin_delegate.h',
         'plugins/webplugin_delegate_impl.cc',
         'plugins/webplugin_delegate_impl.h',

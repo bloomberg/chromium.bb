@@ -28,6 +28,9 @@
 
 class PluginChannel;
 class WebPluginDelegateImpl;
+#if defined(OS_MACOSX)
+class WebPluginAcceleratedSurfaceProxy;
+#endif
 
 // This is an implementation of WebPlugin that proxies all calls to the
 // renderer.
@@ -139,11 +142,35 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 
 #if defined(OS_MACOSX)
   virtual void BindFakePluginWindowHandle(bool opaque);
+
+  virtual webkit_glue::WebPluginAcceleratedSurface* GetAcceleratedSurface();
+
+  // Tell the browser (via the renderer) to invalidate because the
+  // accelerated buffers have changed.
   virtual void AcceleratedFrameBuffersDidSwap(gfx::PluginWindowHandle window);
+
+  // Tell the renderer and browser to associate the given plugin handle with
+  // |accelerated_surface_identifier|. The geometry is used to resize any
+  // native "window" (which on the Mac is a just a view).
+  // This method is used when IOSurface support is available.
   virtual void SetAcceleratedSurface(gfx::PluginWindowHandle window,
-                                     int32 width,
-                                     int32 height,
+                                     const gfx::Size& size,
                                      uint64 accelerated_surface_identifier);
+
+  // Tell the renderer and browser to associate the given plugin handle with
+  // |dib_handle|. The geometry is used to resize any native "window" (which
+  // on the Mac is just a view).
+  // This method is used when IOSurface support is not available.
+  virtual void SetAcceleratedDIB(
+      gfx::PluginWindowHandle window,
+      const gfx::Size& size,
+      const TransportDIB::Handle& dib_handle);
+
+  // Create/destroy TranportDIBs via messages to the browser process.
+  // These are only used when IOSurface support is not available.
+  virtual void AllocSurfaceDIB(const size_t size,
+                               TransportDIB::Handle* dib_handle);
+  virtual void FreeSurfaceDIB(TransportDIB::Id dib_id);
 #endif
 
  private:
@@ -181,6 +208,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   scoped_ptr<TransportDIB> background_dib_;
   scoped_cftyperef<CGContextRef> windowless_context_;
   scoped_cftyperef<CGContextRef> background_context_;
+  scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
 #else
   scoped_ptr<skia::PlatformCanvas> windowless_canvas_;
   scoped_ptr<skia::PlatformCanvas> background_canvas_;

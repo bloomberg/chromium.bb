@@ -619,6 +619,8 @@
         'plugin/plugin_main_mac.mm',
         'plugin/plugin_thread.cc',
         'plugin/plugin_thread.h',
+        'plugin/webplugin_accelerated_surface_proxy_mac.cc',
+        'plugin/webplugin_accelerated_surface_proxy_mac.h',
         'plugin/webplugin_delegate_stub.cc',
         'plugin/webplugin_delegate_stub.h',
         'plugin/webplugin_proxy.cc',

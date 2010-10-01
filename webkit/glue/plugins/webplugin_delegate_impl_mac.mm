@@ -24,6 +24,7 @@
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/plugins/plugin_web_event_converter_mac.h"
 #include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/plugins/webplugin_accelerated_surface_mac.h"
 #include "webkit/glue/webkit_glue.h"
 
 #ifndef NP_NO_CARBON
@@ -359,9 +360,9 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
       if (instance()->event_model() != NPEventModelCocoa)
         return false;
       window_.type = NPWindowTypeDrawable;
-      // Ask the plug-in for the CALayer it created for rendering content. Have
-      // the renderer tell the browser to create a "windowed plugin" to host
-      // the IOSurface.
+      // Ask the plug-in for the CALayer it created for rendering content.
+      // Create a surface to host it, and request a "window" handle to identify
+      // the surface.
       CALayer* layer = nil;
       NPError err = instance()->NPP_GetValue(NPPVpluginCoreAnimationLayer,
                                              reinterpret_cast<void*>(&layer));
@@ -371,8 +372,8 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
           redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
         }
         layer_ = layer;
-        surface_ = new AcceleratedSurface;
-        surface_->Initialize(NULL, true);
+        surface_ = plugin_->GetAcceleratedSurface();
+
         renderer_ = [[CARenderer rendererWithCGLContext:surface_->context()
                                                 options:NULL] retain];
         [renderer_ setLayer:layer_];
@@ -421,11 +422,6 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
   [renderer_ release];
   renderer_ = nil;
   layer_ = nil;
-  if (surface_) {
-    surface_->Destroy();
-    delete surface_;
-    surface_ = NULL;
-  }
 }
 
 void WebPluginDelegateImpl::UpdateGeometryAndContext(
@@ -948,9 +944,7 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
   if (!windowed_handle())
     return;
 
-  surface_->MakeCurrent();
-
-  surface_->Clear(window_rect_);
+  surface_->StartDrawing();
 
   [renderer_ beginFrameAtTime:CACurrentMediaTime() timeStamp:NULL];
   if (CGRectIsEmpty([renderer_ updateBounds])) {
@@ -963,13 +957,10 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
   [renderer_ render];
   [renderer_ endFrame];
 
-  surface_->SwapBuffers();
-  plugin_->AcceleratedFrameBuffersDidSwap(windowed_handle());
+  surface_->EndDrawing();
 }
 
-// Update the size of the IOSurface to match the current size of the plug-in,
-// then tell the browser host view so it can adjust its bookkeeping and CALayer
-// appropriately.
+// Update the size of the surface to match the current size of the plug-in.
 void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
   // Will only have a window handle when using a Core Animation drawing model.
   if (!windowed_handle() || !layer_)
@@ -978,19 +969,13 @@ void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
   [layer_ setFrame:CGRectMake(0, 0,
                               window_rect_.width(), window_rect_.height())];
   [renderer_ setBounds:[layer_ bounds]];
-
-  uint64 io_surface_id = surface_->SetSurfaceSize(window_rect_.size());
-  if (io_surface_id) {
-    plugin_->SetAcceleratedSurface(windowed_handle(),
-                                   window_rect_.width(),
-                                   window_rect_.height(),
-                                   io_surface_id);
-  }
+  surface_->SetSize(window_rect_.size());
 }
 
 void WebPluginDelegateImpl::set_windowed_handle(
     gfx::PluginWindowHandle handle) {
   windowed_handle_ = handle;
+  surface_->SetWindowHandle(handle);
   UpdateAcceleratedSurface();
   // Kick off the drawing timer, if necessary.
   PluginVisibilityChanged();
