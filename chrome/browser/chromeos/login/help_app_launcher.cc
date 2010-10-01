@@ -73,7 +73,8 @@ void HelpAppLauncher::ShowHelpTopicDialog(const GURL& topic_url) {
         this,
         parent_window_,
         l10n_util::GetString(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
-        topic_url));
+        topic_url,
+        LoginHtmlDialog::STYLE_GENERIC));
   } else {
     dialog_->set_url(topic_url);
   }

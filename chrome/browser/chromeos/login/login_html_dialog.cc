@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
 
+#include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/views/html_dialog_view.h"
@@ -42,12 +43,14 @@ class HtmlDialogWithoutContextMenuView : public HtmlDialogView {
 LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
                                  gfx::NativeWindow parent_window,
                                  const std::wstring& title,
-                                 const GURL& url)
-    : delegate_(delegate),
+                                 const GURL& url,
+                                 Style style)
+    : style_(style),
+      delegate_(delegate),
       parent_window_(parent_window),
       title_(title),
       url_(url) {
-  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size(0, 0)));
+  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
   width_ = static_cast<int>(kDefaultWidthRatio * screen_bounds.width());
   height_ = static_cast<int>(kDefaultHeightRatio * screen_bounds.height());
 }
@@ -60,7 +63,15 @@ void LoginHtmlDialog::Show() {
   HtmlDialogWithoutContextMenuView* html_view =
       new HtmlDialogWithoutContextMenuView(ProfileManager::GetDefaultProfile(),
                                            this);
-  views::Window::CreateChromeWindow(parent_window_, gfx::Rect(), html_view);
+  switch (style_) {
+    case STYLE_BUBBLE:
+      chromeos::BubbleWindow::Create(parent_window_, gfx::Rect(), html_view);
+      break;
+    case STYLE_GENERIC:
+    default:
+      views::Window::CreateChromeWindow(parent_window_, gfx::Rect(), html_view);
+      break;
+  }
   html_view->InitDialog();
   html_view->window()->Show();
 }

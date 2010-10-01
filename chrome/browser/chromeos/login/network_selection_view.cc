@@ -80,6 +80,11 @@ const int kMenuWidthOffset = 6;
 
 const SkColor kWelcomeColor = 0xFFCDD3D6;
 
+// Hints for size of proxy settings dialog.
+static const int kProxySettingsDialogReasonableWidth = 700;
+static const int kProxySettingsDialogReasonableHeight = 460;
+static const int kProxySettingsDialogReasonableWidthRatio = 0.4;
+static const int kProxySettingsDialogReasonableHeightRatio = 0.4;
 }  // namespace
 
 namespace chromeos {
@@ -416,8 +421,21 @@ void NetworkSelectionView::LinkActivated(views::Link* source, int) {
       proxy_settings_dialog_.reset(new LoginHtmlDialog(
           this,
           GetNativeWindow(),
-          l10n_util::GetString(IDS_OPTIONS_PROXY_TAB_LABEL),
-          GURL(kProxySettingsURL)));
+          std::wstring(),
+          GURL(kProxySettingsURL),
+          LoginHtmlDialog::STYLE_BUBBLE));
+      gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+      proxy_settings_dialog_->SetDialogSize(
+          std::min(
+              screen_bounds.width(),
+              std::max(kProxySettingsDialogReasonableWidth, static_cast<int>(
+                  kProxySettingsDialogReasonableWidthRatio *
+                      screen_bounds.width()))),
+          std::min(
+              screen_bounds.height(),
+              std::max(kProxySettingsDialogReasonableHeight, static_cast<int>(
+                  kProxySettingsDialogReasonableHeightRatio *
+                      screen_bounds.height()))));
     }
     proxy_settings_dialog_->Show();
   }
