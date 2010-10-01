@@ -562,7 +562,9 @@ TEST_F(JingleChromotingConnectionTest, TestEventsChannel) {
 }
 
 // Verify that data can be transmitted over the video RTP channel.
-TEST_F(JingleChromotingConnectionTest, TestVideoRtpChannel) {
+// TODO(sergeyu): This test is disabled at the moment because of
+// flakiness.
+TEST_F(JingleChromotingConnectionTest, DISABLED_TestVideoRtpChannel) {
   CreateServerPair();
   InitiateConnection();
   scoped_refptr<UDPChannelTester> tester =
