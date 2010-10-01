@@ -425,16 +425,8 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
 }
 
 void RemoveServerData(const ExtensionSyncTraits& traits,
-                      const Extension& extension,
+                      const std::string& id,
                       ProfileSyncService* sync_service) {
-  const std::string& id = extension.id();
-  if (!IsExtensionValidAndSyncable(extension,
-                                   traits.allowed_extension_types)) {
-    LOG(DFATAL) << "RemoveServerData() called for invalid or "
-                << "unsyncable extension " << id;
-    return;
-  }
-
   sync_api::WriteTransaction trans(
       sync_service->backend()->GetUserShareHandle());
   sync_api::WriteNode write_node(&trans);

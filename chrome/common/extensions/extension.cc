@@ -2088,4 +2088,8 @@ ExtensionInfo::~ExtensionInfo() {
 UninstalledExtensionInfo::UninstalledExtensionInfo(
     const Extension& extension)
     : extension_id(extension.id()),
-      extension_api_permissions(extension.api_permissions()) {}
+      extension_api_permissions(extension.api_permissions()),
+      is_theme(extension.is_theme()),
+      is_app(extension.is_app()),
+      converted_from_user_script(extension.converted_from_user_script()),
+      update_url(extension.update_url()) {}

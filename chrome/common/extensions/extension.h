@@ -675,6 +675,12 @@ struct UninstalledExtensionInfo {
 
   std::string extension_id;
   std::set<std::string> extension_api_permissions;
+  // TODO(akalin): Once we have a unified ExtensionType, replace the
+  // below member variables with a member of that type.
+  bool is_theme;
+  bool is_app;
+  bool converted_from_user_script;
+  GURL update_url;
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_H_

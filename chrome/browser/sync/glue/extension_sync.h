@@ -66,9 +66,9 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
                       ProfileSyncService* sync_service,
                       std::string* error);
 
-// Updates the server data for the given extension, if it exists.
+// Removes the server data for the given extension ID.
 void RemoveServerData(const ExtensionSyncTraits& traits,
-                      const Extension& extension,
+                      const std::string& id,
                       ProfileSyncService* sync_service);
 
 // Starts updating the client data from the given server data.

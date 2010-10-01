@@ -15,6 +15,7 @@
 class Extension;
 class ExtensionTypeSet;
 class ExtensionsService;
+struct UninstalledExtensionInfo;
 
 namespace sync_pb {
 class ExtensionSpecifics;
@@ -41,6 +42,11 @@ typedef std::set<ExtensionType> ExtensionTypeSet;
 //
 // TODO(akalin): Might be useful to move this into extension.cc.
 ExtensionType GetExtensionType(const Extension& extension);
+
+// TODO(akalin): Remove this once we unify ExtensionType and simply
+// have an ExtensionType member in UninstalledExtensionInfo.
+ExtensionType GetExtensionTypeFromUninstalledExtensionInfo(
+    const UninstalledExtensionInfo& uninstalled_extension_info);
 
 // Returns whether or not the given extension is one we want to sync.
 bool IsExtensionValid(const Extension& extension);

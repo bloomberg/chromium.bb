@@ -23,8 +23,7 @@ ExtensionType GetExtensionType(const Extension& extension) {
     return THEME;
   }
 
-  // TODO(akalin): Add Extensions::is_app().
-  if (!extension.GetFullLaunchURL().is_empty()) {
+  if (extension.is_app()) {
     return APP;
   }
 
@@ -36,6 +35,27 @@ ExtensionType GetExtensionType(const Extension& extension) {
   }
 
   // Otherwise, we just have a regular extension.
+  return EXTENSION;
+}
+
+// Keep this in sync with the above function.
+// TODO(akalin): Or just hurry up and remove this!
+ExtensionType GetExtensionTypeFromUninstalledExtensionInfo(
+    const UninstalledExtensionInfo& uninstalled_extension_info) {
+  if (uninstalled_extension_info.is_theme) {
+    return THEME;
+  }
+
+  if (uninstalled_extension_info.is_app) {
+    return APP;
+  }
+
+  if (uninstalled_extension_info.converted_from_user_script) {
+    if (uninstalled_extension_info.update_url.is_empty()) {
+      return LOCAL_USER_SCRIPT;
+    }
+    return UPDATEABLE_USER_SCRIPT;
+  }
   return EXTENSION;
 }
 

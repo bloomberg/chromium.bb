@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -44,7 +45,9 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(running());
   DCHECK(profile_);
-  if ((type != NotificationType::EXTENSION_LOADED) &&
+  if ((type != NotificationType::EXTENSION_INSTALLED) &&
+      (type != NotificationType::EXTENSION_UNINSTALLED) &&
+      (type != NotificationType::EXTENSION_LOADED) &&
       (type != NotificationType::EXTENSION_UPDATE_DISABLED) &&
       (type != NotificationType::EXTENSION_UNLOADED) &&
       (type != NotificationType::EXTENSION_UNLOADED_DISABLED)) {
@@ -52,37 +55,36 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
                 << type.value;
     return;
   }
+
   DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
-  const Extension* extension = Details<Extension>(details).ptr();
-  CHECK(extension);
-  // Ignore non-syncable extensions.
-  if (!IsExtensionValidAndSyncable(
-          *extension, traits_.allowed_extension_types)) {
-    return;
-  }
-  const std::string& id = extension->id();
-  LOG(INFO) << "Got notification of type " << type.value
-            << " for extension " << id;
-  ExtensionsService* extensions_service =
-      GetExtensionsServiceFromProfile(profile_);
-  // Whether an extension is loaded or not isn't an indicator of
-  // whether it's installed or not; some extension actions unload and
-  // then reload an extension to force listeners to update.
-  bool extension_installed =
-      (extensions_service->GetExtensionById(id, true) != NULL);
-  if (extension_installed) {
-    LOG(INFO) << "Extension " << id
-              << " is installed; updating server data";
+  if (type == NotificationType::EXTENSION_UNINSTALLED) {
+    const UninstalledExtensionInfo* uninstalled_extension_info =
+        Details<UninstalledExtensionInfo>(details).ptr();
+    CHECK(uninstalled_extension_info);
+    ExtensionType extension_type =
+        GetExtensionTypeFromUninstalledExtensionInfo(
+            *uninstalled_extension_info);
+    if (ContainsKey(traits_.allowed_extension_types, extension_type)) {
+      const std::string& id = uninstalled_extension_info->extension_id;
+      LOG(INFO) << "Removing server data for uninstalled extension "
+                << id << " of type " << extension_type;
+      RemoveServerData(traits_, id, profile_->GetProfileSyncService());
+    }
+  } else {
+    const Extension* extension = Details<Extension>(details).ptr();
+    CHECK(extension);
+    LOG(INFO) << "Updating server data for extension " << extension->id()
+              << " (notification type = " << type.value << ")";
+    // Ignore non-syncable extensions.
+    if (!IsExtensionValidAndSyncable(
+            *extension, traits_.allowed_extension_types)) {
+      return;
+    }
     std::string error;
     if (!UpdateServerData(traits_, *extension,
                           profile_->GetProfileSyncService(), &error)) {
       error_handler()->OnUnrecoverableError(FROM_HERE, error);
     }
-  } else {
-    LOG(INFO) << "Extension " << id
-              << " is not installed; removing server data";
-    RemoveServerData(traits_, *extension,
-                     profile_->GetProfileSyncService());
   }
 }
 
@@ -160,19 +162,22 @@ void ExtensionChangeProcessor::StopImpl() {
 void ExtensionChangeProcessor::StartObserving() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(profile_);
-  LOG(INFO) << "Observing EXTENSION_LOADED, EXTENSION_UPDATE_DISABLED, "
-            << "EXTENSION_UNLOADED, and EXTENSION_UNLOADED_DISABLED";
+  notification_registrar_.Add(
+      this, NotificationType::EXTENSION_INSTALLED,
+      Source<Profile>(profile_));
+  notification_registrar_.Add(
+      this, NotificationType::EXTENSION_UNINSTALLED,
+      Source<Profile>(profile_));
+
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_LOADED,
       Source<Profile>(profile_));
   // Despite the name, this notification is exactly like
   // EXTENSION_LOADED but with an initial state of DISABLED.
-  //
-  // TODO(akalin): See if the themes change processor needs to listen
-  // to any of these, too.
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_UPDATE_DISABLED,
       Source<Profile>(profile_));
+
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_UNLOADED,
       Source<Profile>(profile_));
