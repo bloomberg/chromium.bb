@@ -126,11 +126,46 @@ void BrowserAccessibilityManager::OnAccessibilityNotifications(
           NOTIFICATION_TYPE_VALUE_CHANGED:
         OnAccessibilityObjectValueChange(param.acc_obj);
         break;
+      case ViewHostMsg_AccessibilityNotification_Params::
+          NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED:
+        OnAccessibilityObjectTextChange(param.acc_obj);
+        break;
       default:
         DCHECK(0);
         break;
     }
   }
+}
+
+bool BrowserAccessibilityManager::CanModifyTreeInPlace(
+    BrowserAccessibility* current_root,
+    const webkit_glue::WebAccessibility& new_root) {
+  if (current_root->renderer_id() != new_root.id)
+    return false;
+  if (current_root->GetChildCount() != new_root.children.size())
+    return false;
+  for (unsigned int i = 0; i < current_root->GetChildCount(); i++) {
+    if (!CanModifyTreeInPlace(current_root->GetChild(i),
+                              new_root.children[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void BrowserAccessibilityManager::ModifyTreeInPlace(
+      BrowserAccessibility* current_root,
+      const webkit_glue::WebAccessibility& new_root) {
+  DCHECK_EQ(current_root->renderer_id(), new_root.id);
+  DCHECK_EQ(current_root->GetChildCount(), new_root.children.size());
+  for (unsigned int i = 0; i < current_root->GetChildCount(); i++)
+    ModifyTreeInPlace(current_root->GetChild(i), new_root.children[i]);
+  current_root->Initialize(
+      this,
+      current_root->GetParent(),
+      current_root->child_id(),
+      current_root->index_in_parent(),
+      new_root);
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
@@ -145,37 +180,30 @@ BrowserAccessibility* BrowserAccessibilityManager::UpdateTree(
   if (!old_browser_acc)
     return NULL;
 
-  if (old_browser_acc->GetChildCount() == 0 && acc_obj.children.size() == 0) {
-    // Reinitialize the BrowserAccessibility if there are no children to update.
-    old_browser_acc->Initialize(
-        this,
-        old_browser_acc->GetParent(),
-        child_id,
-        old_browser_acc->index_in_parent(),
-        acc_obj);
-
+  if (CanModifyTreeInPlace(old_browser_acc, acc_obj)) {
+    ModifyTreeInPlace(old_browser_acc, acc_obj);
     return old_browser_acc;
-  } else {
-    BrowserAccessibility* new_browser_acc = CreateAccessibilityTree(
-        old_browser_acc->GetParent(),
-        child_id,
-        acc_obj,
-        old_browser_acc->index_in_parent());
-
-    if (old_browser_acc->GetParent()) {
-      old_browser_acc->GetParent()->ReplaceChild(
-          old_browser_acc,
-          new_browser_acc);
-    } else {
-      DCHECK_EQ(old_browser_acc, root_);
-      root_ = new_browser_acc;
-    }
-    old_browser_acc->InactivateTree();
-    old_browser_acc->Release();
-    child_id_map_[child_id] = new_browser_acc;
-
-    return new_browser_acc;
   }
+
+  BrowserAccessibility* new_browser_acc = CreateAccessibilityTree(
+      old_browser_acc->GetParent(),
+      child_id,
+      acc_obj,
+      old_browser_acc->index_in_parent());
+
+  if (old_browser_acc->GetParent()) {
+    old_browser_acc->GetParent()->ReplaceChild(
+        old_browser_acc,
+        new_browser_acc);
+  } else {
+    DCHECK_EQ(old_browser_acc, root_);
+    root_ = new_browser_acc;
+  }
+  old_browser_acc->InactivateTree();
+  old_browser_acc->Release();
+  child_id_map_[child_id] = new_browser_acc;
+
+  return new_browser_acc;
 }
 
 void BrowserAccessibilityManager::OnAccessibilityObjectStateChange(
@@ -241,6 +269,17 @@ void BrowserAccessibilityManager::OnAccessibilityObjectValueChange(
   LONG child_id = new_browser_acc->child_id();
   NotifyWinEvent(
       EVENT_OBJECT_VALUECHANGE, parent_hwnd_, OBJID_CLIENT, child_id);
+}
+
+void BrowserAccessibilityManager::OnAccessibilityObjectTextChange(
+    const webkit_glue::WebAccessibility& acc_obj) {
+  BrowserAccessibility* new_browser_acc = UpdateTree(acc_obj);
+  if (!new_browser_acc)
+    return;
+
+  LONG child_id = new_browser_acc->child_id();
+  NotifyWinEvent(
+      IA2_EVENT_TEXT_CARET_MOVED, parent_hwnd_, OBJID_CLIENT, child_id);
 }
 
 LONG BrowserAccessibilityManager::GetNextChildID() {

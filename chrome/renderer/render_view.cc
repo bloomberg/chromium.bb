@@ -5595,6 +5595,11 @@ void RenderView::postAccessibilityNotification(
           ViewHostMsg_AccessibilityNotification_Params::
               NOTIFICATION_TYPE_VALUE_CHANGED;
       break;
+    case WebKit::WebAccessibilityNotificationSelectedTextChanged:
+      param.notification_type =
+          ViewHostMsg_AccessibilityNotification_Params::
+              NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED;
+      break;
     default:
       return;
   }

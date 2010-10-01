@@ -984,6 +984,9 @@ struct ViewHostMsg_AccessibilityNotification_Params {
 
     // The node value has changed.
     NOTIFICATION_TYPE_VALUE_CHANGED,
+
+    // The text cursor or selection changed.
+    NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED,
   };
 
   // Type of notification.

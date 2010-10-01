@@ -30,6 +30,20 @@ class RendererAccessibilityBrowserTest : public InProcessBrowserTest {
  public:
   RendererAccessibilityBrowserTest() {}
 
+  // Tell the renderer to send an accessibility tree, then wait for the
+  // notification that it's been received.
+  const WebAccessibility& GetWebAccessibilityTree() {
+    RenderWidgetHostView* host_view =
+        browser()->GetSelectedTabContents()->GetRenderWidgetHostView();
+    RenderWidgetHost* host = host_view->GetRenderWidgetHost();
+    RenderViewHost* view_host = static_cast<RenderViewHost*>(host);
+    view_host->set_save_accessibility_tree_for_testing(true);
+    view_host->EnableRendererAccessibility();
+    ui_test_utils::WaitForNotification(
+        NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+    return view_host->accessibility_tree();
+  }
+
   // InProcessBrowserTest
   void SetUpInProcessBrowserTestFixture();
   void TearDownInProcessBrowserTestFixture();
@@ -55,6 +69,7 @@ void RendererAccessibilityBrowserTest::TearDownInProcessBrowserTestFixture() {
   ::CoUninitialize();
 #endif
 }
+
 // Convenience method to get the value of a particular WebAccessibility
 // node attribute as a UTF-8 const char*.
 std::string RendererAccessibilityBrowserTest::GetAttr(
@@ -67,7 +82,7 @@ std::string RendererAccessibilityBrowserTest::GetAttr(
 }
 
 IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
-                       TestCrossPlatformAccessibilityTree) {
+                       CrossPlatformWebpageAccessibility) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
@@ -77,20 +92,9 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "</body></html>";
   GURL url(url_str);
   browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
-
-  // Tell the renderer to send an accessibility tree, then wait for the
-  // notification that it's been received.
-  RenderWidgetHostView* host_view =
-      browser()->GetSelectedTabContents()->GetRenderWidgetHostView();
-  RenderWidgetHost* host = host_view->GetRenderWidgetHost();
-  RenderViewHost* view_host = static_cast<RenderViewHost*>(host);
-  view_host->set_save_accessibility_tree_for_testing(true);
-  view_host->EnableRendererAccessibility();
-  ui_test_utils::WaitForNotification(
-      NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED);
+  const WebAccessibility& tree = GetWebAccessibilityTree();
 
   // Check properties of the root element of the tree.
-  const WebAccessibility& tree = view_host->accessibility_tree();
   EXPECT_STREQ(url_str, GetAttr(tree, WebAccessibility::ATTR_DOC_URL).c_str());
   EXPECT_STREQ(
       "Accessibility Test",
@@ -137,6 +141,64 @@ IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
       "type", UTF16ToUTF8(checkbox.html_attributes[0].first).c_str());
   EXPECT_STREQ(
     "checkbox", UTF16ToUTF8(checkbox.html_attributes[0].second).c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformUnselectedEditableTextAccessibility) {
+  // Create a data url and load it.
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<body>"
+      "<input value=\"Hello, world.\"/>"
+      "</body></html>";
+  GURL url(url_str);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  const WebAccessibility& tree = GetWebAccessibilityTree();
+  ASSERT_EQ(1U, tree.children.size());
+  const WebAccessibility& body = tree.children[0];
+  ASSERT_EQ(1U, body.children.size());
+  const WebAccessibility& text = body.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text.role);
+  EXPECT_STREQ(
+      "input", GetAttr(text, WebAccessibility::ATTR_HTML_TAG).c_str());
+  EXPECT_STREQ(
+      "0", GetAttr(text, WebAccessibility::ATTR_TEXT_SEL_START).c_str());
+  EXPECT_STREQ(
+      "0", GetAttr(text, WebAccessibility::ATTR_TEXT_SEL_END).c_str());
+  EXPECT_STREQ("Hello, world.", UTF16ToUTF8(text.value).c_str());
+
+  // TODO(dmazzoni): as soon as more accessibility code is cross-platform,
+  // this code should test that the accessible info is dynamically updated
+  // if the selection or value changes.
+}
+
+IN_PROC_BROWSER_TEST_F(RendererAccessibilityBrowserTest,
+                       CrossPlatformSelectedEditableTextAccessibility) {
+  // Create a data url and load it.
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<body onload=\"document.body.children[0].select();\">"
+      "<input value=\"Hello, world.\"/>"
+      "</body></html>";
+  GURL url(url_str);
+  browser()->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
+
+  const WebAccessibility& tree = GetWebAccessibilityTree();
+  ASSERT_EQ(1U, tree.children.size());
+  const WebAccessibility& body = tree.children[0];
+  ASSERT_EQ(1U, body.children.size());
+  const WebAccessibility& text = body.children[0];
+  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, text.role);
+  EXPECT_STREQ(
+      "input", GetAttr(text, WebAccessibility::ATTR_HTML_TAG).c_str());
+  EXPECT_STREQ(
+      "0", GetAttr(text, WebAccessibility::ATTR_TEXT_SEL_START).c_str());
+  EXPECT_STREQ(
+      "13", GetAttr(text, WebAccessibility::ATTR_TEXT_SEL_END).c_str());
+  EXPECT_STREQ("Hello, world.", UTF16ToUTF8(text.value).c_str());
 }
 
 }  // namespace

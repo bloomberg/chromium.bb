@@ -82,9 +82,23 @@ class BrowserAccessibilityManager {
     const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
 
  private:
+  // Recursively compare the IDs of our subtree to a new subtree received
+  // from the renderer and return true if their IDs match exactly.
+  bool CanModifyTreeInPlace(
+      BrowserAccessibility* current_root,
+      const webkit_glue::WebAccessibility& new_root);
+
+  // Recursively modify a subtree (by reinitializing) to match a new
+  // subtree received from the renderer process. Should only be called
+  // if CanModifyTreeInPlace returned true.
+  void ModifyTreeInPlace(
+      BrowserAccessibility* current_root,
+      const webkit_glue::WebAccessibility& new_root);
+
   // Update the accessibility tree with an updated WebAccessibility tree or
-  // subtree received from the renderer process. Returns the updated node or
-  // NULL if no node was updated.
+  // subtree received from the renderer process. First attempts to modify
+  // the tree in place, and if that fails, replaces the entire subtree.
+  // Returns the updated node or NULL if no node was updated.
   BrowserAccessibility* UpdateTree(
       const webkit_glue::WebAccessibility& acc_obj);
 
@@ -97,6 +111,8 @@ class BrowserAccessibilityManager {
   void OnAccessibilityObjectLoadComplete(
       const webkit_glue::WebAccessibility& acc_obj);
   void OnAccessibilityObjectValueChange(
+      const webkit_glue::WebAccessibility& acc_obj);
+  void OnAccessibilityObjectTextChange(
       const webkit_glue::WebAccessibility& acc_obj);
 
   // Returns the next MSAA child id.

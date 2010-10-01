@@ -5,6 +5,7 @@
 #include "chrome/browser/browser_accessibility_win.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_accessibility_manager_win.h"
@@ -31,8 +32,6 @@ void BrowserAccessibility::Initialize(
     LONG child_id,
     LONG index_in_parent,
     const webkit_glue::WebAccessibility& src) {
-  DCHECK_EQ(children_.size(), 0U);
-
   manager_ = manager;
   parent_ = parent;
   child_id_ = child_id;
@@ -44,6 +43,7 @@ void BrowserAccessibility::Initialize(
   attributes_ = src.attributes;
   html_attributes_ = src.html_attributes;
   location_ = src.location;
+  src_role_ = src.role;
   InitRoleAndState(src.role, src.state);
 
   // Expose headings levels to NVDA with the "level" object attribute.
@@ -104,6 +104,11 @@ BrowserAccessibility* BrowserAccessibility::GetParent() {
 
 uint32 BrowserAccessibility::GetChildCount() {
   return children_.size();
+}
+
+BrowserAccessibility* BrowserAccessibility::GetChild(uint32 child_index) {
+  DCHECK(child_index >= 0 && child_index < children_.size());
+  return children_[child_index];
 }
 
 BrowserAccessibility* BrowserAccessibility::GetPreviousSibling() {
@@ -575,7 +580,7 @@ STDMETHODIMP BrowserAccessibility::get_description(BSTR* desc) {
 }
 
 STDMETHODIMP BrowserAccessibility::get_imagePosition(
-    enum IA2CoordinateType coordinate_type, long* x, long* y) {
+    enum IA2CoordinateType coordinate_type, LONG* x, LONG* y) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -602,7 +607,7 @@ STDMETHODIMP BrowserAccessibility::get_imagePosition(
   return S_OK;
 }
 
-STDMETHODIMP BrowserAccessibility::get_imageSize(long* height, long* width) {
+STDMETHODIMP BrowserAccessibility::get_imageSize(LONG* height, LONG* width) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -618,32 +623,53 @@ STDMETHODIMP BrowserAccessibility::get_imageSize(long* height, long* width) {
 // IAccessibleText methods.
 //
 
-STDMETHODIMP BrowserAccessibility::get_nCharacters(long* n_characters) {
+STDMETHODIMP BrowserAccessibility::get_nCharacters(LONG* n_characters) {
   if (!instance_active_)
     return E_FAIL;
 
   if (!n_characters)
     return E_INVALIDARG;
 
-  *n_characters = name_.length();
+  if (src_role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+    *n_characters = value_.length();
+  } else {
+    *n_characters = name_.length();
+  }
+
   return S_OK;
 }
 
 STDMETHODIMP BrowserAccessibility::get_text(
-    long start_offset, long end_offset, BSTR* text) {
+    LONG start_offset, LONG end_offset, BSTR* text) {
   if (!instance_active_)
     return E_FAIL;
 
   if (!text)
     return E_INVALIDARG;
 
-  long len = name_.length();
-  if (start_offset < 0)
-    start_offset = 0;
-  if (end_offset > len)
-    end_offset = len;
+  string16 text_str;
+  if (src_role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+    text_str = value_;
+  } else {
+    text_str = name_;
+  }
 
-  string16 substr = name_.substr(start_offset, end_offset - start_offset);
+  // The spec allows the arguments to be reversed.
+  if (start_offset > end_offset) {
+    LONG tmp = start_offset;
+    start_offset = end_offset;
+    end_offset = tmp;
+  }
+
+  // The spec does not allow the start or end offsets to be out or range;
+  // we must return an error if so.
+  LONG len = text_str.length();
+  if (start_offset < 0)
+    return E_INVALIDARG;
+  if (end_offset > len)
+    return E_INVALIDARG;
+
+  string16 substr = text_str.substr(start_offset, end_offset - start_offset);
   if (substr.empty())
     return S_FALSE;
 
@@ -652,14 +678,76 @@ STDMETHODIMP BrowserAccessibility::get_text(
   return S_OK;
 }
 
-STDMETHODIMP BrowserAccessibility::get_caretOffset(long* offset) {
+STDMETHODIMP BrowserAccessibility::get_caretOffset(LONG* offset) {
   if (!instance_active_)
     return E_FAIL;
 
   if (!offset)
     return E_INVALIDARG;
 
-  *offset = 0;
+  if (src_role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+    int sel_start = 0;
+    if (GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start)) {
+      *offset = sel_start;
+    } else {
+      *offset = 0;
+    }
+  } else {
+    *offset = 0;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_nSelections(LONG* n_selections) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!n_selections)
+    return E_INVALIDARG;
+
+  if (src_role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+    int sel_start = 0;
+    int sel_end = 0;
+    if (GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start) &&
+        GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_END, &sel_end) &&
+        sel_start != sel_end) {
+      *n_selections = 1;
+    } else {
+      *n_selections = 0;
+    }
+  } else {
+    *n_selections = 0;
+  }
+
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibility::get_selection(LONG selection_index,
+                                                 LONG* start_offset,
+                                                 LONG* end_offset) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!start_offset || !end_offset || selection_index != 0)
+    return E_INVALIDARG;
+
+  if (src_role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+    int sel_start = 0;
+    int sel_end = 0;
+    if (GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start) &&
+        GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_END, &sel_end)) {
+      *start_offset = sel_start;
+      *end_offset = sel_end;
+    } else {
+      *start_offset = 0;
+      *end_offset = 0;
+    }
+  } else {
+    *start_offset = 0;
+    *end_offset = 0;
+  }
+
   return S_OK;
 }
 
@@ -1011,7 +1099,7 @@ HRESULT WINAPI BrowserAccessibility::InternalQueryInterface(
     REFIID iid,
     void** object) {
   if (iid == IID_IAccessibleText) {
-    if (role_ != ROLE_SYSTEM_LINK) {
+    if (role_ != ROLE_SYSTEM_LINK && role_ != ROLE_SYSTEM_TEXT) {
       *object = NULL;
       return E_NOINTERFACE;
     }
@@ -1081,12 +1169,24 @@ HRESULT BrowserAccessibility::GetAttributeAsBstr(
   return S_OK;
 }
 
-string16 BrowserAccessibility::Escape(string16 str) {
-  return UTF8ToUTF16(EscapeNonASCII(UTF16ToUTF8(str)));
+bool BrowserAccessibility::GetAttributeAsInt(
+    WebAccessibility::Attribute attribute, int* value_int) {
+  string16 value_str;
+
+  if (!GetAttribute(attribute, &value_str))
+    return false;
+
+  if (!base::StringToInt(value_str, value_int))
+    return false;
+
+  return true;
 }
 
-void BrowserAccessibility::InitRoleAndState(LONG web_role,
-                                            LONG web_state) {
+string16 BrowserAccessibility::Escape(string16 str) {
+  return EscapeQueryParamValueUTF8(str, false);
+}
+
+void BrowserAccessibility::InitRoleAndState(LONG web_role, LONG web_state) {
   state_ = 0;
   ia2_state_ = IA2_STATE_OPAQUE;
 

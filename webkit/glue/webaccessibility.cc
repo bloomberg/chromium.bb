@@ -4,7 +4,9 @@
 
 #include "webkit/glue/webaccessibility.h"
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityRole.h"
@@ -12,7 +14,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocumentType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNamedNodeMap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -332,11 +336,24 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
               element.attributes().attributeItem(i).localName(),
               element.attributes().attributeItem(i).value()));
     }
+
+    if (element.isFormControlElement()) {
+      WebKit::WebFormControlElement form_element =
+          element.to<WebKit::WebFormControlElement>();
+      if (form_element.formControlType() == ASCIIToUTF16("text")) {
+        WebKit::WebInputElement input_element =
+            form_element.to<WebKit::WebInputElement>();
+        attributes[ATTR_TEXT_SEL_START] = base::IntToString16(
+            input_element.selectionStart());
+        attributes[ATTR_TEXT_SEL_END] = base::IntToString16(
+            input_element.selectionEnd());
+      }
+    }
   }
 
   if (role == WebAccessibility::ROLE_DOCUMENT ||
       role == WebAccessibility::ROLE_WEB_AREA) {
-    WebKit::WebDocument document = src.document();
+    const WebKit::WebDocument& document = src.document();
     if (name.empty())
       name = document.title();
     attributes[ATTR_DOC_TITLE] = document.title();
@@ -346,7 +363,7 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     else
       attributes[ATTR_DOC_MIMETYPE] = WebKit::WebString("text/html");
 
-    WebKit::WebDocumentType doctype = document.doctype();
+    const WebKit::WebDocumentType& doctype = document.doctype();
     if (!doctype.isNull())
       attributes[ATTR_DOC_DOCTYPE] = doctype.name();
   }

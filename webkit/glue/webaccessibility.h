@@ -163,6 +163,10 @@ struct WebAccessibility {
     ATTR_DOC_MIMETYPE,
     ATTR_DOC_DOCTYPE,
 
+    // Editable text attributes
+    ATTR_TEXT_SEL_START,
+    ATTR_TEXT_SEL_END,
+
     // Attributes that could apply to any node.
     ATTR_ACTION,
     ATTR_DESCRIPTION,

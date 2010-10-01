@@ -83,6 +83,9 @@ class ATL_NO_VTABLE BrowserAccessibility
   // Returns the number of children of this BrowserAccessibility object.
   uint32 GetChildCount();
 
+  // Return a pointer to the child with the given index.
+  BrowserAccessibility* GetChild(uint32 child_index);
+
   // Return the previous sibling of this object, or NULL if it's the first
   // child of its parent.
   BrowserAccessibility* GetPreviousSibling();
@@ -259,84 +262,82 @@ class ATL_NO_VTABLE BrowserAccessibility
   STDMETHODIMP get_description(BSTR* description);
 
   STDMETHODIMP get_imagePosition(enum IA2CoordinateType coordinate_type,
-                                 long* x, long* y);
+                                 LONG* x, LONG* y);
 
-  STDMETHODIMP get_imageSize(long* height, long* width);
+  STDMETHODIMP get_imageSize(LONG* height, LONG* width);
 
   //
   // IAccessibleText methods.
   //
 
-  STDMETHODIMP get_nCharacters(long* n_characters);
+  STDMETHODIMP get_nCharacters(LONG* n_characters);
 
-  STDMETHODIMP get_text(long start_offset, long end_offset, BSTR* text);
+  STDMETHODIMP get_text(LONG start_offset, LONG end_offset, BSTR* text);
 
-  STDMETHODIMP get_caretOffset(long* offset);
+  STDMETHODIMP get_caretOffset(LONG* offset);
+
+  STDMETHODIMP get_nSelections(LONG* n_selections);
+
+  STDMETHODIMP get_selection(LONG selection_index,
+                             LONG* start_offset,
+                             LONG* end_offset);
 
   // IAccessibleText methods not implemented.
-  STDMETHODIMP addSelection(long start_offset, long end_offset) {
+  STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_attributes(long offset, long* start_offset, long* end_offset,
+  STDMETHODIMP get_attributes(LONG offset, LONG* start_offset, LONG* end_offset,
                               BSTR* text_attributes) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_characterExtents(long offset,
+  STDMETHODIMP get_characterExtents(LONG offset,
                                     enum IA2CoordinateType coord_type,
-                                    long* x, long* y,
-                                    long* width, long* height) {
+                                    LONG* x, LONG* y,
+                                    LONG* width, LONG* height) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_nSelections(long* n_selections) {
+  STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
+                                 enum IA2CoordinateType coord_type,
+                                 LONG* offset) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_offsetAtPoint(long x, long y,
-                             enum IA2CoordinateType coord_type,
-                             long* offset) {
+  STDMETHODIMP get_textBeforeOffset(LONG offset,
+                                    enum IA2TextBoundaryType boundary_type,
+                                    LONG* start_offset, LONG* end_offset,
+                                    BSTR* text) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_selection(long selection_index,
-                         long* start_offset,
-                         long* end_offset) {
+  STDMETHODIMP get_textAfterOffset(LONG offset,
+                                   enum IA2TextBoundaryType boundary_type,
+                                   LONG* start_offset, LONG* end_offset,
+                                   BSTR* text) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_textBeforeOffset(long offset,
+  STDMETHODIMP get_textAtOffset(LONG offset,
                                 enum IA2TextBoundaryType boundary_type,
-                                long* start_offset, long* end_offset,
+                                LONG* start_offset, LONG* end_offset,
                                 BSTR* text) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_textAfterOffset(long offset,
-                               enum IA2TextBoundaryType boundary_type,
-                               long* start_offset, long* end_offset,
-                               BSTR* text) {
+  STDMETHODIMP removeSelection(LONG selection_index) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP get_textAtOffset(long offset,
-                            enum IA2TextBoundaryType boundary_type,
-                            long* start_offset, long* end_offset,
-                            BSTR* text) {
+  STDMETHODIMP setCaretOffset(LONG offset) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP removeSelection(long selection_index) {
+  STDMETHODIMP setSelection(LONG selection_index,
+                            LONG start_offset,
+                            LONG end_offset) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP setCaretOffset(long offset) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP setSelection(long selection_index,
-                            long start_offset,
-                            long end_offset) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP scrollSubstringTo(long start_index,
-                                 long end_index,
+  STDMETHODIMP scrollSubstringTo(LONG start_index,
+                                 LONG end_index,
                                  enum IA2ScrollType scroll_type) {
     return E_NOTIMPL;
   }
-  STDMETHODIMP scrollSubstringToPoint(long start_index, long end_index,
+  STDMETHODIMP scrollSubstringToPoint(LONG start_index, LONG end_index,
                                       enum IA2CoordinateType coordinate_type,
-                                      long x, long y) {
+                                      LONG x, LONG y) {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_newText(IA2TextSegment* new_text) {
@@ -510,6 +511,13 @@ class ATL_NO_VTABLE BrowserAccessibility
   HRESULT GetAttributeAsBstr(
       WebAccessibility::Attribute attribute, BSTR* value_bstr);
 
+  // Retrieve the value of an attribute from the attribute map and
+  // if found and nonempty, try to convert it to an integer.
+  // Returns true only if both the attribute was found and it was successfully
+  // converted to an integer.
+  bool GetAttributeAsInt(
+      WebAccessibility::Attribute attribute, int* value_int);
+
   // Escape a string like it would be escaped for a URL or HTML form.
   string16 Escape(string16 str);
 
@@ -535,6 +543,7 @@ class ATL_NO_VTABLE BrowserAccessibility
   std::map<int32, string16> attributes_;
   std::vector<std::pair<string16, string16> > html_attributes_;
 
+  int src_role_;
   LONG role_;
   LONG state_;
   string16 role_name_;

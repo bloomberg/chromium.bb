@@ -505,7 +505,7 @@ struct ParamTraits
     int val = 0;
     if (!ReadParam(m, iter, &val) ||
         val < params::NOTIFICATION_TYPE_CHECK_STATE_CHANGED ||
-        val > params::NOTIFICATION_TYPE_VALUE_CHANGED) {
+        val > params::NOTIFICATION_TYPE_SELECTED_TEXT_CHANGED) {
       return false;
     }
     *p = static_cast<param_type>(val);
