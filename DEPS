@@ -48,9 +48,6 @@ deps = {
   "src/third_party/hunspell_dictionaries":
    "/trunk/deps/third_party/hunspell_dictionaries@60756",
 
-  "src/third_party/protobuf2/src":
-    (Var("googlecode_url") % "protobuf") + "/trunk@346",
-
   "src/third_party/safe_browsing/testing":
     "http://google-safe-browsing.googlecode.com/svn/trunk/testing@99",
 
