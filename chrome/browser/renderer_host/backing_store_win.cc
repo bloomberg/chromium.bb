@@ -69,7 +69,8 @@ void CallStretchDIBits(HDC hdc, int dest_x, int dest_y, int dest_w, int dest_h,
 
 }  // namespace
 
-BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget, const gfx::Size& size)
+BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget,
+                                 const gfx::Size& size)
     : BackingStore(widget, size),
       backing_store_dib_(NULL),
       original_bitmap_(NULL) {
@@ -117,10 +118,12 @@ void BackingStoreWin::PaintToBackingStore(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    bool* painted_synchronously) {
+    bool* painted_synchronously,
+    bool* done_copying_bitmap) {
   // Our paints are always synchronous and the TransportDIB can be freed when
   // we're done (even on error).
   *painted_synchronously = true;
+  *done_copying_bitmap = true;
 
   if (!backing_store_dib_) {
     backing_store_dib_ = CreateDIB(hdc_, size().width(),

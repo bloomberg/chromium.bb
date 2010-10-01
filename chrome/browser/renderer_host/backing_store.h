@@ -42,16 +42,21 @@ class BackingStore {
   // the backingstore to be painted from the bitmap.
   //
   // The value placed into |*painted_synchronously| indicates if the paint was
-  // completed synchronously and the TransportDIB can be freed. False means that
-  // the backing store may still be using the transport DIB and it will manage
-  // notifying the RenderWidgetHost that it's done with it via
-  // DonePaintingToBackingStore().
+  // completed synchronously and the renderer can begin generating another
+  // update.  If the paint is being done asynchronously, the backing store will
+  // call DonePaintingToBackingStore() when finished.
+  //
+  // |*done_copying_bitmap| is set to true if the browser is done using
+  // the TransportDIB and to false otherwise.  In the false case, the backing
+  // store will manage notifying the RenderWidgetHost that it's done with it via
+  // DoneCopyingBitmapToBackingStore().
   virtual void PaintToBackingStore(
       RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
-      bool* painted_synchronously) = 0;
+      bool* painted_synchronously,
+      bool* done_copying_bitmap) = 0;
 
   // Extracts the gives subset of the backing store and copies it to the given
   // PlatformCanvas. The PlatformCanvas should not be initialized. This function

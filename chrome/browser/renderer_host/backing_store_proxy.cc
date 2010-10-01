@@ -23,7 +23,8 @@ BackingStoreProxy::BackingStoreProxy(RenderWidgetHost* widget,
     : BackingStore(widget, size),
       process_shim_(process_shim),
       routing_id_(routing_id),
-      waiting_for_paint_ack_(false) {
+      waiting_for_paint_ack_(false),
+      current_bitmap_(TransportDIB::Id()) {
   process_shim_->AddRoute(routing_id_, this);
 }
 
@@ -36,7 +37,8 @@ void BackingStoreProxy::PaintToBackingStore(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    bool* painted_synchronously) {
+    bool* painted_synchronously,
+    bool* done_copying_bitmap) {
   DCHECK(!waiting_for_paint_ack_);
 
   base::ProcessId process_id;
@@ -49,12 +51,17 @@ void BackingStoreProxy::PaintToBackingStore(
   if (process_shim_->Send(new GpuMsg_PaintToBackingStore(
           routing_id_, process_id, bitmap, bitmap_rect, copy_rects))) {
     // Message sent successfully, so the caller can not destroy the
-    // TransportDIB. OnDonePaintingToBackingStore will free it later.
+    // TransportDIB. DoneCopyingBitmapToBackingStore will release it later, and
+    // DonePaintingToBackingStore will let the renderer know that it can send us
+    // the next update.
     *painted_synchronously = false;
+    *done_copying_bitmap = false;
     waiting_for_paint_ack_ = true;
+    current_bitmap_ = bitmap;
   } else {
     // On error, we're done with the TransportDIB and the caller can free it.
     *painted_synchronously = true;
+    *done_copying_bitmap = true;
   }
 }
 
@@ -96,6 +103,8 @@ void BackingStoreProxy::OnChannelError() {
 
 void BackingStoreProxy::OnPaintToBackingStoreACK() {
   DCHECK(waiting_for_paint_ack_);
+  render_widget_host()->DoneCopyingBitmapToBackingStore(current_bitmap_);
   render_widget_host()->DonePaintingToBackingStore();
   waiting_for_paint_ack_ = false;
+  current_bitmap_ = TransportDIB::Id();
 }

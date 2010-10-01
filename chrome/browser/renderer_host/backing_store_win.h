@@ -27,7 +27,8 @@ class BackingStoreWin : public BackingStore {
                                    TransportDIB::Id bitmap,
                                    const gfx::Rect& bitmap_rect,
                                    const std::vector<gfx::Rect>& copy_rects,
-                                   bool* painted_synchronously);
+                                   bool* painted_synchronously,
+                                   bool* done_copying_bitmap);
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
                                     skia::PlatformCanvas* output);
   virtual void ScrollBackingStore(int dx, int dy,

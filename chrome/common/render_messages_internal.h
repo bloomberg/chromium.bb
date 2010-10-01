@@ -177,6 +177,11 @@ IPC_BEGIN_MESSAGES(View)
                       gfx::Size /* page_size */,
                       gfx::Size /* desired_size */)
 
+  // Sent when the backing store is finished using a TransportDIB received from
+  // the renderer via a ViewHostMsg_UpdateRect message.
+  IPC_MESSAGE_ROUTED1(ViewMsg_DoneUsingBitmap,
+                      TransportDIB::Id /* bitmap */)
+
   // Tells the render view that a ViewHostMsg_UpdateRect message was processed.
   // This signals the render view that it can send another UpdateRect message.
   IPC_MESSAGE_ROUTED0(ViewMsg_UpdateRect_ACK)

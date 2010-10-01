@@ -17,7 +17,8 @@ void TestBackingStore::PaintToBackingStore(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    bool* painted_synchronously) {
+    bool* painted_synchronously,
+    bool* done_copying_bitmap) {
 }
 
 bool TestBackingStore::CopyFromBackingStore(const gfx::Rect& rect,

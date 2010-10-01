@@ -370,6 +370,11 @@ BackingStore* RenderWidgetHost::AllocBackingStore(const gfx::Size& size) {
   return view_->AllocBackingStore(size);
 }
 
+void RenderWidgetHost::DoneCopyingBitmapToBackingStore(
+    TransportDIB::Id bitmap) {
+  Send(new ViewMsg_DoneUsingBitmap(routing_id(), bitmap));
+}
+
 void RenderWidgetHost::DonePaintingToBackingStore() {
   Send(new ViewMsg_UpdateRect_ACK(routing_id()));
 }
@@ -792,6 +797,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
   DCHECK(!params.view_size.IsEmpty());
 
   bool painted_synchronously = true;  // Default to sending a paint ACK below.
+  bool done_copying_bitmap = true;
   if (!is_gpu_rendering_active_) {
     const size_t size = params.bitmap_rect.height() *
         params.bitmap_rect.width() * 4;
@@ -814,20 +820,25 @@ void RenderWidgetHost::OnMsgUpdateRect(
         // Paint the backing store. This will update it with the
         // renderer-supplied bits. The view will read out of the backing store
         // later to actually draw to the screen.
-        PaintBackingStoreRect(params.bitmap, params.bitmap_rect,
-                              params.copy_rects, params.view_size,
-                              &painted_synchronously);
+        PaintBackingStoreRect(params.bitmap,
+                              params.bitmap_rect,
+                              params.copy_rects,
+                              params.view_size,
+                              &painted_synchronously,
+                              &done_copying_bitmap);
       }
     }
   }
 
-  // ACK early so we can prefetch the next PaintRect if there is a next one.
-  // This must be done AFTER we're done painting with the bitmap supplied by the
-  // renderer. This ACK is a signal to the renderer that the backing store can
-  // be re-used, so the bitmap may be invalid after this call. If the backing
-  // store is painting asynchronously, it will manage issuing this IPC.
+  // Tell the renderer that the bitmap can be re-used, so the bitmap may be
+  // invalid after this call. If the backing store is still using the bitmap, it
+  // will manage issuing this IPC.
+  if (done_copying_bitmap)
+    DoneCopyingBitmapToBackingStore(params.bitmap);
+
+  // ACK early so we can prefetch the next UpdateRect if there is a next one.
   if (painted_synchronously)
-    Send(new ViewMsg_UpdateRect_ACK(routing_id_));
+    DonePaintingToBackingStore();
 
   // We don't need to update the view if the view is hidden. We must do this
   // early return after the ACK is sent, however, or the renderer will not send
@@ -1083,10 +1094,12 @@ void RenderWidgetHost::PaintBackingStoreRect(
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
     const gfx::Size& view_size,
-    bool* painted_synchronously) {
+    bool* painted_synchronously,
+    bool* done_copying_bitmap) {
   // On failure, we need to be sure our caller knows we're done with the
   // backing store.
   *painted_synchronously = true;
+  *done_copying_bitmap = true;
 
   // The view may be destroyed already.
   if (!view_)
@@ -1101,9 +1114,14 @@ void RenderWidgetHost::PaintBackingStoreRect(
   }
 
   bool needs_full_paint = false;
-  BackingStoreManager::PrepareBackingStore(this, view_size, bitmap, bitmap_rect,
-                                           copy_rects, &needs_full_paint,
-                                           painted_synchronously);
+  BackingStoreManager::PrepareBackingStore(this,
+                                           view_size,
+                                           bitmap,
+                                           bitmap_rect,
+                                           copy_rects,
+                                           &needs_full_paint,
+                                           painted_synchronously,
+                                           done_copying_bitmap);
   if (needs_full_paint) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;

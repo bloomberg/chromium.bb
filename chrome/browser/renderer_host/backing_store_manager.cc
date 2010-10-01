@@ -197,9 +197,11 @@ void BackingStoreManager::PrepareBackingStore(
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
     bool* needs_full_paint,
-    bool* painted_synchronously) {
+    bool* painted_synchronously,
+    bool* done_copying_bitmap) {
   // Default to declaring we're done using the transport DIB so it can be freed.
   *painted_synchronously = true;
+  *done_copying_bitmap = true;
 
   BackingStore* backing_store = GetBackingStore(host, backing_store_size);
   if (!backing_store) {
@@ -217,9 +219,12 @@ void BackingStoreManager::PrepareBackingStore(
     backing_store = CreateBackingStore(host, backing_store_size);
   }
 
-  backing_store->PaintToBackingStore(host->process(), bitmap,
-                                     bitmap_rect, copy_rects,
-                                     painted_synchronously);
+  backing_store->PaintToBackingStore(host->process(),
+                                     bitmap,
+                                     bitmap_rect,
+                                     copy_rects,
+                                     painted_synchronously,
+                                     done_copying_bitmap);
 }
 
 // static

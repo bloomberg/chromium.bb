@@ -12,6 +12,7 @@
 
 class GpuProcessHostUIShim;
 
+// This class proxies renderer updates to the GPU process.
 class BackingStoreProxy : public BackingStore,
                           public IPC::Channel::Listener {
  public:
@@ -24,7 +25,8 @@ class BackingStoreProxy : public BackingStore,
                                    TransportDIB::Id bitmap,
                                    const gfx::Rect& bitmap_rect,
                                    const std::vector<gfx::Rect>& copy_rects,
-                                   bool* painted_synchronously);
+                                   bool* painted_synchronously,
+                                   bool* done_copying_bitmap);
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
                                     skia::PlatformCanvas* output);
   virtual void ScrollBackingStore(int dx, int dy,
@@ -45,8 +47,11 @@ class BackingStoreProxy : public BackingStore,
 
   // Set to true when we're waiting for the GPU process to do a paint and send
   // back a "done" message. In this case, the renderer will be waiting for our
-  // message that we're done using the backing store.
+  // message that we're done using the bitmap.
   bool waiting_for_paint_ack_;
+
+  // Bitmap currently being used by the GPU process.
+  TransportDIB::Id current_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(BackingStoreProxy);
 };

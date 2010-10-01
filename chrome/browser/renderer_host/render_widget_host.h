@@ -238,9 +238,14 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // (for example, if we don't currently have a RenderWidgetHostView.)
   BackingStore* AllocBackingStore(const gfx::Size& size);
 
-  // When a backing store does asynchronous painting, it will call this function
-  // when it is done with the DIB. We will then forward a message to the
-  // renderer to send another paint.
+  // When a backing store is copying a TransportDIB asynchronously, it calls
+  // this function when it is done using it.  We then send a message to the
+  // renderer letting it know that the bitmap can be reused.
+  void DoneCopyingBitmapToBackingStore(TransportDIB::Id bitmap);
+
+  // When a backing store does asynchronous painting, it calls this function
+  // when it is done painting. We then send a message to the renderer to send
+  // another update.
   void DonePaintingToBackingStore();
 
   // GPU accelerated version of GetBackingStore function. This will
@@ -526,7 +531,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                              const gfx::Rect& bitmap_rect,
                              const std::vector<gfx::Rect>& copy_rects,
                              const gfx::Size& view_size,
-                             bool* painted_synchronously);
+                             bool* painted_synchronously,
+                             bool* done_copying_bitmap);
 
   // Scrolls the given |clip_rect| in the backing by the given dx/dy amount. The
   // |dib| and its corresponding location |bitmap_rect| in the backing store

@@ -44,10 +44,10 @@ class BackingStoreManager {
   //   Set if we need to send out a request to paint the view
   //   to the renderer.
   // painted_synchronously
-  //   Will be set by the function if the request was processed synchronously,
-  //   and the bitmap is done being used. False means that the backing store
-  //   will paint the bitmap at a later time and that the TransportDIB can't be
-  //   freed (it will be the backing store's job to free it later).
+  //   Will be set by the function if the request was processed synchronously.
+  // done_copying_bitmap
+  //   False means that the backing store is still using the TransportDIB and it
+  //   can't be freed (it will be the backing store's job to free it later).
   static void PrepareBackingStore(
       RenderWidgetHost* host,
       const gfx::Size& backing_store_size,
@@ -55,7 +55,8 @@ class BackingStoreManager {
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
       bool* needs_full_paint,
-      bool* painted_synchronously);
+      bool* painted_synchronously,
+      bool* done_copying_bitmap);
 
   // Returns a matching backing store for the host.
   // Returns NULL if we fail to find one.

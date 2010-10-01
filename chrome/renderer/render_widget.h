@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_RENDER_WIDGET_H_
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include "app/surface/transport_dib.h"
@@ -129,6 +130,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // without ref-counting is an error.
   friend class base::RefCounted<RenderWidget>;
 
+  typedef std::map<TransportDIB::Id, TransportDIB*> TransportDIBMap;
+
   RenderWidget(RenderThreadBase* render_thread,
                WebKit::WebPopupType popup_type);
   virtual ~RenderWidget();
@@ -171,6 +174,7 @@ class RenderWidget : public IPC::Channel::Listener,
                         const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
+  void OnDoneUsingBitmap(TransportDIB::Id id);
   void OnUpdateRectAck();
   void OnCreateVideoAck(int32 video_id);
   void OnUpdateVideoAck(int32 video_id);
@@ -288,8 +292,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // The size of the RenderWidget.
   gfx::Size size_;
 
-  // The TransportDIB that is being used to transfer an image to the browser.
-  TransportDIB* current_paint_buf_;
+  // TransportDIBs currently being used to transfer images to the browser.
+  TransportDIBMap current_paint_bufs_;
 
   PaintAggregator paint_aggregator_;
 
