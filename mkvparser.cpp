@@ -1614,7 +1614,7 @@ bool Cues::Find(
     if (time_ns <= pCP->GetTime(m_pSegment))
     {
         pTP = pCP->Find(pTrack);
-        return (pTP != 0);
+        return (pTP != NULL);
     }
 
     while (i < j)
@@ -1645,7 +1645,7 @@ bool Cues::Find(
     assert(pCP->GetTime(m_pSegment) <= time_ns);
 
     pTP = pCP->Find(pTrack);
-    return (pTP != 0);
+    return (pTP != NULL);
 }
 
 
@@ -1697,7 +1697,7 @@ bool Cues::FindNext(
     assert(pCP->GetTime(m_pSegment) > time_ns);
 
     pTP = pCP->Find(pTrack);
-    return (pTP != 0);
+    return (pTP != NULL);
 }
 
 
