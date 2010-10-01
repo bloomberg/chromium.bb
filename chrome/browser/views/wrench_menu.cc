@@ -500,8 +500,7 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
         max_w = std::max(w, max_w);
       }
     } else {
-      int max_w =
-          font.GetStringWidth(l10n_util::GetStringF(IDS_ZOOM_PERCENT, 100));
+      max_w = font.GetStringWidth(l10n_util::GetStringF(IDS_ZOOM_PERCENT, 100));
     }
 
     return max_w + insets.width();
