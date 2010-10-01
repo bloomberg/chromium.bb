@@ -65,10 +65,9 @@ def GetSources():
         PatchGlob("newlib-1.18.0"), strip=2),
     # For a discussion of why nacl-glibc uses these, see
     # http://code.google.com/p/nativeclient/issues/detail?id=671
-    # TODO(mseaborn): Move this repo to git.chromium.org.
     "linux_headers": dirtree.GitTree(
-        "http://repo.or.cz/r/linux-headers-for-nacl.git",
-        commit_id="2dc04f8190a54defc0d59e693fa6cff3e8a916a9"),
+        "http://src.chromium.org/git/linux-headers-for-nacl.git",
+        commit_id="0014b8d2e052dd3bf4cdc4be999d17e123c50dc2"),
     # TODO(mseaborn): Pin a specific Git commit ID here.
     "glibc": dirtree.GitTree("http://src.chromium.org/git/nacl-glibc.git"),
     }
