@@ -50,6 +50,8 @@ class HoverControllerGtk : public AnimationDelegate {
                        GdkEventCrossing*);
   CHROMEGTK_CALLBACK_1(HoverControllerGtk, gboolean, OnLeave,
                        GdkEventCrossing*);
+  CHROMEGTK_CALLBACK_1(HoverControllerGtk, void, OnHierarchyChanged,
+                       GtkWidget*);
   CHROMEGTK_CALLBACK_0(HoverControllerGtk, void, OnDestroy);
 
   ThrobAnimation throb_animation_;

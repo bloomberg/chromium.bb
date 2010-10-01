@@ -22,6 +22,8 @@ HoverControllerGtk::HoverControllerGtk(GtkWidget* button)
                    G_CALLBACK(OnLeaveThunk), this);
   signals_.Connect(button_, "destroy",
                    G_CALLBACK(OnDestroyThunk), this);
+  signals_.Connect(button_, "hierarchy-changed",
+                   G_CALLBACK(OnHierarchyChangedThunk), this);
 
 #ifndef NDEBUG
   if (g_object_get_data(G_OBJECT(button_), kHoverControllerGtkKey))
@@ -106,6 +108,17 @@ gboolean HoverControllerGtk::OnLeave(GtkWidget* widget,
   }
 
   return FALSE;
+}
+
+void HoverControllerGtk::OnHierarchyChanged(GtkWidget* widget,
+                                            GtkWidget* previous_toplevel) {
+  // GTK+ does not emit leave-notify-event signals when a widget
+  // becomes unanchored, so manually unset the hover states.
+  if (!GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(widget))) {
+    gtk_widget_set_state(button_, GTK_STATE_NORMAL);
+    hover_animation_.Reset();
+    gtk_chrome_button_set_hover_state(GTK_CHROME_BUTTON(button_), 0.0);
+  }
 }
 
 void HoverControllerGtk::OnDestroy(GtkWidget* widget) {
