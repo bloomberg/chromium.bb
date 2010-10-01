@@ -67,7 +67,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -804,9 +803,6 @@ void Browser::OnWindowClosing() {
       NotificationType::BROWSER_CLOSING,
       Source<Browser>(this),
       Details<bool>(&exiting));
-
-  // Shutdown all IPC channels to service processes.
-  ServiceProcessControlManager::instance()->Shutdown();
 
   CloseAllTabs();
 }

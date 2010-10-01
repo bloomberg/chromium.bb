@@ -29,6 +29,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -102,6 +103,9 @@ void Shutdown() {
   ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableFunction(&ChromePluginLib::UnloadAllPlugins));
+
+  // Shutdown all IPC channels to service processes.
+  ServiceProcessControlManager::instance()->Shutdown();
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
   // time to get here. If you have something that *must* happen on end session,
