@@ -202,11 +202,13 @@ struct CFIFixture: public StackwalkerAMD64Fixture {
     ASSERT_EQ(2U, frames->size());
 
     StackFrameAMD64 *frame0 = static_cast<StackFrameAMD64 *>(frames->at(0));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
     ASSERT_EQ(StackFrameAMD64::CONTEXT_VALID_ALL, frame0->context_validity);
     EXPECT_EQ("enchiridion", frame0->function_name);
     EXPECT_EQ(0x40000000c0004000ULL, frame0->function_base);
 
     StackFrameAMD64 *frame1 = static_cast<StackFrameAMD64 *>(frames->at(1));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CFI, frame1->trust);
     ASSERT_EQ((StackFrameAMD64::CONTEXT_VALID_RIP |
                StackFrameAMD64::CONTEXT_VALID_RSP |
                StackFrameAMD64::CONTEXT_VALID_RBP |

@@ -238,11 +238,13 @@ struct CFIFixture: public StackwalkerARMFixture {
     ASSERT_EQ(2U, frames->size());
 
     StackFrameARM *frame0 = static_cast<StackFrameARM *>(frames->at(0));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
     ASSERT_EQ(context_frame_validity, frame0->context_validity);
     EXPECT_EQ("enchiridion", frame0->function_name);
     EXPECT_EQ(0x40004000U, frame0->function_base);
 
     StackFrameARM *frame1 = static_cast<StackFrameARM *>(frames->at(1));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CFI, frame1->trust);
     ASSERT_EQ(expected_validity, frame1->context_validity);
     if (expected_validity & StackFrameARM::CONTEXT_VALID_R1)
       EXPECT_EQ(expected.iregs[1], frame1->context.iregs[1]);

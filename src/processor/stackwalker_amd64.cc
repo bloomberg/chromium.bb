@@ -114,6 +114,7 @@ StackFrame* StackwalkerAMD64::GetContextFrame() {
   // straight out of the CPU context structure.
   frame->context = *context_;
   frame->context_validity = StackFrameAMD64::CONTEXT_VALID_ALL;
+  frame->trust = StackFrame::FRAME_TRUST_CONTEXT;
   frame->instruction = frame->context.rip;
 
   return frame;
@@ -137,6 +138,7 @@ StackFrameAMD64 *StackwalkerAMD64::GetCallerByCFIFrameInfo(
   if ((frame->context_validity & essentials) != essentials)
     return NULL;
 
+  frame->trust = StackFrame::FRAME_TRUST_CFI;
   return frame.release();
 }
 

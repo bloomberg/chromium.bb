@@ -118,7 +118,7 @@ StackFrame *StackwalkerX86::GetContextFrame() {
   // straight out of the CPU context structure.
   frame->context = *context_;
   frame->context_validity = StackFrameX86::CONTEXT_VALID_ALL;
-  frame->trust = StackFrameX86::FRAME_TRUST_CONTEXT;
+  frame->trust = StackFrame::FRAME_TRUST_CONTEXT;
   frame->instruction = frame->context.eip;
 
   return frame;
@@ -127,7 +127,7 @@ StackFrame *StackwalkerX86::GetContextFrame() {
 StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
     const vector<StackFrame *> &frames,
     WindowsFrameInfo *last_frame_info) {
-  StackFrameX86::FrameTrust trust = StackFrameX86::FRAME_TRUST_NONE;
+  StackFrame::FrameTrust trust = StackFrame::FRAME_TRUST_NONE;
 
   StackFrameX86 *last_frame = static_cast<StackFrameX86 *>(frames.back());
 
@@ -219,7 +219,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
   string program_string;
   bool recover_ebp = true;
 
-  trust = StackFrameX86::FRAME_TRUST_CFI;
+  trust = StackFrame::FRAME_TRUST_CFI;
   if (!last_frame_info->program_string.empty()) {
     // The FPO data has its own program string, which will tell us how to
     // get to the caller frame, and may even fill in the values of
@@ -318,7 +318,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
     // one where the return address was found.
     dictionary["$eip"] = eip;
     dictionary["$esp"] = location + 4;
-    trust = StackFrameX86::FRAME_TRUST_SCAN;
+    trust = StackFrame::FRAME_TRUST_SCAN;
   }
 
   // Since this stack frame did not use %ebp in a traditional way,
@@ -356,7 +356,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByWindowsFrameInfo(
         dictionary["$eip"] = eip;
         dictionary["$esp"] = location + 4;
         offset = location - location_start;
-        trust = StackFrameX86::FRAME_TRUST_CFI_SCAN;
+        trust = StackFrame::FRAME_TRUST_CFI_SCAN;
       }
     }
 
@@ -441,14 +441,14 @@ StackFrameX86 *StackwalkerX86::GetCallerByCFIFrameInfo(
   if ((frame->context_validity & essentials) != essentials)
     return NULL;
 
-  frame->trust = StackFrameX86::FRAME_TRUST_CFI;
+  frame->trust = StackFrame::FRAME_TRUST_CFI;
 
   return frame.release();
 }
 
 StackFrameX86 *StackwalkerX86::GetCallerByEBPAtBase(
     const vector<StackFrame *> &frames) {
-  StackFrameX86::FrameTrust trust;
+  StackFrame::FrameTrust trust;
   StackFrameX86 *last_frame = static_cast<StackFrameX86 *>(frames.back());
   u_int32_t last_esp = last_frame->context.esp;
   u_int32_t last_ebp = last_frame->context.ebp;
@@ -481,7 +481,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByEBPAtBase(
   if (memory_->GetMemoryAtAddress(last_ebp + 4, &caller_eip) &&
       memory_->GetMemoryAtAddress(last_ebp, &caller_ebp)) {
     caller_esp = last_ebp + 8;
-    trust = StackFrameX86::FRAME_TRUST_FP;
+    trust = StackFrame::FRAME_TRUST_FP;
   } else {
     // We couldn't read the memory %ebp refers to. It may be that %ebp
     // is pointing to non-stack memory. We'll scan the stack for a
@@ -500,7 +500,7 @@ StackFrameX86 *StackwalkerX86::GetCallerByEBPAtBase(
     caller_esp += 4;
     caller_ebp = last_ebp;
 
-    trust = StackFrameX86::FRAME_TRUST_SCAN;
+    trust = StackFrame::FRAME_TRUST_SCAN;
   }
 
   // Create a new stack frame (ownership will be transferred to the caller)
@@ -571,29 +571,6 @@ StackFrame *StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   new_frame->instruction = new_frame->context.eip - 1;
 
   return new_frame.release();
-}
-
-bool StackwalkerX86::ScanForReturnAddress(u_int32_t location_start,
-                                          u_int32_t *location_found,
-                                          u_int32_t *eip_found) {
-  const int kRASearchWords = 15;
-  for (u_int32_t location = location_start;
-       location <= location_start + kRASearchWords * 4;
-       location += 4) {
-    u_int32_t eip;
-    if (!memory_->GetMemoryAtAddress(location, &eip))
-      break;
-
-    if (modules_ && modules_->GetModuleForAddress(eip) &&
-        InstructionAddressSeemsValid(eip)) {
-
-      *eip_found = eip;
-      *location_found = location;
-      return true;
-    }
-  }
-  // nothing found
-  return false;
 }
 
 }  // namespace google_breakpad

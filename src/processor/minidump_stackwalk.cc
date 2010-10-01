@@ -146,7 +146,7 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
     int sequence = 0;
     if (cpu == "x86") {
       const StackFrameX86 *frame_x86 =
-          reinterpret_cast<const StackFrameX86*>(frame);
+        reinterpret_cast<const StackFrameX86*>(frame);
 
       if (frame_x86->context_validity & StackFrameX86::CONTEXT_VALID_EIP)
         sequence = PrintRegister("eip", frame_x86->context.eip, sequence);
@@ -166,32 +166,9 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
         sequence = PrintRegister("edx", frame_x86->context.edx, sequence);
         sequence = PrintRegister("efl", frame_x86->context.eflags, sequence);
       }
-      const char *trust_name;
-      switch (frame_x86->trust) {
-        default:
-        case StackFrameX86::FRAME_TRUST_NONE:
-          trust_name = "unknown";
-          break;
-        case StackFrameX86::FRAME_TRUST_CONTEXT:
-          trust_name = "given as instruction pointer in context";
-          break;
-        case StackFrameX86::FRAME_TRUST_CFI:
-          trust_name = "call frame info";
-          break;
-        case StackFrameX86::FRAME_TRUST_CFI_SCAN:
-          trust_name = "call frame info with scanning";
-          break;
-        case StackFrameX86::FRAME_TRUST_FP:
-          trust_name = "previous frame's frame pointer";
-          break;
-        case StackFrameX86::FRAME_TRUST_SCAN:
-          trust_name = "stack scanning";
-          break;
-      }
-      printf("\n    Found by: %s", trust_name);
     } else if (cpu == "ppc") {
       const StackFramePPC *frame_ppc =
-          reinterpret_cast<const StackFramePPC*>(frame);
+        reinterpret_cast<const StackFramePPC*>(frame);
 
       if (frame_ppc->context_validity & StackFramePPC::CONTEXT_VALID_SRR0)
         sequence = PrintRegister("srr0", frame_ppc->context.srr0, sequence);
@@ -219,7 +196,7 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
         sequence = PrintRegister("rbp", frame_amd64->context.rbp, sequence);
     } else if (cpu == "sparc") {
       const StackFrameSPARC *frame_sparc =
-          reinterpret_cast<const StackFrameSPARC*>(frame);
+        reinterpret_cast<const StackFrameSPARC*>(frame);
 
       if (frame_sparc->context_validity & StackFrameSPARC::CONTEXT_VALID_SP)
         sequence = PrintRegister("sp", frame_sparc->context.g_r[14], sequence);
@@ -229,7 +206,7 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
         sequence = PrintRegister("pc", frame_sparc->context.pc, sequence);
     } else if (cpu == "arm") {
       const StackFrameARM *frame_arm =
-          reinterpret_cast<const StackFrameARM*>(frame);
+        reinterpret_cast<const StackFrameARM*>(frame);
 
       // General-purpose callee-saves registers.
       if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_R4)
@@ -257,7 +234,7 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
       if (frame_arm->context_validity & StackFrameARM::CONTEXT_VALID_PC)
         sequence = PrintRegister("pc", frame_arm->context.iregs[15], sequence);
     }
-    printf("\n");
+    printf("\n    Found by: %s\n", frame->trust_description().c_str());
   }
 }
 

@@ -69,6 +69,7 @@ StackFrame* StackwalkerARM::GetContextFrame() {
   // straight out of the CPU context structure.
   frame->context = *context_;
   frame->context_validity = context_frame_validity_;
+  frame->trust = StackFrame::FRAME_TRUST_CONTEXT;
   frame->instruction = frame->context.iregs[15];
 
   return frame;
@@ -178,6 +179,7 @@ StackFrame* StackwalkerARM::GetCallerFrame(const CallStack *stack) {
   // frame->context.iregs[MD_CONTEXT_ARM_REG_PC].
   frame->instruction = frame->context.iregs[MD_CONTEXT_ARM_REG_PC] - 1;
 
+  frame->trust = StackFrame::FRAME_TRUST_CFI;
   return frame.release();
 }
 
