@@ -447,6 +447,11 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     // these requests to the browser's cache
     *bind_flags |= BINDF_GETNEWESTVERSION | BINDF_PRAGMA_NO_CACHE;
 
+    // Attempt to avoid storing the response for XHR request.
+    // See http://crbug.com/55918
+    if (resource_type_ != ResourceType::MAIN_FRAME)
+      *bind_flags |= BINDF_NOWRITECACHE;
+
     // Initialize the STGMEDIUM.
     memset(&bind_info->stgmedData, 0, sizeof(STGMEDIUM));
     bind_info->grfBindInfoF = 0;
@@ -949,6 +954,7 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
       request_info.referrer,
       request_info.extra_request_headers,
       request_info.upload_data,
+      static_cast<ResourceType::Type>(request_info.resource_type),
       enable_frame_busting_);
   new_request->set_parent_window(notification_window_);
   new_request->set_privileged_mode(privileged_mode_);

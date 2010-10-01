@@ -16,6 +16,7 @@
 #include "ipc/ipc_message.h"
 #include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
+#include "webkit/glue/resource_type.h"
 
 class PluginUrlRequest;
 class PluginUrlRequestDelegate;
@@ -121,7 +122,8 @@ class PluginUrlRequest {
   bool Initialize(PluginUrlRequestDelegate* delegate,
       int remote_request_id, const std::string& url, const std::string& method,
       const std::string& referrer, const std::string& extra_headers,
-      net::UploadData* upload_data, bool enable_frame_busting_);
+      net::UploadData* upload_data, ResourceType::Type resource_type,
+      bool enable_frame_busting_);
 
   // Accessors.
   int id() const {
@@ -177,6 +179,7 @@ class PluginUrlRequest {
   std::string method_;
   std::string referrer_;
   std::string extra_headers_;
+  ResourceType::Type resource_type_;
   ScopedComPtr<IStream> upload_data_;
 };
 

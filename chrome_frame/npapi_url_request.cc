@@ -205,6 +205,7 @@ void NPAPIUrlRequestManager::StartRequest(int request_id,
         request_info.method, request_info.referrer,
         request_info.extra_request_headers,
         request_info.upload_data,
+        static_cast<ResourceType::Type>(request_info.resource_type),
         enable_frame_busting_)) {
     // Add to map.
     DCHECK(request_map_.find(request_id) == request_map_.end());

@@ -83,6 +83,7 @@ TEST(UrlmonUrlRequestTest, Simple1) {
       "",      // referrer
       "",      // extra request
       NULL,    // upload data
+      ResourceType::MAIN_FRAME,  // resource type
       true);   // frame busting
 
   testing::InSequence s;
@@ -129,6 +130,7 @@ TEST(UrlmonUrlRequestTest, Head) {
       "",      // referrer
       "",      // extra request
       NULL,    // upload data
+      ResourceType::MAIN_FRAME,  // resource type
       true);   // frame busting
 
   testing::InSequence s;
@@ -169,6 +171,7 @@ TEST(UrlmonUrlRequestTest, UnreachableUrl) {
       "",      // referrer
       "",      // extra request
       NULL,    // upload data
+      ResourceType::MAIN_FRAME,  // resource type
       true);   // frame busting
 
   // Expect headers
@@ -205,6 +208,7 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
       "",      // referrer
       "",      // extra request
       NULL,    // upload data
+      ResourceType::MAIN_FRAME,  // resource type
       true);   // frame busting
 
   // Expect headers

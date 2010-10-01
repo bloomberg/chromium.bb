@@ -418,13 +418,22 @@ void URLRequestAutomationJob::StartAsync() {
     referrer = GURL();
   }
 
+  // Get the resource type (main_frame/script/image/stylesheet etc.
+  ResourceDispatcherHostRequestInfo* request_info =
+      ResourceDispatcherHost::InfoForRequest(request_);
+  ResourceType::Type resource_type = ResourceType::MAIN_FRAME;
+  if (request_info) {
+    resource_type = request_info->resource_type();
+  }
+
   // Ask automation to start this request.
   IPC::AutomationURLRequest automation_request = {
     request_->url().spec(),
     request_->method(),
     referrer.spec(),
     new_request_headers.ToString(),
-    request_->get_upload()
+    request_->get_upload(),
+    resource_type
   };
 
   DCHECK(message_filter_);

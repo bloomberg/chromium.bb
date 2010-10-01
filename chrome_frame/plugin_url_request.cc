@@ -11,7 +11,8 @@ PluginUrlRequest::PluginUrlRequest()
     : delegate_(NULL),
       remote_request_id_(-1),
       post_data_len_(0),
-      enable_frame_busting_(false) {
+      enable_frame_busting_(false),
+      resource_type_(ResourceType::MAIN_FRAME) {
 }
 
 PluginUrlRequest::~PluginUrlRequest() {
@@ -20,13 +21,15 @@ PluginUrlRequest::~PluginUrlRequest() {
 bool PluginUrlRequest::Initialize(PluginUrlRequestDelegate* delegate,
     int remote_request_id, const std::string& url, const std::string& method,
     const std::string& referrer, const std::string& extra_headers,
-    net::UploadData* upload_data, bool enable_frame_busting) {
+    net::UploadData* upload_data, ResourceType::Type resource_type,
+    bool enable_frame_busting) {
   delegate_ = delegate;
   remote_request_id_ = remote_request_id;
   url_ = url;
   method_ = method;
   referrer_ = referrer;
   extra_headers_ = extra_headers;
+  resource_type_ = resource_type;
 
   if (upload_data) {
     // We store a pointer to UrlmonUploadDataStream and not net::UploadData
