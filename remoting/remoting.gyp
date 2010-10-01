@@ -402,11 +402,13 @@
         'base/codec_test.h',
         'base/compressor_zlib_unittest.cc',
         'base/decoder_verbatim_unittest.cc',
-        'base/decoder_vp8_unittest.cc',
         'base/decoder_zlib_unittest.cc',
         'base/decompressor_zlib_unittest.cc',
         'base/encoder_verbatim_unittest.cc',
-        'base/encoder_vp8_unittest.cc',
+        # These two tests are disabled due to threading problems in libvpx.
+        # See bug: http://crbug.com/57266
+        # 'base/decoder_vp8_unittest.cc',
+        # 'base/encoder_vp8_unittest.cc',
         'base/encoder_zlib_unittest.cc',
         'base/mock_objects.h',
         'base/multiple_array_input_stream_unittest.cc',
