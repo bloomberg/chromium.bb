@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/base/cookie_monster.h"
+
 #include "base/perftimer.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -236,6 +238,66 @@ TEST(CookieMonsterTest, TestGetKey) {
   for (int i = 0; i < kNumCookies; i++)
     cm->GetKey("www.google.com");
   timer.Done();
+}
+
+// This test is probing for whether garbage collection happens when it
+// shouldn't.  This will not in general be visible functionally, since
+// if GC runs twice in a row without any change to the store, the second
+// GC run will not do anything the first one didn't.  That's why this is
+// a performance test.  The test should be considered to pass if all the
+// times reported are approximately the same--this indicates that no GC
+// happened repeatedly for any case.
+TEST(CookieMonsterTest, TestGCTimes) {
+  const struct TestCase {
+    const char* name;
+    int num_cookies;
+    int num_old_cookies;
+  } test_cases[] = {
+    {
+      // A whole lot of recent cookies; gc shouldn't happen.
+      "all_recent",
+      CookieMonster::kMaxCookies * 2,
+      0,
+    }, {
+      // Some old cookies, but still overflowing max.
+      "mostly_recent",
+      CookieMonster::kMaxCookies * 2,
+      CookieMonster::kMaxCookies / 2,
+    }, {
+      // Old cookies enough to bring us right down to our purge line.
+      "balanced",
+      CookieMonster::kMaxCookies * 2,
+      CookieMonster::kMaxCookies + CookieMonster::kPurgeCookies + 1,
+    }, {
+      "mostly_old",
+      // Old cookies enough to bring below our purge line (which we
+      // shouldn't do).
+      CookieMonster::kMaxCookies * 2,
+      CookieMonster::kMaxCookies * 3 / 4,
+    }, {
+      "less_than_gc_thresh",
+      // Few enough cookies that gc shouldn't happen at all.
+      CookieMonster::kMaxCookies - 5,
+      0,
+    },
+  };
+  for (int ci = 0; ci < static_cast<int>(ARRAYSIZE_UNSAFE(test_cases)); ++ci) {
+    const TestCase& test_case(test_cases[ci]);
+    scoped_refptr<CookieMonster> cm =
+        CreateMonsterFromStoreForGC(
+            test_case.num_cookies, test_case.num_old_cookies,
+            CookieMonster::kSafeFromGlobalPurgeDays * 2);
+
+    GURL gurl("http://google.com");
+    std::string cookie_line("z=3");
+    // Trigger the Garbage collection we're allowed.
+    EXPECT_TRUE(cm->SetCookie(gurl, cookie_line));
+
+    PerfTimeLogger timer((std::string("GC_") + test_case.name).c_str());
+    for (int i = 0; i < kNumCookies; i++)
+      EXPECT_TRUE(cm->SetCookie(gurl, cookie_line));
+    timer.Done();
+  }
 }
 
 } // namespace

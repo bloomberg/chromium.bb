@@ -64,20 +64,21 @@ class CookieMonster : public CookieStore {
   // structures (the data structures are owned by the CookieMonster
   // and must be destroyed when removed from the map).  There are two
   // possible keys for the map, controlled on a per-CookieMonster basis
-  // by use_effective_domain_key_scheme_/SetKeyScheme()
-  // (defaulted by use_effective_domain_key_default_):
+  // by expiry_and_key_scheme_/SetExpiryAndKeyScheme()
+  // (defaulted by expiry_and_key_default_):
 
-  // If use_effective_domain_key_scheme_ is true (default), then the key is
-  // based on the effective domain of the cookies.  If the domain
-  // of the cookie has an eTLD+1, that is the key for the map.  If the
-  // domain of the cookie does not have an eTLD+1, the key of the map
-  // is the host the cookie applies to (it is not legal to have domain
-  // cookies without an eTLD+1).  This rule excludes cookies for,
-  // e.g, ".com", ".co.uk", or ".internalnetwork".
+  // If expiry_and_key_scheme_ is EKS_KEEP_RECENT_AND_PURGE_ETLDP1
+  // (default), then the key is based on the effective domain of the
+  // cookies.  If the domain of the cookie has an eTLD+1, that is the
+  // key for the map.  If the domain of the cookie does not have an eTLD+1,
+  // the key of the map is the host the cookie applies to (it is not
+  // legal to have domain cookies without an eTLD+1).  This rule
+  // excludes cookies for, e.g, ".com", ".co.uk", or ".internalnetwork".
+  // This behavior is the same as the behavior in Firefox v 3.6.10.
 
-  // If use_effective_domain_key_scheme_ is false, then the key is
-  // just the domain of the cookie.  Eventually, this option will be
-  // removed.
+  // If use_effective_domain_key_scheme_ is EKS_DISCARD_RECENT_AND_PURGE_DOMAIN,
+  // then the key is just the domain of the cookie.  Eventually, this
+  // option will be removed.
 
   // NOTE(deanm):
   // I benchmarked hash_multimap vs multimap.  We're going to be query-heavy
@@ -91,6 +92,18 @@ class CookieMonster : public CookieStore {
   typedef std::multimap<std::string, CanonicalCookie*> CookieMap;
   typedef std::pair<CookieMap::iterator, CookieMap::iterator> CookieMapItPair;
   typedef std::vector<CanonicalCookie> CookieList;
+
+  // The key and expiry scheme to be used by the monster.
+  // EKS_KEEP_RECENT_AND_PURGE_ETLDP1 means to use
+  // the new key scheme based on effective domain and save recent cookies
+  // in global garbage collection.  EKS_DISCARD_RECENT_AND_PURGE_DOMAIN
+  // means to use the old key scheme based on full domain and be ruthless
+  // about purging.
+  enum ExpiryAndKeyScheme {
+    EKS_KEEP_RECENT_AND_PURGE_ETLDP1,
+    EKS_DISCARD_RECENT_AND_PURGE_DOMAIN,
+    EKS_LAST_ENTRY
+  };
 
   // The store passed in should not have had Init() called on it yet. This
   // class will take care of initializing it. The backing store is NOT owned by
@@ -185,9 +198,10 @@ class CookieMonster : public CookieStore {
   // the instance (i.e. as part of the instance initialization process).
   void SetCookieableSchemes(const char* schemes[], size_t num_schemes);
 
-  // Overrides the default key scheme.  This function must be called
-  // before initialization.
-  void SetKeyScheme(bool use_effective_domain_key);
+  // Overrides the default key and expiry scheme.  See comments
+  // before CookieMap and Garbage collection constants for details.  This
+  // function must be called before initialization.
+  void SetExpiryAndKeyScheme(ExpiryAndKeyScheme key_scheme);
 
   // There are some unknowns about how to correctly handle file:// cookies,
   // and our implementation for this is not robust enough. This allows you
@@ -209,6 +223,8 @@ class CookieMonster : public CookieStore {
   // For gargage collection constants.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestHostGarbageCollection);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestTotalGarbageCollection);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, GarbageCollectionTriggers);
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestGCTimes);
 
   // For validation of key values.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestDomainTree);
@@ -227,6 +243,12 @@ class CookieMonster : public CookieStore {
   // CookieMap typedef.  So, e.g., the maximum number of cookies allowed for
   // google.com and all of its subdomains will be 150-180.
   //
+  // If the expiry and key scheme follows firefox standards (default,
+  // set by SetExpiryAndKeyScheme()), any cookies accessed more recently
+  // than kSafeFromGlobalPurgeDays will not be evicted by global garbage
+  // collection, even if we have more than kMaxCookies.  This does not affect
+  // domain garbage collection.
+  //
   // Present in .h file to make accessible to tests through FRIEND_TEST.
   // Actual definitions are in cookie_monster.cc.
   static const size_t kDomainMaxCookies;
@@ -234,10 +256,13 @@ class CookieMonster : public CookieStore {
   static const size_t kMaxCookies;
   static const size_t kPurgeCookies;
 
-  // Default value for key scheme.  true means to use the new
-  // key scheme based on effective domain; false to use the
-  // old key scheme based on full domain.
-  static const bool use_effective_domain_key_default_ = true;
+  // The number of days since last access that cookies will not be subject
+  // to global garbage collection.
+  static const int kSafeFromGlobalPurgeDays;
+
+  // Default value for key and expiry scheme scheme.
+  static const ExpiryAndKeyScheme expiry_and_key_default_ =
+      EKS_KEEP_RECENT_AND_PURGE_ETLDP1;
 
   bool SetCookieWithCreationTime(const GURL& url,
                                  const std::string& cookie_line,
@@ -326,7 +351,17 @@ class CookieMonster : public CookieStore {
     DELETE_COOKIE_DONT_RECORD,  // e.g. For final cleanup after flush to store.
     DELETE_COOKIE_EVICTED_DOMAIN,
     DELETE_COOKIE_EVICTED_GLOBAL,
-    DELETE_COOKIE_LAST_ENTRY = DELETE_COOKIE_EVICTED_GLOBAL
+
+    // Cookies evicted during domain level garbage collection that
+    // were accessed longer ago than kSafeFromGlobalPurgeDays
+    DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE,
+
+    // Cookies evicted during domain level garbage collection that
+    // were accessed more rencelyt than kSafeFromGlobalPurgeDays
+    // (and thus would have been preserved by global garbage collection).
+    DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE,
+
+    DELETE_COOKIE_LAST_ENTRY
   };
 
   // |deletion_cause| argument is for collecting statistics.
@@ -335,12 +370,13 @@ class CookieMonster : public CookieStore {
 
   // If the number of cookies for CookieMap key |key|, or globally, are
   // over the preset maximums above, garbage collect, first for the host and
-  // then globally, as described by GarbageCollectRange().
+  // then globally.  See comments above garbage collection threshold
+  // constants for details.
   //
   // Returns the number of cookies deleted (useful for debugging).
   int GarbageCollect(const base::Time& current, const std::string& key);
 
-  // Helper for GarbageCollectRange(); can be called directly as well.  Deletes
+  // Helper for GarbageCollect(); can be called directly as well.  Deletes
   // all expired cookies in |itpair|.  If |cookie_its| is non-NULL, it is
   // populated with all the non-expired cookies from |itpair|.
   //
@@ -349,14 +385,13 @@ class CookieMonster : public CookieStore {
                             const CookieMapItPair& itpair,
                             std::vector<CookieMap::iterator>* cookie_its);
 
-  // If needed, evicts least recently accessed cookies in iterator
-  // list until (|num_max| - |num_purge|) cookies remain.
-  int GarbageCollectEvict(
-      const base::Time& current,
-      size_t num_max,
-      size_t num_purge,
-      DeletionCause cause,
-      std::vector<CookieMap::iterator>* cookie_its);
+  // Helper for GarbageCollect().  Deletes all cookies in the list
+  // that were accessed before |keep_accessed_after|, using DeletionCause
+  // |cause|.  Returns the number of cookies deleted.
+  int GarbageCollectDeleteList(const base::Time& current,
+                               const base::Time& keep_accessed_after,
+                               DeletionCause cause,
+                               std::vector<CookieMap::iterator>& cookie_its);
 
   // Find the key (for lookup in cookies_) based on the given domain.
   // See comment on keys before the CookieMap typedef.
@@ -398,7 +433,7 @@ class CookieMonster : public CookieStore {
 
   // Indicates whether this cookie monster uses the new effective domain
   // key scheme or not.
-  bool use_effective_domain_key_scheme_;
+  ExpiryAndKeyScheme expiry_and_key_scheme_;
 
   scoped_refptr<PersistentCookieStore> store_;
 
@@ -410,6 +445,17 @@ class CookieMonster : public CookieStore {
   // Minimum delay after updating a cookie's LastAccessDate before we will
   // update it again.
   const base::TimeDelta last_access_threshold_;
+
+  // Approximate date of access time of least recently accessed cookie
+  // in |cookies_|.  Note that this is not guaranteed to be accurate, only a)
+  // to be before or equal to the actual time, and b) to be accurate
+  // immediately after a garbage collection that scans through all the cookies.
+  // This value is used to determine whether global garbage collection might
+  // find cookies to purge.
+  // Note: The default Time() constructor will create a value that compares
+  // earlier than any other time value, which is is wanted.  Thus this
+  // value is not initialized.
+  base::Time earliest_access_time_;
 
   std::vector<std::string> cookieable_schemes_;
 

@@ -8,6 +8,7 @@
 // It should only be included by test code.
 
 #include "base/time.h"
+#include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -142,6 +143,93 @@ static void AddCookieToList(
           cookie_expires));
 
   out_list->push_back(cookie.release());
+}
+
+// Just act like a backing database.  Keep cookie information from
+// Add/Update/Delete and regurgitate it when Load is called.
+class MockSimplePersistentCookieStore
+    : public net::CookieMonster::PersistentCookieStore {
+ public:
+  typedef std::vector<net::CookieMonster::CanonicalCookie>
+      CanonicalCookieVector;
+
+  virtual bool Load(
+      std::vector<net::CookieMonster::CanonicalCookie*>* out_cookies) {
+    for (CanonicalCookieVector::const_iterator it = cookies_.begin();
+         it != cookies_.end(); it++)
+      out_cookies->push_back(new net::CookieMonster::CanonicalCookie(*it));
+    return true;
+  }
+
+  virtual void AddCookie(
+      const net::CookieMonster::CanonicalCookie& cookie) {
+    for (CanonicalCookieVector::const_iterator it = cookies_.begin();
+         it != cookies_.end(); it++) {
+      // Caller must assure creation dates unique.
+      EXPECT_NE(cookie.CreationDate().ToInternalValue(),
+                it->CreationDate().ToInternalValue());
+    }
+    cookies_.push_back(cookie);           // Copies.
+  }
+
+  virtual void UpdateCookieAccessTime(
+      const net::CookieMonster::CanonicalCookie& cookie) {
+    for (CanonicalCookieVector::iterator it = cookies_.begin();
+         it != cookies_.end(); it++) {
+      if (it->CreationDate() == cookie.CreationDate())
+        it->SetLastAccessDate(base::Time::Now());
+    }
+  }
+
+  virtual void DeleteCookie(
+      const net::CookieMonster::CanonicalCookie& cookie) {
+    for (CanonicalCookieVector::iterator it = cookies_.begin();
+         it != cookies_.end(); it++) {
+      if (it->CreationDate() == cookie.CreationDate()) {
+        cookies_.erase(it);
+        return;
+      }
+    }
+  }
+
+ private:
+  std::vector<net::CookieMonster::CanonicalCookie> cookies_;
+};
+
+// Helper function for creating a CookieMonster backed by a
+// MockSimplePersistentCookieStore for garbage collection testing.
+//
+// Fill the store through import with |num_cookies| cookies, |num_old_cookies|
+// with access time Now()-days_old, the rest with access time Now().
+// Do two SetCookies().  Return whether each of the two SetCookies() took
+// longer than |gc_perf_micros| to complete, and how many cookie were
+// left in the store afterwards.
+static net::CookieMonster* CreateMonsterFromStoreForGC(
+    int num_cookies,
+    int num_old_cookies,
+    int days_old) {
+  base::Time current(base::Time::Now());
+  base::Time past_creation(base::Time::Now() - base::TimeDelta::FromDays(1000));
+  scoped_refptr<MockSimplePersistentCookieStore> store(
+      new MockSimplePersistentCookieStore);
+  // Must expire to be persistent
+  for (int i = 0; i < num_old_cookies; i++) {
+    net::CookieMonster::CanonicalCookie cc(
+        "a", "1", StringPrintf("h%05d.izzle", i), "/path", false, false,
+        past_creation + base::TimeDelta::FromMicroseconds(i),
+        current - base::TimeDelta::FromDays(days_old),
+        true, current + base::TimeDelta::FromDays(30));
+    store->AddCookie(cc);
+  }
+  for (int i = num_old_cookies; i < num_cookies; i++) {
+    net::CookieMonster::CanonicalCookie cc(
+        "a", "1", StringPrintf("h%05d.izzle", i), "/path", false, false,
+        past_creation + base::TimeDelta::FromMicroseconds(i), current,
+        true, current + base::TimeDelta::FromDays(30));
+    store->AddCookie(cc);
+  }
+
+  return new net::CookieMonster(store, NULL);
 }
 
 }  // namespace
