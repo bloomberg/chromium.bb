@@ -15,3 +15,7 @@ BUGSENORBLANCO WIN DEBUG : media/video-size.html = CRASH
 
 // Upstreamed; remove this on roll past r68543.
 BUGSENORBLANCO WIN : platform/win/plugins/window-geometry-initialized-before-set-window.html = TEXT
+
+// Triggers a DCHECK in debug builds, so appears as a CRASH,
+// produces TEXT differences in release builds.
+BUGMICHAELN SKIP : http/tests/appcache/foreign-fallback.html = CRASH TEXT
