@@ -127,6 +127,8 @@ void JingleChromotingConnection::Close(Task* closed_task) {
     if (session_)
       session_->Terminate();
 
+    SetState(CLOSED);
+
     closed_ = true;
   }
 

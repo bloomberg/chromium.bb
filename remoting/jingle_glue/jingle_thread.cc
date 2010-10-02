@@ -33,6 +33,10 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
   void OnMessage(talk_base::Message* msg) {
     DCHECK(msg->message_id == kRunTasksMessageId);
 
+    // Clear currently pending messages in case there were delayed tasks.
+    // Will schedule it again from ScheduleNextDelayedTask() if neccessary.
+    thread_->Clear(this, kRunTasksMessageId);
+
     // This code is executed whenever we get new message in |message_loop_|.
     // JingleMessagePump posts new tasks in the jingle thread.
     // TODO(sergeyu): Remove it when JingleThread moved on Chromium's
@@ -61,7 +65,6 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
   void ScheduleNextDelayedTask() {
     DCHECK_EQ(thread_->message_loop(), MessageLoop::current());
 
-    thread_->Clear(this, kRunTasksMessageId);
     if (!delayed_work_time_.is_null()) {
       base::Time now = base::Time::Now();
       int delay = static_cast<int>((delayed_work_time_ - now).InMilliseconds());

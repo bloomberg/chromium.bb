@@ -96,7 +96,7 @@ class JingleChromotingConnectionTest : public testing::Test {
   void CloseConnections() {
     if (host_connection_) {
       host_connection_->Close(NewRunnableFunction(
-      &JingleChromotingConnectionTest::DoNothing));
+          &JingleChromotingConnectionTest::DoNothing));
     }
     if (client_connection_) {
       client_connection_->Close(NewRunnableFunction(
@@ -139,6 +139,10 @@ class JingleChromotingConnectionTest : public testing::Test {
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&host_connected_event,
                                     &base::WaitableEvent::Signal));
+    // Expect that the connection will be closed eventually.
+    EXPECT_CALL(host_connection_callback_,
+                OnStateChange(ChromotingConnection::CLOSED))
+        .Times(1);
 
     base::WaitableEvent client_connected_event(false, false);
     EXPECT_CALL(client_connection_callback_,
@@ -149,6 +153,10 @@ class JingleChromotingConnectionTest : public testing::Test {
         .Times(1)
         .WillOnce(InvokeWithoutArgs(&client_connected_event,
                                     &base::WaitableEvent::Signal));
+    // Expect that the connection will be closed eventually.
+    EXPECT_CALL(client_connection_callback_,
+                OnStateChange(ChromotingConnection::CLOSED))
+        .Times(1);
 
     client_connection_ = client_server_->Connect(
         SessionManagerPair::kHostJid,
@@ -562,9 +570,7 @@ TEST_F(JingleChromotingConnectionTest, TestEventsChannel) {
 }
 
 // Verify that data can be transmitted over the video RTP channel.
-// TODO(sergeyu): This test is disabled at the moment because of
-// flakiness.
-TEST_F(JingleChromotingConnectionTest, DISABLED_TestVideoRtpChannel) {
+TEST_F(JingleChromotingConnectionTest, TestVideoRtpChannel) {
   CreateServerPair();
   InitiateConnection();
   scoped_refptr<UDPChannelTester> tester =
