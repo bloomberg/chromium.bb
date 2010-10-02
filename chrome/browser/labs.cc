@@ -12,7 +12,6 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/values.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -198,17 +197,14 @@ bool IsEnabled() {
 #if defined(OS_CHROMEOS)
   // ChromeOS uses a different mechanism for about:labs; integrated with their
   // dom ui options.
+  // TODO(thakis): Port about:labs to chromeos -- http://crbug.com/57634
   return false;
-#elif defined(GOOGLE_CHROME_BUILD)
-  // Don't enable this on the stable channel.
-  return !platform_util::GetVersionStringModifier().empty();
 #else
   return true;
 #endif
 }
 
 void ConvertLabsToSwitches(Profile* profile, CommandLine* command_line) {
-  // Do not activate labs features on the stable channel.
   if (!IsEnabled())
     return;
 
