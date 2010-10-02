@@ -15,3 +15,6 @@ BUGSENORBLANCO WIN DEBUG : media/video-size.html = CRASH
 
 // Upstreamed; remove this on roll past r68543.
 BUGSENORBLANCO WIN : platform/win/plugins/window-geometry-initialized-before-set-window.html = TEXT
+
+// Need to move this expectations to WebKit.
+BUG_HCLAM MAC : fast/canvas/webgl/gl-teximage.html = TEXT
