@@ -57,8 +57,9 @@
 {
   bug_57692
   ThreadSanitizer:Race
-  net::GrowableIOBuffer::set_offset
-  remoting::TCPChannelTester::CheckResults
+  ...
+  fun:*net::GrowableIOBuffer*
+  fun:remoting::TCPChannelTester::CheckResults
 }
 
 ############################
