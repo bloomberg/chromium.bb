@@ -478,6 +478,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   // request that resulted from the redirect.
   WebURLRequest new_request(new_url);
   new_request.setFirstPartyForCookies(request_.firstPartyForCookies());
+  new_request.setDownloadToFile(request_.downloadToFile());
 
   WebString referrer_string = WebString::fromUTF8("Referer");
   WebString referrer = request_.httpHeaderField(referrer_string);
