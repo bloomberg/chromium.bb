@@ -54,6 +54,13 @@
   fun:ThreadSanitizerStartThread
 }
 
+{
+  bug_57692
+  ThreadSanitizer:Race
+  net::GrowableIOBuffer::set_offset
+  remoting::TCPChannelTester::CheckResults
+}
+
 ############################
 # Real races in third_party
 {
