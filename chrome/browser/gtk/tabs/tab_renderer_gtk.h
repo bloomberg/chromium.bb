@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,10 +105,7 @@ class TabRendererGtk : public AnimationDelegate,
   // TabContents. If only the loading state was updated, the loading_only flag
   // should be specified. If other things change, set this flag to false to
   // update everything.
-  virtual void UpdateData(TabContents* contents,
-                          bool phantom,
-                          bool app,
-                          bool loading_only);
+  virtual void UpdateData(TabContents* contents, bool app, bool loading_only);
 
   // Sets the blocked state of the tab.
   void SetBlocked(bool pinned);
@@ -117,10 +114,6 @@ class TabRendererGtk : public AnimationDelegate,
   // Sets the mini-state of the tab.
   void set_mini(bool mini) { data_.mini = mini; }
   bool mini() const { return data_.mini; }
-
-  // Sets the phantom state of the tab.
-  void set_phantom(bool phantom) { data_.phantom = phantom; }
-  bool phantom() const { return data_.phantom; }
 
   // Sets the app state of the tab.
   void set_app(bool app) { data_.app = app; }
@@ -264,7 +257,6 @@ class TabRendererGtk : public AnimationDelegate,
           mini(false),
           blocked(false),
           animating_mini_change(false),
-          phantom(false),
           app(false) {
     }
 
@@ -278,7 +270,6 @@ class TabRendererGtk : public AnimationDelegate,
     bool mini;
     bool blocked;
     bool animating_mini_change;
-    bool phantom;
     bool app;
   };
 

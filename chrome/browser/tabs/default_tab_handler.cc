@@ -18,8 +18,8 @@ DefaultTabHandler::DefaultTabHandler(TabHandlerDelegate* delegate)
 }
 
 DefaultTabHandler::~DefaultTabHandler() {
-  // The tab strip should not have any significant tabs at this point.
-  DCHECK(!model_->HasNonPhantomTabs());
+  // The tab strip should not have any tabs at this point.
+  DCHECK(model_->empty());
   model_->RemoveObserver(this);
 }
 

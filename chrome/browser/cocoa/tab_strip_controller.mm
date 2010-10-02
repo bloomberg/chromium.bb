@@ -1036,10 +1036,6 @@ private:
       [oldController willBecomeUnselectedTab];
       oldContents->view()->StoreFocus();
       oldContents->WasHidden();
-      // If the selection changed because the tab was made phantom, update the
-      // Cocoa side of the state.
-      TabController* tabController = [tabArray_ objectAtIndex:oldIndex];
-      [tabController setPhantom:tabStripModel_->IsPhantomTab(oldModelIndex)];
     }
   }
 
@@ -1218,14 +1214,7 @@ private:
 
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
-
   TabController* tabController = [tabArray_ objectAtIndex:index];
-
-  // Since the tab is loading, it cannot be phantom any more.
-  if ([tabController phantom]) {
-    [tabController setPhantom:NO];
-    [[tabController view] setNeedsDisplay:YES];
-  }
 
   bool oldHasIcon = [tabController iconView] != nil;
   bool newHasIcon = contents->ShouldDisplayFavIcon() ||
@@ -1299,11 +1288,6 @@ private:
 
   if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:tabController withContents:contents];
-
-  // See if the change was to/from phantom.
-  bool isPhantom = tabStripModel_->IsPhantomTab(modelIndex);
-  if (isPhantom != [tabController phantom])
-    [tabController setPhantom:isPhantom];
 
   [self updateFavIconForContents:contents atIndex:modelIndex];
 

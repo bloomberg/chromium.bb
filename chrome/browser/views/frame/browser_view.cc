@@ -1468,12 +1468,9 @@ void BrowserView::TabSelectedAt(TabContents* old_contents,
 
 void BrowserView::TabReplacedAt(TabContents* old_contents,
                                 TabContents* new_contents,
-                                int index,
-                                TabStripModelObserver::TabReplaceType type) {
-  if (type != TabStripModelObserver::REPLACE_MATCH_PREVIEW ||
-      index != browser_->tabstrip_model()->selected_index()) {
+                                int index) {
+  if (index != browser_->tabstrip_model()->selected_index())
     return;
-  }
 
   // Swap the 'active' and 'preview' and delete what was the active.
   contents_->MakePreviewContentsActiveContents();
@@ -1690,7 +1687,7 @@ bool BrowserView::CanClose() const {
   if (!browser_->ShouldCloseWindow())
     return false;
 
-  if (browser_->tabstrip_model()->HasNonPhantomTabs()) {
+  if (!browser_->tabstrip_model()->empty()) {
     // Tab strip isn't empty.  Hide the frame (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut
     // down. When the tab strip is empty we'll be called back again.

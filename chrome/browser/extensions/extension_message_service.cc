@@ -247,8 +247,8 @@ void ExtensionMessageService::OpenChannelToTab(
   }
 
   if (contents && contents->controller().needs_reload()) {
-    // The tab isn't loaded yet (it may be phantom). Don't attempt to connect.
-    // Treat this as a disconnect.
+    // The tab isn't loaded yet. Don't attempt to connect. Treat this as a
+    // disconnect.
     DispatchOnDisconnect(MessagePort(source, MSG_ROUTING_CONTROL),
                          GET_OPPOSITE_PORT_ID(receiver_port_id));
     return;
@@ -336,7 +336,7 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
   DCHECK(target_tab_contents);
 
   if (target_tab_contents->controller().needs_reload()) {
-    // The tab isn't loaded yet (it may be phantom). Don't attempt to connect.
+    // The tab isn't loaded yet. Don't attempt to connect.
     return -1;
   }
 

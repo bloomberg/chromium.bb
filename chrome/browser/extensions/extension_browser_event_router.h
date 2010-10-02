@@ -71,8 +71,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
                             TabChangeType change_type);
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents,
-                             int index,
-                             TabReplaceType type);
+                             int index);
   virtual void TabStripEmpty();
 
   // Page Action execute event.

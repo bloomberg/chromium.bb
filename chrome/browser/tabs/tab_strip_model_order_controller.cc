@@ -64,8 +64,7 @@ int TabStripModelOrderController::DetermineInsertionIndexForAppending() {
 }
 
 int TabStripModelOrderController::DetermineNewSelectedIndex(
-    int removing_index,
-    bool is_remove) const {
+    int removing_index) const {
   int tab_count = tabstrip_->count();
   DCHECK(removing_index >= 0 && removing_index < tab_count);
   NavigationController* parent_opener =
@@ -79,7 +78,7 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
                                                            removing_index,
                                                            false);
   if (index != TabStripModel::kNoTab)
-    return GetValidIndex(index, removing_index, is_remove);
+    return GetValidIndex(index, removing_index);
 
   if (parent_opener) {
     // If the tab was in a group, shift selection to the next tab in the group.
@@ -87,20 +86,21 @@ int TabStripModelOrderController::DetermineNewSelectedIndex(
                                                              removing_index,
                                                              false);
     if (index != TabStripModel::kNoTab)
-      return GetValidIndex(index, removing_index, is_remove);
+      return GetValidIndex(index, removing_index);
 
     // If we can't find a subsequent group member, just fall back to the
     // parent_opener itself. Note that we use "group" here since opener is
     // reset by select operations..
     index = tabstrip_->GetIndexOfController(parent_opener);
     if (index != TabStripModel::kNoTab)
-      return GetValidIndex(index, removing_index, is_remove);
+      return GetValidIndex(index, removing_index);
   }
 
   // No opener set, fall through to the default handler...
   int selected_index = tabstrip_->selected_index();
-  if (is_remove && selected_index >= (tab_count - 1))
+  if (selected_index >= (tab_count - 1))
     return selected_index - 1;
+
   return selected_index;
 }
 
@@ -132,10 +132,9 @@ void TabStripModelOrderController::TabSelectedAt(TabContents* old_contents,
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController, private:
 
-int TabStripModelOrderController::GetValidIndex(int index,
-                                                int removing_index,
-                                                bool is_remove) const {
-  if (is_remove && removing_index < index)
+int TabStripModelOrderController::GetValidIndex(
+    int index, int removing_index) const {
+  if (removing_index < index)
     index = std::max(0, index - 1);
   return index;
 }

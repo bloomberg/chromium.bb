@@ -46,10 +46,9 @@ static void EncodePinnedTab(TabStripModel* model,
     Extension* extension = tab_contents->extension_app();
     DCHECK(extension);
     value->SetString(kAppID, extension->id());
-    // For apps we use the launch url. We do this for two reasons:
+    // For apps we use the launch url. We do this for the following reason:
     // . the user is effectively restarting the app, so that returning them to
     //   the app's launch page seems closest to what they expect.
-    // . we do the same when restoring a phantom tab.
     value->SetString(kURL, extension->GetFullLaunchURL().spec());
     values->Append(value.release());
   } else {

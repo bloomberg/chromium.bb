@@ -2602,7 +2602,8 @@ void Browser::TabMoved(TabContents* contents,
 }
 
 void Browser::TabReplacedAt(TabContents* old_contents,
-                            TabContents* new_contents, int index) {
+                            TabContents* new_contents,
+                            int index) {
   TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);
   TabInsertedAt(new_contents, index,
                 (index == tab_handler_->GetTabStripModel()->selected_index()));
@@ -3261,9 +3262,7 @@ void Browser::CommitMatchPreview(TabContents* preview_contents) {
       tab_contents->controller());
   // TabStripModel takes ownership of preview_contents.
   tab_handler_->GetTabStripModel()->ReplaceTabContentsAt(
-      index,
-      preview_contents,
-      TabStripModelObserver::REPLACE_MATCH_PREVIEW);
+      index, preview_contents);
 }
 
 void Browser::SetSuggestedText(const string16& text) {

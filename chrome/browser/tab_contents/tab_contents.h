@@ -654,13 +654,6 @@ class TabContents : public PageNavigator,
   // Returns true if underlying TabContentsView should accept drag-n-drop.
   bool ShouldAcceptDragAndDrop() const;
 
-  // Creates a duplicate of this TabContents. The returned TabContents is
-  // configured such that the renderer has not been loaded (it'll load the first
-  // time it is selected).
-  // This is intended for use with apps.
-  // The caller owns the returned object.
-  TabContents* CloneAndMakePhantom();
-
   // Indicates if this tab was explicitly closed by the user (control-w, close
   // tab menu item...). This is false for actions that indirectly close the tab,
   // such as closing the window.  The setter is maintained by TabStripModel, and

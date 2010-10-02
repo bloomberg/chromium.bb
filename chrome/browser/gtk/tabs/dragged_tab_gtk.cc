@@ -55,7 +55,6 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
       contents_size_(contents_size),
       close_animation_(this) {
   renderer_->UpdateData(datasource,
-                        false, // phantom
                         datasource->is_app(),
                         false); // loading_only
   renderer_->set_mini(mini);

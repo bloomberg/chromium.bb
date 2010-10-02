@@ -51,12 +51,6 @@ static const int kSuspendAnimationsTimeMs = 200;
 static const int kTabHOffset = -16;
 static const int kTabStripAnimationVSlop = 40;
 
-// Alpha value phantom tabs are rendered at.
-static const int kPhantomTabAlpha = 105;
-
-// Alpha value phantom tab icons are rendered at.
-static const int kPhantomTabIconAlpha = 160;
-
 // Size of the drop indicator.
 static int drop_indicator_width;
 static int drop_indicator_height;
@@ -280,37 +274,7 @@ BaseTab* TabStrip::CreateTabForDragging() {
 
 void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   // Tabs are painted in reverse order, so they stack to the left.
-  // Phantom tabs appear behind all other tabs and are rendered first. To make
-  // them slightly transparent we render them to a different layer.
-  if (HasPhantomTabs()) {
-    gfx::Rect local_bounds = GetLocalBounds(true);
-    canvas->SaveLayerAlpha(kPhantomTabAlpha, local_bounds);
-    canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-    for (int i = tab_count() - 1; i >= 0; --i) {
-      Tab* tab = GetTabAtTabDataIndex(i);
-      if (tab->data().phantom)
-        tab->ProcessPaint(canvas);
-    }
-    canvas->Restore();
-
-    canvas->SaveLayerAlpha(kPhantomTabIconAlpha, local_bounds);
-    canvas->AsCanvasSkia()->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-    for (int i = tab_count() - 1; i >= 0; --i) {
-      Tab* tab = GetTabAtTabDataIndex(i);
-      if (tab->data().phantom) {
-        canvas->Save();
-        canvas->ClipRectInt(tab->MirroredX(), tab->y(), tab->width(),
-                            tab->height());
-        canvas->TranslateInt(tab->MirroredX(), tab->y());
-        tab->PaintIcon(canvas);
-        canvas->Restore();
-      }
-    }
-    canvas->Restore();
-  }
-
   Tab* selected_tab = NULL;
-
   Tab* dragging_tab = NULL;
 
   for (int i = tab_count() - 1; i >= 0; --i) {
@@ -318,14 +282,12 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
-    if (!tab->data().phantom) {
-      if (tab->dragging()) {
-        dragging_tab = tab;
-      } else if (!tab->IsSelected()) {
-        tab->ProcessPaint(canvas);
-      } else {
-        selected_tab = tab;
-      }
+    if (tab->dragging()) {
+      dragging_tab = tab;
+    } else if (!tab->IsSelected()) {
+      tab->ProcessPaint(canvas);
+    } else {
+      selected_tab = tab;
     }
   }
 
@@ -1019,12 +981,4 @@ bool TabStrip::IsPointInTab(Tab* tab,
   gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
   View::ConvertPointToView(this, tab, &point_in_tab_coords);
   return tab->HitTest(point_in_tab_coords);
-}
-
-bool TabStrip::HasPhantomTabs() const {
-  for (int i = 0; i < tab_count(); ++i) {
-    if (GetTabAtTabDataIndex(i)->data().phantom)
-      return true;
-  }
-  return false;
 }

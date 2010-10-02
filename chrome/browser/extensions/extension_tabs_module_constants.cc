@@ -68,7 +68,6 @@ const char kMoreThanOneValuesError[] = "Code and file should not be specified "
     "at the same time in the second argument.";
 const char kLoadFileError[] = "Failed to load file: \"*\". ";
 const char kCannotUpdatePinnedTab[] = "Cannot update pinned tabs";
-const char kCannotRemovePhantomTab[] = "Cannot remove phantom tabs";
 const char kCannotDetermineLanguageOfUnloadedTab[] =
     "Cannot determine language: tab not loaded";
 

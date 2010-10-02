@@ -20,16 +20,12 @@ const int kTitleCloseSpacing = 4;
 const SkScalar kRoundRectRadius = 4;
 const SkColor kTabBackgroundColor = SK_ColorWHITE;
 const SkColor kTextColor = SK_ColorBLACK;
-const SkColor kPhantomTextColor = SK_ColorGRAY;
 
 // Padding between the edge and the icon.
 const int kIconLeftPadding = 5;
 
 // Location the title starts at.
 const int kTitleX = kIconLeftPadding + kFavIconSize + 5;
-
-// Alpha value phantom tab icons are rendered at.
-const int kPhantomTabIconAlpha = 100;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,18 +95,10 @@ void SideTab::Paint(gfx::Canvas* canvas) {
                                           paint);
   }
 
-  if (ShouldShowIcon()) {
-    if (data().phantom) {
-      canvas->SaveLayerAlpha(kPhantomTabIconAlpha,
-                             gfx::Rect(width(), height()));
-      PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
-      canvas->Restore();
-    } else {
-      PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
-    }
-  }
+  if (ShouldShowIcon())
+    PaintIcon(canvas, icon_bounds_.x(), icon_bounds_.y());
 
-  PaintTitle(canvas, data().phantom ? kPhantomTextColor : kTextColor);
+  PaintTitle(canvas, kTextColor);
 }
 
 gfx::Size SideTab::GetPreferredSize() {

@@ -28,7 +28,6 @@ struct TabRendererData {
         show_icon(true),
         mini(false),
         blocked(false),
-        phantom(false),
         app(false) {
   }
 
@@ -41,7 +40,6 @@ struct TabRendererData {
   bool show_icon;
   bool mini;
   bool blocked;
-  bool phantom;
   bool app;
 };
 

@@ -43,13 +43,9 @@ void TabCloseableStateWatcher::TabStripWatcher::TabInsertedAt(
 void TabCloseableStateWatcher::TabStripWatcher::TabClosingAt(
     TabContents* tab_contents, int index) {
   TabStripModel* tabstrip = browser_->tabstrip_model();
-  if ((!browser_defaults::kPhantomTabsEnabled && tabstrip->count() == 1) ||
-      (browser_defaults::kPhantomTabsEnabled &&
-       tabstrip->GetNonPhantomTabCount() == 1 &&
-       !tabstrip->IsTabPinned(index))) {
-    // Closing last tab.
+  // Check if the last tab is closing.
+  if (tabstrip->count() == 1)
     main_watcher_->OnTabStripChanged(browser_, true);
-  }
 }
 
 void TabCloseableStateWatcher::TabStripWatcher::TabDetachedAt(
@@ -194,12 +190,9 @@ void TabCloseableStateWatcher::CheckAndUpdateState(
       new_can_close = true;
     } else {
       TabStripModel* tabstrip_model = browser_to_check->tabstrip_model();
-      // If NTP is the only non-phantom tab, it's not closeable.
-      if (tabstrip_model->GetNonPhantomTabCount() == 1) {
-        int first_non_phantom_tab = tabstrip_model->IndexOfFirstNonPhantomTab();
-        new_can_close =
-            tabstrip_model->GetTabContentsAt(first_non_phantom_tab)->GetURL() !=
-                GURL(chrome::kChromeUINewTabURL);  // Tab is not NewTabPage.
+      if (tabstrip_model->count() == 1) {
+        new_can_close = tabstrip_model->GetTabContentsAt(0)->GetURL() !=
+            GURL(chrome::kChromeUINewTabURL);  // Tab is not NewTabPage.
       } else {
         new_can_close = true;
       }

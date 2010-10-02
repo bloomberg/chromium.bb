@@ -41,18 +41,8 @@ class TabStripModelOrderController;
 //   . App. Corresponds to an extension that wants an app tab. App tabs are
 //     identified by TabContents::is_app(). App tabs are always pinneded (you
 //     can't unpin them).
-//   . Pinned. Any tab can be pinned. A pinned tab is made phantom when closed.
-//     Non-app tabs whose pinned state is changed are moved to be with other
-//     mini-tabs or non-mini tabs.
-// . Phantom. Only pinned tabs may be made phantom. When a tab that can be made
-//   phantom is closed the renderer is shutdown, a new
-//   TabContents/NavigationController is created that has not yet loaded the
-//   renderer and observers are notified via the TabReplacedAt method. When a
-//   phantom tab is selected the renderer is loaded and the tab is no longer
-//   phantom.
-//   Phantom tabs do not prevent the tabstrip from closing, for example if the
-//   tabstrip has one phantom and one non-phantom tab and the non-phantom tab is
-//   closed, then the tabstrip/browser are closed.
+//   . Pinned. Any tab can be pinned. Non-app tabs whose pinned state is changed
+//     are moved to be with other mini-tabs or non-mini tabs.
 //
 //  A TabStripModel has one delegate that it relies on to perform certain tasks
 //  like creating new TabStripModels (probably hosted in Browser windows) when
@@ -137,11 +127,6 @@ class TabStripModel : public NotificationObserver {
   int count() const { return static_cast<int>(contents_data_.size()); }
   bool empty() const { return contents_data_.empty(); }
 
-  // Returns true if there are any non-phantom tabs. When there are no
-  // non-phantom tabs the delegate is notified by way of TabStripEmpty and the
-  // browser closes.
-  bool HasNonPhantomTabs() const;
-
   // Retrieve the Profile associated with this TabStripModel.
   Profile* profile() const { return profile_; }
 
@@ -208,11 +193,9 @@ class TabStripModel : public NotificationObserver {
   void ReplaceNavigationControllerAt(int index,
                                      NavigationController* controller);
 
-  // Replaces the tab contents at |index| with |new_contents|. |type| is passed
-  // to the observer. This deletes the TabContents currently at |index|.
-  void ReplaceTabContentsAt(int index,
-                            TabContents* new_contents,
-                            TabStripModelObserver::TabReplaceType type);
+  // Replaces the tab contents at |index| with |new_contents|. This deletes the
+  // TabContents currently at |index|.
+  void ReplaceTabContentsAt(int index, TabContents* new_contents);
 
   // Detaches the TabContents at the specified index from this strip. The
   // TabContents is not destroyed, just removed from display. The caller is
@@ -277,20 +260,17 @@ class TabStripModel : public NotificationObserver {
   // If |use_group| is true, the group property of the tab is used instead of
   // the opener to find the next tab. Under some circumstances the group
   // relationship may exist but the opener may not.
-  // NOTE: this skips phantom tabs.
   int GetIndexOfNextTabContentsOpenedBy(const NavigationController* opener,
                                         int start_index,
                                         bool use_group) const;
 
   // Returns the index of the first TabContents in the model opened by the
   // specified opener.
-  // NOTE: this skips phantom tabs.
   int GetIndexOfFirstTabContentsOpenedBy(const NavigationController* opener,
                                          int start_index) const;
 
   // Returns the index of the last TabContents in the model opened by the
   // specified opener, starting at |start_index|.
-  // NOTE: this skips phantom tabs.
   int GetIndexOfLastTabContentsOpenedBy(const NavigationController* opener,
                                         int start_index) const;
 
@@ -337,11 +317,6 @@ class TabStripModel : public NotificationObserver {
   // See description above class for details on app tabs.
   bool IsAppTab(int index) const;
 
-  // Returns true if the tab is a phantom tab. A phantom tab is one where the
-  // renderer has not been loaded.
-  // See description above class for details on phantom tabs.
-  bool IsPhantomTab(int index) const;
-
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
@@ -356,14 +331,6 @@ class TabStripModel : public NotificationObserver {
   // 0 and IndexOfFirstNonMiniTab. If |mini_tab| is false, the returned index
   // is between IndexOfFirstNonMiniTab and count().
   int ConstrainInsertionIndex(int index, bool mini_tab);
-
-  // Returns the index of the first tab that is not a phantom tab. This returns
-  // kNoTab if all of the tabs are phantom tabs.
-  int IndexOfFirstNonPhantomTab() const;
-
-  // Returns the number of non phantom tabs in the TabStripModel.
-  int GetNonPhantomTabCount() const;
-
 
   // Command level API /////////////////////////////////////////////////////////
 
@@ -481,17 +448,6 @@ class TabStripModel : public NotificationObserver {
   // (|forward| is false).
   void SelectRelativeTab(bool forward);
 
-  // Returns the first non-phantom tab starting at |index|, skipping the tab at
-  // |ignore_index|.
-  int IndexOfNextNonPhantomTab(int index, int ignore_index);
-
-  // Returns true if the tab at the specified index should be made phantom when
-  // the tab is closing.
-  bool ShouldMakePhantomOnClose(int index);
-
-  // Makes the tab a phantom tab.
-  void MakePhantom(int index);
-
   // Does the work of MoveTabContentsAt. This has no checks to make sure the
   // position is valid, those are done in MoveTabContentsAt.
   void MoveTabContentsAtImpl(int index,
@@ -508,10 +464,7 @@ class TabStripModel : public NotificationObserver {
 
   // Does the work for ReplaceTabContentsAt returning the old TabContents.
   // The caller owns the returned TabContents.
-  TabContents* ReplaceTabContentsAtImpl(
-      int index,
-      TabContents* new_contents,
-      TabStripModelObserver::TabReplaceType type);
+  TabContents* ReplaceTabContentsAtImpl(int index, TabContents* new_contents);
 
   // Our delegate.
   TabStripModelDelegate* delegate_;

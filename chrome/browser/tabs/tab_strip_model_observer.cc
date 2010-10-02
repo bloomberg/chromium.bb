@@ -38,13 +38,6 @@ void TabStripModelObserver::TabReplacedAt(TabContents* old_contents,
                                           int index) {
 }
 
-void TabStripModelObserver::TabReplacedAt(TabContents* old_contents,
-                                          TabContents* new_contents,
-                                          int index,
-                                          TabReplaceType type) {
-  TabReplacedAt(old_contents, new_contents, index);
-}
-
 void TabStripModelObserver::TabPinnedStateChanged(TabContents* contents,
                                                   int index) {
 }

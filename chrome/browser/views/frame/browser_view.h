@@ -346,8 +346,7 @@ class BrowserView : public BrowserBubbleHost,
                              bool user_gesture);
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents,
-                             int index,
-                             TabStripModelObserver::TabReplaceType type);
+                             int index);
   virtual void TabStripEmpty();
 
   // Overridden from menus::SimpleMenuModel::Delegate:

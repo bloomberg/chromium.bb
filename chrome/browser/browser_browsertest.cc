@@ -101,40 +101,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 }  // namespace
 
 class BrowserTest : public ExtensionBrowserTest {
- public:
-  // Used by phantom tab tests. Creates two tabs, pins the first and makes it
-  // a phantom tab (by closing it).
-  void PhantomTabTest() {
-    ASSERT_TRUE(test_server()->Start());
-    host_resolver()->AddRule("www.example.com", "127.0.0.1");
-    GURL url(test_server()->GetURL("empty.html"));
-    TabStripModel* model = browser()->tabstrip_model();
-
-    ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
-
-    Extension* extension_app = GetExtension();
-
-    ui_test_utils::NavigateToURL(browser(), url);
-
-    TabContents* app_contents = new TabContents(browser()->profile(), NULL,
-                                                MSG_ROUTING_NONE, NULL, NULL);
-    app_contents->SetExtensionApp(extension_app);
-
-    model->AddTabContents(app_contents, 0, 0, TabStripModel::ADD_NONE);
-    model->SetTabPinned(0, true);
-    ui_test_utils::NavigateToURL(browser(), url);
-
-    // Close the first, which should make it a phantom.
-    model->CloseTabContentsAt(0, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
-
-    // There should still be two tabs.
-    ASSERT_EQ(2, browser()->tab_count());
-    // The first tab should be a phantom.
-    EXPECT_TRUE(model->IsPhantomTab(0));
-    // And the tab contents of the first tab should have changed.
-    EXPECT_TRUE(model->GetTabContentsAt(0) != app_contents);
-  }
-
  protected:
   // In RTL locales wrap the page title with RTL embedding characters so that it
   // matches the value returned by GetWindowTitle().
@@ -155,7 +121,7 @@ class BrowserTest : public ExtensionBrowserTest {
 #endif
   }
 
-  // Returns the app extension installed by PhantomTabTest.
+  // Returns the app extension aptly named "App Test".
   Extension* GetExtension() {
     const ExtensionList* extensions =
         browser()->profile()->GetExtensionsService()->extensions();
@@ -418,35 +384,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconChange) {
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
 
-// TODO(sky): get these to run on a Mac.
-#if !defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserTest, PhantomTab) {
-  if (!browser_defaults::kPhantomTabsEnabled)
-    return;
-
-  PhantomTabTest();
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
-  if (!browser_defaults::kPhantomTabsEnabled)
-    return;
-
-  PhantomTabTest();
-
-  if (HasFatalFailure())
-    return;
-
-  TabStripModel* model = browser()->tabstrip_model();
-
-  // Revive the phantom tab by selecting it.
-  browser()->SelectTabContentsAt(0, true);
-
-  // There should still be two tabs.
-  ASSERT_EQ(2, browser()->tab_count());
-  // The first tab should no longer be a phantom.
-  EXPECT_FALSE(model->IsPhantomTab(0));
-}
-
 // Makes sure TabClosing is sent when uninstalling an extension that is an app
 // tab.
 IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
@@ -482,20 +419,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   // There should only be one tab now.
   ASSERT_EQ(1, browser()->tab_count());
 }
-
-IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
-  if (!browser_defaults::kPhantomTabsEnabled)
-    return;
-
-  PhantomTabTest();
-
-  Extension* extension = GetExtension();
-  UninstallExtension(extension->id());
-
-  // The uninstall should have removed the tab.
-  ASSERT_EQ(1, browser()->tab_count());
-}
-#endif  // !defined(OS_MACOSX)
 
 #if defined(OS_WIN)
 // http://crbug.com/46198. On XP/Vista, the failure rate is 5 ~ 6%.

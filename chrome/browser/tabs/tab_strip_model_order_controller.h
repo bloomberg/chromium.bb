@@ -39,11 +39,8 @@ class TabStripModelOrderController : public TabStripModelObserver {
   // Returns the index to append tabs at.
   int DetermineInsertionIndexForAppending();
 
-  // Determine where to shift selection after a tab is closed is made phantom.
-  // If |is_remove| is false, the tab is not being removed but rather made
-  // phantom (see description of phantom tabs in TabStripModel).
-  int DetermineNewSelectedIndex(int removed_index,
-                                bool is_remove) const;
+  // Determine where to shift selection after a tab is closed.
+  int DetermineNewSelectedIndex(int removed_index) const;
 
   // Overridden from TabStripModelObserver:
   virtual void TabSelectedAt(TabContents* old_contents,
@@ -53,10 +50,9 @@ class TabStripModelOrderController : public TabStripModelObserver {
 
  private:
   // Returns a valid index to be selected after the tab at |removing_index| is
-  // closed. If |index| is after |removing_index| and |is_remove| is true,
-  // |index| is adjusted to reflect the fact that |removing_index| is going
-  // away. This also skips any phantom tabs.
-  int GetValidIndex(int index, int removing_index, bool is_remove) const;
+  // closed. If |index| is after |removing_index|, |index| is adjusted to
+  // reflect the fact that |removing_index| is going away.
+  int GetValidIndex(int index, int removing_index) const;
 
   TabStripModel* tabstrip_;
 

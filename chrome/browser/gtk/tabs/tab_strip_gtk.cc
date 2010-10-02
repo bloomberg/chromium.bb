@@ -961,8 +961,7 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
   if (!contains_tab) {
     TabData d = { tab, gfx::Rect() };
     tab_data_.insert(tab_data_.begin() + index, d);
-    tab->UpdateData(contents, model_->IsPhantomTab(index),
-                    model_->IsAppTab(index), false);
+    tab->UpdateData(contents, model_->IsAppTab(index), false);
   }
   tab->set_mini(model_->IsMiniTab(index));
   tab->set_app(model_->IsAppTab(index));
@@ -1023,8 +1022,6 @@ void TabStripGtk::TabMoved(TabContents* contents,
   tab->set_mini(model_->IsMiniTab(to_index));
   tab->SetBlocked(model_->IsTabBlocked(to_index));
   tab_data_.insert(tab_data_.begin() + to_index, data);
-  if (tab->phantom() != model_->IsPhantomTab(to_index))
-    tab->set_phantom(!tab->phantom());
   GenerateIdealBounds();
   StartMoveTabAnimation(from_index, to_index);
 }
@@ -1041,7 +1038,6 @@ void TabStripGtk::TabChangedAt(TabContents* contents, int index,
     return;
   }
   tab->UpdateData(contents,
-                  model_->IsPhantomTab(index),
                   model_->IsAppTab(index),
                   change_type == LOADING_ONLY);
   tab->UpdateFromModel();

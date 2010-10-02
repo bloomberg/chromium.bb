@@ -800,13 +800,6 @@ bool RemoveTabFunction::RunImpl() {
                   &browser, NULL, &contents, NULL, &error_))
     return false;
 
-  int tab_index = browser->GetIndexOfController(&contents->controller());
-  if (browser->tabstrip_model()->IsPhantomTab(tab_index)) {
-    // Don't allow closing phantom tabs.
-    error_ = keys::kCannotRemovePhantomTab;
-    return false;
-  }
-
   // Close the tab in this convoluted way, since there's a chance that the tab
   // is being dragged, or we're in some other nested event loop. This code path
   // should ensure that the tab is safely closed under such circumstances,
@@ -1003,8 +996,7 @@ bool DetectTabLanguageFunction::RunImpl() {
   }
 
   if (contents->controller().needs_reload()) {
-    // If the tab hasn't been loaded, such as happens with phantom tabs, don't
-    // wait for the tab to load, instead return.
+    // If the tab hasn't been loaded, don't wait for the tab to load.
     error_ = keys::kCannotDetermineLanguageOfUnloadedTab;
     return false;
   }

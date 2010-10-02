@@ -424,7 +424,7 @@ void DraggedTabControllerGtk::Detach() {
   }
 
   // If we've removed the last tab from the tabstrip, hide the frame now.
-  if (!attached_model->HasNonPhantomTabs())
+  if (attached_model->empty())
     HideWindow();
 
   // Update the dragged tab. This NULL check is necessary apparently in some
@@ -736,7 +736,7 @@ void DraggedTabControllerGtk::ShowWindow() {
 void DraggedTabControllerGtk::CleanUpHiddenFrame() {
   // If the model we started dragging from is now empty, we must ask the
   // delegate to close the frame.
-  if (!source_tabstrip_->model()->HasNonPhantomTabs())
+  if (source_tabstrip_->model()->empty())
     source_tabstrip_->model()->delegate()->CloseFrameAfterDragSession();
 }
 

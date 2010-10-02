@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,8 +94,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
          RenderProcessHost::AllHostsIterator()); !renderer_iter.IsAtEnd();
          renderer_iter.Advance()) {
       DCHECK(renderer_iter.GetCurrentValue());
-      // Ignore processes that don't have a connection, such as crashed tabs or
-      // phantom tabs.
+      // Ignore processes that don't have a connection, such as crashed tabs.
       if (!renderer_iter.GetCurrentValue()->HasConnection() || process.pid !=
               base::GetProcId(renderer_iter.GetCurrentValue()->GetHandle())) {
         continue;

@@ -19,7 +19,6 @@
 @synthesize app = app_;
 @synthesize loadingState = loadingState_;
 @synthesize mini = mini_;
-@synthesize phantom = phantom_;
 @synthesize pinned = pinned_;
 @synthesize target = target_;
 

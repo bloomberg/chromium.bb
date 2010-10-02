@@ -177,15 +177,13 @@ int Tab::GetMiniWidth() {
 // Tab, protected:
 
 void Tab::DataChanged(const TabRendererData& old) {
-  if (data().phantom)
-    StopMiniTabTitleAnimation();
+  if (data().blocked == old.blocked)
+    return;
 
-  if (data().blocked != old.blocked) {
-    if (data().blocked)
-      StartPulse();
-    else
-      StopPulse();
-  }
+  if (data().blocked)
+    StartPulse();
+  else
+    StopPulse();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -198,7 +196,7 @@ void Tab::Paint(gfx::Canvas* canvas) {
     return;
 
   // See if the model changes whether the icons should be painted.
-  const bool show_icon = ShouldShowIcon() && !data().phantom;
+  const bool show_icon = ShouldShowIcon();
   const bool show_close_button = ShouldShowCloseBox();
   if (show_icon != showing_icon_ || show_close_button != showing_close_button_)
     Layout();

@@ -1447,30 +1447,6 @@ bool TabContents::ShouldAcceptDragAndDrop() const {
 #endif
 }
 
-TabContents* TabContents::CloneAndMakePhantom() {
-  TabNavigation tab_nav;
-
-  NavigationEntry* entry = controller().GetActiveEntry();
-  if (extension_app_)
-    tab_nav.set_virtual_url(extension_app_->GetFullLaunchURL());
-  else if (entry)
-    tab_nav.SetFromNavigationEntry(*entry);
-
-  std::vector<TabNavigation> navigations;
-  navigations.push_back(tab_nav);
-
-  TabContents* new_contents =
-      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL,
-                      controller_.session_storage_namespace()->Clone());
-  new_contents->SetExtensionApp(extension_app_);
-  new_contents->controller().RestoreFromState(navigations, 0, false);
-
-  if (!extension_app_ && entry)
-    new_contents->controller().GetActiveEntry()->favicon() = entry->favicon();
-
-  return new_contents;
-}
-
 void TabContents::UpdateHistoryForNavigation(
     scoped_refptr<history::HistoryAddPageArgs> add_page_args) {
   if (profile()->IsOffTheRecord())

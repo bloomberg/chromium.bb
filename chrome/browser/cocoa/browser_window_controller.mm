@@ -407,8 +407,7 @@
 // from this method.
 - (void)windowWillClose:(NSNotification*)notification {
   DCHECK_EQ([notification object], [self window]);
-  DCHECK(!browser_->tabstrip_model()->HasNonPhantomTabs() ||
-         !browser_->tabstrip_model()->count());
+  DCHECK(browser_->tabstrip_model()->empty());
   [savedRegularWindow_ close];
   // We delete statusBubble here because we need to kill off the dependency
   // that its window has on our window before our window goes away.
@@ -458,7 +457,7 @@
   // have to save the window position before we call orderOut:.
   [self saveWindowPositionIfNeeded];
 
-  if (browser_->tabstrip_model()->HasNonPhantomTabs()) {
+  if (!browser_->tabstrip_model()->empty()) {
     // Tab strip isn't empty.  Hide the frame (so it appears to have closed
     // immediately) and close all the tabs, allowing the renderers to shut
     // down. When the tab strip is empty we'll be called back again.
@@ -1321,12 +1320,12 @@
 }
 
 - (NSInteger)numberOfTabs {
-  // count() includes pinned tabs (both live and phantom).
+  // count() includes pinned tabs.
   return browser_->tabstrip_model()->count();
 }
 
 - (BOOL)hasLiveTabs {
-  return browser_->tabstrip_model()->HasNonPhantomTabs();
+  return !browser_->tabstrip_model()->empty();
 }
 
 - (NSString*)selectedTabTitle {

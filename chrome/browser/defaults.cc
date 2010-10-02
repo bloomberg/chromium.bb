@@ -80,8 +80,6 @@ const bool kBrowserAliveWithNoWindows = true;
 const bool kBrowserAliveWithNoWindows = false;
 #endif
 
-const bool kPhantomTabsEnabled = false;
-
 bool bookmarks_enabled = true;
 
 }  // namespace browser_defaults

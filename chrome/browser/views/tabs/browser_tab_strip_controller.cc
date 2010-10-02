@@ -385,7 +385,6 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
   data->show_icon = contents->ShouldDisplayFavIcon();
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);
-  data->phantom = model_->IsPhantomTab(model_index);
   data->app = contents->is_app();
 }
 

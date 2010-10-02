@@ -130,8 +130,8 @@
 - (NSInteger)numberOfTabs;
 
 // YES if there are tabs in the tab strip which have content, allowing for
-// the notion of tabs in the tab strip that are placeholders, or phantoms, but
-// currently have no content.
+// the notion of tabs in the tab strip that are placeholders but currently have
+// no content.
 - (BOOL)hasLiveTabs;
 
 // Return the view of the selected tab.

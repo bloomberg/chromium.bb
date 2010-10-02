@@ -48,7 +48,6 @@ class MenuDelegate;
   BOOL app_;
   BOOL mini_;
   BOOL pinned_;
-  BOOL phantom_;
   BOOL selected_;
   TabLoadingState loadingState_;
   CGFloat iconTitleXOffset_;  // between left edges of icon and title
@@ -65,7 +64,6 @@ class MenuDelegate;
 @property(assign, nonatomic) SEL action;
 @property(assign, nonatomic) BOOL app;
 @property(assign, nonatomic) BOOL mini;
-@property(assign, nonatomic) BOOL phantom;
 @property(assign, nonatomic) BOOL pinned;
 @property(assign, nonatomic) BOOL selected;
 @property(assign, nonatomic) id target;

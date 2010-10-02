@@ -234,9 +234,6 @@ class TabStrip : public BaseTabStrip,
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
 
-  // Returns true if any of the tabs are phantom.
-  bool HasPhantomTabs() const;
-
   // -- Member Variables ------------------------------------------------------
 
   // The "New Tab" button.

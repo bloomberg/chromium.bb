@@ -37,17 +37,6 @@ class TabStripModelObserver {
     ALL
   };
 
-  // Enum used by ReplaceTabContentsAt.
-  // TODO(sky): nuke this, pinned is being removed so there is no point in the
-  // enum.
-  enum TabReplaceType {
-    // The replace is the result of the tab being made phantom.
-    REPLACE_MADE_PHANTOM,
-
-    // The replace is the result of the match preview being committed.
-    REPLACE_MATCH_PREVIEW
-  };
-
   // A new TabContents was inserted into the TabStripModel at the specified
   // index. |foreground| is whether or not it was opened in the foreground
   // (selected).
@@ -99,14 +88,6 @@ class TabStripModelObserver {
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents,
                              int index);
-
-  // The tab contents was replaced at the specified index. |type| describes
-  // the type of replace.
-  // This invokes TabReplacedAt with three args.
-  virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents,
-                             int index,
-                             TabReplaceType type);
 
   // Invoked when the pinned state of a tab changes. This is not invoked if the
   // tab ends up moving as a result of the mini state changing.

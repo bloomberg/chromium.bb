@@ -71,9 +71,6 @@ extern const bool kShowOtherBrowsersInAboutMemory;
 // Should always open incognito windows when started with --incognito switch?
 extern const bool kAlwaysOpenIncognitoWindow;
 
-// Are phantom tabs enabled?
-extern const bool kPhantomTabsEnabled;
-
 //=============================================================================
 // Runtime "const" - set only once after parsing command line option and should
 // never be modified after that.
