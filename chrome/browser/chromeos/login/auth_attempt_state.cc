@@ -22,11 +22,25 @@ AuthAttemptState::AuthAttemptState(const std::string& username,
       ascii_hash(ascii_hash),
       login_token(login_token),
       login_captcha(login_captcha),
+      unlock(false),
       online_complete_(false),
       online_outcome_(LoginFailure::NONE),
-      offline_complete_(false),
-      offline_outcome_(false),
-      offline_code_(kCryptohomeMountErrorNone) {
+      cryptohome_complete_(false),
+      cryptohome_outcome_(false),
+      cryptohome_code_(kCryptohomeMountErrorNone) {
+}
+
+AuthAttemptState::AuthAttemptState(const std::string& username,
+                                   const std::string& ascii_hash)
+    : username(username),
+      ascii_hash(ascii_hash),
+      unlock(true),
+      online_complete_(true),
+      online_outcome_(LoginFailure::UNLOCK_FAILED),
+      credentials_(GaiaAuthConsumer::ClientLoginResult()),
+      cryptohome_complete_(false),
+      cryptohome_outcome_(false),
+      cryptohome_code_(kCryptohomeMountErrorNone) {
 }
 
 AuthAttemptState::~AuthAttemptState() {}
@@ -40,19 +54,19 @@ void AuthAttemptState::RecordOnlineLoginStatus(
   credentials_ = credentials;
 }
 
-void AuthAttemptState::RecordOfflineLoginStatus(bool offline_outcome,
-                                                int offline_code) {
+void AuthAttemptState::RecordCryptohomeStatus(bool cryptohome_outcome,
+                                              int cryptohome_code) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  offline_complete_ = true;
-  offline_outcome_ = offline_outcome;
-  offline_code_ = offline_code;
+  cryptohome_complete_ = true;
+  cryptohome_outcome_ = cryptohome_outcome;
+  cryptohome_code_ = cryptohome_code;
 }
 
-void AuthAttemptState::ResetOfflineLoginStatus() {
+void AuthAttemptState::ResetCryptohomeStatus() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  offline_complete_ = false;
-  offline_outcome_ = false;
-  offline_code_ = kCryptohomeMountErrorNone;
+  cryptohome_complete_ = false;
+  cryptohome_outcome_ = false;
+  cryptohome_code_ = kCryptohomeMountErrorNone;
 }
 
 bool AuthAttemptState::online_complete() {
@@ -70,19 +84,19 @@ const GaiaAuthConsumer::ClientLoginResult& AuthAttemptState::credentials() {
   return credentials_;
 }
 
-bool AuthAttemptState::offline_complete() {
+bool AuthAttemptState::cryptohome_complete() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  return offline_complete_;
+  return cryptohome_complete_;
 }
 
-bool AuthAttemptState::offline_outcome() {
+bool AuthAttemptState::cryptohome_outcome() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  return offline_outcome_;
+  return cryptohome_outcome_;
 }
 
-int AuthAttemptState::offline_code() {
+int AuthAttemptState::cryptohome_code() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  return offline_code_;
+  return cryptohome_code_;
 }
 
 }  // namespace chromeos

@@ -22,6 +22,8 @@ class TestAttemptState : public AuthAttemptState {
                    const std::string& login_token,
                    const std::string& login_captcha);
 
+  TestAttemptState(const std::string& username, const std::string& ascii_hash);
+
   virtual ~TestAttemptState();
 
   // Act as though an online login attempt completed already.
@@ -29,8 +31,8 @@ class TestAttemptState : public AuthAttemptState {
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       const LoginFailure& outcome);
 
-  // Act as though an offline login attempt completed already.
-  void PresetOfflineLoginStatus(bool offline_outcome, int offline_code);
+  // Act as though an cryptohome login attempt completed already.
+  void PresetCryptohomeStatus(bool cryptohome_outcome, int cryptohome_code);
 
   // To allow state to be queried on the main thread during tests.
   bool online_complete() { return online_complete_; }
@@ -38,9 +40,9 @@ class TestAttemptState : public AuthAttemptState {
   const GaiaAuthConsumer::ClientLoginResult& credentials() {
     return credentials_;
   }
-  bool offline_complete() { return offline_complete_; }
-  bool offline_outcome() { return offline_outcome_; }
-  int offline_code() { return offline_code_; }
+  bool cryptohome_complete() { return cryptohome_complete_; }
+  bool cryptohome_outcome() { return cryptohome_outcome_; }
+  int cryptohome_code() { return cryptohome_code_; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAttemptState);

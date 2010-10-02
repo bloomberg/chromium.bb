@@ -52,6 +52,7 @@ class CryptohomeOpTest : public ::testing::Test {
     test_api->SetLibraryLoader(loader, true);
     // |mock_library_| is mine, though.
     test_api->SetCryptohomeLibrary(mock_library_.get(), false);
+    mock_library_->SetUp(false, 0);
 
     io_thread_.Start();
   }
@@ -100,7 +101,16 @@ class CryptohomeOpTest : public ::testing::Test {
         .RetiresOnSaturation();
   }
 
-  void RunTest(CryptohomeOp* op) {
+  void ExpectCheckKey() {
+    EXPECT_CALL(*(mock_library_.get()),
+                AsyncCheckKey(username_, hash_ascii_, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
+  void RunTest(CryptohomeOp* op, bool outcome, int code) {
+    mock_library_->SetAsyncBehavior(outcome, code);
+
     EXPECT_CALL(*(resolver_.get()), Resolve())
         .Times(1)
         .RetiresOnSaturation();
@@ -108,31 +118,9 @@ class CryptohomeOpTest : public ::testing::Test {
     EXPECT_TRUE(op->Initiate());
     // Force IO thread to finish tasks so I can verify |state_|.
     io_thread_.Stop();
-  }
 
-  void RunMountTest(CryptohomeOp* op, bool outcome, int code) {
-    mock_library_->SetAsyncBehavior(outcome, code);
-
-    RunTest(op);
-
-    EXPECT_EQ(outcome, state_.offline_outcome());
-    EXPECT_EQ(code, state_.offline_code());
-  }
-
-  void RunNonMountTest(CryptohomeOp* op, bool outcome, int code) {
-    mock_library_->SetAsyncBehavior(outcome, code);
-
-    RunTest(op);
-
-    if (outcome) {
-      EXPECT_EQ(false, state_.offline_complete());
-      EXPECT_EQ(false, state_.offline_outcome());
-      EXPECT_EQ(kCryptohomeMountErrorNone, state_.offline_code());
-    } else {
-      EXPECT_EQ(true, state_.offline_complete());
-      EXPECT_EQ(outcome, state_.offline_outcome());
-      EXPECT_EQ(code, state_.offline_code());
-    }
+    EXPECT_EQ(outcome, state_.cryptohome_outcome());
+    EXPECT_EQ(code, state_.cryptohome_code());
   }
 
   MessageLoop message_loop_;
@@ -149,79 +137,93 @@ class CryptohomeOpTest : public ::testing::Test {
 
 TEST_F(CryptohomeOpTest, MountSuccess) {
   ExpectMount();
-  scoped_refptr<CryptohomeOp> op(new MountAttempt(&state_, resolver_.get()));
-  RunMountTest(op.get(), true, kCryptohomeMountErrorNone);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMountAttempt(&state_, resolver_.get(), true));
+  RunTest(op.get(), true, kCryptohomeMountErrorNone);
 }
 
 TEST_F(CryptohomeOpTest, MountFatal) {
   ExpectMount();
-  scoped_refptr<CryptohomeOp> op(new MountAttempt(&state_, resolver_.get()));
-  RunMountTest(op.get(), false, kCryptohomeMountErrorFatal);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMountAttempt(&state_, resolver_.get(), true));
+  RunTest(op.get(), false, kCryptohomeMountErrorFatal);
 }
 
 TEST_F(CryptohomeOpTest, MountKeyFailure) {
   ExpectMount();
-  scoped_refptr<CryptohomeOp> op(new MountAttempt(&state_, resolver_.get()));
-  RunMountTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMountAttempt(&state_, resolver_.get(), true));
+  RunTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
 }
 
 TEST_F(CryptohomeOpTest, MountRecreated) {
   ExpectMount();
-  scoped_refptr<CryptohomeOp> op(new MountAttempt(&state_, resolver_.get()));
-  RunMountTest(op.get(), true, kCryptohomeMountErrorRecreated);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMountAttempt(&state_, resolver_.get(), true));
+  RunTest(op.get(), true, kCryptohomeMountErrorRecreated);
 }
 
 TEST_F(CryptohomeOpTest, MountGuestSuccess) {
   ExpectMountGuest();
-  scoped_refptr<CryptohomeOp> op(new MountGuestAttempt(&state_,
-                                                       resolver_.get()));
-  RunMountTest(op.get(), true, kCryptohomeMountErrorNone);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMountGuestAttempt(&state_, resolver_.get()));
+  RunTest(op.get(), true, kCryptohomeMountErrorNone);
 }
 
 TEST_F(CryptohomeOpTest, MountGuestFatal) {
   ExpectMountGuest();
-  scoped_refptr<CryptohomeOp> op(new MountGuestAttempt(&state_,
-                                                       resolver_.get()));
-  RunMountTest(op.get(), false, kCryptohomeMountErrorFatal);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMountGuestAttempt(&state_, resolver_.get()));
+  RunTest(op.get(), false, kCryptohomeMountErrorFatal);
 }
 
 TEST_F(CryptohomeOpTest, MigrateSuccessPassOld) {
   ExpectMigrate(true, "");
-  scoped_refptr<CryptohomeOp> op(new MigrateAttempt(&state_,
-                                                    resolver_.get(),
-                                                    true,
-                                                    ""));
-  RunNonMountTest(op.get(), true, kCryptohomeMountErrorNone);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMigrateAttempt(&state_, resolver_.get(), true, ""));
+  RunTest(op.get(), true, kCryptohomeMountErrorNone);
 }
 
 TEST_F(CryptohomeOpTest, MigrateSuccessPassNew) {
   ExpectMigrate(false, "");
-  scoped_refptr<CryptohomeOp> op(new MigrateAttempt(&state_,
-                                                    resolver_.get(),
-                                                    false,
-                                                    ""));
-  RunNonMountTest(op.get(), true, kCryptohomeMountErrorNone);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMigrateAttempt(&state_, resolver_.get(), false, ""));
+  RunTest(op.get(), true, kCryptohomeMountErrorNone);
 }
 
 TEST_F(CryptohomeOpTest, MigrateKeyFailure) {
   ExpectMigrate(true, "");
-  scoped_refptr<CryptohomeOp> op(new MigrateAttempt(&state_,
-                                                    resolver_.get(),
-                                                    true,
-                                                    ""));
-  RunNonMountTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateMigrateAttempt(&state_, resolver_.get(), true, ""));
+  RunTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
 }
 
 TEST_F(CryptohomeOpTest, RemoveSuccess) {
   ExpectRemove();
-  scoped_refptr<CryptohomeOp> op(new RemoveAttempt(&state_, resolver_.get()));
-  RunNonMountTest(op.get(), true, kCryptohomeMountErrorNone);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateRemoveAttempt(&state_, resolver_.get()));
+  RunTest(op.get(), true, kCryptohomeMountErrorNone);
 }
 
 TEST_F(CryptohomeOpTest, RemoveFailure) {
   ExpectRemove();
-  scoped_refptr<CryptohomeOp> op(new RemoveAttempt(&state_, resolver_.get()));
-  RunNonMountTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateRemoveAttempt(&state_, resolver_.get()));
+  RunTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
+}
+
+TEST_F(CryptohomeOpTest, CheckKeySuccess) {
+  ExpectCheckKey();
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateCheckKeyAttempt(&state_, resolver_.get()));
+  RunTest(op.get(), true, kCryptohomeMountErrorNone);
+}
+
+TEST_F(CryptohomeOpTest, CheckKeyFailure) {
+  ExpectCheckKey();
+  scoped_refptr<CryptohomeOp> op(
+      CryptohomeOp::CreateCheckKeyAttempt(&state_, resolver_.get()));
+  RunTest(op.get(), false, kCryptohomeMountErrorKeyFailure);
 }
 
 }  // namespace chromeos

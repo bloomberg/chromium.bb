@@ -36,7 +36,11 @@ OnlineAttempt::OnlineAttempt(AuthAttemptState* current_attempt,
   CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
 }
 
-OnlineAttempt::~OnlineAttempt() {}
+OnlineAttempt::~OnlineAttempt() {
+  // Just to be sure.
+  if (gaia_authenticator_.get())
+    gaia_authenticator_->CancelRequest();
+}
 
 void OnlineAttempt::Initiate(Profile* profile) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));

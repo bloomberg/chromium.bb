@@ -23,6 +23,11 @@ TestAttemptState::TestAttemptState(const std::string& username,
                        login_captcha) {
 }
 
+TestAttemptState::TestAttemptState(const std::string& username,
+                                   const std::string& ascii_hash)
+    : AuthAttemptState(username, ascii_hash) {
+}
+
 TestAttemptState::~TestAttemptState() {}
 
 void TestAttemptState::PresetOnlineLoginStatus(
@@ -33,11 +38,11 @@ void TestAttemptState::PresetOnlineLoginStatus(
   credentials_ = credentials;
 }
 
-void TestAttemptState::PresetOfflineLoginStatus(bool offline_outcome,
-                                                int offline_code) {
-  offline_complete_ = true;
-  offline_outcome_ = offline_outcome;
-  offline_code_ = offline_code;
+void TestAttemptState::PresetCryptohomeStatus(bool cryptohome_outcome,
+                                                int cryptohome_code) {
+  cryptohome_complete_ = true;
+  cryptohome_outcome_ = cryptohome_outcome;
+  cryptohome_code_ = cryptohome_code;
 }
 
 }  // namespace chromeos

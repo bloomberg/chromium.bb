@@ -19,7 +19,12 @@ namespace chromeos {
 
 class MockCryptohomeLibrary : public CryptohomeLibrary {
  public:
-  MockCryptohomeLibrary() {
+  MockCryptohomeLibrary() : outcome_(false), code_(0) {
+  }
+  virtual ~MockCryptohomeLibrary() {}
+  void SetUp(bool outcome, int code) {
+    outcome_ = outcome;
+    code_ = code;
     ON_CALL(*this, AsyncCheckKey(_, _, _))
         .WillByDefault(
             WithArgs<2>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
@@ -36,7 +41,6 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
         .WillByDefault(
             WithArgs<1>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
   }
-  virtual ~MockCryptohomeLibrary() {}
   MOCK_METHOD2(CheckKey, bool(const std::string& user_email,
                               const std::string& passhash));
   MOCK_METHOD3(AsyncCheckKey, bool(const std::string& user_email,

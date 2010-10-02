@@ -18,11 +18,15 @@ namespace chromeos {
 
 class AuthAttemptState {
  public:
+  // Used to initalize for a login attempt.
   AuthAttemptState(const std::string& username,
                    const std::string& password,
                    const std::string& ascii_hash,
                    const std::string& login_token,
                    const std::string& login_captcha);
+
+  // Used to initalize for a screen unlock attempt.
+  AuthAttemptState(const std::string& username, const std::string& ascii_hash);
 
   virtual ~AuthAttemptState();
 
@@ -33,22 +37,22 @@ class AuthAttemptState {
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       const LoginFailure& outcome);
 
-  // Copy |offline_code| and |offline_outcome| into this object, so we can have
-  // a copy we're sure to own, and can make available on the IO thread.
-  // Must be called from the IO thread.
-  void RecordOfflineLoginStatus(bool offline_outcome, int offline_code);
+  // Copy |cryptohome_code| and |cryptohome_outcome| into this object,
+  // so we can have a copy we're sure to own, and can make available
+  // on the IO thread.  Must be called from the IO thread.
+  void RecordCryptohomeStatus(bool cryptohome_outcome, int cryptohome_code);
 
-  // Blow away locally stored offline login status.
+  // Blow away locally stored cryptohome login status.
   // Must be called from the IO thread.
-  void ResetOfflineLoginStatus();
+  void ResetCryptohomeStatus();
 
   virtual bool online_complete();
   virtual const LoginFailure& online_outcome();
   virtual const GaiaAuthConsumer::ClientLoginResult& credentials();
 
-  virtual bool offline_complete();
-  virtual bool offline_outcome();
-  virtual int offline_code();
+  virtual bool cryptohome_complete();
+  virtual bool cryptohome_outcome();
+  virtual int cryptohome_code();
 
   // Saved so we can retry client login, and also so we know for whom login
   // has succeeded, in the event of successful completion.
@@ -60,8 +64,9 @@ class AuthAttemptState {
   const std::string login_token;
   const std::string login_captcha;
 
+  const bool unlock;  // True if authenticating to unlock the computer.
+
  protected:
-  bool unlock_;  // True if authenticating to unlock the computer.
   bool try_again_;  // True if we're willing to retry the login attempt.
 
   // Status of our online login attempt.
@@ -69,10 +74,10 @@ class AuthAttemptState {
   LoginFailure online_outcome_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
 
-  // Status of our offline login attempt/user homedir mount attempt.
-  bool offline_complete_;
-  bool offline_outcome_;
-  int offline_code_;
+  // Status of our cryptohome op attempt. Can only have one in flight at a time.
+  bool cryptohome_complete_;
+  bool cryptohome_outcome_;
+  int cryptohome_code_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthAttemptState);

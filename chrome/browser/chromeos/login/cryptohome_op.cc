@@ -32,91 +32,165 @@ void CryptohomeOp::OnComplete(bool success, int return_code) {
 
 void CryptohomeOp::TriggerResolve(bool success, int return_code) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  attempt_->RecordOfflineLoginStatus(success, return_code);
+  attempt_->RecordCryptohomeStatus(success, return_code);
   resolver_->Resolve();
 }
 
-MountAttempt::MountAttempt(AuthAttemptState* current_attempt,
-                           AuthAttemptStateResolver* callback)
-    : CryptohomeOp(current_attempt, callback) {
-}
-
-MountAttempt::~MountAttempt() {}
-
-bool MountAttempt::Initiate() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
-  return lib->AsyncMount(attempt_->username, attempt_->ascii_hash, true, this);
-}
-
-MountGuestAttempt::MountGuestAttempt(AuthAttemptState* current_attempt,
-                                     AuthAttemptStateResolver* callback)
-    : CryptohomeOp(current_attempt, callback) {
-}
-
-MountGuestAttempt::~MountGuestAttempt() {}
-
-bool MountGuestAttempt::Initiate() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
-  return lib->AsyncMountForBwsi(this);
-}
-
-MigrateAttempt::MigrateAttempt(AuthAttemptState* current_attempt,
-                               AuthAttemptStateResolver* callback,
-                               bool passing_old_hash,
-                               const std::string& hash)
-    : CryptohomeOp(current_attempt, callback),
-      is_old_hash_(passing_old_hash),
-      hash_(hash) {
-}
-
-MigrateAttempt::~MigrateAttempt() {}
-
-bool MigrateAttempt::Initiate() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
-  if (is_old_hash_) {
-    return lib->AsyncMigrateKey(attempt_->username,
-                                hash_,
-                                attempt_->ascii_hash,
-                                this);
-  } else {
-    return lib->AsyncMigrateKey(attempt_->username,
-                                attempt_->ascii_hash,
-                                hash_,
-                                this);
+class MountAttempt : public CryptohomeOp {
+ public:
+  MountAttempt(AuthAttemptState* current_attempt,
+               AuthAttemptStateResolver* callback,
+               bool create_if_missing)
+      : CryptohomeOp(current_attempt, callback),
+        create_if_missing_(create_if_missing) {
   }
+
+  virtual ~MountAttempt() {}
+
+  bool Initiate() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
+    return lib->AsyncMount(attempt_->username,
+                           attempt_->ascii_hash,
+                           create_if_missing_,
+                           this);
+  }
+
+ private:
+  const bool create_if_missing_;
+  DISALLOW_COPY_AND_ASSIGN(MountAttempt);
+};
+
+class MountGuestAttempt : public CryptohomeOp {
+ public:
+  MountGuestAttempt(AuthAttemptState* current_attempt,
+                    AuthAttemptStateResolver* callback)
+      : CryptohomeOp(current_attempt, callback) {
+  }
+
+  virtual ~MountGuestAttempt() {}
+
+  bool Initiate() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
+    return lib->AsyncMountForBwsi(this);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MountGuestAttempt);
+};
+
+class MigrateAttempt : public CryptohomeOp {
+ public:
+  MigrateAttempt(AuthAttemptState* current_attempt,
+                 AuthAttemptStateResolver* callback,
+                 bool passing_old_hash,
+                 const std::string& hash)
+      : CryptohomeOp(current_attempt, callback),
+        is_old_hash_(passing_old_hash),
+        hash_(hash) {
+  }
+
+  virtual ~MigrateAttempt() {}
+
+  bool Initiate() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
+    if (is_old_hash_) {
+      return lib->AsyncMigrateKey(attempt_->username,
+                                  hash_,
+                                  attempt_->ascii_hash,
+                                  this);
+    } else {
+      return lib->AsyncMigrateKey(attempt_->username,
+                                  attempt_->ascii_hash,
+                                  hash_,
+                                  this);
+    }
+  }
+
+ private:
+  const bool is_old_hash_;
+  const std::string hash_;
+
+  DISALLOW_COPY_AND_ASSIGN(MigrateAttempt);
+};
+
+class RemoveAttempt : public CryptohomeOp {
+ public:
+  RemoveAttempt(AuthAttemptState* current_attempt,
+                AuthAttemptStateResolver* callback)
+      : CryptohomeOp(current_attempt, callback) {
+  }
+
+  virtual ~RemoveAttempt() {}
+
+  bool Initiate() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
+    return lib->AsyncRemove(attempt_->username, this);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RemoveAttempt);
+};
+
+class CheckKeyAttempt : public CryptohomeOp {
+ public:
+  CheckKeyAttempt(AuthAttemptState* current_attempt,
+                  AuthAttemptStateResolver* callback)
+      : CryptohomeOp(current_attempt, callback) {
+  }
+
+  virtual ~CheckKeyAttempt() {}
+
+  bool Initiate() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
+    return lib->AsyncCheckKey(attempt_->username, attempt_->ascii_hash, this);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CheckKeyAttempt);
+};
+
+// static
+CryptohomeOp* CryptohomeOp::CreateMountAttempt(
+    AuthAttemptState* current_attempt,
+    AuthAttemptStateResolver* callback,
+    bool create_if_missing) {
+  return new MountAttempt(current_attempt, callback, create_if_missing);
 }
 
-void MigrateAttempt::TriggerResolve(bool success, int return_code) {
-  if (success)
-    attempt_->ResetOfflineLoginStatus();
-  else
-    attempt_->RecordOfflineLoginStatus(success, return_code);
-  resolver_->Resolve();
+// static
+CryptohomeOp* CryptohomeOp::CreateMountGuestAttempt(
+      AuthAttemptState* current_attempt,
+      AuthAttemptStateResolver* callback) {
+  return new MountGuestAttempt(current_attempt, callback);
 }
 
-RemoveAttempt::RemoveAttempt(AuthAttemptState* current_attempt,
-                             AuthAttemptStateResolver* callback)
-    : CryptohomeOp(current_attempt, callback) {
+// static
+CryptohomeOp* CryptohomeOp::CreateMigrateAttempt(
+    AuthAttemptState* current_attempt,
+    AuthAttemptStateResolver* callback,
+    bool passing_old_hash,
+    const std::string& hash) {
+  return new MigrateAttempt(current_attempt, callback, passing_old_hash, hash);
 }
 
-RemoveAttempt::~RemoveAttempt() {}
-
-bool RemoveAttempt::Initiate() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  CryptohomeLibrary* lib = CrosLibrary::Get()->GetCryptohomeLibrary();
-  return lib->AsyncRemove(attempt_->username, this);
+// static
+CryptohomeOp* CryptohomeOp::CreateRemoveAttempt(
+    AuthAttemptState* current_attempt,
+    AuthAttemptStateResolver* callback) {
+  return new RemoveAttempt(current_attempt, callback);
 }
 
-void RemoveAttempt::TriggerResolve(bool success, int return_code) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  if (success)
-    attempt_->ResetOfflineLoginStatus();
-  else
-    attempt_->RecordOfflineLoginStatus(success, return_code);
-  resolver_->Resolve();
+// static
+CryptohomeOp* CryptohomeOp::CreateCheckKeyAttempt(
+    AuthAttemptState* current_attempt,
+    AuthAttemptStateResolver* callback) {
+
+  return new CheckKeyAttempt(current_attempt, callback);
 }
 
 }  // namespace chromeos
