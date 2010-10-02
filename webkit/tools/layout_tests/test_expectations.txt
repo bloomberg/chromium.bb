@@ -19,3 +19,9 @@ BUGSENORBLANCO WIN : platform/win/plugins/window-geometry-initialized-before-set
 // Triggers a DCHECK in debug builds, so appears as a CRASH,
 // produces TEXT differences in release builds.
 BUGMICHAELN SKIP : http/tests/appcache/foreign-fallback.html = CRASH TEXT
+
+// Unexpected timeout in these tests.
+BUG_HCLAM : http/tests/css/border-image-loading.html = TEXT TIMEOUT PASS
+BUG_HCLAM : http/tests/css/css-image-loading.html = TEXT TIMEOUT PASS
+BUG_HCLAM : http/tests/css/mask-image-loading.html = TEXT TIMEOUT PASS
+BUG_HCLAM : http/tests/css/reflection-mask-image-loading.html = TEXT TIMEOUT PASS
