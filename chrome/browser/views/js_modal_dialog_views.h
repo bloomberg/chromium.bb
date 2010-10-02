@@ -11,14 +11,13 @@
 #include <string>
 
 #include "app/message_box_flags.h"
-#include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/native_app_modal_dialog.h"
 #include "views/window/dialog_delegate.h"
 
 class MessageBoxView;
 
 class JSModalDialogViews : public NativeAppModalDialog,
-                                   public views::DialogDelegate {
+                           public views::DialogDelegate {
  public:
   explicit JSModalDialogViews(JavaScriptAppModalDialog* parent);
   virtual ~JSModalDialogViews();
@@ -49,8 +48,6 @@ class JSModalDialogViews : public NativeAppModalDialog,
   virtual void OnClose();
 
  private:
-  JavaScriptMessageBoxClient* client() const { return parent_->client(); }
-
   // A pointer to the AppModalDialog that owns us.
   JavaScriptAppModalDialog* parent_;
 

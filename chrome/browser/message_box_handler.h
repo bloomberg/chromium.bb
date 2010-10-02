@@ -10,6 +10,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/js_modal_dialog.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "net/base/cookie_monster.h"
@@ -17,7 +18,6 @@
 class CookiePromptModalDialogDelegate;
 class GURL;
 class HostContentSettingsMap;
-class JavaScriptMessageBoxClient;
 class TabContents;
 class Profile;
 
@@ -28,7 +28,7 @@ class Profile;
 // |default_prompt_text|. The result of the operation is returned using
 // |reply_msg|.
 void RunJavascriptMessageBox(Profile* profile,
-                             JavaScriptMessageBoxClient* client,
+                             JavaScriptAppModalDialogDelegate* delegate,
                              const GURL& frame_url,
                              int dialog_flags,
                              const std::wstring& message_text,

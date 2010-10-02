@@ -22,7 +22,7 @@ const int kDefaultPromptTextSize = 2000;
 }  // namespace
 
 JavaScriptAppModalDialog::JavaScriptAppModalDialog(
-    JavaScriptMessageBoxClient* client,
+    JavaScriptAppModalDialogDelegate* delegate,
     const std::wstring& title,
     int dialog_flags,
     const std::wstring& message_text,
@@ -30,9 +30,9 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
     bool display_suppress_checkbox,
     bool is_before_unload_dialog,
     IPC::Message* reply_msg)
-    : AppModalDialog(client->AsTabContents(), title),
-      client_(client),
-      extension_host_(client->AsExtensionHost()),
+    : AppModalDialog(delegate->AsTabContents(), title),
+      delegate_(delegate),
+      extension_host_(delegate->AsExtensionHost()),
       dialog_flags_(dialog_flags),
       display_suppress_checkbox_(display_suppress_checkbox),
       is_before_unload_dialog_(is_before_unload_dialog),
@@ -71,9 +71,9 @@ void JavaScriptAppModalDialog::Observe(NotificationType type,
   // If we reach here, we know the notification is relevant to us, either
   // because we're only observing applicable sources or because we passed the
   // check above. Both of those indicate that we should ignore this dialog.
-  // Also clear the client, since it's now invalid.
+  // Also clear the delegate, since it's now invalid.
   skip_this_dialog_ = true;
-  client_ = NULL;
+  delegate_ = NULL;
   if (native_dialog_)
     CloseModalDialog();
 }
@@ -111,7 +111,7 @@ void JavaScriptAppModalDialog::OnCancel() {
   CompleteDialog();
 
   if (!skip_this_dialog_) {
-    client_->OnMessageBoxClosed(reply_msg_, false, std::wstring());
+    delegate_->OnMessageBoxClosed(reply_msg_, false, std::wstring());
   }
 
   Cleanup();
@@ -122,9 +122,9 @@ void JavaScriptAppModalDialog::OnAccept(const std::wstring& prompt_text,
   CompleteDialog();
 
   if (!skip_this_dialog_) {
-    client_->OnMessageBoxClosed(reply_msg_, true, prompt_text);
+    delegate_->OnMessageBoxClosed(reply_msg_, true, prompt_text);
     if (suppress_js_messages)
-      client_->SetSuppressMessageBoxes(true);
+      delegate_->SetSuppressMessageBoxes(true);
   }
 
   Cleanup();
@@ -136,7 +136,7 @@ void JavaScriptAppModalDialog::OnClose() {
 
 void JavaScriptAppModalDialog::Cleanup() {
   if (skip_this_dialog_) {
-    // We can't use the client_, because we might be in the process of
+    // We can't use the |delegate_|, because we might be in the process of
     // destroying it.
     if (tab_contents_)
       tab_contents_->OnMessageBoxClosed(reply_msg_, false, L"");

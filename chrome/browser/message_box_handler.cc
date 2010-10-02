@@ -62,7 +62,7 @@ static std::wstring GetTitle(Profile* profile,
 }
 
 void RunJavascriptMessageBox(Profile* profile,
-                             JavaScriptMessageBoxClient* client,
+                             JavaScriptAppModalDialogDelegate* delegate,
                              const GURL& frame_url,
                              int dialog_flags,
                              const std::wstring& message_text,
@@ -72,7 +72,7 @@ void RunJavascriptMessageBox(Profile* profile,
   bool is_alert = dialog_flags == MessageBoxFlags::kIsJavascriptAlert;
   std::wstring title = GetTitle(profile, is_alert, frame_url);
   Singleton<AppModalDialogQueue>()->AddDialog(new JavaScriptAppModalDialog(
-      client, title, dialog_flags, message_text, default_prompt_text,
+      delegate, title, dialog_flags, message_text, default_prompt_text,
       display_suppress_checkbox, false, reply_msg));
 }
 

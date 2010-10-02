@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/jsmessage_box_client.h"
+#include "chrome/browser/js_modal_dialog.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -32,7 +32,7 @@ class Rect;
 class BackgroundContents : public RenderViewHostDelegate,
                            public RenderViewHostDelegate::View,
                            public NotificationObserver,
-                           public JavaScriptMessageBoxClient {
+                           public JavaScriptAppModalDialogDelegate {
  public:
   class Delegate {
    public:
@@ -122,12 +122,12 @@ class BackgroundContents : public RenderViewHostDelegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // JavaScriptMessageBoxClient
-  virtual gfx::NativeWindow GetMessageBoxRootWindow();
+  // Overridden from JavaScriptAppModalDialogDelegate:
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,
                                   const std::wstring& prompt);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
+  virtual gfx::NativeWindow GetMessageBoxRootWindow();
   virtual TabContents* AsTabContents() { return NULL; }
   virtual ExtensionHost* AsExtensionHost() { return NULL; }
 

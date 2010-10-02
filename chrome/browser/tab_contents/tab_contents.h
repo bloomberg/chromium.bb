@@ -23,7 +23,7 @@
 #include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
-#include "chrome/browser/jsmessage_box_client.h"
+#include "chrome/browser/js_modal_dialog.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -100,7 +100,7 @@ class TabContents : public PageNavigator,
                     public RenderViewHostDelegate::BrowserIntegration,
                     public RenderViewHostDelegate::Resource,
                     public RenderViewHostManager::Delegate,
-                    public JavaScriptMessageBoxClient,
+                    public JavaScriptAppModalDialogDelegate,
                     public ImageLoadingTracker::Observer,
                     public PasswordManagerDelegate,
                     public TabSpecificContentSettings::Delegate {
@@ -663,12 +663,12 @@ class TabContents : public PageNavigator,
   }
   bool closed_by_user_gesture() const { return closed_by_user_gesture_; }
 
-  // JavaScriptMessageBoxClient ------------------------------------------------
-  virtual gfx::NativeWindow GetMessageBoxRootWindow();
+  // Overridden from JavaScriptAppModalDialogDelegate:
   virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
                                   bool success,
                                   const std::wstring& prompt);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
+  virtual gfx::NativeWindow GetMessageBoxRootWindow();
   virtual TabContents* AsTabContents();
   virtual ExtensionHost* AsExtensionHost();
 

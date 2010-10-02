@@ -2058,7 +2058,6 @@
         'browser/jumplist_win.h',
         'browser/js_modal_dialog.cc',
         'browser/js_modal_dialog.h',
-        'browser/jsmessage_box_client.h',
         'browser/keychain_mac.cc',
         'browser/keychain_mac.h',
         'browser/labs.cc',
