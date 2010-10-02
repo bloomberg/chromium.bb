@@ -5,6 +5,7 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_
 #define WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -12,8 +13,10 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/linked_ptr.h"
 #include "base/lock.h"
 #include "third_party/npapi/bindings/nphostapi.h"
+#include "webkit/glue/plugins/plugin_group.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
 class GURL;
@@ -147,6 +150,14 @@ class PluginList {
   bool GetPluginInfoByPath(const FilePath& plugin_path,
                            WebPluginInfo* info);
 
+  typedef std::map<std::string, linked_ptr<PluginGroup> > PluginMap;
+
+  // Fill the map from identifier to plugin group for all plugin groups.  If
+  // |load_if_necessary| is set, the plugins will be loaded if they haven't
+  // already been loaded, or if Refresh() has been called in the meantime;
+  // otherwise a possibly empty or stale list may be returned.
+  void GetPluginGroups(bool load_if_necessary, PluginMap* plugin_groups);
+
   // Load a specific plugin with full path.
   void LoadPlugin(const FilePath& filename,
                   std::vector<WebPluginInfo>* plugins);
@@ -163,6 +174,19 @@ class PluginList {
   // of return value, if a plugin is found in the future with the given name, it
   // will be disabled.
   bool DisablePlugin(const FilePath& filename);
+
+  // Enable/disable a plugin group, specified by group_name.  Returns |true| iff
+  // a plugin currently in the plugin list was actually enabled/disabled as a
+  // result; regardless of return value, if a plugin is found in the future with
+  // the given name, it will be enabled/disabled. Note that plugins are enabled
+  // by default as far as |PluginList| is concerned.
+  bool EnableGroup(bool enable, const string16& name);
+
+  // Disable all plugins groups that are known to be outdated, according to
+  // the information hardcoded in PluginGroup, to make sure that they can't
+  // be loaded on a web page and instead show a UI to update to the latest
+  // version.
+  void DisableOutdatedPluginGroups();
 
   ~PluginList();
 
@@ -204,6 +228,10 @@ class PluginList {
   bool FindPlugin(const GURL &url,
                   std::string* actual_mime_type,
                   WebPluginInfo* info);
+
+  // Like GetPluginGroups above, but works on a given vector of plugins.
+  static void GetPluginGroups(const std::vector<WebPluginInfo>* plugins,
+                              PluginMap* plugin_groups);
 
   // Returns true if the given WebPluginInfo supports "mime-type".
   // mime_type should be all lower case.
@@ -267,6 +295,11 @@ class PluginList {
 
   // Path names of plugins to disable (the default is to enable them all).
   std::set<FilePath> disabled_plugins_;
+
+  // Group names disable (the default is to enable them all).
+  std::set<string16> disabled_groups_;
+
+  bool disable_outdated_plugins_;
 
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.

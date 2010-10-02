@@ -4,14 +4,12 @@
 
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 
-#include "chrome/common/plugin_group.h"
-
 void MockPluginExceptionsTableModel::set_plugins(
-    const PluginUpdater::PluginMap& plugins) {
+    const NPAPI::PluginList::PluginMap& plugins) {
   plugins_ = plugins;
 }
 
 void MockPluginExceptionsTableModel::GetPlugins(
-    PluginUpdater::PluginMap* plugins) {
+    NPAPI::PluginList::PluginMap* plugins) {
   *plugins = plugins_;
 }

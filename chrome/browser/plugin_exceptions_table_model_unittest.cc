@@ -8,12 +8,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/plugin_group.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/plugins/plugin_group.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
 // Can't be an internal namespace because PluginExceptionsTableModel declares
@@ -82,7 +82,7 @@ class PluginExceptionsTableModelTest : public testing::Test {
 
     table_model_.reset(new MockPluginExceptionsTableModel(map, NULL));
 
-    PluginUpdater::PluginMap plugins;
+    NPAPI::PluginList::PluginMap plugins;
     WebPluginInfo foo_plugin;
     foo_plugin.path = FilePath(FILE_PATH_LITERAL("a-foo"));
     foo_plugin.name = ASCIIToUTF16("FooPlugin");

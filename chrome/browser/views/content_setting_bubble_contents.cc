@@ -20,7 +20,6 @@
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/common/plugin_group.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
@@ -209,8 +208,8 @@ void ContentSettingBubbleContents::InitControlLayout() {
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
       std::wstring name;
-      PluginUpdater::PluginMap groups;
-      PluginUpdater::GetPluginUpdater()->GetPluginGroups(&groups);
+      NPAPI::PluginList::PluginMap groups;
+      NPAPI::PluginList::Singleton()->GetPluginGroups(false, &groups);
       if (groups.find(*it) != groups.end())
         name = UTF16ToWide(groups[*it]->GetGroupName());
       else

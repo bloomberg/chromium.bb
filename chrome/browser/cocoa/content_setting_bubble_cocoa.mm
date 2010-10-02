@@ -18,7 +18,6 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/plugin_group.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -244,8 +243,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
     for (std::set<std::string>::iterator it = plugins.begin();
          it != plugins.end(); ++it) {
       NSString* name;
-      PluginUpdater::PluginMap groups;
-      PluginUpdater::GetPluginUpdater()->GetPluginGroups(&groups);
+      NPAPI::PluginList::PluginMap groups;
+      NPAPI::PluginList::Singleton()->GetPluginGroups(false, &groups);
       if (groups.find(*it) != groups.end())
         name = base::SysUTF16ToNSString(groups[*it]->GetGroupName());
       else

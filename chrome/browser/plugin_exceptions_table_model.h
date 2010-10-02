@@ -9,9 +9,9 @@
 #include <deque>
 
 #include "chrome/browser/host_content_settings_map.h"
-#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/common/notification_observer.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 namespace plugin_test_internal {
 class PluginExceptionsTableModelTest;
@@ -49,7 +49,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
 
  protected:
   // Subclasses can override this method for testing.
-  virtual void GetPlugins(PluginUpdater::PluginMap* plugins);
+  virtual void GetPlugins(NPAPI::PluginList::PluginMap* plugins);
 
  private:
   friend class plugin_test_internal::PluginExceptionsTableModelTest;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/plugin_group.h"
+#include "webkit/glue/plugins/plugin_group.h"
 
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
@@ -413,4 +413,14 @@ void PluginGroup::Enable(bool enable) {
       NPAPI::PluginList::Singleton()->DisablePlugin(it->path);
     }
   }
+}
+
+std::vector<FilePath> PluginGroup::GetPaths() const {
+  std::vector<FilePath> rv;
+  for (std::vector<WebPluginInfo>::const_iterator it =
+       web_plugin_infos_.begin();
+       it != web_plugin_infos_.end(); ++it) {
+    rv.push_back(it->path);
+  }
+  return rv;
 }

@@ -391,6 +391,7 @@
         '../../glue/mimetype_unittest.cc',
         '../../glue/mock_resource_loader_bridge.h',
         '../../glue/multipart_response_delegate_unittest.cc',
+        '../../glue/plugins/plugin_group_unittest.cc',
         '../../glue/plugins/plugin_lib_unittest.cc',
         '../../glue/plugins/webplugin_impl_unittest.cc',
         '../../glue/regular_expression_unittest.cc',

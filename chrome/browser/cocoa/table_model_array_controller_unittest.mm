@@ -11,11 +11,11 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/plugin_group.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
 namespace {
@@ -52,7 +52,7 @@ class TableModelArrayControllerTest : public CocoaTest {
 
     model_.reset(new MockPluginExceptionsTableModel(map, NULL));
 
-    PluginUpdater::PluginMap plugins;
+    NPAPI::PluginList::PluginMap plugins;
     WebPluginInfo foo_plugin;
     foo_plugin.path = FilePath(FILE_PATH_LITERAL("a-foo"));
     foo_plugin.name = ASCIIToUTF16("FooPlugin");

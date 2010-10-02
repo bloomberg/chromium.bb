@@ -10,7 +10,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/plugin_group.h"
 #include "grit/generated_resources.h"
 
 PluginExceptionsTableModel::PluginExceptionsTableModel(
@@ -128,15 +127,16 @@ void PluginExceptionsTableModel::ClearSettings() {
   resources_.clear();
 }
 
-void PluginExceptionsTableModel::GetPlugins(PluginUpdater::PluginMap* plugins) {
-  PluginUpdater::GetPluginUpdater()->GetPluginGroups(plugins);
+void PluginExceptionsTableModel::GetPlugins(
+    NPAPI::PluginList::PluginMap* plugins) {
+  NPAPI::PluginList::Singleton()->GetPluginGroups(false, plugins);
 }
 
 void PluginExceptionsTableModel::LoadSettings() {
   int group_id = 0;
-  PluginUpdater::PluginMap plugins;
+  NPAPI::PluginList::PluginMap plugins;
   GetPlugins(&plugins);
-  for (PluginUpdater::PluginMap::iterator it = plugins.begin();
+  for (NPAPI::PluginList::PluginMap::iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     std::string plugin = it->first;
     HostContentSettingsMap::SettingsForOneType settings;

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
@@ -161,7 +162,9 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
 }
 
 PluginList::PluginList()
-    : plugins_loaded_(false), plugins_need_refresh_(false) {
+    : plugins_loaded_(false),
+      plugins_need_refresh_(false),
+      disable_outdated_plugins_(false) {
   PlatformInit();
 }
 
@@ -229,12 +232,43 @@ void PluginList::LoadPlugins(bool refresh) {
   // Only update the data now since loading plugins can take a while.
   AutoLock lock(lock_);
 
-  // Go through and mark new plugins in the disabled list as, well, disabled.
-  for (std::vector<WebPluginInfo>::iterator it = new_plugins.begin();
-       it != new_plugins.end();
-       ++it) {
-    if (disabled_plugins_.find(it->path) != disabled_plugins_.end())
-      it->enabled = false;
+  // Mark disabled plugins as such.
+  for (size_t i = 0; i < new_plugins.size(); ++i) {
+    if (disabled_plugins_.count(new_plugins[i].path))
+      new_plugins[i].enabled = false;
+  }
+
+  // Disable all of the plugins and plugin groups that are disabled by policy.
+  // There's currenly a bug that makes it impossible to correctly re-enable
+  // plugins or plugin-groups to their original, "pre-policy" state, so
+  // plugins and groups are only changed to a more "safe" state after a policy
+  // change, i.e. from enabled to disabled. See bug 54681.
+  PluginMap plugin_groups;
+  GetPluginGroups(&new_plugins, &plugin_groups);
+  for (PluginMap::const_iterator it = plugin_groups.begin();
+       it != plugin_groups.end(); ++it) {
+    string16 group_name = it->second->GetGroupName();
+    if (PluginGroup::IsPluginNameDisabledByPolicy(group_name) &&
+        !disabled_groups_.count(group_name)) {
+      disabled_groups_.insert(group_name);
+    }
+
+    if (disabled_groups_.count(group_name)) {
+      // Disable the plugins manually instead of PluginGroup::Enable(false)
+      // since that will need to acquire a lock which we already have.
+      std::vector<FilePath> paths = it->second->GetPaths();
+      for (size_t i = 0; i < paths.size(); ++i) {
+        for (size_t j = 0; j < new_plugins.size(); ++j) {
+          if (new_plugins[j].path == paths[i]) {
+            new_plugins[j].enabled = false;
+            break;
+          }
+        }
+      }
+    }
+
+    if (disable_outdated_plugins_)
+      it->second->DisableOutdatedPlugins();
   }
 
   plugins_ = new_plugins;
@@ -420,6 +454,47 @@ bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
   return false;
 }
 
+void PluginList::GetPluginGroups(bool load_if_necessary,
+                                 PluginMap* plugin_groups) {
+  if (load_if_necessary)
+    LoadPlugins(false);
+
+  AutoLock lock(lock_);
+  GetPluginGroups(&plugins_, plugin_groups);
+}
+
+// static
+void PluginList::GetPluginGroups(const std::vector<WebPluginInfo>* plugins,
+                                 PluginMap* plugin_groups) {
+  plugin_groups->clear();
+  // We first search for an existing group that matches our name,
+  // and only create a new group if we can't find any.
+  for (size_t i = 0; i < plugins->size(); ++i) {
+    const WebPluginInfo& web_plugin = (*plugins)[i];
+    PluginGroup* group = PluginGroup::FindGroupMatchingPlugin(
+        *plugin_groups, web_plugin);
+    if (!group) {
+      group = PluginGroup::CopyOrCreatePluginGroup(web_plugin);
+      std::string identifier = group->identifier();
+      // If the identifier is not unique, use the full path. This means that we
+      // probably won't be able to search for this group by identifier, but at
+      // least it's going to be in the set of plugin groups, and if there
+      // is already a plug-in with the same filename, it's probably going to
+      // handle the same MIME types (and it has a higher priority), so this one
+      // is not going to run anyway.
+      if (plugin_groups->find(identifier) != plugin_groups->end())
+#if defined(OS_POSIX)
+        identifier = web_plugin.path.value();
+#elif defined(OS_WIN)
+        identifier = base::SysWideToUTF8(web_plugin.path.value());
+#endif
+      DCHECK(plugin_groups->find(identifier) == plugin_groups->end());
+      (*plugin_groups)[identifier] = linked_ptr<PluginGroup>(group);
+    }
+    group->AddPlugin(web_plugin, i);
+  }
+}
+
 bool PluginList::EnablePlugin(const FilePath& filename) {
   AutoLock lock(lock_);
 
@@ -445,9 +520,6 @@ bool PluginList::EnablePlugin(const FilePath& filename) {
   return did_enable;
 }
 
-PluginList::~PluginList() {
-}
-
 bool PluginList::DisablePlugin(const FilePath& filename) {
   AutoLock lock(lock_);
 
@@ -470,6 +542,46 @@ bool PluginList::DisablePlugin(const FilePath& filename) {
   }
 
   return did_disable;
+}
+
+bool PluginList::EnableGroup(bool enable, const string16& group_name) {
+  bool did_change = false;
+  {
+    AutoLock lock(lock_);
+
+    std::set<string16>::iterator entry = disabled_groups_.find(group_name);
+    if (enable) {
+      if (entry == disabled_groups_.end())
+        return did_change;  // Early exit if group not in disabled list.
+      disabled_groups_.erase(entry);  // Remove from disabled list.
+    } else {
+      if (entry != disabled_groups_.end())
+        return did_change;  // Early exit if group already in disabled list.
+      disabled_groups_.insert(group_name);
+    }
+  }
+
+  PluginMap plugin_groups;
+  GetPluginGroups(false, &plugin_groups);
+  for (PluginMap::const_iterator it = plugin_groups.begin();
+       it != plugin_groups.end(); ++it) {
+    if (it->second->GetGroupName() == group_name) {
+      if (it->second->Enabled() != enable) {
+        it->second->Enable(enable);
+        did_change = true;
+        break;
+      }
+    }
+  }
+
+  return did_change;
+}
+
+void PluginList::DisableOutdatedPluginGroups() {
+  disable_outdated_plugins_ = true;
+}
+
+PluginList::~PluginList() {
 }
 
 void PluginList::Shutdown() {

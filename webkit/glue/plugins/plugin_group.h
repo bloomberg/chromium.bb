@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PLUGIN_GROUP_H_
-#define CHROME_COMMON_PLUGIN_GROUP_H_
+#ifndef WEBKIT_GLUE_PLUGINS_PLUGIN_GROUP_H_
+#define WEBKIT_GLUE_PLUGINS_PLUGIN_GROUP_H_
 #pragma once
 
 #include <map>
@@ -18,6 +18,10 @@ class DictionaryValue;
 class FilePath;
 class Version;
 struct WebPluginInfo;
+
+namespace NPAPI {
+  class PluginList;
+};
 
 template <typename T>
 class linked_ptr;
@@ -127,6 +131,10 @@ class PluginGroup {
   // minimum version.
   void DisableOutdatedPlugins();
 
+ protected:
+  friend class NPAPI::PluginList;
+  std::vector<FilePath> GetPaths() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PluginGroupTest, PluginGroupDefinition);
 
@@ -172,4 +180,4 @@ class PluginGroup {
   DISALLOW_COPY_AND_ASSIGN(PluginGroup);
 };
 
-#endif  // CHROME_COMMON_PLUGIN_GROUP_H_
+#endif  // WEBKIT_GLUE_PLUGINS_PLUGIN_GROUP_H_

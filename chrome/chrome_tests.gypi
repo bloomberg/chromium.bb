@@ -1521,7 +1521,6 @@
         'common/net/test_url_fetcher_factory.cc',
         'common/net/test_url_fetcher_factory.h',
         'common/notification_service_unittest.cc',
-        'common/plugin_group_unittest.cc',
         'common/process_watcher_unittest.cc',
         'common/property_bag_unittest.cc',
         'common/render_messages_unittest.cc',

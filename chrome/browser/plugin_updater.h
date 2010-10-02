@@ -6,11 +6,8 @@
 #define CHROME_BROWSER_PLUGIN_UPDATER_H_
 #pragma once
 
-#include  <map>
-
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/linked_ptr.h"
 #include "base/singleton.h"
 #include "chrome/common/notification_observer.h"
 
@@ -24,11 +21,6 @@ struct WebPluginInfo;
 
 class PluginUpdater : public NotificationObserver {
  public:
-  typedef std::map<std::string, linked_ptr<PluginGroup> > PluginMap;
-
-  // Get a map from identifier to plugin group for all plugin groups.
-  static void GetPluginGroups(PluginMap* plugin_groups);
-
   // Get a list of all the plugin groups. The caller should take ownership
   // of the returned ListValue.
   static ListValue* GetPluginGroupsData();
@@ -41,12 +33,6 @@ class PluginUpdater : public NotificationObserver {
 
   // Disable all plugin groups as defined by the user's preference file.
   void DisablePluginGroupsFromPrefs(Profile* profile);
-
-  // Disable all plugins groups that are known to be outdated, according to
-  // the information hardcoded in PluginGroup, to make sure that they can't
-  // be loaded on a web page and instead show a UI to update to the latest
-  // version.
-  void DisableOutdatedPluginGroups();
 
   // Write the enable/disable status to the user's preference file.
   void UpdatePreferences(Profile* profile);

@@ -97,8 +97,6 @@
           'common/notification_source.cc',
           'common/notification_source.h',
           'common/notification_type.h',
-          'common/plugin_group.cc',
-          'common/plugin_group.h',
           'common/process_watcher_mac.cc',
           'common/process_watcher_posix.cc',
           'common/process_watcher_win.cc',

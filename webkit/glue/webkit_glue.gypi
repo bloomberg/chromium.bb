@@ -251,6 +251,8 @@
         'plugins/pepper_widget.cc',
         'plugins/pepper_widget.h',
         'plugins/plugin_constants_win.h',
+        'plugins/plugin_group.cc',
+        'plugins/plugin_group.h',
         'plugins/plugin_host.cc',
         'plugins/plugin_host.h',
         'plugins/plugin_instance.cc',
