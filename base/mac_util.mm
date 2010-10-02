@@ -669,4 +669,14 @@ bool WasLaunchedAsHiddenLoginItem() {
   return IsHiddenLoginItem(item);
 }
 
+void NSObjectRetain(void* obj) {
+  id<NSObject> nsobj = static_cast<id<NSObject> >(obj);
+  [nsobj retain];
+}
+
+void NSObjectRelease(void* obj) {
+  id<NSObject> nsobj = static_cast<id<NSObject> >(obj);
+  [nsobj release];
+}
+
 }  // namespace mac_util

@@ -169,6 +169,10 @@ void RemoveFromLoginItems();
 // 'Login Item' with 'hide on startup' flag. Used to suppress opening windows.
 bool WasLaunchedAsHiddenLoginItem();
 
+// Retain/release calls for memory management in C++.
+void NSObjectRetain(void* obj);
+void NSObjectRelease(void* obj);
+
 }  // namespace mac_util
 
 #endif  // BASE_MAC_UTIL_H_

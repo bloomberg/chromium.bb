@@ -21,12 +21,6 @@
 
   // The certificate ID for the page, 0 if the page is not over HTTPS.
   int certID_;
-
-  // Reference to the images that are placed within the UI.
-  scoped_nsobject<NSImage> okImage_;
-  scoped_nsobject<NSImage> warningMinorImage_;
-  scoped_nsobject<NSImage> warningMajorImage_;
-  scoped_nsobject<NSImage> errorImage_;
 }
 
 @property (nonatomic, assign) int certID;

@@ -19,12 +19,14 @@ namespace {
 
 class FakeModel : public PageInfoModel {
  public:
-  void AddSection(SectionInfoState state,
+  FakeModel() : PageInfoModel() {}
+
+  void AddSection(SectionStateIcon icon_id,
                   const string16& title,
                   const string16& description,
                   SectionInfoType type) {
     sections_.push_back(SectionInfo(
-        state,
+        icon_id,
         title,
         string16(),
         description,
@@ -89,8 +91,7 @@ class PageInfoWindowMacTest : public CocoaTest {
     for (NSView* view in subviews) {
       if ([view isKindOfClass:[NSImageView class]]) {
         NSImageView* image_view = static_cast<NSImageView*>(view);
-        EXPECT_TRUE([image_view image] == bridge_->good_image_.get() ||
-                    [image_view image] == bridge_->bad_image_.get());
+        EXPECT_TRUE([image_view image]);
       } else if ([view isKindOfClass:[NSTextField class]]) {
         NSTextField* text_field = static_cast<NSTextField*>(view);
         EXPECT_LT(0U, [[text_field stringValue] length]);
@@ -111,13 +112,13 @@ class PageInfoWindowMacTest : public CocoaTest {
 
 
 TEST_F(PageInfoWindowMacTest, NoHistoryNoSecurity) {
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
           ASCIIToUTF16("google.com")),
       PageInfoModel::SECTION_INFO_IDENTITY);
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -131,13 +132,13 @@ TEST_F(PageInfoWindowMacTest, NoHistoryNoSecurity) {
 
 
 TEST_F(PageInfoWindowMacTest, HistoryNoSecurity) {
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
           ASCIIToUTF16("google.com")),
       PageInfoModel::SECTION_INFO_IDENTITY);
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -148,7 +149,7 @@ TEST_F(PageInfoWindowMacTest, HistoryNoSecurity) {
   // asynchronously, so replicate the double-build here.
   bridge_->ModelChanged();
 
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
       l10n_util::GetStringUTF16(
@@ -162,7 +163,7 @@ TEST_F(PageInfoWindowMacTest, HistoryNoSecurity) {
 
 
 TEST_F(PageInfoWindowMacTest, NoHistoryMixedSecurity) {
-  model_->AddSection(PageInfoModel::SECTION_STATE_OK,
+  model_->AddSection(PageInfoModel::ICON_STATE_OK,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY,
@@ -173,7 +174,7 @@ TEST_F(PageInfoWindowMacTest, NoHistoryMixedSecurity) {
   // region (kImageSize).
   string16 title =
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE);
-  model_->AddSection(PageInfoModel::SECTION_STATE_OK,
+  model_->AddSection(PageInfoModel::ICON_STATE_OK,
       title,
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,

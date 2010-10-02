@@ -67,7 +67,6 @@ PageInfoWindowMac::PageInfoWindowMac(PageInfoWindowController* controller,
     : controller_(controller),
       model_(new PageInfoModel(profile, url, ssl, show_history, this)),
       cert_id_(ssl.cert_id()) {
-  Init();
 }
 
 PageInfoWindowMac::PageInfoWindowMac(PageInfoWindowController* controller,
@@ -75,7 +74,6 @@ PageInfoWindowMac::PageInfoWindowMac(PageInfoWindowController* controller,
     : controller_(controller),
       model_(model),
       cert_id_(0) {
-  Init();
 }
 
 // static
@@ -96,17 +94,6 @@ void PageInfoWindowMac::ShowPageInfo(gfx::NativeWindow parent,
   [controller setPageInfo:page_info];
   page_info->LayoutSections();
   page_info->Show();
-}
-
-void PageInfoWindowMac::Init() {
-  // Load the image refs.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  good_image_.reset([rb.GetNSImageNamed(IDR_PAGEINFO_GOOD) retain]);
-  DCHECK_GE(kImageSize, [good_image_ size].width);
-  DCHECK_GE(kImageSize, [good_image_ size].height);
-  bad_image_.reset([rb.GetNSImageNamed(IDR_PAGEINFO_BAD) retain]);
-  DCHECK_GE(kImageSize, [bad_image_ size].width);
-  DCHECK_GE(kImageSize, [bad_image_ size].height);
 }
 
 PageInfoWindowMac::~PageInfoWindowMac() {
@@ -213,8 +200,7 @@ void PageInfoWindowMac::LayoutSections() {
     scoped_nsobject<NSImageView> image_view(
         [[NSImageView alloc] initWithFrame:image_view_rect]);
     [image_view setImageFrameStyle:NSImageFrameNone];
-    [image_view setImage:(info.state == PageInfoModel::SECTION_STATE_OK) ?
-        good_image_.get() : bad_image_.get()];
+    [image_view setImage:model_->GetIconImage(info.icon_id)];
 
     // Add the box to the list of new subviews.
     [box addSubview:image_view.get()];

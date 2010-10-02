@@ -5,7 +5,6 @@
 #include "chrome/browser/views/page_info_bubble_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/views/toolbar_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
@@ -41,6 +39,7 @@ class Section : public views::View,
  public:
   Section(PageInfoBubbleView* owner,
           const PageInfoModel::SectionInfo& section_info,
+          const SkBitmap* status_icon,
           bool show_cert);
   virtual ~Section();
 
@@ -115,7 +114,8 @@ void PageInfoBubbleView::LayoutSections() {
     layout->StartRow(0, 0);
     // TODO(finnur): Remove title from the info struct, since it is
     //               not used anymore.
-    layout->AddView(new Section(this, info, cert_id_ > 0));
+    const SkBitmap* icon = model_.GetIconImage(info.icon_id);
+    layout->AddView(new Section(this, info, icon, cert_id_ > 0));
 
     // Add separator after all sections.
     layout->AddPaddingRow(0, kPaddingAboveSeparator);
@@ -140,7 +140,8 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
   int count = model_.GetSectionCount();
   for (int i = 0; i < count; ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
-    Section section(this, info, cert_id_ > 0);
+    const SkBitmap* icon = model_.GetIconImage(info.icon_id);
+    Section section(this, info, icon, cert_id_ > 0);
     size.Enlarge(0, section.GetHeightForWidth(size.width()));
   }
 
@@ -178,38 +179,15 @@ void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
 
 Section::Section(PageInfoBubbleView* owner,
                  const PageInfoModel::SectionInfo& section_info,
+                 const SkBitmap* state_icon,
                  bool show_cert)
     : owner_(owner),
       info_(section_info),
       status_image_(NULL),
       link_(NULL) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
-  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY ||
-      info_.type == PageInfoModel::SECTION_INFO_CONNECTION) {
+  if (state_icon) {
     status_image_ = new views::ImageView();
-    switch (info_.state) {
-      case PageInfoModel::SECTION_STATE_OK:
-        status_image_->SetImage(rb.GetBitmapNamed(IDR_PAGEINFO_GOOD));
-        break;
-      case PageInfoModel::SECTION_STATE_WARNING_MAJOR:
-        status_image_->SetImage(rb.GetBitmapNamed(IDR_PAGEINFO_WARNING_MAJOR));
-        break;
-      case PageInfoModel::SECTION_STATE_WARNING_MINOR:
-        status_image_->SetImage(rb.GetBitmapNamed(IDR_PAGEINFO_WARNING_MINOR));
-        break;
-      case PageInfoModel::SECTION_STATE_ERROR:
-        status_image_->SetImage(rb.GetBitmapNamed(IDR_PAGEINFO_BAD));
-        break;
-      default:
-        NOTREACHED();  // Do you need to add a case here?
-    }
-    AddChildView(status_image_);
-  } else if (info_.type == PageInfoModel::SECTION_INFO_FIRST_VISIT) {
-    status_image_ = new views::ImageView();
-    status_image_->SetImage(info_.state == PageInfoModel::SECTION_STATE_OK ?
-        rb.GetBitmapNamed(IDR_PAGEINFO_INFO) :
-        rb.GetBitmapNamed(IDR_PAGEINFO_WARNING_MAJOR));
+    status_image_->SetImage(*state_icon);
     AddChildView(status_image_);
   }
 

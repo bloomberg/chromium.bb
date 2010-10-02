@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -16,7 +15,6 @@
 #include "chrome/browser/page_info_window.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
 
 namespace {
 
@@ -148,11 +146,8 @@ GtkWidget* PageInfoWindowGtk::CreateSection(
   gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
   GtkWidget* section_box = gtk_hbox_new(FALSE, 0);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   GtkWidget* image = gtk_image_new_from_pixbuf(
-      section.state == PageInfoModel::SECTION_STATE_OK ?
-      rb.GetPixbufNamed(IDR_PAGEINFO_GOOD) :
-      rb.GetPixbufNamed(IDR_PAGEINFO_WARNING_MAJOR));
+      model_.GetIconImage(section.icon_id));
   gtk_box_pack_start(GTK_BOX(section_box), image, FALSE, FALSE,
                      gtk_util::kControlSpacing);
   gtk_misc_set_alignment(GTK_MISC(image), 0, 0);

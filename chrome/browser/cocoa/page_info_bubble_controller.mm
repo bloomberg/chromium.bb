@@ -5,7 +5,6 @@
 #import "chrome/browser/cocoa/page_info_bubble_controller.h"
 
 #include "app/l10n_util_mac.h"
-#include "app/resource_bundle.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -15,7 +14,6 @@
 #import "chrome/browser/cocoa/info_bubble_window.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/x509_certificate.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -23,7 +21,6 @@
 @interface PageInfoBubbleController (Private)
 - (PageInfoModel*)model;
 - (NSButton*)certificateButtonWithFrame:(NSRect)frame;
-- (NSImage*)statusIconForState:(PageInfoModel::SectionInfoState)state;
 - (void)configureTextFieldAsLabel:(NSTextField*)textField;
 - (CGFloat)addTitleViewForInfo:(const PageInfoModel::SectionInfo&)info
                     toSubviews:(NSMutableArray*)subviews
@@ -149,26 +146,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                          anchoredAt:anchorPoint])) {
     model_.reset(model);
     bridge_.reset(bridge);
-
-    // Load the image refs.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    okImage_.reset([rb.GetNSImageNamed(IDR_PAGEINFO_GOOD) retain]);
-    DCHECK_GE(kImageSize, [okImage_ size].width);
-    DCHECK_GE(kImageSize, [okImage_ size].height);
-    warningMinorImage_.reset(
-        [rb.GetNSImageNamed(IDR_PAGEINFO_WARNING_MINOR) retain]);
-    DCHECK_GE(kImageSize, [warningMinorImage_ size].width);
-    DCHECK_GE(kImageSize, [warningMinorImage_ size].height);
-    warningMajorImage_.reset(
-        [rb.GetNSImageNamed(IDR_PAGEINFO_WARNING_MAJOR) retain]);
-    DCHECK_GE(kImageSize, [warningMajorImage_ size].width);
-    DCHECK_GE(kImageSize, [warningMajorImage_ size].height);
-    errorImage_.reset([rb.GetNSImageNamed(IDR_PAGEINFO_BAD) retain]);
-    DCHECK_GE(kImageSize, [errorImage_ size].width);
-    DCHECK_GE(kImageSize, [errorImage_ size].height);
-
     [[self bubble] setArrowLocation:info_bubble::kTopLeft];
-
     [self performLayout];
   }
   return self;
@@ -202,8 +180,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
     PageInfoModel::SectionInfo info = model_->GetSectionInfo(i);
 
     // Only certain sections have images. This affects the X position.
-    BOOL hasImage = info.type == PageInfoModel::SECTION_INFO_IDENTITY ||
-        info.type == PageInfoModel::SECTION_INFO_CONNECTION;
+    BOOL hasImage = model_->GetIconImage(info.icon_id) != nil;
     CGFloat xPosition = (hasImage ? kTextXPosition : kTextXPositionNoImage);
 
     if (info.type == PageInfoModel::SECTION_INFO_IDENTITY) {
@@ -272,23 +249,6 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   [certButton setTarget:self];
   [certButton setAction:@selector(showCertWindow:)];
   return certButton;
-}
-
-// Returns a weak reference to the NSImage instance to used, or nil if none, for
-// the specified info |state|.
-- (NSImage*)statusIconForState:(PageInfoModel::SectionInfoState)state {
-  switch (state) {
-    case PageInfoModel::SECTION_STATE_OK:
-      return okImage_.get();
-    case PageInfoModel::SECTION_STATE_WARNING_MINOR:
-      return warningMinorImage_.get();
-    case PageInfoModel::SECTION_STATE_WARNING_MAJOR:
-      return warningMajorImage_.get();
-    case PageInfoModel::SECTION_STATE_ERROR:
-      return errorImage_.get();
-    default:
-      return nil;
-  }
 }
 
 // Sets proprties on the given |field| to act as the title or description labels
@@ -376,7 +336,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);
   [imageView setImageFrameStyle:NSImageFrameNone];
-  [imageView setImage:[self statusIconForState:info.state]];
+  [imageView setImage:model_->GetIconImage(info.icon_id)];
   [subviews addObject:imageView.get()];
 }
 

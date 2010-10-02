@@ -58,9 +58,6 @@ class PageInfoWindowMac : public PageInfoModel::PageInfoModelObserver {
   PageInfoWindowMac(PageInfoWindowController* controller,
                     PageInfoModel* model);
 
-  // Shared constructor initialization.
-  void Init();
-
   // Dynamically creates the window's content section.
   void LayoutSections();
 
@@ -72,10 +69,6 @@ class PageInfoWindowMac : public PageInfoModel::PageInfoModelObserver {
 
   // The platform-independent model for the info window.
   scoped_ptr<PageInfoModel> model_;
-
-  // Reference to the good and bad images that are placed within the UI.
-  scoped_nsobject<NSImage> good_image_;
-  scoped_nsobject<NSImage> bad_image_;
 
   // The certificate ID for the page, 0 if the page is not over HTTPS.
   int cert_id_;

@@ -180,6 +180,17 @@ TEST_F(MacUtilTest, CopyNSImageToCGImage) {
   EXPECT_TRUE(cgImage.get());
 }
 
+TEST_F(MacUtilTest, NSObjectRetainRelease) {
+  scoped_nsobject<NSArray> array([[NSArray alloc] initWithObjects:@"foo", nil]);
+  EXPECT_EQ(1U, [array retainCount]);
+
+  mac_util::NSObjectRetain(array);
+  EXPECT_EQ(2U, [array retainCount]);
+
+  mac_util::NSObjectRelease(array);
+  EXPECT_EQ(1U, [array retainCount]);
+}
+
 }  // namespace
 
 }  // namespace mac_util

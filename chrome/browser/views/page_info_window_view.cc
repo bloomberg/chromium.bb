@@ -4,7 +4,6 @@
 
 #include "build/build_config.h"
 
-#include "app/resource_bundle.h"
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
@@ -15,7 +14,6 @@
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "net/base/x509_certificate.h"
 #include "views/background.h"
 #include "views/grid_layout.h"
@@ -108,9 +106,9 @@ class PageInfoWindowView : public views::View,
 class Section : public views::View {
  public:
   Section(const string16& title,
-          bool state,
           const string16& head_line,
-          const string16& description);
+          const string16& description,
+          const SkBitmap* icon);
   virtual ~Section();
 
   virtual int GetHeightForWidth(int w);
@@ -120,17 +118,11 @@ class Section : public views::View {
   // The text placed on top of the section (on the left of the separator bar).
   string16 title_;
 
-  // Whether to show the good/bad icon.
-  bool state_;
-
   // The first line of the description, show in bold.
   string16 head_line_;
 
   // The description, displayed below the head line.
   string16 description_;
-
-  static SkBitmap* good_state_icon_;
-  static SkBitmap* bad_state_icon_;
 
   views::Label* title_label_;
   views::Separator* separator_;
@@ -142,8 +134,6 @@ class Section : public views::View {
 };
 
 // static
-SkBitmap* Section::good_state_icon_ = NULL;
-SkBitmap* Section::bad_state_icon_ = NULL;
 int PageInfoWindowView::opened_window_count_ = 0;
 
 }  // namespace
@@ -217,9 +207,8 @@ void PageInfoWindowView::LayoutSections() {
   for (int i = 0; i < model_.GetSectionCount(); ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
     layout->StartRow(0, 0);
-    layout->AddView(new Section(
-        info.title, info.state == PageInfoModel::SECTION_STATE_OK,
-        info.headline, info.description));
+    layout->AddView(new Section(info.title, info.headline, info.description,
+        model_.GetIconImage(info.icon_id)));
     layout->AddPaddingRow(0, kVerticalPadding);
   }
   layout->AddPaddingRow(1, kVerticalPadding);
@@ -334,20 +323,12 @@ void PageInfoWindowView::ShowCertDialog(int cert_id) {
 // Section
 
 Section::Section(const string16& title,
-                 bool state,
                  const string16& head_line,
-                 const string16& description)
+                 const string16& description,
+                 const SkBitmap* icon)
     : title_(title),
-      state_(state),
       head_line_(head_line),
       description_(description) {
-  if (!good_state_icon_) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    good_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_GOOD);
-    // The exclamation point has been re-purposed as a warning
-    // signal in the new code.
-    bad_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_WARNING_MAJOR);
-  }
   title_label_ = new views::Label(UTF16ToWideHack(title));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(title_label_);
@@ -360,7 +341,7 @@ Section::Section(const string16& title,
 #endif
 
   status_image_ = new views::ImageView();
-  status_image_->SetImage(state ? good_state_icon_ : bad_state_icon_);
+  status_image_->SetImage(*icon);
   AddChildView(status_image_);
 
   head_line_label_ = new views::Label(UTF16ToWideHack(head_line));

@@ -18,12 +18,14 @@ namespace {
 
 class FakeModel : public PageInfoModel {
  public:
-  void AddSection(SectionInfoState state,
+  FakeModel() : PageInfoModel() {}
+
+  void AddSection(SectionStateIcon icon_id,
                   const string16& title,
                   const string16& description,
                   SectionInfoType type) {
     sections_.push_back(SectionInfo(
-        state, title, string16(), description, type));
+        icon_id, title, string16(), description, type));
   }
 };
 
@@ -97,13 +99,13 @@ class PageInfoBubbleControllerTest : public CocoaTest {
 
 
 TEST_F(PageInfoBubbleControllerTest, NoHistoryNoSecurity) {
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
           ASCIIToUTF16("google.com")),
       PageInfoModel::SECTION_INFO_IDENTITY);
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -116,13 +118,13 @@ TEST_F(PageInfoBubbleControllerTest, NoHistoryNoSecurity) {
 
 
 TEST_F(PageInfoBubbleControllerTest, HistoryNoSecurity) {
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
           ASCIIToUTF16("google.com")),
       PageInfoModel::SECTION_INFO_IDENTITY);
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
@@ -133,7 +135,7 @@ TEST_F(PageInfoBubbleControllerTest, HistoryNoSecurity) {
   // asynchronously, so replicate the double-build here.
   CreateBubble();
 
-  model_->AddSection(PageInfoModel::SECTION_STATE_ERROR,
+  model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
       l10n_util::GetStringUTF16(
@@ -142,12 +144,12 @@ TEST_F(PageInfoBubbleControllerTest, HistoryNoSecurity) {
 
   [controller_ performLayout];
 
-  CheckWindow(/*text=*/6, /*image=*/2, /*spacer=*/2, /*button=*/1);
+  CheckWindow(/*text=*/6, /*image=*/3, /*spacer=*/2, /*button=*/1);
 }
 
 
 TEST_F(PageInfoBubbleControllerTest, NoHistoryMixedSecurity) {
-  model_->AddSection(PageInfoModel::SECTION_STATE_OK,
+  model_->AddSection(PageInfoModel::ICON_STATE_OK,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY,
@@ -165,7 +167,7 @@ TEST_F(PageInfoBubbleControllerTest, NoHistoryMixedSecurity) {
       l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_INSECURE_CONTENT_WARNING));
 
-  model_->AddSection(PageInfoModel::SECTION_STATE_OK,
+  model_->AddSection(PageInfoModel::ICON_STATE_OK,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
       description,
       PageInfoModel::SECTION_INFO_CONNECTION);

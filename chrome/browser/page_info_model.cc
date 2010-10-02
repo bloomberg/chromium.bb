@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_number_conversions.h"
@@ -18,10 +19,15 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/ssl_connection_status_flags.h"
 #include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/x509_certificate.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 
 PageInfoModel::PageInfoModel(Profile* profile,
                              const GURL& url,
@@ -29,7 +35,9 @@ PageInfoModel::PageInfoModel(Profile* profile,
                              bool show_history,
                              PageInfoModelObserver* observer)
     : observer_(observer) {
-  SectionInfoState state = SECTION_STATE_OK;
+  Init();
+
+  SectionStateIcon icon_id = ICON_STATE_OK;
   string16 headline;
   string16 description;
   scoped_refptr<net::X509Certificate> cert;
@@ -74,7 +82,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
       } else {
         NOTREACHED() << "Need to specify string for this warning";
       }
-      state = SECTION_STATE_WARNING_MINOR;
+      icon_id = ICON_STATE_WARNING_MINOR;
     } else if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) != 0) {
       // EV HTTPS page.
       DCHECK(!cert->subject().organization_names.empty());
@@ -131,11 +139,11 @@ PageInfoModel::PageInfoModel(Profile* profile,
     // HTTP or HTTPS with errors (not warnings).
     description.assign(l10n_util::GetStringUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
-    state = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
-        SECTION_STATE_WARNING_MAJOR : SECTION_STATE_ERROR;
+    icon_id = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
+        ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
   }
   sections_.push_back(SectionInfo(
-      state,
+      icon_id,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
       headline,
       description,
@@ -145,20 +153,20 @@ PageInfoModel::PageInfoModel(Profile* profile,
   // We consider anything less than 80 bits encryption to be weak encryption.
   // TODO(wtc): Bug 1198735: report mixed/unsafe content for unencrypted and
   // weakly encrypted connections.
-  state = SECTION_STATE_OK;
+  icon_id = ICON_STATE_OK;
   headline.clear();
   description.clear();
   if (ssl.security_bits() < 0) {
     // Security strength is unknown.  Say nothing.
-    state = SECTION_STATE_ERROR;
+    icon_id = ICON_STATE_ERROR;
   } else if (ssl.security_bits() == 0) {
-    state = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
-        SECTION_STATE_WARNING_MAJOR : SECTION_STATE_ERROR;
+    icon_id = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
+        ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
         subject_name));
   } else if (ssl.security_bits() < 80) {
-    state = SECTION_STATE_ERROR;
+    icon_id = ICON_STATE_ERROR;
     description.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
         subject_name));
@@ -176,9 +184,9 @@ PageInfoModel::PageInfoModel(Profile* profile,
       const CommandLine* command_line(CommandLine::ForCurrentProcess());
       if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble) &&
           !ssl.ran_insecure_content()) {
-        state = SECTION_STATE_WARNING_MINOR;
+        icon_id = ICON_STATE_WARNING_MINOR;
       } else {
-        state = SECTION_STATE_ERROR;
+        icon_id = ICON_STATE_ERROR;
       }
       description.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
@@ -221,7 +229,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
 
     if (did_fallback) {
       // For now, only SSLv3 fallback will trigger a warning icon.
-      state = SECTION_STATE_ERROR;
+      icon_id = ICON_STATE_ERROR;
       description += ASCIIToUTF16("\n\n");
       description += l10n_util::GetStringUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE);
@@ -235,7 +243,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
 
   if (!description.empty()) {
     sections_.push_back(SectionInfo(
-        state,
+        icon_id,
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
         headline,
         description,
@@ -254,6 +262,13 @@ PageInfoModel::PageInfoModel(Profile* profile,
 }
 
 PageInfoModel::~PageInfoModel() {
+#if defined(OS_MACOSX)
+  // Release the NSImages.
+  for (std::vector<ImageType>::iterator it = icons_.begin();
+       it != icons_.end(); ++it) {
+    mac_util::NSObjectRelease(*it);
+  }
+#endif
 }
 
 int PageInfoModel::GetSectionCount() {
@@ -263,6 +278,19 @@ int PageInfoModel::GetSectionCount() {
 PageInfoModel::SectionInfo PageInfoModel::GetSectionInfo(int index) {
   DCHECK(index < static_cast<int>(sections_.size()));
   return sections_[index];
+}
+
+PageInfoModel::ImageType PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
+  if (icon_id == ICON_NONE)
+    return NULL;
+  // TODO(rsesek): Remove once the window is replaced with the bubble.
+  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  if (!command_line->HasSwitch(switches::kEnableNewPageInfoBubble) &&
+      icon_id != ICON_STATE_OK) {
+    return icons_[ICON_STATE_WARNING_MAJOR];
+  }
+  // The buble uses new, various icons.
+  return icons_[icon_id];
 }
 
 void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
@@ -284,12 +312,13 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
   // We only show the Site Information heading for the new dialogs.
   string16 title;
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble))
+  bool as_bubble = command_line->HasSwitch(switches::kEnableNewPageInfoBubble);
+  if (as_bubble)
     title = l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE);
 
   if (!visited_before_today) {
     sections_.push_back(SectionInfo(
-        SECTION_STATE_ERROR,
+        ICON_STATE_WARNING_MAJOR,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
         title,
@@ -298,7 +327,8 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
         SECTION_INFO_FIRST_VISIT));
   } else {
     sections_.push_back(SectionInfo(
-        SECTION_STATE_OK,
+        // TODO(rsesek): Remove once the window is replaced with the bubble.
+        as_bubble ? ICON_STATE_INFO : ICON_STATE_OK,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
         title,
@@ -316,4 +346,30 @@ void PageInfoModel::RegisterPrefs(PrefService* prefs) {
 }
 
 PageInfoModel::PageInfoModel() {
+  Init();
+}
+
+void PageInfoModel::Init() {
+  // Loads the icons into the vector. The order must match the SectionStateIcon
+  // enum.
+  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_GOOD));
+  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_WARNING_MINOR));
+  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_WARNING_MAJOR));
+  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_BAD));
+  icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_INFO));
+}
+
+PageInfoModel::ImageType PageInfoModel::GetBitmapNamed(int resource_id) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+#if defined(OS_MACOSX)
+  // Unlike other platforms, the Mac ResourceBundle does not keep a shared image
+  // cache. These are released in the dtor.
+  ImageType image = rb.GetNSImageNamed(resource_id);
+  mac_util::NSObjectRetain(image);
+  return image;
+#elif defined(USE_X11) && !defined(TOOLKIT_VIEWS)
+  return rb.GetPixbufNamed(resource_id);
+#else
+  return rb.GetBitmapNamed(resource_id);
+#endif
 }
