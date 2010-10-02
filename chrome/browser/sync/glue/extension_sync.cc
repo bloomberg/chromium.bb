@@ -89,7 +89,7 @@ void ReadClientDataFromExtensionList(
     const Extension& extension = **it;
     if (IsExtensionValidAndSyncable(extension, allowed_extension_types)) {
       sync_pb::ExtensionSpecifics client_specifics;
-      GetExtensionSpecifics(extension, extensions_service,
+      GetExtensionSpecifics(extension, extensions_service->extension_prefs(),
                             &client_specifics);
       DcheckIsExtensionSpecificsValid(client_specifics);
       const ExtensionData& extension_data =
@@ -277,7 +277,7 @@ void TryUpdateClient(
     SetExtensionProperties(specifics, extensions_service, extension);
     {
       sync_pb::ExtensionSpecifics extension_specifics;
-      GetExtensionSpecifics(*extension, extensions_service,
+      GetExtensionSpecifics(*extension, extensions_service->extension_prefs(),
                             &extension_specifics);
       DCHECK(AreExtensionSpecificsUserPropertiesEqual(
           specifics, extension_specifics))
@@ -382,7 +382,8 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
   ExtensionsService* extensions_service =
       GetExtensionsServiceFromProfileSyncService(sync_service);
   sync_pb::ExtensionSpecifics client_data;
-  GetExtensionSpecifics(extension, extensions_service, &client_data);
+  GetExtensionSpecifics(extension, extensions_service->extension_prefs(),
+                        &client_data);
   DcheckIsExtensionSpecificsValid(client_data);
   ExtensionData extension_data =
       ExtensionData::FromData(ExtensionData::CLIENT, client_data);
@@ -453,7 +454,8 @@ void UpdateClient(const ExtensionSyncTraits& traits,
       return;
     }
     sync_pb::ExtensionSpecifics client_data;
-    GetExtensionSpecifics(*extension, extensions_service, &client_data);
+    GetExtensionSpecifics(*extension, extensions_service->extension_prefs(),
+                          &client_data);
     DcheckIsExtensionSpecificsValid(client_data);
     extension_data =
         ExtensionData::FromData(ExtensionData::CLIENT, client_data);
