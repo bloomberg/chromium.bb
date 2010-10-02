@@ -2727,3 +2727,10 @@
    fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
 }
+{
+  bug_57683
+  fun:_Znw*
+  fun:_ZN7logging17MakeCheckOpStringIPKcS2_EEPSsRKT_RKT0_S2_
+  fun:_ZN7logging11CheckNEImplIPKcS2_EEPSsRKT_RKT0_S2_
+  fun:_ZN7logging*LoggingTest_ChecksAreNotLazy_Test8TestBodyEv
+}

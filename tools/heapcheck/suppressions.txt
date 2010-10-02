@@ -1005,3 +1005,11 @@
    fun:net::DnsRRResolverTest_Resolve_Test::TestBody
    fun:testing::Test::Run
 }
+{
+   bug_57683
+   Heapcheck:Leak
+   ...
+   fun:logging::MakeCheckOpString
+   fun:logging::CheckNEImpl
+   fun:logging::::LoggingTest_ChecksAreNotLazy_Test::TestBody
+}
