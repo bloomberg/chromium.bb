@@ -11,7 +11,6 @@
 #pragma once
 
 #include <iosfwd>
-#include <string>
 
 #include "base/basictypes.h"
 
