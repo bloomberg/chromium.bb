@@ -147,9 +147,6 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/storage/domstorage":
     Var("webkit_trunk") + "/LayoutTests/storage/domstorage@" +
     Var("webkit_revision"),
-  "src/chrome/test/data/layout_tests/LayoutTests/websocket/tests/workers":
-    Var("webkit_trunk") + "/LayoutTests/websocket/tests/workers@" +
-    Var("webkit_revision"),
   "src/chrome/test/data/layout_tests/LayoutTests/media":
     Var("webkit_trunk") + "/LayoutTests/media@" +
     Var("webkit_revision"),
