@@ -336,7 +336,8 @@ TEST_F(GaiaAuthenticator2Test, FullLogin) {
                         "password",
                         "service",
                         std::string(),
-                        std::string());
+                        std::string(),
+                        GaiaAuthenticator2::HostedAccountsAllowed);
 
   URLFetcher::set_factory(NULL);
 }
@@ -358,7 +359,8 @@ TEST_F(GaiaAuthenticator2Test, FullLoginFailure) {
                         "password",
                         "service",
                         std::string(),
-                        std::string());
+                        std::string(),
+                        GaiaAuthenticator2::HostedAccountsAllowed);
 
   URLFetcher::set_factory(NULL);
 }
@@ -378,7 +380,8 @@ TEST_F(GaiaAuthenticator2Test, ClientFetchPending) {
                         "password",
                         "service",
                         std::string(),
-                        std::string());
+                        std::string(),
+                        GaiaAuthenticator2::HostedAccountsAllowed);
 
   URLFetcher::set_factory(NULL);
   EXPECT_TRUE(auth.HasPendingFetch());

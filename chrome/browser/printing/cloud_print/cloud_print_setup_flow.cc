@@ -389,7 +389,8 @@ void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
                              profile_->GetRequestContext()));
   authenticator_->StartClientLogin(user, password,
                                    GaiaConstants::kCloudPrintService,
-                                   "", captcha);
+                                   "", captcha,
+                                   GaiaAuthenticator2::HostedAccountsAllowed);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

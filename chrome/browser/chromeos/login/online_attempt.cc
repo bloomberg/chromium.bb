@@ -98,11 +98,13 @@ void OnlineAttempt::TryClientLogin() {
   ChromeThread::PostDelayedTask(ChromeThread::IO, FROM_HERE,
                                 fetch_canceler_,
                                 kClientLoginTimeoutMs);
-  gaia_authenticator_->StartClientLogin(attempt_->username,
-                                        attempt_->password,
-                                        GaiaConstants::kContactsService,
-                                        attempt_->login_token,
-                                        attempt_->login_captcha);
+  gaia_authenticator_->StartClientLogin(
+      attempt_->username,
+      attempt_->password,
+      GaiaConstants::kContactsService,
+      attempt_->login_token,
+      attempt_->login_captcha,
+      GaiaAuthenticator2::HostedAccountsAllowed);
 }
 
 void OnlineAttempt::CancelClientLogin() {

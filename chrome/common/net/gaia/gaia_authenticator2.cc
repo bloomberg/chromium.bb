@@ -71,9 +71,13 @@ const char GaiaAuthenticator2::kCaptchaUrlPrefix[] =
 // static
 const char GaiaAuthenticator2::kCookiePersistence[] = "true";
 // static
-// TODO(johnnyg): When hosted accounts are supported, this can become
-// "HOSTED_OR_GOOGLE".  http://crbug.com/19589
-const char GaiaAuthenticator2::kAccountType[] = "GOOGLE";
+// TODO(johnnyg): When hosted accounts are supported by sync,
+// we can always use "HOSTED_OR_GOOGLE"
+const char GaiaAuthenticator2::kAccountTypeHostedOrGoogle[] =
+    "HOSTED_OR_GOOGLE";
+const char GaiaAuthenticator2::kAccountTypeGoogle[] =
+    "GOOGLE";
+
 // static
 const char GaiaAuthenticator2::kSecondFactor[] = "Info=InvalidSecondFactor";
 
@@ -133,18 +137,23 @@ std::string GaiaAuthenticator2::MakeClientLoginBody(
     const std::string& source,
     const char* service,
     const std::string& login_token,
-    const std::string& login_captcha) {
+    const std::string& login_captcha,
+    HostedAccountsSetting allow_hosted_accounts) {
   std::string encoded_username = UrlEncodeString(username);
   std::string encoded_password = UrlEncodeString(password);
   std::string encoded_login_token = UrlEncodeString(login_token);
   std::string encoded_login_captcha = UrlEncodeString(login_captcha);
+
+  const char* account_type = allow_hosted_accounts == HostedAccountsAllowed ?
+      kAccountTypeHostedOrGoogle :
+      kAccountTypeGoogle;
 
   if (login_token.empty() || login_captcha.empty()) {
     return StringPrintf(kClientLoginFormat,
                         encoded_username.c_str(),
                         encoded_password.c_str(),
                         kCookiePersistence,
-                        kAccountType,
+                        account_type,
                         source.c_str(),
                         service);
   }
@@ -153,7 +162,7 @@ std::string GaiaAuthenticator2::MakeClientLoginBody(
                       encoded_username.c_str(),
                       encoded_password.c_str(),
                       kCookiePersistence,
-                      kAccountType,
+                      account_type,
                       source.c_str(),
                       service,
                       encoded_login_token.c_str(),
@@ -231,11 +240,13 @@ void GaiaAuthenticator2::ParseClientLoginFailure(const std::string& data,
   }
 }
 
-void GaiaAuthenticator2::StartClientLogin(const std::string& username,
-                                          const std::string& password,
-                                          const char* const service,
-                                          const std::string& login_token,
-                                          const std::string& login_captcha) {
+void GaiaAuthenticator2::StartClientLogin(
+    const std::string& username,
+    const std::string& password,
+    const char* const service,
+    const std::string& login_token,
+    const std::string& login_captcha,
+    HostedAccountsSetting allow_hosted_accounts) {
 
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
@@ -249,7 +260,8 @@ void GaiaAuthenticator2::StartClientLogin(const std::string& username,
                                       source_,
                                       service,
                                       login_token,
-                                      login_captcha);
+                                      login_captcha,
+                                      allow_hosted_accounts);
   fetcher_.reset(CreateGaiaFetcher(getter_,
                                    request_body_,
                                    client_login_gurl_,

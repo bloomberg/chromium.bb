@@ -250,7 +250,8 @@ void RemotingSetupFlow::OnUserSubmittedAuth(const std::string& user,
                              profile_->GetRequestContext()));
   authenticator_->StartClientLogin(user, password,
                                    GaiaConstants::kRemotingService,
-                                   "", captcha);
+                                   "", captcha,
+                                   GaiaAuthenticator2::HostedAccountsAllowed);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

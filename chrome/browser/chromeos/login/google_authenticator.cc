@@ -82,11 +82,14 @@ void GoogleAuthenticator::CancelClientLogin() {
 }
 
 void GoogleAuthenticator::TryClientLogin() {
-  gaia_authenticator_->StartClientLogin(username_,
-                                        password_,
-                                        GaiaConstants::kContactsService,
-                                        login_token_,
-                                        login_captcha_);
+  gaia_authenticator_->StartClientLogin(
+      username_,
+      password_,
+      GaiaConstants::kContactsService,
+      login_token_,
+      login_captcha_,
+      GaiaAuthenticator2::HostedAccountsAllowed);
+
   ChromeThread::PostDelayedTask(
       ChromeThread::UI,
       FROM_HERE,

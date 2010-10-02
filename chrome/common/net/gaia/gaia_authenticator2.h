@@ -29,6 +29,11 @@ class GaiaAuthenticator2Test;
 // TODO(chron): Rename this to GaiaAuthFetcher or something.
 class GaiaAuthenticator2 : public URLFetcher::Delegate {
  public:
+  enum HostedAccountsSetting {
+    HostedAccountsAllowed,
+    HostedAccountsNotAllowed
+  };
+
   // The URLs for different calls in the Google Accounts programmatic login API.
   static const char kClientLoginUrl[];
   static const char kIssueAuthTokenUrl[];
@@ -52,7 +57,8 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
                         const std::string& password,
                         const char* const service,
                         const std::string& login_token,
-                        const std::string& login_captcha);
+                        const std::string& login_captcha,
+                        HostedAccountsSetting allow_hosted_accounts);
 
   // GaiaAuthConsumer will be called on the original thread
   // after results come back. This class is thread agnostic.
@@ -85,7 +91,8 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
  private:
   // ClientLogin body constants that don't change
   static const char kCookiePersistence[];
-  static const char kAccountType[];
+  static const char kAccountTypeHostedOrGoogle[];
+  static const char kAccountTypeGoogle[];
 
   // The format of the POST body for ClientLogin.
   static const char kClientLoginFormat[];
@@ -143,12 +150,14 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   static bool IsSecondFactorSuccess(const std::string& alleged_error);
 
   // Given parameters, create a ClientLogin request body.
-  static std::string MakeClientLoginBody(const std::string& username,
-                                         const std::string& password,
-                                         const std::string& source,
-                                         const char* const service,
-                                         const std::string& login_token,
-                                         const std::string& login_captcha);
+  static std::string MakeClientLoginBody(
+      const std::string& username,
+      const std::string& password,
+      const std::string& source,
+      const char* const service,
+      const std::string& login_token,
+      const std::string& login_captcha,
+      HostedAccountsSetting allow_hosted_accounts);
   // Supply the sid / lsid returned from ClientLogin in order to
   // request a long lived auth token for a service.
   static std::string MakeIssueAuthTokenBody(const std::string& sid,

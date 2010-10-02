@@ -57,7 +57,8 @@ void SigninManager::StartSignIn(const std::string& username,
                                   password,
                                   "",
                                   login_token,
-                                  login_captcha);
+                                  login_captcha,
+                                  GaiaAuthenticator2::HostedAccountsNotAllowed);
 }
 
 void SigninManager::SignOut() {
