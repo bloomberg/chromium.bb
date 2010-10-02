@@ -69,10 +69,10 @@ class AppModalDialog {
   // Parent tab contents.
   TabContents* tab_contents_;
 
- private:
   // The toolkit-specific implementation of the app modal dialog box.
   NativeAppModalDialog* native_dialog_;
 
+ private:
   // Information about the message box is held in the following variables.
   std::wstring title_;
 

@@ -91,8 +91,6 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   // Initializes for notifications to listen.
   void InitNotifications();
 
-  NativeAppModalDialog* native_dialog_;
-
   NotificationRegistrar registrar_;
 
   // An implementation of the client interface to provide supporting methods
