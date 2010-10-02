@@ -13,7 +13,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <string>
 #include <vector>
 
 #if defined(__GLIBCXX__)
