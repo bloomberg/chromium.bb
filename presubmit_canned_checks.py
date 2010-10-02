@@ -258,6 +258,7 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
         not 'https://' in line and
         not line.startswith('#define') and
         not line.startswith('#include') and
+        not line.startswith('#import') and
         not line.startswith('#pragma') and
         not line.startswith('#if') and
         not line.startswith('#endif')):
