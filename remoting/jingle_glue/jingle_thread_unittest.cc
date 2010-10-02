@@ -50,7 +50,7 @@ TEST(JingleThreadTest, PostDelayedTask) {
   base::Time end = base::Time::Now();
   thread.Stop();
 
-  EXPECT_GT((end - start).InMillisecondsRoundedUp(), kDelayMs);
+  EXPECT_GE((end - start).InMillisecondsRoundedUp(), kDelayMs);
 }
 
 }  // namespace remoting
