@@ -2729,6 +2729,7 @@
 }
 {
   bug_57683
+  Memcheck:Leak
   fun:_Znw*
   fun:_ZN7logging17MakeCheckOpStringIPKcS2_EEPSsRKT_RKT0_S2_
   fun:_ZN7logging11CheckNEImplIPKcS2_EEPSsRKT_RKT0_S2_
