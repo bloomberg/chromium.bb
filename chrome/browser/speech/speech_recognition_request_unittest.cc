@@ -61,24 +61,24 @@ TEST_F(SpeechRecognitionRequestTest, BasicTest) {
   // Normal success case with one result.
   CreateAndTestRequest(true,
       "{\"hypotheses\":[{\"utterance\":\"123456\",\"confidence\":0.9}]}");
-  EXPECT_EQ(false, error_);
+  EXPECT_FALSE(error_);
   EXPECT_EQ(ASCIIToUTF16("123456"), result_);
 
   // Normal success case with multiple results.
   CreateAndTestRequest(true,
       "{\"hypotheses\":[{\"utterance\":\"hello\",\"confidence\":0.9},"
       "{\"utterance\":\"123456\",\"confidence\":0.5}]}");
-  EXPECT_EQ(false, error_);
+  EXPECT_FALSE(error_);
   EXPECT_EQ(ASCIIToUTF16("hello"), result_);
 
   // Http failure case.
   CreateAndTestRequest(false, "");
-  EXPECT_EQ(true, error_);
+  EXPECT_TRUE(error_);
   EXPECT_EQ(ASCIIToUTF16(""), result_);
 
   // Malformed JSON case.
   CreateAndTestRequest(true, "{\"hypotheses\":[{\"unknownkey\":\"hello\"}]}");
-  EXPECT_EQ(true, error_);
+  EXPECT_TRUE(error_);
   EXPECT_EQ(ASCIIToUTF16(""), result_);
 }
 

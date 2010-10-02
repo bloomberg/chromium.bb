@@ -174,19 +174,19 @@ TEST_F(ContentSettingsDialogControllerTest, PluginsSetting) {
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
   EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
-  EXPECT_EQ(false, settingsMap_->GetBlockNonsandboxedPlugins());
+  EXPECT_FALSE(settingsMap_->GetBlockNonsandboxedPlugins());
 
   [controller_ setPluginsEnabledIndex:kPluginsAllowSandboxedIndex];
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
   EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
-  EXPECT_EQ(true, settingsMap_->GetBlockNonsandboxedPlugins());
+  EXPECT_TRUE(settingsMap_->GetBlockNonsandboxedPlugins());
 
   [controller_ setPluginsEnabledIndex:kPluginsBlockIndex];
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, setting);
-  EXPECT_EQ(false, settingsMap_->GetBlockNonsandboxedPlugins());
+  EXPECT_FALSE(settingsMap_->GetBlockNonsandboxedPlugins());
 }
 
 TEST_F(ContentSettingsDialogControllerTest, PopupsSetting) {

@@ -1650,12 +1650,6 @@ TEST(Syncable, ComparePathNames) {
   }
 }
 
-void FakeSync(MutableEntry* e, const char* fake_id) {
-  e->Put(IS_UNSYNCED, false);
-  e->Put(BASE_VERSION, 2);
-  e->Put(ID, Id::CreateFromServerId(fake_id));
-}
-
 class SyncableClientTagTest : public SyncableDirectoryTest {
  public:
   static const int kBaseVersion = 1;

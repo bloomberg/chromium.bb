@@ -24,14 +24,6 @@ using ::testing::A;
 
 namespace {
 
-int NumTypesOnPasteboard(NSPasteboard* pb) {
-  return [[pb types] count];
-}
-
-void ClearPasteboard(NSPasteboard* pb) {
-  [pb declareTypes:[NSArray array] owner:nil];
-}
-
 // TODO(shess): Very similar to AutocompleteTextFieldTest.  Maybe
 // those can be shared.
 

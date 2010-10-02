@@ -17,11 +17,6 @@
 
 namespace {
 
-// Represents a special initialization function used only for the unit tests
-// in this file.
-extern void InitHunspellWithFiles(FILE* file_aff_hunspell,
-                                  FILE* file_dic_hunspell);
-
 FilePath GetHunspellDirectory() {
   FilePath hunspell_directory;
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &hunspell_directory))

@@ -70,18 +70,6 @@ namespace history {
 
 namespace {
 
-// Compares the two data values. Used for comparing thumbnail data.
-bool DataEqual(const unsigned char* reference, size_t reference_len,
-               const std::vector<unsigned char>& data) {
-  if (reference_len != data.size())
-    return false;
-  for (size_t i = 0; i < reference_len; i++) {
-    if (data[i] != reference[i])
-      return false;
-  }
-  return true;
-}
-
 // The tracker uses RenderProcessHost pointers for scoping but never
 // dereferences them. We use ints because it's easier. This function converts
 // between the two.
@@ -882,29 +870,6 @@ TEST(HistoryProfileTest, TypicalProfileVersion) {
 }
 
 namespace {
-
-// Use this dummy value to scope the page IDs we give history.
-static const void* kAddArgsScope = reinterpret_cast<void*>(0x12345678);
-
-// Creates a new HistoryAddPageArgs object for sending to the history database
-// with reasonable defaults and the given NULL-terminated URL string. The
-// returned object will NOT be add-ref'ed, which is the responsibility of the
-// caller.
-HistoryAddPageArgs* MakeAddArgs(const GURL& url) {
-  return new HistoryAddPageArgs(url,
-                                Time::Now(),
-                                kAddArgsScope,
-                                0,
-                                GURL(),
-                                history::RedirectList(),
-                                PageTransition::TYPED,
-                                history::SOURCE_BROWSED, false);
-}
-
-// Convenience version of the above to convert a char string.
-HistoryAddPageArgs* MakeAddArgs(const char* url) {
-  return MakeAddArgs(GURL(url));
-}
 
 // A HistoryDBTask implementation. Each time RunOnDBThread is invoked
 // invoke_count is increment. When invoked kWantInvokeCount times, true is

@@ -73,19 +73,19 @@ TEST(ExtensionActionTest, TabSpecificState) {
   ASSERT_EQ(1, action.GetIconIndex(1));
 
   // visibility
-  ASSERT_EQ(false, action.GetIsVisible(1));
+  ASSERT_FALSE(action.GetIsVisible(1));
   action.SetIsVisible(ExtensionAction::kDefaultTabId, true);
-  ASSERT_EQ(true, action.GetIsVisible(1));
-  ASSERT_EQ(true, action.GetIsVisible(100));
+  ASSERT_TRUE(action.GetIsVisible(1));
+  ASSERT_TRUE(action.GetIsVisible(100));
   action.SetIsVisible(ExtensionAction::kDefaultTabId, false);
-  ASSERT_EQ(false, action.GetIsVisible(1));
-  ASSERT_EQ(false, action.GetIsVisible(100));
+  ASSERT_FALSE(action.GetIsVisible(1));
+  ASSERT_FALSE(action.GetIsVisible(100));
   action.SetIsVisible(100, true);
-  ASSERT_EQ(false, action.GetIsVisible(1));
-  ASSERT_EQ(true, action.GetIsVisible(100));
+  ASSERT_FALSE(action.GetIsVisible(1));
+  ASSERT_TRUE(action.GetIsVisible(100));
   action.ClearAllValuesForTab(100);
-  ASSERT_EQ(false, action.GetIsVisible(1));
-  ASSERT_EQ(false, action.GetIsVisible(100));
+  ASSERT_FALSE(action.GetIsVisible(1));
+  ASSERT_FALSE(action.GetIsVisible(100));
 
   // badge text
   ASSERT_EQ("", action.GetBadgeText(1));

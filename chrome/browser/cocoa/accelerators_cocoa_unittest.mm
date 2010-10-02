@@ -17,7 +17,7 @@ TEST(AcceleratorsCocoaTest, GetAccelerator) {
       keymap->GetAcceleratorForCommand(IDC_COPY);
   ASSERT_TRUE(accelerator);
   EXPECT_NSEQ(@"c", accelerator->characters());
-  EXPECT_EQ(NSCommandKeyMask, accelerator->modifiers());
+  EXPECT_EQ(static_cast<int>(NSCommandKeyMask), accelerator->modifiers());
 }
 
 TEST(AcceleratorsCocoaTest, GetNullAccelerator) {

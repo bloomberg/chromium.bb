@@ -378,7 +378,7 @@ TEST_F(HistoryMenuBridgeTest, GotFaviconData) {
   GotFaviconData(item.icon_handle, true, bytes, false, GURL());
 
   // Make sure the callback works.
-  EXPECT_EQ(false, item.icon_requested);
+  EXPECT_FALSE(item.icon_requested);
   EXPECT_TRUE(item.icon.get());
   EXPECT_TRUE([item.menu_item image]);
 }

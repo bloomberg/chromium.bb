@@ -116,15 +116,15 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_TRUE(cookie_value1->GetString(keys::kDomainKey, &string_value));
   EXPECT_EQ("www.foobar.com", string_value);
   EXPECT_TRUE(cookie_value1->GetBoolean(keys::kHostOnlyKey, &boolean_value));
-  EXPECT_EQ(true, boolean_value);
+  EXPECT_TRUE(boolean_value);
   EXPECT_TRUE(cookie_value1->GetString(keys::kPathKey, &string_value));
   EXPECT_EQ("/", string_value);
   EXPECT_TRUE(cookie_value1->GetBoolean(keys::kSecureKey, &boolean_value));
-  EXPECT_EQ(false, boolean_value);
+  EXPECT_FALSE(boolean_value);
   EXPECT_TRUE(cookie_value1->GetBoolean(keys::kHttpOnlyKey, &boolean_value));
-  EXPECT_EQ(false, boolean_value);
+  EXPECT_FALSE(boolean_value);
   EXPECT_TRUE(cookie_value1->GetBoolean(keys::kSessionKey, &boolean_value));
-  EXPECT_EQ(true, boolean_value);
+  EXPECT_TRUE(boolean_value);
   EXPECT_FALSE(
       cookie_value1->GetReal(keys::kExpirationDateKey, &double_value));
   EXPECT_TRUE(cookie_value1->GetString(keys::kStoreIdKey, &string_value));
@@ -137,9 +137,9 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
       extension_cookies_helpers::CreateCookieValue(
           cookie2, "some cookie store"));
   EXPECT_TRUE(cookie_value2->GetBoolean(keys::kHostOnlyKey, &boolean_value));
-  EXPECT_EQ(false, boolean_value);
+  EXPECT_FALSE(boolean_value);
   EXPECT_TRUE(cookie_value2->GetBoolean(keys::kSessionKey, &boolean_value));
-  EXPECT_EQ(false, boolean_value);
+  EXPECT_FALSE(boolean_value);
   EXPECT_TRUE(cookie_value2->GetReal(keys::kExpirationDateKey, &double_value));
   EXPECT_EQ(10000, double_value);
 

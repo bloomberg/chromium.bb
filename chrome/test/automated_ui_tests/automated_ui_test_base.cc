@@ -369,7 +369,7 @@ scoped_refptr<TabProxy> AutomatedUITestBase::GetActiveTab() {
   BrowserProxy* browser = active_browser();
   if (browser == NULL) {
     LogErrorMessage("browser_window_not_found");
-    return false;
+    return NULL;
   }
 
   return browser->GetActiveTab();

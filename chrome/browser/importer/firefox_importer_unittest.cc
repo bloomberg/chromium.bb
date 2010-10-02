@@ -93,7 +93,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       charset, &folder_name, &is_toolbar_folder);
   EXPECT_TRUE(result);
   EXPECT_EQ(L"< > & \" ' \\ /", folder_name);
-  EXPECT_EQ(false, is_toolbar_folder);
+  EXPECT_FALSE(is_toolbar_folder);
 
   // Empty name and toolbar folder attribute.
   result = Firefox2Importer::ParseFolderNameFromLine(
@@ -101,7 +101,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       charset, &folder_name, &is_toolbar_folder);
   EXPECT_TRUE(result);
   EXPECT_EQ(L"", folder_name);
-  EXPECT_EQ(true, is_toolbar_folder);
+  EXPECT_TRUE(is_toolbar_folder);
 
   // Unicode characters in title and shortcut.
   std::wstring title;

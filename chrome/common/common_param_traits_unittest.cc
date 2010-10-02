@@ -18,13 +18,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+#if defined(OS_WIN)
 #ifndef NDEBUG
 namespace {
 void IgnoreAssertHandler(const std::string& str) {
 }
 }  // namespace
-
 #endif  // NDEBUG
+#endif // defined(OS_WIN)
 
 // Tests that serialize/deserialize correctly understand each other
 TEST(IPCMessageTest, Serialize) {

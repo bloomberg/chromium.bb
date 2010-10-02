@@ -258,7 +258,7 @@ TEST_F(TabContentsTest, NTPViewSource) {
   controller().RendererDidNavigate(params, 0, &details);
   // Also check title and url.
   EXPECT_EQ(ASCIIToUTF16(kUrl), contents()->GetTitle());
-  EXPECT_EQ(true, contents()->ShouldDisplayURL());
+  EXPECT_TRUE(contents()->ShouldDisplayURL());
 }
 
 // Test simple same-SiteInstance navigation.
@@ -760,8 +760,8 @@ TEST_F(TabContentsTest, WebKitPrefs) {
   // These values have been overridden by the profile preferences.
   EXPECT_EQ("UTF-8", webkit_prefs.default_encoding);
   EXPECT_EQ(20, webkit_prefs.default_font_size);
-  EXPECT_EQ(false, webkit_prefs.text_areas_are_resizable);
-  EXPECT_EQ(true, webkit_prefs.uses_universal_detector);
+  EXPECT_FALSE(webkit_prefs.text_areas_are_resizable);
+  EXPECT_TRUE(webkit_prefs.uses_universal_detector);
 
   // These should still be the default values.
 #if defined(OS_MACOSX)
@@ -772,7 +772,7 @@ TEST_F(TabContentsTest, WebKitPrefs) {
   const wchar_t kDefaultFont[] = L"Times New Roman";
 #endif
   EXPECT_EQ(kDefaultFont, webkit_prefs.standard_font_family);
-  EXPECT_EQ(true, webkit_prefs.javascript_enabled);
+  EXPECT_TRUE(webkit_prefs.javascript_enabled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

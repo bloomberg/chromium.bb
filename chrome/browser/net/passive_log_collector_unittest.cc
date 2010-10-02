@@ -45,28 +45,6 @@ PassiveLogCollector::Entry MakeEndLogEntry(int source_id) {
       NULL);
 }
 
-void AddStartURLRequestEntries(PassiveLogCollector* collector, uint32 id) {
-  collector->OnAddEntry(NetLog::TYPE_REQUEST_ALIVE, base::TimeTicks(),
-                        NetLog::Source(NetLog::SOURCE_URL_REQUEST, id),
-                        NetLog::PHASE_BEGIN, NULL);
-  collector->OnAddEntry(NetLog::TYPE_URL_REQUEST_START_JOB, base::TimeTicks(),
-                        NetLog::Source(NetLog::SOURCE_URL_REQUEST, id),
-                        NetLog::PHASE_BEGIN, new URLRequestStartEventParameters(
-                            GURL(StringPrintf("http://req%d", id)), "GET", 0,
-                            net::LOW));
-}
-
-void AddEndURLRequestEntries(PassiveLogCollector* collector, uint32 id) {
-  collector->OnAddEntry(NetLog::TYPE_REQUEST_ALIVE, base::TimeTicks(),
-                        NetLog::Source(NetLog::SOURCE_URL_REQUEST, id),
-                        NetLog::PHASE_END, NULL);
-}
-
-std::string GetStringParam(const PassiveLogCollector::Entry& entry) {
-  return static_cast<net::NetLogStringParameter*>(
-      entry.params.get())->value();
-}
-
 bool OrderBySourceID(const PassiveLogCollector::SourceInfo& a,
                      const PassiveLogCollector::SourceInfo& b) {
   return a.source_id < b.source_id;
