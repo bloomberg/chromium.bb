@@ -83,3 +83,6 @@ SessionHistoryTest.LocationReplace
 # UNIMPLEMENTED reached, see http://crbug.com/51387
 OptionsUITest.LoadOptionsByURL
 AutomatedUITestBase.CloseTab
+
+# See http://crbug.com/57717
+ResourceDispatcherTest.CrossSiteFailedRequest
