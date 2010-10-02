@@ -25,7 +25,7 @@ RefCountedBase::~RefCountedBase() {
 #endif
 }
 
-void RefCountedBase::AddRef() {
+void RefCountedBase::AddRef() const {
   // TODO(maruel): Add back once it doesn't assert 500 times/sec.
   // Current thread books the critical section "AddRelease" without release it.
   // DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
@@ -35,7 +35,7 @@ void RefCountedBase::AddRef() {
   ++ref_count_;
 }
 
-bool RefCountedBase::Release() {
+bool RefCountedBase::Release() const {
   // TODO(maruel): Add back once it doesn't assert 500 times/sec.
   // Current thread books the critical section "AddRelease" without release it.
   // DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
@@ -64,14 +64,14 @@ RefCountedThreadSafeBase::~RefCountedThreadSafeBase() {
 #endif
 }
 
-void RefCountedThreadSafeBase::AddRef() {
+void RefCountedThreadSafeBase::AddRef() const {
 #ifndef NDEBUG
   DCHECK(!in_dtor_);
 #endif
   AtomicRefCountInc(&ref_count_);
 }
 
-bool RefCountedThreadSafeBase::Release() {
+bool RefCountedThreadSafeBase::Release() const {
 #ifndef NDEBUG
   DCHECK(!in_dtor_);
   DCHECK(!AtomicRefCountIsZero(&ref_count_));

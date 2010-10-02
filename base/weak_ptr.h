@@ -69,8 +69,8 @@ class WeakReference {
     Flag(Flag** handle);
     ~Flag();
 
-    void AddRef();
-    void Release();
+    void AddRef() const;
+    void Release() const;
     void Invalidate() { handle_ = NULL; }
     bool is_valid() const { return handle_ != NULL; }
 

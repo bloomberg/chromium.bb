@@ -23,15 +23,15 @@ class RefCountedBase {
   RefCountedBase();
   ~RefCountedBase();
 
-  void AddRef();
+  void AddRef() const;
 
   // Returns true if the object should self-delete.
-  bool Release();
+  bool Release() const;
 
  private:
-  int ref_count_;
+  mutable int ref_count_;
 #ifndef NDEBUG
-  bool in_dtor_;
+  mutable bool in_dtor_;
 #endif
 
   DFAKE_MUTEX(add_release_);
@@ -49,15 +49,15 @@ class RefCountedThreadSafeBase {
   RefCountedThreadSafeBase();
   ~RefCountedThreadSafeBase();
 
-  void AddRef();
+  void AddRef() const;
 
   // Returns true if the object should self-delete.
-  bool Release();
+  bool Release() const;
 
  private:
-  AtomicRefCount ref_count_;
+  mutable AtomicRefCount ref_count_;
 #ifndef NDEBUG
-  bool in_dtor_;
+  mutable bool in_dtor_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RefCountedThreadSafeBase);
@@ -85,13 +85,13 @@ class RefCounted : public subtle::RefCountedBase {
   RefCounted() { }
   ~RefCounted() { }
 
-  void AddRef() {
+  void AddRef() const {
     subtle::RefCountedBase::AddRef();
   }
 
-  void Release() {
+  void Release() const {
     if (subtle::RefCountedBase::Release()) {
-      delete static_cast<T*>(this);
+      delete static_cast<const T*>(this);
     }
   }
 
