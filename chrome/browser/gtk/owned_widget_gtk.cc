@@ -6,32 +6,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/debug_util.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
-
-namespace {
-
-class CheckWidgetRefCountTask : public Task {
- public:
-  CheckWidgetRefCountTask(GtkWidget* widget, const std::string& stack)
-      : widget_(widget), stack_(stack) {}
-
-  virtual ~CheckWidgetRefCountTask() {}
-
-  virtual void Run() {
-    // NOTE: Assumes some implementation details about glib internals.
-    DCHECK_EQ(G_OBJECT(widget_)->ref_count, 1U) <<
-        " with Destroy() stack: \n" << stack_;
-    g_object_unref(widget_);
-  }
-
- private:
-  GtkWidget* widget_;
-  std::string stack_;
-};
-
-}  // namespace
 
 OwnedWidgetGtk::~OwnedWidgetGtk() {
   DCHECK(!widget_) << "You must explicitly call OwnerWidgetGtk::Destroy().";
@@ -59,16 +34,8 @@ void OwnedWidgetGtk::Destroy() {
   widget_ = NULL;
   gtk_widget_destroy(widget);
 
-#ifndef NDEBUG
   DCHECK(!g_object_is_floating(widget));
-
-  std::string stack(StackTrace().AsString());
-#else
-  std::string stack;
-#endif
-
-  // Make sure all other ref holders let go of their references (but delay
-  // the check because some ref holders won't let go immediately).
-  MessageLoop::current()->PostTask(
-      FROM_HERE, new CheckWidgetRefCountTask(widget, stack));
+  // NOTE: Assumes some implementation details about glib internals.
+  DCHECK_EQ(G_OBJECT(widget)->ref_count, 1U);
+  g_object_unref(widget);
 }

@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/glue/theme_util.h"
 
 #include "base/file_path.h"
-#include "base/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -22,8 +21,6 @@ namespace {
 using ::testing::Return;
 
 class ThemeUtilTest : public testing::Test {
- private:
-  MessageLoop message_loop_;
 };
 
 void MakeThemeExtension(Extension* extension,

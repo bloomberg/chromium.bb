@@ -70,8 +70,11 @@ TabContentsViewGtk* ConstrainedWindowGtk::ContainingView() {
 gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
                                           GdkEventKey* key) {
   if (key->keyval == GDK_Escape) {
-    // This will delete us!
-    CloseConstrainedWindow();
+    // Let the stack unwind so the event handler can release its ref
+    // on widget().
+    MessageLoop::current()->PostTask(FROM_HERE,
+        factory_.NewRunnableMethod(
+            &ConstrainedWindowGtk::CloseConstrainedWindow));
     return TRUE;
   }
 

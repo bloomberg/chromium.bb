@@ -312,12 +312,3 @@ void StackTrace::OutputToStream(std::ostream* os) {
     (*os) << "\t" << trace_strings[i] << "\n";
   }
 }
-
-std::string StackTrace::AsString() {
-  std::vector<std::string> trace_strings;
-  std::string output;
-  GetBacktraceStrings(trace_, count_, &trace_strings, NULL);
-  for (size_t i = 0; i < trace_strings.size(); ++i)
-    output += "\t" + trace_strings[i] + "\n";
-  return output;
-}

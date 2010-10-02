@@ -388,7 +388,12 @@ void TabGtk::EndDrag(bool canceled) {
   // Make sure we only run EndDrag once by canceling any tasks that want
   // to call EndDrag.
   drag_end_factory_.RevokeAll();
-  DestroyDragWidget();
+
+  // We must let gtk clean up after we handle the drag operation, otherwise
+  // there will be outstanding references to the drag widget when we try to
+  // destroy it.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      destroy_factory_.NewRunnableMethod(&TabGtk::DestroyDragWidget));
 
   if (last_mouse_down_) {
     gdk_event_free(last_mouse_down_);
