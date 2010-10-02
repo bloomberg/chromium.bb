@@ -119,7 +119,7 @@ ExistingUserController::ExistingUserController(
         break;
 
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-      if (UserCrosSettingsProvider::cached_allow_guest() ||
+      if (UserCrosSettingsProvider::cached_allow_new_user() ||
           IsEmailInCachedWhitelist(users[i].email())) {
         controllers_.push_back(new UserController(this, users[i]));
       }

@@ -38,7 +38,7 @@ UserCrosSettingsProvider::UserCrosSettingsProvider() {
   current_user_is_owner_ = UserManager::Get()->current_user_is_owner();
 
   StartFetchingBoolSetting(kAccountsPrefAllowBWSI);
-  StartFetchingBoolSetting(kAccountsPrefAllowGuest);
+  StartFetchingBoolSetting(kAccountsPrefAllowNewUser);
   StartFetchingBoolSetting(kAccountsPrefShowUserNamesOnSignIn);
 }
 
@@ -50,7 +50,7 @@ UserCrosSettingsProvider::~UserCrosSettingsProvider() {
 void UserCrosSettingsProvider::RegisterPrefs(PrefService* local_state) {
   // Cached signed settings values
   local_state->RegisterBooleanPref(kAccountsPrefAllowBWSI, true);
-  local_state->RegisterBooleanPref(kAccountsPrefAllowGuest, true);
+  local_state->RegisterBooleanPref(kAccountsPrefAllowNewUser, true);
   local_state->RegisterBooleanPref(kAccountsPrefShowUserNamesOnSignIn, true);
   local_state->RegisterListPref(kAccountsPrefUsers);
 }
@@ -59,8 +59,9 @@ bool UserCrosSettingsProvider::cached_allow_bwsi() {
   return g_browser_process->local_state()->GetBoolean(kAccountsPrefAllowBWSI);
 }
 
-bool UserCrosSettingsProvider::cached_allow_guest() {
-  return g_browser_process->local_state()->GetBoolean(kAccountsPrefAllowGuest);
+bool UserCrosSettingsProvider::cached_allow_new_user() {
+  return g_browser_process->local_state()->GetBoolean(
+    kAccountsPrefAllowNewUser);
 }
 
 bool UserCrosSettingsProvider::cached_show_users_on_signin() {
@@ -82,7 +83,7 @@ void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
   }
 
   if (path == kAccountsPrefAllowBWSI ||
-      path == kAccountsPrefAllowGuest ||
+      path == kAccountsPrefAllowNewUser ||
       path == kAccountsPrefShowUserNamesOnSignIn) {
     bool bool_value = false;
     if (in_value->GetAsBoolean(&bool_value)) {
@@ -103,7 +104,7 @@ void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
 bool UserCrosSettingsProvider::Get(const std::string& path,
                                    Value** out_value) const {
   if (path == kAccountsPrefAllowBWSI ||
-      path == kAccountsPrefAllowGuest ||
+      path == kAccountsPrefAllowNewUser ||
       path == kAccountsPrefShowUserNamesOnSignIn) {
     *out_value = CreateSettingsBooleanValue(
         g_browser_process->local_state()->GetBoolean(path.c_str()),

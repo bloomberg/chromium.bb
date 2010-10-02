@@ -90,7 +90,7 @@ void LoginPerformer::Login(const std::string& username,
                            const std::string& password) {
   username_ = username;
   password_ = password;
-  if (UserCrosSettingsProvider::cached_allow_guest()) {
+  if (UserCrosSettingsProvider::cached_allow_new_user()) {
     // Starts authentication if guest login is allowed.
     StartAuthentication();
   } else {

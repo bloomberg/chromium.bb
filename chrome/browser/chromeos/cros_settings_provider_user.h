@@ -28,7 +28,7 @@ class UserCrosSettingsProvider : public CrosSettingsProvider,
 
   // Helper functions to access cached settings.
   static bool cached_allow_bwsi();
-  static bool cached_allow_guest();
+  static bool cached_allow_new_user();
   static bool cached_show_users_on_signin();
   static const ListValue* cached_whitelist();
 
