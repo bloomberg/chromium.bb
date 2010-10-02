@@ -44,6 +44,9 @@ class StackTrace {
   // Resolves backtrace to symbols and write to stream.
   void OutputToStream(std::ostream* os);
 
+  // Returns the stacktrace as a string.
+  std::string AsString();
+
  private:
   // From http://msdn.microsoft.com/en-us/library/bb204633.aspx,
   // the sum of FramesToSkip and FramesToCapture must be less than 63,

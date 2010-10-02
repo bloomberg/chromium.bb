@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "chrome/browser/gtk/reload_button_gtk.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,6 +51,9 @@ namespace {
 class ReloadButtonGtkTest : public testing::Test {
  protected:
   ReloadButtonGtkTest() : reload_(NULL, NULL), peer_(&reload_) { }
+
+ private:
+  MessageLoop message_loop_;
 
  protected:
   ReloadButtonGtk reload_;

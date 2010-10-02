@@ -4,6 +4,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/message_loop.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -35,6 +36,9 @@ class GtkThemeProviderTest : public testing::Test {
     profile_.InitThemes();
     provider_ = GtkThemeProvider::GetFrom(&profile_);
   }
+
+ private:
+  MessageLoop message_loop_;
 
  protected:
   TestingProfile profile_;

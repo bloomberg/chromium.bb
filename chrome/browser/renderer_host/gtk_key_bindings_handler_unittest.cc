@@ -1,6 +1,7 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 
 #include <gdk/gdkkeysyms.h>
@@ -10,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -83,6 +85,7 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
  protected:
   GtkWidget* window_;
   GtkKeyBindingsHandler* handler_;
+  MessageLoop message_loop_;
 };
 
 TEST_F(GtkKeyBindingsHandlerTest, MoveCursor) {
