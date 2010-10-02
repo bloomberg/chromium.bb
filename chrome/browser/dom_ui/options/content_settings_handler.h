@@ -43,6 +43,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   void RemoveExceptions(const ListValue* args);
   void SetException(const ListValue* args);
   void CheckExceptionPatternValidity(const ListValue* args);
+  void OpenPluginsTab(const ListValue* args);
   HostContentSettingsMap* GetContentSettingsMap();
   HostContentSettingsMap* GetOTRContentSettingsMap();
 

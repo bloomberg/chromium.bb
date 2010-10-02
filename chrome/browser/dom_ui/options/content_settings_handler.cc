@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -164,8 +165,6 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PLUGIN_NOLOAD_RADIO));
   localized_strings->SetString("disable_individual_plugins",
       l10n_util::GetStringUTF16(IDS_PLUGIN_SELECTIVE_DISABLE));
-  localized_strings->SetString("chrome_plugin_url",
-      chrome::kChromeUIPluginsURL);
 
   // Pop-ups filter.
   localized_strings->SetString("popups_tab_label",
@@ -327,6 +326,9 @@ void ContentSettingsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("checkExceptionPatternValidity",
       NewCallback(this,
                   &ContentSettingsHandler::CheckExceptionPatternValidity));
+  dom_ui_->RegisterMessageCallback(
+      "openPluginsTab",
+      NewCallback(this, &ContentSettingsHandler::OpenPluginsTab));
 }
 
 void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
@@ -482,6 +484,10 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
                                                        *mode_value.get(),
                                                        *pattern_value.get(),
                                                        *valid_value.get());
+}
+
+void ContentSettingsHandler::OpenPluginsTab(const ListValue* args) {
+  BrowserList::GetLastActive()->OpenPluginsTabAndActivate();
 }
 
 // static

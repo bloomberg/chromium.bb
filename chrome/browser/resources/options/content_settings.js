@@ -66,6 +66,10 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction', ['Options_ShowCookies']);
         OptionsPage.showPageByName('cookiesView');
       };
+
+      $('plugins-tab').onclick = function(event) {
+        chrome.send('openPluginsTab');
+      };
     },
 
     /**

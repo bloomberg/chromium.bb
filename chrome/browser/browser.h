@@ -548,6 +548,7 @@ class Browser : public TabHandlerDelegate,
   void OpenLanguageOptionsDialog();
   void OpenSystemOptionsDialog();
 #endif
+  void OpenPluginsTabAndActivate();
 
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
