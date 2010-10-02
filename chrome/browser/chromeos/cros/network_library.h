@@ -209,10 +209,10 @@ struct CellTower {
   int mobile_network_code;        //   MNC          SID
   int location_area_code;         //   LAC          NID
   int cell_id;                    //   CID          BID
-  base::Time timestamp; // Timestamp when this cell was primary
-  int signal_strength;  // Radio signal strength measured in dBm.
-  int timing_advance;   // Represents the distance from the cell tower. Each
-                        // unit is roughly 550 meters.
+  base::Time timestamp;  // Timestamp when this cell was primary
+  int signal_strength;   // Radio signal strength measured in dBm.
+  int timing_advance;    // Represents the distance from the cell tower.
+                         // Each unit is roughly 550 meters.
 };
 
 struct WifiAccessPoint {
@@ -262,7 +262,8 @@ class NetworkLibrary {
     // Called when the network has changed. (wifi networks, and ethernet)
     virtual void NetworkChanged(NetworkLibrary* obj) = 0;
     // Called when the cellular data plan has changed.
-    virtual void CellularDataPlanChanged(NetworkLibrary* obj) {}
+    virtual void CellularDataPlanChanged(const std::string& service_path,
+                                         const CellularDataPlan& plan) {}
   };
 
   virtual ~NetworkLibrary() {}

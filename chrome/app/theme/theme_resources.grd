@@ -477,6 +477,8 @@
         <include name="IDR_LOGIN_DEFAULT_USER" file="login_default.png" type="BINDATA" />
         <include name="IDR_LOGIN_GUEST" file="login_guest.png" type="BINDATA" />
         <include name="IDR_LOGIN_ADD_USER" file="login_add_user.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_BARS_EMPTY" file="notification_bars_empty.png" type="BINDATA" />
+        <include name="IDR_NOTIFICATION_BARS_CRITICAL" file="notification_bars_critical.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_LOW_BATTERY" file="notification_battery_low.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_MENU" file="notification_menu.png" type="BINDATA" />
         <include name="IDR_NOTIFICATION_NETWORK_FAILED" file="notification_network_failed.png" type="BINDATA" />

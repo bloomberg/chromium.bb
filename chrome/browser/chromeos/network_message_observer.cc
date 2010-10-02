@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 
 #include "app/l10n_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -20,15 +21,23 @@ namespace chromeos {
 
 NetworkMessageObserver::NetworkMessageObserver(Profile* profile)
     : initialized_(false),
-      notification_(profile, "network_connection.chromeos",
-        IDR_NOTIFICATION_NETWORK_FAILED,
-        l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE)) {
+      notification_connection_error_(profile, "network_connection.chromeos",
+          IDR_NOTIFICATION_NETWORK_FAILED,
+          l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE)),
+      notification_low_data_(profile, "network_low_data.chromeos",
+          IDR_NOTIFICATION_BARS_CRITICAL,
+          l10n_util::GetStringUTF16(IDS_NETWORK_LOW_DATA_TITLE)),
+      notification_no_data_(profile, "network_no_data.chromeos",
+          IDR_NOTIFICATION_BARS_EMPTY,
+          l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE)) {
   NetworkChanged(CrosLibrary::Get()->GetNetworkLibrary());
   initialized_ = true;
 }
 
 NetworkMessageObserver::~NetworkMessageObserver() {
-  notification_.Hide();
+  notification_connection_error_.Hide();
+  notification_low_data_.Hide();
+  notification_no_data_.Hide();
 }
 
 void NetworkMessageObserver::CreateModalPopup(views::WindowDelegate* view) {
@@ -91,9 +100,9 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
       }
     }
 
-    // If we find any network connecting, we hide any notifications.
+    // If we find any network connecting, we hide the error notification.
     if (wifi.connecting()) {
-      notification_.Hide();
+      notification_connection_error_.Hide();
     }
   }
 
@@ -111,19 +120,96 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
     cellular_networks_[cellular.service_path()] = cellular;
   }
 
-  // Show notification if necessary.
+  // Show connection error notification if necessary.
   if (!new_failed_network.empty()) {
     // Hide if already shown to force show it in case user has closed it.
-    if (notification_.visible())
-      notification_.Hide();
-    notification_.Show(l10n_util::GetStringFUTF16(
+    if (notification_connection_error_.visible())
+      notification_connection_error_.Hide();
+    notification_connection_error_.Show(l10n_util::GetStringFUTF16(
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
-        ASCIIToUTF16(new_failed_network)), false, true);
+        ASCIIToUTF16(new_failed_network)), false, false);
   }
 
   // Show login box if necessary.
   if (view && initialized_)
     CreateModalPopup(view);
+}
+
+void NetworkMessageObserver::CellularDataPlanChanged(
+    const std::string& service_path, const CellularDataPlan& plan) {
+  // If connected cellular network changed, or data plan is different, then
+  // it's a new network. Then hide all previous notifications.
+  bool new_plan = false;
+  if (service_path != cellular_service_path_) {
+    cellular_service_path_ = service_path;
+    new_plan = true;
+  } else if (plan.plan_name != cellular_data_plan_.plan_name ||
+      plan.plan_type != cellular_data_plan_.plan_type) {
+    new_plan = true;
+  }
+  if (new_plan) {
+    // New network, so hide the notifications and set the notifications title.
+    notification_low_data_.Hide();
+    notification_no_data_.Hide();
+    if (plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
+      notification_no_data_.set_title(
+          l10n_util::GetStringFUTF16(IDS_NETWORK_DATA_EXPIRED_TITLE,
+                                     ASCIIToUTF16(plan.plan_name)));
+      notification_low_data_.set_title(
+          l10n_util::GetStringFUTF16(IDS_NETWORK_NEARING_EXPIRATION_TITLE,
+                                     ASCIIToUTF16(plan.plan_name)));
+    } else {
+      notification_no_data_.set_title(
+          l10n_util::GetStringFUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE,
+                                     ASCIIToUTF16(plan.plan_name)));
+      notification_low_data_.set_title(
+          l10n_util::GetStringFUTF16(IDS_NETWORK_LOW_DATA_TITLE,
+                                     ASCIIToUTF16(plan.plan_name)));
+    }
+  }
+
+  if (plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
+    // Time based plan. Show nearing expiration and data expiration.
+    int64 time_left = plan.plan_end_time - plan.update_time;
+    if (time_left <= 0) {
+      notification_low_data_.Hide();
+      notification_no_data_.Show(l10n_util::GetStringFUTF16(
+          IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0")),
+          false, false);
+    } else if (time_left <= kDataNearingExpirationSecs) {
+      notification_no_data_.Hide();
+      notification_low_data_.Show(l10n_util::GetStringFUTF16(
+          IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
+          UTF8ToUTF16(base::Int64ToString(time_left/60))),
+          false, false);
+    } else {
+      // Got more data, so hide notifications.
+      notification_low_data_.Hide();
+      notification_no_data_.Hide();
+    }
+  } else if (plan.plan_type == CELLULAR_DATA_PLAN_METERED_PAID ||
+      plan.plan_type == CELLULAR_DATA_PLAN_METERED_BASE) {
+    // Metered plan. Show low data and out of data.
+    int64 bytes_remaining = plan.plan_data_bytes - plan.data_bytes_used;
+    if (bytes_remaining <= 0) {
+      notification_low_data_.Hide();
+      notification_no_data_.Show(l10n_util::GetStringFUTF16(
+          IDS_NETWORK_DATA_REMAINING_MESSAGE, ASCIIToUTF16("0")),
+          false, false);
+    } else if (bytes_remaining <= kDataLowDataBytes) {
+      notification_no_data_.Hide();
+      notification_low_data_.Show(l10n_util::GetStringFUTF16(
+          IDS_NETWORK_DATA_REMAINING_MESSAGE,
+          UTF8ToUTF16(base::Int64ToString(bytes_remaining/1024))),
+          false, false);
+    } else {
+      // Got more data, so hide notifications.
+      notification_low_data_.Hide();
+      notification_no_data_.Hide();
+    }
+  }
+
+  cellular_data_plan_ = plan;
 }
 
 }  // namespace chromeos

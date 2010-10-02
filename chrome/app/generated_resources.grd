@@ -8335,6 +8335,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_NETWORK_LOW_DATA_TITLE" desc="Title for network low data notification">
+        Low <ph name="network">$1<ex>YBH</ex></ph> data
+      </message>
+      <message name="IDS_NETWORK_OUT_OF_DATA_TITLE" desc="Title for network out of data notification">
+        Out of <ph name="network">$1<ex>YBH</ex></ph> data
+      </message>
+      <message name="IDS_NETWORK_DATA_REMAINING_MESSAGE" desc="Message for network data remaining notification">
+        <ph name="megabytes">$1<ex>50</ex></ph> MB remaining
+      </message>
+      <message name="IDS_NETWORK_NEARING_EXPIRATION_TITLE" desc="Title for network nearing expiration notification">
+        Nearing <ph name="network">$1<ex>YBH</ex></ph> expiration
+      </message>
+      <message name="IDS_NETWORK_DATA_EXPIRED_TITLE" desc="Title for network data expired notification">
+        <ph name="network">$1<ex>YBH</ex></ph> data expired
+      </message>
+      <message name="IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE" desc="Message for network minutes until expirations notification">
+        <ph name="minues">$1<ex>30</ex></ph> minutes until expiration
+      </message>
+      <message name="IDS_NETWORK_MINUTES_REMAINING_MESSAGE" desc="Message for network minutes remaining notification">
+        <ph name="minues">$1<ex>30</ex></ph> minutes remaining
+      </message>
       <message name="IDS_NETWORK_CONNECTION_ERROR_TITLE" desc="Title for network connection error notification">
         Network Connection Error
       </message>

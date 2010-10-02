@@ -32,6 +32,8 @@ class SystemNotification {
 
   virtual ~SystemNotification();
 
+  void set_title(const string16& title) { title_ = title; }
+
   // Show will show or update the message for this notification
   // on a transition to urgent, the notification will be shown if it was
   // previously hidden or minimized by the user.

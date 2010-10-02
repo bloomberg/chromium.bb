@@ -837,7 +837,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void NotifyCellularDataPlanChanged() {
-    FOR_EACH_OBSERVER(Observer, observers_, CellularDataPlanChanged(this));
+    FOR_EACH_OBSERVER(Observer, observers_,
+        CellularDataPlanChanged(cellular_.service_path(), cellular_data_plan_));
   }
 
   void UpdateNetworkStatus() {
@@ -868,15 +869,17 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         break;  // There is only one connected or connecting wifi network.
       }
     }
+    std::string prev_service_path = cellular_.service_path();
     cellular_ = CellularNetwork();
     for (size_t i = 0; i < cellular_networks_.size(); i++) {
       if (cellular_networks_[i].connecting_or_connected()) {
+        // If new cellular, then update data plan list.
+        if (cellular_networks_[i].service_path() != prev_service_path) {
+          CellularDataPlanList list;
+          RetrieveCellularDataPlans(cellular_.service_path().c_str(), &list);
+          UpdateCellularDataPlan(list);
+        }
         cellular_ = cellular_networks_[i];
-
-        CellularDataPlanList list;
-        RetrieveCellularDataPlans(cellular_.service_path().c_str(), &list);
-        UpdateCellularDataPlan(list);
-
         break;  // There is only one connected or connecting cellular network.
       }
     }
