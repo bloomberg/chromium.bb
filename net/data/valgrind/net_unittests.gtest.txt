@@ -4,3 +4,6 @@ KeygenHandlerTest.*ConcurrencyTest
 
 # Fails Valgrind with varying stack traces. http://crbug.com/43179
 SpdyNetworkTransactionTest.PostWithEarlySynReply
+
+# Hangs (or takes forever under Valgrind). http://crbug.com/57686
+CookieMonsterTest.GarbageCollectionTriggers
