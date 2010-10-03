@@ -1881,6 +1881,7 @@
         'browser/dom_ui/mediaplayer_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/extensions/alert_apitest.cc',
+        'browser/extensions/all_urls_apitest.cc',
         'browser/extensions/app_background_page_apitest.cc',
         'browser/extensions/app_process_apitest.cc',
         'browser/extensions/autoupdate_interceptor.cc',

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,18 +19,20 @@ static const int kAllSchemes =
 TEST(URLPatternTest, ParseInvalid) {
   const char* kInvalidPatterns[] = {
     "http",  // no scheme
+    "http:",
+    "http:/",
     "http://",  // no path separator
     "http://foo",  // no path separator
     "http://*foo/bar",  // not allowed as substring of host component
     "http://foo.*.bar/baz",  // must be first component
     "http:/bar",  // scheme separator not found
     "foo://*",  // invalid scheme
-    "chrome-extenstions://*/*",  // we don't support chrome extension URLs
+    "chrome-extension://*/*",  // we don't support chrome extension URLs
   };
 
   for (size_t i = 0; i < arraysize(kInvalidPatterns); ++i) {
     URLPattern pattern;
-    EXPECT_FALSE(pattern.Parse(kInvalidPatterns[i]));
+    EXPECT_FALSE(pattern.Parse(kInvalidPatterns[i])) << kInvalidPatterns[i];
   }
 };
 
@@ -182,6 +184,86 @@ TEST(URLPatternTest, Match11) {
   EXPECT_TRUE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
   EXPECT_TRUE(pattern.MatchesUrl(GURL("file:///foo/bar")));
 };
+
+// SCHEME_ALL matches all schemes.
+TEST(URLPatternTest, Match12) {
+  URLPattern pattern(URLPattern::SCHEME_ALL);
+  EXPECT_TRUE(pattern.Parse("<all_urls>"));
+  EXPECT_TRUE(pattern.MatchesScheme("chrome"));
+  EXPECT_TRUE(pattern.MatchesScheme("http"));
+  EXPECT_TRUE(pattern.MatchesScheme("https"));
+  EXPECT_TRUE(pattern.MatchesScheme("file"));
+  EXPECT_TRUE(pattern.MatchesScheme("javascript"));
+  EXPECT_TRUE(pattern.MatchesScheme("data"));
+  EXPECT_TRUE(pattern.MatchesScheme("about"));
+  EXPECT_TRUE(pattern.MatchesScheme("chrome-extension"));
+  EXPECT_TRUE(pattern.match_subdomains());
+  EXPECT_TRUE(pattern.match_all_urls());
+  EXPECT_EQ("/*", pattern.path());
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://favicon/http://google.com")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("http://127.0.0.1")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("file:///foo/bar")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("chrome://newtab")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("about:blank")));
+  EXPECT_TRUE(pattern.MatchesUrl(GURL("about:version")));
+  EXPECT_TRUE(pattern.MatchesUrl(
+      GURL("data:text/html;charset=utf-8,<html>asdf</html>")));
+};
+
+static const struct MatchPatterns {
+  const char* pattern;
+  const char* matches;
+} kMatch13UrlPatternTestCases[] = {
+  {"about:*", "about:blank"},
+  {"about:blank", "about:blank"},
+  {"about:*", "about:version"},
+  {"chrome-extension://*/*", "chrome-extension://FTW"},
+  {"data:*", "data:monkey"},
+  {"javascript:*", "javascript:atemyhomework"},
+};
+
+// SCHEME_ALL and specific schemes.
+TEST(URLPatternTest, Match13) {
+  for (size_t i = 0; i < arraysize(kMatch13UrlPatternTestCases); ++i) {
+    URLPattern pattern(URLPattern::SCHEME_ALL);
+    EXPECT_TRUE(pattern.Parse(kMatch13UrlPatternTestCases[i].pattern))
+        << " while parsing " << kMatch13UrlPatternTestCases[i].pattern;
+    EXPECT_TRUE(pattern.MatchesUrl(
+        GURL(kMatch13UrlPatternTestCases[i].matches)))
+        << " while matching " << kMatch13UrlPatternTestCases[i].matches;
+  }
+
+  // Negative test.
+  URLPattern pattern(URLPattern::SCHEME_ALL);
+  EXPECT_TRUE(pattern.Parse("data:*"));
+  EXPECT_FALSE(pattern.MatchesUrl(GURL("about:blank")));
+};
+
+static const struct GetAsStringPatterns {
+  const char* pattern;
+} kGetAsStringTestCases[] = {
+  { "http://www/" },
+  { "http://*/*" },
+  { "chrome://*/*" },
+  { "chrome://newtab/" },
+  { "about:*" },
+  { "about:blank" },
+  { "chrome-extension://*/*" },
+  { "chrome-extension://FTW/" },
+  { "data:*" },
+  { "data:monkey" },
+  { "javascript:*" },
+  { "javascript:atemyhomework" },
+};
+
+TEST(URLPatternTest, GetAsString) {
+  for (size_t i = 0; i < arraysize(kGetAsStringTestCases); ++i) {
+    URLPattern pattern(URLPattern::SCHEME_ALL);
+    EXPECT_TRUE(pattern.Parse(kGetAsStringTestCases[i].pattern));
+    EXPECT_STREQ(kGetAsStringTestCases[i].pattern,
+                 pattern.GetAsString().c_str());
+  }
+}
 
 void TestPatternOverlap(const URLPattern& pattern1, const URLPattern& pattern2,
                         bool expect_overlap) {

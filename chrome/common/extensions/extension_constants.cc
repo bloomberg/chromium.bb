@@ -202,8 +202,7 @@ const char* kInvalidPermission =
 const char* kInvalidPermissions =
     "Required value 'permissions' is missing or invalid.";
 const char* kInvalidPermissionScheme =
-    "Invalid scheme for 'permissions[*]'. Only 'http' and 'https' are "
-    "allowed.";
+    "Invalid scheme for 'permissions[*]'.";
 const char* kInvalidPlugins =
     "Invalid value for 'plugins'.";
 const char* kInvalidPluginsPath =

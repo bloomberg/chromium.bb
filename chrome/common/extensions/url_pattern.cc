@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "googleurl/src/url_util.h"
 
 // TODO(aa): Consider adding chrome-extension? What about more obscure ones
 // like data: and javascript: ?
@@ -34,10 +35,21 @@ COMPILE_ASSERT(arraysize(kValidSchemes) == arraysize(kValidSchemeMasks),
 
 static const char kPathSeparator[] = "/";
 
-static const char kAllUrlsPattern[] = "<all_urls>";
+const char URLPattern::kAllUrlsPattern[] = "<all_urls>";
+
+static bool IsStandardScheme(const std::string& scheme) {
+  // "*" gets the same treatment as a standard scheme.
+  if (scheme == "*")
+    return true;
+
+  return url_util::IsStandard(scheme.c_str(),
+      url_parse::Component(0, static_cast<int>(scheme.length())));
+}
 
 URLPattern::URLPattern()
-    : valid_schemes_(0), match_all_urls_(false), match_subdomains_(false) {}
+    : valid_schemes_(SCHEME_NONE),
+      match_all_urls_(false),
+      match_subdomains_(false) {}
 
 URLPattern::URLPattern(int valid_schemes)
     : valid_schemes_(valid_schemes), match_all_urls_(false),
@@ -64,24 +76,32 @@ bool URLPattern::Parse(const std::string& pattern) {
     return true;
   }
 
-  size_t scheme_end_pos = pattern.find(chrome::kStandardSchemeSeparator);
+  size_t scheme_end_pos = pattern.find(":");
   if (scheme_end_pos == std::string::npos)
     return false;
 
   if (!SetScheme(pattern.substr(0, scheme_end_pos)))
     return false;
 
-  size_t host_start_pos = scheme_end_pos +
-      strlen(chrome::kStandardSchemeSeparator);
+  std::string separator =
+      pattern.substr(scheme_end_pos, strlen(chrome::kStandardSchemeSeparator));
+  if (separator == chrome::kStandardSchemeSeparator)
+    scheme_end_pos += strlen(chrome::kStandardSchemeSeparator);
+  else
+    scheme_end_pos += 1;
+
+  // Advance past the scheme separator.
+  size_t host_start_pos = scheme_end_pos;
   if (host_start_pos >= pattern.length())
     return false;
 
   // Parse out the host and path.
   size_t path_start_pos = 0;
 
-  // File URLs are special because they have no host. There are other schemes
-  // with the same structure, but we don't support them (yet).
-  if (scheme_ == chrome::kFileScheme) {
+  bool standard_scheme = IsStandardScheme(scheme_);
+
+  // File URLs are special because they have no host.
+  if (scheme_ == chrome::kFileScheme || !standard_scheme) {
     path_start_pos = host_start_pos;
   } else {
     size_t host_end_pos = pattern.find(kPathSeparator, host_start_pos);
@@ -125,6 +145,9 @@ bool URLPattern::SetScheme(const std::string& scheme) {
 }
 
 bool URLPattern::IsValidScheme(const std::string& scheme) const {
+  if (valid_schemes_ == SCHEME_ALL)
+    return true;
+
   for (size_t i = 0; i < arraysize(kValidSchemes); ++i) {
     if (scheme == kValidSchemes[i] && (valid_schemes_ & kValidSchemeMasks[i]))
       return true;
@@ -136,6 +159,9 @@ bool URLPattern::IsValidScheme(const std::string& scheme) const {
 bool URLPattern::MatchesUrl(const GURL &test) const {
   if (!MatchesScheme(test.scheme()))
     return false;
+
+  if (match_all_urls_)
+    return true;
 
   if (!MatchesHost(test))
     return false;
@@ -209,9 +235,12 @@ std::string URLPattern::GetAsString() const {
   if (match_all_urls_)
     return kAllUrlsPattern;
 
-  std::string spec = scheme_ + chrome::kStandardSchemeSeparator;
+  bool standard_scheme = IsStandardScheme(scheme_);
 
-  if (scheme_ != chrome::kFileScheme) {
+  std::string spec = scheme_ +
+      (standard_scheme ? chrome::kStandardSchemeSeparator : ":");
+
+  if (scheme_ != chrome::kFileScheme && standard_scheme) {
     if (match_subdomains_) {
       spec += "*";
       if (!host_.empty())
