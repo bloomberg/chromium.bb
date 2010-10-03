@@ -94,8 +94,8 @@ class Point {
   int y_;
 };
 
-}  // namespace gfx
-
 std::ostream& operator<<(std::ostream& out, const gfx::Point& p);
+
+}  // namespace gfx
 
 #endif  // GFX_POINT_H_

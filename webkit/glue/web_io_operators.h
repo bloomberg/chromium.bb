@@ -9,11 +9,14 @@
 
 #include "build/build_config.h"
 
-#if defined(WCHAR_T_IS_UTF32)
 namespace WebKit {
+#if defined(WCHAR_T_IS_UTF32)
 class WebString;
 std::ostream& operator<<(std::ostream& out, const WebString& s);
-}  // namespace WebKit
 #endif  // defined(WCHAR_T_IS_UTF32)
+
+struct WebPoint;
+std::ostream& operator<<(std::ostream& out, const WebPoint& p);
+}  // namespace WebKit
 
 #endif  // WEBKIT_GLUE_WEB_IO_OPERATORS_H_

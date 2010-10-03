@@ -53,6 +53,7 @@ bool VerifyRect(const PlatformCanvas& canvas,
   return true;
 }
 
+#if !defined(OS_MACOSX)
 bool IsOfColor(const SkBitmap& bitmap, int x, int y, uint32_t color) {
   // For masking out the alpha values.
   static uint32_t alpha_mask = 0xFF << SK_A32_SHIFT;
@@ -83,6 +84,7 @@ bool VerifyRoundedRect(const PlatformCanvas& canvas,
 
   return true;
 }
+#endif
 
 // Checks whether there is a white canvas with a black square at the given
 // location in pixels (not in the canvas coordinate system).

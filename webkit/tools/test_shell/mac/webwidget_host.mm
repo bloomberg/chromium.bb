@@ -164,8 +164,7 @@ void WebWidgetHost::UpdatePaintRect(const gfx::Rect& rect) {
 }
 
 void WebWidgetHost::Paint() {
-  NSRect r = [view_ frame];
-  gfx::Rect client_rect(NSRectToCGRect(r));
+  gfx::Rect client_rect(NSRectToCGRect([view_ frame]));
   NSGraphicsContext* view_context = [NSGraphicsContext currentContext];
   CGContextRef context = static_cast<CGContextRef>([view_context graphicsPort]);
 
@@ -215,7 +214,6 @@ void WebWidgetHost::Paint() {
 
   // Paint to the screen
   if ([view_ lockFocusIfCanDraw]) {
-    CGRect paint_rect = NSRectToCGRect(r);
     int bitmap_height = CGBitmapContextGetHeight(bitmap_context);
     int bitmap_width = CGBitmapContextGetWidth(bitmap_context);
     CGRect bitmap_rect = { { 0, 0 },
