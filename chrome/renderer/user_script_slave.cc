@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extension_groups.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -67,8 +66,7 @@ UserScriptSlave::UserScriptSlave()
                 IDR_GREASEMONKEY_API_JS);
 }
 
-void UserScriptSlave::GetActiveExtensions(
-    std::set<std::string>* extension_ids) {
+void UserScriptSlave::GetActiveExtensions(std::set<std::string>* extension_ids) {
   for (size_t i = 0; i < scripts_.size(); ++i) {
     DCHECK(!scripts_[i]->extension_id().empty());
     extension_ids->insert(scripts_[i]->extension_id());
@@ -187,8 +185,18 @@ void UserScriptSlave::InsertInitExtensionCode(
 void UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
   GURL frame_url = GURL(frame->url());
-  if (frame_url.is_empty())
+  // Don't bother if this is not a URL we inject script into.
+  if (!URLPattern(UserScript::kValidUserScriptSchemes).IsValidScheme(
+                                 frame_url.scheme()))
     return;
+
+  // Don't inject user scripts into the gallery itself.  This prevents
+  // a user script from removing the "report abuse" link, for example.
+  if (frame_url.host() == GURL(Extension::ChromeStoreURL()).host()
+      && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowScriptingGallery)) {
+    return;
+  }
 
   PerfTimer timer;
   int num_css = 0;
@@ -201,16 +209,8 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     if (frame->parent() && !script->match_all_frames())
       continue;  // Only match subframes if the script declared it wanted to.
 
-    ExtensionRendererInfo* extension =
-        ExtensionRendererInfo::GetByID(script->extension_id());
-    if (!Extension::CanExecuteScriptOnPage(
-            frame_url,
-            extension->allowed_to_execute_script_everywhere(),
-            NULL,
-            script,
-            NULL)) {
-      continue;
-    }
+    if (!script->MatchesUrl(frame->url()))
+      continue;  // This frame doesn't match the script url pattern, skip it.
 
     if (frame_url.SchemeIsFile() && !script->allow_file_access())
       continue;  // This script isn't allowed to run on file URLs.

@@ -661,17 +661,9 @@ bool UpdateTabFunction::RunImpl() {
     // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
     // we need to check host permissions before allowing them.
     if (url.SchemeIs(chrome::kJavaScriptScheme)) {
-      Extension* extension = GetExtension();
-      const std::vector<URLPattern> host_permissions =
-          extension->host_permissions();
-      if (!Extension::CanExecuteScriptOnPage(
-              contents->GetURL(),
-              extension->CanExecuteScriptEverywhere(),
-              &host_permissions,
-              NULL,
-              &error_)) {
+      if (!profile()->GetExtensionsService()->CanExecuteScriptOnHost(
+          GetExtension(), contents->GetURL(), &error_))
         return false;
-      }
 
       // TODO(aa): How does controller queue URLs? Is there any chance that this
       // JavaScript URL will end up applying to something other than

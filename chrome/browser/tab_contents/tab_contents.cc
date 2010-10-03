@@ -1021,6 +1021,7 @@ void TabContents::AddNewContents(TabContents* new_contents,
 }
 
 bool TabContents::ExecuteCode(int request_id, const std::string& extension_id,
+                              const std::vector<URLPattern>& host_permissions,
                               bool is_js_code, const std::string& code_string,
                               bool all_frames) {
   RenderViewHost* host = render_view_host();
@@ -1028,7 +1029,7 @@ bool TabContents::ExecuteCode(int request_id, const std::string& extension_id,
     return false;
 
   return host->Send(new ViewMsg_ExecuteCode(host->routing_id(),
-      ViewMsg_ExecuteCode_Params(request_id, extension_id,
+      ViewMsg_ExecuteCode_Params(request_id, extension_id, host_permissions,
                                  is_js_code, code_string, all_frames)));
 }
 
@@ -2474,6 +2475,7 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
         NotificationType::FRAME_PROVISIONAL_LOAD_COMMITTED,
         Source<NavigationController>(&controller_),
         Details<ProvisionalLoadDetails>(&load_details));
+
   }
 
   // Update history. Note that this needs to happen after the entry is complete,

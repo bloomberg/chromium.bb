@@ -33,7 +33,6 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "googleurl/src/url_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/registry_controlled_domain.h"
@@ -131,17 +130,6 @@ const char* kNonPermissionFunctionNames[] = {
 const size_t kNumNonPermissionFunctionNames =
     arraysize(kNonPermissionFunctionNames);
 
-// Ids of extensions allowed to execute scripts everywhere. Do not add to this
-// list without consulting the Extensions team first.
-// Note: Component extensions have this right implicitly and do not need to be
-// added to this list.
-const char* kCanExecuteScriptsEverywhere[] = {
-  "", // Extension ids for whitelisted extensions go here.
-};
-
-// The size of the kCanExecuteScriptsEverywhere list.
-static size_t kNumCanExecuteScriptsEverywhere =
-    arraysize(kCanExecuteScriptsEverywhere);
 
 // A map between permission name and its install warning message.
 class PermissionMap {
@@ -174,8 +162,6 @@ static const char kWindowPermission[] = "windows";
 
 }  // namespace
 
-char** Extension::scripting_whitelist_ =
-    const_cast<char**>(&kCanExecuteScriptsEverywhere[0]);
 
 const FilePath::CharType Extension::kManifestFilename[] =
     FILE_PATH_LITERAL("manifest.json");
@@ -488,11 +474,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       return false;
     }
 
-    URLPattern pattern;
-    if (CanExecuteScriptEverywhere())
-      pattern = URLPattern(URLPattern::SCHEME_ALL);
-    else
-      pattern = URLPattern(UserScript::kValidUserScriptSchemes);
+    URLPattern pattern(UserScript::kValidUserScriptSchemes);
     if (!pattern.Parse(match_str)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatch,
           base::IntToString(definition_index), base::IntToString(j));
@@ -1532,11 +1514,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
 
       UserScript script;
       if (!LoadUserScriptHelper(content_script, i, error, &script))
-        return false;  // Failed to parse script context definition.
+        return false;  // Failed to parse script context definition
       script.set_extension_id(id());
       if (converted_from_user_script_) {
         script.set_emulate_greasemonkey(true);
-        script.set_match_all_frames(true);  // Greasemonkey matches all frames.
+        script.set_match_all_frames(true);  // greasemonkey matches all frames
       }
       content_scripts_.push_back(script);
     }
@@ -1689,18 +1671,16 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       }
 
       // Otherwise, it's a host pattern permission.
-      URLPattern pattern = URLPattern(CanExecuteScriptEverywhere() ?
-          URLPattern::SCHEME_ALL :
-          (UserScript::kValidUserScriptSchemes |
-              URLPattern::SCHEME_CHROMEUI) & ~URLPattern::SCHEME_FILE);
-
+      URLPattern pattern(URLPattern::SCHEME_HTTP |
+                         URLPattern::SCHEME_HTTPS |
+                         URLPattern::SCHEME_CHROMEUI);
       if (!pattern.Parse(permission_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermission, base::IntToString(i));
         return false;
       }
 
-      if (!CanSpecifyHostPermission(pattern)) {
+      if (!CanAccessURL(pattern)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidPermissionScheme, base::IntToString(i));
         return false;
@@ -1906,13 +1886,6 @@ static std::string SizeToString(const gfx::Size& max_size) {
          base::IntToString(max_size.height());
 }
 
-// static
-void Extension::SetScriptingWhitelist(const char** whitelist, size_t size) {
-  DCHECK(whitelist);
-  scripting_whitelist_ = const_cast<char**>(whitelist);
-  kNumCanExecuteScriptsEverywhere = size;
-}
-
 void Extension::SetCachedImage(const ExtensionResource& source,
                                const SkBitmap& image,
                                const gfx::Size& original_size) {
@@ -1981,13 +1954,12 @@ GURL Extension::GetIconURL(int size, ExtensionIconSet::MatchType match_type) {
     return GetResourceURL(path);
 }
 
-bool Extension::CanSpecifyHostPermission(const URLPattern pattern) const {
-  if (!pattern.match_all_urls() &&
-      pattern.MatchesScheme(chrome::kChromeUIScheme)) {
+bool Extension::CanAccessURL(const URLPattern pattern) const {
+  if (pattern.MatchesScheme(chrome::kChromeUIScheme)) {
     // Only allow access to chrome://favicon to regular extensions. Component
     // extensions can have access to all of chrome://*.
     return (pattern.host() == chrome::kChromeUIFavIconHost ||
-            CanExecuteScriptEverywhere());
+            location() == Extension::COMPONENT);
   }
 
   // Otherwise, the valid schemes were handled by URLPattern.
@@ -2051,45 +2023,6 @@ void Extension::InitEffectiveHostPermissions() {
   }
 }
 
-// static
-bool Extension::CanExecuteScriptOnPage(
-    const GURL& page_url, bool can_execute_script_everywhere,
-    const std::vector<URLPattern>* host_permissions,
-    UserScript* script,
-    std::string* error) {
-  DCHECK(!(host_permissions && script)) << "Shouldn't specify both";
-
-  // The gallery is special-cased as a restricted URL for scripting to prevent
-  // access to special JS bindings we expose to the gallery (and avoid things
-  // like extensions removing the "report abuse" link).
-  if ((page_url.host() == GURL(Extension::ChromeStoreURL()).host()) &&
-      !can_execute_script_everywhere &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowScriptingGallery)) {
-    if (error)
-      *error = errors::kCannotScriptGallery;
-    return false;
-  }
-
-  if (host_permissions) {
-    for (size_t i = 0; i < host_permissions->size(); ++i) {
-      if ((*host_permissions)[i].MatchesUrl(page_url))
-        return true;
-    }
-  }
-  if (script) {
-    if (script->MatchesUrl(page_url))
-      return true;
-  }
-
-  if (error) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                                     page_url.spec());
-  }
-
-  return false;
-}
-
 bool Extension::HasEffectiveAccessToAllHosts() const {
   // Some APIs effectively grant access to every site.  New ones should be
   // added here.  (I'm looking at you, network API)
@@ -2134,18 +2067,6 @@ bool Extension::IsAPIPermission(const std::string& str) {
       }
     }
   }
-  return false;
-}
-
-bool Extension::CanExecuteScriptEverywhere() const {
-  if (location() == Extension::COMPONENT)
-    return true;
-
-  for (size_t i = 0; i < kNumCanExecuteScriptsEverywhere; ++i) {
-    if (id() == scripting_whitelist_[i])
-      return true;
-  }
-
   return false;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,17 +78,9 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  Extension* extension = GetExtension();
-  const std::vector<URLPattern> host_permissions =
-      extension->host_permissions();
-  if (!Extension::CanExecuteScriptOnPage(
-        contents->GetURL(),
-        extension->CanExecuteScriptEverywhere(),
-        &host_permissions,
-        NULL,
-        &error_)) {
+  if (!profile()->GetExtensionsService()->CanExecuteScriptOnHost(
+          GetExtension(), contents->GetURL(), &error_))
     return false;
-  }
 
   if (script_info->HasKey(keys::kAllFramesKey)) {
     if (!script_info->GetBoolean(keys::kAllFramesKey, &all_frames_))
@@ -172,7 +164,8 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
     DCHECK(false);
   }
   if (!contents->ExecuteCode(request_id(), extension->id(),
-                             is_js_code, code_string, all_frames_)) {
+                             extension->host_permissions(), is_js_code,
+                             code_string, all_frames_)) {
     SendResponse(false);
     return false;
   }

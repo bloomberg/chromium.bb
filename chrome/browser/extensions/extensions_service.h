@@ -178,6 +178,13 @@ class ExtensionsService
   bool AllowFileAccess(const Extension* extension);
   void SetAllowFileAccess(Extension* extension, bool allow);
 
+  // Returns true if the extension has permission to execute script on a
+  // particular host.
+  // TODO(aa): Also use this in the renderer, for normal content script
+  // injection. Currently, that has its own copy of this code.
+  bool CanExecuteScriptOnHost(Extension* extension,
+                              const GURL& url, std::string* error) const;
+
   const FilePath& install_directory() const { return install_directory_; }
 
   // Initialize and start all installed extensions.

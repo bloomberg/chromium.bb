@@ -207,11 +207,12 @@ ViewMsg_ExecuteCode_Params::ViewMsg_ExecuteCode_Params() {
 ViewMsg_ExecuteCode_Params::ViewMsg_ExecuteCode_Params(
     int request_id,
     const std::string& extension_id,
+    const std::vector<URLPattern>& host_permissions,
     bool is_javascript,
     const std::string& code,
     bool all_frames)
     : request_id(request_id), extension_id(extension_id),
-      is_javascript(is_javascript),
+      host_permissions(host_permissions), is_javascript(is_javascript),
       code(code), all_frames(all_frames) {
 }
 
@@ -266,8 +267,7 @@ ViewHostMsg_RunFileChooser_Params::~ViewHostMsg_RunFileChooser_Params() {
 }
 
 ViewMsg_ExtensionRendererInfo::ViewMsg_ExtensionRendererInfo()
-    : location(Extension::INVALID),
-      allowed_to_execute_script_everywhere(false) {
+    : location(Extension::INVALID) {
 }
 
 ViewMsg_ExtensionRendererInfo::~ViewMsg_ExtensionRendererInfo() {
@@ -1414,6 +1414,7 @@ void ParamTraits<ViewMsg_ExecuteCode_Params>::Write(Message* m,
                                                     const param_type& p) {
   WriteParam(m, p.request_id);
   WriteParam(m, p.extension_id);
+  WriteParam(m, p.host_permissions);
   WriteParam(m, p.is_javascript);
   WriteParam(m, p.code);
   WriteParam(m, p.all_frames);
@@ -1425,6 +1426,7 @@ bool ParamTraits<ViewMsg_ExecuteCode_Params>::Read(const Message* m,
   return
       ReadParam(m, iter, &p->request_id) &&
       ReadParam(m, iter, &p->extension_id) &&
+      ReadParam(m, iter, &p->host_permissions) &&
       ReadParam(m, iter, &p->is_javascript) &&
       ReadParam(m, iter, &p->code) &&
       ReadParam(m, iter, &p->all_frames);
@@ -1669,8 +1671,6 @@ void ParamTraits<ViewMsg_ExtensionRendererInfo>::Write(Message* m,
   WriteParam(m, p.name);
   WriteParam(m, p.icon_url);
   WriteParam(m, p.location);
-  WriteParam(m, p.allowed_to_execute_script_everywhere);
-  WriteParam(m, p.host_permissions);
 }
 
 bool ParamTraits<ViewMsg_ExtensionRendererInfo>::Read(const Message* m,
@@ -1680,9 +1680,7 @@ bool ParamTraits<ViewMsg_ExtensionRendererInfo>::Read(const Message* m,
       ReadParam(m, iter, &p->web_extent) &&
       ReadParam(m, iter, &p->name) &&
       ReadParam(m, iter, &p->icon_url) &&
-      ReadParam(m, iter, &p->location) &&
-      ReadParam(m, iter, &p->allowed_to_execute_script_everywhere) &&
-      ReadParam(m, iter, &p->host_permissions);
+      ReadParam(m, iter, &p->location);
 }
 
 void ParamTraits<ViewMsg_ExtensionRendererInfo>::Log(const param_type& p,

@@ -746,6 +746,7 @@ struct ViewHostMsg_IDBObjectStoreOpenCursor_Params {
 struct ViewMsg_ExecuteCode_Params {
   ViewMsg_ExecuteCode_Params();
   ViewMsg_ExecuteCode_Params(int request_id, const std::string& extension_id,
+                             const std::vector<URLPattern>& host_permissions,
                              bool is_javascript, const std::string& code,
                              bool all_frames);
   ~ViewMsg_ExecuteCode_Params();
@@ -756,6 +757,10 @@ struct ViewMsg_ExecuteCode_Params {
   // The ID of the requesting extension. To know which isolated world to
   // execute the code inside of.
   std::string extension_id;
+
+  // The host permissions of the requesting extension. So that we can check them
+  // right before injecting, to avoid any race conditions.
+  std::vector<URLPattern> host_permissions;
 
   // Whether the code is JavaScript or CSS.
   bool is_javascript;
@@ -916,8 +921,6 @@ struct ViewMsg_ExtensionRendererInfo {
   std::string name;
   GURL icon_url;
   Extension::Location location;
-  bool allowed_to_execute_script_everywhere;
-  std::vector<URLPattern> host_permissions;
 };
 
 struct ViewMsg_ExtensionsUpdated_Params {

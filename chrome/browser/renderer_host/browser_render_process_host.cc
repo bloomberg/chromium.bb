@@ -701,9 +701,6 @@ void BrowserRenderProcessHost::SendExtensionInfo() {
     info.web_extent = extension->web_extent();
     info.name = extension->name();
     info.location = extension->location();
-    info.allowed_to_execute_script_everywhere =
-        extension->CanExecuteScriptEverywhere();
-    info.host_permissions = extension->host_permissions();
 
     // The icon in the page is 96px.  We'd rather not scale up, so use 128.
     info.icon_url = extension->GetIconURL(Extension::EXTENSION_ICON_LARGE,

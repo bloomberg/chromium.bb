@@ -11,8 +11,7 @@
 // static
 std::vector<ExtensionRendererInfo>* ExtensionRendererInfo::extensions_ = NULL;
 
-ExtensionRendererInfo::ExtensionRendererInfo()
-    : allowed_to_execute_script_everywhere_(false) {
+ExtensionRendererInfo::ExtensionRendererInfo() {
 }
 
 ExtensionRendererInfo::ExtensionRendererInfo(
@@ -21,9 +20,6 @@ ExtensionRendererInfo::ExtensionRendererInfo(
   web_extent_ = that.web_extent_;
   name_ = that.name_;
   icon_url_ = that.icon_url_;
-  allowed_to_execute_script_everywhere_ =
-      that.allowed_to_execute_script_everywhere_;
-  host_permissions_ = that.host_permissions_;
 }
 
 ExtensionRendererInfo::~ExtensionRendererInfo() {
@@ -35,9 +31,6 @@ void ExtensionRendererInfo::Update(const ViewMsg_ExtensionRendererInfo& info) {
   name_ = info.name;
   location_ = info.location;
   icon_url_ = info.icon_url;
-  allowed_to_execute_script_everywhere_ =
-      info.allowed_to_execute_script_everywhere;
-  host_permissions_ = info.host_permissions;
 }
 
 // static

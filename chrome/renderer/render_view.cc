@@ -308,6 +308,16 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
     result->push_back(urls[i]);
 }
 
+static bool UrlMatchesPermissions(
+    const GURL& url, const std::vector<URLPattern>& host_permissions) {
+  for (size_t i = 0; i < host_permissions.size(); ++i) {
+    if (host_permissions[i].MatchesUrl(url))
+      return true;
+  }
+
+  return false;
+}
+
 static bool PaintViewIntoCanvas(WebView* view,
                                 skia::PlatformCanvas& canvas) {
   view->layout();
@@ -5623,6 +5633,15 @@ void RenderView::OnExecuteCode(const ViewMsg_ExecuteCode_Params& params) {
 
 void RenderView::ExecuteCodeImpl(WebFrame* frame,
                                  const ViewMsg_ExecuteCode_Params& params) {
+  // Don't execute scripts in gallery pages.
+  GURL frame_url = GURL(frame->url());
+  if (frame_url.host() == GURL(Extension::ChromeStoreURL()).host()
+      && !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowScriptingGallery)) {
+    Send(new ViewMsg_ExecuteCodeFinished(routing_id_, params.request_id, true));
+    return;
+  }
+
   std::vector<WebFrame*> frame_vector;
   frame_vector.push_back(frame);
   if (params.all_frames)
@@ -5632,19 +5651,8 @@ void RenderView::ExecuteCodeImpl(WebFrame* frame,
        frame_it != frame_vector.end(); ++frame_it) {
     WebFrame* frame = *frame_it;
     if (params.is_javascript) {
-      ExtensionRendererInfo* extension =
-          ExtensionRendererInfo::GetByID(params.extension_id);
-
-      const std::vector<URLPattern> host_permissions =
-          extension->host_permissions();
-      if (!Extension::CanExecuteScriptOnPage(
-              frame->url(),
-              extension->allowed_to_execute_script_everywhere(),
-              &host_permissions,
-              NULL,
-              NULL)) {
+      if (!UrlMatchesPermissions(frame->url(), params.host_permissions))
         continue;
-      }
 
       std::vector<WebScriptSource> sources;
       sources.push_back(
