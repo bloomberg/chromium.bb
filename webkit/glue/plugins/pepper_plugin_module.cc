@@ -124,6 +124,13 @@ double GetTime() {
   return base::Time::Now().ToDoubleT();
 }
 
+double GetTickTime() {
+  // TODO(brettw) http://code.google.com/p/chromium/issues/detail?id=57448
+  // This should be a tick timer rather than wall clock time, but needs to
+  // match message times, which also currently use wall clock time.
+  return GetTime();
+}
+
 void CallOnMainThread(int delay_in_msec,
                       PP_CompletionCallback callback,
                       int32_t result) {
@@ -143,6 +150,7 @@ const PPB_Core core_interface = {
   &MemAlloc,
   &MemFree,
   &GetTime,
+  &GetTickTime,
   &CallOnMainThread,
   &IsMainThread
 };

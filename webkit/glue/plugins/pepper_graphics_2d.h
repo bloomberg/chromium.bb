@@ -43,11 +43,11 @@ class Graphics2D : public Resource {
 
   // PPB_Graphics2D functions.
   bool Describe(PP_Size* size, bool* is_always_opaque);
-  bool PaintImageData(PP_Resource image,
+  void PaintImageData(PP_Resource image_data,
                       const PP_Point* top_left,
                       const PP_Rect* src_rect);
-  bool Scroll(const PP_Rect* clip_rect, const PP_Point* amount);
-  bool ReplaceContents(PP_Resource image);
+  void Scroll(const PP_Rect* clip_rect, const PP_Point* amount);
+  void ReplaceContents(PP_Resource image_data);
   int32_t Flush(const PP_CompletionCallback& callback);
 
   bool ReadImageData(PP_Resource image, const PP_Point* top_left);

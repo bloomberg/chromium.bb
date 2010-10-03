@@ -80,49 +80,46 @@ bool IsGraphics2D(PP_Resource resource) {
   return !!Resource::GetAs<Graphics2D>(resource);
 }
 
-bool Describe(PP_Resource device_context,
+bool Describe(PP_Resource graphics_2d,
               PP_Size* size,
               bool* is_always_opaque) {
   scoped_refptr<Graphics2D> context(
-      Resource::GetAs<Graphics2D>(device_context));
+      Resource::GetAs<Graphics2D>(graphics_2d));
   if (!context)
     return false;
   return context->Describe(size, is_always_opaque);
 }
 
-bool PaintImageData(PP_Resource device_context,
-                    PP_Resource image,
+void PaintImageData(PP_Resource graphics_2d,
+                    PP_Resource image_data,
                     const PP_Point* top_left,
                     const PP_Rect* src_rect) {
   scoped_refptr<Graphics2D> context(
-      Resource::GetAs<Graphics2D>(device_context));
-  if (!context)
-    return false;
-  return context->PaintImageData(image, top_left, src_rect);
+      Resource::GetAs<Graphics2D>(graphics_2d));
+  if (context)
+    context->PaintImageData(image_data, top_left, src_rect);
 }
 
-bool Scroll(PP_Resource device_context,
+void Scroll(PP_Resource graphics_2d,
             const PP_Rect* clip_rect,
             const PP_Point* amount) {
   scoped_refptr<Graphics2D> context(
-      Resource::GetAs<Graphics2D>(device_context));
-  if (!context)
-    return false;
-  return context->Scroll(clip_rect, amount);
+      Resource::GetAs<Graphics2D>(graphics_2d));
+  if (context)
+    context->Scroll(clip_rect, amount);
 }
 
-bool ReplaceContents(PP_Resource device_context, PP_Resource image) {
+void ReplaceContents(PP_Resource graphics_2d, PP_Resource image_data) {
   scoped_refptr<Graphics2D> context(
-      Resource::GetAs<Graphics2D>(device_context));
-  if (!context)
-    return false;
-  return context->ReplaceContents(image);
+      Resource::GetAs<Graphics2D>(graphics_2d));
+  if (context)
+    context->ReplaceContents(image_data);
 }
 
-int32_t Flush(PP_Resource device_context,
+int32_t Flush(PP_Resource graphics_2d,
               PP_CompletionCallback callback) {
   scoped_refptr<Graphics2D> context(
-      Resource::GetAs<Graphics2D>(device_context));
+      Resource::GetAs<Graphics2D>(graphics_2d));
   if (!context)
     return PP_ERROR_BADRESOURCE;
   return context->Flush(callback);
@@ -205,22 +202,23 @@ bool Graphics2D::Describe(PP_Size* size, bool* is_always_opaque) {
   return true;
 }
 
-bool Graphics2D::PaintImageData(PP_Resource image,
+void Graphics2D::PaintImageData(PP_Resource image_data,
                                 const PP_Point* top_left,
                                 const PP_Rect* src_rect) {
   if (!top_left)
-    return false;
+    return;
 
-  scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
+  scoped_refptr<ImageData> image_resource(
+      Resource::GetAs<ImageData>(image_data));
   if (!image_resource)
-    return false;
+    return;
 
   QueuedOperation operation(QueuedOperation::PAINT);
   operation.paint_image = image_resource;
   if (!ValidateAndConvertRect(src_rect, image_resource->width(),
                               image_resource->height(),
                               &operation.paint_src_rect))
-    return false;
+    return;
 
   // Validate the bitmap position using the previously-validated rect, there
   // should be no painted area outside of the image.
@@ -229,25 +227,24 @@ bool Graphics2D::PaintImageData(PP_Resource image,
   if (x64 + static_cast<int64>(operation.paint_src_rect.x()) < 0 ||
       x64 + static_cast<int64>(operation.paint_src_rect.right()) >
       image_data_->width())
-    return false;
+    return;
   if (y64 + static_cast<int64>(operation.paint_src_rect.y()) < 0 ||
       y64 + static_cast<int64>(operation.paint_src_rect.bottom()) >
       image_data_->height())
-    return false;
+    return;
   operation.paint_x = top_left->x;
   operation.paint_y = top_left->y;
 
   queued_operations_.push_back(operation);
-  return true;
 }
 
-bool Graphics2D::Scroll(const PP_Rect* clip_rect, const PP_Point* amount) {
+void Graphics2D::Scroll(const PP_Rect* clip_rect, const PP_Point* amount) {
   QueuedOperation operation(QueuedOperation::SCROLL);
   if (!ValidateAndConvertRect(clip_rect,
                               image_data_->width(),
                               image_data_->height(),
                               &operation.scroll_clip_rect))
-    return false;
+    return;
 
   // If we're being asked to scroll by more than the clip rect size, just
   // ignore this scroll command and say it worked.
@@ -255,31 +252,29 @@ bool Graphics2D::Scroll(const PP_Rect* clip_rect, const PP_Point* amount) {
   int32 dy = amount->y;
   if (dx <= -image_data_->width() || dx >= image_data_->width() ||
       dx <= -image_data_->height() || dy >= image_data_->height())
-    return true;
+    return;
 
   operation.scroll_dx = dx;
   operation.scroll_dy = dy;
 
   queued_operations_.push_back(operation);
-  return false;
 }
 
-bool Graphics2D::ReplaceContents(PP_Resource image) {
-  scoped_refptr<ImageData> image_resource(Resource::GetAs<ImageData>(image));
+void Graphics2D::ReplaceContents(PP_Resource image_data) {
+  scoped_refptr<ImageData> image_resource(
+      Resource::GetAs<ImageData>(image_data));
   if (!image_resource)
-    return false;
+    return;
   if (image_resource->format() != PP_IMAGEDATAFORMAT_BGRA_PREMUL)
-    return false;
+    return;
 
   if (image_resource->width() != image_data_->width() ||
       image_resource->height() != image_data_->height())
-    return false;
+    return;
 
   QueuedOperation operation(QueuedOperation::REPLACE);
   operation.replace_image = image_resource;
   queued_operations_.push_back(operation);
-
-  return true;
 }
 
 int32_t Graphics2D::Flush(const PP_CompletionCallback& callback) {

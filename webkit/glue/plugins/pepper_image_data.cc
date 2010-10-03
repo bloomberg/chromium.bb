@@ -26,6 +26,10 @@ PP_ImageDataFormat GetNativeImageDataFormat() {
   return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
 }
 
+bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
+  return format == PP_IMAGEDATAFORMAT_BGRA_PREMUL;
+}
+
 PP_Resource Create(PP_Module module_id,
                    PP_ImageDataFormat format,
                    const PP_Size* size,
@@ -78,6 +82,7 @@ uint64_t GetNativeMemoryHandle2(PP_Resource resource) {
 
 const PPB_ImageData ppb_imagedata = {
   &GetNativeImageDataFormat,
+  &IsImageDataFormatSupported,
   &Create,
   &IsImageData,
   &Describe,

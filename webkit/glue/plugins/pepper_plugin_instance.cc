@@ -449,7 +449,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
 }
 
 void PluginInstance::Delete() {
-  instance_interface_->Delete(GetPPInstance());
+  instance_interface_->DidDestroy(GetPPInstance());
 
   if (fullscreen_container_) {
     fullscreen_container_->Destroy();
@@ -465,9 +465,6 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
   container_ = container;
   full_frame_ = full_frame;
 
-  if (!instance_interface_->New(GetPPInstance()))
-    return false;
-
   size_t argc = 0;
   scoped_array<const char*> argn(new const char*[arg_names.size()]);
   scoped_array<const char*> argv(new const char*[arg_names.size()]);
@@ -477,8 +474,8 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
     argc++;
   }
 
-  return instance_interface_->Initialize(GetPPInstance(),
-                                         argc, argn.get(), argv.get());
+  return instance_interface_->DidCreate(GetPPInstance(),
+                                        argc, argn.get(), argv.get());
 }
 
 bool PluginInstance::HandleDocumentLoad(URLLoader* loader) {
@@ -521,7 +518,7 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   PP_Rect pp_position, pp_clip;
   RectToPPRect(position_, &pp_position);
   RectToPPRect(clip_, &pp_clip);
-  instance_interface_->ViewChanged(GetPPInstance(), &pp_position, &pp_clip);
+  instance_interface_->DidChangeView(GetPPInstance(), &pp_position, &pp_clip);
 }
 
 void PluginInstance::SetWebKitFocus(bool has_focus) {
@@ -531,7 +528,7 @@ void PluginInstance::SetWebKitFocus(bool has_focus) {
   bool old_plugin_focus = PluginHasFocus();
   has_webkit_focus_ = has_focus;
   if (PluginHasFocus() != old_plugin_focus)
-    instance_interface_->FocusChanged(GetPPInstance(), PluginHasFocus());
+    instance_interface_->DidChangeFocus(GetPPInstance(), PluginHasFocus());
 }
 
 void PluginInstance::SetContentAreaFocus(bool has_focus) {
@@ -541,7 +538,7 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
   bool old_plugin_focus = PluginHasFocus();
   has_content_area_focus_ = has_focus;
   if (PluginHasFocus() != old_plugin_focus)
-    instance_interface_->FocusChanged(GetPPInstance(), PluginHasFocus());
+    instance_interface_->DidChangeFocus(GetPPInstance(), PluginHasFocus());
 }
 
 void PluginInstance::ViewInitiatedPaint() {
