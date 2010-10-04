@@ -27,7 +27,7 @@ class DownloadsTest(pyauto.PyUITest):
     self._existing_downloads = []
     if os.path.isdir(download_dir):
       self._existing_downloads += os.listdir(download_dir)
-    self.files_to_remove = []  # Files to remove after browser shutdown
+    self._files_to_remove = []  # Files to remove after browser shutdown
 
   def tearDown(self):
     # Cleanup all files we created in the download dir
@@ -35,10 +35,20 @@ class DownloadsTest(pyauto.PyUITest):
     if os.path.isdir(download_dir):
       for name in os.listdir(download_dir):
         if name not in self._existing_downloads:
-          self.files_to_remove.append(os.path.join(download_dir, name))
+          self._files_to_remove.append(os.path.join(download_dir, name))
     pyauto.PyUITest.tearDown(self)
-    for item in self.files_to_remove:
+    # Delete all paths marked for deletion after browser shutdown.
+    for item in self._files_to_remove:
       pyauto_utils.RemovePath(item)
+
+  def _DeleteAfterShutdown(self, path):
+    """Delete |path| after browser has been shut down.
+
+    This is so that all handles to the path would have been gone by then.
+    Silently Ignores errors, when the path does not exist, or if the path
+    could not be deleted.
+    """
+    self._files_to_remove.append(path)
 
   def _GetDangerousDownload(self):
     """Returns the file url for a dangerous download for this OS."""
@@ -151,7 +161,7 @@ class DownloadsTest(pyauto.PyUITest):
     # Verify that the file was downloaded.
     self.assertTrue(os.path.exists(downloaded_pkg))
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._DeleteAfterShutdown(downloaded_pkg)
 
   def testDeclineDangerousDownload(self):
     """Verify that we can decline dangerous downloads"""
@@ -183,7 +193,7 @@ class DownloadsTest(pyauto.PyUITest):
     # The download is removed from downloads, but not from the disk.
     self.assertFalse(self.GetDownloadsInfo().Downloads())
     self.assertTrue(os.path.exists(downloaded_pkg))
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._DeleteAfterShutdown(downloaded_pkg)
 
   def testBigZip(self):
     """Verify that we can download a 1GB file.
@@ -196,26 +206,23 @@ class DownloadsTest(pyauto.PyUITest):
     """
     # Create a 1 GB file on the fly
     file_path = self._MakeFile(2**30)
-    try:
-      file_url = self.GetFileURLForPath(file_path)
-      downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                    os.path.basename(file_path))
-      os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-      self.DownloadAndWaitForStart(file_url)
-      # Waiting for big file to download might exceed automation timeout.
-      # Temporarily increase the automation timeout.
-      self._CallFunctionWithNewTimeout(4 * 60 * 1000,  # 4 min.
-                                       self.WaitForAllDownloadsToComplete)
-      # Verify that the file was correctly downloaded
-      self.assertTrue(os.path.exists(downloaded_pkg),
-                      'Downloaded file %s missing.' % downloaded_pkg)
-      self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg),
-                      'Downloaded file %s does not match original' %
-                        downloaded_pkg)
-    finally:  # Cleanup. Remove all big files.
-      os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-      os.path.exists(file_path) and os.remove(file_path)
-
+    self._DeleteAfterShutdown(file_path)
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  os.path.basename(file_path))
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self.DownloadAndWaitForStart(file_url)
+    self._DeleteAfterShutdown(downloaded_pkg)
+    # Waiting for big file to download might exceed automation timeout.
+    # Temporarily increase the automation timeout.
+    self._CallFunctionWithNewTimeout(4 * 60 * 1000,  # 4 min.
+                                     self.WaitForAllDownloadsToComplete)
+    # Verify that the file was correctly downloaded
+    self.assertTrue(os.path.exists(downloaded_pkg),
+                    'Downloaded file %s missing.' % downloaded_pkg)
+    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg),
+                    'Downloaded file %s does not match original' %
+                      downloaded_pkg)
 
   def testFileRenaming(self):
     """Test file renaming when downloading a already-existing filename."""
@@ -240,7 +247,7 @@ class DownloadsTest(pyauto.PyUITest):
     # Verify that all files exist and have the right name
     for filename in renamed_files:
       self.assertTrue(os.path.exists(filename))
-      os.path.exists(filename) and os.remove(filename)
+      self._DeleteAfterShutdown(filename)
 
   def testCrazyFilenames(self):
     """Test downloading with filenames containing special chars.
@@ -260,6 +267,7 @@ class DownloadsTest(pyauto.PyUITest):
 
     # Temp dir for hosting crazy filenames.
     temp_dir = tempfile.mkdtemp(prefix='download')
+    self._DeleteAfterShutdown(unicode(temp_dir))
     # Windows has a dual nature dealing with unicode filenames.
     # While the files are internally saved as unicode, there's a non-unicode
     # aware API that returns a locale-dependent coding on the true unicode
@@ -267,30 +275,27 @@ class DownloadsTest(pyauto.PyUITest):
     # Filesystem-interfacing functions like os.listdir() need to
     # be given unicode strings to "do the right thing" on win.
     # Ref: http://boodebr.org/main/python/all-about-python-and-unicode
-    try:
-      for filename in crazy_filenames:  # filename is unicode.
-        utf8_filename = filename.encode('utf-8')
-        file_path = os.path.join(temp_dir, utf8_filename)
-        _CreateFile(os.path.join(temp_dir, filename))  # unicode file.
-        file_url = self.GetFileURLForPath(file_path)
-        downloaded_file = os.path.join(download_dir, filename)
-        os.path.exists(downloaded_file) and os.remove(downloaded_file)
-        self.DownloadAndWaitForStart(file_url)
-      self.WaitForAllDownloadsToComplete()
+    for filename in crazy_filenames:  # filename is unicode.
+      utf8_filename = filename.encode('utf-8')
+      file_path = os.path.join(temp_dir, utf8_filename)
+      _CreateFile(os.path.join(temp_dir, filename))  # unicode file.
+      file_url = self.GetFileURLForPath(file_path)
+      downloaded_file = os.path.join(download_dir, filename)
+      os.path.exists(downloaded_file) and os.remove(downloaded_file)
+      self.DownloadAndWaitForStart(file_url)
+    self.WaitForAllDownloadsToComplete()
 
-      # Verify downloads.
-      downloads = self.GetDownloadsInfo().Downloads()
-      self.assertEqual(len(downloads), len(crazy_filenames))
+    # Verify downloads.
+    downloads = self.GetDownloadsInfo().Downloads()
+    self.assertEqual(len(downloads), len(crazy_filenames))
 
-      for filename in crazy_filenames:
-        downloaded_file = os.path.join(download_dir, filename)
-        self.assertTrue(os.path.exists(downloaded_file))
-        self.assertTrue(   # Verify file contents.
-            self._EqualFileContents(downloaded_file,
-                                    os.path.join(temp_dir, filename)))
-        os.path.exists(downloaded_file) and os.remove(downloaded_file)
-    finally:
-      shutil.rmtree(unicode(temp_dir))  # unicode so that win treats nicely.
+    for filename in crazy_filenames:
+      downloaded_file = os.path.join(download_dir, filename)
+      self.assertTrue(os.path.exists(downloaded_file))
+      self.assertTrue(   # Verify file contents.
+          self._EqualFileContents(downloaded_file,
+                                  os.path.join(temp_dir, filename)))
+      os.path.exists(downloaded_file) and os.remove(downloaded_file)
 
   def testNoUnsafeDownloadsOnRestart(self):
     """Verify that unsafe file should not show up on session restart."""
@@ -316,42 +321,42 @@ class DownloadsTest(pyauto.PyUITest):
     """
     # Create a 250 MB file on the fly
     file_path = self._MakeFile(2**28)
-    try:
-      file_url = self.GetFileURLForPath(file_path)
-      downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                    os.path.basename(file_path))
-      os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-      self.DownloadAndWaitForStart(file_url)
 
-      # Pause the download and assert that it is paused.
-      pause_dict = self.PerformActionOnDownload(self._GetDownloadId(),
-                                                'toggle_pause')
-      if pause_dict['state'] == 'COMPLETE':
-        logging.info('The download completed before pause. Stopping test.')
-        return
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  os.path.basename(file_path))
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self.DownloadAndWaitForStart(file_url)
 
-      self.assertTrue(pause_dict['is_paused'])
-      self.assertTrue(pause_dict['state'] == 'IN_PROGRESS')
+    self._DeleteAfterShutdown(downloaded_pkg)
+    self._DeleteAfterShutdown(file_path)
 
-      # Resume the download and assert it is not paused.
-      resume_dict = self.PerformActionOnDownload(self._GetDownloadId(),
-                                                 'toggle_pause')
-      self.assertFalse(resume_dict['is_paused'])
+    # Pause the download and assert that it is paused.
+    pause_dict = self.PerformActionOnDownload(self._GetDownloadId(),
+                                              'toggle_pause')
+    if pause_dict['state'] == 'COMPLETE':
+      logging.info('The download completed before pause. Stopping test.')
+      return
 
-      # Waiting for big file to download might exceed automation timeout.
-      # Temporarily increase the automation timeout.
-      self._CallFunctionWithNewTimeout(2 * 60 * 1000,  # 2 min.
-                                       self.WaitForAllDownloadsToComplete)
+    self.assertTrue(pause_dict['is_paused'])
+    self.assertTrue(pause_dict['state'] == 'IN_PROGRESS')
 
-      # Verify that the file was correctly downloaded after pause and resume.
-      self.assertTrue(os.path.exists(downloaded_pkg),
-                      'Downloaded file %s missing.' % downloaded_pkg)
-      self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg),
-                      'Downloaded file %s does not match original' %
-                      downloaded_pkg)
-    finally:  # Cleanup. Remove all big files.
-      os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-      os.path.exists(file_path) and os.remove(file_path)
+    # Resume the download and assert it is not paused.
+    resume_dict = self.PerformActionOnDownload(self._GetDownloadId(),
+                                               'toggle_pause')
+    self.assertFalse(resume_dict['is_paused'])
+
+    # Waiting for big file to download might exceed automation timeout.
+    # Temporarily increase the automation timeout.
+    self._CallFunctionWithNewTimeout(2 * 60 * 1000,  # 2 min.
+                                     self.WaitForAllDownloadsToComplete)
+
+    # Verify that the file was correctly downloaded after pause and resume.
+    self.assertTrue(os.path.exists(downloaded_pkg),
+                    'Downloaded file %s missing.' % downloaded_pkg)
+    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg),
+                    'Downloaded file %s does not match original' %
+                    downloaded_pkg)
 
   def testCancelDownload(self):
     """Verify that we can cancel a download."""
@@ -364,7 +369,7 @@ class DownloadsTest(pyauto.PyUITest):
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
     self.DownloadAndWaitForStart(file_url)
     self.PerformActionOnDownload(self._GetDownloadId(), 'cancel')
-    self.files_to_remove.append(file_path)
+    self._DeleteAfterShutdown(file_path)
 
     state = self.GetDownloadsInfo().Downloads()[0]['state']
     if state == 'COMPLETE':
@@ -399,7 +404,7 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertEqual(1, len(downloads))
     self.assertEqual('a_zip_file.zip', downloads[0]['file_name'])
     self.assertEqual(file_url, downloads[0]['url'])
-    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self._DeleteAfterShutdown(downloaded_pkg)
 
   def testDownloadTheme(self):
     """Verify downloading and saving a theme file installs the theme."""
