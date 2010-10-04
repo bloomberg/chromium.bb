@@ -591,4 +591,9 @@ void PinModule();
 // for a handle to be signaled.
 void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout);
 
+// Enumerates values in a key and adds them to an array.
+// The names of the values are not returned.
+void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
+                        std::vector<std::wstring>* values);
+
 #endif  // CHROME_FRAME_UTILS_H_

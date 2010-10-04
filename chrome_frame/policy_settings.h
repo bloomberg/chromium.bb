@@ -32,6 +32,8 @@ class PolicySettings {
 
   RendererForUrl GetRendererForUrl(const wchar_t* url);
 
+  RendererForUrl GetRendererForContentType(const wchar_t* content_type);
+
  protected:
   // Protected for now since the class is not thread safe.
   void RefreshFromRegistry();
@@ -39,6 +41,7 @@ class PolicySettings {
  protected:
   RendererForUrl default_renderer_;
   std::vector<std::wstring> renderer_exclusion_list_;
+  std::vector<std::wstring> content_type_list_;
 };
 
 

@@ -1515,3 +1515,13 @@ void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout) {
   }
 }
 
+void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
+                        std::vector<std::wstring>* values) {
+  DCHECK(values);
+  RegistryValueIterator url_list(parent_key, sub_key_name);
+  while (url_list.Valid()) {
+    values->push_back(url_list.Value());
+    ++url_list;
+  }
+}
+

@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/policy_constants.h"
+#include "chrome_frame/utils.h"
 
 PolicySettings::RendererForUrl PolicySettings::GetRendererForUrl(
     const wchar_t* url) {
@@ -19,6 +20,21 @@ PolicySettings::RendererForUrl PolicySettings::GetRendererForUrl(
     if (MatchPattern(url, (*it))) {
       renderer = (renderer == RENDER_IN_HOST) ?
           RENDER_IN_CHROME_FRAME : RENDER_IN_HOST;
+      break;
+    }
+  }
+  return renderer;
+}
+
+PolicySettings::RendererForUrl PolicySettings::GetRendererForContentType(
+    const wchar_t* content_type) {
+  DCHECK(content_type);
+  RendererForUrl renderer = RENDERER_NOT_SPECIFIED;
+  std::vector<std::wstring>::const_iterator it;
+  for (it = content_type_list_.begin();
+       it != content_type_list_.end(); ++it) {
+    if (lstrcmpiW(content_type, (*it).c_str()) == 0) {
+      renderer = RENDER_IN_CHROME_FRAME;
       break;
     }
   }
@@ -56,15 +72,21 @@ void PolicySettings::RefreshFromRegistry() {
         policy::key::kRenderInChromeFrameList :
         policy::key::kRenderInHostList;
 
-    RegistryValueIterator url_list(config_key.Handle(),
-                                   ASCIIToWide(exclusion_list_name).c_str());
-    while (url_list.Valid()) {
-      renderer_exclusion_list_.push_back(url_list.Value());
-      ++url_list;
-    }
+    EnumerateKeyValues(config_key.Handle(),
+        ASCIIToWide(exclusion_list_name).c_str(), &renderer_exclusion_list_);
+
     DLOG(INFO) << "Default renderer as specified via policy: " <<
         default_renderer_ << " exclusion list size: " <<
         renderer_exclusion_list_.size();
+  }
+
+  std::wstring sub_key(policy::kRegistrySubKey);
+  sub_key += L"\\";
+  sub_key += ASCIIToWide(policy::key::kChromeFrameContentTypes);
+
+  for (int i = 0; i < arraysize(root_key) && content_type_list_.size() == 0;
+       ++i) {
+    EnumerateKeyValues(root_key[i], sub_key.c_str(), &content_type_list_);
   }
 }
 

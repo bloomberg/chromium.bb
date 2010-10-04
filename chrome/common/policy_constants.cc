@@ -57,6 +57,7 @@ const char kSavingBrowserHistoryDisabled[] = "SavingBrowserHistoryDisabled";
 const char kChromeFrameRendererSettings[] = "ChromeFrameRendererSettings";
 const char kRenderInChromeFrameList[] = "RenderInChromeFrameList";
 const char kRenderInHostList[] = "RenderInHostList";
+const char kChromeFrameContentTypes[] = "ChromeFrameContentTypes";
 
 }  // namespace key
 

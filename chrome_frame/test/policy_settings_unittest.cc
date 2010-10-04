@@ -22,6 +22,7 @@ void DeleteChromeFramePolicyEntries(HKEY root) {
         ASCIIToWide(policy::key::kChromeFrameRendererSettings).c_str());
     key.DeleteKey(ASCIIToWide(policy::key::kRenderInChromeFrameList).c_str());
     key.DeleteKey(ASCIIToWide(policy::key::kRenderInHostList).c_str());
+    key.DeleteKey(ASCIIToWide(policy::key::kChromeFrameContentTypes).c_str());
   }
 }
 
@@ -61,14 +62,32 @@ class TempRegKeyOverride {
 const wchar_t TempRegKeyOverride::kTempTestKeyPath[] =
     L"Software\\Chromium\\TempTestKeys";
 
+bool InitializePolicyKey(HKEY policy_root, RegKey* policy_key) {
+  EXPECT_TRUE(policy_key->Create(policy_root, policy::kRegistrySubKey,
+                                 KEY_ALL_ACCESS));
+  return policy_key->Valid();
+}
+
+void WritePolicyList(RegKey* policy_key, const wchar_t* list_name,
+                     const wchar_t* values[], int count) {
+  DCHECK(policy_key);
+  // Remove any previous settings
+  policy_key->DeleteKey(list_name);
+
+  RegKey list_key;
+  EXPECT_TRUE(list_key.Create(policy_key->Handle(), list_name, KEY_ALL_ACCESS));
+  for (int i = 0; i < count; ++i) {
+    EXPECT_TRUE(list_key.WriteValue(base::StringPrintf(L"%i", i).c_str(),
+                                    values[i]));
+  }
+}
+
 bool SetRendererSettings(HKEY policy_root,
                          PolicySettings::RendererForUrl renderer,
                          const wchar_t* exclusions[],
                          int exclusion_count) {
   RegKey policy_key;
-  EXPECT_TRUE(policy_key.Create(policy_root, policy::kRegistrySubKey,
-                                KEY_ALL_ACCESS));
-  if (!policy_key.Valid())
+  if (!InitializePolicyKey(policy_root, &policy_key))
     return false;
 
   policy_key.WriteValue(
@@ -77,19 +96,22 @@ bool SetRendererSettings(HKEY policy_root,
 
   std::wstring in_cf(ASCIIToWide(policy::key::kRenderInChromeFrameList));
   std::wstring in_host(ASCIIToWide(policy::key::kRenderInHostList));
-  // Remove any previous settings
-  policy_key.DeleteKey(in_cf.c_str());
-  policy_key.DeleteKey(in_host.c_str());
-
   std::wstring exclusion_list(
       renderer == PolicySettings::RENDER_IN_CHROME_FRAME ? in_host : in_cf);
-  RegKey exclusion_key;
-  EXPECT_TRUE(exclusion_key.Create(policy_key.Handle(), exclusion_list.c_str(),
-                                   KEY_ALL_ACCESS));
-  for (int i = 0; i < exclusion_count; ++i) {
-    EXPECT_TRUE(exclusion_key.WriteValue(base::StringPrintf(L"%i", i).c_str(),
-                                         exclusions[i]));
-  }
+  WritePolicyList(&policy_key, exclusion_list.c_str(), exclusions,
+                  exclusion_count);
+
+  return true;
+}
+
+bool SetCFContentTypes(HKEY policy_root, const wchar_t* content_types[],
+                       int count) {
+  RegKey policy_key;
+  if (!InitializePolicyKey(policy_root, &policy_key))
+    return false;
+
+  std::wstring type_list(ASCIIToWide(policy::key::kChromeFrameContentTypes));
+  WritePolicyList(&policy_key, type_list.c_str(), content_types, count);
 
   return true;
 }
@@ -117,10 +139,10 @@ TEST(PolicySettings, RendererForUrl) {
   const wchar_t kNoMatchUrl[] = L"http://www.chromium.org";
 
   scoped_ptr<PolicySettings> settings(new PolicySettings());
-  EXPECT_EQ(settings->default_renderer(),
-            PolicySettings::RENDERER_NOT_SPECIFIED);
-  EXPECT_EQ(settings->GetRendererForUrl(kNoMatchUrl),
-            PolicySettings::RENDERER_NOT_SPECIFIED);
+  EXPECT_EQ(PolicySettings::RENDERER_NOT_SPECIFIED,
+            settings->default_renderer());
+  EXPECT_EQ(PolicySettings::RENDERER_NOT_SPECIFIED,
+            settings->GetRendererForUrl(kNoMatchUrl));
 
   HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
   for (int i = 0; i < arraysize(root); ++i) {
@@ -129,22 +151,22 @@ TEST(PolicySettings, RendererForUrl) {
         arraysize(kTestFilters)));
 
     settings.reset(new PolicySettings());
-    EXPECT_EQ(settings->GetRendererForUrl(kNoMatchUrl),
-              PolicySettings::RENDER_IN_CHROME_FRAME);
+    EXPECT_EQ(PolicySettings::RENDER_IN_CHROME_FRAME,
+              settings->GetRendererForUrl(kNoMatchUrl));
     for (int j = 0; j < arraysize(kTestUrls); ++j) {
-      EXPECT_EQ(settings->GetRendererForUrl(kTestUrls[j]),
-                PolicySettings::RENDER_IN_HOST);
+      EXPECT_EQ(PolicySettings::RENDER_IN_HOST,
+                settings->GetRendererForUrl(kTestUrls[j]));
     }
 
     EXPECT_TRUE(SetRendererSettings(root[i],
         PolicySettings::RENDER_IN_HOST, NULL, 0));
 
     settings.reset(new PolicySettings());
-    EXPECT_EQ(settings->GetRendererForUrl(kNoMatchUrl),
-              PolicySettings::RENDER_IN_HOST);
+    EXPECT_EQ(PolicySettings::RENDER_IN_HOST,
+              settings->GetRendererForUrl(kNoMatchUrl));
     for (int j = 0; j < arraysize(kTestUrls); ++j) {
-      EXPECT_EQ(settings->GetRendererForUrl(kTestUrls[j]),
-                PolicySettings::RENDER_IN_HOST);
+      EXPECT_EQ(PolicySettings::RENDER_IN_HOST,
+                settings->GetRendererForUrl(kTestUrls[j]));
     }
 
     DeleteChromeFramePolicyEntries(root[i]);
@@ -154,3 +176,40 @@ TEST(PolicySettings, RendererForUrl) {
   hklm_pol.reset(NULL);
   TempRegKeyOverride::DeleteAllTempKeys();
 }
+
+TEST(PolicySettings, RendererForContentType) {
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  scoped_ptr<TempRegKeyOverride> hklm_pol(
+      new TempRegKeyOverride(HKEY_LOCAL_MACHINE, L"hklm_pol"));
+  scoped_ptr<TempRegKeyOverride> hkcu_pol(
+      new TempRegKeyOverride(HKEY_CURRENT_USER, L"hkcu_pol"));
+
+  scoped_ptr<PolicySettings> settings(new PolicySettings());
+  EXPECT_EQ(PolicySettings::RENDERER_NOT_SPECIFIED,
+            settings->GetRendererForContentType(L"text/xml"));
+
+  const wchar_t* kTestPolicyContentTypes[] = {
+    L"application/xml",
+    L"text/xml",
+    L"application/pdf",
+  };
+
+  HKEY root[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
+  for (int i = 0; i < arraysize(root); ++i) {
+    SetCFContentTypes(root[i], kTestPolicyContentTypes,
+                      arraysize(kTestPolicyContentTypes));
+    settings.reset(new PolicySettings());
+    for (int type = 0; type < arraysize(kTestPolicyContentTypes); ++type) {
+      EXPECT_EQ(PolicySettings::RENDER_IN_CHROME_FRAME,
+                settings->GetRendererForContentType(
+                    kTestPolicyContentTypes[type]));
+    }
+
+    EXPECT_EQ(PolicySettings::RENDERER_NOT_SPECIFIED,
+              settings->GetRendererForContentType(L"text/html"));
+
+    DeleteChromeFramePolicyEntries(root[i]);
+  }
+}
+

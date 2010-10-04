@@ -54,7 +54,7 @@ extern const char kSavingBrowserHistoryDisabled[];
 extern const char kChromeFrameRendererSettings[];
 extern const char kRenderInChromeFrameList[];
 extern const char kRenderInHostList[];
-
+extern const char kChromeFrameContentTypes[];
 }  // namespace key
 
 }  // namespace policy

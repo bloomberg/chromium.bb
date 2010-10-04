@@ -17,6 +17,7 @@
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/exception_barrier.h"
 #include "chrome_frame/function_stub.h"
+#include "chrome_frame/policy_settings.h"
 #include "chrome_frame/utils.h"
 
 // BINDSTATUS_SERVER_MIMETYPEAVAILABLE == 54. Introduced in IE 8, so
@@ -272,6 +273,12 @@ bool IsAdditionallySupportedContentType(const wchar_t* status_text) {
       return true;
   }
 
+  Singleton<PolicySettings> policy;
+  if (policy->GetRendererForContentType(status_text) ==
+      PolicySettings::RENDER_IN_CHROME_FRAME) {
+    return true;
+  }
+
   return false;
 }
 
@@ -289,7 +296,6 @@ RendererType DetermineRendererTypeFromMetaData(
     const wchar_t* suggested_mime_type,
     const std::wstring& url,
     IWinInetHttpInfo* info) {
-
   bool is_text_html = IsTextHtml(suggested_mime_type);
   bool is_supported_content_type = is_text_html ||
       IsAdditionallySupportedContentType(suggested_mime_type);

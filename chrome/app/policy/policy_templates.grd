@@ -523,6 +523,15 @@ templates and will be translated for each locale. -->
       Customize the list of URL patterns that should always be rendered by the host browser.
       For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.
     </message>
+
+    <message name="IDS_POLICY_CHROMEFRAMECONTENTTYPES_CAPTION"
+             desc="Caption for list of Content-Type values that should additionally be supported by Chrome Frame">
+      Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.
+    </message>
+    <message name="IDS_POLICY_CHROMEFRAMECONTENTTYPES_DESC"
+             desc="Description for list of Content-Type values that should additionally be supported by Chrome Frame">
+      Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.
+    </message>
     <!-- End Chrome Frame messages -->
 
     <!-- Generated documentation messages -->
