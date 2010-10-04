@@ -40,6 +40,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
+// TODOf remove.
+#include <iostream>
+
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
@@ -2138,10 +2141,14 @@ bool Extension::IsAPIPermission(const std::string& str) {
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {
+  // TODOf remove.
+  std::cout << "**** Extension::CanExecuteScriptEverywhere()\n";
   if (location() == Extension::COMPONENT)
     return true;
 
   for (size_t i = 0; i < kNumCanExecuteScriptsEverywhere; ++i) {
+    // TODOf remove.
+    std::cout << "**** Comparing: " << id().c_str() << "==" << scripting_whitelist_[i] << L"\n" << std::flush;
     if (id() == scripting_whitelist_[i])
       return true;
   }
