@@ -57,6 +57,7 @@
 {
   bug_57692
   ThreadSanitizer:Race
+  ...
   fun:*net*GrowableIOBuffer*
   fun:*remoting*TCPChannelTester*
 }
