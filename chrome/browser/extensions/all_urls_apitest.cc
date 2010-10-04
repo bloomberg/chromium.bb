@@ -21,7 +21,6 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
     "fekpfaahmgnelcjpkefdnpiofglcgmgo",
     "bpkfbiacjfimfmglhncgmibnddpnhmoj",
   };
-  Dbg("Set Whitelist");
   Extension::SetScriptingWhitelist(kCanExecuteScriptsEverywhere,
                                    arraysize(kCanExecuteScriptsEverywhere));
 
@@ -40,16 +39,12 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
 
   std::string url;
 
-  Dbg("Extensions loaded");
-
   // Now verify we run content scripts on chrome://newtab/.
   url = "chrome://newtab/";
   ExtensionTestMessageListener listener1a("content script: " + url);
   ExtensionTestMessageListener listener1b("execute: " + url);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  Dbg("Listening on 1a");
   ASSERT_TRUE(listener1a.WaitUntilSatisfied());
-  Dbg("Listening on 1b");
   ASSERT_TRUE(listener1b.WaitUntilSatisfied());
 
   // Now verify data: urls.
@@ -57,9 +52,7 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
   ExtensionTestMessageListener listener2a("content script: " + url);
   ExtensionTestMessageListener listener2b("execute: " + url);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  Dbg("Listening on 2a");
   ASSERT_TRUE(listener2a.WaitUntilSatisfied());
-  Dbg("Listening on 2b");
   ASSERT_TRUE(listener2b.WaitUntilSatisfied());
 
   // Now verify about:version.
@@ -67,9 +60,7 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
   ExtensionTestMessageListener listener3a("content script: " + url);
   ExtensionTestMessageListener listener3b("execute: " + url);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  Dbg("Listening on 3a");
   ASSERT_TRUE(listener3a.WaitUntilSatisfied());
-  Dbg("Listening on 3b");
   ASSERT_TRUE(listener3b.WaitUntilSatisfied());
 
   // Now verify about:blank.
@@ -77,9 +68,7 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
   ExtensionTestMessageListener listener4a("content script: " + url);
   ExtensionTestMessageListener listener4b("execute: " + url);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  Dbg("Listening on 4a");
   ASSERT_TRUE(listener4a.WaitUntilSatisfied());
-  Dbg("Listening on 4b");
   ASSERT_TRUE(listener4b.WaitUntilSatisfied());
 
   // Now verify we can script a regular http page.
@@ -88,9 +77,7 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
   ExtensionTestMessageListener listener5a("content script: " + page_url.spec());
   ExtensionTestMessageListener listener5b("execute: " + page_url.spec());
   ui_test_utils::NavigateToURL(browser(), page_url);
-  Dbg("Listening on 5a");
   ASSERT_TRUE(listener5a.WaitUntilSatisfied());
-  Dbg("Listening on 5b");
   ASSERT_TRUE(listener5b.WaitUntilSatisfied());
 }
 
