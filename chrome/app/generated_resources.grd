@@ -3481,9 +3481,6 @@ each locale. -->
       <message name="IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION" desc="Permisson string for access to geolocation.">
         Your physical location
       </message>
-      <message name="IDS_EXTENSION_PROMPT2_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
-        Manage themes, extensions, and apps
-      </message>      
 
       <!-- Extension error messages -->
       <message name="IDS_EXTENSION_DIRECTORY_NO_EXISTS" desc="Warning displayed in pack dialog when the extension directory does not exist.">

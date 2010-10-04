@@ -1,7 +1,7 @@
 {
   "name": "Install event test",
   "version": "0.1",
-  "permissions": ["management"],
+  "permissions": ["experimental"],
   "background_page": "background.html"
 }
 

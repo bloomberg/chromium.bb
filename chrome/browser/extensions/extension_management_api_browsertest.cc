@@ -4,8 +4,16 @@
 
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/common/chrome_switches.h"
 
-class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {};
+
+class ExtensionManagementApiBrowserTest : public ExtensionBrowserTest {
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalExtensionApis);
+  }
+};
 
 // We test this here instead of in an ExtensionApiTest because normal extensions
 // are not allowed to call the install function.

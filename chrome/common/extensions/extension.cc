@@ -200,7 +200,6 @@ const char Extension::kExperimentalPermission[] = "experimental";
 const char Extension::kGeolocationPermission[] = "geolocation";
 const char Extension::kHistoryPermission[] = "history";
 const char Extension::kIdlePermission[] = "idle";
-const char Extension::kManagementPermission[] = "management";
 const char Extension::kNotificationPermission[] = "notifications";
 const char Extension::kProxyPermission[] = "proxy";
 const char Extension::kTabPermission[] = "tabs";
@@ -219,7 +218,6 @@ const Extension::Permission Extension::kPermissions[] = {
   { kGeolocationPermission, IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION },
   { kIdlePermission, 0 },
   { kHistoryPermission, IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY },
-  { kManagementPermission, IDS_EXTENSION_PROMPT2_WARNING_MANAGEMENT },
   { kNotificationPermission, 0 },
   { kProxyPermission, 0 },
   { kTabPermission, IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY },

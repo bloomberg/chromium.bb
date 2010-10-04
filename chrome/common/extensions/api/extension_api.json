@@ -3915,7 +3915,7 @@
     ]
   },
   {
-    "namespace":"management",
+    "namespace":"experimental.management",
     "types": [
       {
         "id": "IconInfo",

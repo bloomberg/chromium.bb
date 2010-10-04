@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Management - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.experimental.management - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -177,7 +177,6 @@
                   <li><a href="cookies.html">Cookies</a></li>
                   <li><a href="events.html">Events</a></li>
                   <li><a href="history.html">History</a></li>
-                  <li class="leftNavSelected">Management</li>
                   <li><a href="tabs.html">Tabs</a></li>
                   <li><a href="windows.html">Windows</a></li>
                 </ul>
@@ -228,7 +227,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Management</h1>
+        <h1 class="page_title">chrome.experimental.management</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -243,7 +242,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.management</a>
+                <a href="#apiReference">API reference: chrome.experimental.management</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -298,23 +297,19 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary" style="display: none; ">
+        <p id="classSummary">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Management</div>
-<!-- BEGIN AUTHORED CONTENT -->
-<p id="classSummary">
-The <code>chrome.management</code> module provides ways to manage the list of extensions/apps that are installed and running. It is particularly useful for extensions that <a href="override.html">override</a> the built-in New Tab page.
-</p>
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
 <!-- END AUTHORED CONTENT -->
 </div>
 
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.management</h2>
+        <h2>API reference: chrome.experimental.management</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -346,7 +341,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.management.getAll</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.experimental.management.getAll</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -463,7 +458,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="experimental.management.html#type-ExtensionInfo">ExtensionInfo</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -535,7 +530,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.management.launchApp</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
+                  <span>chrome.experimental.management.launchApp</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
                       <var><span>id</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -715,7 +710,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.management.setEnabled</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
+                  <span>chrome.experimental.management.setEnabled</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
                       <var><span>id</span></var></span><span class="null"><span>, </span><span>boolean</span>
                       <var><span>enabled</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
@@ -758,7 +753,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>This should be the id from an item of <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>.</dd>
+          <dd>This should be the id from an item of <a href="experimental.management.html#type-ExtensionInfo">ExtensionInfo</a>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -954,7 +949,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.management.uninstall</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
+                  <span>chrome.experimental.management.uninstall</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
                       <var><span>id</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
@@ -996,7 +991,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>This should be the id from an item of <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>.</dd>
+          <dd>This should be the id from an item of <a href="experimental.management.html#type-ExtensionInfo">ExtensionInfo</a>.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1144,7 +1139,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.management.</span><span>onDisabled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.experimental.management.</span><span>onDisabled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -1167,7 +1162,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="experimental.management.html#type-ExtensionInfo">ExtensionInfo</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1225,7 +1220,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.management.</span><span>onEnabled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.experimental.management.</span><span>onEnabled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -1248,7 +1243,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="experimental.management.html#type-ExtensionInfo">ExtensionInfo</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1306,7 +1301,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.management.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.experimental.management.</span><span>onInstalled</span><span class="subdued">.addListener</span>(function(<span>ExtensionInfo info</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -1329,7 +1324,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="management.html#type-ExtensionInfo">ExtensionInfo</a>
+                        <a href="experimental.management.html#type-ExtensionInfo">ExtensionInfo</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1387,7 +1382,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.management.</span><span>onUninstalled</span><span class="subdued">.addListener</span>(function(<span>string id</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.experimental.management.</span><span>onUninstalled</span><span class="subdued">.addListener</span>(function(<span>string id</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -2118,7 +2113,7 @@ The <code>chrome.management</code> module provides ways to manage the list of ex
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="management.html#type-IconInfo">IconInfo</a>
+                        <a href="experimental.management.html#type-IconInfo">IconInfo</a>
                       </span>
                       <span style="display: none; ">
                         <span>
