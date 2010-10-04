@@ -1024,3 +1024,11 @@
    fun:remoting::SessionManagerPair::DeliverMessage
    fun:remoting::SessionManagerPair::DoProcessMessage
 }
+{
+   bug_57910
+   Heapcheck:Leak
+   fun:inflateInit2_
+   fun:remoting::DecompressorZlib::InitStream
+   fun:remoting::DecompressorZlib::Reset
+   fun:~DecompressorZlib
+}
