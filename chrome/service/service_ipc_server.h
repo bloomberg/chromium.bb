@@ -30,10 +30,13 @@ class ServiceIPCServer : public IPC::Channel::Listener,
   // lifetime is less than the main thread.
   IPC::SyncMessageFilter* sync_message_filter() { return sync_message_filter_; }
 
+  bool is_client_connected() const { return client_connected_; }
+
 
  private:
   // IPC::Channel::Listener implementation:
   virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 
   // IPC message handlers.
@@ -54,6 +57,8 @@ class ServiceIPCServer : public IPC::Channel::Listener,
 
   std::string channel_name_;
   scoped_ptr<IPC::SyncChannel> channel_;
+  // Indicates whether a client is currently connected to the channel.
+  bool client_connected_;
 
   // Allows threads other than the main thread to send sync messages.
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;

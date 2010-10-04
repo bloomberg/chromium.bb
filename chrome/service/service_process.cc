@@ -114,6 +114,9 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
   // After the IPC server has started we signal that the service process is
   // running.
   SignalServiceProcessRunning(kServiceProcessCloudPrint);
+
+  // See if we need to stay running.
+  ScheduleShutdownCheck();
   return true;
 }
 
@@ -183,16 +186,28 @@ void ServiceProcess::OnServiceDisabled() {
   if (0 == enabled_services_) {
     RemoveServiceProcessFromAutoStart();
     // We will wait for some time to respond to IPCs before shutting down.
-    MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &ServiceProcess::ShutdownIfNoServices),
-        kShutdownDelay);
+    ScheduleShutdownCheck();
   }
 }
 
-void ServiceProcess::ShutdownIfNoServices() {
+void ServiceProcess::ScheduleShutdownCheck() {
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableMethod(this, &ServiceProcess::ShutdownIfNeeded),
+      kShutdownDelay);
+}
+
+void ServiceProcess::ShutdownIfNeeded() {
   if (0 == enabled_services_) {
-    Shutdown();
+    if (ipc_server_->is_client_connected()) {
+      // If there is a client connected, we need to try again later.
+      // Note that there is still a timing window here because a client may
+      // decide to connect at this point.
+      // TODO(sanjeevr): Fix this timing window.
+      ScheduleShutdownCheck();
+    } else {
+      Shutdown();
+    }
   }
 }
 

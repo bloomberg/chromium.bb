@@ -104,8 +104,11 @@ class ServiceProcess : public RemotingDirectoryService::Client,
 #endif
 
  private:
-  // Shuts down the process if no services are enabled.
-  void ShutdownIfNoServices();
+  // Schedule a call to ShutdownIfNeeded.
+  void ScheduleShutdownCheck();
+  // Shuts down the process if no services are enabled and no clients are
+  // connected.
+  void ShutdownIfNeeded();
   // Called exactly ONCE per process instance for each service that gets
   // enabled in this process.
   void OnServiceEnabled();

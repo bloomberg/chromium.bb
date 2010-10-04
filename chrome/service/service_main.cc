@@ -29,7 +29,11 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
 #endif   // defined(OS_WIN)
 
   ServiceProcess service_process;
-  service_process.Initialize(&main_message_loop, parameters.command_line_);
+  if (!service_process.Initialize(&main_message_loop,
+                                  parameters.command_line_)) {
+    LOG(ERROR) << "Service process failed to initialize";
+    return 0;
+  }
 
   MessageLoop::current()->Run();
   service_process.Teardown();

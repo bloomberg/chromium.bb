@@ -10,7 +10,7 @@
 #include "ipc/ipc_logging.h"
 
 ServiceIPCServer::ServiceIPCServer(const std::string& channel_name)
-    : channel_name_(channel_name) {
+    : channel_name_(channel_name), client_connected_(false) {
 }
 
 bool ServiceIPCServer::Init() {
@@ -50,11 +50,19 @@ ServiceIPCServer::~ServiceIPCServer() {
   channel_->ClearIPCMessageLoop();
 }
 
+void ServiceIPCServer::OnChannelConnected(int32 peer_pid) {
+  DCHECK(!client_connected_);
+  client_connected_ = true;
+}
+
 void ServiceIPCServer::OnChannelError() {
   // When a client (typically a browser process) disconnects, the pipe is
   // closed and we get an OnChannelError. Since we want to keep servicing
   // client requests, we will recreate the channel.
-  CreateChannel();
+  bool client_was_connected = client_connected_;
+  client_connected_ = false;
+  if (client_was_connected)
+    CreateChannel();
 }
 
 bool ServiceIPCServer::Send(IPC::Message* msg) {
