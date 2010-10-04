@@ -1543,7 +1543,7 @@ void RenderView::LoadNavigationErrorPage(WebFrame* frame,
     int resource_id;
     DictionaryValue error_strings;
 
-    if (failed_url.is_valid())
+    if (failed_url.is_valid() && !failed_url.SchemeIs(chrome::kExtensionScheme))
       extension = ExtensionRendererInfo::GetByURL(failed_url);
     if (extension) {
       LocalizedError::GetAppErrorStrings(error, failed_url, extension,
