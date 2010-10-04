@@ -46,7 +46,6 @@ ServiceRuntime::ServiceRuntime(BrowserInterface* browser_interface,
       async_send_desc_(NULL) {
 }
 
-// shm is consumed (delete invoked).
 bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
                                        nacl::DescWrapper* shm) {
   // TODO(sehr): this should use the new
@@ -104,16 +103,12 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
       const char* error = "failed to send nexe";
       PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
       browser_interface_->AddToConsole(plugin()->instance_id(), error);
-      // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
-      delete shm;
       // TODO(gregoryd): close communication channels
       delete subprocess_;
       subprocess_ = NULL;
       return false;
     }
     /* LoadModule succeeded, proceed normally */
-    // TODO(sehr,mseaborn): use scoped_ptr for management of DescWrappers.
-    delete shm;
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     // Establish the communication for handle passing protocol
     struct NaClDesc* desc = NaClHandlePassBrowserGetSocketAddress();

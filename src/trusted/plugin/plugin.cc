@@ -634,7 +634,7 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
         wrapper_factory_->MakeGeneric(NaClDescRef(shm_nacl_desc));
     service_runtime_started = service_runtime_->StartUnderChromium(
         nacl_module_url_.c_str(), wrapped_shm);
-    // Start consumes the wrapped_shm.
+    delete wrapped_shm;
   } else if (posix_file_desc > NACL_NO_FILE_DESC) {
     NACL_UNIMPLEMENTED();
   } else {
