@@ -16,7 +16,7 @@ const std::string kAllUrlsTarget =
 typedef ExtensionApiTest AllUrlsApiTest;
 
 // TODOf Remove.
-void Dbg(char* msg) {
+void Dbg(const char* msg) {
   std::cout << "**** " << msg << "\n" << std::flush;
 }
 
