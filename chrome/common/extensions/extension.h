@@ -179,6 +179,7 @@ class Extension {
   static const char kGeolocationPermission[];
   static const char kHistoryPermission[];
   static const char kIdlePermission[];
+  static const char kManagementPermission[];
   static const char kNotificationPermission[];
   static const char kProxyPermission[];
   static const char kTabPermission[];
