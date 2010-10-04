@@ -830,8 +830,8 @@ def CommandSelLdrTestNacl(env, name, command,
   if env.Bit('nacl_glibc'):
     command = ['${NACL_SDK_LIB}/runnable-ld.so',
                '--library-path', '${NACL_SDK_LIB}'] + command
-    extra_env = 'NACL_DANGEROUS_ENABLE_FILE_ACCESS=1'
-    extra['osenv'] = AddToStringifiedList(extra.get('osenv'), extra_env)
+    # Enable file access.
+    sel_ldr_flags += ['-a']
     # TODO(mseaborn): Remove the need for the -s (stub out) option.
     sel_ldr_flags += ['-s']
 
