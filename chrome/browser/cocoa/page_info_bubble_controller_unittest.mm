@@ -101,9 +101,7 @@ class PageInfoBubbleControllerTest : public CocoaTest {
 TEST_F(PageInfoBubbleControllerTest, NoHistoryNoSecurity) {
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
-      l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
-          ASCIIToUTF16("google.com")),
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY),
       PageInfoModel::SECTION_INFO_IDENTITY);
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),
@@ -120,9 +118,7 @@ TEST_F(PageInfoBubbleControllerTest, NoHistoryNoSecurity) {
 TEST_F(PageInfoBubbleControllerTest, HistoryNoSecurity) {
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_IDENTITY_TITLE),
-      l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY,
-          ASCIIToUTF16("google.com")),
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY),
       PageInfoModel::SECTION_INFO_IDENTITY);
   model_->AddSection(PageInfoModel::ICON_STATE_ERROR,
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_CONNECTION_TITLE),

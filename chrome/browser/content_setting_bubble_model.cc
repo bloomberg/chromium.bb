@@ -224,8 +224,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     COMPILE_ASSERT(arraysize(kBlockIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
     std::string radio_block_label;
-    radio_block_label = l10n_util::GetStringFUTF8(
-        kBlockIDs[content_type()], UTF8ToUTF16(display_host));
+    radio_block_label = l10n_util::GetStringUTF8(kBlockIDs[content_type()]);
 
     radio_group.radio_items.push_back(radio_allow_label);
     radio_group.radio_items.push_back(radio_block_label);

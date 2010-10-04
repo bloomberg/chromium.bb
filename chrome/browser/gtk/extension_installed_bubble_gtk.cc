@@ -201,8 +201,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Manage label
   GtkWidget* manage_label = gtk_label_new(
-      l10n_util::GetStringFUTF8(IDS_EXTENSION_INSTALLED_MANAGE_INFO,
-          UTF8ToUTF16(extension_->name())).c_str());
+      l10n_util::GetStringUTF8(IDS_EXTENSION_INSTALLED_MANAGE_INFO).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(manage_label), TRUE);
   gtk_widget_set_size_request(manage_label, kTextColumnWidth, -1);
   gtk_box_pack_start(GTK_BOX(text_column), manage_label, FALSE, FALSE, 0);

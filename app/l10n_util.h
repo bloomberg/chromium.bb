@@ -150,9 +150,9 @@ string16 GetStringFUTF16(int message_id,
                          const string16& a,
                          size_t* offset);
 string16 GetStringFUTF16(int message_id,
-                        const string16& a,
-                        const string16& b,
-                        std::vector<size_t>* offsets);
+                         const string16& a,
+                         const string16& b,
+                         std::vector<size_t>* offsets);
 
 // Convenience formatters for a single number.
 std::wstring GetStringF(int message_id, int a);

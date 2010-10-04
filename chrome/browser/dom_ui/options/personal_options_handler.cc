@@ -23,6 +23,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -167,10 +168,12 @@ void PersonalOptionsHandler::Initialize() {
 void PersonalOptionsHandler::SetSyncStatusUIString(const ListValue* args) {
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
   if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
-    scoped_ptr<Value> status_string(Value::CreateStringValue(
-        l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
-                                   service->GetAuthenticatedUsername(),
-                                   service->GetLastSyncedTimeString())));
+    string16 status_label;
+    // TODO(estade): use |link_label|.
+    string16 link_label;
+    sync_ui_util::GetStatusLabels(service, &status_label, &link_label);
+
+    scoped_ptr<Value> status_string(Value::CreateStringValue(status_label));
 
     dom_ui_->CallJavascriptFunction(
         L"PersonalOptions.syncStatusCallback",
