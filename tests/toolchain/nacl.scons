@@ -5,31 +5,32 @@
 
 Import('env')
 
-
-# TODO(cbiffle): enable this for pnacl
-# NOTE: the pnacl linker does not understand '-Wl,-whole-archive'
-if ARGUMENTS.get('bitcode'):
-  Return()
-
-if env.Bit('nacl_glibc'):
-  # This test does not build successfully with nacl-glibc yet.
-  Return()
-
 # force inclusion of entire library, so that we can validate it
 # NOTE: This approach does not work for -lc because of tons of
 #       undefined symbols which would have to be stubbed out
+wa_env = env.Clone()
+if not ARGUMENTS.get('bitcode') and not env.Bit('nacl_glibc'):
+  # NOTE: the pnacl linker does not understand '-Wl,-whole-archive'
+  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=943
+  # NOTE: This test does not build successfully with nacl-glibc yet.
+  wa_env.Prepend(LINKFLAGS=['-Wl,-whole-archive',
+                            '-lgcc',
+                            '-lm',
+                            '-lnacl',
+                            '-lsrpc',
+                            '-lpthread',
+                            '-Wl,-no-whole-archive'])
 
-env.Prepend(LINKFLAGS=['-Wl,-whole-archive',
-                      '-lgcc',
-                      '-lm',
-                      '-lnacl',
-                      '-lsrpc',
-                      '-lpthread',
-                      '-Wl,-no-whole-archive'])
+nexe = wa_env.ComponentProgram('dummy.nexe', 'dummy.c')
+node = wa_env.CommandValidatorTestNacl('whole_archive_test.out',
+                                       image=[nexe])
+wa_env.AddNodeToTestSuite(node, ['toolchain_tests'], 'run_whole_archive_test')
 
-nexe = env.ComponentProgram('dummy.nexe', 'dummy.c')
-node = env.CommandValidatorTestNacl(
-    'dummy_test.out',
-    image=[nexe],
-    )
-env.AddNodeToTestSuite(node, ['toolchain_tests'])
+
+if not ARGUMENTS.get('bitcode'):
+  # c.f. http://code.google.com/p/nativeclient/issues/detail?id=516
+  nexe = env.ComponentProgram('setlongjmp.nexe', 'setlongjmp.c')
+  node = env.CommandSelLdrTestNacl('setlongjmp.out',
+                                   command=[nexe],
+                                   exit_status='55')
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_setlongjmp_test')
