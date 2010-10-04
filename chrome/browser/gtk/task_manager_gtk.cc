@@ -793,8 +793,8 @@ void TaskManagerGtk::OnLinkActivated() {
 
 gint TaskManagerGtk::CompareImpl(GtkTreeModel* model, GtkTreeIter* a,
                                  GtkTreeIter* b, int id) {
-  int row1 = gtk_tree::GetRowNumForIter(model, a);
-  int row2 = gtk_tree::GetRowNumForIter(model, b);
+  int row1 = gtk_tree::GetRowNumForIter(model, b);
+  int row2 = gtk_tree::GetRowNumForIter(model, a);
 
   // When sorting by non-grouped attributes (e.g., Network), just do a normal
   // sort.
