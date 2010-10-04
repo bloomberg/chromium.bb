@@ -15,17 +15,8 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
-  // First add the two extensions we are going to load to the whitelist.
-  const char* kCanExecuteScriptsEverywhere[] = {
-    "fekpfaahmgnelcjpkefdnpiofglcgmgo",
-    "bpkfbiacjfimfmglhncgmibnddpnhmoj",
-  };
-  Extension::SetScriptingWhitelist(kCanExecuteScriptsEverywhere,
-                                   arraysize(kCanExecuteScriptsEverywhere));
-
-
-  // Then load the two extension.
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
+  // First load the two extension.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");
   FilePath extension_dir2 = test_data_dir_.AppendASCII("all_urls")
@@ -36,6 +27,22 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
   ASSERT_TRUE(LoadExtension(extension_dir1));
   ASSERT_TRUE(LoadExtension(extension_dir2));
   EXPECT_EQ(size_before + 2, service->extensions()->size());
+  Extension* extensionA = service->extensions()->at(size_before);
+  Extension* extensionB = service->extensions()->at(size_before + 1);
+
+  // Then add the two extensions to the whitelist.
+  const char* kCanExecuteScriptsEverywhere[] = {
+    extensionA->id().c_str(),
+    extensionB->id().c_str(),
+  };
+  Extension::SetScriptingWhitelist(kCanExecuteScriptsEverywhere,
+                                   arraysize(kCanExecuteScriptsEverywhere));
+
+  // Ideally, we'd set the whitelist first and then load the extensions.
+  // However, we can't reliably know the ids of the extensions until we load
+  // them so we reload them so that the whitelist is in effect from the start.
+  ReloadExtension(extensionA->id());
+  ReloadExtension(extensionB->id());
 
   std::string url;
 
