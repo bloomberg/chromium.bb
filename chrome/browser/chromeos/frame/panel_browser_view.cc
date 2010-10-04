@@ -6,7 +6,19 @@
 
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "cros/chromeos_wm_ipc_enums.h"
+#include "views/widget/widget.h"
 #include "views/window/window.h"
+
+namespace {
+
+const int kPanelMinWidthPixels = 100;
+const int kPanelMinHeightPixels = 100;
+const int kPanelDefaultWidthPixels = 250;
+const int kPanelDefaultHeightPixels = 300;
+const float kPanelMaxWidthFactor = 0.80;
+const float kPanelMaxHeightFactor = 0.80;
+
+}
 
 namespace chromeos {
 
@@ -16,10 +28,35 @@ PanelBrowserView::PanelBrowserView(Browser* browser)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// PanelBrowserView functions
+
+void PanelBrowserView::LimitBounds(gfx::Rect* bounds) const {
+  GdkScreen* screen = gtk_widget_get_screen(GetWidget()->GetNativeView());
+  int max_width = gdk_screen_get_width(screen) * kPanelMaxWidthFactor;
+  int max_height = gdk_screen_get_height(screen) * kPanelMaxHeightFactor;
+
+  if (bounds->width() == 0 && bounds->height() == 0) {
+    bounds->set_width(kPanelDefaultWidthPixels);
+    bounds->set_height(kPanelDefaultHeightPixels);
+  }
+
+  if (bounds->width() < kPanelMinWidthPixels)
+    bounds->set_width(kPanelMinWidthPixels);
+  else if (bounds->width() > max_width)
+    bounds->set_width(max_width);
+
+  if (bounds->height() < kPanelMinHeightPixels)
+    bounds->set_height(kPanelMinHeightPixels);
+  else if (bounds->height() > max_height)
+    bounds->set_height(max_height);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // BrowserView overrides.
 
 void PanelBrowserView::Init() {
-  BrowserView::Init();
+  ::BrowserView::Init();
   // The visibility of toolbar is controlled in
   // the BrowserView::IsToolbarVisible method.
 
@@ -27,6 +64,7 @@ void PanelBrowserView::Init() {
   gfx::NativeWindow native_window = window->GetNativeWindow();
   // The window manager needs the min size for popups.
   gfx::Rect bounds = window->GetBounds();
+  LimitBounds(&bounds);
   gtk_widget_set_size_request(
       GTK_WIDGET(native_window), bounds.width(), bounds.height());
   // If we don't explicitly resize here there is a race condition between
@@ -42,23 +80,29 @@ void PanelBrowserView::Show() {
         true /* focus when opened */, bounds(), creator_xid_,
         WM_IPC_PANEL_USER_RESIZE_HORIZONTALLY_AND_VERTICALLY);
   }
-  BrowserView::Show();
+  ::BrowserView::Show();
+}
+
+void PanelBrowserView::SetBounds(const gfx::Rect& bounds) {
+  gfx::Rect limit_bounds = bounds;
+  LimitBounds(&limit_bounds);
+  ::BrowserView::SetBounds(limit_bounds);
 }
 
 void PanelBrowserView::Close() {
-  BrowserView::Close();
+  ::BrowserView::Close();
   if (panel_controller_.get())
     panel_controller_->Close();
 }
 
 void PanelBrowserView::UpdateTitleBar() {
-  BrowserView::UpdateTitleBar();
+  ::BrowserView::UpdateTitleBar();
   if (panel_controller_.get())
     panel_controller_->UpdateTitleBar();
 }
 
 void PanelBrowserView::ActivationChanged(bool activated) {
-  BrowserView::ActivationChanged(activated);
+  ::BrowserView::ActivationChanged(activated);
   if (panel_controller_.get()) {
     if (activated)
       panel_controller_->OnFocusIn();
@@ -71,6 +115,13 @@ void PanelBrowserView::SetCreatorView(PanelBrowserView* creator) {
   DCHECK(creator);
   GtkWindow* window = creator->GetNativeHandle();
   creator_xid_ = x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window));
+}
+
+bool PanelBrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
+  bool res = ::BrowserView::GetSavedWindowBounds(bounds);
+  if (res)
+    LimitBounds(bounds);
+  return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -47,8 +47,7 @@ BrowserFrameGtk::~BrowserFrameGtk() {
 
 void BrowserFrameGtk::Init() {
   if (browser_frame_view_ == NULL) {
-    if (browser_view_->browser()->type() == Browser::TYPE_POPUP ||
-        browser_view_->browser()->type() == Browser::TYPE_APP_PANEL)
+    if (browser_view_->browser()->type() & Browser::TYPE_POPUP)
       browser_frame_view_ = new PopupNonClientFrameView();
     else
       browser_frame_view_ = new OpaqueBrowserFrameView(this, browser_view_);

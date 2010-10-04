@@ -80,8 +80,9 @@ class Browser : public TabHandlerDelegate,
 
     // TODO(skerner): crbug/56776: Until the panel UI is complete on all
     // platforms, apps that set app.launch.container = "panel" have type
-    // APP_POPUP.
-    TYPE_APP_PANEL = TYPE_APP | 32,
+    // APP_POPUP. (see Browser::CreateForApp)
+    // NOTE: TYPE_APP_PANEL is a superset of TYPE_APP_POPUP.
+    TYPE_APP_PANEL = TYPE_APP | TYPE_POPUP | 32,
     TYPE_ANY = TYPE_NORMAL |
                TYPE_POPUP |
                TYPE_APP |

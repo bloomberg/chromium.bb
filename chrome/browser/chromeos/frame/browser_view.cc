@@ -274,8 +274,7 @@ void BrowserView::ChildPreferredSizeChanged(View* child) {
 }
 
 bool BrowserView::GetSavedWindowBounds(gfx::Rect* bounds) const {
-  if ((browser()->type() & Browser::TYPE_POPUP) == 0 &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame)) {
     // Typically we don't request a full screen size. This means we'll request a
     // non-full screen size, layout/paint at that size, then the window manager
     // will snap us to full screen size. This results in an ugly
@@ -367,9 +366,7 @@ void BrowserView::InitSystemMenu() {
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // Create a browser view for chromeos.
   BrowserView* view;
-  if ((browser->type() == Browser::TYPE_POPUP) ||
-      (browser->type() == Browser::TYPE_APP_POPUP) ||
-      (browser->type() == Browser::TYPE_APP_PANEL))
+  if (browser->type() & Browser::TYPE_POPUP)
     view = new chromeos::PanelBrowserView(browser);
   else
     view = new chromeos::BrowserView(browser);

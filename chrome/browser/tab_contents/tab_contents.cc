@@ -6,11 +6,6 @@
 
 #include <cmath>
 
-#if defined(OS_CHROMEOS)
-// For GdkScreen
-#include <gdk/gdk.h>
-#endif  // defined(OS_CHROMEOS)
-
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #if defined(OS_MACOSX)
@@ -162,13 +157,6 @@ namespace {
 const int kQueryStateDelay = 5000;
 
 const int kSyncWaitDelay = 40;
-
-#if defined(OS_CHROMEOS)
-// If a popup window is bigger than this fraction of the screen on chrome os,
-// turn it into a tab
-const float kMaxWidthFactor = 0.5;
-const float kMaxHeightFactor = 0.6;
-#endif
 
 // If another javascript message box is displayed within
 // kJavascriptMessageExpectedDelay of a previous javascript message box being
@@ -991,22 +979,6 @@ void TabContents::AddNewContents(TabContents* new_contents,
     delegate_->GetConstrainingContents(this)->AddPopup(
         new_contents, initial_pos);
   } else {
-#if defined(OS_CHROMEOS)
-    if (disposition == NEW_POPUP) {
-      // If the popup is bigger than a given factor of the screen, then
-      // turn it into a foreground tab (on chrome os only)
-      // Also check for width or height == 0, which would otherwise indicate
-      // a tab sized popup window.
-      GdkScreen* screen = gdk_screen_get_default();
-      int max_width = gdk_screen_get_width(screen) * kMaxWidthFactor;
-      int max_height = gdk_screen_get_height(screen) * kMaxHeightFactor;
-      if (initial_pos.width() > max_width || initial_pos.width() == 0 ||
-          initial_pos.height() > max_height || initial_pos.height() == 0) {
-        disposition = NEW_FOREGROUND_TAB;
-      }
-    }
-#endif
-
     new_contents->DisassociateFromPopupCount();
     delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
                               user_gesture);

@@ -32,7 +32,8 @@ BrowserFrameChromeos::~BrowserFrameChromeos() {
 void BrowserFrameChromeos::Init() {
   // NOTE: This logic supersedes the logic in BrowserFrameGtk::Init()
   // by always setting browser_frame_view_.
-  if (IsPanel()) {
+  bool is_popup = browser_view()->IsBrowserTypePopup();
+  if (is_popup) {
     // ChromeOS Panels should always use PopupNonClientFrameView.
     set_browser_frame_view(new PopupNonClientFrameView());
   } else {
@@ -42,7 +43,7 @@ void BrowserFrameChromeos::Init() {
 
   BrowserFrameGtk::Init();
 
-  if (!IsPanel()) {
+  if (!is_popup) {
     // On chromeos we want windows to always render as active.
     GetNonClientView()->DisableInactiveRendering(true);
   }
@@ -51,12 +52,8 @@ void BrowserFrameChromeos::Init() {
 bool BrowserFrameChromeos::IsMaximized() const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeosFrame))
     return WindowGtk::IsMaximized();
-  return !IsFullscreen() && (!IsPanel() || WindowGtk::IsMaximized());
-}
-
-bool BrowserFrameChromeos::IsPanel() const {
-  return browser_view()->IsBrowserTypePanel() ||
-      browser_view()->IsBrowserTypePopup();
+  bool is_popup = browser_view()->IsBrowserTypePopup();
+  return !IsFullscreen() && (!is_popup || WindowGtk::IsMaximized());
 }
 
 }  // namespace chromeos

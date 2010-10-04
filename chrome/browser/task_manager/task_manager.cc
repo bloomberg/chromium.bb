@@ -955,7 +955,6 @@ void TaskManager::OpenAboutMemory() {
     // TabContents in a tabbed browser, so we need to grab it with GetLastActive
     // before the call to show().
     if (browser->type() & (Browser::TYPE_APP |
-                           Browser::TYPE_APP_PANEL |
                            Browser::TYPE_DEVTOOLS |
                            Browser::TYPE_POPUP)) {
       browser = BrowserList::GetLastActive();

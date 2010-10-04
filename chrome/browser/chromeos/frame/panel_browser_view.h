@@ -18,7 +18,9 @@ namespace chromeos {
 class PanelController;
 
 // A browser view that implements Panel specific behavior.
-class PanelBrowserView : public BrowserView,
+// NOTE: This inherits from ::BrowserView in chrome/browser/views/frame/,
+// not chromeos::BrowserView in chrome/browser/chromeos/frame/.
+class PanelBrowserView : public ::BrowserView,
                          public PanelController::Delegate {
  public:
   explicit PanelBrowserView(Browser* browser);
@@ -26,11 +28,12 @@ class PanelBrowserView : public BrowserView,
   // BrowserView overrides.
   virtual void Init();
   virtual void Show();
+  virtual void SetBounds(const gfx::Rect& bounds);
   virtual void Close();
   virtual void UpdateTitleBar();
   virtual void ActivationChanged(bool activated);
-
   virtual void SetCreatorView(PanelBrowserView* creator);
+  virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
 
   // PanelController::Delegate overrides
   virtual string16 GetPanelTitle();
@@ -39,6 +42,9 @@ class PanelBrowserView : public BrowserView,
   virtual void OnPanelStateChanged(PanelController::State state) {}
 
  private:
+  // Enforces the min, max, and default bounds.
+  void LimitBounds(gfx::Rect* bounds) const;
+
   // Controls interactions with the window manager for popup panels.
   scoped_ptr<chromeos::PanelController> panel_controller_;
 

@@ -309,17 +309,24 @@ bool CreateWindowFunction::RunImpl() {
   }
 
   // Try to position the new browser relative its originating browser window.
-  gfx::Rect empty_bounds;
-  gfx::Rect bounds;
+  gfx::Rect  window_bounds;
   bool maximized;
   // The call offsets the bounds by kWindowTilePixels (defined in WindowSizer to
   // be 10)
   //
   // NOTE(rafaelw): It's ok if GetCurrentBrowser() returns NULL here.
   // GetBrowserWindowBounds will default to saved "default" values for the app.
-  WindowSizer::GetBrowserWindowBounds(std::string(), empty_bounds,
-                                      GetCurrentBrowser(), &bounds,
+  WindowSizer::GetBrowserWindowBounds(std::string(), gfx::Rect(),
+                                      GetCurrentBrowser(), &window_bounds,
                                       &maximized);
+
+  // Calculate popup bounds separately. In ChromiumOS the default is 0x0 which
+  // indicates default window sizes in PanelBrowserView. In other OSs popups
+  // use the same default bounds as windows.
+  gfx::Rect popup_bounds;
+#if !defined(OS_CHROMEOS)
+  popup_bounds = window_bounds;  // Use window size as default for popups
+#endif
 
   Profile* window_profile = profile();
   Browser::Type window_type = Browser::TYPE_NORMAL;
@@ -330,25 +337,29 @@ bool CreateWindowFunction::RunImpl() {
     if (args->HasKey(keys::kLeftKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kLeftKey,
                                                    &bounds_val));
-      bounds.set_x(bounds_val);
+      window_bounds.set_x(bounds_val);
+      popup_bounds.set_x(bounds_val);
     }
 
     if (args->HasKey(keys::kTopKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kTopKey,
                                                    &bounds_val));
-      bounds.set_y(bounds_val);
+      window_bounds.set_y(bounds_val);
+      popup_bounds.set_y(bounds_val);
     }
 
     if (args->HasKey(keys::kWidthKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kWidthKey,
                                                    &bounds_val));
-      bounds.set_width(bounds_val);
+      window_bounds.set_width(bounds_val);
+      popup_bounds.set_width(bounds_val);
     }
 
     if (args->HasKey(keys::kHeightKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kHeightKey,
                                                    &bounds_val));
-      bounds.set_height(bounds_val);
+      window_bounds.set_height(bounds_val);
+      popup_bounds.set_height(bounds_val);
     }
 
     bool incognito = false;
@@ -366,7 +377,7 @@ bool CreateWindowFunction::RunImpl() {
       if (type_str == keys::kWindowTypeValueNormal) {
         window_type = Browser::TYPE_NORMAL;
       } else if (type_str == keys::kWindowTypeValuePopup) {
-        window_type = Browser::TYPE_POPUP;
+        window_type = Browser::TYPE_APP_POPUP;
       } else {
         EXTENSION_FUNCTION_VALIDATE(false);
       }
@@ -378,8 +389,10 @@ bool CreateWindowFunction::RunImpl() {
   new_window->AddTabWithURL(url, GURL(), PageTransition::LINK, -1,
                             TabStripModel::ADD_SELECTED, NULL, std::string(),
                             &new_window);
-
-  new_window->window()->SetBounds(bounds);
+  if (window_type & Browser::TYPE_POPUP)
+    new_window->window()->SetBounds(popup_bounds);
+  else
+    new_window->window()->SetBounds(window_bounds);
   new_window->window()->Show();
 
   if (new_window->profile()->IsOffTheRecord() && !include_incognito()) {

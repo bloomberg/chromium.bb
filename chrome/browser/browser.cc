@@ -124,6 +124,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include <gdk/gdk.h>  // For GdkScreen
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
@@ -149,6 +150,13 @@ static const std::string kHashMark = "#";
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+// If a popup window is bigger than this fraction of the screen on chrome os,
+// turn it into a tab
+const float kPopupMaxWidthFactor = 0.5;
+const float kPopupMaxHeightFactor = 0.6;
+#endif
 
 // Returns true if the specified TabContents has unload listeners registered.
 bool TabHasUnloadListener(TabContents* contents) {
@@ -2680,6 +2688,22 @@ void Browser::AddNewContents(TabContents* source,
   DCHECK(disposition != SAVE_TO_DISK);  // No code for this yet
   DCHECK(disposition != CURRENT_TAB);  // Can't create a new contents for the
                                        // current tab.
+
+#if defined(OS_CHROMEOS)
+    if (disposition == NEW_POPUP) {
+      // If the popup is bigger than a given factor of the screen, then
+      // turn it into a foreground tab (on chrome os only)
+      // Also check for width or height == 0, which would otherwise indicate
+      // a tab sized popup window.
+      GdkScreen* screen = gdk_screen_get_default();
+      int max_width = gdk_screen_get_width(screen) * kPopupMaxWidthFactor;
+      int max_height = gdk_screen_get_height(screen) * kPopupMaxHeightFactor;
+      if (initial_pos.width() > max_width || initial_pos.width() == 0 ||
+          initial_pos.height() > max_height || initial_pos.height() == 0) {
+        disposition = NEW_FOREGROUND_TAB;
+      }
+    }
+#endif
 
   // If this is a window with no tabstrip, we can only have one tab so we need
   // to process this in tabbed browser window.
