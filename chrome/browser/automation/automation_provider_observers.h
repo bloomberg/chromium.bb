@@ -205,7 +205,7 @@ class TabCountChangeObserver : public TabStripModelObserver {
   virtual void TabInsertedAt(TabContents* contents,
                              int index,
                              bool foreground);
-  virtual void TabClosingAt(TabContents* contents, int index);
+  virtual void TabDetachedAt(TabContents* contents, int index);
   virtual void TabStripModelDeleted();
 
  private:

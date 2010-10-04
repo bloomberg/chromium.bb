@@ -365,7 +365,7 @@ void TabCountChangeObserver::TabInsertedAt(TabContents* contents,
   CheckTabCount();
 }
 
-void TabCountChangeObserver::TabClosingAt(TabContents* contents, int index) {
+void TabCountChangeObserver::TabDetachedAt(TabContents* contents, int index) {
   CheckTabCount();
 }
 

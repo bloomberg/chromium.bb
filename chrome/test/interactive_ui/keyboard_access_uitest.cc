@@ -117,8 +117,9 @@ TEST_F(KeyboardAccessTest, TestShiftAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, views::Event::EF_SHIFT_DOWN);
 }
 
-// Fails, http://crbug.com/50760.
-TEST_F(KeyboardAccessTest, FAILS_ReserveKeyboardAccelerators) {
+// Test that JavaScript cannot intercept reserved keyboard accelerators like
+// ctrl-t to open a new tab or ctrl-f4 to close a tab.
+TEST_F(KeyboardAccessTest, ReserveKeyboardAccelerators) {
   const std::string kBadPage =
       "<html><script>"
       "document.onkeydown = function() {"
