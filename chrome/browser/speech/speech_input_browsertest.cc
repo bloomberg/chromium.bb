@@ -43,6 +43,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
                         int render_process_id,
                         int render_view_id,
                         const gfx::Rect& element_rect) {
+    LOG(INFO) << "StartRecognition invoked.";
     EXPECT_EQ(0, caller_id_);
     EXPECT_EQ(NULL, delegate_);
     caller_id_ = caller_id;
@@ -52,11 +53,13 @@ class FakeSpeechInputManager : public SpeechInputManager {
         &FakeSpeechInputManager::SetFakeRecognitionResult));
   }
   void CancelRecognition(int caller_id) {
+    LOG(INFO) << "CancelRecognition invoked.";
     EXPECT_EQ(caller_id_, caller_id);
     caller_id_ = 0;
     delegate_ = NULL;
   }
   void StopRecording(int caller_id) {
+    LOG(INFO) << "StopRecording invoked.";
     EXPECT_EQ(caller_id_, caller_id);
     // Nothing to do here since we aren't really recording.
   }
@@ -64,6 +67,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
  private:
   void SetFakeRecognitionResult() {
     if (caller_id_) {  // Do a check in case we were cancelled..
+      LOG(INFO) << "Setting fake recognition result.";
       delegate_->DidCompleteRecording(caller_id_);
       delegate_->SetRecognitionResult(caller_id_,
                                       ASCIIToUTF16(kTestResult));
