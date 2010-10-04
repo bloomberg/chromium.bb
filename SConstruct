@@ -828,16 +828,16 @@ def CommandSelLdrTestNacl(env, name, command,
     sel_ldr_flags += ['-Q']
 
   if env.Bit('nacl_glibc'):
-    # TODO(mseaborn): We should not use '--' here; we should use it
-    # unconditionally below.
     command = ['${NACL_SDK_LIB}/runnable-ld.so',
-               '--', '--library-path', '${NACL_SDK_LIB}'] + command
+               '--library-path', '${NACL_SDK_LIB}'] + command
     extra_env = 'NACL_DANGEROUS_ENABLE_FILE_ACCESS=1'
     extra['osenv'] = AddToStringifiedList(extra.get('osenv'), extra_env)
     # TODO(mseaborn): Remove the need for the -s (stub out) option.
     sel_ldr_flags += ['-s']
 
-  command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
+  # We use "-f" because sel_universal requires it, but otherwise we
+  # could use "['--'] + command" instead.
+  command = [sel_ldr] + sel_ldr_flags + ['-f', command[0], '--'] + command[1:]
 
   # NOTE(robertm): log handling is a little magical
   # We do not pass these via flags because those are not usable for sel_ldr

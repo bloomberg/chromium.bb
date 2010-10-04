@@ -39,7 +39,7 @@ nexe = env.ComponentProgram('voronoi.nexe',
 
 node = env.CommandSelLdrTestNacl(
     'voronoi_test.out',
-    command=[env.File('voronoi.nexe'), '-- -t -d'],
+    command=[env.File('voronoi.nexe'), '-t', '-d'],
     stdout_golden=env.File('voronoi.stdout'),
     osenv='NACL_SRPC_STANDALONE=1',
     )

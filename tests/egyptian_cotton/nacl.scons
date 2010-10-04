@@ -41,7 +41,7 @@ platform_limits_known = False
 
 test_suites = ['small_tests', 'sel_ldr_tests']
 
-large_stack_args = ['--', '-s', '0x400000', '-n', '4095', '-f' ]
+large_stack_args = ['-s', '0x400000', '-n', '4095', '-f' ]
 
 #
 # WARNING: Magic numbers ahead!
@@ -102,7 +102,7 @@ if not platform_limits_known:
 if env.IsRunningUnderValgrind():
   high_thread_count_nthreads = min(high_thread_count_nthreads, 1500)
 
-high_thread_count_args = ['--', '-n', str(high_thread_count_nthreads)]
+high_thread_count_args = ['-n', str(high_thread_count_nthreads)]
 
 tests = [ ('egyptian_cotton_test', high_thread_count_args),
           ('thread_stack_alloc_test', large_stack_args) ]
