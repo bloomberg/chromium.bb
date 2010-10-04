@@ -128,13 +128,18 @@ TEST_F(PhishingClassifierTest, TestClassification) {
   responses_["http://localhost/"] = "<html><body>content</body></html>";
   LoadURL("http://localhost/");
   EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score));
-  EXPECT_EQ(phishy_score, PhishingClassifier::kInvalidScore);
+  EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 
   // Extraction should also fail for this case, because the URL is not http.
   responses_["https://host.net/"] = "<html><body>secure</body></html>";
   LoadURL("https://host.net/");
   EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score));
-  EXPECT_EQ(phishy_score, PhishingClassifier::kInvalidScore);
+  EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
+
+  // Extraction should fail for this case because the URL is a POST request.
+  LoadURLWithPost("http://host.net/");
+  EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score));
+  EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
 }  // namespace safe_browsing

@@ -24,6 +24,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
@@ -110,7 +111,16 @@ WebKit::WebFrame* RenderViewFakeResourcesTest::GetMainFrame() {
 }
 
 void RenderViewFakeResourcesTest::LoadURL(const std::string& url) {
-  GetMainFrame()->loadRequest(WebKit::WebURLRequest(GURL(url)));
+  GURL g_url(url);
+  GetMainFrame()->loadRequest(WebKit::WebURLRequest(g_url));
+  message_loop_.Run();
+}
+
+void RenderViewFakeResourcesTest::LoadURLWithPost(const std::string& url) {
+  GURL g_url(url);
+  WebKit::WebURLRequest request(g_url);
+  request.setHTTPMethod(WebKit::WebString::fromUTF8("POST"));
+  GetMainFrame()->loadRequest(request);
   message_loop_.Run();
 }
 

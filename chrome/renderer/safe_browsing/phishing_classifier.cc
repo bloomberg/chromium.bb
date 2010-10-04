@@ -19,8 +19,10 @@
 #include "chrome/renderer/safe_browsing/phishing_url_feature_extractor.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 namespace safe_browsing {
@@ -89,9 +91,15 @@ void PhishingClassifier::BeginFeatureExtraction() {
   }
 
   // Check whether the URL is one that we should classify.
-  // Currently, we only classify http: URLs.
+  // Currently, we only classify http: URLs that are GET requests.
   GURL url(frame->url());
   if (!url.SchemeIs(chrome::kHttpScheme)) {
+    RunFailureCallback();
+    return;
+  }
+
+  WebKit::WebDataSource* ds = frame->dataSource();
+  if (!ds || !EqualsASCII(ds->request().httpMethod(), "GET")) {
     RunFailureCallback();
     return;
   }

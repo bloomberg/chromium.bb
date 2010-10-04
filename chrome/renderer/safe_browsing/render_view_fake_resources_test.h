@@ -90,6 +90,10 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
   // to responses_.
   void LoadURL(const std::string& url);
 
+  // Same as LoadURL, but sends a POST request.  Note that POST data is
+  // not supported.
+  void LoadURLWithPost(const std::string& url);
+
   // Returns the main WebFrame for our RenderView.
   WebKit::WebFrame* GetMainFrame();
 
