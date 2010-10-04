@@ -74,6 +74,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
       delegate_->DidCompleteRecognition(caller_id_);
       caller_id_ = 0;
       delegate_ = NULL;
+      LOG(INFO) << "Finished setting fake recognition result.";
     }
   }
 
@@ -96,7 +97,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestBasicRecognition) {
+IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, FLAKY_TestBasicRecognition) {
   // Inject the fake manager factory so that the test result is returned to the
   // web page.
   SpeechInputDispatcherHost::set_manager_accessor(&fakeManagerAccessor);

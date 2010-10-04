@@ -168,6 +168,7 @@ void SpeechInputDispatcherHost::SendMessageToRenderView(IPC::Message* message,
 
 void SpeechInputDispatcherHost::SetRecognitionResult(int caller_id,
                                                      const string16& result) {
+  LOG(INFO) << "SpeechInputDispatcherHost::SetRecognitionResult enter";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);
   int caller_request_id = callers_->request_id(caller_id);
@@ -176,9 +177,11 @@ void SpeechInputDispatcherHost::SetRecognitionResult(int caller_id,
                                                    caller_request_id,
                                                    result),
       caller_render_view_id);
+  LOG(INFO) << "SpeechInputDispatcherHost::SetRecognitionResult exit";
 }
 
 void SpeechInputDispatcherHost::DidCompleteRecording(int caller_id) {
+  LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecording exit";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);
   int caller_request_id = callers_->request_id(caller_id);
@@ -186,9 +189,11 @@ void SpeechInputDispatcherHost::DidCompleteRecording(int caller_id) {
       new ViewMsg_SpeechInput_RecordingComplete(caller_render_view_id,
                                                 caller_request_id),
       caller_render_view_id);
+  LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecording exit";
 }
 
 void SpeechInputDispatcherHost::DidCompleteRecognition(int caller_id) {
+  LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecognition exit";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);
   int caller_request_id = callers_->request_id(caller_id);
@@ -197,6 +202,7 @@ void SpeechInputDispatcherHost::DidCompleteRecognition(int caller_id) {
                                                   caller_request_id),
       caller_render_view_id);
   callers_->RemoveId(caller_id);  // Request sequence ended, so remove mapping.
+  LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecognition exit";
 }
 
 }  // namespace speech_input
