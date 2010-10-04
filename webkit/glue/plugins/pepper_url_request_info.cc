@@ -80,17 +80,13 @@ bool SetProperty(PP_Resource request_id,
   return false;
 }
 
-bool AppendDataToBody(PP_Resource request_id, PP_Var var) {
+bool AppendDataToBody(PP_Resource request_id, const char* data, uint32_t len) {
   scoped_refptr<URLRequestInfo> request(
       Resource::GetAs<URLRequestInfo>(request_id));
   if (!request)
     return false;
 
-  scoped_refptr<StringVar> data(StringVar::FromPPVar(var));
-  if (!data)
-    return false;
-
-  return request->AppendDataToBody(data->value());
+  return request->AppendDataToBody(std::string(data, len));
 }
 
 bool AppendFileToBody(PP_Resource request_id,
