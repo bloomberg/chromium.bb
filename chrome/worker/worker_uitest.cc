@@ -419,8 +419,8 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-// Flaky, see http://crbug.com/49381
-TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
+// Times out, see http://crbug.com/49381
+TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "close-in-onmessage-crash.html",
     "close-in-shared-worker.html",
