@@ -22,13 +22,13 @@ class MD5Calculator {
   void CalcDigest();
  public:
   MD5Calculator();
-  ~MD5Calculator() {}
+  ~MD5Calculator();
   void AddData(const uint8* data, int length);
   void AddData(const char* data, int length) {
     AddData(reinterpret_cast<const uint8*>(data), length);
   }
   std::string GetHexDigest();
-  std::vector<uint8> GetDigest();
+  const std::vector<uint8>& GetDigest();
  private:
   DISALLOW_COPY_AND_ASSIGN(MD5Calculator);
 };

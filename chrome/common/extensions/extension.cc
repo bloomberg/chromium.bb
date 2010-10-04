@@ -2163,8 +2163,7 @@ ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
         static_cast<DictionaryValue*>(manifest->DeepCopy()));
 }
 
-ExtensionInfo::~ExtensionInfo() {
-}
+ExtensionInfo::~ExtensionInfo() {}
 
 UninstalledExtensionInfo::UninstalledExtensionInfo(
     const Extension& extension)
@@ -2174,3 +2173,5 @@ UninstalledExtensionInfo::UninstalledExtensionInfo(
       is_app(extension.is_app()),
       converted_from_user_script(extension.converted_from_user_script()),
       update_url(extension.update_url()) {}
+
+UninstalledExtensionInfo::~UninstalledExtensionInfo() {}

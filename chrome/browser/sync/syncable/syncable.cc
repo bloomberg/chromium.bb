@@ -154,6 +154,13 @@ bool LessPathNames::operator() (const string& a, const string& b) const {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// EntryKernel
+
+EntryKernel::EntryKernel() : dirty_(false) {}
+
+EntryKernel::~EntryKernel() {}
+
+///////////////////////////////////////////////////////////////////////////
 // Directory
 
 static const DirectoryChangeEvent kShutdownChangesEvent =
@@ -163,6 +170,21 @@ void Directory::init_kernel(const std::string& name) {
   DCHECK(kernel_ == NULL);
   kernel_ = new Kernel(FilePath(), name, KernelLoadInfo());
 }
+
+Directory::PersistedKernelInfo::PersistedKernelInfo()
+    : next_id(0) {
+  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+    last_download_timestamp[i] = 0;
+  }
+}
+
+Directory::PersistedKernelInfo::~PersistedKernelInfo() {}
+
+Directory::SaveChangesSnapshot::SaveChangesSnapshot()
+    : kernel_info_status(KERNEL_SHARE_INFO_INVALID) {
+}
+
+Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 
 Directory::Kernel::Kernel(const FilePath& db_path,
                           const string& name,

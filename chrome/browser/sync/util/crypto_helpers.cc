@@ -21,6 +21,8 @@ MD5Calculator::MD5Calculator() {
   MD5Init(&context_);
 }
 
+MD5Calculator::~MD5Calculator() {}
+
 void MD5Calculator::AddData(const unsigned char* data, int length) {
   CHECK(bin_digest_.empty());
   MD5Update(&context_, data, length);
@@ -34,7 +36,7 @@ void MD5Calculator::CalcDigest() {
   }
 }
 
-vector<uint8> MD5Calculator::GetDigest() {
+const vector<uint8>& MD5Calculator::GetDigest() {
   CalcDigest();
   return bin_digest_;
 }

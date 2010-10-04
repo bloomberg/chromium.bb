@@ -33,6 +33,8 @@ class Image {
   // Copy constructor.
   explicit Image(const Image& image);
 
+  ~Image();
+
   const gfx::Size& size() const {
     return size_;
   }

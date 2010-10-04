@@ -11,6 +11,10 @@
 
 namespace base {
 
+GlobalDescriptors::GlobalDescriptors() {}
+
+GlobalDescriptors::~GlobalDescriptors() {}
+
 int GlobalDescriptors::MaybeGet(Key key) const {
   for (Mapping::const_iterator
        i = descriptors_.begin(); i != descriptors_.end(); ++i) {

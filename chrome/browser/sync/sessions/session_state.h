@@ -80,18 +80,9 @@ struct SyncSessionSnapshot {
       bool is_silenced,
       int64 unsynced_count,
       int num_conflicting_updates,
-      bool did_commit_items)
-      : syncer_status(syncer_status),
-        errors(errors),
-        num_server_changes_remaining(num_server_changes_remaining),
-        max_local_timestamp(max_local_timestamp),
-        is_share_usable(is_share_usable),
-        initial_sync_ended(initial_sync_ended),
-        has_more_to_sync(more_to_sync),
-        is_silenced(is_silenced),
-        unsynced_count(unsynced_count),
-        num_conflicting_updates(num_conflicting_updates),
-        did_commit_items(did_commit_items) {}
+                      bool did_commit_items);
+  ~SyncSessionSnapshot();
+
   const SyncerStatus syncer_status;
   const ErrorCounters errors;
   const int64 num_server_changes_remaining;
@@ -108,8 +99,8 @@ struct SyncSessionSnapshot {
 // Tracks progress of conflicts and their resolution using conflict sets.
 class ConflictProgress {
  public:
-  explicit ConflictProgress(bool* dirty_flag) : dirty_(dirty_flag) {}
-  ~ConflictProgress() { CleanupSets(); }
+  explicit ConflictProgress(bool* dirty_flag);
+  ~ConflictProgress();
   // Various iterators, size, and retrieval functions for conflict sets.
   IdToConflictSetMap::const_iterator IdToConflictSetBegin() const;
   IdToConflictSetMap::const_iterator IdToConflictSetEnd() const;
@@ -150,6 +141,9 @@ typedef std::pair<UpdateAttemptResponse, syncable::Id> AppliedUpdate;
 // Tracks update application and verification.
 class UpdateProgress {
  public:
+  UpdateProgress();
+  ~UpdateProgress();
+
   void AddVerifyResult(const VerifyResult& verify_result,
                        const sync_pb::SyncEntity& entity);
 
@@ -232,12 +226,9 @@ class DirtyOnWrite {
 // scope control (such as OrderedCommitSet), but the top level entity is still
 // a singleton with respect to model types.
 struct AllModelTypeState {
-  explicit AllModelTypeState(bool* dirty_flag)
-      : unsynced_handles(dirty_flag),
-        syncer_status(dirty_flag),
-        error_counters(dirty_flag),
-        num_server_changes_remaining(dirty_flag, 0),
-        commit_set(ModelSafeRoutingInfo()) {}
+  explicit AllModelTypeState(bool* dirty_flag);
+  ~AllModelTypeState();
+
   // Commits for all model types are bundled together into a single message.
   ClientToServerMessage commit_message;
   ClientToServerResponse commit_response;
@@ -256,16 +247,18 @@ struct AllModelTypeState {
 
 // Grouping of all state that applies to a single ModelSafeGroup.
 struct PerModelSafeGroupState {
-  explicit PerModelSafeGroupState(bool* dirty_flag)
-      : conflict_progress(dirty_flag) {}
+  explicit PerModelSafeGroupState(bool* dirty_flag);
+  ~PerModelSafeGroupState();
+
   UpdateProgress update_progress;
   ConflictProgress conflict_progress;
 };
 
 // Grouping of all state that applies to a single ModelType.
 struct PerModelTypeState {
-  explicit PerModelTypeState(bool* dirty_flag)
-      : current_download_timestamp(dirty_flag, 0) {}
+  explicit PerModelTypeState(bool* dirty_flag);
+  ~PerModelTypeState();
+
   DirtyOnWrite<int64> current_download_timestamp;
 };
 

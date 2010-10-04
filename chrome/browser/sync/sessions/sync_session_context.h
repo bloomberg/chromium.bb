@@ -20,10 +20,10 @@
 #pragma once
 
 #include <string>
-#include "chrome/browser/chrome_thread.h"
+
+#include "base/scoped_ptr.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
-#include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
 namespace syncable {
 class DirectoryManager;
@@ -32,34 +32,21 @@ class DirectoryManager;
 namespace browser_sync {
 
 class ConflictResolver;
+class ExtensionsActivityMonitor;
 class ModelSafeWorkerRegistrar;
 class ServerConnectionManager;
 
 namespace sessions {
 class ScopedSessionContextConflictResolver;
 class ScopedSessionContextSyncerEventChannel;
+struct SyncSessionSnapshot;
 
 class SyncSessionContext {
  public:
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::DirectoryManager* directory_manager,
-                     ModelSafeWorkerRegistrar* model_safe_worker_registrar)
-      : resolver_(NULL),
-        syncer_event_channel_(NULL),
-        connection_manager_(connection_manager),
-        directory_manager_(directory_manager),
-        registrar_(model_safe_worker_registrar),
-        extensions_activity_monitor_(new ExtensionsActivityMonitor()),
-        notifications_enabled_(false) {
-  }
-
-  ~SyncSessionContext() {
-    // In unittests, there may be no UI thread, so the above will fail.
-    if (!ChromeThread::DeleteSoon(ChromeThread::UI, FROM_HERE,
-                                  extensions_activity_monitor_)) {
-      delete extensions_activity_monitor_;
-    }
-  }
+                     ModelSafeWorkerRegistrar* model_safe_worker_registrar);
+  ~SyncSessionContext();
 
   ConflictResolver* resolver() { return resolver_; }
   ServerConnectionManager* connection_manager() {
@@ -103,9 +90,7 @@ class SyncSessionContext {
     return previous_session_snapshot_.get();
   }
 
-  void set_last_snapshot(const SyncSessionSnapshot& snapshot) {
-    previous_session_snapshot_.reset(new SyncSessionSnapshot(snapshot));
-  }
+  void set_last_snapshot(const SyncSessionSnapshot& snapshot);
 
  private:
   // Rather than force clients to set and null-out various context members, we

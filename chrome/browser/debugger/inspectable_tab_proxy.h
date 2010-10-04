@@ -26,8 +26,8 @@ class InspectableTabProxy {
   typedef base::hash_map<int32, NavigationController*> ControllersMap;
   typedef base::hash_map<int32, DevToolsClientHostImpl*> IdToClientHostMap;
 
-  InspectableTabProxy() {}
-  virtual ~InspectableTabProxy() {}
+  InspectableTabProxy();
+  virtual ~InspectableTabProxy();
 
   // Returns a map of NavigationControllerKeys to NavigationControllers
   // for all Browser instances. Clients should not keep the result around
@@ -64,13 +64,9 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   DevToolsClientHostImpl(
     int32 id,
     DebuggerRemoteService* service,
-    InspectableTabProxy::IdToClientHostMap* map)
-      : id_(id),
-        service_(service),
-        map_(map) {}
-  ~DevToolsClientHostImpl() {
-    map_->erase(this->id_);
-  }
+    InspectableTabProxy::IdToClientHostMap* map);
+  ~DevToolsClientHostImpl();
+
   DebuggerRemoteService* debugger_remote_service() {
     return service_;
   }
