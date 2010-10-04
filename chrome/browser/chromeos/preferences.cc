@@ -41,7 +41,7 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   if (prefs->FindPreference(prefs::kAccessibilityEnabled) == NULL) {
     prefs->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
   }
-  prefs->RegisterIntegerPref(prefs::kLabsTalkEnabled, 0);
+  prefs->RegisterIntegerPref(prefs::kLabsTalkEnabled, 1);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 3);
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
