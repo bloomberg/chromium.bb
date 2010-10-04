@@ -197,6 +197,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
   scoped_refptr<X509Certificate> cert(cert_list[0]);
   EXPECT_EQ("Test CA", cert->subject().common_name);
 
+  EXPECT_EQ(CertDatabase::TRUSTED_SSL,
+            cert_db_.GetCertTrust(cert.get(), CA_CERT));
+
   psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
   EXPECT_TRUE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
   EXPECT_FALSE(trust.HasTrustedCA(PR_FALSE, PR_TRUE, PR_FALSE));
@@ -226,6 +229,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
   scoped_refptr<X509Certificate> cert(cert_list[0]);
   EXPECT_EQ("Test CA", cert->subject().common_name);
 
+  EXPECT_EQ(CertDatabase::TRUSTED_EMAIL,
+            cert_db_.GetCertTrust(cert.get(), CA_CERT));
+
   psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
   EXPECT_FALSE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
   EXPECT_TRUE(trust.HasTrustedCA(PR_FALSE, PR_TRUE, PR_FALSE));
@@ -253,6 +259,9 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
   EXPECT_EQ("Test CA", cert->subject().common_name);
+
+  EXPECT_EQ(CertDatabase::TRUSTED_OBJ_SIGN,
+            cert_db_.GetCertTrust(cert.get(), CA_CERT));
 
   psm::nsNSSCertTrust trust(cert->os_cert_handle()->trust);
   EXPECT_FALSE(trust.HasTrustedCA(PR_TRUE, PR_FALSE, PR_FALSE));
