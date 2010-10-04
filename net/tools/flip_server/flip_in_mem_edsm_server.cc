@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include <dirent.h>
-#include <linux/tcp.h>  // For TCP_NODELAY
+#include <netinet/tcp.h>  // For TCP_NODELAY
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
