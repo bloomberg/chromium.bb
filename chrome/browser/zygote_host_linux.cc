@@ -91,6 +91,8 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     switches::kAllowSandboxDebugging,
     switches::kLoggingLevel,
     switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
+    switches::kV,
+    switches::kVModule,
     switches::kUserDataDir,  // Make logs go to the right file.
     // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
     switches::kRegisterPepperPlugins,

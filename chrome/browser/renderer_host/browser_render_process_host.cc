@@ -542,6 +542,8 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kNoJsRandomness,
     switches::kDisableBreakpad,
     switches::kFullMemoryCrashReport,
+    switches::kV,
+    switches::kVModule,
     switches::kEnableLogging,
     switches::kDumpHistogramsOnExit,
     switches::kDisableLogging,
