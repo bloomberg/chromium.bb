@@ -86,7 +86,7 @@ void MemFree(void* ptr) {
   free(ptr);
 }
 
-PP_Time GetTime() {
+PP_TimeTicks GetTime() {
   DebugPrintf("PluginCore::GetTime\n");
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   double time;
@@ -95,6 +95,19 @@ PP_Time GetTime() {
     return static_cast<PP_Time>(-1.0);
   } else {
     return static_cast<PP_Time>(time);
+  }
+}
+
+PP_TimeTicks GetTimeTicks() {
+  DebugPrintf("PluginCore::GetTime\n");
+  NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
+  double time;
+  // TODO(sehr): implement time ticks.
+  NaClSrpcError retval = PpbCoreRpcClient::PPB_Core_GetTime(channel, &time);
+  if (retval != NACL_SRPC_RESULT_OK) {
+    return static_cast<PP_TimeTicks>(-1.0);
+  } else {
+    return static_cast<PP_TimeTicks>(time);
   }
 }
 
@@ -126,6 +139,7 @@ const void* PluginCore::GetInterface() {
     MemAlloc,
     MemFree,
     GetTime,
+    GetTimeTicks,
     CallOnMainThread,
     IsMainThread
   };

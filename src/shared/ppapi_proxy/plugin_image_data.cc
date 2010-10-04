@@ -22,6 +22,11 @@ PP_ImageDataFormat GetNativeImageDataFormat() {
   return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
 }
 
+bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
+  UNREFERENCED_PARAMETER(format);
+  return false;
+}
+
 PP_Resource Create(PP_Module module,
                    PP_ImageDataFormat format,
                    const struct PP_Size* size,
@@ -58,6 +63,7 @@ void Unmap(PP_Resource resource) {
 const PPB_ImageData* PluginImageData::GetInterface() {
   static const PPB_ImageData intf = {
     GetNativeImageDataFormat,
+    IsImageDataFormatSupported,
     Create,
     IsImageData,
     Describe,

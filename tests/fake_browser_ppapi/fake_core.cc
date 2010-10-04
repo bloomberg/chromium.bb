@@ -45,6 +45,14 @@ static PP_Time GetTime() {
   return static_cast<PP_Time>(time);
 }
 
+static PP_TimeTicks GetTimeTicks() {
+  DebugPrintf("Core::GetTime\n");
+  static double time = 0.0;
+  // TODO(sehr): Do we need a real time here?
+  time += 1.0;
+  return static_cast<PP_Time>(time);
+}
+
 static void CallOnMainThread(int32_t delay_in_milliseconds,
                              PP_CompletionCallback callback,
                              int32_t result) {
@@ -73,6 +81,7 @@ const PPB_Core* Core::GetInterface() {
     MemAlloc,
     MemFree,
     GetTime,
+    GetTimeTicks,
     CallOnMainThread,
     IsMainThread
   };

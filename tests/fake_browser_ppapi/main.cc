@@ -102,10 +102,8 @@ void TestInstance(PP_Module browser_module_id,
   // Create an instance and the corresponding id.
   fake_browser_ppapi::Instance browser_instance(&window);
   PP_Instance instance_id = reinterpret_cast<PP_Instance>(&browser_instance);
-  // Create a plugin instance.
-  CHECK(instance_interface->New(instance_id));
-  // Initialize the instance.
-  CHECK(instance_interface->Initialize(instance_id, argc, argn, argv));
+  // Create and initialize plugin instance.
+  CHECK(instance_interface->DidCreate(instance_id, argc, argn, argv));
   // Test the scriptable object for the instance.
   PP_Var instance_object = instance_interface->GetInstanceObject(instance_id);
   const PPB_Var* var_interface =

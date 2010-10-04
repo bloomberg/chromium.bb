@@ -456,24 +456,19 @@ static const PPP_Class object_class = {
 
 // PPP_Instance functions.
 
-bool New(PP_Instance instance) {
-  printf("basic_object: New(%"NACL_PRIu64")\n", instance);
-  return true;
-}
-
-void Delete(PP_Instance instance) {
-  printf("basic_object: Delete(%"NACL_PRIu64")\n", instance);
-}
-
-bool Initialize(PP_Instance instance,
-                uint32_t argc,
-                const char* argn[],
-                const char* argv[]) {
-  printf("basic_object: Initialize(%"NACL_PRIu64")\n", instance);
+bool DidCreate(PP_Instance instance,
+               uint32_t argc,
+               const char* argn[],
+               const char* argv[]) {
+  printf("basic_object: DidCreate(%"NACL_PRIu64")\n", instance);
   for (uint32_t i = 0; i < argc; ++i) {
     printf("  arg[%"NACL_PRIu32"]: '%s' = '%s'\n", i, argn[i], argv[i]);
   }
   return true;
+}
+
+void DidDestroy(PP_Instance instance) {
+  printf("basic_object: DidDestroy(%"NACL_PRIu64")\n", instance);
 }
 
 PP_Var GetInstanceObject(PP_Instance instance) {
@@ -489,15 +484,14 @@ PP_Var GetInstanceObject(PP_Instance instance) {
 
 static const void* GetInstanceInterface() {
   static const PPP_Instance instance_class = {
-    New,
-    Delete,
-    Initialize,
-    NULL,
-    NULL,
-    NULL,
+    DidCreate,
+    DidDestroy,
+    NULL,  // DidChangeView
+    NULL,  // DidChangeFocus
+    NULL,  // HandleInputEvent
+    NULL,  // HandleDocumentLoad
     GetInstanceObject,
-    NULL,
-    NULL
+    NULL  // GetSelectedText
   };
 
   return reinterpret_cast<const void*>(&instance_class);

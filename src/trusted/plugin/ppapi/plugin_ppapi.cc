@@ -210,15 +210,11 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
     ppapi_proxy_ = NULL;
     return;
   }
-  if (!instance_interface->New(pp_instance())) {
-    // TODO(sehr): we should report an error here.
-    return;
-  }
-  // Initialize the instance's parameters.
-  if (!instance_interface->Initialize(pp_instance(),
-                                      argc(),
-                                      const_cast<const char**>(argn()),
-                                      const_cast<const char**>(argv()))) {
+  // Create an instance and initialize the instance's parameters.
+  if (!instance_interface->DidCreate(pp_instance(),
+                                     argc(),
+                                     const_cast<const char**>(argn()),
+                                     const_cast<const char**>(argv()))) {
     // TODO(sehr): we should report an error here.
     return;
   }
