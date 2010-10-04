@@ -22,6 +22,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_common.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -89,6 +90,15 @@ void LanguageOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_THIS_LANGUAGE_IS_CURRENTLY_IN_USE,
           l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)));
+  localized_strings->SetString("use_this_for_spell_checking",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING));
+  localized_strings->SetString("cannot_be_used_for_spell_checking",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING));
+  localized_strings->SetString("is_used_for_spell_checking",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING));
 
   // GetSupportedInputMethods() never return NULL.
   scoped_ptr<InputMethodDescriptors> descriptors(
@@ -99,6 +109,8 @@ void LanguageOptionsHandler::GetLocalizedValues(
       g_browser_process->GetApplicationLocale());
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
   localized_strings->Set("languageList", GetLanguageList(*descriptors));
+  localized_strings->Set("spellCheckLanguageCodeSet",
+                         GetSpellCheckLanguageCodeSet());
   localized_strings->Set("uiLanguageCodeSet", GetUiLanguageCodeSet());
 }
 
@@ -113,6 +125,9 @@ void LanguageOptionsHandler::RegisterMessages() {
                   &LanguageOptionsHandler::InputMethodOptionsOpenCallback));
   dom_ui_->RegisterMessageCallback("languageOptionsOpen",
       NewCallback(this, &LanguageOptionsHandler::LanguageOptionsOpenCallback));
+  dom_ui_->RegisterMessageCallback("spellCheckLanguageChange",
+      NewCallback(this,
+                  &LanguageOptionsHandler::SpellCheckLanguageChangeCallback));
   dom_ui_->RegisterMessageCallback("uiLanguageChange",
       NewCallback(this, &LanguageOptionsHandler::UiLanguageChangeCallback));
   dom_ui_->RegisterMessageCallback("uiLanguageRestart",
@@ -225,6 +240,16 @@ DictionaryValue* LanguageOptionsHandler::GetUiLanguageCodeSet() {
   return dictionary;
 }
 
+DictionaryValue* LanguageOptionsHandler::GetSpellCheckLanguageCodeSet() {
+  DictionaryValue* dictionary = new DictionaryValue();
+  std::vector<std::string> spell_check_languages;
+  SpellCheckCommon::SpellCheckLanguages(&spell_check_languages);
+  for (size_t i = 0; i < spell_check_languages.size(); ++i) {
+    dictionary->SetBoolean(spell_check_languages[i], true);
+  }
+  return dictionary;
+}
+
 void LanguageOptionsHandler::InputMethodDisableCallback(
     const ListValue* args) {
   const std::string input_method_id = WideToASCII(ExtractStringValue(args));
@@ -267,6 +292,15 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
   prefs->SavePersistentPrefs();
   dom_ui_->CallJavascriptFunction(
       L"options.LanguageOptions.uiLanguageSaved");
+}
+
+void LanguageOptionsHandler::SpellCheckLanguageChangeCallback(
+    const ListValue* args) {
+  const std::string language_code = WideToASCII(ExtractStringValue(args));
+  CHECK(!language_code.empty());
+  const std::string action = StringPrintf(
+      "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());
+  UserMetrics::RecordComputedAction(action);
 }
 
 void LanguageOptionsHandler::RestartCallback(const ListValue* args) {

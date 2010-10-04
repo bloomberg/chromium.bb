@@ -9252,6 +9252,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for a language that cannot be used for UI">
         <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> cannot be displayed in this language
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_USE_THIS_FOR_SPELL_CHECKING"
+               desc="The label for a language a button that changes the spell check language of Chrome OS">
+        Use this language for spell checking
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_CANNOT_BE_USED_FOR_SPELL_CHECKING"
+               desc="The label for a language that cannot be used for spell checking">
+        This language cannot be used for spell checking
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
+               desc="The label for a language that is currently used for spell checking">
+        This languae is used for spell checking
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD"
                desc="The label for a input method">
         Standard input method

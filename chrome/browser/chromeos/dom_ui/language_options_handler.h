@@ -48,9 +48,17 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // The return value will look like:
   // {'en-US': true, 'fi': true, 'fr': true, ...}
   //
-  // Note that true in languageCodeSet does not mean anything. We just use
-  // the dictionary as a set.
+  // Note that true in values does not mean anything. We just use the
+  // dictionary as a set.
   static DictionaryValue* GetUiLanguageCodeSet();
+
+  // Gets the set of language codes that can be used for spellchecking.
+  // The return value will look like:
+  // {'en-US': true, 'fi': true, 'fr': true, ...}
+  //
+  // Note that true in values does not mean anything. We just use the
+  // dictionary as a set.
+  static DictionaryValue* GetSpellCheckLanguageCodeSet();
 
  private:
   // Called when the input method is disabled.
@@ -71,6 +79,10 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // Called when the UI language is changed.
   // |args| will contain the language code as string (ex. "fr").
   void UiLanguageChangeCallback(const ListValue* args);
+
+  // Called when the spell check language is changed.
+  // |args| will contain the language code as string (ex. "fr").
+  void SpellCheckLanguageChangeCallback(const ListValue* args);
 
   // Called when the restart button is clicked.
   void RestartCallback(const ListValue* args);

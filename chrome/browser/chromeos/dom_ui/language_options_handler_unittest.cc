@@ -162,4 +162,10 @@ TEST(LanguageOptionsHandlerTest, GetUiLanguageCodeSet) {
   // EXPECT_FALSE(dictionary->HasKey("no"));
 }
 
+TEST(LanguageOptionsHandlerTest, GetSpellCheckLanguageCodeSet) {
+  scoped_ptr<DictionaryValue> dictionary(
+      LanguageOptionsHandler::GetSpellCheckLanguageCodeSet());
+  EXPECT_TRUE(dictionary->HasKey("en-US"));
+}
+
 }  // namespace chromeos

@@ -81,7 +81,12 @@ cr.define('options', function() {
     // The preference is a CSV string that describes preload engines
     // (i.e. active input methods).
     preloadEnginesPref: 'settings.language.preload_engines',
+    // The list of preload engines, like ['mozc', 'pinyin'].
     preloadEngines_: [],
+    // The preference is a string that describes the spell check
+    // dictionary language, like "en-US".
+    spellCheckDictionaryPref: 'spellcheck.dictionary',
+    spellCheckDictionary_: "",
     // The map of language code to input method IDs, like:
     // {'ja': ['mozc', 'mozc-jp'], 'zh-CN': ['pinyin'], ...}
     languageCodeToInputMethodIdsMap_: {},
@@ -124,6 +129,8 @@ cr.define('options', function() {
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(this.preloadEnginesPref,
           this.handlePreloadEnginesPrefChange_.bind(this));
+      Preferences.getInstance().addEventListener(this.spellCheckDictionaryPref,
+          this.handleSpellCheckDictionaryPrefChange_.bind(this));
     },
 
     /**
@@ -172,6 +179,7 @@ cr.define('options', function() {
       var languageCode = languageOptionsList.getLanguageCodes()[index];
       this.updateSelectedLanguageName_(languageCode);
       this.updateUiLanguageButton_(languageCode);
+      this.updateSpellCheckLanguageButton_(languageCode);
       this.updateInputMethodList_(languageCode);
       this.updateLanguageListInAddLanguageOverlay_();
     },
@@ -316,6 +324,47 @@ cr.define('options', function() {
     },
 
     /**
+     * Updates the spell check language button.
+     * @param {string} languageCode Language code (ex. "fr").
+     * @private
+     */
+    updateSpellCheckLanguageButton_: function(languageCode) {
+      var spellCheckLanguageButton = $(
+          'language-options-spell-check-language-button');
+      // Check if the language code matches the current spell check language.
+      if (languageCode == this.spellCheckDictionary_) {
+        // If it matches, the button just says that the spell check language is
+        // currently in use.
+        spellCheckLanguageButton.textContent =
+            localStrings.getString('is_used_for_spell_checking');
+        // Make it look like a text label.
+        spellCheckLanguageButton.className = 'text-button';
+        // Remove the event listner.
+        spellCheckLanguageButton.onclick = undefined;
+      } else if (languageCode in templateData.spellCheckLanguageCodeSet) {
+        // If the language is supported as spell check language, users can
+        // click on the button to change the spell check language.
+        spellCheckLanguageButton.textContent =
+            localStrings.getString('use_this_for_spell_checking');
+        spellCheckLanguageButton.className = '';
+        spellCheckLanguageButton.languageCode = languageCode;
+        // Add an event listner to the click event.
+        spellCheckLanguageButton.addEventListener('click',
+            this.handleSpellCheckLanguageButtonClick_.bind(this));
+      } else {
+        // If the language is not supported as spell check language, the
+        // button just says that this language cannot be used for spell
+        // checking.
+        spellCheckLanguageButton.textContent =
+            localStrings.getString('cannot_be_used_for_spell_checking');
+        spellCheckLanguageButton.className = 'text-button';
+        spellCheckLanguageButton.onclick = undefined;
+      }
+      spellCheckLanguageButton.style.display = 'block';
+      $('language-options-ui-notification-bar').style.display = 'none';
+    },
+
+    /**
      * Updates the input method list.
      * @param {string} languageCode Language code (ex. "fr").
      * @private
@@ -445,6 +494,31 @@ cr.define('options', function() {
         return;
       }
       languageOptionsList.removeSelectedLanguage();
+    },
+
+    /**
+     * Handles spellCheckDictionaryPref change.
+     * @param {Event} e Change event.
+     * @private
+     */
+    handleSpellCheckDictionaryPrefChange_: function(e) {
+      var languageCode = e.value.value
+      this.spellCheckDictionary_ = languageCode;
+    },
+
+    /**
+     * Handles spellCheckLanguageButton click.
+     * @param {Event} e Click event.
+     * @private
+     */
+    handleSpellCheckLanguageButtonClick_: function(e) {
+      var languageCode = e.target.languageCode;
+      // Save the preference.
+      Preferences.setStringPref(this.spellCheckDictionaryPref,
+                                languageCode);
+      chrome.send('spellCheckLanguageChange', [languageCode]);
+      this.spellCheckDictionary_ = languageCode;
+      this.updateSpellCheckLanguageButton_(languageCode)
     },
 
     /**
