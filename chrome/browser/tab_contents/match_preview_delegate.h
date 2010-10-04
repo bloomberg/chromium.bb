@@ -19,7 +19,7 @@ class Rect;
 class MatchPreviewDelegate {
  public:
   // Invoked when the preview TabContents should be shown.
-  virtual void ShowMatchPreview() = 0;
+  virtual void ShowMatchPreview(TabContents* preview_contents) = 0;
 
   // Invoked when the preview TabContents should be hidden.
   virtual void HideMatchPreview() = 0;

@@ -1133,7 +1133,7 @@ void BrowserWindowGtk::Paste() {
   DoCutCopyPaste(this, &RenderViewHost::Paste, "paste-clipboard");
 }
 
-void BrowserWindowGtk::ShowMatchPreview() {
+void BrowserWindowGtk::ShowMatchPreview(TabContents* preview_contents) {
   // TODO: implement me
   NOTIMPLEMENTED();
 }

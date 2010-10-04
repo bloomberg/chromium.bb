@@ -564,7 +564,7 @@ void BrowserWindowCocoa::OpenTabpose() {
   [controller_ openTabpose];
 }
 
-void BrowserWindowCocoa::ShowMatchPreview() {
+void BrowserWindowCocoa::ShowMatchPreview(TabContents* preview_contents) {
   // TODO: implement me
   NOTIMPLEMENTED();
 }

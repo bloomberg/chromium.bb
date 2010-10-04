@@ -1355,13 +1355,11 @@ void BrowserView::ToggleTabStripMode() {
   frame_->TabStripDisplayModeChanged();
 }
 
-void BrowserView::ShowMatchPreview() {
+void BrowserView::ShowMatchPreview(TabContents* preview_contents) {
   if (!preview_container_)
     preview_container_ = new TabContentsContainer();
-  TabContents* preview_tab_contents =
-      browser_->match_preview()->preview_contents();
-  contents_->SetPreview(preview_container_, preview_tab_contents);
-  preview_container_->ChangeTabContents(preview_tab_contents);
+  contents_->SetPreview(preview_container_, preview_contents);
+  preview_container_->ChangeTabContents(preview_contents);
 }
 
 void BrowserView::HideMatchPreview() {

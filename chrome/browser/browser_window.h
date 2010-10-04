@@ -313,7 +313,7 @@ class BrowserWindow {
 #endif
 
   // Invoked when the match preview's tab contents should be shown.
-  virtual void ShowMatchPreview() = 0;
+  virtual void ShowMatchPreview(TabContents* preview_contents) = 0;
 
   // Invoked when the match preview's tab contents should be hidden.
   virtual void HideMatchPreview() = 0;

@@ -123,7 +123,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void Copy();
   virtual void Paste();
   virtual void ToggleTabStripMode() {}
-  virtual void ShowMatchPreview();
+  virtual void ShowMatchPreview(TabContents* preview_contents);
   virtual void HideMatchPreview();
   virtual gfx::Rect GetMatchPreviewBounds();
 

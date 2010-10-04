@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_ID_H_
 #pragma once
 
+#include "base/basictypes.h"
+
 typedef int64 TemplateURLID;
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_ID_H_

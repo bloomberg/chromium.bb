@@ -733,12 +733,12 @@ void LocationBarView::OnAutocompleteLosingFocus(
   if (!match_preview)
     return;
 
-  if (!match_preview->is_active() || !match_preview->preview_contents())
+  if (!match_preview->is_active() || !match_preview->GetPreviewContents())
     return;
 
   switch (GetCommitType(view_gaining_focus)) {
     case COMMIT_MATCH_PREVIEW_IMMEDIATELY:
-      match_preview->CommitCurrentPreview(MatchPreview::COMMIT_FOCUS_LOST);
+      match_preview->CommitCurrentPreview(MATCH_PREVIEW_COMMIT_FOCUS_LOST);
       break;
     case COMMIT_MATCH_PREVIEW_ON_MOUSE_UP:
       match_preview->SetCommitOnMouseUp();
@@ -1208,18 +1208,19 @@ LocationBarView::MatchPreviewCommitType LocationBarView::GetCommitType(
 #if defined(OS_WIN)
   MatchPreview* match_preview = delegate_->GetMatchPreview();
   RenderWidgetHostView* rwhv =
-      match_preview->preview_contents()->GetRenderWidgetHostView();
+      match_preview->GetPreviewContents()->GetRenderWidgetHostView();
   if (!view_gaining_focus || !rwhv)
     return REVERT_MATCH_PREVIEW;
 
-  gfx::NativeView tab_view = match_preview->preview_contents()->GetNativeView();
+  gfx::NativeView tab_view =
+      match_preview->GetPreviewContents()->GetNativeView();
   if (rwhv->GetNativeView() == view_gaining_focus ||
       tab_view == view_gaining_focus) {
     // Focus is going to the renderer. Only commit the match preview if the
     // mouse is down. If the mouse isn't down it means someone else moved focus
     // and we shouldn't commit.
     if (match_preview->IsMouseDownFromActivate()) {
-      if (match_preview->is_showing_instant()) {
+      if (match_preview->IsShowingInstant()) {
         // We're showing instant results. As instant results may shift when
         // committing we commit on the mouse up. This way a slow click still
         // works fine.

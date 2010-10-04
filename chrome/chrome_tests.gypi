@@ -1461,6 +1461,7 @@
         'browser/sync/test_profile_sync_service.h',
         'browser/sync/util/cryptographer_unittest.cc',
         'browser/sync/util/nigori_unittest.cc',
+        'browser/tab_contents/loader_manager_unittest.cc',
         'browser/tab_contents/navigation_controller_unittest.cc',
         'browser/tab_contents/navigation_entry_unittest.cc',
         'browser/tab_contents/render_view_host_manager_unittest.cc',

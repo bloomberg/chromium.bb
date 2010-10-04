@@ -775,7 +775,7 @@ class Browser : public TabHandlerDelegate,
   virtual void OnStateChanged();
 
   // Overriden from MatchPreviewDelegate:
-  virtual void ShowMatchPreview();
+  virtual void ShowMatchPreview(TabContents* preview_contents);
   virtual void HideMatchPreview();
   virtual void CommitMatchPreview(TabContents* preview_contents);
   virtual void SetSuggestedText(const string16& text);

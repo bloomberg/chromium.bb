@@ -3274,9 +3274,9 @@ void Browser::OnStateChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, MatchPreviewDelegate implementation:
 
-void Browser::ShowMatchPreview() {
+void Browser::ShowMatchPreview(TabContents* preview_contents) {
   DCHECK(match_preview_->tab_contents() == GetSelectedTabContents());
-  window_->ShowMatchPreview();
+  window_->ShowMatchPreview(preview_contents);
 }
 
 void Browser::HideMatchPreview() {
@@ -4149,13 +4149,13 @@ bool Browser::OpenMatchPreview(WindowOpenDisposition disposition) {
     return false;
 
   if (disposition == CURRENT_TAB) {
-    match_preview()->CommitCurrentPreview(MatchPreview::COMMIT_PRESSED_ENTER);
+    match_preview()->CommitCurrentPreview(MATCH_PREVIEW_COMMIT_PRESSED_ENTER);
     return true;
   }
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
     HideMatchPreview();
     TabContents* preview_contents = match_preview()->ReleasePreviewContents(
-        MatchPreview::COMMIT_PRESSED_ENTER);
+        MATCH_PREVIEW_COMMIT_PRESSED_ENTER);
     preview_contents->controller().PruneAllButActive();
     tab_handler_->GetTabStripModel()->AddTabContents(
         preview_contents,
