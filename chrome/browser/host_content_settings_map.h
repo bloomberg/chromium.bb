@@ -108,7 +108,6 @@ class HostContentSettingsMap
     std::string resource_identifier_;
   };
 
-
   typedef std::pair<Pattern, ContentSetting> PatternSettingPair;
   typedef std::vector<PatternSettingPair> SettingsForOneType;
 

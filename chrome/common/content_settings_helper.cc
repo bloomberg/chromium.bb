@@ -11,12 +11,16 @@
 
 namespace content_settings_helper {
 
-std::wstring OriginToWString(const GURL& origin) {
-  std::string port_component((origin.IntPort() != url_parse::PORT_UNSPECIFIED) ?
+std::string OriginToString(const GURL& origin) {
+   std::string port_component(origin.IntPort() != url_parse::PORT_UNSPECIFIED ?
       ":" + origin.port() : "");
   std::string scheme_component(!origin.SchemeIs(chrome::kHttpScheme) ?
       origin.scheme() + chrome::kStandardSchemeSeparator : "");
-  return UTF8ToWide(scheme_component + origin.host() + port_component);
+  return scheme_component + origin.host() + port_component;
+}
+
+std::wstring OriginToWString(const GURL& origin) {
+  return UTF8ToWide(OriginToString(origin));
 }
 
 }  // namespace content_settings_helper

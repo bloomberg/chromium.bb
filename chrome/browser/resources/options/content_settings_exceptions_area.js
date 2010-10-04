@@ -157,10 +157,10 @@ cr.define('options.contentSettings', function() {
      * @type {string}
      */
     get pattern() {
-      return this.dataItem[0];
+      return this.dataItem['displayPattern'];
     },
     set pattern(pattern) {
-      this.dataItem[0] = pattern;
+      this.dataItem['displayPattern'] = pattern;
     },
 
     /**
@@ -168,21 +168,10 @@ cr.define('options.contentSettings', function() {
      * @type {string}
      */
     get setting() {
-      return this.dataItem[1];
+      return this.dataItem['setting'];
     },
     set setting(setting) {
-      this.dataItem[1] = setting;
-    },
-
-    /**
-     * The embedding origin for the location exception.
-     * @type {string}
-     */
-    get embeddingOrigin() {
-      return this.dataItem[2];
-    },
-    set embeddingOrigin(url) {
-      this.dataItem[2] = url;
+      this.dataItem['setting'] = setting;
     },
 
     /**
@@ -367,7 +356,7 @@ cr.define('options.contentSettings', function() {
       this.dataModel.push(entry);
 
       // When an empty row is added, put it into editing mode.
-      if (!entry[0] && !entry[1]) {
+      if (!entry['displayPattern'] && !entry['setting']) {
         var index = this.dataModel.length - 1;
         var sm = this.selectionModel;
         sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
@@ -403,20 +392,19 @@ cr.define('options.contentSettings', function() {
      * Removes all selected rows from browser's model.
      */
     removeSelectedRows: function() {
-      // The first member is the content type; the rest of the values are
+      // The first member is the content type; the rest of the values describe
       // the patterns we are removing.
       var args = [this.contentType];
       var selectedItems = this.selectedItems;
       for (var i = 0; i < selectedItems.length; i++) {
         if (this.contentType == 'location') {
-          args.push(selectedItems[i][0]);   // origin (pattern)
-          args.push(selectedItems[i][2]);   // embedded origin
+          args.push(selectedItems[i]['origin']);
+          args.push(selectedItems[i]['embeddingOrigin']);
         } else if (this.contentType == 'notifications') {
-          args.push(selectedItems[i][0]);   // origin (pattern)
-          args.push(selectedItems[i][1]);   // setting
+          // TODO(estade): fill this in.
         } else {
-          args.push(this.mode);             // browser mode
-          args.push(selectedItems[i][0]);   // pattern
+          args.push(this.mode);
+          args.push(selectedItems[i]['displayPattern']);
         }
       }
 

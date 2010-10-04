@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_settings_helper.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -25,6 +26,11 @@
 typedef HostContentSettingsMap::ContentSettingsDetails ContentSettingsDetails;
 
 namespace {
+
+const char* kDisplayPattern = "displayPattern";
+const char* kSetting = "setting";
+const char* kOrigin = "origin";
+const char* kEmbeddingOrigin = "embeddingOrigin";
 
 ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
   if (name == "cookies")
@@ -75,6 +81,66 @@ ContentSetting ContentSettingFromString(const std::string& name) {
 
   NOTREACHED();
   return CONTENT_SETTING_DEFAULT;
+}
+
+std::string GeolocationExceptionToString(const GURL& origin,
+                                         const GURL& embedding_origin) {
+  if (origin == embedding_origin)
+    return content_settings_helper::OriginToString(origin);
+
+  // TODO(estade): the page needs to use CSS to indent the string.
+  std::string indent(" ");
+  if (embedding_origin.is_empty()) {
+    // NOTE: As long as the user cannot add/edit entries from the exceptions
+    // dialog, it's impossible to actually have a non-default setting for some
+    // origin "embedded on any other site", so this row will never appear.  If
+    // we add the ability to add/edit exceptions, we'll need to decide when to
+    // display this and how "removing" it will function.
+    return indent +
+        l10n_util::GetStringUTF8(IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ANY_OTHER);
+  }
+
+  return indent + l10n_util::GetStringFUTF8(
+      IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST,
+      UTF8ToUTF16(content_settings_helper::OriginToString(embedding_origin)));
+}
+
+// Create a DictionaryValue* that will act as a data source for a single row
+// in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
+// Ownership of the pointer is passed to the caller.
+DictionaryValue* GetExceptionForPage(
+    const HostContentSettingsMap::Pattern pattern,
+    ContentSetting setting) {
+  DictionaryValue* exception = new DictionaryValue();
+  exception->Set(
+      kDisplayPattern,
+      new StringValue(pattern.AsString()));
+  exception->Set(
+      kSetting,
+      new StringValue(ContentSettingToString(setting)));
+  return exception;
+}
+
+// Create a DictionaryValue* that will act as a data source for a single row
+// in the Geolocation exceptions table. Ownership of the pointer is passed to
+// the caller.
+DictionaryValue* GetGeolocationExceptionForPage(const GURL& origin,
+                                                const GURL& embedding_origin,
+                                                ContentSetting setting) {
+  DictionaryValue* exception = new DictionaryValue();
+  exception->Set(
+      kDisplayPattern,
+      new StringValue(GeolocationExceptionToString(origin, embedding_origin)));
+  exception->Set(
+      kSetting,
+      new StringValue(ContentSettingToString(setting)));
+  exception->Set(
+      kOrigin,
+      new StringValue(origin.spec()));
+  exception->Set(
+      kEmbeddingOrigin,
+      new StringValue(embedding_origin.spec()));
+  return exception;
 }
 
 }  // namespace
@@ -230,17 +296,17 @@ void ContentSettingsHandler::Observe(NotificationType type,
     UpdateExceptionsViewFromModel(settings_details->type());
 }
 
-void ContentSettingsHandler::UpdateExceptionsDefaultFromModel(
+void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     ContentSettingsType type) {
   DictionaryValue filter_settings;
   filter_settings.SetString(ContentSettingsTypeToGroupName(type),
-                            GetExceptionsDefaultFromModel(type));
+                            GetSettingDefaultFromModel(type));
 
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setContentFilterSettingsValue", filter_settings);
 }
 
-std::string ContentSettingsHandler::GetExceptionsDefaultFromModel(
+std::string ContentSettingsHandler::GetSettingDefaultFromModel(
     ContentSettingsType type) {
   ContentSetting default_setting;
   const HostContentSettingsMap* settings_map = GetContentSettingsMap();
@@ -270,16 +336,66 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
 
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     ContentSettingsType type) {
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
+    UpdateGeolocationExceptionsView();
+  else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+    UpdateNotificationExceptionsView();
+  else
+    UpdateExceptionsViewFromHostContentSettingsMap(type);
+}
+
+void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
+  GeolocationContentSettingsMap* map =
+      dom_ui_->GetProfile()->GetGeolocationContentSettingsMap();
+  GeolocationContentSettingsMap::AllOriginsSettings all_settings =
+      map->GetAllOriginsSettings();
+  GeolocationContentSettingsMap::AllOriginsSettings::const_iterator i;
+
+  ListValue exceptions;
+  for (i = all_settings.begin(); i != all_settings.end(); ++i) {
+    const GURL& origin = i->first;
+    const GeolocationContentSettingsMap::OneOriginSettings& one_settings =
+        i->second;
+
+    GeolocationContentSettingsMap::OneOriginSettings::const_iterator parent =
+        one_settings.find(origin);
+
+    // Add the "parent" entry for the non-embedded setting.
+    ContentSetting parent_setting =
+        parent == one_settings.end() ? CONTENT_SETTING_DEFAULT : parent->second;
+    exceptions.Append(
+        GetGeolocationExceptionForPage(origin, origin, parent_setting));
+
+    // Add the "children" for any embedded settings.
+    GeolocationContentSettingsMap::OneOriginSettings::const_iterator j;
+    for (j = one_settings.begin(); j != one_settings.end(); ++j) {
+      // Skip the non-embedded setting which we already added above.
+      if (j == parent)
+        continue;
+
+      exceptions.Append(
+          GetGeolocationExceptionForPage(origin, j->first, j->second));
+    }
+  }
+
+  StringValue type_string(
+      ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_GEOLOCATION));
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.setExceptions", type_string, exceptions);
+}
+
+void ContentSettingsHandler::UpdateNotificationExceptionsView() {
+  NOTIMPLEMENTED();
+}
+
+void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
+    ContentSettingsType type) {
   HostContentSettingsMap::SettingsForOneType entries;
   GetContentSettingsMap()->GetSettingsForOneType(type, "", &entries);
 
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
-    ListValue* exception = new ListValue();
-    exception->Append(new StringValue(entries[i].first.AsString()));
-    exception->Append(
-        new StringValue(ContentSettingToString(entries[i].second)));
-    exceptions.Append(exception);
+    exceptions.Append(GetExceptionForPage(entries[i].first, entries[i].second));
   }
 
   StringValue type_string(ContentSettingsTypeToGroupName(type));
@@ -288,21 +404,17 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
 
   // The default may also have changed (we won't get a separate notification).
   // If it hasn't changed, this call will be harmless.
-  UpdateExceptionsDefaultFromModel(type);
+  UpdateSettingDefaultFromModel(type);
 
   const HostContentSettingsMap* otr_settings_map = GetOTRContentSettingsMap();
-  if (otr_settings_map && type != CONTENT_SETTINGS_TYPE_GEOLOCATION &&
-                          type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+  if (otr_settings_map) {
     HostContentSettingsMap::SettingsForOneType otr_entries;
     otr_settings_map->GetSettingsForOneType(type, "", &otr_entries);
 
     ListValue otr_exceptions;
     for (size_t i = 0; i < otr_entries.size(); ++i) {
-      ListValue* exception = new ListValue();
-      exception->Append(new StringValue(otr_entries[i].first.AsString()));
-      exception->Append(
-          new StringValue(ContentSettingToString(otr_entries[i].second)));
-      otr_exceptions.Append(exception);
+      otr_exceptions.Append(GetExceptionForPage(entries[i].first,
+                                                entries[i].second));
     }
 
     dom_ui_->CallJavascriptFunction(
