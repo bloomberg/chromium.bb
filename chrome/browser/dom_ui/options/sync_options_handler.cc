@@ -52,7 +52,11 @@ void SyncOptionsHandler::GetLocalizedValues(
 void SyncOptionsHandler::Initialize() {
   ProfileSyncService* service =
       dom_ui_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
-  DCHECK(service);
+  if (!service) {
+    // This can happen if the user logs in to Chrome OS as guest.
+    LOG(ERROR) << "Failed to get ProfileSyncService";
+    return;
+  }
 
   DictionaryValue args;
   SyncSetupFlow::GetArgsForChooseDataTypes(service, &args);
