@@ -49,8 +49,6 @@ class CarbonPluginWebEventConverter : public PluginWebEventConverter {
 
   virtual bool InitWithEvent(const WebInputEvent& web_event);
 
-  virtual void SetZoomLevel(float zooom);
-
   virtual void* plugin_event() { return &carbon_event_; }
 
  protected:
@@ -75,12 +73,6 @@ bool CarbonPluginWebEventConverter::InitWithEvent(
   carbon_event_.modifiers |= CarbonModifiers(web_event);
 
   return PluginWebEventConverter::InitWithEvent(web_event);
-}
-
-void CarbonPluginWebEventConverter::SetZoomLevel(float zoom) {
-  // Nothing to do here; because the event is built using the WebMouseEvent's
-  // global coordinates, and the dummy window is in the right place, zoom has
-  // no effect.
 }
 
 bool CarbonPluginWebEventConverter::ConvertKeyboardEvent(
@@ -185,8 +177,6 @@ public:
 
   virtual bool InitWithEvent(const WebInputEvent& web_event);
 
-  virtual void SetZoomLevel(float zoom);
-
   virtual void* plugin_event() { return &cocoa_event_; }
 
 protected:
@@ -210,24 +200,6 @@ bool CocoaPluginWebEventConverter::InitWithEvent(
     const WebInputEvent& web_event) {
   memset(&cocoa_event_, 0, sizeof(cocoa_event_));
   return PluginWebEventConverter::InitWithEvent(web_event);
-}
-
-void CocoaPluginWebEventConverter::SetZoomLevel(float zoom) {
-  // Make sure we are dealing with a mouse event.
-  if (!(cocoa_event_.type != NPCocoaEventMouseDown ||
-        cocoa_event_.type != NPCocoaEventMouseUp ||
-        cocoa_event_.type != NPCocoaEventMouseMoved ||
-        cocoa_event_.type != NPCocoaEventMouseEntered ||
-        cocoa_event_.type != NPCocoaEventMouseExited ||
-        cocoa_event_.type != NPCocoaEventMouseDragged ||
-        cocoa_event_.type != NPCocoaEventScrollWheel)) {
-    NOTREACHED();
-    return;
-  }
-  cocoa_event_.data.mouse.pluginX =
-      round(cocoa_event_.data.mouse.pluginX * zoom);
-  cocoa_event_.data.mouse.pluginY =
-      round(cocoa_event_.data.mouse.pluginY * zoom);
 }
 
 bool CocoaPluginWebEventConverter::ConvertKeyboardEvent(

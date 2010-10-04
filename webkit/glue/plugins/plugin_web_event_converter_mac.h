@@ -25,12 +25,6 @@ class PluginWebEventConverter {
   // could not be converted.
   virtual bool InitWithEvent(const WebKit::WebInputEvent& web_event);
 
-  // Sets a zoom level to apply to mouse coordinates. Must be called after
-  // InitWithEvent.
-  // TODO(stuartmorgan): Re-evaluate whether this is necessary when
-  // http://crbug.com/9996 is fixed.
-  virtual void SetZoomLevel(float zoom) = 0;
-
   // Returns a pointer to a plugin event--suitable for passing to
   // NPP_HandleEvent--corresponding to the the web event this converter was
   // created with. The pointer is valid only as long as this object is.
