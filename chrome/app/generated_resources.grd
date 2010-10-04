@@ -3826,7 +3826,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Labs Experiments
       </message>
       <message name="IDS_LABS_BLURB" desc="Text at the top of the about:labs page, warning users that the about:labs contents are volatile.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Labs is a testing ground for experimental features that aren't quite ready for primetime. They may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on. Your browser may spontaneously combust, acquire sentience, and/or steal your babies.
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Labs is a testing ground for experimental features that aren't quite ready for primetime. They may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on. Your browser may spontaneously combust and/or acquire sentience.
       </message>
       <message name="IDS_LABS_NO_EXPERIMENTS_AVAILABLE" desc="Shown if no labs experiments are available">
         Aww, it looks like there are currently no experiments available.
