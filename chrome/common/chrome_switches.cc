@@ -767,6 +767,9 @@ const char kNoJsRandomness[]                = "no-js-randomness";
 // Don't send HTTP-Referer headers.
 const char kNoReferrers[]                   = "no-referrers";
 
+// Don't send hyperlink auditing pings
+const char kNoPings[]                       = "no-pings";
+
 // Don't use a proxy server, always make direct connections. Overrides any
 // other proxy server flags that are passed.
 const char kNoProxyServer[]                 = "no-proxy-server";

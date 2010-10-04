@@ -479,6 +479,7 @@ void ParamTraits<WebPreferences>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.databases_enabled);
   WriteParam(m, p.application_cache_enabled);
   WriteParam(m, p.tabs_to_links);
+  WriteParam(m, p.hyperlink_auditing_enabled);
   WriteParam(m, p.user_style_sheet_enabled);
   WriteParam(m, p.user_style_sheet_location);
   WriteParam(m, p.author_and_user_styles_enabled);
@@ -527,6 +528,7 @@ bool ParamTraits<WebPreferences>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->databases_enabled) &&
       ReadParam(m, iter, &p->application_cache_enabled) &&
       ReadParam(m, iter, &p->tabs_to_links) &&
+      ReadParam(m, iter, &p->hyperlink_auditing_enabled) &&
       ReadParam(m, iter, &p->user_style_sheet_enabled) &&
       ReadParam(m, iter, &p->user_style_sheet_location) &&
       ReadParam(m, iter, &p->author_and_user_styles_enabled) &&

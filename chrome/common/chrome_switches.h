@@ -223,6 +223,7 @@ extern const char kNoFirstRun[];
 extern const char kNoJsRandomness[];
 extern const char kNoProxyServer[];
 extern const char kNoReferrers[];
+extern const char kNoPings[];
 extern const char kNoSandbox[];
 extern const char kNoStartupWindow[];
 extern const char kNotifyCloudPrintTokenExpired[];
