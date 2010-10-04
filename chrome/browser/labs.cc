@@ -117,6 +117,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     switches::kEnableXSSAuditor
   },
+  {
+    "background-webapps", // Do not change; see above
+    IDS_LABS_BACKGROUND_WEBAPPS_NAME,
+    IDS_LABS_BACKGROUND_WEBAPPS_DESCRIPTION,
+    kOsAll,
+    switches::kEnableBackgroundMode
+  }
 };
 
 // Extracts the list of enabled lab experiments from a profile and stores them
