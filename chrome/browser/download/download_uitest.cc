@@ -175,7 +175,7 @@ class DownloadTest : public UITest {
 // All download tests are flaky on all platforms, http://crbug.com/35275,
 // http://crbug.com/48913 and especially http://crbug.com/50060.
 // Additionally, there is Windows-specific flake, http://crbug.com/20809.
-TEST_F(DownloadTest, FLAKY_DownloadMimeType) {
+TEST_F(DownloadTest, DISABLED_DownloadMimeType) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
 
   EXPECT_EQ(1, GetTabCount());
@@ -224,7 +224,7 @@ TEST_F(DownloadTest, FLAKY_NoDownload) {
 // All download tests are flaky on all platforms, http://crbug.com/35275,
 // http://crbug.com/48913 and especially http://crbug.com/50060.
 // Additionally, there is Windows-specific flake, http://crbug.com/20809.
-TEST_F(DownloadTest, FLAKY_ContentDisposition) {
+TEST_F(DownloadTest, DISABLED_ContentDisposition) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
@@ -246,7 +246,7 @@ TEST_F(DownloadTest, FLAKY_ContentDisposition) {
 // All download tests are flaky on all platforms, http://crbug.com/35275,
 // http://crbug.com/48913 and especially http://crbug.com/50060.
 // Additionally, there is Windows-specific flake, http://crbug.com/20809.
-TEST_F(DownloadTest, FLAKY_PerWindowShelf) {
+TEST_F(DownloadTest, DISABLED_PerWindowShelf) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
@@ -314,7 +314,7 @@ TEST_F(DownloadTest, FLAKY_KnownSize) {
 // All download tests are flaky on all platforms, http://crbug.com/35275,
 // http://crbug.com/48913 and especially http://crbug.com/50060.
 // Additionally, there is Windows-specific flake, http://crbug.com/20809.
-TEST_F(DownloadTest, FLAKY_IncognitoDownload) {
+TEST_F(DownloadTest, DISABLED_IncognitoDownload) {
   // Open a regular window and sanity check default values for window / tab
   // count and shelf visibility.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -521,7 +521,7 @@ TEST_F(DownloadTest, FLAKY_CloseNewTab3) {
 // All download tests are flaky on all platforms, http://crbug.com/35275,
 // http://crbug.com/48913 and especially http://crbug.com/50060.
 // Additionally, there is Windows-specific flake, http://crbug.com/20809.
-TEST_F(DownloadTest, FLAKY_DontCloseNewWindow) {
+TEST_F(DownloadTest, DISABLED_DontCloseNewWindow) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
@@ -546,7 +546,7 @@ TEST_F(DownloadTest, FLAKY_DontCloseNewWindow) {
 // All download tests are flaky on all platforms, http://crbug.com/35275,
 // http://crbug.com/48913 and especially http://crbug.com/50060.
 // Additionally, there is Windows-specific flake, http://crbug.com/20809.
-TEST_F(DownloadTest, FLAKY_NewWindow) {
+TEST_F(DownloadTest, DISABLED_NewWindow) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   int window_count = 0;
