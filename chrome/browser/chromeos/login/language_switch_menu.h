@@ -36,11 +36,6 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
   // Sets the minimum width of the first level menu to be shown.
   void SetFirstLevelMenuWidth(int width);
 
-  void set_menu_offset(int delta_x, int delta_y) {
-    delta_x_ = delta_x;
-    delta_y_ = delta_y;
-  }
-
   // Switches the current locale, saves the new locale in preferences.
   static void SwitchLanguage(const std::string& locale);
 
@@ -62,8 +57,6 @@ class LanguageSwitchMenu : public views::ViewMenuDelegate,
 
   // Language locale name storage.
   scoped_ptr<LanguageList> language_list_;
-
-  int delta_x_, delta_y_;
 
   FRIEND_TEST(::WizardControllerTest, SwitchLanguage);
   DISALLOW_COPY_AND_ASSIGN(LanguageSwitchMenu);

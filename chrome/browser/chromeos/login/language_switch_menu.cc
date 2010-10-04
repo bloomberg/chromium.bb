@@ -30,9 +30,7 @@ namespace chromeos {
 
 LanguageSwitchMenu::LanguageSwitchMenu()
     : ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)),
-      delta_x_(0),
-      delta_y_(0) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_submenu_(this)) {
 }
 
 void LanguageSwitchMenu::InitLanguageMenu() {
@@ -108,9 +106,7 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
 
 void LanguageSwitchMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   DCHECK(menu_ != NULL);
-  gfx::Point point(pt);
-  point.Offset(delta_x_, delta_y_);
-  menu_->RunMenuAt(point, views::Menu2::ALIGN_TOPRIGHT);
+  menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -64,15 +64,11 @@ const int kSelectionBoxHeight = 29;
 // Menu button is drawn using our custom icons in resources. See
 // TextButtonBorder::Paint() for details. So this offset compensate
 // horizontal size, eaten by those icons.
-const int kMenuHorizontalOffset = -1;
-
-// Constants were taken from 'views/controls/menu_button.cc'.
-const int kDefaultMenuOffsetX = -2;
-const int kDefaultMenuOffsetY = -4;
+const int kMenuHorizontalOffset = -3;
 
 // Vertical addition to the menu window to make it appear exactly below
 // MenuButton.
-const int kMenuVerticalOffset = 3;
+const int kMenuVerticalOffset = -1;
 
 // Offset that compensates menu width so that it matches
 // menu button visual width when being in pushed state.
@@ -298,9 +294,8 @@ void NetworkSelectionView::Init() {
   languages_menubutton_->SetFocusable(true);
   languages_menubutton_->SetNormalHasBorder(true);
   // Menu is positioned by bottom right corner of the MenuButton.
-  // TODO(altimofeev): switch to the absolute offsets (button related)
-  delegate_->language_switch_menu()->set_menu_offset(kMenuHorizontalOffset,
-                                                     kMenuVerticalOffset);
+  languages_menubutton_->set_menu_offset(kMenuHorizontalOffset,
+                                         kMenuVerticalOffset);
 
   select_network_label_ = new views::Label();
   select_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
@@ -309,10 +304,8 @@ void NetworkSelectionView::Init() {
                                                          GetNativeWindow(),
                                                          delegate_);
 
-  // TODO(altimofeev): switch to the absolute offsets (button related)
-  network_dropdown_->set_menu_offset(
-      kDefaultMenuOffsetX + kMenuHorizontalOffset,
-      kDefaultMenuOffsetY + kMenuVerticalOffset);
+  network_dropdown_->set_menu_offset(kMenuHorizontalOffset,
+                                     kMenuVerticalOffset);
 
   network_dropdown_->SetNormalHasBorder(true);
   network_dropdown_->SetFocusable(true);
