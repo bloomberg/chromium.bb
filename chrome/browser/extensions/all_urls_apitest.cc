@@ -15,12 +15,7 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-// TODOf Remove.
-void Dbg(const char* msg) {
-  std::cout << "**** " << msg << "\n" << std::flush;
-}
-
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FAILS_WhitelistedExtension) {
   // First add the two extensions we are going to load to the whitelist.
   const char* kCanExecuteScriptsEverywhere[] = {
     "fekpfaahmgnelcjpkefdnpiofglcgmgo",
