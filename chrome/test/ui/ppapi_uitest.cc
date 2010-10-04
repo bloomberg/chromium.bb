@@ -105,7 +105,8 @@ TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
 
-TEST_F(PPAPITest, FLAKY_URLLoader) {
+// http://bugs.chromium.org/51345
+TEST_F(PPAPITest, DISABLED_URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
