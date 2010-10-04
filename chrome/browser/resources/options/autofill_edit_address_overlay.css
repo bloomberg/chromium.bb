@@ -1,3 +1,25 @@
 #autoFillEditAddressOverlay {
   width: 500px;
 }
+
+div.table {
+  display: table;
+}
+
+div.cell {
+  display: table-cell;
+  max-width: 151px;
+}
+
+div.row {
+  display: table-row;
+}
+
+div.input {
+  padding: 2px;
+}
+
+input.form {
+  width: 90%;
+  max-width: 151px;
+}
