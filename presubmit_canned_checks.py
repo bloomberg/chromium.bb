@@ -516,6 +516,8 @@ def CheckBuildbotPendingBuilds(input_api, output_api, url, max_pendings,
   for (builder_name, builder) in data.iteritems():
     if builder_name in ignored:
       continue
+    if builder.get('state', '') == 'offline':
+      continue
     pending_builds_len = len(builder.get('pending_builds', []))
     if pending_builds_len > max_pendings:
       out.append('%s has %d build(s) pending' %
