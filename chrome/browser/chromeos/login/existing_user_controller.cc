@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros_settings_provider_user.h"
@@ -50,6 +51,30 @@ const size_t kNotSelected = -1;
 // Offset of cursor in first position from edit left side. It's used to position
 // info bubble arrow to cursor.
 const int kCursorOffset = 5;
+
+// Used to handle the asynchronous response of deleting a cryptohome directory.
+class RemoveAttempt : public CryptohomeLibrary::Delegate {
+ public:
+  explicit RemoveAttempt(const std::string& user_email)
+      : user_email_(user_email) {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncRemove(
+          user_email_, this);
+    }
+  }
+
+  void OnComplete(bool success, int return_code) {
+    // Log the error, but there's not much we can do.
+    if (!success) {
+      LOG(INFO) << "Removal of cryptohome for " << user_email_
+                << " failed, return code: " << return_code;
+    }
+    delete this;
+  }
+
+ private:
+  std::string user_email_;
+};
 
 // Checks if display names are unique. If there are duplicates, enables
 // tooltips with full emails to let users distinguish their accounts.
@@ -331,6 +356,8 @@ void ExistingUserController::RemoveUser(UserController* source) {
   for (int i = 0; i < new_size; ++i)
     controllers_[i]->UpdateUserCount(i, new_size);
 
+  // Delete the encrypted user directory.
+  new RemoveAttempt(source->user().email());
   // We need to unmap entry windows, the windows will be unmapped in destructor.
   delete source;
 }
