@@ -1,0 +1,21 @@
+<!--
+ * Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+<head>
+<script>
+console.log('Extension content_script starts');
+
+chrome.extension.onRequest.addListener(
+  function(request, sender, sendResponse) {
+    console.log('Extension content_script reports back');
+
+    // Let the extension know where the script ran.
+    var url = sender.tab ? sender.tab.url : 'about:blank';
+    chrome.test.sendMessage('content script: ' + url);
+  });
+</script>
+</head>
+</html>

@@ -799,7 +799,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
 
 // Test window.chrome.app.isInstalled .
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PropertyAppIsInstalled) {
-
   std::string app_host("app.com");
   std::string nonapp_host("nonapp.com");
 

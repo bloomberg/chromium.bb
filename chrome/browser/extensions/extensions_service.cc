@@ -1259,30 +1259,6 @@ void ExtensionsService::SetAllowFileAccess(Extension* extension, bool allow) {
       Details<Extension>(extension));
 }
 
-bool ExtensionsService::CanExecuteScriptOnHost(Extension* extension,
-                                               const GURL& url,
-                                               std::string* error) const {
-  // No extensions are allowed to execute script on the gallery because that
-  // would allow extensions to manipulate their own install pages.
-  if (url.host() == GURL(Extension::ChromeStoreURL()).host()
-      && !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowScriptingGallery)) {
-    if (error)
-      *error = errors::kCannotScriptGallery;
-    return false;
-  }
-
-  if (extension->HasHostPermission(url))
-      return true;
-
-  if (error) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
-                                                     url.spec());
-  }
-
-  return false;
-}
-
 void ExtensionsService::CheckForExternalUpdates() {
   // This installs or updates externally provided extensions.
   // TODO(aa): Why pass this list into the provider, why not just filter it
