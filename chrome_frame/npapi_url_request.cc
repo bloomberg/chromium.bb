@@ -29,6 +29,14 @@ class NPAPIUrlRequest : public PluginUrlRequest {
   virtual unsigned long API_CALL AddRef();
   virtual unsigned long API_CALL Release();
 
+  const URLRequestStatus& status() const {
+    return status_;
+  }
+
+  NPP instance() const {
+    return instance_;
+  }
+
  private:
   unsigned long ref_count_;
   NPP instance_;
@@ -113,6 +121,8 @@ bool NPAPIUrlRequest::Start() {
 void NPAPIUrlRequest::Stop() {
   DLOG(INFO) << "Finished request: Url - " << url() << " result: "
       << static_cast<int>(status_.status());
+
+  status_.set_status(URLRequestStatus::CANCELED);
   if (stream_) {
     npapi::DestroyStream(instance_, stream_, NPRES_USER_BREAK);
     stream_ = NULL;
@@ -137,21 +147,28 @@ NPError NPAPIUrlRequest::OnStreamCreated(const char* mime_type,
 }
 
 NPError NPAPIUrlRequest::OnStreamDestroyed(NPReason reason) {
-  URLRequestStatus::Status status = URLRequestStatus::FAILED;
-  switch (reason) {
-    case NPRES_DONE:
-      status_.set_status(URLRequestStatus::SUCCESS);
-      status_.set_os_error(0);
-      break;
-    case NPRES_USER_BREAK:
-      status_.set_status(URLRequestStatus::CANCELED);
-      status_.set_os_error(net::ERR_ABORTED);
-      break;
-    case NPRES_NETWORK_ERR:
-    default:
-      status_.set_status(URLRequestStatus::FAILED);
-      status_.set_os_error(net::ERR_CONNECTION_CLOSED);
-      break;
+  // If the request has been aborted, then ignore the |reason| argument.
+  // Normally the execution flow is such than NPRES_USER_BREAK will be passed
+  // when the stream is aborted, but sometimes NPRES_NETWORK_ERROR is passed
+  // instead.  To prevent Chrome from receiving a notification of a failed
+  // network connection, when Chrome actually canceled the request, we ignore
+  // the status here.
+  if (URLRequestStatus::CANCELED != status_.status()) {
+    switch (reason) {
+      case NPRES_DONE:
+        status_.set_status(URLRequestStatus::SUCCESS);
+        status_.set_os_error(0);
+        break;
+      case NPRES_USER_BREAK:
+        status_.set_status(URLRequestStatus::CANCELED);
+        status_.set_os_error(net::ERR_ABORTED);
+        break;
+      case NPRES_NETWORK_ERR:
+      default:
+        status_.set_status(URLRequestStatus::FAILED);
+        status_.set_os_error(net::ERR_CONNECTION_CLOSED);
+        break;
+    }
   }
 
   delegate_->OnResponseEnd(id(), status_);
@@ -207,10 +224,9 @@ void NPAPIUrlRequestManager::StartRequest(int request_id,
         request_info.upload_data,
         static_cast<ResourceType::Type>(request_info.resource_type),
         enable_frame_busting_)) {
-    // Add to map.
     DCHECK(request_map_.find(request_id) == request_map_.end());
-    request_map_[request_id] = new_request;
     if (new_request->Start()) {
+      request_map_[request_id] = new_request;
       // Keep additional reference on request for NPSTREAM
       // This will be released in NPP_UrlNotify
       new_request->AddRef();
@@ -343,6 +359,13 @@ NPError NPAPIUrlRequestManager::NewStream(NPMIMEType type,
   if (!request)
     return NPERR_NO_ERROR;
 
+  // This stream is being constructed for a request that has already been
+  // canceled.  Signal its immediate termination.
+  if (URLRequestStatus::CANCELED == request->status().status()) {
+    return npapi::DestroyStream(request->instance(),
+                                stream, NPRES_USER_BREAK);
+  }
+
   DCHECK(request_map_.find(request->id()) != request_map_.end());
   // We need to return the requested stream mode if we are returning a success
   // code. If we don't do this it causes Opera to blow up.
@@ -372,8 +395,15 @@ NPError NPAPIUrlRequestManager::DestroyStream(NPStream* stream,
   NPAPIUrlRequest* request = RequestFromNotifyData(stream->notifyData);
   if (!request)
     return NPERR_NO_ERROR;
-  DCHECK(request_map_.find(request->id()) != request_map_.end());
-  return request->OnStreamDestroyed(reason);
+
+  // It is possible to receive notification of a destroyed stream for a
+  // unregistered request:  EndRequest will unregister a request in response
+  // to an AutomationMsg_RequestEnd message.  EndRequest will also invoke
+  // npapi::DestroyStream, which will call back to this function.
+  if (request_map_.find(request->id()) != request_map_.end())
+    return request->OnStreamDestroyed(reason);
+
+  return NPERR_NO_ERROR;
 }
 
 void NPAPIUrlRequestManager::UrlNotify(const char* url, NPReason reason,
