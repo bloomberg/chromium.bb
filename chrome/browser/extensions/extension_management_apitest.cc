@@ -2,22 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/chrome_switches.h"
 
 class ExtensionManagementApiTest : public ExtensionApiTest {
  public:
-
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalExtensionApis);
-  }
-
   virtual void InstallExtensions() {
     FilePath basedir = test_data_dir_.AppendASCII("management");
 

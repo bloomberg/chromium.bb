@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-if (!chrome.management) {
-  chrome.management = chrome.experimental.management;
-}
-
 window.onload = function() {
   chrome.management.getAll(function(items) {
     for (var i in items) {
