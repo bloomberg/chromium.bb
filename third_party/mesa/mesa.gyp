@@ -7,7 +7,7 @@
   },
   'target_defaults': {
     'conditions': [
-      ['OS=="linux"', {
+      ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
         'cflags': [
           '-fPIC',
         ],

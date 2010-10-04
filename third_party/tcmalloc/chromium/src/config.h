@@ -15,6 +15,8 @@
 #include "third_party/tcmalloc/chromium/src/config_win.h"
 #elif defined(OS_LINUX)
 #include "third_party/tcmalloc/chromium/src/config_linux.h"
+#elif defined(OS_FREEBSD)
+#include "third_party/tcmalloc/chromium/src/config_freebsd.h"
 #endif
 
 #endif // CONFIG_H_
