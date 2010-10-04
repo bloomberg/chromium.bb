@@ -431,12 +431,16 @@ TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
   };
 
   FilePath websocket_test_dir;
+  websocket_test_dir = websocket_test_dir.AppendASCII("http");
+  websocket_test_dir = websocket_test_dir.AppendASCII("tests");
   websocket_test_dir = websocket_test_dir.AppendASCII("websocket");
   websocket_test_dir = websocket_test_dir.AppendASCII("tests");
 
   FilePath worker_test_dir;
   worker_test_dir = worker_test_dir.AppendASCII("workers");
   InitializeForLayoutTest(websocket_test_dir, worker_test_dir, kWebSocketPort);
+  test_case_dir_ = test_case_dir_.AppendASCII("http");
+  test_case_dir_ = test_case_dir_.AppendASCII("tests");
   test_case_dir_ = test_case_dir_.AppendASCII("websocket");
   test_case_dir_ = test_case_dir_.AppendASCII("tests");
   test_case_dir_ = test_case_dir_.AppendASCII("workers");

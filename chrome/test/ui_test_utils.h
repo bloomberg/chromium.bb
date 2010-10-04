@@ -266,7 +266,7 @@ class TimedMessageLoopRunner {
 //
 //    third_paty/WebKit/WebKitTools/Scripts/new-run-webkit-websocketserver
 //
-// Only *_wsh.py handlers found under "websocket/tests" from the
+// Only *_wsh.py handlers found under "http/tests/websocket/tests" from the
 // |root_directory| will be found and active while running the test
 // server.
 class TestWebSocketServer {

@@ -117,6 +117,9 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/http/tests/xmlhttprequest":
     Var("webkit_trunk") + "/LayoutTests/http/tests/xmlhttprequest@" +
     Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/http/tests/websocket/tests":
+    Var("webkit_trunk") + "/LayoutTests/http/tests/websocket/tests@" +
+    Var("webkit_revision"),
   "src/chrome/test/data/layout_tests/LayoutTests/platform/chromium/fast/workers":
     Var("webkit_trunk") + "/LayoutTests/platform/chromium/fast/workers@" +
     Var("webkit_revision"),
