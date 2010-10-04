@@ -8,16 +8,10 @@
 
 #include <string>
 
-#include "base/string16.h"
-#include "chrome/browser/browsing_data_local_storage_helper.h"
-#include "chrome/browser/js_modal_dialog.h"
-#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
-#include "net/base/cookie_monster.h"
 
-class CookiePromptModalDialogDelegate;
 class GURL;
-class HostContentSettingsMap;
+class JavaScriptAppModalDialogDelegate;
 class TabContents;
 class Profile;
 
@@ -43,46 +37,5 @@ void RunJavascriptMessageBox(Profile* profile,
 void RunBeforeUnloadDialog(TabContents* tab_contents,
                            const std::wstring& message_text,
                            IPC::Message* reply_msg);
-
-// This will display a modal dialog box with cookie information asking
-// user to accept or reject the cookie. The caller should pass |delegate|
-// that will handle the reply from the dialog.
-void RunCookiePrompt(TabContents* tab_contents,
-                     HostContentSettingsMap* host_content_settings_map,
-                     const GURL& origin,
-                     const std::string& cookie_line,
-                     CookiePromptModalDialogDelegate* delegate);
-
-// This will display a modal dialog box with local storage information asking
-// user to accept or reject it. The caller should pass |delegate|
-// that will handle the reply from the dialog.
-void RunLocalStoragePrompt(
-    TabContents* tab_contents,
-    HostContentSettingsMap* host_content_settings_map,
-    const GURL& origin,
-    const string16& key,
-    const string16& value,
-    CookiePromptModalDialogDelegate* delegate);
-
-// This will display a modal dialog box with the database name on every open
-// and ask the user to accept or reject it. The caller should pass |delegate|
-// that will handle the reply from the dialog.
-void RunDatabasePrompt(
-    TabContents* tab_contents,
-    HostContentSettingsMap* host_content_settings_map,
-    const GURL& origin,
-    const string16& database_name,
-    const string16& display_name,
-    unsigned long estimated_size,
-    CookiePromptModalDialogDelegate* delegate);
-
-// This will display a modal dialog box with the |manifest_url| and ask the
-// user to accept or reject it. The caller should pass |delegate| that will
-// handle the reply from the dialog.
-void RunAppCachePrompt(
-    TabContents* tab_contents,
-    HostContentSettingsMap* host_content_settings_map,
-    const GURL& manifest_url,
-    CookiePromptModalDialogDelegate* delegate);
 
 #endif  // CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
