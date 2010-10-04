@@ -29,10 +29,10 @@ class ExtensionRendererInfo {
   const ExtensionExtent& web_extent() const { return web_extent_; }
   const std::string& name() const { return name_; }
   const GURL& icon_url() const { return icon_url_; }
-  const bool allowed_to_execute_script_everywhere() const {
+  bool allowed_to_execute_script_everywhere() const {
     return allowed_to_execute_script_everywhere_;
   }
-  const std::vector<URLPattern> host_permissions() const {
+  const std::vector<URLPattern>& host_permissions() const {
     return host_permissions_;
   }
 
