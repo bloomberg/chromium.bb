@@ -838,12 +838,16 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK);
     IPC_MESSAGE_HANDLER(ViewHostMsg_QueryFormFieldAutoFill,
                         OnQueryFormFieldAutoFill)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidShowAutoFillSuggestions,
+                        OnDidShowAutoFillSuggestions)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RemoveAutocompleteEntry,
                         OnRemoveAutocompleteEntry)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowAutoFillDialog,
                         OnShowAutoFillDialog)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FillAutoFillFormData,
                         OnFillAutoFillFormData)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFillAutoFillFormData,
+                        OnDidFillAutoFillFormData)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotification,
                         OnShowDesktopNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CancelDesktopNotification,
@@ -1692,6 +1696,13 @@ void RenderViewHost::OnQueryFormFieldAutoFill(
   }
 }
 
+void RenderViewHost::OnDidShowAutoFillSuggestions() {
+  NotificationService::current()->Notify(
+      NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
+      Source<RenderViewHost>(this),
+      NotificationService::NoDetails());
+}
+
 void RenderViewHost::OnRemoveAutocompleteEntry(const string16& field_name,
                                                const string16& value) {
   RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
@@ -1726,6 +1737,13 @@ void RenderViewHost::OnFillAutoFillFormData(int query_id,
     return;
 
   autofill_delegate->FillAutoFillFormData(query_id, form, unique_id);
+}
+
+void RenderViewHost::OnDidFillAutoFillFormData() {
+  NotificationService::current()->Notify(
+      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
+      Source<RenderViewHost>(this),
+      NotificationService::NoDetails());
 }
 
 void RenderViewHost::AutoFillSuggestionsReturned(

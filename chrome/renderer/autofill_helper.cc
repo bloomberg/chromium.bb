@@ -128,6 +128,9 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
     web_view->applyAutoFillSuggestions(
         autofill_query_node_, v, l, i, ids, separator_index);
   }
+
+  render_view_->Send(new ViewHostMsg_DidShowAutoFillSuggestions(
+      render_view_->routing_id()));
 }
 
 void AutoFillHelper::FormDataFilled(int query_id,
@@ -146,6 +149,8 @@ void AutoFillHelper::FormDataFilled(int query_id,
       NOTREACHED();
   }
   autofill_action_ = AUTOFILL_NONE;
+  render_view_->Send(new ViewHostMsg_DidFillAutoFillFormData(
+      render_view_->routing_id()));
 }
 
 void AutoFillHelper::DidSelectAutoFillSuggestion(const WebNode& node,

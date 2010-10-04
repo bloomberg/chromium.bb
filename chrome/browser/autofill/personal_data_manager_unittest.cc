@@ -7,7 +7,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_common_unittest.h"
+#include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -48,15 +48,12 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   virtual void SetUp() {
-#if defined(OS_MACOSX)
-    Encryptor::UseMockKeychain(true);
-#endif
-
     db_thread_.Start();
 
     profile_.reset(new TestingProfile);
     profile_->CreateWebDataService(false);
 
+    autofill_test::DisableSystemServices(profile_.get());
     ResetPersonalDataManager();
   }
 
@@ -73,11 +70,6 @@ class PersonalDataManagerTest : public testing::Test {
     personal_data_ = new PersonalDataManager();
     personal_data_->Init(profile_.get());
     personal_data_->SetObserver(&personal_data_observer_);
-
-    // Disable auxiliary profiles for unit testing.  These reach out to system
-    // services on the Mac.
-    profile_->GetPrefs()->SetBoolean(
-      prefs::kAutoFillAuxiliaryProfilesEnabled, false);
   }
 
   AutoFillProfile* MakeProfile() {
@@ -100,19 +92,19 @@ class PersonalDataManagerTest : public testing::Test {
 // TODO(jhawkins): Test SetProfiles w/out a WebDataService in the profile.
 TEST_F(PersonalDataManagerTest, SetProfiles) {
   AutoFillProfile profile0(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile0,
+  autofill_test::SetProfileInfo(&profile0,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
   AutoFillProfile profile1(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile1,
+  autofill_test::SetProfileInfo(&profile1,
       "Home", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
       "US", "19482937549", "13502849239");
 
   AutoFillProfile profile2(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile2,
+  autofill_test::SetProfileInfo(&profile2,
       "Work", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -194,16 +186,16 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
 // TODO(jhawkins): Test SetCreditCards w/out a WebDataService in the profile.
 TEST_F(PersonalDataManagerTest, SetCreditCards) {
   CreditCard creditcard0(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard0, "Corporate",
+  autofill_test::SetCreditCardInfo(&creditcard0, "Corporate",
       "John Dillinger", "Visa", "123456789012", "01", "2010", 1);
 
   CreditCard creditcard1(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard1, "Personal",
+  autofill_test::SetCreditCardInfo(&creditcard1, "Personal",
       "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", 2);
 
   CreditCard creditcard2(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard2, "Savings", "Clyde Barrow",
-      "American Express", "777666888555", "04", "2015", 3);
+  autofill_test::SetCreditCardInfo(&creditcard2, "Savings",
+      "Clyde Barrow", "American Express", "777666888555", "04", "2015", 3);
 
   // This will verify that the web database has been loaded and the notification
   // sent out.
@@ -278,23 +270,23 @@ TEST_F(PersonalDataManagerTest, SetCreditCards) {
 
 TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
   AutoFillProfile profile0(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile0,
+  autofill_test::SetProfileInfo(&profile0,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
   AutoFillProfile profile1(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile1,
+  autofill_test::SetProfileInfo(&profile1,
       "Home", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
       "US", "19482937549", "13502849239");
 
   CreditCard creditcard0(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard0, "Corporate",
+  autofill_test::SetCreditCardInfo(&creditcard0, "Corporate",
       "John Dillinger", "Visa", "123456789012", "01", "2010", 1);
 
   CreditCard creditcard1(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard1, "Personal",
+  autofill_test::SetCreditCardInfo(&creditcard1, "Personal",
       "Bonnie Parker", "Mastercard", "098765432109", "12", "2012", 2);
 
   // This will verify that the web database has been loaded and the notification
@@ -358,7 +350,7 @@ TEST_F(PersonalDataManagerTest, SetProfilesAndCreditCards) {
 // load.
 TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   AutoFillProfile profile0(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile0,
+  autofill_test::SetProfileInfo(&profile0,
       "", "y", "", "", "", "", "", "", "", "", "", "", "", "");
 
   // This will verify that the web database has been loaded and the notification
@@ -387,7 +379,7 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
 
   // Add a new profile.
   AutoFillProfile profile1(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile1,
+  autofill_test::SetProfileInfo(&profile1,
       "", "y", "", "", "", "", "", "", "", "", "", "", "", "");
   update.clear();
   update.push_back(*results2[0]);
@@ -405,7 +397,7 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
 
 TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
   AutoFillProfile profile0(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile0,
+  autofill_test::SetProfileInfo(&profile0,
       "", "", "", "", "", "", "", "", "", "", "", "", "", "");
 
   // This will verify that the web database has been loaded and the notification
@@ -445,7 +437,7 @@ TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
 
 TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
   CreditCard creditcard0(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&creditcard0,
+  autofill_test::SetCreditCardInfo(&creditcard0,
       "", "", "", "", "", "", 0);
 
   // This will verify that the web database has been loaded and the notification
@@ -485,13 +477,13 @@ TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
 
 TEST_F(PersonalDataManagerTest, Refresh) {
   AutoFillProfile profile0(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile0,
+  autofill_test::SetProfileInfo(&profile0,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
   AutoFillProfile profile1(string16(), 0);
-  autofill_unittest::SetProfileInfo(&profile1,
+  autofill_test::SetProfileInfo(&profile1,
       "Home", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
       "US", "19482937549", "13502849239");
@@ -524,7 +516,7 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   EXPECT_EQ(profile1, *results1.at(1));
 
   scoped_ptr<AutoFillProfile> profile2(MakeProfile());
-  autofill_unittest::SetProfileInfo(profile2.get(),
+  autofill_test::SetProfileInfo(profile2.get(),
       "Work", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -576,13 +568,13 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 TEST_F(PersonalDataManagerTest, ImportFormData) {
   FormData form;
   webkit_glue::FormField field;
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form.fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form.fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form.fields.push_back(field);
   FormStructure form_structure(form);
@@ -597,7 +589,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   MessageLoop::current()->Run();
 
   AutoFillProfile expected(string16(), 1);
-  autofill_unittest::SetProfileInfo(&expected, NULL, "George", NULL,
+  autofill_test::SetProfileInfo(&expected, NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL, NULL);
   const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
@@ -652,13 +644,13 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   scoped_ptr<FormData> form(new FormData);
 
   webkit_glue::FormField field;
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Email:", "email", "theprez@gmail.com", "text", &field);
   form->fields.push_back(field);
 
@@ -676,7 +668,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
 
   scoped_ptr<AutoFillProfile> expected(
       new AutoFillProfile(string16(), 1));
-  autofill_unittest::SetProfileInfo(expected.get(), NULL, "George", NULL,
+  autofill_test::SetProfileInfo(expected.get(), NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL, NULL);
   const std::vector<AutoFillProfile*>& results = personal_data_->profiles();
@@ -686,13 +678,13 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
 
   // Now create a completely different profile.
   form.reset(new FormData);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "First name:", "first_name", "John", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Last name:", "last_name", "Adams", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Email:", "email", "second@gmail.com", "text", &field);
   form->fields.push_back(field);
 
@@ -711,14 +703,14 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   ASSERT_EQ(2U, results2.size());
 
   expected.reset(new AutoFillProfile(string16(), 1));
-  autofill_unittest::SetProfileInfo(expected.get(), NULL, "George", NULL,
+  autofill_test::SetProfileInfo(expected.get(), NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL, NULL);
   expected->set_label(results2[0]->Label());
   EXPECT_EQ(*expected, *results2[0]);
 
   expected.reset(new AutoFillProfile(string16(), 2));
-  autofill_unittest::SetProfileInfo(expected.get(), NULL, "John", NULL,
+  autofill_test::SetProfileInfo(expected.get(), NULL, "John", NULL,
       "Adams", "second@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL);
   expected->set_label(results2[1]->Label());
@@ -726,22 +718,22 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
 
   // Submit a form with new data for the first profile.
   form.reset(new FormData);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "First name:", "first_name", "George", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Last name:", "last_name", "Washington", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Address Line 1:", "address", "190 High Street", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "City:", "city", "Philadelphia", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "State:", "state", "Pennsylvania", "text", &field);
   form->fields.push_back(field);
-  autofill_unittest::CreateTestFormField(
+  autofill_test::CreateTestFormField(
       "Zip:", "zipcode", "19106", "text", &field);
   form->fields.push_back(field);
 
@@ -760,14 +752,14 @@ TEST_F(PersonalDataManagerTest, AggregateProfileData) {
   ASSERT_EQ(2U, results3.size());
 
   expected.reset(new AutoFillProfile(string16(), 1));
-  autofill_unittest::SetProfileInfo(expected.get(), NULL, "George", NULL,
+  autofill_test::SetProfileInfo(expected.get(), NULL, "George", NULL,
       "Washington", "theprez@gmail.com", NULL, "190 High Street", NULL,
       "Philadelphia", "Pennsylvania", "19106", NULL, NULL, NULL);
   expected->set_label(results3[0]->Label());
   EXPECT_EQ(*expected, *results3[0]);
 
   expected.reset(new AutoFillProfile(string16(), 2));
-  autofill_unittest::SetProfileInfo(expected.get(), NULL, "John", NULL,
+  autofill_test::SetProfileInfo(expected.get(), NULL, "John", NULL,
       "Adams", "second@gmail.com", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
       NULL, NULL);
   expected->set_label(results3[1]->Label());

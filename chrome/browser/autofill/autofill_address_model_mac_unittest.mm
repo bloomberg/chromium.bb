@@ -5,7 +5,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
-#include "chrome/browser/autofill/autofill_common_unittest.h"
+#include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -26,7 +26,7 @@ TEST(AutoFillAddressModelTest, Basic) {
 
 TEST(AutoFillAddressModelTest, InitializationFromProfile) {
   AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
-  autofill_unittest::SetProfileInfo(
+  autofill_test::SetProfileInfo(
       &profile,
       "Billing",
       "Marion",
@@ -60,7 +60,7 @@ TEST(AutoFillAddressModelTest, InitializationFromProfile) {
 
 TEST(AutoFillAddressModelTest, CopyModelToProfile) {
   AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
-  autofill_unittest::SetProfileInfo(
+  autofill_test::SetProfileInfo(
       &profile,
       "Billing",
       "Marion",

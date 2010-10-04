@@ -1196,7 +1196,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStartLoading)
 
   // Sent when the renderer is done loading a page. This corresponds to WebKit's
-  // noption of the throbber stopping.
+  // notion of the throbber stopping.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopLoading)
 
   // Sent when the document element is available for the toplevel frame.  This
@@ -2023,12 +2023,18 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       bool /* form_autofilled */,
                       webkit_glue::FormField /* the form field */)
 
+  // Sent when the popup with AutoFill suggestions for a form is shown.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_DidShowAutoFillSuggestions)
+
   // Instructs the browser to fill in the values for a form using AutoFill
   // profile data.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_FillAutoFillFormData,
                       int /* id of this message */,
                       webkit_glue::FormData /* the form  */,
                       int /* profile unique ID */)
+
+  // Sent when a form is previewed or filled with AutoFill suggestions.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFillAutoFillFormData)
 
   // Instructs the browser to remove the specified Autocomplete entry from the
   // database.

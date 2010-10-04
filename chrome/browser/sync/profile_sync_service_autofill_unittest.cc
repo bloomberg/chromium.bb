@@ -17,7 +17,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/autofill/autofill_common_unittest.h"
+#include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
@@ -530,7 +530,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasMixedNativeEmptySync) {
   std::vector<AutoFillProfile> expected_profiles;
   // Owned by GetAutoFillProfiles caller.
   AutoFillProfile* profile0 = new AutoFillProfile(string16(), 0);
-  autofill_unittest::SetProfileInfo(profile0,
+  autofill_test::SetProfileInfo(profile0,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
@@ -585,12 +585,12 @@ TEST_F(ProfileSyncServiceAutofillTest, HasDuplicateProfileLabelsEmptySync) {
   std::vector<AutoFillProfile> expected_profiles;
   std::vector<AutoFillProfile*> profiles;
   AutoFillProfile* profile0 = new AutoFillProfile(string16(), 0);
-  autofill_unittest::SetProfileInfo(profile0,
+  autofill_test::SetProfileInfo(profile0,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
   AutoFillProfile* profile1 = new AutoFillProfile(string16(), 0);
-  autofill_unittest::SetProfileInfo(profile1,
+  autofill_test::SetProfileInfo(profile1,
       "Billing", "Same", "Label", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
@@ -647,13 +647,13 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncNoMerge) {
   AutofillEntry native_entry(MakeAutofillEntry("native", "entry", 1));
   AutofillEntry sync_entry(MakeAutofillEntry("sync", "entry", 2));
   AutoFillProfile sync_profile(string16(), 0);
-  autofill_unittest::SetProfileInfo(&sync_profile,
+  autofill_test::SetProfileInfo(&sync_profile,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
   AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
-  autofill_unittest::SetProfileInfo(native_profile,
+  autofill_test::SetProfileInfo(native_profile,
       "Work", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -736,13 +736,13 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeEntry) {
 
 TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
   AutoFillProfile sync_profile(string16(), 0);
-  autofill_unittest::SetProfileInfo(&sync_profile,
+  autofill_test::SetProfileInfo(&sync_profile,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
   AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
-  autofill_unittest::SetProfileInfo(native_profile,
+  autofill_test::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -812,7 +812,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
   ASSERT_TRUE(task.success());
 
   AutoFillProfile added_profile(string16(), 0);
-  autofill_unittest::SetProfileInfo(&added_profile,
+  autofill_test::SetProfileInfo(&added_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -834,7 +834,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfile) {
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfileConflict) {
   AutoFillProfile sync_profile(string16(), 0);
-  autofill_unittest::SetProfileInfo(&sync_profile,
+  autofill_test::SetProfileInfo(&sync_profile,
       "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
@@ -855,7 +855,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeAddProfileConflict) {
   ASSERT_TRUE(task.success());
 
   AutoFillProfile added_profile(string16(), 0);
-  autofill_unittest::SetProfileInfo(&added_profile,
+  autofill_test::SetProfileInfo(&added_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -924,7 +924,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateEntry) {
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
   AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
-  autofill_unittest::SetProfileInfo(native_profile,
+  autofill_test::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -939,7 +939,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
   ASSERT_TRUE(task.success());
 
   AutoFillProfile update_profile(string16(), 0);
-  autofill_unittest::SetProfileInfo(&update_profile,
+  autofill_test::SetProfileInfo(&update_profile,
       "Billing", "Changin'", "Mah", "Namez",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -962,7 +962,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfile) {
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
   AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
-  autofill_unittest::SetProfileInfo(native_profile,
+  autofill_test::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -977,7 +977,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeUpdateProfileRelabel) {
   ASSERT_TRUE(task.success());
 
   AutoFillProfile update_profile(string16(), 0);
-  autofill_unittest::SetProfileInfo(&update_profile,
+  autofill_test::SetProfileInfo(&update_profile,
       "TRYIN 2 FOOL U", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
@@ -1003,11 +1003,11 @@ TEST_F(ProfileSyncServiceAutofillTest,
   std::vector<AutoFillProfile*> native_profiles;
   native_profiles.push_back(new AutoFillProfile(string16(), 0));
   native_profiles.push_back(new AutoFillProfile(string16(), 0));
-  autofill_unittest::SetProfileInfo(native_profiles[0],
+  autofill_test::SetProfileInfo(native_profiles[0],
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
-  autofill_unittest::SetProfileInfo(native_profiles[1],
+  autofill_test::SetProfileInfo(native_profiles[1],
       "ExistingLabel", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
@@ -1092,12 +1092,12 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveEntry) {
 
 TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
   AutoFillProfile sync_profile(string16(), 0);
-  autofill_unittest::SetProfileInfo(&sync_profile,
+  autofill_test::SetProfileInfo(&sync_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
   AutoFillProfile* native_profile = new AutoFillProfile(string16(), 0);
-  autofill_unittest::SetProfileInfo(native_profile,
+  autofill_test::SetProfileInfo(native_profile,
       "Billing", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");

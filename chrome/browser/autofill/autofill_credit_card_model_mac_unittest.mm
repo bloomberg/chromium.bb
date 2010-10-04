@@ -4,7 +4,7 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/autofill/autofill_common_unittest.h"
+#include "chrome/browser/autofill/autofill_common_test.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -26,7 +26,7 @@ TEST(AutoFillCreditCardModelTest, Basic) {
 
 TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
   CreditCard credit_card(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&credit_card, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card, "Corporate",
       "John Dillinger", "Visa", "123456789012", "01", "2010", 1);
   scoped_nsobject<AutoFillCreditCardModel> model(
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);
@@ -41,7 +41,7 @@ TEST(AutoFillCreditCardModelTest, InitializationFromCreditCard) {
 
 TEST(AutoFillCreditCardModelTest, CopyModelToCreditCard) {
   CreditCard credit_card(string16(), 0);
-  autofill_unittest::SetCreditCardInfo(&credit_card, "Corporate",
+  autofill_test::SetCreditCardInfo(&credit_card, "Corporate",
       "John Dillinger", "Visa", "123456789012", "01", "2010", 1);
   scoped_nsobject<AutoFillCreditCardModel> model(
       [[AutoFillCreditCardModel alloc] initWithCreditCard:credit_card]);

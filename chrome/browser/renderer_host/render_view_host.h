@@ -645,12 +645,14 @@ class RenderViewHost : public RenderWidgetHost {
   void OnQueryFormFieldAutoFill(int request_id,
                                 bool form_autofilled,
                                 const webkit_glue::FormField& field);
+  void OnDidShowAutoFillSuggestions();
   void OnRemoveAutocompleteEntry(const string16& field_name,
                                  const string16& value);
   void OnShowAutoFillDialog();
   void OnFillAutoFillFormData(int query_id,
                               const webkit_glue::FormData& form,
                               int unique_id);
+  void OnDidFillAutoFillFormData();
 
   void OnShowDesktopNotification(
       const ViewHostMsg_ShowNotification_Params& params);

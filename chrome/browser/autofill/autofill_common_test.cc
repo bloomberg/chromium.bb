@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/autofill/autofill_common_unittest.h"
+#include "chrome/browser/autofill/autofill_common_test.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/password_manager/encryptor.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 #include "webkit/glue/form_field.h"
 
-namespace autofill_unittest {
+namespace autofill_test {
 
 void CreateTestFormField(const char* label,
                          const char* name,
@@ -63,4 +67,16 @@ void SetCreditCardInfo(CreditCard* credit_card,
   credit_card->set_billing_address_id(billing_address_id);
 }
 
-}  // namespace autofill_unittest
+void DisableSystemServices(Profile* profile) {
+  // Use a mock Keychain rather than the OS one to store credit card data.
+#if defined(OS_MACOSX)
+  Encryptor::UseMockKeychain(true);
+#endif
+
+  // Disable auxiliary profiles for unit testing.  These reach out to system
+  // services on the Mac.
+  profile->GetPrefs()->SetBoolean(prefs::kAutoFillAuxiliaryProfilesEnabled,
+                                  false);
+}
+
+}  // namespace autofill_test
