@@ -407,10 +407,10 @@ class Cluster
 
 public:
     Segment* const m_pSegment;
-    const size_t m_index;
+    long m_index;
 
 public:
-    static Cluster* Parse(Segment*, size_t, long long off);
+    static Cluster* Parse(Segment*, long, long long off);
 
     Cluster();  //EndOfStream
     ~Cluster();
@@ -431,7 +431,7 @@ public:
     const BlockEntry* GetMaxKey(const VideoTrack*);
 
 protected:
-    Cluster(Segment*, size_t, long long off);
+    Cluster(Segment*, long, long long off);
 
 public:
     long long m_pos;
@@ -467,12 +467,15 @@ public:
     static long long CreateInstance(IMkvReader*, long long, Segment*&);
     ~Segment();
 
-    //for big-bang loading (source filter)
-    long Load();
+    long Load();  //loads headers and all clusters
 
     //for incremental loading (splitter)
     long long Unparsed() const;
-    long long ParseHeaders();
+    long long ParseHeaders();  //stops when first cluster is found
+    long LoadCluster();        //loads one cluster
+
+    //This pair parses one cluster, but only changes the state of the
+    //segment object when the cluster is actually added to the index.
     long ParseCluster(Cluster*&, long long& newpos) const;
     bool AddCluster(Cluster*, long long);
 
@@ -504,8 +507,8 @@ private:
     Tracks* m_pTracks;
     Cues* m_pCues;
     Cluster** m_clusters;
-    size_t m_clusterCount;  //number of entries
-    size_t m_clusterSize;   //array size
+    long m_clusterCount;  //number of entries
+    long m_clusterSize;   //array size
 
     void AppendCluster(Cluster*);
 

@@ -1172,14 +1172,105 @@ bool Segment::AddCluster(Cluster* pCluster, long long pos)
 }
 
 
+long Segment::LoadCluster()
+{
+    const long long stop = m_start + m_size;
+
+    while (m_pos < stop)
+    {
+        long long pos = m_pos;
+
+        long len;
+
+        long long result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        const long long idpos = pos;
+        const long long id = ReadUInt(m_pReader, idpos, len);
+
+        if (id < 0)  //error
+            return static_cast<long>(id);
+
+        pos += len;  //consume ID
+
+        //Read Size
+        result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        const long long size = ReadUInt(m_pReader, pos, len);
+
+        if (size < 0)  //error
+            return static_cast<long>(size);
+
+        pos += len;  //consume length of size of element
+
+        if (size == 0)  //weird
+        {
+            m_pos = pos;
+            continue;
+        }
+
+        //Pos now points to start of payload
+
+        if ((pos + size) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        const bool bCluster = (id == 0x0F43B675);  //Cluster ID
+
+        if (bCluster)
+        {
+            const long idx = m_clusterCount;
+            const long long off = idpos - m_start;
+
+            Cluster* const pCluster = Cluster::Parse(this, idx, off);
+            assert(pCluster);
+            assert(pCluster->m_index == idx);
+
+            AppendCluster(pCluster);
+            assert(m_clusters);
+            assert(m_clusterSize > idx);
+            assert(m_clusters[idx] == pCluster);
+        }
+#if 0  //TODO
+        else if (id == 0x0C53BB6B)  //Cues ID
+        {
+            assert(m_pCues == NULL);
+
+            m_pCues = new Cues(this, pos, size);
+            assert(m_pCues);  //TODO
+        }
+#endif
+
+        m_pos = pos + size;  //consume payload
+
+        if (bCluster)
+            break;
+    }
+
+    assert(m_pos <= stop);
+    return 0;
+}
+
+
+
 void Segment::AppendCluster(Cluster* pCluster)
 {
     assert(pCluster);
 
-    size_t& size = m_clusterSize;
+    long& size = m_clusterSize;
     assert(size >= m_clusterCount);
 
-    const size_t idx = pCluster->m_index;
+    const long idx = pCluster->m_index;
     assert(idx == m_clusterCount);
 
     if (idx < size)
@@ -1190,7 +1281,7 @@ void Segment::AppendCluster(Cluster* pCluster)
         return;
     }
 
-    size_t n;
+    long n;
 
     if (size > 0)
         n = 2 * size;
@@ -1205,7 +1296,7 @@ void Segment::AppendCluster(Cluster* pCluster)
         else
         {
             const long long sec = (ns + 999999999LL) / 1000000000LL;
-            n = static_cast<size_t>(sec);
+            n = static_cast<long>(sec);
         }
     }
 
@@ -1294,7 +1385,7 @@ long Segment::Load()
 
         if (id == 0x0F43B675)  //Cluster ID
         {
-            const size_t idx = m_clusterCount;
+            const long idx = m_clusterCount;
             const long long off = idpos - m_start;
 
             Cluster* const pCluster = Cluster::Parse(this, idx, off);
@@ -1912,7 +2003,7 @@ Cluster* Segment::GetLast()
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
         return &m_eos;
 
-    const size_t idx = m_clusterCount - 1;
+    const long idx = m_clusterCount - 1;
     Cluster* const pCluster = m_clusters[idx];
     assert(pCluster);
 
@@ -1922,8 +2013,7 @@ Cluster* Segment::GetLast()
 
 unsigned long Segment::GetCount() const
 {
-    //TODO: m_clusterCount should not be long long.
-    return static_cast<unsigned long>(m_clusterCount);
+    return m_clusterCount;
 }
 
 
@@ -1934,11 +2024,11 @@ Cluster* Segment::GetNext(const Cluster* pCurr)
     assert(m_clusters);
     assert(m_clusterCount > 0);
 
-    size_t idx =  pCurr->m_index;
+    long idx =  pCurr->m_index;
     assert(idx < m_clusterCount);
     assert(pCurr == m_clusters[idx]);
 
-    idx++;
+    ++idx;
 
     if (idx >= m_clusterCount)
         return &m_eos;
@@ -1966,8 +2056,8 @@ Cluster* Segment::GetCluster(long long time_ns)
 
     //Binary search of cluster array
 
-    size_t i = 0;
-    size_t j = m_clusterCount;
+    long i = 0;
+    long j = m_clusterCount;
 
     while (i < j)
     {
@@ -1976,7 +2066,7 @@ Cluster* Segment::GetCluster(long long time_ns)
         //[i, j) ?
         //[j, m_clusterCount)  > time_ns
 
-        const size_t k = i + (j - i) / 2;
+        const long k = i + (j - i) / 2;
         assert(k < m_clusterCount);
 
         Cluster* const pCluster = m_clusters[k];
@@ -1997,7 +2087,7 @@ Cluster* Segment::GetCluster(long long time_ns)
     assert(i > 0);
     assert(i <= m_clusterCount);
 
-    const size_t k = i - 1;
+    const long k = i - 1;
 
     Cluster* const pCluster = m_clusters[k];
     assert(pCluster);
@@ -2015,6 +2105,9 @@ void Segment::GetCluster(
     const BlockEntry*& pBlockEntry)
 {
     assert(pTrack);
+
+    if (SearchCues(time_ns, pTrack, pCluster, pBlockEntry))
+        return;
 
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
     {
@@ -2046,7 +2139,7 @@ void Segment::GetCluster(
     {
         //TODO: we could decide to use cues for this, as we do for video.
         //But we only use it for video because looking around for a keyframe
-        //can get expensive.  Audio doesn't require anything special we a
+        //can get expensive.  Audio doesn't require anything special so a
         //straight cluster search is good enough (we assume).
 
         Cluster** lo = i;
@@ -2064,7 +2157,7 @@ void Segment::GetCluster(
 
             Cluster* const pCluster = *mid;
             assert(pCluster);
-            assert(pCluster->m_index == size_t(mid - m_clusters));
+            assert(pCluster->m_index == long(mid - m_clusters));
             assert(pCluster->m_pSegment == this);
 
             const long long t = pCluster->GetTime();
@@ -2090,9 +2183,6 @@ void Segment::GetCluster(
     }
 
     assert(pTrack->GetType() == 1);  //video
-
-    if (SearchCues(time_ns, pTrack, pCluster, pBlockEntry))
-        return;
 
     Cluster** lo = i;
     Cluster** hi = j;
@@ -2180,7 +2270,10 @@ bool Segment::SearchCues(
     if (m_pCues == 0)
         return false;
 
-    if ((m_clusters == NULL) || (m_clusterCount == 0))
+    if (pTrack->GetType() != 1)  //not video
+        return false;  //TODO: for now, just handle video stream
+
+    if ((m_clusters == NULL) || (m_clusterCount <= 0))
         return false;
 
     //TODO:
@@ -2195,7 +2288,7 @@ bool Segment::SearchCues(
     //     find (earlier) cue point corresponding to something
     //       already loaded in cache, and return that
 
-    const size_t last_idx = m_clusterCount - 1;
+    const long last_idx = m_clusterCount - 1;
 
     Cluster* const pLastCluster = m_clusters[last_idx];
     assert(pLastCluster);
@@ -2317,7 +2410,6 @@ SegmentInfo::SegmentInfo(Segment* pSegment, long long start, long long size_) :
 
     m_timecodeScale = 1000000;
     m_duration = 0;
-
 
     while (pos < stop)
     {
@@ -3147,10 +3239,11 @@ void Cluster::Load()
 
 Cluster* Cluster::Parse(
     Segment* pSegment,
-    size_t idx,
+    long idx,
     long long off)
 {
     assert(pSegment);
+    assert(idx >= 0);
     assert(off >= 0);
     assert(off < pSegment->m_size);
 
@@ -3175,7 +3268,7 @@ Cluster::Cluster() :
 
 Cluster::Cluster(
     Segment* pSegment,
-    size_t idx,
+    long idx,
     long long off) :
     m_pSegment(pSegment),
     m_index(idx),
