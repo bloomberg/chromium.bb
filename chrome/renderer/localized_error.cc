@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "googleurl/src/gurl.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -121,6 +122,13 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_SSL_PROTOCOL_ERROR,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
    SUGGEST_LEARNMORE,
+  },
+  {net::ERR_PROXY_CONNECTION_FAILED,
+   IDS_ERRORPAGES_TITLE_PROXY_CONNECTION_FAILED,
+   IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED,
+   IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED,
+   IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED,
+   SUGGEST_NONE,
   },
 };
 
@@ -321,11 +329,24 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
       l10n_util::GetStringUTF16(options.summary_resource_id));
   // TODO(tc): we want the unicode url here since it's being displayed
   summary->SetString("failedUrl", failed_url);
+  summary->SetString("productName",
+                     l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   error_strings->Set("summary", summary);
 
   string16 details = l10n_util::GetStringUTF16(options.details_resource_id);
   error_strings->SetString("details",
       GetErrorDetailsString(error_domain, error_code, details));
+
+  // Any special case processing that needs to happen for particular
+  // errors (hack).
+  if (error_domain == net::kErrorDomain &&
+      error_code == net::ERR_PROXY_CONNECTION_FAILED) {
+    // Suffix the platform dependent portion of the summary section.
+    summary->SetString("msg",
+        l10n_util::GetStringFUTF16(options.summary_resource_id,
+            l10n_util::GetStringUTF16(
+                IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM)));
+  }
 
   if (options.suggestions & SUGGEST_RELOAD) {
     DictionaryValue* suggest_reload = new DictionaryValue;

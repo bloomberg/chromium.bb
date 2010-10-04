@@ -5394,6 +5394,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_TITLE_LOAD_FAILED" desc="Title of the error page when we can't load a page.">
         <ph name="URL">$1<ex>http://some-unreliable-site.com/</ex></ph> failed to load
       </message>
+      <message name="IDS_ERRORPAGES_TITLE_PROXY_CONNECTION_FAILED" desc="Title of the error page when we can't connect to the proxy server.">
+        Could not connect to the proxy server
+      </message>
       <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
         This webpage is not available.
       </message>
@@ -5402,6 +5405,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_HEADING_TOO_MANY_REDIRECTS" desc="Heading in the error page when there are too many URL redirects.">
         This webpage has a redirect loop.
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED" desc="Heading in the error page when the proxy server connection failed.">
+        Unable to connect to the proxy server.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
@@ -5415,6 +5421,45 @@ Keep your key file in a safe place. You will need it to create new versions of y
         not, it is possibly a server configuration issue and not a problem with your
         computer.
       </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Summary in the error page when the proxy server connection failed.">
+        A proxy server is a server that acts as an intermediary between your computer and other servers.  Right now, your system is configured to use a proxy, but
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        can't connect to it.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        If you use a proxy server, check your proxy settings or check with your network administrator to make sure the proxy server is working.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        If you don't believe you should be using a proxy server, try the following steps:
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        <ph name="PLATFORM_TEXT">$1<ex>Goto the wrench menu and choose Fix It</ex></ph>
+      </message>
+
+      <if expr="os == 'darwin'">
+        <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM" desc="Summary (platform dependent section) in the error page when the proxy server connection failed.  Describes the system configuration method used for setting proxy servers under Mac OSX.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and uncheck any proxies that have been selected.
+        </message>
+      </if>
+      <if expr="os == 'linux2'">
+        <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM" desc="Summary (platform dependent section) in the error page when the proxy server connection failed.  Describes the Chromium configuration method used for setting proxy servers under Linux.">
+          Go to the
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Wrench menu &gt; Options &gt; Under the Hood &gt; Change proxy settings
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and make sure your configuration is set to &quot;no proxy&quot; or &quot;direct.&quot;
+        </message>
+      </if>
+      <if expr="os != 'darwin' and os != 'linux2'">
+        <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM" desc="Summary (platform dependent section) in the error page when the proxy server connection failed.  Describes the Chromium configuration method used for setting proxy servers under Windows.  Note that the localized version of the quoted text ('Use a proxy server for your LAN') can also be found at control panel > Internet Options > Connections > LAN Settings.">
+          Go to the
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Wrench menu &gt; Options &gt; Under the Hood &gt; Change proxy settings &gt; LAN Settings
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          and uncheck &quot;Use a proxy server for your LAN.&quot;
+        </message>
+      </if>
 
       <message name="IDS_ERRORPAGES_DETAILS_TEMPLATE" desc="On the bottom of the error page text, there is a box that includes extra information for tech savvy users.">
         Error <ph name="ERROR_NUMBER">$1<ex>5</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_FILE_NOT_FOUND</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The requested file is not found.</ex></ph>
@@ -5440,6 +5485,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_TOO_MANY_REDIRECTS" desc="The error message displayed when there are too many redirects.">
         There were too many redirects.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED" desc="The error message displayed when the proxy server connection failed.">
+        Proxy server connection failed.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
         Unknown error.
