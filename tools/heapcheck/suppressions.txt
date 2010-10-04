@@ -1013,3 +1013,14 @@
    fun:logging::CheckNEImpl
    fun:logging::::LoggingTest_ChecksAreNotLazy_Test::TestBody
 }
+{
+   bug_57799
+   Heapcheck:Leak
+   fun:cricket::Transport::OnRemoteCandidate
+   fun:cricket::Transport::OnRemoteCandidates
+   fun:cricket::Session::OnTransportInfoMessage
+   fun:cricket::Session::OnIncomingMessage
+   fun:cricket::SessionManager::OnIncomingMessage
+   fun:remoting::SessionManagerPair::DeliverMessage
+   fun:remoting::SessionManagerPair::DoProcessMessage
+}
