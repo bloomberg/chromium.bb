@@ -77,6 +77,8 @@ using WebKit::WebCache;
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
+// TODOf remove.
+#include <iostream>
 
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
@@ -711,6 +713,10 @@ void BrowserRenderProcessHost::SendExtensionInfo() {
     if (info.icon_url.is_empty())
       info.icon_url = GURL("chrome://theme/IDR_APP_DEFAULT_ICON");
     params.extensions.push_back(info);
+
+    // TODOf remove.
+    std::cout << "**** SendExtensionInfo: '" << info.name.c_str() << "'\n" << std::flush;
+    std::cout << "**** SendExtensionInfo: '" << info.allowed_to_execute_script_everywhere << "'\n" << std::flush;
   }
 
   Send(new ViewMsg_ExtensionsUpdated(params));
