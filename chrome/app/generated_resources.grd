@@ -5017,6 +5017,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Set up cloud printing
       </message>
 
+      <!-- Print Preview -->
+      <message name="IDS_PRINTPREVIEW_TITLE" desc="Title for print preview page ">
+        Print Preview
+      </message>
+
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_IDLE"></message>
       <message name="IDS_LOAD_STATE_WAITING_FOR_CACHE">

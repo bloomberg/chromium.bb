@@ -19,8 +19,9 @@
 #include "chrome/browser/dom_ui/labs_ui.h"
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/dom_ui/remoting_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
+#include "chrome/browser/dom_ui/print_preview_ui.h"
+#include "chrome/browser/dom_ui/remoting_ui.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/dom_ui/slideshow_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
@@ -152,10 +153,12 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<MediaplayerUI>;
   if (url.host() == chrome::kChromeUIMobileSetupHost)
     return &NewDOMUI<MobileSetupUI>;
-  if (url.host() == chrome::kChromeUISettingsHost)
-    return &NewDOMUI<OptionsUI>;
+  if (url.host() == chrome::kChromeUIPrintHost)
+    return &NewDOMUI<PrintPreviewUI>;
   if (url.host() == chrome::kChromeUIRegisterPageHost)
     return &NewDOMUI<RegisterPageUI>;
+  if (url.host() == chrome::kChromeUISettingsHost)
+    return &NewDOMUI<OptionsUI>;
   if (url.host() == chrome::kChromeUISlideshowHost)
     return &NewDOMUI<SlideshowUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
@@ -165,6 +168,12 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableTabbedOptions)) {
       return &NewDOMUI<OptionsUI>;
+    }
+  }
+  if (url.host() == chrome::kChromeUIPrintHost) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnablePrintPreview)) {
+      return &NewDOMUI<PrintPreviewUI>;
     }
   }
 #endif

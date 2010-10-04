@@ -1,0 +1,105 @@
+/* TODO(thestig) make mainview float rather than fixed */
+body {
+  font-size: 100%;
+  -webkit-user-select: none;
+}
+
+#settings-title {
+  -webkit-padding-end: 24px;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  text-align: end;
+  font-size: 125%;
+  font-weight: normal;
+  color: #53627d;
+  margin: 0;
+}
+
+#main-content {
+  background-color: #5d626c;
+  display: -webkit-box;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+#navbar-container {
+  background-color: #f8fafd;
+  position: relative;
+  width: 300px;
+  z-index: 2;
+}
+
+#destination-container {
+  background-color: #ffffff;
+  padding: 10px;
+}
+
+#options-container {
+  padding: 10px;
+}
+
+#mainview {
+  -webkit-box-align: stretch;
+  background: -webkit-gradient(linear,
+                               left top,
+                               right top,
+                               from(#a4a4a4),
+                               color-stop(0.02, #cccccc),
+                               to(#cccccc));
+  margin: 0;
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+#mainview-content {
+  width: 480px;
+  padding: 10px 24px;
+}
+
+#thumbnails {
+  background: -webkit-gradient(linear,
+                               left top,
+                               right top,
+                               from(#cccccc),
+                               to(#5d626c));
+  margin: 0;
+  position: relative;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+#thumbnails-content {
+  width: 160px;
+  padding: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+select {
+  margin: 0px;
+}
+
+.link-button {
+  background-color: transparent;
+  border: none;
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.text-button {
+  background-color: transparent;
+  border-color: transparent;
+}
