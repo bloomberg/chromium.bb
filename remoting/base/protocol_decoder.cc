@@ -29,7 +29,7 @@ void ProtocolDecoder::ParseHostMessages(scoped_refptr<media::DataBuffer> data,
 
 template <typename T>
 void ProtocolDecoder::ParseMessages(scoped_refptr<media::DataBuffer> data,
-                                    std::vector<T*>* messages) {
+                                    std::list<T*>* messages) {
   // If this is the first data in the processing queue, then set the
   // last read position to 0.
   if (data_list_.empty())

@@ -18,6 +18,9 @@ namespace remoting {
 class ChromotingView;
 class ClientContext;
 class InputHandler;
+class ChromotingHostMessage;
+class InitClientMessage;
+class RectangleUpdateDecoder;
 
 class ChromotingClient : public HostConnection::HostEventCallback {
  public:
@@ -26,6 +29,7 @@ class ChromotingClient : public HostConnection::HostEventCallback {
                    ClientContext* context,
                    HostConnection* connection,
                    ChromotingView* view,
+                   RectangleUpdateDecoder* rectangle_decoder,
                    InputHandler* input_handler,
                    CancelableTask* client_done);
   virtual ~ChromotingClient();
@@ -64,23 +68,37 @@ class ChromotingClient : public HostConnection::HostEventCallback {
   // Convenience method for modifying the state on this object's message loop.
   void SetState(State s);
 
+  // If a message is not being processed, dispatches a single message from the
+  // |received_messages_| queue.
+  void DispatchMessage();
+
+  void OnMessageDone(ChromotingHostMessage* msg);
+
   // Handles for chromotocol messages.
-  void InitClient(ChromotingHostMessage* msg);
-  void BeginUpdate(ChromotingHostMessage* msg);
-  void HandleUpdate(ChromotingHostMessage* msg);
-  void EndUpdate(ChromotingHostMessage* msg);
+  void InitClient(const InitClientMessage& msg, Task* done);
 
   // The following are not owned by this class.
   ClientConfig config_;
   ClientContext* context_;
   HostConnection* connection_;
   ChromotingView* view_;
+  RectangleUpdateDecoder* rectangle_decoder_;
   InputHandler* input_handler_;
 
   // If non-NULL, this is called when the client is done.
   CancelableTask* client_done_;
 
   State state_;
+
+  // Contains all messages that have been received, but have not yet been
+  // processed.
+  //
+  // Used to serialize sending of messages to the client.
+  HostMessageList received_messages_;
+
+  // True if a message is being processed. Can be used to determine if it is
+  // safe to dispatch another message.
+  bool message_being_processed_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClient);
 };

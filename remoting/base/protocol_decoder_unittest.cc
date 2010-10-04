@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/protocol_decoder.h"
 #include "remoting/base/protocol_util.h"
@@ -93,25 +94,28 @@ TEST(ProtocolDecoderTest, BasicOperations) {
   // Then verify the decoded messages.
   EXPECT_EQ(31u, message_list.size());
   ASSERT_TRUE(message_list.size() > 0);
-  EXPECT_TRUE(message_list[0]->has_init_client());
-  delete message_list[0];
+  EXPECT_TRUE(message_list.front()->has_init_client());
+  delete message_list.front();
+  message_list.pop_front();
 
-  for (size_t i = 1; i < message_list.size(); ++i) {
+  for (HostMessageList::iterator it = message_list.begin();
+       it != message_list.end(); ++it) {
+    ChromotingHostMessage* message = *it;
     int type = (i - 1) % 3;
     if (type == 0) {
       // Begin update stream.
-      EXPECT_TRUE(message_list[i]->has_begin_update_stream());
+      EXPECT_TRUE(message->has_begin_update_stream());
     } else if (type == 1) {
       // Partial update stream.
-      EXPECT_TRUE(message_list[i]->has_update_stream_packet());
+      EXPECT_TRUE(message->has_update_stream_packet());
       EXPECT_EQ(kTestData,
-                message_list[i]->update_stream_packet().rect_data().data());
+                message->update_stream_packet().rect_data().data());
     } else if (type == 2) {
       // End update stream.
-      EXPECT_TRUE(message_list[i]->has_end_update_stream());
+      EXPECT_TRUE(message->has_end_update_stream());
     }
-    delete message_list[i];
   }
+  STLDeleteElements(&message_list);
 }
 
 }  // namespace remoting

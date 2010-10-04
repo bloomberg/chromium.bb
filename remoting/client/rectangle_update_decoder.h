@@ -8,12 +8,13 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "media/base/video_frame.h"
-#include "remoting/base/decoder.h"  // For UpdatedRects.
+#include "remoting/base/decoder.h"  // For UpdatedRects
 
 class MessageLoop;
 
 namespace remoting {
 
+class Decoder;
 class FrameConsumer;
 class RectangleFormat;
 class RectangleUpdatePacket;

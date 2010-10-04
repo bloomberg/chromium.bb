@@ -61,8 +61,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                  Capturer* capturer, Encoder* encoder, EventExecutor* executor);
   virtual ~ChromotingHost();
 
-  // Start the host process. This method starts the chromoting host
-  // asynchronously.
+  // Asynchronously start the host process.
+  //
+  // After this is invoked, the host process will connect to the talk
+  // network and start listening for incoming connections.
   //
   // |shutdown_task| is called if Start() has failed ot Shutdown() is called
   // and all related operations are completed.
@@ -70,7 +72,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // This method can only be called once during the lifetime of this object.
   void Start(Task* shutdown_task);
 
-  // This method is called when we need to destroy the host process.
+  // Asynchronously shutdown the host process.
   void Shutdown();
 
   // This method is called if a client is connected to this object.
@@ -103,13 +105,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
     kStarted,
     kStopped,
   };
-
-  // This method connects to the talk network and start listening for incoming
-  // connections.
-  void DoStart(Task* shutdown_task);
-
-  // This method shuts down the host process.
-  void DoShutdown();
 
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;

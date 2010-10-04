@@ -36,21 +36,94 @@ ChromotingHost::~ChromotingHost() {
 }
 
 void ChromotingHost::Start(Task* shutdown_task) {
+  if (MessageLoop::current() != context_->main_message_loop()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingHost::Start, shutdown_task));
+    return;
+  }
+
+  DCHECK(!jingle_client_);
+  DCHECK(shutdown_task);
+
+  // Make sure this object is not started.
+  {
+    AutoLock auto_lock(lock_);
+    if (state_ != kInitial)
+      return;
+    state_ = kStarted;
+  }
+
   // Get capturer to set up it's initial configuration.
   capturer_->ScreenConfigurationChanged();
 
-  // Submit a task to perform host registration. We'll also start
-  // listening to connection if registration is done.
-  context_->main_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ChromotingHost::DoStart, shutdown_task));
+  // Save the shutdown task.
+  shutdown_task_.reset(shutdown_task);
+
+  std::string xmpp_login;
+  std::string xmpp_auth_token;
+  if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
+      !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
+    LOG(ERROR) << "XMPP credentials are not defined in config.";
+    return;
+  }
+
+  access_verifier_.Init(config_);
+
+  // Connect to the talk network with a JingleClient.
+  jingle_client_ = new JingleClient(context_->jingle_thread());
+  jingle_client_->Init(xmpp_login, xmpp_auth_token,
+                       kChromotingTokenServiceName, this);
+
+  heartbeat_sender_ = new HeartbeatSender();
+  if (!heartbeat_sender_->Init(config_, jingle_client_.get())) {
+    LOG(ERROR) << "Failed to initialize HeartbeatSender.";
+    return;
+  }
 }
 
 // This method is called when we need to destroy the host process.
 void ChromotingHost::Shutdown() {
-  context_->main_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &ChromotingHost::DoShutdown));
+  if (MessageLoop::current() != context_->main_message_loop()) {
+    context_->main_message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &ChromotingHost::Shutdown));
+    return;
+  }
+
+  // No-op if this object is not started yet.
+  {
+    AutoLock auto_lock(lock_);
+    if (state_ != kStarted)
+      return;
+    state_ = kStopped;
+  }
+
+  // Tell the session to pause and then disconnect all clients.
+  if (session_.get()) {
+    session_->Pause();
+    session_->RemoveAllClients();
+  }
+
+  // Disconnect all clients.
+  if (client_) {
+    client_->Disconnect();
+  }
+
+  // Disconnect from the talk network.
+  if (jingle_client_) {
+    jingle_client_->Close();
+  }
+
+  // Stop the heartbeat sender.
+  if (heartbeat_sender_) {
+    heartbeat_sender_->Stop();
+  }
+
+  // Lastly call the shutdown task.
+  if (shutdown_task_.get()) {
+    shutdown_task_->Run();
+  }
 }
 
 // This method is called if a client is connected to this object.
@@ -147,9 +220,7 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
 
     // TODO(sergeyu): We should try reconnecting here instead of terminating
     // the host.
-    // Post a shutdown task to properly shutdown the chromoting host.
-    context_->main_message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &ChromotingHost::DoShutdown));
+    Shutdown();
   }
 }
 
@@ -192,83 +263,6 @@ void ChromotingHost::OnNewConnection(JingleClient* jingle_client,
   // the client directly. Note that we give the ownership of the channel
   // to the client.
   client_->set_jingle_channel(channel);
-}
-
-void ChromotingHost::DoStart(Task* shutdown_task) {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
-  DCHECK(!jingle_client_);
-  DCHECK(shutdown_task);
-
-  // Make sure this object is not started.
-  {
-    AutoLock auto_lock(lock_);
-    if (state_ != kInitial)
-      return;
-    state_ = kStarted;
-  }
-
-  // Save the shutdown task.
-  shutdown_task_.reset(shutdown_task);
-
-  std::string xmpp_login;
-  std::string xmpp_auth_token;
-  if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
-      !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
-    LOG(ERROR) << "XMPP credentials are not defined in the config.";
-    return;
-  }
-
-  if (!access_verifier_.Init(config_))
-    return;
-
-  // Connect to the talk network with a JingleClient.
-  jingle_client_ = new JingleClient(context_->jingle_thread());
-  jingle_client_->Init(xmpp_login, xmpp_auth_token,
-                       kChromotingTokenServiceName, this);
-
-  heartbeat_sender_ = new HeartbeatSender();
-  if (!heartbeat_sender_->Init(config_, jingle_client_.get())) {
-    LOG(ERROR) << "Failed to initialize HeartbeatSender.";
-    return;
-  }
-}
-
-void ChromotingHost::DoShutdown() {
-  DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
-
-  // No-op if this object is not started yet.
-  {
-    AutoLock auto_lock(lock_);
-    if (state_ != kStarted)
-      return;
-    state_ = kStopped;
-  }
-
-  // Tell the session to pause and then disconnect all clients.
-  if (session_.get()) {
-    session_->Pause();
-    session_->RemoveAllClients();
-  }
-
-  // Disconnect all clients.
-  if (client_) {
-    client_->Disconnect();
-  }
-
-  // Disconnect from the talk network.
-  if (jingle_client_) {
-    jingle_client_->Close();
-  }
-
-  // Stop the heartbeat sender.
-  if (heartbeat_sender_) {
-    heartbeat_sender_->Stop();
-  }
-
-  // Lastly call the shutdown task.
-  if (shutdown_task_.get()) {
-    shutdown_task_->Run();
-  }
 }
 
 }  // namespace remoting

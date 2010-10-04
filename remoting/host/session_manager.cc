@@ -12,6 +12,7 @@
 #include "media/base/data_buffer.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/base/protocol_decoder.h"
+#include "remoting/base/tracer.h"
 #include "remoting/host/client_connection.h"
 
 namespace remoting {
@@ -61,36 +62,36 @@ SessionManager::~SessionManager() {
 
 void SessionManager::Start() {
   capture_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &SessionManager::DoStart));
+      FROM_HERE, NewTracedMethod(this, &SessionManager::DoStart));
 }
 
 void SessionManager::Pause() {
   capture_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &SessionManager::DoPause));
+      FROM_HERE, NewTracedMethod(this, &SessionManager::DoPause));
 }
 
 void SessionManager::SetMaxRate(double rate) {
   capture_loop_->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &SessionManager::DoSetMaxRate, rate));
+      FROM_HERE, NewTracedMethod(this, &SessionManager::DoSetMaxRate, rate));
 }
 
 void SessionManager::AddClient(scoped_refptr<ClientConnection> client) {
   // Gets the init information for the client.
   capture_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoGetInitInfo, client));
+      NewTracedMethod(this, &SessionManager::DoGetInitInfo, client));
 }
 
 void SessionManager::RemoveClient(scoped_refptr<ClientConnection> client) {
   network_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoRemoveClient, client));
+      NewTracedMethod(this, &SessionManager::DoRemoveClient, client));
 }
 
 void SessionManager::RemoveAllClients() {
   network_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoRemoveAllClients));
+      NewTracedMethod(this, &SessionManager::DoRemoveAllClients));
 }
 
 // Private accessors -----------------------------------------------------------
@@ -121,7 +122,7 @@ void SessionManager::DoStart() {
   // Starts the rate regulation.
   network_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoStartRateControl));
+      NewTracedMethod(this, &SessionManager::DoStartRateControl));
 }
 
 void SessionManager::DoPause() {
@@ -137,7 +138,7 @@ void SessionManager::DoPause() {
   // Pause the rate regulation.
   network_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoPauseRateControl));
+      NewTracedMethod(this, &SessionManager::DoPauseRateControl));
 }
 
 void SessionManager::DoSetRate(double rate) {
@@ -169,6 +170,10 @@ void SessionManager::DoSetMaxRate(double max_rate) {
 void SessionManager::ScheduleNextCapture() {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
+  ScopedTracer tracer("capture");
+
+  TraceContext::tracer()->PrintString("Capture Scheduled");
+
   if (rate_ == 0)
     return;
 
@@ -176,7 +181,7 @@ void SessionManager::ScheduleNextCapture() {
       static_cast<int>(base::Time::kMillisecondsPerSecond / rate_));
   capture_loop_->PostDelayedTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoCapture),
+      NewTracedMethod(this, &SessionManager::DoCapture),
       interval.InMilliseconds());
 }
 
@@ -188,6 +193,7 @@ void SessionManager::DoCapture() {
   if (recordings_ >= 2 || !started_) {
     return;
   }
+  TraceContext::tracer()->PrintString("Capture Started");
 
   base::Time now = base::Time::Now();
   base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
@@ -208,9 +214,9 @@ void SessionManager::DoCapture() {
   ScheduleNextCapture();
 
   // And finally perform one capture.
-  DCHECK(capturer_.get());
+  DCHECK(capturer());
 
-  capturer_->CaptureInvalidRects(
+  capturer()->CaptureInvalidRects(
       NewCallback(this, &SessionManager::CaptureDoneCallback));
 }
 
@@ -219,9 +225,10 @@ void SessionManager::CaptureDoneCallback(
   // TODO(hclam): There is a bug if the capturer doesn't produce any dirty
   // rects.
   DCHECK_EQ(capture_loop_, MessageLoop::current());
+  TraceContext::tracer()->PrintString("Capture Done");
   encode_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoEncode, capture_data));
+      NewTracedMethod(this, &SessionManager::DoEncode, capture_data));
 }
 
 void SessionManager::DoFinishEncode() {
@@ -240,10 +247,12 @@ void SessionManager::DoFinishEncode() {
 void SessionManager::DoGetInitInfo(scoped_refptr<ClientConnection> client) {
   DCHECK_EQ(capture_loop_, MessageLoop::current());
 
+  ScopedTracer tracer("init");
+
   // Sends the init message to the client.
   network_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoSendInit, client,
+      NewTracedMethod(this, &SessionManager::DoSendInit, client,
                         capturer()->width(), capturer()->height()));
 
   // And then add the client to the list so it can receive update stream.
@@ -251,7 +260,7 @@ void SessionManager::DoGetInitInfo(scoped_refptr<ClientConnection> client) {
   // update stream before init message.
   network_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoAddClient, client));
+      NewTracedMethod(this, &SessionManager::DoAddClient, client));
 }
 
 // Network thread --------------------------------------------------------------
@@ -278,9 +287,10 @@ void SessionManager::DoPauseRateControl() {
 }
 
 void SessionManager::ScheduleNextRateControl() {
+  ScopedTracer tracer("Rate Control");
   network_loop_->PostDelayedTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoRateControl),
+      NewTracedMethod(this, &SessionManager::DoRateControl),
       kRateControlInterval.InMilliseconds());
 }
 
@@ -315,13 +325,19 @@ void SessionManager::DoRateControl() {
   // Then set the rate.
   capture_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoSetRate, new_rate));
+      NewTracedMethod(this, &SessionManager::DoSetRate, new_rate));
   ScheduleNextRateControl();
 }
 
 void SessionManager::DoSendUpdate(ChromotingHostMessage* message,
                                   Encoder::EncodingState state) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
+
+  // TODO(ajwong): We shouldn't need EncodingState. Just inspect message.
+  bool is_end_of_update = (message->rectangle_update().flags() |
+      RectangleUpdatePacket::LAST_PACKET) != 0;
+
+  TraceContext::tracer()->PrintString("DoSendUpdate");
 
   // Create a data buffer in wire format from |message|.
   // Note that this takes ownership of |message|.
@@ -330,17 +346,12 @@ void SessionManager::DoSendUpdate(ChromotingHostMessage* message,
 
   for (ClientConnectionList::const_iterator i = clients_.begin();
        i < clients_.end(); ++i) {
-    // TODO(hclam): Merge BeginUpdateStreamMessage into |message|.
-    if (state & Encoder::EncodingStarting) {
-      (*i)->SendBeginUpdateStreamMessage();
-    }
-
     (*i)->SendUpdateStreamPacketMessage(data);
 
-    // TODO(hclam): Merge EndUpdateStreamMessage into |message|.
-    if (state & Encoder::EncodingEnded)
-      (*i)->SendEndUpdateStreamMessage();
+    if (is_end_of_update)
+      (*i)->MarkEndOfUpdate();
   }
+  TraceContext::tracer()->PrintString("DoSendUpdate done");
 }
 
 void SessionManager::DoSendInit(scoped_refptr<ClientConnection> client,
@@ -381,16 +392,21 @@ void SessionManager::DoRemoveAllClients() {
 void SessionManager::DoEncode(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
+  TraceContext::tracer()->PrintString("DoEncode called");
 
+  // Early out if there's nothing to encode.
   if (!capture_data->dirty_rects().size()) {
     capture_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &SessionManager::DoFinishEncode));
+        FROM_HERE, NewTracedMethod(this, &SessionManager::DoFinishEncode));
+    return;
   }
 
   // TODO(hclam): Enable |force_refresh| if a new client was
   // added.
+  TraceContext::tracer()->PrintString("Encode start");
   encoder_->Encode(capture_data, false,
                    NewCallback(this, &SessionManager::EncodeDataAvailableTask));
+  TraceContext::tracer()->PrintString("Encode Done");
 }
 
 void SessionManager::EncodeDataAvailableTask(
@@ -403,11 +419,11 @@ void SessionManager::EncodeDataAvailableTask(
   // task. The ownership will eventually pass to the ClientConnections.
   network_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &SessionManager::DoSendUpdate, message, state));
+      NewTracedMethod(this, &SessionManager::DoSendUpdate, message, state));
 
   if (state & Encoder::EncodingEnded) {
     capture_loop_->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &SessionManager::DoFinishEncode));
+        FROM_HERE, NewTracedMethod(this, &SessionManager::DoFinishEncode));
   }
 }
 

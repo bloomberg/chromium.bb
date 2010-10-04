@@ -356,8 +356,10 @@ EventExecutorWin::~EventExecutorWin() {
 }
 
 void EventExecutorWin::HandleInputEvents(ClientMessageList* messages) {
-  for (size_t i = 0; i < messages->size(); ++i) {
-    ChromotingClientMessage* msg = (*messages)[i];
+  for (ClientMessageList::iterator it = messages->begin();
+       it != messages->end();
+       ++it) {
+    ChromotingClientMessage* msg = *it;
     if (msg->has_mouse_set_position_event()) {
       HandleMouseSetPosition(msg);
     } else if (msg->has_mouse_move_event()) {

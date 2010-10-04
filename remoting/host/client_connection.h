@@ -95,6 +95,8 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // Notifies the viewer the update stream has ended.
   virtual void SendEndUpdateStreamMessage();
 
+  virtual void MarkEndOfUpdate();
+
   // Gets the number of update stream messages not yet transmitted.
   // Note that the value returned is an estimate using average size of the
   // most recent update streams.

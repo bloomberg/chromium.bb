@@ -49,13 +49,14 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor,
   const int bytes_per_pixel = GetBytesPerPixel(capture_data_->pixel_format());
   const int row_size = bytes_per_pixel * rect.width();
 
-  ChromotingHostMessage* message = PrepareMessage(&rect);
-  const uint8 * in = capture_data_->data_planes().data[0] +
-                     rect.y() * strides +
-                     rect.x() * bytes_per_pixel;
+  ChromotingHostMessage* message = new ChromotingHostMessage();
+  RectangleUpdatePacket* update = message->mutable_rectangle_update();
+  PrepareUpdateStart(rect, update);
+  const uint8* in = capture_data_->data_planes().data[0] +
+                    rect.y() * strides +
+                    rect.x() * bytes_per_pixel;
   // TODO(hclam): Fill in the sequence number.
-  uint8* out = (uint8*)message->mutable_update_stream_packet()->
-      mutable_rect_data()->mutable_data()->data();
+  uint8* out = GetOutputBuffer(update, packet_size_);
   int filled = 0;
   int row_x = 0;
   int row_y = 0;
@@ -63,9 +64,9 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor,
   while (compress_again) {
     // Prepare a message for sending out.
     if (!message) {
-      message = PrepareMessage(NULL);
-      out = (uint8*)(message->mutable_update_stream_packet()->
-                     mutable_rect_data()->mutable_data()->data());
+      message = new ChromotingHostMessage();
+      update = message->mutable_rectangle_update();
+      out = GetOutputBuffer(update, packet_size_);
       filled = 0;
     }
 
@@ -88,13 +89,13 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor,
 
     // We have reached the end of stream.
     if (!compress_again) {
-      message->mutable_update_stream_packet()->mutable_end_rect();
+      update->set_flags(update->flags() | RectangleUpdatePacket::LAST_PACKET);
     }
 
     // If we have filled the message or we have reached the end of stream.
     if (filled == packet_size_ || !compress_again) {
-      message->mutable_update_stream_packet()->mutable_rect_data()->
-          mutable_data()->resize(filled);
+      message->mutable_rectangle_update()->mutable_encoded_rect()->
+          resize(filled);
       SubmitMessage(message, rect_index);
       message = NULL;
     }
@@ -108,33 +109,40 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor,
   }
 }
 
-ChromotingHostMessage* EncoderZlib::PrepareMessage(const gfx::Rect* rect) {
-  ChromotingHostMessage* message = new ChromotingHostMessage();
-  UpdateStreamPacketMessage* packet = message->mutable_update_stream_packet();
+void EncoderZlib::PrepareUpdateStart(const gfx::Rect& rect,
+                                     RectangleUpdatePacket* update) {
 
-  // Prepare the begin rect content.
-  if (rect != NULL) {
-    packet->mutable_begin_rect()->set_x(rect->x());
-    packet->mutable_begin_rect()->set_y(rect->y());
-    packet->mutable_begin_rect()->set_width(rect->width());
-    packet->mutable_begin_rect()->set_height(rect->height());
-    packet->mutable_begin_rect()->set_encoding(EncodingZlib);
-    packet->mutable_begin_rect()->set_pixel_format(
-        capture_data_->pixel_format());
-  }
+  update->set_flags(update->flags() | RectangleUpdatePacket::FIRST_PACKET);
+  RectangleFormat* format = update->mutable_format();
 
-  packet->mutable_rect_data()->mutable_data()->resize(packet_size_);
-  return message;
+  format->set_x(rect.x());
+  format->set_y(rect.y());
+  format->set_width(rect.width());
+  format->set_height(rect.height());
+  format->set_encoding(EncodingZlib);
+  format->set_pixel_format(capture_data_->pixel_format());
+}
+
+uint8* EncoderZlib::GetOutputBuffer(RectangleUpdatePacket* update,
+                                    size_t size) {
+  update->mutable_encoded_rect()->resize(size);
+  // TODO(ajwong): Is there a better way to do this at all???
+  return const_cast<uint8*>(reinterpret_cast<const uint8*>(
+      update->mutable_encoded_rect()->data()));
 }
 
 void EncoderZlib::SubmitMessage(ChromotingHostMessage* message,
                                 size_t rect_index) {
   EncodingState state = EncodingInProgress;
-  if (rect_index == 0 && message->update_stream_packet().has_begin_rect())
+  const RectangleUpdatePacket& update = message->rectangle_update();
+  if (rect_index == 0 &&
+      (update.flags() | RectangleUpdatePacket::FIRST_PACKET)) {
     state |= EncodingStarting;
+  }
   if (rect_index == capture_data_->dirty_rects().size() - 1 &&
-      message->update_stream_packet().has_end_rect())
+      (update.flags() | RectangleUpdatePacket::LAST_PACKET)) {
     state |= EncodingEnded;
+  }
   callback_->Run(message, state);
 }
 

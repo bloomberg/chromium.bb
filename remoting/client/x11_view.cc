@@ -10,7 +10,7 @@
 #include <X11/extensions/Xcomposite.h>
 
 #include "base/logging.h"
-#include "remoting/base/decoder_zlib.h"
+#include "base/task.h"
 
 namespace remoting {
 
@@ -65,13 +65,14 @@ void X11View::TearDown() {
 }
 
 void X11View::Paint() {
+  NOTIMPLEMENTED() << "Not sure if we need this call anymore.";
+}
+
+void X11View::PaintRect(media::VideoFrame* frame, const gfx::Rect& clip) {
   // Don't bother attempting to paint if the display hasn't been set up.
-  if (!display_ || !window_ || !frame_height_ || !frame_width_ || !frame_) {
+  if (!display_ || !window_ || !frame) {
     return;
   }
-
-  // TODO(hclam): Paint only the updated regions.
-  all_update_rects_.clear();
 
   // If we have not initialized the render target then do it now.
   if (!picture_)
@@ -83,8 +84,8 @@ void X11View::Paint() {
   // Creates a XImage.
   XImage image;
   memset(&image, 0, sizeof(image));
-  image.width = frame_width_;
-  image.height = frame_height_;
+  image.width = frame->width();
+  image.height = frame->height();
   image.depth = 32;
   image.bits_per_pixel = 32;
   image.format = ZPixmap;
@@ -100,11 +101,11 @@ void X11View::Paint() {
 
   // Creates a pixmap and uploads from the XImage.
   unsigned long pixmap = XCreatePixmap(display_, window_,
-                                       frame_width_, frame_height_, 32);
+                                       frame->width(), frame->height(), 32);
 
   GC gc = XCreateGC(display_, pixmap, 0, NULL);
-  XPutImage(display_, pixmap, gc, &image, 0, 0, 0, 0,
-            frame_width_, frame_height_);
+  XPutImage(display_, pixmap, gc, &image, clip.x(), clip.y(),
+            clip.x(), clip.y(), clip.width(), clip.height());
   XFreeGC(display_, gc);
 
   // Creates the picture representing the pixmap.
@@ -115,8 +116,8 @@ void X11View::Paint() {
 
   // Composite the picture over the picture representing the window.
   XRenderComposite(display_, PictOpSrc, picture, 0,
-                   picture_, 0, 0, 0, 0, 0, 0,
-                   frame_width_, frame_height_);
+                   picture_, 0, 0, 0, 0, clip.x(), clip.y(),
+                   clip.width(), clip.height());
 
   XRenderFreePicture(display_, picture);
   XFreePixmap(display_, pixmap);
@@ -137,14 +138,6 @@ void X11View::SetViewport(int x, int y, int width, int height) {
   // NOTIMPLEMENTED();
 }
 
-void X11View::SetHostScreenSize(int width, int height) {
-  frame_width_ = width;
-  frame_height_ = height;
-  frame_ = NULL;
-
-  XResizeWindow(display_, window_, frame_width_, frame_height_);
-}
-
 void X11View::InitPaintTarget() {
   // Testing XRender support.
   int dummy;
@@ -163,60 +156,52 @@ void X11View::InitPaintTarget() {
   CHECK(picture_) << "Backing picture not created";
 }
 
-void X11View::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
+void X11View::AllocateFrame(media::VideoFrame::Format format,
+                            size_t width,
+                            size_t height,
+                            base::TimeDelta timestamp,
+                            base::TimeDelta duration,
+                            scoped_refptr<media::VideoFrame>* frame_out,
+                            Task* done) {
+  // TODO(ajwong): Implement this to use the native X window rather than
+  // just a generic frame buffer.
+  media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
+                                 width, height,
+                                 base::TimeDelta(), base::TimeDelta(),
+                                 frame_out);
+  if (*frame_out) {
+    (*frame_out)->AddRef();
+  }
+  done->Run();
+  delete done;
+}
 
-  // Make sure the |frame_| is initialized.
-  if (!frame_) {
-    media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
-                                   frame_width_, frame_height_,
-                                   base::TimeDelta(), base::TimeDelta(),
-                                   &frame_);
-    CHECK(frame_);
+void X11View::ReleaseFrame(media::VideoFrame* frame) {
+  if (frame) {
+    LOG(WARNING) << "Frame released.";
+    frame->Release();
   }
 }
 
-void X11View::HandleUpdateStreamPacket(ChromotingHostMessage* msg) {
-  // Lazily initialize the decoder.
-  SetupDecoder(msg->update_stream_packet().begin_rect().encoding());
-  if (!decoder_->IsStarted()) {
-    BeginDecoding(NewRunnableMethod(this, &X11View::OnPartialDecodeDone),
-                  NewRunnableMethod(this, &X11View::OnDecodeDone));
-  }
-
-  Decode(msg);
-}
-
-void X11View::HandleEndUpdateStream(ChromotingHostMessage* msg) {
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
-  EndDecoding();
-}
-
-void X11View::OnPartialDecodeDone() {
-  // Decoder has produced some output so schedule a paint. We'll get a Paint()
-  // call in the near future. Note that we can get UpdateStreamPacket during
-  // this short period of time and we will perform decode again and the
-  // information in updated rects will be lost.
-  // There are several ways to solve this problem.
-  // 1. Merge the updated rects and perform one paint.
-  // 2. Queue the updated rects and perform two paints.
-  // 3. Ignore the updated rects and always paint the full image. Since we
-  //    use one frame as output this will always be correct.
-  // We will take (1) and simply concat the list of rectangles.
-  all_update_rects_.insert(all_update_rects_.begin() +
-                           all_update_rects_.size(),
-                           update_rects_.begin(), update_rects_.end());
-
+void X11View::OnPartialFrameOutput(media::VideoFrame* frame,
+                                   UpdatedRects* rects,
+                                   Task* done) {
   // TODO(hclam): Make sure we call this method on the right thread. Since
   // decoder is single-threaded we don't have a problem but we better post
   // a task to do the right thing.
+
+  for (UpdatedRects::iterator it = rects->begin(); it != rects->end(); ++it) {
+    PaintRect(frame, *it);
+  }
+
+  // TODO(ajwong): Shouldn't we only expose the part of the window that was
+  // damanged?
   XEvent event;
   event.type = Expose;
   XSendEvent(display_, static_cast<int>(window_), true, ExposureMask, &event);
-}
 
-void X11View::OnDecodeDone() {
-  // Since we do synchronous decoding here there's nothing in this method.
+  done->Run();
+  delete done;
 }
 
 }  // namespace remoting

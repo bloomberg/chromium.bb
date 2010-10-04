@@ -39,6 +39,7 @@ class HostConnection;
 class InputHandler;
 class JingleThread;
 class PepperView;
+class RectangleUpdateDecoder;
 
 class ChromotingInstance : public pp::Instance {
  public:
@@ -70,6 +71,7 @@ class ChromotingInstance : public pp::Instance {
   ClientContext context_;
   scoped_ptr<HostConnection> host_connection_;
   scoped_ptr<PepperView> view_;
+  scoped_ptr<RectangleUpdateDecoder> rectangle_decoder_;
   scoped_ptr<InputHandler> input_handler_;
   scoped_ptr<ChromotingClient> client_;
   pp::Var instance_object_;  // JavaScript interface to control this instance.

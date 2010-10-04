@@ -31,9 +31,13 @@ class EncoderZlib : public Encoder {
   void EncodeRect(CompressorZlib* compressor, const gfx::Rect& rect,
                   size_t rect_index);
 
-  // Create a new ChromotingHostMessage with the right flag and attributes.
-  // The message can be used immediately for output of encoding.
-  ChromotingHostMessage* PrepareMessage(const gfx::Rect* rect);
+  // Marks a packets as the first in a series of rectangle updates.
+  void PrepareUpdateStart(const gfx::Rect& rect,
+                          RectangleUpdatePacket* update);
+
+  // Retrieves a pointer to the output buffer in |update| used for storing the
+  // encoded rectangle data.  Will resize the buffer to |size|.
+  uint8* GetOutputBuffer(RectangleUpdatePacket* update, size_t size);
 
   // Submit |message| to |callback_|.
   void SubmitMessage(ChromotingHostMessage* message, size_t rect_index);

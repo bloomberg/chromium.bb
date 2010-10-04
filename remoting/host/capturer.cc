@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "remoting/base/tracer.h"
+
 namespace remoting {
 
 Capturer::Capturer()
@@ -43,16 +45,18 @@ void Capturer::InvalidateFullScreen() {
 
 void Capturer::CaptureInvalidRects(CaptureCompletedCallback* callback) {
   // Calculate which rects need to be captured.
+  TraceContext::tracer()->PrintString("Started CalculateInvalidRects");
   CalculateInvalidRects();
+  TraceContext::tracer()->PrintString("Done CalculateInvalidRects");
 
   // Braced to scope the lock.
   InvalidRects local_rects;
   {
     AutoLock auto_inval_rects_lock(inval_rects_lock_);
-    local_rects = inval_rects_;
-    inval_rects_.clear();
+    local_rects.swap(inval_rects_);
   }
 
+  TraceContext::tracer()->PrintString("Start CaptureRects");
   CaptureRects(local_rects, callback);
 }
 

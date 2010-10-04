@@ -5,6 +5,8 @@
 #include "remoting/client/plugin/pepper_view.h"
 
 #include "base/message_loop.h"
+#include "remoting/base/tracer.h"
+#include "remoting/client/client_context.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "third_party/ppapi/cpp/graphics_2d.h"
@@ -14,14 +16,15 @@
 
 namespace remoting {
 
-PepperView::PepperView(ChromotingInstance* instance)
-    : instance_(instance),
-      viewport_x_(0),
-      viewport_y_(0),
-      viewport_width_(0),
-      viewport_height_(0),
-      is_static_fill_(false),
-      static_fill_color_(0) {
+PepperView::PepperView(ChromotingInstance* instance, ClientContext* context)
+  : instance_(instance),
+    context_(context),
+    viewport_x_(0),
+    viewport_y_(0),
+    viewport_width_(0),
+    viewport_height_(0),
+    is_static_fill_(false),
+    static_fill_color_(0) {
 }
 
 PepperView::~PepperView() {
@@ -36,10 +39,47 @@ void PepperView::TearDown() {
 
 void PepperView::Paint() {
   if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewRunnableMethod(this, &PepperView::Paint));
+    RunTaskOnPluginThread(NewTracedMethod(this, &PepperView::Paint));
     return;
   }
 
+  TraceContext::tracer()->PrintString("Start Paint.");
+  // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
+  // is wrong.
+  if (is_static_fill_) {
+    LOG(ERROR) << "Static filling " << static_fill_color_;
+    pp::ImageData image(pp::ImageData::GetNativeImageDataFormat(),
+                        pp::Size(viewport_width_, viewport_height_),
+                        false);
+    if (image.is_null()) {
+      LOG(ERROR) << "Unable to allocate image of size: "
+                 << viewport_width_ << "x" << viewport_height_;
+      return;
+    }
+
+    for (int y = 0; y < image.size().height(); y++) {
+      for (int x = 0; x < image.size().width(); x++) {
+        *image.GetAddr32(pp::Point(x, y)) = static_fill_color_;
+      }
+    }
+
+    // For ReplaceContents, make sure the image size matches the device context
+    // size!  Otherwise, this will just silently do nothing.
+    graphics2d_.ReplaceContents(&image);
+    graphics2d_.Flush(TaskToCompletionCallback(
+        NewTracedMethod(this, &PepperView::OnPaintDone)));
+  } else {
+    // TODO(ajwong): We need to keep a backing store image of the viewport that
+    // has the data here which can be redrawn.
+    return;
+  }
+  TraceContext::tracer()->PrintString("End Paint.");
+}
+
+void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
+  DCHECK(instance_->CurrentlyOnPluginThread());
+
+  TraceContext::tracer()->PrintString("Start Paint Frame.");
   // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
   // is wrong.
   pp::ImageData image(pp::ImageData::GetNativeImageDataFormat(),
@@ -47,43 +87,37 @@ void PepperView::Paint() {
                       false);
   if (image.is_null()) {
     LOG(ERROR) << "Unable to allocate image of size: "
-               << viewport_width_ << "x" << viewport_height_;
+               << frame->width() << "x" << frame->height();
     return;
   }
 
-  if (is_static_fill_) {
-    for (int y = 0; y < image.size().height(); y++) {
-      for (int x = 0; x < image.size().width(); x++) {
-        *image.GetAddr32(pp::Point(x, y)) = static_fill_color_;
-      }
+  uint32_t* frame_data =
+      reinterpret_cast<uint32_t*>(frame->data(media::VideoFrame::kRGBPlane));
+  int frame_width = static_cast<int>(frame->width());
+  int frame_height = static_cast<int>(frame->height());
+  int max_height = std::min(frame_height, image.size().height());
+  int max_width = std::min(frame_width, image.size().width());
+  for (int y = 0; y < max_height; y++) {
+    for (int x = 0; x < max_width; x++) {
+      // Force alpha to be set to 255.
+      *image.GetAddr32(pp::Point(x, y)) =
+          frame_data[y*frame_width + x] | 0xFF000000;
     }
-  } else if (frame_) {
-    uint32_t* frame_data =
-        reinterpret_cast<uint32_t*>(frame_->data(media::VideoFrame::kRGBPlane));
-    int max_height = std::min(frame_height_, image.size().height());
-    int max_width = std::min(frame_width_, image.size().width());
-    for (int y = 0; y < max_height; y++) {
-      for (int x = 0; x < max_width; x++) {
-        // Force alpha to be set to 255.
-        *image.GetAddr32(pp::Point(x, y)) =
-            frame_data[y*frame_width_ + x] | 0xFF000000;
-      }
-    }
-  } else {
-    // Nothing to paint. escape!
-    //
-    // TODO(ajwong): This is an ugly control flow. fix.
-    return;
   }
-  device_context_.ReplaceContents(&image);
-  device_context_.Flush(TaskToCompletionCallback(
-      NewRunnableMethod(this, &PepperView::OnPaintDone)));
+
+  // For ReplaceContents, make sure the image size matches the device context
+  // size!  Otherwise, this will just silently do nothing.
+  graphics2d_.ReplaceContents(&image);
+  graphics2d_.Flush(TaskToCompletionCallback(
+      NewTracedMethod(this, &PepperView::OnPaintDone)));
+
+  TraceContext::tracer()->PrintString("End Paint Frame.");
 }
 
 void PepperView::SetSolidFill(uint32 color) {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
-        NewRunnableMethod(this, &PepperView::SetSolidFill, color));
+        NewTracedMethod(this, &PepperView::SetSolidFill, color));
     return;
   }
 
@@ -94,7 +128,7 @@ void PepperView::SetSolidFill(uint32 color) {
 void PepperView::UnsetSolidFill() {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
-        NewRunnableMethod(this, &PepperView::UnsetSolidFill));
+        NewTracedMethod(this, &PepperView::UnsetSolidFill));
     return;
   }
 
@@ -103,7 +137,7 @@ void PepperView::UnsetSolidFill() {
 
 void PepperView::SetViewport(int x, int y, int width, int height) {
   if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewRunnableMethod(this, &PepperView::SetViewport,
+    RunTaskOnPluginThread(NewTracedMethod(this, &PepperView::SetViewport,
                                           x, y, width, height));
     return;
   }
@@ -116,95 +150,64 @@ void PepperView::SetViewport(int x, int y, int width, int height) {
   viewport_width_ = width;
   viewport_height_ = height;
 
-  device_context_ =
-      pp::Graphics2D(pp::Size(viewport_width_, viewport_height_), false);
-  if (!instance_->BindGraphics(device_context_)) {
+  graphics2d_ = pp::Graphics2D(pp::Size(viewport_width_, viewport_height_),
+                               false);
+  if (!instance_->BindGraphics(graphics2d_)) {
     LOG(ERROR) << "Couldn't bind the device context.";
     return;
   }
 }
 
-void PepperView::SetHostScreenSize(int width, int height) {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(NewRunnableMethod(this,
-                                            &PepperView::SetHostScreenSize,
-                                            width, height));
-    return;
+void PepperView::AllocateFrame(media::VideoFrame::Format format,
+                               size_t width,
+                               size_t height,
+                               base::TimeDelta timestamp,
+                               base::TimeDelta duration,
+                               scoped_refptr<media::VideoFrame>* frame_out,
+                               Task* done) {
+  // TODO(ajwong): Implement this to be backed by an pp::ImageData rather than
+  // generic memory.
+  media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
+                                 width, height,
+                                 base::TimeDelta(), base::TimeDelta(),
+                                 frame_out);
+  if (*frame_out) {
+    (*frame_out)->AddRef();
   }
-
-  frame_width_ = width;
-  frame_height_ = height;
-
-  // Reset |frame_| - it will be recreated by the next update stream.
-  frame_ = NULL;
+  done->Run();
+  delete done;
 }
 
-void PepperView::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewRunnableMethod(this, &PepperView::HandleBeginUpdateStream,
-                          msg));
-    return;
-  }
-
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
-
-  // Make sure the |frame_| is initialized.
-  if (!frame_) {
-    media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
-                                   frame_width_, frame_height_,
-                                   base::TimeDelta(), base::TimeDelta(),
-                                   &frame_);
-    CHECK(frame_);
+void PepperView::ReleaseFrame(media::VideoFrame* frame) {
+  if (frame) {
+    LOG(WARNING) << "Frame released.";
+    frame->Release();
   }
 }
 
-void PepperView::HandleUpdateStreamPacket(ChromotingHostMessage* msg) {
+void PepperView::OnPartialFrameOutput(media::VideoFrame* frame,
+                                      UpdatedRects* rects,
+                                      Task* done) {
   if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewRunnableMethod(this, &PepperView::HandleUpdateStreamPacket,
-                          msg));
+    RunTaskOnPluginThread(NewTracedMethod(this,
+                                          &PepperView::OnPartialFrameOutput,
+                                          frame, rects, done));
     return;
   }
 
-  // Lazily initialize the decoder.
-  SetupDecoder(msg->update_stream_packet().begin_rect().encoding());
-  if (!decoder_->IsStarted()) {
-    BeginDecoding(NewRunnableMethod(this, &PepperView::OnPartialDecodeDone),
-                  NewRunnableMethod(this, &PepperView::OnDecodeDone));
-  }
-
-  Decode(msg);
-}
-
-void PepperView::HandleEndUpdateStream(ChromotingHostMessage* msg) {
-  if (!instance_->CurrentlyOnPluginThread()) {
-    RunTaskOnPluginThread(
-        NewRunnableMethod(this, &PepperView::HandleEndUpdateStream,
-                          msg));
-    return;
-  }
-
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
-  EndDecoding();
+  TraceContext::tracer()->PrintString("Calling PaintFrame");
+  // TODO(ajwong): Clean up this API to be async so we don't need to use a
+  // member variable as a hack.
+  PaintFrame(frame, rects);
+  done->Run();
+  delete done;
 }
 
 void PepperView::OnPaintDone() {
   // TODO(ajwong):Probably should set some variable to allow repaints to
   // actually paint.
+  TraceContext::tracer()->PrintString("Paint flushed");
   return;
-}
-
-void PepperView::OnPartialDecodeDone() {
-  all_update_rects_.insert(all_update_rects_.begin() +
-                           all_update_rects_.size(),
-                           update_rects_.begin(), update_rects_.end());
-  Paint();
-  // TODO(ajwong): Need to block here to be synchronous.
-}
-
-
-void PepperView::OnDecodeDone() {
 }
 
 }  // namespace remoting

@@ -115,6 +115,18 @@ void ClientConnection::SendEndUpdateStreamMessage() {
   update_stream_size_ = 0;
 }
 
+void ClientConnection::MarkEndOfUpdate() {
+  // This is some logic to help calculate the average update stream size.
+  size_in_queue_ += update_stream_size_;
+  size_queue_.push_back(update_stream_size_);
+  if (size_queue_.size() > kAverageUpdateStream) {
+    size_in_queue_ -= size_queue_.front();
+    size_queue_.pop_front();
+    DCHECK_GE(size_in_queue_, 0);
+  }
+  update_stream_size_ = 0;
+}
+
 int ClientConnection::GetPendingUpdateStreamMessages() {
   DCHECK_EQ(loop_, MessageLoop::current());
 

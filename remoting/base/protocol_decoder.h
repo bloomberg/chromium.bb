@@ -6,7 +6,7 @@
 #define REMOTING_BASE_PROTOCOL_DECODER_H_
 
 #include <deque>
-#include <vector>
+#include <list>
 
 #include "base/ref_counted.h"
 #include "google/protobuf/message_lite.h"
@@ -15,8 +15,8 @@
 
 namespace remoting {
 
-typedef std::vector<ChromotingHostMessage*> HostMessageList;
-typedef std::vector<ChromotingClientMessage*> ClientMessageList;
+typedef std::list<ChromotingHostMessage*> HostMessageList;
+typedef std::list<ChromotingClientMessage*> ClientMessageList;
 
 // A protocol decoder is used to decode data transmitted in the chromoting
 // network.
@@ -42,7 +42,7 @@ class ProtocolDecoder {
   // buffers.
   template <typename T>
   void ParseMessages(scoped_refptr<media::DataBuffer> data,
-                     std::vector<T*>* messages);
+                     std::list<T*>* messages);
 
   // Parse one message from |data_list_|. Return true if sucessful.
   template <typename T>

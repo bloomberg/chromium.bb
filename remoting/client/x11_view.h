@@ -5,9 +5,11 @@
 #ifndef REMOTING_CLIENT_X11_VIEW_H_
 #define REMOTING_CLIENT_X11_VIEW_H_
 
-#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "media/base/video_frame.h"
+#include "remoting/base/decoder.h"  // For UpdatedRects
+#include "remoting/client/frame_consumer.h"
 #include "remoting/client/chromoting_view.h"
 
 typedef unsigned long XID;
@@ -16,7 +18,7 @@ typedef struct _XDisplay Display;
 namespace remoting {
 
 // A ChromotingView implemented using X11 and XRender.
-class X11View : public ChromotingView {
+class X11View : public ChromotingView, public FrameConsumer {
  public:
   X11View();
   virtual ~X11View();
@@ -28,17 +30,25 @@ class X11View : public ChromotingView {
   virtual void SetSolidFill(uint32 color);
   virtual void UnsetSolidFill();
   virtual void SetViewport(int x, int y, int width, int height);
-  virtual void SetHostScreenSize(int width, int height);
-  virtual void HandleBeginUpdateStream(ChromotingHostMessage* msg);
-  virtual void HandleUpdateStreamPacket(ChromotingHostMessage* msg);
-  virtual void HandleEndUpdateStream(ChromotingHostMessage* msg);
+
+  // FrameConsumer implementation.
+  virtual void AllocateFrame(media::VideoFrame::Format format,
+                             size_t width,
+                             size_t height,
+                             base::TimeDelta timestamp,
+                             base::TimeDelta duration,
+                             scoped_refptr<media::VideoFrame>* frame_out,
+                             Task* done);
+  virtual void ReleaseFrame(media::VideoFrame* frame);
+  virtual void OnPartialFrameOutput(media::VideoFrame* frame,
+                                    UpdatedRects* rects,
+                                    Task* done);
 
   Display* display() { return display_; }
 
  private:
   void InitPaintTarget();
-  void OnPartialDecodeDone();
-  void OnDecodeDone();
+  void PaintRect(media::VideoFrame* frame, const gfx::Rect& clip);
 
   Display* display_;
   XID window_;

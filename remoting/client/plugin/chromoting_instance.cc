@@ -15,6 +15,7 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/client/jingle_host_connection.h"
+#include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_view.h"
@@ -67,7 +68,9 @@ bool ChromotingInstance::Init(uint32_t argc,
 
   // Create the chromoting objects.
   host_connection_.reset(new JingleHostConnection(&context_));
-  view_.reset(new PepperView(this));
+  view_.reset(new PepperView(this, &context_));
+  rectangle_decoder_.reset(
+      new RectangleUpdateDecoder(context_.decode_message_loop(), view_.get()));
   input_handler_.reset(new PepperInputHandler(&context_, host_connection_.get(),
                                               view_.get()));
 
@@ -84,6 +87,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
                                      &context_,
                                      host_connection_.get(),
                                      view_.get(),
+                                     rectangle_decoder_.get(),
                                      input_handler_.get(),
                                      NULL));
 

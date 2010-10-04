@@ -18,6 +18,10 @@ class Decompressor {
  public:
   virtual ~Decompressor() {}
 
+  // Resets all the internal state so the decompressor behaves as if it was
+  // just created.
+  virtual void Reset() = 0;
+
   // Decompress |input_data| with |input_size| bytes.
   //
   // |output_data| is provided by the caller and |output_size| is the

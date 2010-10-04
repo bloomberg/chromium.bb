@@ -24,7 +24,7 @@
 // void Decoder::StartDecode() {
 //   ScopedTracer tracer("decode_start");
 //
-//   TraceContext::current()->PrintString("Decode starting");
+//   TraceContext::tracer()->PrintString("Decode starting");
 //
 //   // DoDecode takes 2 parameters. The first is a callback invoked for each
 //   // finished frame of output.  The second is invoked when the task is done.
@@ -34,12 +34,12 @@
 // }
 //
 // void Decoder::OnFrameOutput() {
-//   TraceContext::current()->PrintString("Frame outputed");
+//   TraceContext::tracer()->PrintString("Frame outputed");
 //   ...
 // }
 //
 // void Decoder::DecodeDone() {
-//   TraceContext::current()->PrintString("decode done");
+//   TraceContext::tracer()->PrintString("decode done");
 //   ...
 // }
 //
@@ -91,7 +91,7 @@ class Tracer : public base::RefCountedThreadSafe<Tracer> {
 
 class TraceContext {
  public:
-  // Set the current tracer.
+  // Get the current tracer.
   static Tracer* tracer() {
     return Get()->GetTracerInternal();
   }
@@ -142,12 +142,16 @@ class TraceContext {
 class ScopedTracer {
  public:
   ScopedTracer(const std::string& name) {
+#if defined(USE_TRACE)
     scoped_refptr<Tracer> tracer = new Tracer(name, 1.00);
     TraceContext::PushTracer(tracer);
+#endif
   }
 
   ~ScopedTracer() {
+#if defined(USE_TRACE)
     TraceContext::PopTracer();
+#endif
   }
 };
 

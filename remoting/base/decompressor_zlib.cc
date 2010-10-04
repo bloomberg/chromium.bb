@@ -21,18 +21,16 @@
 namespace remoting {
 
 DecompressorZlib::DecompressorZlib() {
-  stream_.reset(new z_stream());
-
-  stream_->next_in = Z_NULL;
-  stream_->zalloc = Z_NULL;
-  stream_->zfree = Z_NULL;
-  stream_->opaque = Z_NULL;
-
-  inflateInit(stream_.get());
+  InitStream();
 }
 
 DecompressorZlib::~DecompressorZlib() {
+  Reset();
+}
+
+void DecompressorZlib::Reset() {
   inflateEnd(stream_.get());
+  InitStream();
 }
 
 bool DecompressorZlib::Process(const uint8* input_data, int input_size,
@@ -58,6 +56,17 @@ bool DecompressorZlib::Process(const uint8* input_data, int input_size,
   // reason for us to get Z_BUF_ERROR is when zlib requires more input
   // data.
   return ret == Z_OK || ret == Z_BUF_ERROR;
+}
+
+void DecompressorZlib::InitStream() {
+  stream_.reset(new z_stream());
+
+  stream_->next_in = Z_NULL;
+  stream_->zalloc = Z_NULL;
+  stream_->zfree = Z_NULL;
+  stream_->opaque = Z_NULL;
+
+  inflateInit(stream_.get());
 }
 
 }  // namespace remoting

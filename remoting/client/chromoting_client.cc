@@ -5,10 +5,12 @@
 #include "remoting/client/chromoting_client.h"
 
 #include "base/message_loop.h"
+#include "remoting/base/tracer.h"
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/client/input_handler.h"
+#include "remoting/client/rectangle_update_decoder.h"
 
 static const uint32 kCreatedColor = 0xffccccff;
 static const uint32 kDisconnectedColor = 0xff00ccff;
@@ -20,15 +22,18 @@ ChromotingClient::ChromotingClient(const ClientConfig& config,
                                    ClientContext* context,
                                    HostConnection* connection,
                                    ChromotingView* view,
+                                   RectangleUpdateDecoder* rectangle_decoder,
                                    InputHandler* input_handler,
                                    CancelableTask* client_done)
     : config_(config),
       context_(context),
       connection_(connection),
       view_(view),
+      rectangle_decoder_(rectangle_decoder),
       input_handler_(input_handler),
       client_done_(client_done),
-      state_(CREATED) {
+      state_(CREATED),
+      message_being_processed_(false) {
 }
 
 ChromotingClient::~ChromotingClient() {
@@ -101,24 +106,51 @@ void ChromotingClient::HandleMessages(HostConnection* conn,
     return;
   }
 
-  for (size_t i = 0; i < messages->size(); ++i) {
-    ChromotingHostMessage* msg = (*messages)[i];
-    // TODO(ajwong): Consider creating a macro similar to the IPC message
-    // mappings.  Also reconsider the lifetime of the message object.
-    if (msg->has_init_client()) {
-      InitClient(msg);
-    } else if (msg->has_begin_update_stream()) {
-      BeginUpdate(msg);
-    } else if (msg->has_update_stream_packet()) {
-      HandleUpdate(msg);
-    } else if (msg->has_end_update_stream()) {
-      EndUpdate(msg);
-    } else {
-      NOTREACHED() << "Unknown message received";
-    }
+  // Put all messages in the queue.
+  received_messages_.splice(received_messages_.end(), *messages);
+
+  if (!message_being_processed_) {
+    DispatchMessage();
   }
-  // Assume we have processed all the messages.
-  messages->clear();
+}
+
+void ChromotingClient::DispatchMessage() {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+  CHECK(!message_being_processed_);
+
+  if (received_messages_.empty()) {
+    // Nothing to do!
+    return;
+  }
+
+  ChromotingHostMessage* msg = received_messages_.front();
+  received_messages_.pop_front();
+  message_being_processed_ = true;
+
+  // TODO(ajwong): Consider creating a macro similar to the IPC message
+  // mappings.  Also reconsider the lifetime of the message object.
+  if (msg->has_init_client()) {
+    ScopedTracer tracer("Handle Init Client");
+    // TODO(ajwong): Change this to use a done callback.
+    InitClient(msg->init_client(),
+               NewTracedMethod(this, &ChromotingClient::OnMessageDone, msg));
+  } else if (msg->has_rectangle_update()) {
+    ScopedTracer tracer("Handle Rectangle Update");
+    rectangle_decoder_->DecodePacket(
+        msg->rectangle_update(),
+        NewTracedMethod(this, &ChromotingClient::OnMessageDone, msg));
+  } else {
+    NOTREACHED() << "Unknown message received";
+
+    // We have an unknown message. Drop it, and schedule another dispatch.
+    // Call DispatchMessage as a continuation to avoid growing the stack.
+    delete msg;
+    message_being_processed_ = false;
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this, &ChromotingClient::DispatchMessage));
+    return;
+  }
 }
 
 void ChromotingClient::OnConnectionOpened(HostConnection* conn) {
@@ -172,41 +204,40 @@ void ChromotingClient::SetState(State s) {
   Repaint();
 }
 
-void ChromotingClient::InitClient(ChromotingHostMessage* msg) {
+void ChromotingClient::OnMessageDone(ChromotingHostMessage* msg) {
+  if (message_loop() != MessageLoop::current()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewTracedMethod(this, &ChromotingClient::OnMessageDone, msg));
+    return;
+  }
+
+  TraceContext::tracer()->PrintString("Message done");
+
+  message_being_processed_ = false;
+  delete msg;
+  DispatchMessage();
+}
+
+void ChromotingClient::InitClient(const InitClientMessage& init_client,
+                                  Task* done) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(msg->has_init_client());
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
+  TraceContext::tracer()->PrintString("Init received");
 
   // Resize the window.
-  int width = msg->init_client().width();
-  int height = msg->init_client().height();
+  int width = init_client.width();
+  int height = init_client.height();
   LOG(INFO) << "Init client received geometry: " << width << "x" << height;
 
-  view_->SetHostScreenSize(width, height);
+//  TODO(ajwong): What to do here?  Does the decoder actually need to request
+//  the right frame size?  This is mainly an optimization right?
+//  rectangle_decoder_->SetOutputFrameSize(width, height);
 
   // Schedule the input handler to process the event queue.
   input_handler_->Initialize();
-}
 
-void ChromotingClient::BeginUpdate(ChromotingHostMessage* msg) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(msg->has_begin_update_stream());
-
-  view_->HandleBeginUpdateStream(msg);
-}
-
-void ChromotingClient::HandleUpdate(ChromotingHostMessage* msg) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(msg->has_update_stream_packet());
-
-  view_->HandleUpdateStreamPacket(msg);
-}
-
-void ChromotingClient::EndUpdate(ChromotingHostMessage* msg) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(msg->has_end_update_stream());
-
-  view_->HandleEndUpdateStream(msg);
+  done->Run();
+  delete done;
 }
 
 }  // namespace remoting

@@ -8,6 +8,7 @@
 #include "gfx/rect.h"
 #include "media/base/video_frame.h"
 #include "remoting/base/codec_test.h"
+#include "remoting/base/decoder.h"
 #include "remoting/base/encoder.h"
 #include "remoting/base/mock_objects.h"
 #include "remoting/base/protocol_util.h"
@@ -252,6 +253,8 @@ class DecoderTester {
   DISALLOW_COPY_AND_ASSIGN(DecoderTester);
 };
 
+// The EncoderTester provides a hook for retrieving the data, and passing the
+// message to other subprograms for validaton.
 class EncoderTester {
  public:
   EncoderTester(EncoderMessageTester* message_tester,

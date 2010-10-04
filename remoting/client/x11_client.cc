@@ -11,6 +11,7 @@
 #include "remoting/client/client_config.h"
 #include "remoting/client/client_util.h"
 #include "remoting/client/jingle_host_connection.h"
+#include "remoting/client/rectangle_update_decoder.h"
 #include "remoting/client/x11_view.h"
 #include "remoting/client/x11_input_handler.h"
 
@@ -31,9 +32,12 @@ int main(int argc, char** argv) {
   remoting::ClientContext context;
   remoting::JingleHostConnection connection(&context);
   remoting::X11View view;
+  remoting::RectangleUpdateDecoder rectangle_decoder(
+      context.decode_message_loop(), &view);
   remoting::X11InputHandler input_handler(&context, &connection, &view);
-  remoting::ChromotingClient client(config, &context, &connection, &view,
-      &input_handler, NewRunnableFunction(&ClientQuit, &ui_loop));
+  remoting::ChromotingClient client(
+      config, &context, &connection, &view, &rectangle_decoder, &input_handler,
+      NewRunnableFunction(&ClientQuit, &ui_loop));
 
   // Run the client on a new MessageLoop until
   context.Start();

@@ -71,7 +71,8 @@ ACTION_P(FinishEncode, msg) {
   delete arg2;
 }
 
-TEST_F(SessionManagerTest, OneRecordCycle) {
+// BUG 57351
+TEST_F(SessionManagerTest, DISABLED_OneRecordCycle) {
   Init();
 
   InvalidRects update_rects;

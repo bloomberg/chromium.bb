@@ -5,6 +5,10 @@
 #ifndef REMOTING_CLIENT_FRAME_CONSUMER_H_
 #define REMOTING_CLIENT_FRAME_CONSUMER_H_
 
+#include "remoting/base/decoder.h"  // For UpdatedRects
+
+class Task;
+
 namespace remoting {
 
 class FrameConsumer {
@@ -41,8 +45,8 @@ class FrameConsumer {
   virtual void ReleaseFrame(media::VideoFrame* frame) = 0;
 
   // OnPartialFrameOutput() is called every time at least one rectangle of
-  // output is produced.  The |frame| is guaranteed to have valid data for
-  // every region included in the |rects| list.
+  // output is produced.  The |frame| is guaranteed to have valid data for every
+  // region included in the |rects| list.
   //
   // Both |frame| and |rects| are guaranteed to be valid until the |done|
   // callback is invoked.

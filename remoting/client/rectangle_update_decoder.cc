@@ -8,9 +8,9 @@
 #include "base/message_loop.h"
 #include "media/base/callback.h"
 #include "remoting/base/decoder.h"
-#include "remoting/base/decoder_verbatim.h"
-#include "remoting/base/decoder_zlib.h"
+#include "remoting/base/decoder_row_based.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
+#include "remoting/base/protocol_util.h"
 #include "remoting/base/tracer.h"
 #include "remoting/client/frame_consumer.h"
 
@@ -195,10 +195,10 @@ void RectangleUpdateDecoder::InitializeDecoder(const RectangleFormat& format,
     // Initialize a new decoder based on this message encoding.
     if (format.encoding() == EncodingNone) {
       TraceContext::tracer()->PrintString("Creating Verbatim decoder.");
-      decoder_.reset(new DecoderVerbatim());
+      decoder_.reset(DecoderRowBased::CreateVerbatimDecoder());
     } else if (format.encoding() == EncodingZlib) {
       TraceContext::tracer()->PrintString("Creating Zlib decoder");
-      decoder_.reset(new DecoderZlib());
+      decoder_.reset(DecoderRowBased::CreateZlibDecoder());
     } else {
       NOTREACHED() << "Invalid Encoding found: " << format.encoding();
     }
@@ -211,7 +211,8 @@ void RectangleUpdateDecoder::InitializeDecoder(const RectangleFormat& format,
   gfx::Rect rectangle_size(format.x(), format.y(),
                            format.width(), format.height());
   updated_rects_.push_back(rectangle_size);
-  decoder_->Initialize(frame_, rectangle_size);
+  decoder_->Initialize(frame_, rectangle_size,
+                       GetBytesPerPixel(format.pixel_format()));
   TraceContext::tracer()->PrintString("Decoder is Initialized");
 }
 

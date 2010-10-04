@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
+#include "remoting/base/decoder.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
 #include "remoting/client/chromoting_view.h"
 #include "testing/gmock/include/gmock/gmock.h"

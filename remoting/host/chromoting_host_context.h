@@ -20,6 +20,10 @@ class ChromotingHostContext {
   ChromotingHostContext();
   virtual ~ChromotingHostContext();
 
+  // TODO(ajwong): Move the Start/Stop methods out of this class. Then
+  // create a static factory for construction, and destruction.  We
+  // should be able to remove the need for virtual functions below with that
+  // design, while preserving the relative simplicity of this API.
   virtual void Start();
   virtual void Stop();
 

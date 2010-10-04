@@ -32,6 +32,7 @@
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/json_host_config.h"
+#include "remoting/base/tracer.h"
 
 #if defined(OS_WIN)
 #include "remoting/host/capturer_gdi.h"
