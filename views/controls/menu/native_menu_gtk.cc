@@ -498,9 +498,13 @@ void NativeMenuGtk::MenuDestroyed(GtkWidget* widget, Menu2* menu2) {
 ////////////////////////////////////////////////////////////////////////////////
 // MenuWrapper, public:
 
+#if !defined(OS_CHROMEOS)
+
 // static
 MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
   return new NativeMenuGtk(menu);
 }
+
+#endif  // OS_CHROMEOS
 
 }  // namespace views

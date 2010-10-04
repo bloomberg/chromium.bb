@@ -119,6 +119,7 @@ const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUIThemePath[] = "theme";
 const char kChromeUIThumbnailPath[] = "thumb";
+const char kChromeUIMenu[] = "menu";
 
 #if defined(OS_CHROMEOS)
 const char kChromeUIFileBrowseHost[] = "filebrowse";

@@ -113,6 +113,7 @@ extern const char kChromeUISettingsHost[];
 extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUIThemePath[];
 extern const char kChromeUIThumbnailPath[];
+extern const char kChromeUIMenu[];
 
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIFileBrowseHost[];

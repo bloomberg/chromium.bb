@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/dom_ui/mobile_setup_ui.h"
 #include "chrome/browser/chromeos/dom_ui/register_page_ui.h"
 #include "chrome/browser/chromeos/dom_ui/system_info_ui.h"
+#include "chrome/browser/chromeos/dom_ui/menu_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #endif
@@ -163,6 +164,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<SlideshowUI>;
   if (url.host() == chrome::kChromeUISystemInfoHost)
     return &NewDOMUI<SystemInfoUI>;
+  if (url.host() == chrome::kChromeUIMenu)
+    return &NewDOMUI<chromeos::MenuUI>;
 #else
   if (url.host() == chrome::kChromeUISettingsHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
