@@ -213,30 +213,30 @@ TEST_F(RegistryControlledDomainTest, TestSameDomainOrHost) {
   TestRegistryControlledDomainService::UseDomainData(
       Perfect_Hash_Test2::FindDomain);
 
-  EXPECT_EQ(true, CompareDomains("http://a.b.bar.jp/file.html",
-                                 "http://a.b.bar.jp/file.html")); // b.bar.jp
-  EXPECT_EQ(true, CompareDomains("http://a.b.bar.jp/file.html",
-                                 "http://b.b.bar.jp/file.html")); // b.bar.jp
-  EXPECT_EQ(false, CompareDomains("http://a.foo.jp/file.html",    // foo.jp
-                                  "http://a.not.jp/file.html"));  // not.jp
-  EXPECT_EQ(false, CompareDomains("http://a.foo.jp/file.html",    // foo.jp
-                                  "http://a.foo.jp./file.html")); // foo.jp.
-  EXPECT_EQ(false, CompareDomains("http://a.com/file.html",       // a.com
-                                  "http://b.com/file.html"));     // b.com
-  EXPECT_EQ(true, CompareDomains("http://a.x.com/file.html",
-                                 "http://b.x.com/file.html"));    // x.com
-  EXPECT_EQ(true, CompareDomains("http://a.x.com/file.html",
-                                 "http://.x.com/file.html"));     // x.com
-  EXPECT_EQ(true, CompareDomains("http://a.x.com/file.html",
-                                 "http://..b.x.com/file.html"));  // x.com
-  EXPECT_EQ(true, CompareDomains("http://intranet/file.html",
-                                 "http://intranet/file.html"));   // intranet
-  EXPECT_EQ(true, CompareDomains("http://127.0.0.1/file.html",
-                                 "http://127.0.0.1/file.html"));  // 127.0.0.1
-  EXPECT_EQ(false, CompareDomains("http://192.168.0.1/file.html", // 192.168.0.1
-                                  "http://127.0.0.1/file.html")); // 127.0.0.1
-  EXPECT_EQ(false, CompareDomains("file:///C:/file.html",
-                                  "file:///C:/file.html"));       // no host
+  EXPECT_TRUE(CompareDomains("http://a.b.bar.jp/file.html",
+                             "http://a.b.bar.jp/file.html")); // b.bar.jp
+  EXPECT_TRUE(CompareDomains("http://a.b.bar.jp/file.html",
+                             "http://b.b.bar.jp/file.html")); // b.bar.jp
+  EXPECT_FALSE(CompareDomains("http://a.foo.jp/file.html",    // foo.jp
+                              "http://a.not.jp/file.html"));  // not.jp
+  EXPECT_FALSE(CompareDomains("http://a.foo.jp/file.html",    // foo.jp
+                              "http://a.foo.jp./file.html")); // foo.jp.
+  EXPECT_FALSE(CompareDomains("http://a.com/file.html",       // a.com
+                              "http://b.com/file.html"));     // b.com
+  EXPECT_TRUE(CompareDomains("http://a.x.com/file.html",
+                             "http://b.x.com/file.html"));    // x.com
+  EXPECT_TRUE(CompareDomains("http://a.x.com/file.html",
+                             "http://.x.com/file.html"));     // x.com
+  EXPECT_TRUE(CompareDomains("http://a.x.com/file.html",
+                             "http://..b.x.com/file.html"));  // x.com
+  EXPECT_TRUE(CompareDomains("http://intranet/file.html",
+                             "http://intranet/file.html"));   // intranet
+  EXPECT_TRUE(CompareDomains("http://127.0.0.1/file.html",
+                             "http://127.0.0.1/file.html"));  // 127.0.0.1
+  EXPECT_FALSE(CompareDomains("http://192.168.0.1/file.html", // 192.168.0.1
+                              "http://127.0.0.1/file.html")); // 127.0.0.1
+  EXPECT_FALSE(CompareDomains("file:///C:/file.html",
+                              "file:///C:/file.html"));       // no host
 }
 
 TEST_F(RegistryControlledDomainTest, TestDefaultData) {

@@ -142,18 +142,18 @@ TEST(ThreadLocalTest, Pointer) {
 TEST(ThreadLocalTest, Boolean) {
   {
     base::ThreadLocalBoolean tlb;
-    EXPECT_EQ(false, tlb.Get());
+    EXPECT_FALSE(tlb.Get());
 
     tlb.Set(false);
-    EXPECT_EQ(false, tlb.Get());
+    EXPECT_FALSE(tlb.Get());
 
     tlb.Set(true);
-    EXPECT_EQ(true, tlb.Get());
+    EXPECT_TRUE(tlb.Get());
   }
 
   // Our slot should have been freed, we're all reset.
   {
     base::ThreadLocalBoolean tlb;
-    EXPECT_EQ(false, tlb.Get());
+    EXPECT_FALSE(tlb.Get());
   }
 }

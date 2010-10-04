@@ -63,8 +63,8 @@ void Size::set_height(int height) {
   height_ = height;
 }
 
-}  // namespace gfx
-
 std::ostream& operator<<(std::ostream& out, const gfx::Size& s) {
   return out << s.width() << "x" << s.height();
 }
+
+}  // namespace gfx

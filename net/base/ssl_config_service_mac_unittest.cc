@@ -38,10 +38,10 @@ class SSLConfigServiceMacTest : public testing::Test {
 TEST(SSLConfigServiceMacTest, GetNowTest) {
   // Verify that the constructor sets the correct default values.
   net::SSLConfig config;
-  EXPECT_EQ(true, config.rev_checking_enabled);
-  EXPECT_EQ(false, config.ssl2_enabled);
-  EXPECT_EQ(true, config.ssl3_enabled);
-  EXPECT_EQ(true, config.tls1_enabled);
+  EXPECT_TRUE(config.rev_checking_enabled);
+  EXPECT_FALSE(config.ssl2_enabled);
+  EXPECT_TRUE(config.ssl3_enabled);
+  EXPECT_TRUE(config.tls1_enabled);
 
   bool rv = net::SSLConfigServiceMac::GetSSLConfigNow(&config);
   EXPECT_TRUE(rv);

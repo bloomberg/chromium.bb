@@ -173,8 +173,8 @@ class Rect {
   gfx::Size size_;
 };
 
-}  // namespace gfx
-
 std::ostream& operator<<(std::ostream& out, const gfx::Rect& r);
+
+}  // namespace gfx
 
 #endif  // GFX_RECT_H_

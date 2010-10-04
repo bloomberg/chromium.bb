@@ -67,6 +67,8 @@ TEST_F(CapturerMacTest, Capture) {
 
 }  // namespace remoting
 
+namespace gfx {
+
 std::ostream& operator<<(std::ostream& out,
                          const remoting::InvalidRects& rects) {
   for (remoting::InvalidRects::const_iterator i = rects.begin();
@@ -76,3 +78,6 @@ std::ostream& operator<<(std::ostream& out,
   }
   return out;
 }
+
+}  // namespace gfx
+

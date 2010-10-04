@@ -107,7 +107,7 @@ TEST(ChromotingViewTest, DecodeSimple) {
   Decoder* decoder = view->get_decoder();
   ASSERT_TRUE(decoder != NULL);
   EXPECT_EQ(EncodingZlib, decoder->Encoding());
-  EXPECT_EQ(false, decoder->IsStarted());
+  EXPECT_FALSE(decoder->IsStarted());
 
   // Overwrite |decoder_| with MockDecoder.
   MockDecoder* mock_decoder = new MockDecoder();
@@ -176,7 +176,7 @@ TEST(ChromotingViewTest, DecodeThreePackets) {
   Decoder* decoder = view->get_decoder();
   ASSERT_TRUE(decoder != NULL);
   EXPECT_EQ(EncodingZlib, decoder->Encoding());
-  EXPECT_EQ(false, decoder->IsStarted());
+  EXPECT_FALSE(decoder->IsStarted());
 
   // Overwrite |decoder_| with MockDecoder.
   MockDecoder* mock_decoder = new MockDecoder();
@@ -265,7 +265,7 @@ TEST(ChromotingViewTest, DecodeTwoStreams) {
   Decoder* decoder = view->get_decoder();
   ASSERT_TRUE(decoder != NULL);
   EXPECT_EQ(EncodingZlib, decoder->Encoding());
-  EXPECT_EQ(false, decoder->IsStarted());
+  EXPECT_FALSE(decoder->IsStarted());
 
   // Overwrite |decoder_| with MockDecoder.
   MockDecoder* mock_decoder = new MockDecoder();
@@ -373,7 +373,7 @@ TEST(ChromotingViewTest, DecodeTwoStreamsDifferentEncodings) {
   Decoder* decoder = view->get_decoder();
   ASSERT_TRUE(decoder != NULL);
   EXPECT_EQ(EncodingZlib, decoder->Encoding());
-  EXPECT_EQ(false, decoder->IsStarted());
+  EXPECT_FALSE(decoder->IsStarted());
 
   // Overwrite |decoder_| with MockDecoder.
   MockDecoder* mock_decoder1 = new MockDecoder();
@@ -489,7 +489,7 @@ TEST(ChromotingViewTest, MismatchedEncodings) {
   Decoder* decoder = view->get_decoder();
   ASSERT_TRUE(decoder != NULL);
   EXPECT_EQ(EncodingZlib, decoder->Encoding());
-  EXPECT_EQ(false, decoder->IsStarted());
+  EXPECT_FALSE(decoder->IsStarted());
 
   // Overwrite |decoder_| with MockDecoder.
   MockDecoder* mock_decoder = new MockDecoder();

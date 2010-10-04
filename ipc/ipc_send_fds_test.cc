@@ -125,7 +125,9 @@ MULTIPROCESS_TEST_MAIN(RunTestDescriptorClientSandboxed) {
   struct stat st;
   const int fd = open(kDevZeroPath, O_RDONLY);
   fstat(fd, &st);
-  HANDLE_EINTR(close(fd));
+  if (HANDLE_EINTR(close(fd)) < 0) {
+    return -1;
+  }
 
   // Enable the Sandbox.
   char* error_buff = NULL;

@@ -75,8 +75,8 @@ class Size {
   int height_;
 };
 
-}  // namespace gfx
-
 std::ostream& operator<<(std::ostream& out, const gfx::Size& s);
+
+}  // namespace gfx
 
 #endif  // GFX_SIZE_H_

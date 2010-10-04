@@ -29,11 +29,11 @@
 using base::WaitableEvent;
 using testing::_;
 
-namespace {
 // Define these << operators so we can use EXPECT_EQ with the
 // AutofillKeys type.
 template<class T1, class T2, class T3>
-std::ostream& operator<<(std::ostream& os, const std::set<T1, T2, T3>& seq) {
+static std::ostream& operator<<(
+    std::ostream& os, const std::set<T1, T2, T3>& seq) {
   typedef typename std::set<T1, T2, T3>::const_iterator SetConstIterator;
   for (SetConstIterator i = seq.begin(); i != seq.end(); ++i) {
     os << *i << ", ";
@@ -41,10 +41,11 @@ std::ostream& operator<<(std::ostream& os, const std::set<T1, T2, T3>& seq) {
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {
+static std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {
   return os << UTF16ToUTF8(key.name()) << ", " << UTF16ToUTF8(key.value());
 }
 
+namespace {
 class GetAllAutofillEntries
     : public base::RefCountedThreadSafe<GetAllAutofillEntries> {
  public:

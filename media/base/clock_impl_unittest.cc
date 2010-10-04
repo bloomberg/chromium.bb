@@ -11,12 +11,12 @@ using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
 
-namespace {
+namespace base {
 
 // Provide a stream output operator so we can use EXPECT_EQ(...) with TimeDelta.
 //
 // TODO(scherkus): move this into the testing package.
-std::ostream& operator<<(std::ostream& stream, const base::TimeDelta& time) {
+static std::ostream& operator<<(std::ostream& stream, const TimeDelta& time) {
   return (stream << time.ToInternalValue());
 }
 
