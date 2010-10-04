@@ -207,6 +207,7 @@ TEST_F(WebDatabaseTest, Keywords) {
   set_prepopulate_id(&template_url, 10);
   set_logo_id(&template_url, 1000);
   template_url.set_created_by_policy(true);
+  template_url.set_supports_instant(false);
   SetID(1, &template_url);
 
   EXPECT_TRUE(db.AddKeyword(template_url));
@@ -248,6 +249,8 @@ TEST_F(WebDatabaseTest, Keywords) {
 
   EXPECT_TRUE(restored_url->created_by_policy());
 
+  EXPECT_FALSE(template_url.supports_instant());
+
   EXPECT_TRUE(db.RemoveKeyword(restored_url->id()));
 
   template_urls.clear();
@@ -288,6 +291,7 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
   template_url.set_safe_for_autoreplace(true);
   template_url.set_show_in_default_list(true);
   template_url.SetSuggestionsURL("url2", 0, 0);
+  template_url.set_supports_instant(false);
   SetID(1, &template_url);
 
   EXPECT_TRUE(db.AddKeyword(template_url));
@@ -299,6 +303,7 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
   template_url.add_input_encoding("Shift_JIS");
   set_prepopulate_id(&template_url, 5);
   set_logo_id(&template_url, 2000);
+  template_url.set_supports_instant(true);
   EXPECT_TRUE(db.UpdateKeyword(template_url));
 
   std::vector<TemplateURL*> template_urls;
@@ -334,6 +339,8 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
   EXPECT_EQ(template_url.prepopulate_id(), restored_url->prepopulate_id());
 
   EXPECT_EQ(template_url.logo_id(), restored_url->logo_id());
+
+  EXPECT_TRUE(template_url.supports_instant());
 
   delete restored_url;
 }
@@ -1573,6 +1580,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   void SetUpVersion24Database();
   void SetUpVersion25Database();
   void SetUpVersion26Database();
+  void SetUpVersion27Database();
 
  private:
   ScopedTempDir temp_dir_;
@@ -1580,7 +1588,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 27;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 28;
 
 // This schema is taken from a build prior to the addition of the |credit_card|
 // table.  Version 22 of the schema.  Contrast this with the corrupt version
@@ -1921,6 +1929,77 @@ void WebDatabaseMigrationTest::SetUpVersion26Database() {
     "CREATE TABLE token_service (service VARCHAR PRIMARY KEY NOT NULL,"
         "encrypted_token BLOB);"
     "CREATE INDEX logins_signon ON logins (signon_realm);"
+    "CREATE INDEX web_apps_url_index ON web_apps (url);"
+    "CREATE INDEX autofill_name ON autofill (name);"
+    "CREATE INDEX autofill_name_value_lower ON autofill (name, value_lower);"
+    "CREATE INDEX autofill_dates_pair_id ON autofill_dates (pair_id);"
+    "CREATE INDEX autofill_profiles_label_index ON autofill_profiles (label);"
+    "CREATE INDEX credit_cards_label_index ON credit_cards (label);"));
+  ASSERT_TRUE(connection.CommitTransaction());
+}
+
+void WebDatabaseMigrationTest::SetUpVersion27Database() {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(connection.Execute(
+    "CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY "
+      "KEY,value LONGVARCHAR);"
+    "INSERT INTO \"meta\" VALUES('version','27');"
+    "INSERT INTO \"meta\" VALUES('last_compatible_version','27');"
+    "INSERT INTO \"meta\" VALUES('Default Search Provider ID','2');"
+    "INSERT INTO \"meta\" VALUES('Builtin Keyword Version','29');"
+    "CREATE TABLE keywords (id INTEGER PRIMARY KEY,short_name VARCHAR "
+      "NOT NULL,keyword VARCHAR NOT NULL,favicon_url VARCHAR NOT "
+      "NULL,url VARCHAR NOT NULL,show_in_default_list "
+      "INTEGER,safe_for_autoreplace INTEGER,originating_url "
+      "VARCHAR,date_created INTEGER DEFAULT 0,usage_count INTEGER "
+      "DEFAULT 0,input_encodings VARCHAR,suggest_url "
+      "VARCHAR,prepopulate_id INTEGER DEFAULT 0,autogenerate_keyword "
+      "INTEGER DEFAULT 0,logo_id INTEGER DEFAULT 0,created_by_policy "
+      "INTEGER DEFAULT 0);"
+    "INSERT INTO \"keywords\" "
+      "VALUES(2,'Google','google.com','http://www.google.com/favicon.ico',"
+      "'{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
+      "{google:originalQueryForSuggestion}sourceid=chrome&ie={inputEncoding}"
+      "&q={searchTerms}',1,1,'',0,0,'UTF-8',"
+      "'{google:baseSuggestURL}search?client=chrome&hl={language}"
+      "&q={searchTerms}',1,1,6245,0);"
+    "CREATE TABLE logins (origin_url VARCHAR NOT NULL, action_url "
+      "VARCHAR, username_element VARCHAR, username_value VARCHAR, "
+      "password_element VARCHAR, password_value BLOB, submit_element "
+      "VARCHAR, signon_realm VARCHAR NOT NULL,ssl_valid INTEGER NOT "
+      "NULL,preferred INTEGER NOT NULL,date_created INTEGER NOT "
+      "NULL,blacklisted_by_user INTEGER NOT NULL,scheme INTEGER NOT "
+      "NULL,UNIQUE (origin_url, username_element, username_value, "
+      "password_element, submit_element, signon_realm));"
+    "CREATE TABLE ie7_logins (url_hash VARCHAR NOT NULL, "
+      "password_value BLOB, date_created INTEGER NOT NULL,UNIQUE "
+      "(url_hash));"
+    "CREATE TABLE web_app_icons (url LONGVARCHAR,width int,height "
+      "int,image BLOB, UNIQUE (url, width, height));"
+    "CREATE TABLE web_apps (url LONGVARCHAR UNIQUE,has_all_images "
+      "INTEGER NOT NULL);"
+    "CREATE TABLE autofill (name VARCHAR, value VARCHAR, value_lower "
+      "VARCHAR, pair_id INTEGER PRIMARY KEY, count INTEGER DEFAULT "
+      "1);"
+    "CREATE TABLE autofill_dates ( pair_id INTEGER DEFAULT 0, "
+      "date_created INTEGER DEFAULT 0);"
+    "CREATE TABLE autofill_profiles ( label VARCHAR, unique_id INTEGER "
+      "PRIMARY KEY, first_name VARCHAR, middle_name VARCHAR, last_name "
+      "VARCHAR, email VARCHAR, company_name VARCHAR, address_line_1 "
+      "VARCHAR, address_line_2 VARCHAR, city VARCHAR, state VARCHAR, "
+      "zipcode VARCHAR, country VARCHAR, phone VARCHAR, fax VARCHAR);"
+    "CREATE TABLE credit_cards ( label VARCHAR, unique_id INTEGER "
+      "PRIMARY KEY, name_on_card VARCHAR, type VARCHAR, card_number "
+      "VARCHAR, expiration_month INTEGER, expiration_year INTEGER, "
+      "verification_code VARCHAR, billing_address VARCHAR, "
+      "shipping_address VARCHAR, card_number_encrypted BLOB, "
+      "verification_code_encrypted BLOB);"
+    "CREATE TABLE token_service (service VARCHAR PRIMARY KEY NOT "
+      "NULL,encrypted_token BLOB);"
+    "CREATE INDEX logins_signon ON logins (signon_realm);"
+    "CREATE INDEX ie7_logins_hash ON ie7_logins (url_hash);"
     "CREATE INDEX web_apps_url_index ON web_apps (url);"
     "CREATE INDEX autofill_name ON autofill (name);"
     "CREATE INDEX autofill_name_value_lower ON autofill (name, value_lower);"
@@ -2278,5 +2357,46 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion26ToCurrentStringIDs) {
     EXPECT_EQ(std::string(), s.ColumnString(7));
     EXPECT_EQ(1, s.ColumnInt(8));
     // The remaining columns are unused or blobs.
+  }
+}
+
+// Tests that the column supports_instant is correctly added to keywords.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion27ToCurrent) {
+  // Initialize the database.
+  SetUpVersion27Database();
+
+  // Verify pre-conditions. These are expectations for version 27 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // supports_instant is new to 28, make sure it isn't in 27.
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "supports_instant"));
+  }
+
+  // Load the database via the WebDatabase class and migrate the database to
+  // the current version.
+  {
+    WebDatabase db;
+    ASSERT_EQ(sql::INIT_OK, db.Init(GetDatabasePath()));
+  }
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "supports_instant"));
+
+    // Check that supports_instant gets set to false.
+    std::string stmt = "SELECT supports_instant FROM keywords";
+    sql::Statement s(connection.GetUniqueStatement(stmt.c_str()));
+    ASSERT_TRUE(s.Step());
+    EXPECT_EQ(s.ColumnType(0), sql::COLUMN_TYPE_INTEGER);
+    EXPECT_FALSE(s.ColumnBool(0));
   }
 }

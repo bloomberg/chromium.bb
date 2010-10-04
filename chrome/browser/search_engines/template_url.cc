@@ -564,7 +564,8 @@ TemplateURL::TemplateURL()
       usage_count_(0),
       search_engine_type_(TemplateURLPrepopulateData::SEARCH_ENGINE_OTHER),
       logo_id_(0),
-      prepopulate_id_(0) {
+      prepopulate_id_(0),
+      supports_instant_(false) {
 }
 
 TemplateURL::~TemplateURL() {

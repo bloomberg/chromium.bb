@@ -297,9 +297,9 @@ class TemplateURL {
   }
   const std::wstring& short_name() const { return short_name_; }
 
-  // Returns true if this search engine supports showing instant results.
-  // TODO(sky): make this real.
-  bool supports_instant() const { return false; }
+  // Whether the search engine supports instant.
+  void set_supports_instant(bool value) { supports_instant_ = value; }
+  bool supports_instant() const { return supports_instant_; }
 
   // An accessor for the short_name, but adjusted so it can be appropriately
   // displayed even if it is LTR and the UI is RTL.
@@ -505,6 +505,9 @@ class TemplateURL {
   TemplateURLPrepopulateData::SearchEngineType search_engine_type_;
   int logo_id_;
   int prepopulate_id_;
+
+  // See description above setter.
+  bool supports_instant_;
 
   // TODO(sky): Add date last parsed OSD file.
 };

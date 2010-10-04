@@ -68,6 +68,8 @@ using webkit_glue::PasswordForm;
 //   logo_id                See TemplateURL::logo_id
 //   created_by_policy      See TemplateURL::created_by_policy.  This was added
 //                          in version 26.
+//   supports_instant       See TemplateURL::supports_instant.  This was added
+//                          in version 28.
 //
 // logins
 //   origin_url
@@ -169,9 +171,11 @@ typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 // Current version number.  Note: when changing the current version number,
 // corresponding changes must happen in the unit tests, and new migration test
 // added.  See |WebDatabaseMigrationTest::kCurrentTestedVersionNumber|.
-const int kCurrentVersionNumber = 27;
-const int kCompatibleVersionNumber = 27;
-const int kUrlIdPosition = 15;
+const int kCurrentVersionNumber = 28;
+const int kCompatibleVersionNumber = 28;
+
+// ID of the url column in keywords.
+const int kUrlIdPosition = 16;
 
 // Keys used in the meta table.
 const char* kDefaultSearchProviderKey = "Default Search Provider ID";
@@ -213,6 +217,7 @@ void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
   s->BindInt(12, url.autogenerate_keyword() ? 1 : 0);
   s->BindInt(13, url.logo_id());
   s->BindBool(14, url.created_by_policy());
+  s->BindBool(15, url.supports_instant());
 }
 
 void InitPasswordFormFromStatement(PasswordForm* form, sql::Statement* s) {
@@ -629,7 +634,8 @@ bool WebDatabase::InitKeywordsTable() {
                      "prepopulate_id INTEGER DEFAULT 0,"
                      "autogenerate_keyword INTEGER DEFAULT 0,"
                      "logo_id INTEGER DEFAULT 0,"
-                     "created_by_policy INTEGER DEFAULT 0)")) {
+                     "created_by_policy INTEGER DEFAULT 0,"
+                     "supports_instant INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -836,8 +842,9 @@ bool WebDatabase::AddKeyword(const TemplateURL& url) {
       "(short_name, keyword, favicon_url, url, safe_for_autoreplace, "
       "originating_url, date_created, usage_count, input_encodings, "
       "show_in_default_list, suggest_url, prepopulate_id, "
-      "autogenerate_keyword, logo_id, created_by_policy, id) VALUES "
-      "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+      "autogenerate_keyword, logo_id, created_by_policy, supports_instant, "
+      "id) VALUES "
+      "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -868,7 +875,7 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
       "safe_for_autoreplace, originating_url, date_created, "
       "usage_count, input_encodings, show_in_default_list, "
       "suggest_url, prepopulate_id, autogenerate_keyword, logo_id, "
-      "created_by_policy "
+      "created_by_policy, supports_instant "
       "FROM keywords ORDER BY id ASC"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
@@ -920,6 +927,8 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
 
     template_url->set_created_by_policy(s.ColumnBool(15));
 
+    template_url->set_supports_instant(s.ColumnBool(16));
+
     urls->push_back(template_url);
   }
   return s.Succeeded();
@@ -934,7 +943,7 @@ bool WebDatabase::UpdateKeyword(const TemplateURL& url) {
       "safe_for_autoreplace=?, originating_url=?, date_created=?, "
       "usage_count=?, input_encodings=?, show_in_default_list=?, "
       "suggest_url=?, prepopulate_id=?, autogenerate_keyword=?, "
-      "logo_id=?, created_by_policy=? WHERE id=?"));
+      "logo_id=?, created_by_policy=?, supports_instant=? WHERE id=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
@@ -2157,6 +2166,20 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
 
       // FALL THROUGH
     }
+
+    case 27:
+      // Add the created_by_policy column.
+      if (!db_.Execute("ALTER TABLE keywords ADD COLUMN supports_instant "
+                       "INTEGER DEFAULT 0")) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 28.";
+        return;
+      }
+      meta_table_.SetVersionNumber(28);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(28, kCompatibleVersionNumber));
+
+      // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and
     // compatible version number as appropriate, then fall through to the next
