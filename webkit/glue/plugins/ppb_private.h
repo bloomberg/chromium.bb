@@ -5,6 +5,7 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
 #define WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
 
+#include "base/string16.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_var.h"
 
@@ -82,6 +83,11 @@ struct PP_PrivateFontFileDescription {
   PP_PrivateFontCharset charset;
 };
 
+struct PP_PrivateFindResult {
+  int start_index;
+  int length;
+};
+
 struct PPB_Private {
   // Returns a localized string.
   PP_Var (*GetLocalizedString)(PP_Module module, PP_ResourceString string_id);
@@ -102,6 +108,16 @@ struct PPB_Private {
                                          uint32_t table,
                                          void* output,
                                          uint32_t* output_length);
+
+  // Search the given string using ICU.  Use PPB_Core's MemFree on results when
+  // done.
+  void (*SearchString)(
+     PP_Module module,
+     const char16* string,
+     const char16* term,
+     bool case_sensitive,
+     PP_PrivateFindResult** results,
+     int* count);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_

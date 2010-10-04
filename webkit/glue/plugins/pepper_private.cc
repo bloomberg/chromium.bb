@@ -12,6 +12,7 @@
 #include "grit/webkit_strings.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/icu/public/i18n/unicode/usearch.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
@@ -162,11 +163,55 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
 #endif
 }
 
+void SearchString(PP_Module module,
+                  const char16* string,
+                  const char16* term,
+                  bool case_sensitive,
+                  PP_PrivateFindResult** results,
+                  int* count) {
+  UErrorCode status = U_ZERO_ERROR;
+  UStringSearch* searcher = usearch_open(
+      term, -1, string, -1, webkit_glue::GetWebKitLocale().c_str(), 0,
+      &status);
+  UCollationStrength strength = case_sensitive ? UCOL_TERTIARY : UCOL_PRIMARY;
+
+  UCollator* collator = usearch_getCollator(searcher);
+  if (ucol_getStrength(collator) != strength) {
+    ucol_setStrength(collator, strength);
+    usearch_reset(searcher);
+  }
+
+  int match_start = usearch_first(searcher, &status);
+  DCHECK(status == U_ZERO_ERROR);
+
+  std::vector<PP_PrivateFindResult> pp_results;
+  while (match_start != USEARCH_DONE) {
+    size_t matched_length = usearch_getMatchedLength(searcher);
+    PP_PrivateFindResult result;
+    result.start_index = match_start;
+    result.length = matched_length;
+    pp_results.push_back(result);
+    match_start = usearch_next(searcher, &status);
+  }
+
+  *count = pp_results.size();
+  if (*count) {
+    *results = reinterpret_cast<PP_PrivateFindResult*>(
+        malloc(*count * sizeof(PP_PrivateFindResult)));
+    memcpy(*results, &pp_results[0], *count * sizeof(PP_PrivateFindResult));
+  } else {
+    *results = NULL;
+  }
+
+  usearch_close(searcher);
+}
+
 const PPB_Private ppb_private = {
   &GetLocalizedString,
   &GetResourceImage,
   &GetFontFileWithFallback,
   &GetFontTableForPrivateFontFile,
+  &SearchString
 };
 
 }  // namespace
