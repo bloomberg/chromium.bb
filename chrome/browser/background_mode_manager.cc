@@ -98,12 +98,14 @@ class EnableLaunchOnStartupTask : public Task {
     FilePath autostart_file = GetAutostartFilename(environment.get());
     if (!file_util::DirectoryExists(autostart_directory) &&
         !file_util::CreateDirectory(autostart_directory)) {
-      LOG(WARNING) << "Failed to register launch on login.";
+      LOG(WARNING)
+        << "Failed to register launch on login.  No autostart directory.";
       return;
     }
     std::string wrapper_script;
     if (!environment->GetVar("CHROME_WRAPPER", &wrapper_script)) {
-      LOG(WARNING) << "Failed to register launch on login.";
+      LOG(WARNING)
+        << "Failed to register launch on login.  CHROME_WRAPPER not set.";
       return;
     }
     std::string autostart_file_contents =
@@ -112,9 +114,14 @@ class EnableLaunchOnStartupTask : public Task {
         "Terminal=false\n"
         "Exec=" + wrapper_script + "\n"
         "Name=" + version_info->Name() + "\n";
+    std::string::size_type content_length = autostart_file_contents.length();
     if (file_util::WriteFile(autostart_file, autostart_file_contents.c_str(),
-                             autostart_file_contents.length()))
-      LOG(WARNING) << "Failed to register launch on login.";
+                             content_length) !=
+        static_cast<int>(content_length)) {
+      LOG(WARNING) << "Failed to register launch on login.  Failed to write "
+                   << autostart_file.value();
+      file_util::Delete(GetAutostartFilename(environment.get()), false);
+    }
   }
 };
 #endif  // defined(OS_LINUX)
