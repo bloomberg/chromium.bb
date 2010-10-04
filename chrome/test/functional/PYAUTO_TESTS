@@ -69,6 +69,7 @@
     # codesign tests should run *after* signing. crbug.com/50481
     '-codesign',
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
+    '-downloads.DownloadsTest.testSaveDangerousFile',  # crbug.com/57875
   ],
 
   'linux': [  # linux != chromeos
