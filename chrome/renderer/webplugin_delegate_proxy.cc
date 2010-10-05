@@ -1142,7 +1142,7 @@ void WebPluginDelegateProxy::OnShowModalHTMLDialog(
 static void EncodeDragData(const WebDragData& data, bool add_data,
                            NPVariant* drag_type, NPVariant* drag_data) {
   const NPString* np_drag_type;
-  if (data.hasFileNames()) {
+  if (data.containsFilenames()) {
     static const NPString kFiles = { "Files", 5 };
     np_drag_type = &kFiles;
   } else {
@@ -1160,7 +1160,7 @@ static void EncodeDragData(const WebDragData& data, bool add_data,
   }
 
   WebVector<WebString> files;
-  data.fileNames(files);
+  data.filenames(files);
 
   static std::string utf8;
   utf8.clear();

@@ -28,12 +28,12 @@ WebDropData::WebDropData(const WebDragData& drag_data)
       plain_text(drag_data.plainText()),
       text_html(drag_data.htmlText()),
       html_base_url(drag_data.htmlBaseURL()),
-      file_description_filename(drag_data.fileContentFileName()) {
-  if (drag_data.hasFileNames()) {
-    WebVector<WebString> fileNames;
-    drag_data.fileNames(fileNames);
-    for (size_t i = 0; i < fileNames.size(); ++i)
-      filenames.push_back(fileNames[i]);
+      file_description_filename(drag_data.fileContentFilename()) {
+  if (drag_data.containsFilenames()) {
+    WebVector<WebString> filenames_copy;
+    drag_data.filenames(filenames_copy);
+    for (size_t i = 0; i < filenames_copy.size(); ++i)
+      filenames.push_back(filenames_copy[i]);
   }
   WebData contents = drag_data.fileContent();
   if (!contents.isEmpty())
@@ -53,11 +53,11 @@ WebDragData WebDropData::ToDragData() const {
   result.setURL(url);
   result.setURLTitle(url_title);
   result.setFileExtension(file_extension);
-  result.setFileNames(filenames);
+  result.setFilenames(filenames);
   result.setPlainText(plain_text);
   result.setHTMLText(text_html);
   result.setHTMLBaseURL(html_base_url);
-  result.setFileContentFileName(file_description_filename);
+  result.setFileContentFilename(file_description_filename);
   result.setFileContent(WebData(file_contents.data(), file_contents.size()));
   return result;
 }
