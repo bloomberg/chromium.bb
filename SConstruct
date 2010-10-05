@@ -270,6 +270,49 @@ bad_build_lists['dbg-win-64'] = ['ncval_test_call_long_dis',
                                  'run_srpc_basic_test',
                                  'run_srpc_bad_service_test']
 
+# This is a list of tests that do not yet pass when using nacl-glibc.
+# TODO(mseaborn): Enable more of these tests!
+nacl_glibc_skiplist = [
+    # These tests require multi-threading.
+    'run_egyptian_cotton_test',
+    'run_main_thread_pthread_exit_test',
+    'run_race_test',
+    'run_simple_thread_test',
+    'run_socket_transfer_test',
+    'run_thread_stack_alloc_test',
+    'run_thread_test',
+    'run_voronoi',
+    # This test assumes it can allocate address ranges from the
+    # dynamic code area itself.  However, this does not work when
+    # ld.so assumes it can do the same.  To fix this, ld.so will need
+    # an interface, like mmap() or brk(), for reserving space in the
+    # dynamic code area.
+    'run_dynamic_load_test',
+    # These tests use sel_universal but that does not support the
+    # options we need (-s and -a).
+    'run_srpc_bad_service_test',
+    'run_srpc_basic_test',
+    'run_srpc_sysv_shm_test',
+    # This tests the absence of "-s" but that is no good because
+    # we currently force that option on.
+    'run_stubout_mode_test',
+    # This fails because of a bug in mmap()'s zero-fill behaviour.
+    # See http://code.google.com/p/nativeclient/issues/detail?id=824
+    'run_app_lib_test',
+    # Struct layouts differ.
+    'run_abi_test',
+    # Syscall wrappers not implemented yet.
+    'run_nanosleep_test',
+    'run_sysbasic_test',
+    'run_sysbrk_test',
+    'run_syscall_test',
+    'run_timefuncs_test',
+    # Needs further investigation.
+    'run_tls_test',
+    'sdk_minimal_test',
+    ]
+
+
 # ----------------------------------------------------------
 # Generic Test Wrapper
 # all test suites know so far
@@ -299,6 +342,9 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
 
   # Retrieve list of tests to skip on this platform
   skiplist = bad_build_lists.get(platform,[])
+
+  if env.Bit('nacl_glibc'):
+    skiplist = skiplist + nacl_glibc_skiplist
 
   if node_name in skiplist:
     print '*** SKIPPING ', platform, ':', node_name

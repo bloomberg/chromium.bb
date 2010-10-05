@@ -68,8 +68,9 @@ def GetSources():
     "linux_headers": dirtree.GitTree(
         "http://src.chromium.org/git/linux-headers-for-nacl.git",
         commit_id="0014b8d2e052dd3bf4cdc4be999d17e123c50dc2"),
-    # TODO(mseaborn): Pin a specific Git commit ID here.
-    "glibc": dirtree.GitTree("http://src.chromium.org/git/nacl-glibc.git"),
+    "glibc": dirtree.GitTree(
+        "http://src.chromium.org/git/nacl-glibc.git",
+        commit_id="ee0be16e2c812e7cf0698456904caca582763e10"),
     }
 
 
@@ -370,10 +371,11 @@ int main() {
 
   AddSconsModule(
       "scons_tests",
-      deps=glibc_toolchain_deps + ["dummy_libnacl"],
-      scons_args=["--nacl_glibc", "run_hello_world_test"])
+      deps=glibc_toolchain_deps + ["nacl_libs_glibc"],
+      scons_args=["--nacl_glibc", "small_tests", "-k"])
 
-  # Check that all the Scons tests build, but don't try running them yet.
+  # Check that all the Scons tests build, including those that do not
+  # yet run successfully.
   AddSconsModule(
       "scons_compile_tests",
       deps=glibc_toolchain_deps + ["nacl_libs_glibc"],

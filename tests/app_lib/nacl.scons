@@ -52,4 +52,4 @@ node = env.CommandSelLdrTestNacl(
      sel_ldr_flags=['-a'],
      )
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_app_list_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_app_lib_test')

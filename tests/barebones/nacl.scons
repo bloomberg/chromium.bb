@@ -29,6 +29,17 @@
 
 Import('env')
 
+# Use of "-nostdlib" means these tests produce statically-linked
+# executables.  This does not work with the test runner for
+# nacl-glibc, which always runs the executables via ld.so.  However,
+# we want to keep building the tests.
+# TODO(mseaborn): To fix this, either switch these tests to
+# dynamically link against libc, or make use of ld.so optional.
+if env.Bit('nacl_glibc'):
+  TEST_SUITES = []
+else:
+  TEST_SUITES = ['small_tests']
+
 LINK_FLAGS_MULTILIB = ['-nostdlib']
 
 if env['BUILD_ARCHITECTURE'] == 'x86' and not ARGUMENTS.get('bitcode'):
@@ -83,9 +94,9 @@ for basename in ['addr_modes',
       out,
       command=[env.File(nexe)],
       exit_status='55',)
-  env.AddNodeToTestSuite(node, ['small_tests',
-                                'barebones_tests',
-                                'sel_ldr_tests'], test)
+  env.AddNodeToTestSuite(node,
+                         TEST_SUITES + ['barebones_tests', 'sel_ldr_tests'],
+                         test)
 
 
 # a test that the validador can handle an empty segment after the last
@@ -97,5 +108,5 @@ if env['BUILD_ARCHITECTURE'] == 'arm' and not ARGUMENTS.get('bitcode'):
       command=[env.File(nexe)],
       exit_status='55',)
   env.AddNodeToTestSuite(node,
-                         ['small_tests', 'sel_ldr_tests'],
+                         TEST_SUITES + ['sel_ldr_tests'],
                          'run_gold-barebones_hello_world_test')
