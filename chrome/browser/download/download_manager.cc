@@ -309,15 +309,26 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
 
   // We need to move over to the download thread because we don't want to stat
   // the suggested path on the UI thread.
+  // We can only access preferences on the UI thread, so check the download path
+  // now and pass the value to the FILE thread.
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
-          this, &DownloadManager::CheckIfSuggestedPathExists, info));
+          this,
+          &DownloadManager::CheckIfSuggestedPathExists,
+          info,
+          download_prefs()->download_path()));
 }
 
-void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
+void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info,
+                                                 const FilePath& default_path) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   DCHECK(info);
+
+  // Make sure the default download directory exists.
+  // TODO(phajdan.jr): only create the directory when we're sure the user
+  // is going to save there and not to another directory of his choice.
+  file_util::CreateDirectory(default_path);
 
   // Check writability of the suggested path. If we can't write to it, default
   // to the user's "My Documents" directory. We'll prompt them in this case.

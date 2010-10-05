@@ -233,7 +233,8 @@ class DownloadManager
   // Called on the download thread to check whether the suggested file path
   // exists.  We don't check if the file exists on the UI thread to avoid UI
   // stalls from interacting with the file system.
-  void CheckIfSuggestedPathExists(DownloadCreateInfo* info);
+  void CheckIfSuggestedPathExists(DownloadCreateInfo* info,
+                                  const FilePath& default_path);
 
   // Called on the UI thread once the DownloadManager has determined whether the
   // suggested file path exists.
