@@ -439,7 +439,7 @@ class WidgetWin : public gfx::WindowImpl,
   void LayoutRootView();
 
   // Called when a MSAA screen reader cleint is detected.
-  void OnScreenReaderDetected();
+  virtual void OnScreenReaderDetected();
 
   // Returns whether capture should be released on mouse release. The default
   // is true.

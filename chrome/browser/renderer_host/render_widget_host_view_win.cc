@@ -16,6 +16,7 @@
 #include "base/win_util.h"
 #include "chrome/browser/accessibility/browser_accessibility.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/chrome_thread.h"
@@ -65,6 +66,10 @@ const int kTooltipMaxWidthPixels = 300;
 
 // Maximum number of characters we allow in a tooltip.
 const int kMaxTooltipLength = 1024;
+
+// A custom MSAA object id used to determine if a screen reader is actively
+// listening for MSAA events.
+const int kIdCustom = 1;
 
 const wchar_t* kRenderWidgetHostViewKey = L"__RENDER_WIDGET_HOST_VIEW__";
 
@@ -1541,14 +1546,27 @@ void RenderWidgetHostViewWin::AccessibilityDoDefaultAction(int acc_obj_id) {
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
                                              LPARAM lparam, BOOL& handled) {
+  if (kIdCustom == lparam) {
+    // An MSAA client requestes our custom id. Assume that we have detected an
+    // active windows screen reader.
+    Singleton<BrowserAccessibilityState>()->OnScreenReaderDetected();
+    render_widget_host_->EnableRendererAccessibility();
+
+    // Return with failure.
+    return static_cast<LRESULT>(0L);
+  }
+
   if (lparam != OBJID_CLIENT) {
     handled = false;
     return static_cast<LRESULT>(0L);
   }
 
-  if (!browser_accessibility_manager_.get()) {
-    render_widget_host_->EnableRendererAccessibility();
+  if (!render_widget_host_->renderer_accessible()) {
+    // Attempt to detect screen readers by sending an event with our custom id.
+    NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
+  }
 
+  if (!browser_accessibility_manager_.get()) {
     // Return busy document tree while renderer accessibility tree loads.
     webkit_glue::WebAccessibility loading_tree;
     loading_tree.role = WebAccessibility::ROLE_DOCUMENT;
@@ -1559,9 +1577,8 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
 
   ScopedComPtr<IAccessible> root(
       browser_accessibility_manager_->GetRootAccessible());
-  if (root.get()) {
+  if (root.get())
     return LresultFromObject(IID_IAccessible, wparam, root.Detach());
-  }
 
   handled = false;
   return static_cast<LRESULT>(0L);

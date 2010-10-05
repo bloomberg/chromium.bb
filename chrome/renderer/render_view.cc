@@ -1473,7 +1473,6 @@ void RenderView::UpdateURL(WebFrame* frame) {
   // Check if the navigation was within the same page, in which case we don't
   // want to clear the accessibility cache.
   if (accessibility_.get() && !navigation_state->was_within_same_page()) {
-    accessibility_->clear();
     accessibility_.reset();
     pending_accessibility_notifications_.clear();
   }

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/message_loop.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
@@ -64,15 +65,13 @@ static const int kHungRendererDelayMs = 20000;
 // in trailing scrolls after the user ends their input.
 static const int kMaxTimeBetweenWheelMessagesMs = 250;
 
-// static
-bool RenderWidgetHost::renderer_accessible_ = false;
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHost
 
 RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
                                    int routing_id)
     : renderer_initialized_(false),
+      renderer_accessible_(false),
       view_(NULL),
       process_(process),
       painting_observer_(NULL),
@@ -102,7 +101,8 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
   process_->WidgetRestored();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceRendererAccessibility)) {
+          switches::kForceRendererAccessibility) ||
+      Singleton<BrowserAccessibilityState>()->IsAccessibleBrowser()) {
     EnableRendererAccessibility();
   }
 }

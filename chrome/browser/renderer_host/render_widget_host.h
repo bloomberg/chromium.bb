@@ -146,7 +146,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   RenderProcessHost* process() const { return process_; }
   int routing_id() const { return routing_id_; }
-  static bool renderer_accessible() { return renderer_accessible_; }
+  bool renderer_accessible() { return renderer_accessible_; }
 
   // Set the PaintObserver on this object. Takes ownership.
   void set_paint_observer(PaintObserver* paint_observer) {
@@ -556,7 +556,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   // True if renderer accessibility is enabled. This should only be set when a
   // screenreader is detected as it can potentially slow down Chrome.
-  static bool renderer_accessible_;
+  bool renderer_accessible_;
 
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer

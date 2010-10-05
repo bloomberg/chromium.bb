@@ -61,6 +61,8 @@
         # mocks.
         'browser/accessibility/browser_accessibility.cc',
         'browser/accessibility/browser_accessibility.h',
+        'browser/accessibility/browser_accessibility_state.cc',
+        'browser/accessibility/browser_accessibility_state.h',
         'browser/accessibility/browser_accessibility_manager.cc',
         'browser/accessibility/browser_accessibility_manager.h',
         'browser/accessibility/browser_accessibility_manager_win.cc',

@@ -11,6 +11,7 @@
 
 #include "app/win_util.h"
 #include "base/win_util.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -241,6 +242,11 @@ ThemeProvider* BrowserFrameWin::GetThemeProvider() const {
 
 ThemeProvider* BrowserFrameWin::GetDefaultThemeProvider() const {
   return profile_->GetThemeProvider();
+}
+
+void BrowserFrameWin::OnScreenReaderDetected() {
+  Singleton<BrowserAccessibilityState>()->OnScreenReaderDetected();
+  WindowWin::OnScreenReaderDetected();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
