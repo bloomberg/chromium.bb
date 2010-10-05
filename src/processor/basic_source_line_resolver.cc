@@ -394,6 +394,10 @@ bool BasicSourceLineResolver::Module::LoadMapFromBuffer(
       // be accessed by a SymbolSupplier.
       //
       // MODULE <guid> <age> <filename>
+    } else if (strncmp(buffer, "INFO ", 5) == 0) {
+      // Ignore these as well, they're similarly just for housekeeping.
+      //
+      // INFO CODE_ID <code id> <filename>
     } else {
       if (!cur_func.get()) {
         BPLOG(ERROR) << "Found source line data without a function at " <<
