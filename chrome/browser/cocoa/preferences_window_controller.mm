@@ -36,7 +36,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/options_window.h"
@@ -1582,7 +1581,6 @@ const int kDisabledIndex = 1;
     [self recordUserAction:UserMetricsAction(
                            "Options_DnsPrefetchCheckbox_Disable")];
   dnsPrefetch_.SetValueIfNotManaged(value ? true : false);
-  chrome_browser_net::EnablePredictor(dnsPrefetch_.GetValue());
 }
 
 // Returns whether the safe browsing checkbox should be checked based on the

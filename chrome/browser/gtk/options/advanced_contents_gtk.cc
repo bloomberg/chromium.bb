@@ -32,7 +32,6 @@
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/options/content_settings_window_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
-#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -930,7 +929,6 @@ void PrivacySection::OnDNSPrefetchingChange(GtkWidget* widget,
           UserMetricsAction("Options_DnsPrefetchCheckbox_Disable"),
       privacy_section->profile()->GetPrefs());
   privacy_section->dns_prefetch_enabled_.SetValue(enabled);
-  chrome_browser_net::EnablePredictor(enabled);
 }
 
 // static
@@ -1001,7 +999,6 @@ void PrivacySection::NotifyPrefChanged(const std::string* pref_name) {
     bool enabled = dns_prefetch_enabled_.GetValue();
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(enable_dns_prefetching_checkbox_), enabled);
-    chrome_browser_net::EnablePredictor(enabled);
   }
   if (!pref_name || *pref_name == prefs::kSafeBrowsingEnabled) {
     gtk_widget_set_sensitive(

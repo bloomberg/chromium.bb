@@ -45,6 +45,7 @@
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
@@ -667,6 +668,9 @@ PrefService* ProfileImpl::GetPrefs() {
     prefs_->SetBoolean(prefs::kSessionExitedCleanly, false);
     // Make sure we save to disk that the session has opened.
     prefs_->ScheduleSavePersistentPrefs();
+
+    DCHECK(!net_pref_observer_.get());
+    net_pref_observer_.reset(new NetPrefObserver(prefs_.get()));
   }
 
   return prefs_.get();

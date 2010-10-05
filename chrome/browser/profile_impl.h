@@ -26,6 +26,8 @@ class Preferences;
 }
 #endif
 
+class NetPrefObserver;
+
 // The default profile implementation.
 class ProfileImpl : public Profile,
                     public SpellCheckHostObserver,
@@ -167,6 +169,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<TransportSecurityPersister>
       transport_security_persister_;
   scoped_ptr<PrefService> prefs_;
+  scoped_ptr<NetPrefObserver> net_pref_observer_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
   scoped_ptr<TemplateURLModel> template_url_model_;
   scoped_ptr<BookmarkModel> bookmark_bar_model_;

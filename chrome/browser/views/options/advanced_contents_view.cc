@@ -28,7 +28,6 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/gears_integration.h"
-#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -506,7 +505,6 @@ void PrivacySection::ButtonPressed(
                                 "Options_DnsPrefetchCheckbox_Disable"),
                             profile()->GetPrefs());
     dns_prefetch_enabled_.SetValue(enabled);
-    chrome_browser_net::EnablePredictor(enabled);
   } else if (sender == enable_safe_browsing_checkbox_) {
     bool enabled = enable_safe_browsing_checkbox_->checked();
     UserMetricsRecordAction(UserMetricsAction(enabled ?
@@ -655,7 +653,6 @@ void PrivacySection::NotifyPrefChanged(const std::string* pref_name) {
         !dns_prefetch_enabled_.IsManaged());
     bool enabled = dns_prefetch_enabled_.GetValue();
     enable_dns_prefetching_checkbox_->SetChecked(enabled);
-    chrome_browser_net::EnablePredictor(enabled);
   }
   if (!pref_name || *pref_name == prefs::kSafeBrowsingEnabled) {
     enable_safe_browsing_checkbox_->SetEnabled(!safe_browsing_.IsManaged());

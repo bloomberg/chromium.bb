@@ -2147,6 +2147,8 @@
         'browser/net/metadata_url_request.h',
         'browser/net/net_log_logger.cc',
         'browser/net/net_log_logger.h',
+        'browser/net/net_pref_observer.cc',
+        'browser/net/net_pref_observer.h',
         'browser/net/passive_log_collector.cc',
         'browser/net/passive_log_collector.h',
         'browser/net/preconnect.cc',

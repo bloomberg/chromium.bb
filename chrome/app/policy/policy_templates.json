@@ -129,7 +129,7 @@
       'annotations': {
         'platforms': ['linux', 'mac', 'win'],
         'products': ['chrome'],
-        'features': {'dynamic_refresh': 0},
+        'features': {'dynamic_refresh': 1},
         'example_value': True,
       }
     },
