@@ -235,6 +235,10 @@ function load() {
     }
   }
 
+  // Allow platform specific CSS rules.
+  if (cr.isMac)
+    document.documentElement.setAttribute('os', 'mac');
+
   var end = new Date();
   var total = end - start;
   console.log('time took to run load():'+ total);

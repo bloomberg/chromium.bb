@@ -247,10 +247,6 @@ section > div:only-of-type {
   border-spacing: 0 0;
 }
 
-.suboption {
-  -webkit-margin-start: 18px;
-}
-
 /* TODO(stuartmorgan): make this less specific once all pages
  * are converted to the non-table style.
  */
@@ -326,15 +322,32 @@ html[enable-background-mode=false] #background-mode-section {
  display: none;
 }
 
+input[type=checkbox],
+input[type=radio],
+button {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Checkbox and radio buttons have different sizes on different platforms. The
+ * following rules have platform specific tweaks.
+ * TODO(arv): Test the vertical position on Linux and CrOS as well.
+ */
+
 label.checkbox > input,
 label.radio > input {
-  margin-top: 2px; /* TODO(arv): This was tested on Mac, add platform specific
-                      tweaks here */
+  margin-top: 1px;
   position: absolute;
 }
 
 label.checkbox > span,
-label.radio > span {
-  -webkit-margin-start: 19px;
+label.radio > span,
+.suboption {
+  -webkit-margin-start: 16px;
   display: block;
+}
+
+html[os=mac] label.checkbox > input,
+html[os=mac] label.radio > input {
+  margin-top: 2px;
 }
