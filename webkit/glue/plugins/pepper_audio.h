@@ -25,20 +25,22 @@ class PluginModule;
 
 class AudioConfig : public Resource {
  public:
-  AudioConfig(PluginModule* module, int32_t sample_rate,
-              int32_t sample_frame_count);
-
+  AudioConfig(PluginModule* module,
+              PP_AudioSampleRate_Dev sample_rate,
+              uint32_t sample_frame_count,
+              uint32_t* obtained_frame_count);
+  size_t BufferSize();
   static const PPB_AudioConfig_Dev* GetInterface();
 
-  uint32_t sample_rate() { return sample_rate_; }
+  PP_AudioSampleRate_Dev sample_rate() { return sample_rate_; }
   uint32_t sample_frame_count() { return sample_frame_count_; }
 
  private:
   // Resource override.
   virtual AudioConfig* AsAudioConfig();
 
-  int sample_rate_;
-  int sample_frame_count_;
+  PP_AudioSampleRate_Dev sample_rate_;
+  uint32_t sample_frame_count_;
 };
 
 class Audio : public Resource,

@@ -14,20 +14,24 @@ namespace {
 
 // PPB_AudioConfig functions
 
-PP_Resource CreateStereo16bit(PP_Module module_id, uint32_t sample_rate,
-                              uint32_t sample_frame_count) {
+PP_Resource CreateStereo16bit(PP_Module module_id,
+                              PP_AudioSampleRate_Dev sample_rate,
+                              uint32_t sample_frame_count,
+                              uint32_t* obtained_frame_count) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
     return 0;
 
-  scoped_refptr<AudioConfig> config(new AudioConfig(module, sample_rate,
-                                                    sample_frame_count));
+  scoped_refptr<AudioConfig> config(new AudioConfig(module,
+                                                    sample_rate,
+                                                    sample_frame_count,
+                                                    obtained_frame_count));
   return config->GetReference();
 }
 
-uint32_t GetSampleRate(PP_Resource config_id) {
+PP_AudioSampleRate_Dev GetSampleRate(PP_Resource config_id) {
   scoped_refptr<AudioConfig> config = Resource::GetAs<AudioConfig>(config_id);
-  return config ? config->sample_rate() : 0;
+  return config ? config->sample_rate() : PP_AUDIOSAMPLERATE_NONE;
 }
 
 uint32_t GetSampleFrameCount(PP_Resource config_id) {
@@ -96,15 +100,32 @@ const PPB_AudioTrusted_Dev ppb_audiotrusted = {
 
 }  // namespace
 
-AudioConfig::AudioConfig(PluginModule* module, int32_t sample_rate,
-                         int32_t sample_frame_count)
+AudioConfig::AudioConfig(PluginModule* module,
+                         PP_AudioSampleRate_Dev sample_rate,
+                         uint32_t sample_frame_count,
+                         uint32_t* obtained_frame_count)
     : Resource(module),
       sample_rate_(sample_rate),
       sample_frame_count_(sample_frame_count) {
+  // TODO(audio): adjust obtained frame count as needed.  Some systems
+  // may need to adjust the sample frame count for best performance, for
+  // example to avoid audio glitching if the requested sample frame size
+  // reflects too low a latency.  For now, do not adjust.
+  *obtained_frame_count = sample_frame_count;
 }
 
 const PPB_AudioConfig_Dev* AudioConfig::GetInterface() {
   return &ppb_audioconfig;
+}
+
+size_t AudioConfig::BufferSize() {
+  // TODO(audio): as more options become available, we'll need to
+  // have additional code here to correctly calculate the size in
+  // bytes of an audio buffer.  For now, only support two channel
+  // int16_t sample buffers.
+  const int kChannels = 2;
+  const int kSizeOfSample = sizeof(int16_t);
+  return static_cast<size_t>(sample_frame_count_ * kSizeOfSample * kChannels);
 }
 
 AudioConfig* AudioConfig::AsAudioConfig() {
@@ -211,6 +232,7 @@ void Audio::StreamCreated(base::SharedMemoryHandle shared_memory_handle,
 void Audio::Run() {
   int pending_data;
   void* buffer = shared_memory_->memory();
+  size_t buffer_size_in_bytes = config_->BufferSize();
 
   while (sizeof(pending_data) ==
       socket_->Receive(&pending_data, sizeof(pending_data)) &&
@@ -218,7 +240,7 @@ void Audio::Run() {
     // Exit the thread on pause.
     if (pending_data < 0)
       return;
-    callback_(buffer, user_data_);
+    callback_(buffer, buffer_size_in_bytes, user_data_);
   }
 }
 
