@@ -1033,7 +1033,7 @@
    fun:~DecompressorZlib
 }
 {
-   bug_57966
+   bug_57966a
    Heapcheck:Leak
    ...
    fun:cricket::AllocationSequence::CreateUDPPorts
@@ -1041,4 +1041,25 @@
    fun:AllocationSequence
    fun:cricket::BasicPortAllocatorSession::OnAllocate
    fun:cricket::BasicPortAllocatorSession::OnMessage
+}
+{
+   bug_57966b
+   Heapcheck:Leak
+   ...
+   fun:talk_base::NetworkManager::CreateNetworks
+   fun:talk_base::NetworkManager::EnumNetworks
+   fun:talk_base::NetworkManager::GetNetworks
+   fun:cricket::BasicPortAllocatorSession::OnAllocate
+   fun:cricket::BasicPortAllocatorSession::OnMessage
+}
+{
+   bug_57966c
+   Heapcheck:Leak
+   ...
+   fun:remoting::JingleChromotingConnection::OnAccept
+   fun:remoting::JingleChromotingConnection::OnSessionState
+   fun:sigslot::_connection2::emit
+   fun:sigslot::signal2::operator
+   fun:cricket::BaseSession::SetState
+   fun:cricket::Session::Accept
 }
