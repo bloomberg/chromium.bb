@@ -125,6 +125,13 @@ std::string GetCreditCardType(const string16& number) {
 
 }  // namespace
 
+CreditCard::CreditCard()
+    : expiration_month_(0),
+      expiration_year_(0),
+      billing_address_id_(0),
+      unique_id_(0) {
+}
+
 CreditCard::CreditCard(const string16& label, int unique_id)
     : expiration_month_(0),
       expiration_year_(0),
@@ -137,12 +144,7 @@ CreditCard::CreditCard(const CreditCard& card) : FormGroup() {
   operator=(card);
 }
 
-CreditCard::CreditCard()
-    : expiration_month_(0),
-      expiration_year_(0),
-      billing_address_id_(0),
-      unique_id_(0) {
-}
+CreditCard::~CreditCard() {}
 
 FormGroup* CreditCard::Clone() const {
   return new CreditCard(*this);

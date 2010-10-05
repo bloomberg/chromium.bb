@@ -55,7 +55,8 @@ class TextDatabaseManager {
   // our internals.
   class ChangeSet {
    public:
-    ChangeSet() {}
+    ChangeSet();
+    ~ChangeSet();
 
    private:
     friend class TextDatabaseManager;
@@ -173,6 +174,7 @@ class TextDatabaseManager {
   class PageInfo {
    public:
     PageInfo(URLID url_id, VisitID visit_id, base::Time visit_time);
+    ~PageInfo();
 
     // Getters.
     URLID url_id() const { return url_id_; }

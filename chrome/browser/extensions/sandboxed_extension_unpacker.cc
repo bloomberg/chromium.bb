@@ -116,6 +116,8 @@ void SandboxedExtensionUnpacker::Start() {
   }
 }
 
+SandboxedExtensionUnpacker::~SandboxedExtensionUnpacker() {}
+
 void SandboxedExtensionUnpacker::StartProcessOnIOThread(
     const FilePath& temp_crx_path) {
   UtilityProcessHost* host = new UtilityProcessHost(

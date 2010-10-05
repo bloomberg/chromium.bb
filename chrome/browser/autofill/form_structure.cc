@@ -101,6 +101,8 @@ FormStructure::FormStructure(const FormData& form)
   }
 }
 
+FormStructure::~FormStructure() {}
+
 bool FormStructure::EncodeUploadRequest(bool auto_fill_used,
                                         std::string* encoded_xml) const {
   bool auto_fillable = IsAutoFillable();

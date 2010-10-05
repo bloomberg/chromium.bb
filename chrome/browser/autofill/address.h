@@ -14,8 +14,8 @@
 // A form group that stores address information.
 class Address : public FormGroup {
  public:
-  Address() {}
-  virtual ~Address() {}
+  Address();
+  virtual ~Address();
 
   // FormGroup implementation:
   virtual FormGroup* Clone() const = 0;

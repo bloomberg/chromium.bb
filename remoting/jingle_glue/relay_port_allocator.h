@@ -23,9 +23,8 @@ class RelayPortAllocator : public cricket::HttpPortAllocator,
   // Caller keeps ownership of |network_manager|. |network_manager| must not
   // be destroyed before RelayPortAllocator.
   RelayPortAllocator(talk_base::NetworkManager* network_manager,
-                     const std::string& user_agent)
-      : cricket::HttpPortAllocator(network_manager, user_agent) {
-  }
+                     const std::string& user_agent);
+  virtual ~RelayPortAllocator();
 
   void OnJingleInfo(const std::string& token,
                     const std::vector<std::string>& relay_hosts,

@@ -15,6 +15,7 @@
 
 struct PepperPluginInfo {
   PepperPluginInfo();  // Needed to initialize |is_internal|.
+  ~PepperPluginInfo();
 
   bool is_internal;  // Defaults to false (see constructor).
   FilePath path;  // Internal plugins have "internal-[name]" as path.
@@ -41,6 +42,8 @@ class PepperPluginRegistry {
   static void PreloadModules();
 
   pepper::PluginModule* GetModule(const FilePath& path) const;
+
+  ~PepperPluginRegistry();
 
  private:
   static void GetPluginInfoFromSwitch(std::vector<PepperPluginInfo>* plugins);

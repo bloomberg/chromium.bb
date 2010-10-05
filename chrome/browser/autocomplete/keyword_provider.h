@@ -76,7 +76,7 @@ class KeywordProvider : public AutocompleteProvider,
   class ScopedEndExtensionKeywordMode;
   friend class ScopedEndExtensionKeywordMode;
 
-  ~KeywordProvider() {}
+  virtual ~KeywordProvider();
 
   // Extracts the keyword from |input| into |keyword|. Any remaining characters
   // after the keyword are placed in |remaining_input|. Returns true if |input|

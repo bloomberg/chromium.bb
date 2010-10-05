@@ -122,6 +122,8 @@ ExtensionPrefs::ExtensionPrefs(PrefService* prefs, const FilePath& root_dir)
   MakePathsRelative();
 }
 
+ExtensionPrefs::~ExtensionPrefs() {}
+
 // static
 const char ExtensionPrefs::kExtensionsPref[] = "extensions.settings";
 

@@ -11,6 +11,14 @@
 
 namespace remoting {
 
+RelayPortAllocator::RelayPortAllocator(
+    talk_base::NetworkManager* network_manager,
+    const std::string& user_agent)
+    : cricket::HttpPortAllocator(network_manager, user_agent) {
+}
+
+RelayPortAllocator::~RelayPortAllocator() {}
+
 void RelayPortAllocator::OnJingleInfo(
     const std::string& token,
     const std::vector<std::string>& relay_hosts,

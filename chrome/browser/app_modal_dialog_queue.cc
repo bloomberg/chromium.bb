@@ -34,6 +34,12 @@ void AppModalDialogQueue::ActivateModalDialog() {
     active_dialog_->ActivateModalDialog();
 }
 
+AppModalDialogQueue::AppModalDialogQueue()
+    : active_dialog_(NULL), showing_modal_dialog_(false) {
+}
+
+AppModalDialogQueue::~AppModalDialogQueue() {}
+
 void AppModalDialogQueue::ShowModalDialog(AppModalDialog* dialog) {
   // Be sure and set the active_dialog_ field first, otherwise if
   // ShowModalDialog triggers a call back to the queue they'll get the old

@@ -130,3 +130,8 @@ bool SessionStartupPref::URLsAreManaged(PrefService* prefs) {
   return pref_urls->IsManaged();
 }
 
+SessionStartupPref::SessionStartupPref() : type(DEFAULT) {}
+
+SessionStartupPref::SessionStartupPref(Type type) : type(type) {}
+
+SessionStartupPref::~SessionStartupPref() {}

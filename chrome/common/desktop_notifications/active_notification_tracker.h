@@ -22,7 +22,8 @@ class WebNotificationPermissionCallback;
 // the main thread.
 class ActiveNotificationTracker {
  public:
-  ActiveNotificationTracker() {}
+  ActiveNotificationTracker();
+  ~ActiveNotificationTracker();
 
   // Methods for tracking active notification objects.
   int RegisterNotification(const WebKit::WebNotification& notification);

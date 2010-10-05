@@ -36,6 +36,7 @@ enum UploadRequired {
 class FormStructure {
  public:
   explicit FormStructure(const webkit_glue::FormData& form);
+  ~FormStructure();
 
   // Encodes the XML upload request from this FormStructure.
   bool EncodeUploadRequest(bool auto_fill_used,

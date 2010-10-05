@@ -11,6 +11,10 @@
 
 // SqliteStatementCache -------------------------------------------------------
 
+SqliteStatementCache::SqliteStatementCache() : db_(NULL) {}
+
+SqliteStatementCache::SqliteStatementCache(sqlite3* db) : db_(db) {}
+
 SqliteStatementCache::~SqliteStatementCache() {
   STLDeleteContainerPairSecondPointers(statements_.begin(), statements_.end());
   statements_.clear();

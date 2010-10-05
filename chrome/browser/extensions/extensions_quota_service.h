@@ -142,9 +142,8 @@ class QuotaLimitHeuristic {
   };
 
   // Ownership of |mapper| is given to the new QuotaLimitHeuristic.
-  explicit QuotaLimitHeuristic(const Config& config, BucketMapper* map)
-      : config_(config), bucket_mapper_(map) {}
-  virtual ~QuotaLimitHeuristic() {}
+  explicit QuotaLimitHeuristic(const Config& config, BucketMapper* map);
+  virtual ~QuotaLimitHeuristic();
 
   // Determines if sufficient quota exists (according to the Apply
   // implementation of a derived class) to perform an operation with |args|,

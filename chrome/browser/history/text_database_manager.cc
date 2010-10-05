@@ -37,6 +37,12 @@ const int kExpirationSec = 20;
 
 }  // namespace
 
+// TextDatabaseManager::ChangeSet ----------------------------------------------
+
+TextDatabaseManager::ChangeSet::ChangeSet() {}
+
+TextDatabaseManager::ChangeSet::~ChangeSet() {}
+
 // TextDatabaseManager::PageInfo -----------------------------------------------
 
 TextDatabaseManager::PageInfo::PageInfo(URLID url_id,
@@ -47,6 +53,8 @@ TextDatabaseManager::PageInfo::PageInfo(URLID url_id,
       visit_time_(visit_time) {
   added_time_ = TimeTicks::Now();
 }
+
+TextDatabaseManager::PageInfo::~PageInfo() {}
 
 void TextDatabaseManager::PageInfo::set_title(const string16& ttl) {
   if (ttl.empty())  // Make the title nonempty when we set it for EverybodySet.

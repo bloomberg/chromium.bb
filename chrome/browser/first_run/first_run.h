@@ -37,8 +37,12 @@ class FirstRun {
     OEM_BUBBLE,        // Smaller bubble for OEM builds
     MINIMAL_BUBBLE     // Minimal bubble shown after search engine dialog
   } BubbleType;
+
   // See ProcessMasterPreferences for more info about this structure.
   struct MasterPrefs {
+    MasterPrefs();
+    ~MasterPrefs();
+
     int ping_delay;
     bool homepage_defined;
     int do_import_items;
@@ -49,6 +53,7 @@ class FirstRun {
     std::vector<GURL> new_tabs;
     std::vector<GURL> bookmarks;
   };
+
 #if defined(OS_WIN)
   // Creates the desktop shortcut to chrome for the current user. Returns
   // false if it fails. It will overwrite the shortcut if it exists.
@@ -292,13 +297,13 @@ class FirstRunBrowserProcess : public BrowserProcessImpl {
 // The values that it handles are meant to be used as the process exit code.
 class FirstRunImportObserver : public ImportObserver {
  public:
-  FirstRunImportObserver()
-      : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
-  }
+  FirstRunImportObserver();
+
   int import_result() const;
   virtual void ImportCanceled();
   virtual void ImportComplete();
   void RunLoop();
+
  private:
   void Finish();
   bool loop_running_;

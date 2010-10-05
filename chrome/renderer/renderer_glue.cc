@@ -42,51 +42,6 @@
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 #endif
 
-template <typename T, size_t stack_capacity>
-class ResizableStackArray {
- public:
-  ResizableStackArray()
-      : cur_buffer_(stack_buffer_), cur_capacity_(stack_capacity) {
-  }
-  ~ResizableStackArray() {
-    FreeHeap();
-  }
-
-  T* get() const {
-    return cur_buffer_;
-  }
-
-  T& operator[](size_t i) {
-    return cur_buffer_[i];
-  }
-
-  size_t capacity() const {
-    return cur_capacity_;
-  }
-
-  void Resize(size_t new_size) {
-    if (new_size < cur_capacity_)
-      return;  // already big enough
-    FreeHeap();
-    cur_capacity_ = new_size;
-    cur_buffer_ = new T[new_size];
-  }
-
- private:
-  // Resets the heap buffer, if any
-  void FreeHeap() {
-    if (cur_buffer_ != stack_buffer_) {
-      delete[] cur_buffer_;
-      cur_buffer_ = stack_buffer_;
-      cur_capacity_ = stack_capacity;
-    }
-  }
-
-  T stack_buffer_[stack_capacity];
-  T* cur_buffer_;
-  size_t cur_capacity_;
-};
-
 // This definition of WriteBitmapFromPixels uses shared memory to communicate
 // across processes.
 void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,

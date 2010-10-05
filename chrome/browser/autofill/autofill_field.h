@@ -17,6 +17,7 @@ class AutoFillField : public webkit_glue::FormField {
   AutoFillField();
   AutoFillField(const webkit_glue::FormField& field,
                 const string16& unique_name);
+  virtual ~AutoFillField();
 
   const string16& unique_name() const { return unique_name_; }
 

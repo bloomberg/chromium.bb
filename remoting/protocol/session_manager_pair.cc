@@ -20,6 +20,8 @@ SessionManagerPair::SessionManagerPair(JingleThread* thread)
     : message_loop_(thread->message_loop()) {
 }
 
+SessionManagerPair::~SessionManagerPair() {}
+
 void SessionManagerPair::Init() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 

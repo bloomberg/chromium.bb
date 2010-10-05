@@ -83,6 +83,13 @@ void QuotaLimitHeuristic::Bucket::Reset(const Config& config,
   expiration_ = start + config.refill_interval;
 }
 
+QuotaLimitHeuristic::QuotaLimitHeuristic(const Config& config,
+                                         BucketMapper* map)
+    : config_(config), bucket_mapper_(map) {
+}
+
+QuotaLimitHeuristic::~QuotaLimitHeuristic() {}
+
 bool QuotaLimitHeuristic::ApplyToArgs(const ListValue* args,
     const base::TimeTicks& event_time) {
   BucketList buckets;

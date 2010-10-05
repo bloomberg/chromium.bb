@@ -38,6 +38,8 @@ AutoFillField::AutoFillField(const webkit_glue::FormField& field,
       heuristic_type_(UNKNOWN_TYPE) {
 }
 
+AutoFillField::~AutoFillField() {}
+
 void AutoFillField::set_heuristic_type(const AutoFillFieldType& type) {
   DCHECK(type >= 0 && type < MAX_VALID_FIELD_TYPE);
   if (type >= 0 && type < MAX_VALID_FIELD_TYPE)

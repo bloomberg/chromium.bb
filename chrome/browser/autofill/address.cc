@@ -27,6 +27,10 @@ const int kAutoFillAddressLength = arraysize(kAutoFillAddressTypes);
 
 }  // namespace
 
+Address::Address() {}
+
+Address::~Address() {}
+
 void Address::GetPossibleFieldTypes(const string16& text,
                                     FieldTypeSet* possible_types) const {
   DCHECK(possible_types);

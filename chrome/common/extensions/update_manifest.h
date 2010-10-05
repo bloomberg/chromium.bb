@@ -45,6 +45,9 @@ class UpdateManifest {
 
   static const int kNoDaystart = -1;
   struct Results {
+    Results();
+    ~Results();
+
     std::vector<Result> list;
     // This will be >= 0, or kNoDaystart if the <daystart> tag was not present.
     int daystart_elapsed_seconds;

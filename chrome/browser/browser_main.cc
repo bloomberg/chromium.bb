@@ -1012,7 +1012,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
-  FirstRun::MasterPrefs master_prefs = { 0 };
+  FirstRun::MasterPrefs master_prefs;
   bool first_run_ui_bypass = false;  // True to skip first run UI.
   if (is_first_run) {
     first_run_ui_bypass =

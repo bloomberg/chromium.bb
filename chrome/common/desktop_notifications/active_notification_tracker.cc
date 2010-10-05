@@ -12,6 +12,10 @@
 using WebKit::WebNotification;
 using WebKit::WebNotificationPermissionCallback;
 
+ActiveNotificationTracker::ActiveNotificationTracker() {}
+
+ActiveNotificationTracker::~ActiveNotificationTracker() {}
+
 bool ActiveNotificationTracker::GetId(
     const WebNotification& notification, int& id) {
   ReverseTable::iterator iter = reverse_notification_table_.find(notification);

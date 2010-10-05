@@ -37,6 +37,7 @@ class ExtensionPrefs {
   };
 
   explicit ExtensionPrefs(PrefService* prefs, const FilePath& root_dir_);
+  ~ExtensionPrefs();
 
   // Returns a copy of the Extensions prefs.
   // TODO(erikkay) Remove this so that external consumers don't need to be

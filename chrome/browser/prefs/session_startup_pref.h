@@ -41,9 +41,11 @@ struct SessionStartupPref {
   static bool TypeIsManaged(PrefService* prefs);
   static bool URLsAreManaged(PrefService* prefs);
 
-  SessionStartupPref() : type(DEFAULT) {}
+  SessionStartupPref();
 
-  explicit SessionStartupPref(Type type) : type(type) {}
+  explicit SessionStartupPref(Type type);
+
+  ~SessionStartupPref();
 
   // What to do on startup.
   Type type;

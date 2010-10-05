@@ -18,6 +18,8 @@
 PepperPluginInfo::PepperPluginInfo() : is_internal(false) {
 }
 
+PepperPluginInfo::~PepperPluginInfo() {}
+
 // static
 PepperPluginRegistry* PepperPluginRegistry::GetInstance() {
   static PepperPluginRegistry registry;
@@ -167,6 +169,8 @@ pepper::PluginModule* PepperPluginRegistry::GetModule(
     return NULL;
   return it->second;
 }
+
+PepperPluginRegistry::~PepperPluginRegistry() {}
 
 PepperPluginRegistry::PepperPluginRegistry() {
   InternalPluginInfoList internal_plugin_info;

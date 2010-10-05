@@ -623,6 +623,7 @@ class AutocompleteResult {
   };
 
   AutocompleteResult();
+  ~AutocompleteResult();
 
   // operator=() by another name.
   void CopyFrom(const AutocompleteResult& rhs);

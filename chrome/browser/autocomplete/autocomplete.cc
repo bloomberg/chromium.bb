@@ -679,6 +679,8 @@ AutocompleteResult::AutocompleteResult() {
   default_match_ = end();
 }
 
+AutocompleteResult::~AutocompleteResult() {}
+
 void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   if (this == &rhs)
     return;

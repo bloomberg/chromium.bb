@@ -243,6 +243,8 @@ void KeywordProvider::Stop() {
   MaybeEndExtensionKeywordMode();
 }
 
+KeywordProvider::~KeywordProvider() {}
+
 // static
 bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
                                               std::wstring* keyword,

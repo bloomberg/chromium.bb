@@ -14,10 +14,11 @@
 // A form group that stores credit card information.
 class CreditCard : public FormGroup {
  public:
+  CreditCard();
   CreditCard(const string16& label, int unique_id);
   // For use in STL containers.
   CreditCard(const CreditCard& card);
-  CreditCard();
+  ~CreditCard();
 
   // FormGroup implementation:
   FormGroup* Clone() const;

@@ -42,6 +42,7 @@ class SessionManagerPair
   static const char kClientJid[];
 
   SessionManagerPair(JingleThread* thread);
+  virtual ~SessionManagerPair();
 
   void Init();
 

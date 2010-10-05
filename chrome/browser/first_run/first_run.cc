@@ -51,6 +51,10 @@ FilePath GetDefaultPrefFilePath(bool create_profile_dir,
 
 FirstRun::FirstRunState FirstRun::first_run_ = FIRST_RUN_UNKNOWN;
 
+FirstRun::MasterPrefs::MasterPrefs() {}
+
+FirstRun::MasterPrefs::~MasterPrefs() {}
+
 // TODO(port): Import switches need to be ported to both Mac and Linux. Not all
 // import switches here are implemented for Linux. None are implemented for Mac
 // (as this function will not be called on Mac).
@@ -437,6 +441,10 @@ void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
   }
 }
 #endif  // (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
+
+FirstRunImportObserver::FirstRunImportObserver()
+    : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
+}
 
 int FirstRunImportObserver::import_result() const {
   return import_result_;
