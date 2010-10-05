@@ -681,10 +681,15 @@ class SVNWrapper(SCMWrapper):
     Raises:
       Error: if can't get URL for relative path.
     """
-    # Only update if git is not controlling the directory.
+    # Only update if git or hg is not controlling the directory.
     git_path = os.path.join(self.checkout_path, '.git')
     if os.path.exists(git_path):
       print('________ found .git directory; skipping %s' % self.relpath)
+      return
+
+    hg_path = os.path.join(self.checkout_path, '.hg')
+    if os.path.exists(hg_path):
+      print('________ found .hg directory; skipping %s' % self.relpath)
       return
 
     if args:
