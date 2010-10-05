@@ -40,6 +40,8 @@ int ChromeCookiePolicy::CanGetCookies(const GURL& url,
   }
 
   int policy = CheckPolicy(url);
+  if (policy == net::OK_FOR_SESSION_ONLY)
+    policy = net::OK;
   if (policy != net::ERR_IO_PENDING)
     return policy;
 
