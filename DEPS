@@ -49,7 +49,7 @@ deps = {
    "/trunk/deps/third_party/hunspell_dictionaries@60756",
 
   "src/third_party/safe_browsing/testing":
-    "http://google-safe-browsing.googlecode.com/svn/trunk/testing@99",
+    "http://google-safe-browsing.googlecode.com/svn/trunk/testing@101",
 
   "src/third_party/cacheinvalidation/files":
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@35",
