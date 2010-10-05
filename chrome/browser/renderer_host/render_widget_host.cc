@@ -842,7 +842,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
     // which attempts to move the plugin windows and in the process could
     // dispatch other window messages which could cause the view to be
     // destroyed.
-    if (view_) {
+    if (view_ && !is_gpu_rendering_active_) {
       view_being_painted_ = true;
       view_->DidUpdateBackingStore(params.scroll_rect, params.dx, params.dy,
                                    params.copy_rects);
