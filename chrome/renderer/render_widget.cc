@@ -315,7 +315,6 @@ void RenderWidget::OnDoneUsingBitmap(TransportDIB::Id id) {
     current_paint_bufs_.erase(it);
     return;
   }
-  NOTREACHED() << "Browser returned unexpected TransportDIB to renderer";
 }
 
 void RenderWidget::OnUpdateRectAck() {
@@ -527,7 +526,6 @@ void RenderWidget::DoDeferredUpdate() {
       !is_gpu_rendering_active_ &&
       GetBitmapForOptimizedPluginPaint(bounds, &dib, &optimized_copy_location,
                                        &optimized_copy_rect)) {
-    current_paint_bufs_.insert(std::make_pair(dib->id(), dib));
     bounds = optimized_copy_location;
     copy_rects.push_back(optimized_copy_rect);
     dib_id = dib->id();
