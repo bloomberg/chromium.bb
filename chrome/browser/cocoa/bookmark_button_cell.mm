@@ -76,6 +76,7 @@
   [self setButtonType:NSMomentaryPushInButton];
   [self setBezelStyle:NSShadowlessSquareBezelStyle];
   [self setShowsBorderOnlyWhileMouseInside:YES];
+  [self setControlSize:NSSmallControlSize];
   [self setAlignment:NSLeftTextAlignment];
   [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
   [self setWraps:NO];
@@ -98,11 +99,9 @@
 
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
   NSSize size = [super cellSizeForBounds:aRect];
-  // See comments in setBookmarkCellText:image: about squeezing
-  // buttons with no title.
-  if ([[self title] length]) {
-    size.width += 2;
-  }
+  // Cocoa seems to slightly underestimate how much space we need, so we
+  // compensate here to avoid a clipped rendering.
+  size.width += 2;
   size.height += 4;
   return size;
 }
@@ -113,18 +112,17 @@
                                            withString:@" "];
   title = [title stringByReplacingOccurrencesOfString:@"\r"
                                            withString:@" "];
-  // If no title squeeze things tight with a NSMiniControlSize.
-  // Else make them small and place the image on the left.
+  // If there is no title, squeeze things tight by displaying only the image; by
+  // default, Cocoa leaves extra space in an attempt to display an empty title.
   if ([title length]) {
     [self setImagePosition:NSImageLeft];
-    [self setControlSize:NSSmallControlSize];
+    [self setTitle:title];
   } else {
-    [self setControlSize:NSMiniControlSize];
+    [self setImagePosition:NSImageOnly];
   }
+
   if (image)
     [self setImage:image];
-  if (title)
-    [self setTitle:title];
 }
 
 - (void)setBookmarkNode:(const BookmarkNode*)node {

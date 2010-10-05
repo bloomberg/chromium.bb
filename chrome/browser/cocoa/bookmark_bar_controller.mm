@@ -1885,7 +1885,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   for (BookmarkButton* button in buttons_.get()) {
     const BookmarkNode* cellnode = [button bookmarkNode];
     if (cellnode == node) {
-      [[button cell] setBookmarkCellText:nil
+      [[button cell] setBookmarkCellText:[button title]
                                    image:[self favIconForNode:node]];
       // Adding an image means we might need more room for the
       // bookmark.  Test for it by growing the button (if needed)
