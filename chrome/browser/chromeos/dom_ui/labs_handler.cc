@@ -35,4 +35,9 @@ void LabsHandler::GetLocalizedValues(
      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_TALK));
   localized_strings->SetString("talk",
      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_TALK_DESCRIPTION));
+
+  localized_strings->SetString("side_tabs_title",
+     l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_SIDE_TABS));
+  localized_strings->SetString("side_tabs",
+     l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SIDE_TABS_DESCRIPTION));
 }

@@ -238,12 +238,6 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
 }
 
 bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
-#if defined(OS_CHROMEOS)
-  if (command_id == IDC_TOGGLE_VERTICAL_TABS) {
-    return browser_->UseVerticalTabs();
-  }
-#endif
-
   if (command_id == IDC_SHOW_BOOKMARK_BAR) {
     return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
   }
@@ -388,11 +382,6 @@ void WrenchMenuModel::Build() {
     AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
   }
-
-#if defined(OS_CHROMEOS)
-  AddCheckItemWithStringId(IDC_TOGGLE_VERTICAL_TABS,
-                           IDS_TAB_CXMENU_USE_VERTICAL_TABS);
-#endif
 
   // On Mac, there is no About item.
   if (browser_defaults::kShowAboutMenuItem) {
