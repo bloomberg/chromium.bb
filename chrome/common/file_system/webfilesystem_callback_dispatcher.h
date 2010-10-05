@@ -34,6 +34,7 @@ class WebFileSystemCallbackDispatcher
   virtual void DidOpenFileSystem(const std::string&,
                                  const FilePath&);
   virtual void DidFail(base::PlatformFileError);
+  virtual void DidWrite(int64 bytes, bool complete);
 
  private:
   WebKit::WebFileSystemCallbacks* callbacks_;

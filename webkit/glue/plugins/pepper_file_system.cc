@@ -54,6 +54,10 @@ class StatusCallback : public fileapi::FileSystemCallbackDispatcher {
     RunCallback(error_code);
   }
 
+  virtual void DidWrite(int64 bytes, bool complete) {
+    NOTREACHED();
+  }
+
  private:
   void RunCallback(base::PlatformFileError error_code) {
     if (!module_.get() || !callback_.func)
@@ -103,6 +107,10 @@ class QueryInfoCallback : public fileapi::FileSystemCallbackDispatcher {
 
   virtual void DidFail(base::PlatformFileError error_code) {
     RunCallback(error_code, base::PlatformFileInfo());
+  }
+
+  virtual void DidWrite(int64 bytes, bool complete) {
+    NOTREACHED();
   }
 
  private:

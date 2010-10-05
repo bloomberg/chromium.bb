@@ -18,30 +18,6 @@ using WebKit::WebFileSystemEntry;
 using WebKit::WebString;
 using WebKit::WebVector;
 
-namespace {
-
-WebKit::WebFileError PlatformFileErrorToWebFileError(
-    base::PlatformFileError error_code) {
-  switch (error_code) {
-    case base::PLATFORM_FILE_ERROR_NOT_FOUND:
-      return WebKit::WebFileErrorNotFound;
-    case base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
-    case base::PLATFORM_FILE_ERROR_EXISTS:
-    case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
-      return WebKit::WebFileErrorInvalidModification;
-    case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-      return WebKit::WebFileErrorNoModificationAllowed;
-    case base::PLATFORM_FILE_ERROR_FAILED:
-      return WebKit::WebFileErrorInvalidState;
-    case base::PLATFORM_FILE_ERROR_ABORT:
-      return WebKit::WebFileErrorAbort;
-    default:
-      return WebKit::WebFileErrorInvalidModification;
-  }
-}
-
-}
-
 WebFileSystemCallbackDispatcher::WebFileSystemCallbackDispatcher(
     WebFileSystemCallbacks* callbacks)
     : callbacks_(callbacks) {
@@ -56,6 +32,11 @@ void WebFileSystemCallbackDispatcher::DidReadMetadata(
     const base::PlatformFileInfo& file_info) {
   WebFileInfo web_file_info;
   web_file_info.modificationTime = file_info.last_modified.ToDoubleT();
+  web_file_info.length = file_info.size;
+  if (file_info.is_directory)
+    web_file_info.type = WebFileInfo::TypeDirectory;
+  else
+    web_file_info.type = WebFileInfo::TypeFile;
   callbacks_->didReadMetadata(web_file_info);
 }
 
@@ -78,5 +59,11 @@ void WebFileSystemCallbackDispatcher::DidOpenFileSystem(
 
 void WebFileSystemCallbackDispatcher::DidFail(
     base::PlatformFileError error_code) {
-  callbacks_->didFail(PlatformFileErrorToWebFileError(error_code));
+    callbacks_->didFail(
+        webkit_glue::PlatformFileErrorToWebFileError(error_code));
 }
+
+void WebFileSystemCallbackDispatcher::DidWrite(int64 bytes, bool complete) {
+  NOTREACHED();
+}
+

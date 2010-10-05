@@ -215,8 +215,7 @@ void FileSystemDispatcher::DidWrite(
   fileapi::FileSystemCallbackDispatcher* dispatcher =
       dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);
-  // TODO(ericu): Coming soon.
-  // dispatcher->DidWrite(bytes, complete);
+  dispatcher->DidWrite(bytes, complete);
   if (complete)
     dispatchers_.Remove(request_id);
 }
