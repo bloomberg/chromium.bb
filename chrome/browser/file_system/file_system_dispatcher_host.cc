@@ -161,11 +161,10 @@ void FileSystemDispatcherHost::OnCopy(
   GetNewOperation(request_id)->Copy(src_path, dest_path);
 }
 
-void FileSystemDispatcherHost::OnRemove(
-    int request_id, const FilePath& path, bool recursive) {
+void FileSystemDispatcherHost::OnRemove(int request_id, const FilePath& path) {
   if (!CheckValidFileSystemPath(path, request_id))
     return;
-  GetNewOperation(request_id)->Remove(path, recursive);
+  GetNewOperation(request_id)->Remove(path);
 }
 
 void FileSystemDispatcherHost::OnReadMetadata(

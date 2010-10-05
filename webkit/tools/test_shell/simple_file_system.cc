@@ -130,10 +130,10 @@ void SimpleFileSystem::copy(
 }
 
 void SimpleFileSystem::remove(
-    const WebString& path, bool recursive, WebFileSystemCallbacks* callbacks) {
+    const WebString& path, WebFileSystemCallbacks* callbacks) {
   FilePath filepath(webkit_glue::WebStringToFilePath(path));
 
-  GetNewOperation(callbacks)->Remove(filepath, recursive);
+  GetNewOperation(callbacks)->Remove(filepath);
 }
 
 void SimpleFileSystem::readMetadata(

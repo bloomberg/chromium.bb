@@ -47,16 +47,6 @@ void WebFileSystemImpl::remove(const WebString& path,
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
   dispatcher->Remove(webkit_glue::WebStringToFilePath(path),
-                     false /* recursive */,
-                     new WebFileSystemCallbackDispatcher(callbacks));
-}
-
-void WebFileSystemImpl::removeRecursively(const WebString& path,
-                                          WebFileSystemCallbacks* callbacks) {
-  FileSystemDispatcher* dispatcher =
-      ChildThread::current()->file_system_dispatcher();
-  dispatcher->Remove(webkit_glue::WebStringToFilePath(path),
-                     true /* recursive */,
                      new WebFileSystemCallbackDispatcher(callbacks));
 }
 
@@ -114,3 +104,4 @@ WebKit::WebFileWriter* WebFileSystemImpl::createFileWriter(
     const WebString& path, WebKit::WebFileWriterClient* client) {
   return new WebFileWriterImpl(path, client);
 }
+

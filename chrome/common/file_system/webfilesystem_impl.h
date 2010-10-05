@@ -32,10 +32,6 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
       const WebKit::WebString& path,
       WebKit::WebFileSystemCallbacks*);
 
-  virtual void removeRecursively(
-      const WebKit::WebString& path,
-      WebKit::WebFileSystemCallbacks*);
-
   virtual void readMetadata(
       const WebKit::WebString& path,
       WebKit::WebFileSystemCallbacks*);

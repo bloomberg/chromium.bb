@@ -118,15 +118,14 @@ void FileSystemOperation::ReadDirectory(const FilePath& path) {
           &FileSystemOperation::DidReadDirectory));
 }
 
-void FileSystemOperation::Remove(const FilePath& path, bool recursive) {
+void FileSystemOperation::Remove(const FilePath& path) {
 #ifndef NDEBUG
   DCHECK(kOperationNone == pending_operation_);
   pending_operation_ = kOperationRemove;
 #endif
 
-  base::FileUtilProxy::Delete(proxy_, path, recursive,
-      callback_factory_.NewCallback(
-          &FileSystemOperation::DidFinishFileOperation));
+  base::FileUtilProxy::Delete(proxy_, path, callback_factory_.NewCallback(
+      &FileSystemOperation::DidFinishFileOperation));
 }
 
 void FileSystemOperation::Write(
