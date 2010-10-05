@@ -231,7 +231,7 @@ bool NativeMenuDOMUI::Dispatch(GdkEvent* event) {
       NativeMenuDOMUI* target = FindMenuAt(
           gfx::Point(event->motion.x_root, event->motion.y_root));
       if (target)
-        target->menu_widget_->EnableInput(true);
+        target->menu_widget_->EnableInput(false);
       break;
     }
     case GDK_BUTTON_PRESS: {

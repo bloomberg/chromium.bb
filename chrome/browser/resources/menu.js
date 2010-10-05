@@ -72,7 +72,8 @@ MenuItem.prototype = {
   activate: function() {
     if (this.attrs.type == 'submenu') {
       this.menu_.openSubmenu(this);
-    } else if (this.attrs.type != 'separator') {
+    } else if (this.attrs.type != 'separator' &&
+               this.div.className.indexOf('selected') >= 0) {
       sendClick(this.id);
     }
   },
@@ -356,7 +357,10 @@ Menu.prototype = {
 
   onMouseover_: function(event, item) {
     this.cancelSubmenuTimer_();
-    if (this.current_ != item && item.attrs.enabled) {
+    // Ignore false mouseover event at (0,0) which is
+    // emitted when opening submenu.
+    if (item.attrs.enabled &&
+        (event.x != 0 && event.y != 0)) {
       item.select();
     }
   },
@@ -364,7 +368,6 @@ Menu.prototype = {
   onMouseout_: function(event) {
     if (this.current_) {
       this.current_.unselect();
-      this.current_ = null;
     }
   },
 
@@ -388,7 +391,6 @@ Menu.prototype = {
     if (!this.is_root) {
       if (this.current_) {
         this.current_.unselect();
-        this.current_ = null;
       }
       chrome.send('move_to_parent', []);
     }
