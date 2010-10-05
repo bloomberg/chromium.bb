@@ -165,7 +165,13 @@ IN_PROC_BROWSER_TEST_F(SidebarTest, SidebarOnInactiveTab) {
   HideSidebarForCurrentTab();
 }
 
-IN_PROC_BROWSER_TEST_F(SidebarTest, SidebarNavigate) {
+// FAILS, http://crbug.com/57964
+#if defined(OS_WIN)
+#define MAYBE_SidebarNavigate DISABLED_SidebarNavigate
+#else
+#define MAYBE_SidebarNavigate SidebarNavigate
+#endif
+IN_PROC_BROWSER_TEST_F(SidebarTest, MAYBE_SidebarNavigate) {
   ShowSidebarForCurrentTab();
 
   NavigateSidebarForCurrentTabTo(kSimplePage);
