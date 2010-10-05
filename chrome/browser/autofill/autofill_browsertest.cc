@@ -59,7 +59,13 @@ class AutoFillTest : public InProcessBrowserTest {
 };
 
 // Test that basic form fill is working.
-IN_PROC_BROWSER_TEST_F(AutoFillTest, BasicFormFill) {
+// FAILS on windows: http://crbug.com/57962
+#if defined(OS_WIN)
+#define MAYBE_BasicFormFill DISABLED_BasicFormFill
+#else
+#define MAYBE_BasicFormFill BasicFormFill
+#endif
+IN_PROC_BROWSER_TEST_F(AutoFillTest, MAYBE_BasicFormFill) {
   SetUpProfile();
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
