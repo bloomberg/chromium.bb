@@ -41,6 +41,9 @@ class FileSystemCallbackDispatcher {
 
   // Called with an error code when a requested operation has failed.
   virtual void DidFail(base::PlatformFileError error_code) = 0;
+
+  // Callback for FileWriter's write() call.
+  virtual void DidWrite(int64 bytes, bool complete) = 0;
 };
 
 } // namespace fileapi

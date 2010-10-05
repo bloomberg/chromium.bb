@@ -52,6 +52,10 @@ class MockDispatcher : public fileapi::FileSystemCallbackDispatcher {
     NOTREACHED();
   }
 
+  virtual void DidWrite(int64 bytes, bool complete) {
+    NOTREACHED();
+  }
+
   // Helpers for testing.
   int status() const { return status_; }
   int request_id() const { return request_id_; }
@@ -553,3 +557,60 @@ TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
   EXPECT_FALSE(file_util::DirectoryExists(empty_dir.path()));
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
+
+TEST_F(FileSystemOperationTest, TestTruncate) {
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath file;
+  file_util::CreateTemporaryFileInDir(dir.path(), &file);
+
+  char test_data[] = "test data";
+  int data_size = static_cast<int>(sizeof(test_data));
+  EXPECT_EQ(data_size,
+            file_util::WriteFile(file, test_data, data_size));
+
+  // Check that its length is the size of the data written.
+  operation()->GetMetadata(file);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
+  EXPECT_FALSE(mock_dispatcher_->info().is_directory);
+  EXPECT_EQ(data_size, mock_dispatcher_->info().size);
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+
+  // Extend the file by truncating it.
+  int length = 17;
+  operation()->Truncate(file, length);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+
+  // Check that its length is now 17 and that it's all zeroes after the test
+  // data.
+  base::PlatformFileInfo info;
+
+  EXPECT_TRUE(file_util::GetFileInfo(file, &info));
+  EXPECT_EQ(length, info.size);
+  char data[100];
+  EXPECT_EQ(length, file_util::ReadFile(file, data, length));
+  for (int i = 0; i < length; ++i) {
+    if (i < data_size)
+      EXPECT_EQ(test_data[i], data[i]);
+    else
+      EXPECT_EQ(0, data[i]);
+  }
+
+  // Shorten the file by truncating it.
+  length = 3;
+  operation()->Truncate(file, length);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+
+  // Check that its length is now 3 and that it contains only bits of test data.
+  EXPECT_TRUE(file_util::GetFileInfo(file, &info));
+  EXPECT_EQ(length, info.size);
+  EXPECT_EQ(length, file_util::ReadFile(file, data, length));
+  for (int i = 0; i < length; ++i)
+    EXPECT_EQ(test_data[i], data[i]);
+}
+
