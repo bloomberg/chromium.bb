@@ -459,7 +459,11 @@ sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
   }
 
   // If the file on disk is an older database version, bring it up to date.
-  MigrateOldVersionsAsNeeded();
+  // If the migration fails we return an error to caller and do not commit
+  // the migration.
+  sql::InitStatus migration_status = MigrateOldVersionsAsNeeded();
+  if (migration_status != sql::INIT_OK)
+    return migration_status;
 
   return transaction.Commit() ? sql::INIT_OK : sql::INIT_FAILURE;
 }
@@ -1884,27 +1888,31 @@ bool WebDatabase::RemoveFormElementForID(int64 pair_id) {
   return false;
 }
 
-void WebDatabase::MigrateOldVersionsAsNeeded(){
+sql::InitStatus WebDatabase::MigrateOldVersionsAsNeeded(){
   // Migrate if necessary.
   int current_version = meta_table_.GetVersionNumber();
   switch (current_version) {
     // Versions 1 - 19 are unhandled.  Version numbers greater than
     // kCurrentVersionNumber should have already been weeded out by the caller.
     default:
-      // When the version is too old, we just try to continue anyway.  There
-      // should not be a released product that makes a database too old for us
-      // to handle.
+      // When the version is too old, we return failure error code.  The schema
+      // is too out of date to migrate.
+      // There should not be a released product that makes a database too old to
+      // migrate. If we do encounter such a legacy database, we will need a
+      // better solution to handle it (i.e., pop up a dialog to tell the user,
+      // erase all their prefs and start over, etc.).
       LOG(WARNING) << "Web database version " << current_version <<
           " is too old to handle.";
-      return;
+      NOTREACHED();
+      return sql::INIT_FAILURE;
 
     case 20:
       // Add the autogenerate_keyword column.
       if (!db_.Execute("ALTER TABLE keywords ADD COLUMN autogenerate_keyword "
                        "INTEGER DEFAULT 0")) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 21.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
       meta_table_.SetVersionNumber(21);
       meta_table_.SetCompatibleVersionNumber(
@@ -1913,7 +1921,9 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
 
     case 21:
       if (!ClearAutofillEmptyValueElements()) {
-        NOTREACHED() << "Failed to clean-up autofill DB.";
+        LOG(WARNING) << "Failed to clean-up autofill DB.";
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
       meta_table_.SetVersionNumber(22);
       // No change in the compatibility version number.
@@ -1950,23 +1960,24 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
       // we allow for the faulty assumption described above by checking for
       // the existence of the columns only AFTER we've executed the commands
       // to add them.
-      if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
-                       "card_number_encrypted BLOB DEFAULT NULL")) {
-        LOG(WARNING) << "Could not add card_number_encrypted to "
-                        "credit_cards table.";
+      if (!db_.DoesColumnExist("credit_cards", "card_number_encrypted")) {
+        if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
+                         "card_number_encrypted BLOB DEFAULT NULL")) {
+          LOG(WARNING) << "Could not add card_number_encrypted to "
+                          "credit_cards table.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
       }
-      if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
-                       "verification_code_encrypted BLOB DEFAULT NULL")) {
-        LOG(WARNING) << "Could not add verification_code_encrypted to "
-                        "credit_cards table.";
-      }
-      if (!db_.Execute(
-              "SELECT card_number_encrypted FROM credit_cards limit 1") ||
-          !db_.Execute(
-              "SELECT verification_code_encrypted FROM credit_cards limit 1")) {
-        NOTREACHED();
-        LOG(WARNING) << "Unable to update web database to version 23.";
-        return;
+
+      if (!db_.DoesColumnExist("credit_cards", "verification_code_encrypted")) {
+        if (!db_.Execute("ALTER TABLE credit_cards ADD COLUMN "
+                         "verification_code_encrypted BLOB DEFAULT NULL")) {
+          LOG(WARNING) << "Could not add verification_code_encrypted to "
+                          "credit_cards table.";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
+        }
       }
       meta_table_.SetVersionNumber(23);
       // FALL THROUGH
@@ -1998,30 +2009,30 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
       std::string query = "DELETE FROM autofill_dates WHERE pair_id IN ("
           "SELECT pair_id FROM autofill WHERE " + autofill_is_too_big + ")";
       if (!db_.Execute(query.c_str())) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 24.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
       query = "DELETE FROM autofill WHERE " + autofill_is_too_big;
       if (!db_.Execute(query.c_str())) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 24.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
       query = "DELETE FROM credit_cards WHERE (" + credit_cards_is_too_big +
           ") OR label IN (SELECT label FROM autofill_profiles WHERE " +
           autofill_profiles_is_too_big + ")";
       if (!db_.Execute(query.c_str())) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 24.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
       query = "DELETE FROM autofill_profiles WHERE " +
           autofill_profiles_is_too_big;
       if (!db_.Execute(query.c_str())) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 24.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
 
       meta_table_.SetVersionNumber(24);
@@ -2033,9 +2044,9 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
       // Add the logo_id column if keyword table was not created in this build.
       if (!db_.Execute("ALTER TABLE keywords ADD COLUMN logo_id "
                        "INTEGER DEFAULT 0")) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 25.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
       meta_table_.SetVersionNumber(25);
       meta_table_.SetCompatibleVersionNumber(
@@ -2046,9 +2057,9 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
       // Add the created_by_policy column.
       if (!db_.Execute("ALTER TABLE keywords ADD COLUMN created_by_policy "
                        "INTEGER DEFAULT 0")) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 26.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
 
       meta_table_.SetVersionNumber(26);
@@ -2067,8 +2078,9 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
           "WHERE credit_cards.billing_address = autofill_profiles.label";
       sql::Statement s(db_.GetUniqueStatement(stmt.c_str()));
       if (!s) {
-        NOTREACHED() << "Statement prepare failed";
-        return;
+        LOG(WARNING) << "Statement prepare failed";
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
 
       std::map<int, int> cc_billing_map;
@@ -2082,8 +2094,9 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
           "SELECT unique_id,billing_address FROM credit_cards";
         sql::Statement s(db_.GetUniqueStatement(stmt.c_str()));
         if (!s) {
-          NOTREACHED() << "Statement prepare failed";
-          return;
+          LOG(WARNING) << "Statement prepare failed";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
         }
 
         while (s.Step()) {
@@ -2106,9 +2119,9 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
                        "shipping_address VARCHAR, "
                        "card_number_encrypted BLOB, "
                        "verification_code_encrypted BLOB)")) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 27.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
 
       if (!db_.Execute(
@@ -2117,22 +2130,22 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
           "expiration_month,expiration_year,verification_code,0,"
           "shipping_address,card_number_encrypted,verification_code_encrypted "
           "FROM credit_cards")) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 27.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
 
       if (!db_.Execute("DROP TABLE credit_cards")) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 27.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
 
       if (!db_.Execute(
           "ALTER TABLE credit_cards_temp RENAME TO credit_cards")) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 27.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
 
       meta_table_.SetVersionNumber(26);
@@ -2146,17 +2159,18 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
             SQL_FROM_HERE,
             "UPDATE credit_cards SET billing_address=? WHERE unique_id=?"));
         if (!s) {
-          NOTREACHED() << "Statement prepare failed";
-          return;
+          LOG(WARNING) << "Statement prepare failed";
+          NOTREACHED();
+          return sql::INIT_FAILURE;
         }
 
         s.BindInt(0, (*iter).second);
         s.BindInt(1, (*iter).first);
 
         if (!s.Run()) {
-          NOTREACHED();
           LOG(WARNING) << "Unable to update web database to version 27.";
-          return;
+          NOTREACHED();
+          return sql::INIT_FAILURE;
         }
       }
 
@@ -2171,9 +2185,9 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
       // Add the created_by_policy column.
       if (!db_.Execute("ALTER TABLE keywords ADD COLUMN supports_instant "
                        "INTEGER DEFAULT 0")) {
-        NOTREACHED();
         LOG(WARNING) << "Unable to update web database to version 28.";
-        return;
+        NOTREACHED();
+        return sql::INIT_FAILURE;
       }
       meta_table_.SetVersionNumber(28);
       meta_table_.SetCompatibleVersionNumber(
@@ -2187,6 +2201,6 @@ void WebDatabase::MigrateOldVersionsAsNeeded(){
 
     case kCurrentVersionNumber:
       // No migration needed.
-      return;
+      return sql::INIT_OK;
   }
 }

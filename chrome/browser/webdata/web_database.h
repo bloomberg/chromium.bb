@@ -338,7 +338,9 @@ class WebDatabase {
   bool InitWebAppIconsTable();
   bool InitWebAppsTable();
 
-  void MigrateOldVersionsAsNeeded();
+  // Used by |Init()| to migration database schema from older versions to
+  // current version.
+  sql::InitStatus MigrateOldVersionsAsNeeded();
 
   sql::Connection db_;
   sql::MetaTable meta_table_;
