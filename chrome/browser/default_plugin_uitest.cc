@@ -16,7 +16,12 @@ class DefaultPluginUITest : public UITest {
   }
 };
 
-TEST_F(DefaultPluginUITest, DefaultPluginLoadTest) {
+#if defined(OS_WIN)
+#define MAYBE_DefaultPluginLoadTest DISABLED_DefaultPluginLoadTest
+#else
+#define MAYBE_DefaultPluginLoadTest DefaultPluginLoadTest
+#endif
+TEST_F(DefaultPluginUITest, MAYBE_DefaultPluginLoadTest) {
   // Open page with default plugin.
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("default_plugin.html");
