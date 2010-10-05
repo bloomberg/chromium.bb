@@ -945,6 +945,7 @@ def DoPresubmitChecks(change,
   Return:
     True if execution can continue, False if not.
   """
+  print "Running presubmit hooks..."
   start_time = time.time()
   presubmit_files = ListRelevantPresubmitFiles(change.AbsoluteLocalPaths(True),
                                                change.RepositoryRoot())

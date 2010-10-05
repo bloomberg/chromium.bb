@@ -341,6 +341,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.failIf(presubmit.DoPresubmitChecks(change, False, True, output, input,
                                             None, False))
     self.assertEqual(output.getvalue().count('!!'), 2)
+    self.checkstdout('Running presubmit hooks...\n')
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
     join = presubmit.os.path.join
@@ -379,6 +380,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.failUnless(presubmit.DoPresubmitChecks(change, False, True, output,
                                                 input, None, True))
     self.assertEquals(output.getvalue().count('??'), 2)
+    self.checkstdout('Running presubmit hooks...\nRunning presubmit hooks...\n')
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
     join = presubmit.os.path.join
@@ -413,6 +415,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count('XX!!XX'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
+    self.checkstdout('Running presubmit hooks...\n')
 
   def testDoDefaultPresubmitChecksAndFeedback(self):
     join = presubmit.os.path.join
@@ -452,6 +455,7 @@ def CheckChangeOnCommit(input_api, output_api):
             'Was the presubmit check useful? Please send feedback & hate mail '
             'to maruel@chromium.org!\n')
     self.assertEquals(output.getvalue(), text)
+    self.checkstdout('Running presubmit hooks...\n')
 
   def testDirectoryHandling(self):
     files = [
@@ -523,6 +527,7 @@ def CheckChangeOnCommit(input_api, output_api):
                        'Running default presubmit script.\n'
                        '** Presubmit Messages **\n'
                        'http://tracker.com/42\n\n'))
+    self.checkstdout('Running presubmit hooks...\n')
 
   def testGetTrySlavesExecuter(self):
     self.mox.ReplayAll()
