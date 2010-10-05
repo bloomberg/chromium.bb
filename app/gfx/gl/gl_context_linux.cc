@@ -170,19 +170,31 @@ bool GLContext::InitializeOneOff() {
     return false;
   }
 
-  // Only check the GLX version if we are in fact using GLX. We might actually
-  // be using the mock GL implementation.
-  if (GetGLImplementation() == kGLImplementationDesktopGL) {
-    Display* display = x11_util::GetXDisplay();
-    int major, minor;
-    if (!glXQueryVersion(display, &major, &minor)) {
-      LOG(ERROR) << "glxQueryVersion failed";
-      return false;
-    }
+  switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGL: {
+      // Only check the GLX version if we are in fact using GLX. We might
+      // actually be using the mock GL implementation.
+      Display* display = x11_util::GetXDisplay();
+      int major, minor;
+      if (!glXQueryVersion(display, &major, &minor)) {
+        LOG(ERROR) << "glxQueryVersion failed";
+        return false;
+      }
 
-    if (major == 1 && minor < 3) {
-      LOG(WARNING) << "GLX 1.3 or later is recommended.";
+      if (major == 1 && minor < 3) {
+        LOG(WARNING) << "GLX 1.3 or later is recommended.";
+      }
+
+      break;
     }
+    case kGLImplementationEGLGLES2:
+      if (!BaseEGLContext::InitializeOneOff()) {
+        LOG(ERROR) << "BaseEGLContext::InitializeOneOff failed.";
+        return false;
+      }
+      break;
+    default:
+      break;
   }
 
   initialized = true;
