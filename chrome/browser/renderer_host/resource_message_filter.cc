@@ -796,7 +796,7 @@ void ResourceMessageFilter::OnGotPluginInfo(bool found,
                                             const std::string& actual_mime_type,
                                             const GURL& policy_url,
                                             IPC::Message* reply_msg) {
-  ContentSetting setting;
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
   if (found) {
     info.enabled = info.enabled &&
         plugin_service_->PrivatePluginAllowedForURL(info.path, policy_url);
