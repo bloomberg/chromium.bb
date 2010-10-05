@@ -1032,3 +1032,13 @@
    fun:remoting::DecompressorZlib::Reset
    fun:~DecompressorZlib
 }
+{
+   bug_57966
+   Heapcheck:Leak
+   ...
+   fun:cricket::AllocationSequence::CreateUDPPorts
+   fun:cricket::AllocationSequence::OnMessage
+   fun:AllocationSequence
+   fun:cricket::BasicPortAllocatorSession::OnAllocate
+   fun:cricket::BasicPortAllocatorSession::OnMessage
+}
