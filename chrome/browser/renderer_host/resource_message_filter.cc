@@ -408,7 +408,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPluginInfo,
+                                      OnGetPluginInfo)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
                                   OnReceiveContextMenuMsg(msg))
@@ -741,6 +742,7 @@ void ResourceMessageFilter::OnGetPlugins(bool refresh,
         last_plugin_refresh_time_ = now;
   }
 
+  // Can't load plugins on IO thread, so go to the FILE thread.
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
@@ -762,33 +764,60 @@ void ResourceMessageFilter::OnGetPluginsOnFileThread(
 void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
                                             const GURL& policy_url,
                                             const std::string& mime_type,
-                                            bool* found,
-                                            WebPluginInfo* info,
-                                            ContentSetting* setting,
-                                            std::string* actual_mime_type) {
+                                            IPC::Message* reply_msg) {
+  // The PluginList::GetPluginInfo may need to load the plugins.  Don't do it
+  // on the IO thread.
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OnGetPluginInfoOnFileThread,
+          url, policy_url, mime_type, reply_msg));
+}
+
+void ResourceMessageFilter::OnGetPluginInfoOnFileThread(
+    const GURL& url,
+    const GURL& policy_url,
+    const std::string& mime_type,
+    IPC::Message* reply_msg) {
+  WebPluginInfo info;
+  std::string actual_mime_type;
   bool allow_wildcard = true;
-  *found = NPAPI::PluginList::Singleton()->GetPluginInfo(url,
-                                                         mime_type,
-                                                         allow_wildcard,
-                                                         info,
-                                                         actual_mime_type);
-  if (*found) {
-    info->enabled = info->enabled &&
-        plugin_service_->PrivatePluginAllowedForURL(info->path, policy_url);
+  bool found = NPAPI::PluginList::Singleton()->GetPluginInfo(
+      url, mime_type, allow_wildcard, &info, &actual_mime_type);
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OnGotPluginInfo,
+          found, info, actual_mime_type, policy_url, reply_msg));
+}
+
+void ResourceMessageFilter::OnGotPluginInfo(bool found,
+                                            WebPluginInfo info,
+                                            const std::string& actual_mime_type,
+                                            const GURL& policy_url,
+                                            IPC::Message* reply_msg) {
+  ContentSetting setting;
+  if (found) {
+    info.enabled = info.enabled &&
+        plugin_service_->PrivatePluginAllowedForURL(info.path, policy_url);
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-    scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(*info));
+    scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
     std::string resource = group->identifier();
-    *setting = map->GetNonDefaultContentSetting(
+    setting = map->GetNonDefaultContentSetting(
         policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource);
-    if (*setting == CONTENT_SETTING_DEFAULT) {
+    if (setting == CONTENT_SETTING_DEFAULT) {
       ContentSetting defaultContentSetting =
           map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
       if (defaultContentSetting == CONTENT_SETTING_BLOCK ||
           !map->GetBlockNonsandboxedPlugins()) {
-        *setting = defaultContentSetting;
+        setting = defaultContentSetting;
       }
     }
   }
+
+  ViewHostMsg_GetPluginInfo::WriteReplyParams(
+      reply_msg, found, info, setting, actual_mime_type);
+  Send(reply_msg);
 }
 
 void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
