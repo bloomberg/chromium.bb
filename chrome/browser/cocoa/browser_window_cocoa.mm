@@ -564,17 +564,17 @@ void BrowserWindowCocoa::OpenTabpose() {
   [controller_ openTabpose];
 }
 
-void BrowserWindowCocoa::ShowMatchPreview(TabContents* preview_contents) {
+void BrowserWindowCocoa::ShowInstant(TabContents* preview_contents) {
   // TODO: implement me
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::HideMatchPreview() {
+void BrowserWindowCocoa::HideInstant() {
   // TODO: implement me
   NOTIMPLEMENTED();
 }
 
-gfx::Rect BrowserWindowCocoa::GetMatchPreviewBounds() {
+gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
   // TODO: implement me
   NOTIMPLEMENTED();
   return gfx::Rect();

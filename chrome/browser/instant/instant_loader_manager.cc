@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/loader_manager.h"
+#include "chrome/browser/instant/instant_loader_manager.h"
 
 #include "base/logging.h"
-#include "chrome/browser/tab_contents/match_preview_loader.h"
-#include "chrome/browser/tab_contents/match_preview_loader_delegate.h"
+#include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
-LoaderManager::LoaderManager(MatchPreviewLoaderDelegate* loader_delegate)
+InstantLoaderManager::InstantLoaderManager(
+    InstantLoaderDelegate* loader_delegate)
     : loader_delegate_(loader_delegate),
       current_loader_(NULL),
       pending_loader_(NULL) {
 }
 
-LoaderManager::~LoaderManager() {
+InstantLoaderManager::~InstantLoaderManager() {
   for (Loaders::iterator i = instant_loaders_.begin();
        i != instant_loaders_.end(); ++i) {
     if (i->second == current_loader_)
@@ -32,14 +33,14 @@ LoaderManager::~LoaderManager() {
     delete pending_loader_;
 }
 
-MatchPreviewLoader* LoaderManager::UpdateLoader(
+InstantLoader* InstantLoaderManager::UpdateLoader(
     TemplateURLID instant_id,
-    scoped_ptr<MatchPreviewLoader>* old_loader) {
-  MatchPreviewLoader* old_current_loader = current_loader_;
-  MatchPreviewLoader* old_pending_loader = pending_loader_;
+    scoped_ptr<InstantLoader>* old_loader) {
+  InstantLoader* old_current_loader = current_loader_;
+  InstantLoader* old_pending_loader = pending_loader_;
 
   // Determine the new loader.
-  MatchPreviewLoader* loader = NULL;
+  InstantLoader* loader = NULL;
   if (instant_id) {
     loader = GetInstantLoader(instant_id);
   } else {
@@ -85,8 +86,8 @@ MatchPreviewLoader* LoaderManager::UpdateLoader(
   return active_loader();
 }
 
-void LoaderManager::MakePendingCurrent(
-    scoped_ptr<MatchPreviewLoader>* old_loader) {
+void InstantLoaderManager::MakePendingCurrent(
+    scoped_ptr<InstantLoader>* old_loader) {
   DCHECK(current_loader_);
   DCHECK(pending_loader_);
 
@@ -97,9 +98,9 @@ void LoaderManager::MakePendingCurrent(
   pending_loader_ = NULL;
 }
 
-MatchPreviewLoader* LoaderManager::ReleaseCurrentLoader() {
+InstantLoader* InstantLoaderManager::ReleaseCurrentLoader() {
   DCHECK(current_loader_);
-  MatchPreviewLoader* loader = current_loader_;
+  InstantLoader* loader = current_loader_;
   if (current_loader_->template_url_id()) {
     Loaders::iterator i =
         instant_loaders_.find(current_loader_->template_url_id());
@@ -110,14 +111,14 @@ MatchPreviewLoader* LoaderManager::ReleaseCurrentLoader() {
   return loader;
 }
 
-MatchPreviewLoader* LoaderManager::CreateLoader(TemplateURLID id) {
-  MatchPreviewLoader* loader = new MatchPreviewLoader(loader_delegate_, id);
+InstantLoader* InstantLoaderManager::CreateLoader(TemplateURLID id) {
+  InstantLoader* loader = new InstantLoader(loader_delegate_, id);
   if (id)
     instant_loaders_[id] = loader;
   return loader;
 }
 
-MatchPreviewLoader* LoaderManager::GetInstantLoader(TemplateURLID id) {
+InstantLoader* InstantLoaderManager::GetInstantLoader(TemplateURLID id) {
   Loaders::iterator i = instant_loaders_.find(id);
   return i == instant_loaders_.end() ? CreateLoader(id) : i->second;
 }

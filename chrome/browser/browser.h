@@ -18,6 +18,7 @@
 #include "base/task.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/instant/instant_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/tabs/tab_handler.h"
 #include "chrome/browser/tabs/tab_strip_model_delegate.h"   // TODO(beng): remove
 #include "chrome/browser/tabs/tab_strip_model_observer.h"   // TODO(beng): remove
-#include "chrome/browser/tab_contents/match_preview_delegate.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/toolbar_model.h"
@@ -39,7 +39,7 @@
 class BrowserWindow;
 class Extension;
 class FindBarController;
-class MatchPreview;
+class InstantController;
 class PrefService;
 class Profile;
 class SessionStorageNamespace;
@@ -59,7 +59,7 @@ class Browser : public TabHandlerDelegate,
                 public SelectFileDialog::Listener,
                 public TabRestoreServiceObserver,
                 public ProfileSyncServiceObserver,
-                public MatchPreviewDelegate {
+                public InstantDelegate {
  public:
   // If you change the values in this enum you'll need to update browser_proxy.
   // TODO(sky): move into a common place that is referenced by both ui_tests
@@ -176,9 +176,9 @@ class Browser : public TabHandlerDelegate,
   Profile* profile() const { return profile_; }
   const std::vector<std::wstring>& user_data_dir_profiles() const;
 
-  // Returns the MatchPreview or NULL if there is no MatchPreview for this
-  // Browser.
-  MatchPreview* match_preview() const { return match_preview_.get(); }
+  // Returns the InstantController or NULL if there is no InstantController for
+  // this Browser.
+  InstantController* instant() const { return instant_.get(); }
 
 #if defined(UNIT_TEST)
   // Sets the BrowserWindow. This is intended for testing and generally not
@@ -789,12 +789,12 @@ class Browser : public TabHandlerDelegate,
   // Overridden from ProfileSyncServiceObserver:
   virtual void OnStateChanged();
 
-  // Overriden from MatchPreviewDelegate:
-  virtual void ShowMatchPreview(TabContents* preview_contents);
-  virtual void HideMatchPreview();
-  virtual void CommitMatchPreview(TabContents* preview_contents);
+  // Overriden from InstantDelegate:
+  virtual void ShowInstant(TabContents* preview_contents);
+  virtual void HideInstant();
+  virtual void CommitInstant(TabContents* preview_contents);
   virtual void SetSuggestedText(const string16& text);
-  virtual gfx::Rect GetMatchPreviewBounds();
+  virtual gfx::Rect GetInstantBounds();
 
   // Command and state updating ///////////////////////////////////////////////
 
@@ -978,9 +978,9 @@ class Browser : public TabHandlerDelegate,
   // cancel closing of window.
   bool IsClosingPermitted();
 
-  // Commits the current match preview, returning true on success. This is
-  // intended for use from OpenCurrentURL.
-  bool OpenMatchPreview(WindowOpenDisposition disposition);
+  // Commits the current instant, returning true on success. This is intended
+  // for use from OpenCurrentURL.
+  bool OpenInstant(WindowOpenDisposition disposition);
 
   // Data members /////////////////////////////////////////////////////////////
 
@@ -1110,7 +1110,7 @@ class Browser : public TabHandlerDelegate,
   // and we install ourselves as an observer.
   TabRestoreService* tab_restore_service_;
 
-  scoped_ptr<MatchPreview> match_preview_;
+  scoped_ptr<InstantController> instant_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

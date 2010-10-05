@@ -56,6 +56,7 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/host_zoom_map.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/browser_url_util.h"
@@ -75,7 +76,6 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
-#include "chrome/browser/tab_contents/match_preview.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -247,9 +247,9 @@ Browser::Browser(Type type, Profile* profile)
   if (profile_->GetProfileSyncService())
     profile_->GetProfileSyncService()->AddObserver(this);
 
-  if (type == TYPE_NORMAL && MatchPreview::IsEnabled() &&
+  if (type == TYPE_NORMAL && InstantController::IsEnabled() &&
       !profile->IsOffTheRecord()) {
-    match_preview_.reset(new MatchPreview(this));
+    instant_.reset(new InstantController(this));
   }
 
   PrefService *local_state = g_browser_process->local_state();
@@ -1255,7 +1255,7 @@ void Browser::OpenCurrentURL() {
   LocationBar* location_bar = window_->GetLocationBar();
   WindowOpenDisposition open_disposition =
       location_bar->GetWindowOpenDisposition();
-  if (OpenMatchPreview(open_disposition))
+  if (OpenInstant(open_disposition))
     return;
 
   GURL url(WideToUTF8(location_bar->GetInputString()));
@@ -2549,8 +2549,8 @@ void Browser::TabDetachedAt(TabContents* contents, int index) {
 }
 
 void Browser::TabDeselectedAt(TabContents* contents, int index) {
-  if (match_preview())
-    match_preview()->DestroyPreviewContents();
+  if (instant())
+    instant()->DestroyPreviewContents();
 
   // Save what the user's currently typing, so it can be restored when we
   // switch back to this tab.
@@ -3267,19 +3267,19 @@ void Browser::OnStateChanged() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, MatchPreviewDelegate implementation:
+// Browser, InstantDelegate implementation:
 
-void Browser::ShowMatchPreview(TabContents* preview_contents) {
-  DCHECK(match_preview_->tab_contents() == GetSelectedTabContents());
-  window_->ShowMatchPreview(preview_contents);
+void Browser::ShowInstant(TabContents* preview_contents) {
+  DCHECK(instant_->tab_contents() == GetSelectedTabContents());
+  window_->ShowInstant(preview_contents);
 }
 
-void Browser::HideMatchPreview() {
-  window_->HideMatchPreview();
+void Browser::HideInstant() {
+  window_->HideInstant();
 }
 
-void Browser::CommitMatchPreview(TabContents* preview_contents) {
-  TabContents* tab_contents = match_preview_->tab_contents();
+void Browser::CommitInstant(TabContents* preview_contents) {
+  TabContents* tab_contents = instant_->tab_contents();
   int index = tab_handler_->GetTabStripModel()->GetIndexOfTabContents(
       tab_contents);
   DCHECK_NE(-1, index);
@@ -3294,8 +3294,8 @@ void Browser::SetSuggestedText(const string16& text) {
   window()->GetLocationBar()->SetSuggestedText(text);
 }
 
-gfx::Rect Browser::GetMatchPreviewBounds() {
-  return window()->GetMatchPreviewBounds();
+gfx::Rect Browser::GetInstantBounds() {
+  return window()->GetInstantBounds();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4145,23 +4145,23 @@ void Browser::TabRestoreServiceDestroyed(TabRestoreService* service) {
   tab_restore_service_ = NULL;
 }
 
-bool Browser::OpenMatchPreview(WindowOpenDisposition disposition) {
-  if (!match_preview() || !match_preview()->is_active())
+bool Browser::OpenInstant(WindowOpenDisposition disposition) {
+  if (!instant() || !instant()->is_active())
     return false;
 
   if (disposition == CURRENT_TAB) {
-    match_preview()->CommitCurrentPreview(MATCH_PREVIEW_COMMIT_PRESSED_ENTER);
+    instant()->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
     return true;
   }
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
-    HideMatchPreview();
-    TabContents* preview_contents = match_preview()->ReleasePreviewContents(
-        MATCH_PREVIEW_COMMIT_PRESSED_ENTER);
+    HideInstant();
+    TabContents* preview_contents = instant()->ReleasePreviewContents(
+        INSTANT_COMMIT_PRESSED_ENTER);
     preview_contents->controller().PruneAllButActive();
     tab_handler_->GetTabStripModel()->AddTabContents(
         preview_contents,
         -1,
-        match_preview()->last_transition_type(),
+        instant()->last_transition_type(),
         disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_SELECTED :
                                             TabStripModel::ADD_NONE);
     return true;

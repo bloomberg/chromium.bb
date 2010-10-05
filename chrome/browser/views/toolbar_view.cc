@@ -274,8 +274,8 @@ TabContents* ToolbarView::GetTabContents() {
   return browser_->GetSelectedTabContents();
 }
 
-MatchPreview* ToolbarView::GetMatchPreview() {
-  return browser_->match_preview();
+InstantController* ToolbarView::GetInstant() {
+  return browser_->instant();
 }
 
 void ToolbarView::OnInputInProgress(bool in_progress) {

@@ -312,16 +312,16 @@ class BrowserWindow {
   virtual void OpenTabpose() = 0;
 #endif
 
-  // Invoked when the match preview's tab contents should be shown.
-  virtual void ShowMatchPreview(TabContents* preview_contents) = 0;
+  // Invoked when instant's tab contents should be shown.
+  virtual void ShowInstant(TabContents* preview_contents) = 0;
 
-  // Invoked when the match preview's tab contents should be hidden.
-  virtual void HideMatchPreview() = 0;
+  // Invoked when the instant's tab contents should be hidden.
+  virtual void HideInstant() = 0;
 
-  // Returns the desired bounds for match preview in screen coordinates. Note
-  // that if match preview isn't currently visible this returns the bounds the
-  // match preview would be placed at.
-  virtual gfx::Rect GetMatchPreviewBounds() = 0;
+  // Returns the desired bounds for instant in screen coordinates. Note that if
+  // instant isn't currently visible this returns the bounds instant would be
+  // placed at.
+  virtual gfx::Rect GetInstantBounds() = 0;
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);

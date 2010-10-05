@@ -36,9 +36,9 @@ class ContentSettingImageView;
 class EVBubbleView;
 class ExtensionAction;
 class GURL;
+class InstantController;
 class KeywordHintView;
 class LocationIconView;
-class MatchPreview;
 class PageActionWithBadgeView;
 class Profile;
 class SelectedKeywordView;
@@ -73,8 +73,8 @@ class LocationBarView : public LocationBar,
     // Should return the current tab contents.
     virtual TabContents* GetTabContents() = 0;
 
-    // Returns the MatchPreview, or NULL if there isn't one.
-    virtual MatchPreview* GetMatchPreview() = 0;
+    // Returns the InstantController, or NULL if there isn't one.
+    virtual InstantController* GetInstant() = 0;
 
     // Called by the location bar view when the user starts typing in the edit.
     // This forces our security style to be UNKNOWN for the duration of the
@@ -257,16 +257,16 @@ class LocationBarView : public LocationBar,
  private:
   typedef std::vector<ContentSettingImageView*> ContentSettingViews;
 
-  // Enumeration of what should happen to the match preview on focus lost.
-  enum MatchPreviewCommitType {
-    // The match preview should be committed immediately.
-    COMMIT_MATCH_PREVIEW_IMMEDIATELY,
+  // Enumeration of what should happen to instant on focus lost.
+  enum InstantCommitType {
+    // The instant preview should be committed immediately.
+    COMMIT_INSTANT_IMMEDIATELY,
 
-    // The match preview should be committed on mouse up.
-    COMMIT_MATCH_PREVIEW_ON_MOUSE_UP,
+    // The instant preview should be committed on mouse up.
+    COMMIT_INSTANT_ON_MOUSE_UP,
 
-    // The match preview should be reverted.
-    REVERT_MATCH_PREVIEW
+    // The instant preview should be reverted.
+    REVERT_INSTANT
   };
 
   friend class PageActionImageView;
@@ -311,9 +311,9 @@ class LocationBarView : public LocationBar,
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
-  // Returns what should happen to the MatchPreview as a result of focus being
-  // lost.
-  MatchPreviewCommitType GetCommitType(gfx::NativeView view_gaining_focus);
+  // Returns what should happen to the InstantController as a result of focus
+  // being lost.
+  InstantCommitType GetCommitType(gfx::NativeView view_gaining_focus);
 
   // Current profile. Not owned by us.
   Profile* profile_;
@@ -403,11 +403,11 @@ class LocationBarView : public LocationBar,
   scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 #endif
 
-  // Should the match preview be updated? This is set to false in
-  // OnAutocompleteWillAccept and true in OnAutocompleteAccept. This is needed
-  // as prior to accepting an autocomplete suggestion the model is reverted
-  // which triggers resetting the match preview.
-  bool update_match_preview_;
+  // Should instant be updated? This is set to false in OnAutocompleteWillAccept
+  // and true in OnAutocompleteAccept. This is needed as prior to accepting an
+  // autocomplete suggestion the model is reverted which triggers resetting
+  // instant.
+  bool update_instant_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarView);
 };

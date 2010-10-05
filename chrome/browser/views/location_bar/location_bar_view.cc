@@ -20,11 +20,11 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/tab_contents/match_preview.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/location_bar/content_setting_image_view.h"
@@ -101,7 +101,7 @@ LocationBarView::LocationBarView(Profile* profile,
       show_focus_rect_(false),
       bubble_type_(FirstRun::MINIMAL_BUBBLE),
       template_url_model_(NULL),
-      update_match_preview_(true) {
+      update_instant_(true) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
@@ -717,34 +717,34 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event,
 #endif
 
 void LocationBarView::OnAutocompleteWillClosePopup() {
-  if (!update_match_preview_)
+  if (!update_instant_)
     return;
 
-  MatchPreview* match_preview = delegate_->GetMatchPreview();
-  if (match_preview && !match_preview->commit_on_mouse_up())
-    match_preview->DestroyPreviewContents();
+  InstantController* instant = delegate_->GetInstant();
+  if (instant && !instant->commit_on_mouse_up())
+    instant->DestroyPreviewContents();
 }
 
 void LocationBarView::OnAutocompleteLosingFocus(
     gfx::NativeView view_gaining_focus) {
   SetSuggestedText(string16());
 
-  MatchPreview* match_preview = delegate_->GetMatchPreview();
-  if (!match_preview)
+  InstantController* instant = delegate_->GetInstant();
+  if (!instant)
     return;
 
-  if (!match_preview->is_active() || !match_preview->GetPreviewContents())
+  if (!instant->is_active() || !instant->GetPreviewContents())
     return;
 
   switch (GetCommitType(view_gaining_focus)) {
-    case COMMIT_MATCH_PREVIEW_IMMEDIATELY:
-      match_preview->CommitCurrentPreview(MATCH_PREVIEW_COMMIT_FOCUS_LOST);
+    case COMMIT_INSTANT_IMMEDIATELY:
+      instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
       break;
-    case COMMIT_MATCH_PREVIEW_ON_MOUSE_UP:
-      match_preview->SetCommitOnMouseUp();
+    case COMMIT_INSTANT_ON_MOUSE_UP:
+      instant->SetCommitOnMouseUp();
       break;
-    case REVERT_MATCH_PREVIEW:
-      match_preview->DestroyPreviewContents();
+    case REVERT_INSTANT:
+      instant->DestroyPreviewContents();
       break;
     default:
       NOTREACHED();
@@ -752,26 +752,26 @@ void LocationBarView::OnAutocompleteLosingFocus(
 }
 
 void LocationBarView::OnAutocompleteWillAccept() {
-  update_match_preview_ = false;
+  update_instant_ = false;
 }
 
 bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
-  MatchPreview* match_preview = delegate_->GetMatchPreview();
-  if (!match_preview || !suggested_text_view_ ||
+  InstantController* instant = delegate_->GetInstant();
+  if (!instant || !suggested_text_view_ ||
       suggested_text_view_->size().IsEmpty() ||
       suggested_text_view_->GetText().empty()) {
     return false;
   }
-  // TODO(sky): I may need to route this through MatchPreview so that we don't
+  // TODO(sky): I may need to route this through InstantController so that we don't
   // fetch suggestions for the new combined text.
   location_entry_->SetUserText(typed_text + suggested_text_view_->GetText());
   return true;
 }
 
 void LocationBarView::OnPopupBoundsChanged(const gfx::Rect& bounds) {
-  MatchPreview* match_preview = delegate_->GetMatchPreview();
-  if (match_preview)
-    match_preview->SetOmniboxBounds(bounds);
+  InstantController* instant = delegate_->GetInstant();
+  if (instant)
+    instant->SetOmniboxBounds(bounds);
 }
 
 void LocationBarView::OnAutocompleteAccept(
@@ -808,10 +808,10 @@ void LocationBarView::OnAutocompleteAccept(
     }
   }
 
-  if (delegate_->GetMatchPreview())
-    delegate_->GetMatchPreview()->DestroyPreviewContents();
+  if (delegate_->GetInstant())
+    delegate_->GetInstant()->DestroyPreviewContents();
 
-  update_match_preview_ = true;
+  update_instant_ = true;
 }
 
 void LocationBarView::OnChanged() {
@@ -821,17 +821,17 @@ void LocationBarView::OnChanged() {
   Layout();
   SchedulePaint();
 
-  MatchPreview* match_preview = delegate_->GetMatchPreview();
+  InstantController* instant = delegate_->GetInstant();
   string16 suggested_text;
-  if (update_match_preview_ && match_preview && GetTabContents()) {
+  if (update_instant_ && instant && GetTabContents()) {
     if (location_entry_->model()->user_input_in_progress() &&
         location_entry_->model()->popup_model()->IsOpen()) {
-      match_preview->Update(GetTabContents(),
-                            location_entry_->model()->CurrentMatch(),
-                            WideToUTF16(location_entry_->GetText()),
-                            &suggested_text);
+      instant->Update(GetTabContents(),
+                      location_entry_->model()->CurrentMatch(),
+                      WideToUTF16(location_entry_->GetText()),
+                      &suggested_text);
     } else {
-      match_preview->DestroyPreviewContents();
+      instant->DestroyPreviewContents();
     }
   }
 
@@ -1201,34 +1201,33 @@ void LocationBarView::OnTemplateURLModelChanged() {
   ShowFirstRunBubble(bubble_type_);
 }
 
-LocationBarView::MatchPreviewCommitType LocationBarView::GetCommitType(
+LocationBarView::InstantCommitType LocationBarView::GetCommitType(
     gfx::NativeView view_gaining_focus) {
-  // The MatchPreview is active. Destroy it if the user didn't click on the
+  // The InstantController is active. Destroy it if the user didn't click on the
   // TabContents (or one of its children).
 #if defined(OS_WIN)
-  MatchPreview* match_preview = delegate_->GetMatchPreview();
+  InstantController* instant = delegate_->GetInstant();
   RenderWidgetHostView* rwhv =
-      match_preview->GetPreviewContents()->GetRenderWidgetHostView();
+      instant->GetPreviewContents()->GetRenderWidgetHostView();
   if (!view_gaining_focus || !rwhv)
-    return REVERT_MATCH_PREVIEW;
+    return REVERT_INSTANT;
 
-  gfx::NativeView tab_view =
-      match_preview->GetPreviewContents()->GetNativeView();
+  gfx::NativeView tab_view = instant->GetPreviewContents()->GetNativeView();
   if (rwhv->GetNativeView() == view_gaining_focus ||
       tab_view == view_gaining_focus) {
-    // Focus is going to the renderer. Only commit the match preview if the
-    // mouse is down. If the mouse isn't down it means someone else moved focus
-    // and we shouldn't commit.
-    if (match_preview->IsMouseDownFromActivate()) {
-      if (match_preview->IsShowingInstant()) {
+    // Focus is going to the renderer. Only commit instant if the mouse is
+    // down. If the mouse isn't down it means someone else moved focus and we
+    // shouldn't commit.
+    if (instant->IsMouseDownFromActivate()) {
+      if (instant->IsShowingInstant()) {
         // We're showing instant results. As instant results may shift when
         // committing we commit on the mouse up. This way a slow click still
         // works fine.
-        return COMMIT_MATCH_PREVIEW_ON_MOUSE_UP;
+        return COMMIT_INSTANT_ON_MOUSE_UP;
       }
-      return COMMIT_MATCH_PREVIEW_IMMEDIATELY;
+      return COMMIT_INSTANT_IMMEDIATELY;
     }
-    return REVERT_MATCH_PREVIEW;
+    return REVERT_INSTANT;
   }
   gfx::NativeView view_gaining_focus_ancestor = view_gaining_focus;
   while (view_gaining_focus_ancestor &&
@@ -1236,10 +1235,10 @@ LocationBarView::MatchPreviewCommitType LocationBarView::GetCommitType(
     view_gaining_focus_ancestor = ::GetParent(view_gaining_focus_ancestor);
   }
   return view_gaining_focus_ancestor != NULL ?
-      COMMIT_MATCH_PREVIEW_IMMEDIATELY : REVERT_MATCH_PREVIEW;
+      COMMIT_INSTANT_IMMEDIATELY : REVERT_INSTANT;
 #else
   // TODO: implement me.
   NOTIMPLEMENTED();
-  return REVERT_MATCH_PREVIEW;
+  return REVERT_INSTANT;
 #endif
 }

@@ -103,9 +103,9 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void Paste() {}
   virtual void ToggleTabStripMode() {}
   virtual void OpenTabpose() {}
-  virtual void ShowMatchPreview(TabContents* preview_contents) {}
-  virtual void HideMatchPreview() {}
-  virtual gfx::Rect GetMatchPreviewBounds() { return gfx::Rect(); }
+  virtual void ShowInstant(TabContents* preview_contents) {}
+  virtual void HideInstant() {}
+  virtual gfx::Rect GetInstantBounds() { return gfx::Rect(); }
 
  protected:
   virtual void DestroyBrowser() {}

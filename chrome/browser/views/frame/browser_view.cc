@@ -26,6 +26,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/dom_ui/bug_report_ui.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sidebar/sidebar_container.h"
 #include "chrome/browser/sidebar/sidebar_manager.h"
-#include "chrome/browser/tab_contents/match_preview.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -1355,14 +1355,14 @@ void BrowserView::ToggleTabStripMode() {
   frame_->TabStripDisplayModeChanged();
 }
 
-void BrowserView::ShowMatchPreview(TabContents* preview_contents) {
+void BrowserView::ShowInstant(TabContents* preview_contents) {
   if (!preview_container_)
     preview_container_ = new TabContentsContainer();
   contents_->SetPreview(preview_container_, preview_contents);
   preview_container_->ChangeTabContents(preview_contents);
 }
 
-void BrowserView::HideMatchPreview() {
+void BrowserView::HideInstant() {
   if (!preview_container_)
     return;
 
@@ -1373,7 +1373,7 @@ void BrowserView::HideMatchPreview() {
   preview_container_ = NULL;
 }
 
-gfx::Rect BrowserView::GetMatchPreviewBounds() {
+gfx::Rect BrowserView::GetInstantBounds() {
   return contents_->GetPreviewBounds();
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/match_preview_loader.h"
+#include "chrome/browser/instant/instant_loader.h"
 
 #include <algorithm>
 
@@ -12,12 +12,12 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history_marshaling.h"
+#include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/tab_contents/match_preview_loader_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -114,11 +114,11 @@ void SendOmniboxBoundsScript(TabContents* tab_contents,
 
 // FrameLoadObserver is responsible for waiting for the TabContents to finish
 // loading and when done sending the necessary script down to the page.
-class MatchPreviewLoader::FrameLoadObserver : public NotificationObserver {
+class InstantLoader::FrameLoadObserver : public NotificationObserver {
  public:
-  FrameLoadObserver(MatchPreviewLoader* match_preview, const string16& text)
-      : match_preview_(match_preview),
-        tab_contents_(match_preview->preview_contents()),
+  FrameLoadObserver(InstantLoader* loader, const string16& text)
+      : loader_(loader),
+        tab_contents_(loader->preview_contents()),
         unique_id_(tab_contents_->controller().pending_entry()->unique_id()),
         text_(text),
         pressed_enter_(false) {
@@ -131,10 +131,10 @@ class MatchPreviewLoader::FrameLoadObserver : public NotificationObserver {
   // Sets the text to send to the page.
   void set_text(const string16& text) { text_ = text; }
 
-  // Invoked when the MatchPreviewLoader releases ownership of the TabContents
-  // and the page hasn't finished loading.
+  // Invoked when the InstantLoader releases ownership of the TabContents and
+  // the page hasn't finished loading.
   void DetachFromPreview(bool pressed_enter) {
-    match_preview_ = NULL;
+    loader_ = NULL;
     pressed_enter_ = pressed_enter;
   }
 
@@ -152,16 +152,16 @@ class MatchPreviewLoader::FrameLoadObserver : public NotificationObserver {
           return;
         }
 
-        if (match_preview_) {
-          gfx::Rect bounds = match_preview_->GetOmniboxBoundsInTermsOfPreview();
+        if (loader_) {
+          gfx::Rect bounds = loader_->GetOmniboxBoundsInTermsOfPreview();
           if (!bounds.IsEmpty())
             SendOmniboxBoundsScript(tab_contents_, bounds);
         }
 
         SendUserInputScript(tab_contents_, text_);
 
-        if (match_preview_)
-          match_preview_->PageFinishedLoading();
+        if (loader_)
+          loader_->PageFinishedLoading();
         else
           SendDoneScript(tab_contents_, text_, pressed_enter_);
 
@@ -180,8 +180,8 @@ class MatchPreviewLoader::FrameLoadObserver : public NotificationObserver {
   }
 
  private:
-  // MatchPreviewLoader that created us.
-  MatchPreviewLoader* match_preview_;
+  // InstantLoader that created us.
+  InstantLoader* loader_;
 
   // The TabContents we're listening for changes on.
   TabContents* tab_contents_;
@@ -202,33 +202,32 @@ class MatchPreviewLoader::FrameLoadObserver : public NotificationObserver {
 };
 
 // PaintObserver implementation. When the RenderWidgetHost paints itself this
-// notifies MatchPreviewLoader, which makes the TabContents active.
-class MatchPreviewLoader::PaintObserverImpl
+// notifies InstantLoader, which makes the TabContents active.
+class InstantLoader::PaintObserverImpl
     : public RenderWidgetHost::PaintObserver {
  public:
-  explicit PaintObserverImpl(MatchPreviewLoader* preview)
-      : match_preview_(preview) {
+  explicit PaintObserverImpl(InstantLoader* loader) : loader_(loader) {
   }
 
   virtual void RenderWidgetHostWillPaint(RenderWidgetHost* rwh) {
   }
 
   virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh) {
-    match_preview_->PreviewPainted();
+    loader_->PreviewPainted();
     rwh->set_paint_observer(NULL);
     // WARNING: we've been deleted.
   }
 
  private:
-  MatchPreviewLoader* match_preview_;
+  InstantLoader* loader_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintObserverImpl);
 };
 
-class MatchPreviewLoader::TabContentsDelegateImpl : public TabContentsDelegate {
+class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
  public:
-  explicit TabContentsDelegateImpl(MatchPreviewLoader* match_preview)
-      : match_preview_(match_preview),
+  explicit TabContentsDelegateImpl(InstantLoader* loader)
+      : loader_(loader),
         installed_paint_observer_(false),
         waiting_for_new_page_(true),
         is_mouse_down_from_activate_(false) {
@@ -253,7 +252,7 @@ class MatchPreviewLoader::TabContentsDelegateImpl : public TabContentsDelegate {
 
   // Commits the currently buffered history.
   void CommitHistory() {
-    TabContents* tab = match_preview_->preview_contents();
+    TabContents* tab = loader_->preview_contents();
     if (tab->profile()->IsOffTheRecord())
       return;
 
@@ -292,7 +291,7 @@ class MatchPreviewLoader::TabContentsDelegateImpl : public TabContentsDelegate {
       // preview after the first paint we would end up with a white rect.
       installed_paint_observer_ = true;
       source->GetRenderWidgetHostView()->GetRenderWidgetHost()->
-          set_paint_observer(new PaintObserverImpl(match_preview_));
+          set_paint_observer(new PaintObserverImpl(loader_));
     }
   }
   virtual void AddNewContents(TabContents* source,
@@ -317,7 +316,7 @@ class MatchPreviewLoader::TabContentsDelegateImpl : public TabContentsDelegate {
     return false;
   }
   virtual void WillShowConstrainedWindow(TabContents* source) {
-    if (!match_preview_->ready()) {
+    if (!loader_->ready()) {
       // A constrained window shown for an auth may not paint. Show the preview
       // contents.
       if (installed_paint_observer_) {
@@ -325,7 +324,7 @@ class MatchPreviewLoader::TabContentsDelegateImpl : public TabContentsDelegate {
             set_paint_observer(NULL);
       }
       installed_paint_observer_ = true;
-      match_preview_->ShowPreview();
+      loader_->ShowPreview();
     }
   }
   virtual TabContents* GetConstrainingContents(TabContents* source) {
@@ -421,11 +420,11 @@ class MatchPreviewLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void ContentTypeChanged(TabContents* source) {}
 
   virtual void OnSetSuggestResult(int32 page_id, const std::string& result) {
-    TabContents* source = match_preview_->preview_contents();
+    TabContents* source = loader_->preview_contents();
     // TODO: only allow for default search provider.
     if (source->controller().GetActiveEntry() &&
         page_id == source->controller().GetActiveEntry()->page_id()) {
-      match_preview_->SetCompleteSuggestedText(UTF8ToUTF16(result));
+      loader_->SetCompleteSuggestedText(UTF8ToUTF16(result));
     }
   }
 
@@ -436,20 +435,20 @@ class MatchPreviewLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   void CommitFromMouseReleaseIfNecessary() {
     bool was_down = is_mouse_down_from_activate_;
     is_mouse_down_from_activate_ = false;
-    if (was_down && match_preview_->ShouldCommitPreviewOnMouseUp())
-      match_preview_->CommitPreview();
+    if (was_down && loader_->ShouldCommitInstantOnMouseUp())
+      loader_->CommitInstantLoader();
   }
 
-  MatchPreviewLoader* match_preview_;
+  InstantLoader* loader_;
 
   // Has the paint observer been installed? See comment in
   // NavigationStateChanged for details on this.
   bool installed_paint_observer_;
 
   // Used to cache data that needs to be added to history. Normally entries are
-  // added to history as the user types, but for match preview we only want to
-  // add the items to history if the user commits the match preview. So, we
-  // cache them here and if committed then add the items to history.
+  // added to history as the user types, but for instant we only want to add the
+  // items to history if the user commits instant. So, we cache them here and if
+  // committed then add the items to history.
   AddPageVector add_page_vector_;
 
   // Are we we waiting for a NavigationType of NEW_PAGE? If we're waiting for
@@ -462,25 +461,24 @@ class MatchPreviewLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
 };
 
-MatchPreviewLoader::MatchPreviewLoader(MatchPreviewLoaderDelegate* delegate,
-                                       TemplateURLID id)
+InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
     : delegate_(delegate),
       template_url_id_(id),
       ready_(false) {
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
 }
 
-MatchPreviewLoader::~MatchPreviewLoader() {
+InstantLoader::~InstantLoader() {
   // Delete the TabContents before the delegate as the TabContents holds a
   // reference to the delegate.
   preview_contents_.reset(NULL);
 }
 
-void MatchPreviewLoader::Update(TabContents* tab_contents,
-                                const AutocompleteMatch& match,
-                                const string16& user_text,
-                                const TemplateURL* template_url,
-                                string16* suggested_text) {
+void InstantLoader::Update(TabContents* tab_contents,
+                           const AutocompleteMatch& match,
+                           const string16& user_text,
+                           const TemplateURL* template_url,
+                           string16* suggested_text) {
   DCHECK(url_ != match.destination_url);
 
   url_ = match.destination_url;
@@ -543,7 +541,7 @@ void MatchPreviewLoader::Update(TabContents* tab_contents,
   }
 }
 
-void MatchPreviewLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
+void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
   if (omnibox_bounds_ == bounds)
     return;
 
@@ -555,41 +553,40 @@ void MatchPreviewLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
   }
 }
 
-void MatchPreviewLoader::DestroyPreviewContents() {
+void InstantLoader::DestroyPreviewContents() {
   if (!preview_contents_.get()) {
     // We're not showing anything, nothing to do.
     return;
   }
 
-  delete ReleasePreviewContents(MATCH_PREVIEW_COMMIT_DESTROY);
+  delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);
 }
 
-bool MatchPreviewLoader::IsMouseDownFromActivate() {
+bool InstantLoader::IsMouseDownFromActivate() {
   return preview_tab_contents_delegate_->is_mouse_down_from_activate();
 }
 
-TabContents* MatchPreviewLoader::ReleasePreviewContents(
-    MatchPreviewCommitType type) {
+TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type) {
   if (!preview_contents_.get())
     return NULL;
 
   if (frame_load_observer_.get()) {
     frame_load_observer_->DetachFromPreview(
-        type == MATCH_PREVIEW_COMMIT_PRESSED_ENTER);
+        type == INSTANT_COMMIT_PRESSED_ENTER);
     // FrameLoadObserver will delete itself either when the TabContents is
     // deleted, or when the page finishes loading.
     FrameLoadObserver* unused ALLOW_UNUSED = frame_load_observer_.release();
-  } else if (type != MATCH_PREVIEW_COMMIT_DESTROY && is_showing_instant()) {
+  } else if (type != INSTANT_COMMIT_DESTROY && is_showing_instant()) {
     SendDoneScript(preview_contents_.get(),
                    user_text_,
-                   type == MATCH_PREVIEW_COMMIT_PRESSED_ENTER);
+                   type == INSTANT_COMMIT_PRESSED_ENTER);
   }
   omnibox_bounds_ = gfx::Rect();
   url_ = GURL();
   user_text_.clear();
   complete_suggested_text_.clear();
   if (preview_contents_.get()) {
-    if (type != MATCH_PREVIEW_COMMIT_DESTROY)
+    if (type != INSTANT_COMMIT_DESTROY)
       preview_tab_contents_delegate_->CommitHistory();
     // Destroy the paint observer.
     // RenderWidgetHostView may be null during shutdown.
@@ -604,15 +601,15 @@ TabContents* MatchPreviewLoader::ReleasePreviewContents(
   return preview_contents_.release();
 }
 
-bool MatchPreviewLoader::ShouldCommitPreviewOnMouseUp() {
-  return delegate_->ShouldCommitPreviewOnMouseUp();
+bool InstantLoader::ShouldCommitInstantOnMouseUp() {
+  return delegate_->ShouldCommitInstantOnMouseUp();
 }
 
-void MatchPreviewLoader::CommitPreview() {
-  delegate_->CommitPreview(this);
+void InstantLoader::CommitInstantLoader() {
+  delegate_->CommitInstantLoader(this);
 }
 
-void MatchPreviewLoader::SetCompleteSuggestedText(
+void InstantLoader::SetCompleteSuggestedText(
     const string16& complete_suggested_text) {
   if (complete_suggested_text == complete_suggested_text_)
     return;
@@ -631,27 +628,27 @@ void MatchPreviewLoader::SetCompleteSuggestedText(
       complete_suggested_text_.substr(user_text_.size()));
 }
 
-void MatchPreviewLoader::PreviewPainted() {
+void InstantLoader::PreviewPainted() {
   ShowPreview();
 }
 
-void MatchPreviewLoader::ShowPreview() {
+void InstantLoader::ShowPreview() {
   if (!ready_) {
     ready_ = true;
-    delegate_->ShowMatchPreviewLoader(this);
+    delegate_->ShowInstantLoader(this);
   }
 }
 
-void MatchPreviewLoader::PageFinishedLoading() {
+void InstantLoader::PageFinishedLoading() {
   // FrameLoadObserver deletes itself after this call.
   FrameLoadObserver* unused ALLOW_UNUSED = frame_load_observer_.release();
 }
 
-gfx::Rect MatchPreviewLoader::GetOmniboxBoundsInTermsOfPreview() {
+gfx::Rect InstantLoader::GetOmniboxBoundsInTermsOfPreview() {
   if (omnibox_bounds_.IsEmpty())
     return omnibox_bounds_;
 
-  gfx::Rect preview_bounds(delegate_->GetMatchPreviewBounds());
+  gfx::Rect preview_bounds(delegate_->GetInstantBounds());
   return gfx::Rect(omnibox_bounds_.x() - preview_bounds.x(),
                    omnibox_bounds_.y() - preview_bounds.y(),
                    omnibox_bounds_.width(),

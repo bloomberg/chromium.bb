@@ -2,32 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_MATCH_PREVIEW_LOADER_H_
-#define CHROME_BROWSER_TAB_CONTENTS_MATCH_PREVIEW_LOADER_H_
+#ifndef CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
+#define CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/browser/tab_contents/match_preview_commit_type.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
 struct AutocompleteMatch;
-class LoaderManagerTest;
-class MatchPreviewLoaderDelegate;
+class InstantLoaderDelegate;
+class InstantLoaderManagerTest;
 class TabContents;
 class TemplateURL;
 
-// MatchPreviewLoader does the loading of a particular URL for MatchPreview.
-// MatchPreviewLoader notifies its delegate, which is typically MatchPreview,
-// of all interesting events.
-class MatchPreviewLoader {
+// InstantLoader does the loading of a particular URL for InstantController.
+// InstantLoader notifies its delegate, which is typically InstantController, of
+// all interesting events.
+class InstantLoader {
  public:
-  MatchPreviewLoader(MatchPreviewLoaderDelegate* delegate, TemplateURLID id);
-  ~MatchPreviewLoader();
+  InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id);
+  ~InstantLoader();
 
   // Invoked to load a URL. |tab_contents| is the TabContents the preview is
   // going to be shown on top of and potentially replace.
@@ -53,11 +53,11 @@ class MatchPreviewLoader {
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
   // not notify the delegate.
-  TabContents* ReleasePreviewContents(MatchPreviewCommitType type);
+  TabContents* ReleasePreviewContents(InstantCommitType type);
 
   // Calls through to method of same name on delegate.
-  bool ShouldCommitPreviewOnMouseUp();
-  void CommitPreview();
+  bool ShouldCommitInstantOnMouseUp();
+  void CommitInstantLoader();
 
   // The preview TabContents; may be null.
   TabContents* preview_contents() const { return preview_contents_.get(); }
@@ -74,7 +74,7 @@ class MatchPreviewLoader {
   TemplateURLID template_url_id() const { return template_url_id_; }
 
  private:
-  friend class LoaderManagerTest;
+  friend class InstantLoaderManagerTest;
   class FrameLoadObserver;
   class PaintObserverImpl;
   class TabContentsDelegateImpl;
@@ -103,7 +103,7 @@ class MatchPreviewLoader {
     return frame_load_observer_.get() != NULL;
   }
 
-  MatchPreviewLoaderDelegate* delegate_;
+  InstantLoaderDelegate* delegate_;
 
   // If we're showing instant results this is the ID of the TemplateURL driving
   // the results. A value of 0 means there is no TemplateURL.
@@ -133,7 +133,7 @@ class MatchPreviewLoader {
 
   scoped_ptr<FrameLoadObserver> frame_load_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(MatchPreviewLoader);
+  DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_MATCH_PREVIEW_LOADER_H_
+#endif  // CHROME_BROWSER_INSTANT_INSTANT_LOADER_H_

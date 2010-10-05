@@ -2,39 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_MATCH_PREVIEW_H_
-#define CHROME_BROWSER_TAB_CONTENTS_MATCH_PREVIEW_H_
+#ifndef CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
+#define CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/instant/instant_commit_type.h"
+#include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/search_engines/template_url_id.h"
-#include "chrome/browser/tab_contents/match_preview_commit_type.h"
-#include "chrome/browser/tab_contents/match_preview_loader_delegate.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
 struct AutocompleteMatch;
-class LoaderManager;
-class MatchPreviewDelegate;
+class InstantDelegate;
+class InstantLoaderManager;
 class TabContents;
 
-// MatchPreview maintains a TabContents that is intended to give a preview of
-// a URL. MatchPreview is owned by Browser.
+// InstantController maintains a TabContents that is intended to give a preview
+// of a URL. InstantController is owned by Browser.
 //
-// At any time the TabContents maintained by MatchPreview may be destroyed by
-// way of |DestroyPreviewContents|, which results in |HideMatchPreview| being
+// At any time the TabContents maintained by InstantController may be destroyed
+// by way of |DestroyPreviewContents|, which results in |HideInstant| being
 // invoked on the delegate. Similarly the preview may be committed at any time
-// by invoking |CommitCurrentPreview|, which results in |CommitMatchPreview|
+// by invoking |CommitCurrentPreview|, which results in |CommitInstant|
 // being invoked on the delegate.
-class MatchPreview : public MatchPreviewLoaderDelegate {
+class InstantController : public InstantLoaderDelegate {
  public:
-  explicit MatchPreview(MatchPreviewDelegate* delegate);
-  ~MatchPreview();
+  explicit InstantController(InstantDelegate* delegate);
+  ~InstantController();
 
-  // Is MatchPreview enabled?
+  // Is InstantController enabled?
   static bool IsEnabled();
 
   // Invoked as the user types in the omnibox with the url to navigate to.  If
@@ -57,9 +57,9 @@ class MatchPreview : public MatchPreviewLoaderDelegate {
 
   // Invoked when the user does some gesture that should trigger making the
   // current previewed page the permanent page.
-  void CommitCurrentPreview(MatchPreviewCommitType type);
+  void CommitCurrentPreview(InstantCommitType type);
 
-  // Sets MatchPreview so that when the mouse is released the preview is
+  // Sets InstantController so that when the mouse is released the preview is
   // committed.
   void SetCommitOnMouseUp();
 
@@ -72,7 +72,7 @@ class MatchPreview : public MatchPreviewLoaderDelegate {
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
   // not notify the delegate.
-  TabContents* ReleasePreviewContents(MatchPreviewCommitType type);
+  TabContents* ReleasePreviewContents(InstantCommitType type);
 
   // TabContents the match is being shown for.
   TabContents* tab_contents() const { return tab_contents_; }
@@ -92,13 +92,13 @@ class MatchPreview : public MatchPreviewLoaderDelegate {
   // Are we showing instant results?
   bool IsShowingInstant();
 
-  // MatchPreviewLoaderDelegate
-  virtual void ShowMatchPreviewLoader(MatchPreviewLoader* loader);
-  virtual void SetSuggestedTextFor(MatchPreviewLoader* loader,
+  // InstantLoaderDelegate
+  virtual void ShowInstantLoader(InstantLoader* loader);
+  virtual void SetSuggestedTextFor(InstantLoader* loader,
                                    const string16& text);
-  virtual gfx::Rect GetMatchPreviewBounds();
-  virtual bool ShouldCommitPreviewOnMouseUp();
-  virtual void CommitPreview(MatchPreviewLoader* loader);
+  virtual gfx::Rect GetInstantBounds();
+  virtual bool ShouldCommitInstantOnMouseUp();
+  virtual void CommitInstantLoader(InstantLoader* loader);
 
  private:
   // Invoked when the page wants to update the suggested text. If |user_text_|
@@ -117,7 +117,7 @@ class MatchPreview : public MatchPreviewLoaderDelegate {
   // Returns true if we should show preview for |url|.
   bool ShouldShowPreviewFor(const GURL& url);
 
-  MatchPreviewDelegate* delegate_;
+  InstantDelegate* delegate_;
 
   // The TabContents last passed to |Update|.
   TabContents* tab_contents_;
@@ -135,9 +135,9 @@ class MatchPreview : public MatchPreviewLoaderDelegate {
   // See description above getter.
   PageTransition::Type last_transition_type_;
 
-  scoped_ptr<LoaderManager> loader_manager_;
+  scoped_ptr<InstantLoaderManager> loader_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(MatchPreview);
+  DISALLOW_COPY_AND_ASSIGN(InstantController);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_MATCH_PREVIEW_H_
+#endif  // CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_

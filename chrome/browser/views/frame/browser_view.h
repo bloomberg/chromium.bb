@@ -321,9 +321,9 @@ class BrowserView : public BrowserBubbleHost,
   virtual void Copy();
   virtual void Paste();
   virtual void ToggleTabStripMode();
-  virtual void ShowMatchPreview(TabContents* preview_contents);
-  virtual void HideMatchPreview();
-  virtual gfx::Rect GetMatchPreviewBounds();
+  virtual void ShowInstant(TabContents* preview_contents);
+  virtual void HideInstant();
+  virtual gfx::Rect GetInstantBounds();
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;
@@ -496,7 +496,7 @@ class BrowserView : public BrowserBubbleHost,
   // Initialize the hung plugin detector.
   void InitHangMonitor();
 
-  // Invoked from TabSelectedAt or when the match preview is made active.  Is
+  // Invoked from TabSelectedAt or when instant is made active.  Is
   // |change_tab_contents| is true, |new_contents| is added to the view
   // hierarchy, if |change_tab_contents| is false, it's assumed |new_contents|
   // has already been added to the view hierarchy.
@@ -584,7 +584,7 @@ class BrowserView : public BrowserBubbleHost,
   // The view that contains devtools window for the selected TabContents.
   TabContentsContainer* devtools_container_;
 
-  // The view that contains the match preview TabContents.
+  // The view that contains instant's TabContents.
   TabContentsContainer* preview_container_;
 
   // The view managing both the contents_container_ and preview_container_.

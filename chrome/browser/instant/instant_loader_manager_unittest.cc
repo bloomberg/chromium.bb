@@ -3,56 +3,56 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/tab_contents/loader_manager.h"
-#include "chrome/browser/tab_contents/match_preview_loader.h"
-#include "chrome/browser/tab_contents/match_preview_loader_delegate.h"
+#include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/instant/instant_loader_delegate.h"
+#include "chrome/browser/instant/instant_loader_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class MatchPreviewLoaderDelegateImpl : public MatchPreviewLoaderDelegate {
+class InstantLoaderDelegateImpl : public InstantLoaderDelegate {
  public:
-  MatchPreviewLoaderDelegateImpl() {}
+  InstantLoaderDelegateImpl() {}
 
-  virtual void ShowMatchPreviewLoader(MatchPreviewLoader* loader) {}
+  virtual void ShowInstantLoader(InstantLoader* loader) {}
 
-  virtual void SetSuggestedTextFor(MatchPreviewLoader* loader,
+  virtual void SetSuggestedTextFor(InstantLoader* loader,
                                    const string16& text) {}
 
-  virtual gfx::Rect GetMatchPreviewBounds() {
+  virtual gfx::Rect GetInstantBounds() {
     return gfx::Rect();
   }
 
-  virtual bool ShouldCommitPreviewOnMouseUp() {
+  virtual bool ShouldCommitInstantOnMouseUp() {
     return false;
   }
 
-  virtual void CommitPreview(MatchPreviewLoader* loader) {
+  virtual void CommitInstantLoader(InstantLoader* loader) {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MatchPreviewLoaderDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(InstantLoaderDelegateImpl);
 };
 
 }
 
-class LoaderManagerTest : public testing::Test {
+class InstantLoaderManagerTest : public testing::Test {
  public:
-  LoaderManagerTest() {}
+  InstantLoaderManagerTest() {}
 
-  void MarkReady(MatchPreviewLoader* loader) {
+  void MarkReady(InstantLoader* loader) {
     loader->ready_ = true;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LoaderManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(InstantLoaderManagerTest);
 };
 
 // Makes sure UpdateLoader works when invoked once.
-TEST_F(LoaderManagerTest, Basic) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, Basic) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(0, &loader);
   EXPECT_EQ(NULL, loader.get());
   EXPECT_TRUE(manager.current_loader());
@@ -62,12 +62,12 @@ TEST_F(LoaderManagerTest, Basic) {
 
 // Make sure invoking update twice for non-instant results keeps the same
 // loader.
-TEST_F(LoaderManagerTest, UpdateTwice) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, UpdateTwice) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(0, &loader);
-  MatchPreviewLoader* current_loader = manager.current_loader();
+  InstantLoader* current_loader = manager.current_loader();
   manager.UpdateLoader(0, &loader);
   EXPECT_EQ(NULL, loader.get());
   EXPECT_EQ(current_loader, manager.current_loader());
@@ -75,12 +75,12 @@ TEST_F(LoaderManagerTest, UpdateTwice) {
 }
 
 // Make sure invoking update twice for instant results keeps the same loader.
-TEST_F(LoaderManagerTest, UpdateInstantTwice) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, UpdateInstantTwice) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(1, &loader);
-  MatchPreviewLoader* current_loader = manager.current_loader();
+  InstantLoader* current_loader = manager.current_loader();
   manager.UpdateLoader(1, &loader);
   EXPECT_EQ(NULL, loader.get());
   EXPECT_EQ(current_loader, manager.current_loader());
@@ -89,12 +89,12 @@ TEST_F(LoaderManagerTest, UpdateInstantTwice) {
 }
 
 // Makes sure transitioning from non-instant to instant works.
-TEST_F(LoaderManagerTest, NonInstantToInstant) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, NonInstantToInstant) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(0, &loader);
-  MatchPreviewLoader* current_loader = manager.current_loader();
+  InstantLoader* current_loader = manager.current_loader();
   manager.UpdateLoader(1, &loader);
   EXPECT_TRUE(loader.get() != NULL);
   EXPECT_NE(current_loader, manager.current_loader());
@@ -104,12 +104,12 @@ TEST_F(LoaderManagerTest, NonInstantToInstant) {
 
 // Makes sure instant loaders aren't deleted when invoking update with different
 // ids.
-TEST_F(LoaderManagerTest, DontDeleteInstantLoaders) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, DontDeleteInstantLoaders) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(1, &loader);
-  MatchPreviewLoader* current_loader = manager.current_loader();
+  InstantLoader* current_loader = manager.current_loader();
   manager.UpdateLoader(2, &loader);
   EXPECT_EQ(NULL, loader.get());
   EXPECT_NE(current_loader, manager.current_loader());
@@ -119,12 +119,12 @@ TEST_F(LoaderManagerTest, DontDeleteInstantLoaders) {
 
 // Makes sure a new loader is created and assigned to secondary when
 // transitioning from a ready non-instant to instant.
-TEST_F(LoaderManagerTest, CreateSecondaryWhenReady) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, CreateSecondaryWhenReady) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(0, &loader);
-  MatchPreviewLoader* current_loader = manager.current_loader();
+  InstantLoader* current_loader = manager.current_loader();
   ASSERT_TRUE(current_loader);
   MarkReady(current_loader);
 
@@ -136,7 +136,7 @@ TEST_F(LoaderManagerTest, CreateSecondaryWhenReady) {
   EXPECT_EQ(1u, manager.num_instant_loaders());
 
   // Make the pending loader current.
-  MatchPreviewLoader* pending_loader = manager.pending_loader();
+  InstantLoader* pending_loader = manager.pending_loader();
   manager.MakePendingCurrent(&loader);
   EXPECT_TRUE(loader.get());
   EXPECT_EQ(pending_loader, manager.current_loader());
@@ -145,12 +145,12 @@ TEST_F(LoaderManagerTest, CreateSecondaryWhenReady) {
 }
 
 // Makes sure releasing an instant updates maps currectly.
-TEST_F(LoaderManagerTest, ReleaseInstant) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, ReleaseInstant) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(1, &loader);
-  scoped_ptr<MatchPreviewLoader> current_loader(manager.ReleaseCurrentLoader());
+  scoped_ptr<InstantLoader> current_loader(manager.ReleaseCurrentLoader());
   EXPECT_TRUE(current_loader.get());
   EXPECT_EQ(NULL, manager.current_loader());
   EXPECT_EQ(0u, manager.num_instant_loaders());
@@ -158,17 +158,17 @@ TEST_F(LoaderManagerTest, ReleaseInstant) {
 
 // Tests transitioning from a non-instant ready loader to an instant ready
 // loader is immediate.
-TEST_F(LoaderManagerTest, NonInstantToInstantWhenReady) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, NonInstantToInstantWhenReady) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(1, &loader);
   ASSERT_TRUE(manager.current_loader());
   EXPECT_EQ(1, manager.current_loader()->template_url_id());
-  MatchPreviewLoader* instant_loader = manager.current_loader();
+  InstantLoader* instant_loader = manager.current_loader();
 
   manager.UpdateLoader(0, &loader);
-  MatchPreviewLoader* non_instant_loader = manager.current_loader();
+  InstantLoader* non_instant_loader = manager.current_loader();
   ASSERT_TRUE(non_instant_loader);
   MarkReady(non_instant_loader);
   EXPECT_NE(non_instant_loader, instant_loader);
@@ -182,25 +182,25 @@ TEST_F(LoaderManagerTest, NonInstantToInstantWhenReady) {
 }
 
 // Tests transitioning between 3 instant loaders, all ready.
-TEST_F(LoaderManagerTest, ThreeInstant) {
-  MatchPreviewLoaderDelegateImpl delegate;
-  LoaderManager manager(&delegate);
-  scoped_ptr<MatchPreviewLoader> loader;
+TEST_F(InstantLoaderManagerTest, ThreeInstant) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
   manager.UpdateLoader(1, &loader);
   ASSERT_TRUE(manager.current_loader());
   EXPECT_EQ(1, manager.current_loader()->template_url_id());
-  MatchPreviewLoader* instant_loader1 = manager.current_loader();
+  InstantLoader* instant_loader1 = manager.current_loader();
   MarkReady(instant_loader1);
 
   manager.UpdateLoader(2, &loader);
-  MatchPreviewLoader* instant_loader2 = manager.pending_loader();
+  InstantLoader* instant_loader2 = manager.pending_loader();
   ASSERT_TRUE(instant_loader2);
   EXPECT_EQ(2, instant_loader2->template_url_id());
   EXPECT_NE(instant_loader1, instant_loader2);
   EXPECT_EQ(instant_loader1, manager.current_loader());
 
   manager.UpdateLoader(3, &loader);
-  MatchPreviewLoader* instant_loader3 = manager.pending_loader();
+  InstantLoader* instant_loader3 = manager.pending_loader();
   ASSERT_TRUE(instant_loader3);
   EXPECT_EQ(3, instant_loader3->template_url_id());
   EXPECT_NE(instant_loader1, instant_loader3);

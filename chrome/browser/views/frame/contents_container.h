@@ -17,7 +17,7 @@ class Widget;
 
 // ContentsContainer is responsible for managing the TabContents views.
 // ContentsContainer has up to two children: one for the currently active
-// TabContents and one for the match preview TabContents.
+// TabContents and one for instant's TabContents.
 class ContentsContainer : public views::View {
  public:
   ContentsContainer(BrowserView* browser_view, views::View* active);

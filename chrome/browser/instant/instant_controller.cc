@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/match_preview.h"
+#include "chrome/browser/instant/instant_controller.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/instant/instant_delegate.h"
+#include "chrome/browser/instant/instant_loader.h"
+#include "chrome/browser/instant/instant_loader_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/tab_contents/loader_manager.h"
-#include "chrome/browser/tab_contents/match_preview_delegate.h"
-#include "chrome/browser/tab_contents/match_preview_loader.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 
 // static
-bool MatchPreview::IsEnabled() {
+bool InstantController::IsEnabled() {
   static bool enabled = false;
   static bool checked = false;
   if (!checked) {
@@ -28,7 +28,7 @@ bool MatchPreview::IsEnabled() {
   return enabled;
 }
 
-MatchPreview::MatchPreview(MatchPreviewDelegate* delegate)
+InstantController::InstantController(InstantDelegate* delegate)
     : delegate_(delegate),
       tab_contents_(NULL),
       is_active_(false),
@@ -36,13 +36,13 @@ MatchPreview::MatchPreview(MatchPreviewDelegate* delegate)
       last_transition_type_(PageTransition::LINK) {
 }
 
-MatchPreview::~MatchPreview() {
+InstantController::~InstantController() {
 }
 
-void MatchPreview::Update(TabContents* tab_contents,
-                          const AutocompleteMatch& match,
-                          const string16& user_text,
-                          string16* suggested_text) {
+void InstantController::Update(TabContents* tab_contents,
+                               const AutocompleteMatch& match,
+                               const string16& user_text,
+                               string16* suggested_text) {
   if (tab_contents != tab_contents_)
     DestroyPreviewContents();
 
@@ -61,7 +61,7 @@ void MatchPreview::Update(TabContents* tab_contents,
   }
 
   if (!loader_manager_.get())
-    loader_manager_.reset(new LoaderManager(this));
+    loader_manager_.reset(new InstantLoaderManager(this));
 
   const TemplateURL* template_url = match.template_url;
   if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
@@ -79,19 +79,19 @@ void MatchPreview::Update(TabContents* tab_contents,
   }
   TemplateURLID template_url_id = template_url ? template_url->id() : 0;
 
-  MatchPreviewLoader* old_loader = loader_manager_->current_loader();
-  scoped_ptr<MatchPreviewLoader> owned_loader;
-  MatchPreviewLoader* new_loader =
+  InstantLoader* old_loader = loader_manager_->current_loader();
+  scoped_ptr<InstantLoader> owned_loader;
+  InstantLoader* new_loader =
       loader_manager_->UpdateLoader(template_url_id, &owned_loader);
 
   new_loader->SetOmniboxBounds(omnibox_bounds_);
   new_loader->Update(tab_contents, match, user_text, template_url,
                      suggested_text);
   if (old_loader != new_loader && new_loader->ready())
-    delegate_->ShowMatchPreview(new_loader->preview_contents());
+    delegate_->ShowInstant(new_loader->preview_contents());
 }
 
-void MatchPreview::SetOmniboxBounds(const gfx::Rect& bounds) {
+void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   if (omnibox_bounds_ == bounds)
     return;
 
@@ -103,38 +103,37 @@ void MatchPreview::SetOmniboxBounds(const gfx::Rect& bounds) {
   }
 }
 
-void MatchPreview::DestroyPreviewContents() {
+void InstantController::DestroyPreviewContents() {
   if (!loader_manager_.get()) {
     // We're not showing anything, nothing to do.
     return;
   }
 
-  delegate_->HideMatchPreview();
-  delete ReleasePreviewContents(MATCH_PREVIEW_COMMIT_DESTROY);
+  delegate_->HideInstant();
+  delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);
 }
 
-void MatchPreview::CommitCurrentPreview(MatchPreviewCommitType type) {
+void InstantController::CommitCurrentPreview(InstantCommitType type) {
   DCHECK(loader_manager_.get());
   DCHECK(loader_manager_->current_loader());
-  delegate_->CommitMatchPreview(ReleasePreviewContents(type));
+  delegate_->CommitInstant(ReleasePreviewContents(type));
 }
 
-void MatchPreview::SetCommitOnMouseUp() {
+void InstantController::SetCommitOnMouseUp() {
   commit_on_mouse_up_ = true;
 }
 
-bool MatchPreview::IsMouseDownFromActivate() {
+bool InstantController::IsMouseDownFromActivate() {
   DCHECK(loader_manager_.get());
   DCHECK(loader_manager_->current_loader());
   return loader_manager_->current_loader()->IsMouseDownFromActivate();
 }
 
-TabContents* MatchPreview::ReleasePreviewContents(MatchPreviewCommitType type) {
+TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   if (!loader_manager_.get())
     return NULL;
 
-  scoped_ptr<MatchPreviewLoader> loader(
-      loader_manager_->ReleaseCurrentLoader());
+  scoped_ptr<InstantLoader> loader(loader_manager_->ReleaseCurrentLoader());
   TabContents* tab = loader->ReleasePreviewContents(type);
 
   is_active_ = false;
@@ -144,47 +143,47 @@ TabContents* MatchPreview::ReleasePreviewContents(MatchPreviewCommitType type) {
   return tab;
 }
 
-TabContents* MatchPreview::GetPreviewContents() {
+TabContents* InstantController::GetPreviewContents() {
   return loader_manager_.get() ?
       loader_manager_->current_loader()->preview_contents() : NULL;
 }
 
-bool MatchPreview::IsShowingInstant() {
+bool InstantController::IsShowingInstant() {
   return loader_manager_.get() &&
       loader_manager_->current_loader()->is_showing_instant();
 }
 
-void MatchPreview::ShowMatchPreviewLoader(MatchPreviewLoader* loader) {
+void InstantController::ShowInstantLoader(InstantLoader* loader) {
   DCHECK(loader_manager_.get());
   if (loader_manager_->current_loader() == loader) {
     is_active_ = true;
-    delegate_->ShowMatchPreview(loader->preview_contents());
+    delegate_->ShowInstant(loader->preview_contents());
   } else if (loader_manager_->pending_loader() == loader) {
-    scoped_ptr<MatchPreviewLoader> old_loader;
+    scoped_ptr<InstantLoader> old_loader;
     loader_manager_->MakePendingCurrent(&old_loader);
-    delegate_->ShowMatchPreview(loader->preview_contents());
+    delegate_->ShowInstant(loader->preview_contents());
   } else {
     NOTREACHED();
   }
 }
 
-void MatchPreview::SetSuggestedTextFor(MatchPreviewLoader* loader,
-                                       const string16& text) {
+void InstantController::SetSuggestedTextFor(InstantLoader* loader,
+                                            const string16& text) {
   if (loader_manager_->current_loader() == loader)
     delegate_->SetSuggestedText(text);
 }
 
-gfx::Rect MatchPreview::GetMatchPreviewBounds() {
-  return delegate_->GetMatchPreviewBounds();
+gfx::Rect InstantController::GetInstantBounds() {
+  return delegate_->GetInstantBounds();
 }
 
-bool MatchPreview::ShouldCommitPreviewOnMouseUp() {
+bool InstantController::ShouldCommitInstantOnMouseUp() {
   return commit_on_mouse_up_;
 }
 
-void MatchPreview::CommitPreview(MatchPreviewLoader* loader) {
+void InstantController::CommitInstantLoader(InstantLoader* loader) {
   if (loader_manager_.get() && loader_manager_->current_loader() == loader) {
-    CommitCurrentPreview(MATCH_PREVIEW_COMMIT_FOCUS_LOST);
+    CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
   } else {
     // This can happen if the mouse was down, we swapped out the preview and
     // the mouse was released. Generally this shouldn't happen, but if it does
@@ -193,6 +192,6 @@ void MatchPreview::CommitPreview(MatchPreviewLoader* loader) {
   }
 }
 
-bool MatchPreview::ShouldShowPreviewFor(const GURL& url) {
+bool InstantController::ShouldShowPreviewFor(const GURL& url) {
   return !url.SchemeIs(chrome::kJavaScriptScheme);
 }
