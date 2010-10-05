@@ -1021,6 +1021,7 @@
         '_USE_32BIT_TIME_T',
       ],
       'dependencies': [
+        'common',
         '../skia/skia.gyp:skia',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         'browser/sync/protocol/sync_proto.gyp:sync_proto_cpp',
