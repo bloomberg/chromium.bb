@@ -9,8 +9,10 @@
 #endif
 
 #include "base/command_line.h"
+#include "base/scoped_vector.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -3266,6 +3268,20 @@ void GetPrepopulatedEngines(PrefService* prefs,
                                     engines[i]->id);
     t_urls->push_back(turl);
   }
+}
+
+TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs) {
+  TemplateURL* default_search_provider = NULL;
+  ScopedVector<TemplateURL> loaded_urls;
+  size_t default_search_index;
+  // This could be more efficient.  We are loading all the URLs to only keep
+  // the first one.
+  GetPrepopulatedEngines(prefs, &loaded_urls.get(), &default_search_index);
+  if (default_search_index < loaded_urls.size()) {
+    default_search_provider = loaded_urls[default_search_index];
+    loaded_urls.weak_erase(loaded_urls.begin() + default_search_index);
+  }
+  return default_search_provider;
 }
 
 }  // namespace TemplateURLPrepopulateData

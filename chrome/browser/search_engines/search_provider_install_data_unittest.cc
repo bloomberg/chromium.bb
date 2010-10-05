@@ -16,6 +16,9 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/test/testing_pref_service.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Create a TemplateURL. The caller owns the returned TemplateURL*.
@@ -188,6 +191,29 @@ class SearchProviderInstallDataTest : public testing::Test {
     testing::Test::TearDown();
   }
 
+  void SimulateDefaultSearchIsManaged(const std::string& url) {
+    ASSERT_FALSE(url.empty());
+    TestingPrefService* service = util_.profile()->GetTestingPrefService();
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderEnabled,
+        Value::CreateBooleanValue(true));
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderSearchURL,
+        Value::CreateStringValue(url));
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderName,
+        Value::CreateStringValue("managed"));
+    // Clear the IDs that are not specified via policy.
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderID, new StringValue(""));
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
+    util_.model()->Observe(
+        NotificationType::PREF_CHANGED,
+        Source<PrefService>(util_.profile()->GetTestingPrefService()),
+        Details<std::string>(NULL));
+  }
+
  protected:
   TemplateURLModelTestUtil util_;
   scoped_ptr<ChromeThread> io_thread_;
@@ -223,6 +249,33 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   util_.model()->Add(default_url);
   util_.model()->SetDefaultSearchProvider(default_url);
   test_get_install_state->set_default_search_provider_host(default_host);
+  EXPECT_TRUE(test_get_install_state->RunTests(*io_thread_.get()));
+}
+
+
+TEST_F(SearchProviderInstallDataTest, ManagedDefaultSearch) {
+  // Set up the database.
+  util_.ChangeModelToLoadState();
+  std::string host = "www.unittest.com";
+  TemplateURL* t_url = CreateTemplateURL("http://" + host + "/path",
+                                         L"unittest");
+  util_.model()->Add(t_url);
+
+  // Set a managed preference that establishes a default search provider.
+  std::string host2 = "www.managedtest.com";
+  std::string url2 = "http://" + host2 + "/p{searchTerms}";
+  SimulateDefaultSearchIsManaged(url2);
+  EXPECT_TRUE(util_.model()->is_default_search_managed());
+
+  // Wait for the changes to be saved.
+  util_.BlockTillServiceProcessesRequests();
+
+  // Verify the search providers install state.  The default search should be
+  // the managed one we previously set.
+  scoped_refptr<TestGetInstallState> test_get_install_state(
+      new TestGetInstallState(install_data_));
+  test_get_install_state->set_search_provider_host(host);
+  test_get_install_state->set_default_search_provider_host(host2);
   EXPECT_TRUE(test_get_install_state->RunTests(*io_thread_.get()));
 }
 

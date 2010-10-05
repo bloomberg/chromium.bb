@@ -134,6 +134,8 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
     ConfigurationPolicyPrefStore::default_search_policy_map_[] = {
+  { Value::TYPE_BOOLEAN, kPolicyDefaultSearchProviderEnabled,
+      prefs::kDefaultSearchProviderEnabled },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderName,
       prefs::kDefaultSearchProviderName },
   { Value::TYPE_STRING, kPolicyDefaultSearchProviderKeyword,
@@ -167,6 +169,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
         Value::TYPE_INTEGER, key::kRestoreOnStartup },
     { ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
         Value::TYPE_LIST, key::kURLsToRestoreOnStartup },
+    { ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
+        Value::TYPE_BOOLEAN, key::kDefaultSearchProviderEnabled },
     { ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
         Value::TYPE_STRING, key::kDefaultSearchProviderName },
     { ConfigurationPolicyStore::kPolicyDefaultSearchProviderKeyword,
@@ -533,7 +537,20 @@ class SearchTermsDataForValidation : public SearchTermsData {
   DISALLOW_COPY_AND_ASSIGN(SearchTermsDataForValidation);
 };
 
+
 void ConfigurationPolicyPrefStore::FinalizeDefaultSearchPolicySettings() {
+  bool enabled = true;
+  if (prefs_->GetBoolean(prefs::kDefaultSearchProviderEnabled, &enabled) &&
+      !enabled) {
+    // If default search is disabled, we ignore the other fields.
+    prefs_->SetString(prefs::kDefaultSearchProviderName, "");
+    prefs_->SetString(prefs::kDefaultSearchProviderSearchURL, "");
+    prefs_->SetString(prefs::kDefaultSearchProviderSuggestURL, "");
+    prefs_->SetString(prefs::kDefaultSearchProviderIconURL, "");
+    prefs_->SetString(prefs::kDefaultSearchProviderEncodings, "");
+    prefs_->SetString(prefs::kDefaultSearchProviderKeyword, "");
+    return;
+  }
   std::string search_url;
   // The search URL is required.
   if (prefs_->GetString(prefs::kDefaultSearchProviderSearchURL, &search_url) &&
@@ -551,9 +568,10 @@ void ConfigurationPolicyPrefStore::FinalizeDefaultSearchPolicySettings() {
 
       // For the name, default to the host if not specified.
       std::string name;
-      if (!prefs_->GetString(prefs::kDefaultSearchProviderName, &name))
+      if (!prefs_->GetString(prefs::kDefaultSearchProviderName, &name) ||
+          name.empty())
         prefs_->SetString(prefs::kDefaultSearchProviderName,
-                          search_url_ref.GetHost());
+                          GURL(search_url).host());
 
       // And clear the IDs since these are not specified via policy.
       prefs_->SetString(prefs::kDefaultSearchProviderID, "");

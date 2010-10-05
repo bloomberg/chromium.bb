@@ -170,8 +170,6 @@ void SearchEngineListModel::ResetContents() {
 
 void SearchEngineListModel::ChangeComboboxSelection() {
   if (template_urls_.size()) {
-    combobox_->SetEnabled(true);
-
     const TemplateURL* default_search_provider =
         template_url_model_->GetDefaultSearchProvider();
     if (default_search_provider) {
@@ -182,10 +180,13 @@ void SearchEngineListModel::ChangeComboboxSelection() {
         combobox_->SetSelectedItem(
             static_cast<int>(i - template_urls_.begin()));
       }
+    } else {
+        combobox_->SetSelectedItem(-1);
     }
-  } else {
-    combobox_->SetEnabled(false);
   }
+  // If the default search is managed or there are no URLs, disable the control.
+  combobox_->SetEnabled(!template_urls_.empty() &&
+                        !template_url_model_->is_default_search_managed());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

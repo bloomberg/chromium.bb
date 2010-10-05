@@ -52,6 +52,7 @@ extern const char kFormAutofillEnabled[];  // OBSOLETE
 extern const char kSafeBrowsingEnabled[];
 extern const char kSearchSuggestEnabled[];
 extern const char kCookieBehavior[];  // OBSOLETE
+extern const char kDefaultSearchProviderEnabled[];
 extern const char kDefaultSearchProviderSearchURL[];
 extern const char kDefaultSearchProviderSuggestURL[];
 extern const char kDefaultSearchProviderIconURL[];

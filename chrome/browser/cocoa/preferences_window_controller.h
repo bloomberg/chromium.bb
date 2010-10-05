@@ -95,6 +95,7 @@ class ProfileSyncService;
   BOOL restoreButtonsEnabled_;
   BOOL restoreURLsEnabled_;
   BOOL showHomeButtonEnabled_;
+  BOOL defaultSearchEngineEnabled_;
 
   // User Data panel
   BooleanPrefMember askSavePasswords_;
@@ -202,6 +203,7 @@ class ProfileSyncService;
 @property (nonatomic) BOOL restoreButtonsEnabled;
 @property (nonatomic) BOOL restoreURLsEnabled;
 @property (nonatomic) BOOL showHomeButtonEnabled;
+@property (nonatomic) BOOL defaultSearchEngineEnabled;
 @property (nonatomic) BOOL passwordManagerChoiceEnabled;
 @property (nonatomic) BOOL passwordManagerButtonEnabled;
 @property (nonatomic) BOOL autoFillSettingsButtonEnabled;

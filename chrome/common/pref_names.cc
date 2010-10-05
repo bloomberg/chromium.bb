@@ -123,6 +123,10 @@ const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 // 2 - block all cookies
 const char kCookieBehavior[] = "security.cookie_behavior";
 
+// Whether having a default search provider is enabled.
+const char kDefaultSearchProviderEnabled[] =
+    "default_search_provider.enabled";
+
 // The URL (as understood by TemplateURLRef) the default search provider uses
 // for searches.
 const char kDefaultSearchProviderSearchURL[] =

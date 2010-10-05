@@ -42,6 +42,16 @@ void TestingPrefService::RemoveManagedPref(const char* path) {
   RemovePref(managed_prefs_, path);
 }
 
+void TestingPrefService::SetManagedPrefWithoutNotification(const char* path,
+                                                           Value* value) {
+  managed_prefs_->prefs()->Set(path, value);
+}
+
+void TestingPrefService::RemoveManagedPrefWithoutNotification(
+    const char* path) {
+  managed_prefs_->prefs()->Remove(path, NULL);
+}
+
 const Value* TestingPrefService::GetUserPref(const char* path) {
   return GetPref(user_prefs_, path);
 }

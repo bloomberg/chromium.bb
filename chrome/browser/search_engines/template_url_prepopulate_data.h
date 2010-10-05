@@ -68,6 +68,10 @@ void GetPrepopulatedEngines(PrefService* prefs,
                             std::vector<TemplateURL*>* t_urls,
                             size_t* default_search_provider_index);
 
+// Returns the default search provider specified by the prepopulate data.
+// The caller owns the returned value, which may be NULL.
+TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs);
+
 }  // namespace TemplateURLPrepopulateData
 
 #endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_PREPOPULATE_DATA_H_

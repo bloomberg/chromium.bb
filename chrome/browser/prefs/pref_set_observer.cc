@@ -59,6 +59,7 @@ PrefSetObserver* PrefSetObserver::CreateDefaultSearchPrefSetObserver(
     PrefService* pref_service,
     NotificationObserver* observer) {
   PrefSetObserver* pref_set = new PrefSetObserver(pref_service, observer);
+  pref_set->AddPref(prefs::kDefaultSearchProviderEnabled);
   pref_set->AddPref(prefs::kDefaultSearchProviderName);
   pref_set->AddPref(prefs::kDefaultSearchProviderKeyword);
   pref_set->AddPref(prefs::kDefaultSearchProviderSearchURL);

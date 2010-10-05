@@ -41,6 +41,18 @@ class TestingPrefService : public PrefService {
   // preference has been defined previously.
   void RemoveManagedPref(const char* path);
 
+  // Set a preference on the managed layer.  Assumes ownership of |value|.
+  // We don't fire observers for each change because in the real code, the
+  // notification is sent after all the prefs have been loaded.  See
+  // ConfigurationPolicyPrefStore::ReadPrefs().
+  void SetManagedPrefWithoutNotification(const char* path, Value* value);
+
+  // Clear the preference on the managed layer.
+  // We don't fire observers for each change because in the real code, the
+  // notification is sent after all the prefs have been loaded.  See
+  // ConfigurationPolicyPrefStore::ReadPrefs().
+  void RemoveManagedPrefWithoutNotification(const char* path);
+
   // Similar to the above, but for user preferences.
   const Value* GetUserPref(const char* path);
   void SetUserPref(const char* path, Value* value);

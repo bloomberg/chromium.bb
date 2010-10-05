@@ -127,6 +127,10 @@ class TemplateURLRef {
   // {google:baseURL} or {google:baseSuggestURL}.
   bool HasGoogleBaseURLs() const;
 
+  // Returns true if both refs are NULL or have the same values.
+  static bool SameUrlRefs(const TemplateURLRef* ref1,
+                          const TemplateURLRef* ref2);
+
  private:
   friend class SearchHostToURLsMapTest;
   friend class TemplateURL;

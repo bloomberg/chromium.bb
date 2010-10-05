@@ -22,6 +22,7 @@ extern const char kHomepageLocation[];
 extern const char kHomepageIsNewTabPage[];
 extern const char kRestoreOnStartup[];
 extern const char kURLsToRestoreOnStartup[];
+extern const char kDefaultSearchProviderEnabled[];
 extern const char kDefaultSearchProviderName[];
 extern const char kDefaultSearchProviderKeyword[];
 extern const char kDefaultSearchProviderSearchURL[];

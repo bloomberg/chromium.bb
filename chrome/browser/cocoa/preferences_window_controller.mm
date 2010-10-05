@@ -421,6 +421,7 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
 @synthesize restoreButtonsEnabled = restoreButtonsEnabled_;
 @synthesize restoreURLsEnabled = restoreURLsEnabled_;
 @synthesize showHomeButtonEnabled = showHomeButtonEnabled_;
+@synthesize defaultSearchEngineEnabled = defaultSearchEngineEnabled_;
 @synthesize passwordManagerChoiceEnabled = passwordManagerChoiceEnabled_;
 @synthesize passwordManagerButtonEnabled = passwordManagerButtonEnabled_;
 @synthesize autoFillSettingsButtonEnabled = autoFillSettingsButtonEnabled_;
@@ -505,10 +506,10 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
     [self setPasswordManagerButtonEnabled:
         !askSavePasswords_.IsManaged() || askSavePasswords_.GetValue()];
 
-    // Initialize the enabled state of the show home button and
-    // restore on startup elements.
+    // Initialize the enabled state of the elements on the general tab.
     [self setShowHomeButtonEnabled:!showHomeButton_.IsManaged()];
     [self setEnabledStateOfRestoreOnStartup];
+    [self setDefaultSearchEngineEnabled:![searchEngineModel_ isDefaultManaged]];
 
     // Initialize UI state for the advanced page.
     [self setShowAlternateErrorPagesEnabled:!alternateErrorPages_.IsManaged()];
@@ -911,23 +912,16 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
         SessionStartupPref::GetStartupPref(prefs_);
     [self setRestoreOnStartupIndex:startupPref.type];
     [self setEnabledStateOfRestoreOnStartup];
-  }
-
-  if (*prefName == prefs::kURLsToRestoreOnStartup) {
+  } else if (*prefName == prefs::kURLsToRestoreOnStartup) {
     [customPagesSource_ reloadURLs];
     [self setEnabledStateOfRestoreOnStartup];
-  }
-
-  if (*prefName == prefs::kHomePageIsNewTabPage) {
+  } else if (*prefName == prefs::kHomePageIsNewTabPage) {
     NSInteger useNewTabPage = newTabPageIsHomePage_.GetValue() ? 0 : 1;
     [self setNewTabPageIsHomePageIndex:useNewTabPage];
-  }
-  if (*prefName == prefs::kHomePage) {
+  } else if (*prefName == prefs::kHomePage) {
     NSString* value = base::SysUTF8ToNSString(homepage_.GetValue());
     [self setHomepageURL:value];
-  }
-
-  if (*prefName == prefs::kShowHomeButton) {
+  } else if (*prefName == prefs::kShowHomeButton) {
     [self setShowHomeButton:showHomeButton_.GetValue() ? YES : NO];
     [self setShowHomeButtonEnabled:!showHomeButton_.IsManaged()];
   }
@@ -1172,6 +1166,8 @@ enum { kHomepageNewTabPage, kHomepageURL };
 // popup by tickling the bindings with the new value.
 - (void)searchEngineModelChanged:(NSNotification*)notify {
   [self setSearchEngineSelectedIndex:[self searchEngineSelectedIndex]];
+  [self setDefaultSearchEngineEnabled:![searchEngineModel_ isDefaultManaged]];
+
 }
 
 - (IBAction)manageSearchEngines:(id)sender {

@@ -36,7 +36,8 @@ class SearchEngineObserver;
 // setter changes the back-end preference.
 - (NSUInteger)defaultIndex;
 - (void)setDefaultIndex:(NSUInteger)index;
-
+// Return TRUE if the default is managed via policy.
+- (BOOL)isDefaultManaged;
 @end
 
 // Broadcast when the cross-platform model changes. This can be used to update

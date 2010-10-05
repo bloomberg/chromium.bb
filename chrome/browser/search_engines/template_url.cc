@@ -513,6 +513,12 @@ bool TemplateURLRef::HasGoogleBaseURLs() const {
   return false;
 }
 
+// static
+bool TemplateURLRef::SameUrlRefs(const TemplateURLRef* ref1,
+ const TemplateURLRef* ref2) {
+  return ref1 == ref2 || (ref1 && ref2 && ref1->url() == ref2->url());
+}
+
 void TemplateURLRef::InvalidateCachedValues() const {
   supports_replacements_ = valid_ = parsed_ = false;
   host_.clear();

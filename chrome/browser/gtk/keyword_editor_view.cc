@@ -213,8 +213,8 @@ void KeywordEditorView::EnableControls() {
   bool can_remove = false;
   int model_row = GetSelectedModelRow();
   if (model_row != -1) {
-    can_edit = true;
     const TemplateURL* selected_url = controller_->GetTemplateURL(model_row);
+    can_edit = controller_->CanEdit(selected_url);
     can_make_default = controller_->CanMakeDefault(selected_url);
     can_remove = controller_->CanRemove(selected_url);
   }

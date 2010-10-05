@@ -24,6 +24,7 @@ class ConfigurationPolicyStore {
     kPolicyHomepageIsNewTabPage,
     kPolicyRestoreOnStartup,
     kPolicyURLsToRestoreOnStartup,
+    kPolicyDefaultSearchProviderEnabled,
     kPolicyDefaultSearchProviderName,
     kPolicyDefaultSearchProviderKeyword,
     kPolicyDefaultSearchProviderSearchURL,

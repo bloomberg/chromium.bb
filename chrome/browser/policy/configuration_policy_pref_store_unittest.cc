@@ -411,6 +411,9 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MinimallyDefined) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(
+      ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
+      Value::CreateBooleanValue(true));
+  provider->AddPolicy(
       ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
       Value::CreateStringValue(search_url));
 
@@ -457,6 +460,9 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, FullyDefined) {
   const char* encodings = "UTF-16;UTF-8";
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
+  provider->AddPolicy(
+      ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
+      Value::CreateBooleanValue(true));
   provider->AddPolicy(
       ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
       Value::CreateStringValue(search_url));
@@ -523,6 +529,9 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MissingUrl) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(
+      ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
+      Value::CreateBooleanValue(true));
+  provider->AddPolicy(
       ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
       Value::CreateStringValue(name));
   provider->AddPolicy(
@@ -570,6 +579,9 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Invalid) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(
+      ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
+      Value::CreateBooleanValue(true));
+  provider->AddPolicy(
       ConfigurationPolicyStore::kPolicyDefaultSearchProviderSearchURL,
       Value::CreateStringValue(bad_search_url));
   provider->AddPolicy(
@@ -594,6 +606,8 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Invalid) {
   DictionaryValue* prefs = store.prefs();
 
   std::string string_result;
+  EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderEnabled,
+                               &string_result));
   EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderSearchURL,
                                &string_result));
   EXPECT_FALSE(prefs->GetString(prefs::kDefaultSearchProviderName,

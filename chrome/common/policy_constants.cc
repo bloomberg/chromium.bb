@@ -20,6 +20,7 @@ const char kHomepageLocation[] = "HomepageLocation";
 const char kHomepageIsNewTabPage[] = "HomepageIsNewTabPage";
 const char kRestoreOnStartup[] = "RestoreOnStartup";
 const char kURLsToRestoreOnStartup[] = "RestoreOnStartupURLs";
+const char kDefaultSearchProviderEnabled[] = "DefaultSearchProviderEnabled";
 const char kDefaultSearchProviderName[] = "DefaultSearchProviderName";
 const char kDefaultSearchProviderKeyword[] = "DefaultSearchProviderKeyword";
 const char kDefaultSearchProviderSearchURL[] =

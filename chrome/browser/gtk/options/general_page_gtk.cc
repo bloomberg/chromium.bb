@@ -621,7 +621,8 @@ void GeneralPageGtk::OnTemplateURLModelChanged() {
           GTK_COMBO_BOX(default_search_engine_combobox_), &iter);
     }
   }
-  EnableDefaultSearchEngineComboBox(populated);
+  EnableDefaultSearchEngineComboBox(populated &&
+      !template_url_model_->is_default_search_managed());
   default_search_initializing_ = false;
 }
 

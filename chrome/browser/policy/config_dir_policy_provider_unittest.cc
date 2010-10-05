@@ -349,6 +349,9 @@ INSTANTIATE_TEST_CASE_P(
         ValueTestParams::ForListPolicy(
             ConfigurationPolicyStore::kPolicyURLsToRestoreOnStartup,
             key::kURLsToRestoreOnStartup),
+        ValueTestParams::ForBooleanPolicy(
+            ConfigurationPolicyStore::kPolicyDefaultSearchProviderEnabled,
+            key::kDefaultSearchProviderEnabled),
         ValueTestParams::ForStringPolicy(
             ConfigurationPolicyStore::kPolicyDefaultSearchProviderName,
             key::kDefaultSearchProviderName),

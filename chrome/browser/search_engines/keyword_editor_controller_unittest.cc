@@ -10,6 +10,9 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
@@ -62,12 +65,27 @@ class KeywordEditorControllerTest : public testing::Test,
         removed_count_ = 0;
   }
 
-  void SimulateDefaultSearchIsManaged(const TemplateURL* turl) {
-    ASSERT_TRUE(turl->url() != NULL);
-    model_->SetDefaultSearchProvider(turl);
+  void SimulateDefaultSearchIsManaged(const std::string& url) {
+    ASSERT_FALSE(url.empty());
     TestingPrefService* service = profile_->GetTestingPrefService();
-    service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,
-                            Value::CreateStringValue(turl->url()->url()));
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderEnabled,
+        Value::CreateBooleanValue(true));
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderSearchURL,
+        Value::CreateStringValue(url));
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderName,
+        Value::CreateStringValue("managed"));
+    // Clear the IDs that are not specified via policy.
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderID, new StringValue(""));
+    service->SetManagedPrefWithoutNotification(
+        prefs::kDefaultSearchProviderPrepopulateID, new StringValue(""));
+    model_->Observe(
+        NotificationType::PREF_CHANGED,
+        Source<PrefService>(profile_->GetTestingPrefService()),
+        Details<std::string>(NULL));
   }
 
   TemplateURLTableModel* table_model() const {
@@ -177,8 +195,8 @@ TEST_F(KeywordEditorControllerTest, CannotSetDefaultWhileManaged) {
   EXPECT_TRUE(controller_->CanMakeDefault(turl1));
   EXPECT_TRUE(controller_->CanMakeDefault(turl2));
 
-  SimulateDefaultSearchIsManaged(turl2);
-  EXPECT_TRUE(model_->IsDefaultSearchManaged());
+  SimulateDefaultSearchIsManaged(turl2->url()->url());
+  EXPECT_TRUE(model_->is_default_search_managed());
 
   EXPECT_FALSE(controller_->CanMakeDefault(turl1));
   EXPECT_FALSE(controller_->CanMakeDefault(turl2));
@@ -199,11 +217,13 @@ TEST_F(KeywordEditorControllerTest, EditManagedDefault) {
   EXPECT_TRUE(controller_->CanEdit(turl1));
   EXPECT_TRUE(controller_->CanEdit(turl2));
 
-  SimulateDefaultSearchIsManaged(turl2);
-  EXPECT_TRUE(model_->IsDefaultSearchManaged());
-
+  // Simulate setting a managed default.  This will add another template URL to
+  // the model.
+  SimulateDefaultSearchIsManaged(turl2->url()->url());
+  EXPECT_TRUE(model_->is_default_search_managed());
   EXPECT_TRUE(controller_->CanEdit(turl1));
-  EXPECT_FALSE(controller_->CanEdit(turl2));
+  EXPECT_TRUE(controller_->CanEdit(turl2));
+  EXPECT_FALSE(controller_->CanEdit(model_->GetDefaultSearchProvider()));
 }
 
 TEST_F(KeywordEditorControllerTest, MakeDefaultNoWebData) {

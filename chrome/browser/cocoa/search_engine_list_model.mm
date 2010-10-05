@@ -115,4 +115,8 @@ class SearchEngineObserver : public TemplateURLModelObserver {
   }
 }
 
+// Return TRUE if the default is managed via policy.
+- (BOOL)isDefaultManaged {
+  return model_->is_default_search_managed();
+}
 @end

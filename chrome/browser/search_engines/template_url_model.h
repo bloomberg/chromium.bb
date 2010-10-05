@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_MODEL_H_
 #pragma once
 
+#include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
@@ -21,9 +24,11 @@ class GURL;
 class Extension;
 class PrefService;
 class Profile;
+class PrefSetObserver;
 class SearchHostToURLsMap;
 class SearchTermsData;
 class TemplateURLModelObserver;
+class TemplateURLRef;
 
 namespace history {
 struct URLVisitedDetails;
@@ -165,7 +170,9 @@ class TemplateURLModel : public WebDataServiceConsumer,
                         const std::wstring& keyword,
                         const std::string& search_url);
 
-  // The default search provider. This may be null.
+  // Set the default search provider.  |url| may be null.
+  // This will assert if the default search is managed; the UI should not be
+  // invoking this method in that situation.
   void SetDefaultSearchProvider(const TemplateURL* url);
 
   // Returns the default search provider. If the TemplateURLModel hasn't been
@@ -175,7 +182,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   const TemplateURL* GetDefaultSearchProvider();
 
   // Returns true if the default search is managed through group policy.
-  bool IsDefaultSearchManaged();
+  bool is_default_search_managed() const { return is_default_search_managed_; }
 
   // Observers used to listen for changes to the model.
   // TemplateURLModel does NOT delete the observers when deleted.
@@ -209,6 +216,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
   //   corresponds to a keyword.
   // . NOTIFY_GOOGLE_URL_UPDATED: updates mapping for any keywords containing
   //   a google base url replacement term.
+  // . PREF_CHANGED: checks whether the default search engine has changed.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -223,6 +231,9 @@ class TemplateURLModel : public WebDataServiceConsumer,
     return search_engine_dialog_chosen_slot_;
   }
 
+  // Registers the preferences used to save a TemplateURL to prefs.
+  static void RegisterUserPrefs(PrefService* prefs);
+
  protected:
   // Cover method for the method of the same name on the HistoryService.
   // url is the one that was visited with the given search terms.
@@ -234,6 +245,7 @@ class TemplateURLModel : public WebDataServiceConsumer,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, BuildQueryTerms);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest, TestManagedDefaultSearch);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest,
                            UpdateKeywordSearchTermsForURL);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLModelTest,
@@ -276,14 +288,14 @@ class TemplateURLModel : public WebDataServiceConsumer,
   void SaveDefaultSearchProviderToPrefs(const TemplateURL* url);
 
   // Creates a TemplateURL that was previously saved to prefs via
-  // SaveDefaultSearchProviderToPrefs. Returns true if successful, false
-  // otherwise. This is used if GetDefaultSearchProvider is invoked before the
-  // TemplateURL has loaded. If the user has opted for no default search, this
+  // SaveDefaultSearchProviderToPrefs or set via policy.
+  // Returns true if successful, false otherwise.
+  // If the user or the policy has opted for no default search, this
   // returns true but default_provider is set to NULL.
-  bool LoadDefaultSearchProviderFromPrefs(TemplateURL** default_provider);
-
-  // Registers the preferences used to save a TemplateURL to prefs.
-  void RegisterPrefs(PrefService* prefs);
+  // |*is_managed| specifies whether the default is managed via policy.
+  bool LoadDefaultSearchProviderFromPrefs(
+      scoped_ptr<TemplateURL>* default_provider,
+      bool* is_managed);
 
   // Returns true if there is no TemplateURL that has a search url with the
   // specified host, or the only TemplateURLs matching the specified host can
@@ -299,8 +311,9 @@ class TemplateURLModel : public WebDataServiceConsumer,
 
   // Updates the information in |existing_turl| using the information from
   // |new_values|, but the ID for |existing_turl| is retained.
-  void Update(const TemplateURL* existing_turl,
-              const TemplateURL& new_values);
+  // Notifying observers is the responsibility of the caller.
+  void UpdateNoNotify(const TemplateURL* existing_turl,
+                      const TemplateURL& new_values);
 
   // Returns the preferences we use.
   PrefService* GetPrefs();
@@ -326,6 +339,33 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // TemplateURLs that have a replacement term of {google:baseURL} or
   // {google:baseSuggestURL}.
   void GoogleBaseURLChanged();
+
+  // Update the default search.  Called at initialization or when a managed
+  // preference has changed.
+  void UpdateDefaultSearch();
+
+  // Returns the default search specified in the prepopulated data, if it
+  // exists.  If not, returns first URL in |template_urls_|, or NULL if that's
+  // empty.
+  const TemplateURL* FindNewDefaultSearchProvider();
+
+  // Set the default search provider even if it is managed. |url| may be null.
+  // Caller is responsible for notifying observers.
+  void SetDefaultSearchProviderNoNotify(const TemplateURL* url);
+
+  // Adds a new TemplateURL to this model. TemplateURLModel will own the
+  // reference, and delete it when the TemplateURL is removed.
+  // Caller is responsible for notifying observers.
+  void AddNoNotify(TemplateURL* template_url);
+
+  // Removes the keyword from the model. This deletes the supplied TemplateURL.
+  // This fails if the supplied template_url is the default search provider.
+  // Caller is responsible for notifying observers.
+  void RemoveNoNotify(const TemplateURL* template_url);
+
+  // Notify the observers that the model has changed.  This is done only if the
+  // model is loaded.
+  void NotifyObservers();
 
   NotificationRegistrar registrar_;
 
@@ -360,16 +400,24 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // UpdateKeywordSearchTermsForURL is invoked for each element of the vector.
   std::vector<history::URLVisitedDetails> visits_to_add_;
 
+  // Once loaded, the default search provider.  This is a pointer to a
+  // TemplateURL owned by template_urls_.
   const TemplateURL* default_search_provider_;
 
   // Used for UX testing. Gives the slot in the search engine dialog that was
   // chosen as the default search engine.
   int search_engine_dialog_chosen_slot_;
 
-  // The default search provider from preferences. This is only valid if
-  // GetDefaultSearchProvider is invoked and we haven't been loaded or loading
-  // failed. If loading was successful this is not used.
-  scoped_ptr<TemplateURL> prefs_default_search_provider_;
+  // The initial search provider extracted from preferences. This is only valid
+  // if we haven't been loaded or loading failed.
+  scoped_ptr<TemplateURL> initial_default_search_provider_;
+
+  // Whether the default search is managed via policy.
+  bool is_default_search_managed_;
+
+  // The set of preferences observer we use to find if the default search
+  // preferences have changed.
+  scoped_ptr<PrefSetObserver> default_search_prefs_;
 
   // ID assigned to next TemplateURL added to this model. This is an ever
   // increasing integer that is initialized from the database.
