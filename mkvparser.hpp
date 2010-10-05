@@ -439,7 +439,7 @@ public:
 
 private:
     long long m_timecode;
-    BlockEntry** m_pEntries;
+    BlockEntry** m_entries;
     size_t m_entriesCount;
 
     void Load();
@@ -507,14 +507,14 @@ private:
     Tracks* m_pTracks;
     Cues* m_pCues;
     Cluster** m_clusters;
-    long m_clusterCount;  //number of entries
-    long m_clusterSize;   //array size
+    long m_clusterCount;         //number of entries for which m_index >= 0
+    long m_clusterPreloadCount;  //number of entries for which m_index < 0
+    long m_clusterSize;          //array size
 
     void AppendCluster(Cluster*);
 
-    //void ParseSeekHead(long long pos, long long size, size_t*);
-    //void ParseSeekEntry(long long pos, long long size, size_t*);
-    //void ParseSecondarySeekHead(long long off, size_t*);
+    void ParseSeekHead(long long pos, long long size);
+    void ParseSeekEntry(long long pos, long long size);
     void ParseCues(long long off);
 
     bool SearchCues(
