@@ -1122,7 +1122,8 @@ int CookieMonster::GarbageCollectExpired(
 
 int CookieMonster::DeleteAll(bool sync_to_store) {
   AutoLock autolock(lock_);
-  InitIfNecessary();
+  if (sync_to_store)
+    InitIfNecessary();
 
   int num_deleted = 0;
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
