@@ -70,7 +70,7 @@ def GetSources():
         commit_id="0014b8d2e052dd3bf4cdc4be999d17e123c50dc2"),
     "glibc": dirtree.GitTree(
         "http://src.chromium.org/git/nacl-glibc.git",
-        commit_id="ee0be16e2c812e7cf0698456904caca582763e10"),
+        commit_id="3f6eff38b28bffde240156d50e31319e66932cab"),
     }
 
 

@@ -273,12 +273,9 @@ bad_build_lists['dbg-win-64'] = ['ncval_test_call_long_dis',
 # This is a list of tests that do not yet pass when using nacl-glibc.
 # TODO(mseaborn): Enable more of these tests!
 nacl_glibc_skiplist = [
-    # These tests require multi-threading.
+    # Some tests using multi-threading pass, but the following do not.
     'run_egyptian_cotton_test',
-    'run_main_thread_pthread_exit_test',
     'run_race_test',
-    'run_simple_thread_test',
-    'run_socket_transfer_test',
     'run_thread_stack_alloc_test',
     'run_thread_test',
     'run_voronoi',
