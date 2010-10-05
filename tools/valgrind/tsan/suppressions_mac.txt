@@ -156,13 +156,6 @@
 # running overnight and removing outdated bugs/suppressions.
 
 {
-  bug_46086
-  ThreadSanitizer:Race
-  ...
-  fun:YUVConvertTest_YV12_Test*
-}
-
-{
   bug_55946
   ThreadSanitizer:Race
   ...
