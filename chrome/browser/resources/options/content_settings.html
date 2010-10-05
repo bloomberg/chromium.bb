@@ -18,7 +18,7 @@
           i18n-content="popups_tab_label" id="popups-nav-tab"
           class="inactive-tab" tab-contents="popupsFilterTab"></span><span
           i18n-content="location_tab_label" id="location-nav-tab"
-          class="inactive-tab" tab-contents="locationFilterTab"></span><span 
+          class="inactive-tab" tab-contents="locationFilterTab"></span><span
           i18n-content="notifications_tab_label" id="notifications-nav-tab"
           class="inactive-tab" tab-contents="notificationsFilterTab"></span>
   </div>
@@ -29,16 +29,20 @@
     <h4 i18n-content="cookies_modify" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="cookies" value="allow">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="cookies" value="allow">
           <span i18n-content="cookies_allow"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="cookies" value="block">
-         <span i18n-content="cookies_block"></span>
-      </label></td>
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="cookies" value="block">
+           <span i18n-content="cookies_block"></span>
+        </label>
+      </td>
     </tr>
     </table>
 
@@ -53,17 +57,21 @@
 
     <table class="option-control-table">
     <tr>
-      <td class="option-name"><label>
-        <input id="block-third-party-cookies" type="checkbox">
+      <td class="option-name">
+        <label class="checkbox">
+          <input id="block-third-party-cookies" type="checkbox">
           <span i18n-content="cookies_block_3rd_party"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-         <input id="clear-cookies-on-exit"
-                pref="profile.clear_site_data_on_exit" type="checkbox">
-           <span i18n-content="cookies_clear_on_exit"></span>
-       </label></td>
+      <td class="option-name">
+        <label class="checkbox">
+          <input id="clear-cookies-on-exit"
+              pref="profile.clear_site_data_on_exit" type="checkbox">
+          <span i18n-content="cookies_clear_on_exit"></span>
+        </label>
+      </td>
     </tr>
     <tr>
       <td class="option-name"><button id="show-cookies-button"
@@ -84,16 +92,20 @@
     <h4 i18n-content="images_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="images" value="allow">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="images" value="allow">
           <span i18n-content="images_allow"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="images" value="block">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="images" value="block">
           <span i18n-content="images_block"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     </table>
 
@@ -112,16 +124,20 @@
     <h4 i18n-content="javascript_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="javascript" value="allow">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="javascript" value="allow">
           <span i18n-content="javascript_allow"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="javascript" value="block">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="javascript" value="block">
           <span i18n-content="javascript_block"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     </table>
 
@@ -140,22 +156,28 @@
     <h4 i18n-content="plugins_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="plugins" value="allow">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="plugins" value="allow">
           <span i18n-content="plugins_allow"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="plugins" value="ask">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="plugins" value="ask">
           <span i18n-content="plugins_allow_sandboxed"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="plugins" value="block">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="plugins" value="block">
           <span i18n-content="plugins_block"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     </table>
 
@@ -175,16 +197,20 @@
     <h4 i18n-content="popups_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
-       <td class="option-name"><label>
-         <input type="radio" name="popups" value="allow">
+       <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="popups" value="allow">
            <span i18n-content="popups_allow"></span>
-       </label></td>
+        </label>
+       </td>
     </tr>
     <tr>
-       <td class="option-name"><label>
-         <input type="radio" name="popups" value="block">
-           <span i18n-content="popups_block"></span>
-       </label></td>
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="popups" value="block">
+          <span i18n-content="popups_block"></span>
+        </label>
+      </td>
     </tr>
     </table>
 
@@ -203,22 +229,28 @@
     <h4 i18n-content="location_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="location" value="allow">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="location" value="allow">
           <span i18n-content="location_allow"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="location" value="ask">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="location" value="ask">
           <span i18n-content="location_ask"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="location" value="block">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="location" value="block">
           <span i18n-content="location_block"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     </table>
 
@@ -233,22 +265,28 @@
     <h4 i18n-content="notifications_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="notifications" value="allow">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="notifications" value="allow">
           <span i18n-content="notifications_allow"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="notifications" value="ask">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="notifications" value="ask">
           <span i18n-content="notifications_ask"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="notifications" value="block">
+      <td class="option-name">
+        <label class="radio">
+          <input type="radio" name="notifications" value="block">
           <span i18n-content="notifications_block"></span>
-      </label></td>
+        </label>
+      </td>
     </tr>
     </table>
 

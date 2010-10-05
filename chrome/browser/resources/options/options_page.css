@@ -1,6 +1,7 @@
 body {
-  font-size: 100%;
   -webkit-user-select: none;
+  cursor: default;
+  font-size: 100%;
 }
 
 #settings-title {
@@ -72,6 +73,7 @@ html[dir='rtl'] #close-overlay {
 }
 
 #navbar-container {
+  -webkit-border-end: 1px solid #c6c9ce;
   background: -webkit-gradient(linear,
                                left top,
                                left bottom,
@@ -83,9 +85,11 @@ html[dir='rtl'] #close-overlay {
                                from(#eaeef3),
                                color-stop(0.97, #eaeef3),
                                to(#d3d7db));
-  -webkit-border-end: 1px solid #c6c9ce;
+  bottom: 0;
   cursor: pointer;
-  position: relative;
+  left: 0;
+  position: fixed;
+  top: 0;
   width: 250px;
   z-index: 2;
   display: none;
@@ -104,6 +108,8 @@ html[dir='rtl'] #navbar-container {
                                from(white),
                                color-stop(0.8, white),
                                to(#f3f3f3));
+  left: auto;
+  right: 0;
 }
 
 html[hide-menu=false] #navbar-container {
@@ -182,7 +188,7 @@ html[hide-menu=true] #mainview {
   width: 100%;
 }
 
-#managed-prefs-banner, span {
+#managed-prefs-banner {
   margin: 0;
   padding: 0;
   vertical-align: middle;
@@ -250,7 +256,7 @@ section > div:only-of-type {
  */
 section > div:only-of-type label {
   display: block;
-  margin-bottom: 3px;
+  margin: 3px 0;
 }
 
 .hidden {
@@ -259,16 +265,6 @@ section > div:only-of-type label {
 
 .touch-slider {
   -webkit-appearance: slider-horizontal;
-}
-
-input[type="checkbox"] {
-  margin-top: 0;
-  vertical-align: middle;
-}
-
-input[type="radio"] {
-  vertical-align: top;
-  padding-top: 2px;
 }
 
 select {
@@ -330,11 +326,15 @@ html[enable-background-mode=false] #background-mode-section {
  display: none;
 }
 
-.multi-line-wrap input {
+label.checkbox > input,
+label.radio > input {
+  margin-top: 2px; /* TODO(arv): This was tested on Mac, add platform specific
+                      tweaks here */
   position: absolute;
 }
 
-.multi-line-wrap span {
-  -webkit-margin-start: 20px;
+label.checkbox > span,
+label.radio > span {
+  -webkit-margin-start: 19px;
   display: block;
 }

@@ -29,14 +29,14 @@
   <section>
     <h3 i18n-content="passwords"></h3>
     <div>
-      <label>
+      <label class="radio">
         <input id="passwords_asktosave"
             name="passwords_radio"
             pref="profile.password_manager_enabled"
             type="radio" value="true" metric="Options_PasswordManager">
         <span i18n-content="passwords_asktosave"></span>
       </label>
-      <label>
+      <label class="radio">
         <input id="passwords_neversave"
             name="passwords_radio"
             pref="profile.password_manager_enabled"
@@ -72,13 +72,13 @@
             i18n-content="themes_set_classic"></button>
         <a i18n-content="themes_gallery" id="themes-gallery" href="#"></a>
       </div>
-      <label>
+      <label class="radio">
         <input name="decorations_radio"
             pref="browser.custom_chrome_frame"
             type="radio" value="false" metric="Options_CustomFrame">
         <span i18n-content="showWindow_decorations_radio"></span>
       </label>
-      <label>
+      <label class="radio">
         <input name="decorations_radio"
             pref="browser.custom_chrome_frame"
             type="radio" value="true" metric="Options_CustomFrame">

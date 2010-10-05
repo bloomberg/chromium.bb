@@ -3,16 +3,20 @@
   <section>
     <h3 i18n-content="proxy_config_title"></h3>
     <div>
-      <label><input type="radio" id="directProxy" name="proxytype" 
-          pref="cros.proxy.type" value="1"><span
-          i18n-content="proxyDirectInternetConnection"></span>
+      <label class="radio">
+        <input type="radio" id="directProxy" name="proxytype"
+          pref="cros.proxy.type" value="1">
+        <span i18n-content="proxyDirectInternetConnection"></span>
       </label>
-      <label><input type="radio" id="manualProxy" name="proxytype"
-          pref="cros.proxy.type" value="2"><span
-          i18n-content="proxyManual"></span></label>
-      <label><input id="proxyAllProtocols"
-          type="checkbox" pref="cros.proxy.single"><span
-          i18n-content="sameProxyProtocols"></span></label>
+      <label class="radio">
+        <input type="radio" id="manualProxy" name="proxytype"
+            pref="cros.proxy.type" value="2">
+        <span i18n-content="proxyManual"></span>
+      </label>
+      <label class="checkbox">
+        <input id="proxyAllProtocols" type="checkbox" pref="cros.proxy.single">
+        <span i18n-content="sameProxyProtocols"></span>
+      </label>
       <div id="singleProxy">
         <table>
         <tr><td><span
@@ -45,7 +49,7 @@
           i18n-content="proxyPort"></span></td><td>
         <input id="secureProxyPort" type="text" size="5" pref="cros.proxy.httpsport" disabled>
         </td></tr>
-        <tr>    
+        <tr>
         <td><span
             i18n-content="ftpProxy"></span></td><td>
           <input id="ftpProxy" type="text" size="30" pref="cros.proxy.ftpurl" disabled>
@@ -65,9 +69,10 @@
         </td></tr>
         </table>
       </div>
-      <label><input type="radio" id="autoProxy" name="proxytype"
-            pref="cros.proxy.type" value="3"><span
-          i18n-content="proxyAutomatic"></span></label>
+      <label class="radio">
+        <input type="radio" id="autoProxy" name="proxytype"
+            pref="cros.proxy.type" value="3">
+        <span i18n-content="proxyAutomatic"></span></label>
       <label><span
           i18n-content="proxyConfigUrl"></span>
         <input id="proxyConfig" type="url" size="60" pref="cros.proxy.pacurl">
