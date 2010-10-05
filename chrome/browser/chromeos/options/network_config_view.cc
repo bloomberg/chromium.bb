@@ -75,9 +75,9 @@ std::wstring NetworkConfigView::GetDialogButtonLabel(
     if (flags_ & FLAG_LOGIN_ONLY)
       return l10n_util::GetString(IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN);
     else
-      return l10n_util::GetString(IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DONE);
+      return l10n_util::GetString(IDS_CANCEL);
   }
-  return L"";
+  return std::wstring();
 }
 
 bool NetworkConfigView::IsDialogButtonEnabled(

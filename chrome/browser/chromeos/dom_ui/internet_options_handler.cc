@@ -123,11 +123,8 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetConnect",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE));
-
-
   localized_strings->SetString("detailsInternetDismiss",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DONE));
+      l10n_util::GetStringUTF16(IDS_CANCEL));
 
   localized_strings->Set("wiredList", GetWiredList());
   localized_strings->Set("wirelessList", GetWirelessList());

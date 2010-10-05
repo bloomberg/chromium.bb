@@ -8712,9 +8712,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT" desc="In settings internet options, the text for customer support hyper link.">
         Customer support
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DONE" desc="In settings internet options, the label for the button done.">
-        Done
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOGIN" desc="In settings internet options, the label for the button login.">
         Login
       </message>
