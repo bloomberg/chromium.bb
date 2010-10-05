@@ -25,11 +25,18 @@ cr.define('options', function() {
       treeItem.icon = data.icon;
     }
 
+    treeItem.decorate();
     return treeItem;
   }
 
   CookieTreeItem.prototype = {
     __proto__: TreeItem.prototype,
+
+    /** @inheritDoc */
+    decorate: function() {
+      this.hasChildren = this.data.hasChildren;
+      this.addEventListener('expand', this.handleExpand_.bind(this));
+    },
 
     /** @inheritDoc */
     addAt: function(child, index) {
@@ -46,7 +53,17 @@ cr.define('options', function() {
     },
 
     /**
-     * The tree path id/.
+     * Clears all children.
+     */
+    clear: function() {
+      // We might leave some garbage in treeLookup for removed children.
+      // But that should be okay because treeLookup is cleared when we
+      // reload the tree.
+      this.lastElementChild.textContent = '';
+    },
+
+    /**
+     * The tree path id.
      * @type {string}
      */
     get pathId() {
@@ -55,6 +72,16 @@ cr.define('options', function() {
         return parent.pathId + ',' + this.data.id;
       } else {
         return this.data.id;
+      }
+    },
+
+    /**
+     * Handles 'expand' event and loads immediate children.
+     * @private
+     */
+    handleExpand_ : function(e) {
+      if (e.target == this) {
+        chrome.send('loadCookie', [this.pathId]);
       }
     }
   };
@@ -97,13 +124,12 @@ cr.define('options', function() {
     },
 
     /**
-     * Add tree nodes by parent id.
-     * @param {string} parentId Id of the parent node.
+     * Add tree nodes by given parent.
+     * @param {Object} parent Parent node.
      * @param {int} start Start index of where to insert nodes.
      * @param {Array} nodesData Nodes data array.
      */
-    addByParentId: function(parentId, start, nodesData) {
-      var parent = parentId ? treeLookup[parentId] : this;
+    addByParent: function(parent, start, nodesData) {
       if (!parent) {
         return;
       }
@@ -113,6 +139,17 @@ cr.define('options', function() {
       }
 
       cr.dispatchSimpleEvent(this, 'change');
+    },
+
+    /**
+     * Add tree nodes by parent id.
+     * @param {string} parentId Id of the parent node.
+     * @param {int} start Start index of where to insert nodes.
+     * @param {Array} nodesData Nodes data array.
+     */
+    addByParentId: function(parentId, start, nodesData) {
+      var parent = parentId ? treeLookup[parentId] : this;
+      this.addByParent(parent, start, nodesData);
     },
 
     /**
@@ -132,6 +169,33 @@ cr.define('options', function() {
       }
 
       cr.dispatchSimpleEvent(this, 'change');
+    },
+
+    /**
+     * Clears the tree.
+     */
+    clear: function() {
+      // Remove all fields without recreating the object since other code
+      // references it.
+      for (var id in treeLookup){
+        delete treeLookup[id];
+      }
+      this.textContent = '';
+    },
+
+    /**
+     * Loads the immediate children of given parent node.
+     * @param {string} parentId Id of the parent node.
+     * @param {Array} children The immediate children of parent node.
+     */
+    loadChildren: function(parentId, children) {
+      var parent = parentId ? treeLookup[parentId] : this;
+      if (!parent) {
+        return;
+      }
+
+      parent.clear();
+      this.addByParent(parent, 0, children);
     }
   };
 

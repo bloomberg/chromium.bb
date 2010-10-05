@@ -243,6 +243,10 @@ cr.define('options', function() {
     $('cookiesTree').removeByParentId(args[0], args[1], args[2]);
   };
 
+  CookiesView.loadChildren = function(args) {
+    $('cookiesTree').loadChildren(args[0], args[1]);
+  };
+
   // Export
   return {
     CookiesView: CookiesView

@@ -21,25 +21,26 @@
 
 namespace {
 
-static const char kKeyId[]       = "id";
-static const char kKeyTitle[]    = "title";
-static const char kKeyIcon[]     = "icon";
-static const char kKeyType[]     = "type";
+static const char kKeyId[]          = "id";
+static const char kKeyTitle[]       = "title";
+static const char kKeyIcon[]        = "icon";
+static const char kKeyType[]        = "type";
+static const char kKeyHasChildren[] = "hasChildren";
 
-static const char kKeyName[]     = "name";
-static const char kKeyContent[]  = "content";
-static const char kKeyDomain[]   = "domain";
-static const char kKeyPath[]     = "path";
-static const char kKeySendFor[]  = "sendfor";
-static const char kKeyDesc[]     = "desc";
-static const char kKeySize[]     = "size";
-static const char kKeyOrigin[]   = "origin";
-static const char kKeyManifest[] = "manifest";
+static const char kKeyName[]        = "name";
+static const char kKeyContent[]     = "content";
+static const char kKeyDomain[]      = "domain";
+static const char kKeyPath[]        = "path";
+static const char kKeySendFor[]     = "sendfor";
+static const char kKeyDesc[]        = "desc";
+static const char kKeySize[]        = "size";
+static const char kKeyOrigin[]      = "origin";
+static const char kKeyManifest[]    = "manifest";
 
-static const char kKeyAccessed[] = "accessed";
-static const char kKeyCreated[]  = "created";
-static const char kKeyExpires[]  = "expires";
-static const char kKeyModified[] = "modified";
+static const char kKeyAccessed[]    = "accessed";
+static const char kKeyCreated[]     = "created";
+static const char kKeyExpires[]     = "expires";
+static const char kKeyModified[]    = "modified";
 
 // Encodes a pointer value into a hex string.
 std::string PointerToHexString(const void* pointer) {
@@ -57,11 +58,13 @@ void* HexStringToPointer(const std::string& str) {
   return *reinterpret_cast<void**>(&buffer[0]);
 }
 
-bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
+// Populate given |dict| with cookie tree node properties.
+void GetCookieTreeNodeDictionary(const CookieTreeNode& node,
                                  DictionaryValue* dict) {
   // Use node's address as an id for DOMUI to look it up.
   dict->SetString(kKeyId, PointerToHexString(&node));
   dict->SetString(kKeyTitle, node.GetTitle());
+  dict->SetBoolean(kKeyHasChildren, !!node.GetChildCount());
 
   switch (node.GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_ORIGIN: {
@@ -170,8 +173,17 @@ bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
     default:
       break;
   }
+}
 
-  return true;
+// Append the children nodes of |parent| in specified range to |nodes| list.
+void GetChildNodeList(CookieTreeNode* parent, int start, int count,
+                      ListValue* nodes) {
+  for (int i = 0; i < count; ++i) {
+    DictionaryValue* dict = new DictionaryValue;
+    CookieTreeNode* child = parent->GetChild(start + i);
+    GetCookieTreeNodeDictionary(*child, dict);
+    nodes->Append(dict);
+  }
 }
 
 // TODO(xiyuan): Remove this function when strings are updated.
@@ -184,7 +196,7 @@ string16 CleanButtonLabel(const string16& text) {
 
 }  // namespace
 
-CookiesViewHandler::CookiesViewHandler() {
+CookiesViewHandler::CookiesViewHandler() : batch_update_(false) {
 }
 
 CookiesViewHandler::~CookiesViewHandler() {
@@ -248,21 +260,6 @@ void CookiesViewHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_ALL_LABEL)));
 }
 
-void CookiesViewHandler::Initialize() {
-  DCHECK(dom_ui_);
-
-  Profile* profile = dom_ui_->GetProfile();
-
-  cookies_tree_model_.reset(new CookiesTreeModel(
-      profile->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
-      new BrowsingDataDatabaseHelper(profile),
-      new BrowsingDataLocalStorageHelper(profile),
-      NULL,
-      new BrowsingDataAppCacheHelper(profile),
-      BrowsingDataIndexedDBHelper::Create(profile)));
-  cookies_tree_model_->AddObserver(this);
-}
-
 void CookiesViewHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("updateCookieSearchResults",
       NewCallback(this, &CookiesViewHandler::UpdateSearchResults));
@@ -270,27 +267,27 @@ void CookiesViewHandler::RegisterMessages() {
       NewCallback(this, &CookiesViewHandler::RemoveAll));
   dom_ui_->RegisterMessageCallback("removeCookie",
       NewCallback(this, &CookiesViewHandler::Remove));
+  dom_ui_->RegisterMessageCallback("loadCookie",
+      NewCallback(this, &CookiesViewHandler::LoadChildren));
 }
 
 void CookiesViewHandler::TreeNodesAdded(TreeModel* model,
                                         TreeModelNode* parent,
                                         int start,
                                         int count) {
-  ListValue* nodes = new ListValue;
-  for (int i = 0; i < count; ++i) {
-    DictionaryValue* dict = new DictionaryValue;
-    CookieTreeNode* child = static_cast<CookieTreeNode*>(
-        model->GetChild(parent, start + i));
-    GetCookieTreeNodeDictionary(*child, dict);
-    nodes->Append(dict);
-  }
+  // Skip if there is a batch update in progress.
+  if (batch_update_)
+    return;
+
+  ListValue* children = new ListValue;
+  GetChildNodeList(cookies_tree_model_->AsNode(parent), start, count, children);
 
   ListValue args;
   args.Append(parent == cookies_tree_model_->GetRoot() ?
       Value::CreateNullValue() :
       Value::CreateStringValue(PointerToHexString(parent)));
   args.Append(Value::CreateIntegerValue(start));
-  args.Append(nodes);
+  args.Append(children);
   dom_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemAdded", args);
 }
 
@@ -298,6 +295,10 @@ void CookiesViewHandler::TreeNodesRemoved(TreeModel* model,
                                           TreeModelNode* parent,
                                           int start,
                                           int count) {
+  // Skip if there is a batch update in progress.
+  if (batch_update_)
+    return;
+
   ListValue args;
   args.Append(parent == cookies_tree_model_->GetRoot() ?
       Value::CreateNullValue() :
@@ -307,10 +308,34 @@ void CookiesViewHandler::TreeNodesRemoved(TreeModel* model,
   dom_ui_->CallJavascriptFunction(L"CookiesView.onTreeItemRemoved", args);
 }
 
+void CookiesViewHandler::TreeModelBeginBatch(CookiesTreeModel* model) {
+  DCHECK(!batch_update_);  // There should be no nested batch begin.
+  batch_update_ = true;
+}
+
+void CookiesViewHandler::TreeModelEndBatch(CookiesTreeModel* model) {
+  DCHECK(batch_update_);
+  batch_update_ = false;
+
+  SendChildren(cookies_tree_model_->GetRoot());
+}
+
 void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
   std::string query;
   if (!args->GetString(0, &query)){
     return;
+  }
+
+  if (!cookies_tree_model_.get()) {
+    Profile* profile = dom_ui_->GetProfile();
+    cookies_tree_model_.reset(new CookiesTreeModel(
+        profile->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
+        new BrowsingDataDatabaseHelper(profile),
+        new BrowsingDataLocalStorageHelper(profile),
+        NULL,
+        new BrowsingDataAppCacheHelper(profile),
+        BrowsingDataIndexedDBHelper::Create(profile)));
+    cookies_tree_model_->AddObserver(this);
   }
 
   cookies_tree_model_->UpdateSearchResults(UTF8ToWide(query));
@@ -326,8 +351,26 @@ void CookiesViewHandler::Remove(const ListValue* args) {
     return;
   }
 
+  CookieTreeNode* node = GetTreeNodeFromPath(node_path);
+  if (node)
+    cookies_tree_model_->DeleteCookieNode(node);
+}
+
+void CookiesViewHandler::LoadChildren(const ListValue* args) {
+  std::string node_path;
+  if (!args->GetString(0, &node_path)){
+    return;
+  }
+
+  CookieTreeNode* node = GetTreeNodeFromPath(node_path);
+  if (node)
+    SendChildren(node);
+}
+
+CookieTreeNode* CookiesViewHandler::GetTreeNodeFromPath(
+    const std::string& path) {
   std::vector<std::string> node_ids;
-  SplitString(node_path, ',', &node_ids);
+  SplitString(path, ',', &node_ids);
 
   CookieTreeNode* child = NULL;
   CookieTreeNode* parent = cookies_tree_model_->GetRoot();
@@ -345,6 +388,18 @@ void CookiesViewHandler::Remove(const ListValue* args) {
     parent = child;
   }
 
-  if (child_index >= 0)
-    cookies_tree_model_->DeleteCookieNode(child);
+  return child_index >= 0 ? child : NULL;
+}
+
+void CookiesViewHandler::SendChildren(CookieTreeNode* parent) {
+  ListValue* children = new ListValue;
+  GetChildNodeList(parent, 0, parent->GetChildCount(), children);
+
+  ListValue args;
+  args.Append(parent == cookies_tree_model_->GetRoot() ?
+      Value::CreateNullValue() :
+      Value::CreateStringValue(PointerToHexString(parent)));
+  args.Append(children);
+
+  dom_ui_->CallJavascriptFunction(L"CookiesView.loadChildren", args);
 }

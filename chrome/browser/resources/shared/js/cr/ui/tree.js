@@ -301,7 +301,7 @@ cr.define('cr.ui', function() {
     addAt: function(child, index) {
       this.lastElementChild.insertBefore(child, this.items[index]);
       if (this.items.length == 1)
-        this.hasChildren_ = true;
+        this.hasChildren = true;
       child.setDepth_(this.depth + 1);
     },
 
@@ -318,7 +318,7 @@ cr.define('cr.ui', function() {
 
       this.lastElementChild.removeChild(child);
       if (this.items.length == 0)
-        this.hasChildren_ = false;
+        this.hasChildren = false;
     },
 
     /**
@@ -483,9 +483,8 @@ cr.define('cr.ui', function() {
     /**
      * Whether the tree item has children.
      * @type {boolean}
-     * @private
      */
-    set hasChildren_(b) {
+    set hasChildren(b) {
       var rowItem = this.firstElementChild;
       this.setAttribute('has-children', b);
       rowItem.setAttribute('has-children', b);

@@ -18,7 +18,6 @@ class CookiesViewHandler : public OptionsPageUIHandler,
 
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
-  virtual void Initialize();
   virtual void RegisterMessages();
 
   // TreeModel::Observer implementation.
@@ -31,6 +30,8 @@ class CookiesViewHandler : public OptionsPageUIHandler,
                                 int start,
                                 int count);
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) {}
+  virtual void TreeModelBeginBatch(CookiesTreeModel* model);
+  virtual void TreeModelEndBatch(CookiesTreeModel* model);
 
  private:
   // Updates search filter for cookies tree model.
@@ -42,8 +43,22 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   // Remove selected sites data.
   void Remove(const ListValue* args);
 
+  // Get the tree node using the tree path info in |args| and call
+  // SendChildren to pass back children nodes data to DOMUI.
+  void LoadChildren(const ListValue* args);
+
+  // Gets tree node from given path. Return NULL if path is not valid.
+  CookieTreeNode* GetTreeNodeFromPath(const std::string& path);
+
+  // Get children nodes data and pass it to 'CookiesView.loadChildren' to
+  // update the DOMUI.
+  void SendChildren(CookieTreeNode* parent);
+
   // The Cookies Tree model
   scoped_ptr<CookiesTreeModel> cookies_tree_model_;
+
+  // Flag to indicate whether there is a batch update in progress.
+  bool batch_update_;
 
   DISALLOW_COPY_AND_ASSIGN(CookiesViewHandler);
 };
