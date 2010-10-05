@@ -177,7 +177,7 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
 #if defined(OS_LINUX)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuHostMsg_GetViewXID, OnGetViewXID)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_GetViewXID, OnGetViewXID)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
                         OnAcceleratedSurfaceSetIOSurface)
@@ -210,38 +210,12 @@ void GpuProcessHost::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
 }
 
 #if defined(OS_LINUX)
-
-namespace {
-
-void SendDelayedReply(IPC::Message* reply_msg) {
-  GpuProcessHost::Get()->Send(reply_msg);
-}
-
-void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
-  unsigned long xid;
-
+void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id, unsigned long* xid) {
   GtkNativeViewManager* manager = Singleton<GtkNativeViewManager>::get();
-  if (!manager->GetPermanentXIDForId(&xid, id)) {
+  if (!manager->GetXIDForId(xid, id)) {
     DLOG(ERROR) << "Can't find XID for view id " << id;
-    xid = 0;
+    *xid = 0;
   }
-
-  GpuHostMsg_GetViewXID::WriteReplyParams(reply_msg, xid);
-
-  // Have to reply from IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(&SendDelayedReply, reply_msg));
-}
-
-}
-
-void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id,
-                                  IPC::Message *reply_msg) {
-  // Have to request a permanent overlay from UI thread.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableFunction(&GetViewXIDDispatcher, id, reply_msg));
 }
 
 #elif defined(OS_MACOSX)

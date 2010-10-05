@@ -95,7 +95,7 @@ class GpuProcessHost : public BrowserChildProcessHost {
   void OnSynchronizeReply();
   void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
 #if defined(OS_LINUX)
-  void OnGetViewXID(gfx::NativeViewId id, IPC::Message* reply_msg);
+  void OnGetViewXID(gfx::NativeViewId id, unsigned long* xid);
 #elif defined(OS_MACOSX)
   void OnAcceleratedSurfaceSetIOSurface(
       const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
