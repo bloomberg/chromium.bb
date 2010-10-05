@@ -173,6 +173,8 @@ void SearchString(PP_Module module,
   UStringSearch* searcher = usearch_open(
       term, -1, string, -1, webkit_glue::GetWebKitLocale().c_str(), 0,
       &status);
+  DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
+         status == U_USING_DEFAULT_WARNING);
   UCollationStrength strength = case_sensitive ? UCOL_TERTIARY : UCOL_PRIMARY;
 
   UCollator* collator = usearch_getCollator(searcher);
@@ -181,6 +183,7 @@ void SearchString(PP_Module module,
     usearch_reset(searcher);
   }
 
+  status = U_ZERO_ERROR;
   int match_start = usearch_first(searcher, &status);
   DCHECK(status == U_ZERO_ERROR);
 
@@ -192,6 +195,7 @@ void SearchString(PP_Module module,
     result.length = matched_length;
     pp_results.push_back(result);
     match_start = usearch_next(searcher, &status);
+    DCHECK(status == U_ZERO_ERROR);
   }
 
   *count = pp_results.size();
