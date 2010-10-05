@@ -716,7 +716,8 @@ solutions = [
     revision_overrides = self._EnforceRevisions()
     pm = None
     # Disable progress for non-tty stdout.
-    if command in ('update', 'revert') and sys.stdout.isatty():
+    if (command in ('update', 'revert') and sys.stdout.isatty() and not
+        self._options.verbose):
       pm = Progress('Syncing projects', 1)
     work_queue = gclient_utils.ExecutionQueue(self._options.jobs, pm)
     for s in self.dependencies:
