@@ -696,15 +696,14 @@ void FilebrowseHandler::OpenNewWindow(const ListValue* args, bool popup) {
   Browser* browser = popup ?
       Browser::CreateForType(Browser::TYPE_APP_PANEL, profile_) :
       BrowserList::GetLastActive();
-  browser->AddTabWithURL(GURL(url), GURL(), PageTransition::LINK, -1,
-                         TabStripModel::ADD_SELECTED, NULL, std::string(),
-                         &browser);
+  Browser::AddTabWithURLParams params(GURL(url), PageTransition::LINK);
+  browser->AddTabWithURL(&params);
   if (popup) {
     // TODO(dhg): Remove these from being hardcoded. Allow javascript
     // to specify.
-    browser->window()->SetBounds(gfx::Rect(0, 0, 400, 300));
+    params.target->window()->SetBounds(gfx::Rect(0, 0, 400, 300));
   }
-  browser->window()->Show();
+  params.target->window()->Show();
 }
 
 void FilebrowseHandler::SendPicasawebRequest() {
@@ -1062,16 +1061,14 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
       url.append(hashArgument);
     }
 
-    browser->AddTabWithURL(
-        GURL(url), GURL(), PageTransition::LINK, -1,
-        TabStripModel::ADD_SELECTED, NULL, std::string(),
-        &browser);
-    browser->window()->SetBounds(gfx::Rect(kPopupLeft,
-                                           kPopupTop,
-                                           width,
-                                           height));
+    Browser::AddTabWithURLParams params(GURL(url), PageTransition::LINK);
+    browser->AddTabWithURL(&params);
+    params.target->window()->SetBounds(gfx::Rect(kPopupLeft,
+                                                 kPopupTop,
+                                                 width,
+                                                 height));
 
-    browser->window()->Show();
+    params.target->window()->Show();
   } else {
     browser->window()->Show();
   }

@@ -20,6 +20,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/test/test_server.h"
@@ -217,11 +218,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
 
   // Create several tabs.
   for (int i = 0; i < 4; ++i) {
-    Browser* browser_used = NULL;
-    browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                             TabStripModel::ADD_SELECTED, NULL, std::string(),
-                             &browser_used);
-    EXPECT_EQ(browser(), browser_used);
+    Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+    browser()->AddTabWithURL(&params);
+    EXPECT_EQ(browser(), params.target);
   }
 
   // Alternate focus for the tab.
@@ -297,11 +296,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   browser()->FocusLocationBar();
 
   // Create a 2nd tab.
-  Browser* browser_used = NULL;
-  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string(),
-                           &browser_used);
-  EXPECT_EQ(browser(), browser_used);
+  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+  browser()->AddTabWithURL(&params);
+  EXPECT_EQ(browser(), params.target);
 
   // Focus should be on the recently opened tab page.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
@@ -733,10 +730,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open about:blank, focus should be on the location bar.
-  browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::LINK,
-                           -1, TabStripModel::ADD_SELECTED, NULL,
-                           std::string(),
-                           NULL);
+  browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
+                                   PageTransition::LINK);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 }
 

@@ -148,9 +148,7 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
       std::string url(chrome::kChromeUINewTabURL);
       url += "/#";
       url += hash_params;
-      browser->AddTabWithURL(GURL(url), GURL(), PageTransition::TYPED, -1,
-                             TabStripModel::ADD_SELECTED, NULL, std::string(),
-                             NULL);
+      browser->AddSelectedTabWithURL(GURL(url), PageTransition::TYPED);
     }
 
     return;

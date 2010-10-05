@@ -74,10 +74,8 @@ class LinuxHostInit {
 namespace {
 
 void InitializeBrowser(Browser* browser) {
-  browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
-                         PageTransition::START_PAGE, -1,
-                         TabStripModel::ADD_SELECTED, NULL, std::string(),
-                         &browser);
+  browser->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
+                                 PageTransition::START_PAGE);
 
   // Wait for the page to finish loading.
   ui_test_utils::WaitForNavigation(

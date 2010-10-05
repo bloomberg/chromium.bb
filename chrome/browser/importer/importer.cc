@@ -200,12 +200,12 @@ void ImporterHost::StartImportSettings(
           MB_OK | MB_TOPMOST);
 
       GURL url("https://www.google.com/accounts/ServiceLogin");
-      BrowsingInstance* instance = new BrowsingInstance(writer_->profile());
-      SiteInstance* site = instance->GetSiteInstanceForURL(url);
       Browser* browser = BrowserList::GetLastActive();
-      browser->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                             TabStripModel::ADD_SELECTED, site, std::string(),
-                             NULL);
+      Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+      // BrowsingInstance is refcounted.
+      BrowsingInstance* instance = new BrowsingInstance(writer_->profile());
+      params.instance = instance->GetSiteInstanceForURL(url);
+      browser->AddTabWithURL(&params);
 
       MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &ImporterHost::OnLockViewEnd, false));

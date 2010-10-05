@@ -41,13 +41,10 @@ void HtmlDialogTabContentsDelegate::OpenURLFromTab(
     // open it in the current frame.  Code adapted from
     // Browser::OpenURLFromTab() with disposition == NEW_WINDOW.
     Browser* browser = CreateBrowser();
-    TabContents* new_contents =
-        browser->AddTabWithURL(url, referrer, transition, -1,
-                               TabStripModel::ADD_SELECTED, NULL,
-                               std::string(), &browser);
-    DCHECK(new_contents);
+    Browser::AddTabWithURLParams params(url, transition);
+    params.referrer = referrer;
+    browser->AddTabWithURL(&params);
     browser->window()->Show();
-    new_contents->Focus();
   }
 }
 

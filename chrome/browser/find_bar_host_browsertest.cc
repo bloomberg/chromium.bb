@@ -823,11 +823,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
   EXPECT_EQ(1, FindInPageWchar(tab1, L"Default", kFwd, kIgnoreCase, &ordinal));
 
   // Create a second tab.
-  Browser* browser_used = NULL;
-  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string(),
-                           &browser_used);
-  EXPECT_EQ(browser(), browser_used);
+  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+  browser()->AddTabWithURL(&params);
+  EXPECT_EQ(browser(), params.target);
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
@@ -901,11 +899,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
   EXPECT_EQ(1, FindInPageWchar(tab1, L"page", kFwd, kIgnoreCase, &ordinal));
 
   // Now create a second tab and load the same page.
-  Browser* browser_used = NULL;
-  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string(),
-                           &browser_used);
-  EXPECT_EQ(browser(), browser_used);
+  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+  browser()->AddTabWithURL(&params);
+  EXPECT_EQ(browser(), params.target);
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
@@ -948,11 +944,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
       FindBarController::kKeepSelection);
 
   // Now create a second tab and load the same page.
-  Browser* browser_used = NULL;
-  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string(),
-                           &browser_used);
-  EXPECT_EQ(browser(), browser_used);
+  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+  browser()->AddTabWithURL(&params);
+  EXPECT_EQ(browser(), params.target);
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);
@@ -1024,11 +1018,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   // Open a new incognito window and navigate to the same page.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser = Browser::Create(incognito_profile);
-  Browser* browser_used = NULL;
-  incognito_browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, -1,
-                                   TabStripModel::ADD_SELECTED, NULL,
-                                   std::string(), &browser_used);
-  EXPECT_EQ(incognito_browser, browser_used);
+  Browser::AddTabWithURLParams params1(url, PageTransition::START_PAGE);
+  incognito_browser->AddTabWithURL(&params1);
+  EXPECT_EQ(incognito_browser, params1.target);
   ui_test_utils::WaitForNavigation(
       &incognito_browser->GetSelectedTabContents()->controller());
   incognito_browser->window()->Show();
@@ -1048,10 +1040,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
       FindBarController::kKeepSelection);
 
   // Now open a new tab in the original (non-incognito) browser.
-  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string(),
-                           &browser_used);
-  EXPECT_EQ(browser(), browser_used);
+  Browser::AddTabWithURLParams params2(url, PageTransition::TYPED);
+  browser()->AddTabWithURL(&params2);
+  EXPECT_EQ(browser(), params2.target);
   browser()->SelectTabContentsAt(1, false);
   TabContents* tab2 = browser()->GetSelectedTabContents();
   EXPECT_NE(tab1, tab2);

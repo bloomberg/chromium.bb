@@ -122,6 +122,8 @@ class Browser : public TabHandlerDelegate,
   // Creates a new browser of the given |type| and for the given |profile|. The
   // Browser has a NULL window after its construction, CreateBrowserWindow must
   // be called after configuration for window() to be valid.
+  // Avoid using this constructor directly if you can use one of the Create*()
+  // methods below. This applies to almost all non-testing code.
   Browser(Type type, Profile* profile);
   virtual ~Browser();
 
@@ -235,29 +237,19 @@ class Browser : public TabHandlerDelegate,
   // app panel window, otherwise it will be opened as as either
   // Browser::Type::APP a.k.a. "thin frame" (if |extension| is NULL) or
   // Browser::Type::EXTENSION_APP (if |extension| is non-NULL).
-  // Returns the browser hosting for the TabContents via optional parameter,
-  // |browser|.
   static TabContents* OpenApplicationWindow(
       Profile* profile,
       Extension* extension,
       extension_misc::LaunchContainer container,
-      const GURL& url,
-      Browser** browser);
+      const GURL& url);
 
   // Open an application for |extension| in a new application window or panel.
-  // Returns the browser hosting the TabContents via optional parameter,
-  // |browser|.
-  static TabContents* OpenApplicationWindow(Profile* profile,
-                                            GURL& url,
-                                            Browser** browser);
+  static TabContents* OpenApplicationWindow(Profile* profile, GURL& url);
 
   // Open an application for |extension| in a new application tab.  Returns
   // NULL if there are no appropriate existing browser windows for |profile|.
-  // Returns the browser hosting the TabContents via optional parameter,
-  // |browser|.
   static TabContents* OpenApplicationTab(Profile* profile,
-                                         Extension* extension,
-                                         Browser** browser);
+                                         Extension* extension);
 
   // Opens a new window and opens the bookmark manager.
   static void OpenBookmarkManagerWindow(Profile* profile);
@@ -337,21 +329,44 @@ class Browser : public TabHandlerDelegate,
   // command line this is invoked three times with the values 0, 1 and 2.
   int GetIndexForInsertionDuringRestore(int relative_index);
 
-  // Adds a new tab at the specified index. |add_types| is a bitmask of the
-  // values defined by TabStripModel::AddTabTypes; see it for details. If
-  // |instance| is not null, its process will be used to render the tab. If
-  // |extension_app_id| is non-empty the new tab is an app tab.
-  // The returned tab may be hosted in a different browser.  |browser_used|
-  // will be assigned the browser that satisfied the add tab request.
-  // |browser_used| may be passed
-  TabContents* AddTabWithURL(const GURL& url,
-                             const GURL& referrer,
-                             PageTransition::Type transition,
-                             int index,
-                             int add_types,
-                             SiteInstance* instance,
-                             const std::string& extension_app_id,
-                             Browser** browser_used);
+  // Adds a selected tab with the specified URL and transition, returns the
+  // created TabContents.
+  TabContents* AddSelectedTabWithURL(const GURL& url,
+                                     PageTransition::Type transition);
+
+  // Parameters for AddTabWithURL.
+  struct AddTabWithURLParams {
+    AddTabWithURLParams(const GURL& a_url, PageTransition::Type a_transition);
+    ~AddTabWithURLParams();
+
+    // Basic configuration.
+    GURL url;
+    GURL referrer;
+    PageTransition::Type transition;
+
+    // The index to open the tab at. This could be ignored by the tabstrip
+    // depending on the combination of |add_types| specified.
+    int index;
+
+    // A bitmask of values defined in TabStripModel::AddTabTypes.
+    // The default is ADD_SELECTED.
+    int add_types;
+
+    // If non-NULL, used to render the tab.
+    SiteInstance* instance;
+
+    // If non-empty, the new tab is an app tab.
+    std::string extension_app_id;
+
+    // The browser where the tab was added.
+    Browser* target;
+
+   private:
+    AddTabWithURLParams();
+  };
+
+  // Adds a tab to the browser (or another) and returns the created TabContents.
+  TabContents* AddTabWithURL(AddTabWithURLParams* params);
 
   // Add a new tab, given a TabContents. A TabContents appropriate to
   // display the last committed entry is created and returned.

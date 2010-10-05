@@ -453,15 +453,9 @@ void Browser::OpenWindowWithRestoredTabs(Profile* profile) {
 
 // static
 void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
-  Profile* off_the_record_profile = profile->GetOffTheRecordProfile();
-  Browser* browser = BrowserList::FindBrowserWithType(
-      off_the_record_profile, TYPE_NORMAL, false);
-  if (!browser)
-    browser = Browser::Create(off_the_record_profile);
-  // TODO(eroman): should we have referrer here?
-  browser->AddTabWithURL(
-      url, GURL(), PageTransition::LINK, -1, TabStripModel::ADD_SELECTED, NULL,
-      std::string(), &browser);
+  Browser* browser = GetOrCreateTabbedBrowser(
+      profile->GetOffTheRecordProfile());
+  browser->AddSelectedTabWithURL(url, PageTransition::LINK);
   browser->window()->Show();
 }
 
@@ -496,10 +490,10 @@ TabContents* Browser::OpenApplication(
     case extension_misc::LAUNCH_WINDOW:
     case extension_misc::LAUNCH_PANEL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
-                                           GURL(), NULL);
+                                           GURL());
       break;
     case extension_misc::LAUNCH_TAB: {
-      tab = Browser::OpenApplicationTab(profile, extension, NULL);
+      tab = Browser::OpenApplicationTab(profile, extension);
       break;
     }
     default:
@@ -514,8 +508,7 @@ TabContents* Browser::OpenApplicationWindow(
     Profile* profile,
     Extension* extension,
     extension_misc::LaunchContainer container,
-    const GURL& url_input,
-    Browser** browser) {
+    const GURL& url_input) {
   GURL url;
   if (!url_input.is_empty()) {
     if (extension)
@@ -531,19 +524,17 @@ TabContents* Browser::OpenApplicationWindow(
   RegisterAppPrefs(app_name);
 
   bool as_panel = extension && (container == extension_misc::LAUNCH_PANEL);
-  Browser* local_browser = Browser::CreateForApp(app_name, extension, profile,
-                                                 as_panel);
-  TabContents* tab_contents = local_browser->AddTabWithURL(
-      url, GURL(), PageTransition::START_PAGE, -1, TabStripModel::ADD_SELECTED,
-      NULL, std::string(), &local_browser);
-
-  tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
-  tab_contents->render_view_host()->SyncRendererPrefs();
-  local_browser->window()->Show();
+  Browser* browser = Browser::CreateForApp(app_name, extension, profile,
+                                           as_panel);
+  TabContents* contents =
+      browser->AddSelectedTabWithURL(url, PageTransition::START_PAGE);
+  contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
+  contents->render_view_host()->SyncRendererPrefs();
+  browser->window()->Show();
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
-  tab_contents->view()->SetInitialFocus();
+  contents->view()->SetInitialFocus();
 
   if (!as_panel) {
     // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
@@ -552,30 +543,25 @@ TabContents* Browser::OpenApplicationWindow(
     // OnDidGetApplicationInfo, which calls
     // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
     // pending web app action.
-    local_browser->pending_web_app_action_ = UPDATE_SHORTCUT;
+    browser->pending_web_app_action_ = UPDATE_SHORTCUT;
   }
 
-  if (browser)
-    *browser = local_browser;
-
-  return tab_contents;
+  return contents;
 }
 
 // static
-TabContents* Browser::OpenApplicationWindow(Profile* profile,
-                                            GURL& url, Browser** browser) {
+TabContents* Browser::OpenApplicationWindow(Profile* profile, GURL& url) {
   return OpenApplicationWindow(profile, NULL, extension_misc::LAUNCH_WINDOW,
-                               url, browser);
+                               url);
 }
 
 // static
 TabContents* Browser::OpenApplicationTab(Profile* profile,
-                                         Extension* extension,
-                                         Browser** browser) {
-  Browser* local_browser = BrowserList::GetLastActiveWithProfile(profile);
-  TabContents* tab_contents = NULL;
-  if (!local_browser || local_browser->type() != Browser::TYPE_NORMAL)
-    return tab_contents;
+                                         Extension* extension) {
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  TabContents* contents = NULL;
+  if (!browser || browser->type() != Browser::TYPE_NORMAL)
+    return contents;
 
   // Check the prefs for overridden mode.
   ExtensionsService* extensions_service = profile->GetExtensionsService();
@@ -589,12 +575,14 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
 
   // TODO(erikkay): START_PAGE doesn't seem like the right transition in all
   // cases.
-  tab_contents = local_browser->AddTabWithURL(extension->GetFullLaunchURL(),
-      GURL(), PageTransition::START_PAGE, -1, add_type, NULL, "", browser);
+  AddTabWithURLParams params(extension->GetFullLaunchURL(),
+                             PageTransition::START_PAGE);
+  params.add_types = add_type;
+  contents = browser->AddTabWithURL(&params);
   if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
-    local_browser->window()->SetFullscreen(true);
+    browser->window()->SetFullscreen(true);
 
-  return tab_contents;
+  return contents;
 }
 
 // static
@@ -874,48 +862,57 @@ int Browser::GetIndexForInsertionDuringRestore(int relative_index) {
       TabStripModel::INSERT_AFTER) ? tab_count() : relative_index;
 }
 
-TabContents* Browser::AddTabWithURL(const GURL& url,
-                                    const GURL& referrer,
-                                    PageTransition::Type transition,
-                                    int index,
-                                    int add_types,
-                                    SiteInstance* instance,
-                                    const std::string& extension_app_id,
-                                    Browser** browser_used) {
+TabContents* Browser::AddSelectedTabWithURL(const GURL& url,
+                                            PageTransition::Type transition) {
+  AddTabWithURLParams params(url, transition);
+  return AddTabWithURL(&params);
+}
+
+Browser::AddTabWithURLParams::AddTabWithURLParams(
+    const GURL& a_url,
+    PageTransition::Type a_transition)
+    : url(a_url),
+      transition(a_transition),
+      index(-1),
+      add_types(TabStripModel::ADD_SELECTED),
+      instance(NULL),
+      target(NULL) {
+}
+
+Browser::AddTabWithURLParams::~AddTabWithURLParams() {
+}
+
+TabContents* Browser::AddTabWithURL(AddTabWithURLParams* params) {
   TabContents* contents = NULL;
   if (CanSupportWindowFeature(FEATURE_TABSTRIP) || tabstrip_model()->empty()) {
-    GURL url_to_load = url;
+    GURL url_to_load = params->url;
     if (url_to_load.is_empty())
       url_to_load = GetHomePage();
-    contents = CreateTabContentsForURL(url_to_load, referrer, profile_,
-                                       transition, false, instance);
-    contents->SetExtensionAppById(extension_app_id);
-    tab_handler_->GetTabStripModel()->AddTabContents(contents, index,
-                                                     transition, add_types);
+    contents = CreateTabContentsForURL(url_to_load, params->referrer, profile_,
+                                       params->transition, false,
+                                       params->instance);
+    contents->SetExtensionAppById(params->extension_app_id);
+    tab_handler_->GetTabStripModel()->AddTabContents(contents, params->index,
+                                                     params->transition,
+                                                     params->add_types);
     // TODO(sky): figure out why this is needed. Without it we seem to get
     // failures in startup tests.
     // By default, content believes it is not hidden.  When adding contents
     // in the background, tell it that it's hidden.
-    if ((add_types & TabStripModel::ADD_SELECTED) == 0) {
+    if ((params->add_types & TabStripModel::ADD_SELECTED) == 0) {
       // TabStripModel::AddTabContents invokes HideContents if not foreground.
       contents->WasHidden();
     }
-
-    if (browser_used)
-      *browser_used = this;
+    params->target = this;
   } else {
     // We're in an app window or a popup window. Find an existing browser to
     // open this URL in, creating one if none exists.
-    Browser* b = BrowserList::FindBrowserWithFeature(profile_,
-                                                     FEATURE_TABSTRIP);
-    if (!b)
-      b = Browser::Create(profile_);
-    contents = b->AddTabWithURL(url, referrer, transition, index, add_types,
-                                instance, extension_app_id, &b);
-    b->window()->Show();
-
-    if (browser_used)
-      *browser_used = b;
+    Browser* browser =
+        BrowserList::FindBrowserWithFeature(profile_, FEATURE_TABSTRIP);
+    if (!browser)
+      browser = Browser::Create(profile_);
+    contents = browser->AddTabWithURL(params);
+    DCHECK(params->target);
   }
   return contents;
 }
@@ -1049,8 +1046,7 @@ void Browser::ShowSingletonTab(const GURL& url) {
   }
 
   // Otherwise, just create a new tab.
-  AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK, -1,
-                TabStripModel::ADD_SELECTED, NULL, std::string(), NULL);
+  AddSelectedTabWithURL(url, PageTransition::AUTO_BOOKMARK);
 }
 
 void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
@@ -1805,8 +1801,7 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
   }
 
   // No options tab found, so create a new one.
-  AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK, -1,
-                TabStripModel::ADD_SELECTED, NULL, std::string(), NULL);
+  AddSelectedTabWithURL(url, PageTransition::AUTO_BOOKMARK);
 }
 
 void Browser::OpenClearBrowsingDataDialog() {
@@ -1887,8 +1882,7 @@ void Browser::OpenUpdateChromeDialog() {
 
 void Browser::OpenHelpTab() {
   GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kHelpContentUrl));
-  AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK, -1,
-                TabStripModel::ADD_SELECTED, NULL, std::string(), NULL);
+  AddSelectedTabWithURL(help_url, PageTransition::AUTO_BOOKMARK);
 }
 
 void Browser::OpenThemeGalleryTabAndActivate() {
@@ -2314,12 +2308,13 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
   // TabContents, but we want to include the time it takes to create the
   // TabContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
-  TabContents* tab_contents = AddTabWithURL(
-      GURL(chrome::kChromeUINewTabURL), GURL(), PageTransition::TYPED, index,
-      foreground ? TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE, NULL,
-      std::string(), NULL);
-  tab_contents->set_new_tab_start_time(new_tab_start_time);
-  return tab_contents;
+  AddTabWithURLParams params(GURL(chrome::kChromeUINewTabURL),
+                             PageTransition::TYPED);
+  params.add_types =
+      foreground ? TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE;
+  TabContents* contents = AddTabWithURL(&params);
+  contents->set_new_tab_start_time(new_tab_start_time);
+  return contents;
 }
 
 Browser* Browser::CreateNewStripWithContents(TabContents* detached_contents,
@@ -3965,10 +3960,12 @@ void Browser::OpenURLAtIndex(TabContents* source,
     return;
   } else if (disposition == NEW_WINDOW) {
     Browser* browser = Browser::Create(profile_);
-    new_contents = browser->AddTabWithURL(
-        url, referrer, transition, index,
-        TabStripModel::ADD_SELECTED | add_types, instance, std::string(),
-        &browser);
+    AddTabWithURLParams params(url, transition);
+    params.referrer = referrer;
+    params.index = index;
+    params.add_types = TabStripModel::ADD_SELECTED | add_types;
+    params.instance = instance;
+    new_contents = browser->AddTabWithURL(&params);
     browser->window()->Show();
   } else if ((disposition == CURRENT_TAB) && current_tab) {
     tab_handler_->GetTabStripModel()->TabNavigating(current_tab, transition);
@@ -4002,8 +3999,12 @@ void Browser::OpenURLAtIndex(TabContents* source,
   } else if (disposition != SUPPRESS_OPEN) {
     if (disposition != NEW_BACKGROUND_TAB)
       add_types |= TabStripModel::ADD_SELECTED;
-    new_contents = AddTabWithURL(url, referrer, transition, index, add_types,
-                                 instance, std::string(), NULL);
+    AddTabWithURLParams params(url, transition);
+    params.referrer = referrer;
+    params.index = index;
+    params.add_types = add_types;
+    params.instance = instance;
+    new_contents = AddTabWithURL(&params);
   }
 
   if (disposition != NEW_BACKGROUND_TAB && source_tab_was_frontmost &&

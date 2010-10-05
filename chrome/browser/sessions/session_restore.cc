@@ -551,8 +551,10 @@ class SessionRestoreImpl : public NotificationObserver {
       if (i == 0)
         add_types |= TabStripModel::ADD_SELECTED;
       int index = browser->GetIndexForInsertionDuringRestore(i);
-      browser->AddTabWithURL(urls[i], GURL(), PageTransition::START_PAGE, index,
-                             add_types, NULL, std::string(), NULL);
+      Browser::AddTabWithURLParams params(urls[i], PageTransition::START_PAGE);
+      params.index = index;
+      params.add_types = add_types;
+      browser->AddTabWithURL(&params);
     }
   }
 

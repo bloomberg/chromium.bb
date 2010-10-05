@@ -169,18 +169,12 @@
 
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
-  TabContents* tabContents = browser_->AddTabWithURL(
-                        GURL(chrome::kChromeUINewTabURL),
-                        GURL(),
-                        PageTransition::TYPED,
-                        -1, //  To indicate tab is inserted at end.
-                        TabStripModel::ADD_SELECTED,
-                        NULL,
-                        std::string(),
-                        NULL);
-  tabContents->set_new_tab_start_time(newTabStartTime);
+  TabContents* contents =
+      browser_->AddSelectedTabWithURL(GURL(chrome::kChromeUINewTabURL),
+                                      PageTransition::TYPED);
+  contents->set_new_tab_start_time(newTabStartTime);
 
-  [aTab setTabContent:tabContents];
+  [aTab setTabContent:contents];
 }
 
 - (void)insertInTabs:(TabAppleScript*)aTab atIndex:(int)index {
@@ -191,18 +185,13 @@
 
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
-  TabContents* tabContents = browser_->AddTabWithURL(
-                        GURL(chrome::kChromeUINewTabURL),
-                        GURL(),
-                        PageTransition::TYPED,
-                        index,
-                        TabStripModel::ADD_SELECTED,
-                        NULL,
-                        std::string(),
-                        NULL);
-  tabContents->set_new_tab_start_time(newTabStartTime);
+  Browser::AddTabWithURLParams params(GURL(chrome::kChromeUINewTabURL),
+                                      PageTransition::TYPED);
+  params.index = index;
+  TabContents* contents = browser_->AddTabWithURL(&params);
+  contents->set_new_tab_start_time(newTabStartTime);
 
-  [aTab setTabContent:tabContents];
+  [aTab setTabContent:contents];
 }
 
 - (void)removeFromTabsAtIndex:(int)index {

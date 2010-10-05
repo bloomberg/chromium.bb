@@ -479,10 +479,8 @@ void TranslateManager::ReportLanguageDetectionError(TabContents* tab_contents) {
     NOTREACHED();
     return;
   }
-  browser->AddTabWithURL(GURL(report_error_url), GURL(),
-                         PageTransition::AUTO_BOOKMARK, -1,
-                         TabStripModel::ADD_SELECTED, NULL, std::string(),
-                         NULL);
+  browser->AddSelectedTabWithURL(GURL(report_error_url),
+                                 PageTransition::AUTO_BOOKMARK);
 }
 
 void TranslateManager::DoTranslatePage(TabContents* tab,

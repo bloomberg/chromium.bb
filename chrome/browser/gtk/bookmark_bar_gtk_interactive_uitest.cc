@@ -35,12 +35,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, FindBarTest) {
   browser()->Find();
 
   // Create new tab with an arbitrary URL.
-  Browser* browser_used = NULL;
   GURL url = test_server()->GetURL(kSimplePage);
-  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string(),
-                           &browser_used);
-  EXPECT_EQ(browser(), browser_used);
+  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+  browser()->AddTabWithURL(&params);
+  EXPECT_EQ(browser(), params.target);
 
   // Switch back to the NTP with the active findbar.
   browser()->SelectTabContentsAt(1, false);

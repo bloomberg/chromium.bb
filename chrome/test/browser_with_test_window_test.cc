@@ -60,10 +60,10 @@ TestRenderViewHost* BrowserWithTestWindowTest::TestRenderViewHostForTab(
 }
 
 void BrowserWithTestWindowTest::AddTab(Browser* browser, const GURL& url) {
-  TabContents* new_tab = browser->AddTabWithURL(
-      url, GURL(), PageTransition::TYPED, 0, TabStripModel::ADD_SELECTED, NULL,
-      std::string(), NULL);
-  CommitPendingLoad(&new_tab->controller());
+  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+  params.index = 0;
+  TabContents* contents = browser->AddTabWithURL(&params);
+  CommitPendingLoad(&contents->controller());
 }
 
 void BrowserWithTestWindowTest::CommitPendingLoad(

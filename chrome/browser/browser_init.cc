@@ -613,7 +613,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
-      Browser::OpenApplicationWindow(profile, url, NULL);
+      Browser::OpenApplicationWindow(profile, url);
       return true;
     }
   }
@@ -757,9 +757,12 @@ Browser* BrowserInit::LaunchWithProfile::OpenTabsInBrowser(
       add_types |= TabStripModel::ADD_PINNED;
     int index = browser->GetIndexForInsertionDuringRestore(i);
 
-    TabContents* tab = browser->AddTabWithURL(
-        tabs[i].url, GURL(), PageTransition::START_PAGE, index, add_types, NULL,
-        tabs[i].app_id, NULL);
+    Browser::AddTabWithURLParams params(tabs[i].url,
+                                        PageTransition::START_PAGE);
+    params.index = index;
+    params.add_types = add_types;
+    params.extension_app_id = tabs[i].app_id;
+    TabContents* tab = browser->AddTabWithURL(&params);
 
     if (profile_ && first_tab && process_startup) {
       AddCrashedInfoBarIfNecessary(tab);

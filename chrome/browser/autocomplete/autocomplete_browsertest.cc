@@ -147,11 +147,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
   location_bar->location_entry()->SetUserText(L"");
-  Browser* browser_used = NULL;
-  browser()->AddTabWithURL(
-      GURL(chrome::kAboutBlankURL), GURL(), PageTransition::START_PAGE,
-      -1, TabStripModel::ADD_SELECTED, NULL, std::string(), &browser_used);
-  EXPECT_EQ(browser(), browser_used);
+  Browser::AddTabWithURLParams params(GURL(chrome::kAboutBlankURL),
+                                      PageTransition::START_PAGE);
+  browser()->AddTabWithURL(&params);
+  EXPECT_EQ(browser(), params.target);
   ui_test_utils::WaitForNavigation(
       &browser()->GetSelectedTabContents()->controller());
   EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),

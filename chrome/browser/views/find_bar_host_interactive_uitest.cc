@@ -50,11 +50,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   browser()->Find();
 
   // Open another tab (tab B).
-  Browser* browser_used = NULL;
-  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string(),
-                           &browser_used);
-  EXPECT_EQ(browser(), browser_used);
+  Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+  browser()->AddTabWithURL(&params);
+  EXPECT_EQ(browser(), params.target);
 
   browser()->Find();
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(),

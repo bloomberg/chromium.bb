@@ -492,12 +492,11 @@ void TestingAutomationProvider::AppendTab(int handle, const GURL& url,
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     observer = AddTabStripObserver(browser, reply_message);
-    TabContents* tab_contents = browser->AddTabWithURL(
-        url, GURL(), PageTransition::TYPED, -1, TabStripModel::ADD_SELECTED,
-        NULL, std::string(), &browser);
-    if (tab_contents) {
+    TabContents* contents =
+        browser->AddSelectedTabWithURL(url, PageTransition::TYPED);
+    if (contents) {
       append_tab_response =
-          GetIndexForNavigationController(&tab_contents->controller(), browser);
+          GetIndexForNavigationController(&contents->controller(), browser);
     }
   }
 

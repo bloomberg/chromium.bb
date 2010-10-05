@@ -384,11 +384,8 @@ bool CreateWindowFunction::RunImpl() {
     }
   }
 
-  Browser* new_window = new Browser(window_type, window_profile);
-  new_window->CreateBrowserWindow();
-  new_window->AddTabWithURL(url, GURL(), PageTransition::LINK, -1,
-                            TabStripModel::ADD_SELECTED, NULL, std::string(),
-                            &new_window);
+  Browser* new_window = Browser::CreateForType(window_type, window_profile);
+  new_window->AddSelectedTabWithURL(url, PageTransition::LINK);
   if (window_type & Browser::TYPE_POPUP)
     new_window->window()->SetBounds(popup_bounds);
   else
@@ -597,8 +594,10 @@ bool CreateTabFunction::RunImpl() {
   int add_types = selected ? TabStripModel::ADD_SELECTED :
                              TabStripModel::ADD_NONE;
   add_types |= TabStripModel::ADD_FORCE_INDEX;
-  TabContents* contents = browser->AddTabWithURL(url, GURL(),
-      PageTransition::LINK, index, add_types, NULL, std::string(), &browser);
+  Browser::AddTabWithURLParams params(url, PageTransition::LINK);
+  params.index = index;
+  params.add_types = add_types;
+  TabContents* contents = browser->AddTabWithURL(&params);
   index = browser->tabstrip_model()->GetIndexOfTabContents(contents);
 
   if (selected)

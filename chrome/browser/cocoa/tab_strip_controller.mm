@@ -1676,14 +1676,16 @@ private:
 
   // Either insert a new tab or open in a current tab.
   switch (disposition) {
-    case NEW_FOREGROUND_TAB:
+    case NEW_FOREGROUND_TAB: {
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
                                 browser_->profile());
-      browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED, index,
-                              TabStripModel::ADD_SELECTED |
-                                  TabStripModel::ADD_FORCE_INDEX,
-                              NULL, std::string(), NULL);
+      Browser::AddTabWithURLParams params(url, PageTransition::TYPED);
+      params.index = index;
+      params.add_types =
+          TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX;
+      browser_->AddTabWithURL(&params);
       break;
+    }
     case CURRENT_TAB:
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
                                 browser_->profile());
