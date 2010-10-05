@@ -54,14 +54,6 @@
   fun:ThreadSanitizerStartThread
 }
 
-{
-  bug_57692
-  ThreadSanitizer:Race
-  ...
-  fun:*net*GrowableIOBuffer*
-  fun:*remoting*TCPChannelTester*
-}
-
 ############################
 # Real races in third_party
 {

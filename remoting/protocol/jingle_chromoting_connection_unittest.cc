@@ -286,14 +286,13 @@ class TCPChannelTester : public ChannelTesterBase {
     EXPECT_EQ(0, write_errors_);
     EXPECT_EQ(0, read_errors_);
 
-    input_buffer_->set_offset(0);
     ASSERT_EQ(kTestDataSize + kMessageSize, input_buffer_->capacity());
 
     output_buffer_->SetOffset(0);
     ASSERT_EQ(kTestDataSize, output_buffer_->size());
 
     EXPECT_EQ(0, memcmp(output_buffer_->data(),
-                        input_buffer_->data(), kTestDataSize));
+                        input_buffer_->StartOfBuffer(), kTestDataSize));
   }
 
  protected:
@@ -347,7 +346,8 @@ class TCPChannelTester : public ChannelTesterBase {
 
   void OnRead(int result) {
     HandleReadResult(result);
-    DoRead();
+    if (!done_event_.IsSignaled())
+      DoRead();  // Don't try to read again when we are done reading.
   }
 
   void HandleReadResult(int result) {
