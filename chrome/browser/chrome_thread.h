@@ -206,4 +206,6 @@ class ChromeThread : public base::Thread {
   static ChromeThread* chrome_threads_[ID_COUNT];
 };
 
+typedef ChromeThread BrowserThread;
+
 #endif  // CHROME_BROWSER_CHROME_THREAD_H_

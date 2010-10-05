@@ -591,7 +591,7 @@ const std::vector<AutoFillProfile*>& PersonalDataManager::web_profiles() {
 AutoFillProfile* PersonalDataManager::CreateNewEmptyAutoFillProfileForDBThread(
     const string16& label) {
   // See comment in header for thread details.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   AutoLock lock(unique_ids_lock_);
   AutoFillProfile* p = new AutoFillProfile(label,
       CreateNextUniqueIDFor(&unique_profile_ids_));

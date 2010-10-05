@@ -99,8 +99,8 @@ class BookmarkStorage::LoadTask : public Task {
       }
     }
 
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             storage_.get(), &BookmarkStorage::OnLoadFinished,
             bookmark_file_exists, path_));
@@ -147,12 +147,12 @@ BookmarkStorage::BookmarkStorage(Profile* profile, BookmarkModel* model)
     : profile_(profile),
       model_(model),
       writer_(profile->GetPath().Append(chrome::kBookmarksFileName),
-              ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)),
       tmp_history_path_(
           profile->GetPath().Append(chrome::kHistoryBookmarksFileName)) {
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE, new BackupTask(writer_.path()));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, new BackupTask(writer_.path()));
 }
 
 BookmarkStorage::~BookmarkStorage() {
@@ -168,8 +168,8 @@ void BookmarkStorage::LoadBookmarks(BookmarkLoadDetails* details) {
 }
 
 void BookmarkStorage::DoLoadBookmarks(const FilePath& path) {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE, new LoadTask(path, this, details_.get()));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, new LoadTask(path, this, details_.get()));
 }
 
 void BookmarkStorage::MigrateFromHistory() {
@@ -244,8 +244,8 @@ void BookmarkStorage::OnLoadFinished(bool file_exists, const FilePath& path) {
     SaveNow();
 
     // Clean up after migration from history.
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE, new FileDeleteTask(tmp_history_path_));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE, new FileDeleteTask(tmp_history_path_));
   }
 }
 

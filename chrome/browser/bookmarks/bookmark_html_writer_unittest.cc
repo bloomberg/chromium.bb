@@ -143,8 +143,8 @@ class BookmarksObserver : public BookmarksExportObserver {
 // way of bookmark_html_writer, then using the importer to read it back in.
 TEST_F(BookmarkHTMLWriterTest, Test) {
   MessageLoop message_loop;
-  ChromeThread fake_ui_thread(ChromeThread::UI, &message_loop);
-  ChromeThread fake_file_thread(ChromeThread::FILE, &message_loop);
+  BrowserThread fake_ui_thread(BrowserThread::UI, &message_loop);
+  BrowserThread fake_file_thread(BrowserThread::FILE, &message_loop);
 
   TestingProfile profile;
   profile.CreateHistoryService(true, false);

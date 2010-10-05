@@ -18,13 +18,13 @@
 class BookmarkDragDataTest : public testing::Test {
  public:
   BookmarkDragDataTest()
-      : ui_thread_(ChromeThread::UI, &loop_),
-        file_thread_(ChromeThread::FILE, &loop_) { }
+      : ui_thread_(BrowserThread::UI, &loop_),
+        file_thread_(BrowserThread::FILE, &loop_) { }
 
  private:
   MessageLoop loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 };
 
 namespace {

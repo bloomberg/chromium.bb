@@ -28,7 +28,7 @@
 using webkit_glue::FormData;
 
 ACTION(QuitUIMessageLoop) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MessageLoop::current()->Quit();
 }
 
@@ -43,8 +43,8 @@ class PersonalDataLoadedObserverMock : public PersonalDataManager::Observer {
 class PersonalDataManagerTest : public testing::Test {
  protected:
   PersonalDataManagerTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        db_thread_(ChromeThread::DB) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB) {
   }
 
   virtual void SetUp() {
@@ -80,8 +80,8 @@ class PersonalDataManagerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread db_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<PersonalDataManager> personal_data_;
   NotificationRegistrar registrar_;

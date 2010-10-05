@@ -418,7 +418,7 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
   // for the duration of the write), as such we make a copy of the
   // BookmarkModel using BookmarkCodec then write from that.
   BookmarkCodec codec;
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       new Writer(codec.Encode(profile_->GetBookmarkModel()),
                  path_,
                  favicons_map_.release(),

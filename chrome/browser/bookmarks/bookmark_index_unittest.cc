@@ -222,8 +222,8 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   // This ensures MessageLoop::current() will exist, which is needed by
   // TestingProfile::BlockUntilHistoryProcessesPendingRequests().
   MessageLoop loop(MessageLoop::TYPE_DEFAULT);
-  ChromeThread ui_thread(ChromeThread::UI, &loop);
-  ChromeThread file_thread(ChromeThread::FILE, &loop);
+  BrowserThread ui_thread(BrowserThread::UI, &loop);
+  BrowserThread file_thread(BrowserThread::FILE, &loop);
 
   TestingProfile profile;
   profile.CreateHistoryService(true, false);
