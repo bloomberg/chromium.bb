@@ -6,10 +6,10 @@
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/test/test_suite.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
-#include "chrome/test/test_timeouts.h"
 #include "chrome_mini_installer.h"
 
 void BackUpProfile(bool chrome_frame) {

@@ -10,7 +10,7 @@
 #endif
 
 #include "base/eintr_wrapper.h"
-#include "chrome/test/test_timeouts.h"
+#include "base/test/test_timeouts.h"
 #include "net/base/net_util.h"
 #include "testing/platform_test.h"
 

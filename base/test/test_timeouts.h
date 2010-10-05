@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TEST_TIMEOUTS_H_
-#define CHROME_TEST_TEST_TIMEOUTS_H_
+#ifndef BASE_TEST_TEST_TIMEOUTS_H_
+#define BASE_TEST_TEST_TIMEOUTS_H_
 
 #include "base/basictypes.h"
 
@@ -63,4 +63,4 @@ class TestTimeouts {
   DISALLOW_IMPLICIT_CONSTRUCTORS(TestTimeouts);
 };
 
-#endif  // CHROME_TEST_TEST_TIMEOUTS_H_
+#endif  // BASE_TEST_TEST_TIMEOUTS_H_

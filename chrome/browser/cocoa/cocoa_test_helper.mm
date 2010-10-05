@@ -5,8 +5,8 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 
 #include "base/logging.h"
+#include "base/test/test_timeouts.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
-#include "chrome/test/test_timeouts.h"
 
 @implementation CocoaTestHelperWindow
 

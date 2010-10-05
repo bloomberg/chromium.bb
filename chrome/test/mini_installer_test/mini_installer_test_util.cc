@@ -9,11 +9,11 @@
 #include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/logging_installer.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
-#include "chrome/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Change current directory so that chrome.dll from current folder

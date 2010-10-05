@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -15,7 +16,6 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
-#include "chrome/test/test_timeouts.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
