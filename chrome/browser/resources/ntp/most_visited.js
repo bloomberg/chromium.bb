@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 // Dependencies that we should remove/formalize:
-// ../shared/js/class_list.js
 // util.js
 //
 // afterTransition
