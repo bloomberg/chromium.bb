@@ -1,0 +1,10 @@
+<html><body>
+<script>
+  window.setTimeout(function() {
+    var iframe = document.createElement('iframe');
+    iframe.src = "f.html";
+    var div = document.getElementById('f');
+    div.appendChild(iframe);
+  }, 500);
+</script>
+<iframe src="e.html"></iframe><div id="f"></div></body></html>

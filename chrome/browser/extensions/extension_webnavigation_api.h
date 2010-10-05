@@ -10,6 +10,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBNAVIGATION_API_H_
 #pragma once
 
+#include <map>
+
 #include "base/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/notification_observer.h"
@@ -18,6 +20,7 @@
 
 class NavigationController;
 class ProvisionalLoadDetails;
+class TabContents;
 
 // Observes navigation notifications and routes them as events to the extension
 // system.

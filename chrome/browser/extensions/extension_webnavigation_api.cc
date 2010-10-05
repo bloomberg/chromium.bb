@@ -21,6 +21,21 @@
 
 namespace keys = extension_webnavigation_api_constants;
 
+namespace {
+
+// Returns 0 if the navigation happens in the main frame, or the frame ID
+// modulo 32 bits otherwise.
+int GetFrameId(ProvisionalLoadDetails* details) {
+  return details->main_frame() ? 0 : static_cast<int>(details->frame_id());
+}
+
+// Returns |time| as milliseconds since the epoch.
+double MilliSecondsFromTime(const base::Time& time) {
+  return 1000 * time.ToDoubleT();
+}
+
+}  // namespace
+
 // static
 ExtensionWebNavigationEventRouter*
 ExtensionWebNavigationEventRouter::GetInstance() {
@@ -75,11 +90,9 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadStart(
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
   dict->SetString(keys::kUrlKey,
                   details->url().spec());
-  dict->SetInteger(keys::kFrameIdKey, 0);
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetInteger(keys::kRequestIdKey, 0);
-  dict->SetReal(keys::kTimeStampKey,
-      static_cast<double>(
-          (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds()));
+  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -96,16 +109,14 @@ void ExtensionWebNavigationEventRouter::FrameProvisionalLoadCommitted(
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
   dict->SetString(keys::kUrlKey,
                   details->url().spec());
-  dict->SetInteger(keys::kFrameIdKey, 0);
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetString(keys::kTransitionTypeKey,
                   PageTransition::CoreTransitionString(
                       details->transition_type()));
   dict->SetString(keys::kTransitionQualifiersKey,
                   PageTransition::QualifierString(
                       details->transition_type()));
-  dict->SetReal(keys::kTimeStampKey,
-      static_cast<double>(
-          (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds()));
+  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;
@@ -122,12 +133,10 @@ void ExtensionWebNavigationEventRouter::FailProvisionalLoadWithError(
                    ExtensionTabUtil::GetTabId(controller->tab_contents()));
   dict->SetString(keys::kUrlKey,
                   details->url().spec());
-  dict->SetInteger(keys::kFrameIdKey, 0);
+  dict->SetInteger(keys::kFrameIdKey, GetFrameId(details));
   dict->SetString(keys::kErrorKey,
                   std::string(net::ErrorToString(details->error_code())));
-  dict->SetReal(keys::kTimeStampKey,
-      static_cast<double>(
-          (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds()));
+  dict->SetReal(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args.Append(dict);
 
   std::string json_args;

@@ -550,9 +550,11 @@ class RenderViewHost : public RenderWidgetHost {
                                            const std::string& security_info);
   void OnMsgDidDisplayInsecureContent();
   void OnMsgDidRunInsecureContent(const std::string& security_origin);
-  void OnMsgDidStartProvisionalLoadForFrame(bool main_frame,
+  void OnMsgDidStartProvisionalLoadForFrame(long long frame_id,
+                                            bool main_frame,
                                             const GURL& url);
-  void OnMsgDidFailProvisionalLoadWithError(bool main_frame,
+  void OnMsgDidFailProvisionalLoadWithError(long long frame_id,
+                                            bool main_frame,
                                             int error_code,
                                             const GURL& url,
                                             bool showing_repost_interstitial);

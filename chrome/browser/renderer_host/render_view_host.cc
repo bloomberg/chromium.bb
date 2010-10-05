@@ -1166,7 +1166,8 @@ void RenderViewHost::OnMsgDidRunInsecureContent(
     resource_delegate->DidRunInsecureContent(security_origin);
 }
 
-void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(bool is_main_frame,
+void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(long long frame_id,
+                                                          bool is_main_frame,
                                                           const GURL& url) {
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
@@ -1175,12 +1176,13 @@ void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(bool is_main_frame,
   RenderViewHostDelegate::Resource* resource_delegate =
       delegate_->GetResourceDelegate();
   if (resource_delegate) {
-    resource_delegate->DidStartProvisionalLoadForFrame(this, is_main_frame,
-                                                       validated_url);
+    resource_delegate->DidStartProvisionalLoadForFrame(
+        this, frame_id, is_main_frame, validated_url);
   }
 }
 
 void RenderViewHost::OnMsgDidFailProvisionalLoadWithError(
+    long long frame_id,
     bool is_main_frame,
     int error_code,
     const GURL& url,
@@ -1188,7 +1190,8 @@ void RenderViewHost::OnMsgDidFailProvisionalLoadWithError(
   LOG(INFO) << "Failed Provisional Load: " << url.possibly_invalid_spec()
             << ", error_code: " << error_code
             << " is_main_frame: " << is_main_frame
-            << " showing_repost_interstitial: " << showing_repost_interstitial;
+            << " showing_repost_interstitial: " << showing_repost_interstitial
+            << " frame_id: " << frame_id;
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
             process()->id(), &validated_url);
@@ -1197,7 +1200,7 @@ void RenderViewHost::OnMsgDidFailProvisionalLoadWithError(
       delegate_->GetResourceDelegate();
   if (resource_delegate) {
     resource_delegate->DidFailProvisionalLoadWithError(
-        this, is_main_frame, error_code, validated_url,
+        this, frame_id, is_main_frame, error_code, validated_url,
         showing_repost_interstitial);
   }
 }

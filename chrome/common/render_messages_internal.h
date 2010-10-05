@@ -1234,18 +1234,20 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       std::string  /* security_origin */)
 
   // Sent when the renderer starts a provisional load for a frame.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_DidStartProvisionalLoadForFrame,
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_DidStartProvisionalLoadForFrame,
+                      long long /* frame_id */,
                       bool /* true if it is the main frame */,
                       GURL /* url */)
 
   // Sent when the renderer fails a provisional load with an error.
-  IPC_MESSAGE_ROUTED4(ViewHostMsg_DidFailProvisionalLoadWithError,
+  IPC_MESSAGE_ROUTED5(ViewHostMsg_DidFailProvisionalLoadWithError,
+                      long long /* frame_id */,
                       bool /* true if it is the main frame */,
                       int /* error_code */,
                       GURL /* url */,
                       bool /* true if the failure is the result of
                               navigating to a POST again and we're going to
-                              show the POST interstitial */ )
+                              show the POST interstitial */)
 
   // Tells the render view that a ViewHostMsg_PaintAtSize message was
   // processed, and the DIB is ready for use. |tag| has the same value that

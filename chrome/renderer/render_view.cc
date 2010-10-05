@@ -1311,6 +1311,7 @@ void RenderView::UpdateURL(WebFrame* frame) {
   params.http_status_code = response.httpStatusCode();
   params.is_post = false;
   params.page_id = page_id_;
+  params.frame_id = frame->identifier();
   params.is_content_filtered = response.isContentFiltered();
   params.was_within_same_page = navigation_state->was_within_same_page();
   if (!navigation_state->security_info().empty()) {
@@ -2884,7 +2885,7 @@ void RenderView::didStartProvisionalLoad(WebFrame* frame) {
   }
 
   Send(new ViewHostMsg_DidStartProvisionalLoadForFrame(
-       routing_id_, is_top_most, ds->request().url()));
+       routing_id_, frame->identifier(), is_top_most, ds->request().url()));
 }
 
 void RenderView::didReceiveServerRedirectForProvisionalLoad(WebFrame* frame) {
@@ -2922,8 +2923,8 @@ void RenderView::didFailProvisionalLoad(WebFrame* frame,
       (error.reason == net::ERR_CACHE_MISS &&
        EqualsASCII(failed_request.httpMethod(), "POST"));
   Send(new ViewHostMsg_DidFailProvisionalLoadWithError(
-      routing_id_, !frame->parent(), error.reason, error.unreachableURL,
-      show_repost_interstitial));
+      routing_id_, frame->identifier(), !frame->parent(), error.reason,
+      error.unreachableURL, show_repost_interstitial));
 
   // Don't display an error page if this is simply a cancelled load.  Aside
   // from being dumb, WebCore doesn't expect it and it will cause a crash.

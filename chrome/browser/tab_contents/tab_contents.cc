@@ -2093,11 +2093,12 @@ void TabContents::OnSetSuggestResult(int32 page_id, const std::string& result) {
 
 void TabContents::DidStartProvisionalLoadForFrame(
     RenderViewHost* render_view_host,
+    long long frame_id,
     bool is_main_frame,
     const GURL& url) {
   ProvisionalLoadDetails details(is_main_frame,
                                  controller_.IsURLInPageNavigation(url),
-                                 url, std::string(), false);
+                                 url, std::string(), false, frame_id);
   NotificationService::current()->Notify(
       NotificationType::FRAME_PROVISIONAL_LOAD_START,
       Source<NavigationController>(&controller_),
@@ -2156,6 +2157,7 @@ void TabContents::DidRunInsecureContent(const std::string& security_origin) {
 
 void TabContents::DidFailProvisionalLoadWithError(
     RenderViewHost* render_view_host,
+    long long frame_id,
     bool is_main_frame,
     int error_code,
     const GURL& url,
@@ -2201,7 +2203,7 @@ void TabContents::DidFailProvisionalLoadWithError(
   // Send out a notification that we failed a provisional load with an error.
   ProvisionalLoadDetails details(is_main_frame,
                                  controller_.IsURLInPageNavigation(url),
-                                 url, std::string(), false);
+                                 url, std::string(), false, frame_id);
   details.set_error_code(error_code);
 
   NotificationService::current()->Notify(
@@ -2429,9 +2431,14 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   // different from the NAV_ENTRY_COMMITTED notification which doesn't include
   // the actual URL navigated to and isn't sent for AUTO_SUBFRAME navigations.
   if (details.type != NavigationType::NAV_IGNORE) {
-    ProvisionalLoadDetails load_details(details.is_main_frame,
-                                        details.is_in_page,
-                                        params.url, std::string(), false);
+    // For AUTO_SUBFRAME navigations, an event for the main frame is generated
+    // that is not recorded in the navigation history. For the purpose of
+    // tracking navigation events, we treat this event as a sub frame navigation
+    // event.
+    bool is_main_frame = did_navigate ? details.is_main_frame : false;
+    ProvisionalLoadDetails load_details(
+        is_main_frame, details.is_in_page, params.url, std::string(), false,
+        params.frame_id);
     load_details.set_transition_type(params.transition);
     // Whether or not a page transition was triggered by going backward or
     // forward in the history is only stored in the navigation controller's

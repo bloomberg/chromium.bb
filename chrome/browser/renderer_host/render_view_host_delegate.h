@@ -302,6 +302,7 @@ class RenderViewHostDelegate {
     // The RenderView is starting a provisional load.
     virtual void DidStartProvisionalLoadForFrame(
         RenderViewHost* render_view_host,
+        long long frame_id,
         bool is_main_frame,
         const GURL& url) = 0;
 
@@ -341,6 +342,7 @@ class RenderViewHostDelegate {
     // The RenderView failed a provisional load with an error.
     virtual void DidFailProvisionalLoadWithError(
         RenderViewHost* render_view_host,
+        long long frame_id,
         bool is_main_frame,
         int error_code,
         const GURL& url,

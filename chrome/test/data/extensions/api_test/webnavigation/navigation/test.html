@@ -1,10 +1,14 @@
 <script>
 var expectedEventData;
 var capturedEventData;
+var nextFrameId;
+var frameIds;
 
 function expect(data) {
   expectedEventData = data;
   capturedEventData = [];
+  nextFrameId = 1;
+  frameIds = {};
 }
 
 function checkExpectations() {
@@ -16,39 +20,31 @@ function checkExpectations() {
   chrome.test.succeed();
 }
 
-chrome.experimental.webNavigation.onBeforeNavigate.addListener(
-  function(details) {
-    console.log('---onBeforeNavigate: ' + details.url);
-    // normalize details.
-    details.timeStamp = 0;
-    if (details.frameId != 0) {
-      details.frameId = 1;
-    }
-    capturedEventData.push(["onBeforeNavigate", details]);
-    checkExpectations();
-});
-
-chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
-  console.log('---onCommitted: ' + details.url);
+function captureEvent(name, details) {
   // normalize details.
   details.timeStamp = 0;
   if (details.frameId != 0) {
-    details.frameId = 1;
+    if (frameIds[details.frameId] === undefined) {
+      frameIds[details.frameId] = nextFrameId++;
+    }
+    details.frameId = frameIds[details.frameId];
   }
-  capturedEventData.push(["onCommitted", details]);
+  capturedEventData.push([name, details]);
   checkExpectations();
+}
+
+chrome.experimental.webNavigation.onBeforeNavigate.addListener(
+  function(details) {
+    captureEvent("onBeforeNavigate", details);
+});
+
+chrome.experimental.webNavigation.onCommitted.addListener(function(details) {
+  captureEvent("onCommitted", details);
 });
 
 chrome.experimental.webNavigation.onErrorOccurred.addListener(
   function(details) {
-    console.log('---onErrorOccurred: ' + details.url);
-    // normalize details.
-    details.timeStamp = 0;
-    if (details.frameId != 0) {
-      details.frameId = 1;
-    }
-    capturedEventData.push(["onErrorOccurred", details]);
-    checkExpectations();
+    captureEvent("onErrorOccurred", details);
 });
 
 var getURL = chrome.extension.getURL;
@@ -173,32 +169,92 @@ chrome.tabs.getSelected(null, function(tab) {
             transitionType: "link",
             url: getURL('iframe/a.html') }],
         [ "onBeforeNavigate",
-          { frameId: 0,
+          { frameId: 1,
             requestId: 0,
             tabId: tabId,
             timeStamp: 0,
             url: getURL('iframe/b.html') }],
         [ "onCommitted",
-          { frameId: 0,
+          { frameId: 1,
             tabId: tabId,
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "auto_subframe",
             url: getURL('iframe/b.html') }],
         [ "onBeforeNavigate",
-          { frameId: 0,
+          { frameId: 1,
             requestId: 0,
             tabId: tabId,
             timeStamp: 0,
             url: getURL('iframe/c.html') }],
         [ "onCommitted",
-          { frameId: 0,
+          { frameId: 1,
             tabId: tabId,
             timeStamp: 0,
             transitionQualifiers: "",
             transitionType: "manual_subframe",
             url: getURL('iframe/c.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('iframe/a.html') });
+    },
+
+    /* Navigates to d.html which includes e.html and f.html as iframes. To be
+       able to predict which iframe has which id, the iframe for f.html is
+       created by javascript. f.html then navigates to g.html. */
+    function iframe2() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/d.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('iframe/d.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/e.html') }],
+        [ "onCommitted",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "auto_subframe",
+            url: getURL('iframe/e.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 2,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/f.html') }],
+        [ "onCommitted",
+          { frameId: 2,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "auto_subframe",
+            url: getURL('iframe/f.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 2,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframe/g.html') }],
+        [ "onCommitted",
+          { frameId: 2,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "manual_subframe",
+            url: getURL('iframe/g.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('iframe/d.html') });
     },
 
     /* Navigates to a non-existant page. */
@@ -230,6 +286,107 @@ chrome.tabs.getSelected(null, function(tab) {
             transitionType: "link",
             url: getURL('nonexistant.html') }]]);
       chrome.tabs.update(tabId, { url: getURL('nonexistant.html') });
+    },
+
+    /* An page that tries to load an non-existant iframe. */
+    function nonExistantIframe() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/d.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('iframeFail/d.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/c.html') }],
+        [ "onErrorOccurred",
+          { error: "net::ERR_FILE_NOT_FOUND",
+            frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/c.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: "chrome://chromewebdata/"}],
+        [ "onCommitted",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "auto_subframe",
+            url: getURL('iframeFail/c.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('iframeFail/d.html') });
+    },
+
+    /* An iframe navigates to a non-existant page. */
+    function nonExistantIframeNavigation() {
+      expect([
+        [ "onBeforeNavigate",
+          { frameId: 0,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/a.html') }],
+        [ "onCommitted",
+          { frameId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "link",
+            url: getURL('iframeFail/a.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/b.html') }],
+        [ "onCommitted",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "auto_subframe",
+            url: getURL('iframeFail/b.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/c.html') }],
+        [ "onErrorOccurred",
+          { error: "net::ERR_FILE_NOT_FOUND",
+            frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            url: getURL('iframeFail/c.html') }],
+        [ "onBeforeNavigate",
+          { frameId: 1,
+            requestId: 0,
+            tabId: tabId,
+            timeStamp: 0,
+            url: "chrome://chromewebdata/"}],
+        [ "onCommitted",
+          { frameId: 1,
+            tabId: tabId,
+            timeStamp: 0,
+            transitionQualifiers: "",
+            transitionType: "manual_subframe",
+            url: getURL('iframeFail/c.html') }]]);
+      chrome.tabs.update(tabId, { url: getURL('iframeFail/a.html') });
     },
   ]);
 });

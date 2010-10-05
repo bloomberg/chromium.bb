@@ -24,6 +24,7 @@ ViewMsg_Navigate_Params::~ViewMsg_Navigate_Params() {
 
 ViewHostMsg_FrameNavigate_Params::ViewHostMsg_FrameNavigate_Params()
     : page_id(0),
+      frame_id(0),
       transition(PageTransition::TYPED),
       should_update_history(false),
       gesture(NavigationGestureUser),
@@ -716,6 +717,7 @@ void ParamTraits<ViewHostMsg_GetSearchProviderInstallState_Params>::Log(
 void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Write(Message* m,
                                                           const param_type& p) {
   WriteParam(m, p.page_id);
+  WriteParam(m, p.frame_id);
   WriteParam(m, p.url);
   WriteParam(m, p.referrer);
   WriteParam(m, p.transition);
@@ -738,6 +740,7 @@ bool ParamTraits<ViewHostMsg_FrameNavigate_Params>::Read(const Message* m,
                                                          param_type* p) {
   return
       ReadParam(m, iter, &p->page_id) &&
+      ReadParam(m, iter, &p->frame_id) &&
       ReadParam(m, iter, &p->url) &&
       ReadParam(m, iter, &p->referrer) &&
       ReadParam(m, iter, &p->transition) &&
@@ -759,6 +762,8 @@ void ParamTraits<ViewHostMsg_FrameNavigate_Params>::Log(const param_type& p,
                                                         std::string* l) {
   l->append("(");
   LogParam(p.page_id, l);
+  l->append(", ");
+  LogParam(p.frame_id, l);
   l->append(", ");
   LogParam(p.url, l);
   l->append(", ");
