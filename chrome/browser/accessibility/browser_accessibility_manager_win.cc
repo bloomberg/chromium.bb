@@ -176,6 +176,18 @@ BrowserAccessibilityWin* BrowserAccessibilityManagerWin::UpdateTree(
     return new_browser_acc;
 }
 
+void BrowserAccessibilityManagerWin::GotFocus() {
+  // TODO(ctguil): Remove when tree update logic handles focus changes.
+  if (!focus_)
+    return;
+
+  NotifyWinEvent(
+      EVENT_OBJECT_FOCUS,
+      GetParentWindow(),
+      OBJID_CLIENT,
+      focus_->child_id());
+}
+
 IAccessible* BrowserAccessibilityManagerWin::GetRootAccessible() {
   return root_;
 }
@@ -216,7 +228,8 @@ void BrowserAccessibilityManagerWin::OnAccessibilityObjectFocusChange(
 
   focus_ = new_browser_acc;
   LONG child_id = new_browser_acc->child_id();
-  NotifyWinEvent(EVENT_OBJECT_FOCUS, GetParentWindow(), OBJID_CLIENT, child_id);
+  if (delegate_ && delegate_->HasFocus())
+    GotFocus();
 }
 
 void BrowserAccessibilityManagerWin::OnAccessibilityObjectLoadComplete(
@@ -229,10 +242,13 @@ void BrowserAccessibilityManagerWin::OnAccessibilityObjectLoadComplete(
   if (!focus_)
     focus_ = root_;
 
-  LONG root_id = root_->child_id();
-  NotifyWinEvent(EVENT_OBJECT_FOCUS, GetParentWindow(), OBJID_CLIENT, root_id);
   NotifyWinEvent(
-    IA2_EVENT_DOCUMENT_LOAD_COMPLETE, GetParentWindow(), OBJID_CLIENT, root_id);
+      IA2_EVENT_DOCUMENT_LOAD_COMPLETE,
+      GetParentWindow(),
+      OBJID_CLIENT,
+      root_->child_id());
+  if (delegate_ && delegate_->HasFocus())
+    GotFocus();
 }
 
 void BrowserAccessibilityManagerWin::OnAccessibilityObjectValueChange(

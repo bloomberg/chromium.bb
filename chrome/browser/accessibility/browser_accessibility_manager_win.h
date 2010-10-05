@@ -10,6 +10,7 @@
 #include <atlcom.h>
 #include <oleacc.h>
 
+#include <hash_map>
 #include <vector>
 
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
@@ -67,6 +68,7 @@ class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
   void DoDefaultAction(const BrowserAccessibilityWin& node);
 
   // BrowserAccessibilityManager Methods
+  virtual void GotFocus();
   virtual IAccessible* GetRootAccessible();
   virtual void OnAccessibilityObjectStateChange(
       const webkit_glue::WebAccessibility& acc_obj);

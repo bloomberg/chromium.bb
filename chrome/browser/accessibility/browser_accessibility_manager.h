@@ -27,6 +27,7 @@ class BrowserAccessibilityDelegate {
   virtual ~BrowserAccessibilityDelegate() {}
   virtual void SetAccessibilityFocus(int acc_obj_id) = 0;
   virtual void AccessibilityDoDefaultAction(int acc_obj_id) = 0;
+  virtual bool HasFocus() = 0;
 };
 
 // Manages a tree of BrowserAccessibility objects.
@@ -40,6 +41,10 @@ class BrowserAccessibilityManager {
     BrowserAccessibilityDelegate* delegate);
 
   virtual ~BrowserAccessibilityManager();
+
+  // Called to notify the accessibility manager that its associated native
+  // window got focused.
+  virtual void GotFocus() = 0;
 
   // Called when the renderer process has notified us of about tree changes.
   // Send a notification to MSAA clients of the change.

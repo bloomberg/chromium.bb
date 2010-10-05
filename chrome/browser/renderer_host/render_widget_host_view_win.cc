@@ -1038,7 +1038,8 @@ LRESULT RenderWidgetHostViewWin::OnSetCursor(HWND window, UINT hittest_code,
 void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
   views::FocusManager::GetWidgetFocusManager()->OnWidgetFocusEvent(window,
                                                                    m_hWnd);
-
+  if (browser_accessibility_manager_.get())
+    browser_accessibility_manager_->GotFocus();
   if (render_widget_host_)
     render_widget_host_->GotFocus();
 }
