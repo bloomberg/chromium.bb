@@ -12,6 +12,10 @@
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/frame/bubble_window.h"
+#endif  // defined(OS_CHROMEOS)
+
 ////////////////////////////////////////////////////////////////////////////////
 // JSModalDialogViews, public:
 
@@ -148,6 +152,13 @@ NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
     JavaScriptAppModalDialog* dialog,
     gfx::NativeWindow parent_window) {
   JSModalDialogViews* d = new JSModalDialogViews(dialog);
+
+#if defined(OS_CHROMEOS)
+  // Use bubble frame for JS dialog on ChromeOS.
+  chromeos::BubbleWindow::Create(parent_window, gfx::Rect(), d);
+#else
   views::Window::CreateChromeWindow(parent_window, gfx::Rect(), d);
+#endif
+
   return d;
 }

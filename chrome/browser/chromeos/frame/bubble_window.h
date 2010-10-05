@@ -30,6 +30,9 @@ class BubbleWindow : public views::WindowGtk {
 
  protected:
   explicit BubbleWindow(views::WindowDelegate* window_delegate);
+
+  // Overidden from views::WindowGtk:
+  virtual void Init(GtkWindow* parent, const gfx::Rect& bounds);
 };
 
 }  // namespace chromeos

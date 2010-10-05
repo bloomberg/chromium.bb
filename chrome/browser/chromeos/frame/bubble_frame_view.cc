@@ -33,6 +33,7 @@ BubbleFrameView::BubbleFrameView(views::Window* frame)
   set_border(new BubbleBorder(BubbleBorder::NONE));
 
   title_ = new views::Label(frame_->GetDelegate()->GetWindowTitle());
+  title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_->SetFont(title_->font().DeriveFont(1, gfx::Font::BOLD));
   AddChildView(title_);
 }
