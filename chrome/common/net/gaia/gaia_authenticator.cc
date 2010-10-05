@@ -30,7 +30,8 @@ GaiaAuthenticator::AuthResults::AuthResults() : auth_error(None) {}
 
 GaiaAuthenticator::AuthResults::~AuthResults() {}
 
-GaiaAuthenticator::AuthParams::AuthParams() {}
+GaiaAuthenticator::AuthParams::AuthParams() : authenticator(NULL),
+                                              request_id(0) {}
 
 GaiaAuthenticator::AuthParams::~AuthParams() {}
 

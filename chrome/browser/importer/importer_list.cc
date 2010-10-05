@@ -72,6 +72,9 @@ Importer* ImporterList::CreateImporterByType(importer::ProfileType type) {
     case importer::SAFARI:
       return new SafariImporter(mac_util::GetUserLibraryPath());
 #endif  // OS_MACOSX
+    case importer::NO_PROFILE_TYPE:
+      NOTREACHED();
+      return NULL;
   }
   NOTREACHED();
   return NULL;

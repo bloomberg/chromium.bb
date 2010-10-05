@@ -238,13 +238,10 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
             setup_for_test_mode(setup_for_test_mode) {}
 
       GURL service_url;
-      bool attempt_last_user_authentication;
       sync_api::HttpPostProviderFactory* http_bridge_factory;
       sync_api::SyncCredentials credentials;
       std::string lsid;
       bool delete_sync_data_folder;
-      bool invalidate_sync_login;
-      bool invalidate_sync_xmpp_login;
       notifier::NotifierOptions notifier_options;
       std::string restored_key_for_bootstrapping;
       bool setup_for_test_mode;

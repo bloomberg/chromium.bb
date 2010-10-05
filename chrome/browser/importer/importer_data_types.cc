@@ -6,7 +6,7 @@
 
 namespace importer {
 
-ProfileInfo::ProfileInfo() {
+ProfileInfo::ProfileInfo() : browser_type(NO_PROFILE_TYPE) {
 }
 
 ProfileInfo::~ProfileInfo() {

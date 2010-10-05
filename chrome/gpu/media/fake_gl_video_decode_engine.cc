@@ -10,7 +10,8 @@
 FakeGlVideoDecodeEngine::FakeGlVideoDecodeEngine()
     : width_(0),
       height_(0),
-      handler_(NULL) {
+      handler_(NULL),
+      context_(NULL) {
 }
 
 FakeGlVideoDecodeEngine::~FakeGlVideoDecodeEngine() {

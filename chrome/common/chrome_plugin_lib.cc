@@ -189,7 +189,8 @@ ChromePluginLib::ChromePluginLib(const FilePath& filename)
 #endif
       initialized_(false),
       CP_VersionNegotiate_(NULL),
-      CP_Initialize_(NULL) {
+      CP_Initialize_(NULL),
+      CP_Test_(NULL) {
   memset((void*)&plugin_funcs_, 0, sizeof(plugin_funcs_));
 }
 

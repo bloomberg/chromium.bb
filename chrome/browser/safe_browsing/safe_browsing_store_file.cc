@@ -173,7 +173,8 @@ bool FileHeaderSanityCheck(const FilePath& filename,
 
 SafeBrowsingStoreFile::SafeBrowsingStoreFile()
     : chunks_written_(0),
-      file_(NULL) {
+      file_(NULL),
+      empty_(false) {
 }
 SafeBrowsingStoreFile::~SafeBrowsingStoreFile() {
   Close();

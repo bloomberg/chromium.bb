@@ -12,7 +12,8 @@
 #include "ipc/ipc_message_impl_macros.h"
 
 PluginMsg_Init_Params::PluginMsg_Init_Params()
-    : load_manually(false),
+    : containing_window(0),
+      load_manually(false),
       host_render_view_routing_id(-1) {
 }
 

@@ -40,6 +40,8 @@ ViewHostMsg_UpdateRect_Params::ViewHostMsg_UpdateRect_Params()
     : dx(0),
       dy(0),
       flags(0) {
+    // On windows, bitmap is of type "struct HandleAndSequenceNum"
+    memset(&bitmap, 0, sizeof(bitmap));
 }
 
 ViewHostMsg_UpdateRect_Params::~ViewHostMsg_UpdateRect_Params() {
@@ -181,7 +183,8 @@ ViewHostMsg_IDBFactoryOpen_Params::~ViewHostMsg_IDBFactoryOpen_Params() {
 ViewHostMsg_IDBDatabaseCreateObjectStore_Params::
     ViewHostMsg_IDBDatabaseCreateObjectStore_Params()
     : response_id_(0),
-      auto_increment_(false) {
+      auto_increment_(false),
+      idb_database_id_(0) {
 }
 
 ViewHostMsg_IDBDatabaseCreateObjectStore_Params::

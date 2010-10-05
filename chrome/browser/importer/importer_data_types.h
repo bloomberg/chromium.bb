@@ -31,6 +31,7 @@ enum ImportItem {
 // settings and data from them.  Numbers added so that data can be
 // reliably cast to ints and passed across IPC.
 enum ProfileType {
+  NO_PROFILE_TYPE = -1,
 #if defined(OS_WIN)
   MS_IE = 0,
 #endif

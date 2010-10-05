@@ -107,6 +107,7 @@ class EventChannel {
   // The shutdown event gets send in the EventChannel's destructor.
   explicit EventChannel(const EventType& shutdown_event)
     : current_listener_callback_(NULL),
+      current_listener_callback_message_loop_(NULL),
       callback_waiters_(NULL),
       shutdown_event_(shutdown_event) {
   }

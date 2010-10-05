@@ -111,6 +111,7 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate, int caller_id)
       caller_id_(caller_id),
       encoder_(new SpeexEncoder()),
       endpointer_(kAudioSampleRate),
+      num_samples_recorded_(0),
       audio_level_(0.0f) {
   endpointer_.set_speech_input_complete_silence_length(
       base::Time::kMicrosecondsPerSecond / 2);

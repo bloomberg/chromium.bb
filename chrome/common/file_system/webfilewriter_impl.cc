@@ -15,6 +15,7 @@ WebFileWriterImpl::WebFileWriterImpl(
      const WebKit::WebString& path, WebKit::WebFileWriterClient* client)
   : path_(webkit_glue::WebStringToFilePath(path)),
     client_(client),
+    request_id_(0),
     operation_(kOperationNone),
     cancel_state_(kCancelNotInProgress) {
 }

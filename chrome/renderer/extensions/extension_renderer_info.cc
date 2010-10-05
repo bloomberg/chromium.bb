@@ -24,6 +24,7 @@ ExtensionRendererInfo::ExtensionRendererInfo(
   allowed_to_execute_script_everywhere_ =
       that.allowed_to_execute_script_everywhere_;
   host_permissions_ = that.host_permissions_;
+  location_ = that.location_;
 }
 
 ExtensionRendererInfo::~ExtensionRendererInfo() {

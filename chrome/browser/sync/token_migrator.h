@@ -44,9 +44,6 @@ class TokenMigrator {
   // PostTokensBack is called.
   ProfileSyncService* service_;
 
-  // Pending tasks, stored so they can be canceled if this object is destroyed.
-  CancelableTask* loading_task_;
-
   // The directory to search for the user settings database.
   FilePath database_location_;
 

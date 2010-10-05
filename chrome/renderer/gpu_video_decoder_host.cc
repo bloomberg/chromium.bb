@@ -20,6 +20,7 @@ GpuVideoDecoderHost::GpuVideoDecoderHost(GpuVideoServiceHost* service_host,
       input_buffer_busy_(false) {
   memset(&config_, 0, sizeof(config_));
   memset(&done_param_, 0, sizeof(done_param_));
+  memset(&decoder_info_, 0, sizeof(decoder_info_));
 }
 
 void GpuVideoDecoderHost::OnChannelError() {

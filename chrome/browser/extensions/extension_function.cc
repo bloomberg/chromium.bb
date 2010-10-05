@@ -14,7 +14,8 @@ ExtensionFunction::ExtensionFunction()
     : request_id_(-1),
       profile_(NULL),
       has_callback_(false),
-      include_incognito_(false) {
+      include_incognito_(false),
+      user_gesture_(false) {
 }
 
 ExtensionFunction::~ExtensionFunction() {
