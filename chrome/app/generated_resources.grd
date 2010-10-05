@@ -4643,13 +4643,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Adobe Flash
       </message>
       <message name="IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION" desc="Description of Adobe flash section">
-        Flash can store data associated with your computer you can access and control this data using a website provided by Adobe
+        Flash can store data associated with your computer. You can access and control this data using a website provided by Adobe.
       </message>
       <message name="IDS_CLEAR_DATA_CHROME_SYNC_TITLE" desc="Title of Chrome Sync section">
         Chrome Sync
       </message>
       <message name="IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION" desc="Description of clearing server data">
-        Chrome stores information on Google servers when it syncs.  If you're absolutely sure you do not want to use sync anymore you can stop all syncing and delete the data from Google
+        Chrome stores information on Google servers when it syncs. If you're absolutely sure you do not want to use sync anymore you can stop all syncing and delete the data from Google.
       </message>
       <message name="IDS_CLEAR_DATA_CLEAR_BUTTON" desc="Button used to clear server data">
         Stop sync and delete data from Google
@@ -4664,7 +4664,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         The Google Dashboard has more details about what Google is storing when Chrome syncs your data.
      </message>
      <message name="IDS_CONFIRM_CLEAR_DESCRIPTION" desc="Clear confirmation dialog text">
-        You're about to stop sync on all your computers where you use Chrome.  Your data will also be deleted from Google, but will remain within Chrome
+        You're about to stop sync on all your computers where you use Chrome. Your data will also be deleted from Google, but will remain within Chrome. Are you sure?
      </message>
      <message name="IDS_CONFIRM_CLEAR_TITLE" desc="Clear confirmation dialog title">
         Clear Browsing Data
