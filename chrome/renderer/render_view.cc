@@ -2203,6 +2203,14 @@ void RenderView::focusPrevious() {
 
 void RenderView::focusedNodeChanged(const WebNode& node) {
   Send(new ViewHostMsg_FocusedNodeChanged(routing_id_));
+
+  if (WebAccessibilityCache::accessibilityEnabled() && node.isNull()) {
+    // TODO(ctguil): Make WebKit send this notification.
+    // When focus is cleared notify accessibility that the document is focused.
+    postAccessibilityNotification(
+        webview()->accessibilityObject(),
+        WebKit::WebAccessibilityNotificationFocusedUIElementChanged);
+  }
 }
 
 void RenderView::navigateBackForwardSoon(int offset) {
