@@ -142,20 +142,20 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
 
   size_t num_after = service->extensions()->size();
   if (num_after != (num_before + expected_change)) {
-    std::cout << "Num extensions before: "
+    LOG(INFO) << "Num extensions before: "
               << base::IntToString(num_before) << " "
               << "num after: " << base::IntToString(num_after) << " "
-              << "Installed extensions follow:\n";
+              << "Installed extensions follow:";
 
     for (size_t i = 0; i < service->extensions()->size(); ++i)
-      std::cout << "  " << service->extensions()->at(i)->id() << "\n";
+      LOG(INFO) << "  " << service->extensions()->at(i)->id();
 
-    std::cout << "Errors follow:\n";
+    LOG(INFO) << "Errors follow:";
     const std::vector<std::string>* errors =
         ExtensionErrorReporter::GetInstance()->GetErrors();
     for (std::vector<std::string>::const_iterator iter = errors->begin();
          iter != errors->end(); ++iter) {
-      std::cout << *iter << "\n";
+      LOG(INFO) << *iter;
     }
 
     return false;
@@ -281,47 +281,47 @@ void ExtensionBrowserTest::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED:
       last_loaded_extension_id_ = Details<Extension>(details).ptr()->id();
-      std::cout << "Got EXTENSION_LOADED notification.\n";
+      LOG(INFO) << "Got EXTENSION_LOADED notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_UPDATE_DISABLED:
-      std::cout << "Got EXTENSION_UPDATE_DISABLED notification.\n";
+      LOG(INFO) << "Got EXTENSION_UPDATE_DISABLED notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_HOST_DID_STOP_LOADING:
-      std::cout << "Got EXTENSION_HOST_DID_STOP_LOADING notification.\n";
+      LOG(INFO) << "Got EXTENSION_HOST_DID_STOP_LOADING notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_INSTALLED:
-      std::cout << "Got EXTENSION_INSTALLED notification.\n";
+      LOG(INFO) << "Got EXTENSION_INSTALLED notification.";
       ++extension_installs_observed_;
       MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_INSTALL_ERROR:
-      std::cout << "Got EXTENSION_INSTALL_ERROR notification.\n";
+      LOG(INFO) << "Got EXTENSION_INSTALL_ERROR notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_PROCESS_CREATED:
-      std::cout << "Got EXTENSION_PROCESS_CREATED notification.\n";
+      LOG(INFO) << "Got EXTENSION_PROCESS_CREATED notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_PROCESS_TERMINATED:
-      std::cout << "Got EXTENSION_PROCESS_TERMINATED notification.\n";
+      LOG(INFO) << "Got EXTENSION_PROCESS_TERMINATED notification.";
       MessageLoopForUI::current()->Quit();
       break;
 
     case NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED: {
       LocationBarTesting* location_bar =
           browser()->window()->GetLocationBar()->GetLocationBarForTesting();
-      std::cout << "Got EXTENSION_PAGE_ACTION_COUNT_CHANGED "
+      LOG(INFO) << "Got EXTENSION_PAGE_ACTION_COUNT_CHANGED "
                 << "notification. Number of page actions: "
-                << location_bar->PageActionCount() << "\n";
+                << location_bar->PageActionCount() << "";
       if (location_bar->PageActionCount() ==
           target_page_action_count_) {
         target_page_action_count_ = -1;
@@ -333,9 +333,9 @@ void ExtensionBrowserTest::Observe(NotificationType type,
     case NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
       LocationBarTesting* location_bar =
           browser()->window()->GetLocationBar()->GetLocationBarForTesting();
-      std::cout << "Got EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED "
+      LOG(INFO) << "Got EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED "
                 << "notification. Number of visible page actions: "
-                << location_bar->PageActionVisibleCount() << "\n";
+                << location_bar->PageActionVisibleCount();
       if (location_bar->PageActionVisibleCount() ==
           target_visible_page_action_count_) {
         target_visible_page_action_count_ = -1;

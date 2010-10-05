@@ -57,7 +57,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
 
   switch (type.value) {
     case NotificationType::EXTENSION_TEST_PASSED:
-      std::cout << "Got EXTENSION_TEST_PASSED notification.\n";
+      LOG(INFO) << "Got EXTENSION_TEST_PASSED notification.";
       results_.push_back(true);
       messages_.push_back("");
       if (waiting_)
@@ -65,7 +65,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
       break;
 
     case NotificationType::EXTENSION_TEST_FAILED:
-      std::cout << "Got EXTENSION_TEST_FAILED notification.\n";
+      LOG(INFO) << "Got EXTENSION_TEST_FAILED notification.";
       results_.push_back(false);
       messages_.push_back(*(Details<std::string>(details).ptr()));
       if (waiting_)
