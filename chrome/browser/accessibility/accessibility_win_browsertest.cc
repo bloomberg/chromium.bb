@@ -317,8 +317,9 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   }
 }
 
+// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestRendererAccessibilityTree) {
+                       DISABLED_TestRendererAccessibilityTree) {
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
   // the accessibility tree is being requested from the renderer.
   AccessibleChecker document1_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
@@ -373,8 +374,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(E_FAIL, hr);
 }
 
+// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationActiveDescendantChanged) {
+                       DISABLED_TestNotificationActiveDescendantChanged) {
   GURL tree_url("data:text/html,<ul tabindex='-1' role='radiogroup'><li id='li'"
       ">li</li></ul>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
@@ -422,8 +424,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationCheckedStateChanged) {
+                       DISABLED_TestNotificationCheckedStateChanged) {
   GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   GetRendererAccessible();
@@ -451,8 +454,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationChildrenChanged) {
+                       DISABLED_TestNotificationChildrenChanged) {
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
       "data:text/html,<body role=group></body>");
@@ -478,8 +482,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationChildrenChanged2) {
+                       DISABLED_TestNotificationChildrenChanged2) {
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
       "data:text/html,<div role=group style='visibility: hidden'>text"
@@ -506,8 +511,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationFocusChanged) {
+                       DISABLED_TestNotificationFocusChanged) {
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
       "data:text/html,<div role=group tabindex='-1'></div>");
@@ -552,8 +558,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // document_checker.CheckAccessible(GetRendererAccessible());
 }
 
+// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestNotificationValueChanged) {
+                       DISABLED_TestNotificationValueChanged) {
   GURL tree_url("data:text/html,<body><input type='text' value='old value'/>"
       "</body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
