@@ -139,8 +139,15 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryEnabled) {
   }
 }
 
+// Times out on Vista only.  http://crbug.com/57994
+#if defined(OS_WIN)
+#define MAYBE_SavingHistoryDisabled DISABLED_SavingHistoryDisabled
+#else
+#define MAYBE_SavingHistoryDisabled SavingHistoryDisabled
+#endif
+
 // Test that disabling saving browser history really works.
-IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryDisabled) {
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, MAYBE_SavingHistoryDisabled) {
   GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled, true);
 
   EXPECT_TRUE(GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS));
@@ -154,9 +161,18 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryDisabled) {
   ExpectEmptyHistory();
 }
 
+// Times out on Vista only.  http://crbug.com/57994
+#if defined(OS_WIN)
+#define MAYBE_SavingHistoryEnabledThenDisabled \
+    DISABLED_SavingHistoryEnabledThenDisabled
+#else
+#define MAYBE_SavingHistoryEnabledThenDisabled SavingHistoryEnabledThenDisabled
+#endif
+
 // Test that changing the pref takes effect immediately
 // when the browser is running.
-IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryEnabledThenDisabled) {
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
+    MAYBE_SavingHistoryEnabledThenDisabled) {
   EXPECT_FALSE(GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled));
 
   ui_test_utils::WaitForHistoryToLoad(browser());
