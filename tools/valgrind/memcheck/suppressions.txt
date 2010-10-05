@@ -1531,8 +1531,8 @@
    fun:_ZN11webkit_glue18WebMediaPlayerImpl*
    fun:_ZN19TestWebViewDelegate17createMediaPlayerEPN6WebKit8WebFrameEPNS0_20WebMediaPlayerClientE
    fun:_ZN6WebKit20createWebMediaPlayerEPNS_20WebMediaPlayerClientEPN7WebCore5FrameE
-   fun:_ZN6WebKit24WebMediaPlayerClientImpl4loadERKN7WebCore6StringE
-   fun:_ZN7WebCore11MediaPlayer4loadERKNS_6StringERKNS_11ContentTypeE
+   fun:_ZN6WebKit24WebMediaPlayerClientImpl4load*
+   fun:_ZN7WebCore11MediaPlayer4load*
    fun:_ZN7WebCore16HTMLMediaElement12loadResourceERKNS_4KURLERNS_11ContentTypeE
    fun:_ZN7WebCore16HTMLMediaElement19selectMediaResourceEv
    fun:_ZN7WebCore16HTMLMediaElement12loadInternalEv
