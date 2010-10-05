@@ -57,7 +57,7 @@ DeletableFileReference::DeletableFileReference(
 DeletableFileReference::~DeletableFileReference() {
   DCHECK(map()->find(path_)->second == this);
   map()->erase(path_);
-  base::FileUtilProxy::Delete(file_thread_, path_, NULL);
+  base::FileUtilProxy::Delete(file_thread_, path_, false /* recursive */, NULL);
 }
 
 }  // namespace webkit_blob

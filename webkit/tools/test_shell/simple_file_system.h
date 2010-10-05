@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_SYSTEM_H_
@@ -27,6 +27,7 @@ class SimpleFileSystem : public WebKit::WebFileSystem {
                     const WebKit::WebString& dest_path,
                     WebKit::WebFileSystemCallbacks* callbacks);
   virtual void remove(const WebKit::WebString& path,
+                      bool recursive,
                       WebKit::WebFileSystemCallbacks* callbacks);
   virtual void readMetadata(const WebKit::WebString& path,
                             WebKit::WebFileSystemCallbacks* callbacks);
