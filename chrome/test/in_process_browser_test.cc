@@ -287,6 +287,13 @@ Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
 }
 
 void InProcessBrowserTest::RunTestOnMainThreadLoop() {
+#if defined(OS_POSIX)
+  // Restore default signal handler for SIGTERM, so when the out-of-process
+  // test runner tries to terminate us, we don't catch it and possibly make it
+  // look like a success (http://crbug.com/57578).
+  signal(SIGTERM, SIG_DFL);
+#endif  // defined(OS_POSIX)
+
   // On Mac, without the following autorelease pool, code which is directly
   // executed (as opposed to executed inside a message loop) would autorelease
   // objects into a higher-level pool. This pool is not recycled in-sync with
