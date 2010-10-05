@@ -9,7 +9,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "printing/native_metafile.h"
-#include "printing/units.h"
 #include "skia/ext/vector_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
@@ -17,34 +16,6 @@
 using printing::NativeMetafile;
 using WebKit::WebFrame;
 using WebKit::WebSize;
-
-static void FillDefaultPrintParams(ViewMsg_Print_Params* params) {
-  // TODO(myhuang): Get printing parameters via IPC
-  // using the print_web_view_helper.cc version of Print.
-  // For testing purpose, we hard-coded printing parameters here.
-
-  // The paper size is US Letter (8.5 in. by 11 in.).
-  double page_width_in_pixel = 8.5 * printing::kPixelsPerInch;
-  double page_height_in_pixel = 11.0 * printing::kPixelsPerInch;
-  params->page_size = gfx::Size(
-      static_cast<int>(page_width_in_pixel),
-      static_cast<int>(page_height_in_pixel));
-  params->printable_size = gfx::Size(
-      static_cast<int>(
-          page_width_in_pixel -
-          (NativeMetafile::kLeftMarginInInch +
-           NativeMetafile::kRightMarginInInch) * printing::kPixelsPerInch),
-      static_cast<int>(
-          page_height_in_pixel -
-          (NativeMetafile::kTopMarginInInch +
-           NativeMetafile::kBottomMarginInInch) * printing::kPixelsPerInch));
-  params->margin_top = static_cast<int>(
-      NativeMetafile::kTopMarginInInch * printing::kPixelsPerInch);
-  params->margin_left = static_cast<int>(
-      NativeMetafile::kLeftMarginInInch * printing::kPixelsPerInch);
-  params->dpi = printing::kPixelsPerInch;
-  params->desired_dpi = params->dpi;
-}
 
 void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                     WebFrame* frame) {
@@ -104,9 +75,6 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
                                    const gfx::Size& canvas_size,
                                    WebFrame* frame,
                                    printing::NativeMetafile* metafile) {
-  ViewMsg_Print_Params default_params;
-  FillDefaultPrintParams(&default_params);
-
   double content_width_in_points;
   double content_height_in_points;
   double margin_top_in_points;
@@ -115,7 +83,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   double margin_left_in_points;
   GetPageSizeAndMarginsInPoints(frame,
                                 params.page_number,
-                                default_params,
+                                params.params,
                                 &content_width_in_points,
                                 &content_height_in_points,
                                 &margin_top_in_points,

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,10 +14,13 @@
 #import <ApplicationServices/ApplicationServices.h>
 #endif
 
+#if defined(OS_WIN)
 typedef struct HDC__* HDC;
 typedef struct _devicemodeW DEVMODE;
+#elif defined(USE_X11)
 typedef struct _GtkPrintSettings GtkPrintSettings;
 typedef struct _GtkPageSetup GtkPageSetup;
+#endif
 
 namespace printing {
 
@@ -30,7 +33,7 @@ class PrintSettings {
   // Reinitialize the settings to the default values.
   void Clear();
 
-#ifdef WIN32
+#if defined(OS_WIN)
   // Reads the settings from the selected device context. Calculates derived
   // values like printable_area_.
   void Init(HDC hdc,
@@ -42,7 +45,7 @@ class PrintSettings {
   // Reads the settings from the given PMPrinter and PMPageFormat.
   void Init(PMPrinter printer, PMPageFormat page_format,
             const PageRanges& new_ranges, bool print_selection_only);
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   // Initializes the settings from the given GtkPrintSettings and GtkPageSetup.
   // TODO(jhawkins): This method is a mess across the platforms. Refactor.
   void Init(GtkPrintSettings* settings,

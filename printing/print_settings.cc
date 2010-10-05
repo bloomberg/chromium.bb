@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 // TODO(jhawkins): Move platform-specific implementations to their own files.
 #if defined(USE_X11)
 #include <gtk/gtk.h>
+#include <gtk/gtkprinter.h>
+#include "printing/native_metafile.h"
 #endif  // defined(USE_X11)
 
 #include "base/atomic_sequence_num.h"
@@ -129,7 +131,7 @@ void PrintSettings::Init(PMPrinter printer, PMPageFormat page_format,
                           printable_area_device_units,
                           72);
 }
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 void PrintSettings::Init(GtkPrintSettings* settings,
                          GtkPageSetup* page_setup,
                          const PageRanges& new_ranges,
@@ -140,23 +142,42 @@ void PrintSettings::Init(GtkPrintSettings* settings,
   printer_name_ = UTF8ToWide(name);
   device_name_ = printer_name_;
   ranges = new_ranges;
+  selection_only = print_selection_only;
 
   GtkPageOrientation orientation = gtk_print_settings_get_orientation(settings);
   landscape_ = orientation == GTK_PAGE_ORIENTATION_LANDSCAPE;
-  selection_only = print_selection_only;
 
+  gfx::Size physical_size_device_units;
+  gfx::Rect printable_area_device_units;
   dpi_ = gtk_print_settings_get_resolution(settings);
-
-  // Initialize page_setup_device_units_.
-  gfx::Size physical_size_device_units(
-      gtk_page_setup_get_paper_width(page_setup, GTK_UNIT_INCH) * dpi_,
-      gtk_page_setup_get_paper_height(page_setup, GTK_UNIT_INCH) * dpi_);
-  gfx::Rect printable_area_device_units(
-      gtk_page_setup_get_left_margin(page_setup, GTK_UNIT_INCH) * dpi_,
-      gtk_page_setup_get_top_margin(page_setup, GTK_UNIT_INCH) * dpi_,
-      gtk_page_setup_get_page_width(page_setup, GTK_UNIT_INCH) * dpi_,
-      gtk_page_setup_get_page_height(page_setup, GTK_UNIT_INCH) * dpi_);
-
+  if (dpi_) {
+    // Initialize page_setup_device_units_.
+    physical_size_device_units.SetSize(
+        gtk_page_setup_get_paper_width(page_setup, GTK_UNIT_INCH) * dpi_,
+        gtk_page_setup_get_paper_height(page_setup, GTK_UNIT_INCH) * dpi_);
+    printable_area_device_units.SetRect(
+        gtk_page_setup_get_left_margin(page_setup, GTK_UNIT_INCH) * dpi_,
+        gtk_page_setup_get_top_margin(page_setup, GTK_UNIT_INCH) * dpi_,
+        gtk_page_setup_get_page_width(page_setup, GTK_UNIT_INCH) * dpi_,
+        gtk_page_setup_get_page_height(page_setup, GTK_UNIT_INCH) * dpi_);
+  } else {
+    // Use dummy values if we cannot get valid values.
+    // TODO(jhawkins) Remove this hack when the Linux printing refactoring
+    // finishes.
+    dpi_ = kPixelsPerInch;
+    double page_width_in_pixel = 8.5 * dpi_;
+    double page_height_in_pixel = 11.0 * dpi_;
+    physical_size_device_units.SetSize(
+      static_cast<int>(page_width_in_pixel),
+      static_cast<int>(page_height_in_pixel));
+    printable_area_device_units.SetRect(
+      static_cast<int>(
+          NativeMetafile::kLeftMarginInInch * printing::kPixelsPerInch),
+      static_cast<int>(
+          NativeMetafile::kTopMarginInInch * printing::kPixelsPerInch),
+      page_width_in_pixel,
+      page_height_in_pixel);
+  }
   SetPrinterPrintableArea(physical_size_device_units,
                           printable_area_device_units,
                           dpi_);
