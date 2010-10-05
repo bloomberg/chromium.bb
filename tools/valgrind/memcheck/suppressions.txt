@@ -2774,3 +2774,29 @@
    fun:_ZN8remoting16DecompressorZlib10InitStreamEv
    fun:_ZN8remoting16DecompressorZlib5ResetEv
 }
+{
+   bug_57949
+   Memcheck:Addr4
+   fun:_ZNK22OpaqueBrowserFrameView24NonClientTopBorderHeightEbb
+   fun:_ZNK22OpaqueBrowserFrameView35GetHorizontalTabStripVerticalOffsetEb
+   fun:_ZNK22OpaqueBrowserFrameView20GetBoundsForTabStripEP12BaseTabStrip
+   fun:_ZNK15BrowserFrameGtk20GetBoundsForTabStripEP12BaseTabStrip
+   fun:_ZN8chromeos17BrowserViewLayout14LayoutTabStripEv
+   fun:_ZN17BrowserViewLayout6LayoutEPN5views4ViewE
+   fun:_ZN11BrowserView6LayoutEv
+   fun:_ZN8chromeos11BrowserView25ChildPreferredSizeChangedEPN5views4ViewE
+   fun:_ZN5views4View20PreferredSizeChangedEv
+   fun:_ZN8chromeos14StatusAreaView25ChildPreferredSizeChangedEPN5views4ViewE
+   fun:_ZN5views4View20PreferredSizeChangedEv
+   fun:_ZN5views10TextButton14UpdateTextSizeEv
+   fun:_ZN5views10TextButton7SetTextERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN8chromeos16StatusAreaButton7SetTextERKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN8chromeos15ClockMenuButton10UpdateTextEv
+   fun:_ZN8chromeos15ClockMenuButton25UpdateTextAndSetNextTimerEv
+   fun:_Z16DispatchToMethodIN8chromeos15ClockMenuButtonEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN4base9BaseTimerIN8chromeos15ClockMenuButtonELb0EE9TimerTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
+   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
+}
