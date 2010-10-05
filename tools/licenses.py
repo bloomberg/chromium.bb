@@ -61,6 +61,10 @@ SPECIAL_CASES = {
         "Name": "Almost Native Graphics Layer Engine",
         "URL": "http://code.google.com/p/angleproject/",
     },
+    os.path.join('third_party', 'lss'): {
+        "Name": "linux-syscall-support",
+        "URL": "http://code.google.com/p/lss/",
+    },
     os.path.join('third_party', 'ots'): {
         "Name": "OTS (OpenType Sanitizer)",
         "URL": "http://code.google.com/p/ots/",
