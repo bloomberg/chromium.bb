@@ -78,6 +78,28 @@ AC_ARG_ENABLE(m32,
                esac],
               [usem32=false])
 
+AC_ARG_ENABLE(processor,
+              AS_HELP_STRING([--disable-processor],
+                             [Don't build processor library]
+                             [(default is no)]),
+              [case "${enableval}" in
+                 yes)
+                   disable_processor=false
+                   ;;
+                 no)
+                   disable_processor=true
+                   ;;
+                 *)
+                   AC_MSG_ERROR(bad value ${enableval} for --disable-processor)
+                   ;;
+               esac],
+              [disable_processor=false])
+AM_CONDITIONAL(DISABLE_PROCESSOR, test x$disable_processor = xtrue)
+
+if test x$LINUX_HOST = xfalse -a x$disable_processor = xtrue; then
+   AC_MSG_ERROR([--disable-processor was specified, and not building for Linux. Nothing to build!])
+fi
+
 AC_CHECK_MEMBER(struct sockaddr.sa_len,
                 [AC_DEFINE([GET_SA_LEN(X)],[(((struct sockaddr*)&(X))->sa_len)],
                            [actual length of specific struct sockaddr])],

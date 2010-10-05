@@ -49,8 +49,15 @@ dist_doc_DATA = \
 
 
 ## Libraries
-noinst_LTLIBRARIES = src/third_party/libdisasm/libdisasm.la
-lib_LTLIBRARIES = src/libbreakpad.la
+noinst_LTLIBRARIES =
+lib_LTLIBRARIES =
+bin_PROGRAMS =
+check_PROGRAMS =
+
+if !DISABLE_PROCESSOR
+lib_LTLIBRARIES += src/libbreakpad.la
+noinst_LTLIBRARIES += src/third_party/libdisasm/libdisasm.la
+endif
 
 if LINUX_HOST
 lib_LTLIBRARIES += src/client/linux/libbreakpad_client.la
@@ -68,6 +75,7 @@ src_client_linux_libbreakpad_client_la_SOURCES = \
 	src/common/linux/guid_creator.cc
 endif
 
+if !DISABLE_PROCESSOR
 src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/common/breakpad_types.h \
 	src/google_breakpad/common/minidump_format.h \
@@ -176,13 +184,14 @@ src_third_party_libdisasm_libdisasm_la_SOURCES = \
 	src/third_party/libdisasm/x86_insn.c \
 	src/third_party/libdisasm/x86_misc.c \
 	src/third_party/libdisasm/x86_operand_list.c \
- 	src/third_party/libdisasm/x86_operand_list.h
+	src/third_party/libdisasm/x86_operand_list.h
 
 ## Programs
-bin_PROGRAMS = \
+bin_PROGRAMS += \
 	src/processor/minidump_dump \
 	src/processor/minidump_stackwalk \
-	src/processor/source_daemon 
+	src/processor/source_daemon
+endif !DISABLE_PROCESSOR
 
 if LINUX_HOST
 bin_PROGRAMS += \
@@ -190,7 +199,8 @@ bin_PROGRAMS += \
 endif
 
 ## Tests
-check_PROGRAMS = \
+if !DISABLE_PROCESSOR
+check_PROGRAMS += \
 	src/common/test_assembler_unittest \
 	src/processor/address_map_unittest \
 	src/processor/binarystream_unittest \
@@ -212,21 +222,26 @@ check_PROGRAMS = \
 	src/processor/stackwalker_arm_unittest \
 	src/processor/stackwalker_x86_unittest \
 	src/processor/synth_minidump_unittest
+endif
 
 if LINUX_HOST
 check_PROGRAMS += \
 	src/client/linux/linux_client_unittest
 endif
 
+if !DISABLE_PROCESSOR
 if SELFTEST
 check_PROGRAMS += \
 	src/processor/stackwalker_selftest
 endif SELFTEST
+endif !DISABLE_PROCESSOR
 
+if !DISABLE_PROCESSOR
 check_SCRIPTS = \
 	src/processor/minidump_dump_test \
 	src/processor/minidump_stackwalk_test \
 	src/processor/minidump_stackwalk_machine_readable_test
+endif
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 TESTS_ENVIRONMENT =
@@ -247,7 +262,11 @@ src_client_linux_linux_client_unittest_SOURCES = \
 	src/common/memory_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
-	src/testing/src/gmock-all.cc
+	src/testing/src/gmock-all.cc \
+	src/processor/basic_code_modules.cc \
+	src/processor/logging.cc \
+	src/processor/minidump.cc \
+	src/processor/pathname_stripper.cc
 
 src_client_linux_linux_client_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
@@ -265,15 +284,12 @@ src_client_linux_linux_client_unittest_LDADD = \
 	src/common/md5.lo \
 	src/common/linux/file_id.lo \
 	src/common/linux/guid_creator.lo \
-	src/common/string_conversion.lo \
-	src/processor/basic_code_modules.lo \
-	src/processor/logging.lo \
-	src/processor/minidump.lo \
-	src/processor/pathname_stripper.lo
+	src/common/string_conversion.lo
 
 src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la src/libbreakpad.la
 endif
 
+if !DISABLE_PROCESSOR
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
 src_processor_address_map_unittest_LDADD = \
@@ -378,7 +394,7 @@ src_processor_disassembler_x86_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing
 src_processor_disassembler_x86_unittest_LDADD = \
 	src/processor/disassembler_x86.lo \
- 	src/third_party/libdisasm/libdisasm.la
+	src/third_party/libdisasm/libdisasm.la
 
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc \
@@ -685,6 +701,7 @@ src_processor_source_daemon_LDADD = \
 	src/processor/simple_symbol_supplier.lo \
 	src/processor/tokenize.lo \
 	src/processor/udp_network.lo
+endif !DISABLE_PROCESSOR
 
 ## Additional files to be included in a source distribution
 ##
