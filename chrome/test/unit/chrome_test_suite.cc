@@ -18,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/test_timeouts.h"
 #include "chrome/test/testing_browser_process.h"
+#include "net/base/net_errors.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
@@ -36,19 +37,19 @@ static void RemoveSharedMemoryFile(const std::string& filename) {
 #endif
 }
 
-WarningHostResolverProc::WarningHostResolverProc()
+LocalHostResolverProc::LocalHostResolverProc()
     : HostResolverProc(NULL) {
 }
 
-WarningHostResolverProc::~WarningHostResolverProc() {
+LocalHostResolverProc::~LocalHostResolverProc() {
 }
 
-int WarningHostResolverProc::Resolve(const std::string& host,
-                                     net::AddressFamily address_family,
-                                     net::HostResolverFlags host_resolver_flags,
-                                     net::AddressList* addrlist,
-                                     int* os_error) {
-  const char* kLocalHostNames[] = {"localhost", "127.0.0.1"};
+int LocalHostResolverProc::Resolve(const std::string& host,
+                                   net::AddressFamily address_family,
+                                   net::HostResolverFlags host_resolver_flags,
+                                   net::AddressList* addrlist,
+                                   int* os_error) {
+  const char* kLocalHostNames[] = {"localhost", "127.0.0.1", "::1"};
   bool local = false;
 
   if (host == net::GetHostName()) {
@@ -61,10 +62,16 @@ int WarningHostResolverProc::Resolve(const std::string& host,
       }
   }
 
-  // Make the test fail so it's harder to ignore.
-  // If you really need to make real DNS query, use
+  // To avoid depending on external resources and to reduce (if not preclude)
+  // network interactions from tests, we simulate failure for non-local DNS
+  // queries, rather than perform them.
+  // If you really need to make an external DNS query, use
   // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
-  EXPECT_TRUE(local) << "Making external DNS lookup of " << host;
+  if (!local) {
+    DLOG(INFO) << "To avoid external dependencies, simulating failure for "
+               << "external DNS lookup of " << host;
+    return net::ERR_NOT_IMPLEMENTED;
+  }
 
   return ResolveUsingPrevious(host, address_family, host_resolver_flags,
                               addrlist, os_error);
@@ -84,7 +91,7 @@ void ChromeTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
   chrome::RegisterChromeSchemes();
-  host_resolver_proc_ = new WarningHostResolverProc();
+  host_resolver_proc_ = new LocalHostResolverProc();
   scoped_host_resolver_proc_.Init(host_resolver_proc_.get());
 
   chrome::RegisterPathProvider();

@@ -329,7 +329,7 @@ void PredictorGetHtmlInfo(std::string* output) {
                  // "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
                  "</head><body>");
   if (!predictor_enabled  || NULL == g_predictor) {
-    output->append("Dns Prefetching is disabled.");
+    output->append("DNS pre-resolution and TCP pre-connection is disabled.");
   } else {
     if (!on_the_record_switch) {
       output->append("Incognito mode is active in a window.");
@@ -378,8 +378,6 @@ void FinalizePredictorInitialization(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   g_predictor = global_predictor;
   g_initial_observer = new InitialObserver();
-
-  DLOG(INFO) << "DNS Prefetch service started";
 
   // Prefetch these hostnames on startup.
   DnsPrefetchMotivatedList(startup_urls,

@@ -23,11 +23,12 @@ class StatsTable;
 
 // In many cases it may be not obvious that a test makes a real DNS lookup.
 // We generally don't want to rely on external DNS servers for our tests,
-// so this host resolver procedure catches external queries.
-class WarningHostResolverProc : public net::HostResolverProc {
+// so this host resolver procedure catches external queries and returns a failed
+// lookup result.
+class LocalHostResolverProc : public net::HostResolverProc {
  public:
-  WarningHostResolverProc();
-  virtual ~WarningHostResolverProc();
+  LocalHostResolverProc();
+  virtual ~LocalHostResolverProc();
 
   virtual int Resolve(const std::string& host,
                       net::AddressFamily address_family,
@@ -58,7 +59,7 @@ class ChromeTestSuite : public base::TestSuite {
   FilePath browser_dir_;
 
   ScopedOleInitializer ole_initializer_;
-  scoped_refptr<WarningHostResolverProc> host_resolver_proc_;
+  scoped_refptr<LocalHostResolverProc> host_resolver_proc_;
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
 };
 
