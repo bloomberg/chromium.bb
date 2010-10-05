@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "app/menus/menu_model.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "views/controls/menu/menu_delegate.h"
 
@@ -22,10 +23,10 @@ class View;
 }  // namespace views
 
 // WrenchMenu adapts the WrenchMenuModel to view's menu related classes.
-class WrenchMenu : public views::MenuDelegate {
+class WrenchMenu : public base::RefCounted<WrenchMenu>,
+                   public views::MenuDelegate {
  public:
   explicit WrenchMenu(Browser* browser);
-  ~WrenchMenu();
 
   void Init(menus::MenuModel* model);
 
@@ -39,11 +40,15 @@ class WrenchMenu : public views::MenuDelegate {
   virtual bool GetAccelerator(int id, views::Accelerator* accelerator);
 
  private:
+  friend class base::RefCounted<WrenchMenu>;
+
   class CutCopyPasteView;
   class ZoomView;
 
   typedef std::pair<menus::MenuModel*,int> Entry;
   typedef std::map<int,Entry> IDToEntry;
+
+  ~WrenchMenu();
 
   // Populates |parent| with all the child menus in |model|. Recursively invokes
   // |PopulateMenu| for any submenu. |next_id| is incremented for every menu

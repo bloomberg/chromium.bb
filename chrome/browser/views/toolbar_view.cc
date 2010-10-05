@@ -251,7 +251,7 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /*pt*/) {
 
   bool destroyed_flag = false;
   destroyed_flag_ = &destroyed_flag;
-  wrench_menu_.reset(new WrenchMenu(browser_));
+  wrench_menu_ = new WrenchMenu(browser_);
   wrench_menu_->Init(wrench_menu_model_.get());
 
   for (size_t i = 0; i < menu_listeners_.size(); ++i)

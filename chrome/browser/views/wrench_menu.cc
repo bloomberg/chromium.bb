@@ -565,9 +565,6 @@ WrenchMenu::WrenchMenu(Browser* browser)
       selected_index_(0) {
 }
 
-WrenchMenu::~WrenchMenu() {
-}
-
 void WrenchMenu::Init(menus::MenuModel* model) {
   DCHECK(!root_.get());
   root_.reset(new MenuItemView(this));
@@ -579,6 +576,11 @@ void WrenchMenu::Init(menus::MenuModel* model) {
 }
 
 void WrenchMenu::RunMenu(views::MenuButton* host) {
+  // Up the ref count while the menu is displaying. This way if the window is
+  // deleted while we're running we won't prematurely delete the menu.
+  // TODO(sky): fix this, the menu should really take ownership of the menu
+  // (57890).
+  scoped_refptr<WrenchMenu> dont_delete_while_running(this);
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(host, &screen_loc);
   gfx::Rect bounds(screen_loc, host->size());
@@ -636,6 +638,9 @@ bool WrenchMenu::GetAccelerator(int id, views::Accelerator* accelerator) {
   *accelerator = views::Accelerator(menu_accelerator.GetKeyCode(),
                                     menu_accelerator.modifiers());
   return true;
+}
+
+WrenchMenu::~WrenchMenu() {
 }
 
 void WrenchMenu::PopulateMenu(MenuItemView* parent,

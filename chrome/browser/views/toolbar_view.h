@@ -10,6 +10,7 @@
 
 #include "app/menus/accelerator.h"
 #include "app/slide_animation.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/back_forward_menu_model.h"
 #include "chrome/browser/command_updater.h"
@@ -189,7 +190,7 @@ class ToolbarView : public AccessibleToolbarView,
   scoped_ptr<menus::SimpleMenuModel> wrench_menu_model_;
 
   // Wrench menu.
-  scoped_ptr<WrenchMenu> wrench_menu_;
+  scoped_refptr<WrenchMenu> wrench_menu_;
 
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;

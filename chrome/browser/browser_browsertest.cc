@@ -98,6 +98,38 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
 };
 
+// Used by CloseWithAppMenuOpen. Invokes CloseWindow on the supplied browser.
+class CloseWindowTask : public Task {
+ public:
+  explicit CloseWindowTask(Browser* browser) : browser_(browser) {}
+
+  virtual void Run() {
+    browser_->CloseWindow();
+  }
+
+ private:
+  Browser* browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(CloseWindowTask);
+};
+
+// Used by CloseWithAppMenuOpen. Posts a CloseWindowTask and shows the app menu.
+class RunCloseWithAppMenuTask : public Task {
+ public:
+  explicit RunCloseWithAppMenuTask(Browser* browser) : browser_(browser) {}
+
+  virtual void Run() {
+    // ShowAppMenu is modal under views. Schedule a task that closes the window.
+    MessageLoop::current()->PostTask(FROM_HERE, new CloseWindowTask(browser_));
+    browser_->ShowAppMenu();
+  }
+
+ private:
+  Browser* browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(RunCloseWithAppMenuTask);
+};
+
 }  // namespace
 
 class BrowserTest : public ExtensionBrowserTest {
@@ -532,6 +564,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
+// This test verifies we don't crash when closing the last window and the app
+// menu is showing.
+IN_PROC_BROWSER_TEST_F(BrowserTest, CloseWithAppMenuOpen) {
+  if (browser_defaults::kBrowserAliveWithNoWindows)
+    return;
+
+  // We need a message loop running for menus on windows.
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   new RunCloseWithAppMenuTask(browser()));
+}
 
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.
 // It originally lived in browser_unittest.cc, but has been moved here to make

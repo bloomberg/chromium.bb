@@ -91,6 +91,7 @@ MenuItemView::~MenuItemView() {
   // loop is running deletion can't be done, otherwise the stack gets
   // thoroughly screwed. The destructor should be made private, and
   // MenuController should be the only place handling deletion of the menu.
+  // (57890).
   delete submenu_;
 }
 
