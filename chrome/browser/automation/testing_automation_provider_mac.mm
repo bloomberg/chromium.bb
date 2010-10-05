@@ -56,19 +56,25 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
   DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
   if (![controller isKindOfClass:[BrowserWindowController class]])
     return;
-  NSView* tab = [controller selectedTabView];
+  NSView* tab =
+      [[[controller tabStripController] activeTabContentsController] view];
   if (!tab)
     return;
 
-  NSPoint coords = NSZeroPoint;
+  NSRect rect = [tab convertRectToBase:[tab bounds]];
+  // The origin of the bounding box should be the top left of the tab contents,
+  // not bottom left, to match other platforms.
+  rect.origin.y += rect.size.height;
+  CGFloat coord_sys_height;
   if (screen_coordinates) {
-    coords = [window convertBaseToScreen:[tab convertPoint:NSZeroPoint
-                                                    toView:nil]];
+    rect.origin = [window convertBaseToScreen:rect.origin];
+    coord_sys_height = [[window screen] frame].size.height;
   } else {
-    coords = [tab convertPoint:NSZeroPoint toView:[window contentView]];
+    coord_sys_height = [window frame].size.height;
   }
-  // Flip coordinate system
-  coords.y = [[window screen] frame].size.height - coords.y;
+  // Flip coordinate system.
+  rect.origin.y = coord_sys_height - rect.origin.y;
+  *bounds = gfx::Rect(NSRectToCGRect(rect));
   *success = true;
 }
 
