@@ -61,7 +61,8 @@ class FileSystemOperation {
 
   void Remove(const FilePath& path);
 
-  void Write(const FilePath& path, const GURL& blob_url, int64 offset);
+  void Write(
+      const FilePath& path, const GURL& blob_url, int64 offset);
 
   void Truncate(const FilePath& path, int64 length);
 
@@ -69,10 +70,9 @@ class FileSystemOperation {
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time);
 
-  // Try to cancel the current operation [we support cancelling write or
-  // truncate only].  Report failure for the current operation, then tell the
-  // passed-in operation to report success.
-  void Cancel(FileSystemOperation* cancel_operation);
+  // Used to attempt to cancel the current operation.  This currently does
+  // nothing for any operation other than Write().
+  void Cancel();
 
  protected:
   // Proxy for calling file_util_proxy methods.
@@ -114,28 +114,9 @@ class FileSystemOperation {
 
   base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;
 
-  FileSystemOperation* cancel_operation_;
-
 #ifndef NDEBUG
-  enum OperationType {
-    kOperationNone,
-    kOperationCreateFile,
-    kOperationCreateDirectory,
-    kOperationCopy,
-    kOperationMove,
-    kOperationDirectoryExists,
-    kOperationFileExists,
-    kOperationGetMetadata,
-    kOperationReadDirectory,
-    kOperationRemove,
-    kOperationWrite,
-    kOperationTruncate,
-    kOperationTouchFile,
-    kOperationCancel,
-  };
-
   // A flag to make sure we call operation only once per instance.
-  OperationType pending_operation_;
+  bool operation_pending_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperation);

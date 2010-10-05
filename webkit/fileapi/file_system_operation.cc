@@ -15,11 +15,10 @@ FileSystemOperation::FileSystemOperation(
     scoped_refptr<base::MessageLoopProxy> proxy)
     : proxy_(proxy),
       dispatcher_(dispatcher),
-      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-      cancel_operation_(NULL) {
+      callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(dispatcher);
 #ifndef NDEBUG
-  pending_operation_ = kOperationNone;
+  operation_pending_ = false;
 #endif
 }
 
@@ -29,8 +28,8 @@ FileSystemOperation::~FileSystemOperation() {
 void FileSystemOperation::CreateFile(const FilePath& path,
                                      bool exclusive) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationCreateFile;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::CreateOrOpen(
@@ -44,8 +43,8 @@ void FileSystemOperation::CreateDirectory(const FilePath& path,
                                           bool exclusive,
                                           bool recursive) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationCreateDirectory;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::CreateDirectory(
@@ -56,8 +55,8 @@ void FileSystemOperation::CreateDirectory(const FilePath& path,
 void FileSystemOperation::Copy(const FilePath& src_path,
                                const FilePath& dest_path) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationCopy;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::Copy(proxy_, src_path, dest_path,
@@ -68,8 +67,8 @@ void FileSystemOperation::Copy(const FilePath& src_path,
 void FileSystemOperation::Move(const FilePath& src_path,
                                const FilePath& dest_path) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationMove;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::Move(proxy_, src_path, dest_path,
@@ -79,8 +78,8 @@ void FileSystemOperation::Move(const FilePath& src_path,
 
 void FileSystemOperation::DirectoryExists(const FilePath& path) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationDirectoryExists;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::GetFileInfo(proxy_, path, callback_factory_.NewCallback(
@@ -89,8 +88,8 @@ void FileSystemOperation::DirectoryExists(const FilePath& path) {
 
 void FileSystemOperation::FileExists(const FilePath& path) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationFileExists;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::GetFileInfo(proxy_, path, callback_factory_.NewCallback(
@@ -99,8 +98,8 @@ void FileSystemOperation::FileExists(const FilePath& path) {
 
 void FileSystemOperation::GetMetadata(const FilePath& path) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationGetMetadata;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::GetFileInfo(proxy_, path, callback_factory_.NewCallback(
@@ -109,8 +108,8 @@ void FileSystemOperation::GetMetadata(const FilePath& path) {
 
 void FileSystemOperation::ReadDirectory(const FilePath& path) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationReadDirectory;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::ReadDirectory(proxy_, path,
@@ -120,8 +119,8 @@ void FileSystemOperation::ReadDirectory(const FilePath& path) {
 
 void FileSystemOperation::Remove(const FilePath& path) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationRemove;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::Delete(proxy_, path, callback_factory_.NewCallback(
@@ -129,32 +128,36 @@ void FileSystemOperation::Remove(const FilePath& path) {
 }
 
 void FileSystemOperation::Write(
-    const FilePath& path,
-    const GURL& blob_url,
-    int64 offset) {
+    const FilePath&,
+    const GURL&,
+    int64) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationWrite;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
   NOTREACHED();
+  // TODO(ericu):
+  // Set up a loop that, via multiple callback invocations, reads from a
+  // URLRequest wrapping blob_url, writes the bytes to the file, reports
+  // progress events no more frequently than some set rate, and periodically
+  // checks to see if it's been cancelled.
 }
 
 void FileSystemOperation::Truncate(const FilePath& path, int64 length) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationTruncate;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
-  base::FileUtilProxy::Truncate(proxy_, path, length,
-      callback_factory_.NewCallback(
-          &FileSystemOperation::DidFinishFileOperation));
+  // TODO(ericu):
+  NOTREACHED();
 }
 
 void FileSystemOperation::TouchFile(const FilePath& path,
                                     const base::Time& last_access_time,
                                     const base::Time& last_modified_time) {
 #ifndef NDEBUG
-  DCHECK(kOperationNone == pending_operation_);
-  pending_operation_ = kOperationTouchFile;
+  DCHECK(!operation_pending_);
+  operation_pending_ = true;
 #endif
 
   base::FileUtilProxy::Touch(
@@ -162,18 +165,15 @@ void FileSystemOperation::TouchFile(const FilePath& path,
       callback_factory_.NewCallback(&FileSystemOperation::DidTouchFile));
 }
 
-// We can only get here on a write or truncate that's not yet completed.
-// We don't support cancelling any other operation at this time.
-void FileSystemOperation::Cancel(FileSystemOperation* cancel_operation) {
+void FileSystemOperation::Cancel() {
 #ifndef NDEBUG
-  DCHECK(kOperationTruncate == pending_operation_);
-  // FIXME(ericu): Cancelling for writes coming soon.
+  DCHECK(operation_pending_);
 #endif
-  // We're cancelling a truncate operation, but we can't actually stop it
-  // since it's been proxied to another thread.  We need to save the
-  // cancel_operation so that when the truncate returns, it can see that it's
-  // been cancelled, report it, and report that the cancel has succeeded.
-  cancel_operation_ = cancel_operation;
+  NOTREACHED();
+  // TODO(ericu):
+  // Make sure this was done on a FileSystemOperation used for a Write.
+  // Then set a flag that ensures that the Write loop will exit without
+  // reporting any more progress, with a failure notification.
 }
 
 void FileSystemOperation::DidCreateFileExclusive(
@@ -197,19 +197,10 @@ void FileSystemOperation::DidCreateFileNonExclusive(
 
 void FileSystemOperation::DidFinishFileOperation(
     base::PlatformFileError rv) {
-  if (cancel_operation_) {
-#ifndef NDEBUG
-    DCHECK(kOperationTruncate == pending_operation_);
-#endif
-    FileSystemOperation *cancel_op = cancel_operation_;
-    // This call deletes us, so we have to extract cancel_op first.
-    dispatcher_->DidFail(base::PLATFORM_FILE_ERROR_ABORT);
-    cancel_op->dispatcher_->DidSucceed();
-  } else if (rv == base::PLATFORM_FILE_OK) {
+  if (rv == base::PLATFORM_FILE_OK)
     dispatcher_->DidSucceed();
-  } else {
+  else
     dispatcher_->DidFail(rv);
-  }
 }
 
 void FileSystemOperation::DidDirectoryExists(
@@ -259,7 +250,7 @@ void FileSystemOperation::DidWrite(
     int64 bytes,
     bool complete) {
   if (rv == base::PLATFORM_FILE_OK)
-    dispatcher_->DidWrite(bytes, complete);
+    /* dispatcher_->DidWrite(bytes, complete) TODO(ericu): Coming soon. */ {}
   else
     dispatcher_->DidFail(rv);
 }
