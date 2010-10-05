@@ -7,3 +7,5 @@
 
 // Behavior was changed by WebKit roll 69035:69062.
 BUG_TKENT MAC : media/video-transformed.html = IMAGE
+// Flaky since 2010-09-17?
+BUG57950 WIN LINUX : svg/batik/text/verticalText.svg = CRASH PASS
