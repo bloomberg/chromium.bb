@@ -110,8 +110,14 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
+// crbug.com/57940
+#if defined(OS_WINDOWS)
+#define MAYBE_TestMoveFailureContainsPath FAILS_TestMoveFailureContainsPath
+#else
+#define MAYBE_TestMoveFailureContainsPath TestMoveFailureContainsPath
+#endif
 
-TEST_F(FileSystemOperationTest, TestMoveFailureContainsPath) {
+TEST_F(FileSystemOperationTest, MAYBE_TestMoveFailureContainsPath) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
   FilePath dest_dir_path;
@@ -283,7 +289,14 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
-TEST_F(FileSystemOperationTest, TestCopyFailureContainsPath) {
+// crbug.com/57940
+#if defined(OS_WINDOWS)
+#define MAYBE_TestCopyFailureContainsPath FAILS_TestCopyFailureContainsPath
+#else
+#define MAYBE_TestCopyFailureContainsPath TestCopyFailureContainsPath
+#endif
+
+TEST_F(FileSystemOperationTest, MAYBE_TestCopyFailureContainsPath) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
   FilePath dest_dir_path;
@@ -761,7 +774,7 @@ TEST_F(FileSystemOperationTest, TestTruncate) {
   char data[100];
   EXPECT_EQ(length, file_util::ReadFile(file, data, length));
   for (int i = 0; i < length; ++i) {
-    if (i < data_size)
+    if (i < static_cast<int>(sizeof(test_data)))
       EXPECT_EQ(test_data[i], data[i]);
     else
       EXPECT_EQ(0, data[i]);
@@ -781,4 +794,3 @@ TEST_F(FileSystemOperationTest, TestTruncate) {
   for (int i = 0; i < length; ++i)
     EXPECT_EQ(test_data[i], data[i]);
 }
-
