@@ -3350,8 +3350,8 @@
             # TODO(mattm): Cert manager stuff is really !USE_NSS.
             'browser/certificate_manager_model.cc',
             'browser/certificate_manager_model.h',
-            'browser/dom_ui/certificate_manager_handler.cc',
-            'browser/dom_ui/certificate_manager_handler.h',
+            'browser/dom_ui/options/certificate_manager_handler.cc',
+            'browser/dom_ui/options/certificate_manager_handler.h',
             'browser/file_path_watcher_inotify.cc',
           ],
         }],
