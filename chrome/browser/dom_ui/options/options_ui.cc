@@ -216,8 +216,13 @@ void OptionsUI::InitializeHandlers() {
 }
 
 void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
-                                        OptionsPageUIHandler* handler) {
-  DCHECK(handler);
-  handler->GetLocalizedValues(localized_strings);
-  AddMessageHandler(handler->Attach(this));
+                                        OptionsPageUIHandler* handler_raw) {
+  scoped_ptr<OptionsPageUIHandler> handler(handler_raw);
+  DCHECK(handler.get());
+  // Add only if handler's service is enabled.
+  if (handler->IsEnabled()) {
+    handler->GetLocalizedValues(localized_strings);
+    // Add handler to the list and also pass the ownership.
+    AddMessageHandler(handler.release()->Attach(this));
+  }
 }

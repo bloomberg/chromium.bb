@@ -48,6 +48,9 @@ class OptionsPageUIHandler : public DOMMessageHandler,
   OptionsPageUIHandler();
   virtual ~OptionsPageUIHandler();
 
+  // Is this handler enabled?
+  virtual bool IsEnabled() { return true; }
+
   // Collects localized strings for options page.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings) = 0;
 
@@ -84,6 +87,7 @@ class OptionsUI : public DOMUI {
   void InitializeHandlers();
 
  private:
+  // Adds OptionsPageUiHandler to the handlers list if handler is enabled.
   void AddOptionsPageUIHandler(DictionaryValue* localized_strings,
                                OptionsPageUIHandler* handler);
 

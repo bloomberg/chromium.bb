@@ -43,6 +43,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
+  localized_strings->SetString("sync_disabled_info",
+      l10n_util::GetStringUTF16(IDS_SYNC_IS_DISABLED_INFO));
   localized_strings->SetString("sync_section",
       l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
   localized_strings->SetString("sync_not_setup_info",
@@ -158,11 +160,15 @@ void PersonalOptionsHandler::Initialize() {
       new OptionsManagedBannerHandler(dom_ui_,
                                       ASCIIToUTF16("PersonalOptions"),
                                       OPTIONS_PAGE_CONTENT));
-
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   ObserveThemeChanged();
+  // Explicitly enable synchronization option if needed.
+  scoped_ptr<Value> is_sync_enabled(
+      Value::CreateBooleanValue(ProfileSyncService::IsSyncEnabled()));
+  dom_ui_->CallJavascriptFunction(L"PersonalOptions.enableSync",
+                                  *is_sync_enabled);
 }
 
 void PersonalOptionsHandler::SetSyncStatusUIString(const ListValue* args) {

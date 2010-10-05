@@ -13,6 +13,9 @@ cr.define('options', function() {
   function PersonalOptions() {
     OptionsPage.call(this, 'personal', templateData.personalPage,
                      'personalPage');
+    // State variables.
+    this.syncEnabled = false;
+    this.hasSetupCompleted = false;
   }
 
   cr.addSingletonGetter(PersonalOptions);
@@ -33,17 +36,13 @@ cr.define('options', function() {
         //TODO(sargrass): Show start-sync subpage, after dhg done.
       };
 
-      // Listen to pref changes.
       Preferences.getInstance().addEventListener('sync.has_setup_completed',
           function(event) {
-            if (event.value) {
+            var personalOptions = PersonalOptions.getInstance();
+            personalOptions.hasSetupCompleted = event.value;
+            if (personalOptions.hasSetupCompleted)
               chrome.send('getSyncStatus');
-              $('synced-controls').classList.remove('hidden');
-              $('not-synced-controls').classList.add('hidden');
-            } else {
-              $('synced-controls').classList.add('hidden');
-              $('not-synced-controls').classList.remove('hidden');
-            }
+            personalOptions.updateControlsVisibility_();
           });
 
       $('showpasswords').onclick = function(event) {
@@ -110,6 +109,31 @@ cr.define('options', function() {
     setClassicThemeButtonEnabled_: function(enabled) {
       $('themes_set_classic').disabled = !enabled;
     },
+
+    updateControl_: function(control, visible) {
+      if (visible)
+        control.classList.remove('hidden');
+      else
+        control.classList.add('hidden');
+    },
+
+    updateControlsVisibility_: function() {
+      this.updateControl_($('synced-controls'),
+                          this.syncEnabled && this.hasSetupCompleted);
+      this.updateControl_($('not-synced-controls'),
+                          this.syncEnabled && !this.hasSetupCompleted);
+      this.updateControl_($('sync-disabled-controls'), !this.syncEnabled);
+    },
+
+  };
+
+  // Enables synchronization option.
+  // NOTE: by default synchronization option is disabled, so handler should
+  // explicitly enable it.
+  PersonalOptions.enableSync = function(enabled) {
+    var personalOptions = PersonalOptions.getInstance();
+    personalOptions.syncEnabled = enabled;
+    personalOptions.updateControlsVisibility_();
   };
 
   PersonalOptions.syncStatusCallback = function(statusString) {

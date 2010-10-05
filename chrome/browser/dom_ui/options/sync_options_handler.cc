@@ -11,6 +11,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
@@ -22,6 +23,10 @@
 SyncOptionsHandler::SyncOptionsHandler() {}
 
 SyncOptionsHandler::~SyncOptionsHandler() {}
+
+bool SyncOptionsHandler::IsEnabled() {
+  return ProfileSyncService::IsSyncEnabled();
+}
 
 void SyncOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
@@ -52,11 +57,9 @@ void SyncOptionsHandler::GetLocalizedValues(
 void SyncOptionsHandler::Initialize() {
   ProfileSyncService* service =
       dom_ui_->GetProfile()->GetOriginalProfile()->GetProfileSyncService();
-  if (!service) {
-    // This can happen if the user logs in to Chrome OS as guest.
-    LOG(ERROR) << "Failed to get ProfileSyncService";
-    return;
-  }
+  // If service is unavailable for some good reason, 'IsEnabled()' method
+  // should return false. Otherwise something is broken.
+  DCHECK(service);
 
   DictionaryValue args;
   SyncSetupFlow::GetArgsForChooseDataTypes(service, &args);

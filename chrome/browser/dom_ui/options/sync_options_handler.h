@@ -15,6 +15,7 @@ class SyncOptionsHandler : public OptionsPageUIHandler {
   virtual ~SyncOptionsHandler();
 
   // OptionsUIHandler implementation.
+  virtual bool IsEnabled();
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
   virtual void Initialize();
   virtual void RegisterMessages();
