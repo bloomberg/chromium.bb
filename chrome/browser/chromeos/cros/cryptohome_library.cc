@@ -117,18 +117,21 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
   }
 
   void Dispatch(const chromeos::CryptohomeAsyncCallStatus& event) {
+    if (!callback_map_[event.async_id]) {
+      LOG(ERROR) << "Received signal for unknown async_id " << event.async_id;
+      return;
+    }
     callback_map_[event.async_id]->OnComplete(event.return_status,
                                               event.return_code);
     callback_map_[event.async_id] = NULL;
   }
 
-  bool CacheCallback(int async_id,
-                     Delegate* d,
-                     const char* error) {
+  bool CacheCallback(int async_id, Delegate* d, const char* error) {
     if (async_id == 0) {
       LOG(ERROR) << error;
       return false;
     }
+    LOG(INFO) << "Adding handler for " << async_id;
     callback_map_[async_id] = d;
     return true;
   }
