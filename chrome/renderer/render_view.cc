@@ -143,6 +143,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWindowFeatures.h"
+#include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/dom_operations.h"
@@ -4151,13 +4152,19 @@ void RenderView::SetSuggestResult(const std::string& suggest) {
     Send(new ViewHostMsg_SetSuggestResult(routing_id_, page_id_, suggest));
 }
 
-void RenderView::EvaluateScript(const std::wstring& frame_xpath,
-                                const std::wstring& script) {
-  WebFrame* web_frame = GetChildFrame(frame_xpath);
-  if (!web_frame)
-    return;
-
-  web_frame->executeScript(WebScriptSource(WideToUTF16Hack(script)));
+void RenderView::EvaluateScript(const string16& frame_xpath,
+                                const string16& script,
+                                int id,
+                                bool notify_result) {
+  v8::Handle<v8::Value> result;
+  WebFrame* web_frame = GetChildFrame(UTF16ToWideHack(frame_xpath));
+  if (web_frame)
+    result = web_frame->executeScriptAndReturnValue(WebScriptSource(script));
+  if (notify_result) {
+    bool bool_result = !result.IsEmpty() && result->IsBoolean() ?
+        result->BooleanValue() : false;
+    Send(new ViewHostMsg_ScriptEvalResponse(routing_id_, id, bool_result));
+  }
 }
 
 void RenderView::InsertCSS(const std::wstring& frame_xpath,
@@ -4199,9 +4206,11 @@ void RenderView::OnPepperPluginDestroy(
   }
 }
 
-void RenderView::OnScriptEvalRequest(const std::wstring& frame_xpath,
-                                     const std::wstring& jscript) {
-  EvaluateScript(frame_xpath, jscript);
+void RenderView::OnScriptEvalRequest(const string16& frame_xpath,
+                                     const string16& jscript,
+                                     int id,
+                                     bool notify_result) {
+  EvaluateScript(frame_xpath, jscript, id, notify_result);
 }
 
 void RenderView::OnCSSInsertRequest(const std::wstring& frame_xpath,

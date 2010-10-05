@@ -331,9 +331,7 @@ bool DebuggerRemoteService::DispatchEvaluateJavascript(
   }
   std::string javascript;
   content->GetString(kDataKey, &javascript);
-  render_view_host->Send(
-      new ViewMsg_ScriptEvalRequest(render_view_host->routing_id(),
-                                    L"",
-                                    UTF8ToWide(javascript)));
+  render_view_host->ExecuteJavascriptInWebFrame(std::wstring(),
+                                                UTF8ToWide(javascript));
   return false;
 }

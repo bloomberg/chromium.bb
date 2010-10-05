@@ -252,6 +252,11 @@ class RenderViewHost : public RenderWidgetHost {
   void ExecuteJavascriptInWebFrame(const std::wstring& frame_xpath,
                                    const std::wstring& jscript);
 
+  // Runs some javascript within the context of a frame in the page. The result
+  // is sent back via the notification EXECUTE_JAVASCRIPT_RESULT.
+  int ExecuteJavascriptInWebFrameNotifyResult(const string16& frame_xpath,
+                                              const string16& jscript);
+
   // Insert some css into a frame in the page. |id| is optional, and specifies
   // the element id given when inserting/replacing the style element.
   void InsertCSSInWebFrame(const std::wstring& frame_xpath,
@@ -688,6 +693,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnDetectedPhishingSite(const GURL& phishing_url,
                               double phishing_score,
                               const SkBitmap& thumbnail);
+  void OnScriptEvalResponse(int id, bool result);
 
  private:
   friend class TestRenderViewHost;

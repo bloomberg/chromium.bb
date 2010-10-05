@@ -494,6 +494,14 @@ class NotificationType {
     // view host for the page, there are no details.
     FOCUS_CHANGED_IN_PAGE,
 
+    // Notification posted from ExecuteJavascriptInWebFrameNotifyResult. The
+    // source is the RenderViewHost ExecuteJavascriptInWebFrameNotifyResult was
+    // invoked on. The details are a std::pair<int, Value*> with the int giving
+    // the id returned from ExecuteJavascriptInWebFrameNotifyResult and the
+    // Value the results of the javascript expression. The Value is owned by
+    // RenderViewHost.
+    EXECUTE_JAVASCRIPT_RESULT,
+
     // BackgroundContents ------------------------------------------------------
 
     // A new background contents was opened by script. The source is the parent

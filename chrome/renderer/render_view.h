@@ -232,8 +232,10 @@ class RenderView : public RenderWidget,
   void SetSuggestResult(const std::string& suggest);
 
   // Evaluates a string of JavaScript in a particular frame.
-  void EvaluateScript(const std::wstring& frame_xpath,
-                      const std::wstring& jscript);
+  void EvaluateScript(const string16& frame_xpath,
+                      const string16& jscript,
+                      int id,
+                      bool notify_result);
 
   // Adds the given file chooser request to the file_chooser_completion_ queue
   // (see that var for more) and requests the chooser be displayed if there are
@@ -828,8 +830,10 @@ class RenderView : public RenderWidget,
   void OnReservePageIDRange(int size_of_range);
   void OnResetPageEncodingToDefault();
   void OnRevertTranslation(int page_id);
-  void OnScriptEvalRequest(const std::wstring& frame_xpath,
-                           const std::wstring& jscript);
+  void OnScriptEvalRequest(const string16& frame_xpath,
+                           const string16& jscript,
+                           int id,
+                           bool notify_result);
   void OnSelectAll();
   void OnSetAccessibilityFocus(int acc_obj_id);
   void OnSetActive(bool active);

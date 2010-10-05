@@ -14,6 +14,7 @@
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "chrome/browser/blocked_plugin_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -490,8 +491,20 @@ void RenderViewHost::ReservePageIDRange(int size) {
 }
 
 void RenderViewHost::ExecuteJavascriptInWebFrame(
-    const std::wstring& frame_xpath, const std::wstring& jscript) {
-  Send(new ViewMsg_ScriptEvalRequest(routing_id(), frame_xpath, jscript));
+    const std::wstring& frame_xpath,
+    const std::wstring& jscript) {
+  Send(new ViewMsg_ScriptEvalRequest(routing_id(), WideToUTF16(frame_xpath),
+                                     WideToUTF16(jscript),
+                                     0, false));
+}
+
+int RenderViewHost::ExecuteJavascriptInWebFrameNotifyResult(
+    const string16& frame_xpath,
+    const string16& jscript) {
+  static int next_id = 1;
+  Send(new ViewMsg_ScriptEvalRequest(routing_id(), frame_xpath, jscript,
+                                     next_id, true));
+  return next_id++;
 }
 
 void RenderViewHost::InsertCSSInWebFrame(
@@ -871,6 +884,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSuggestResult, OnSetSuggestResult)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
                         OnDetectedPhishingSite)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
@@ -2101,4 +2115,13 @@ void RenderViewHost::OnDetectedPhishingSite(const GURL& phishing_url,
                                             const SkBitmap& thumbnail) {
   // TODO(noelutz): send an HTTP request to the client-side detection frontends
   // to confirm that the URL is really phishing.
+}
+
+void RenderViewHost::OnScriptEvalResponse(int id, bool result) {
+  scoped_ptr<Value> result_value(Value::CreateBooleanValue(result));
+  std::pair<int, Value*> details(id, result_value.get());
+  NotificationService::current()->Notify(
+      NotificationType::EXECUTE_JAVASCRIPT_RESULT,
+      Source<RenderViewHost>(this),
+      Details<std::pair<int, Value*> >(&details));
 }

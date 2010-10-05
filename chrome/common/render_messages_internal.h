@@ -370,9 +370,16 @@ IPC_BEGIN_MESSAGES(View)
   // jscript_url is the string containing the javascript: url to be executed
   // in the target frame's context. The string should start with "javascript:"
   // and continue with a valid JS text.
-  IPC_MESSAGE_ROUTED2(ViewMsg_ScriptEvalRequest,
-                      std::wstring,  /* frame_xpath */
-                      std::wstring  /* jscript_url */)
+  //
+  // If the fourth parameter is true the result is sent back to the renderer
+  // using the message ViewHostMsg_ScriptEvalResponse.
+  // ViewHostMsg_ScriptEvalResponse is passed the ID parameter so that the
+  // client can uniquely identify the request.
+  IPC_MESSAGE_ROUTED4(ViewMsg_ScriptEvalRequest,
+                      string16,  /* frame_xpath */
+                      string16,  /* jscript_url */
+                      int,  /* ID */
+                      bool  /* If true, result is sent back. */)
 
   // Request for the renderer to evaluate an xpath to a frame and insert css
   // into that frame's document. See ViewMsg_ScriptEvalRequest for details on
@@ -2924,5 +2931,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       GURL /* phishing_url */,
                       double /* phishing_score */,
                       SkBitmap /* thumbnail */)
+
+  // Response from ViewMsg_ScriptEvalRequest. The ID is the parameter supplied
+  // to ViewMsg_ScriptEvalRequest. The result is true if the script evaluated
+  // to the boolean result true, false otherwise.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
+                      int  /* id */,
+                      bool  /* result */)
 
 IPC_END_MESSAGES(ViewHost)
