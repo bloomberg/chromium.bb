@@ -19,10 +19,10 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
+#include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_service.h"
-#include "gfx/codec/png_codec.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -447,23 +447,6 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
   }
 }
 
-// Helper function to convert an icon to a data: URL
-// with the icon encoded as a PNG.
-static std::string ConvertSkBitmapToDataURL(const SkBitmap& icon) {
-  DCHECK(!icon.isNull());
-
-  // Get the icon data.
-  std::vector<unsigned char> icon_data;
-  gfx::PNGCodec::EncodeBGRASkBitmap(icon, false, &icon_data);
-
-  // Base64-encode it (to make it a data URL).
-  std::string icon_data_str(reinterpret_cast<char*>(&icon_data[0]),
-                            icon_data.size());
-  std::string icon_base64_encoded;
-  base::Base64Encode(icon_data_str, &icon_base64_encoded);
-  return std::string("data:image/png;base64," + icon_base64_encoded);
-}
-
 ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
     const SkBitmap& icon, const std::string& name, bool connecting,
     bool connected, int connection_type, bool remembered) {
@@ -491,7 +474,7 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
   network->Append(Value::CreateBooleanValue(connecting));
   // icon data url
   network->Append(Value::CreateStringValue(icon.isNull() ? "" :
-      ConvertSkBitmapToDataURL(icon)));
+      dom_ui_util::GetImageDataUrl(icon)));
   // remembered
   network->Append(Value::CreateBooleanValue(remembered));
   return network;

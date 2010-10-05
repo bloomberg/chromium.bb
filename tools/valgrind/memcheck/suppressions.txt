@@ -2263,18 +2263,6 @@
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
 }
 {
-   bug_50630
-   Memcheck:Value4
-   fun:modp_b64_encode
-   fun:_ZN4base12Base64EncodeERKSsPSs
-   fun:_Z24ConvertSkBitmapToDataURLRK8SkBitmap
-   fun:_ZN22InternetOptionsHandler10GetNetworkERKSsRK8SkBitmapS1_bbib
-   ...
-   fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
-   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
-   fun:_ZN9OptionsUIC1EP11TabContents
-}
-{
    bug_50936
    Memcheck:Leak
    fun:_Znw*
