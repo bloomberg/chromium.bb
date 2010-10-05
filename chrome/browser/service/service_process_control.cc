@@ -50,7 +50,7 @@ class ServiceProcessControl::Launcher
   }
 
   void DoDetectLaunched(Task* task) {
-    if (CheckServiceProcessRunning(kServiceProcessCloudPrint)) {
+    if (CheckServiceProcessRunning()) {
       ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
           NewRunnableMethod(this, &Launcher::Notify, task));
       return;
@@ -75,10 +75,8 @@ class ServiceProcessControl::Launcher
 };
 
 // ServiceProcessControl implementation.
-ServiceProcessControl::ServiceProcessControl(Profile* profile,
-                                             ServiceProcessType type)
+ServiceProcessControl::ServiceProcessControl(Profile* profile)
     : profile_(profile),
-      type_(type),
       message_handler_(NULL) {
 }
 
@@ -116,7 +114,7 @@ void ServiceProcessControl::Launch(Task* task) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // If the service process is already running then connects to it.
-  if (CheckServiceProcessRunning(kServiceProcessCloudPrint)) {
+  if (CheckServiceProcessRunning()) {
     ConnectInternal(task);
     return;
   }

@@ -27,7 +27,6 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/service_process_type.h"
 #include "gfx/font.h"
 #include "grit/locale_settings.h"
 
@@ -41,10 +40,10 @@ static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='done']";
 // is connected or launched. The events are sent back to RemotingSetupFlow
 // when the dialog is still active. RemotingSetupFlow can detach from this
 // helper class when the dialog is closed.
-class RemotingServiceProcessHelper :
-    public base::RefCountedThreadSafe<RemotingServiceProcessHelper> {
+class RemotingServiceProcessHelper
+    : public base::RefCountedThreadSafe<RemotingServiceProcessHelper> {
  public:
-  RemotingServiceProcessHelper(RemotingSetupFlow* flow)
+  explicit RemotingServiceProcessHelper(RemotingSetupFlow* flow)
       : flow_(flow) {
   }
 
@@ -205,9 +204,7 @@ void RemotingSetupFlow::OnIssueAuthTokenSuccess(const std::string& service,
   // If we have already connected to the service process then submit the tokens
   // to it to register the host.
   process_control_ =
-      ServiceProcessControlManager::instance()->GetProcessControl(
-          profile_,
-          kServiceProcessRemoting);
+      ServiceProcessControlManager::instance()->GetProcessControl(profile_);
 
   if (process_control_->is_connected()) {
     // TODO(hclam): Need to figure out what to do when the service process is

@@ -81,7 +81,6 @@
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/result_codes.h"
-#include "chrome/common/service_process_type.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "grit/app_locale_settings.h"
@@ -1426,7 +1425,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   if (parsed_command_line.HasSwitch(switches::kEnableRemoting)) {
     if (user_prefs->GetBoolean(prefs::kRemotingHasSetupCompleted)) {
       ServiceProcessControl* control = ServiceProcessControlManager::instance()
-          ->GetProcessControl(profile, kServiceProcessRemoting);
+          ->GetProcessControl(profile);
        control->Launch(NULL);
     }
   }

@@ -7,7 +7,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
-#include "chrome/common/service_process_type.h"
 
 class ServiceProcessControlBrowserTest
     : public InProcessBrowserTest,
@@ -16,7 +15,7 @@ class ServiceProcessControlBrowserTest
   void LaunchServiceProcessControl() {
     ServiceProcessControl* process =
         ServiceProcessControlManager::instance()->GetProcessControl(
-            browser()->profile(), kServiceProcessCloudPrint);
+            browser()->profile());
     process_ = process;
 
     // Launch the process asynchronously.

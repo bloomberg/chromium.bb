@@ -9,11 +9,16 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/sandbox_policy.h"
+#include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_process.h"
 
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const MainFunctionParams& parameters) {
+  // If there is already a service process running, quit now.
+  if (!TakeServiceProcessSingletonLock())
+    return 0;
+
   MessageLoopForUI main_message_loop;
   if (parameters.command_line_.HasSwitch(switches::kWaitForDebugger)) {
     DebugUtil::WaitForDebugger(60, true);

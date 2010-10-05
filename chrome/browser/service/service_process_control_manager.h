@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "chrome/common/service_process_type.h"
-
 class Profile;
 class ServiceProcessControl;
 
@@ -25,12 +23,10 @@ class ServiceProcessControlManager {
   // Get the ServiceProcess instance corresponding to |profile| and |type|.
   // If such an instance doesn't exist a new instance is created.
   //
-  // There will be at most one ServiceProcess for a |profile| and |type|
-  // pair.
+  // There will be at most one ServiceProcess for a |profile|.
   //
   // This method should only be accessed on the UI thread.
-  ServiceProcessControl* GetProcessControl(Profile* profile,
-                                           ServiceProcessType type);
+  ServiceProcessControl* GetProcessControl(Profile* profile);
 
   // Destroy all ServiceProcess objects created.
   void Shutdown();

@@ -18,7 +18,7 @@ ServiceProcessControlManager::~ServiceProcessControlManager() {
 }
 
 ServiceProcessControl* ServiceProcessControlManager::GetProcessControl(
-    Profile* profile, ServiceProcessType type) {
+    Profile* profile) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // TODO(hclam): We will have different service process for different types of
@@ -30,7 +30,7 @@ ServiceProcessControl* ServiceProcessControlManager::GetProcessControl(
   }
 
   // Couldn't find a ServiceProcess so construct a new one.
-  ServiceProcessControl* process  = new ServiceProcessControl(profile, type);
+  ServiceProcessControl* process  = new ServiceProcessControl(profile);
   process_control_list_.push_back(process);
   return process;
 }

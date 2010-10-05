@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "chrome/common/service_process_type.h"
-
 class Profile;
 
 // Return the IPC channel to connect to the service process.
@@ -19,14 +17,20 @@ std::string GetServiceProcessChannelName();
 // The following methods are used as a mechanism to signal a service process
 // is running properly and all initialized.
 //
+
+// Tries to become the sole service process for the current user data dir.
+// Returns false is another service process is already running.
+bool TakeServiceProcessSingletonLock();
+
 // Signal that the service process is running.
 // This method is called when the service process is running and initialized.
-void SignalServiceProcessRunning(ServiceProcessType type);
+void SignalServiceProcessRunning();
 
 // Signal that the service process is stopped.
-void SignalServiceProcessStopped(ServiceProcessType type);
+void SignalServiceProcessStopped();
 
-// This method checks that if the service process is running.
-bool CheckServiceProcessRunning(ServiceProcessType type);
+// This method checks that if the service process is running (ready to receive
+// IPC commands).
+bool CheckServiceProcessRunning();
 
 #endif  // CHROME_COMMON_SERVICE_PROCESS_UTIL_H_

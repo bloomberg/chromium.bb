@@ -13,7 +13,6 @@
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/common/service_process_type.h"
 #include "ipc/ipc_sync_channel.h"
 
 class Profile;
@@ -43,15 +42,12 @@ class ServiceProcessControl : public IPC::Channel::Sender,
     virtual void OnGoodDay() = 0;
   };
 
-  // Construct a ServiceProcessControl with |profile| and a specific |type|.
-  ServiceProcessControl(Profile* profile, ServiceProcessType type);
+  // Construct a ServiceProcessControl with |profile|..
+  explicit ServiceProcessControl(Profile* profile);
   virtual ~ServiceProcessControl();
 
   // Return the user profile associated with this service process.
   Profile* profile() const { return profile_; }
-
-  // Return the type of this object.
-  ServiceProcessType type() const { return type_; }
 
   // Return true if this object is connected to the service.
   bool is_connected() const { return channel_.get() != NULL; }
@@ -114,7 +110,6 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   void ConnectInternal(Task* task);
 
   Profile* profile_;
-  ServiceProcessType type_;
 
   // IPC channel to the service process.
   scoped_ptr<IPC::SyncChannel> channel_;

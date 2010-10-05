@@ -32,16 +32,15 @@ std::string GetServiceProcessChannelName() {
 }
 
 // Gets the name of the lock file for service process.
-static FilePath GetServiceProcessLockFilePath(ServiceProcessType type) {
+static FilePath GetServiceProcessLockFilePath() {
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   return user_data_dir.Append(FILE_PATH_LITERAL("Service Process Lock"));
 }
 
 #if defined(OS_WIN)
-static std::wstring GetServiceProcessEventName(
-    ServiceProcessType type) {
-  FilePath path = GetServiceProcessLockFilePath(type);
+static std::wstring GetServiceProcessEventName() {
+  FilePath path = GetServiceProcessLockFilePath();
   std::wstring event_name = path.value();
   std::replace(event_name.begin(), event_name.end(), '\\', '!');
   return event_name;
@@ -49,18 +48,33 @@ static std::wstring GetServiceProcessEventName(
 
 // An event that is signaled when a service process is running. This
 // variable is used only in the service process.
-static ScopedHandle service_process_running_event;
+static HANDLE g_service_process_running_event;
 #endif
 
-void SignalServiceProcessRunning(ServiceProcessType type) {
+bool TakeServiceProcessSingletonLock() {
 #if defined(OS_WIN)
-  std::wstring event_name = GetServiceProcessEventName(type);
+  std::wstring event_name = GetServiceProcessEventName();
+  DCHECK(g_service_process_running_event == NULL);
+  ScopedHandle service_process_running_event;
   service_process_running_event.Set(
-      CreateEvent(NULL, true, true, event_name.c_str()));
+      CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));
+  DWORD error = GetLastError();
+  if ((error == ERROR_ALREADY_EXISTS) || (error == ERROR_ACCESS_DENIED))
+    return false;
   DCHECK(service_process_running_event.IsValid());
+  g_service_process_running_event = service_process_running_event.Take();
+#endif
+  // TODO(sanjeevr): Implement singleton mechanism for other platforms.
+  return true;
+}
+
+void SignalServiceProcessRunning() {
+#if defined(OS_WIN)
+  DCHECK(g_service_process_running_event != NULL);
+  SetEvent(g_service_process_running_event);
 #else
   // TODO(hclam): Implement better mechanism for these platform.
-  const FilePath path = GetServiceProcessLockFilePath(type);
+  const FilePath path = GetServiceProcessLockFilePath();
   FILE* file = file_util::OpenFile(path, "wb+");
   if (!file)
     return;
@@ -69,20 +83,21 @@ void SignalServiceProcessRunning(ServiceProcessType type) {
 #endif
 }
 
-void SignalServiceProcessStopped(ServiceProcessType type) {
+void SignalServiceProcessStopped() {
 #if defined(OS_WIN)
   // Close the handle to the event.
-  service_process_running_event.Close();
+  CloseHandle(g_service_process_running_event);
+  g_service_process_running_event = NULL;
 #else
   // TODO(hclam): Implement better mechanism for these platform.
-  const FilePath path = GetServiceProcessLockFilePath(type);
+  const FilePath path = GetServiceProcessLockFilePath();
   file_util::Delete(path, false);
 #endif
 }
 
-bool CheckServiceProcessRunning(ServiceProcessType type) {
+bool CheckServiceProcessRunning() {
 #if defined(OS_WIN)
-  std::wstring event_name = GetServiceProcessEventName(type);
+  std::wstring event_name = GetServiceProcessEventName();
   ScopedHandle event(
       OpenEvent(SYNCHRONIZE | READ_CONTROL, false, event_name.c_str()));
   if (!event.IsValid())
@@ -91,7 +106,7 @@ bool CheckServiceProcessRunning(ServiceProcessType type) {
   return WaitForSingleObject(event, 0) == WAIT_OBJECT_0;
 #else
   // TODO(hclam): Implement better mechanism for these platform.
-  const FilePath path = GetServiceProcessLockFilePath(type);
+  const FilePath path = GetServiceProcessLockFilePath();
   return file_util::PathExists(path);
 #endif
 }

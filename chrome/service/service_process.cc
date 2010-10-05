@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/service_process_type.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_ipc_server.h"
@@ -113,7 +112,7 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
 
   // After the IPC server has started we signal that the service process is
   // running.
-  SignalServiceProcessRunning(kServiceProcessCloudPrint);
+  SignalServiceProcessRunning();
 
   // See if we need to stay running.
   ScheduleShutdownCheck();
@@ -142,7 +141,7 @@ bool ServiceProcess::Teardown() {
   network_change_notifier_.reset();
 
   // Delete the service process lock file when it shuts down.
-  SignalServiceProcessStopped(kServiceProcessCloudPrint);
+  SignalServiceProcessStopped();
   return true;
 }
 

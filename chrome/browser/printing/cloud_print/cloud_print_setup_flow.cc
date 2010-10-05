@@ -34,7 +34,6 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
-#include "chrome/common/service_process_type.h"
 #include "gfx/font.h"
 #include "grit/locale_settings.h"
 
@@ -93,9 +92,7 @@ class CloudPrintServiceDisableTask
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     process_control_ =
-        ServiceProcessControlManager::instance()->GetProcessControl(
-            profile_,
-            kServiceProcessCloudPrint);
+        ServiceProcessControlManager::instance()->GetProcessControl(profile_);
 
     if (process_control_) {
       // If the process isn't connected, launch it now.  This will run
@@ -145,9 +142,7 @@ class CloudPrintServiceRefreshTask
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     process_control_ =
-        ServiceProcessControlManager::instance()->GetProcessControl(
-            profile_,
-            kServiceProcessCloudPrint);
+        ServiceProcessControlManager::instance()->GetProcessControl(profile_);
 
     if (process_control_) {
       // If the process isn't connected, launch it now.  This will run
@@ -351,9 +346,7 @@ void CloudPrintSetupFlow::OnClientLoginSuccess(
   // If we have already connected to the service process then submit the tokens
   // to it to register the host.
   process_control_ =
-      ServiceProcessControlManager::instance()->GetProcessControl(
-          profile_,
-          kServiceProcessCloudPrint);
+      ServiceProcessControlManager::instance()->GetProcessControl(profile_);
 
 #if defined(OS_WIN)
   // TODO(hclam): This call only works on Windows. I need to make it
