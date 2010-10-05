@@ -5,6 +5,3 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-BUG_HCLAM : svg/clip-path/clip-path-text-and-stroke.svg = CRASH PASS
-BUG_HCLAM WIN : svg/text/text-intro-05-t.svg = IMAGE+TEXT CRASH TEXT
-BUG_HCLAM LINUX : svg/text/text-intro-05-t.svg = IMAGE PASS
