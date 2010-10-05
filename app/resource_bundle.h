@@ -21,6 +21,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "gfx/native_widget_types.h"
 
 namespace base {
 class DataPack;
@@ -114,6 +115,12 @@ class ResourceBundle {
 
   // Returns the font for the specified style.
   const gfx::Font& GetFont(FontStyle style);
+
+  // Returns the gfx::NativeImage, the native platform type, named resource.
+  // Internally, this makes use of GetNSImageNamed(), GetPixbufNamed(), or
+  // GetBitmapNamed() depending on the platform (see gfx/native_widget_types.h).
+  // NOTE: On Mac the returned resource is autoreleased.
+  gfx::NativeImage GetNativeImageNamed(int resource_id);
 
 #if defined(OS_WIN)
   // Loads and returns an icon from the app module.

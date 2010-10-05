@@ -264,7 +264,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
 PageInfoModel::~PageInfoModel() {
 #if defined(OS_MACOSX)
   // Release the NSImages.
-  for (std::vector<ImageType>::iterator it = icons_.begin();
+  for (std::vector<gfx::NativeImage>::iterator it = icons_.begin();
        it != icons_.end(); ++it) {
     mac_util::NSObjectRelease(*it);
   }
@@ -280,7 +280,7 @@ PageInfoModel::SectionInfo PageInfoModel::GetSectionInfo(int index) {
   return sections_[index];
 }
 
-PageInfoModel::ImageType PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
+gfx::NativeImage PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
   if (icon_id == ICON_NONE)
     return NULL;
   // TODO(rsesek): Remove once the window is replaced with the bubble.
@@ -359,17 +359,13 @@ void PageInfoModel::Init() {
   icons_.push_back(GetBitmapNamed(IDR_PAGEINFO_INFO));
 }
 
-PageInfoModel::ImageType PageInfoModel::GetBitmapNamed(int resource_id) {
+gfx::NativeImage PageInfoModel::GetBitmapNamed(int resource_id) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::NativeImage image = rb.GetNativeImageNamed(resource_id);
 #if defined(OS_MACOSX)
   // Unlike other platforms, the Mac ResourceBundle does not keep a shared image
   // cache. These are released in the dtor.
-  ImageType image = rb.GetNSImageNamed(resource_id);
   mac_util::NSObjectRetain(image);
-  return image;
-#elif defined(USE_X11) && !defined(TOOLKIT_VIEWS)
-  return rb.GetPixbufNamed(resource_id);
-#else
-  return rb.GetBitmapNamed(resource_id);
 #endif
+  return image;
 }

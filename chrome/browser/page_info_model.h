@@ -8,24 +8,15 @@
 
 #include <vector>
 
+#include "gfx/native_widget_types.h"
 #include "base/string16.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "googleurl/src/gurl.h"
 
-#ifdef __OBJC__
-@class NSImage;
-#else
-class NSImage;
-#endif  // __OBJC__
 class PrefService;
 class Profile;
-class SkBitmap;
-
-#if defined(USE_X11) && !defined(TOOLKIT_VIEWS)
-typedef struct _GdkPixbuf GdkPixbuf;
-#endif
 
 // The model that provides the information that should be displayed in the page
 // info dialog/bubble.
@@ -43,15 +34,6 @@ class PageInfoModel {
     SECTION_INFO_CONNECTION,
     SECTION_INFO_FIRST_VISIT,
   };
-
-  // TODO(rsesek): Extract this information out to gfx::NativeImage.
-#if defined(OS_MACOSX)
-  typedef NSImage* ImageType;
-#elif defined(USE_X11) && !defined(TOOLKIT_VIEWS)
-  typedef GdkPixbuf* ImageType;
-#else
-  typedef const SkBitmap* ImageType;
-#endif
 
   enum SectionStateIcon {
     // No icon.
@@ -109,7 +91,7 @@ class PageInfoModel {
   SectionInfo GetSectionInfo(int index);
 
   // Returns the native image type for an icon with the given id.
-  ImageType GetIconImage(SectionStateIcon icon_id);
+  gfx::NativeImage GetIconImage(SectionStateIcon icon_id);
 
   // Callback from history service with number of visits to url.
   void OnGotVisitCountToHost(HistoryService::Handle handle,
@@ -126,17 +108,16 @@ class PageInfoModel {
   // Shared initialization for default and testing constructor.
   void Init();
 
-  // Gets the native image resource of the given id from the ResourceBundle.
-  // Mac only: image is owned by caller. On other platforms, the image is owned
-  // by the shared ResourceBundle.
-  ImageType GetBitmapNamed(int resource_id);
+  // Wrapper for ResourceBundle::GetNativeImage() so that Mac can retain its
+  // icons.
+  gfx::NativeImage GetBitmapNamed(int resource_id);
 
   PageInfoModelObserver* observer_;
 
   std::vector<SectionInfo> sections_;
 
   // All possible icons that go next to the text descriptions to indicate state.
-  std::vector<ImageType> icons_;
+  std::vector<gfx::NativeImage> icons_;
 
   // Used to request number of visits.
   CancelableRequestConsumer request_consumer_;
