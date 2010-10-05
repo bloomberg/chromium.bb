@@ -2788,3 +2788,18 @@
    fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
    fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
 }
+{
+   bug_58074
+   Memcheck:Value4
+   fun:modp_b64_encode
+   fun:_ZN4base12Base64EncodeERKSsPSs
+   fun:_ZN11dom_ui_util15GetImageDataUrlERK8SkBitmap
+   fun:_ZN22InternetOptionsHandler10GetNetworkERKSsRK8SkBitmapS1_bbib
+   fun:_ZN22InternetOptionsHandler*
+   fun:_ZN22InternetOptionsHandler18GetLocalizedValuesEP15DictionaryValue
+   fun:_ZN9OptionsUI23AddOptionsPageUIHandlerEP15DictionaryValueP20OptionsPageUIHandler
+   fun:_ZN9OptionsUIC1EP11TabContents
+   fun:_Z8NewDOMUII9OptionsUIEP5DOMUIP11TabContentsRK4GURL
+   fun:_ZN12DOMUIFactory17CreateDOMUIForURLEP11TabContentsRK4GURL
+   fun:_ZN11TabContents27CreateDOMUIForRenderManagerERK4GURL
+}
