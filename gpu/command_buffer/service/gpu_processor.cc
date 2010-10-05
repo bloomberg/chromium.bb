@@ -62,6 +62,7 @@ bool GPUProcessor::InitializeCommon(gfx::GLContext* context,
     LOG(ERROR) << "GPUProcessor::InitializeCommon failed because group "
                << "failed to initialize.";
     Destroy();
+    return false;
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
