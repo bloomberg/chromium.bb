@@ -161,12 +161,10 @@ void BackingStoreX::PaintToBackingStore(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
-    bool* painted_synchronously,
-    bool* done_copying_bitmap) {
+    bool* painted_synchronously) {
   // Our paints are always synchronous and the caller can free the TransportDIB
   // when we're done, even on error.
   *painted_synchronously = true;
-  *done_copying_bitmap = true;
 
   if (!display_)
     return;

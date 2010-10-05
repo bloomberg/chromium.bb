@@ -4,8 +4,6 @@
 
 #include "chrome/renderer/render_widget.h"
 
-#include <utility>
-
 #include "app/surface/transport_dib.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -63,6 +61,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
       opener_id_(MSG_ROUTING_NONE),
       render_thread_(render_thread),
       host_window_(0),
+      current_paint_buf_(NULL),
       next_paint_flags_(0),
       update_reply_pending_(false),
       did_show_(false),
@@ -83,9 +82,9 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread,
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_) << "Leaking our WebWidget!";
-  for (TransportDIBMap::iterator it = current_paint_bufs_.begin();
-       it != current_paint_bufs_.end(); ++it) {
-    RenderProcess::current()->ReleaseTransportDIB(it->second);
+  if (current_paint_buf_) {
+    RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
+    current_paint_buf_ = NULL;
   }
   RenderProcess::current()->ReleaseProcess();
 }
@@ -170,7 +169,6 @@ IPC_DEFINE_MESSAGE_MAP(RenderWidget)
   IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
   IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
   IPC_MESSAGE_HANDLER(ViewMsg_WasRestored, OnWasRestored)
-  IPC_MESSAGE_HANDLER(ViewMsg_DoneUsingBitmap, OnDoneUsingBitmap)
   IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
   IPC_MESSAGE_HANDLER(ViewMsg_CreateVideo_ACK, OnCreateVideoAck)
   IPC_MESSAGE_HANDLER(ViewMsg_UpdateVideo_ACK, OnUpdateVideoAck)
@@ -301,25 +299,16 @@ void RenderWidget::OnRequestMoveAck() {
   pending_window_rect_count_--;
 }
 
-void RenderWidget::OnDoneUsingBitmap(TransportDIB::Id id) {
-  // If we sent an UpdateRect message with a zero-sized bitmap, then we should
-  // get an empty bitmap in response.
-  // TODO(derat): Don't send the "done using bitmap" message at all in this
-  // case.
-  if (id == TransportDIB::Id())
-    return;
-
-  TransportDIBMap::iterator it = current_paint_bufs_.find(id);
-  if (it != current_paint_bufs_.end()) {
-    RenderProcess::current()->ReleaseTransportDIB(it->second);
-    current_paint_bufs_.erase(it);
-    return;
-  }
-}
-
 void RenderWidget::OnUpdateRectAck() {
   DCHECK(update_reply_pending());
   update_reply_pending_ = false;
+
+  // If we sent an UpdateRect message with a zero-sized bitmap, then we should
+  // have no current paint buffer.
+  if (current_paint_buf_) {
+    RenderProcess::current()->ReleaseTransportDIB(current_paint_buf_);
+    current_paint_buf_ = NULL;
+  }
 
   // Notify subclasses.
   DidFlushPaint();
@@ -532,12 +521,12 @@ void RenderWidget::DoDeferredUpdate() {
   } else if (!is_gpu_rendering_active_) {
     // Compute a buffer for painting and cache it.
     scoped_ptr<skia::PlatformCanvas> canvas(
-        RenderProcess::current()->GetDrawingCanvas(&dib, bounds));
+        RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
+                                                   bounds));
     if (!canvas.get()) {
       NOTREACHED();
       return;
     }
-    current_paint_bufs_.insert(std::make_pair(dib->id(), dib));
 
     // We may get back a smaller canvas than we asked for.
     // TODO(darin): This seems like it could cause painting problems!
@@ -563,7 +552,7 @@ void RenderWidget::DoDeferredUpdate() {
     for (size_t i = 0; i < copy_rects.size(); ++i)
       PaintRect(copy_rects[i], bounds.origin(), canvas.get());
 
-    dib_id = dib->id();
+    dib_id = current_paint_buf_->id();
   } else {  // Accelerated compositing path
     // Begin painting.
     bool finish = next_paint_is_resize_ack();

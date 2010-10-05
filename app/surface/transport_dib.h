@@ -63,10 +63,6 @@ class TransportDIB {
       return other.sequence_num < sequence_num;
     }
 
-    bool operator==(const HandleAndSequenceNum& other) const {
-      return !(*this < other) && !(other < *this);
-    }
-
     HANDLE handle;
     uint32 sequence_num;
   };
