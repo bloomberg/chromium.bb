@@ -108,9 +108,6 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   std::vector<webkit_glue::PasswordForm*> password_list_;
   std::vector<webkit_glue::PasswordForm*> password_exception_list_;
 
-  // A weak reference to profile.
-  Profile* profile_;
-
   // User's pref
   std::string languages_;
 

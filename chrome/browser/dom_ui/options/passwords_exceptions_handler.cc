@@ -56,7 +56,7 @@ void PasswordsExceptionsHandler::GetLocalizedValues(
 }
 
 void PasswordsExceptionsHandler::Initialize() {
-  profile_ = dom_ui_->GetProfile();
+  // We should not cache dom_ui_->GetProfile(). See crosbug.com/6304.
 }
 
 void PasswordsExceptionsHandler::RegisterMessages() {
@@ -77,11 +77,12 @@ void PasswordsExceptionsHandler::RegisterMessages() {
 }
 
 PasswordStore* PasswordsExceptionsHandler::GetPasswordStore() {
-  return profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+  return dom_ui_->GetProfile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
 void PasswordsExceptionsHandler::LoadLists(const ListValue* args) {
-  languages_ = profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  languages_ =
+      dom_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   populater_.Populate();
   exception_populater_.Populate();
 }
