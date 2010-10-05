@@ -3903,6 +3903,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LABS_BACKGROUND_WEBAPPS_DESCRIPTION" desc="Description of the 'Background WebApps' lab.">
         Allows installed web apps to run in the background at system startup and continue running after all windows are closed.
       </message>
+      <message name="IDS_LABS_CLOUD_PRINT_PROXY_NAME" desc="Title of the Cloud Print Proxy lab">
+        Cloud Print Proxy
+      </message>
+      <message name="IDS_LABS_CLOUD_PRINT_PROXY_DESCRIPTION" desc="Description of the Cloud Print Proxy lab">
+        Enables a background service that connects the Google Cloud Print service to any printers installed on this computer. Once this lab is enabled, you can turn Cloud Print on by logging in with your Google account in the Options/Preferences in the Under the Hood section.
+      </message>
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">

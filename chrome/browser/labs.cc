@@ -123,6 +123,13 @@ const Experiment kExperiments[] = {
     IDS_LABS_BACKGROUND_WEBAPPS_DESCRIPTION,
     kOsAll,
     switches::kEnableBackgroundMode
+  },
+  {
+    "cloud-print-proxy", // Do not change; see above.
+    IDS_LABS_CLOUD_PRINT_PROXY_NAME,
+    IDS_LABS_CLOUD_PRINT_PROXY_DESCRIPTION,
+    kOsWin,
+    switches::kEnableCloudPrintProxy
   }
 };
 
