@@ -66,6 +66,7 @@ google_breakpad::ExceptionHandler* g_breakpad = NULL;
 // data updated as the state of the browser changes.
 static std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
 static size_t g_url_chunks_offset;
+static size_t g_num_of_extensions_offset;
 static size_t g_extension_ids_offset;
 static size_t g_client_id_offset;
 static size_t g_gpu_info_offset;
@@ -119,6 +120,10 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
+
+  g_num_of_extensions_offset = g_custom_entries->size();
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"num-extensions", L"N/A"));
 
   g_extension_ids_offset = g_custom_entries->size();
   for (int i = 0; i < kMaxReportedActiveExtensions; ++i) {
@@ -310,6 +315,20 @@ extern "C" void __declspec(dllexport) __cdecl SetClientId(
            client_id);
 }
 
+static void SetIntegerValue(size_t offset, int value) {
+  if (!g_custom_entries)
+    return;
+
+  wcscpy_s((*g_custom_entries)[offset].value,
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           StringPrintf(L"%d", value).c_str());
+}
+
+extern "C" void __declspec(dllexport) __cdecl SetNumberOfExtensions(
+    int number_of_extensions) {
+  SetIntegerValue(g_num_of_extensions_offset, number_of_extensions);
+}
+
 extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
     int index, const wchar_t* id) {
   DCHECK(id);
@@ -349,12 +368,7 @@ extern "C" void __declspec(dllexport) __cdecl SetGpuInfo(
 
 extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
     int number_of_views) {
-  if (!g_custom_entries)
-    return;
-
-  wcscpy_s((*g_custom_entries)[g_num_of_views_offset].value,
-           google_breakpad::CustomInfoEntry::kValueMaxLength,
-           StringPrintf(L"%d", number_of_views).c_str());
+  SetIntegerValue(g_num_of_views_offset, number_of_views);
 }
 
 }  // namespace

@@ -22,6 +22,10 @@ typedef void (__cdecl *MainSetActiveURL)(const wchar_t*);
 typedef void (__cdecl *MainSetClientId)(const wchar_t*);
 
 // exported in breakpad_win.cc:
+//   void __declspec(dllexport) __cdecl SetNumberOfExtensions.
+typedef void (__cdecl *MainSetNumberOfExtensions)(int);
+
+// exported in breakpad_win.cc:
 // void __declspec(dllexport) __cdecl SetExtensionID.
 typedef void (__cdecl *MainSetExtensionID)(size_t, const wchar_t*);
 
@@ -86,6 +90,17 @@ std::string GetClientId() {
 }
 
 void SetActiveExtensions(const std::set<std::string>& extension_ids) {
+  static MainSetNumberOfExtensions set_number_of_extensions = NULL;
+  if (!set_number_of_extensions) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (!exe_module)
+      return;
+    set_number_of_extensions = reinterpret_cast<MainSetNumberOfExtensions>(
+        GetProcAddress(exe_module, "SetNumberOfExtensions"));
+    if (!set_number_of_extensions)
+      return;
+  }
+
   static MainSetExtensionID set_extension_id = NULL;
   if (!set_extension_id) {
     HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
@@ -96,6 +111,8 @@ void SetActiveExtensions(const std::set<std::string>& extension_ids) {
     if (!set_extension_id)
       return;
   }
+
+  (set_number_of_extensions)(static_cast<int>(extension_ids.size()));
 
   std::set<std::string>::const_iterator iter = extension_ids.begin();
   for (size_t i = 0; i < kMaxReportedActiveExtensions; ++i) {
