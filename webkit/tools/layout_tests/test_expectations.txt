@@ -6,4 +6,5 @@
 // until the changes can be landed upstream.
 
 BUG_HCLAM : svg/clip-path/clip-path-text-and-stroke.svg = CRASH PASS
-BUG_HCLAM WIN : svg/text/text-intro-05-t.svg = IMAGE+TEXT
+BUG_HCLAM WIN : svg/text/text-intro-05-t.svg = IMAGE+TEXT CRASH
+BUG_HCLAM LINUX : svg/text/text-intro-05-t.svg = IMAGE PASS
