@@ -352,16 +352,16 @@ void WebResourceService::UnpackLogoSignal(const DictionaryValue& parsed_json) {
     }
   }
 
-  // If logo start or end times have changed, trigger a theme change so that
-  // the logo on the NTP is updated. This check is outside the reading of the
-  // web resource data, because the absence of dates counts as a triggering
-  // change if there were dates before.
+  // If logo start or end times have changed, trigger a new web resource
+  // notification, so that the logo on the NTP is updated. This check is
+  // outside the reading of the web resource data, because the absence of
+  // dates counts as a triggering change if there were dates before.
   if (!(old_logo_start == logo_start) ||
       !(old_logo_end == logo_end)) {
     prefs_->SetReal(prefs::kNTPCustomLogoStart, logo_start);
     prefs_->SetReal(prefs::kNTPCustomLogoEnd, logo_end);
     NotificationService* service = NotificationService::current();
-    service->Notify(NotificationType::BROWSER_THEME_CHANGED,
+    service->Notify(NotificationType::WEB_RESOURCE_AVAILABLE,
                     Source<WebResourceService>(this),
                     NotificationService::NoDetails());
   }

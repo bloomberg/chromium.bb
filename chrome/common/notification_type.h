@@ -706,6 +706,10 @@ class NotificationType {
     // should be the UI thread.
     DEFAULT_REQUEST_CONTEXT_AVAILABLE,
 
+    // A new web resource has been made available. Source is the
+    // WebResourceService, and the details are NoDetails.
+    WEB_RESOURCE_AVAILABLE,
+
     // Autocomplete ------------------------------------------------------------
 
     // Sent by the autocomplete controller at least once per query, each time

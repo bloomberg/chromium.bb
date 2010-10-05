@@ -131,6 +131,8 @@ std::string GetNewTabBackgroundTilingCSS(const ThemeProvider* theme_provider) {
 NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::WEB_RESOURCE_AVAILABLE,
+                 NotificationService::AllSources());
 
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -167,7 +169,8 @@ RefCountedBytes* NTPResourceCache::GetNewTabCSS(bool is_off_the_record) {
 void NTPResourceCache::Observe(NotificationType type,
     const NotificationSource& source, const NotificationDetails& details) {
   // Invalidate the cache.
-  if (NotificationType::BROWSER_THEME_CHANGED == type) {
+  if (NotificationType::BROWSER_THEME_CHANGED == type ||
+      NotificationType::WEB_RESOURCE_AVAILABLE == type) {
     new_tab_incognito_html_ = NULL;
     new_tab_html_ = NULL;
     new_tab_incognito_css_ = NULL;
