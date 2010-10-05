@@ -695,7 +695,7 @@
    fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
    fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
    fun:_ZNK7Browser23CreateTabContentsForURLERK4GURLS2_P7ProfilejbP12SiteInstance
-   fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jiiP12SiteInstanceRKSsPPS_
+   fun:_ZN7Browser13AddTabWithURL*
 }
 
 #-----------------------------------------------------------------------
