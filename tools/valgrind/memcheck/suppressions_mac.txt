@@ -584,6 +584,15 @@
    fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
 }
 {
+   bug_49250_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting12TraceContext3GetEv
+   fun:_ZN8remoting12TraceContext6tracerEv
+   fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
+   fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
+}
+{
    bug_50286
    Memcheck:Leak
    fun:_Znw*
