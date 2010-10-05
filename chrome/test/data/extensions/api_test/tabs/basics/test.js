@@ -440,6 +440,18 @@ chrome.test.runTests([
     chrome.windows.create({"url": pageUrl("a")}, pass(function(tab) {}));
   },
 
+  function windowSetFocused() {
+    chrome.windows.getCurrent(function(oldWin) {
+      chrome.windows.create({}, function(newWin) {
+        assertTrue(newWin.focused);
+        chrome.windows.update(oldWin.id, {focused:true});
+        chrome.windows.get(oldWin.id, pass(function(oldWin2) {
+          assertTrue(oldWin2.focused);
+        }));
+      });
+    });
+  },
+
   /* TODO: Enable this test when crbug.com/28055 is fixed. This bug causes a
      newly created window not to be set as the current window, if
      Chrome was not the foreground window when the create call was made.

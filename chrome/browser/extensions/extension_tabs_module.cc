@@ -446,8 +446,18 @@ bool UpdateWindowFunction::RunImpl() {
         &bounds_val));
     bounds.set_height(bounds_val);
   }
-
   browser->window()->SetBounds(bounds);
+
+  bool selected_val = false;
+  if (update_props->HasKey(keys::kFocusedKey)) {
+    EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
+        keys::kFocusedKey, &selected_val));
+    if (selected_val)
+      browser->window()->Activate();
+    else
+      browser->window()->Deactivate();
+  }
+
   result_.reset(ExtensionTabUtil::CreateWindowValue(browser, false));
 
   return true;
