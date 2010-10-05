@@ -73,7 +73,8 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
-  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials);
+  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials,
+                      bool request_pending);
   void CheckOffline(const LoginFailure& error);
   void CheckLocalaccount(const LoginFailure& error);
   void OnLoginFailure(const LoginFailure& error);

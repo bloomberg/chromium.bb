@@ -441,7 +441,7 @@ class InputEventObserver : public MessageLoopForUI::Observer {
       activated_ = true;
       std::string not_used_string;
       GaiaAuthConsumer::ClientLoginResult not_used;
-      screen_locker_->OnLoginSuccess(not_used_string, not_used);
+      screen_locker_->OnLoginSuccess(not_used_string, not_used, false);
     }
   }
 
@@ -606,8 +606,10 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   MessageLoopForUI::current()->AddObserver(mouse_event_relay_.get());
 }
 
-void ScreenLocker::OnLoginSuccess(const std::string& username,
-    const GaiaAuthConsumer::ClientLoginResult& unused) {
+void ScreenLocker::OnLoginSuccess(
+    const std::string& username,
+    const GaiaAuthConsumer::ClientLoginResult& unused,
+    bool pending_requests) {
   LOG(INFO) << "OnLoginSuccess: Sending Unlock request.";
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();

@@ -93,8 +93,10 @@ void LoginScreen::OnLoginFailure(const LoginFailure& failure) {
   view()->ClearAndEnablePassword();
 }
 
-void LoginScreen::OnLoginSuccess(const std::string& username,
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+void LoginScreen::OnLoginSuccess(
+    const std::string& username,
+    const GaiaAuthConsumer::ClientLoginResult& credentials,
+    bool pending_requests) {
 
   delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   AppendStartUrlToCmdline();

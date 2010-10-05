@@ -456,8 +456,10 @@ void ExistingUserController::ShowError(int error_id,
       this);
 }
 
-void ExistingUserController::OnLoginSuccess(const std::string& username,
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+void ExistingUserController::OnLoginSuccess(
+    const std::string& username,
+    const GaiaAuthConsumer::ClientLoginResult& credentials,
+    bool pending_requests) {
 
   AppendStartUrlToCmdline();
   if (selected_view_index_ + 1 == controllers_.size() &&

@@ -44,8 +44,10 @@ class LoginScreen : public ViewScreen<NewUserView>,
 
   // Overridden from LoginStatusConsumer.
   virtual void OnLoginFailure(const LoginFailure& error);
-  virtual void OnLoginSuccess(const std::string& username,
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+  virtual void OnLoginSuccess(
+      const std::string& username,
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool pending_requests);
   virtual void OnOffTheRecordLoginSuccess();
 
   // Overridden from views::InfoBubbleDelegate.

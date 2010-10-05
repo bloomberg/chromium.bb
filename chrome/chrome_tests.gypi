@@ -1043,6 +1043,7 @@
         'browser/chromeos/login/google_authenticator_unittest.cc',
         'browser/chromeos/login/mock_auth_attempt_state_resolver.h',
         'browser/chromeos/login/mock_auth_response_handler.cc',
+        'browser/chromeos/login/mock_login_status_consumer.h',
         'browser/chromeos/login/mock_url_fetchers.h',
         'browser/chromeos/login/mock_url_fetchers.cc',
         'browser/chromeos/login/online_attempt_unittest.cc',

@@ -52,7 +52,8 @@ class ScreenLocker : public LoginStatusConsumer,
   // LoginStatusConsumer implements:
   virtual void OnLoginFailure(const chromeos::LoginFailure& error);
   virtual void OnLoginSuccess(const std::string& username,
-      const GaiaAuthConsumer::ClientLoginResult& result);
+                              const GaiaAuthConsumer::ClientLoginResult& result,
+                              bool pending_requests);
 
   // Overridden from views::InfoBubbleDelegate.
   virtual void InfoBubbleClosing(InfoBubble* info_bubble,

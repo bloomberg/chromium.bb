@@ -150,7 +150,7 @@ bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &GoogleAuthenticator::OnLoginSuccess,
-                          GaiaAuthConsumer::ClientLoginResult()));
+                          GaiaAuthConsumer::ClientLoginResult(), false));
   } else {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
@@ -187,7 +187,7 @@ void GoogleAuthenticator::OnClientLoginSuccess(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &GoogleAuthenticator::OnLoginSuccess,
-                        credentials));
+                        credentials, false));
 }
 
 void GoogleAuthenticator::OnClientLoginFailure(
@@ -237,8 +237,8 @@ void GoogleAuthenticator::OnClientLoginFailure(
 }
 
 void GoogleAuthenticator::OnLoginSuccess(
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
-
+    const GaiaAuthConsumer::ClientLoginResult& credentials,
+    bool request_pending) {
   // Send notification of success
   AuthenticationNotificationDetails details(true);
   NotificationService::current()->Notify(
@@ -251,7 +251,7 @@ void GoogleAuthenticator::OnLoginSuccess(
       (CrosLibrary::Get()->GetCryptohomeLibrary()->Mount(username_.c_str(),
                                                          ascii_hash_.c_str(),
                                                          &mount_error))) {
-    consumer_->OnLoginSuccess(username_, credentials);
+    consumer_->OnLoginSuccess(username_, credentials, request_pending);
   } else if (!unlock_ &&
              mount_error == chromeos::kCryptohomeMountErrorKeyFailure) {
     consumer_->OnPasswordChangeDetected(credentials);
@@ -267,7 +267,7 @@ void GoogleAuthenticator::CheckOffline(const LoginFailure& error) {
           ascii_hash_.c_str())) {
     // The fetch didn't succeed, but offline login did.
     LOG(INFO) << "Offline login successful!";
-    OnLoginSuccess(GaiaAuthConsumer::ClientLoginResult());
+    OnLoginSuccess(GaiaAuthConsumer::ClientLoginResult(), false);
   } else {
     // We couldn't hit the network, and offline login failed.
     GoogleAuthenticator::CheckLocalaccount(error);
@@ -295,7 +295,8 @@ void GoogleAuthenticator::CheckLocalaccount(const LoginFailure& error) {
         &mount_error)) {
       LOG(WARNING) << "Logging in with localaccount: " << localaccount_;
       consumer_->OnLoginSuccess(username_,
-                                GaiaAuthConsumer::ClientLoginResult());
+                                GaiaAuthConsumer::ClientLoginResult(),
+                                false);
     } else {
       LOG(ERROR) << "Could not mount tmpfs for local account: " << mount_error;
       OnLoginFailure(
@@ -324,7 +325,7 @@ void GoogleAuthenticator::RecoverEncryptedData(const std::string& old_password,
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->MigrateKey(username_,
                                                              old_hash,
                                                              ascii_hash_)) {
-    OnLoginSuccess(credentials);
+    OnLoginSuccess(credentials, false);
     return;
   }
   // User seems to have given us the wrong old password...
@@ -335,7 +336,7 @@ void GoogleAuthenticator::ResyncEncryptedData(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
 
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->Remove(username_)) {
-    OnLoginSuccess(credentials);
+    OnLoginSuccess(credentials, false);
   } else {
     OnLoginFailure(LoginFailure(LoginFailure::DATA_REMOVAL_FAILED));
   }

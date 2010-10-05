@@ -774,7 +774,8 @@ class StubLogin : public chromeos::LoginStatusConsumer {
   }
 
   void OnLoginSuccess(const std::string& username,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) {
+                      const GaiaAuthConsumer::ClientLoginResult& credentials,
+                      bool pending_requests) {
     chromeos::LoginUtils::Get()->CompleteLogin(username, credentials);
     delete this;
   }

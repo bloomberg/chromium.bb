@@ -43,7 +43,8 @@ class MockAuthenticator : public Authenticator {
           ChromeThread::UI, FROM_HERE,
           NewRunnableMethod(this,
                             &MockAuthenticator::OnLoginSuccess,
-                            GaiaAuthConsumer::ClientLoginResult()));
+                            GaiaAuthConsumer::ClientLoginResult(),
+                            false));
       return true;
     } else {
       GoogleServiceAuthError error(
@@ -67,10 +68,13 @@ class MockAuthenticator : public Authenticator {
     consumer_->OnOffTheRecordLoginSuccess();
   }
 
-  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials,
+                      bool request_pending) {
     // If we want to be more like the real thing, we could save username
     // in AuthenticateToLogin, but there's not much of a point.
-    consumer_->OnLoginSuccess(expected_username_, credentials);
+    consumer_->OnLoginSuccess(expected_username_,
+                              credentials,
+                              request_pending);
   }
 
   void OnLoginFailure(const LoginFailure& failure) {

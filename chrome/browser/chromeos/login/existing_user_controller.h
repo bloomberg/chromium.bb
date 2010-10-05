@@ -90,8 +90,10 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // LoginPerformer::Delegate implementation:
   virtual void OnLoginFailure(const LoginFailure& error);
-  virtual void OnLoginSuccess(const std::string& username,
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+  virtual void OnLoginSuccess(
+      const std::string& username,
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool pending_requests);
   virtual void OnOffTheRecordLoginSuccess();
   virtual void OnPasswordChangeDetected(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
