@@ -68,9 +68,9 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 check_PROGRAMS = $(am__EXEEXT_3) $(am__EXEEXT_4) $(am__EXEEXT_5)
-@DISABLE_PROCESSOR_FALSE@am__append_1 = src/libbreakpad.la
-@DISABLE_PROCESSOR_FALSE@am__append_2 = src/third_party/libdisasm/libdisasm.la
-@LINUX_HOST_TRUE@am__append_3 = src/client/linux/libbreakpad_client.la
+@DISABLE_PROCESSOR_FALSE@am__append_1 = src/libbreakpad.a
+@DISABLE_PROCESSOR_FALSE@am__append_2 = src/third_party/libdisasm/libdisasm.a
+@LINUX_HOST_TRUE@am__append_3 = src/client/linux/libbreakpad_client.a
 @DISABLE_PROCESSOR_FALSE@am__append_4 = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk \
@@ -113,14 +113,12 @@ subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_doc_DATA) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/configure $(top_srcdir)/src/config.h.in AUTHORS \
-	COPYING ChangeLog INSTALL NEWS autotools/config.guess \
-	autotools/config.sub autotools/depcomp autotools/install-sh \
-	autotools/ltmain.sh autotools/missing
+	COPYING ChangeLog INSTALL NEWS autotools/compile \
+	autotools/config.guess autotools/config.sub autotools/depcomp \
+	autotools/install-sh autotools/ltmain.sh autotools/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/ax_pthread.m4 $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_pthread.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -152,9 +150,12 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(docdir)"
-LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
-src_client_linux_libbreakpad_client_la_LIBADD =
-am__src_client_linux_libbreakpad_client_la_SOURCES_DIST =  \
+LIBRARIES = $(lib_LIBRARIES) $(noinst_LIBRARIES)
+AR = ar
+ARFLAGS = cru
+src_client_linux_libbreakpad_client_a_AR = $(AR) $(ARFLAGS)
+src_client_linux_libbreakpad_client_a_LIBADD =
+am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 	src/client/linux/crash_generation/crash_generation_client.cc \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
@@ -163,21 +164,21 @@ am__src_client_linux_libbreakpad_client_la_SOURCES_DIST =  \
 	src/common/md5.c src/common/string_conversion.cc \
 	src/common/linux/file_id.cc src/common/linux/guid_creator.cc
 am__dirstamp = $(am__leading_dot)dirstamp
-@LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_la_OBJECTS = src/client/linux/crash_generation/crash_generation_client.lo \
-@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.lo \
-@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.lo \
-@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.lo \
-@LINUX_HOST_TRUE@	src/client/minidump_file_writer.lo \
-@LINUX_HOST_TRUE@	src/common/convert_UTF.lo src/common/md5.lo \
-@LINUX_HOST_TRUE@	src/common/string_conversion.lo \
-@LINUX_HOST_TRUE@	src/common/linux/file_id.lo \
-@LINUX_HOST_TRUE@	src/common/linux/guid_creator.lo
-src_client_linux_libbreakpad_client_la_OBJECTS =  \
-	$(am_src_client_linux_libbreakpad_client_la_OBJECTS)
-@LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_la_rpath =  \
-@LINUX_HOST_TRUE@	-rpath $(libdir)
-@DISABLE_PROCESSOR_FALSE@src_libbreakpad_la_DEPENDENCIES = src/third_party/libdisasm/libdisasm.la
-am__src_libbreakpad_la_SOURCES_DIST =  \
+@LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_a_OBJECTS = src/client/linux/crash_generation/crash_generation_client.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/minidump_file_writer.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/common/convert_UTF.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/common/md5.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/common/string_conversion.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/common/linux/file_id.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/common/linux/guid_creator.$(OBJEXT)
+src_client_linux_libbreakpad_client_a_OBJECTS =  \
+	$(am_src_client_linux_libbreakpad_client_a_OBJECTS)
+src_libbreakpad_a_AR = $(AR) $(ARFLAGS)
+@DISABLE_PROCESSOR_FALSE@src_libbreakpad_a_DEPENDENCIES = src/third_party/libdisasm/libdisasm.a
+am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/google_breakpad/common/breakpad_types.h \
 	src/google_breakpad/common/minidump_format.h \
 	src/google_breakpad/common/minidump_size.h \
@@ -243,39 +244,34 @@ am__src_libbreakpad_la_SOURCES_DIST =  \
 	src/processor/static_map-inl.h src/processor/static_map.h \
 	src/processor/tokenize.cc src/processor/tokenize.h \
 	src/processor/udp_network.cc src/processor/udp_network.h
-@DISABLE_PROCESSOR_FALSE@am_src_libbreakpad_la_OBJECTS =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo
-src_libbreakpad_la_OBJECTS = $(am_src_libbreakpad_la_OBJECTS)
-src_libbreakpad_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
-	$(CXXFLAGS) $(src_libbreakpad_la_LDFLAGS) $(LDFLAGS) -o $@
-@DISABLE_PROCESSOR_FALSE@am_src_libbreakpad_la_rpath = -rpath \
-@DISABLE_PROCESSOR_FALSE@	$(libdir)
-src_third_party_libdisasm_libdisasm_la_LIBADD =
-am__src_third_party_libdisasm_libdisasm_la_SOURCES_DIST =  \
+@DISABLE_PROCESSOR_FALSE@am_src_libbreakpad_a_OBJECTS = src/processor/basic_code_modules.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.$(OBJEXT)
+src_libbreakpad_a_OBJECTS = $(am_src_libbreakpad_a_OBJECTS)
+src_third_party_libdisasm_libdisasm_a_AR = $(AR) $(ARFLAGS)
+src_third_party_libdisasm_libdisasm_a_LIBADD =
+am__src_third_party_libdisasm_libdisasm_a_SOURCES_DIST =  \
 	src/third_party/libdisasm/ia32_implicit.c \
 	src/third_party/libdisasm/ia32_implicit.h \
 	src/third_party/libdisasm/ia32_insn.c \
@@ -302,23 +298,22 @@ am__src_third_party_libdisasm_libdisasm_la_SOURCES_DIST =  \
 	src/third_party/libdisasm/x86_misc.c \
 	src/third_party/libdisasm/x86_operand_list.c \
 	src/third_party/libdisasm/x86_operand_list.h
-@DISABLE_PROCESSOR_FALSE@am_src_third_party_libdisasm_libdisasm_la_OBJECTS = src/third_party/libdisasm/ia32_implicit.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_insn.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_invariant.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_modrm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_opcode_tables.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_operand.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_reg.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_settings.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_disasm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_format.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_imm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_insn.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_misc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_operand_list.lo
-src_third_party_libdisasm_libdisasm_la_OBJECTS =  \
-	$(am_src_third_party_libdisasm_libdisasm_la_OBJECTS)
-@DISABLE_PROCESSOR_FALSE@am_src_third_party_libdisasm_libdisasm_la_rpath =
+@DISABLE_PROCESSOR_FALSE@am_src_third_party_libdisasm_libdisasm_a_OBJECTS = src/third_party/libdisasm/ia32_implicit.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_insn.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_invariant.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_modrm.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_opcode_tables.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_operand.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_reg.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_settings.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_disasm.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_format.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_imm.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_insn.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_misc.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/x86_operand_list.$(OBJEXT)
+src_third_party_libdisasm_libdisasm_a_OBJECTS =  \
+	$(am_src_third_party_libdisasm_libdisasm_a_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@am__EXEEXT_1 =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump$(EXEEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk$(EXEEXT) \
@@ -380,9 +375,7 @@ am__src_client_linux_linux_dumper_unittest_helper_SOURCES_DIST = src/client/linu
 src_client_linux_linux_dumper_unittest_helper_OBJECTS =  \
 	$(am_src_client_linux_linux_dumper_unittest_helper_OBJECTS)
 src_client_linux_linux_dumper_unittest_helper_LDADD = $(LDADD)
-src_client_linux_linux_dumper_unittest_helper_LINK = $(LIBTOOL) \
-	--tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(CXXLD) \
+src_client_linux_linux_dumper_unittest_helper_LINK = $(CXXLD) \
 	$(src_client_linux_linux_dumper_unittest_helper_CXXFLAGS) \
 	$(CXXFLAGS) \
 	$(src_client_linux_linux_dumper_unittest_helper_LDFLAGS) \
@@ -407,8 +400,8 @@ am__src_processor_address_map_unittest_SOURCES_DIST =  \
 src_processor_address_map_unittest_OBJECTS =  \
 	$(am_src_processor_address_map_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_address_map_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_basic_source_line_resolver_unittest_SOURCES_DIST =  \
 	src/processor/basic_source_line_resolver_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -417,11 +410,11 @@ am__src_processor_basic_source_line_resolver_unittest_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/testing/gtest/src/src_processor_basic_source_line_resolver_unittest-gtest-all.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/src_processor_basic_source_line_resolver_unittest-gmock-all.$(OBJEXT)
 src_processor_basic_source_line_resolver_unittest_OBJECTS = $(am_src_processor_basic_source_line_resolver_unittest_OBJECTS)
-@DISABLE_PROCESSOR_FALSE@src_processor_basic_source_line_resolver_unittest_DEPENDENCIES = src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo
+@DISABLE_PROCESSOR_FALSE@src_processor_basic_source_line_resolver_unittest_DEPENDENCIES = src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o
 am__src_processor_binarystream_unittest_SOURCES_DIST =  \
 	src/processor/binarystream_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -432,7 +425,7 @@ am__src_processor_binarystream_unittest_SOURCES_DIST =  \
 src_processor_binarystream_unittest_OBJECTS =  \
 	$(am_src_processor_binarystream_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_binarystream_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o
 am__src_processor_cfi_frame_info_unittest_SOURCES_DIST =  \
 	src/processor/cfi_frame_info_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -445,17 +438,17 @@ am__src_processor_cfi_frame_info_unittest_SOURCES_DIST =  \
 src_processor_cfi_frame_info_unittest_OBJECTS =  \
 	$(am_src_processor_cfi_frame_info_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_cfi_frame_info_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_contained_range_map_unittest_SOURCES_DIST =  \
 	src/processor/contained_range_map_unittest.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_contained_range_map_unittest_OBJECTS = src/processor/contained_range_map_unittest.$(OBJEXT)
 src_processor_contained_range_map_unittest_OBJECTS =  \
 	$(am_src_processor_contained_range_map_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_contained_range_map_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_disassembler_x86_unittest_SOURCES_DIST =  \
 	src/processor/disassembler_x86_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -468,8 +461,8 @@ am__src_processor_disassembler_x86_unittest_SOURCES_DIST =  \
 src_processor_disassembler_x86_unittest_OBJECTS =  \
 	$(am_src_processor_disassembler_x86_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_disassembler_x86_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 am__src_processor_exploitability_unittest_SOURCES_DIST =  \
 	src/processor/exploitability_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -482,36 +475,36 @@ am__src_processor_exploitability_unittest_SOURCES_DIST =  \
 src_processor_exploitability_unittest_OBJECTS =  \
 	$(am_src_processor_exploitability_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_exploitability_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 am__src_processor_minidump_dump_SOURCES_DIST =  \
 	src/processor/minidump_dump.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_minidump_dump_OBJECTS = src/processor/minidump_dump.$(OBJEXT)
 src_processor_minidump_dump_OBJECTS =  \
 	$(am_src_processor_minidump_dump_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_dump_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_minidump_processor_unittest_SOURCES_DIST =  \
 	src/processor/minidump_processor_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -522,56 +515,56 @@ am__src_processor_minidump_processor_unittest_SOURCES_DIST =  \
 src_processor_minidump_processor_unittest_OBJECTS =  \
 	$(am_src_processor_minidump_processor_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_processor_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 am__src_processor_minidump_stackwalk_SOURCES_DIST =  \
 	src/processor/minidump_stackwalk.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_minidump_stackwalk_OBJECTS = src/processor/minidump_stackwalk.$(OBJEXT)
 src_processor_minidump_stackwalk_OBJECTS =  \
 	$(am_src_processor_minidump_stackwalk_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_stackwalk_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 am__src_processor_minidump_unittest_SOURCES_DIST =  \
 	src/common/test_assembler.cc \
 	src/processor/minidump_unittest.cc \
@@ -588,10 +581,10 @@ am__src_processor_minidump_unittest_SOURCES_DIST =  \
 src_processor_minidump_unittest_OBJECTS =  \
 	$(am_src_processor_minidump_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_network_source_line_resolver_server_unittest_SOURCES_DIST =  \
 	src/processor/network_source_line_resolver_server_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -601,31 +594,31 @@ am__src_processor_network_source_line_resolver_server_unittest_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/src_processor_network_source_line_resolver_server_unittest-gmock-all.$(OBJEXT)
 src_processor_network_source_line_resolver_server_unittest_OBJECTS = $(am_src_processor_network_source_line_resolver_server_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_resolver_server_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 am__src_processor_network_source_line_resolver_unittest_SOURCES_DIST =  \
 	src/processor/network_source_line_resolver_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -635,14 +628,14 @@ am__src_processor_network_source_line_resolver_unittest_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/src_processor_network_source_line_resolver_unittest-gmock-all.$(OBJEXT)
 src_processor_network_source_line_resolver_unittest_OBJECTS = $(am_src_processor_network_source_line_resolver_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_resolver_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o
 am__src_processor_network_source_line_server_unittest_SOURCES_DIST =  \
 	src/processor/network_source_line_server_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -652,51 +645,51 @@ am__src_processor_network_source_line_server_unittest_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/src_processor_network_source_line_server_unittest-gmock-all.$(OBJEXT)
 src_processor_network_source_line_server_unittest_OBJECTS = $(am_src_processor_network_source_line_server_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_server_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o
 am__src_processor_pathname_stripper_unittest_SOURCES_DIST =  \
 	src/processor/pathname_stripper_unittest.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_pathname_stripper_unittest_OBJECTS = src/processor/pathname_stripper_unittest.$(OBJEXT)
 src_processor_pathname_stripper_unittest_OBJECTS =  \
 	$(am_src_processor_pathname_stripper_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_pathname_stripper_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_postfix_evaluator_unittest_SOURCES_DIST =  \
 	src/processor/postfix_evaluator_unittest.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_postfix_evaluator_unittest_OBJECTS = src/processor/postfix_evaluator_unittest.$(OBJEXT)
 src_processor_postfix_evaluator_unittest_OBJECTS =  \
 	$(am_src_processor_postfix_evaluator_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_postfix_evaluator_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_range_map_unittest_SOURCES_DIST =  \
 	src/processor/range_map_unittest.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_range_map_unittest_OBJECTS = src/processor/range_map_unittest.$(OBJEXT)
 src_processor_range_map_unittest_OBJECTS =  \
 	$(am_src_processor_range_map_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_range_map_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_source_daemon_SOURCES_DIST =  \
 	src/processor/source_daemon.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_source_daemon_OBJECTS = src/processor/source_daemon.$(OBJEXT)
 src_processor_source_daemon_OBJECTS =  \
 	$(am_src_processor_source_daemon_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_source_daemon_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o
 am__src_processor_stackwalker_amd64_unittest_SOURCES_DIST =  \
 	src/common/test_assembler.cc \
 	src/processor/stackwalker_amd64_unittest.cc \
@@ -711,7 +704,7 @@ am__src_processor_stackwalker_amd64_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_amd64_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_amd64_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_amd64_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.la
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a
 am__src_processor_stackwalker_arm_unittest_SOURCES_DIST =  \
 	src/common/test_assembler.cc \
 	src/processor/stackwalker_arm_unittest.cc \
@@ -726,29 +719,29 @@ am__src_processor_stackwalker_arm_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_arm_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_arm_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.la
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a
 am__src_processor_stackwalker_selftest_SOURCES_DIST =  \
 	src/processor/stackwalker_selftest.cc
 @DISABLE_PROCESSOR_FALSE@am_src_processor_stackwalker_selftest_OBJECTS = src/processor/stackwalker_selftest.$(OBJEXT)
 src_processor_stackwalker_selftest_OBJECTS =  \
 	$(am_src_processor_stackwalker_selftest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_selftest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o
 am__src_processor_stackwalker_x86_unittest_SOURCES_DIST =  \
 	src/common/test_assembler.cc \
 	src/processor/stackwalker_x86_unittest.cc \
@@ -763,7 +756,7 @@ am__src_processor_stackwalker_x86_unittest_SOURCES_DIST =  \
 src_processor_stackwalker_x86_unittest_OBJECTS =  \
 	$(am_src_processor_stackwalker_x86_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_x86_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.la
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a
 am__src_processor_static_map_unittest_SOURCES_DIST =  \
 	src/processor/static_map_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -774,8 +767,8 @@ am__src_processor_static_map_unittest_SOURCES_DIST =  \
 src_processor_static_map_unittest_OBJECTS =  \
 	$(am_src_processor_static_map_unittest_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_static_map_unittest_DEPENDENCIES =  \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 am__src_processor_synth_minidump_unittest_SOURCES_DIST =  \
 	src/common/test_assembler.cc src/common/test_assembler.h \
 	src/processor/synth_minidump_unittest.cc \
@@ -799,25 +792,16 @@ am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
-SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
-	$(src_libbreakpad_la_SOURCES) \
-	$(src_third_party_libdisasm_libdisasm_la_SOURCES) \
+CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
+SOURCES = $(src_client_linux_libbreakpad_client_a_SOURCES) \
+	$(src_libbreakpad_a_SOURCES) \
+	$(src_third_party_libdisasm_libdisasm_a_SOURCES) \
 	$(src_client_linux_linux_client_unittest_SOURCES) \
 	$(src_client_linux_linux_dumper_unittest_helper_SOURCES) \
 	$(src_common_test_assembler_unittest_SOURCES) \
@@ -846,9 +830,9 @@ SOURCES = $(src_client_linux_libbreakpad_client_la_SOURCES) \
 	$(src_processor_static_map_unittest_SOURCES) \
 	$(src_processor_synth_minidump_unittest_SOURCES)
 DIST_SOURCES =  \
-	$(am__src_client_linux_libbreakpad_client_la_SOURCES_DIST) \
-	$(am__src_libbreakpad_la_SOURCES_DIST) \
-	$(am__src_third_party_libdisasm_libdisasm_la_SOURCES_DIST) \
+	$(am__src_client_linux_libbreakpad_client_a_SOURCES_DIST) \
+	$(am__src_libbreakpad_a_SOURCES_DIST) \
+	$(am__src_third_party_libdisasm_libdisasm_a_SOURCES_DIST) \
 	$(am__src_client_linux_linux_client_unittest_SOURCES_DIST) \
 	$(am__src_client_linux_linux_dumper_unittest_helper_SOURCES_DIST) \
 	$(am__src_common_test_assembler_unittest_SOURCES_DIST) \
@@ -894,7 +878,6 @@ distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
-AR = @AR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -905,43 +888,29 @@ CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
-CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
-DSYMUTIL = @DSYMUTIL@
-DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-FGREP = @FGREP@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
-LIBTOOL = @LIBTOOL@
-LIBTOOL_DEPS = @LIBTOOL_DEPS@
-LIPO = @LIPO@
-LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
-NM = @NM@
-NMEDIT = @NMEDIT@
-OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-OTOOL = @OTOOL@
-OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -954,7 +923,6 @@ PTHREAD_CC = @PTHREAD_CC@
 PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
 PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
-SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -965,7 +933,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
-ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -997,7 +964,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -1027,9 +993,9 @@ dist_doc_DATA = \
 	NEWS \
 	README
 
-noinst_LTLIBRARIES = $(am__append_2)
-lib_LTLIBRARIES = $(am__append_1) $(am__append_3)
-@LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_la_SOURCES = \
+noinst_LIBRARIES = $(am__append_2)
+lib_LIBRARIES = $(am__append_1) $(am__append_3)
+@LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.cc \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.cc \
@@ -1041,7 +1007,7 @@ lib_LTLIBRARIES = $(am__append_1) $(am__append_3)
 @LINUX_HOST_TRUE@	src/common/linux/file_id.cc \
 @LINUX_HOST_TRUE@	src/common/linux/guid_creator.cc
 
-@DISABLE_PROCESSOR_FALSE@src_libbreakpad_la_SOURCES = \
+@DISABLE_PROCESSOR_FALSE@src_libbreakpad_a_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/common/breakpad_types.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/common/minidump_format.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/common/minidump_size.h \
@@ -1119,9 +1085,8 @@ lib_LTLIBRARIES = $(am__append_1) $(am__append_3)
 @DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.h
 
-@DISABLE_PROCESSOR_FALSE@src_libbreakpad_la_LDFLAGS = -W1,-static
-@DISABLE_PROCESSOR_FALSE@src_libbreakpad_la_LIBADD = src/third_party/libdisasm/libdisasm.la
-@DISABLE_PROCESSOR_FALSE@src_third_party_libdisasm_libdisasm_la_SOURCES = \
+@DISABLE_PROCESSOR_FALSE@src_libbreakpad_a_LIBADD = src/third_party/libdisasm/libdisasm.a
+@DISABLE_PROCESSOR_FALSE@src_third_party_libdisasm_libdisasm_a_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_implicit.c \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_implicit.h \
 @DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/ia32_insn.c \
@@ -1185,24 +1150,24 @@ TESTS_ENVIRONMENT =
 @LINUX_HOST_TRUE@	-I$(top_srcdir)/src/testing
 
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_LDADD = \
-@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.lo \
-@LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.lo \
-@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.lo \
-@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.lo \
-@LINUX_HOST_TRUE@	src/client/minidump_file_writer.lo \
-@LINUX_HOST_TRUE@	src/common/convert_UTF.lo \
-@LINUX_HOST_TRUE@	src/common/md5.lo \
-@LINUX_HOST_TRUE@	src/common/linux/file_id.lo \
-@LINUX_HOST_TRUE@	src/common/linux/guid_creator.lo \
-@LINUX_HOST_TRUE@	src/common/string_conversion.lo
+@LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.o \
+@LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.o \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.o \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.o \
+@LINUX_HOST_TRUE@	src/client/minidump_file_writer.o \
+@LINUX_HOST_TRUE@	src/common/convert_UTF.o \
+@LINUX_HOST_TRUE@	src/common/md5.o \
+@LINUX_HOST_TRUE@	src/common/linux/file_id.o \
+@LINUX_HOST_TRUE@	src/common/linux/guid_creator.o \
+@LINUX_HOST_TRUE@	src/common/string_conversion.o
 
-@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la src/libbreakpad.la
+@LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.a src/libbreakpad.a
 @DISABLE_PROCESSOR_FALSE@src_processor_address_map_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/address_map_unittest.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_address_map_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_binarystream_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/binarystream_unittest.cc \
@@ -1217,7 +1182,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_binarystream_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_basic_source_line_resolver_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver_unittest.cc \
@@ -1232,11 +1197,11 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_basic_source_line_resolver_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_cfi_frame_info_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info_unittest.cc \
@@ -1245,9 +1210,9 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_cfi_frame_info_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_cfi_frame_info_unittest_CPPFLAGS = \
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
@@ -1260,8 +1225,8 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/contained_range_map_unittest.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_contained_range_map_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_exploitability_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_unittest.cc \
@@ -1277,26 +1242,26 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_exploitability_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 
 @DISABLE_PROCESSOR_FALSE@src_processor_disassembler_x86_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86_unittest.cc \
@@ -1312,8 +1277,8 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_disassembler_x86_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_processor_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor_unittest.cc \
@@ -1328,26 +1293,26 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_processor_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler.cc \
@@ -1365,10 +1330,10 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_resolver_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver_unittest.cc \
@@ -1383,14 +1348,14 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_resolver_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_resolver_server_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver_server_unittest.cc \
@@ -1405,31 +1370,31 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_resolver_server_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_server_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server_unittest.cc \
@@ -1444,12 +1409,12 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_network_source_line_server_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_map_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/static_map_unittest.cc \
@@ -1464,49 +1429,49 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@  -I$(top_srcdir)/src/testing
 
 @DISABLE_PROCESSOR_FALSE@src_processor_static_map_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_pathname_stripper_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper_unittest.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_pathname_stripper_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_postfix_evaluator_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/postfix_evaluator_unittest.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_postfix_evaluator_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_range_map_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/range_map_unittest.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_range_map_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_selftest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_selftest.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_selftest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_amd64_unittest_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/common/test_assembler.cc \
@@ -1516,7 +1481,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_amd64_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.la
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_amd64_unittest_CPPFLAGS = \
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
@@ -1533,7 +1498,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.la
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_arm_unittest_CPPFLAGS = \
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
@@ -1550,7 +1515,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/testing/src/gmock-all.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_x86_unittest_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.la
+@DISABLE_PROCESSOR_FALSE@	src/libbreakpad.a
 
 @DISABLE_PROCESSOR_FALSE@src_processor_stackwalker_x86_unittest_CPPFLAGS = \
 @DISABLE_PROCESSOR_FALSE@	-I$(top_srcdir)/src \
@@ -1596,54 +1561,54 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_dump.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_dump_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_stackwalk_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_stackwalk_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo \
-@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.la
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/disassembler_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/exploitability_win.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/minidump_processor.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_ppc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_sparc.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_x86.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o \
+@DISABLE_PROCESSOR_FALSE@	src/third_party/libdisasm/libdisasm.a
 
 @DISABLE_PROCESSOR_FALSE@src_processor_source_daemon_SOURCES = \
 @DISABLE_PROCESSOR_FALSE@	src/processor/source_daemon.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_source_daemon_LDADD = \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/logging.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.lo \
-@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.lo
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o
 
 EXTRA_DIST = \
 	$(SCRIPTS) \
@@ -1779,7 +1744,7 @@ EXTRA_DIST = \
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .cc .lo .o .obj
+.SUFFIXES: .c .cc .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -1831,53 +1796,48 @@ $(top_srcdir)/src/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f src/config.h src/stamp-h1
-install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+install-libLIBRARIES: $(lib_LIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(libdir)" || $(MKDIR_P) "$(DESTDIR)$(libdir)"
-	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
+	@list='$(lib_LIBRARIES)'; test -n "$(libdir)" || list=; \
 	list2=; for p in $$list; do \
 	  if test -f $$p; then \
 	    list2="$$list2 $$p"; \
 	  else :; fi; \
 	done; \
 	test -z "$$list2" || { \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(libdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(libdir)"; \
-	}
-
-uninstall-libLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
+	  echo " $(INSTALL_DATA) $$list2 '$(DESTDIR)$(libdir)'"; \
+	  $(INSTALL_DATA) $$list2 "$(DESTDIR)$(libdir)" || exit $$?; }
+	@$(POST_INSTALL)
+	@list='$(lib_LIBRARIES)'; test -n "$(libdir)" || list=; \
 	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$f"; \
+	  if test -f $$p; then \
+	    $(am__strip_dir) \
+	    echo " ( cd '$(DESTDIR)$(libdir)' && $(RANLIB) $$f )"; \
+	    ( cd "$(DESTDIR)$(libdir)" && $(RANLIB) $$f ) || exit $$?; \
+	  else :; fi; \
 	done
 
-clean-libLTLIBRARIES:
-	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
+uninstall-libLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(lib_LIBRARIES)'; test -n "$(libdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(libdir)' && rm -f "$$files" )"; \
+	cd "$(DESTDIR)$(libdir)" && rm -f $$files
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
+clean-libLIBRARIES:
+	-test -z "$(lib_LIBRARIES)" || rm -f $(lib_LIBRARIES)
+
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
 src/client/linux/crash_generation/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux/crash_generation
 	@: > src/client/linux/crash_generation/$(am__dirstamp)
 src/client/linux/crash_generation/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux/crash_generation/$(DEPDIR)
 	@: > src/client/linux/crash_generation/$(DEPDIR)/$(am__dirstamp)
-src/client/linux/crash_generation/crash_generation_client.lo:  \
+src/client/linux/crash_generation/crash_generation_client.$(OBJEXT):  \
 	src/client/linux/crash_generation/$(am__dirstamp) \
 	src/client/linux/crash_generation/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/handler/$(am__dirstamp):
@@ -1886,7 +1846,7 @@ src/client/linux/handler/$(am__dirstamp):
 src/client/linux/handler/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux/handler/$(DEPDIR)
 	@: > src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
-src/client/linux/handler/exception_handler.lo:  \
+src/client/linux/handler/exception_handler.$(OBJEXT):  \
 	src/client/linux/handler/$(am__dirstamp) \
 	src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/minidump_writer/$(am__dirstamp):
@@ -1895,10 +1855,10 @@ src/client/linux/minidump_writer/$(am__dirstamp):
 src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux/minidump_writer/$(DEPDIR)
 	@: > src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
-src/client/linux/minidump_writer/linux_dumper.lo:  \
+src/client/linux/minidump_writer/linux_dumper.$(OBJEXT):  \
 	src/client/linux/minidump_writer/$(am__dirstamp) \
 	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
-src/client/linux/minidump_writer/minidump_writer.lo:  \
+src/client/linux/minidump_writer/minidump_writer.$(OBJEXT):  \
 	src/client/linux/minidump_writer/$(am__dirstamp) \
 	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
 src/client/$(am__dirstamp):
@@ -1907,7 +1867,7 @@ src/client/$(am__dirstamp):
 src/client/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/client/$(DEPDIR)
 	@: > src/client/$(DEPDIR)/$(am__dirstamp)
-src/client/minidump_file_writer.lo: src/client/$(am__dirstamp) \
+src/client/minidump_file_writer.$(OBJEXT): src/client/$(am__dirstamp) \
 	src/client/$(DEPDIR)/$(am__dirstamp)
 src/common/$(am__dirstamp):
 	@$(MKDIR_P) src/common
@@ -1915,11 +1875,11 @@ src/common/$(am__dirstamp):
 src/common/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/common/$(DEPDIR)
 	@: > src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/convert_UTF.lo: src/common/$(am__dirstamp) \
+src/common/convert_UTF.$(OBJEXT): src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/md5.lo: src/common/$(am__dirstamp) \
+src/common/md5.$(OBJEXT): src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
-src/common/string_conversion.lo: src/common/$(am__dirstamp) \
+src/common/string_conversion.$(OBJEXT): src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/linux/$(am__dirstamp):
 	@$(MKDIR_P) src/common/linux
@@ -1927,135 +1887,152 @@ src/common/linux/$(am__dirstamp):
 src/common/linux/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/common/linux/$(DEPDIR)
 	@: > src/common/linux/$(DEPDIR)/$(am__dirstamp)
-src/common/linux/file_id.lo: src/common/linux/$(am__dirstamp) \
+src/common/linux/file_id.$(OBJEXT): src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
-src/common/linux/guid_creator.lo: src/common/linux/$(am__dirstamp) \
+src/common/linux/guid_creator.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux
 	@: > src/client/linux/$(am__dirstamp)
-src/client/linux/libbreakpad_client.la: $(src_client_linux_libbreakpad_client_la_OBJECTS) $(src_client_linux_libbreakpad_client_la_DEPENDENCIES) src/client/linux/$(am__dirstamp)
-	$(CXXLINK) $(am_src_client_linux_libbreakpad_client_la_rpath) $(src_client_linux_libbreakpad_client_la_OBJECTS) $(src_client_linux_libbreakpad_client_la_LIBADD) $(LIBS)
+src/client/linux/libbreakpad_client.a: $(src_client_linux_libbreakpad_client_a_OBJECTS) $(src_client_linux_libbreakpad_client_a_DEPENDENCIES) src/client/linux/$(am__dirstamp)
+	-rm -f src/client/linux/libbreakpad_client.a
+	$(src_client_linux_libbreakpad_client_a_AR) src/client/linux/libbreakpad_client.a $(src_client_linux_libbreakpad_client_a_OBJECTS) $(src_client_linux_libbreakpad_client_a_LIBADD)
+	$(RANLIB) src/client/linux/libbreakpad_client.a
 src/processor/$(am__dirstamp):
 	@$(MKDIR_P) src/processor
 	@: > src/processor/$(am__dirstamp)
 src/processor/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/processor/$(DEPDIR)
 	@: > src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/basic_code_modules.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/basic_source_line_resolver.lo:  \
+src/processor/basic_code_modules.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/binarystream.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/call_stack.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/cfi_frame_info.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/disassembler_x86.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/exploitability.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/exploitability_win.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/logging.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/minidump.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/minidump_processor.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/network_source_line_resolver.lo:  \
+src/processor/basic_source_line_resolver.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/network_source_line_server.lo:  \
+src/processor/binarystream.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/call_stack.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/cfi_frame_info.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/disassembler_x86.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/pathname_stripper.lo: src/processor/$(am__dirstamp) \
+src/processor/exploitability.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/process_state.lo: src/processor/$(am__dirstamp) \
-	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/simple_symbol_supplier.lo:  \
+src/processor/exploitability_win.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/stackwalker.lo: src/processor/$(am__dirstamp) \
+src/processor/logging.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/stackwalker_amd64.lo: src/processor/$(am__dirstamp) \
+src/processor/minidump.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/stackwalker_arm.lo: src/processor/$(am__dirstamp) \
+src/processor/minidump_processor.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/stackwalker_ppc.lo: src/processor/$(am__dirstamp) \
+src/processor/network_source_line_resolver.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/stackwalker_sparc.lo: src/processor/$(am__dirstamp) \
+src/processor/network_source_line_server.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/stackwalker_x86.lo: src/processor/$(am__dirstamp) \
+src/processor/pathname_stripper.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/tokenize.lo: src/processor/$(am__dirstamp) \
+src/processor/process_state.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
-src/processor/udp_network.lo: src/processor/$(am__dirstamp) \
+src/processor/simple_symbol_supplier.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_amd64.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_arm.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_ppc.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_sparc.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/stackwalker_x86.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/tokenize.$(OBJEXT): src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/udp_network.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/$(am__dirstamp):
 	@$(MKDIR_P) src
 	@: > src/$(am__dirstamp)
-src/libbreakpad.la: $(src_libbreakpad_la_OBJECTS) $(src_libbreakpad_la_DEPENDENCIES) src/$(am__dirstamp)
-	$(src_libbreakpad_la_LINK) $(am_src_libbreakpad_la_rpath) $(src_libbreakpad_la_OBJECTS) $(src_libbreakpad_la_LIBADD) $(LIBS)
+src/libbreakpad.a: $(src_libbreakpad_a_OBJECTS) $(src_libbreakpad_a_DEPENDENCIES) src/$(am__dirstamp)
+	-rm -f src/libbreakpad.a
+	$(src_libbreakpad_a_AR) src/libbreakpad.a $(src_libbreakpad_a_OBJECTS) $(src_libbreakpad_a_LIBADD)
+	$(RANLIB) src/libbreakpad.a
 src/third_party/libdisasm/$(am__dirstamp):
 	@$(MKDIR_P) src/third_party/libdisasm
 	@: > src/third_party/libdisasm/$(am__dirstamp)
 src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/third_party/libdisasm/$(DEPDIR)
 	@: > src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/ia32_implicit.lo:  \
+src/third_party/libdisasm/ia32_implicit.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/ia32_insn.lo:  \
+src/third_party/libdisasm/ia32_insn.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/ia32_invariant.lo:  \
+src/third_party/libdisasm/ia32_invariant.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/ia32_modrm.lo:  \
+src/third_party/libdisasm/ia32_modrm.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/ia32_opcode_tables.lo:  \
+src/third_party/libdisasm/ia32_opcode_tables.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/ia32_operand.lo:  \
+src/third_party/libdisasm/ia32_operand.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/ia32_reg.lo:  \
+src/third_party/libdisasm/ia32_reg.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/ia32_settings.lo:  \
+src/third_party/libdisasm/ia32_settings.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/x86_disasm.lo:  \
+src/third_party/libdisasm/x86_disasm.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/x86_format.lo:  \
+src/third_party/libdisasm/x86_format.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/x86_imm.lo:  \
+src/third_party/libdisasm/x86_imm.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/x86_insn.lo:  \
+src/third_party/libdisasm/x86_insn.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/x86_misc.lo:  \
+src/third_party/libdisasm/x86_misc.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/x86_operand_list.lo:  \
+src/third_party/libdisasm/x86_operand_list.$(OBJEXT):  \
 	src/third_party/libdisasm/$(am__dirstamp) \
 	src/third_party/libdisasm/$(DEPDIR)/$(am__dirstamp)
-src/third_party/libdisasm/libdisasm.la: $(src_third_party_libdisasm_libdisasm_la_OBJECTS) $(src_third_party_libdisasm_libdisasm_la_DEPENDENCIES) src/third_party/libdisasm/$(am__dirstamp)
-	$(LINK) $(am_src_third_party_libdisasm_libdisasm_la_rpath) $(src_third_party_libdisasm_libdisasm_la_OBJECTS) $(src_third_party_libdisasm_libdisasm_la_LIBADD) $(LIBS)
+src/third_party/libdisasm/libdisasm.a: $(src_third_party_libdisasm_libdisasm_a_OBJECTS) $(src_third_party_libdisasm_libdisasm_a_DEPENDENCIES) src/third_party/libdisasm/$(am__dirstamp)
+	-rm -f src/third_party/libdisasm/libdisasm.a
+	$(src_third_party_libdisasm_libdisasm_a_AR) src/third_party/libdisasm/libdisasm.a $(src_third_party_libdisasm_libdisasm_a_OBJECTS) $(src_third_party_libdisasm_libdisasm_a_LIBADD)
+	$(RANLIB) src/third_party/libdisasm/libdisasm.a
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
 	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
 	for p in $$list; do echo "$$p $$p"; done | \
 	sed 's/$(EXEEXT)$$//' | \
-	while read p p1; do if test -f $$p || test -f $$p1; \
+	while read p p1; do if test -f $$p; \
 	  then echo "$$p"; echo "$$p"; else :; fi; \
 	done | \
 	sed -e 'p;s,.*/,,;n;h' -e 's|.*|.|' \
@@ -2069,8 +2046,8 @@ install-binPROGRAMS: $(bin_PROGRAMS)
 	while read type dir files; do \
 	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
 	    test -z "$$files" || { \
-	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(bindir)$$dir'"; \
-	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
+	      echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(bindir)$$dir'"; \
+	      $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
 	    } \
 	; done
 
@@ -2085,31 +2062,13 @@ uninstall-binPROGRAMS:
 	cd "$(DESTDIR)$(bindir)" && rm -f $$files
 
 clean-binPROGRAMS:
-	@list='$(bin_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
+	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
 clean-checkPROGRAMS:
-	@list='$(check_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
+	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
 
 clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT):  \
 	src/client/linux/handler/$(am__dirstamp) \
 	src/client/linux/handler/$(DEPDIR)/$(am__dirstamp)
@@ -2469,29 +2428,20 @@ src/processor/synth_minidump_unittest$(EXEEXT): $(src_processor_synth_minidump_u
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f src/client/linux/crash_generation/crash_generation_client.$(OBJEXT)
-	-rm -f src/client/linux/crash_generation/crash_generation_client.lo
 	-rm -f src/client/linux/handler/exception_handler.$(OBJEXT)
-	-rm -f src/client/linux/handler/exception_handler.lo
 	-rm -f src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.$(OBJEXT)
 	-rm -f src/client/linux/minidump_writer/linux_dumper.$(OBJEXT)
-	-rm -f src/client/linux/minidump_writer/linux_dumper.lo
 	-rm -f src/client/linux/minidump_writer/minidump_writer.$(OBJEXT)
-	-rm -f src/client/linux/minidump_writer/minidump_writer.lo
 	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-directory_reader_unittest.$(OBJEXT)
 	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-line_reader_unittest.$(OBJEXT)
 	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-linux_dumper_unittest.$(OBJEXT)
 	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_client_unittest-minidump_writer_unittest.$(OBJEXT)
 	-rm -f src/client/linux/minidump_writer/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.$(OBJEXT)
 	-rm -f src/client/minidump_file_writer.$(OBJEXT)
-	-rm -f src/client/minidump_file_writer.lo
 	-rm -f src/common/convert_UTF.$(OBJEXT)
-	-rm -f src/common/convert_UTF.lo
 	-rm -f src/common/linux/file_id.$(OBJEXT)
-	-rm -f src/common/linux/file_id.lo
 	-rm -f src/common/linux/guid_creator.$(OBJEXT)
-	-rm -f src/common/linux/guid_creator.lo
 	-rm -f src/common/md5.$(OBJEXT)
-	-rm -f src/common/md5.lo
 	-rm -f src/common/src_client_linux_linux_client_unittest-memory_unittest.$(OBJEXT)
 	-rm -f src/common/src_common_test_assembler_unittest-test_assembler.$(OBJEXT)
 	-rm -f src/common/src_common_test_assembler_unittest-test_assembler_unittest.$(OBJEXT)
@@ -2501,46 +2451,29 @@ mostlyclean-compile:
 	-rm -f src/common/src_processor_stackwalker_x86_unittest-test_assembler.$(OBJEXT)
 	-rm -f src/common/src_processor_synth_minidump_unittest-test_assembler.$(OBJEXT)
 	-rm -f src/common/string_conversion.$(OBJEXT)
-	-rm -f src/common/string_conversion.lo
 	-rm -f src/processor/address_map_unittest.$(OBJEXT)
 	-rm -f src/processor/basic_code_modules.$(OBJEXT)
-	-rm -f src/processor/basic_code_modules.lo
 	-rm -f src/processor/basic_source_line_resolver.$(OBJEXT)
-	-rm -f src/processor/basic_source_line_resolver.lo
 	-rm -f src/processor/binarystream.$(OBJEXT)
-	-rm -f src/processor/binarystream.lo
 	-rm -f src/processor/call_stack.$(OBJEXT)
-	-rm -f src/processor/call_stack.lo
 	-rm -f src/processor/cfi_frame_info.$(OBJEXT)
-	-rm -f src/processor/cfi_frame_info.lo
 	-rm -f src/processor/contained_range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/disassembler_x86.$(OBJEXT)
-	-rm -f src/processor/disassembler_x86.lo
 	-rm -f src/processor/exploitability.$(OBJEXT)
-	-rm -f src/processor/exploitability.lo
 	-rm -f src/processor/exploitability_win.$(OBJEXT)
-	-rm -f src/processor/exploitability_win.lo
 	-rm -f src/processor/logging.$(OBJEXT)
-	-rm -f src/processor/logging.lo
 	-rm -f src/processor/minidump.$(OBJEXT)
-	-rm -f src/processor/minidump.lo
 	-rm -f src/processor/minidump_dump.$(OBJEXT)
 	-rm -f src/processor/minidump_processor.$(OBJEXT)
-	-rm -f src/processor/minidump_processor.lo
 	-rm -f src/processor/minidump_stackwalk.$(OBJEXT)
 	-rm -f src/processor/network_source_line_resolver.$(OBJEXT)
-	-rm -f src/processor/network_source_line_resolver.lo
 	-rm -f src/processor/network_source_line_server.$(OBJEXT)
-	-rm -f src/processor/network_source_line_server.lo
 	-rm -f src/processor/pathname_stripper.$(OBJEXT)
-	-rm -f src/processor/pathname_stripper.lo
 	-rm -f src/processor/pathname_stripper_unittest.$(OBJEXT)
 	-rm -f src/processor/postfix_evaluator_unittest.$(OBJEXT)
 	-rm -f src/processor/process_state.$(OBJEXT)
-	-rm -f src/processor/process_state.lo
 	-rm -f src/processor/range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/simple_symbol_supplier.$(OBJEXT)
-	-rm -f src/processor/simple_symbol_supplier.lo
 	-rm -f src/processor/source_daemon.$(OBJEXT)
 	-rm -f src/processor/src_client_linux_linux_client_unittest-basic_code_modules.$(OBJEXT)
 	-rm -f src/processor/src_client_linux_linux_client_unittest-logging.$(OBJEXT)
@@ -2564,22 +2497,14 @@ mostlyclean-compile:
 	-rm -f src/processor/src_processor_synth_minidump_unittest-synth_minidump.$(OBJEXT)
 	-rm -f src/processor/src_processor_synth_minidump_unittest-synth_minidump_unittest.$(OBJEXT)
 	-rm -f src/processor/stackwalker.$(OBJEXT)
-	-rm -f src/processor/stackwalker.lo
 	-rm -f src/processor/stackwalker_amd64.$(OBJEXT)
-	-rm -f src/processor/stackwalker_amd64.lo
 	-rm -f src/processor/stackwalker_arm.$(OBJEXT)
-	-rm -f src/processor/stackwalker_arm.lo
 	-rm -f src/processor/stackwalker_ppc.$(OBJEXT)
-	-rm -f src/processor/stackwalker_ppc.lo
 	-rm -f src/processor/stackwalker_selftest.$(OBJEXT)
 	-rm -f src/processor/stackwalker_sparc.$(OBJEXT)
-	-rm -f src/processor/stackwalker_sparc.lo
 	-rm -f src/processor/stackwalker_x86.$(OBJEXT)
-	-rm -f src/processor/stackwalker_x86.lo
 	-rm -f src/processor/tokenize.$(OBJEXT)
-	-rm -f src/processor/tokenize.lo
 	-rm -f src/processor/udp_network.$(OBJEXT)
-	-rm -f src/processor/udp_network.lo
 	-rm -f src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest-all.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_client_linux_linux_client_unittest-gtest_main.$(OBJEXT)
 	-rm -f src/testing/gtest/src/src_common_test_assembler_unittest-gtest-all.$(OBJEXT)
@@ -2625,50 +2550,36 @@ mostlyclean-compile:
 	-rm -f src/testing/src/src_processor_static_map_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/testing/src/src_processor_synth_minidump_unittest-gmock-all.$(OBJEXT)
 	-rm -f src/third_party/libdisasm/ia32_implicit.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/ia32_implicit.lo
 	-rm -f src/third_party/libdisasm/ia32_insn.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/ia32_insn.lo
 	-rm -f src/third_party/libdisasm/ia32_invariant.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/ia32_invariant.lo
 	-rm -f src/third_party/libdisasm/ia32_modrm.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/ia32_modrm.lo
 	-rm -f src/third_party/libdisasm/ia32_opcode_tables.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/ia32_opcode_tables.lo
 	-rm -f src/third_party/libdisasm/ia32_operand.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/ia32_operand.lo
 	-rm -f src/third_party/libdisasm/ia32_reg.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/ia32_reg.lo
 	-rm -f src/third_party/libdisasm/ia32_settings.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/ia32_settings.lo
 	-rm -f src/third_party/libdisasm/x86_disasm.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/x86_disasm.lo
 	-rm -f src/third_party/libdisasm/x86_format.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/x86_format.lo
 	-rm -f src/third_party/libdisasm/x86_imm.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/x86_imm.lo
 	-rm -f src/third_party/libdisasm/x86_insn.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/x86_insn.lo
 	-rm -f src/third_party/libdisasm/x86_misc.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/x86_misc.lo
 	-rm -f src/third_party/libdisasm/x86_operand_list.$(OBJEXT)
-	-rm -f src/third_party/libdisasm/x86_operand_list.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@src/client/$(DEPDIR)/minidump_file_writer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/crash_generation/$(DEPDIR)/crash_generation_client.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/exception_handler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/$(DEPDIR)/minidump_file_writer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/crash_generation/$(DEPDIR)/crash_generation_client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/exception_handler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_dumper.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/minidump_writer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/linux_dumper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/minidump_writer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-directory_reader_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-line_reader_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-linux_dumper_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump_writer_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/convert_UTF.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/md5.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/convert_UTF.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/md5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_client_linux_linux_client_unittest-memory_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_test_assembler_unittest-test_assembler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_test_assembler_unittest-test_assembler_unittest.Po@am__quote@
@@ -2677,32 +2588,32 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_processor_stackwalker_arm_unittest-test_assembler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_processor_stackwalker_x86_unittest-test_assembler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_processor_synth_minidump_unittest-test_assembler.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/string_conversion.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/file_id.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/guid_creator.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/string_conversion.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/file_id.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/linux/$(DEPDIR)/guid_creator.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/address_map_unittest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_code_modules.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_source_line_resolver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/binarystream.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/call_stack.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/cfi_frame_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_code_modules.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/basic_source_line_resolver.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/binarystream.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/call_stack.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/cfi_frame_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/contained_range_map_unittest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/disassembler_x86.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability_win.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/logging.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/disassembler_x86.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/exploitability_win.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/logging.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_dump.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_processor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_processor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/minidump_stackwalk.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/network_source_line_resolver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/network_source_line_server.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/pathname_stripper.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/network_source_line_resolver.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/network_source_line_server.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/pathname_stripper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/pathname_stripper_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/postfix_evaluator_unittest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/process_state.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/process_state.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/range_map_unittest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/simple_symbol_supplier.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/simple_symbol_supplier.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_daemon.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest-basic_code_modules.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest-logging.Po@am__quote@
@@ -2725,15 +2636,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_static_map_unittest-static_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_processor_synth_minidump_unittest-synth_minidump_unittest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_amd64.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_arm.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_ppc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_amd64.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_arm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_ppc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_selftest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_sparc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/tokenize.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/udp_network.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_sparc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/stackwalker_x86.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/tokenize.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/udp_network.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_client_linux_linux_client_unittest-gtest_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/gtest/src/$(DEPDIR)/src_common_test_assembler_unittest-gtest-all.Po@am__quote@
@@ -2778,20 +2689,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_stackwalker_x86_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_static_map_unittest-gmock-all.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/testing/src/$(DEPDIR)/src_processor_synth_minidump_unittest-gmock-all.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_implicit.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_insn.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_invariant.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_modrm.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_opcode_tables.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_operand.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_reg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_settings.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_disasm.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_format.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_imm.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_insn.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_misc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_operand_list.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_implicit.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_insn.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_invariant.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_modrm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_opcode_tables.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_operand.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_reg.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/ia32_settings.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_disasm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_format.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_imm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_insn.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_misc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/third_party/libdisasm/$(DEPDIR)/x86_operand_list.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -2809,14 +2720,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-.c.lo:
-@am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
-@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
-
 .cc.o:
 @am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
@@ -2832,14 +2735,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-.cc.lo:
-@am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
-@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
-@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
 src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.o: src/client/linux/handler/exception_handler_unittest.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_client_linux_linux_client_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.o -MD -MP -MF src/client/linux/handler/$(DEPDIR)/src_client_linux_linux_client_unittest-exception_handler_unittest.Tpo -c -o src/client/linux/handler/src_client_linux_linux_client_unittest-exception_handler_unittest.o `test -f 'src/client/linux/handler/exception_handler_unittest.cc' || echo '$(srcdir)/'`src/client/linux/handler/exception_handler_unittest.cc
@@ -3946,25 +3841,6 @@ src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj: src/proc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/processor/synth_minidump.cc' object='src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_processor_synth_minidump_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/processor/src_processor_synth_minidump_unittest-synth_minidump.obj `if test -f 'src/processor/synth_minidump.cc'; then $(CYGPATH_W) 'src/processor/synth_minidump.cc'; else $(CYGPATH_W) '$(srcdir)/src/processor/synth_minidump.cc'; fi`
-
-mostlyclean-libtool:
-	-rm -f *.lo
-
-clean-libtool:
-	-rm -rf .libs _libs
-	-rm -rf src/.libs src/_libs
-	-rm -rf src/client/.libs src/client/_libs
-	-rm -rf src/client/linux/.libs src/client/linux/_libs
-	-rm -rf src/client/linux/crash_generation/.libs src/client/linux/crash_generation/_libs
-	-rm -rf src/client/linux/handler/.libs src/client/linux/handler/_libs
-	-rm -rf src/client/linux/minidump_writer/.libs src/client/linux/minidump_writer/_libs
-	-rm -rf src/common/.libs src/common/_libs
-	-rm -rf src/common/linux/.libs src/common/linux/_libs
-	-rm -rf src/processor/.libs src/processor/_libs
-	-rm -rf src/third_party/libdisasm/.libs src/third_party/libdisasm/_libs
-
-distclean-libtool:
-	-rm -f libtool config.lt
 install-dist_docDATA: $(dist_doc_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(docdir)" || $(MKDIR_P) "$(DESTDIR)$(docdir)"
@@ -4281,9 +4157,7 @@ check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) $(check_SCRIPTS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
-install-binPROGRAMS: install-libLTLIBRARIES
-
+all-am: Makefile $(LIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(docdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -4338,15 +4212,15 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
-	clean-libLTLIBRARIES clean-libtool clean-noinstLTLIBRARIES \
-	clean-noinstPROGRAMS mostlyclean-am
+	clean-libLIBRARIES clean-noinstLIBRARIES clean-noinstPROGRAMS \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf src/client/$(DEPDIR) src/client/linux/crash_generation/$(DEPDIR) src/client/linux/handler/$(DEPDIR) src/client/linux/minidump_writer/$(DEPDIR) src/common/$(DEPDIR) src/common/linux/$(DEPDIR) src/processor/$(DEPDIR) src/testing/gtest/src/$(DEPDIR) src/testing/src/$(DEPDIR) src/third_party/libdisasm/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-tags
+	distclean-hdr distclean-tags
 
 dvi: dvi-am
 
@@ -4366,7 +4240,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS install-libLTLIBRARIES
+install-exec-am: install-binPROGRAMS install-libLIBRARIES
 
 install-html: install-html-am
 
@@ -4397,8 +4271,7 @@ maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool
+mostlyclean-am: mostlyclean-compile mostlyclean-generic
 
 pdf: pdf-am
 
@@ -4409,33 +4282,29 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_docDATA \
-	uninstall-libLTLIBRARIES
+	uninstall-libLIBRARIES
 
 .MAKE: check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-TESTS check-am \
 	clean clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
-	clean-libLTLIBRARIES clean-libtool clean-noinstLTLIBRARIES \
-	clean-noinstPROGRAMS ctags dist dist-all dist-bzip2 dist-gzip \
-	dist-lzma dist-shar dist-tarZ dist-xz dist-zip distcheck \
-	distclean distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-dist_docDATA install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	clean-libLIBRARIES clean-noinstLIBRARIES clean-noinstPROGRAMS \
+	ctags dist dist-all dist-bzip2 dist-gzip dist-lzma dist-shar \
+	dist-tarZ dist-xz dist-zip distcheck distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-tags distcleancheck distdir distuninstallcheck dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-data install-data-am \
+	install-dist_docDATA install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLIBRARIES install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-dist_docDATA uninstall-libLTLIBRARIES
+	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-binPROGRAMS uninstall-dist_docDATA \
+	uninstall-libLIBRARIES
 
-
-libtool: $(LIBTOOL_DEPS)
-	$(SHELL) ./config.status --recheck
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

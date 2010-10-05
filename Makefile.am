@@ -49,20 +49,20 @@ dist_doc_DATA = \
 
 
 ## Libraries
-noinst_LTLIBRARIES =
-lib_LTLIBRARIES =
+noinst_LIBRARIES =
+lib_LIBRARIES =
 bin_PROGRAMS =
 check_PROGRAMS =
 
 if !DISABLE_PROCESSOR
-lib_LTLIBRARIES += src/libbreakpad.la
-noinst_LTLIBRARIES += src/third_party/libdisasm/libdisasm.la
+lib_LIBRARIES += src/libbreakpad.a
+noinst_LIBRARIES += src/third_party/libdisasm/libdisasm.a
 endif
 
 if LINUX_HOST
-lib_LTLIBRARIES += src/client/linux/libbreakpad_client.la
+lib_LIBRARIES += src/client/linux/libbreakpad_client.a
 
-src_client_linux_libbreakpad_client_la_SOURCES = \
+src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/crash_generation/crash_generation_client.cc \
 	src/client/linux/handler/exception_handler.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
@@ -76,7 +76,7 @@ src_client_linux_libbreakpad_client_la_SOURCES = \
 endif
 
 if !DISABLE_PROCESSOR
-src_libbreakpad_la_SOURCES = \
+src_libbreakpad_a_SOURCES = \
 	src/google_breakpad/common/breakpad_types.h \
 	src/google_breakpad/common/minidump_format.h \
 	src/google_breakpad/common/minidump_size.h \
@@ -154,11 +154,9 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/udp_network.cc \
 	src/processor/udp_network.h
 
-src_libbreakpad_la_LDFLAGS = -W1,-static
+src_libbreakpad_a_LIBADD = src/third_party/libdisasm/libdisasm.a
 
-src_libbreakpad_la_LIBADD = src/third_party/libdisasm/libdisasm.la
-
-src_third_party_libdisasm_libdisasm_la_SOURCES = \
+src_third_party_libdisasm_libdisasm_a_SOURCES = \
 	src/third_party/libdisasm/ia32_implicit.c \
 	src/third_party/libdisasm/ia32_implicit.h \
 	src/third_party/libdisasm/ia32_insn.c \
@@ -275,26 +273,26 @@ src_client_linux_linux_client_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_client_linux_linux_client_unittest_LDADD = \
-	src/client/linux/handler/exception_handler.lo \
-	src/client/linux/crash_generation/crash_generation_client.lo \
-	src/client/linux/minidump_writer/linux_dumper.lo \
-	src/client/linux/minidump_writer/minidump_writer.lo \
-	src/client/minidump_file_writer.lo \
-	src/common/convert_UTF.lo \
-	src/common/md5.lo \
-	src/common/linux/file_id.lo \
-	src/common/linux/guid_creator.lo \
-	src/common/string_conversion.lo
+	src/client/linux/handler/exception_handler.o \
+	src/client/linux/crash_generation/crash_generation_client.o \
+	src/client/linux/minidump_writer/linux_dumper.o \
+	src/client/linux/minidump_writer/minidump_writer.o \
+	src/client/minidump_file_writer.o \
+	src/common/convert_UTF.o \
+	src/common/md5.o \
+	src/common/linux/file_id.o \
+	src/common/linux/guid_creator.o \
+	src/common/string_conversion.o
 
-src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.la src/libbreakpad.la
+src_client_linux_linux_client_unittest_DEPENDENCIES = src/client/linux/linux_dumper_unittest_helper src/client/linux/libbreakpad_client.a src/libbreakpad.a
 endif
 
 if !DISABLE_PROCESSOR
 src_processor_address_map_unittest_SOURCES = \
 	src/processor/address_map_unittest.cc
 src_processor_address_map_unittest_LDADD = \
-	src/processor/logging.lo \
-	src/processor/pathname_stripper.lo
+	src/processor/logging.o \
+	src/processor/pathname_stripper.o
 
 src_processor_binarystream_unittest_SOURCES = \
 	src/processor/binarystream_unittest.cc \
@@ -307,7 +305,7 @@ src_processor_binarystream_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_binarystream_unittest_LDADD = \
-	src/processor/binarystream.lo
+	src/processor/binarystream.o
 
 src_processor_basic_source_line_resolver_unittest_SOURCES = \
 	src/processor/basic_source_line_resolver_unittest.cc \
@@ -320,11 +318,11 @@ src_processor_basic_source_line_resolver_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_basic_source_line_resolver_unittest_LDADD = \
-	src/processor/basic_source_line_resolver.lo \
-	src/processor/cfi_frame_info.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/logging.lo \
-	src/processor/tokenize.lo
+	src/processor/basic_source_line_resolver.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/pathname_stripper.o \
+	src/processor/logging.o \
+	src/processor/tokenize.o
 
 src_processor_cfi_frame_info_unittest_SOURCES = \
 	src/processor/cfi_frame_info_unittest.cc \
@@ -332,9 +330,9 @@ src_processor_cfi_frame_info_unittest_SOURCES = \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_processor_cfi_frame_info_unittest_LDADD = \
-	src/processor/cfi_frame_info.lo \
-	src/processor/logging.lo \
-	src/processor/pathname_stripper.lo
+	src/processor/cfi_frame_info.o \
+	src/processor/logging.o \
+	src/processor/pathname_stripper.o
 src_processor_cfi_frame_info_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
@@ -345,8 +343,8 @@ src_processor_cfi_frame_info_unittest_CPPFLAGS = \
 src_processor_contained_range_map_unittest_SOURCES = \
 	src/processor/contained_range_map_unittest.cc
 src_processor_contained_range_map_unittest_LDADD = \
-	src/processor/logging.lo \
-	src/processor/pathname_stripper.lo
+	src/processor/logging.o \
+	src/processor/pathname_stripper.o
 
 src_processor_exploitability_unittest_SOURCES = \
 	src/processor/exploitability_unittest.cc \
@@ -360,26 +358,26 @@ src_processor_exploitability_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_exploitability_unittest_LDADD = \
-	src/processor/minidump_processor.lo \
-	src/processor/process_state.lo \
-	src/processor/disassembler_x86.lo \
-	src/processor/exploitability.lo \
-	src/processor/exploitability_win.lo \
-	src/processor/basic_code_modules.lo \
-	src/processor/basic_source_line_resolver.lo \
-	src/processor/call_stack.lo \
-	src/processor/cfi_frame_info.lo \
-	src/processor/logging.lo \
-	src/processor/minidump.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/stackwalker.lo \
-	src/processor/stackwalker_amd64.lo \
-	src/processor/stackwalker_arm.lo \
-	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_sparc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo \
-	src/third_party/libdisasm/libdisasm.la
+	src/processor/minidump_processor.o \
+	src/processor/process_state.o \
+	src/processor/disassembler_x86.o \
+	src/processor/exploitability.o \
+	src/processor/exploitability_win.o \
+	src/processor/basic_code_modules.o \
+	src/processor/basic_source_line_resolver.o \
+	src/processor/call_stack.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/logging.o \
+	src/processor/minidump.o \
+	src/processor/pathname_stripper.o \
+	src/processor/stackwalker.o \
+	src/processor/stackwalker_amd64.o \
+	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_sparc.o \
+	src/processor/stackwalker_x86.o \
+	src/processor/tokenize.o \
+	src/third_party/libdisasm/libdisasm.a
 
 src_processor_disassembler_x86_unittest_SOURCES = \
 	src/processor/disassembler_x86_unittest.cc \
@@ -393,8 +391,8 @@ src_processor_disassembler_x86_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_disassembler_x86_unittest_LDADD = \
-	src/processor/disassembler_x86.lo \
-	src/third_party/libdisasm/libdisasm.la
+	src/processor/disassembler_x86.o \
+	src/third_party/libdisasm/libdisasm.a
 
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc \
@@ -407,26 +405,26 @@ src_processor_minidump_processor_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_minidump_processor_unittest_LDADD = \
-	src/processor/basic_code_modules.lo \
-	src/processor/basic_source_line_resolver.lo \
-	src/processor/call_stack.lo \
-	src/processor/cfi_frame_info.lo \
-	src/processor/disassembler_x86.lo \
-	src/processor/exploitability.lo \
-	src/processor/exploitability_win.lo \
-	src/processor/logging.lo \
-	src/processor/minidump_processor.lo \
-	src/processor/minidump.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/process_state.lo \
-	src/processor/stackwalker.lo \
-	src/processor/stackwalker_amd64.lo \
-	src/processor/stackwalker_arm.lo \
-	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_sparc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo \
-	src/third_party/libdisasm/libdisasm.la
+	src/processor/basic_code_modules.o \
+	src/processor/basic_source_line_resolver.o \
+	src/processor/call_stack.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/disassembler_x86.o \
+	src/processor/exploitability.o \
+	src/processor/exploitability_win.o \
+	src/processor/logging.o \
+	src/processor/minidump_processor.o \
+	src/processor/minidump.o \
+	src/processor/pathname_stripper.o \
+	src/processor/process_state.o \
+	src/processor/stackwalker.o \
+	src/processor/stackwalker_amd64.o \
+	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_sparc.o \
+	src/processor/stackwalker_x86.o \
+	src/processor/tokenize.o \
+	src/third_party/libdisasm/libdisasm.a
 
 src_processor_minidump_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -442,10 +440,10 @@ src_processor_minidump_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_minidump_unittest_LDADD = \
-	src/processor/basic_code_modules.lo \
-	src/processor/logging.lo \
-	src/processor/minidump.lo \
-	src/processor/pathname_stripper.lo
+	src/processor/basic_code_modules.o \
+	src/processor/logging.o \
+	src/processor/minidump.o \
+	src/processor/pathname_stripper.o
 
 src_processor_network_source_line_resolver_unittest_SOURCES = \
 	src/processor/network_source_line_resolver_unittest.cc \
@@ -458,14 +456,14 @@ src_processor_network_source_line_resolver_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_network_source_line_resolver_unittest_LDADD = \
-	src/processor/basic_code_modules.lo \
-	src/processor/binarystream.lo \
-	src/processor/cfi_frame_info.lo \
-	src/processor/logging.lo \
-	src/processor/network_source_line_resolver.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/tokenize.lo \
-	src/processor/udp_network.lo
+	src/processor/basic_code_modules.o \
+	src/processor/binarystream.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/logging.o \
+	src/processor/network_source_line_resolver.o \
+	src/processor/pathname_stripper.o \
+	src/processor/tokenize.o \
+	src/processor/udp_network.o
 
 src_processor_network_source_line_resolver_server_unittest_SOURCES = \
 	src/processor/network_source_line_resolver_server_unittest.cc \
@@ -478,31 +476,31 @@ src_processor_network_source_line_resolver_server_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_network_source_line_resolver_server_unittest_LDADD = \
-	src/processor/basic_code_modules.lo \
-	src/processor/basic_source_line_resolver.lo \
-	src/processor/binarystream.lo \
-	src/processor/call_stack.lo \
-	src/processor/cfi_frame_info.lo \
-	src/processor/disassembler_x86.lo \
-	src/processor/exploitability.lo \
-	src/processor/exploitability_win.lo \
-	src/processor/logging.lo \
-	src/processor/minidump_processor.lo \
-	src/processor/minidump.lo \
-	src/processor/network_source_line_resolver.lo \
-	src/processor/network_source_line_server.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/process_state.lo \
-	src/processor/simple_symbol_supplier.lo \
-	src/processor/stackwalker.lo \
-	src/processor/stackwalker_amd64.lo \
-	src/processor/stackwalker_arm.lo \
-	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_sparc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo \
-	src/processor/udp_network.lo \
-	src/third_party/libdisasm/libdisasm.la
+	src/processor/basic_code_modules.o \
+	src/processor/basic_source_line_resolver.o \
+	src/processor/binarystream.o \
+	src/processor/call_stack.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/disassembler_x86.o \
+	src/processor/exploitability.o \
+	src/processor/exploitability_win.o \
+	src/processor/logging.o \
+	src/processor/minidump_processor.o \
+	src/processor/minidump.o \
+	src/processor/network_source_line_resolver.o \
+	src/processor/network_source_line_server.o \
+	src/processor/pathname_stripper.o \
+	src/processor/process_state.o \
+	src/processor/simple_symbol_supplier.o \
+	src/processor/stackwalker.o \
+	src/processor/stackwalker_amd64.o \
+	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_sparc.o \
+	src/processor/stackwalker_x86.o \
+	src/processor/tokenize.o \
+	src/processor/udp_network.o \
+	src/third_party/libdisasm/libdisasm.a
 
 src_processor_network_source_line_server_unittest_SOURCES = \
 	src/processor/network_source_line_server_unittest.cc \
@@ -515,12 +513,12 @@ src_processor_network_source_line_server_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src/testing/gtest \
 	-I$(top_srcdir)/src/testing
 src_processor_network_source_line_server_unittest_LDADD = \
-	src/processor/binarystream.lo \
-	src/processor/cfi_frame_info.lo \
-	src/processor/logging.lo \
-	src/processor/network_source_line_server.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/udp_network.lo
+	src/processor/binarystream.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/logging.o \
+	src/processor/network_source_line_server.o \
+	src/processor/pathname_stripper.o \
+	src/processor/udp_network.o
 
 src_processor_static_map_unittest_SOURCES = \
 	src/processor/static_map_unittest.cc \
@@ -533,45 +531,45 @@ src_processor_static_map_unittest_CPPFLAGS = \
   -I$(top_srcdir)/src/testing/gtest \
   -I$(top_srcdir)/src/testing
 src_processor_static_map_unittest_LDADD = \
-	src/processor/logging.lo \
-	src/processor/pathname_stripper.lo
+	src/processor/logging.o \
+	src/processor/pathname_stripper.o
 
 src_processor_pathname_stripper_unittest_SOURCES = \
 	src/processor/pathname_stripper_unittest.cc
 src_processor_pathname_stripper_unittest_LDADD = \
-	src/processor/pathname_stripper.lo
+	src/processor/pathname_stripper.o
 
 src_processor_postfix_evaluator_unittest_SOURCES = \
 	src/processor/postfix_evaluator_unittest.cc
 src_processor_postfix_evaluator_unittest_LDADD = \
-	src/processor/logging.lo \
-	src/processor/pathname_stripper.lo
+	src/processor/logging.o \
+	src/processor/pathname_stripper.o
 
 src_processor_range_map_unittest_SOURCES = \
 	src/processor/range_map_unittest.cc
 src_processor_range_map_unittest_LDADD = \
-	src/processor/logging.lo \
-	src/processor/pathname_stripper.lo
+	src/processor/logging.o \
+	src/processor/pathname_stripper.o
 
 src_processor_stackwalker_selftest_SOURCES = \
 	src/processor/stackwalker_selftest.cc
 src_processor_stackwalker_selftest_LDADD = \
-	src/processor/basic_code_modules.lo \
-	src/processor/basic_source_line_resolver.lo \
-	src/processor/call_stack.lo \
-	src/processor/disassembler_x86.lo \
-	src/processor/exploitability.lo \
-	src/processor/exploitability_win.lo \
-	src/processor/logging.lo \
-	src/processor/minidump.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/stackwalker.lo \
-	src/processor/stackwalker_amd64.lo \
-	src/processor/stackwalker_arm.lo \
-	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_sparc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo
+	src/processor/basic_code_modules.o \
+	src/processor/basic_source_line_resolver.o \
+	src/processor/call_stack.o \
+	src/processor/disassembler_x86.o \
+	src/processor/exploitability.o \
+	src/processor/exploitability_win.o \
+	src/processor/logging.o \
+	src/processor/minidump.o \
+	src/processor/pathname_stripper.o \
+	src/processor/stackwalker.o \
+	src/processor/stackwalker_amd64.o \
+	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_sparc.o \
+	src/processor/stackwalker_x86.o \
+	src/processor/tokenize.o
 
 src_processor_stackwalker_amd64_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -580,7 +578,7 @@ src_processor_stackwalker_amd64_unittest_SOURCES = \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_processor_stackwalker_amd64_unittest_LDADD = \
-	src/libbreakpad.la
+	src/libbreakpad.a
 src_processor_stackwalker_amd64_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
@@ -595,7 +593,7 @@ src_processor_stackwalker_arm_unittest_SOURCES = \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_processor_stackwalker_arm_unittest_LDADD = \
-	src/libbreakpad.la
+	src/libbreakpad.a
 src_processor_stackwalker_arm_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
@@ -610,7 +608,7 @@ src_processor_stackwalker_x86_unittest_SOURCES = \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
 src_processor_stackwalker_x86_unittest_LDADD = \
-	src/libbreakpad.la
+	src/libbreakpad.a
 src_processor_stackwalker_x86_unittest_CPPFLAGS = \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/testing/include \
@@ -655,52 +653,52 @@ noinst_SCRIPTS = $(check_SCRIPTS)
 src_processor_minidump_dump_SOURCES = \
 	src/processor/minidump_dump.cc
 src_processor_minidump_dump_LDADD = \
-	src/processor/basic_code_modules.lo \
-	src/processor/logging.lo \
-	src/processor/minidump.lo \
-	src/processor/pathname_stripper.lo
+	src/processor/basic_code_modules.o \
+	src/processor/logging.o \
+	src/processor/minidump.o \
+	src/processor/pathname_stripper.o
 
 src_processor_minidump_stackwalk_SOURCES = \
 	src/processor/minidump_stackwalk.cc
 src_processor_minidump_stackwalk_LDADD = \
-	src/processor/basic_code_modules.lo \
-	src/processor/basic_source_line_resolver.lo \
-	src/processor/binarystream.lo \
-	src/processor/call_stack.lo \
-	src/processor/cfi_frame_info.lo \
-	src/processor/disassembler_x86.lo \
-	src/processor/exploitability.lo \
-	src/processor/exploitability_win.lo \
-	src/processor/logging.lo \
-	src/processor/minidump.lo \
-	src/processor/minidump_processor.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/process_state.lo \
-	src/processor/network_source_line_resolver.lo \
-	src/processor/simple_symbol_supplier.lo \
-	src/processor/stackwalker.lo \
-	src/processor/stackwalker_amd64.lo \
-	src/processor/stackwalker_arm.lo \
-	src/processor/stackwalker_ppc.lo \
-	src/processor/stackwalker_sparc.lo \
-	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo \
-	src/processor/udp_network.lo \
-	src/third_party/libdisasm/libdisasm.la
+	src/processor/basic_code_modules.o \
+	src/processor/basic_source_line_resolver.o \
+	src/processor/binarystream.o \
+	src/processor/call_stack.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/disassembler_x86.o \
+	src/processor/exploitability.o \
+	src/processor/exploitability_win.o \
+	src/processor/logging.o \
+	src/processor/minidump.o \
+	src/processor/minidump_processor.o \
+	src/processor/pathname_stripper.o \
+	src/processor/process_state.o \
+	src/processor/network_source_line_resolver.o \
+	src/processor/simple_symbol_supplier.o \
+	src/processor/stackwalker.o \
+	src/processor/stackwalker_amd64.o \
+	src/processor/stackwalker_arm.o \
+	src/processor/stackwalker_ppc.o \
+	src/processor/stackwalker_sparc.o \
+	src/processor/stackwalker_x86.o \
+	src/processor/tokenize.o \
+	src/processor/udp_network.o \
+	src/third_party/libdisasm/libdisasm.a
 
 src_processor_source_daemon_SOURCES = \
 	src/processor/source_daemon.cc
 src_processor_source_daemon_LDADD = \
-	src/processor/basic_code_modules.lo \
-	src/processor/basic_source_line_resolver.lo \
-	src/processor/binarystream.lo \
-	src/processor/cfi_frame_info.lo \
-	src/processor/logging.lo \
-	src/processor/network_source_line_server.lo \
-	src/processor/pathname_stripper.lo \
-	src/processor/simple_symbol_supplier.lo \
-	src/processor/tokenize.lo \
-	src/processor/udp_network.lo
+	src/processor/basic_code_modules.o \
+	src/processor/basic_source_line_resolver.o \
+	src/processor/binarystream.o \
+	src/processor/cfi_frame_info.o \
+	src/processor/logging.o \
+	src/processor/network_source_line_server.o \
+	src/processor/pathname_stripper.o \
+	src/processor/simple_symbol_supplier.o \
+	src/processor/tokenize.o \
+	src/processor/udp_network.o
 endif !DISABLE_PROCESSOR
 
 ## Additional files to be included in a source distribution
@@ -838,9 +836,3 @@ EXTRA_DIST = \
 	src/tools/windows/dump_syms/testdata/dump_syms_regtest.sym \
 	src/tools/windows/symupload/symupload.cc \
 	src/tools/windows/symupload/symupload.vcproj
-
-
-## Additional rules
-libtool: $(LIBTOOL_DEPS)
-	$(SHELL) ./config.status --recheck
-
