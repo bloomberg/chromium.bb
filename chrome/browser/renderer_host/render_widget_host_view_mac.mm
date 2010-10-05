@@ -170,6 +170,12 @@ void DisablePasswordInput() {
                          pluginHandle:(gfx::PluginWindowHandle)pluginHandle;
 - (void)drawView;
 
+// NSViews autorelease subviews when they die. The RWHVMac gets destroyed when
+// RHWVCocoa gets dealloc'd, which means the AcceleratedPluginView child views
+// can be around a little longer than the RWHVMac. This is called when the
+// RWHVMac is about to be deleted (but it's still valid while this method runs).
+- (void)onRenderWidgetHostViewGone;
+
 // This _must_ be atomic, since it's accessed from several threads.
 @property BOOL surfaceWasSwapped;
 
@@ -247,6 +253,8 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 
 - (void)dealloc {
   CVDisplayLinkRelease(displayLink_);
+  if (renderWidgetHostView_)
+    renderWidgetHostView_->DeallocFakePluginWindowHandle(pluginHandle_);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
@@ -260,6 +268,14 @@ static CVReturn DrawOneAcceleratedPluginCallback(
       cglContext_, pluginHandle_, [self cachedSize]);
 
   CGLFlushDrawable(cglContext_);
+  CGLUnlockContext(cglContext_);
+}
+
+- (void)onRenderWidgetHostViewGone {
+  CGLLockContext(cglContext_);
+  // Deallocate the plugin handle while we still can.
+  renderWidgetHostView_->DeallocFakePluginWindowHandle(pluginHandle_);
+  renderWidgetHostView_ = NULL;
   CGLUnlockContext(cglContext_);
 }
 
@@ -698,11 +714,13 @@ void RenderWidgetHostViewMac::Destroy() {
     // Depth-first destroy all popups. Use ShutdownHost() to enforce
     // deepest-first ordering.
     for (NSView* subview in [cocoa_view_ subviews]) {
-      if (![subview isKindOfClass:[RenderWidgetHostViewCocoa class]])
-        continue;  // Skip accelerated views.
-
-      [static_cast<RenderWidgetHostViewCocoa*>(subview)
-          renderWidgetHostViewMac]->ShutdownHost();
+      if ([subview isKindOfClass:[RenderWidgetHostViewCocoa class]]) {
+        [static_cast<RenderWidgetHostViewCocoa*>(subview)
+            renderWidgetHostViewMac]->ShutdownHost();
+      } else if ([subview isKindOfClass:[AcceleratedPluginView class]]) {
+        [static_cast<AcceleratedPluginView*>(subview)
+            onRenderWidgetHostViewGone];
+      }
     }
 
     // We've been told to destroy.
@@ -880,6 +898,15 @@ void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
   }
   [it->second removeFromSuperview];
   plugin_views_.erase(it);
+
+  // The view's dealloc will call DeallocFakePluginWindowHandle(), which will
+  // remove the handle from |plugin_container_manager_|. This code path is
+  // taken if a plugin is removed, but the RWHVMac itself stays alive.
+}
+
+// This is called by AcceleratedPluginView's -dealloc.
+void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
+    gfx::PluginWindowHandle window) {
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
 }
 
@@ -1007,7 +1034,7 @@ namespace {
 // Adjusts an NSRect in Cocoa screen coordinates to have an origin in the upper
 // left of the primary screen (Carbon coordinates), and stuffs it into a
 // gfx::Rect.
-gfx::Rect FlipNSRectToRectScreen(const NSRect rect) {
+gfx::Rect FlipNSRectToRectScreen(const NSRect& rect) {
   gfx::Rect new_rect(NSRectToCGRect(rect));
   if ([[NSScreen screens] count] > 0) {
     new_rect.set_y([[[NSScreen screens] objectAtIndex:0] frame].size.height -

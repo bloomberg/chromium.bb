@@ -224,6 +224,13 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
                                                                  bool root);
   virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
+
+  // Helper to do the actual cleanup after a plugin handle has been destroyed.
+  // Required because DestroyFakePluginWindowHandle() isn't always called for
+  // all handles (it's e.g. not called on navigation, when the RWHVMac gets
+  // destroyed anyway).
+  void DeallocFakePluginWindowHandle(gfx::PluginWindowHandle window);
+
   virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                               int32 width,
                                               int32 height,
