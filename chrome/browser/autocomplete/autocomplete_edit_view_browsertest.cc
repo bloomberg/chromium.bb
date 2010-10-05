@@ -330,7 +330,13 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PopupAccelerators) {
+// FLAKY on windows, http://crbug.com/57965
+#if defined(OS_WIN)
+#define MAYBE_PopupAccelerators FLAKY_PopupAccelerators
+#else
+#define MAYBE_PopupAccelerators PopupAccelerators
+#endif
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_PopupAccelerators) {
   // Create a popup.
   Browser* popup = CreateBrowserForPopup(browser()->profile());
   AutocompleteEditView* edit_view = NULL;
