@@ -199,9 +199,9 @@ TEST(ChromeProxy, SharedProxy) {
 
 TEST(ChromeProxy, LaunchTimeout) {
   base::WaitableEvent done(true, false);
-  StrictMock<MockFactory> factory;
   StrictMock<MockCFProxyTraits> api;
   StrictMock<MockChromeProxyDelegate> delegate;
+  StrictMock<MockFactory> factory;
   CFProxy* proxy = new CFProxy(&api);
 
   EXPECT_CALL(delegate, tab_handle()).WillRepeatedly(Return(0));
