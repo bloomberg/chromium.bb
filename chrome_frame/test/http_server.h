@@ -21,7 +21,6 @@ class ChromeFrameHTTPServer {
 
   void SetUp();
   void TearDown();
-  bool WaitToFinish(int milliseconds);
   GURL Resolve(const wchar_t* relative_url);
   FilePath GetDataDir();
 

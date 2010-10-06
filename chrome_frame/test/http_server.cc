@@ -63,15 +63,6 @@ void ChromeFrameHTTPServer::TearDown() {
   file_util::Delete(cfi_path, false);
 }
 
-bool ChromeFrameHTTPServer::WaitToFinish(int milliseconds) {
-  bool ret = test_server_.WaitToFinish(milliseconds);
-  if (!ret) {
-    LOG(ERROR) << "WaitToFinish failed with error:" << ::GetLastError();
-    ret = test_server_.Stop();
-  }
-  return ret;
-}
-
 // TODO(phajdan.jr): Change wchar_t* to std::string& and fix callers.
 GURL ChromeFrameHTTPServer::Resolve(const wchar_t* relative_url) {
   return test_server_.GetURL(WideToUTF8(relative_url));

@@ -170,20 +170,6 @@ bool TestServer::Stop() {
   return ret;
 }
 
-bool TestServer::WaitToFinish(int timeout_ms) {
-  if (!process_handle_)
-    return true;
-
-  bool ret = base::WaitForSingleProcess(process_handle_, timeout_ms);
-  if (ret) {
-    base::CloseProcessHandle(process_handle_);
-    process_handle_ = base::kNullProcessHandle;
-  } else {
-    LOG(ERROR) << "Timed out.";
-  }
-  return ret;
-}
-
 std::string TestServer::GetScheme() const {
   switch (type_) {
     case TYPE_FTP:
