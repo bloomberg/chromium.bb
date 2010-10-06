@@ -117,7 +117,8 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
 
   // And make sure a controller for a pop-up window is not normal.
   // popup_browser will be owned by its window.
-  Browser *popup_browser(Browser::CreateForPopup(browser_helper_.profile()));
+  Browser *popup_browser(Browser::CreateForType(Browser::TYPE_POPUP,
+                                                browser_helper_.profile()));
   NSWindow *cocoaWindow = popup_browser->window()->GetNativeHandle();
   BrowserWindowController* controller =
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);

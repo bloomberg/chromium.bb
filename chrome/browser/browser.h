@@ -131,8 +131,11 @@ class Browser : public TabHandlerDelegate,
   // window is created by this function call.
   static Browser* Create(Profile* profile);
 
-  // Like Create, but creates a tabstrip-less popup window.
-  static Browser* CreateForPopup(Profile* profile);
+  // Like Create, but creates a browser of the specified (popup) type, with the
+  // specified contents, in a popup window of the specified size/position.
+  static Browser* CreateForPopup(Type type, Profile* profile,
+                                 TabContents* new_contents,
+                                 const gfx::Rect& initial_bounds);
 
   // Like Create, but creates a browser of the specified type.
   static Browser* CreateForType(Type type, Profile* profile);
@@ -603,14 +606,6 @@ class Browser : public TabHandlerDelegate,
   // Creates a new Browser if none are available.
   static Browser* GetOrCreateTabbedBrowser(Profile* profile);
 
-  // Helper function to create a new popup window.
-  static void BuildPopupWindowHelper(TabContents* source,
-                                     TabContents* new_contents,
-                                     const gfx::Rect& initial_pos,
-                                     Browser::Type browser_type,
-                                     Profile* profile,
-                                     bool honor_saved_maximized_state);
-
   // Calls ExecuteCommandWithDisposition with the given disposition.
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition);
 
@@ -917,13 +912,6 @@ class Browser : public TabHandlerDelegate,
                       PageTransition::Type transition,
                       int index,
                       int add_types);
-
-  // Creates a new popup window with its own Browser object with the
-  // incoming sizing information. |initial_pos|'s origin() is the
-  // window origin, and its size() is the size of the content area.
-  void BuildPopupWindow(TabContents* source,
-                        TabContents* new_contents,
-                        const gfx::Rect& initial_pos);
 
   // Returns what the user's home page is, or the new tab page if the home page
   // has not been set.

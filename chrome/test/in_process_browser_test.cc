@@ -271,7 +271,7 @@ Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
 }
 
 Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
-  Browser* browser = Browser::CreateForPopup(profile);
+  Browser* browser = Browser::CreateForType(Browser::TYPE_POPUP, profile);
   InitializeBrowser(browser);
   return browser;
 }

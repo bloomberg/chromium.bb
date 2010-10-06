@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   // Create a new popup.
   Profile* profile = browser()->profile();
-  Browser* popup = Browser::CreateForPopup(profile);
+  Browser* popup = Browser::CreateForType(Browser::TYPE_POPUP, profile);
   popup->window()->Show();
 
   // Close the browser.
@@ -117,4 +117,3 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   window = static_cast<TabRestoreService::Window*>(service->entries().front());
   EXPECT_EQ(2U, window->tabs.size());
 }
-

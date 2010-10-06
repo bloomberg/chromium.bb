@@ -547,31 +547,41 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
   if (!contents)
     return;
 
-  Browser* browser = BrowserList::FindBrowserWithType(
-      contents->profile(),
-      Browser::TYPE_NORMAL,
-      false);  // Match incognito exactly.
-  if (!browser) {
-    // If no browser is associated with the created TabContents, then the
-    // created TabContents may be an intermediate structure used during topmost
-    // url navigation from within an experimental extension popup view.
-    //
-    // If the ExtensionHost has an associated TabContents, then register the
-    // new contents with this contents.  This will allow top-level link
-    // navigation within the new contents to function just as navigation
-    // within the current host.
-    TabContents* associated_contents = associated_tab_contents();
-    if (associated_contents) {
-      associated_contents->AddNewContents(contents, disposition, initial_pos,
-                                          user_gesture);
-    } else {
-      browser = Browser::Create(contents->profile());
-      browser->window()->Show();
+  if (disposition == NEW_POPUP) {
+    // Create a new Browser window of type TYPE_APP_POPUP.
+    // (AddTabContents would otherwise create a window of type TYPE_POPUP).
+    Browser* browser = Browser::CreateForPopup(Browser::TYPE_APP_POPUP,
+                                               contents->profile(),
+                                               contents,
+                                               initial_pos);
+    browser->window()->Show();
+  } else {
+    Browser* browser = BrowserList::FindBrowserWithType(
+        contents->profile(),
+        Browser::TYPE_NORMAL,
+        false);  // Match incognito exactly.
+    if (!browser) {
+      // If no browser is associated with the created TabContents, then the
+      // created TabContents may be an intermediate struct used during topmost
+      // url navigation from within an experimental extension popup view.
+      //
+      // If the ExtensionHost has an associated TabContents, then register the
+      // new contents with this contents.  This will allow top-level link
+      // navigation within the new contents to function just as navigation
+      // within the current host.
+      TabContents* associated_contents = associated_tab_contents();
+      if (associated_contents) {
+        associated_contents->AddNewContents(contents, disposition, initial_pos,
+                                            user_gesture);
+      } else {
+        browser = Browser::Create(contents->profile());
+        browser->window()->Show();
+      }
     }
-  }
 
-  if (browser)
-    browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
+    if (browser)
+      browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
+  }
 }
 
 void ExtensionHost::ShowCreatedWidget(int route_id,

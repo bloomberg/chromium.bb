@@ -627,7 +627,8 @@ void ExternalTabContainer::HandleKeyboardEvent(
 void ExternalTabContainer::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
                                           gfx::NativeWindow parent_window) {
   if (!browser_.get()) {
-    browser_.reset(Browser::CreateForPopup(tab_contents_->profile()));
+    browser_.reset(Browser::CreateForType(Browser::TYPE_POPUP,
+                                          tab_contents_->profile()));
   }
 
   gfx::NativeWindow parent = parent_window ? parent_window
@@ -1066,4 +1067,3 @@ void TemporaryPopupExternalTabContainer::OpenURLFromTab(
   // support only one navigation for a dummy tab before it is killed.
   ::DestroyWindow(GetNativeView());
 }
-

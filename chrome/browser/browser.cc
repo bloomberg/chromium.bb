@@ -314,8 +314,15 @@ Browser* Browser::Create(Profile* profile) {
 }
 
 // static
-Browser* Browser::CreateForPopup(Profile* profile) {
-  Browser* browser = CreateForType(TYPE_POPUP, profile);
+Browser* Browser::CreateForPopup(Type type,
+                                 Profile* profile,
+                                 TabContents* new_contents,
+                                 const gfx::Rect& initial_bounds) {
+  DCHECK(type & TYPE_POPUP);
+  Browser* browser = new Browser(type, profile);
+  browser->set_override_bounds(initial_bounds);
+  browser->CreateBrowserWindow();
+  browser->tabstrip_model()->AppendTabContents(new_contents, true);
   return browser;
 }
 
@@ -2411,7 +2418,7 @@ void Browser::DuplicateContentsAt(int index) {
       browser = Browser::CreateForApp(app_name_, extension_app_, profile_,
                                       false);
     } else if (type_ == TYPE_POPUP) {
-      browser = Browser::CreateForPopup(profile_);
+      browser = Browser::CreateForType(TYPE_POPUP, profile_);
     }
 
     // Preserve the size of the original window. The new window has already
@@ -2730,7 +2737,19 @@ void Browser::AddNewContents(TabContents* source,
   }
 
   if (disposition == NEW_POPUP) {
-    BuildPopupWindow(source, new_contents, initial_pos);
+    Type browser_type;
+    if ((type_ & TYPE_APP) || (source && source->is_app())) {
+      // New app popup, or an app is creating a popup.
+      browser_type = TYPE_APP_POPUP;
+    } else {
+      browser_type = TYPE_POPUP;
+    }
+    Browser* browser = Browser::CreateForPopup(browser_type,
+                                               profile_,
+                                               new_contents,
+                                               initial_pos);
+    browser->window()->Show();
+
   } else if (disposition == NEW_WINDOW) {
     Browser* browser = Browser::Create(profile_);
     browser->AddNewContents(source, new_contents, NEW_FOREGROUND_TAB,
@@ -4020,37 +4039,6 @@ void Browser::OpenURLAtIndex(TabContents* source,
     // front-most.
     new_contents->Focus();
   }
-}
-
-void Browser::BuildPopupWindow(TabContents* source,
-                               TabContents* new_contents,
-                               const gfx::Rect& initial_pos) {
-  Browser::Type browser_type;
-  if ((type_ & TYPE_APP) ||          // New app popup
-      (source && source->is_app()))  // App is creating a popup
-    browser_type = TYPE_APP_POPUP;
-  else
-    browser_type = TYPE_POPUP;
-  BuildPopupWindowHelper(source, new_contents, initial_pos,
-                         browser_type,
-                         profile_, false);
-}
-
-void Browser::BuildPopupWindowHelper(TabContents* source,
-                                     TabContents* new_contents,
-                                     const gfx::Rect& initial_pos,
-                                     Browser::Type browser_type,
-                                     Profile* profile,
-                                     bool start_restored) {
-  Browser* browser = new Browser(browser_type, profile);
-  browser->set_override_bounds(initial_pos);
-
-  if (start_restored)
-    browser->set_maximized_state(MAXIMIZED_STATE_UNMAXIMIZED);
-
-  browser->CreateBrowserWindow();
-  browser->tabstrip_model()->AppendTabContents(new_contents, true);
-  browser->window()->Show();
 }
 
 GURL Browser::GetHomePage() const {

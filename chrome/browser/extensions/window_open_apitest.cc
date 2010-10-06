@@ -41,7 +41,8 @@ void WaitForTabsAndPopups(Browser* browser, int num_tabs, int num_popups) {
       if (*iter == browser)
         continue;
 
-      ASSERT_EQ(Browser::TYPE_POPUP, (*iter)->type());
+      // Check for TYPE_POPUP or TYPE_APP_POPUP/PANEL.
+      ASSERT_TRUE((*iter)->type() & Browser::TYPE_POPUP);
     }
 
     break;

@@ -599,7 +599,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(1, browser()->tab_count());
 
   // Open a popup browser with a single blank foreground tab.
-  Browser* popup_browser = browser()->CreateForPopup(browser()->profile());
+  Browser* popup_browser = browser()->CreateForType(Browser::TYPE_POPUP,
+                                                    browser()->profile());
   popup_browser->AddBlankTab(true);
   EXPECT_EQ(1, popup_browser->tab_count());
 
