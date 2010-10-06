@@ -415,6 +415,8 @@ void ExtensionPopup::Release() {
     ExtensionPopup::Observer* observer = observer_;
     delete this;
 
+    // |this| is passed only as a 'cookie'. The observer API explicitly takes a
+    // void* argument to emphasize this.
     if (observer)
       observer->ExtensionPopupClosed(this);
   }
