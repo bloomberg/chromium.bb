@@ -35,33 +35,45 @@ bool SpeechInputDispatcher::OnMessageReceived(const IPC::Message& message) {
 
 bool SpeechInputDispatcher::startRecognition(
     int request_id, const WebKit::WebRect& element_rect) {
+  LOG(INFO) << "SpeechInputDispatcher::startRecognition enter";
   gfx::Size scroll = render_view_->webview()->mainFrame()->scrollOffset();
   gfx::Rect rect = element_rect;
   rect.Offset(-scroll.width(), -scroll.height());
   render_view_->Send(new ViewHostMsg_SpeechInput_StartRecognition(
       render_view_->routing_id(), request_id, rect));
+  LOG(INFO) << "SpeechInputDispatcher::startRecognition exit";
   return true;
 }
 
 void SpeechInputDispatcher::cancelRecognition(int request_id) {
+  LOG(INFO) << "SpeechInputDispatcher::cancelRecognition enter";
   render_view_->Send(new ViewHostMsg_SpeechInput_CancelRecognition(
       render_view_->routing_id(), request_id));
+  LOG(INFO) << "SpeechInputDispatcher::cancelRecognition exit";
 }
 
 void SpeechInputDispatcher::stopRecording(int request_id) {
+  LOG(INFO) << "SpeechInputDispatcher::stopRecording enter";
   render_view_->Send(new ViewHostMsg_SpeechInput_StopRecording(
       render_view_->routing_id(), request_id));
+  LOG(INFO) << "SpeechInputDispatcher::stopRecording exit";
 }
 
 void SpeechInputDispatcher::OnSpeechRecognitionResult(
     int request_id, const string16& result) {
+  LOG(INFO) << "SpeechInputDispatcher::OnSpeechRecognitionResult enter";
   listener_->setRecognitionResult(request_id, result);
+  LOG(INFO) << "SpeechInputDispatcher::OnSpeechRecognitionResult exit";
 }
 
 void SpeechInputDispatcher::OnSpeechRecordingComplete(int request_id) {
+  LOG(INFO) << "SpeechInputDispatcher::OnSpeechRecordingComplete enter";
   listener_->didCompleteRecording(request_id);
+  LOG(INFO) << "SpeechInputDispatcher::OnSpeechRecordingComplete exit";
 }
 
 void SpeechInputDispatcher::OnSpeechRecognitionComplete(int request_id) {
+  LOG(INFO) << "SpeechInputDispatcher::OnSpeechRecognitionComplete enter";
   listener_->didCompleteRecognition(request_id);
+  LOG(INFO) << "SpeechInputDispatcher::OnSpeechRecognitionComplete exit";
 }

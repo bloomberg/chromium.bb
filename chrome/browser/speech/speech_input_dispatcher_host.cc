@@ -181,7 +181,7 @@ void SpeechInputDispatcherHost::SetRecognitionResult(int caller_id,
 }
 
 void SpeechInputDispatcherHost::DidCompleteRecording(int caller_id) {
-  LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecording exit";
+  LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecording enter";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);
   int caller_request_id = callers_->request_id(caller_id);
@@ -193,7 +193,7 @@ void SpeechInputDispatcherHost::DidCompleteRecording(int caller_id) {
 }
 
 void SpeechInputDispatcherHost::DidCompleteRecognition(int caller_id) {
-  LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecognition exit";
+  LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecognition enter";
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);
   int caller_request_id = callers_->request_id(caller_id);
