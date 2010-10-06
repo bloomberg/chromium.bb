@@ -323,10 +323,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
-  // First we navigate to our test page.
-  GURL url = test_server()->GetURL(kSimplePage);
-  ui_test_utils::NavigateToURL(browser(), url);
-
   // Open a new browser window.
   Browser* browser2 = Browser::Create(browser()->profile());
   ASSERT_TRUE(browser2);
@@ -345,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
     focused_browser = browser();
     unfocused_browser = browser2;
   } else {
-    ASSERT_TRUE(false);
+    FAIL() << "Could not determine which browser has focus";
   }
 #elif defined(OS_WIN)
   focused_browser = browser();
@@ -362,16 +358,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   // Activate the first browser.
   focused_browser->window()->Activate();
 
-  // Wait for the focus to be stolen by the other browser.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new MessageLoop::QuitTask(), 2000);
-  ui_test_utils::RunMessageLoop();
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      unfocused_browser->GetSelectedTabContents()->render_view_host(), L"",
+      L"stealFocus();"));
 
   // Make sure the first browser is still active.
   EXPECT_TRUE(focused_browser->window()->IsActive());
-
-  // Close the 2nd browser to avoid a DCHECK().
-  browser2->window()->Close();
 }
 
 // Page cannot steal focus when focus is on location bar.
@@ -385,8 +377,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
 
   browser()->FocusLocationBar();
 
-  // Wait for the page to steal focus.
-  PlatformThread::Sleep(2000);
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"stealFocus();"));
 
   // Make sure the location bar is still focused.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
