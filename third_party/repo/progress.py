@@ -24,8 +24,9 @@ class Progress(object):
     self._lastp = -1
     self._start = time()
     self._show = False
+    self._width = 0
 
-  def update(self, inc=1):
+  def update(self, inc=1, extra=''):
     self._done += inc
 
     if not self._show:
@@ -34,35 +35,37 @@ class Progress(object):
       else:
         return
 
+    text = None
+
     if self._total <= 0:
-      sys.stdout.write('\r%s: %d, ' % (
-        self._title,
-        self._done))
-      sys.stdout.flush()
+      text = '%s: %3d' % (self._title, self._done)
     else:
       p = (100 * self._done) / self._total
 
       if self._lastp != p:
         self._lastp = p
-        sys.stdout.write('\r%s: %3d%% (%d/%d)  ' % (
-          self._title,
-          p,
-          self._done,
-          self._total))
-        sys.stdout.flush()
+        text = '%s: %3d%% (%2d/%2d)' % (self._title, p,
+                                        self._done, self._total)
+
+    if text:
+      text += ' ' + extra
+      spaces = max(self._width - len(text), 0)
+      sys.stdout.write('%s%*s\r' % (text, spaces, ''))
+      sys.stdout.flush()
+      self._width = len(text)
 
   def end(self):
     if not self._show:
       return
 
     if self._total <= 0:
-      sys.stdout.write('\r%s: %d, done.  \n' % (
+      sys.stdout.write('%s: %d, done.\n' % (
         self._title,
         self._done))
       sys.stdout.flush()
     else:
       p = (100 * self._done) / self._total
-      sys.stdout.write('\r%s: %3d%% (%d/%d), done.  \n' % (
+      sys.stdout.write('%s: %3d%% (%d/%d), done.\n' % (
         self._title,
         p,
         self._done,

@@ -663,7 +663,7 @@ class ExecutionQueue(object):
         t.join()
         sys.stdout.full_flush()
         if self.progress:
-          self.progress.update(1)
+          self.progress.update(1, t.item.name)
         assert not t.item.name in self.ran
         if not t.item.name in self.ran:
           self.ran.append(t.item.name)
@@ -681,7 +681,7 @@ class ExecutionQueue(object):
       task_item.run(*args, **kwargs)
       self.ran.append(task_item.name)
       if self.progress:
-        self.progress.update(1)
+        self.progress.update(1, ', '.join(t.item.name for t in self.running))
 
   class _Worker(threading.Thread):
     """One thread to execute one WorkItem."""
