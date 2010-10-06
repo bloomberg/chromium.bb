@@ -994,14 +994,16 @@ long long Segment::ParseHeaders()
         }
         else if (id == 0x0C53BB6B)  //Cues ID
         {
-            assert(m_pCues == NULL);
-
-            m_pCues = new Cues(this, pos, size);
-            assert(m_pCues);  //TODO
+            if (m_pCues == NULL)
+            {
+                m_pCues = new Cues(this, pos, size);
+                assert(m_pCues);  //TODO
+            }
         }
         else if (id == 0x014D9B74)  //SeekHead ID
         {
-            ParseSeekHead(pos, size);
+            if (m_pCues == NULL)
+                ParseSeekHead(pos, size);
         }
         else if (id == 0x0F43B675)  //Cluster ID
         {
@@ -2657,7 +2659,7 @@ bool Segment::SearchCues(
     while (i < j)
     {
         //INVARIANT:
-        //[0, i) < pTP->m_pos
+        //[ii, i) < pTP->m_pos
         //[i, j) ?
         //[j, jj)  > pTP->m_pos
 
