@@ -58,11 +58,33 @@ HTML_CHECKER = ['tidy', '-errors']
 
 # From depot_tools:
 # To see a list of all filters run: 'depot_tools/cpplint.py --filter='
-CPP_CHECKER = ['cpplint.py', '--filter=-build/header_guard']
+CPP_CHECKER = ['cpplint.py',
+               '--filter='
+               '-build/header_guard'
+               ',-build/class'
+               ',-build/include_order'
+               ',-readability/casting'
+               ',-readability/check'
+               ',-readability/multiline_comment'
+               ',-runtime/sizeof'
+               ',-runtime/threadsafe_fn'
+               ',-whitespace/newline'
+               ]
 
 # From depot_tools (currently not used -- too many false positives).
 # To see a list of all filters run: 'depot_tools/cpplint.py --filter='
-C_CHECKER = ['cpplint.py', '--filter=-build/header_guard']
+C_CHECKER = ['cpplint.py',
+             '--filter='
+             '-build/header_guard'
+             ',-build/class'
+             ',-build/include_order'
+             ',-readability/casting'
+             ',-readability/check'
+             ',-readability/multiline_comment'
+             ',-runtime/sizeof'
+             ',-runtime/threadsafe_fn'
+             ',-whitespace/newline'
+             ]
 
 # http://pychecker.sourceforge.net/
 PYTHON_CHECKER = ['pychecker']
@@ -321,8 +343,11 @@ class RewriteChecker(GenericRegexChecker):
 
 VALID_INCLUDE_PREFIX = [
     'base/',
+    'breakpad/',
     'chrome/common/',
+    'chrome/renderer/',
     'gen/native_client/',
+    'gpu/',
     'gtest/',
     'native_client/',
     'ppapi/',
