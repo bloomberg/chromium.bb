@@ -179,7 +179,11 @@ bool NativeViewEGLContext::SwapBuffers() {
 gfx::Size NativeViewEGLContext::GetSize() {
 #if defined(OS_WIN)
   RECT rect;
-  CHECK(GetClientRect(static_cast<HWND>(window_), &rect));
+  if (!GetClientRect(static_cast<HWND>(window_), &rect)) {
+    DCHECK(false) << "GetClientRect failed.";
+    return gfx::Size();
+  }
+
   return gfx::Size(rect.right - rect.left, rect.bottom - rect.top);
 #else
   // TODO(piman): This doesn't work correctly on Windows yet, the size doesn't
