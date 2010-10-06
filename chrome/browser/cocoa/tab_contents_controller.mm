@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/tab_contents_controller.h"
 
 #include "base/mac_util.h"
+#include "base/scoped_nsobject.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -13,10 +14,8 @@
 @implementation TabContentsController
 @synthesize tabContents = contents_;
 
-- (id)initWithNibName:(NSString*)name
-             contents:(TabContents*)contents {
-  if ((self = [super initWithNibName:name
-                              bundle:mac_util::MainAppBundle()])) {
+- (id)initWithContents:(TabContents*)contents {
+  if ((self = [super initWithNibName:nil bundle:nil])) {
     contents_ = contents;
   }
   return self;
@@ -26,6 +25,12 @@
   // make sure our contents have been removed from the window
   [[self view] removeFromSuperview];
   [super dealloc];
+}
+
+- (void)loadView {
+  scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+  [view setAutoresizingMask:NSViewHeightSizable|NSViewWidthSizable];
+  [self setView:view];
 }
 
 - (void)ensureContentsSizeDoesNotChange {

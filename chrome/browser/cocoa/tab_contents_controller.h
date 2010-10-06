@@ -23,10 +23,8 @@ class TabContents;
 }
 @property(readonly, nonatomic) TabContents* tabContents;
 
-// Create the contents of a tab represented by |contents| and loaded from the
-// nib given by |name|.
-- (id)initWithNibName:(NSString*)name
-             contents:(TabContents*)contents;
+// Create the contents of a tab represented by |contents|.
+- (id)initWithContents:(TabContents*)contents;
 
 // Called when the tab contents is the currently selected tab and is about to be
 // removed from the view hierarchy.

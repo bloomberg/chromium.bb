@@ -972,8 +972,7 @@ private:
   // Make a new tab. Load the contents of this tab from the nib and associate
   // the new controller with |contents| so it can be looked up later.
   TabContentsController* contentsController =
-      [[[TabContentsController alloc] initWithNibName:@"TabContents"
-                                             contents:contents]
+      [[[TabContentsController alloc] initWithContents:contents]
           autorelease];
   [tabContentsArray_ insertObject:contentsController atIndex:index];
 
