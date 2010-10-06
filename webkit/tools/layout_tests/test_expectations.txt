@@ -5,3 +5,10 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
+// Regression from Webkit Roll 69169:69180
+BUGAJWONG WIN : media/audio-delete-while-slider-thumb-clicked.html = CRASH
+BUGAJWONG WIN : media/controls-drag-timebar.html = CRASH
+
+// Moving from slow to timeout since it is dying consistently for the last few runs.
+BUG18733 WIN : http/tests/xmlhttprequest/cross-origin-no-authorization.html = TIMEOUT PASS
+
