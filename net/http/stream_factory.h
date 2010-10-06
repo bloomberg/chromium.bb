@@ -13,6 +13,7 @@
 namespace net {
 
 class BoundNetLog;
+class ClientSocketHandle;
 class HostPortPair;
 class HttpAlternateProtocols;
 class HttpAuthController;
@@ -83,6 +84,7 @@ class StreamFactory {
     virtual void Start(const HttpRequestInfo* request_info,
                        SSLConfig* ssl_config,
                        ProxyInfo* proxy_info,
+                       ClientSocketHandle* connection,
                        StreamRequestDelegate* delegate,
                        const BoundNetLog& net_log) = 0;
 
@@ -128,6 +130,7 @@ class StreamFactory {
   virtual void RequestStream(const HttpRequestInfo* info,
                              SSLConfig* ssl_config,
                              ProxyInfo* proxy_info,
+                             ClientSocketHandle* connection,
                              StreamRequestDelegate* delegate,
                              const BoundNetLog& net_log,
                              const scoped_refptr<HttpNetworkSession>& session,

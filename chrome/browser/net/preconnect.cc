@@ -101,8 +101,13 @@ void Preconnect::Connect(const GURL& url) {
 
   proxy_info_.reset(new net::ProxyInfo());
   net::StreamFactory* stream_factory = session->http_stream_factory();
-  stream_factory->RequestStream(request_info_.get(), ssl_config_.get(),
-                                proxy_info_.get(), this, net_log_, session,
+  stream_factory->RequestStream(request_info_.get(),
+                                ssl_config_.get(),
+                                proxy_info_.get(),
+                                NULL,
+                                this,
+                                net_log_,
+                                session,
                                 &stream_request_job_);
 }
 
