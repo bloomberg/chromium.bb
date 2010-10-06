@@ -192,8 +192,12 @@ AccessibilityWinBrowserTest::GetRendererAccessible() {
       browser()->GetSelectedTabContents()->GetRenderWidgetHostView()->
           GetNativeView();
 
-  // By requesting an accessible chrome will believe a screen reader has been
-  // detected.
+  // Invoke windows screen reader detection by sending the WM_GETOBJECT message
+  // with kIdCustom as the LPARAM.
+  const int32 kIdCustom = 1;
+  SendMessage(
+      hwnd_render_widget_host_view, WM_GETOBJECT, OBJID_CLIENT, kIdCustom);
+
   IAccessible* accessible;
   HRESULT hr = AccessibleObjectFromWindow(
       hwnd_render_widget_host_view, OBJID_CLIENT,
@@ -317,9 +321,8 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   }
 }
 
-// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestRendererAccessibilityTree) {
+                       TestRendererAccessibilityTree) {
   // The initial accessible returned should have state STATE_SYSTEM_BUSY while
   // the accessibility tree is being requested from the renderer.
   AccessibleChecker document1_checker(L"", ROLE_SYSTEM_DOCUMENT, L"");
@@ -374,9 +377,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   ASSERT_EQ(E_FAIL, hr);
 }
 
-// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestNotificationActiveDescendantChanged) {
+                       TestNotificationActiveDescendantChanged) {
   GURL tree_url("data:text/html,<ul tabindex='-1' role='radiogroup'><li id='li'"
       ">li</li></ul>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
@@ -424,9 +426,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
-// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestNotificationCheckedStateChanged) {
+                       TestNotificationCheckedStateChanged) {
   GURL tree_url("data:text/html,<body><input type='checkbox' /></body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
   GetRendererAccessible();
@@ -454,9 +455,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
-// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestNotificationChildrenChanged) {
+                       TestNotificationChildrenChanged) {
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
       "data:text/html,<body role=group></body>");
@@ -482,9 +482,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
-// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestNotificationChildrenChanged2) {
+                       TestNotificationChildrenChanged2) {
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
       "data:text/html,<div role=group style='visibility: hidden'>text"
@@ -511,9 +510,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
-// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestNotificationFocusChanged) {
+                       TestNotificationFocusChanged) {
   // The role attribute causes the node to be in the accessibility tree.
   GURL tree_url(
       "data:text/html,<div role=group tabindex='-1'></div>");
@@ -555,9 +553,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   document_checker.CheckAccessible(GetRendererAccessible());
 }
 
-// FAILS http://crbug.com/57959
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       DISABLED_TestNotificationValueChanged) {
+                       TestNotificationValueChanged) {
   GURL tree_url("data:text/html,<body><input type='text' value='old value'/>"
       "</body>");
   browser()->OpenURL(tree_url, GURL(), CURRENT_TAB, PageTransition::TYPED);
