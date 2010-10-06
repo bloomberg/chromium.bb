@@ -262,12 +262,10 @@ TEST_SUITES = {'all_tests': None}
 # platform is defined as build type
 # <BUILD_TYPE>-<SUBARCH>
 bad_build_lists = dict()
-bad_build_lists['opt-win-64'] = ['ncval_test_call_long_dis',
-                                 'run_srpc_basic_test',
+bad_build_lists['opt-win-64'] = ['run_srpc_basic_test',
                                  'run_srpc_bad_service_test']
 
-bad_build_lists['dbg-win-64'] = ['ncval_test_call_long_dis',
-                                 'run_srpc_basic_test',
+bad_build_lists['dbg-win-64'] = ['run_srpc_basic_test',
                                  'run_srpc_bad_service_test']
 
 # This is a list of tests that do not yet pass when using nacl-glibc.
