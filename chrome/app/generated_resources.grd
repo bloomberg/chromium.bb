@@ -9336,7 +9336,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_IS_USED_FOR_SPELL_CHECKING"
                desc="The label for a language that is currently used for spell checking">
-        This languae is used for spell checking
+        This language is used for spell checking
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD"
                desc="The label for a input method">
