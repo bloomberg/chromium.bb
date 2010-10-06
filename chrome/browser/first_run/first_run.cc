@@ -51,7 +51,15 @@ FilePath GetDefaultPrefFilePath(bool create_profile_dir,
 
 FirstRun::FirstRunState FirstRun::first_run_ = FIRST_RUN_UNKNOWN;
 
-FirstRun::MasterPrefs::MasterPrefs() {}
+FirstRun::MasterPrefs::MasterPrefs()
+    : ping_delay(0),
+      homepage_defined(false),
+      do_import_items(0),
+      dont_import_items(0),
+      run_search_engine_experiment(false),
+      randomize_search_engine_experiment(false),
+      make_chrome_default(false) {
+}
 
 FirstRun::MasterPrefs::~MasterPrefs() {}
 
