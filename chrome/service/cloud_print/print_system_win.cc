@@ -43,7 +43,7 @@ class DevMode {
 
   void Free() {
     if (dm_)
-      delete dm_;
+      delete [] dm_;
     dm_ = NULL;
   }
 
