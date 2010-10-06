@@ -112,7 +112,8 @@ class EnableLaunchOnStartupTask : public Task {
         "[Desktop Entry]\n"
         "Type=Application\n"
         "Terminal=false\n"
-        "Exec=" + wrapper_script + "\n"
+        "Exec=" + wrapper_script +
+        " --enable-background-mode --no-startup-window\n"
         "Name=" + version_info->Name() + "\n";
     std::string::size_type content_length = autostart_file_contents.length();
     if (file_util::WriteFile(autostart_file, autostart_file_contents.c_str(),
@@ -379,13 +380,15 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
     FilePath executable;
     if (!PathService::Get(base::FILE_EXE, &executable))
       return;
+    std::wstring new_value = executable.value() +
+        L" --enable-background-mode --no-startup-window";
     if (read_key.ValueExists(key_name)) {
       std::wstring current_value;
       if (read_key.ReadValue(key_name, &current_value) &&
-          (current_value == executable.value()))
+          (current_value == new_value))
         return;
     }
-    if (!write_key.WriteValue(key_name, executable.value().c_str()))
+    if (!write_key.WriteValue(key_name, new_value.c_str()))
       LOG(WARNING) << "Failed to register launch on login.";
   } else {
     if (read_key.ValueExists(key_name) && !write_key.DeleteValue(key_name))
