@@ -672,6 +672,10 @@ void LocationBarView::SetShowFocusRect(bool show) {
   SchedulePaint();
 }
 
+void LocationBarView::SelectAll() {
+  location_entry_->SelectAll(true);
+}
+
 #if defined(OS_WIN)
 bool LocationBarView::OnMousePressed(const views::MouseEvent& event) {
   UINT msg;
@@ -762,8 +766,8 @@ bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
       suggested_text_view_->GetText().empty()) {
     return false;
   }
-  // TODO(sky): I may need to route this through InstantController so that we don't
-  // fetch suggestions for the new combined text.
+  // TODO(sky): I may need to route this through InstantController so that we
+  // don't fetch suggestions for the new combined text.
   location_entry_->SetUserText(typed_text + suggested_text_view_->GetText());
   return true;
 }

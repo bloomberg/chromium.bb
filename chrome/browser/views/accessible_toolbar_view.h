@@ -63,6 +63,9 @@ class AccessibleToolbarView : public views::View,
   // Remove toolbar focus.
   virtual void RemoveToolbarFocus();
 
+  // Select all text in the location bar
+  virtual void LocationBarSelectAll();
+
   void RestoreLastFocusedView();
 
   View* GetFirstFocusableChild();

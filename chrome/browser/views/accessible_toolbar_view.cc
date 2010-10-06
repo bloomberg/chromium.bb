@@ -98,6 +98,14 @@ void AccessibleToolbarView::RemoveToolbarFocus() {
   focus_manager_->UnregisterAccelerator(right_key_, this);
 }
 
+void AccessibleToolbarView::LocationBarSelectAll() {
+  views::View* focused_view = GetFocusManager()->GetFocusedView();
+  if (focused_view &&
+      focused_view->GetClassName() == LocationBarView::kViewClassName) {
+    static_cast<LocationBarView*>(focused_view)->SelectAll();
+  }
+}
+
 void AccessibleToolbarView::RestoreLastFocusedView() {
   views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
   views::View* last_focused_view =
@@ -143,13 +151,12 @@ views::FocusTraversable* AccessibleToolbarView::GetPaneFocusTraversable() {
 
 bool AccessibleToolbarView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
-  // Special case: don't handle arrows for certain views, like the
-  // location bar's edit text view, which need them for text editing.
+  // Special case: don't handle any accelerators for the location bar,
+  // so that it behaves exactly the same whether you focus it with Ctrl+L
+  // or F6 or Alt+D or Alt+Shift+T.
   views::View* focused_view = focus_manager_->GetFocusedView();
   if ((focused_view->GetClassName() == LocationBarView::kViewClassName ||
-       focused_view->GetClassName() == views::NativeViewHost::kViewClassName) &&
-      (accelerator.GetKeyCode() == app::VKEY_LEFT ||
-       accelerator.GetKeyCode() == app::VKEY_RIGHT)) {
+       focused_view->GetClassName() == views::NativeViewHost::kViewClassName)) {
     return false;
   }
 
@@ -199,6 +206,16 @@ void AccessibleToolbarView::FocusWillChange(views::View* focused_before,
 
   views::FocusManager::FocusChangeReason reason =
       focus_manager_->focus_change_reason();
+
+  if (focused_now->GetClassName() == LocationBarView::kViewClassName &&
+      reason == views::FocusManager::kReasonFocusTraversal) {
+    // Tabbing to the location bar should select all. Defer so that it happens
+    // after the focus.
+    MessageLoop::current()->PostTask(
+        FROM_HERE, method_factory_.NewRunnableMethod(
+            &AccessibleToolbarView::LocationBarSelectAll));
+  }
+
   if (!IsParentOf(focused_now) ||
       reason == views::FocusManager::kReasonDirectFocusChange) {
     // We should remove toolbar focus (i.e. make most of the controls

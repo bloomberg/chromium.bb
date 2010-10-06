@@ -167,6 +167,10 @@ class LocationBarView : public LocationBar,
   // Repaints if necessary.
   virtual void SetShowFocusRect(bool show);
 
+  // Select all of the text. Needed when the user tabs through controls
+  // in the toolbar in full keyboard accessibility mode.
+  virtual void SelectAll();
+
 #if defined(OS_WIN)
   // Event Handlers
   virtual bool OnMousePressed(const views::MouseEvent& event);
