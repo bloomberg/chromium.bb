@@ -111,6 +111,12 @@ void DOMUI::CallJavascriptFunction(
   ExecuteJavascript(GetJavascript(function_name, args));
 }
 
+void DOMUI::CallJavascriptFunction(
+    const std::wstring& function_name,
+    const std::vector<const Value*>& args) {
+  ExecuteJavascript(GetJavascript(function_name, args));
+}
+
 ThemeProvider* DOMUI::GetThemeProvider() const {
   return tab_contents_->profile()->GetThemeProvider();
 }

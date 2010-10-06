@@ -20,13 +20,79 @@ cr.define('options', function() {
     this.tree.addEventListener('change',
         this.handleCertificatesTreeChange_.bind(this));
 
+    var tree = this.tree;
 
     this.viewButton = $(id + '-view');
-
-    var tree = this.tree;
     this.viewButton.onclick = function(e) {
       var selected = tree.selectedItem;
       chrome.send('viewCertificate', [selected.data.id]);
+    }
+
+    this.editButton = $(id + '-edit');
+    if (this.editButton !== null) {
+      if (id == 'serverCertsTab') {
+        this.editButton.onclick = function(e) {
+          var selected = tree.selectedItem;
+          chrome.send('editServerCertificate', [selected.data.id]);
+        }
+      } else if (id == 'caCertsTab') {
+        this.editButton.onclick = function(e) {
+          var selected = tree.selectedItem;
+          chrome.send('editCaCertificate', [selected.data.id]);
+        }
+      } else {
+        console.log('unknown edit button for: ' + id);
+      }
+    }
+
+    this.backupButton = $(id + '-backup');
+    if (this.backupButton !== null) {
+      this.backupButton.onclick = function(e) {
+        var selected = tree.selectedItem;
+        chrome.send('exportPersonalCertificate', [selected.data.id]);
+      }
+    }
+
+    this.backupAllButton = $(id + '-backup-all');
+    if (this.backupAllButton !== null) {
+      this.backupAllButton.onclick = function(e) {
+        chrome.send('exportAllPersonalCertificates', []);
+      }
+    }
+
+    this.importButton = $(id + '-import');
+    if (this.importButton !== null) {
+      if (id == 'personalCertsTab') {
+        this.importButton.onclick = function(e) {
+          chrome.send('importPersonalCertificate', []);
+        }
+      } else if (id == 'caCertsTab') {
+        this.importButton.onclick = function(e) {
+          chrome.send('importCaCertificate', []);
+        }
+      } else {
+        console.log('unknown import button for: ' + id);
+      }
+    }
+
+    this.exportButton = $(id + '-export');
+    if (this.exportButton !== null) {
+      this.exportButton.onclick = function(e) {
+        var selected = tree.selectedItem;
+        chrome.send('exportCertificate', [selected.data.id]);
+      }
+    }
+
+    this.deleteButton = $(id + '-delete');
+    this.deleteButton.onclick = function(e) {
+      var data = tree.selectedItem.data;
+      AlertOverlay.show(
+          localStrings.getStringF(id + 'DeleteConfirm', data.name),
+          localStrings.getString(id + 'DeleteImpact'),
+          undefined,
+          undefined,
+          function() { chrome.send('deleteCertificate', [data.id]); }
+          );
     }
   }
 
@@ -39,7 +105,17 @@ cr.define('options', function() {
      */
     updateButtonState: function(data) {
       var isCert = !!data && data.id.substr(0, 5) == 'cert-';
+      var hasChildren = this.tree.items.length > 0;
       this.viewButton.disabled = !isCert;
+      if (this.editButton !== null)
+        this.editButton.disabled = !isCert;
+      if (this.backupButton !== null)
+        this.backupButton.disabled = !isCert;
+      if (this.backupAllButton !== null)
+        this.backupAllButton.disabled = !hasChildren;
+      if (this.exportButton !== null)
+        this.exportButton.disabled = !isCert;
+      this.deleteButton.disabled = !isCert;
     },
 
     /**
@@ -106,6 +182,14 @@ cr.define('options', function() {
   // CertificateManagerHandler callbacks.
   CertificateManager.onPopulateTree = function(args) {
     $(args[0]).populate(args[1]);
+  };
+
+  CertificateManager.exportPersonalAskPassword = function(args) {
+    CertificateBackupOverlay.show();
+  };
+
+  CertificateManager.importPersonalAskPassword = function(args) {
+    CertificateRestoreOverlay.show();
   };
 
   // Export

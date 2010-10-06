@@ -111,6 +111,8 @@ class DOMUI {
                               const Value& arg2,
                               const Value& arg3,
                               const Value& arg4);
+  void CallJavascriptFunction(const std::wstring& function_name,
+                              const std::vector<const Value*>& args);
 
   ThemeProvider* GetThemeProvider() const;
 

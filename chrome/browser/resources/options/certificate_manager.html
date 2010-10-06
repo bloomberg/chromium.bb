@@ -33,7 +33,17 @@
       <tr><td>
         <button id="personalCertsTab-view" i18n-content="view_certificate"
           disabled></button>
-        <!-- TODO other buttons -->
+        <button id="personalCertsTab-backup" i18n-content="export_certificate"
+          disabled></button>
+        <!-- TODO(mattm):
+        <button id="personalCertsTab-backup-all"
+          i18n-content="export_all_certificates"
+          disabled></button>
+        -->
+        <button id="personalCertsTab-import" i18n-content="import_certificate"
+          ></button>
+        <button id="personalCertsTab-delete" i18n-content="delete_certificate"
+          disabled></button>
       </td></tr>
     </table>
   </div>
@@ -49,7 +59,17 @@
       <tr><td>
         <button id="emailCertsTab-view" i18n-content="view_certificate"
           disabled></button>
-        <!-- TODO other buttons -->
+        <!--  We don't really care about email certificates, so not much point
+        bothering to implement these...
+        <button id="emailCertsTab-edit" i18n-content="edit_certificate"
+          disabled></button>
+        <button id="emailCertsTab-import" i18n-content="import_certificate"
+          ></button>
+        -->
+        <button id="emailCertsTab-export" i18n-content="export_certificate"
+          disabled></button>
+        <button id="emailCertsTab-delete" i18n-content="delete_certificate"
+          disabled></button>
       </td></tr>
     </table>
   </div>
@@ -65,7 +85,16 @@
       <tr><td>
         <button id="serverCertsTab-view" i18n-content="view_certificate"
           disabled></button>
-        <!-- TODO other buttons -->
+        <!-- TODO(mattm):
+        <button id="serverCertsTab-edit" i18n-content="edit_certificate"
+          disabled></button>
+        <button id="serverCertsTab-import" i18n-content="import_certificate"
+          ></button>
+        -->
+        <button id="serverCertsTab-export" i18n-content="export_certificate"
+          disabled></button>
+        <button id="serverCertsTab-delete" i18n-content="delete_certificate"
+          disabled></button>
       </td></tr>
     </table>
   </div>
@@ -81,7 +110,16 @@
       <tr><td>
         <button id="caCertsTab-view" i18n-content="view_certificate"
           disabled></button>
-        <!-- TODO other buttons -->
+        <!-- TODO(mattm):
+        <button id="caCertsTab-edit" i18n-content="edit_certificate"
+          disabled></button>
+        <button id="caCertsTab-import" i18n-content="import_certificate"
+          ></button>
+        -->
+        <button id="caCertsTab-export" i18n-content="export_certificate"
+          disabled></button>
+        <button id="caCertsTab-delete" i18n-content="delete_certificate"
+          disabled></button>
       </td></tr>
     </table>
   </div>
@@ -97,7 +135,10 @@
       <tr><td>
         <button id="otherCertsTab-view" i18n-content="view_certificate"
           disabled></button>
-        <!-- TODO other buttons -->
+        <button id="otherCertsTab-export" i18n-content="export_certificate"
+          disabled></button>
+        <button id="otherCertsTab-delete" i18n-content="delete_certificate"
+          disabled></button>
       </td></tr>
     </table>
   </div>

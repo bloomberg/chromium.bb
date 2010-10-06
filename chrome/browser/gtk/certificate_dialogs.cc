@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(mattm): this isn't gtk specific, it shouldn't be under the gtk dir
+
+// TODO(mattm): the nss export functions should be moved to cert_database_nss or
+// x509_certificate_nss.
+
 #include "chrome/browser/gtk/certificate_dialogs.h"
 
 #include <cms.h>
-#include <gtk/gtk.h>
 
 #include <vector>
 

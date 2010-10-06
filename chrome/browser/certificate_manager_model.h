@@ -30,10 +30,19 @@ class CertificateManagerModel {
     COL_EMAIL_ADDRESS,
   };
 
-  CertificateManagerModel();
+  class Observer {
+   public:
+    // Called to notify the view that the certificate list has been refreshed.
+    // TODO(mattm): do a more granular updating strategy?  Maybe retrieve new
+    // list of certs, diff against past list, and then notify of the changes?
+    virtual void CertificatesRefreshed() = 0;
+  };
+
+  explicit CertificateManagerModel(Observer* observer);
   ~CertificateManagerModel();
 
-  // Refresh the list of certs.  Following this call, the view should call
+  // Refresh the list of certs.  Following this call, the observer
+  // CertificatesRefreshed method will be called so the view can call
   // FilterAndBuildOrgGroupingMap as necessary to refresh its tree views.
   void Refresh();
 
@@ -44,9 +53,26 @@ class CertificateManagerModel {
   // Get the data to be displayed in |column| for the given |cert|.
   string16 GetColumnText(const net::X509Certificate& cert, Column column) const;
 
+  // Import certificates from PKCS #12 encoded |data|, using the given
+  // |password|.  Returns a net error code on failure.
+  int ImportFromPKCS12(const std::string& data, const string16& password);
+
+  // Export certificates as PKCS #12 encoded |output|, using the given
+  // |password|.  Returns number of certs exported.
+  int ExportToPKCS12(const net::CertificateList& certs,
+                     const string16& password,
+                     std::string* output) const;
+
+  // Delete the cert.  Returns true on success.  |cert| is still valid when this
+  // function returns.
+  bool Delete(net::X509Certificate* cert);
+
  private:
   net::CertDatabase cert_db_;
   net::CertificateList cert_list_;
+
+  // The observer to notify when certificate list is refreshed.
+  Observer* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerModel);
 };

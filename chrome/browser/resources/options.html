@@ -82,8 +82,12 @@
 <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
   <script src="options/certificate_tree.js"></script>
   <script src="options/certificate_manager.js"></script>
+  <script src="options/certificate_restore_overlay.js"></script>
+  <script src="options/certificate_backup_overlay.js"></script>
   <script>
     var CertificateManager = options.CertificateManager;
+    var CertificateRestoreOverlay = options.CertificateRestoreOverlay;
+    var CertificateBackupOverlay = options.CertificateBackupOverlay;
   </script>
 </if>
 <script src="options/add_startup_page_overlay.js"></script>
@@ -163,6 +167,8 @@ function load() {
   OptionsPage.registerSubPage(SyncOptions.getInstance());
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerSubPage(CertificateManager.getInstance());
+    OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance());
+    OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance());
   }
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
@@ -268,6 +274,10 @@ window.onpopstate = function(e) {
      <include
          src="options/chromeos_language_customize_modifier_keys_overlay.html">
      <include src="options/chromeos_internet_detail.html">
+  </if>
+  <if expr="not pp_ifdef('win32') and not pp_ifdef('darwin')">
+    <include src="options/certificate_restore_overlay.html">
+    <include src="options/certificate_backup_overlay.html">
   </if>
 </div>
 <div id="main-content">

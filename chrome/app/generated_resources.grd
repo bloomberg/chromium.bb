@@ -3154,6 +3154,81 @@ each locale. -->
       <message name="IDS_CERT_MANAGER_VIEW_CERT_BUTTON" desc="Label for the button in the certificate manager which launches the certificate viewer for the selected certificate">
         View
       </message>
+      <message name="IDS_CERT_MANAGER_IMPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates">
+        Import...
+      </message>
+      <message name="IDS_CERT_MANAGER_EXPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to export certificates">
+        Export...
+      </message>
+      <message name="IDS_CERT_MANAGER_EXPORT_ALL_BUTTON" desc="Label for the button in the certificate manager which saves all personal certificates and their private keys">
+        Export All...
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_BUTTON" desc="Label for the button in the certificate manager which allows you to edit certificate trust">
+        Edit...
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_BUTTON" desc="Label for the button in the certificate manager which allows you to delete certificates">
+        Delete...
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_USER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a user certificate">
+        Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>VeriSign Browser Certificate</ex></ph>"?
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_USER_DESCRIPTION" desc="Description of impact of deleting a user certificate">
+        If you delete one of your own certificates, you can no longer use it to identify yourself.
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_SERVER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a server certificate">
+        Delete server certificate "<ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>"?
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_SERVER_DESCRIPTION" desc="Description of impact of deleting a server certificate">
+        If you delete a server certificate, you restore the usual security checks for that server and require it uses a valid certificate.
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_CA_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate authority certificate">
+        Delete CA certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>"?
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION" desc="Description of impact of deleting a certificate authority certificate">
+        If you delete a Certificate Authority (CA) certificate, your browser will no longer trust any certificates issued by that CA.
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_UNKNOWN_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate of other type">
+        Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph>"?
+      </message>
+      <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_DESC" desc="Description of password prompt in certificate manager for exporting a personal certificate">
+        Please enter a password to encrypt this certificate file.
+      </message>
+      <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_HELP" desc="Text in password prompt of certificate manager for exporting a personal certificate, reminding user that if they forget the password they're screwed.">
+        The password you choose will be required to restore this file later.  Please record it in a safe location.
+      </message>
+      <message name="IDS_CERT_MANAGER_RESTORE_PASSWORD_DESC" desc="Description of password prompt in certificate manager for restoring a personal certificate">
+        Please enter the password that was used to encrypt this certificate file.
+      </message>
+      <message name="IDS_CERT_MANAGER_PASSWORD_LABEL" desc="The label of the password field in the certificate manager for restoring or exporting a personal certificate">
+        Password:
+      </message>
+      <message name="IDS_CERT_MANAGER_CONFIRM_PASSWORD_LABEL" desc="The label of the field in the certificate manager for re-entering the password when creating a export.">
+        Confirm Password:
+      </message>
+      <message name="IDS_CERT_MANAGER_PKCS12_FILES" desc="The label in the file selector dialog for PKCS #12 file type.">
+        PKCS #12 Files
+      </message>
+      <message name="IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file export errors.">
+        PKCS #12 Export Error
+      </message>
+      <message name="IDS_CERT_MANAGER_WRITE_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file write errors.">
+        There was an error while trying to write the file: <ph name="ERROR_TEXT">$1<ex>Permission denied.</ex></ph>.
+      </message>
+      <message name="IDS_CERT_MANAGER_PKCS12_IMPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file import errors.">
+        PKCS #12 Import Error
+      </message>
+      <message name="IDS_CERT_MANAGER_READ_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file read errors.">
+        There was an error while trying to read the file: <ph name="ERROR_TEXT">$1<ex>File not found.</ex></ph>.
+      </message>
+      <message name="IDS_CERT_MANAGER_BAD_PASSWORD" desc="The text in the error dialog for entering an incorrect password when importing an encrypted certificate file.">
+        Incorrect password.
+      </message>
+      <message name="IDS_CERT_MANAGER_UNKNOWN_ERROR" desc="The text in the error dialog when an unknown error occurs during an operation on the certificate database.">
+        Unknown error.
+      </message>
+      <message name="IDS_CERT_MANAGER_DELETE_CERT_ERROR_TITLE" desc="The title in the error dialog for certificate delete errors.">
+        Certificate Deletion Error
+      </message>
 
       <!-- Add Client Certificate Dialog -->
       <message name="IDS_ADD_CERT_DIALOG_ADD" desc="Title of the button that adds the certificate in the Add Client Certificate dialog">

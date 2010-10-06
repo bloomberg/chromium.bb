@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
+#include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
 
 // TODO(mattm): Try to make this use only X509Certificate stuff rather than NSS
@@ -49,14 +50,18 @@ std::string GetCertNameOrNickname(CERTCertificate* os_cert) {
 
 }  // namespace
 
-CertificateManagerModel::CertificateManagerModel() {
+CertificateManagerModel::CertificateManagerModel(Observer* observer)
+    : observer_(observer) {
 }
 
 CertificateManagerModel::~CertificateManagerModel() {
 }
 
 void CertificateManagerModel::Refresh() {
+  VLOG(1) << "refresh started";
   cert_db_.ListCerts(&cert_list_);
+  observer_->CertificatesRefreshed();
+  VLOG(1) << "refresh finished";
 }
 
 void CertificateManagerModel::FilterAndBuildOrgGroupingMap(
@@ -108,4 +113,25 @@ string16 CertificateManagerModel::GetColumnText(
       NOTREACHED();
   }
   return rv;
+}
+
+int CertificateManagerModel::ImportFromPKCS12(const std::string& data,
+                                              const string16& password) {
+  int result = cert_db_.ImportFromPKCS12(data, password);
+  if (result == net::OK)
+    Refresh();
+  return result;
+}
+
+int CertificateManagerModel::ExportToPKCS12(const net::CertificateList& certs,
+                                            const string16& password,
+                                            std::string* output) const {
+  return cert_db_.ExportToPKCS12(certs, password, output);
+}
+
+bool CertificateManagerModel::Delete(net::X509Certificate* cert) {
+  bool result = cert_db_.DeleteCertAndKey(cert);
+  if (result)
+    Refresh();
+  return result;
 }
