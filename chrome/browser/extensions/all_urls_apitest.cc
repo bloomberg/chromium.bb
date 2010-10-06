@@ -15,7 +15,8 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
+// Flaky, see http://crbug.com/57694.
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FLAKY_WhitelistedExtension) {
   // First load the two extension.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");
@@ -30,7 +31,6 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   Extension* extensionA = service->extensions()->at(size_before);
   Extension* extensionB = service->extensions()->at(size_before + 1);
 
-  // Then add the two extensions to the whitelist.
   const char* kCanExecuteScriptsEverywhere[] = {
     extensionA->id().c_str(),
     extensionB->id().c_str(),
