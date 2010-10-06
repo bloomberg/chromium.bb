@@ -512,6 +512,7 @@ private:
     long m_clusterSize;          //array size
 
     void AppendCluster(Cluster*);
+    void PreloadCluster(Cluster*, ptrdiff_t);
 
     void ParseSeekHead(long long pos, long long size);
     void ParseSeekEntry(long long pos, long long size);

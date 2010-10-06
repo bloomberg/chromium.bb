@@ -1305,13 +1305,13 @@ void Segment::AppendCluster(Cluster* pCluster)
     assert(pCluster);
     assert(pCluster->m_index >= 0);
 
+    const long count = m_clusterCount + m_clusterPreloadCount;
+
     long& size = m_clusterSize;
-    assert(size >= m_clusterCount);
+    assert(size >= count);
 
     const long idx = pCluster->m_index;
     assert(idx == m_clusterCount);
-
-    const long count = m_clusterCount + m_clusterPreloadCount;
 
     if (count >= size)
     {
@@ -1376,6 +1376,76 @@ void Segment::AppendCluster(Cluster* pCluster)
     m_clusters[idx] = pCluster;
     ++m_clusterCount;
 }
+
+
+void Segment::PreloadCluster(Cluster* pCluster, ptrdiff_t idx)
+{
+    assert(pCluster);
+    assert(pCluster->m_index < 0);
+    assert(idx >= m_clusterCount);
+
+    const long count = m_clusterCount + m_clusterPreloadCount;
+
+    long& size = m_clusterSize;
+    assert(size >= count);
+
+    if (count >= size)
+    {
+        long n;
+
+        if (size > 0)
+            n = 2 * size;
+        else if (m_pInfo == 0)
+            n = 2048;
+        else
+        {
+            const long long ns = m_pInfo->GetDuration();
+
+            if (ns <= 0)
+                n = 2048;
+            else
+            {
+                const long long sec = (ns + 999999999LL) / 1000000000LL;
+                n = static_cast<long>(sec);
+            }
+        }
+
+        Cluster** const qq = new Cluster*[n];
+        Cluster** q = qq;
+
+        Cluster** p = m_clusters;
+        Cluster** const pp = p + count;
+
+        while (p != pp)
+            *q++ = *p++;
+
+        delete[] m_clusters;
+
+        m_clusters = qq;
+        size = n;
+    }
+
+    assert(m_clusters);
+
+    Cluster** const p = m_clusters + idx;
+
+    Cluster** q = m_clusters + count;
+    assert(q >= p);
+    assert(q < (m_clusters + size));
+
+    while (q > p)
+    {
+        Cluster** const qq = q - 1;
+        assert((*qq)->m_index < 0);
+
+        *q = *qq;
+        q = qq;
+    }
+
+    m_clusters[idx] = pCluster;
+    ++m_clusterPreloadCount;
+}
+
 
 long Segment::Load()
 {
@@ -2069,6 +2139,7 @@ Cluster* Segment::GetLast()
         return &m_eos;
 
     const long idx = m_clusterCount - 1;
+
     Cluster* const pCluster = m_clusters[idx];
     assert(pCluster);
 
@@ -2087,19 +2158,152 @@ Cluster* Segment::GetNext(const Cluster* pCurr)
     assert(pCurr);
     assert(pCurr != &m_eos);
     assert(m_clusters);
-    assert(m_clusterCount > 0);
 
     long idx =  pCurr->m_index;
-    assert(idx < m_clusterCount);
-    assert(pCurr == m_clusters[idx]);
 
-    ++idx;
+    if (idx >= 0)
+    {
+        assert(m_clusterCount > 0);
+        assert(idx < m_clusterCount);
+        assert(pCurr == m_clusters[idx]);
 
-    if (idx >= m_clusterCount)
-        return &m_eos;
+        ++idx;
 
-    Cluster* const pNext = m_clusters[idx];
-    assert(pNext);
+        if (idx >= m_clusterCount)
+            return &m_eos;  //caller will LoadCluster as desired
+
+        Cluster* const pNext = m_clusters[idx];
+        assert(pNext);
+        assert(pNext->m_index >= 0);
+        assert(pNext->m_index == idx);
+
+        return pNext;
+    }
+
+    assert(m_clusterPreloadCount > 0);
+
+    const long long off_ = pCurr->m_pos;
+    const long long off = off_ * ((off_ < 0) ? -1 : 1);
+
+    long long pos = m_start + off;
+    const long long stop = m_start + m_size;  //end of segment
+
+    {
+        long len;
+
+        long long result = GetUIntLength(m_pReader, pos, len);
+        assert(result == 0);  //TODO
+        assert((pos + len) <= stop);  //TODO
+
+        const long long id = ReadUInt(m_pReader, pos, len);
+        assert(id == 0x0F43B675);  //Cluster ID   //TODO
+
+        pos += len;  //consume ID
+
+        //Read Size
+        result = GetUIntLength(m_pReader, pos, len);
+        assert(result == 0);  //TODO
+        assert((pos + len) <= stop);  //TODO
+
+        const long long size = ReadUInt(m_pReader, pos, len);
+        assert(size > 0);  //TODO
+        assert((pCurr->m_size <= 0) || (pCurr->m_size == size));
+
+        pos += len;  //consume length of size of element
+        assert((pos + size) <= stop);  //TODO
+
+        //Pos now points to start of payload
+
+        pos += size;  //consume payload
+    }
+
+    long long off_next = 0;
+
+    while (pos < stop)
+    {
+        long len;
+
+        long long result = GetUIntLength(m_pReader, pos, len);
+        assert(result == 0);  //TODO
+        assert((pos + len) <= stop);  //TODO
+
+        const long long idpos = pos;  //pos of next (potential) cluster
+
+        const long long id = ReadUInt(m_pReader, idpos, len);
+        assert(id > 0);  //TODO
+
+        pos += len;  //consume ID
+
+        //Read Size
+        result = GetUIntLength(m_pReader, pos, len);
+        assert(result == 0);  //TODO
+        assert((pos + len) <= stop);  //TODO
+
+        const long long size = ReadUInt(m_pReader, pos, len);
+        assert(size >= 0);  //TODO
+
+        pos += len;  //consume length of size of element
+        assert((pos + size) <= stop);  //TODO
+
+        //Pos now points to start of payload
+
+        if (size == 0)  //weird
+            continue;
+
+        if (id == 0x0F43B675)  //Cluster ID
+        {
+            off_next = idpos - m_start;
+            break;
+        }
+
+        pos += size;  //consume payload
+    }
+
+    if (off_next <= 0)
+        return 0;
+
+    Cluster** const ii = m_clusters + m_clusterCount;
+    Cluster** i = ii;
+
+    Cluster** const jj = ii + m_clusterPreloadCount;
+    Cluster** j = jj;
+
+    while (i < j)
+    {
+        //INVARIANT:
+        //[0, i) < pos_next
+        //[i, j) ?
+        //[j, jj)  > pos_next
+
+        Cluster** const k = i + (j - i) / 2;
+        assert(k < jj);
+
+        Cluster* const pNext = *k;
+        assert(pNext);
+        assert(pNext->m_index < 0);
+
+        const long long pos_ = pNext->m_pos;
+        assert(pos_);
+
+        pos = pos_ * ((pos_ < 0) ? -1 : 1);
+
+        if (pos < off_next)
+            i = k + 1;
+        else if (pos > off_next)
+            j = k;
+        else
+            return pNext;
+    }
+
+    assert(i == j);
+
+    Cluster* const pNext = Cluster::Parse(this, -1, off_next);
+    const ptrdiff_t idx_next = i - m_clusters;  //insertion position
+
+    PreloadCluster(pNext, idx_next);
+    assert(m_clusters);
+    assert(idx_next < m_clusterSize);
+    assert(m_clusters[idx_next] == pNext);
 
     return pNext;
 }
@@ -2327,7 +2531,7 @@ void Segment::GetCluster(
 
 
 bool Segment::SearchCues(
-    long long time_ns_,
+    long long time_ns,
     Track* pTrack,
     Cluster*& pCluster,
     const BlockEntry*& pBlockEntry)
@@ -2338,20 +2542,9 @@ bool Segment::SearchCues(
     if (pTrack->GetType() != 1)  //not video
         return false;  //TODO: for now, just handle video stream
 
+#if 0
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
         return false;
-
-    //TODO:
-    //search among cuepoints for time
-    //if time is less then what's already loaded then
-    //  return that cluster and we're done
-    //else (time is greater than what's loaded)
-    //  if time isn't "too far into the future" then
-    //     pre-load the necessary clusters
-    //     return that cluster and we're done
-    //  else
-    //     find (earlier) cue point corresponding to something
-    //       already loaded in cache, and return that
 
     const long last_idx = m_clusterCount - 1;
 
@@ -2438,6 +2631,75 @@ bool Segment::SearchCues(
 
         assert(i < j);
     }
+#else
+    const CuePoint* pCP;
+    const CuePoint::TrackPosition* pTP;
+
+    if (!m_pCues->Find(time_ns, pTrack, pCP, pTP))
+        return false;  //weird
+
+    assert(pCP);
+    assert(pTP);
+    assert(pTP->m_track == pTrack->GetNumber());
+
+    //We have the cue point and track position we want,
+    //so we now need to search for the cluster having
+    //the indicated position.
+
+    Cluster** const ii = m_clusters;
+    Cluster** i = ii;
+
+    const long count = m_clusterCount + m_clusterPreloadCount;
+
+    Cluster** const jj = ii + count;
+    Cluster** j = jj;
+
+    while (i < j)
+    {
+        //INVARIANT:
+        //[0, i) < pTP->m_pos
+        //[i, j) ?
+        //[j, jj)  > pTP->m_pos
+
+        Cluster** const k = i + (j - i) / 2;
+        assert(k < jj);
+
+        pCluster = *k;
+        assert(pCluster);
+
+        const long long pos_ = pCluster->m_pos;
+        assert(pos_);
+
+        const long long pos = pos_ * ((pos_ < 0) ? -1 : 1);
+
+        if (pos < pTP->m_pos)
+            i = k + 1;
+        else if (pos > pTP->m_pos)
+            j = k;
+        else
+        {
+            pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
+            assert(pBlockEntry);
+
+            return true;
+        }
+    }
+
+    assert(i == j);
+
+    pCluster = Cluster::Parse(this, -1, pTP->m_pos);
+    const ptrdiff_t idx = i - m_clusters;
+
+    PreloadCluster(pCluster, idx);
+    assert(m_clusters);
+    assert(m_clusterPreloadCount > 0);
+    assert(m_clusters[idx] == pCluster);
+
+    pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
+    assert(pBlockEntry);
+
+    return true;
+#endif
 }
 
 
@@ -2660,7 +2922,13 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
 
     for (int i = 0; i < 100; ++i)  //arbitrary upper bound
     {
-        if ((pCluster == NULL) || pCluster->EOS())
+        if (pCluster == NULL)
+        {
+            pBlockEntry = GetEOS();
+            return 1;
+        }
+
+        if (pCluster->EOS())
         {
             if (m_pSegment->Unparsed() <= 0)  //all clusters have been loaded
             {
@@ -2693,7 +2961,7 @@ long Track::GetFirst(const BlockEntry*& pBlockEntry) const
     //might be too conservative).
 
     pBlockEntry = GetEOS();  //so we can return a non-NULL value
-    return 1L;
+    return 1;
 }
 
 
@@ -2728,7 +2996,13 @@ long Track::GetNext(
 
         pCluster = m_pSegment->GetNext(pCluster);
 
-        if ((pCluster == NULL) || pCluster->EOS())
+        if (pCluster == NULL)
+        {
+            pNextEntry = GetEOS();
+            return 1;
+        }
+
+        if (pCluster->EOS())
         {
             if (m_pSegment->Unparsed() <= 0)   //all clusters have been loaded
             {
@@ -3308,7 +3582,6 @@ Cluster* Cluster::Parse(
     long long off)
 {
     assert(pSegment);
-    assert(idx >= 0);
     assert(off >= 0);
     assert(off < pSegment->m_size);
 
