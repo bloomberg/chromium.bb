@@ -60,11 +60,10 @@ void GpuBackingStoreGLX::OnChannelError() {
 }
 
 void GpuBackingStoreGLX::OnPaintToBackingStore(
-    base::ProcessId source_process_id,
-    TransportDIB::Id id,
+    TransportDIB::Handle dib_handle,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects) {
-  scoped_ptr<TransportDIB> dib(TransportDIB::Map(id));
+  scoped_ptr<TransportDIB> dib(TransportDIB::Map(dib_handle));
   view_->BindContext();
 
   scoped_ptr<skia::PlatformCanvas> canvas(

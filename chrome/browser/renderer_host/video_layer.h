@@ -26,12 +26,13 @@ class VideoLayer {
   RenderWidgetHost* render_widget_host() const { return render_widget_host_; }
   const gfx::Size& size() { return size_; }
 
-  // Copy the incoming bitmap into this video layer. |bitmap| contains YUV
+  // Copy the incoming bitmap into this video layer. The given DIB contains YUV
   // pixel data in YV12 format and must be the same dimensions as this video
   // layer. |bitmap_rect| specifies the absolute position and destination size
   // of the bitmap on the backing store.
   virtual void CopyTransportDIB(RenderProcessHost* process,
-                                TransportDIB::Id bitmap,
+                                TransportDIB::Id dib_id,
+                                TransportDIB::Handle dib_handle,
                                 const gfx::Rect& bitmap_rect) = 0;
 
  protected:

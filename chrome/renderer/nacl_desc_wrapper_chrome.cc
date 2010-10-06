@@ -33,7 +33,7 @@ DescWrapper* DescWrapperFactory::ImportPepper2DSharedMemory(intptr_t shm_int) {
   return ImportShmHandle(dib->handle().fd, dib->size());
 #elif defined(OS_WIN)
   // TransportDIBs use MapViewOfFile shared memory on Windows.
-  return ImportShmHandle(dib->handle(), dib->size());
+  return ImportShmHandle(dib->handle().section(), dib->size());
 #else
 # error "What platform?"
 #endif

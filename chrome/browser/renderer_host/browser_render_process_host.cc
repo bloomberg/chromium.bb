@@ -766,23 +766,18 @@ bool BrowserRenderProcessHost::SendWithTimeout(IPC::Message* msg,
 
 // This is a platform specific function for mapping a transport DIB given its id
 TransportDIB* BrowserRenderProcessHost::MapTransportDIB(
-    TransportDIB::Id dib_id) {
-#if defined(OS_WIN)
-  // On Windows we need to duplicate the handle from the remote process
-  HANDLE section = win_util::GetSectionFromProcess(
-      dib_id.handle, GetHandle(), false /* read write */);
-  return TransportDIB::Map(section);
-#elif defined(OS_MACOSX)
+    TransportDIB::Id dib_id, TransportDIB::Handle dib_handle) {
+#if defined(OS_MACOSX)
   // On OSX, the browser allocates all DIBs and keeps a file descriptor around
   // for each.
   return widget_helper_->MapTransportDIB(dib_id);
-#elif defined(OS_POSIX)
-  return TransportDIB::Map(dib_id);
-#endif  // defined(OS_POSIX)
+#else
+  return TransportDIB::Map(dib_handle);
+#endif
 }
 
 TransportDIB* BrowserRenderProcessHost::GetTransportDIB(
-    TransportDIB::Id dib_id) {
+    TransportDIB::Id dib_id, TransportDIB::Handle dib_handle) {
   const std::map<TransportDIB::Id, TransportDIB*>::iterator
       i = cached_dibs_.find(dib_id);
   if (i != cached_dibs_.end()) {
@@ -790,7 +785,7 @@ TransportDIB* BrowserRenderProcessHost::GetTransportDIB(
     return i->second;
   }
 
-  TransportDIB* dib = MapTransportDIB(dib_id);
+  TransportDIB* dib = MapTransportDIB(dib_id, dib_handle);
   if (!dib)
     return NULL;
 

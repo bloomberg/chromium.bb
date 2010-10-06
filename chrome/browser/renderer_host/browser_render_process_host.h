@@ -78,7 +78,8 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual bool FastShutdownIfPossible();
   virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
   virtual base::ProcessHandle GetHandle();
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
+  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id,
+                                        TransportDIB::Handle dib_handle);
 
   // IPC::Channel::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg);
@@ -185,8 +186,10 @@ class BrowserRenderProcessHost : public RenderProcessHost,
     MAX_MAPPED_TRANSPORT_DIBS = 3,
   };
 
-  // Map a transport DIB from its Id and return it. Returns NULL on error.
-  TransportDIB* MapTransportDIB(TransportDIB::Id dib_id);
+  // Map a transport DIB from its handle. On Mac, the ID is necessary to find
+  // the appropriate file descriptor. Returns NULL on error.
+  TransportDIB* MapTransportDIB(TransportDIB::Id dib_id,
+                                TransportDIB::Handle dib_handle);
 
   void ClearTransportDIBCache();
   // This is used to clear our cache five seconds after the last use.

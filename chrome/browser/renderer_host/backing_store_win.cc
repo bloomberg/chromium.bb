@@ -69,7 +69,8 @@ void CallStretchDIBits(HDC hdc, int dest_x, int dest_y, int dest_w, int dest_h,
 
 }  // namespace
 
-BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget, const gfx::Size& size)
+BackingStoreWin::BackingStoreWin(RenderWidgetHost* widget,
+                                 const gfx::Size& size)
     : BackingStore(widget, size),
       backing_store_dib_(NULL),
       original_bitmap_(NULL) {
@@ -114,7 +115,8 @@ size_t BackingStoreWin::MemorySize() {
 
 void BackingStoreWin::PaintToBackingStore(
     RenderProcessHost* process,
-    TransportDIB::Id bitmap,
+    TransportDIB::Id dib_id,
+    TransportDIB::Handle dib_handle,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
     bool* painted_synchronously) {
@@ -132,7 +134,7 @@ void BackingStoreWin::PaintToBackingStore(
     original_bitmap_ = SelectObject(hdc_, backing_store_dib_);
   }
 
-  TransportDIB* dib = process->GetTransportDIB(bitmap);
+  TransportDIB* dib = process->GetTransportDIB(dib_id, dib_handle);
   if (!dib)
     return;
 
