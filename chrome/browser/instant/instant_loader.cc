@@ -327,9 +327,6 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
       loader_->ShowPreview();
     }
   }
-  virtual TabContents* GetConstrainingContents(TabContents* source) {
-    return NULL;
-  }
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   virtual void URLStarredChanged(TabContents* source, bool starred) {}
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
