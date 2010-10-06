@@ -49,6 +49,8 @@ void NativeViewHostWin::NativeViewAttached() {
 }
 
 void NativeViewHostWin::NativeViewDetaching(bool destroyed) {
+  if (!destroyed && installed_clip_)
+    UninstallClip();
   installed_clip_ = false;
   // Notify children that parent is removed
   std::vector<RootView*> root_views;
