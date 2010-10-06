@@ -35,7 +35,6 @@ cr.define('options', function() {
     /** @inheritDoc */
     decorate: function() {
       this.hasChildren = this.data.hasChildren;
-      this.addEventListener('expand', this.handleExpand_.bind(this));
     },
 
     /** @inheritDoc */
@@ -75,14 +74,15 @@ cr.define('options', function() {
       }
     },
 
-    /**
-     * Handles 'expand' event and loads immediate children.
-     * @private
-     */
-    handleExpand_ : function(e) {
-      if (e.target == this) {
+    /** @inheritDoc */
+    get expanded() {
+      return TreeItem.prototype.__lookupGetter__('expanded').call(this);
+    },
+    set expanded(b) {
+      if (b && this.expanded != b)
         chrome.send('loadCookie', [this.pathId]);
-      }
+
+      TreeItem.prototype.__lookupSetter__('expanded').call(this, b);
     }
   };
 
@@ -117,7 +117,7 @@ cr.define('options', function() {
     clear: function() {
       // Remove all fields without recreating the object since other code
       // references it.
-      for (var id in treeLookup){
+      for (var id in treeLookup) {
         delete treeLookup[id];
       }
       this.textContent = '';
