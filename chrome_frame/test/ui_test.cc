@@ -355,6 +355,42 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
     EXPECT_CALL(acc_observer_, OnAccDocLoad(_)).Times(testing::AnyNumber());
   }
 
+  // Common helper function for "Save xxx As" tests.
+  void DoSaveAsTest(const wchar_t* role, const wchar_t* menu_item_name,
+                    const wchar_t* file_ext) {
+    server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+    MockWindowObserver win_observer_mock;
+    InSequence expect_in_sequence_for_scope;
+
+    // Open 'Save As' dialog.
+    const char* kSaveDlgCaption = "Save As";
+    EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+        .WillOnce(testing::DoAll(
+            WatchWindow(&win_observer_mock, kSaveDlgCaption),
+            AccRightClick(AccObjectMatcher(L"", role))));
+    EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+        .WillOnce(AccLeftClick(AccObjectMatcher(menu_item_name)));
+
+    // Get safe download name using temporary file.
+    FilePath temp_file_path;
+    ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
+    ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
+    temp_file_path = temp_file_path.ReplaceExtension(file_ext);
+
+    AccObjectMatcher file_name_box(L"File name:", L"editable text");
+    EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+        .WillOnce(testing::DoAll(
+            AccSendCharMessage(file_name_box, L'a'),
+            AccSetValue(file_name_box, temp_file_path.value()),
+            AccDoDefaultAction(AccObjectMatcher(L"Save", L"push button"))));
+
+    EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+        .WillOnce(CloseWhenFileSaved(&ie_mock_, temp_file_path, 5000));
+
+    LaunchIEAndNavigate(GetTestUrl(L"save_as_context_menu.html"));
+    ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
+  }
+
  protected:
   testing::NiceMock<MockAccEventObserver> acc_observer_;
 };
@@ -461,41 +497,12 @@ TEST_F(ContextMenuTest, CFInspector) {
                           kChromeFrameLongNavigationTimeoutInSeconds * 2);
 }
 
-TEST_F(ContextMenuTest, CFSaveAs) {
-  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
-  MockWindowObserver win_observer_mock;
+TEST_F(ContextMenuTest, CFSavePageAs) {
+  ASSERT_NO_FATAL_FAILURE(DoSaveAsTest(L"", L"Save as...", L".html"));
+}
 
-  InSequence expect_in_sequence_for_scope;
-
-  // Open 'Save As' dialog.
-  const char* kSaveDlgCaption = "Save As";
-  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
-      .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kSaveDlgCaption),
-          OpenContextMenuAsync()));
-  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
-      .WillOnce(AccLeftClick(AccObjectMatcher(L"Save as...")));
-
-  // Get safe download name using temporary file.
-  FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
-  temp_file_path = temp_file_path.ReplaceExtension(L".htm");
-  ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
-
-  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
-      .WillOnce(testing::DoAll(
-          AccSendCharMessage(AccObjectMatcher(L"File name:", L"editable text"),
-                             L'a'),
-          AccSetValue(AccObjectMatcher(L"File name:", L"editable text"),
-                      temp_file_path.value()),
-          AccDoDefaultAction(AccObjectMatcher(L"Save", L"push button"))));
-
-  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
-      .WillOnce(CloseWhenFileSaved(&ie_mock_, temp_file_path, 5000));
-
-  LaunchIENavigateAndLoop(GetSimplePageUrl(),
-                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
-  ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
+TEST_F(ContextMenuTest, CFSaveLinkAs) {
+  ASSERT_NO_FATAL_FAILURE(DoSaveAsTest(L"link", L"Save link as...", L".zip"));
 }
 
 // This tests that the about:version page can be opened via the CF context menu.
