@@ -2846,9 +2846,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        FilePath /* dest path */)
 
   // WebFileSystem::remove() message.
-  IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_Remove,
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Remove,
                        int /* request_id */,
-                       FilePath /* path */)
+                       FilePath /* path */,
+                       bool /* recursive */)
 
   // WebFileSystem::readMetadata() message.
   IPC_MESSAGE_CONTROL2(ViewHostMsg_FileSystem_ReadMetadata,

@@ -321,6 +321,8 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
     case base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
     case base::PLATFORM_FILE_ERROR_EXISTS:
     case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
+    case base::PLATFORM_FILE_ERROR_NOT_A_FILE:
+    case base::PLATFORM_FILE_ERROR_NOT_EMPTY:
       return WebKit::WebFileErrorInvalidModification;
     case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
       return WebKit::WebFileErrorNoModificationAllowed;
