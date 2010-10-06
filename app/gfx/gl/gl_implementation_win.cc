@@ -53,6 +53,11 @@ bool InitializeGLBindings(GLImplementation implementation) {
           reinterpret_cast<GLGetProcAddressProc>(
               base::GetFunctionPointerFromNativeLibrary(
                   library, "OSMesaGetProcAddress"));
+      if (!get_proc_address) {
+        DLOG(ERROR) << "OSMesaGetProcAddress not found.";
+        base::UnloadNativeLibrary(library);
+        return false;
+      }
 
       SetGLGetProcAddressProc(get_proc_address);
       AddGLNativeLibrary(library);
@@ -67,12 +72,23 @@ bool InitializeGLBindings(GLImplementation implementation) {
       if (!PathService::Get(base::DIR_MODULE, &module_path))
         return false;
 
+      // Load libglesv2.dll before libegl.dll because the latter is dependent on
+      // the former and if there is another version of libglesv2.dll in the dll
+      // search path, it will get loaded.
+      base::NativeLibrary gles_library = base::LoadNativeLibrary(
+          module_path.Append(L"libglesv2.dll"));
+      if (!gles_library) {
+        LOG(ERROR) << "libglesv2.dll not found";
+        return false;
+      }
+
       // When using EGL, first try eglGetProcAddress and then Windows
       // GetProcAddress on both the EGL and GLES2 DLLs.
       base::NativeLibrary egl_library = base::LoadNativeLibrary(
           module_path.Append(L"libegl.dll"));
       if (!egl_library) {
         LOG(ERROR) << "libegl.dll not found.";
+        base::UnloadNativeLibrary(gles_library);
         return false;
       }
 
@@ -80,12 +96,10 @@ bool InitializeGLBindings(GLImplementation implementation) {
           reinterpret_cast<GLGetProcAddressProc>(
               base::GetFunctionPointerFromNativeLibrary(
                   egl_library, "eglGetProcAddress"));
-
-      base::NativeLibrary gles_library = base::LoadNativeLibrary(
-          module_path.Append(L"libglesv2.dll"));
-      if (!gles_library) {
+      if (!get_proc_address) {
+        LOG(ERROR) << "eglGetProcAddress not found.";
         base::UnloadNativeLibrary(egl_library);
-        LOG(ERROR) << "libglesv2.dll not found";
+        base::UnloadNativeLibrary(gles_library);
         return false;
       }
 
@@ -117,6 +131,11 @@ bool InitializeGLBindings(GLImplementation implementation) {
           reinterpret_cast<GLGetProcAddressProc>(
               base::GetFunctionPointerFromNativeLibrary(
                   library, "wglGetProcAddress"));
+      if (!get_proc_address) {
+        LOG(ERROR) << "wglGetProcAddress not found.";
+        base::UnloadNativeLibrary(library);
+        return false;
+      }
 
       SetGLGetProcAddressProc(get_proc_address);
       AddGLNativeLibrary(library);

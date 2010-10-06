@@ -43,6 +43,11 @@ bool InitializeGLBindings(GLImplementation implementation) {
           reinterpret_cast<GLGetProcAddressProc>(
               base::GetFunctionPointerFromNativeLibrary(
                   library, "OSMesaGetProcAddress"));
+      if (!get_proc_address) {
+        LOG(ERROR) << "OSMesaGetProcAddress not found.";
+        base::UnloadNativeLibrary(library);
+        return false;
+      }
 
       SetGLGetProcAddressProc(get_proc_address);
       AddGLNativeLibrary(library);
