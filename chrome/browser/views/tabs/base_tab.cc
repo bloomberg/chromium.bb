@@ -342,7 +342,7 @@ void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
   }
 
   if (state != TabRendererData::NETWORK_STATE_NONE) {
-    loading_animation_frame_ = ++loading_animation_frame_ %
+    loading_animation_frame_ = (loading_animation_frame_ + 1) %
         ((state == TabRendererData::NETWORK_STATE_WAITING) ?
             waiting_animation_frame_count : loading_animation_frame_count);
   } else {
