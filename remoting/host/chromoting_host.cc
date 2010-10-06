@@ -9,13 +9,14 @@
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/encoder.h"
-#include "remoting/base/protocol_decoder.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
 #include "remoting/jingle_glue/jingle_channel.h"
+#include "remoting/protocol/messages_decoder.h"
+#include "remoting/protocol/jingle_chromoting_server.h"
 
 namespace remoting {
 
@@ -54,9 +55,6 @@ void ChromotingHost::Start(Task* shutdown_task) {
     state_ = kStarted;
   }
 
-  // Get capturer to set up it's initial configuration.
-  capturer_->ScreenConfigurationChanged();
-
   // Save the shutdown task.
   shutdown_task_.reset(shutdown_task);
 
@@ -64,11 +62,12 @@ void ChromotingHost::Start(Task* shutdown_task) {
   std::string xmpp_auth_token;
   if (!config_->GetString(kXmppLoginConfigPath, &xmpp_login) ||
       !config_->GetString(kXmppAuthTokenConfigPath, &xmpp_auth_token)) {
-    LOG(ERROR) << "XMPP credentials are not defined in config.";
+    LOG(ERROR) << "XMPP credentials are not defined in the config.";
     return;
   }
 
-  access_verifier_.Init(config_);
+  if (!access_verifier_.Init(config_))
+    return;
 
   // Connect to the talk network with a JingleClient.
   jingle_client_ = new JingleClient(context_->jingle_thread());
@@ -94,8 +93,10 @@ void ChromotingHost::Shutdown() {
   // No-op if this object is not started yet.
   {
     AutoLock auto_lock(lock_);
-    if (state_ != kStarted)
+    if (state_ != kStarted) {
+      state_ = kStopped;
       return;
+    }
     state_ = kStopped;
   }
 
@@ -110,14 +111,20 @@ void ChromotingHost::Shutdown() {
     client_->Disconnect();
   }
 
-  // Disconnect from the talk network.
-  if (jingle_client_) {
-    jingle_client_->Close();
-  }
-
   // Stop the heartbeat sender.
   if (heartbeat_sender_) {
     heartbeat_sender_->Stop();
+  }
+
+  // Stop chromotocol server.
+  if (chromotocol_server_) {
+    chromotocol_server_->Close(
+        NewRunnableMethod(this, &ChromotingHost::OnServerClosed));
+  }
+
+  // Disconnect from the talk network.
+  if (jingle_client_) {
+    jingle_client_->Close();
   }
 
   // Lastly call the shutdown task.
@@ -168,15 +175,14 @@ void ChromotingHost::OnClientDisconnected(ClientConnection* client) {
 
 ////////////////////////////////////////////////////////////////////////////
 // ClientConnection::EventHandler implementations
-void ChromotingHost::HandleMessages(ClientConnection* client,
-                                    ClientMessageList* messages) {
+void ChromotingHost::HandleMessage(ClientConnection* client,
+                                   ChromotingClientMessage* message) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Delegate the messages to EventExecutor and delete the unhandled
   // messages.
   DCHECK(executor_.get());
-  executor_->HandleInputEvents(messages);
-  STLDeleteElements<ClientMessageList>(messages);
+  executor_->HandleInputEvent(message);
 }
 
 void ChromotingHost::OnConnectionOpened(ClientConnection* client) {
@@ -210,7 +216,15 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     LOG(INFO) << "Host connected as "
               << jingle_client->GetFullJid() << "." << std::endl;
 
-    // Start heartbeating after we've connected.
+    // Create and start |chromotocol_server_|.
+    chromotocol_server_ =
+        new JingleChromotingServer(context_->jingle_thread()->message_loop());
+    chromotocol_server_->Init(
+        jingle_client->GetFullJid(),
+        jingle_client->session_manager(),
+        NewCallback(this, &ChromotingHost::OnNewClientConnection));
+
+    // Start heartbeating.
     heartbeat_sender_->Start();
   } else if (state == JingleClient::CLOSED) {
     LOG(INFO) << "Host disconnected from talk network." << std::endl;
@@ -224,45 +238,44 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
   }
 }
 
-bool ChromotingHost::OnAcceptConnection(
-    JingleClient* jingle_client, const std::string& jid,
-    JingleChannel::Callback** channel_callback) {
+void ChromotingHost::OnNewClientConnection(
+    ChromotingConnection* connection, bool* accept) {
   AutoLock auto_lock(lock_);
-  if (state_ != kStarted)
-    return false;
-
-  DCHECK_EQ(jingle_client_.get(), jingle_client);
-
   // TODO(hclam): Allow multiple clients to connect to the host.
-  if (client_.get())
-    return false;
+  if (client_.get() || state_ != kStarted) {
+    *accept = false;
+    return;
+  }
 
   // Check that the user has access to the host.
-  if (!access_verifier_.VerifyPermissions(jid))
-    return false;
+  if (!access_verifier_.VerifyPermissions(connection->jid())) {
+    *accept = false;
+    return;
+  }
 
-  LOG(INFO) << "Client connected: " << jid << std::endl;
+  *accept = true;
+
+  LOG(INFO) << "Client connected: " << connection->jid() << std::endl;
 
   // If we accept the connected then create a client object and set the
   // callback.
-  client_ = new ClientConnection(context_->main_message_loop(),
-                                 new ProtocolDecoder(), this);
-  *channel_callback = client_.get();
-  return true;
+  client_ = new ClientConnection(context_->main_message_loop(), this);
+  client_->Init(connection);
+}
+
+bool ChromotingHost::OnAcceptConnection(
+    JingleClient* jingle_client, const std::string& jid,
+    JingleChannel::Callback** channel_callback) {
+  return false;
 }
 
 void ChromotingHost::OnNewConnection(JingleClient* jingle_client,
                                      scoped_refptr<JingleChannel> channel) {
-  AutoLock auto_lock(lock_);
-  if (state_ != kStarted)
-    return;
+  NOTREACHED();
+}
 
-  DCHECK_EQ(jingle_client_.get(), jingle_client);
-
-  // Since the session manager has not started, it is still safe to access
-  // the client directly. Note that we give the ownership of the channel
-  // to the client.
-  client_->set_jingle_channel(channel);
+void ChromotingHost::OnServerClosed() {
+  // Don't need to do anything here.
 }
 
 }  // namespace remoting

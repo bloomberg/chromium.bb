@@ -7,11 +7,12 @@
 
 #include <vector>
 
-#include "remoting/base/protocol_decoder.h"
+#include "base/basictypes.h"
 
 namespace remoting {
 
 class Capturer;
+class ChromotingClientMessage;
 
 // An interface that defines the behavior of an event executor object.
 // An event executor is to perform actions on the host machine. For example
@@ -19,14 +20,14 @@ class Capturer;
 // clipboards.
 class EventExecutor {
  public:
-  EventExecutor(Capturer* capturer)
+  explicit EventExecutor(Capturer* capturer)
     : capturer_(capturer) {
   }
   virtual ~EventExecutor() {}
 
   // Handles input events from ClientMessageList and removes them from the
   // list.
-  virtual void HandleInputEvents(ClientMessageList* messages) = 0;
+  virtual void HandleInputEvent(ChromotingClientMessage* message) = 0;
   // TODO(hclam): Define actions for clipboards.
 
  protected:

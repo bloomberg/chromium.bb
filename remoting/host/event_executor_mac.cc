@@ -13,7 +13,8 @@ EventExecutorMac::EventExecutorMac(Capturer* capturer)
 EventExecutorMac::~EventExecutorMac() {
 }
 
-void EventExecutorMac::HandleInputEvents(ClientMessageList* messages) {
+void EventExecutorMac::HandleInputEvent(ChromotingClientMessage* message) {
+  delete message;
 }
 
 }  // namespace remoting

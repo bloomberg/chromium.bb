@@ -17,7 +17,7 @@ class EventExecutorWin : public EventExecutor {
   EventExecutorWin(Capturer* capturer);
   virtual ~EventExecutorWin();
 
-  virtual void HandleInputEvents(ClientMessageList* messages);
+  virtual void HandleInputEvent(ChromotingClientMessage* message);
 
  private:
   void HandleMouseSetPosition(ChromotingClientMessage* msg);

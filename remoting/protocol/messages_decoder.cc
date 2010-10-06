@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/base/protocol_decoder.h"
+#include "remoting/protocol/messages_decoder.h"
 
 #include "base/logging.h"
 #include "remoting/base/multiple_array_input_stream.h"
@@ -10,27 +10,30 @@
 
 namespace remoting {
 
-ProtocolDecoder::ProtocolDecoder()
+MessagesDecoder::MessagesDecoder()
     : last_read_position_(0),
       available_bytes_(0),
       next_payload_(0),
       next_payload_known_(false) {
 }
 
-ProtocolDecoder::~ProtocolDecoder() {}
+MessagesDecoder::~MessagesDecoder() {}
 
-void ProtocolDecoder::ParseClientMessages(scoped_refptr<media::DataBuffer> data,
+void MessagesDecoder::ParseClientMessages(scoped_refptr<net::IOBuffer> data,
+                                          int data_size,
                                           ClientMessageList* messages) {
-  ParseMessages<ChromotingClientMessage>(data, messages);
+  ParseMessages<ChromotingClientMessage>(data, data_size, messages);
 }
 
-void ProtocolDecoder::ParseHostMessages(scoped_refptr<media::DataBuffer> data,
+void MessagesDecoder::ParseHostMessages(scoped_refptr<net::IOBuffer> data,
+                                        int data_size,
                                         HostMessageList* messages) {
-  ParseMessages<ChromotingHostMessage>(data, messages);
+  ParseMessages<ChromotingHostMessage>(data, data_size, messages);
 }
 
 template <typename T>
-void ProtocolDecoder::ParseMessages(scoped_refptr<media::DataBuffer> data,
+void MessagesDecoder::ParseMessages(scoped_refptr<net::IOBuffer> data,
+                                    int data_size,
                                     std::list<T*>* messages) {
   // If this is the first data in the processing queue, then set the
   // last read position to 0.
@@ -38,8 +41,8 @@ void ProtocolDecoder::ParseMessages(scoped_refptr<media::DataBuffer> data,
     last_read_position_ = 0;
 
   // First enqueue the data received.
-  data_list_.push_back(data);
-  available_bytes_ += data->GetDataSize();
+  data_list_.push_back(DataChunk(data, data_size));
+  available_bytes_ += data_size;
 
   // Then try to parse one message until we can't parse anymore.
   T* message;
@@ -49,7 +52,7 @@ void ProtocolDecoder::ParseMessages(scoped_refptr<media::DataBuffer> data,
 }
 
 template <typename T>
-bool ProtocolDecoder::ParseOneMessage(T** message) {
+bool MessagesDecoder::ParseOneMessage(T** message) {
   // Determine the payload size. If we already know it, then skip this
   // part.
   // We have the value set to -1 for checking later.
@@ -66,18 +69,16 @@ bool ProtocolDecoder::ParseOneMessage(T** message) {
     return false;
   next_payload_known_ = false;
 
-  // Extract data from |data_list_| used to form a full protocol buffer.
-  DataList buffers;
-  std::deque<const uint8*> buffer_pointers;
-  std::deque<int> buffer_sizes;
+  // Create a MultipleArrayInputStream for parsing.
+  MultipleArrayInputStream stream;
+  std::vector<scoped_refptr<net::IOBuffer> > buffers;
   while (next_payload_ > 0 && !data_list_.empty()) {
-    scoped_refptr<media::DataBuffer> buffer = data_list_.front();
-    size_t read_bytes = std::min(buffer->GetDataSize() - last_read_position_,
+    DataChunk* buffer = &(data_list_.front());
+    size_t read_bytes = std::min(buffer->data_size - last_read_position_,
                                  next_payload_);
 
-    buffers.push_back(buffer);
-    buffer_pointers.push_back(buffer->GetData() + last_read_position_);
-    buffer_sizes.push_back(read_bytes);
+    buffers.push_back(buffer->data);
+    stream.AddBuffer(buffer->data->data() + last_read_position_, read_bytes);
 
     // Adjust counters.
     last_read_position_ += read_bytes;
@@ -85,30 +86,24 @@ bool ProtocolDecoder::ParseOneMessage(T** message) {
     available_bytes_ -= read_bytes;
 
     // If the front buffer is fully read, remove it from the queue.
-    if (buffer->GetDataSize() == last_read_position_) {
+    if (buffer->data_size == last_read_position_) {
       data_list_.pop_front();
       last_read_position_ = 0;
     }
   }
   DCHECK_EQ(0UL, next_payload_);
-  DCHECK_EQ(buffers.size(), buffer_pointers.size());
-  DCHECK_EQ(buffers.size(), buffer_sizes.size());
-
-  // Create a MultipleArrayInputStream for parsing.
-  MultipleArrayInputStream stream(buffers.size());
-  for (size_t i = 0; i < buffers.size(); ++i) {
-    stream.SetBuffer(i, buffer_pointers[i], buffer_sizes[i]);
-  }
 
   // And finally it is parsing.
   *message = new T();
   bool ret = (*message)->ParseFromZeroCopyStream(&stream);
-  if (!ret)
+  if (!ret) {
+    LOG(ERROR) << "Received invalid message.";
     delete *message;
+  }
   return ret;
 }
 
-bool ProtocolDecoder::GetPayloadSize(int* size) {
+bool MessagesDecoder::GetPayloadSize(int* size) {
   // The header has a size of 4 bytes.
   const size_t kHeaderSize = sizeof(int32);
 
@@ -117,24 +112,24 @@ bool ProtocolDecoder::GetPayloadSize(int* size) {
 
   std::string header;
   while (header.length() < kHeaderSize && !data_list_.empty()) {
-    scoped_refptr<media::DataBuffer> buffer = data_list_.front();
+    DataChunk* buffer = &(data_list_.front());
 
     // Find out how many bytes we need and how many bytes are available in this
     // buffer.
     int needed_bytes = kHeaderSize - header.length();
-    int available_bytes = buffer->GetDataSize() - last_read_position_;
+    int available_bytes = buffer->data_size - last_read_position_;
 
     // Then append the required bytes into the header and advance the last
     // read position.
     int read_bytes = std::min(needed_bytes, available_bytes);
     header.append(
-        reinterpret_cast<const char*>(buffer->GetData()) + last_read_position_,
+        reinterpret_cast<char*>(buffer->data->data()) + last_read_position_,
         read_bytes);
     last_read_position_ += read_bytes;
     available_bytes_ -= read_bytes;
 
     // If the buffer is depleted then remove it from the queue.
-    if (last_read_position_ == buffer->GetDataSize()) {
+    if (last_read_position_ == buffer->data_size) {
       last_read_position_ = 0;
       data_list_.pop_front();
     }

@@ -21,11 +21,13 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "remoting/base/protocol_decoder.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
-#include "remoting/jingle_glue/jingle_channel.h"
 #include "remoting/jingle_glue/jingle_client.h"
+#include "remoting/protocol/chromoting_connection.h"
+#include "remoting/protocol/chromoting_server.h"
+#include "remoting/protocol/stream_reader.h"
+#include "remoting/protocol/stream_writer.h"
 
 class MessageLoop;
 
@@ -36,7 +38,6 @@ class JingleThread;
 struct ClientConfig;
 
 class JingleHostConnection : public HostConnection,
-                             public JingleChannel::Callback,
                              public JingleClient::Callback {
  public:
   explicit JingleHostConnection(ClientContext* context);
@@ -48,33 +49,49 @@ class JingleHostConnection : public HostConnection,
 
   virtual void SendEvent(const ChromotingClientMessage& msg);
 
-  // JingleChannel::Callback interface.
-  virtual void OnStateChange(JingleChannel* channel,
-                             JingleChannel::State state);
-  virtual void OnPacketReceived(JingleChannel* channel,
-                                scoped_refptr<media::DataBuffer> buffer);
-
   // JingleClient::Callback interface.
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
   virtual bool OnAcceptConnection(JingleClient* client, const std::string& jid,
                                   JingleChannel::Callback** callback);
-  virtual void OnNewConnection(JingleClient* client,
-                               scoped_refptr<JingleChannel> channel);
+  void OnNewConnection(JingleClient* client,
+                       scoped_refptr<JingleChannel> channel);
+
+  // Callback for ChromotingServer.
+  void OnNewChromotocolConnection(
+      ChromotingConnection* connection, bool* accept);
+
+  // Callback for ChromotingConnection.
+  void OnConnectionStateChange(ChromotingConnection::State state);
 
  private:
+  // The message loop for the jingle thread this object works on.
   MessageLoop* message_loop();
 
-  void DoConnect(const ClientConfig& config,
-                 HostEventCallback* event_callback);
-  void DoDisconnect();
+  // Called on the jingle thread after we've successfully to XMPP server. Starts
+  // P2P connection to the host.
+  void InitConnection();
+
+  // Callback for |video_reader_|.
+  // TODO(sergeyu): This should be replaced with RTP/RTCP handler.
+  void OnVideoMessage(ChromotingHostMessage* msg);
+
+  // Used by Disconnect() to disconnect chromoting connection, stop chromoting
+  // server, and then disconnect XMPP connection.
+  void OnDisconnected();
+  void OnServerClosed();
 
   ClientContext* context_;
 
   scoped_refptr<JingleClient> jingle_client_;
-  scoped_refptr<JingleChannel> jingle_channel_;
+  scoped_refptr<ChromotingServer> chromotocol_server_;
+  scoped_refptr<ChromotingConnection> connection_;
 
-  ProtocolDecoder decoder_;
+  EventsStreamWriter events_writer_;
+  VideoStreamReader video_reader_;
+
   HostEventCallback* event_callback_;
+
+  std::string host_jid_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleHostConnection);
 };

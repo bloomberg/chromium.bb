@@ -28,8 +28,8 @@ const char kEventsChannelName[] = "events";
 }  // namespace
 
 JingleChromotingConnection::JingleChromotingConnection(
-    JingleChromotingServer* session_client)
-    : session_client_(session_client),
+    JingleChromotingServer* server)
+    : server_(server),
       state_(INITIALIZING),
       closed_(false),
       session_(NULL),
@@ -42,7 +42,7 @@ JingleChromotingConnection::~JingleChromotingConnection() {
 }
 
 void JingleChromotingConnection::Init(Session* session) {
-  DCHECK_EQ(session_client_->message_loop(), MessageLoop::current());
+  DCHECK_EQ(server_->message_loop(), MessageLoop::current());
 
   session_ = session;
   jid_ = session_->remote_name();
@@ -55,7 +55,7 @@ bool JingleChromotingConnection::HasSession(cricket::Session* session) {
 }
 
 Session* JingleChromotingConnection::ReleaseSession() {
-  DCHECK_EQ(session_client_->message_loop(), MessageLoop::current());
+  DCHECK_EQ(server_->message_loop(), MessageLoop::current());
 
   SetState(CLOSED);
   Session* session = session_;
@@ -68,35 +68,45 @@ Session* JingleChromotingConnection::ReleaseSession() {
 
 void JingleChromotingConnection::SetStateChangeCallback(
     StateChangeCallback* callback) {
-  DCHECK_EQ(session_client_->message_loop(), MessageLoop::current());
+  DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   DCHECK(callback);
   state_change_callback_.reset(callback);
 }
 
 // TODO(sergeyu): Remove this method after we switch to RTP.
 net::Socket* JingleChromotingConnection::GetVideoChannel() {
-  DCHECK_EQ(session_client_->message_loop(), MessageLoop::current());
+  DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return video_channel_adapter_.get();
 }
 
 net::Socket* JingleChromotingConnection::GetEventsChannel() {
-  DCHECK_EQ(session_client_->message_loop(), MessageLoop::current());
+  DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return events_channel_adapter_.get();
 }
 
 net::Socket* JingleChromotingConnection::GetVideoRtpChannel() {
-  DCHECK_EQ(session_client_->message_loop(), MessageLoop::current());
+  DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return video_rtp_channel_.get();
 }
 
 net::Socket* JingleChromotingConnection::GetVideoRtcpChannel() {
-  DCHECK_EQ(session_client_->message_loop(), MessageLoop::current());
+  DCHECK_EQ(server_->message_loop(), MessageLoop::current());
   return video_rtcp_channel_.get();
 }
 
+const std::string& JingleChromotingConnection::jid() {
+  // No synchronization is needed because jid_ is not changed
+  // after new connection is passed to JingleChromotingServer callback.
+  return jid_;
+}
+
+MessageLoop* JingleChromotingConnection::message_loop() {
+  return server_->message_loop();
+}
+
 void JingleChromotingConnection::Close(Task* closed_task) {
-  if (MessageLoop::current() != session_client_->message_loop()) {
-    session_client_->message_loop()->PostTask(
+  if (MessageLoop::current() != server_->message_loop()) {
+    server_->message_loop()->PostTask(
         FROM_HERE, NewRunnableMethod(this, &JingleChromotingConnection::Close,
                                      closed_task));
     return;
@@ -171,7 +181,7 @@ void JingleChromotingConnection::OnSessionState(
 void JingleChromotingConnection::OnInitiate(bool incoming) {
   jid_ = session_->remote_name();
   if (incoming)
-    session_client_->AcceptConnection(this, session_);
+    server_->AcceptConnection(this, session_);
   SetState(CONNECTING);
 }
 

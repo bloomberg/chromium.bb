@@ -10,6 +10,7 @@
 #include "base/task.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/client/client_config.h"
+#include "remoting/protocol/messages_decoder.h"
 
 class MessageLoop;
 
@@ -50,7 +51,8 @@ class ChromotingClient : public HostConnection::HostEventCallback {
   virtual void SetViewport(int x, int y, int width, int height);
 
   // HostConnection::HostEventCallback implementation.
-  virtual void HandleMessages(HostConnection* conn, HostMessageList* messages);
+  virtual void HandleMessage(HostConnection* conn,
+                             ChromotingHostMessage* messages);
   virtual void OnConnectionOpened(HostConnection* conn);
   virtual void OnConnectionClosed(HostConnection* conn);
   virtual void OnConnectionFailed(HostConnection* conn);

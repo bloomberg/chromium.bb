@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "remoting/base/constants.h"
-#include "remoting/base/protocol_util.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/jingle_host_connection.h"
 #include "remoting/jingle_glue/jingle_thread.h"
+#include "remoting/protocol/jingle_chromoting_server.h"
+#include "remoting/protocol/util.h"
 
 namespace remoting {
 
@@ -21,67 +23,82 @@ JingleHostConnection::~JingleHostConnection() {
 
 void JingleHostConnection::Connect(const ClientConfig& config,
                                    HostEventCallback* event_callback) {
-  message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &JingleHostConnection::DoConnect,
-                        config, event_callback));
+  event_callback_ = event_callback;
+
+  // Initialize |jingle_client_|.
+  jingle_client_ = new JingleClient(context_->jingle_thread());
+  jingle_client_->Init(config.username, config.auth_token,
+                       kChromotingTokenServiceName, this);
+
+  // Save jid of the host. The actual connection is created later after
+  // |jingle_client_| is connected.
+  host_jid_ = config.host_jid;
 }
 
 void JingleHostConnection::Disconnect() {
-  message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &JingleHostConnection::DoDisconnect));
+  if (MessageLoop::current() != message_loop()) {
+    message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this,
+                                     &JingleHostConnection::Disconnect));
+    return;
+  }
+
+  events_writer_.Close();
+  video_reader_.Close();
+
+  if (connection_) {
+    connection_->Close(
+        NewRunnableMethod(this, &JingleHostConnection::OnDisconnected));
+  } else {
+    OnDisconnected();
+  }
+}
+
+void JingleHostConnection::OnVideoMessage(
+    ChromotingHostMessage* msg) {
+  event_callback_->HandleMessage(this, msg);
+}
+
+void JingleHostConnection::InitConnection() {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  // Initialize |chromotocol_server_|.
+  JingleChromotingServer* chromotocol_server =
+      new JingleChromotingServer(message_loop());
+  chromotocol_server->Init(
+      jingle_client_->GetFullJid(),
+      jingle_client_->session_manager(),
+      NewCallback(this, &JingleHostConnection::OnNewChromotocolConnection));
+  chromotocol_server_ = chromotocol_server;
+
+  // Initialize |connection_|.
+  connection_ = chromotocol_server_->Connect(
+      host_jid_,
+      NewCallback(this, &JingleHostConnection::OnConnectionStateChange));
+}
+
+void JingleHostConnection::OnDisconnected() {
+  connection_ = NULL;
+
+  if (chromotocol_server_) {
+    chromotocol_server_->Close(
+        NewRunnableMethod(this, &JingleHostConnection::OnServerClosed));
+  } else {
+    OnServerClosed();
+  }
+}
+
+void JingleHostConnection::OnServerClosed() {
+  chromotocol_server_ = NULL;
+  if (jingle_client_) {
+    jingle_client_->Close();
+    jingle_client_ = NULL;
+  }
 }
 
 void JingleHostConnection::SendEvent(const ChromotingClientMessage& msg) {
-  if (message_loop() != MessageLoop::current()) {
-    message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &JingleHostConnection::SendEvent, msg));
-    return;
-  }
-
-  // Don't send messages if we're disconnected.
-  if (jingle_channel_ == NULL) {
-    return;
-  }
-
-  jingle_channel_->Write(SerializeAndFrameMessage(msg));
-}
-
-void JingleHostConnection::OnStateChange(JingleChannel* channel,
-                                         JingleChannel::State state) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(event_callback_);
-
-  switch (state) {
-    case JingleChannel::FAILED:
-      event_callback_->OnConnectionFailed(this);
-      break;
-
-    case JingleChannel::CLOSED:
-      event_callback_->OnConnectionClosed(this);
-      break;
-
-    case JingleChannel::OPEN:
-      event_callback_->OnConnectionOpened(this);
-      break;
-
-    default:
-      // Ignore the other states by default.
-      break;
-  }
-}
-
-void JingleHostConnection::OnPacketReceived(
-    JingleChannel* channel,
-    scoped_refptr<media::DataBuffer> buffer) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-  DCHECK(event_callback_);
-
-  HostMessageList list;
-  decoder_.ParseHostMessages(buffer, &list);
-  event_callback_->HandleMessages(this, &list);
+  // This drops the message if we are not connected yet.
+  events_writer_.SendMessage(msg);
 }
 
 // JingleClient::Callback interface.
@@ -93,6 +110,7 @@ void JingleHostConnection::OnStateChange(JingleClient* client,
 
   if (state == JingleClient::CONNECTED) {
     LOG(INFO) << "Connected as: " << client->GetFullJid();
+    InitConnection();
   } else if (state == JingleClient::CLOSED) {
     LOG(INFO) << "Connection closed.";
     event_callback_->OnConnectionClosed(this);
@@ -110,8 +128,8 @@ bool JingleHostConnection::OnAcceptConnection(
 }
 
 void JingleHostConnection::OnNewConnection(
-    JingleClient* client,
-    scoped_refptr<JingleChannel> channel) {
+   JingleClient* client,
+   scoped_refptr<JingleChannel> channel) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // TODO(ajwong): Should we log more aggressively on this and above? We
@@ -119,34 +137,44 @@ void JingleHostConnection::OnNewConnection(
   NOTREACHED() << "Clients can't accept inbound connections.";
 }
 
+void JingleHostConnection::OnNewChromotocolConnection(
+    ChromotingConnection* connection, bool* accept) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+  // Client always rejects incoming connections.
+  *accept = false;
+}
+
+void JingleHostConnection::OnConnectionStateChange(
+    ChromotingConnection::State state) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK(event_callback_);
+
+  switch (state) {
+    case ChromotingConnection::FAILED:
+      event_callback_->OnConnectionFailed(this);
+      break;
+
+    case ChromotingConnection::CLOSED:
+      event_callback_->OnConnectionClosed(this);
+      break;
+
+    case ChromotingConnection::CONNECTED:
+      // Initialize reader and writer.
+      events_writer_.Init(connection_->GetEventsChannel());
+      video_reader_.Init(
+          connection_->GetVideoChannel(),
+          NewCallback(this, &JingleHostConnection::OnVideoMessage));
+      event_callback_->OnConnectionOpened(this);
+      break;
+
+    default:
+      // Ignore the other states by default.
+      break;
+  }
+}
+
 MessageLoop* JingleHostConnection::message_loop() {
   return context_->jingle_thread()->message_loop();
-}
-
-void JingleHostConnection::DoConnect(const ClientConfig& config,
-                                     HostEventCallback* event_callback) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  event_callback_ = event_callback;
-
-  jingle_client_ = new JingleClient(context_->jingle_thread());
-  jingle_client_->Init(config.username, config.auth_token,
-                       kChromotingTokenServiceName, this);
-  jingle_channel_ = jingle_client_->Connect(config.host_jid, this);
-}
-
-void JingleHostConnection::DoDisconnect() {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  if (jingle_channel_.get()) {
-    jingle_channel_->Close();
-    jingle_channel_ = NULL;
-  }
-
-  if (jingle_client_.get()) {
-    jingle_client_->Close();
-    jingle_client_ = NULL;
-  }
 }
 
 }  // namespace remoting

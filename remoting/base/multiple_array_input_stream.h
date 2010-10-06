@@ -5,8 +5,9 @@
 #ifndef REMOTING_BASE_MULTIPLE_ARRAY_INPUT_STREAM_H_
 #define REMOTING_BASE_MULTIPLE_ARRAY_INPUT_STREAM_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 namespace remoting {
@@ -19,24 +20,23 @@ class MultipleArrayInputStream :
   // Construct a MultipleArrayInputStream with |count| backing arrays.
   // TODO(hclam): Consider adding block size to see if it has a performance
   // gain.
-  explicit MultipleArrayInputStream(int count);
+  MultipleArrayInputStream();
   virtual ~MultipleArrayInputStream();
 
+  // Add a new buffer to the list.
+  void AddBuffer(const char* buffer, int size);
+
+  // google::protobuf::io::ZeroCopyInputStream interface.
   virtual bool Next(const void** data, int* size);
   virtual void BackUp(int count);
   virtual bool Skip(int count);
   virtual int64 ByteCount() const;
 
-  // Set the n-th buffer to be |buffer|.
-  void SetBuffer(int n, const uint8* buffer, int size);
-
  private:
-  scoped_array<const uint8*> buffers_;
-  scoped_array<int> buffer_sizes_;
+  std::vector<const char*> buffers_;
+  std::vector<int> buffer_sizes_;
 
-  const int buffer_count_;
-
-  int current_buffer_;
+  size_t current_buffer_;
   int current_buffer_offset_;
   int position_;
   int last_returned_size_;

@@ -11,9 +11,9 @@
 #include "base/stl_util-inl.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/capture_data.h"
-#include "remoting/base/protocol_decoder.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/client_connection.h"
+#include "remoting/protocol/messages_decoder.h"
 
 namespace remoting {
 
@@ -333,24 +333,15 @@ void SessionManager::DoSendUpdate(ChromotingHostMessage* message,
                                   Encoder::EncodingState state) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
-  // TODO(ajwong): We shouldn't need EncodingState. Just inspect message.
-  bool is_end_of_update = (message->rectangle_update().flags() |
-      RectangleUpdatePacket::LAST_PACKET) != 0;
-
   TraceContext::tracer()->PrintString("DoSendUpdate");
-
-  // Create a data buffer in wire format from |message|.
-  // Note that this takes ownership of |message|.
-  scoped_refptr<media::DataBuffer> data =
-      ClientConnection::CreateWireFormatDataBuffer(message);
 
   for (ClientConnectionList::const_iterator i = clients_.begin();
        i < clients_.end(); ++i) {
-    (*i)->SendUpdateStreamPacketMessage(data);
-
-    if (is_end_of_update)
-      (*i)->MarkEndOfUpdate();
+    (*i)->SendUpdateStreamPacketMessage(*message);
   }
+
+  delete message;
+
   TraceContext::tracer()->PrintString("DoSendUpdate done");
 }
 

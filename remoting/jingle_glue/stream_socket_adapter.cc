@@ -65,6 +65,7 @@ int StreamSocketAdapter::Write(
   if (result == net::ERR_CONNECTION_CLOSED &&
       stream_->GetState() == talk_base::SS_OPENING)
     result = net::ERR_IO_PENDING;
+
   if (result == net::ERR_IO_PENDING) {
     write_pending_ = true;
     write_callback_ = callback;

@@ -7,7 +7,7 @@
 #include "remoting/base/decompressor.h"
 #include "remoting/base/decompressor_zlib.h"
 #include "remoting/base/decompressor_verbatim.h"
-#include "remoting/base/protocol_util.h"
+#include "remoting/base/util.h"
 
 namespace remoting {
 

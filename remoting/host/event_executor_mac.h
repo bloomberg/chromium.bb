@@ -17,7 +17,7 @@ class EventExecutorMac : public EventExecutor {
   EventExecutorMac(Capturer* capturer);
   virtual ~EventExecutorMac();
 
-  virtual void HandleInputEvents(ClientMessageList* messages);
+  virtual void HandleInputEvent(ChromotingClientMessage* message);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventExecutorMac);

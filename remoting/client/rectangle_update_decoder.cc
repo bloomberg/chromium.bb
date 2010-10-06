@@ -10,8 +10,8 @@
 #include "remoting/base/decoder.h"
 #include "remoting/base/decoder_row_based.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
-#include "remoting/base/protocol_util.h"
 #include "remoting/base/tracer.h"
+#include "remoting/base/util.h"
 #include "remoting/client/frame_consumer.h"
 
 using media::AutoTaskRunner;

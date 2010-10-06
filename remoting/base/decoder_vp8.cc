@@ -6,7 +6,7 @@
 
 #include "media/base/media.h"
 #include "media/base/yuv_convert.h"
-#include "remoting/base/protocol_util.h"
+#include "remoting/base/util.h"
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1

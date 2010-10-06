@@ -41,9 +41,8 @@ class JingleChromotingConnection : public ChromotingConnection,
   virtual net::Socket* GetVideoRtpChannel();
   virtual net::Socket* GetVideoRtcpChannel();
 
-  // No synchronization is needed because jid_ is not changed
-  // after new connection is passed to JingleChromotingServer callback.
-  virtual const std::string& jid() { return jid_; };
+  virtual const std::string& jid();
+  virtual MessageLoop* message_loop();
 
   virtual void Close(Task* closed_task);
 
@@ -68,7 +67,7 @@ class JingleChromotingConnection : public ChromotingConnection,
   void SetState(State new_state);
 
   // JingleChromotingServer that created this connection.
-  scoped_refptr<JingleChromotingServer> session_client_;
+  scoped_refptr<JingleChromotingServer> server_;
 
   State state_;
   scoped_ptr<StateChangeCallback> state_change_callback_;

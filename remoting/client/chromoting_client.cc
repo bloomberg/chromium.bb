@@ -96,18 +96,18 @@ void ChromotingClient::SetViewport(int x, int y, int width, int height) {
   view_->SetViewport(x, y, width, height);
 }
 
-void ChromotingClient::HandleMessages(HostConnection* conn,
-                                      HostMessageList* messages) {
+void ChromotingClient::HandleMessage(HostConnection* conn,
+                                     ChromotingHostMessage* msg) {
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &ChromotingClient::HandleMessages,
-                          conn, messages));
+        NewRunnableMethod(this, &ChromotingClient::HandleMessage,
+                          conn, msg));
     return;
   }
 
   // Put all messages in the queue.
-  received_messages_.splice(received_messages_.end(), *messages);
+  received_messages_.push_back(msg);
 
   if (!message_being_processed_) {
     DispatchMessage();
@@ -204,18 +204,18 @@ void ChromotingClient::SetState(State s) {
   Repaint();
 }
 
-void ChromotingClient::OnMessageDone(ChromotingHostMessage* msg) {
+void ChromotingClient::OnMessageDone(ChromotingHostMessage* message) {
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
         FROM_HERE,
-        NewTracedMethod(this, &ChromotingClient::OnMessageDone, msg));
+        NewTracedMethod(this, &ChromotingClient::OnMessageDone, message));
     return;
   }
 
   TraceContext::tracer()->PrintString("Message done");
 
   message_being_processed_ = false;
-  delete msg;
+  delete message;
   DispatchMessage();
 }
 

@@ -11,7 +11,7 @@
 #include "remoting/base/decoder.h"
 #include "remoting/base/encoder.h"
 #include "remoting/base/mock_objects.h"
-#include "remoting/base/protocol_util.h"
+#include "remoting/base/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const int kWidth = 320;

@@ -7,7 +7,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "remoting/base/protocol_decoder.h"
+#include "remoting/protocol/messages_decoder.h"
 
 namespace remoting {
 
@@ -19,12 +19,10 @@ class HostConnection {
    public:
     virtual ~HostEventCallback() {}
 
-    // Handles an event received by the HostConnection. Receiver will own the
-    // HostMessages in HostMessageList and needs to delete them.
-    // Note that the sender of messages will not reference messages
-    // again so it is okay to clear |messages| in this method.
-    virtual void HandleMessages(HostConnection* conn,
-                                HostMessageList* messages) = 0;
+    // Handles an event received by the HostConnection. Ownership of
+    // the message is passed to the callee.
+    virtual void HandleMessage(HostConnection* conn,
+                               ChromotingHostMessage* message) = 0;
 
     // Called when the network connection is opened.
     virtual void OnConnectionOpened(HostConnection* conn) = 0;

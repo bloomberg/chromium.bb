@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_PROTOCOL_DECODER_H_
-#define REMOTING_BASE_PROTOCOL_DECODER_H_
+#ifndef REMOTING_PROTOCOL_MESSAGES_DECODER_H_
+#define REMOTING_PROTOCOL_MESSAGES_DECODER_H_
 
 #include <deque>
 #include <list>
 
 #include "base/ref_counted.h"
 #include "google/protobuf/message_lite.h"
-#include "media/base/data_buffer.h"
+#include "net/base/io_buffer.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
 
 namespace remoting {
@@ -21,27 +21,45 @@ typedef std::list<ChromotingClientMessage*> ClientMessageList;
 // A protocol decoder is used to decode data transmitted in the chromoting
 // network.
 // TODO(hclam): Defines the interface and implement methods.
-class ProtocolDecoder {
+class MessagesDecoder {
  public:
-  ProtocolDecoder();
+  MessagesDecoder();
+  virtual ~MessagesDecoder();
 
-  virtual ~ProtocolDecoder();
-
-  // Parse data received from network into ClientMessages. Ownership of |data|
-  // is passed to this object and output is written to |messages|.
-  virtual void ParseClientMessages(scoped_refptr<media::DataBuffer> data,
+  // Parse data received from network into ClientMessages. Output is written
+  // to |messages|.
+  virtual void ParseClientMessages(scoped_refptr<net::IOBuffer> data,
+                                   int data_size,
                                    ClientMessageList* messages);
 
-  // Parse data received from network into HostMessages. Ownership of |data|
-  // is passed to this object and output is written to |messages|.
-  virtual void ParseHostMessages(scoped_refptr<media::DataBuffer> data,
+  // Parse data received from network into HostMessages. Output is
+  // written to |messages|.
+  virtual void ParseHostMessages(scoped_refptr<net::IOBuffer> data,
+                                 int data_size,
                                  HostMessageList* messages);
 
  private:
+  // DataChunk stores reference to a net::IOBuffer and size of the data
+  // stored in that buffer.
+  struct DataChunk {
+    DataChunk(net::IOBuffer* data, size_t data_size)
+        : data(data),
+          data_size(data_size) {
+    }
+
+    scoped_refptr<net::IOBuffer> data;
+    size_t data_size;
+  };
+
+  // TODO(sergeyu): It might be more efficient to memcopy data to one big buffer
+  // instead of storing chunks in dqueue.
+  typedef std::deque<DataChunk> DataList;
+
   // A private method used to parse data received from network into protocol
   // buffers.
   template <typename T>
-  void ParseMessages(scoped_refptr<media::DataBuffer> data,
+  void ParseMessages(scoped_refptr<net::IOBuffer> data,
+                     int data_size,
                      std::list<T*>* messages);
 
   // Parse one message from |data_list_|. Return true if sucessful.
@@ -52,7 +70,6 @@ class ProtocolDecoder {
   // data list. Return false if we don't have enough data.
   bool GetPayloadSize(int* size);
 
-  typedef std::deque<scoped_refptr<media::DataBuffer> > DataList;
   DataList data_list_;
   size_t last_read_position_;
 
@@ -69,4 +86,4 @@ class ProtocolDecoder {
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_PROTOCOL_DECODER_H_
+#endif  // REMOTING_PROTOCOL_MESSAGES_DECODER_H_

@@ -8,7 +8,7 @@
 #include "gfx/rect.h"
 #include "media/base/data_buffer.h"
 #include "remoting/base/capture_data.h"
-#include "remoting/base/protocol_util.h"
+#include "remoting/base/util.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
 
 namespace remoting {

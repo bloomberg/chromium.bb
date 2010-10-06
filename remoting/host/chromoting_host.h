@@ -27,6 +27,7 @@ class Encoder;
 class EventExecutor;
 class MutableHostConfig;
 class SessionManager;
+class JingleChromotingServer;
 
 // A class to implement the functionality of a host process.
 //
@@ -83,8 +84,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
 
   ////////////////////////////////////////////////////////////////////////////
   // ClientConnection::EventHandler implementations
-  virtual void HandleMessages(ClientConnection* client,
-                              ClientMessageList* messages);
+  virtual void HandleMessage(ClientConnection* client,
+                             ChromotingClientMessage* message);
   virtual void OnConnectionOpened(ClientConnection* client);
   virtual void OnConnectionClosed(ClientConnection* client);
   virtual void OnConnectionFailed(ClientConnection* client);
@@ -99,12 +100,22 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
       JingleClient* jingle,
       scoped_refptr<JingleChannel> channel);
 
+  // Callback for ChromotingServer.
+  void OnNewClientConnection(ChromotingConnection* connection, bool* accept);
+
  private:
   enum State {
     kInitial,
     kStarted,
     kStopped,
   };
+
+  // This method connects to the talk network and start listening for incoming
+  // connections.
+  void DoStart(Task* shutdown_task);
+
+  // Callback for ChromotingServer::Close().
+  void OnServerClosed();
 
   // The context that the chromoting host runs on.
   ChromotingHostContext* context_;
@@ -125,6 +136,8 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // The libjingle client. This is used to connect to the talk network to
   // receive connection requests from chromoting client.
   scoped_refptr<JingleClient> jingle_client_;
+
+  scoped_refptr<JingleChromotingServer> chromotocol_server_;
 
   // Objects that takes care of sending heartbeats to the chromoting bot.
   scoped_refptr<HeartbeatSender> heartbeat_sender_;

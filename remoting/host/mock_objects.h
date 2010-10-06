@@ -6,10 +6,10 @@
 #define REMOTING_HOST_MOCK_OBJECTS_H_
 
 #include "media/base/data_buffer.h"
-#include "remoting/base/protocol_decoder.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_connection.h"
 #include "remoting/host/event_executor.h"
+#include "remoting/protocol/messages_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {
@@ -36,7 +36,7 @@ class MockEventExecutor : public EventExecutor {
  public:
    MockEventExecutor(Capturer* capturer) : EventExecutor(capturer) {}
 
-  MOCK_METHOD1(HandleInputEvents, void(ClientMessageList* messages));
+  MOCK_METHOD1(HandleInputEvent, void(ChromotingClientMessage* messages));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEventExecutor);
@@ -46,17 +46,14 @@ class MockClientConnection : public ClientConnection {
  public:
   MockClientConnection(){}
 
+  MOCK_METHOD1(Init, void(ChromotingConnection* connection));
   MOCK_METHOD2(SendInitClientMessage, void(int width, int height));
   MOCK_METHOD0(SendBeginUpdateStreamMessage, void());
   MOCK_METHOD1(SendUpdateStreamPacketMessage,
-               void(scoped_refptr<media::DataBuffer> data));
+               void(const ChromotingHostMessage& message));
   MOCK_METHOD0(SendEndUpdateStreamMessage, void());
   MOCK_METHOD0(GetPendingUpdateStreamMessages, int());
-
-  MOCK_METHOD2(OnStateChange, void(JingleChannel* channel,
-                                   JingleChannel::State state));
-  MOCK_METHOD2(OnPacketReceived, void(JingleChannel* channel,
-                                      scoped_refptr<media::DataBuffer> data));
+  MOCK_METHOD0(Disconnect, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClientConnection);
@@ -66,8 +63,9 @@ class MockClientConnectionEventHandler : public ClientConnection::EventHandler {
  public:
   MockClientConnectionEventHandler() {}
 
-  MOCK_METHOD2(HandleMessages,
-               void(ClientConnection* viewer, ClientMessageList* messages));
+  MOCK_METHOD2(HandleMessage,
+               void(ClientConnection* viewer,
+                    ChromotingClientMessage* message));
   MOCK_METHOD1(OnConnectionOpened, void(ClientConnection* viewer));
   MOCK_METHOD1(OnConnectionClosed, void(ClientConnection* viewer));
   MOCK_METHOD1(OnConnectionFailed, void(ClientConnection* viewer));

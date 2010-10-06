@@ -7,7 +7,7 @@
 #include "remoting/base/mock_objects.h"
 #include "remoting/host/client_connection.h"
 #include "remoting/host/mock_objects.h"
-#include "remoting/jingle_glue/mock_objects.h"
+#include "remoting/protocol/fake_connection.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::_;
@@ -23,86 +23,67 @@ class ClientConnectionTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    decoder_ = new MockProtocolDecoder();
-    channel_ = new StrictMock<MockJingleChannel>();
+    connection_ = new FakeChromotingConnection();
+    connection_->set_message_loop(&message_loop_);
 
-    // Allocate a ClientConnection object with the mock objects. we give the
-    // ownership of decoder to the viewer.
-    viewer_ = new ClientConnection(&message_loop_,
-                                   decoder_,
-                                   &handler_);
-
-    viewer_->set_jingle_channel(channel_.get());
+    // Allocate a ClientConnection object with the mock objects.
+    viewer_ = new ClientConnection(&message_loop_, &handler_);
+    viewer_->Init(connection_);
+    EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
+    connection_->get_state_change_callback()->Run(
+        ChromotingConnection::CONNECTED);
+    message_loop_.RunAllPending();
   }
 
   MessageLoop message_loop_;
-  MockProtocolDecoder* decoder_;
   MockClientConnectionEventHandler handler_;
   scoped_refptr<ClientConnection> viewer_;
 
-  // |channel_| is wrapped with StrictMock because we limit strictly the calls
-  // to it.
-  scoped_refptr<StrictMock<MockJingleChannel> > channel_;
+  scoped_refptr<FakeChromotingConnection> connection_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientConnectionTest);
 };
 
 TEST_F(ClientConnectionTest, SendUpdateStream) {
-  // Tell the viewer we are starting an update stream.
-  EXPECT_CALL(*channel_, Write(_));
-  viewer_->SendBeginUpdateStreamMessage();
-
   // Then send the actual data.
-  EXPECT_CALL(*channel_, Write(_));
-  scoped_refptr<media::DataBuffer> data = new media::DataBuffer(10);
-  viewer_->SendUpdateStreamPacketMessage(data);
-
-  // Send the end of update message.
-  EXPECT_CALL(*channel_, Write(_));
-  viewer_->SendEndUpdateStreamMessage();
+  ChromotingHostMessage message;
+  viewer_->SendUpdateStreamPacketMessage(message);
 
   // And then close the connection to ClientConnection.
-  EXPECT_CALL(*channel_, Close());
   viewer_->Disconnect();
+
+  message_loop_.RunAllPending();
+
+  // Verify that something has been written.
+  // TODO(sergeyu): Verify that the correct data has been written.
+  EXPECT_GT(connection_->GetVideoChannel()->written_data().size(), 0u);
 }
 
 TEST_F(ClientConnectionTest, StateChange) {
-  EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
-  viewer_->OnStateChange(channel_.get(), JingleChannel::OPEN);
-  message_loop_.RunAllPending();
-
   EXPECT_CALL(handler_, OnConnectionClosed(viewer_.get()));
-  viewer_->OnStateChange(channel_.get(), JingleChannel::CLOSED);
+  connection_->get_state_change_callback()->Run(ChromotingConnection::CLOSED);
   message_loop_.RunAllPending();
 
   EXPECT_CALL(handler_, OnConnectionFailed(viewer_.get()));
-  viewer_->OnStateChange(channel_.get(), JingleChannel::FAILED);
-  message_loop_.RunAllPending();
-}
-
-TEST_F(ClientConnectionTest, ParseMessages) {
-  scoped_refptr<media::DataBuffer> data;
-
-  // Give the data to the ClientConnection, it will use ProtocolDecoder to
-  // decode the messages.
-  EXPECT_CALL(*decoder_, ParseClientMessages(data, NotNull()));
-  EXPECT_CALL(handler_, HandleMessages(viewer_.get(), NotNull()));
-
-  viewer_->OnPacketReceived(channel_.get(), data);
+  connection_->get_state_change_callback()->Run(ChromotingConnection::FAILED);
   message_loop_.RunAllPending();
 }
 
 // Test that we can close client connection more than once and operations
 // after the connection is closed has no effect.
 TEST_F(ClientConnectionTest, Close) {
-  EXPECT_CALL(*channel_, Close());
   viewer_->Disconnect();
+  message_loop_.RunAllPending();
+  EXPECT_TRUE(connection_->is_closed());
 
-  scoped_refptr<media::DataBuffer> data = new media::DataBuffer(10);
-  viewer_->SendUpdateStreamPacketMessage(data);
-  viewer_->SendEndUpdateStreamMessage();
+  ChromotingHostMessage message;
+  viewer_->SendUpdateStreamPacketMessage(message);
   viewer_->Disconnect();
+  message_loop_.RunAllPending();
+
+  // Verify that nothing has been written.
+  EXPECT_EQ(connection_->GetVideoChannel()->written_data().size(), 0u);
 }
 
 }  // namespace remoting

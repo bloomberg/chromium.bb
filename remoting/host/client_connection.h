@@ -11,9 +11,10 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "remoting/base/protocol_decoder.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
-#include "remoting/jingle_glue/jingle_channel.h"
+#include "remoting/protocol/chromoting_connection.h"
+#include "remoting/protocol/stream_reader.h"
+#include "remoting/protocol/stream_writer.h"
 
 namespace media {
 
@@ -28,8 +29,7 @@ namespace remoting {
 // screen updates and other messages to the remote viewer. It is also
 // responsible for receiving and parsing data from the remote viewer and
 // delegating events to the event handler.
-class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
-                         public JingleChannel::Callback {
+class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
  public:
   class EventHandler {
    public:
@@ -39,8 +39,8 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
     // ClientMessages in ClientMessageList and needs to delete them.
     // Note that the sender of messages will not reference messages
     // again so it is okay to clear |messages| in this method.
-    virtual void HandleMessages(ClientConnection* viewer,
-                                ClientMessageList* messages) = 0;
+    virtual void HandleMessage(ClientConnection* viewer,
+                               ChromotingClientMessage* message) = 0;
 
     // Called when the network connection is opened.
     virtual void OnConnectionOpened(ClientConnection* viewer) = 0;
@@ -57,45 +57,21 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // a libjingle channel, these events are delegated to |handler|.
   // It is guranteed that |handler| is called only on the |message_loop|.
   ClientConnection(MessageLoop* message_loop,
-                   ProtocolDecoder* decoder,
                    EventHandler* handler);
 
   virtual ~ClientConnection();
 
-  // Creates a DataBuffer object that wraps around ChromotingHostMessage. The
-  // DataBuffer object will be responsible for serializing and framing the
-  // message. DataBuffer will also own |msg| after this call.
-  static scoped_refptr<media::DataBuffer> CreateWireFormatDataBuffer(
-      const ChromotingHostMessage* msg);
+  virtual void Init(ChromotingConnection* connection);
 
-  virtual void set_jingle_channel(JingleChannel* channel) {
-    channel_ = channel;
-  }
-
-  // Returns the channel in use.
-  virtual JingleChannel* jingle_channel() { return channel_; }
+  // Returns the connection in use.
+  virtual ChromotingConnection* connection() { return connection_; }
 
   // Send information to the client for initialization.
   virtual void SendInitClientMessage(int width, int height);
 
-  // Notifies the viewer the start of an update stream.
-  virtual void SendBeginUpdateStreamMessage();
-
   // Send encoded update stream data to the viewer.
-  //
-  // |data| is the actual bytes in wire format. That means it is fully framed
-  // and serialized from a ChromotingHostMessage. This is a special case only
-  // for UpdateStreamPacket to reduce the amount of memory copies.
-  //
-  // |data| should be created by calling to
-  // CreateWireFormatDataBuffer(ChromotingHostMessage).
   virtual void SendUpdateStreamPacketMessage(
-      scoped_refptr<media::DataBuffer> data);
-
-  // Notifies the viewer the update stream has ended.
-  virtual void SendEndUpdateStreamMessage();
-
-  virtual void MarkEndOfUpdate();
+      const ChromotingHostMessage& message);
 
   // Gets the number of update stream messages not yet transmitted.
   // Note that the value returned is an estimate using average size of the
@@ -109,42 +85,33 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // After this method is called all the send method calls will be ignored.
   virtual void Disconnect();
 
-  /////////////////////////////////////////////////////////////////////////////
-  // JingleChannel::Callback implmentations
-  virtual void OnStateChange(JingleChannel* channel,
-                             JingleChannel::State state);
-  virtual void OnPacketReceived(JingleChannel* channel,
-                                scoped_refptr<media::DataBuffer> data);
-
  protected:
   // Protected constructor used by unit test.
   ClientConnection() {}
 
  private:
+  // Callback for ChromotingConnection.
+  void OnConnectionStateChange(ChromotingConnection::State state);
+
+  // Callback for EventsStreamReader.
+  void OnMessageReceived(ChromotingClientMessage* message);
+
   // Process a libjingle state change event on the |loop_|.
-  void StateChangeTask(JingleChannel::State state);
+  void StateChangeTask(ChromotingConnection::State state);
 
   // Process a data buffer received from libjingle.
-  void PacketReceivedTask(scoped_refptr<media::DataBuffer> data);
+  void MessageReceivedTask(ChromotingClientMessage* message);
+
+  void OnClosed();
 
   // The libjingle channel used to send and receive data from the remote client.
-  scoped_refptr<JingleChannel> channel_;
+  scoped_refptr<ChromotingConnection> connection_;
+
+  EventsStreamReader events_reader_;
+  VideoStreamWriter video_writer_;
 
   // The message loop that this object runs on.
   MessageLoop* loop_;
-
-  // An object used by the ClientConnection to decode data received from the
-  // network.
-  scoped_ptr<ProtocolDecoder> decoder_;
-
-  // A queue to count the sizes of the last 10 update streams.
-  std::deque<int> size_queue_;
-
-  // Count the sum of sizes in the queue.
-  int size_in_queue_;
-
-  // Measure the number of bytes of the current upstream stream.
-  int update_stream_size_;
 
   // Event handler for handling events sent from this object.
   EventHandler* handler_;

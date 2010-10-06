@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 
+class MessageLoop;
 class Task;
 
 namespace net {
@@ -17,7 +18,10 @@ class Socket;
 
 namespace remoting {
 
-// Generic interface for Chromoting connection.
+// Generic interface for Chromoting connection used by both client and host.
+// Provides access to the connection channels, but doesn't depend on the
+// protocol used for each channel.
+// TODO(sergeyu): Remove refcounting?
 class ChromotingConnection
     : public base::RefCountedThreadSafe<ChromotingConnection> {
  public:
@@ -37,6 +41,7 @@ class ChromotingConnection
 
   // Reliable PseudoTCP channels for this connection.
   // TODO(sergeyu): Remove VideoChannel, and use RTP channels instead.
+  // TODO(sergeyu): Make it possible to create/destroy new channels on-fly?
   virtual net::Socket* GetVideoChannel() = 0;
   virtual net::Socket* GetEventsChannel() = 0;
 
@@ -47,7 +52,11 @@ class ChromotingConnection
   // JID of the other side.
   virtual const std::string& jid() = 0;
 
-  // Closed connection. Callbacks are guaranteed not to be called after
+  // Message loop that must be used for to access the channels of this
+  // connection.
+  virtual MessageLoop* message_loop() = 0;
+
+  // Closes connection. Callbacks are guaranteed not to be called after
   // |closed_task| is executed.
   virtual void Close(Task* closed_task) = 0;
 

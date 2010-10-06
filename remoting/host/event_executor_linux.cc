@@ -4,6 +4,8 @@
 
 #include "remoting/host/event_executor_linux.h"
 
+#include "remoting/protocol/messages_decoder.h"
+
 namespace remoting {
 
 EventExecutorLinux::EventExecutorLinux(Capturer* capturer)
@@ -13,7 +15,8 @@ EventExecutorLinux::EventExecutorLinux(Capturer* capturer)
 EventExecutorLinux::~EventExecutorLinux() {
 }
 
-void EventExecutorLinux::HandleInputEvents(ClientMessageList* messages) {
+void EventExecutorLinux::HandleInputEvent(ChromotingClientMessage* message) {
+  delete message;
 }
 
 }  // namespace remoting

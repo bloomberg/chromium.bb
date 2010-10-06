@@ -9,22 +9,26 @@
 
 namespace remoting {
 
-MultipleArrayInputStream::MultipleArrayInputStream(int count)
-    : buffer_count_(count),
-      current_buffer_(0),
+MultipleArrayInputStream::MultipleArrayInputStream()
+    : current_buffer_(0),
       current_buffer_offset_(0),
       position_(0),
       last_returned_size_(0) {
-  DCHECK_GT(buffer_count_, 0);
-  buffers_.reset(new const uint8*[buffer_count_]);
-  buffer_sizes_.reset(new int[buffer_count_]);
 }
 
 MultipleArrayInputStream::~MultipleArrayInputStream() {
 }
 
+void MultipleArrayInputStream::AddBuffer(
+    const char* buffer, int size) {
+  DCHECK_EQ(position_, 0); // Haven't started reading.
+  buffers_.push_back(buffer);
+  buffer_sizes_.push_back(size);
+  DCHECK_EQ(buffers_.size(), buffer_sizes_.size());
+}
+
 bool MultipleArrayInputStream::Next(const void** data, int* size) {
-  if (current_buffer_ < buffer_count_) {
+  if (current_buffer_ < buffers_.size()) {
     // Also reply with that is remaining in the current buffer.
     last_returned_size_ =
         buffer_sizes_[current_buffer_] - current_buffer_offset_;
@@ -49,7 +53,7 @@ bool MultipleArrayInputStream::Next(const void** data, int* size) {
 void MultipleArrayInputStream::BackUp(int count) {
   DCHECK_LE(count, last_returned_size_);
   DCHECK_EQ(0, current_buffer_offset_);
-  DCHECK_GT(current_buffer_, 0);
+  DCHECK_GT(current_buffer_, 0u);
 
   // Rewind one buffer.
   --current_buffer_;
@@ -63,7 +67,7 @@ bool MultipleArrayInputStream::Skip(int count) {
   DCHECK_GE(count, 0);
   last_returned_size_ = 0;
 
-  while (count && current_buffer_ < buffer_count_) {
+  while (count && current_buffer_ < buffers_.size()) {
     int read = std::min(
         count,
         buffer_sizes_[current_buffer_] - current_buffer_offset_);
@@ -84,13 +88,6 @@ bool MultipleArrayInputStream::Skip(int count) {
 
 int64 MultipleArrayInputStream::ByteCount() const {
   return position_;
-}
-
-void MultipleArrayInputStream::SetBuffer(
-    int n, const uint8* buffer, int size) {
-  CHECK(n < buffer_count_);
-  buffers_[n] = buffer;
-  buffer_sizes_[n] = size;
 }
 
 }  // namespace remoting

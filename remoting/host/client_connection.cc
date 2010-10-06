@@ -5,11 +5,9 @@
 #include "remoting/host/client_connection.h"
 
 #include "google/protobuf/message.h"
-#include "media/base/data_buffer.h"
-#include "remoting/base/protocol_decoder.h"
-#include "remoting/base/protocol_util.h"
-
-using media::DataBuffer;
+#include "net/base/io_buffer.h"
+#include "remoting/protocol/messages_decoder.h"
+#include "remoting/protocol/util.h"
 
 namespace remoting {
 
@@ -18,165 +16,100 @@ namespace remoting {
 static const size_t kAverageUpdateStream = 10;
 
 ClientConnection::ClientConnection(MessageLoop* message_loop,
-                                   ProtocolDecoder* decoder,
                                    EventHandler* handler)
     : loop_(message_loop),
-      decoder_(decoder),
-      size_in_queue_(0),
-      update_stream_size_(0),
       handler_(handler) {
   DCHECK(loop_);
-  DCHECK(decoder_.get());
   DCHECK(handler_);
 }
 
 ClientConnection::~ClientConnection() {
   // TODO(hclam): When we shut down the viewer we may have to close the
-  // jingle channel.
+  // connection.
 }
 
-// static
-scoped_refptr<media::DataBuffer>
-    ClientConnection::CreateWireFormatDataBuffer(
-        const ChromotingHostMessage* msg) {
-  // TODO(hclam): Instead of serializing |msg| create an DataBuffer
-  // object that wraps around it.
-  scoped_ptr<const ChromotingHostMessage> message_deleter(msg);
-  return SerializeAndFrameMessage(*msg);
+void ClientConnection::Init(ChromotingConnection* connection) {
+  DCHECK_EQ(connection->message_loop(), MessageLoop::current());
+
+  connection_ = connection;
+  connection_->SetStateChangeCallback(
+      NewCallback(this, &ClientConnection::OnConnectionStateChange));
 }
 
 void ClientConnection::SendInitClientMessage(int width, int height) {
   DCHECK_EQ(loop_, MessageLoop::current());
-  DCHECK(!update_stream_size_);
 
   // If we are disconnected then return.
-  if (!channel_)
+  if (!connection_)
     return;
 
   ChromotingHostMessage msg;
   msg.mutable_init_client()->set_width(width);
   msg.mutable_init_client()->set_height(height);
   DCHECK(msg.IsInitialized());
-  channel_->Write(SerializeAndFrameMessage(msg));
-}
-
-void ClientConnection::SendBeginUpdateStreamMessage() {
-  DCHECK_EQ(loop_, MessageLoop::current());
-
-  // If we are disconnected then return.
-  if (!channel_)
-    return;
-
-  ChromotingHostMessage msg;
-  msg.mutable_begin_update_stream();
-  DCHECK(msg.IsInitialized());
-
-  scoped_refptr<DataBuffer> data = SerializeAndFrameMessage(msg);
-  DCHECK(!update_stream_size_);
-  update_stream_size_ += data->GetDataSize();
-  channel_->Write(data);
+  video_writer_.SendMessage(msg);
 }
 
 void ClientConnection::SendUpdateStreamPacketMessage(
-    scoped_refptr<DataBuffer> data) {
+    const ChromotingHostMessage& message) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If we are disconnected then return.
-  if (!channel_)
+  if (!connection_)
     return;
 
-  update_stream_size_ += data->GetDataSize();
-  channel_->Write(data);
-}
-
-void ClientConnection::SendEndUpdateStreamMessage() {
-  DCHECK_EQ(loop_, MessageLoop::current());
-
-  // If we are disconnected then return.
-  if (!channel_)
-    return;
-
-  ChromotingHostMessage msg;
-  msg.mutable_end_update_stream();
-  DCHECK(msg.IsInitialized());
-
-  scoped_refptr<DataBuffer> data = SerializeAndFrameMessage(msg);
-  update_stream_size_ += data->GetDataSize();
-  channel_->Write(data);
-
-  // Here's some logic to help finding the average update stream size.
-  size_in_queue_ += update_stream_size_;
-  size_queue_.push_back(update_stream_size_);
-  if (size_queue_.size() > kAverageUpdateStream) {
-    size_in_queue_ -= size_queue_.front();
-    size_queue_.pop_front();
-    DCHECK_GE(size_in_queue_, 0);
-  }
-  update_stream_size_ = 0;
-}
-
-void ClientConnection::MarkEndOfUpdate() {
-  // This is some logic to help calculate the average update stream size.
-  size_in_queue_ += update_stream_size_;
-  size_queue_.push_back(update_stream_size_);
-  if (size_queue_.size() > kAverageUpdateStream) {
-    size_in_queue_ -= size_queue_.front();
-    size_queue_.pop_front();
-    DCHECK_GE(size_in_queue_, 0);
-  }
-  update_stream_size_ = 0;
+  video_writer_.SendMessage(message);
 }
 
 int ClientConnection::GetPendingUpdateStreamMessages() {
   DCHECK_EQ(loop_, MessageLoop::current());
-
-  if (!size_queue_.size())
-    return 0;
-  int average_size = size_in_queue_ / size_queue_.size();
-  if (!average_size)
-    return 0;
-  return channel_->write_buffer_size() / average_size;
+  return video_writer_.GetPendingMessages();
 }
 
 void ClientConnection::Disconnect() {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   // If there is a channel then close it and release the reference.
-  if (channel_) {
-    channel_->Close();
-    channel_ = NULL;
+  if (connection_) {
+    connection_->Close(NewRunnableMethod(this, &ClientConnection::OnClosed));
+    connection_ = NULL;
   }
 }
 
-void ClientConnection::OnStateChange(JingleChannel* channel,
-                                     JingleChannel::State state) {
-  DCHECK(channel);
+void ClientConnection::OnConnectionStateChange(
+    ChromotingConnection::State state) {
+  if (state == ChromotingConnection::CONNECTED) {
+    events_reader_.Init(
+        connection_->GetEventsChannel(),
+        NewCallback(this, &ClientConnection::OnMessageReceived));
+    video_writer_.Init(connection_->GetVideoChannel());
+  }
+
   loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &ClientConnection::StateChangeTask, state));
 }
 
-void ClientConnection::OnPacketReceived(JingleChannel* channel,
-                                        scoped_refptr<DataBuffer> data) {
-  DCHECK_EQ(channel_.get(), channel);
+void ClientConnection::OnMessageReceived(ChromotingClientMessage* message) {
   loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ClientConnection::PacketReceivedTask, data));
+      NewRunnableMethod(this, &ClientConnection::MessageReceivedTask,
+                        message));
 }
 
-void ClientConnection::StateChangeTask(JingleChannel::State state) {
+void ClientConnection::StateChangeTask(ChromotingConnection::State state) {
   DCHECK_EQ(loop_, MessageLoop::current());
 
   DCHECK(handler_);
   switch(state) {
-    case JingleChannel::CONNECTING:
+    case ChromotingConnection::CONNECTING:
       break;
     // Don't care about this message.
-    case JingleChannel::OPEN:
+    case ChromotingConnection::CONNECTED:
       handler_->OnConnectionOpened(this);
       break;
-    case JingleChannel::CLOSED:
+    case ChromotingConnection::CLOSED:
       handler_->OnConnectionClosed(this);
       break;
-    case JingleChannel::FAILED:
+    case ChromotingConnection::FAILED:
       handler_->OnConnectionFailed(this);
       break;
     default:
@@ -185,17 +118,14 @@ void ClientConnection::StateChangeTask(JingleChannel::State state) {
   }
 }
 
-void ClientConnection::PacketReceivedTask(scoped_refptr<DataBuffer> data) {
+void ClientConnection::MessageReceivedTask(ChromotingClientMessage* message) {
   DCHECK_EQ(loop_, MessageLoop::current());
-
-  // Use the decoder to parse incoming data.
-  DCHECK(decoder_.get());
-  ClientMessageList list;
-  decoder_->ParseClientMessages(data, &list);
-
-  // Then submit the messages to the handler.
   DCHECK(handler_);
-  handler_->HandleMessages(this, &list);
+  handler_->HandleMessage(this, message);
+}
+
+// OnClosed() is used as a callback for ChromotingConnection::Close().
+void ClientConnection::OnClosed() {
 }
 
 }  // namespace remoting

@@ -4,10 +4,13 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "remoting/base/multiple_array_input_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
+
+// TODO(sergeyu): Add SCOPED_TRACE() for ReadFromInput() and ReadString().
 
 static size_t ReadFromInput(MultipleArrayInputStream* input,
                          void* data, size_t size) {
@@ -64,11 +67,11 @@ static void PrepareData(scoped_ptr<MultipleArrayInputStream>* stream) {
       segments += 2;
   }
 
-  MultipleArrayInputStream* mstream = new MultipleArrayInputStream(segments);
+  MultipleArrayInputStream* mstream = new MultipleArrayInputStream();
   const char* data = kTestData.c_str();
   for (int i = 0; i < segments; ++i) {
     int size = i % 2 == 0 ? 1 : 2;
-    mstream->SetBuffer(i, reinterpret_cast<const uint8*>(data), size);
+    mstream->AddBuffer(data, size);
     data += size;
   }
   stream->reset(mstream);

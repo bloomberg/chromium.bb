@@ -355,28 +355,21 @@ EventExecutorWin::EventExecutorWin(Capturer* capturer)
 EventExecutorWin::~EventExecutorWin() {
 }
 
-void EventExecutorWin::HandleInputEvents(ClientMessageList* messages) {
-  for (ClientMessageList::iterator it = messages->begin();
-       it != messages->end();
-       ++it) {
-    ChromotingClientMessage* msg = *it;
-    if (msg->has_mouse_set_position_event()) {
-      HandleMouseSetPosition(msg);
-    } else if (msg->has_mouse_move_event()) {
-      HandleMouseMove(msg);
-    } else if (msg->has_mouse_wheel_event()) {
-      HandleMouseWheel(msg);
-    } else if (msg->has_mouse_down_event()) {
-      HandleMouseButtonDown(msg);
-    } else if (msg->has_mouse_up_event()) {
-      HandleMouseButtonUp(msg);
-    } else if (msg->has_key_event()) {
-      HandleKey(msg);
-    }
+void EventExecutorWin::HandleInputEvent(ChromotingClientMessage* msg) {
+  if (msg->has_mouse_set_position_event()) {
+    HandleMouseSetPosition(msg);
+  } else if (msg->has_mouse_move_event()) {
+    HandleMouseMove(msg);
+  } else if (msg->has_mouse_wheel_event()) {
+    HandleMouseWheel(msg);
+  } else if (msg->has_mouse_down_event()) {
+    HandleMouseButtonDown(msg);
+  } else if (msg->has_mouse_up_event()) {
+    HandleMouseButtonUp(msg);
+  } else if (msg->has_key_event()) {
+    HandleKey(msg);
   }
-  // We simply delete all messages.
-  // TODO(hclam): Delete messages processed.
-  STLDeleteElements<ClientMessageList>(messages);
+  delete msg;
 }
 
 void EventExecutorWin::HandleMouseSetPosition(ChromotingClientMessage* msg) {

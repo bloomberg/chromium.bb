@@ -6,9 +6,9 @@
 
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
-#include "media/base/data_buffer.h"
-#include "remoting/base/protocol_decoder.h"
-#include "remoting/base/protocol_util.h"
+#include "net/base/io_buffer.h"
+#include "remoting/protocol/messages_decoder.h"
+#include "remoting/protocol/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -20,10 +20,9 @@ static const std::string kTestData = "Chromoting rockz";
 static void AppendMessage(const ChromotingHostMessage& msg,
                           std::string* buffer) {
   // Contains one encoded message.
-  scoped_refptr<media::DataBuffer> encoded_msg;
+  scoped_refptr<net::IOBufferWithSize> encoded_msg;
   encoded_msg = SerializeAndFrameMessage(msg);
-  buffer->append(reinterpret_cast<const char*>(encoded_msg->GetData()),
-                 encoded_msg->GetDataSize());
+  buffer->append(encoded_msg->data(), encoded_msg->size());
 }
 
 // Construct and prepare data in the |output_stream|.
@@ -61,20 +60,20 @@ static void PrepareData(uint8** buffer, int* size) {
   memcpy(*buffer, encoded_data.c_str(), *size);
 }
 
-TEST(ProtocolDecoderTest, BasicOperations) {
+TEST(MessagesDecoderTest, BasicOperations) {
   // Prepare encoded data for testing.
   int size;
   uint8* test_data;
   PrepareData(&test_data, &size);
   scoped_array<uint8> memory_deleter(test_data);
 
-  // Then simulate using ProtocolDecoder to decode variable
+  // Then simulate using MessagesDecoder to decode variable
   // size of encoded data.
   // The first thing to do is to generate a variable size of data. This is done
   // by iterating the following array for read sizes.
   const int kReadSizes[] = {1, 2, 3, 1};
 
-  ProtocolDecoder decoder;
+  MessagesDecoder decoder;
 
   // Then feed the protocol decoder using the above generated data and the
   // read pattern.
@@ -84,10 +83,9 @@ TEST(ProtocolDecoderTest, BasicOperations) {
     int read = std::min(size - i, kReadSizes[i % arraysize(kReadSizes)]);
 
     // And then prepare a DataBuffer for feeding it.
-    scoped_refptr<media::DataBuffer> buffer = new media::DataBuffer(read);
-    memcpy(buffer->GetWritableData(), test_data + i, read);
-    buffer->SetDataSize(read);
-    decoder.ParseHostMessages(buffer, &message_list);
+    scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(read);
+    memcpy(buffer->data(), test_data + i, read);
+    decoder.ParseHostMessages(buffer, read, &message_list);
     i += read;
   }
 
@@ -98,10 +96,12 @@ TEST(ProtocolDecoderTest, BasicOperations) {
   delete message_list.front();
   message_list.pop_front();
 
+  int index = 0;
   for (HostMessageList::iterator it = message_list.begin();
        it != message_list.end(); ++it) {
     ChromotingHostMessage* message = *it;
-    int type = (i - 1) % 3;
+    int type = index % 3;
+    ++index;
     if (type == 0) {
       // Begin update stream.
       EXPECT_TRUE(message->has_begin_update_stream());
