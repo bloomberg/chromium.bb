@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "third_party/ppapi/c/pp_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
@@ -19,8 +20,10 @@
 using WebKit::WebCanvas;
 using WebKit::WebPluginContainer;
 using WebKit::WebPluginParams;
+using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebString;
+using WebKit::WebURL;
 using WebKit::WebVector;
 using WebKit::WebView;
 
@@ -161,12 +164,16 @@ bool WebPluginImpl::hasSelection() const {
   return !selectionAsText().isEmpty();
 }
 
-WebKit::WebString WebPluginImpl::selectionAsText() const {
+WebString WebPluginImpl::selectionAsText() const {
   return instance_->GetSelectedText(false);
 }
 
-WebKit::WebString WebPluginImpl::selectionAsMarkup() const {
+WebString WebPluginImpl::selectionAsMarkup() const {
   return instance_->GetSelectedText(true);
+}
+
+WebURL WebPluginImpl::linkAtPosition(const WebPoint& position) const {
+  return GURL(instance_->GetLinkAtPosition(position));
 }
 
 void WebPluginImpl::setZoomLevel(double level, bool text_only) {

@@ -54,6 +54,7 @@
 #include "webkit/glue/plugins/pepper_string.h"
 #include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_var.h"
+#include "webkit/glue/plugins/ppp_private.h"
 
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
@@ -273,6 +274,7 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       find_identifier_(-1),
       plugin_find_interface_(NULL),
       plugin_zoom_interface_(NULL),
+      plugin_private_interface_(NULL),
 #if defined (OS_LINUX)
       num_pages_(0),
       pdf_output_done_(false),
@@ -587,6 +589,21 @@ string16 PluginInstance::GetSelectedText(bool html) {
   return UTF8ToUTF16(string->value());
 }
 
+string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
+  if (!LoadPrivateInterface())
+    return string16();
+
+  PP_Point p;
+  p.x = point.x();
+  p.y = point.y();
+  PP_Var rv = plugin_private_interface_->GetLinkAtPosition(GetPPInstance(), p);
+  scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
+  Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
+  if (!string)
+    return string16();
+  return UTF8ToUTF16(string->value());
+}
+
 void PluginInstance::Zoom(double factor, bool text_only) {
   if (!LoadZoomInterface())
     return;
@@ -635,6 +652,16 @@ bool PluginInstance::LoadZoomInterface() {
   }
 
   return !!plugin_zoom_interface_;
+}
+
+bool PluginInstance::LoadPrivateInterface() {
+  if (!plugin_private_interface_) {
+    plugin_private_interface_ =
+        reinterpret_cast<const PPP_Private*>(module_->GetPluginInterface(
+            PPP_PRIVATE_INTERFACE));
+  }
+
+  return !!plugin_private_interface_;
 }
 
 bool PluginInstance::PluginHasFocus() const {

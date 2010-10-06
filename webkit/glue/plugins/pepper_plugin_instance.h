@@ -28,6 +28,7 @@ struct PPB_Fullscreen_Dev;
 struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
 struct PPP_Instance;
+struct PPP_Private;
 struct PPP_Zoom_Dev;
 
 class SkBitmap;
@@ -136,6 +137,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
       gfx::Rect* clip);
 
   string16 GetSelectedText(bool html);
+  string16 GetLinkAtPosition(const gfx::Point& point);
   void Zoom(double factor, bool text_only);
   bool StartFind(const string16& search_text,
                  bool case_sensitive,
@@ -157,6 +159,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
  private:
   bool LoadFindInterface();
   bool LoadZoomInterface();
+  bool LoadPrivateInterface();
 
   // Determines if we think the plugin has focus, both content area and webkit
   // (see has_webkit_focus_ below).
@@ -216,6 +219,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // The plugin find and zoom interfaces.
   const PPP_Find_Dev* plugin_find_interface_;
   const PPP_Zoom_Dev* plugin_zoom_interface_;
+  const PPP_Private* plugin_private_interface_;
 
   // This is only valid between a successful PrintBegin call and a PrintEnd
   // call.

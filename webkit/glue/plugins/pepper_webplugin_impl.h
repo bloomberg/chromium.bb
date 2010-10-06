@@ -63,6 +63,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
   virtual bool hasSelection() const;
   virtual WebKit::WebString selectionAsText() const;
   virtual WebKit::WebString selectionAsMarkup() const;
+  virtual WebKit::WebURL linkAtPosition(const WebKit::WebPoint& position) const;
   virtual void setZoomLevel(double level, bool text_only);
   virtual bool startFind(const WebKit::WebString& search_text,
                          bool case_sensitive,
