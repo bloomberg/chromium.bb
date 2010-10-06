@@ -899,7 +899,7 @@ const char kNTPWebResourceCacheUpdate[] = "ntp.web_resource_cache_update";
 const char kNTPTipsResourceServer[] = "ntp.tips_resource_server";
 
 // Last server used to fill logo_resource_cache.
-const char kNTPLogoResourceServer[] = "ntp.logo_resource_server";
+const char kNTPLogoResourceServer[] = "ntp.alt_logo_resource_server";
 
 // Which sections should be visible on the new tab page
 // 1 - Show the most visited sites in a grid
@@ -914,8 +914,8 @@ const char kNTPPrefVersion[] = "ntp.pref_version";
 
 // Dates between which the NTP should show a custom logo rather than the
 // standard one.
-const char kNTPCustomLogoStart[] = "ntp.custom_logo_start";
-const char kNTPCustomLogoEnd[] = "ntp.custom_logo_end";
+const char kNTPCustomLogoStart[] = "ntp.alt_logo_start";
+const char kNTPCustomLogoEnd[] = "ntp.alt_logo_end";
 
 // A boolean specifying whether dev tools window should be opened docked.
 const char kDevToolsOpenDocked[] = "devtools.open_docked";
