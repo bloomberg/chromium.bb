@@ -44,8 +44,8 @@ class TestOwner : public printing::PrintJobWorkerOwner {
     // That's fine for testing. It is actually simulating PrinterQuery behavior.
     TestPrintJobWorker* worker(new TestPrintJobWorker(new_owner));
     EXPECT_TRUE(worker->Start());
-    worker->printing_context().UseDefaultSettings();
-    settings_ = worker->printing_context().settings();
+    worker->printing_context()->UseDefaultSettings();
+    settings_ = worker->printing_context()->settings();
     return worker;
   }
   virtual MessageLoop* message_loop() {

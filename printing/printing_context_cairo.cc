@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/printing_context.h"
+#include "printing/printing_context_cairo.h"
 
 #include <gtk/gtk.h>
 #include <gtk/gtkprintunixdialog.h>
@@ -11,18 +11,19 @@
 
 namespace printing {
 
-PrintingContext::PrintingContext()
-    :
-      dialog_box_dismissed_(false),
-      in_print_job_(false),
-      abort_printing_(false) {
+// static
+PrintingContext* PrintingContext::Create() {
+  return static_cast<PrintingContext*>(new PrintingContextCairo);
 }
 
-PrintingContext::~PrintingContext() {
-  ResetSettings();
+PrintingContextCairo::PrintingContextCairo() : PrintingContext() {
 }
 
-void PrintingContext::AskUserForSettings(
+PrintingContextCairo::~PrintingContextCairo() {
+  ReleaseContext();
+}
+
+void PrintingContextCairo::AskUserForSettings(
     gfx::NativeView parent_view,
     int max_pages,
     bool has_selection,
@@ -31,7 +32,7 @@ void PrintingContext::AskUserForSettings(
   callback->Run(OK);
 }
 
-PrintingContext::Result PrintingContext::UseDefaultSettings() {
+PrintingContext::Result PrintingContextCairo::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   ResetSettings();
@@ -52,7 +53,7 @@ PrintingContext::Result PrintingContext::UseDefaultSettings() {
   return OK;
 }
 
-PrintingContext::Result PrintingContext::InitWithSettings(
+PrintingContext::Result PrintingContextCairo::InitWithSettings(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);
   settings_ = settings;
@@ -62,13 +63,7 @@ PrintingContext::Result PrintingContext::InitWithSettings(
   return FAILED;
 }
 
-void PrintingContext::ResetSettings() {
-  dialog_box_dismissed_ = false;
-  abort_printing_ = false;
-  in_print_job_ = false;
-}
-
-PrintingContext::Result PrintingContext::NewDocument(
+PrintingContext::Result PrintingContextCairo::NewDocument(
     const string16& document_name) {
   DCHECK(!in_print_job_);
 
@@ -77,7 +72,7 @@ PrintingContext::Result PrintingContext::NewDocument(
   return FAILED;
 }
 
-PrintingContext::Result PrintingContext::NewPage() {
+PrintingContext::Result PrintingContextCairo::NewPage() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
@@ -87,7 +82,7 @@ PrintingContext::Result PrintingContext::NewPage() {
   return FAILED;
 }
 
-PrintingContext::Result PrintingContext::PageDone() {
+PrintingContext::Result PrintingContextCairo::PageDone() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
@@ -97,7 +92,7 @@ PrintingContext::Result PrintingContext::PageDone() {
   return FAILED;
 }
 
-PrintingContext::Result PrintingContext::DocumentDone() {
+PrintingContext::Result PrintingContextCairo::DocumentDone() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
@@ -108,20 +103,23 @@ PrintingContext::Result PrintingContext::DocumentDone() {
   return FAILED;
 }
 
-void PrintingContext::Cancel() {
+void PrintingContextCairo::Cancel() {
   abort_printing_ = true;
   in_print_job_ = false;
 
   NOTIMPLEMENTED();
 }
 
-void PrintingContext::DismissDialog() {
+void PrintingContextCairo::DismissDialog() {
   NOTIMPLEMENTED();
 }
 
-PrintingContext::Result PrintingContext::OnError() {
-  ResetSettings();
-  return abort_printing_ ? CANCEL : FAILED;
+void PrintingContextCairo::ReleaseContext() {
+  // Nothing to do yet.
+}
+
+gfx::NativeDrawingContext PrintingContextCairo::context() const {
+  return NULL;
 }
 
 }  // namespace printing

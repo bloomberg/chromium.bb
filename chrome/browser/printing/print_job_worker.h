@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
 #pragma once
 
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "gfx/native_widget_types.h"
@@ -60,7 +62,7 @@ class PrintJobWorker : public base::Thread {
 
  protected:
   // Retrieves the context for testing only.
-  PrintingContext& printing_context() { return printing_context_; }
+  PrintingContext* printing_context() { return printing_context_.get(); }
 
  private:
   // The shared NotificationService service can only be accessed from the UI
@@ -98,7 +100,7 @@ class PrintJobWorker : public base::Thread {
   void GetSettingsDone(PrintingContext::Result result);
 
   // Information about the printer setting.
-  PrintingContext printing_context_;
+  scoped_ptr<PrintingContext> printing_context_;
 
   // The printed document. Only has read-only access.
   scoped_refptr<PrintedDocument> document_;

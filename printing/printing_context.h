@@ -5,40 +5,21 @@
 #ifndef PRINTING_PRINTING_CONTEXT_H_
 #define PRINTING_PRINTING_CONTEXT_H_
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <ocidl.h>
-#include <commdlg.h>
-#endif
-
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#if !(defined(OS_WIN) || defined(OS_MACOSX))
-// TODO(port) Remove after implementing PrintingContext::context()
-#include "base/logging.h"
-#endif
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "gfx/native_widget_types.h"
 #include "printing/print_settings.h"
 
-#if defined(OS_MACOSX)
-#include "base/scoped_cftyperef.h"
-#ifdef __OBJC__
-@class NSPrintInfo;
-#else
-class NSPrintInfo;
-#endif  // __OBJC__
-#endif  // OS_MACOSX
-
 namespace printing {
 
-// Describe the user selected printing context for Windows. This includes the
-// OS-dependent UI to ask the user about the print settings. This class directly
-// talk to the printer and manages the document and pages breaks.
+// An abstraction of a printer context, implemented by objects that describe the
+// user selected printing context. This includes the OS-dependent UI to ask the
+// user about the print settings. Concrete implementations directly talk to the
+// printer and manage the document and page breaks.
 class PrintingContext {
  public:
   // Tri-state result for user behavior-dependent functions.
@@ -48,8 +29,7 @@ class PrintingContext {
     FAILED,
   };
 
-  PrintingContext();
-  ~PrintingContext();
+  virtual ~PrintingContext();
 
   // Callback of AskUserForSettings, used to notify the PrintJobWorker when
   // print settings are available.
@@ -59,42 +39,17 @@ class PrintingContext {
   // context with the select device settings. The result of the call is returned
   // in the callback. This is necessary for Linux, which only has an
   // asynchronous printing API.
-  void AskUserForSettings(gfx::NativeView parent_view,
-                          int max_pages,
-                          bool has_selection,
-                          PrintSettingsCallback* callback);
-
-#if defined(OS_WIN) && defined(UNIT_TEST)
-  // Sets a fake PrintDlgEx function pointer in tests.
-  void SetPrintDialog(HRESULT (__stdcall *print_dialog_func)(LPPRINTDLGEX)) {
-    print_dialog_func_ = print_dialog_func;
-  }
-#endif
-
-#if defined(OS_WIN)
-  // Allocates the HDC for a specific DEVMODE.
-  static bool AllocateContext(const std::wstring& printer_name,
-                              const DEVMODE* dev_mode,
-                              gfx::NativeDrawingContext* context);
-
-  // Retrieves the content of a GetPrinter call.
-  static void GetPrinterHelper(HANDLE printer, int level,
-                               scoped_array<uint8>* buffer);
-#endif
+  virtual void AskUserForSettings(gfx::NativeView parent_view,
+                                  int max_pages,
+                                  bool has_selection,
+                                  PrintSettingsCallback* callback) = 0;
 
   // Selects the user's default printer and format. Updates the context with the
   // default device settings.
-  Result UseDefaultSettings();
-
-  void SetUseOverlays(bool use_overlays) {
-    settings_.use_overlays = use_overlays;
-  }
+  virtual Result UseDefaultSettings() = 0;
 
   // Initializes with predefined settings.
-  Result InitWithSettings(const PrintSettings& settings);
-
-  // Reinitializes the settings to uninitialized for object reuse.
-  void ResetSettings();
+  virtual Result InitWithSettings(const PrintSettings& settings) = 0;
 
   // Does platform specific setup of the printer before the printing. Signal the
   // printer that a document is about to be spooled.
@@ -102,92 +57,55 @@ class PrintingContext {
   // like IPC message processing! Some printers have side-effects on this call
   // like virtual printers that ask the user for the path of the saved document;
   // for example a PDF printer.
-  Result NewDocument(const string16& document_name);
+  virtual Result NewDocument(const string16& document_name) = 0;
 
   // Starts a new page.
-  Result NewPage();
+  virtual Result NewPage() = 0;
 
   // Closes the printed page.
-  Result PageDone();
+  virtual Result PageDone() = 0;
 
   // Closes the printing job. After this call the object is ready to start a new
   // document.
-  Result DocumentDone();
+  virtual Result DocumentDone() = 0;
 
   // Cancels printing. Can be used in a multi-threaded context. Takes effect
   // immediately.
-  void Cancel();
+  virtual void Cancel() = 0;
 
   // Dismiss the Print... dialog box if shown.
-  void DismissDialog();
+  virtual void DismissDialog() = 0;
 
-  gfx::NativeDrawingContext context() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-    return context_;
-#else
-    NOTIMPLEMENTED();
-    return NULL;
-#endif
+  // Releases the native printing context.
+  virtual void ReleaseContext() = 0;
+
+  // Returns the native context used to print.
+  virtual gfx::NativeDrawingContext context() const = 0;
+
+  // Creates an instance of this object. Implementers of this interface should
+  // implement this method to create an object of their implementation. The
+  // caller owns the returned object.
+  static PrintingContext* Create();
+
+  void set_use_overlays(bool use_overlays) {
+    settings_.use_overlays = use_overlays;
   }
 
   const PrintSettings& settings() const {
     return settings_;
   }
 
- private:
-  // Class that manages the PrintDlgEx() callbacks. This is meant to be a
-  // temporary object used during the Print... dialog display.
-  class CallbackHandler;
+ protected:
+  PrintingContext();
+
+  // Reinitializes the settings for object reuse.
+  void ResetSettings();
 
   // Does bookkeeping when an error occurs.
   PrintingContext::Result OnError();
 
-#if defined(OS_WIN)
-  // Used in response to the user canceling the printing.
-  static BOOL CALLBACK AbortProc(HDC hdc, int nCode);
-
-  // Reads the settings from the selected device context. Updates settings_ and
-  // its margins.
-  bool InitializeSettings(const DEVMODE& dev_mode,
-                          const std::wstring& new_device_name,
-                          const PRINTPAGERANGE* ranges,
-                          int number_ranges,
-                          bool selection_only);
-
-  // Retrieves the printer's default low-level settings. On Windows, context_ is
-  // allocated with this call.
-  bool GetPrinterSettings(HANDLE printer,
-                          const std::wstring& device_name);
-
-  // Parses the result of a PRINTDLGEX result.
-  Result ParseDialogResultEx(const PRINTDLGEX& dialog_options);
-  Result ParseDialogResult(const PRINTDLG& dialog_options);
-#elif defined(OS_MACOSX)
-  // Read the settings from the given NSPrintInfo (and cache it for later use).
-  void ParsePrintInfo(NSPrintInfo* print_info);
-#endif
-
-  // On Windows, the selected printer context.
-  // On Mac, the current page's context; only valid between NewPage and PageDone
-  // call pairs.
-  gfx::NativeDrawingContext context_;
-
-#if defined(OS_MACOSX)
-  // The native print info object.
-  NSPrintInfo* print_info_;
-#endif
-
   // Complete print context settings.
   PrintSettings settings_;
-
-#if defined(OS_WIN)
-  // The dialog box for the time it is shown.
-  volatile HWND dialog_box_;
-
-  // Function pointer that defaults to PrintDlgEx. It can be changed using
-  // SetPrintDialog() in tests.
-  HRESULT (__stdcall *print_dialog_func_)(LPPRINTDLGEX);
-#endif
 
   // The dialog box has been dismissed.
   volatile bool dialog_box_dismissed_;

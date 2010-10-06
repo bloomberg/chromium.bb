@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/printing_context.h"
+#include "printing/printing_context_win.h"
 
 #include <winspool.h>
 
@@ -19,10 +19,10 @@ using base::Time;
 
 namespace printing {
 
-class PrintingContext::CallbackHandler : public IPrintDialogCallback,
-                                         public IObjectWithSite {
+class PrintingContextWin::CallbackHandler : public IPrintDialogCallback,
+                                            public IObjectWithSite {
  public:
-  CallbackHandler(PrintingContext& owner, HWND owner_hwnd)
+  CallbackHandler(PrintingContextWin& owner, HWND owner_hwnd)
       : owner_(owner),
         owner_hwnd_(owner_hwnd),
         services_(NULL) {
@@ -113,30 +113,33 @@ class PrintingContext::CallbackHandler : public IPrintDialogCallback,
   }
 
  private:
-  PrintingContext& owner_;
+  PrintingContextWin& owner_;
   HWND owner_hwnd_;
   IPrintDialogServices* services_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackHandler);
 };
 
-PrintingContext::PrintingContext()
-    : context_(NULL),
+// static
+PrintingContext* PrintingContext::Create() {
+  return static_cast<PrintingContext*>(new PrintingContextWin);
+}
+
+PrintingContextWin::PrintingContextWin()
+    : PrintingContext(),
+      context_(NULL),
       dialog_box_(NULL),
-      dialog_box_dismissed_(false),
-      in_print_job_(false),
-      abort_printing_(false),
       print_dialog_func_(&PrintDlgEx) {
 }
 
-PrintingContext::~PrintingContext() {
-  ResetSettings();
+PrintingContextWin::~PrintingContextWin() {
+  ReleaseContext();
 }
 
-void PrintingContext::AskUserForSettings(HWND view,
-                                         int max_pages,
-                                         bool has_selection,
-                                         PrintSettingsCallback* callback) {
+void PrintingContextWin::AskUserForSettings(HWND view,
+                                            int max_pages,
+                                            bool has_selection,
+                                            PrintSettingsCallback* callback) {
   DCHECK(!in_print_job_);
   dialog_box_dismissed_ = false;
 
@@ -194,7 +197,7 @@ void PrintingContext::AskUserForSettings(HWND view,
   callback->Run(ParseDialogResultEx(dialog_options));
 }
 
-PrintingContext::Result PrintingContext::UseDefaultSettings() {
+PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   PRINTDLG dialog_options = { sizeof(PRINTDLG) };
@@ -206,7 +209,7 @@ PrintingContext::Result PrintingContext::UseDefaultSettings() {
   return ParseDialogResult(dialog_options);
 }
 
-PrintingContext::Result PrintingContext::InitWithSettings(
+PrintingContext::Result PrintingContextWin::InitWithSettings(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);
   settings_ = settings;
@@ -230,16 +233,7 @@ PrintingContext::Result PrintingContext::InitWithSettings(
   return status;
 }
 
-void PrintingContext::ResetSettings() {
-  if (context_ != NULL) {
-    DeleteDC(context_);
-    context_ = NULL;
-  }
-  settings_.Clear();
-  in_print_job_ = false;
-}
-
-PrintingContext::Result PrintingContext::NewDocument(
+PrintingContext::Result PrintingContextWin::NewDocument(
     const string16& document_name) {
   DCHECK(!in_print_job_);
   if (!context_)
@@ -289,7 +283,7 @@ PrintingContext::Result PrintingContext::NewDocument(
   return OK;
 }
 
-PrintingContext::Result PrintingContext::NewPage() {
+PrintingContext::Result PrintingContextWin::NewPage() {
   if (abort_printing_)
     return CANCEL;
 
@@ -303,7 +297,7 @@ PrintingContext::Result PrintingContext::NewPage() {
   return OK;
 }
 
-PrintingContext::Result PrintingContext::PageDone() {
+PrintingContext::Result PrintingContextWin::PageDone() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
@@ -313,7 +307,7 @@ PrintingContext::Result PrintingContext::PageDone() {
   return OK;
 }
 
-PrintingContext::Result PrintingContext::DocumentDone() {
+PrintingContext::Result PrintingContextWin::DocumentDone() {
   if (abort_printing_)
     return CANCEL;
   DCHECK(in_print_job_);
@@ -327,7 +321,7 @@ PrintingContext::Result PrintingContext::DocumentDone() {
   return OK;
 }
 
-void PrintingContext::Cancel() {
+void PrintingContextWin::Cancel() {
   abort_printing_ = true;
   in_print_job_ = false;
   if (context_)
@@ -335,21 +329,26 @@ void PrintingContext::Cancel() {
   DismissDialog();
 }
 
-void PrintingContext::DismissDialog() {
+void PrintingContextWin::DismissDialog() {
   if (dialog_box_) {
     DestroyWindow(dialog_box_);
     dialog_box_dismissed_ = true;
   }
 }
 
-PrintingContext::Result PrintingContext::OnError() {
-  // This will close context_ and clear settings_.
-  ResetSettings();
-  return abort_printing_ ? CANCEL : FAILED;
+void PrintingContextWin::ReleaseContext() {
+  if (context_) {
+    DeleteDC(context_);
+    context_ = NULL;
+  }
+}
+
+gfx::NativeDrawingContext PrintingContextWin::context() const {
+  return context_;
 }
 
 // static
-BOOL PrintingContext::AbortProc(HDC hdc, int nCode) {
+BOOL PrintingContextWin::AbortProc(HDC hdc, int nCode) {
   if (nCode) {
     // TODO(maruel):  Need a way to find the right instance to set. Should
     // leverage PrintJobManager here?
@@ -358,11 +357,11 @@ BOOL PrintingContext::AbortProc(HDC hdc, int nCode) {
   return true;
 }
 
-bool PrintingContext::InitializeSettings(const DEVMODE& dev_mode,
-                                         const std::wstring& new_device_name,
-                                         const PRINTPAGERANGE* ranges,
-                                         int number_ranges,
-                                         bool selection_only) {
+bool PrintingContextWin::InitializeSettings(const DEVMODE& dev_mode,
+                                            const std::wstring& new_device_name,
+                                            const PRINTPAGERANGE* ranges,
+                                            int number_ranges,
+                                            bool selection_only) {
   skia::PlatformDevice::InitializeDC(context_);
   DCHECK(GetDeviceCaps(context_, CLIPCAPS));
   DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_STRETCHDIB);
@@ -402,8 +401,8 @@ bool PrintingContext::InitializeSettings(const DEVMODE& dev_mode,
   return true;
 }
 
-bool PrintingContext::GetPrinterSettings(HANDLE printer,
-                                         const std::wstring& device_name) {
+bool PrintingContextWin::GetPrinterSettings(HANDLE printer,
+                                            const std::wstring& device_name) {
   DCHECK(!in_print_job_);
   scoped_array<uint8> buffer;
 
@@ -456,15 +455,15 @@ bool PrintingContext::GetPrinterSettings(HANDLE printer,
 }
 
 // static
-bool PrintingContext::AllocateContext(const std::wstring& printer_name,
-                                      const DEVMODE* dev_mode,
-                                      gfx::NativeDrawingContext* context) {
+bool PrintingContextWin::AllocateContext(const std::wstring& printer_name,
+                                         const DEVMODE* dev_mode,
+                                         gfx::NativeDrawingContext* context) {
   *context = CreateDC(L"WINSPOOL", printer_name.c_str(), NULL, dev_mode);
   DCHECK(*context);
   return *context != NULL;
 }
 
-PrintingContext::Result PrintingContext::ParseDialogResultEx(
+PrintingContext::Result PrintingContextWin::ParseDialogResultEx(
     const PRINTDLGEX& dialog_options) {
   // If the user clicked OK or Apply then Cancel, but not only Cancel.
   if (dialog_options.dwResultAction != PD_RESULT_CANCEL) {
@@ -543,7 +542,7 @@ PrintingContext::Result PrintingContext::ParseDialogResultEx(
   }
 }
 
-PrintingContext::Result PrintingContext::ParseDialogResult(
+PrintingContext::Result PrintingContextWin::ParseDialogResult(
     const PRINTDLG& dialog_options) {
   // If the user clicked OK or Apply then Cancel, but not only Cancel.
   // Start fresh.
@@ -594,8 +593,8 @@ PrintingContext::Result PrintingContext::ParseDialogResult(
 }
 
 // static
-void PrintingContext::GetPrinterHelper(HANDLE printer, int level,
-                                       scoped_array<uint8>* buffer) {
+void PrintingContextWin::GetPrinterHelper(HANDLE printer, int level,
+                                          scoped_array<uint8>* buffer) {
   DWORD buf_size = 0;
   GetPrinter(printer, level, NULL, 0, &buf_size);
   if (buf_size) {

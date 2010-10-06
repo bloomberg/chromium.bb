@@ -52,6 +52,8 @@ PrintJobWorker::PrintJobWorker(PrintJobWorkerOwner* owner)
       owner_(owner) {
   // The object is created in the IO thread.
   DCHECK_EQ(owner_->message_loop(), MessageLoop::current());
+
+  printing_context_.reset(PrintingContext::Create());
 }
 
 PrintJobWorker::~PrintJobWorker() {
@@ -75,7 +77,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   // Recursive task processing is needed for the dialog in case it needs to be
   // destroyed by a task.
   MessageLoop::current()->SetNestableTasksAllowed(true);
-  printing_context_.SetUseOverlays(use_overlays);
+  printing_context_->set_use_overlays(use_overlays);
 
   if (ask_user_for_settings) {
 #if defined(OS_MACOSX) || defined(USE_X11)
@@ -85,14 +87,14 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
                           parent_view, document_page_count,
                           has_selection));
 #else
-    printing_context_.AskUserForSettings(
+    printing_context_->AskUserForSettings(
         parent_view,
         document_page_count,
         has_selection,
         NewCallback(this, &PrintJobWorker::GetSettingsDone));
 #endif  // defined(OS_MACOSX) || defined(USE_X11)
   } else {
-    PrintingContext::Result result = printing_context_.UseDefaultSettings();
+    PrintingContext::Result result = printing_context_->UseDefaultSettings();
     GetSettingsDone(result);
   }
 }
@@ -108,7 +110,7 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
   owner_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       owner_,
       &PrintJobWorkerOwner::GetSettingsDone,
-      printing_context_.settings(),
+      printing_context_->settings(),
       result));
 }
 
@@ -118,7 +120,7 @@ void PrintJobWorker::GetSettingsWithUI(gfx::NativeView parent_view,
                                        bool has_selection) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  printing_context_.AskUserForSettings(
+  printing_context_->AskUserForSettings(
       parent_view,
       document_page_count,
       has_selection,
@@ -136,7 +138,7 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK_EQ(document_, new_document);
   DCHECK(document_.get());
-  DCHECK(new_document->settings().Equals(printing_context_.settings()));
+  DCHECK(new_document->settings().Equals(printing_context_->settings()));
 
   if (!document_.get() || page_number_ != PageNumber::npos() ||
       document_ != new_document) {
@@ -144,7 +146,7 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   }
 
   PrintingContext::Result result =
-      printing_context_.NewDocument(document_->name());
+      printing_context_->NewDocument(document_->name());
   if (result != PrintingContext::OK) {
     OnFailure();
     return;
@@ -163,7 +165,7 @@ void PrintJobWorker::OnDocumentChanged(PrintedDocument* new_document) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK(!new_document ||
-         new_document->settings().Equals(printing_context_.settings()));
+         new_document->settings().Equals(printing_context_->settings()));
 
   if (page_number_ != PageNumber::npos())
     return;
@@ -217,13 +219,13 @@ void PrintJobWorker::OnNewPage() {
 
 void PrintJobWorker::Cancel() {
   // This is the only function that can be called from any thread.
-  printing_context_.Cancel();
+  printing_context_->Cancel();
   // Cannot touch any member variable since we don't know in which thread
   // context we run.
 }
 
 void PrintJobWorker::DismissDialog() {
-  printing_context_.DismissDialog();
+  printing_context_->DismissDialog();
 }
 
 void PrintJobWorker::OnDocumentDone() {
@@ -231,7 +233,7 @@ void PrintJobWorker::OnDocumentDone() {
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK(document_.get());
 
-  if (printing_context_.DocumentDone() != PrintingContext::OK) {
+  if (printing_context_->DocumentDone() != PrintingContext::OK) {
     OnFailure();
     return;
   }
@@ -261,16 +263,16 @@ void PrintJobWorker::SpoolPage(PrintedPage& page) {
   owner_->message_loop()->PostTask(FROM_HERE, task);
 
   // Preprocess.
-  if (printing_context_.NewPage() != PrintingContext::OK) {
+  if (printing_context_->NewPage() != PrintingContext::OK) {
     OnFailure();
     return;
   }
 
   // Actual printing.
-  document_->RenderPrintedPage(page, printing_context_.context());
+  document_->RenderPrintedPage(page, printing_context_->context());
 
   // Postprocess.
-  if (printing_context_.PageDone() != PrintingContext::OK) {
+  if (printing_context_->PageDone() != PrintingContext::OK) {
     OnFailure();
     return;
   }

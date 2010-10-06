@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/printing_context.h"
+#include <ocidl.h>
+#include <commdlg.h>
 
+#include <string>
+
+#include "base/scoped_ptr.h"
 #include "printing/printing_test.h"
+#include "printing/printing_context.h"
+#include "printing/printing_context_win.h"
 #include "printing/print_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +52,7 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   DEVMODE* dev_mode = NULL;
   PRINTER_INFO_2* info_2 = NULL;
 
-  printing::PrintingContext::GetPrinterHelper(printer, 2, &buffer);
+  printing::PrintingContextWin::GetPrinterHelper(printer, 2, &buffer);
   if (buffer.get()) {
     info_2 = reinterpret_cast<PRINTER_INFO_2*>(buffer.get());
     if (info_2->pDevMode != NULL)
@@ -55,7 +61,7 @@ HRESULT WINAPI PrintDlgExMock(LPPRINTDLGEX lppd) {
   if (!dev_mode)
     return E_FAIL;
 
-  if (!printing::PrintingContext::AllocateContext(printer_name, dev_mode,
+  if (!printing::PrintingContextWin::AllocateContext(printer_name, dev_mode,
       &lppd->hDC)) {
     return E_FAIL;
   }
@@ -102,18 +108,19 @@ TEST_F(PrintingContextTest, Base) {
 
   settings.set_device_name(GetDefaultPrinter());
   // Initialize it.
-  printing::PrintingContext context;
-  EXPECT_EQ(printing::PrintingContext::OK, context.InitWithSettings(settings));
+  scoped_ptr<printing::PrintingContext> context(
+      printing::PrintingContext::Create());
+  EXPECT_EQ(printing::PrintingContext::OK, context->InitWithSettings(settings));
 
   // The print may lie to use and may not support world transformation.
   // Verify right now.
   XFORM random_matrix = { 1, 0.1f, 0, 1.5f, 0, 1 };
-  EXPECT_TRUE(SetWorldTransform(context.context(), &random_matrix));
-  EXPECT_TRUE(ModifyWorldTransform(context.context(), NULL, MWT_IDENTITY));
+  EXPECT_TRUE(SetWorldTransform(context->context(), &random_matrix));
+  EXPECT_TRUE(ModifyWorldTransform(context->context(), NULL, MWT_IDENTITY));
 }
 
 TEST_F(PrintingContextTest, PrintAll) {
-  printing::PrintingContext context;
+  printing::PrintingContextWin context;
   context.SetPrintDialog(&PrintDlgExMock);
   context.AskUserForSettings(
       NULL,

@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_handle_win.h"
+#include "base/scoped_ptr.h"
 #include "printing/printing_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,8 +76,9 @@ TEST_F(EmfPrintingTest, Enumerate) {
   settings.set_device_name(L"UnitTest Printer");
 
   // Initialize it.
-  printing::PrintingContext context;
-  EXPECT_EQ(context.InitWithSettings(settings), printing::PrintingContext::OK);
+  scoped_ptr<printing::PrintingContext> context(
+      printing::PrintingContext::Create());
+  EXPECT_EQ(context->InitWithSettings(settings), printing::PrintingContext::OK);
 
   FilePath emf_file;
   EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &emf_file));
@@ -95,10 +97,10 @@ TEST_F(EmfPrintingTest, Enumerate) {
   // unit_test, printing::PrintingContext automatically dumps its files to the
   // current directory.
   // TODO(maruel):  Clean the .PRN file generated in current directory.
-  context.NewDocument(L"EmfTest.Enumerate");
-  context.NewPage();
+  context->NewDocument(L"EmfTest.Enumerate");
+  context->NewPage();
   // Process one at a time.
-  printing::Emf::Enumerator emf_enum(emf, context.context(),
+  printing::Emf::Enumerator emf_enum(emf, context->context(),
                                 &emf.GetBounds().ToRECT());
   for (printing::Emf::Enumerator::const_iterator itr = emf_enum.begin();
        itr != emf_enum.end();
@@ -111,8 +113,8 @@ TEST_F(EmfPrintingTest, Enumerate) {
     EXPECT_TRUE(itr->SafePlayback(NULL)) <<
         " index: " << index << " type: " << itr->record()->iType;
   }
-  context.PageDone();
-  context.DocumentDone();
+  context->PageDone();
+  context->DocumentDone();
 }
 
 // Disabled if no "UnitTest printer" exists.

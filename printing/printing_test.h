@@ -8,6 +8,10 @@
 #include <windows.h>
 #include <winspool.h>
 
+#include <string>
+
+#include "base/basictypes.h"
+
 // Disable the whole test case when executing on a computer that has no printer
 // installed.
 // Note: Parent should be testing::Test or UITest.
