@@ -16,13 +16,17 @@
  * Window onload handler, sets up the page.
  */
 function load() {
+  $('sysinfo-url').onclick = function(event) {
+    chrome.send('openSystemTab');
+  };
+
   // textContent on description-text textarea seems to default
   // to several spaces, this resets it to empty.
   $('description-text').textContent = '';
   $('send-report-button').disabled = true;
 
   $('issue-with-combo').addEventListener('change', function(e) {
-    $('send-report-button').disabled = 
+    $('send-report-button').disabled =
         this.selectedIndex <= 0 || $('description-text').value.length == 0;
   });
 
@@ -169,8 +173,10 @@ window.addEventListener('DOMContentLoaded', load);
         <tr>
           <td>
             <input id="sys-info-checkbox" type="checkbox" value="sysinfo" checked>
-            <span id="sysinfo-label"></span> <a href='chrome://system/'
-                id="sysinfo-url" target="_blank"><span i18n-content="sysinfo"></span></a>
+            <span id="sysinfo-label"></span>
+            <a id="sysinfo-url" href="#" >
+              <span i18n-content="sysinfo"></span>
+            </a>
           </td>
         </tr>
 </if>

@@ -560,9 +560,10 @@ class Browser : public TabHandlerDelegate,
   void OpenPrivacyDashboardTabAndActivate();
   void OpenSearchEngineOptionsDialog();
 #if defined(OS_CHROMEOS)
+  void OpenSystemOptionsDialog();
   void OpenInternetOptionsDialog();
   void OpenLanguageOptionsDialog();
-  void OpenSystemOptionsDialog();
+  void OpenSystemTabAndActivate();
 #endif
   void OpenPluginsTabAndActivate();
 

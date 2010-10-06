@@ -1948,6 +1948,13 @@ void Browser::OpenLanguageOptionsDialog() {
     chromeos::LanguageConfigView::Show(profile_, NULL);
   }
 }
+
+void Browser::OpenSystemTabAndActivate() {
+  OpenURL(GURL(chrome::kChromeUISystemInfoURL), GURL(),
+          NEW_FOREGROUND_TAB, PageTransition::LINK);
+  window_->Activate();
+}
+
 #endif
 
 void Browser::OpenPluginsTabAndActivate() {

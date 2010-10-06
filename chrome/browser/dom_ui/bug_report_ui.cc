@@ -194,10 +194,11 @@ class BugReportHandler : public DOMMessageHandler,
                           const ResponseCookies& cookies,
                           const std::string& data);
 
-  void HandleGetDialogDefaults(const ListValue*);
-  void HandleRefreshScreenshots(const ListValue*);
-  void HandleSendReport(const ListValue* list_value);
-  void HandleCancel(const ListValue*);
+  void HandleGetDialogDefaults(const ListValue* args);
+  void HandleRefreshScreenshots(const ListValue* args);
+  void HandleSendReport(const ListValue* args);
+  void HandleCancel(const ListValue* args);
+  void HandleOpenSystemTab(const ListValue* args);
 
   void SetupScreenshotsSource();
   void ClobberScreenshotsSource();
@@ -479,6 +480,8 @@ void BugReportHandler::RegisterMessages() {
       NewCallback(this, &BugReportHandler::HandleSendReport));
   dom_ui_->RegisterMessageCallback("cancel",
       NewCallback(this, &BugReportHandler::HandleCancel));
+  dom_ui_->RegisterMessageCallback("openSystemTab",
+      NewCallback(this, &BugReportHandler::HandleOpenSystemTab));
 }
 
 void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
@@ -649,6 +652,12 @@ void BugReportHandler::SyslogsComplete(chromeos::LogDictionaryType* logs) {
 
 void BugReportHandler::HandleCancel(const ListValue*) {
   CloseTab();
+}
+
+void BugReportHandler::HandleOpenSystemTab(const ListValue* args) {
+#if defined(OS_CHROMEOS)
+  BrowserList::GetLastActive()->OpenSystemTabAndActivate();
+#endif
 }
 
 void BugReportHandler::CloseTab() {
