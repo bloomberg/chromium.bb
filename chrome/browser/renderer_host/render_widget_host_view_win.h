@@ -62,7 +62,8 @@ class RenderWidgetHostViewWin
                          CWindow,
                          RenderWidgetHostHWNDTraits>,
       public RenderWidgetHostView,
-      public NotificationObserver {
+      public NotificationObserver,
+      public BrowserAccessibilityDelegate {
  public:
   // The view will associate itself with the given widget.
   explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);
