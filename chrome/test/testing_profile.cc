@@ -29,6 +29,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -40,6 +41,7 @@
 #include "chrome/test/testing_pref_service.h"
 #include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_unittest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
 
@@ -106,16 +108,6 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadObserver);
-};
-
-// This context is used to assist testing the CookieMonster by providing a
-// valid CookieStore. This can probably be expanded to test other aspects of
-// the context as well.
-class TestURLRequestContext : public URLRequestContext {
- public:
-  TestURLRequestContext() {
-    cookie_store_ = new net::CookieMonster(NULL, NULL);
-  }
 };
 
 // Used to return a dummy context (normally the context is on the IO thread).
@@ -311,8 +303,16 @@ void TestingProfile::BlockUntilBookmarkModelLoaded() {
   DCHECK(bookmark_bar_model_->IsLoaded());
 }
 
+void TestingProfile::CreateTemplateURLFetcher() {
+  template_url_fetcher_.reset(new TemplateURLFetcher(this));
+}
+
 void TestingProfile::CreateTemplateURLModel() {
-  template_url_model_.reset(new TemplateURLModel(this));
+  SetTemplateURLModel(new TemplateURLModel(this));
+}
+
+void TestingProfile::SetTemplateURLModel(TemplateURLModel* model) {
+  template_url_model_.reset(model);
 }
 
 void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {

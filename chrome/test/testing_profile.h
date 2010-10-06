@@ -80,8 +80,15 @@ class TestingProfile : public Profile {
   // CreateBookmarkModel.
   void BlockUntilBookmarkModelLoaded();
 
-  // Creates a TemplateURLModel. If not invoked the TemplateURLModel is NULL.
+  // Creates a TemplateURLFetcher. If not invoked, the TemplateURLFetcher is
+  // NULL.
+  void CreateTemplateURLFetcher();
+
+  // Creates a TemplateURLModel. If not invoked, the TemplateURLModel is NULL.
   void CreateTemplateURLModel();
+
+  // Sets the TemplateURLModel. Takes ownership of it.
+  void SetTemplateURLModel(TemplateURLModel* model);
 
   // Uses a specific theme provider for this profile. TestingProfile takes
   // ownership of |theme_provider|.
@@ -165,7 +172,9 @@ class TestingProfile : public Profile {
   virtual TemplateURLModel* GetTemplateURLModel() {
     return template_url_model_.get();
   }
-  virtual TemplateURLFetcher* GetTemplateURLFetcher() { return NULL; }
+  virtual TemplateURLFetcher* GetTemplateURLFetcher() {
+    return template_url_fetcher_.get();
+  }
   virtual history::TopSites* GetTopSites();
   virtual DownloadManager* GetDownloadManager() { return NULL; }
   virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }
@@ -315,7 +324,11 @@ class TestingProfile : public Profile {
   // The WebDataService.  Only created if CreateWebDataService is invoked.
   scoped_refptr<WebDataService> web_data_service_;
 
-  // The TemplateURLFetcher. Only created if CreateTemplateURLModel is invoked.
+  // The TemplateURLFetcher. Only created if CreateTemplateURLFetcher is
+  // invoked.
+  scoped_ptr<TemplateURLFetcher> template_url_fetcher_;
+
+  // The TemplateURLModel. Only created if CreateTemplateURLModel is invoked.
   scoped_ptr<TemplateURLModel> template_url_model_;
 
   scoped_ptr<NTPResourceCache> ntp_resource_cache_;

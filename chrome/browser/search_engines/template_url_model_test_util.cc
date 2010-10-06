@@ -123,8 +123,8 @@ TemplateURLModelTestUtil::~TemplateURLModelTestUtil() {
 void TemplateURLModelTestUtil::SetUp() {
   profile_.reset(new TemplateURLModelTestingProfile());
   profile_->SetUp();
-  model_.reset(new TestingTemplateURLModel(profile_.get()));
-  model_->AddObserver(this);
+  profile_->SetTemplateURLModel(new TestingTemplateURLModel(profile_.get()));
+  profile_->GetTemplateURLModel()->AddObserver(this);
 }
 
 void TemplateURLModelTestUtil::TearDown() {
@@ -157,33 +157,34 @@ void TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests() {
 }
 
 void TemplateURLModelTestUtil::VerifyLoad() {
-  ASSERT_FALSE(model_->loaded());
-  model_->Load();
+  ASSERT_FALSE(model()->loaded());
+  model()->Load();
   BlockTillServiceProcessesRequests();
   VerifyObserverCount(1);
 }
 
 void TemplateURLModelTestUtil::ChangeModelToLoadState() {
-  model_->ChangeToLoadedState();
+  model()->ChangeToLoadedState();
   // Initialize the web data service so that the database gets updated with
   // any changes made.
-  model_->service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  model()->service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
 }
 
 void TemplateURLModelTestUtil::ClearModel() {
-  model_.reset(NULL);
+  profile_->SetTemplateURLModel(NULL);
 }
 
 void TemplateURLModelTestUtil::ResetModel(bool verify_load) {
-  model_.reset(new TestingTemplateURLModel(profile_.get()));
-  model_->AddObserver(this);
+  profile_->SetTemplateURLModel(new TestingTemplateURLModel(profile_.get()));
+  model()->AddObserver(this);
   changed_count_ = 0;
   if (verify_load)
     VerifyLoad();
 }
 
 std::wstring TemplateURLModelTestUtil::GetAndClearSearchTerm() {
-  return model_->GetAndClearSearchTerm();
+  return
+      static_cast<TestingTemplateURLModel*>(model())->GetAndClearSearchTerm();
 }
 
 void TemplateURLModelTestUtil::SetGoogleBaseURL(
@@ -199,7 +200,7 @@ WebDataService* TemplateURLModelTestUtil::GetWebDataService() {
 }
 
 TemplateURLModel* TemplateURLModelTestUtil::model() const {
-  return model_.get();
+  return profile_->GetTemplateURLModel();
 }
 
 TestingProfile* TemplateURLModelTestUtil::profile() const {

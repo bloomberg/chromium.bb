@@ -1403,6 +1403,7 @@
         'browser/search_engines/keyword_editor_controller_unittest.cc',
         'browser/search_engines/search_host_to_urls_map_unittest.cc',
         'browser/search_engines/search_provider_install_data_unittest.cc',
+        'browser/search_engines/template_url_fetcher_unittest.cc',
         'browser/search_engines/template_url_model_test_util.cc',
         'browser/search_engines/template_url_model_test_util.h',
         'browser/search_engines/template_url_model_unittest.cc',

@@ -69,8 +69,11 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
   const std::wstring keyword() const { return keyword_; }
 
  private:
+  void AddSearchProvider();
+
   URLFetcher url_fetcher_;
   TemplateURLFetcher* fetcher_;
+  scoped_ptr<TemplateURL> template_url_;
   std::wstring keyword_;
   const GURL osdd_url_;
   const GURL favicon_url_;
@@ -94,81 +97,88 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {
+  template_url_.reset(new TemplateURL());
+
+  // Validation checks.
   // Make sure we can still replace the keyword, i.e. the fetch was successful.
   // If the OSDD file was loaded HTTP, we also have to check the response_code.
   // For other schemes, e.g. when the OSDD file is bundled with an extension,
-  // the response_code is not applicable and should be -1.
+  // the response_code is not applicable and should be -1. Also, ensure that
+  // the returned information results in a valid search URL.
   if (!status.is_success() ||
-      ((response_code != -1) && (response_code != 200))) {
+      ((response_code != -1) && (response_code != 200)) ||
+      !TemplateURLParser::Parse(
+          reinterpret_cast<const unsigned char*>(data.c_str()),
+          data.length(),
+          NULL,
+          template_url_.get()) ||
+      !template_url_->url() || !template_url_->url()->SupportsReplacement()) {
     fetcher_->RequestCompleted(this);
     // WARNING: RequestCompleted deletes us.
     return;
   }
+  AddSearchProvider();
+  // WARNING: AddSearchProvider deletes us.
+}
 
-  scoped_ptr<TemplateURL> template_url(new TemplateURL());
-  if (TemplateURLParser::Parse(
-          reinterpret_cast<const unsigned char*>(data.c_str()),
-                                                 data.length(),
-                                                 NULL,
-                                                 template_url.get()) &&
-      template_url->url() && template_url->url()->SupportsReplacement()) {
-    if (!autodetected_ || keyword_.empty()) {
-      // Generate new keyword from URL in OSDD for none autodetected case.
-      // Previous keyword was generated from URL where OSDD was placed and
-      // it gives wrong result when OSDD is located on third party site that
-      // has nothing in common with search engine in OSDD.
-      GURL keyword_url(template_url->url()->url());
-      std::wstring new_keyword = TemplateURLModel::GenerateKeyword(
-          keyword_url, false);
-      if (!new_keyword.empty())
-        keyword_ = new_keyword;
+void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
+  DCHECK(template_url_.get());
+  if (!autodetected_ || keyword_.empty()) {
+    // Generate new keyword from URL in OSDD for none autodetected case.
+    // Previous keyword was generated from URL where OSDD was placed and
+    // it gives wrong result when OSDD is located on third party site that
+    // has nothing in common with search engine in OSDD.
+    GURL keyword_url(template_url_->url()->url());
+    std::wstring new_keyword = TemplateURLModel::GenerateKeyword(
+        keyword_url, false);
+    if (!new_keyword.empty())
+      keyword_ = new_keyword;
+  }
+  TemplateURLModel* model = fetcher_->profile()->GetTemplateURLModel();
+  const TemplateURL* existing_url;
+  if (keyword_.empty() ||
+      !model || !model->loaded() ||
+      !model->CanReplaceKeyword(keyword_, GURL(template_url_->url()->url()),
+                                &existing_url)) {
+    if (autodetected_ || !model || !model->loaded()) {
+      fetcher_->RequestCompleted(this);
+      // WARNING: RequestCompleted deletes us.
+      return;
     }
-    TemplateURLModel* model = fetcher_->profile()->GetTemplateURLModel();
-    const TemplateURL* existing_url;
-    if (keyword_.empty() ||
-        !model || !model->loaded() ||
-        !model->CanReplaceKeyword(keyword_, GURL(template_url->url()->url()),
-                                  &existing_url)) {
-      if (autodetected_ || !model || !model->loaded()) {
-        fetcher_->RequestCompleted(this);
-        // WARNING: RequestCompleted deletes us.
-        return;
-      }
-      // If we're coming from JS (neither autodetected nor failure to load the
-      // template URL model) and this URL already exists in the model, we bring
-      // up the EditKeywordController to edit it.  This is helpful feedback in
-      // the case of clicking a button twice, and annoying in the case of a
-      // page that calls AddSearchProvider() in JS without a user action.
-      keyword_.clear();
-      existing_url = NULL;
-    }
+    // If we're coming from JS (neither autodetected nor failure to load the
+    // template URL model) and this URL already exists in the model, we bring
+    // up the EditKeywordController to edit it.  This is helpful feedback in
+    // the case of clicking a button twice, and annoying in the case of a
+    // page that calls AddSearchProvider() in JS without a user action.
+    keyword_.clear();
+    existing_url = NULL;
+  }
 
-    if (existing_url)
-      model->Remove(existing_url);
+  if (existing_url)
+    model->Remove(existing_url);
 
-    // The short name is what is shown to the user. We preserve original names
-    // since it is better when generated keyword in many cases.
-    template_url->set_keyword(keyword_);
-    template_url->set_originating_url(osdd_url_);
+  // The short name is what is shown to the user. We preserve original names
+  // since it is better when generated keyword in many cases.
+  template_url_->set_keyword(keyword_);
+  template_url_->set_originating_url(osdd_url_);
 
-    // The page may have specified a URL to use for favicons, if not, set it.
-    if (!template_url->GetFavIconURL().is_valid())
-      template_url->SetFavIconURL(favicon_url_);
+  // The page may have specified a URL to use for favicons, if not, set it.
+  if (!template_url_->GetFavIconURL().is_valid())
+    template_url_->SetFavIconURL(favicon_url_);
 
-    if (autodetected_) {
-      // Mark the keyword as replaceable so it can be removed if necessary.
-      template_url->set_safe_for_autoreplace(true);
-      model->Add(template_url.release());
-    } else if (source_ && source_->delegate()) {
-      // Confirm addition and allow user to edit default choices. It's ironic
-      // that only *non*-autodetected additions get confirmed, but the user
-      // expects feedback that his action did something.
-      // The source TabContents' delegate takes care of adding the URL to the
-      // model, which takes ownership, or of deleting it if the add is
-      // cancelled.
-      source_->delegate()->ConfirmAddSearchProvider(template_url.release(),
-                                                    fetcher_->profile());
-    }
+  if (autodetected_) {
+    // Mark the keyword as replaceable so it can be removed if necessary.
+    template_url_->set_safe_for_autoreplace(true);
+    model->Add(template_url_.release());
+  } else if (source_ && source_->delegate()) {
+    // Confirm addition and allow user to edit default choices. It's ironic
+    // that only *non*-autodetected additions get confirmed, but the user
+    // expects feedback that his action did something.
+    // The source TabContents' delegate takes care of adding the URL to the
+    // model, which takes ownership, or of deleting it if the add is
+    // cancelled.
+    source_->delegate()->ConfirmAddSearchProvider(template_url_.release(),
+                                                  fetcher_->profile());
   }
   fetcher_->RequestCompleted(this);
   // WARNING: RequestCompleted deletes us.
