@@ -4,6 +4,8 @@
 
 #include "remoting/host/event_executor_mac.h"
 
+#include "remoting/protocol/messages_decoder.h"
+
 namespace remoting {
 
 EventExecutorMac::EventExecutorMac(Capturer* capturer)
