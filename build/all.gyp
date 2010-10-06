@@ -52,6 +52,11 @@
             '../src/trusted/handle_pass/handle_pass.gyp:*',
           ],
         }],
+        ['OS!="win"', {
+          'dependencies': [
+            '../src/shared/ppapi_proxy/ppapi_proxy.gyp:*',
+          ],
+        }],
       ],
     },
   ],
