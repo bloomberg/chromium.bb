@@ -95,3 +95,6 @@ PREFIX: appmodaldialog::closemodaldialog___javascriptappmodaldialog::observe___n
 
 # 57157
 PREFIX: browserview::gettoolbarview___webcore::videolayerchromium::~videolayerchromium
+
+# 58097
+`anonymous namespace'::purecall____purecall___notificationservice::notify___browserlist::removebrowser___browser::~browser___browser::`scalar deleting destructor'___browserview::~browserview___browserview::`scalar deleting destructor'___views::view::~view___views::nonclientview::`scalar deleting destructor'___views::view::doremovechildview___views::view::removeallchildviews___views::rootview::~rootview___views::rootview::`scalar deleting destructor'___views::widgetwin::~widgetwin___browserframewin::`scalar deleting destructor'___views::windowwin::onfinalmessage___views::widgetwin::onwndproc___gfx::windowimpl::wndproc___views::widgetwin::closenow___messageloop::runtask___messageloop::dowork___base::messagepumpforui::dorunloop___base::messagepumpwin::runwithdispatcher___messageloop::runinternal___messageloopforui::run___`anonymous namespace'::runuimessageloop___browsermain___chromemain___maindllloader::launch___wwinmain_____tmaincrtstartup
