@@ -5,8 +5,10 @@
 #include "chrome/renderer/renderer_webidbdatabase_impl.h"
 
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
+#include "chrome/renderer/renderer_webidbobjectstore_impl.h"
 #include "chrome/renderer/renderer_webidbtransaction_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
@@ -61,21 +63,33 @@ WebDOMStringList RendererWebIDBDatabaseImpl::objectStores() const {
   return webResult;
 }
 
-void RendererWebIDBDatabaseImpl::createObjectStore(
-    const WebString& name, const WebString& key_path, bool auto_increment,
-    WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBDatabaseCreateObjectStore(
-      name, key_path, auto_increment, callbacks, idb_database_id_);
+WebKit::WebIDBObjectStore* RendererWebIDBDatabaseImpl::createObjectStore(
+    const WebKit::WebString& name,
+    const WebKit::WebString& key_path,
+    bool auto_increment,
+    const WebKit::WebIDBTransaction& transaction) {
+  ViewHostMsg_IDBDatabaseCreateObjectStore_Params params;
+  params.name_ = name;
+  params.key_path_ = key_path;
+  params.auto_increment_ = auto_increment;
+  params.transaction_id_ = IndexedDBDispatcher::TransactionId(transaction);
+  params.idb_database_id_ = idb_database_id_;
+
+  int object_store;
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBDatabaseCreateObjectStore(params, &object_store));
+  if (!object_store)
+    return NULL;
+  return new RendererWebIDBObjectStoreImpl(object_store);
 }
 
 void RendererWebIDBDatabaseImpl::removeObjectStore(
-    const WebString& name, WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBDatabaseRemoveObjectStore(
-      name, callbacks, idb_database_id_);
+    const WebString& name,
+    const WebIDBTransaction& transaction) {
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBDatabaseRemoveObjectStore(
+          idb_database_id_, name,
+          IndexedDBDispatcher::TransactionId(transaction)));
 }
 
 void RendererWebIDBDatabaseImpl::setVersion(

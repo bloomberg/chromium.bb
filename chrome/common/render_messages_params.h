@@ -640,9 +640,6 @@ struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params {
   ViewHostMsg_IDBDatabaseCreateObjectStore_Params();
   ~ViewHostMsg_IDBDatabaseCreateObjectStore_Params();
 
-  // The response should have this id.
-  int32 response_id_;
-
   // The name of the object store.
   string16 name_;
 
@@ -651,6 +648,9 @@ struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params {
 
   // Whether the object store created should have a key generator.
   bool auto_increment_;
+
+  // The transaction this is associated with.
+  int32 transaction_id_;
 
   // The database the object store belongs to.
   int32 idb_database_id_;
@@ -712,9 +712,6 @@ struct ViewHostMsg_IDBObjectStoreCreateIndex_Params {
   ViewHostMsg_IDBObjectStoreCreateIndex_Params();
   ~ViewHostMsg_IDBObjectStoreCreateIndex_Params();
 
-  // The response should have this id.
-  int32 response_id_;
-
   // The name of the index.
   string16 name_;
 
@@ -723,6 +720,9 @@ struct ViewHostMsg_IDBObjectStoreCreateIndex_Params {
 
   // Whether the index created has unique keys.
   bool unique_;
+
+  // The transaction this is associated with.
+  int32 transaction_id_;
 
   // The object store the index belongs to.
   int32 idb_object_store_id_;

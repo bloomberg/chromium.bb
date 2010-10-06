@@ -61,10 +61,10 @@ void RendererWebIDBIndexImpl::openObjectCursor(
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexOpenObjectCursor(
-      range, direction, callbacks,  idb_index_id_, transaction.id());
+      range, direction, callbacks,  idb_index_id_, transaction);
 }
 
-void RendererWebIDBIndexImpl::openCursor(
+void RendererWebIDBIndexImpl::openKeyCursor(
     const WebKit::WebIDBKeyRange& range,
     unsigned short direction,
     WebKit::WebIDBCallbacks* callbacks,
@@ -72,7 +72,7 @@ void RendererWebIDBIndexImpl::openCursor(
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexOpenCursor(
-      range, direction, callbacks,  idb_index_id_, transaction.id());
+      range, direction, callbacks,  idb_index_id_, transaction);
 }
 
 void RendererWebIDBIndexImpl::getObject(
@@ -82,15 +82,15 @@ void RendererWebIDBIndexImpl::getObject(
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexGetObject(
-      IndexedDBKey(key), callbacks, idb_index_id_, transaction.id());
+      IndexedDBKey(key), callbacks, idb_index_id_, transaction);
 }
 
-void RendererWebIDBIndexImpl::get(
+void RendererWebIDBIndexImpl::getKey(
     const WebKit::WebIDBKey& key,
     WebKit::WebIDBCallbacks* callbacks,
     const WebKit::WebIDBTransaction& transaction) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexGet(
-      IndexedDBKey(key), callbacks,  idb_index_id_, transaction.id());
+      IndexedDBKey(key), callbacks,  idb_index_id_, transaction);
 }

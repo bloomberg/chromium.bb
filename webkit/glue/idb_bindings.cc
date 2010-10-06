@@ -20,35 +20,11 @@ using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyPath;
 using WebKit::WebSerializedScriptValue;
 
-namespace {
-
-class LocalContext {
- public:
-  LocalContext()
-      : context_(v8::Context::New()) {
-    context_->Enter();
-  }
-
-  virtual ~LocalContext() {
-    context_->Exit();
-    context_.Dispose();
-  }
-
- private:
-  v8::Locker lock_;
-  v8::HandleScope scope_;
-  v8::Persistent<v8::Context> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalContext);
-};
-
-}  // namespace
-
 bool IDBKeysFromValuesAndKeyPath(
     const std::vector<WebSerializedScriptValue>& serialized_script_values,
     const string16& idb_key_path,
     std::vector<WebIDBKey>* values) {
-  LocalContext env;
+  v8::Locker lock;
   WebIDBKeyPath web_idb_key_path = WebIDBKeyPath::create(idb_key_path);
   bool error = web_idb_key_path.parseError() != 0;
   // TODO(bulach): what to do when we have a parse error? For now, setting

@@ -6,6 +6,7 @@
 
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/serialized_script_value.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/render_thread.h"
@@ -71,7 +72,7 @@ void RendererWebIDBObjectStoreImpl::get(
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStoreGet(
-      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction.id());
+      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction);
 }
 
 void RendererWebIDBObjectStoreImpl::put(
@@ -84,7 +85,7 @@ void RendererWebIDBObjectStoreImpl::put(
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStorePut(
       SerializedScriptValue(value), IndexedDBKey(key), add_only, callbacks,
-      idb_object_store_id_, transaction.id());
+      idb_object_store_id_, transaction);
 }
 
 void RendererWebIDBObjectStoreImpl::remove(
@@ -94,36 +95,46 @@ void RendererWebIDBObjectStoreImpl::remove(
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStoreRemove(
-      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction.id());
+      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction);
 }
 
-void RendererWebIDBObjectStoreImpl::createIndex(
-    const WebString& name, const WebString& key_path, bool unique,
-    WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBObjectStoreCreateIndex(
-      name, key_path, unique, callbacks, idb_object_store_id_);
+WebKit::WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
+    const WebKit::WebString& name,
+    const WebKit::WebString& key_path,
+    bool unique,
+    const WebKit::WebIDBTransaction& transaction) {
+  ViewHostMsg_IDBObjectStoreCreateIndex_Params params;
+  params.name_ = name;
+  params.key_path_ = key_path;
+  params.unique_ = unique;
+  params.transaction_id_ = IndexedDBDispatcher::TransactionId(transaction);
+  params.idb_object_store_id_ = idb_object_store_id_;
 
+  int32 index_id;
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBObjectStoreCreateIndex(params, &index_id));
+  if (!index_id)
+    return NULL;
+  return new RendererWebIDBIndexImpl(index_id);
 }
 
 WebIDBIndex* RendererWebIDBObjectStoreImpl::index(const WebString& name) {
-  bool success;
   int32 idb_index_id;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBObjectStoreIndex(idb_object_store_id_, name,
-                                          &success, &idb_index_id));
-  if (!success)
+                                          &idb_index_id));
+  if (!idb_index_id)
       return NULL;
   return new RendererWebIDBIndexImpl(idb_index_id);
 }
 
-void RendererWebIDBObjectStoreImpl::removeIndex(const WebString& name,
-                                                WebIDBCallbacks* callbacks) {
-  IndexedDBDispatcher* dispatcher =
-      RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBObjectStoreRemoveIndex(name, callbacks,
-                                               idb_object_store_id_);
+void RendererWebIDBObjectStoreImpl::removeIndex(
+    const WebString& name,
+    const WebKit::WebIDBTransaction& transaction) {
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBObjectStoreRemoveIndex(
+          idb_object_store_id_, name,
+          IndexedDBDispatcher::TransactionId(transaction)));
 }
 
 void RendererWebIDBObjectStoreImpl::openCursor(
@@ -134,5 +145,5 @@ void RendererWebIDBObjectStoreImpl::openCursor(
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStoreOpenCursor(
       idb_key_range, direction, callbacks,  idb_object_store_id_,
-      transaction.id());
+      transaction);
 }

@@ -28,9 +28,10 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
 
 int RendererWebIDBTransactionImpl::mode() const
 {
-  // TODO: implement
-  DCHECK(false);
-  return 0;
+  int mode;
+  RenderThread::current()->Send(new ViewHostMsg_IDBTransactionMode(
+      idb_transaction_id_, &mode));
+  return mode;
 }
 
 WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
@@ -58,15 +59,11 @@ void RendererWebIDBTransactionImpl::didCompleteTaskEvents()
           idb_transaction_id_));
 }
 
-int RendererWebIDBTransactionImpl::id() const
-{
-  return idb_transaction_id_;
-}
-
 void RendererWebIDBTransactionImpl::setCallbacks(
     WebIDBTransactionCallbacks* callbacks)
 {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBTransactionSetCallbacks(callbacks);
+  dispatcher->RegisterWebIDBTransactionCallbacks(callbacks,
+                                                 idb_transaction_id_);
 }

@@ -183,8 +183,8 @@ ViewHostMsg_IDBFactoryOpen_Params::~ViewHostMsg_IDBFactoryOpen_Params() {
 
 ViewHostMsg_IDBDatabaseCreateObjectStore_Params::
     ViewHostMsg_IDBDatabaseCreateObjectStore_Params()
-    : response_id_(0),
-      auto_increment_(false),
+    : auto_increment_(false),
+      transaction_id_(0),
       idb_database_id_(0) {
 }
 
@@ -217,8 +217,8 @@ ViewHostMsg_IDBObjectStorePut_Params::~ViewHostMsg_IDBObjectStorePut_Params() {
 
 ViewHostMsg_IDBObjectStoreCreateIndex_Params::
 ViewHostMsg_IDBObjectStoreCreateIndex_Params()
-    : response_id_(0),
-      unique_(false),
+    : unique_(false),
+      transaction_id_(0),
       idb_object_store_id_(0) {
 }
 
@@ -1246,10 +1246,10 @@ void ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Log(const param_type& p,
 void ParamTraits<ViewHostMsg_IDBDatabaseCreateObjectStore_Params>::Write(
     Message* m,
     const param_type& p) {
-  WriteParam(m, p.response_id_);
   WriteParam(m, p.name_);
   WriteParam(m, p.key_path_);
   WriteParam(m, p.auto_increment_);
+  WriteParam(m, p.transaction_id_);
   WriteParam(m, p.idb_database_id_);
 }
 
@@ -1258,10 +1258,10 @@ bool ParamTraits<ViewHostMsg_IDBDatabaseCreateObjectStore_Params>::Read(
     void** iter,
     param_type* p) {
   return
-      ReadParam(m, iter, &p->response_id_) &&
       ReadParam(m, iter, &p->name_) &&
       ReadParam(m, iter, &p->key_path_) &&
       ReadParam(m, iter, &p->auto_increment_) &&
+      ReadParam(m, iter, &p->transaction_id_) &&
       ReadParam(m, iter, &p->idb_database_id_);
 }
 
@@ -1269,13 +1269,13 @@ void ParamTraits<ViewHostMsg_IDBDatabaseCreateObjectStore_Params>::Log(
     const param_type& p,
     std::string* l) {
   l->append("(");
-  LogParam(p.response_id_, l);
-  l->append(", ");
   LogParam(p.name_, l);
   l->append(", ");
   LogParam(p.key_path_, l);
   l->append(", ");
   LogParam(p.auto_increment_, l);
+  l->append(", ");
+  LogParam(p.transaction_id_, l);
   l->append(", ");
   LogParam(p.idb_database_id_, l);
   l->append(")");
@@ -1372,10 +1372,10 @@ void ParamTraits<ViewHostMsg_IDBObjectStorePut_Params>::Log(
 void ParamTraits<ViewHostMsg_IDBObjectStoreCreateIndex_Params>::Write(
     Message* m,
     const param_type& p) {
-  WriteParam(m, p.response_id_);
   WriteParam(m, p.name_);
   WriteParam(m, p.key_path_);
   WriteParam(m, p.unique_);
+  WriteParam(m, p.transaction_id_);
   WriteParam(m, p.idb_object_store_id_);
 }
 
@@ -1384,10 +1384,10 @@ bool ParamTraits<ViewHostMsg_IDBObjectStoreCreateIndex_Params>::Read(
     void** iter,
     param_type* p) {
   return
-      ReadParam(m, iter, &p->response_id_) &&
       ReadParam(m, iter, &p->name_) &&
       ReadParam(m, iter, &p->key_path_) &&
       ReadParam(m, iter, &p->unique_) &&
+      ReadParam(m, iter, &p->transaction_id_) &&
       ReadParam(m, iter, &p->idb_object_store_id_);
 }
 
@@ -1395,13 +1395,13 @@ void ParamTraits<ViewHostMsg_IDBObjectStoreCreateIndex_Params>::Log(
     const param_type& p,
     std::string* l) {
   l->append("(");
-  LogParam(p.response_id_, l);
-  l->append(", ");
   LogParam(p.name_, l);
   l->append(", ");
   LogParam(p.key_path_, l);
   l->append(", ");
   LogParam(p.unique_, l);
+  l->append(", ");
+  LogParam(p.transaction_id_, l);
   l->append(", ");
   LogParam(p.idb_object_store_id_, l);
   l->append(")");

@@ -883,24 +883,27 @@ IPC_BEGIN_MESSAGES(View)
   // IDBCallback message handlers.
   IPC_MESSAGE_CONTROL1(ViewMsg_IDBCallbacksSuccessNull,
                        int32 /* response_id */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBCursor,
+                       int32 /* response_id */,
+                       int32 /* cursor_id */)
   IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBDatabase,
                        int32 /* response_id */,
                        int32 /* idb_database_id */)
   IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIndexedDBKey,
                        int32 /* response_id */,
                        IndexedDBKey /* indexed_db_key */)
-  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBObjectStore,
-                       int32 /* response_id */,
-                       int32 /* idb_object_store_id */)
   IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBIndex,
                        int32 /* response_id */,
                        int32 /* idb_index_id */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBObjectStore,
+                       int32 /* response_id */,
+                       int32 /* idb_object_store_id */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessIDBTransaction,
+                       int32 /* response_id */,
+                       int32 /* idb_transaction_id */)
   IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessSerializedScriptValue,
                        int32 /* response_id */,
                        SerializedScriptValue /* serialized_script_value */)
-  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbackSuccessOpenCursor,
-                       int32 /* response_id */,
-                       int32 /* cursor_id */)
   IPC_MESSAGE_CONTROL3(ViewMsg_IDBCallbacksError,
                        int32 /* response_id */,
                        int /* code */,
@@ -908,7 +911,11 @@ IPC_BEGIN_MESSAGES(View)
 
   // IDBTransactionCallback message handlers.
   IPC_MESSAGE_CONTROL1(ViewMsg_IDBTransactionCallbacksAbort,
-                       int /* transaction_id */)
+                       int32 /* transaction_id */)
+  IPC_MESSAGE_CONTROL1(ViewMsg_IDBTransactionCallbacksComplete,
+                       int32 /* transaction_id */)
+  IPC_MESSAGE_CONTROL1(ViewMsg_IDBTransactionCallbacksTimeout,
+                       int32 /* transaction_id */)
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   // Tell the renderer process to begin or end IPC message logging.
@@ -2402,8 +2409,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::vector<string16> /* objectStores */)
 
   // WebIDBDatabase::createObjectStore() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseCreateObjectStore,
-                       ViewHostMsg_IDBDatabaseCreateObjectStore_Params)
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseCreateObjectStore,
+                              ViewHostMsg_IDBDatabaseCreateObjectStore_Params,
+                              int32 /* object_store_id */)
 
   // WebIDBDatabase::objectStore() message.
   IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_IDBDatabaseObjectStore,
@@ -2416,8 +2424,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebIDBDatabase::removeObjectStore() message.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBDatabaseRemoveObjectStore,
                        int32, /* idb_database_id */
-                       int32, /* response_id */
-                       string16 /* name */)
+                       string16, /* name */
+                       int32 /* transaction_id */)
 
   // WebIDBDatabase::setVersion() message.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBDatabaseSetVersion,
@@ -2461,12 +2469,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int32, /* idb_unique_id */
                               bool /* unique */)
 
-  // WebIDBIndex::openObjectCursor() message. (Uses openCursor's params though.)
+  // WebIDBIndex::openObjectCursor() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexOpenObjectCursor,
                        ViewHostMsg_IDBIndexOpenCursor_Params)
 
-  // WebIDBIndex::openCursor() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexOpenCursor,
+  // WebIDBIndex::openKeyCursor() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexOpenKeyCursor,
                        ViewHostMsg_IDBIndexOpenCursor_Params)
 
   // WebIDBIndex::getObject() message.
@@ -2474,14 +2482,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32, /* idb_index_id */
                        int32, /* response_id */
                        IndexedDBKey, /* key */
-                       int /* transaction_id */)
+                       int32 /* transaction_id */)
 
-  // WebIDBIndex::get() message.
-  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBIndexGet,
+  // WebIDBIndex::getKey() message.
+  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBIndexGetKey,
                        int32, /* idb_index_id */
                        int32, /* response_id */
                        IndexedDBKey, /* key */
-                       int /* transaction_id */)
+                       int32 /* transaction_id */)
 
   // WebIDBIndex::~WebIDBIndex() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexDestroyed,
@@ -2507,7 +2515,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32, /* idb_object_store_id */
                        int32, /* response_id */
                        IndexedDBKey, /* key */
-                       int /* transaction_id */)
+                       int32 /* transaction_id */)
 
   // WebIDBObjectStore::put() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStorePut,
@@ -2518,24 +2526,24 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32, /* idb_object_store_id */
                        int32, /* response_id */
                        IndexedDBKey, /* key */
-                       int /* transaction_id */)
+                       int32 /* transaction_id */)
 
   // WebIDBObjectStore::createIndex() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreCreateIndex,
-                       ViewHostMsg_IDBObjectStoreCreateIndex_Params)
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreCreateIndex,
+                              ViewHostMsg_IDBObjectStoreCreateIndex_Params,
+                              int32 /* index_id */)
 
   // WebIDBObjectStore::index() message.
-  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_IDBObjectStoreIndex,
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_IDBObjectStoreIndex,
                               int32, /* idb_object_store_id */
                               string16, /* name */
-                              bool, /* success */
                               int32 /* idb_index_id */)
 
   // WebIDBObjectStore::removeIndex() message.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBObjectStoreRemoveIndex,
                        int32, /* idb_object_store_id */
-                       int32, /* response_id */
-                       string16 /* name */)
+                       string16, /* name */
+                       int32 /* transaction_id */)
 
   // WebIDBObjectStore::openCursor() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreOpenCursor,
@@ -2554,6 +2562,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int32, /* transaction_id */
                               string16, /* name */
                               int32 /* object_store_id */)
+
+  // WebIDBTransaction::mode() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBTransactionMode,
+                              int32, /* idb_transaction_id */
+                              int /* mode */)
 
   // WebIDBTransaction::abort() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionAbort,

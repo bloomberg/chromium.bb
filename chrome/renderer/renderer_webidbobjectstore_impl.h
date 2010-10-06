@@ -41,14 +41,15 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
               WebKit::WebIDBCallbacks* callbacks,
               const WebKit::WebIDBTransaction& transaction);
 
-  void createIndex(const WebKit::WebString& name,
-                   const WebKit::WebString& key_path,
-                   bool unique,
-                   WebKit::WebIDBCallbacks* callbacks);
+  WebKit::WebIDBIndex* createIndex(
+      const WebKit::WebString& name,
+      const WebKit::WebString& key_path,
+      bool unique,
+      const WebKit::WebIDBTransaction& transaction);
   // Transfers ownership of the WebIDBIndex to the caller.
   WebKit::WebIDBIndex* index(const WebKit::WebString& name);
   void removeIndex(const WebKit::WebString& name,
-                   WebKit::WebIDBCallbacks* callbacks);
+                   const WebKit::WebIDBTransaction&);
 
   void openCursor(const WebKit::WebIDBKeyRange& idb_key_range,
                   unsigned short direction,

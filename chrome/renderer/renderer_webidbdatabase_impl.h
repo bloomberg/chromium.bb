@@ -27,11 +27,14 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual WebKit::WebString description() const;
   virtual WebKit::WebString version() const;
   virtual WebKit::WebDOMStringList objectStores() const;
-  virtual void createObjectStore(
-      const WebKit::WebString& name, const WebKit::WebString& key_path,
-      bool auto_increment, WebKit::WebIDBCallbacks* callbacks);
+  virtual WebKit::WebIDBObjectStore* createObjectStore(
+      const WebKit::WebString& name,
+      const WebKit::WebString& key_path,
+      bool auto_increment,
+      const WebKit::WebIDBTransaction& transaction);
   virtual void removeObjectStore(
-      const WebKit::WebString& name, WebKit::WebIDBCallbacks* callbacks);
+      const WebKit::WebString& name,
+      const WebKit::WebIDBTransaction& transaction);
   virtual void setVersion(
       const WebKit::WebString& version, WebKit::WebIDBCallbacks* callbacks);
   virtual WebKit::WebIDBTransaction* transaction(
