@@ -75,22 +75,6 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
 
   registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
                  Source<ExtensionAction>(browser_action_));
-
-  // The Browser Action API does not allow the default icon path to be changed
-  // at runtime, so we can load this now and cache it.
-  std::string relative_path = browser_action_->default_icon_path();
-  if (relative_path.empty())
-    return;
-
-  // This is a bit sketchy because if ImageLoadingTracker calls
-  // ::OnImageLoaded() before our creator appends up to the view hierarchy, we
-  // will crash. But since we know that ImageLoadingTracker is asynchronous,
-  // this should be OK. And doing this in the constructor means that we don't
-  // have to protect against it getting done multiple times.
-  tracker_.LoadImage(extension, extension->GetResource(relative_path),
-                     gfx::Size(Extension::kBrowserActionIconMaxSize,
-                               Extension::kBrowserActionIconMaxSize),
-                     ImageLoadingTracker::DONT_CACHE);
 }
 
 void BrowserActionButton::Destroy() {
@@ -100,6 +84,28 @@ void BrowserActionButton::Destroy() {
   } else {
     delete this;
   }
+}
+
+void BrowserActionButton::ViewHierarchyChanged(
+    bool is_add, View* parent, View* child) {
+  if (is_add && child == this) {
+    // The Browser Action API does not allow the default icon path to be
+    // changed at runtime, so we can load this now and cache it.
+    std::string relative_path = browser_action_->default_icon_path();
+    if (relative_path.empty())
+      return;
+
+    // LoadImage is not guaranteed to be synchronous, so we might see the
+    // callback OnImageLoaded execute immediately. It (through UpdateState)
+    // expects GetParent() to return the owner for this button, so this
+    // function is as early as we can start this request.
+    tracker_.LoadImage(extension_, extension_->GetResource(relative_path),
+                       gfx::Size(Extension::kBrowserActionIconMaxSize,
+                                 Extension::kBrowserActionIconMaxSize),
+                       ImageLoadingTracker::DONT_CACHE);
+  }
+
+  MenuButton::ViewHierarchyChanged(is_add, parent, child);
 }
 
 void BrowserActionButton::ButtonPressed(views::Button* sender,

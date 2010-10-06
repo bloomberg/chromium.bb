@@ -68,6 +68,9 @@ class BrowserActionButton : public views::MenuButton,
   // Returns the default icon, if any.
   const SkBitmap& default_icon() const { return default_icon_; }
 
+  // Overridden from views::View:
+  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 

@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_action.h"
+#include "chrome/common/extensions/extension_resource.h"
 
 class BrowserActionsContainerTest : public ExtensionBrowserTest {
  public:
@@ -152,4 +157,44 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, DISABLED_Visibility) {
   EXPECT_EQ(3, browser_actions_bar()->NumberOfBrowserActions());
   EXPECT_EQ(3, browser_actions_bar()->VisibleBrowserActions());
   EXPECT_EQ(idA, browser_actions_bar()->GetExtensionId(2));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, TestCrash57536) {
+  std::cout << "Test starting\n" << std::flush;
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const size_t size_before = service->extensions()->size();
+
+  std::cout << "Loading extension\n" << std::flush;
+
+  // Load extension A (contains browser action).
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
+                                          .AppendASCII("browser_action")
+                                          .AppendASCII("crash_57536")));
+
+  Extension* extension = service->extensions()->at(size_before);
+
+  std::cout << "Creating bitmap\n" << std::flush;
+
+  // Create and cache and empty bitmap.
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                    Extension::kBrowserActionIconMaxSize,
+                    Extension::kBrowserActionIconMaxSize);
+  bitmap.allocPixels();
+
+  std::cout << "Set as cached image\n" << std::flush;
+
+  gfx::Size size(Extension::kBrowserActionIconMaxSize,
+                 Extension::kBrowserActionIconMaxSize);
+  extension->SetCachedImage(
+      extension->GetResource(extension->browser_action()->default_icon_path()),
+      bitmap,
+      size);
+
+  std::cout << "Disabling extension\n" << std::flush;
+  DisableExtension(extension->id());
+  std::cout << "Enabling extension\n" << std::flush;
+  EnableExtension(extension->id());
+  std::cout << "Test ending\n" << std::flush;
 }
