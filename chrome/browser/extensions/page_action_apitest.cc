@@ -177,7 +177,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ShowPageActionPopup) {
 
 // Test http://crbug.com/57333: that two page action extensions using the same
 // icon for the page action icon and the extension icon do not crash.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TestCrash57333) {
+//
+// Disabled while I investigate. http://crbug.com/58141.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TestCrash57333) {
   // Load extension A.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("page_action")
                                           .AppendASCII("crash_57333")
