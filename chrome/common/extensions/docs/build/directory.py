@@ -5,12 +5,28 @@
 
 """Class for parsing metadata about extension samples."""
 
+import locale
 import os
 import os.path
 import re
 import hashlib
 import zipfile
 import simplejson as json
+
+# Make sure we get consistent string sorting behavior by explicitly using the
+# default C locale.
+locale.setlocale(locale.LC_ALL, 'C')
+
+def sorted_walk(path):
+  """ A version of os.walk that yields results in order sorted by name.
+
+  This is to prevent spurious docs changes due to os.walk returning items in a
+  filesystem dependent order (by inode creation time, etc).
+  """
+  for base, dirs, files in os.walk(path):
+    dirs.sort()
+    files.sort()
+    yield base, dirs, files
 
 def parse_json_file(path, encoding="utf-8"):
   """ Load the specified file and parse it as JSON.
@@ -161,7 +177,7 @@ class SamplesManifest(object):
       A list of paths below base_path pointing at manifest.json files.
     """
     manifest_paths = []
-    for root, directories, files in os.walk(path):
+    for root, directories, files in sorted_walk(path):
       if 'manifest.json' in files:
         directories = []             # Don't go any further down this tree
         manifest_paths.append(os.path.join(root, 'manifest.json'))
@@ -398,7 +414,7 @@ class Sample(dict):
     """
     api_calls = set()
     extension_dir_path = os.path.dirname(self._manifest_path)
-    for root, dirs, files in os.walk(extension_dir_path):
+    for root, dirs, files in sorted_walk(extension_dir_path):
       for file in files:
         if file[-5:] == '.html' or file[-3:] == '.js':
           path = os.path.join(root, file)
@@ -422,7 +438,7 @@ class Sample(dict):
     """
     source_paths = []
     base_path = os.path.realpath(os.path.dirname(self._manifest_path))
-    for root, directories, files in os.walk(base_path):
+    for root, directories, files in sorted_walk(base_path):
       if '.svn' in directories:
         directories.remove('.svn')   # Don't go into SVN metadata directories
 
@@ -578,7 +594,7 @@ class Sample(dict):
     zip_file = zipfile.ZipFile(zip_path, 'w')
 
     try:
-      for root, dirs, files in os.walk(sample_path):
+      for root, dirs, files in sorted_walk(sample_path):
         if '.svn' in dirs:
           dirs.remove('.svn')
         for file in files:
