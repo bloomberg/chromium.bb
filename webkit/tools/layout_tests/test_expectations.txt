@@ -5,11 +5,3 @@
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
 
-// Behavior was changed by WebKit roll 69035:69062.
-BUG_TKENT MAC : media/video-transformed.html = IMAGE
-BUG_TKENT LINUX : media/video-transformed.html = IMAGE PASS
-
-// Flaky since 2010-09-17?
-BUG57950 WIN LINUX : svg/batik/text/verticalText.svg = CRASH PASS
-
-BUG57957 LINUX DEBUG : fast/blockflow/block-level-images.html = IMAGE PASS
