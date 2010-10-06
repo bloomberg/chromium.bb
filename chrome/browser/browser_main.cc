@@ -364,8 +364,8 @@ void BrowserMainParts::PrefetchFieldTrial() {
   else if (parsed_command_line().HasSwitch(switches::kDisableContentPrefetch)) {
     ResourceDispatcherHost::set_is_prefetch_enabled(false);
   } else {
-    const FieldTrial::Probability kPrefetchDivisor = 100;
-    const FieldTrial::Probability no_prefetch_probability = 50;
+    const FieldTrial::Probability kPrefetchDivisor = 1000;
+    const FieldTrial::Probability no_prefetch_probability = 980;
     scoped_refptr<FieldTrial> trial =
         new FieldTrial("Prefetch", kPrefetchDivisor);
     trial->AppendGroup("ContentPrefetchDisabled", no_prefetch_probability);
