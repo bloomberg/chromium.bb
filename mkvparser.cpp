@@ -1023,6 +1023,8 @@ long long Segment::ParseHeaders()
         return E_FILE_FORMAT_INVALID;
 
     //TODO: require Cues too?
+    //No, don't require it, but use its presence or abscense
+    //to determine whether seeking is allowed.
 
     return 0;  //success
 }
@@ -1235,71 +1237,68 @@ long Segment::LoadCluster()
         if ((pos + size) > stop)
             return E_FILE_FORMAT_INVALID;
 
-        const bool bCluster = (id == 0x0F43B675);  //Cluster ID
-
-        if (bCluster)
+        if (id == 0x0C53BB6B)  //Cues ID
         {
-            const long idx = m_clusterCount;
-            const long long off = idpos - m_start;
-
-            bool bParse = true;
-
-            if (m_clusterPreloadCount > 0)
+            if (m_pCues == NULL)
             {
-                assert(idx < m_clusterSize);
-
-                Cluster* const pCluster = m_clusters[idx];
-                assert(pCluster);
-                assert(pCluster->m_index < 0);
-
-                const long long pos_ = pCluster->m_pos;
-                assert(pos_);
-
-                const long long pos = pos_ * ((pos_ >= 0) ? 1 : -1);
-                assert(off <= pos);
-
-                if (off == pos)  //match
-                {
-                    pCluster->m_index = idx;
-                    ++m_clusterCount;
-                    --m_clusterPreloadCount;
-
-                    bParse = false;
-                }
+                m_pCues = new Cues(this, pos, size);
+                assert(m_pCues);  //TODO
             }
 
-            if (bParse)
-            {
-                Cluster* const pCluster = Cluster::Parse(this, idx, off);
-                assert(pCluster);
-                assert(pCluster->m_index == idx);
+            m_pos = pos + size;  //consume payload
+            continue;
+        }
 
-                AppendCluster(pCluster);
-                assert(m_clusters);
-                assert(idx < m_clusterSize);
-                assert(m_clusters[idx] == pCluster);
+        if (id != 0x0F43B675)  //Cluster ID
+        {
+            m_pos = pos + size;  //consume payload
+            continue;
+        }
+
+        const long idx = m_clusterCount;
+        const long long idoff = idpos - m_start;
+
+        if (m_clusterPreloadCount > 0)
+        {
+            assert(idx < m_clusterSize);
+
+            Cluster* const pCluster = m_clusters[idx];
+            assert(pCluster);
+            assert(pCluster->m_index < 0);
+
+            const long long off_ = pCluster->m_pos;
+            assert(off_);
+
+            const long long off = off_ * ((off_ >= 0) ? 1 : -1);
+            assert(idoff <= off);
+
+            if (idoff == off)  //cluster has been preloaded already
+            {
+                pCluster->m_index = idx;
+                ++m_clusterCount;
+                --m_clusterPreloadCount;
+
+                m_pos = pos + size;  //consume payload
+                break;
             }
         }
-#if 0  //TODO
-        else if (id == 0x0C53BB6B)  //Cues ID
-        {
-            assert(m_pCues == NULL);
 
-            m_pCues = new Cues(this, pos, size);
-            assert(m_pCues);  //TODO
-        }
-#endif
+        Cluster* const pCluster = Cluster::Parse(this, idx, idoff);
+        assert(pCluster);
+        assert(pCluster->m_index == idx);
+
+        AppendCluster(pCluster);
+        assert(m_clusters);
+        assert(idx < m_clusterSize);
+        assert(m_clusters[idx] == pCluster);
 
         m_pos = pos + size;  //consume payload
-
-        if (bCluster)
-            break;
+        break;
     }
 
     assert(m_pos <= stop);
     return 0;
 }
-
 
 
 void Segment::AppendCluster(Cluster* pCluster)
