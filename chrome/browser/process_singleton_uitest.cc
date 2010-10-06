@@ -17,11 +17,13 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/ref_counted.h"
+#include "base/scoped_temp_dir.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,12 +35,13 @@ namespace {
 // NewRunnableMethod class to run the StartChrome methods in many threads.
 class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
  public:
-  explicit ChromeStarter(int timeout_ms)
+  explicit ChromeStarter(int timeout_ms, const FilePath& user_data_dir)
       : ready_event_(false /* manual */, false /* signaled */),
         done_event_(false /* manual */, false /* signaled */),
         process_handle_(NULL),
         process_terminated_(false),
-        timeout_ms_(timeout_ms) {
+        timeout_ms_(timeout_ms),
+        user_data_dir_(user_data_dir) {
   }
 
   // We must reset some data members since we reuse the same ChromeStarter
@@ -60,14 +63,28 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     CommandLine command_line(browser_directory.Append(
         FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath)));
 
-    FilePath user_data_directory;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
-    command_line.AppendSwitchPath(switches::kUserDataDir, user_data_directory);
+    command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
 
     if (first_run)
       command_line.AppendSwitch(switches::kFirstRun);
     else
       command_line.AppendSwitch(switches::kNoFirstRun);
+
+    // Add the normal test-mode switches, except for the ones we're adding
+    // ourselves.
+    CommandLine standard_switches(CommandLine::ARGUMENTS_ONLY);
+    test_launcher_utils::PrepareBrowserCommandLineForTests(&standard_switches);
+    const CommandLine::SwitchMap& switch_map = standard_switches.GetSwitches();
+    for (CommandLine::SwitchMap::const_iterator i = switch_map.begin();
+         i != switch_map.end(); ++i) {
+      const std::string& switch_name = i->first;
+      if (switch_name == switches::kUserDataDir ||
+          switch_name == switches::kFirstRun ||
+          switch_name == switches::kNoFirstRun)
+        continue;
+
+      command_line.AppendSwitchNative(switch_name, i->second);
+    }
 
     // Try to get all threads to launch the app at the same time.
     // So let the test know we are ready.
@@ -107,6 +124,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
   }
 
   int timeout_ms_;
+  FilePath user_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeStarter);
 };
@@ -118,6 +136,7 @@ class ProcessSingletonTest : public UITest {
       // We use a manual reset so that all threads wake up at once when signaled
       // and thus we must manually reset it for each attempt.
       : threads_waker_(true /* manual */, false /* signaled */) {
+    temp_profile_dir_.CreateUniqueTempDir();
   }
 
   void SetUp() {
@@ -125,7 +144,8 @@ class ProcessSingletonTest : public UITest {
     for (size_t i = 0; i < kNbThreads; ++i) {
       chrome_starter_threads_[i].reset(new base::Thread("ChromeStarter"));
       ASSERT_TRUE(chrome_starter_threads_[i]->Start());
-      chrome_starters_[i] = new ChromeStarter(action_max_timeout_ms());
+      chrome_starters_[i] = new ChromeStarter(action_max_timeout_ms(),
+                                              temp_profile_dir_.path());
     }
   }
 
@@ -190,6 +210,10 @@ class ProcessSingletonTest : public UITest {
   // The event that will get all threads to wake up simultaneously and try
   // to start a chrome process at the same time.
   base::WaitableEvent threads_waker_;
+
+  // We don't want to use the default profile, but can't use UITest's since we
+  // don't use UITest::LaunchBrowser.
+  ScopedTempDir temp_profile_dir_;
 };
 
 #if defined(OS_LINUX)
