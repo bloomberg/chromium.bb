@@ -56,7 +56,7 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
   GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
   if (!host)
     return false;
-  DCHECK(host->state() == GpuChannelHost::CONNECTED);
+  DCHECK(host->state() == GpuChannelHost::kConnected);
 
   // Convert WebGL context creation attributes into GGL/EGL size requests.
   const int alpha_size = attributes.alpha ? 8 : 0;
@@ -187,7 +187,8 @@ bool WebGraphicsContext3DCommandBufferImpl::isGLES2NPOTStrict() {
   return false;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::isErrorGeneratedOnOutOfBoundsAccesses() {
+bool WebGraphicsContext3DCommandBufferImpl::
+    isErrorGeneratedOnOutOfBoundsAccesses() {
   return false;
 }
 

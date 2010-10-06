@@ -91,6 +91,7 @@ bool GpuProcessHost::Init() {
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {
     switches::kUseGL,
+    switches::kDisableGpuWatchdog,
     switches::kDisableLogging,
     switches::kEnableLogging,
     switches::kGpuStartupDialog,
@@ -122,14 +123,18 @@ GpuProcessHost* GpuProcessHost::Get() {
   return sole_instance_;
 }
 
-// static
 void GpuProcessHost::SendAboutGpuCrash() {
-  Get()->Send(new GpuMsg_Crash());
+    ChromeThread::PostTask(
+        ChromeThread::IO,
+        FROM_HERE,
+        NewRunnableFunction(&GpuProcessHost::SendAboutGpuCrashInternal));
 }
 
-// static
 void GpuProcessHost::SendAboutGpuHang() {
-  Get()->Send(new GpuMsg_Hang());
+    ChromeThread::PostTask(
+        ChromeThread::IO,
+        FROM_HERE,
+        NewRunnableFunction(&GpuProcessHost::SendAboutGpuHangInternal));
 }
 
 bool GpuProcessHost::Send(IPC::Message* msg) {
@@ -347,4 +352,16 @@ URLRequestContext* GpuProcessHost::GetRequestContext(
 
 bool GpuProcessHost::CanShutdown() {
   return true;
+}
+
+// static
+void GpuProcessHost::SendAboutGpuCrashInternal() {
+  DCHECK(Get());
+  Get()->Send(new GpuMsg_Crash());
+}
+
+// static
+void GpuProcessHost::SendAboutGpuHangInternal() {
+  DCHECK(Get());
+  Get()->Send(new GpuMsg_Hang());
 }

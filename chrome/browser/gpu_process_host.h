@@ -29,11 +29,11 @@ class GpuProcessHost : public BrowserChildProcessHost {
   static GpuProcessHost* Get();
 
   // Tells the GPU process to crash. Useful for testing.
-  static void SendAboutGpuCrash();
+  void SendAboutGpuCrash();
 
   // Tells the GPU process to let its main thread enter an infinite loop.
   // Useful for testing.
-  static void SendAboutGpuHang();
+  void SendAboutGpuHang();
 
   // Shutdown routine, which should only be called upon process
   // termination.
@@ -114,6 +114,9 @@ class GpuProcessHost : public BrowserChildProcessHost {
       const ViewHostMsg_Resource_Request& request_data);
 
   virtual bool CanShutdown();
+
+  static void SendAboutGpuCrashInternal();
+  static void SendAboutGpuHangInternal();
 
   bool initialized_;
   bool initialized_successfully_;
