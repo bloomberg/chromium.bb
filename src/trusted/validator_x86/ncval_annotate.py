@@ -54,7 +54,10 @@ def check(obj_file, output_fh):
       else:
         output_fh.write("  func: %s" % info)
 
-  proc = subprocess.Popen(["ncval", obj_file], stdout=subprocess.PIPE)
+  # Pass --max_errors=-1 to get all validation errors.  This works
+  # around ncval's default of truncating the number of results to 100.
+  proc = subprocess.Popen(["ncval", "--max_errors=-1", obj_file],
+                          stdout=subprocess.PIPE)
   for line in proc.stdout:
     match = ncval_regexp.match(line)
     if match is not None:

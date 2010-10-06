@@ -74,6 +74,32 @@ VALIDATOR: ADDRESS: Illegal instruction
         "Output did not match.\n\nEXPECTED:\n%s\nACTUAL:\n%s"
         % (expected, actual))
 
+  def test_ncval_handles_many_errors(self):
+    # This tests for
+    # http://code.google.com/p/nativeclient/issues/detail?id=915,
+    # where ncval_annotate would truncate the number of results at 100.
+    disallowed = """
+#ifdef __i386__
+  __asm__("int $0x80");
+#else
+#  error Update this test for other architectures!
+#endif
+"""
+    source = "int main() { %s }" % (disallowed * 150)
+    temp_dir = self.make_temp_dir()
+    source_file = os.path.join(temp_dir, "code.c")
+    write_file(source_file, source)
+    testutils.check_call(["nacl-gcc", "-g", source_file,
+                          "-o", os.path.join(temp_dir, "prog")])
+    dest_file = os.path.join(self.make_temp_dir(), "file")
+    subprocess.call([sys.executable,
+                     os.path.join(PARENT_DIR, "ncval_annotate.py"),
+                     os.path.join(temp_dir, "prog")],
+                    stdout=open(dest_file, "w"))
+    failures = len([line for line in open(dest_file, "r")
+                    if line.startswith("VALIDATOR")])
+    self.assertEquals(failures, 150)
+
 
 if __name__ == "__main__":
   unittest.main()
