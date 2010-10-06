@@ -46,14 +46,14 @@ void StatsOptionsHandler::HandleMetricsReportingCheckbox(
       enabled ?
       UserMetricsAction("Options_MetricsReportingCheckbox_Enable") :
       UserMetricsAction("Options_MetricsReportingCheckbox_Disable"));
-  const bool is_enabled = GetCurrentStatus();
+  const bool is_enabled = MetricsCrosSettingsProvider::GetMetricsStatus();
   SetupMetricsReportingCheckbox(enabled == is_enabled);
 #endif
 }
 
 void StatsOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
 #if defined(GOOGLE_CHROME_BUILD)
-  FundamentalValue checked(GetCurrentStatus());
+  FundamentalValue checked(MetricsCrosSettingsProvider::GetMetricsStatus());
   FundamentalValue disabled(false);
   FundamentalValue user_has_changed(user_changed);
   dom_ui_->CallJavascriptFunction(
