@@ -12,6 +12,10 @@
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/examples/examples_main.h"
 
+#if defined(OS_CHROMEOS)
+#include "views/controls/menu/native_menu_gtk.h"
+#endif
+
 namespace {
 
 using views::View;
@@ -48,6 +52,19 @@ class ContainerView : public View {
 };
 
 }  // namespace
+
+namespace views {
+
+// OS_CHROMEOS requires a MenuWrapper::CreateWrapper implementation.
+// TODO(oshima): Fix chromium-os:7409 so that this isn't required.
+#if defined(OS_CHROMEOS)
+// static
+MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
+  return new NativeMenuGtk(menu);
+}
+#endif  // OS_CHROMEOS
+
+}  // namespace views
 
 namespace examples {
 
