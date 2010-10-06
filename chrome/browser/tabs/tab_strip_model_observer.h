@@ -84,7 +84,6 @@ class TabStripModelObserver {
   // The tab contents was replaced at the specified index. This is invoked when
   // a tab becomes phantom. See description of phantom tabs in class description
   // of TabStripModel for details.
-  // TODO(sky): nuke this in favor of the 4 arg variant.
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents,
                              int index);

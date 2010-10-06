@@ -462,10 +462,6 @@ class TabStripModel : public NotificationObserver {
                             const NavigationController* opener,
                             bool use_group);
 
-  // Does the work for ReplaceTabContentsAt returning the old TabContents.
-  // The caller owns the returned TabContents.
-  TabContents* ReplaceTabContentsAtImpl(int index, TabContents* new_contents);
-
   // Our delegate.
   TabStripModelDelegate* delegate_;
 

@@ -163,8 +163,15 @@ void TabStripModel::InsertTabContentsAt(int index,
 }
 
 void TabStripModel::ReplaceTabContentsAt(int index, TabContents* new_contents) {
-  scoped_ptr<TabContents> old_contents(
-      ReplaceTabContentsAtImpl(index, new_contents));
+  // TODO: this should reset group/opener of any tabs that point at
+  // old_contents.
+  DCHECK(ContainsIndex(index));
+  scoped_ptr<TabContents> old_contents(GetContentsAt(index));
+
+  contents_data_[index]->contents = new_contents;
+
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                    TabReplacedAt(old_contents.get(), new_contents, index));
 
   // When the selected tab contents is replaced send out selected notification
   // too. We do this as nearly all observers need to treat a replace of the
@@ -924,20 +931,4 @@ bool TabStripModel::OpenerMatches(const TabContentsData* data,
                                   const NavigationController* opener,
                                   bool use_group) {
   return data->opener == opener || (use_group && data->group == opener);
-}
-
-TabContents* TabStripModel::ReplaceTabContentsAtImpl(
-    int index,
-    TabContents* new_contents) {
-  // TODO: this should reset group/opener of any tabs that point at
-  // old_contents.
-  DCHECK(ContainsIndex(index));
-
-  TabContents* old_contents = GetContentsAt(index);
-
-  contents_data_[index]->contents = new_contents;
-
-  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabReplacedAt(old_contents, new_contents, index));
-  return old_contents;
 }
