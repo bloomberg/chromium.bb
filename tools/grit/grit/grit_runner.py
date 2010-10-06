@@ -1,4 +1,4 @@
-﻿#!/usr/bin/python2.4
+#!/usr/bin/python2.4
 # Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -172,6 +172,9 @@ def Main(args):
   else:
     options = Options()
     args = options.ReadOptions(args)  # args may be shorter after this
+    if not args:
+      print "No tool provided.  Try running 'grit help' for a list of tools."
+      return 2
     tool = args[0]
     if not _GetToolInfo(tool):
       print "No such tool.  Try running 'grit help' for a list of tools."
