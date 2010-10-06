@@ -106,8 +106,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
-// Hangy, http://crbug.com/53991.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoSplitMode) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
@@ -132,8 +131,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoSplitMode) {
 
 // Tests that the APIs in an incognito-disabled extension don't see incognito
 // events or callbacks.
-// Hangy, http://crbug.com/53869.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_IncognitoDisabled) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
