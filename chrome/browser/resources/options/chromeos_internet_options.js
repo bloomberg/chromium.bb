@@ -42,7 +42,7 @@ cr.define('options', function() {
       $('wiredSection').hidden = (templateData.wiredList.length == 0);
       $('wirelessSection').hidden = (templateData.wirelessList.length == 0);
       $('rememberedSection').hidden = (templateData.rememberedList.length == 0);
-
+      InternetOptions.setupAttributes(templateData);
       // Setting up the details page
       $('detailsInternetDismiss').onclick = function(event) {
           OptionsPage.clearOverlays();
@@ -51,6 +51,19 @@ cr.define('options', function() {
       $('detailsInternetLogin').onclick = function(event) {
           InternetOptions.loginFromDetails();
       };
+      $('enableWifi').onclick = function(event) {
+        chrome.send('enableWifi', []);
+      };
+      $('disableWifi').onclick = function(event) {
+         chrome.send('disableWifi', []);
+      };
+      $('enableCellular').onclick = function(event) {
+         chrome.send('disableCellular', []);
+      };
+      $('disableCellular').onclick = function(event) {
+         chrome.send('disableCellular', []);
+      };
+
     }
   };
 
@@ -90,6 +103,25 @@ cr.define('options', function() {
     }
   };
 
+  InternetOptions.setupAttributes = function(data) {
+    var buttons = $('wirelessButtons');
+    if (data.wirelessList.length == 0) {
+      buttons.removeAttribute('hasWifi');
+    } else {
+      buttons.setAttribute('hasWifi', 'true');
+    }
+    if (!data.cellularAvailable) {
+      buttons.removeAttribute('cellularAvail');
+    } else {
+      buttons.setAttribute('cellularAvail', 'true');
+      if (data.cellularEnabled) {
+        buttons.setAttribute('hasCellular', 'true');
+      } else {
+        buttons.removeAttribute('hasCellular');
+      }
+    }
+  };
+
   //
   //Chrome callbacks
   //
@@ -100,6 +132,7 @@ cr.define('options', function() {
 
     $('wiredSection').hidden = (data.wiredList.length == 0);
     $('wirelessSection').hidden = (data.wirelessList.length == 0);
+    InternetOptions.setupAttributes(data);
     $('rememberedSection').hidden = (data.rememberedList.length == 0);
   };
 

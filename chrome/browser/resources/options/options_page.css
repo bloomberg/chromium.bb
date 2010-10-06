@@ -225,13 +225,14 @@ section {
 }
 
 section > h3 {
-  width: 100px;
+  width: 150px;
   font-weight: normal;
   -webkit-padding-start: 0;
   vertical-align: middle;
   margin: 0;
   font-size: 100%;
   padding-top: 2px;
+  font-weight: bold;
 }
 
 section > div:only-of-type {

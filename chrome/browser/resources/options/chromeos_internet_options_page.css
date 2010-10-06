@@ -15,6 +15,10 @@
   display: none;
 }
 
+#networkingControls {
+  text-align: center;
+}
+
 .networks {
   -webkit-margin-start: 15px;
   padding: 2px;
@@ -116,5 +120,18 @@
 #detailsInternetPage:not([cert]) > #certNetworkPkcs,
 #detailsInternetPage:not([certPkcs]) > #certNetworkPkcs,
 #detailsInternetPage[certPkcs] > #certNetwork {
+  display: none;
+}
+
+#wirelessButtons > * > button {
+  display: block;
+}
+
+#wirelessButtons[haswifi] > * > #enableWifi,
+#wirelessButtons:not([haswifi]) > * > #disableWifi,
+#wirelessButtons:not([cellularAvail]) > * > #disableCellular,
+#wirelessButtons:not([cellularAvail]) > * > #enableCellular,
+#wirelessButtons[hasCellular] > * > #enableCellular,
+#wirelessButtons:not([hasCellular]) > * > #disableCellular {
   display: none;
 }

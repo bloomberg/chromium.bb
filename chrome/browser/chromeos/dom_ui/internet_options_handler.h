@@ -41,6 +41,10 @@ class InternetOptionsHandler : public OptionsPageUIHandler,
   void LoginCertCallback(const ListValue* args);
   void LoginToOtherCallback(const ListValue* args);
   void SetDetailsCallback(const ListValue* args);
+  void EnableWifiCallback(const ListValue* args);
+  void DisableWifiCallback(const ListValue* args);
+  void EnableCellularCallback(const ListValue* args);
+  void DisableCellularCallback(const ListValue* args);
 
   bool is_certificate_in_pkcs11(const std::string& path);
 

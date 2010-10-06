@@ -123,12 +123,39 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("inetConnect",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE));
+
+ localized_strings->SetString("enableWifi",
+      l10n_util::GetStringFUTF16(
+          IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)));
+  localized_strings->SetString("disableWifi",
+      l10n_util::GetStringFUTF16(
+          IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)));
+ localized_strings->SetString("enableCellular",
+      l10n_util::GetStringFUTF16(
+          IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)));
+  localized_strings->SetString("disableCellular",
+      l10n_util::GetStringFUTF16(
+          IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)));
+  localized_strings->SetString("generalNetworkingTitle",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE));
+
   localized_strings->SetString("detailsInternetDismiss",
       l10n_util::GetStringUTF16(IDS_CANCEL));
 
   localized_strings->Set("wiredList", GetWiredList());
   localized_strings->Set("wirelessList", GetWirelessList());
   localized_strings->Set("rememberedList", GetRememberedList());
+
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  localized_strings->SetBoolean("cellularAvailable",
+                                cros->cellular_available());
+  localized_strings->SetBoolean("cellularEnabled", cros->cellular_enabled());
 }
 
 void InternetOptionsHandler::RegisterMessages() {
@@ -144,7 +171,38 @@ void InternetOptionsHandler::RegisterMessages() {
       NewCallback(this, &InternetOptionsHandler::SetDetailsCallback));
   dom_ui_->RegisterMessageCallback("loginToOtherNetwork",
       NewCallback(this, &InternetOptionsHandler::LoginToOtherCallback));
+  dom_ui_->RegisterMessageCallback("enableWifi",
+      NewCallback(this, &InternetOptionsHandler::EnableWifiCallback));
+  dom_ui_->RegisterMessageCallback("disableWifi",
+      NewCallback(this, &InternetOptionsHandler::DisableWifiCallback));
+  dom_ui_->RegisterMessageCallback("enableCellular",
+      NewCallback(this, &InternetOptionsHandler::EnableCellularCallback));
+  dom_ui_->RegisterMessageCallback("disablCellular",
+      NewCallback(this, &InternetOptionsHandler::DisableCellularCallback));
+}
 
+void InternetOptionsHandler::EnableWifiCallback(const ListValue* args) {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  cros->EnableWifiNetworkDevice(true);
+}
+
+void InternetOptionsHandler::DisableWifiCallback(const ListValue* args) {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  cros->EnableWifiNetworkDevice(false);
+}
+
+void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  cros->EnableCellularNetworkDevice(true);
+}
+
+void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  cros->EnableCellularNetworkDevice(false);
 }
 
 void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
@@ -153,6 +211,10 @@ void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
     dictionary.Set("wiredList", GetWiredList());
     dictionary.Set("wirelessList", GetWirelessList());
     dictionary.Set("rememberedList", GetRememberedList());
+    chromeos::NetworkLibrary* cros =
+        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+    dictionary.SetBoolean("cellularAvailable", cros->cellular_available());
+    dictionary.SetBoolean("cellularEnabled", cros->cellular_enabled());
     dom_ui_->CallJavascriptFunction(
         L"options.InternetOptions.refreshNetworkData", dictionary);
   }
