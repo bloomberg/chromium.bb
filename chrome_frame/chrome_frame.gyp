@@ -242,6 +242,7 @@
       ],
       'sources': [
         '../base/test_suite.h',
+        'cfproxy_test.cc',
         'test/automation_client_mock.cc',
         'test/automation_client_mock.h',
         'test/chrome_frame_test_utils.cc',
@@ -795,6 +796,11 @@
       'target_name': 'chrome_frame_common',
       'type': 'static_library',
       'sources': [
+        'cfproxy.h',
+        'cfproxy_private.h',
+        'cfproxy_factory.cc',
+        'cfproxy_proxy.cc',
+        'cfproxy_support.cc',
         'chrome_frame_automation.h',
         'chrome_frame_automation.cc',
         'chrome_frame_delegate.h',
@@ -803,10 +809,14 @@
         'chrome_launcher_utils.cc',
         'chrome_launcher_utils.h',
         'custom_sync_call_context.h',
+        'external_tab.h',
+        'external_tab.cc',
         'plugin_url_request.h',
         'plugin_url_request.cc',
         'sync_msg_reply_dispatcher.h',
         'sync_msg_reply_dispatcher.cc',
+        'task_marshaller.h',
+        'task_marshaller.cc',
       ]
     },
     {
