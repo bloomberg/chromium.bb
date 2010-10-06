@@ -60,57 +60,6 @@ class BrowserAccessibilityWin
 
   virtual ~BrowserAccessibilityWin();
 
-  // Initialize this object and mark it as active.
-  void Initialize(BrowserAccessibilityManagerWin* manager,
-                  BrowserAccessibilityWin* parent,
-                  LONG child_id,
-                  LONG index_in_parent,
-                  const webkit_glue::WebAccessibility& src);
-
-  // Add a child of this object.
-  void AddChild(BrowserAccessibilityWin* child);
-
-  // Mark this object as inactive, and remove references to all children.
-  // When no other clients hold any references to this object it will be
-  // deleted, and in the meantime, calls to any methods will return E_FAIL.
-  void InactivateTree();
-
-  // Return true if this object is equal to or a descendant of |ancestor|.
-  bool IsDescendantOf(BrowserAccessibilityWin* ancestor);
-
-  // Returns the parent of this object, or NULL if it's the
-  // BrowserAccessibilityWin root.
-  BrowserAccessibilityWin* GetParent();
-
-  // Returns the number of children of this BrowserAccessibilityWin object.
-  uint32 GetChildCount();
-
-  // Return a pointer to the child with the given index.
-  BrowserAccessibilityWin* GetChild(uint32 child_index);
-
-  // Return the previous sibling of this object, or NULL if it's the first
-  // child of its parent.
-  BrowserAccessibilityWin* GetPreviousSibling();
-
-  // Return the next sibling of this object, or NULL if it's the last child
-  // of its parent.
-  BrowserAccessibilityWin* GetNextSibling();
-
-  // Replace a child BrowserAccessibilityWin object. Used when updating the
-  // accessibility tree.
-  void ReplaceChild(
-      const BrowserAccessibilityWin* old_acc, BrowserAccessibilityWin* new_acc);
-
-  // Accessors
-  LONG child_id() const { return child_id_; }
-  int32 renderer_id() const { return renderer_id_; }
-  LONG index_in_parent() const { return index_in_parent_; }
-
-  // Add one to the reference count and return the same object. Always
-  // use this method when returning a BrowserAccessibilityWin object as
-  // an output parameter to a COM interface, never use it otherwise.
-  BrowserAccessibilityWin* NewReference();
-
   //
   // IAccessible methods.
   //
@@ -489,6 +438,21 @@ class BrowserAccessibilityWin
                                         void** object);
 
  private:
+  // Initialize this object and mark it as active.
+  virtual void Initialize();
+
+  // Mark this object as inactive, and remove references to all children.
+  // When no other clients hold any references to this object it will be
+  // deleted, and in the meantime, calls to any methods will return E_FAIL.
+  virtual void ReleaseTree();
+
+  virtual void ReleaseReference();
+
+  // Add one to the reference count and return the same object. Always
+  // use this method when returning a BrowserAccessibilityWin object as
+  // an output parameter to a COM interface, never use it otherwise.
+  BrowserAccessibilityWin* NewReference();
+
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.
   // This method tries to figure out the target object from |var_id| and
@@ -498,8 +462,7 @@ class BrowserAccessibilityWin
 
   // Initialize the role and state metadata from the role enum and state
   // bitmasks defined in webkit/glue/webaccessibility.h.
-  void InitRoleAndState(LONG web_accessibility_role,
-                        LONG web_accessibility_state);
+  void InitRoleAndState();
 
   // Return true if this attribute is in the attributes map.
   bool HasAttribute(WebAccessibility::Attribute attribute);
@@ -524,42 +487,23 @@ class BrowserAccessibilityWin
   // Escape a string like it would be escaped for a URL or HTML form.
   string16 Escape(string16 str);
 
-  // The manager of this tree of accessibility objects; needed for
-  // global operations like focus tracking.
-  BrowserAccessibilityManagerWin* manager_;
-  // The parent of this object, may be NULL if we're the root object.
-  BrowserAccessibilityWin* parent_;
-  // The ID of this object; globally unique within the browser process.
-  LONG child_id_;
-  // The index of this within its parent object.
-  LONG index_in_parent_;
-  // The ID of this object in the renderer process.
-  int32 renderer_id_;
-
-  // The children of this object.
-  std::vector<BrowserAccessibilityWin*> children_;
-
-  // Accessibility metadata from the renderer, used to respond to MSAA
-  // events.
-  string16 name_;
-  string16 value_;
-  std::map<int32, string16> attributes_;
-  std::vector<std::pair<string16, string16> > html_attributes_;
-
-  int src_role_;
-  LONG role_;
-  LONG state_;
-  string16 role_name_;
-  LONG ia2_role_;
-  LONG ia2_state_;
-  WebKit::WebRect location_;
-
   // COM objects are reference-counted. When we're done with this object
   // and it's removed from our accessibility tree, a client may still be
   // holding onto a pointer to this object, so we mark it as inactive
   // so that calls to any of this object's methods immediately return
   // failure.
   bool instance_active_;
+
+  // IAccessible role and state.
+  int32 ia_state_;
+  int32 ia_role_;
+
+  // IAccessible2 role and state.
+  int32 ia2_role_;
+  int32 ia2_state_;
+
+  // Give BrowserAccessibility::Create access to our constructor.
+  friend class BrowserAccessibility;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityWin);
 };

@@ -6,7 +6,20 @@
 #define CHROME_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_H_
 #pragma once
 
+#include <map>
+#include <utility>
+#include <vector>
+
 #include "base/basictypes.h"
+#include "build/build_config.h"
+#include "webkit/glue/webaccessibility.h"
+
+class BrowserAccessibilityManager;
+#if defined(OS_WIN)
+class BrowserAccessibilityWin;
+#endif
+
+using webkit_glue::WebAccessibility;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -22,12 +35,103 @@
 ////////////////////////////////////////////////////////////////////////////////
 class BrowserAccessibility {
  public:
-  // Creates the platform specific BrowserAccessibility. Ownership passes to the
+  // Creates a platform specific BrowserAccessibility. Ownership passes to the
   // caller.
+  static BrowserAccessibility* Create();
+
   virtual ~BrowserAccessibility();
+
+  // Initialize this object
+  void Initialize(BrowserAccessibilityManager* manager,
+                  BrowserAccessibility* parent,
+                  int32 child_id,
+                  int32 index_in_parent,
+                  const WebAccessibility& src);
+
+  // Add a child of this object.
+  void AddChild(BrowserAccessibility* child);
+
+  // Return true if this object is equal to or a descendant of |ancestor|.
+  bool IsDescendantOf(BrowserAccessibility* ancestor);
+
+  // Returns the parent of this object, or NULL if it's the root.
+  BrowserAccessibility* GetParent();
+
+  // Returns the number of children of this object.
+  uint32 GetChildCount();
+
+  // Return a pointer to the child with the given index.
+  BrowserAccessibility* GetChild(uint32 child_index);
+
+  // Return the previous sibling of this object, or NULL if it's the first
+  // child of its parent.
+  BrowserAccessibility* GetPreviousSibling();
+
+  // Return the next sibling of this object, or NULL if it's the last child
+  // of its parent.
+  BrowserAccessibility* GetNextSibling();
+
+  // Replace a child object. Used when updating the accessibility tree.
+  void ReplaceChild(
+      const BrowserAccessibility* old_acc,
+      BrowserAccessibility* new_acc);
+
+  // Accessors
+  int32 child_id() const { return child_id_; }
+  const std::vector<BrowserAccessibility*>& children() const {
+    return children_;
+  }
+  int32 renderer_id() const { return renderer_id_; }
+  int32 index_in_parent() const { return index_in_parent_; }
+  WebKit::WebRect location() const { return location_; }
+
+#if defined(OS_WIN)
+  BrowserAccessibilityWin* toBrowserAccessibilityWin();
+#endif
 
  protected:
   BrowserAccessibility();
+
+  // Perform platform specific initialization. This can be called multiple times
+  // during the lifetime of this instance after the members of this base object
+  // have been reset with new values from the renderer process.
+  virtual void Initialize() = 0;
+
+  // Remove references to all children and delete them if possible.
+  virtual void ReleaseTree() = 0;
+
+  // Release a reference to this node. This may be a no-op on platforms other
+  // than windows.
+  virtual void ReleaseReference() = 0;
+
+  // The manager of this tree of accessibility objects; needed for
+  // global operations like focus tracking.
+  BrowserAccessibilityManager* manager_;
+
+  // The parent of this object, may be NULL if we're the root object.
+  BrowserAccessibility* parent_;
+
+  // The ID of this object; globally unique within the browser process.
+  int32 child_id_;
+
+  // The index of this within its parent object.
+  int32 index_in_parent_;
+
+  // The ID of this object in the renderer process.
+  int32 renderer_id_;
+
+  // The children of this object.
+  std::vector<BrowserAccessibility*> children_;
+
+  // Accessibility metadata from the renderer
+  string16 name_;
+  string16 value_;
+  std::map<int32, string16> attributes_;
+  std::vector<std::pair<string16, string16> > html_attributes_;
+  int32 role_;
+  int32 state_;
+  string16 role_name_;
+  WebKit::WebRect location_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
