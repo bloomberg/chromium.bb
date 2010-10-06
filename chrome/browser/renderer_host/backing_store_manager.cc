@@ -193,8 +193,7 @@ BackingStore* BackingStoreManager::GetBackingStore(
 void BackingStoreManager::PrepareBackingStore(
     RenderWidgetHost* host,
     const gfx::Size& backing_store_size,
-    TransportDIB::Id dib_id,
-    TransportDIB::Handle dib_handle,
+    TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
     bool* needs_full_paint,
@@ -218,11 +217,8 @@ void BackingStoreManager::PrepareBackingStore(
     backing_store = CreateBackingStore(host, backing_store_size);
   }
 
-  backing_store->PaintToBackingStore(host->process(),
-                                     dib_id,
-                                     dib_handle,
-                                     bitmap_rect,
-                                     copy_rects,
+  backing_store->PaintToBackingStore(host->process(), bitmap,
+                                     bitmap_rect, copy_rects,
                                      painted_synchronously);
 }
 

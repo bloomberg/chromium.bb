@@ -84,8 +84,7 @@ void RenderWidgetHostProcess::InitUpdateRectParams(
 
   if (!current_update_buf_)
     current_update_buf_ = TransportDIB::Create(pixel_size, 0);
-  params->dib_id = current_update_buf_->id();
-  params->dib_handle = current_update_buf_->handle();
+  params->bitmap = current_update_buf_->id();
   params->bitmap_rect = gfx::Rect(0, 0, w, h);
   params->dx = 0;
   params->dy = 0;

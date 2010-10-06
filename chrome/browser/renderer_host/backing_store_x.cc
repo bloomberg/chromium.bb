@@ -158,8 +158,7 @@ void BackingStoreX::PaintRectWithoutXrender(
 
 void BackingStoreX::PaintToBackingStore(
     RenderProcessHost* process,
-    TransportDIB::Id dib_id,
-    TransportDIB::Handle dib_handle,
+    TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
     bool* painted_synchronously) {
@@ -180,7 +179,7 @@ void BackingStoreX::PaintToBackingStore(
       height <= 0 || height > kMaxVideoLayerSize)
     return;
 
-  TransportDIB* dib = process->GetTransportDIB(dib_id, dib_handle);
+  TransportDIB* dib = process->GetTransportDIB(bitmap);
   if (!dib)
     return;
 

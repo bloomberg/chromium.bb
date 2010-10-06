@@ -42,7 +42,8 @@ class GpuBackingStoreWin : public IPC::Channel::Listener {
 
  private:
   // Message handlers.
-  void OnPaintToBackingStore(TransportDIB::Handle dib_handle,
+  void OnPaintToBackingStore(base::ProcessId source_process_id,
+                             TransportDIB::Id id,
                              const gfx::Rect& bitmap_rect,
                              const std::vector<gfx::Rect>& copy_rects);
   void OnScrollBackingStore(int dx, int dy,

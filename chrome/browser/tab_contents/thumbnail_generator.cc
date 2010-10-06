@@ -11,7 +11,6 @@
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
-#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
@@ -209,8 +208,7 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   }
 
   renderer->PaintAtSize(
-      thumbnail_dib->GetHandleForProcess(renderer->process()->GetHandle()),
-      sequence_num, page_size, desired_size);
+      thumbnail_dib->handle(), sequence_num, page_size, desired_size);
 }
 
 SkBitmap ThumbnailGenerator::GetThumbnailForRenderer(
@@ -301,7 +299,7 @@ void ThumbnailGenerator::WidgetDidReceivePaintAtSizeAck(
   if (item != callback_map_.end()) {
     TransportDIB* dib = item->second->thumbnail_dib.get();
     DCHECK(dib);
-    if (!dib || !dib->Map()) {
+    if (!dib) {
       return;
     }
 

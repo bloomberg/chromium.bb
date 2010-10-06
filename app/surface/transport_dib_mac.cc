@@ -34,54 +34,44 @@ TransportDIB* TransportDIB::Create(size_t size, uint32 sequence_num) {
     return NULL;
   }
 
+  if (!dib->shared_memory_.Map(size)) {
+    delete dib;
+    return NULL;
+  }
+
   dib->size_ = size;
   return dib;
 }
 
 // static
-TransportDIB* TransportDIB::Map(Handle handle) {
-  scoped_ptr<TransportDIB> dib(CreateWithHandle(handle));
-  if (!dib->Map())
+TransportDIB* TransportDIB::Map(TransportDIB::Handle handle) {
+  if (!is_valid(handle))
     return NULL;
-  return dib.release();
+
+  TransportDIB* dib = new TransportDIB(handle);
+  struct stat st;
+  if ((fstat(handle.fd, &st) != 0) ||
+      (!dib->shared_memory_.Map(st.st_size))) {
+    delete dib;
+    if (HANDLE_EINTR(close(handle.fd)) < 0)
+      PLOG(ERROR) << "close";
+    return NULL;
+  }
+
+  dib->size_ = st.st_size;
+
+  return dib;
 }
 
-// static
-TransportDIB* TransportDIB::CreateWithHandle(Handle handle) {
-  return new TransportDIB(handle);
-}
-
-// static
 bool TransportDIB::is_valid(Handle dib) {
   return dib.fd >= 0;
 }
 
 skia::PlatformCanvas* TransportDIB::GetPlatformCanvas(int w, int h) {
-  if (!memory() && !Map())
-    return NULL;
   scoped_ptr<skia::PlatformCanvas> canvas(new skia::PlatformCanvas);
   if (!canvas->initialize(w, h, true, reinterpret_cast<uint8_t*>(memory())))
     return NULL;
   return canvas.release();
-}
-
-bool TransportDIB::Map() {
-  if (memory())
-    return true;
-
-  struct stat st;
-  if ((fstat(shared_memory_.handle().fd, &st) != 0) ||
-      (!shared_memory_.Map(st.st_size))) {
-    return false;
-  }
-
-  size_ = st.st_size;
-  return true;
-}
-
-TransportDIB::Handle TransportDIB::GetHandleForProcess(
-    base::ProcessHandle process_handle) const {
-  return handle();
 }
 
 void* TransportDIB::memory() const {

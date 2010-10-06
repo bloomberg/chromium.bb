@@ -216,12 +216,12 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // Transport DIB functions ---------------------------------------------------
 
-  // Return the TransportDIB for the given id. On Windows and Linux, this may
-  // involve mapping the TransportDIB. On Mac, the shared memory is created in
-  // the browser process and the cached metadata is returned. The
-  // RenderProcessHost still owns the returned DIB.
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id,
-                                        TransportDIB::Handle dib_handle) = 0;
+  // Return the TransportDIB for the given id. On Linux, this can involve
+  // mapping shared memory. On Mac, the shared memory is created in the browser
+  // process and the cached metadata is returned. On Windows, this involves
+  // duplicating the handle from the remote process.  The RenderProcessHost
+  // still owns the returned DIB.
+  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) = 0;
 
   // Static management functions -----------------------------------------------
 

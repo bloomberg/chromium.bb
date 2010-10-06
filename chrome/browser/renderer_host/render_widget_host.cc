@@ -795,8 +795,7 @@ void RenderWidgetHost::OnMsgUpdateRect(
   if (!is_gpu_rendering_active_) {
     const size_t size = params.bitmap_rect.height() *
         params.bitmap_rect.width() * 4;
-    TransportDIB* dib = process_->GetTransportDIB(params.dib_id,
-                                                  params.dib_handle);
+    TransportDIB* dib = process_->GetTransportDIB(params.bitmap);
 
     // If gpu process does painting, scroll_rect and copy_rects are always empty
     // and backing store is never used.
@@ -815,11 +814,8 @@ void RenderWidgetHost::OnMsgUpdateRect(
         // Paint the backing store. This will update it with the
         // renderer-supplied bits. The view will read out of the backing store
         // later to actually draw to the screen.
-        PaintBackingStoreRect(params.dib_id,
-                              params.dib_handle,
-                              params.bitmap_rect,
-                              params.copy_rects,
-                              params.view_size,
+        PaintBackingStoreRect(params.bitmap, params.bitmap_rect,
+                              params.copy_rects, params.view_size,
                               &painted_synchronously);
       }
     }
@@ -883,10 +879,9 @@ void RenderWidgetHost::OnMsgCreateVideo(const gfx::Size& size) {
   Send(new ViewMsg_CreateVideo_ACK(routing_id_, -1));
 }
 
-void RenderWidgetHost::OnMsgUpdateVideo(TransportDIB::Id dib_id,
-                                        TransportDIB::Handle dib_handle,
+void RenderWidgetHost::OnMsgUpdateVideo(TransportDIB::Id bitmap,
                                         const gfx::Rect& bitmap_rect) {
-  PaintVideoLayer(dib_id, dib_handle, bitmap_rect);
+  PaintVideoLayer(bitmap, bitmap_rect);
 
   // TODO(scherkus): support actual video ids!
   Send(new ViewMsg_UpdateVideo_ACK(routing_id_, -1));
@@ -1084,8 +1079,7 @@ void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
 #endif
 
 void RenderWidgetHost::PaintBackingStoreRect(
-    TransportDIB::Id dib_id,
-    TransportDIB::Handle dib_handle,
+    TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
     const gfx::Size& view_size,
@@ -1107,13 +1101,8 @@ void RenderWidgetHost::PaintBackingStoreRect(
   }
 
   bool needs_full_paint = false;
-  BackingStoreManager::PrepareBackingStore(this,
-                                           view_size,
-                                           dib_id,
-                                           dib_handle,
-                                           bitmap_rect,
-                                           copy_rects,
-                                           &needs_full_paint,
+  BackingStoreManager::PrepareBackingStore(this, view_size, bitmap, bitmap_rect,
+                                           copy_rects, &needs_full_paint,
                                            painted_synchronously);
   if (needs_full_paint) {
     repaint_start_time_ = TimeTicks::Now();
@@ -1142,13 +1131,12 @@ void RenderWidgetHost::ScrollBackingStoreRect(int dx, int dy,
   backing_store->ScrollBackingStore(dx, dy, clip_rect, view_size);
 }
 
-void RenderWidgetHost::PaintVideoLayer(TransportDIB::Id dib_id,
-                                       TransportDIB::Handle dib_handle,
+void RenderWidgetHost::PaintVideoLayer(TransportDIB::Id bitmap,
                                        const gfx::Rect& bitmap_rect) {
   if (is_hidden_ || !video_layer_.get())
     return;
 
-  video_layer_->CopyTransportDIB(process(), dib_id, dib_handle, bitmap_rect);
+  video_layer_->CopyTransportDIB(process(), bitmap, bitmap_rect);
 
   // Don't update the view if we're hidden or if the view has been destroyed.
   if (is_hidden_ || !view_)

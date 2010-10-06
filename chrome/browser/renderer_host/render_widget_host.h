@@ -480,9 +480,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgPaintAtSizeAck(int tag, const gfx::Size& size);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnMsgCreateVideo(const gfx::Size& size);
-  void OnMsgUpdateVideo(TransportDIB::Id dib_id,
-                        TransportDIB::Handle dib_handle,
-                        const gfx::Rect& bitmap_rect);
+  void OnMsgUpdateVideo(TransportDIB::Id bitmap, const gfx::Rect& bitmap_rect);
   void OnMsgDestroyVideo();
   void OnMsgInputEventAck(const IPC::Message& message);
   virtual void OnMsgFocus();
@@ -524,8 +522,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // synchronously, and the bitmap is done being used. False means that the
   // backing store will paint the bitmap at a later time and that the DIB can't
   // be freed (it will be the backing store's job to free it later).
-  void PaintBackingStoreRect(TransportDIB::Id dib_id,
-                             TransportDIB::Handle dib_handle,
+  void PaintBackingStoreRect(TransportDIB::Id bitmap,
                              const gfx::Rect& bitmap_rect,
                              const std::vector<gfx::Rect>& copy_rects,
                              const gfx::Size& view_size,
@@ -540,8 +537,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Paints the entire given bitmap into the current video layer, if it exists.
   // |bitmap_rect| specifies the destination size and absolute location of the
   // bitmap on the backing store.
-  void PaintVideoLayer(TransportDIB::Id dib_id,
-                       TransportDIB::Handle dib_handle,
+  void PaintVideoLayer(TransportDIB::Id bitmap,
                        const gfx::Rect& bitmap_rect);
 
   // Called by OnMsgInputEventAck() to process a keyboard event ack message.

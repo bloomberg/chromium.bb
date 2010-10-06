@@ -218,8 +218,7 @@ NPObject* WebPluginProxy::GetPluginElement() {
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
-  Send(new PluginHostMsg_GetPluginElement(route_id_, npobject_route_id,
-                                          &success));
+  Send(new PluginHostMsg_GetPluginElement(route_id_, npobject_route_id, &success));
   if (!success)
     return NULL;
 
@@ -518,31 +517,61 @@ void WebPluginProxy::UpdateGeometry(
 #endif
 }
 
+#if defined(OS_WIN)
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,
     const TransportDIB::Handle& background_buffer,
     const gfx::Rect& window_rect) {
-  // We have to handle errors here since we're mapping a large amount of memory
-  // that may not fit in our address space. Also, the renderer may have already
-  // destroyed the TransportDIB by the time we receive the handle, e.g. in case
-  // of multiple resizes.
-#if defined(OS_MACOSX)
+  // Create a canvas that will reference the shared bits. We have to handle
+  // errors here since we're mapping a large amount of memory that may not fit
+  // in our address space, or go wrong in some other way.
+  windowless_canvas_.reset(new skia::PlatformCanvas);
+  if (!windowless_canvas_->initialize(
+          window_rect.width(),
+          window_rect.height(),
+          true,
+          win_util::GetSectionFromProcess(windowless_buffer,
+              channel_->renderer_handle(), false))) {
+    windowless_canvas_.reset();
+    background_canvas_.reset();
+    return;
+  }
+
+  if (background_buffer) {
+    background_canvas_.reset(new skia::PlatformCanvas);
+    if (!background_canvas_->initialize(
+            window_rect.width(),
+            window_rect.height(),
+            true,
+            win_util::GetSectionFromProcess(background_buffer,
+                channel_->renderer_handle(), false))) {
+      windowless_canvas_.reset();
+      background_canvas_.reset();
+      return;
+    }
+  }
+}
+
+#elif defined(OS_MACOSX)
+
+void WebPluginProxy::SetWindowlessBuffer(
+    const TransportDIB::Handle& windowless_buffer,
+    const TransportDIB::Handle& background_buffer,
+    const gfx::Rect& window_rect) {
+  // Convert the shared memory handle to a handle that works in our process,
+  // and then use that to create a CGContextRef.
   windowless_dib_.reset(TransportDIB::Map(windowless_buffer));
   background_dib_.reset(TransportDIB::Map(background_buffer));
-  if (windowless_dib_.get()) {
-    windowless_context_.reset(CGBitmapContextCreate(
-        windowless_dib_->memory(),
-        window_rect.width(),
-        window_rect.height(),
-        8, 4 * window_rect.width(),
-        mac_util::GetSystemColorSpace(),
-        kCGImageAlphaPremultipliedFirst |
-        kCGBitmapByteOrder32Host));
-    CGContextTranslateCTM(windowless_context_, 0, window_rect.height());
-    CGContextScaleCTM(windowless_context_, 1, -1);
-  } else {
-    windowless_context_.reset();
-  }
+  windowless_context_.reset(CGBitmapContextCreate(
+      windowless_dib_->memory(),
+      window_rect.width(),
+      window_rect.height(),
+      8, 4 * window_rect.width(),
+      mac_util::GetSystemColorSpace(),
+      kCGImageAlphaPremultipliedFirst |
+      kCGBitmapByteOrder32Host));
+  CGContextTranslateCTM(windowless_context_, 0, window_rect.height());
+  CGContextScaleCTM(windowless_context_, 1, -1);
   if (background_dib_.get()) {
     background_context_.reset(CGBitmapContextCreate(
         background_dib_->memory(),
@@ -554,28 +583,32 @@ void WebPluginProxy::SetWindowlessBuffer(
         kCGBitmapByteOrder32Host));
     CGContextTranslateCTM(background_context_, 0, window_rect.height());
     CGContextScaleCTM(background_context_, 1, -1);
-  } else {
-    background_context_.reset();
   }
-#else
+}
+
+#elif defined(USE_X11)
+
+void WebPluginProxy::SetWindowlessBuffer(
+    const TransportDIB::Handle& windowless_buffer,
+    const TransportDIB::Handle& background_buffer,
+    const gfx::Rect& window_rect) {
   int width = window_rect.width();
   int height = window_rect.height();
-  windowless_dib_.reset(TransportDIB::CreateWithHandle(windowless_buffer));
-  background_dib_.reset(TransportDIB::CreateWithHandle(background_buffer));
-  windowless_canvas_.reset(windowless_dib_->GetPlatformCanvas(width, height));
-  background_canvas_.reset(background_dib_->GetPlatformCanvas(width, height));
-  if (!windowless_canvas_.get() || !background_canvas_.get()) {
+  windowless_dib_.reset(TransportDIB::Map(windowless_buffer));
+  if (windowless_dib_.get()) {
+    windowless_canvas_.reset(windowless_dib_->GetPlatformCanvas(width, height));
+  } else {
+    // This can happen if the renderer has already destroyed the TransportDIB
+    // by the time we receive the handle, e.g. in case of multiple resizes.
     windowless_canvas_.reset();
-    background_canvas_.reset();
-    // Destroy the TransportDIB if the canvas was not created successfully.
-    // Otherwise we may have an unnecessary handle which is keeping the shared
-    // memory open.
-    windowless_dib_.reset();
-    background_dib_.reset();
   }
-#endif
+  background_dib_.reset(TransportDIB::Map(background_buffer));
+  if (background_dib_.get()) {
+    background_canvas_.reset(background_dib_->GetPlatformCanvas(width, height));
+  } else {
+    background_canvas_.reset();
+  }
 
-#if defined(USE_X11)
   // If SHM pixmaps support is available, create a SHM pixmap and
   // pass it to the delegate for windowless plugin painting.
   if (delegate_->IsWindowless() && use_shm_pixmap_ && windowless_dib_.get()) {
@@ -595,8 +628,9 @@ void WebPluginProxy::SetWindowlessBuffer(
 
     delegate_->SetWindowlessShmPixmap(windowless_shm_pixmap_);
   }
-#endif
 }
+
+#endif
 
 void WebPluginProxy::CancelDocumentLoad() {
   Send(new PluginHostMsg_CancelDocumentLoad(route_id_));

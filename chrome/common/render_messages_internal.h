@@ -1259,9 +1259,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Sent to create, update and destroy video layers.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_CreateVideo,
                       gfx::Size /* size */)
-  IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateVideo,
-                      TransportDIB::Id /* bitmap_id */,
-                      TransportDIB::Handle /* bitmap_handle */,
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateVideo,
+                      TransportDIB::Id /* bitmap */,
                       gfx::Rect /* bitmap_rect */)
   IPC_MESSAGE_ROUTED0(ViewHostMsg_DestroyVideo)
 

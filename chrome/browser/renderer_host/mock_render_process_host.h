@@ -55,8 +55,7 @@ class MockRenderProcessHost : public RenderProcessHost {
     return base::kNullProcessHandle;
   }
 
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id,
-                                        TransportDIB::Handle dib_handle);
+  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
 
   // IPC::Channel::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg);
