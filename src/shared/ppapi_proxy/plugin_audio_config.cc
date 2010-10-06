@@ -19,17 +19,19 @@ namespace ppapi_proxy {
 
 namespace {
 PP_Resource CreateStereo16Bit(PP_Module module,
-                              uint32_t sample_rate,
-                              uint32_t sample_frame_count) {
+                              PP_AudioSampleRate_Dev sample_rate,
+                              uint32_t sample_frame_count,
+                              uint32_t* obtained_sample_frame_count) {
   UNREFERENCED_PARAMETER(module);
   UNREFERENCED_PARAMETER(sample_rate);
   UNREFERENCED_PARAMETER(sample_frame_count);
+  UNREFERENCED_PARAMETER(obtained_sample_frame_count);
   return kInvalidResourceId;
 }
 
-uint32_t GetSampleRate(PP_Resource config) {
+PP_AudioSampleRate_Dev GetSampleRate(PP_Resource config) {
   UNREFERENCED_PARAMETER(config);
-  return PP_AUDIOSAMELERATE_44100;
+  return PP_AUDIOSAMPLERATE_NONE;
 }
 
 uint32_t GetSampleFrameCount(PP_Resource config) {
