@@ -17,6 +17,7 @@
 #include "gfx/codec/png_codec.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/window_impl.h"
+#include "gfx/win_util.h"
 #include "grit/gfx_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,14 +99,27 @@ SkBitmap LoadBitmapFromResources(int resource_id) {
   return bitmap;
 }
 
+bool CheckForD2DCompatibility() {
+  if (!gfx::Direct2dIsAvailable()) {
+    LOG(WARNING) << "Test is disabled as it requires either Windows 7 or " <<
+                    "Vista with Platform Update KB971644";
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 TEST(CanvasDirect2D, CreateCanvas) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 }
 
 TEST(CanvasDirect2D, SaveRestoreNesting) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -137,6 +151,8 @@ TEST(CanvasDirect2D, SaveRestoreNesting) {
 }
 
 TEST(CanvasDirect2D, SaveLayerAlpha) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -149,6 +165,8 @@ TEST(CanvasDirect2D, SaveLayerAlpha) {
 }
 
 TEST(CanvasDirect2D, SaveLayerAlphaWithBounds) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -161,6 +179,8 @@ TEST(CanvasDirect2D, SaveLayerAlphaWithBounds) {
 }
 
 TEST(CanvasDirect2D, FillRect) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -168,6 +188,8 @@ TEST(CanvasDirect2D, FillRect) {
 }
 
 TEST(CanvasDirect2D, PlatformPainting) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -183,6 +205,8 @@ TEST(CanvasDirect2D, PlatformPainting) {
 }
 
 TEST(CanvasDirect2D, ClipRect) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -192,6 +216,8 @@ TEST(CanvasDirect2D, ClipRect) {
 }
 
 TEST(CanvasDirect2D, ClipRectWithTranslate) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -211,6 +237,8 @@ TEST(CanvasDirect2D, ClipRectWithTranslate) {
 }
 
 TEST(CanvasDirect2D, ClipRectWithScale) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -232,6 +260,8 @@ TEST(CanvasDirect2D, ClipRectWithScale) {
 }
 
 TEST(CanvasDirect2D, DrawRectInt) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -241,6 +271,8 @@ TEST(CanvasDirect2D, DrawRectInt) {
 }
 
 TEST(CanvasDirect2D, DrawLineInt) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -250,6 +282,8 @@ TEST(CanvasDirect2D, DrawLineInt) {
 }
 
 TEST(CanvasDirect2D, DrawBitmapInt) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -261,6 +295,8 @@ TEST(CanvasDirect2D, DrawBitmapInt) {
 }
 
 TEST(CanvasDirect2D, DrawBitmapInt2) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 
@@ -274,6 +310,8 @@ TEST(CanvasDirect2D, DrawBitmapInt2) {
 }
 
 TEST(CanvasDirect2D, TileImageInt) {
+  if (!CheckForD2DCompatibility())
+    return;
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());
 

@@ -4,6 +4,9 @@
 
 #include "gfx/font.h"
 
+#if defined(OS_WIN)
+#include "gfx/platform_font_win.h"
+#endif  // defined(OS_WIN)
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -12,6 +15,34 @@ using gfx::Font;
 
 class FontTest : public testing::Test {
 };
+
+#if defined(OS_WIN)
+class ScopedMinimumFontSizeCallback {
+ public:
+  explicit ScopedMinimumFontSizeCallback(int minimum_size) {
+    minimum_size_ = minimum_size;
+    old_callback_ = gfx::PlatformFontWin::get_minimum_font_size_callback;
+    gfx::PlatformFontWin::get_minimum_font_size_callback = &GetMinimumFontSize;
+  }
+
+  ~ScopedMinimumFontSizeCallback() {
+    gfx::PlatformFontWin::get_minimum_font_size_callback = old_callback_;
+  }
+
+ private:
+  static int GetMinimumFontSize() {
+    return minimum_size_;
+  }
+
+  gfx::PlatformFontWin::GetMinimumFontSizeCallback old_callback_;
+  static int minimum_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedMinimumFontSizeCallback);
+};
+
+int ScopedMinimumFontSizeCallback::minimum_size_ = 0;
+#endif  // defined(OS_WIN)
+
 
 TEST_F(FontTest, LoadArial) {
   Font cf(L"Arial", 16);
@@ -58,10 +89,12 @@ TEST_F(FontTest, Widths) {
 }
 
 #if defined(OS_WIN)
-// http://crbug.com/46733
-TEST_F(FontTest, FAILS_DeriveFontResizesIfSizeTooSmall) {
+TEST_F(FontTest, DeriveFontResizesIfSizeTooSmall) {
   // This creates font of height -8.
   Font cf(L"Arial", 6);
+  // The minimum font size is set to 5 in browser_main.cc.
+  ScopedMinimumFontSizeCallback minimum_size(5);
+
   Font derived_font = cf.DeriveFont(-4);
   LOGFONT font_info;
   GetObject(derived_font.GetNativeFont(), sizeof(LOGFONT), &font_info);
@@ -71,6 +104,9 @@ TEST_F(FontTest, FAILS_DeriveFontResizesIfSizeTooSmall) {
 TEST_F(FontTest, DeriveFontKeepsOriginalSizeIfHeightOk) {
   // This creates font of height -8.
   Font cf(L"Arial", 6);
+  // The minimum font size is set to 5 in browser_main.cc.
+  ScopedMinimumFontSizeCallback minimum_size(5);
+
   Font derived_font = cf.DeriveFont(-2);
   LOGFONT font_info;
   GetObject(derived_font.GetNativeFont(), sizeof(LOGFONT), &font_info);
