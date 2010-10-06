@@ -460,7 +460,14 @@ void ExistingUserController::OnLoginSuccess(
     const std::string& username,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests) {
-
+  // LoginPerformer instance will delete itself once online auth result is OK.
+  // In case of failure it'll bring up ScreenLock and ask for
+  // correct password/display error message.
+  // Even in case when following online,offline protocol and returning
+  // requests_pending = false, let LoginPerformer delete itself.
+  login_performer_->set_delegate(NULL);
+  LoginPerformer* performer = login_performer_.release();
+  performer = NULL;
   AppendStartUrlToCmdline();
   if (selected_view_index_ + 1 == controllers_.size() &&
       !UserManager::Get()->IsKnownUser(username)) {
