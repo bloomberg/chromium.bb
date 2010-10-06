@@ -62,6 +62,7 @@
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_pinyin_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/proxy_handler.h"
+#include "chrome/browser/chromeos/dom_ui/stats_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
 
@@ -164,6 +165,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::LanguagePinyinOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new chromeos::ProxyHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::StatsOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
 #endif
 #if defined(USE_NSS)

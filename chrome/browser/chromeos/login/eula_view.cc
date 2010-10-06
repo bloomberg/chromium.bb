@@ -12,21 +12,21 @@
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros_settings_provider_stats.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/options_util.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/dom_view.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "cros/chromeos_cryptohome.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -41,10 +41,6 @@
 #include "views/widget/widget_gtk.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
-
-#if defined(USE_LINUX_BREAKPAD)
-#include "chrome/app/breakpad_linux.h"
-#endif
 
 using views::WidgetGtk;
 
@@ -259,13 +255,8 @@ void EulaView::Init() {
   layout->StartRow(0, SINGLE_CONTROL_WITH_SHIFT_ROW);
   usage_statistics_checkbox_ = new views::Checkbox();
   usage_statistics_checkbox_->SetMultiLine(true);
-
-  // TODO(zelidrag): http://crosbug/6367 - Change default settings for checked
-  // and enabled state of usage_statistics_checkbox_ before the product is
-  // released.
   usage_statistics_checkbox_->SetChecked(true);
   layout->AddView(usage_statistics_checkbox_);
-  usage_statistics_checkbox_->SetEnabled(false);
 
   layout->StartRow(0, SINGLE_LINK_WITH_SHIFT_ROW);
   learn_more_link_ = new views::Link();
@@ -353,13 +344,8 @@ void EulaView::OnLocaleChanged() {
 void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == continue_button_) {
     if (usage_statistics_checkbox_) {
-      bool enable_reporting = usage_statistics_checkbox_->checked();
-      enable_reporting =
-          OptionsUtil::ResolveMetricsReportingEnabled(enable_reporting);
-#if defined(USE_LINUX_BREAKPAD)
-      if (enable_reporting)
-        InitCrashReporter();
-#endif
+      MetricsCrosSettingsProvider::SetMetricsStatus(
+          usage_statistics_checkbox_->checked());
     }
     observer_->OnExit(ScreenObserver::EULA_ACCEPTED);
   } else if (sender == back_button_) {

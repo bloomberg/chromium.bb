@@ -96,7 +96,11 @@ class AdvancedOptionsHandler
 #endif
 
   scoped_refptr<SelectFileDialog> select_folder_dialog_;
+
+#if !defined(OS_CHROMEOS)
   BooleanPrefMember enable_metrics_recording_;
+#endif
+
   FilePathPrefMember default_download_location_;
   StringPrefMember auto_open_files_;
   scoped_ptr<PrefSetObserver> proxy_prefs_;

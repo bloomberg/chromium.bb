@@ -178,8 +178,10 @@ DOMMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {
   // special behaviors that aren't handled by the standard prefs UI.
   DCHECK(dom_ui_);
   PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
+#if !defined(OS_CHROMEOS)
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
+#endif
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
@@ -202,9 +204,11 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("resetToDefaults",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleResetToDefaults));
+#if !defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleMetricsReportingCheckbox));
+#endif
 #if !defined(USE_NSS)
   dom_ui_->RegisterMessageCallback("showManageSSLCertificates",
       NewCallback(this,
@@ -277,7 +281,7 @@ void AdvancedOptionsHandler::HandleResetToDefaults(const ListValue* args) {
 
 void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
     const ListValue* args) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
   bool enabled = (checked_str == "true");
   UserMetricsRecordAction(
@@ -334,7 +338,7 @@ void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
 #endif
 
 void AdvancedOptionsHandler::SetupMetricsReportingCheckbox(bool user_changed) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   FundamentalValue checked(enable_metrics_recording_.GetValue());
   FundamentalValue disabled(enable_metrics_recording_.IsManaged());
   FundamentalValue user_has_changed(user_changed);

@@ -25,11 +25,6 @@ class CrosSettingsProvider {
 
   // Gets the namespace prefix provided by this provider
   virtual bool HandlesSetting(const std::string& path) = 0;
-
- protected:
-  // Fires system setting change notification.
-  void FireObservers(const char* path);
-
 };
 
 }  // namespace chromeos

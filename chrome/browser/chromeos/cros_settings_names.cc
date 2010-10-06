@@ -16,4 +16,6 @@ const char kAccountsPrefUsers[] = "cros.accounts.users";
 
 const char kSystemTimezone[] = "cros.system.timezone";
 
+const char kStatsReportingPref[] = "cros.metrics.reportingEnabled";
+
 }  // namespace chromeos

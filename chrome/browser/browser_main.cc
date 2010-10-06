@@ -151,6 +151,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/cros_settings_provider_stats.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -548,8 +549,10 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
   // sources. This has to be done before uninstall code path and before prefs
   // are registered.
   local_state->RegisterStringPref(prefs::kApplicationLocale, "");
+#if !defined(OS_CHROMEOS)
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
       GoogleUpdateSettings::GetCollectStatsConsent());
+#endif  // !defined(OS_CHROMEOS)
 
   if (is_first_run) {
 #if defined(OS_WIN)
@@ -634,7 +637,11 @@ MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
     // prefs, we turn on recording.  We disable metrics completely for
     // non-official builds.
 #if defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_CHROMEOS)
+    bool enabled = chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
+#else
     bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+#endif  // #if defined(OS_CHROMEOS)
     metrics->SetUserPermitsUpload(enabled);
     if (enabled) {
       metrics->Start();
@@ -947,6 +954,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // through configuration policy or user preference. The kHeadless environment
   // variable overrides the decision, but only if the crash service is under
   // control of the user.
+#if !defined(OS_CHROMEOS)
   const PrefService::Preference* metrics_reporting_enabled =
       local_state->FindPreference(prefs::kMetricsReportingEnabled);
   CHECK(metrics_reporting_enabled);
@@ -954,6 +962,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
       local_state->GetBoolean(prefs::kMetricsReportingEnabled);
   if (!breakpad_enabled && metrics_reporting_enabled->IsUserModifiable())
     breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
+#else
+  bool breakpad_enabled =
+      chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
+#endif  // #if !defined(OS_CHROMEOS)
   if (breakpad_enabled)
     InitCrashReporter();
 #endif

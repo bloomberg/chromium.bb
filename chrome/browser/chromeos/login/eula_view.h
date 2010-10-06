@@ -29,6 +29,7 @@ class DOMView;
 namespace chromeos {
 
 class HelpAppLauncher;
+class MetricsCrosSettingsProvider;
 
 // Delegate for TabContents that will show EULA.
 // Blocks context menu and other actions.
