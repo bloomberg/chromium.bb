@@ -210,6 +210,10 @@ void ToolbarView::SetToolbarFocusAndFocusAppMenu(int view_storage_id) {
   SetToolbarFocus(view_storage_id, app_menu_);
 }
 
+bool ToolbarView::IsAppMenuFocused() {
+  return app_menu_->HasFocus();
+}
+
 void ToolbarView::AddMenuListener(views::MenuListener* listener) {
   menu_listeners_.push_back(listener);
 }

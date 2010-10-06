@@ -903,12 +903,16 @@ void BrowserView::FocusAppMenu() {
   // Chrome doesn't have a traditional menu bar, but it has a menu button in the
   // main toolbar that plays the same role.  If the user presses a key that
   // would typically focus the menu bar, tell the toolbar to focus the menu
-  // button.  Pass it the storage id of the view where focus should be returned
-  // if the user presses escape.
+  // button.  If the user presses the key again, return focus to the previous
+  // location.
   //
   // Not used on the Mac, which has a normal menu bar.
-  SaveFocusedView();
-  toolbar_->SetToolbarFocusAndFocusAppMenu(last_focused_view_storage_id_);
+  if (toolbar_->IsAppMenuFocused()) {
+    RestoreFocus();
+  } else {
+    SaveFocusedView();
+    toolbar_->SetToolbarFocusAndFocusAppMenu(last_focused_view_storage_id_);
+  }
 }
 
 void BrowserView::RotatePaneFocus(bool forwards) {

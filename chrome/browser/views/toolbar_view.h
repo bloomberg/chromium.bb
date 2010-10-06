@@ -65,6 +65,9 @@ class ToolbarView : public AccessibleToolbarView,
   // to the ViewStorage with id |view_storage_id| if the user escapes.
   void SetToolbarFocusAndFocusAppMenu(int view_storage_id);
 
+  // Returns true if the app menu is focused.
+  bool IsAppMenuFocused();
+
   // Add a listener to receive a callback when the menu opens.
   void AddMenuListener(views::MenuListener* listener);
 
