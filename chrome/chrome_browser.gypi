@@ -532,6 +532,8 @@
         'browser/chromeos/login/existing_user_view.h',
         'browser/chromeos/login/google_authenticator.cc',
         'browser/chromeos/login/google_authenticator.h',
+        'browser/chromeos/login/guest_user_view.cc',
+        'browser/chromeos/login/guest_user_view.h',
         'browser/chromeos/login/help_app_launcher.cc',
         'browser/chromeos/login/help_app_launcher.h',
         'browser/chromeos/login/helper.cc',

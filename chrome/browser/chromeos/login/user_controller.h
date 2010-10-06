@@ -26,8 +26,9 @@ class WidgetGtk;
 
 namespace chromeos {
 
-class UserView;
 class ExistingUserView;
+class GuestUserView;
+class UserView;
 
 // UserController manages the set of windows needed to login a single existing
 // user or first time login for a new user. ExistingUserController creates
@@ -131,9 +132,8 @@ class UserController : public views::ButtonListener,
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();
 
-  // Selects user entry with specified |index|, |is_click| is true if the entry
-  // was selected by mouse click.
-  void SelectUser(int index, bool is_click);
+  // Selects user entry with specified |index|.
+  void SelectUser(int index);
 
   // Sets focus on password field.
   void FocusPasswordField();
@@ -213,6 +213,9 @@ class UserController : public views::ButtonListener,
 
   // View that is used for existing user login.
   ExistingUserView* existing_user_view_;
+
+  // View that is used for guest user login.
+  GuestUserView* guest_user_view_;
 
   // Views that show display name of the user.
   views::Label* label_view_;

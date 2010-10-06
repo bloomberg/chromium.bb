@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/existing_user_view.h"
+#include "chrome/browser/chromeos/login/guest_user_view.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/user_view.h"
@@ -58,7 +59,7 @@ class ClickNotifyingWidget : public views::WidgetGtk {
  private:
   gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
     if (!controller_->is_user_selected())
-      controller_->SelectUser(controller_->user_index(), true);
+      controller_->SelectUser(controller_->user_index());
 
     return views::WidgetGtk::OnButtonPress(widget, event);
   }
@@ -96,6 +97,7 @@ UserController::UserController(Delegate* delegate, bool is_bwsi)
       user_view_(NULL),
       new_user_view_(NULL),
       existing_user_view_(NULL),
+      guest_user_view_(NULL),
       label_view_(NULL),
       unselected_label_view_(NULL) {
   registrar_.Add(
@@ -121,6 +123,7 @@ UserController::UserController(Delegate* delegate,
       user_view_(NULL),
       new_user_view_(NULL),
       existing_user_view_(NULL),
+      guest_user_view_(NULL),
       label_view_(NULL),
       unselected_label_view_(NULL) {
   registrar_.Add(
@@ -188,6 +191,7 @@ void UserController::UpdateSubmitButtonState() {
 
 void UserController::ClearAndEnablePassword() {
   if (is_new_user_) {
+    // TODO(avayvod): This code seems not reachable to me.
     new_user_view_->ClearAndEnablePassword();
   } else {
     existing_user_view_->password_field()->SetText(string16());
@@ -199,6 +203,8 @@ void UserController::ClearAndEnablePassword() {
 void UserController::ClearAndEnableFields() {
   if (is_new_user_) {
     new_user_view_->ClearAndEnableFields();
+  } else if (is_bwsi_) {
+    guest_user_view_->FocusSignInButton();
   } else {
     ClearAndEnablePassword();
   }
@@ -229,10 +235,10 @@ bool UserController::HandleKeystroke(
     Login();
     return true;
   } else if (keystroke.GetKeyboardCode() == app::VKEY_LEFT) {
-    SelectUser(user_index() - 1, false);
+    SelectUser(user_index() - 1);
     return true;
   } else if (keystroke.GetKeyboardCode() == app::VKEY_RIGHT) {
-    SelectUser(user_index() + 1, false);
+    SelectUser(user_index() + 1);
     return true;
   }
   delegate_->ClearErrors();
@@ -335,6 +341,10 @@ WidgetGtk* UserController::CreateControlsWindow(
         new NewUserView(this, false, need_browse_without_signin);
     new_user_view_->Init();
     control_view = new_user_view_;
+  } else if (is_bwsi_) {
+    guest_user_view_ = new GuestUserView(this);
+    guest_user_view_->RecreateFields();
+    control_view = guest_user_view_;
   } else {
     existing_user_view_ = new ExistingUserView(this);
     existing_user_view_->RecreateFields();
@@ -344,8 +354,6 @@ WidgetGtk* UserController::CreateControlsWindow(
   *height = kControlsHeight;
   if (is_new_user_)
     *height += kUserImageSize + kUserNameGap;
-  if (is_bwsi_)
-    *height = 1;
 
   WidgetGtk* window = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   ConfigureLoginWindow(window,
@@ -388,8 +396,6 @@ void UserController::CreateBorderWindow(int index,
   int height = kBorderSize * 2 + controls_height;
   if (!is_new_user_)
     height += kBorderSize + kUserImageSize;
-  if (is_bwsi_)
-    height = kBorderSize * 2 + kUserImageSize + 1;
   border_window_ = new WidgetGtk(WidgetGtk::TYPE_WINDOW);
   border_window_->MakeTransparent();
   border_window_->Init(NULL, gfx::Rect(0, 0, width, height));
@@ -484,18 +490,15 @@ void UserController::ClearErrors() {
 }
 
 void UserController::NavigateAway() {
-  SelectUser(user_index() - 1, false);
+  SelectUser(user_index() - 1);
 }
 
 void UserController::OnRemoveUser() {
   delegate_->RemoveUser(this);
 }
 
-void UserController::SelectUser(int index, bool is_click) {
-  if (is_click && is_bwsi_)
-    delegate_->LoginOffTheRecord();
-  else
-    delegate_->SelectUser(index);
+void UserController::SelectUser(int index) {
+  delegate_->SelectUser(index);
 }
 
 void UserController::FocusPasswordField() {

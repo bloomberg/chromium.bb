@@ -45,18 +45,17 @@ class UserEntryTextfield : public views::Textfield {
       : Textfield(style),
         controller_(controller) {}
 
-  // Overridden from View:
+  // Overridden from views::View:
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
     if (e.GetKeyCode() == app::VKEY_TAB) {
       int index = controller_->user_index() + (e.IsShiftDown() ? -1 : 1);
-      controller_->SelectUser(index, false);
+      controller_->SelectUser(index);
       return true;
     } else {
       return false;
     }
   }
 
-  // Overridden from views::Textfield:
   virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
     if (e.GetKeyCode() == app::VKEY_TAB)
       return true;
