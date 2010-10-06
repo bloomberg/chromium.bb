@@ -191,9 +191,26 @@ class ImportsTest(pyauto.PyUITest):
     # TODO(alyssad): Test for search engines after a hook is added.
     # See crbug.com/52009.
 
+  def _CanRunFirefoxTests(self):
+    """Determine whether we can run firefox imports.
+
+    On windows, checks if firefox is installed. Always True on other platforms.
+    """
+    if self.IsWin():
+      ff_installed = os.path.exists(os.path.join(
+          os.getenv('ProgramFiles'), 'Mozilla Firefox', 'firefox.exe'))
+      if not ff_installed:
+        logging.warn('Firefox not installed.')
+      return ff_installed
+    # TODO(nirnimesh): Anything else to be done on other platforms?
+    return True
+
   # Tests.
   def testFirefoxImportFromPrefs(self):
     """Verify importing Firefox data through preferences."""
+    if not self._CanRunFirefoxTests():
+      logging.warn('Not running firefox import tests.')
+      return
     self._SwapFirefoxProfile()
     self.ImportSettings('Mozilla Firefox', False, self._to_import)
     self._CheckDefaults(bookmarks=True, history=True, passwords=True,
@@ -205,6 +222,9 @@ class ImportsTest(pyauto.PyUITest):
     For Win, only history and homepage will only be imported.
     Mac and Linux can import history, homepage, and bookmarks.
     """
+    if not self._CanRunFirefoxTests():
+      logging.warn('Not running firefox import tests.')
+      return
     self._SwapFirefoxProfile()
     self.ImportSettings('Mozilla Firefox', True, self._to_import)
     non_win = not self.IsWin()
@@ -216,6 +236,9 @@ class ImportsTest(pyauto.PyUITest):
 
     Bookmarks should be duplicated, but history and passwords should not.
     """
+    if not self._CanRunFirefoxTests():
+      logging.warn('Not running firefox import tests.')
+      return
     self._SwapFirefoxProfile()
     self.ImportSettings('Mozilla Firefox', False, self._to_import)
     num_history_orig = len(self.GetHistoryInfo().History())
