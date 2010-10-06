@@ -110,6 +110,14 @@ class AccObject : public base::RefCounted<AccObject> {
   // Gets the number of children of this object and returns true on success.
   bool GetChildCount(int* child_count);
 
+  // Gets an object resulting from the navigation and returns true if the
+  // navigation completed successfully. Even if true, |object| may still
+  // refer to a NULL object if no object was found from the navigation.
+  // |navigation_type| may be any navigation constant, such as NAVDIR_NEXT.
+  // Note: This method uses a deprecated IAccessible method.
+  bool GetFromNavigation(long navigation_type,
+                         scoped_refptr<AccObject>* object);
+
   // Gets the window containing this object and returns true on success. This
   // method will return false if the object is not contained within a window.
   bool GetWindow(HWND* window);
@@ -135,6 +143,13 @@ class AccObject : public base::RefCounted<AccObject> {
  private:
   friend class base::RefCounted<AccObject>;
   ~AccObject() {}
+
+  // Creates an AccObject using the given variant, returning NULL on failure.
+  // The variant should be of type |VT_I4| referring to the id of a child of
+  // |object|, or of type |VT_DISPATCH|. This method is useful for converting
+  // the variant returned by many of the IAccessible methods into an AccObject.
+  static AccObject* CreateFromVariant(AccObject* object,
+                                      const VARIANT& variant);
 
   // Helper method for posting mouse button messages at this object's location.
   bool PostMouseButtonMessages(int button_up, int button_down);

@@ -265,63 +265,51 @@ bool AccObject::GetChildren(RefCountedAccObjectVector* client_objects) {
   }
   if (child_count == 0)
     return true;
-  scoped_array<VARIANT> unscoped_children(new VARIANT[child_count]);
-  long actual_child_count;  // NOLINT
+
+  RefCountedAccObjectVector objects;
+  // Find children using |AccessibleChildren|.
+  scoped_array<VARIANT> children(new VARIANT[child_count]);
+  long found_child_count;  // NOLINT
   if (FAILED(AccessibleChildren(accessible_, 0L, child_count,
-                                unscoped_children.get(),
-                                &actual_child_count))) {
+                                children.get(),
+                                &found_child_count))) {
     LOG(ERROR) << "Failed to get children of accessible object";
     return false;
   }
-  if (actual_child_count == 0)
-    return true;
-  // Convert the retrieved children array into an array of scoped children.
-  scoped_array<ScopedVariant> children(new ScopedVariant[child_count]);
-  for (int i = 0; i < child_count; ++i) {
-    children[i].Reset(unscoped_children[i]);
+  if (found_child_count > 0) {
+    for (int i = 0; i < found_child_count; i++) {
+      scoped_refptr<AccObject> obj = CreateFromVariant(this, children[i]);
+      if (obj)
+        objects.push_back(obj);
+      ::VariantClear(&children[i]);
+    }
   }
 
-  RefCountedAccObjectVector objects;
-  for (int i = 0; i < actual_child_count; i++) {
-    ScopedComPtr<IDispatch> dispatch;
-    if (children[i].type() == VT_I4) {
-      // According to MSDN, a server is allowed to return a full Accessibility
-      // object using the parent object and the child id. If get_accChild is
-      // called with the id, the server must return the actual IAccessible
-      // interface. Do that here to get an actual IAccessible interface if
-      // possible, since this class operates under the assumption that if the
-      // child id is not CHILDID_SELF, the object is a simple element. See the
-      // DCHECK in the constructor.
-      HRESULT result = accessible_->get_accChild(children[i],
-                                                 dispatch.Receive());
-      if (result == S_FALSE || result == E_NOINTERFACE) {
-        // The object in question really is a simple element. Add it.
-        objects.push_back(new AccObject(accessible_, V_I4(&children[i])));
-        continue;
-      } else if (FAILED(result)) {
-        DLOG(WARNING) << "Failed to determine if child id refers to a full "
-                      << "object. Error: " << result << std::endl
-                      << "Parent object: " << WideToUTF8(GetDescription())
-                      << std::endl << "Child ID: " << V_I4(&children[i]);
-        // Disregard this object.
-        continue;
+  // In some cases, there are more children which can be found only by using
+  // the deprecated |accNavigate| method. Many of the menus, such as
+  // 'Favorites', cannot be found in IE6 using |AccessibileChildren|. Here we
+  // attempt a best effort at finding some remaining children.
+  int remaining_child_count = child_count - found_child_count;
+  scoped_refptr<AccObject> child_object;
+  if (remaining_child_count > 0) {
+    GetFromNavigation(NAVDIR_FIRSTCHILD, &child_object);
+  }
+  while (remaining_child_count > 0 && child_object) {
+    // Add to the children list if this child was not found earlier.
+    bool already_found = false;
+    for (size_t i = 0; i < objects.size(); ++i) {
+      if (child_object->Equals(objects[i])) {
+        already_found = true;
+        break;
       }
-      // The object in question was actually a full object. It is saved in the
-      // |dispatch| arg and will be added down below.
-    } else if (children[i].type() == VT_DISPATCH) {
-      dispatch.Attach(V_DISPATCH(&children[i].Release()));
-    } else {
-      DLOG(WARNING) << "Unrecognizable child type, omitting from children";
-      continue;
     }
-
-    scoped_refptr<AccObject> child = CreateFromDispatch(dispatch.get());
-    if (child) {
-      objects.push_back(child);
-    } else {
-      LOG(ERROR) << "Failed to create AccObject from IDispatch";
-      return false;
+    if (!already_found) {
+      objects.push_back(child_object);
+      remaining_child_count--;
     }
+    scoped_refptr<AccObject> next_child_object;
+    child_object->GetFromNavigation(NAVDIR_NEXT, &next_child_object);
+    child_object = next_child_object;
   }
 
   client_objects->insert(client_objects->end(), objects.begin(), objects.end());
@@ -337,6 +325,42 @@ bool AccObject::GetChildCount(int* child_count) {
       return false;
     *child_count = static_cast<int>(long_child_count);
   }
+  return true;
+}
+
+bool AccObject::GetFromNavigation(long navigation_type,
+                                  scoped_refptr<AccObject>* object) {
+  DCHECK(object);
+  bool is_child_navigation = navigation_type == NAVDIR_FIRSTCHILD ||
+                             navigation_type == NAVDIR_LASTCHILD;
+  DCHECK(!is_child_navigation || !IsSimpleElement());
+  ScopedVariant object_variant;
+  HRESULT result = accessible_->accNavigate(navigation_type,
+                                            child_id_,
+                                            object_variant.Receive());
+  if (FAILED(result)) {
+    LOG(WARNING) << "Navigation from accessibility object failed";
+    return false;
+  }
+  if (result == S_FALSE || object_variant.type() == VT_EMPTY) {
+    // This indicates that there was no accessibility object found by the
+    // navigation.
+    return true;
+  }
+  AccObject* navigated_to_object;
+  if (!is_child_navigation && !IsSimpleElement()) {
+    scoped_refptr<AccObject> parent = GetParent();
+    if (!parent.get()) {
+      LOG(WARNING) << "Could not get parent for accessibiliy navigation";
+      return false;
+    }
+    navigated_to_object = CreateFromVariant(parent, object_variant);
+  } else {
+    navigated_to_object = CreateFromVariant(this, object_variant);
+  }
+  if (!navigated_to_object)
+    return false;
+  *object = navigated_to_object;
   return true;
 }
 
@@ -408,6 +432,40 @@ std::wstring AccObject::GetTree() {
     }
   }
   return string_stream.str();
+}
+
+// static
+AccObject* AccObject::CreateFromVariant(AccObject* object,
+                                        const VARIANT& variant) {
+  IAccessible* accessible = object->accessible_;
+  if (V_VT(&variant) == VT_I4) {
+    // According to MSDN, a server is allowed to return a full Accessibility
+    // object using the parent object and the child id. If get_accChild is
+    // called with the id, the server must return the actual IAccessible
+    // interface. Do that here to get an actual IAccessible interface if
+    // possible, since this class operates under the assumption that if the
+    // child id is not CHILDID_SELF, the object is a simple element. See the
+    // DCHECK in the constructor.
+    ScopedComPtr<IDispatch> dispatch;
+    HRESULT result = accessible->get_accChild(variant,
+                                              dispatch.Receive());
+    if (result == S_FALSE || result == E_NOINTERFACE) {
+      // The object in question really is a simple element.
+      return new AccObject(accessible, V_I4(&variant));
+    } else if (SUCCEEDED(result)) {
+      // The object in question was actually a full object.
+      return CreateFromDispatch(dispatch.get());
+    }
+    LOG(WARNING) << "Failed to determine if child id refers to a full "
+                  << "object. Error: " << result << std::endl
+                  << "Parent object: " << WideToUTF8(object->GetDescription())
+                  << std::endl << "Child ID: " << V_I4(&variant);
+    return NULL;
+  } else if (V_VT(&variant) == VT_DISPATCH) {
+    return CreateFromDispatch(V_DISPATCH(&variant));
+  }
+  LOG(WARNING) << "Unrecognizable child type";
+  return NULL;
 }
 
 bool AccObject::PostMouseButtonMessages(int button_up, int button_down) {
