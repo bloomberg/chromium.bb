@@ -6,8 +6,8 @@ body {
 
 #settings-title {
   -webkit-padding-end: 24px;
-  padding-top: 1em;
-  padding-bottom: 1em;
+  padding-top: 16px;
+  padding-bottom: 34px;
   text-align: end;
   font-size: 125%;
   font-weight: normal;
@@ -125,7 +125,7 @@ html[hide-menu=false] #navbar-container {
 }
 
 .navbar-item, .navbar-item2 {
-  padding: 0.5em 0;
+  padding: 7px 0;
   -webkit-padding-end: 24px;
   text-align: end;
   display: block;
@@ -138,8 +138,8 @@ html[hide-menu=false] #navbar-container {
                                left top,
                                right top,
                                from(#eaeef3),
-                               color-stop(0.97, #b4c8ea),
-                               to(#a2b5b4));
+                               color-stop(0.95, #b4c8ea),
+                               to(#9bacc5));
   font-weight: bold;
   color: black;
 }
