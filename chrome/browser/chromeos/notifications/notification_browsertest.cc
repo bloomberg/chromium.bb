@@ -588,10 +588,7 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestAddDOMUIMessageCallback) {
           &NotificationTest::HandleDOMUIMessage)));
 }
 
-// TODO(oshima, caseq): FAILS after r61174 (see http://crbug.com/57580)
-// Either this needs to be rewritten not to use data: url, or data: URLs
-// should be allowed to execute DOM bindings.
-IN_PROC_BROWSER_TEST_F(NotificationTest, FAILS_TestDOMUIMessageCallback) {
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestDOMUIMessageCallback) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   Profile* profile = browser()->profile();
   // a notification that sends 'test' domui message back to chrome.
