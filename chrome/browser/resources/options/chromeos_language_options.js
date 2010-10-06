@@ -172,11 +172,7 @@ cr.define('options', function() {
      */
     handleLanguageOptionsListChange_: function(e) {
       var languageOptionsList = $('language-options-list');
-      var index = languageOptionsList.selectionModel.selectedIndex;
-      if (index == -1)
-        return;
-
-      var languageCode = languageOptionsList.getLanguageCodes()[index];
+      var languageCode = languageOptionsList.getSelectedLanguageCode();
       this.updateSelectedLanguageName_(languageCode);
       this.updateUiLanguageButton_(languageCode);
       this.updateSpellCheckLanguageButton_(languageCode);
@@ -504,6 +500,9 @@ cr.define('options', function() {
     handleSpellCheckDictionaryPrefChange_: function(e) {
       var languageCode = e.value.value
       this.spellCheckDictionary_ = languageCode;
+      var languageOptionsList = $('language-options-list');
+      var selectedLanguageCode = languageOptionsList.getSelectedLanguageCode();
+      this.updateSpellCheckLanguageButton_(selectedLanguageCode);
     },
 
     /**
@@ -517,8 +516,6 @@ cr.define('options', function() {
       Preferences.setStringPref(this.spellCheckDictionaryPref,
                                 languageCode);
       chrome.send('spellCheckLanguageChange', [languageCode]);
-      this.spellCheckDictionary_ = languageCode;
-      this.updateSpellCheckLanguageButton_(languageCode)
     },
 
     /**
