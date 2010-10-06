@@ -1,5 +1,5 @@
 *.pyc
-/git-cl-repo
+/git_cl_repo
 /tests/pymox
 /tests/_trial
 /python
