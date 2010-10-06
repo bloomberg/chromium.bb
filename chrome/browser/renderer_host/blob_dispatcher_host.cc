@@ -78,7 +78,7 @@ void BlobDispatcherHost::OnRegisterBlobUrlFrom(
     const GURL& url, const GURL& src_url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   blob_storage_context_->controller()->RegisterBlobUrlFrom(url, src_url);
-  blob_urls_.insert(src_url.spec());
+  blob_urls_.insert(url.spec());
 }
 
 void BlobDispatcherHost::OnUnregisterBlobUrl(const GURL& url) {
