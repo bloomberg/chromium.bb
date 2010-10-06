@@ -94,6 +94,10 @@ cr.define('options', function() {
           chrome.send('themesGallery');
         }
       }
+
+      if (cr.isChromeOS) {
+        chrome.send('loadAccountPicture');
+      }
     },
 
     syncStatusCallback_: function(statusString) {
@@ -147,6 +151,10 @@ cr.define('options', function() {
   PersonalOptions.setClassicThemeButtonEnabled = function(enabled) {
     PersonalOptions.getInstance().setClassicThemeButtonEnabled_(enabled);
   };
+
+  PersonalOptions.setAccountPicture = function(image) {
+    $('account-picture').src = image;
+  }
 
   // Export
   return {

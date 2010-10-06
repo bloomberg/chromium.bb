@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/touchpad_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -115,6 +116,9 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
                              language_prefs::kXkbAutoRepeatDelayInMs);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbAutoRepeatInterval,
                              language_prefs::kXkbAutoRepeatIntervalInMs);
+
+  // Screen lock default to off.
+  prefs->RegisterBooleanPref(prefs::kEnableScreenLock, false);
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -181,6 +185,8 @@ void Preferences::Init(PrefService* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, this);
 
   labs_talk_enabled_.Init(prefs::kLabsTalkEnabled, prefs, this);
+
+  enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, this);
 
   // Initialize touchpad settings to what's saved in user preferences.
   NotifyPrefChanged(NULL);
@@ -342,6 +348,12 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   // Listen for explicit changes as ExtensionsService handles startup case.
   if (pref_name && *pref_name == prefs::kLabsTalkEnabled) {
     UpdateTalkApp();
+  }
+
+  // Init or update power manager config.
+  if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
+    CrosLibrary::Get()->GetPowerLibrary()->EnableScreenLock(
+        enable_screen_lock_.GetValue());
   }
 }
 

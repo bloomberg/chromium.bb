@@ -380,6 +380,9 @@ const char kLabsMediaplayerEnabled[] = "settings.labs.mediaplayer";
 const char kLabsTalkEnabled[] =
     "extensions.settings.ggnioahjipcehijkhpdjekioddnjoben.state";
 
+// A boolean pref that turns on screen locker.
+const char kEnableScreenLock[] = "settings.enable_screen_lock";
+
 #endif  // defined(OS_CHROMEOS)
 
 // The disabled messages in IPC logging.

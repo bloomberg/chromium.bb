@@ -188,6 +188,7 @@ void CrosMock::SetStatusAreaMocksExpectations() {
   SetInputMethodLibraryStatusAreaExpectations();
   SetNetworkLibraryStatusAreaExpectations();
   SetPowerLibraryStatusAreaExpectations();
+  SetPowerLibraryExpectations();
   SetTouchpadLibraryExpectations();
   SetSystemLibraryStatusAreaExpectations();
 }
@@ -334,6 +335,13 @@ void CrosMock::SetPowerLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_power_library_, RemoveObserver(_))
       .Times(1)
       .RetiresOnSaturation();
+}
+
+void CrosMock::SetPowerLibraryExpectations() {
+  // EnableScreenLock is currently bounded with a prefs value and thus is
+  // always called when loading
+  EXPECT_CALL(*mock_power_library_, EnableScreenLock(_))
+      .Times(AnyNumber());
 }
 
 void CrosMock::SetSpeechSynthesisLibraryExpectations() {

@@ -438,6 +438,8 @@
         'browser/chromeos/dom_ui/core_chromeos_options_handler.h',
         'browser/chromeos/dom_ui/cros_options_page_ui_handler.cc',
         'browser/chromeos/dom_ui/cros_options_page_ui_handler.h',
+        'browser/chromeos/dom_ui/cros_personal_options_handler.cc',
+        'browser/chromeos/dom_ui/cros_personal_options_handler.h',
         'browser/chromeos/dom_ui/imageburner_ui.cc',
         'browser/chromeos/dom_ui/imageburner_ui.h',
         'browser/chromeos/dom_ui/internet_options_handler.cc',
@@ -3291,10 +3293,10 @@
           ],
         }],
         ['touchui==1', {
-	  'sources/': [
-	    ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.cc'],
-	    ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
-	  ],
+          'sources/': [
+            ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.cc'],
+            ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
+          ],
         }],
         ['OS=="linux"', {
           'dependencies': [
@@ -3561,8 +3563,8 @@
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
             'browser/power_save_blocker_stub.cc',
-	    'browser/renderer_host/render_widget_host_view_views.cc',
-	    'browser/renderer_host/render_widget_host_view_views.h',
+            'browser/renderer_host/render_widget_host_view_views.cc',
+            'browser/renderer_host/render_widget_host_view_views.h',
             'browser/views/select_file_dialog.cc',
           ],
           'conditions': [

@@ -24,6 +24,8 @@ class MockPowerLibrary : public PowerLibrary {
   MOCK_CONST_METHOD0(battery_is_present, bool(void));
   MOCK_CONST_METHOD0(battery_time_to_empty, base::TimeDelta(void));
   MOCK_CONST_METHOD0(battery_time_to_full, base::TimeDelta(void));
+
+  MOCK_METHOD1(EnableScreenLock, void(bool));
 };
 
 }  // namespace chromeos

@@ -1,6 +1,22 @@
 <div class="page hidden" id="personalPage">
   <h1 i18n-content="personalPage"></h1>
 
+<if expr="pp_ifdef('chromeos')">
+  <section>
+    <h3 i18n-content="account"></h3>
+    <div>
+      <table class="option-control-table">
+        <tr><td>
+          <img id='account-picture' src='chrome://theme/IDR_LOGIN_DEFAULT_USER'>
+        </td><td>
+          <label><input id="enable-screen-lock"
+           pref="settings.enable_screen_lock" type="checkbox"><span
+           i18n-content="enable_screenlock"></span></label>
+        </td></tr>
+      </table>
+    </div>
+  </section>
+</if>
   <section>
     <h3 i18n-content="sync_section"></h3>
     <div>

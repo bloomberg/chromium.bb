@@ -8664,6 +8664,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ACCOUNTS_ADD_USERS" desc="In the Accounts settings tab, the label text above the user name edit box.">
         Add users
       </message>
+      <message name="IDS_OPTIONS_PERSONAL_ACCOUNT_GROUP_NAME" desc="In the Personal Stuff settings tab, the title text for Account section.">
+        Account
+      </message>
+      <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
+        Require password to wake from sleep
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings internet options, the label for the network id.">
         Network id:
       </message>

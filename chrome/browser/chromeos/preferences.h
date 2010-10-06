@@ -129,6 +129,8 @@ class Preferences : public NotificationObserver {
   // Labs preferences.
   IntegerPrefMember labs_talk_enabled_;
 
+  BooleanPrefMember enable_screen_lock_;
+
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };
 

@@ -77,6 +77,7 @@ class CrosMock {
   void SetInputMethodLibraryStatusAreaExpectations();
   void SetNetworkLibraryStatusAreaExpectations();
   void SetPowerLibraryStatusAreaExpectations();
+  void SetPowerLibraryExpectations();
   void SetSpeechSynthesisLibraryExpectations();
   void SetSystemLibraryStatusAreaExpectations();
   void SetSystemLibraryExpectations();
