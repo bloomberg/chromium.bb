@@ -98,6 +98,8 @@ void RunMessageLoop();
 void QuitMessageLoop();
 void RunAllPendingMessages();
 void DispatchMessageLoop();
+bool MessageLoopNestableTasksAllowed();
+void MessageLoopSetNestableTasksAllowed(bool allowed);
 WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
     CreateDevToolsMessageLoop();
 void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms);

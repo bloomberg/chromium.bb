@@ -345,6 +345,14 @@ void RunAllPendingMessages() {
   MessageLoop::current()->RunAllPending();
 }
 
+bool MessageLoopNestableTasksAllowed() {
+  return MessageLoop::current()->NestableTasksAllowed();
+}
+
+void MessageLoopSetNestableTasksAllowed(bool allowed) {
+  MessageLoop::current()->SetNestableTasksAllowed(allowed);
+}
+
 void DispatchMessageLoop() {
   MessageLoop* current = MessageLoop::current();
   bool old_state = current->NestableTasksAllowed();
