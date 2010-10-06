@@ -1020,6 +1020,8 @@ void WebPluginDelegateImpl::WindowlessPaint(HDC hdc,
   damage_rect_win.right  = damage_rect_win.left + damage_rect.width();
   damage_rect_win.bottom = damage_rect_win.top + damage_rect.height();
 
+  // Save away the old HDC as this could be a nested invocation.
+  void* old_dc = window_.window;
   window_.window = hdc;
 
   NPEvent paint_event;
@@ -1030,6 +1032,7 @@ void WebPluginDelegateImpl::WindowlessPaint(HDC hdc,
   static StatsRate plugin_paint("Plugin.Paint");
   StatsScope<StatsRate> scope(plugin_paint);
   instance()->NPP_HandleEvent(&paint_event);
+  window_.window = old_dc;
 }
 
 void WebPluginDelegateImpl::WindowlessSetWindow() {
