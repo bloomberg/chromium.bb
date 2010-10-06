@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <string>
 
 #include "base/logging.h"
@@ -67,12 +68,29 @@ void ChromeSystemResources::Log(
     LogLevel level, const char* file, int line,
     const char* format, ...) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  va_list ap;
-  va_start(ap, format);
-  std::string result;
-  StringAppendV(&result, format, ap);
-  logging::LogMessage(file, line).stream() << result;
-  va_end(ap);
+  logging::LogSeverity log_severity = logging::LOG_INFO;
+  switch (level) {
+    case INFO_LEVEL:
+      log_severity = logging::LOG_INFO;
+      break;
+    case WARNING_LEVEL:
+      log_severity = logging::LOG_WARNING;
+      break;
+    case ERROR_LEVEL:
+      log_severity = logging::LOG_ERROR;
+      break;
+  }
+  // We treat LOG(INFO) as VLOG(1).
+  if ((log_severity >= logging::GetMinLogLevel()) &&
+      ((log_severity != logging::LOG_INFO) ||
+       (1 <= logging::GetVlogLevelHelper(file, ::strlen(file))))) {
+    va_list ap;
+    va_start(ap, format);
+    std::string result;
+    StringAppendV(&result, format, ap);
+    logging::LogMessage(file, line, log_severity).stream() << result;
+    va_end(ap);
+  }
 }
 
 Task* ChromeSystemResources::MakeTaskToPost(

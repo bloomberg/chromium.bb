@@ -123,7 +123,9 @@ void RegistrationManager::OnRegister(
       // TODO(akalin): Add retry logic.  For now, just fall through.
     default:
       // Treat everything else as a permanent failure.
-      LOG(ERROR) << "Registration failed with code: " << code;
+      if (VLOG_IS_ON(1)) {
+        LOG(ERROR) << "Registration failed with code: " << code;
+      }
       break;
   }
 }

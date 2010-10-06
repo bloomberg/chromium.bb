@@ -19,6 +19,7 @@
 #endif
 
 #include <algorithm>
+#include <cstring>
 #include <functional>
 #include <iomanip>
 #include <iterator>
@@ -955,11 +956,6 @@ ScopedKernelLock::ScopedKernelLock(const Directory* dir)
 
 ///////////////////////////////////////////////////////////////////////////
 // Transactions
-#if defined LOG_ALL || !defined NDEBUG
-static const bool kLoggingInfo = true;
-#else
-static const bool kLoggingInfo = false;
-#endif
 
 void BaseTransaction::Lock() {
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -968,7 +964,10 @@ void BaseTransaction::Lock() {
 
   time_acquired_ = base::TimeTicks::Now();
   const base::TimeDelta elapsed = time_acquired_ - start_time;
-  if (kLoggingInfo && elapsed.InMilliseconds() > 200) {
+  if (LOG_IS_ON(INFO) &&
+      (1 <= logging::GetVlogLevelHelper(
+          source_file_, ::strlen(source_file_))) &&
+      (elapsed.InMilliseconds() > 200)) {
     logging::LogMessage(source_file_, line_, logging::LOG_INFO).stream()
       << name_ << " transaction waited "
       << elapsed.InSecondsF() << " seconds.";
@@ -1002,7 +1001,10 @@ bool BaseTransaction::NotifyTransactionChangingAndEnding(
 
   scoped_ptr<OriginalEntries> originals(originals_arg);
   const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
-  if (kLoggingInfo && elapsed.InMilliseconds() > 50) {
+  if (LOG_IS_ON(INFO) &&
+      (1 <= logging::GetVlogLevelHelper(
+          source_file_, ::strlen(source_file_))) &&
+      (elapsed.InMilliseconds() > 50)) {
     logging::LogMessage(source_file_, line_, logging::LOG_INFO).stream()
         << name_ << " transaction completed in " << elapsed.InSecondsF()
         << " seconds.";
