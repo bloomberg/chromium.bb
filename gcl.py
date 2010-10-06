@@ -1329,6 +1329,9 @@ def main(argv):
     print >> sys.stderr, 'Got an exception'
     print >> sys.stderr, str(e)
     return 1
+  except upload.ClientLoginError, e:
+    print >> sys.stderr, 'Got an exception logging in to Rietveld'
+    print >> sys.stderr, str(e)
   except urllib2.HTTPError, e:
     if e.code != 500:
       raise

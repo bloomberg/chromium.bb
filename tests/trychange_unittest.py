@@ -40,12 +40,12 @@ class TryChangeUnittest(TryChangeTestsBase):
   """General trychange.py tests."""
   def testMembersChanged(self):
     members = [
-      'EPILOG', 'EscapeDot', 'GIT', 'GuessVCS', 'GetMungedDiff',
-      'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PrintSuccess',
-      'SCM', 'SVN', 'TryChange', 'USAGE',
-      'breakpad', 'datetime', 'errno', 'gclient_utils', 'getpass', 'json',
-      'logging', 'optparse', 'os', 'posixpath', 're', 'scm', 'shutil', 'sys',
-      'tempfile', 'urllib',
+      'EPILOG', 'EscapeDot', 'GIT', 'GuessVCS', 'GetMungedDiff', 'HELP_STRING',
+      'InvalidScript', 'NoTryServerAccess', 'PrintSuccess', 'SCM', 'SVN',
+      'TryChange', 'USAGE',
+      'breakpad', 'datetime', 'errno', 'gcl', 'gclient_utils', 'getpass',
+      'json', 'logging', 'optparse', 'os', 'posixpath', 're', 'scm', 'shutil',
+      'sys', 'tempfile', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)

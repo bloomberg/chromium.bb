@@ -11,6 +11,7 @@ import breakpad
 
 import gclient_utils
 from scm import GIT
+import third_party.upload
 import trychange
 
 
@@ -51,10 +52,14 @@ if __name__ == '__main__':
       args.extend(['--rietveld_url', GetRietveldServerUrl()])
   # Hack around a limitation in logging.
   logging.getLogger().handlers = []
-  sys.exit(trychange.TryChange(
-    args, file_list=[], swallow_exception=False,
-    prog='git-try',
-    extra_epilog='\n'
-                  'git-try will diff against your tracked branch and will '
-                      'detect your rietveld\n'
-                  'code review if you are using git-cl\n'))
+  try:
+    sys.exit(trychange.TryChange(
+        args, file_list=[], swallow_exception=False,
+        prog='git-try',
+        extra_epilog='\n'
+                     'git-try will diff against your tracked branch and will '
+                     'detect your rietveld\n'
+                     'code review if you are using git-cl\n'))
+  except third_party.upload.ClientLoginError, e:
+    print('Got an exception while trying to log in to Rietveld.')
+    print(str(e))

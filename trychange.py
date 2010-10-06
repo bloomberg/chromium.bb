@@ -33,6 +33,11 @@ try:
 except ImportError:
   pass
 
+try:
+  import gcl
+except ImportError:
+  gcl = None
+
 import gclient_utils
 import scm
 
@@ -106,17 +111,21 @@ class SCM(object):
   def GetCodeReviewSetting(self, key):
     """Returns a value for the given key for this repository.
 
-    Uses gcl-style settings from the repository."""
-    if self.codereview_settings is None:
-      self.codereview_settings = {}
-      settings_file = self.ReadRootFile(self.codereview_settings_file)
-      if settings_file:
-        for line in settings_file.splitlines():
-          if not line or line.lstrip().startswith('#'):
-            continue
-          k, v = line.split(":", 1)
-          self.codereview_settings[k.strip()] = v.strip()
-    return self.codereview_settings.get(key, '')
+    Uses gcl-style settings from the repository.
+    """
+    if gcl:
+      return gcl.GetCodeReviewSetting(key)
+    else:
+      if self.codereview_settings is None:
+        self.codereview_settings = {}
+        settings_file = self.ReadRootFile(self.codereview_settings_file)
+        if settings_file:
+          for line in settings_file.splitlines():
+            if not line or line.lstrip().startswith('#'):
+              continue
+            k, v = line.split(":", 1)
+            self.codereview_settings[k.strip()] = v.strip()
+      return self.codereview_settings.get(key, '')
 
   def _GclStyleSettings(self):
     """Set default settings based on the gcl-style settings from the
