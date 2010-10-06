@@ -23,7 +23,7 @@ class ShaderTranslator {
 
   // Initializes the translator.
   // Must be called once before using the translator object.
-  bool Init(EShLanguage language, const TBuiltInResource* resources);
+  bool Init(ShShaderType shader_type, const ShBuiltInResources* resources);
   // Translates the given shader source.
   // Returns true if translation is successful, false otherwise.
   bool Translate(const char* shader);

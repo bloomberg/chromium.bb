@@ -18,11 +18,11 @@ class ShaderTranslatorTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    TBuiltInResource resources;
-    ShInitBuiltInResource(&resources);
+    ShBuiltInResources resources;
+    ShInitBuiltInResources(&resources);
 
-    ASSERT_TRUE(vertex_translator_.Init(EShLangVertex, &resources));
-    ASSERT_TRUE(fragment_translator_.Init(EShLangFragment, &resources));
+    ASSERT_TRUE(vertex_translator_.Init(SH_VERTEX_SHADER, &resources));
+    ASSERT_TRUE(fragment_translator_.Init(SH_FRAGMENT_SHADER, &resources));
     // Post-init the results must be empty.
     // Vertex translator results.
     EXPECT_TRUE(vertex_translator_.translated_shader() == NULL);

@@ -22,7 +22,7 @@ bool InitializeShaderTranslator() {
 }
 
 using gpu::gles2::ShaderTranslator;
-void GetVariableInfo(ShHandle compiler, EShInfo var_type,
+void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
                      ShaderTranslator::VariableMap* var_map) {
   int name_len = 0;
   switch (var_type) {
@@ -41,7 +41,7 @@ void GetVariableInfo(ShHandle compiler, EShInfo var_type,
   ShGetInfo(compiler, var_type, &num_vars);
   for (int i = 0; i < num_vars; ++i) {
     int size = 0;
-    EShDataType type = SH_NONE;
+    ShDataType type = SH_NONE;
 
     switch (var_type) {
       case SH_ACTIVE_ATTRIBUTES:
@@ -72,17 +72,17 @@ ShaderTranslator::~ShaderTranslator() {
     ShDestruct(compiler_);
 }
 
-bool ShaderTranslator::Init(EShLanguage language,
-                            const TBuiltInResource* resources) {
+bool ShaderTranslator::Init(ShShaderType shader_type,
+                            const ShBuiltInResources* resources) {
   // Make sure Init is called only once.
   DCHECK(compiler_ == NULL);
-  DCHECK(language == EShLangVertex || language == EShLangFragment);
+  DCHECK(shader_type == SH_FRAGMENT_SHADER || shader_type == SH_VERTEX_SHADER);
   DCHECK(resources != NULL);
 
   if (!InitializeShaderTranslator())
     return false;
 
-  compiler_ = ShConstructCompiler(language, EShSpecGLES2, resources);
+  compiler_ = ShConstructCompiler(shader_type, SH_GLES2_SPEC, resources);
   return compiler_ != NULL;
 }
 
@@ -93,7 +93,7 @@ bool ShaderTranslator::Translate(const char* shader) {
   ClearResults();
 
   bool success = false;
-  int compile_options = EShOptObjectCode | EShOptAttribsUniforms;
+  int compile_options = SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS;
   if (ShCompile(compiler_, &shader, 1, compile_options)) {
     success = true;
     // Get translated shader.

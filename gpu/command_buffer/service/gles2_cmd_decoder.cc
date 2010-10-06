@@ -1906,8 +1906,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   }
 
   if (use_shader_translator_) {
-    TBuiltInResource resources;
-    ShInitBuiltInResource(&resources);
+    ShBuiltInResources resources;
+    ShInitBuiltInResources(&resources);
     resources.MaxVertexAttribs = group_->max_vertex_attribs();
     resources.MaxVertexUniformVectors =
         group_->max_vertex_uniform_vectors();
@@ -1922,13 +1922,13 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
     resources.OES_standard_derivatives =
         feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
     vertex_translator_.reset(new ShaderTranslator);
-    if (!vertex_translator_->Init(EShLangVertex, &resources)) {
+    if (!vertex_translator_->Init(SH_VERTEX_SHADER, &resources)) {
         LOG(ERROR) << "Could not initialize vertex shader translator.";
         Destroy();
         return false;
     }
     fragment_translator_.reset(new ShaderTranslator);
-    if (!fragment_translator_->Init(EShLangFragment, &resources)) {
+    if (!fragment_translator_->Init(SH_FRAGMENT_SHADER, &resources)) {
         LOG(ERROR) << "Could not initialize fragment shader translator.";
         Destroy();
         return false;
