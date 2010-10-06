@@ -251,6 +251,10 @@ void DevToolsWindow::SetAttachedWindow() {
 
 
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
+  if (inspected_tab_) {
+    FundamentalValue tabId(inspected_tab_->controller().session_id().id());
+    CallClientFunction(L"WebInspector.setInspectedTabId", tabId);
+  }
   ListValue results;
   const ExtensionsService* extension_service = tab_contents_->profile()->
       GetOriginalProfile()->GetExtensionsService();
