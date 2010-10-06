@@ -9,9 +9,13 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
+#if defined(OS_CHROMEOS)
+// Tabs fails on ChromeOS.
+// http://crbug.com/58229
+#define MAYBE_Tabs FAILS_Tabs
+#elif defined(OS_MACOSX)
 // Tabs appears to timeout, or maybe crash on mac.
 // http://crbug.com/53779
-#if defined(OS_MACOSX)
 #define MAYBE_Tabs FAILS_Tabs
 #else
 #define MAYBE_Tabs Tabs
