@@ -11,6 +11,7 @@
 #include "chrome/browser/download/download_file_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -22,7 +23,8 @@
 
 class MockDownloadManager : public DownloadManager {
  public:
-  MockDownloadManager() : DownloadManager(NULL) {
+  explicit MockDownloadManager(DownloadStatusUpdater* updater)
+      : DownloadManager(updater) {
   }
 
   // Override some functions.
@@ -34,7 +36,7 @@ class DownloadManagerTest : public testing::Test {
  public:
   DownloadManagerTest()
       : profile_(new TestingProfile()),
-        download_manager_(new MockDownloadManager()),
+        download_manager_(new MockDownloadManager(&download_status_updater_)),
         ui_thread_(ChromeThread::UI, &message_loop_) {
     download_manager_->Init(profile_.get());
   }
@@ -53,6 +55,7 @@ class DownloadManagerTest : public testing::Test {
   }
 
  protected:
+  DownloadStatusUpdater download_status_updater_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;

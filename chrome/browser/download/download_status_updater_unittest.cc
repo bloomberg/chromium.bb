@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_status_updater_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -12,16 +13,20 @@ namespace {
 class MockDelegate : public DownloadStatusUpdaterDelegate {
  public:
   explicit MockDelegate(DownloadStatusUpdater* updater)
-      : updater_(updater),
+      : updater_(updater->AsWeakPtr()),
         is_download_progress_known_(true),
         in_progress_download_count_(0),
         received_bytes_(0),
         total_bytes_(0) {
-    updater_->AddDelegate(this);
+    EXPECT_TRUE(updater);
+    if (updater_)
+      updater_->AddDelegate(this);
   }
 
   ~MockDelegate() {
-    updater_->RemoveDelegate(this);
+    EXPECT_TRUE(updater_);
+    if (updater_)
+      updater_->RemoveDelegate(this);
   }
 
   // Overriden from DownloadStatusUpdaterDelegate:
@@ -58,7 +63,7 @@ class MockDelegate : public DownloadStatusUpdaterDelegate {
   }
 
  private:
-  DownloadStatusUpdater* updater_;
+  base::WeakPtr<DownloadStatusUpdater> updater_;
 
   bool is_download_progress_known_;
   int64 in_progress_download_count_;

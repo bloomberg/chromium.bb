@@ -12,7 +12,6 @@ DownloadStatusUpdater::DownloadStatusUpdater() {
 }
 
 DownloadStatusUpdater::~DownloadStatusUpdater() {
-  DCHECK(delegates_.empty());
 }
 
 void DownloadStatusUpdater::AddDelegate(
@@ -37,18 +36,15 @@ void DownloadStatusUpdater::Update() {
 bool DownloadStatusUpdater::GetProgress(float* progress) {
   *progress = 0;
 
-  bool progress_known = true;
   int64 received_bytes = 0;
   int64 total_bytes = 0;
   for (DelegateSet::iterator i = delegates_.begin();
        i != delegates_.end(); ++i) {
-    progress_known = progress_known && (*i)->IsDownloadProgressKnown();
+    if (!(*i)->IsDownloadProgressKnown())
+      return false;
     received_bytes += (*i)->GetReceivedDownloadBytes();
     total_bytes += (*i)->GetTotalDownloadBytes();
   }
-
-  if (!progress_known)
-    return false;
 
   if (total_bytes > 0)
     *progress = static_cast<float>(received_bytes) / total_bytes;

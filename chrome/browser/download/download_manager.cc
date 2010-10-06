@@ -54,7 +54,7 @@ DownloadManager::DownloadManager(DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),
       profile_(NULL),
       file_manager_(NULL),
-      status_updater_(status_updater) {
+      status_updater_(status_updater->AsWeakPtr()) {
   if (status_updater_)
     status_updater_->AddDelegate(this);
 }

@@ -39,6 +39,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_status_updater_delegate.h"
 #include "chrome/browser/shell_dialogs.h"
@@ -341,7 +342,7 @@ class DownloadManager
   DownloadFileManager* file_manager_;
 
   // Non-owning pointer for updating the download status.
-  DownloadStatusUpdater* status_updater_;
+  base::WeakPtr<DownloadStatusUpdater> status_updater_;
 
   // The user's last choice for download directory. This is only used when the
   // user wants us to prompt for a save location for each download.

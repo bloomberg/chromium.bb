@@ -9,11 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/weak_ptr.h"
 
 class DownloadStatusUpdaterDelegate;
 
 // Keeps track of download progress for the entire browser.
-class DownloadStatusUpdater {
+class DownloadStatusUpdater
+    : public base::SupportsWeakPtr<DownloadStatusUpdater> {
  public:
   DownloadStatusUpdater();
   ~DownloadStatusUpdater();
