@@ -2,6 +2,8 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
+confdir=@confdir@
+cachedir=@fc_cachedir@
 
 Name: Fontconfig
 Description: Font configuration and customization library
