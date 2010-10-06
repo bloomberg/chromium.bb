@@ -13,9 +13,12 @@ Usage:
 3. python update_expectations_from_dashboard.py path/to/local/file
 """
 
+import copy
 import logging
 import os
 import sys
+import re
+from expectations_line import ExpectationsLine
 
 #
 # Find the WebKit python directories and add them to the PYTHONPATH
@@ -309,6 +312,18 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                 updates = [candidate]
         return updates
 
+    def _merge(self, expectations):
+        result = []
+        for expectation in expectations:
+            if not len(result):
+                result.append(expectation)
+            elif result[-1].can_merge(expectation):
+                result[-1].merge(expectation)
+            else:
+                result.append(expectation)
+
+        return result
+
     def update_based_on_json(self, update_json):
         """Updates the expectations based on the update_json, which is of the
         following form:
@@ -317,6 +332,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
           "WIN RELEASE": {"extra": "FAIL"}
         }}
         """
+        unused = copy.deepcopy(update_json)
         output = []
 
         comment_lines = []
@@ -348,6 +364,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                 platform, build_type = build_info.lower().split(' ')
                 if platform in platforms and build_type in build_types:
                     has_updates_for_this_line = True
+                    del(unused[test][build_info])
 
             # If the updates for this test don't apply for the platforms /
             # build-types listed in this line, then output the line unmodified.
@@ -373,6 +390,19 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
                 comment_lines, test, deduped_updates)
         # Append any comment/whitespace lines at the end of test_expectations.
         output.extend(comment_lines)
+
+        new_expectations = []
+        for test in unused:
+            for build_info in unused[test]:
+                if 'missing' in unused[test][build_info]:
+                    new_expectations.append(ExpectationsLine("BUG_AUTO %s : %s = %s\n" % (build_info, test, unused[test][build_info]['missing'])))
+
+        new_expectations = self._merge(self._merge(new_expectations))
+
+        if len(new_expectations):
+            output += ["\n"]
+            output += [str(x) + "\n" for x in new_expectations]
+
         return "".join(output)
 
     def _write_updates(self, output, comment_lines, test, updates):
@@ -479,7 +509,6 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
         line = line + [":", test, "="] + expectations
         self._write_completed_lines(output, comment_lines,
                                     " ".join(line) + "\n")
-
 
 def main():
     logging.basicConfig(level=logging.INFO,
