@@ -131,6 +131,35 @@ TEST_P(FullTabUITest, FLAKY_CtrlN) {
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
 
+// Test that Ctrl+F opens the Find dialog.
+TEST_P(FullTabUITest, FLAKY_CtrlF) {
+  bool is_cf = GetParam().invokes_cf();
+  if (!is_cf) {
+    LOG(ERROR) << "Test not implemented for this configuration.";
+    return;
+  }
+  server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
+  MockWindowObserver win_observer_mock;
+  InSequence expect_in_sequence_for_scope;
+
+  const char* kFindDialogCaption = "Find";
+  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
+      .WillOnce(testing::DoAll(
+          WatchWindow(&win_observer_mock, kFindDialogCaption),
+          SetFocusToRenderer(&ie_mock_),
+          DelaySendChar(&loop_, 1500, 'f', simulate_input::CONTROL)));
+
+  // Watch for find dialog. It appears that the window close message cannot be
+  // reliably delivered immediately upon receipt of the window open event.
+  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+      .WillOnce(DelayDoCloseWindow(500));
+
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(GetSimplePageUrl());
+}
+
 // Test that ctrl+r does cause a refresh.
 TEST_P(FullTabUITest, FLAKY_CtrlR) {
   InSequence expect_in_sequence_for_scope;
