@@ -28,8 +28,6 @@ class SimpleFileSystem : public WebKit::WebFileSystem {
                     WebKit::WebFileSystemCallbacks* callbacks);
   virtual void remove(const WebKit::WebString& path,
                       WebKit::WebFileSystemCallbacks* callbacks);
-  virtual void removeRecursively(const WebKit::WebString& path,
-                                 WebKit::WebFileSystemCallbacks* callbacks);
   virtual void readMetadata(const WebKit::WebString& path,
                             WebKit::WebFileSystemCallbacks* callbacks);
   virtual void createFile(const WebKit::WebString& path,

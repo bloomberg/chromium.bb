@@ -67,11 +67,10 @@ bool FileSystemDispatcher::Copy(
 
 bool FileSystemDispatcher::Remove(
     const FilePath& path,
-    bool recursive,
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   int request_id = dispatchers_.Add(dispatcher);
   return ChildThread::current()->Send(
-      new ViewHostMsg_FileSystem_Remove(request_id, path, recursive));
+      new ViewHostMsg_FileSystem_Remove(request_id, path));
 }
 
 bool FileSystemDispatcher::ReadMetadata(
@@ -220,3 +219,4 @@ void FileSystemDispatcher::DidWrite(
   if (complete)
     dispatchers_.Remove(request_id);
 }
+

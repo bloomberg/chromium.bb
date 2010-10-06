@@ -711,7 +711,7 @@ bool PepperPluginDelegateImpl::Delete(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Remove(path, false /* recursive */, dispatcher);
+  return file_system_dispatcher->Remove(path, dispatcher);
 }
 
 bool PepperPluginDelegateImpl::Rename(

@@ -45,6 +45,9 @@ class FileSystemOperation {
   void Copy(const FilePath& src_path,
             const FilePath& dest_path);
 
+  // If |dest_path| exists and is a directory, behavior is unspecified or
+  // varies for different platforms. TODO(kkanetkar): Fix this as per spec
+  // when it is addressed in spec.
   void Move(const FilePath& src_path,
             const FilePath& dest_path);
 
@@ -56,7 +59,7 @@ class FileSystemOperation {
 
   void ReadDirectory(const FilePath& path);
 
-  void Remove(const FilePath& path, bool recursive);
+  void Remove(const FilePath& path);
 
   void Write(const FilePath& path, const GURL& blob_url, int64 offset);
 
