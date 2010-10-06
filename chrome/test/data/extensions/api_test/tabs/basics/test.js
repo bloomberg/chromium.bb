@@ -151,7 +151,7 @@ chrome.test.runTests([
           assertEq(false, tabs[2].selected);
           // Select tab[2].
           chrome.tabs.update(tabs[2].id,
-			     {selected: true},
+                             {selected: true},
                              pass(function(tab2){
             // Check update of tab[2].
             chrome.test.assertEq(true, tab2.selected);
@@ -415,13 +415,13 @@ chrome.test.runTests([
 
   function windowCreate() {
     chrome.windows.create({type: "popup"}, pass(function(window) {
-      assertEq(window.type, "popup");
+      assertEq("popup", window.type);
       assertTrue(!window.incognito);
     }));
     chrome.windows.create({incognito: true}, pass(function(window) {
       // This extension is not incognito-enabled, so it shouldn't be able to
       // see the incognito window.
-      assertEq(window, null);
+      assertEq(null, window);
     }));
   },
 
@@ -429,7 +429,7 @@ chrome.test.runTests([
     chrome.test.listenOnce(chrome.windows.onCreated, function(window) {
       assertTrue(window.width > 0);
       assertTrue(window.height > 0);
-      assertEq(window.type, "normal");
+      assertEq("normal", window.type);
       assertTrue(!window.incognito);
       windowEventsWindow = window;
       chrome.tabs.getAllInWindow(window.id, pass(function(tabs) {
