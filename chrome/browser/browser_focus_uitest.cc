@@ -705,27 +705,33 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
 // Makes sure the focus is in the right location when opening the different
 // types of tabs.
-// Flaky, http://crbug.com/50763.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabInitialFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   // Open the history tab, focus should be on the tab contents.
   browser()->ShowHistoryTab();
-  ui_test_utils::RunAllPendingInMessageLoop();
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
+      &browser()->GetSelectedTabContents()->controller()));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open the new tab, focus should be on the location bar.
   browser()->NewTab();
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
+      &browser()->GetSelectedTabContents()->controller()));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Open the download tab, focus should be on the tab contents.
   browser()->ShowDownloadsTab();
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
+      &browser()->GetSelectedTabContents()->controller()));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
   // Open about:blank, focus should be on the location bar.
   browser()->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
                                    PageTransition::LINK);
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::WaitForLoadStop(
+      &browser()->GetSelectedTabContents()->controller()));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 }
 
 // Tests that focus goes where expected when using reload.
