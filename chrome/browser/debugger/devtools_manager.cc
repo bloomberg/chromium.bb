@@ -11,8 +11,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/child_process_security_policy.h"
-#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
+#include "chrome/browser/debugger/devtools_netlog_observer.h"
+#include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -386,6 +388,13 @@ void DevToolsManager::BindClientHost(
   DCHECK(client_host_to_inspected_rvh_.find(client_host) ==
       client_host_to_inspected_rvh_.end());
 
+  if (client_host_to_inspected_rvh_.empty()) {
+    ChromeThread::PostTask(
+        ChromeThread::IO,
+        FROM_HERE,
+        NewRunnableFunction(&DevToolsNetLogObserver::Attach,
+                            g_browser_process->io_thread()));
+  }
   inspected_rvh_to_client_host_[inspected_rvh] = client_host;
   client_host_to_inspected_rvh_[client_host] = inspected_rvh;
   runtime_properties_map_[inspected_rvh] = runtime_properties;
@@ -401,4 +410,11 @@ void DevToolsManager::UnbindClientHost(RenderViewHost* inspected_rvh,
   inspected_rvh_to_client_host_.erase(inspected_rvh);
   client_host_to_inspected_rvh_.erase(client_host);
   runtime_properties_map_.erase(inspected_rvh);
+
+  if (client_host_to_inspected_rvh_.empty()) {
+    ChromeThread::PostTask(
+        ChromeThread::IO,
+        FROM_HERE,
+        NewRunnableFunction(&DevToolsNetLogObserver::Detach));
+  }
 }

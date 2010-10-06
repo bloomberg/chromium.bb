@@ -266,6 +266,40 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::LoadTimingInfo> {
   }
 };
 
+template <>
+struct ParamTraits<
+    scoped_refptr<webkit_glue::ResourceLoaderBridge::DevToolsInfo> > {
+  typedef scoped_refptr<webkit_glue::ResourceLoaderBridge::DevToolsInfo>
+      param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.get() != NULL);
+    if (p.get()) {
+      WriteParam(m, p->request_headers);
+      WriteParam(m, p->response_headers);
+    }
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    bool has_object;
+    if (!ReadParam(m, iter, &has_object))
+        return false;
+    if (!has_object)
+        return true;
+    *r = new webkit_glue::ResourceLoaderBridge::DevToolsInfo();
+    return
+        ReadParam(m, iter, &(*r)->request_headers) &&
+        ReadParam(m, iter, &(*r)->response_headers);
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
+    if (p) {
+      LogParam(p->request_headers, l);
+      l->append(", ");
+      LogParam(p->response_headers, l);
+    }
+    l->append(")");
+  }
+};
+
 // Traits for webkit_glue::ResourceLoaderBridge::ResponseInfo
 template <>
 struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
@@ -283,6 +317,7 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     WriteParam(m, p.connection_id);
     WriteParam(m, p.connection_reused);
     WriteParam(m, p.load_timing);
+    WriteParam(m, p.devtools_info);
     WriteParam(m, p.download_file_path);
     WriteParam(m, p.was_fetched_via_spdy);
     WriteParam(m, p.was_npn_negotiated);
@@ -303,6 +338,7 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
         ReadParam(m, iter, &r->connection_id) &&
         ReadParam(m, iter, &r->connection_reused) &&
         ReadParam(m, iter, &r->load_timing) &&
+        ReadParam(m, iter, &r->devtools_info) &&
         ReadParam(m, iter, &r->download_file_path) &&
         ReadParam(m, iter, &r->was_fetched_via_spdy) &&
         ReadParam(m, iter, &r->was_npn_negotiated) &&
@@ -334,6 +370,8 @@ struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
     LogParam(p.connection_reused, l);
     l->append(", ");
     LogParam(p.load_timing, l);
+    l->append(", ");
+    LogParam(p.devtools_info, l);
     l->append(", ");
     LogParam(p.download_file_path, l);
     l->append(", ");

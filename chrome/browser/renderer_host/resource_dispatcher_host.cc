@@ -457,6 +457,15 @@ void ResourceDispatcherHost::BeginRequest(
   } else if (request_data.resource_type == ResourceType::SUB_FRAME) {
     load_flags |= net::LOAD_SUB_FRAME;
   }
+  // Raw headers are sensitive, as they inclide Cookie/Set-Cookie, so only
+  // allow requesting them if requestor has ReadRawCookies permission.
+  if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
+      && !ChildProcessSecurityPolicy::GetInstance()->
+              CanReadRawCookies(child_id)) {
+    LOG(INFO) << "Denied unathorized request for raw headers";
+    load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
+  }
+
   request->set_load_flags(load_flags);
   request->set_context(context);
   request->set_priority(DetermineRequestPriority(request_data.resource_type));

@@ -17,6 +17,9 @@
 #ifndef WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_
 #define WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_
 
+#include <utility>
+#include <vector>
+
 #include "build/build_config.h"
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -24,7 +27,9 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/resource_type.h"
@@ -147,6 +152,13 @@ class ResourceLoaderBridge {
     int32 receive_headers_end;
   };
 
+  struct DevToolsInfo : base::RefCounted<DevToolsInfo> {
+    typedef std::vector<std::pair<std::string, std::string> >
+        HeadersVector;
+    HeadersVector request_headers;
+    HeadersVector response_headers;
+  };
+
   struct ResponseInfo {
     ResponseInfo();
     ~ResponseInfo();
@@ -193,6 +205,11 @@ class ResourceLoaderBridge {
     // Detailed timing information used by the WebTiming, HAR and Developer
     // Tools.
     LoadTimingInfo load_timing;
+
+    // Actual request and response headers, as obtained from the network stack.
+    // Only present if request had LOAD_REPORT_RAW_HEADERS in load_flags, and
+    // requesting renderer had CanReadRowCookies permission.
+    scoped_refptr<DevToolsInfo> devtools_info;
 
     // The path to a file that will contain the response body.  It may only
     // contain a portion of the response body at the time that the ResponseInfo

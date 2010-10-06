@@ -41,6 +41,10 @@ class NetLogHttpRequestParameter : public NetLog::EventParameters {
     return dict;
   }
 
+  const HttpRequestHeaders& GetHeaders() const {
+    return headers_;
+  }
+
  private:
   ~NetLogHttpRequestParameter() {}
 
@@ -70,6 +74,10 @@ class NetLogHttpResponseParameter : public NetLog::EventParameters {
     }
     dict->Set("headers", headers);
     return dict;
+  }
+
+  const HttpResponseHeaders& GetHeaders() const {
+    return *headers_;
   }
 
  private:

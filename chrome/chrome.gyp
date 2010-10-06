@@ -552,6 +552,8 @@
         'browser/debugger/devtools_http_protocol_handler.h',
         'browser/debugger/devtools_manager.cc',
         'browser/debugger/devtools_manager.h',
+        'browser/debugger/devtools_netlog_observer.cc',
+        'browser/debugger/devtools_netlog_observer.h',
         'browser/debugger/devtools_protocol_handler.cc',
         'browser/debugger/devtools_protocol_handler.h',
         'browser/debugger/devtools_remote.h',

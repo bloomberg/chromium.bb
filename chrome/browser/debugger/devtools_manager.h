@@ -13,14 +13,18 @@
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/common/devtools_messages.h"
+#include "webkit/glue/resource_loader_bridge.h"
 
 namespace IPC {
 class Message;
 }
 
+class DevToolsNetLogObserver;
 class GURL;
+class IOThread;
 class PrefService;
 class RenderViewHost;
+using webkit_glue::ResourceLoaderBridge;
 
 // This class is a singleton that manages DevToolsClientHost instances and
 // routes messages between developer tools clients and agents.

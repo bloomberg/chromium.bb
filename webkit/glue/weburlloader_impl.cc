@@ -18,6 +18,7 @@
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebResourceRawHeaders.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
@@ -36,6 +37,7 @@ using base::TimeDelta;
 using WebKit::WebData;
 using WebKit::WebHTTPBody;
 using WebKit::WebHTTPHeaderVisitor;
+using WebKit::WebResourceRawHeaders;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -163,6 +165,8 @@ bool GetInfoFromDataURL(const GURL& url,
   return false;
 }
 
+typedef ResourceLoaderBridge::DevToolsInfo::HeadersVector HeadersVector;
+
 void PopulateURLResponse(
     const GURL& url,
     const ResourceLoaderBridge::ResponseInfo& info,
@@ -202,6 +206,25 @@ void PopulateURLResponse(
   timing.setSendEnd(timing_info.send_end);
   timing.setReceiveHeadersEnd(timing_info.receive_headers_end);
   response->setLoadTiming(timing);
+
+  if (info.devtools_info.get()) {
+    WebResourceRawHeaders rawHeaders;
+
+    const HeadersVector& request_headers = info.devtools_info->request_headers;
+    for (HeadersVector::const_iterator it = request_headers .begin();
+         it != request_headers.end(); ++it) {
+      rawHeaders.addRequestHeader(WebString::fromUTF8(it->first),
+          WebString::fromUTF8(it->second));
+    }
+    const HeadersVector& response_headers =
+        info.devtools_info->response_headers;
+    for (HeadersVector::const_iterator it = response_headers.begin();
+         it != response_headers.end(); ++it) {
+      rawHeaders.addResponseHeader(WebString::fromUTF8(it->first),
+          WebString::fromUTF8(it->second));
+    }
+    response->setResourceRawHeaders(rawHeaders);
+  }
 
   const net::HttpResponseHeaders* headers = info.headers;
   if (!headers)
@@ -364,6 +387,8 @@ void WebURLLoaderImpl::Context::Start(
     load_flags |= net::LOAD_ENABLE_UPLOAD_PROGRESS;
   if (request.reportLoadTiming())
     load_flags |= net::LOAD_ENABLE_LOAD_TIMING;
+  if (request.reportRawHeaders())
+    load_flags |= net::LOAD_REPORT_RAW_HEADERS;
 
   if (!request.allowCookies() || !request.allowStoredCredentials()) {
     load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
@@ -372,7 +397,6 @@ void WebURLLoaderImpl::Context::Start(
 
   if (!request.allowStoredCredentials())
     load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
-
 
   // TODO(jcampan): in the non out-of-process plugin case the request does not
   // have a requestor_pid. Find a better place to set this.
