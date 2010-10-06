@@ -181,8 +181,11 @@ void DOMUIMenuWidget::OnSizeAllocate(GtkWidget* widget,
 
 gboolean MapToFocus(GtkWidget* widget, GdkEvent* event, gpointer data) {
   DOMUIMenuWidget* menu_widget = DOMUIMenuWidget::FindDOMUIMenuWidget(widget);
-  if (menu_widget)
-    menu_widget->EnableInput(false);
+  if (menu_widget) {
+    // See EnableInput for the meaning of data.
+    bool select_item = data != NULL;
+    menu_widget->EnableInput(select_item);
+  }
   return true;
 }
 
@@ -200,12 +203,12 @@ void DOMUIMenuWidget::EnableInput(bool select_item) {
   ClearGrabWidget();
 
   if (!GTK_WIDGET_REALIZED(target)) {
-    // Try again if the widget is not yet realized.
-    // This happens only for root which tries to open & grab input.
-    DCHECK(is_root_);
-    DCHECK(!select_item);
+    // Wait grabbing widget if the widget is not yet realized.
+    // Using data as a flag. |select_item| is false if data is NULL,
+    // or true otherwise.
     g_signal_connect(G_OBJECT(target), "map-event",
-                     G_CALLBACK(&MapToFocus), NULL);
+                     G_CALLBACK(&MapToFocus),
+                     select_item ? this : NULL);
     return;
   }
 
