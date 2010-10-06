@@ -57,6 +57,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/registry_controlled_domain.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/database_util.h"
 
@@ -164,10 +165,21 @@ bool IsGalleryDownloadURL(const GURL& download_url) {
   std::string command_line_gallery_url =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAppsGalleryURL);
-  if (!command_line_gallery_url.empty() &&
-      StartsWithASCII(download_url.spec(),
-                      command_line_gallery_url, false))
-    return true;
+  if (!command_line_gallery_url.empty()) {
+    if (StartsWithASCII(download_url.spec(), command_line_gallery_url, false))
+      return true;
+
+    // When using the command-line gallery switch, be a bit more lenient with
+    // the check and allow hosts that match the root host.
+    std::string download_domain =
+        net::RegistryControlledDomainService::GetDomainAndRegistry(
+            download_url);
+    std::string command_line_domain =
+        net::RegistryControlledDomainService::GetDomainAndRegistry(
+            GURL(command_line_gallery_url));
+    if (download_domain == command_line_domain)
+      return true;
+  }
 
   return false;
 }
@@ -503,6 +515,9 @@ void ExtensionsServiceBackend::ReloadExtensionManifests(
 // static
 bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
                                               const GURL& referrer_url) {
+  if (referrer_url.is_empty() || !referrer_url.is_valid())
+    return false;
+
   if (!IsGalleryDownloadURL(download_url))
     return false;
 
@@ -518,10 +533,24 @@ bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
   std::string command_line_gallery_url =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kAppsGalleryURL);
-  if (!command_line_gallery_url.empty() &&
-      StartsWithASCII(referrer_url.spec(),
-                      command_line_gallery_url, false))
-    return true;
+  if (!command_line_gallery_url.empty()) {
+    if (StartsWithASCII(referrer_url.spec(), command_line_gallery_url, false))
+      return true;
+
+    // When using the command-line gallery switch, be a bit more lenient with
+    // the check and allow hosts that match the root host.
+    // TODO(erikkay) On test galleries, the current config sometimes leaves us
+    // with an empty referrer.  With the command-line flag set, maybe we should
+    // just ignore referrer altogether?
+    std::string referrer_domain =
+        net::RegistryControlledDomainService::GetDomainAndRegistry(
+            referrer_url);
+    std::string command_line_domain =
+        net::RegistryControlledDomainService::GetDomainAndRegistry(
+            GURL(command_line_gallery_url));
+    if (referrer_domain == command_line_domain)
+      return true;
+  }
 
   return false;
 }
