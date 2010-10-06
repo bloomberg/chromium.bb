@@ -4,6 +4,7 @@
 
 #include "base/time.h"
 #include "base/waitable_event.h"
+#include "base/test/test_timeouts.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -34,11 +35,8 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(remoting::JingleChromotingConnectionTest);
 namespace remoting {
 
 namespace {
-const int kConnectionTimeoutMs = 10000;
-const int kSendTimeoutMs = 20000;
-
-// Send 100 messages 1024 bytes each. For UDP messages are send with
-// 10ms interval (about 1 seconds for 100 messages).
+// Send 100 messages 1024 bytes each. UDP messages are sent with 10ms delay
+// between messages (about 1 second for 100 messages).
 const int kMessageSize = 1024;
 const int kMessages = 100;
 const int kTestDataSize = kMessages * kMessageSize;
@@ -163,10 +161,10 @@ class JingleChromotingConnectionTest : public testing::Test {
         NewCallback(&client_connection_callback_,
                     &MockConnectionCallback::OnStateChange));
 
-    host_connected_event.TimedWait(
-        base::TimeDelta::FromMilliseconds(kConnectionTimeoutMs));
-    client_connected_event.TimedWait(
-        base::TimeDelta::FromMilliseconds(kConnectionTimeoutMs));
+    host_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
+        TestTimeouts::action_max_timeout_ms()));
+    client_connected_event.TimedWait(base::TimeDelta::FromMilliseconds(
+        TestTimeouts::action_max_timeout_ms()));
   }
 
   static void SignalEvent(base::WaitableEvent* event) {
@@ -222,7 +220,8 @@ class ChannelTesterBase : public base::RefCountedThreadSafe<ChannelTesterBase> {
   }
 
   void WaitFinished() {
-    done_event_.TimedWait(base::TimeDelta::FromMilliseconds(kSendTimeoutMs));
+    done_event_.TimedWait(base::TimeDelta::FromMilliseconds(
+        TestTimeouts::action_max_timeout_ms()));
   }
 
   virtual void CheckResults() = 0;
@@ -530,7 +529,7 @@ TEST_F(JingleChromotingConnectionTest, RejectConnection) {
                   &MockConnectionCallback::OnStateChange));
 
   done_event.TimedWait(
-      base::TimeDelta::FromMilliseconds(kConnectionTimeoutMs));
+      base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
 }
 
 // Verify that we can connect two endpoints.
