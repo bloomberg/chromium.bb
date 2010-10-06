@@ -71,7 +71,8 @@ bool test2() {
     printf("got strange number of processors: %d\n", rv);
     return false;
   }
-  rv = sysconf(_SC_NPROCESSORS_ONLN - 1);
+  // test sysconf on an invalid input.
+  rv = sysconf(-1);
   if (rv != -1) {
     printf("succeeded on unsupported\n");
     return false;

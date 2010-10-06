@@ -297,13 +297,9 @@ nacl_glibc_skiplist = [
     # Struct layouts differ.
     'run_abi_test',
     # Syscall wrappers not implemented yet.
-    'run_nanosleep_test',
     'run_sysbasic_test',
     'run_sysbrk_test',
-    'run_syscall_test',
-    'run_timefuncs_test',
     # Needs further investigation.
-    'run_tls_test',
     'sdk_minimal_test',
     ]
 
