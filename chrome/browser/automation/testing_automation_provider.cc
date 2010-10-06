@@ -97,8 +97,8 @@ std::string GetCookiesForURL(
   std::string cookies;
   base::WaitableEvent event(true /* manual reset */,
                             false /* not initially signaled */);
-  CHECK(ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  CHECK(BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new GetCookiesTask(url, context_getter, &event, &cookies)));
   event.Wait();
   return cookies;
@@ -139,8 +139,8 @@ bool SetCookieForURL(
   base::WaitableEvent event(true /* manual reset */,
                             false /* not initially signaled */);
   bool rv = false;
-  CHECK(ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  CHECK(BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new SetCookieTask(url, value, context_getter, &event, &rv)));
   event.Wait();
   return rv;
@@ -572,8 +572,8 @@ void TestingAutomationProvider::DeleteCookie(const GURL& url,
   *success = false;
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         new DeleteCookieTask(url, cookie_name,
                              tab->profile()->GetRequestContext()));
     *success = true;
@@ -2275,7 +2275,7 @@ class GetChildProcessHostInfoTask : public Task {
       child_processes_(child_processes) {}
 
   virtual void Run() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
       // Only add processes which are already started,
       // since we need their handle.
@@ -2387,8 +2387,8 @@ void TestingAutomationProvider::GetBrowserInfo(
   ListValue* child_processes = new ListValue;
   base::WaitableEvent event(true   /* manual reset */,
                             false  /* not initially signaled */);
-  CHECK(ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  CHECK(BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new GetChildProcessHostInfoTask(&event, child_processes)));
   event.Wait();
   return_value->Set("child_processes", child_processes);

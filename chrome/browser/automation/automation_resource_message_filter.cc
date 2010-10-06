@@ -90,8 +90,8 @@ AutomationResourceMessageFilter::AutomationResourceMessageFilter()
   // Ensure that an instance of the render view map is created.
   filtered_render_views_.Get();
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(
           URLRequestAutomationJob::EnsureProtocolFactoryRegistered));
 }
@@ -166,7 +166,7 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
 // Called on the IPC thread:
 bool AutomationResourceMessageFilter::Send(IPC::Message* message) {
   // This has to be called on the IO thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!channel_) {
     delete message;
     return false;
@@ -181,7 +181,7 @@ bool AutomationResourceMessageFilter::RegisterRequest(
     NOTREACHED();
     return false;
   }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Register pending jobs in the pending request map for servicing later.
   if (job->is_pending()) {
@@ -203,7 +203,7 @@ void AutomationResourceMessageFilter::UnRegisterRequest(
     NOTREACHED();
     return;
   }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (job->is_pending()) {
     DCHECK(ContainsKey(pending_request_map_, job->id()));
@@ -222,8 +222,8 @@ bool AutomationResourceMessageFilter::RegisterRenderView(
     return false;
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(
           AutomationResourceMessageFilter::RegisterRenderViewInIOThread,
           renderer_pid, renderer_id, tab_handle, filter, pending_view));
@@ -232,8 +232,8 @@ bool AutomationResourceMessageFilter::RegisterRenderView(
 
 void AutomationResourceMessageFilter::UnRegisterRenderView(
     int renderer_pid, int renderer_id) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(
           AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread,
           renderer_pid, renderer_id));
@@ -247,8 +247,8 @@ bool AutomationResourceMessageFilter::ResumePendingRenderView(
     return false;
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(
           AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread,
           renderer_pid, renderer_id, tab_handle, filter));
@@ -300,7 +300,7 @@ void AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread(
 bool AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
     int renderer_pid, int renderer_id, int tab_handle,
     AutomationResourceMessageFilter* filter) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   RendererId renderer_key(renderer_pid, renderer_id);
 
@@ -349,7 +349,7 @@ bool AutomationResourceMessageFilter::LookupRegisteredRenderView(
 
 bool AutomationResourceMessageFilter::GetAutomationRequestId(
     int request_id, int* automation_request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   RequestMap::iterator it = request_map_.begin();
   while (it != request_map_.end()) {

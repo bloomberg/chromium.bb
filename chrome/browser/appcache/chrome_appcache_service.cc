@@ -23,11 +23,11 @@ ChromeAppCacheService::ChromeAppCacheService() {
 void ChromeAppCacheService::InitializeOnIOThread(
     const FilePath& profile_path, bool is_incognito,
     scoped_refptr<HostContentSettingsMap> content_settings_map) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!has_initialized_thread_ids) {
     has_initialized_thread_ids = true;
-    appcache::AppCacheThread::Init(ChromeThread::DB, ChromeThread::IO);
+    appcache::AppCacheThread::Init(BrowserThread::DB, BrowserThread::IO);
   }
 
   host_contents_settings_map_ = content_settings_map;
@@ -37,23 +37,23 @@ void ChromeAppCacheService::InitializeOnIOThread(
   // Init our base class.
   Initialize(
       is_incognito ? FilePath() : profile_path.Append(chrome::kAppCacheDirname),
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   set_appcache_policy(this);
 }
 
 ChromeAppCacheService::~ChromeAppCacheService() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 void ChromeAppCacheService::SetOriginQuotaInMemory(
     const GURL& origin, int64 quota) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (storage())
     storage()->SetOriginQuotaInMemory(origin, quota);
 }
 
 void ChromeAppCacheService::ResetOriginQuotaInMemory(const GURL& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (storage())
     storage()->ResetOriginQuotaInMemory(origin);
 }
@@ -64,7 +64,7 @@ void ChromeAppCacheService::ClearLocalState(const FilePath& profile_path) {
 }
 
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ContentSetting setting = host_contents_settings_map_->GetContentSetting(
       manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
@@ -74,7 +74,7 @@ bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
 
 int ChromeAppCacheService::CanCreateAppCache(
     const GURL& manifest_url, net::CompletionCallback* callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ContentSetting setting = host_contents_settings_map_->GetContentSetting(
       manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
@@ -85,17 +85,17 @@ int ChromeAppCacheService::CanCreateAppCache(
 void ChromeAppCacheService::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(type == NotificationType::PURGE_MEMORY);
   PurgeMemory();
 }
 
 // ----------------------------------------------------------------------------
 
-static ChromeThread::ID ToChromeThreadID(int id) {
+static BrowserThread::ID ToBrowserThreadID(int id) {
   DCHECK(has_initialized_thread_ids);
-  DCHECK(id == ChromeThread::DB || id == ChromeThread::IO);
-  return static_cast<ChromeThread::ID>(id);
+  DCHECK(id == BrowserThread::DB || id == BrowserThread::IO);
+  return static_cast<BrowserThread::ID>(id);
 }
 
 namespace appcache {
@@ -106,11 +106,11 @@ bool AppCacheThread::PostTask(
     int id,
     const tracked_objects::Location& from_here,
     Task* task) {
-  return ChromeThread::PostTask(ToChromeThreadID(id), from_here, task);
+  return BrowserThread::PostTask(ToBrowserThreadID(id), from_here, task);
 }
 
 bool AppCacheThread::CurrentlyOn(int id) {
-  return ChromeThread::CurrentlyOn(ToChromeThreadID(id));
+  return BrowserThread::CurrentlyOn(ToBrowserThreadID(id));
 }
 
 }  // namespace appcache

@@ -549,8 +549,8 @@ void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
   }
   DCHECK(context_getter);
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new SetProxyConfigTask(context_getter, new_proxy_config));
 }
 

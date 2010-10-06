@@ -96,8 +96,8 @@ class HistoryURLProviderTest : public testing::Test,
                                public ACProviderListener {
  public:
   HistoryURLProviderTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_) {}
 
   // ACProviderListener
   virtual void OnProviderUpdate(bool updated_matches);
@@ -126,8 +126,8 @@ class HistoryURLProviderTest : public testing::Test,
   void RunAdjustOffsetTest(const std::wstring text, size_t expected_offset);
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
   ACMatches matches_;
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;

@@ -69,7 +69,7 @@ URLRequestAutomationJob::~URLRequestAutomationJob() {
 }
 
 bool URLRequestAutomationJob::EnsureProtocolFactoryRegistered() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!is_protocol_factory_registered_) {
     old_http_factory_ =
@@ -162,7 +162,7 @@ bool URLRequestAutomationJob::ReadRawData(
         buf_size));
     SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
   } else {
-    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this,
                           &URLRequestAutomationJob::NotifyJobCompletionTask));
   }

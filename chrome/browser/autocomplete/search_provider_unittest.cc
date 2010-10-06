@@ -33,7 +33,7 @@ class SearchProviderTest : public testing::Test,
         term1_(UTF8ToUTF16("term1")),
         keyword_t_url_(NULL),
         keyword_term_(UTF8ToUTF16("keyword")),
-        io_thread_(ChromeThread::IO),
+        io_thread_(BrowserThread::IO),
         quit_when_done_(false) {
     io_thread_.Start();
   }
@@ -68,7 +68,7 @@ class SearchProviderTest : public testing::Test,
   GURL keyword_url_;
 
   MessageLoopForUI message_loop_;
-  ChromeThread io_thread_;
+  BrowserThread io_thread_;
 
   // URLFetcher::Factory implementation registered.
   TestURLFetcherFactory test_factory_;
