@@ -95,7 +95,7 @@ void Network::ConfigureFromService(const ServiceInfo& service) {
 std::string Network::GetStateString() {
   switch (state_) {
     case STATE_UNKNOWN:
-      break;
+      return "Unknown";
     case STATE_IDLE:
       return "Idle";
     case STATE_CARRIER:
@@ -110,8 +110,11 @@ std::string Network::GetStateString() {
       return "Disconnect";
     case STATE_FAILURE:
       return "Failure";
+    default:
+      // Usually no default, but changes to libcros may add states.
+      break;
   }
-  return "Unknown";
+  return "Unrecognized State";
 }
 
 std::string Network::GetErrorString() {
@@ -130,8 +133,11 @@ std::string Network::GetErrorString() {
       return "Bad Passphrase";
     case ERROR_BAD_WEPKEY:
       return "Bad WEP Key";
+    default:
+      // Usually no default, but changes to libcros may add errors.
+      break;
   }
-  return "";
+  return "Unrecognized Error";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
