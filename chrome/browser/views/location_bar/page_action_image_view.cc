@@ -174,7 +174,11 @@ void PageActionImageView::OnImageLoaded(
       page_action_icons_[page_action_->default_icon_path()] = *image;
   }
 
-  owner_->UpdatePageActions();
+  // During object construction (before the parent has been set) we are already
+  // in a UpdatePageActions call, so we don't need to start another one (and
+  // doing so causes crash described in http://crbug.com/57333).
+  if (GetParent())
+    owner_->UpdatePageActions();
 }
 
 void PageActionImageView::UpdateVisibility(TabContents* contents,

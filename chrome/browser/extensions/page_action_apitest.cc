@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -172,4 +173,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ShowPageActionPopup) {
     location_bar->TestPageActionPressed(0);
     ASSERT_TRUE(catcher.GetNextResult());
   }
+}
+
+// Test http://crbug.com/57333: that two page action extensions using the same
+// icon for the page action icon and the extension icon do not crash.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TestCrash57333) {
+  // Load extension A.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("page_action")
+                                          .AppendASCII("crash_57333")
+                                          .AppendASCII("Extension1")));
+  // Load extension B.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("page_action")
+                                          .AppendASCII("crash_57333")
+                                          .AppendASCII("Extension2")));
 }
