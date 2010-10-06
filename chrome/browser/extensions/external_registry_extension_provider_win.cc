@@ -51,18 +51,24 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
 
           scoped_ptr<Version> version;
           version.reset(Version::GetVersionFromString(extension_version));
+          if (!version.get()) {
+            LOG(ERROR) << "Invalid version value " << extension_version
+                       << " for key " << key_path;
+            continue;
+          }
+
           FilePath path = FilePath::FromWStringHack(extension_path);
           visitor->OnExternalExtensionFileFound(id, version.get(), path,
                                                 Extension::EXTERNAL_REGISTRY);
         } else {
           // TODO(erikkay): find a way to get this into about:extensions
-          LOG(WARNING) << "Missing value " << kRegistryExtensionVersion <<
-                          " for key " << key_path;
+          LOG(ERROR) << "Missing value " << kRegistryExtensionVersion
+                     << " for key " << key_path;
         }
       } else {
         // TODO(erikkay): find a way to get this into about:extensions
-        LOG(WARNING) << "Missing value " << kRegistryExtensionPath <<
-                        " for key " << key_path;
+        LOG(ERROR) << "Missing value " << kRegistryExtensionPath
+                   << " for key " << key_path;
       }
     }
     ++iterator;
