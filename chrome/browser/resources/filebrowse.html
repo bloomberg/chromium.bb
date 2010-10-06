@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <title i18n-content="title"></title>
+<link rel="icon" href="../../app/theme/downloads_favicon.png">
 <style type="text/css">
 div.header {
   border-bottom: 1px solid #7289E2;
@@ -141,6 +142,10 @@ ul.filebrowselist {
   background: black;
 }
 
+.downloading {
+  background: white;
+}
+
 .imagepreview {
   width: 600px;
   position: fixed;
@@ -168,7 +173,7 @@ li.filebrowserow div.icon {
   margin-top: -3px;
   display: inline
   position: relative;
-  width: 17px;
+  width: 21px;
   height: 17px;
   background-repeat: no-repeat;
 }
@@ -187,6 +192,7 @@ li.filebrowserow div.icon {
   height: 100%;
   width: 15px;
   margin-left: 0;
+  background: url('shared/images/filebrowse_menu.png');
   margin-top: 5px;
   background-repeat: no-repeat;
   cursor: pointer;
@@ -296,7 +302,7 @@ li.filebrowserow:hover span.namelink {
 }
 
 li.selected {
-  background-color: #b1c8f2;
+  background-color: #b1c8f2 !important;
 }
 
 div.title {
@@ -311,12 +317,12 @@ div.controlbutton {
   width: 16px;
   height: 15px;
   display: inline;
-  position: absolute;
+  position: relative;
   z-index: 999;
   border: 1px solid #859EE8;
   cursor: pointer;
   padding: 4px;
-
+  padding-bottom: 0;
   background: -webkit-gradient(linear,
                                left top,
                                left bottom,
@@ -380,8 +386,8 @@ div.iconmusic {
 
 div.backbutton {
   border-radius: 4px;
-  left: 6px;
-  top: 3px
+  left: 0;
+  top: 0;
 }
 
 div.playbackcontainer {
@@ -404,16 +410,20 @@ div.scanningcontainer {
 div.filebutton {
   height: 18px;
   cursor: pointer;
-  padding: 3px 3px;
+  padding: 5px 15px 2px;
   border: 1px solid #abb6ce;
-  background-color: #f5f7fc;
-  border-radius: 5px;
+  background-image: -webkit-gradient(linear,
+                                     left top,
+                                     left bottom,
+                                     color-stop(0.80, #fcfcfc),
+                                     color-stop(0.97, #e3e3e3));
+  border-radius: 3px;
   text-align: center;
   font-size: .8em;
 }
 
 .filenameprompt {
-  top: 10px;
+  top: 8px;
   left: 13px;
   font-size: .8em;
   position: absolute;
@@ -421,27 +431,30 @@ div.filebutton {
 
 .filename {
   left: 90px;
-  top: 5px;
+  top: 3px;
+  border-radius: 4px;
   right: 10px;
   font-size: .8em;
   position: absolute;
 }
 
 div.openbutton {
-  bottom: 5px;
-  left: 10px;
+  bottom: 3px;
+  right: 100px;
   position: absolute;
+  width: 50px;
 }
 
 div.cancelbutton {
-  bottom: 5px;
-  left: 100px;
+  bottom: 3px;
+  right: 10px;
   position: absolute;
+  width: 50px;
 }
 
 div.newfolderbutton {
-  bottom: 5px;
-  right: 10px;
+  bottom: 3px;
+  left: 10px;
   position: absolute;
 }
 
@@ -459,8 +472,8 @@ div.opencontainer {
   background-image: -webkit-gradient(linear,
                                      0% 0%,
                                      0% 90%,
-                                     from(rgb(239, 242, 249)),
-                                     to(rgba(201, 212, 245, 1)));
+                                     from(#fcfcfc),
+                                     to(#eff1f2));
 }
 
 div.savecontainer {
@@ -472,8 +485,8 @@ div.savecontainer {
   background-image: -webkit-gradient(linear,
                                      0% 0%,
                                      0% 90%,
-                                     from(rgb(239, 242, 249)),
-                                     to(rgba(201, 212, 245, 1)));
+                                     from(#fcfcfc),
+                                     to(#eff1f2));
 }
 
 div.container {
@@ -487,7 +500,9 @@ div.container {
 div.containerwithopenbuttons {
   top: 0;
   position: absolute;
-  width: 100%;
+  right: 0;
+  border: 1px solid #C2C2C2;
+  margin: 4px;
   left: 0;
   bottom: 30px;
 }
@@ -495,7 +510,9 @@ div.containerwithopenbuttons {
 div.containerwithsavebuttons {
   top: 0;
   position: absolute;
-  width: 100%;
+  right: 0;
+  margin: 4px;
+  border: 1px solid #C2C2C2;
   left: 0;
   bottom: 60px;
 }
@@ -575,6 +592,10 @@ div.fullcontainer {
   text-align: left;
   color: gray;
   left: 0;
+}
+
+.downloading[dangerous] > * > .icon {
+  background: url('../../app/theme/alert_small.png');
 }
 
 </style>
@@ -692,6 +713,11 @@ function enabledResult(info) {
         filenameprompt.textContent = localStrings.getString('filenameprompt');
         savemenu.appendChild(filenameprompt);
 
+        var backbutton = $('back');
+        if (backbutton) {
+          backbutton.style.top = '5px';
+        }
+
         var filename = document.createElement('input');
         filename.className = 'filename';
         filename.id = 'filename';
@@ -724,6 +750,10 @@ function enabledResult(info) {
         openbutton.textContent = localStrings.getString('open');
         cancelbutton.textContent = localStrings.getString('confirmcancel');
         document.body.appendChild(openmenu);
+        var backbutton = $('back');
+        if (backbutton) {
+          backbutton.style.top = '5px';
+        }
       }
     }
   } else {
@@ -1107,11 +1137,15 @@ function downloadsList(results) {
   downloadUpdated(results);
 }
 
-function allowDownload(id) {
+function allowDownload(id, path) {
+  var element = $(path);
+  element.removeAttribute('dangerous');
   chrome.send('allowDownload', ['' + id]);
 }
 
-function cancelDownload(id) {
+function cancelDownload(id, path) {
+  var element = $(path);
+  element.removeAttribute('dangerous');
   chrome.send('cancelDownload', ['' + id]);
 }
 
@@ -1223,6 +1257,7 @@ function downloadUpdated(results) {
           pauseDiv.onclick = partial(pauseToggleDownload, results[x].id);
           pauseDiv.className = 'downloadpause';
           if (results[x].state == "DANGEROUS") {
+            element.setAttribute('dangerous', 'true');
             pauseDiv.onClick = undefined;
             var prompt = document.createElement('div');
             prompt.textContent = localStrings.getString('allowdownload');
@@ -1231,9 +1266,13 @@ function downloadUpdated(results) {
             var yes = document.createElement('div');
             yes.className = 'link';
             yes.textContent = localStrings.getString('confirmyes');
-            yes.onclick = partial(allowDownload, results[x].id);
+            yes.onclick = partial(allowDownload,
+                                  results[x].id, 
+                                  results[x].file_path);
             var no = document.createElement('div');
-            no.onclick = partial(cancelDownload, results[x].id);
+            no.onclick = partial(cancelDownload,
+                                 results[x].id,
+                                 results[x].file_path);
             no.textContent = localStrings.getString('confirmcancel');
             no.className = 'link';
             pauseDiv.onclick = undefined;
@@ -1420,6 +1459,9 @@ function findInArray(arr, element) {
 
 function selectItem(elementid, path) {
   var element = $(elementid);
+  if (element.className == 'filebrowserow downloading') {
+    return;
+  }
   var index;
   if ((index = findInArray(currentlySelectedItems, element)) != -1) {
     // the user must want to toggle
@@ -1439,6 +1481,11 @@ function selectItem(elementid, path) {
     element.className = 'selected filebrowserow';
     currentlySelectedItems.push(element);
     currentlySelectedPaths.push(path);
+    if (inSaveMode) {
+      var extracted = getPathAndFilenameForPath(path);
+      var file = $('filename');
+      file.value = extracted[2];
+    }
   }
 }
 
@@ -1688,7 +1735,7 @@ function createNewList(title, results, main, path) {
   i18n-values=".style.fontFamily:fontfamily">
 <div id='header' class=''>
   <div id='back' class='backbutton controlbutton' onclick='goBackInList();return false;'>
-    <img src="shared/images/filebrowse_back.png" width='100%' height='100%'>
+    <img src="shared/images/filebrowse_back.png">
   </div>
   <div id='currenttitle' class=''></div>
 </div><br>
