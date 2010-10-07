@@ -23,6 +23,7 @@
 {
   bug_41314
   ThreadSanitizer:Race
+  ...
   fun:base::LaunchApp*
   fun:ChildProcessLauncher::Context::LaunchInternal*
 }
