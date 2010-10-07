@@ -3,12 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
-import os
-
 Import('env')
 
-# ARM doesn't have -finstrument-for-thread-suspension currently
-if env['TARGET_ARCHITECTURE'] != 'arm':
+# PNaCl doesn't have -finstrument-for-thread-suspension currently
+if not ARGUMENTS.get('bitcode'):
   inputs = ['gc_noinst.c']
 
   # Compile gc_instrumentation.c with -finstrument-for-thread-suspension
