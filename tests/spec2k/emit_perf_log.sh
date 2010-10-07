@@ -37,7 +37,7 @@ LogGzippedSize() {
 #@  $4 :: measurement value
 #@  $5 :: unit
 LogPerf() {
-  echo "*RESULT $1_$2: $3= $4 $5"
+  echo "RESULT $1_$2: $3= $4 $5"
 }
 
 ######################################################################
