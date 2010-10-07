@@ -29,6 +29,10 @@ class PrintJobManager : public NotificationObserver {
   // On browser quit, we should wait to have the print job finished.
   void OnQuit();
 
+  // Stops all printing jobs. If wait_for_finish is true, tries to give jobs
+  // a chance to complete before stopping them.
+  void StopJobs(bool wait_for_finish);
+
   // Queues a semi-initialized worker thread. Can be called from any thread.
   // Current use case is queuing from the I/O thread.
   // TODO(maruel):  Have them vanish after a timeout (~5 minutes?)

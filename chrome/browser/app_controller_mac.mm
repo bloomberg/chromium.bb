@@ -39,6 +39,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -242,6 +243,10 @@ void RecordLastRunAppBundlePath() {
   // though.) http://crbug.com/40861
 
   size_t num_browsers = BrowserList::size();
+
+  // Give any print jobs in progress time to finish.
+  if (!browser_shutdown::IsTryingToQuit())
+    g_browser_process->print_job_manager()->StopJobs(true);
 
   // Initiate a shutdown (via BrowserList::CloseAllBrowsers()) if we aren't
   // already shutting down.
