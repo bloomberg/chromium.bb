@@ -812,7 +812,7 @@ void EventSendingController::beginDragWithFiles(
   for (size_t i = 0; i < files.size(); ++i) {
     FilePath file_path = FilePath::FromWStringHack(files[i]);
     file_util::AbsolutePath(&file_path);
-    current_drag_data.appendToFileNames(
+    current_drag_data.appendToFilenames(
         webkit_glue::FilePathStringToWebString(file_path.value()));
   }
   current_drag_effects_allowed = WebKit::WebDragOperationCopy;
