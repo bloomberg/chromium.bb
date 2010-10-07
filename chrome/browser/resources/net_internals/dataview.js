@@ -102,6 +102,14 @@ DataView.prototype.onExportToText_ = function() {
   text.push('Command line: ' + ClientInfo.command_line);
 
   text.push('');
+  var default_address_family =
+      g_browser.hostResolverInfo_.currentData_.default_address_family;
+  text.push('Default address family: ' +
+      getKeyWithValue(AddressFamily, default_address_family));
+  if (default_address_family == AddressFamily.ADDRESS_FAMILY_IPV4)
+    text.push('  (IPv6 disabled)');
+
+  text.push('');
   text.push('----------------------------------------------');
   text.push(' Proxy settings (effective)');
   text.push('----------------------------------------------');
@@ -144,9 +152,9 @@ DataView.prototype.onExportToText_ = function() {
   text.push('----------------------------------------------');
   text.push('');
 
-  var hostResolverCache = g_browser.hostResolverCache_.currentData_;
+  var hostResolverCache = g_browser.hostResolverInfo_.currentData_.cache;
 
-  text.push('Capcity: ' + hostResolverCache.capacity);
+  text.push('Capacity: ' + hostResolverCache.capacity);
   text.push('Time to live for successful resolves (ms): ' +
             hostResolverCache.ttl_success_ms);
   text.push('Time to live for failed resolves (ms): ' +
@@ -159,7 +167,8 @@ DataView.prototype.onExportToText_ = function() {
       text.push('');
       text.push('(' + (i+1) + ')');
       text.push('Hostname: ' + e.hostname);
-      text.push('Address family: ' + e.address_family);
+      text.push('Address family: ' +
+                getKeyWithValue(AddressFamily, e.address_family));
 
       if (e.error != undefined) {
          text.push('Error: ' + e.error);

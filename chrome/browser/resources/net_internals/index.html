@@ -83,7 +83,17 @@ found in the LICENSE file.
     </div>
     <!-- Host resolver info -->
     <div id=dnsTabContent>
-      <a href='#events&q=type:HOST_RESOLVER_IMPL_REQUEST%20type:HOST_RESOLVER_IMPL_JOB%20is:active'>View pending lookups</a>
+      <h4>Host resolver</h4>
+      <ul>
+        <li><a href='#events&q=type:HOST_RESOLVER_IMPL_REQUEST%20type:HOST_RESOLVER_IMPL_JOB%20is:active'>View pending lookups</a></li>
+        <li>Default address family: <span id=hostResolverDefaultFamily></span>
+          <span id=hostResolverIPv6Disabled class=warningText style="display: none;">
+            (IPv6 disabled)
+            <input type=button value="Enable IPv6" id=hostResolverEnableIPv6 />
+          </span>
+        </li>
+      </ul>
+
       <h4>
         Host resolver cache
         <input type=button value="Clear host cache" id=clearHostResolverCache />

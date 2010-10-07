@@ -11,6 +11,7 @@ var ClientInfo = null;
 var LogSourceType = null;
 var NetError = null;
 var LoadFlag = null;
+var AddressFamily = null;
 
 /**
  * Object to communicate between the renderer and the browser.
@@ -61,6 +62,9 @@ function onLoaded() {
   var dnsView = new DnsView("dnsTabContent",
                             "hostResolverCacheTbody",
                             "clearHostResolverCache",
+                            "hostResolverDefaultFamily",
+                            "hostResolverIPv6Disabled",
+                            "hostResolverEnableIPv6",
                             "hostResolverCacheCapacity",
                             "hostResolverCacheTTLSuccess",
                             "hostResolverCacheTTLFailure");
@@ -149,8 +153,8 @@ function BrowserBridge() {
   this.proxySettings_ = new PollableDataHelper('onProxySettingsChanged');
   this.badProxies_ = new PollableDataHelper('onBadProxiesChanged');
   this.httpCacheInfo_ = new PollableDataHelper('onHttpCacheInfoChanged');
-  this.hostResolverCache_ =
-      new PollableDataHelper('onHostResolverCacheChanged');
+  this.hostResolverInfo_ =
+      new PollableDataHelper('onHostResolverInfoChanged');
   this.socketPoolInfo_ = new PollableDataHelper('onSocketPoolInfoChanged');
   this.serviceProviders_ = new PollableDataHelper('onServiceProvidersChanged');
 
@@ -231,9 +235,9 @@ BrowserBridge.prototype.sendGetBadProxies = function() {
   chrome.send('getBadProxies');
 };
 
-BrowserBridge.prototype.sendGetHostResolverCache = function() {
-  // The browser will call receivedHostResolverCache on completion.
-  chrome.send('getHostResolverCache');
+BrowserBridge.prototype.sendGetHostResolverInfo = function() {
+  // The browser will call receivedHostResolverInfo on completion.
+  chrome.send('getHostResolverInfo');
 };
 
 BrowserBridge.prototype.sendClearBadProxies = function() {
@@ -258,6 +262,10 @@ BrowserBridge.prototype.sendGetSocketPoolInfo = function() {
 
 BrowserBridge.prototype.sendGetServiceProviders = function() {
   chrome.send('getServiceProviders');
+};
+
+BrowserBridge.prototype.enableIPv6 = function() {
+  chrome.send('enableIPv6');
 };
 
 //------------------------------------------------------------------------------
@@ -305,6 +313,11 @@ BrowserBridge.prototype.receivedNetErrorConstants = function(constantsMap) {
   NetError = constantsMap;
 };
 
+BrowserBridge.prototype.receivedAddressFamilyConstants =
+function(constantsMap) {
+  AddressFamily = constantsMap;
+};
+
 BrowserBridge.prototype.receivedTimeTickOffset = function(timeTickOffset) {
   this.timeTickOffset_ = timeTickOffset;
 };
@@ -317,9 +330,9 @@ BrowserBridge.prototype.receivedBadProxies = function(badProxies) {
   this.badProxies_.update(badProxies);
 };
 
-BrowserBridge.prototype.receivedHostResolverCache =
-function(hostResolverCache) {
-  this.hostResolverCache_.update(hostResolverCache);
+BrowserBridge.prototype.receivedHostResolverInfo =
+function(hostResolverInfo) {
+  this.hostResolverInfo_.update(hostResolverInfo);
 };
 
 BrowserBridge.prototype.receivedSocketPoolInfo = function(socketPoolInfo) {
@@ -422,18 +435,18 @@ BrowserBridge.prototype.addProxySettingsObserver = function(observer) {
  *   badProxies[i].bad_until: The time when the proxy stops being considered
  *                            bad. Note the time is in time ticks.
  */
-BrowserBridge.prototype.addBadProxiesObsever = function(observer) {
+BrowserBridge.prototype.addBadProxiesObserver = function(observer) {
   this.badProxies_.addObserver(observer);
 };
 
 /**
- * Adds a listener of the host resolver cache. |observer| will be called back
+ * Adds a listener of the host resolver info. |observer| will be called back
  * when data is received, through:
  *
- *   observer.onHostResolverCacheChanged(hostResolverCache)
+ *   observer.onHostResolverInfoChanged(hostResolverInfo)
  */
-BrowserBridge.prototype.addHostResolverCacheObserver = function(observer) {
-  this.hostResolverCache_.addObserver(observer);
+BrowserBridge.prototype.addHostResolverInfoObserver = function(observer) {
+  this.hostResolverInfo_.addObserver(observer);
 };
 
 /**
@@ -558,7 +571,7 @@ BrowserBridge.prototype.doPolling_ = function() {
   // frequency poll since it won't impact the display.
   this.sendGetProxySettings();
   this.sendGetBadProxies();
-  this.sendGetHostResolverCache();
+  this.sendGetHostResolverInfo();
   this.sendGetHttpCacheInfo();
   this.sendGetSocketPoolInfo();
   if (this.isPlatformWindows())

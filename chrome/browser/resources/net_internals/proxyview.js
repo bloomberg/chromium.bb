@@ -35,7 +35,7 @@ function ProxyView(mainBoxId,
 
   // Register to receive proxy information as it changes.
   g_browser.addProxySettingsObserver(this);
-  g_browser.addBadProxiesObsever(this);
+  g_browser.addBadProxiesObserver(this);
 }
 
 inherits(ProxyView, DivView);

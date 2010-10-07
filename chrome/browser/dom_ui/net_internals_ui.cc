@@ -207,8 +207,9 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnReloadProxySettings(const ListValue* list);
   void OnGetBadProxies(const ListValue* list);
   void OnClearBadProxies(const ListValue* list);
-  void OnGetHostResolverCache(const ListValue* list);
+  void OnGetHostResolverInfo(const ListValue* list);
   void OnClearHostResolverCache(const ListValue* list);
+  void OnEnableIPv6(const ListValue* list);
   void OnGetPassiveLogEntries(const ListValue* list);
   void OnStartConnectionTests(const ListValue* list);
   void OnGetHttpCacheInfo(const ListValue* list);
@@ -382,11 +383,14 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "clearBadProxies",
       proxy_->CreateCallback(&IOThreadImpl::OnClearBadProxies));
   dom_ui_->RegisterMessageCallback(
-      "getHostResolverCache",
-      proxy_->CreateCallback(&IOThreadImpl::OnGetHostResolverCache));
+      "getHostResolverInfo",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetHostResolverInfo));
   dom_ui_->RegisterMessageCallback(
       "clearHostResolverCache",
       proxy_->CreateCallback(&IOThreadImpl::OnClearHostResolverCache));
+  dom_ui_->RegisterMessageCallback(
+      "enableIPv6",
+      proxy_->CreateCallback(&IOThreadImpl::OnEnableIPv6));
   dom_ui_->RegisterMessageCallback(
       "getPassiveLogEntries",
       proxy_->CreateCallback(&IOThreadImpl::OnGetPassiveLogEntries));
@@ -549,7 +553,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   }
 
   // Tell the javascript about the relationship between source type enums and
-  // their symbolic name.
+  // their symbolic names.
   {
     DictionaryValue* dict = new DictionaryValue();
 
@@ -558,6 +562,21 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 #undef SOURCE_TYPE
 
     CallJavascriptFunction(L"g_browser.receivedLogSourceTypeConstants", dict);
+  }
+
+  // Tell the javascript about the relationship between address family enums and
+  // their symbolic names.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+    dict->SetInteger("ADDRESS_FAMILY_UNSPECIFIED",
+                     net::ADDRESS_FAMILY_UNSPECIFIED);
+    dict->SetInteger("ADDRESS_FAMILY_IPV4",
+                     net::ADDRESS_FAMILY_IPV4);
+    dict->SetInteger("ADDRESS_FAMILY_IPV6",
+                     net::ADDRESS_FAMILY_IPV6);
+
+    CallJavascriptFunction(L"g_browser.receivedAddressFamilyConstants", dict);
   }
 
   // Tell the javascript how the "time ticks" values we have given it relate to
@@ -588,7 +607,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   OnGetPassiveLogEntries(NULL);
   OnGetProxySettings(NULL);
   OnGetBadProxies(NULL);
-  OnGetHostResolverCache(NULL);
+  OnGetHostResolverInfo(NULL);
   OnGetHttpCacheInfo(NULL);
   OnGetSocketPoolInfo(NULL);
 #ifdef OS_WIN
@@ -652,24 +671,33 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
   OnGetBadProxies(NULL);
 }
 
-void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
+void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
     const ListValue* list) {
+  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::HostResolverImpl* host_resolver_impl =
+      context->host_resolver()->GetAsHostResolverImpl();
+  net::HostCache* cache = GetHostResolverCache(context);
 
-  net::HostCache* cache =
-      GetHostResolverCache(context_getter_->GetURLRequestContext());
-
-  if (!cache) {
-    CallJavascriptFunction(L"g_browser.receivedHostResolverCache", NULL);
+  if (!host_resolver_impl || !cache) {
+    CallJavascriptFunction(L"g_browser.receivedHostResolverInfo", NULL);
     return;
   }
 
   DictionaryValue* dict = new DictionaryValue();
 
-  dict->SetInteger("capacity", static_cast<int>(cache->max_entries()));
   dict->SetInteger(
+      "default_address_family",
+      static_cast<int>(host_resolver_impl->GetDefaultAddressFamily()));
+
+  DictionaryValue* cache_info_dict = new DictionaryValue();
+
+  cache_info_dict->SetInteger(
+      "capacity",
+      static_cast<int>(cache->max_entries()));
+  cache_info_dict->SetInteger(
       "ttl_success_ms",
       static_cast<int>(cache->success_entry_ttl().InMilliseconds()));
-  dict->SetInteger(
+  cache_info_dict->SetInteger(
       "ttl_failure_ms",
       static_cast<int>(cache->failure_entry_ttl().InMilliseconds()));
 
@@ -706,9 +734,10 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
     entry_list->Append(entry_dict);
   }
 
-  dict->Set("entries", entry_list);
+  cache_info_dict->Set("entries", entry_list);
+  dict->Set("cache", cache_info_dict);
 
-  CallJavascriptFunction(L"g_browser.receivedHostResolverCache", dict);
+  CallJavascriptFunction(L"g_browser.receivedHostResolverInfo", dict);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
@@ -720,7 +749,22 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
     cache->clear();
 
   // Cause the renderer to be notified of the new values.
-  OnGetHostResolverCache(NULL);
+  OnGetHostResolverInfo(NULL);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::OnEnableIPv6(
+    const ListValue* list) {
+  URLRequestContext* context = context_getter_->GetURLRequestContext();
+  net::HostResolverImpl* host_resolver_impl =
+      context->host_resolver()->GetAsHostResolverImpl();
+
+  if (host_resolver_impl) {
+    host_resolver_impl->SetDefaultAddressFamily(
+        net::ADDRESS_FAMILY_UNSPECIFIED);
+  }
+
+  // Cause the renderer to be notified of the new value.
+  OnGetHostResolverInfo(NULL);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetPassiveLogEntries(

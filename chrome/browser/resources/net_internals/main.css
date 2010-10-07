@@ -254,3 +254,10 @@ table.styledTable,
   font-size: 100%;
   font-weight: bold;
 }
+
+/**
+ * Styling for text indicating a potential problem or error state.
+ */
+.warningText {
+  color: red;
+}
