@@ -153,6 +153,12 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/media":
     Var("webkit_trunk") + "/LayoutTests/media@" +
     Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/fast/filesystem/workers":
+    Var("webkit_trunk") + "/LayoutTests/fast/filesystem/workers@" +
+    Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/fast/filesystem/resources":
+    Var("webkit_trunk") + "/LayoutTests/fast/filesystem/resources@" +
+    Var("webkit_revision"),
 
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
