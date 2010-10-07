@@ -753,13 +753,13 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     return;
   }
 
-  // Report the malware resource to the SafeBrowsing servers if we have a
-  // malware resource on a safe page and only if the user has opted in to
-  // reporting statistics.
+  // Report the malicious resource to the SafeBrowsing servers if the user has
+  // opted in to reporting statistics.
   const MetricsService* metrics = g_browser_process->metrics_service();
   DCHECK(metrics);
   if (metrics && metrics->reporting_active() &&
-      resource.threat_type == SafeBrowsingService::URL_MALWARE) {
+      (resource.threat_type == SafeBrowsingService::URL_MALWARE ||
+       resource.threat_type == SafeBrowsingService::URL_PHISHING)) {
     GURL page_url = wc->GetURL();
     GURL referrer_url;
     NavigationEntry* entry = wc->controller().GetActiveEntry();
@@ -780,47 +780,35 @@ void SafeBrowsingService::DoDisplayBlockingPage(
       page_url = resource.original_url;
     }
 
-    if ((!page_url.is_empty() && resource.url != page_url) ||
-        !referrer_url.is_empty()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this,
-                            &SafeBrowsingService::ReportMalware,
-                            resource.url,
-                            page_url,
-                            referrer_url,
-                            is_subresource));
-    }
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(
+            this,
+            &SafeBrowsingService::ReportSafeBrowsingHit,
+            resource.url,
+            page_url,
+            referrer_url,
+            is_subresource,
+            resource.threat_type));
   }
 
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
-void SafeBrowsingService::ReportMalware(const GURL& malware_url,
-                                        const GURL& page_url,
-                                        const GURL& referrer_url,
-                                        bool is_subresource) {
+void SafeBrowsingService::ReportSafeBrowsingHit(
+    const GURL& malicious_url,
+    const GURL& page_url,
+    const GURL& referrer_url,
+    bool is_subresource,
+    SafeBrowsingService::UrlCheckResult threat_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
   if (!enabled_)
     return;
 
-  if (DatabaseAvailable()) {
-    // Check if 'page_url' is already blacklisted (exists in our cache). Only
-    // report if it's not there. This can happen if the user has ignored
-    // the warning for page_url and is now hitting a warning for a resource.
-    std::string list;
-    std::vector<SBPrefix> prefix_hits;
-    std::vector<SBFullHashResult> full_hits;
-    database_->ContainsUrl(page_url, &list, &prefix_hits, &full_hits,
-                           protocol_manager_->last_update());
-    if (!full_hits.empty())
-      return;
-  }
-
-  DLOG(INFO) << "ReportMalware: " << malware_url << " " << page_url << " " <<
-      referrer_url << " " << is_subresource;
-
-  protocol_manager_->ReportMalware(malware_url, page_url, referrer_url,
-                                   is_subresource);
+  DLOG(INFO) << "ReportSafeBrowsingHit: " << malicious_url << " " << page_url
+             << " " << referrer_url << " " << is_subresource
+             << " " << threat_type;
+  protocol_manager_->ReportSafeBrowsingHit(malicious_url, page_url,
+                                           referrer_url, is_subresource,
+                                           threat_type);
 }

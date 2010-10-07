@@ -269,12 +269,13 @@ class SafeBrowsingService
   // Invoked on the UI thread to show the blocking page.
   void DoDisplayBlockingPage(const UnsafeResource& resource);
 
-  // Report any pages that contain malware sub-resources to the SafeBrowsing
+  // Report any pages that contain malware or phishing to the SafeBrowsing
   // service.
-  void ReportMalware(const GURL& malware_url,
-                     const GURL& page_url,
-                     const GURL& referrer_url,
-                     bool is_subresource);
+  void ReportSafeBrowsingHit(const GURL& malicious_url,
+                             const GURL& page_url,
+                             const GURL& referrer_url,
+                             bool is_subresource,
+                             UrlCheckResult threat_type);
 
   CurrentChecks checks_;
 
