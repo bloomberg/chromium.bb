@@ -136,10 +136,8 @@ message SyncEntity {
   // If this group is present, it implies that this SyncEntity corresponds to
   // a bookmark or a bookmark folder.
   //
-  // TODO(idana): for now, we put the bookmarks related information explicitly
-  // in the protocol definition. When we start syncing more data types, it is
-  // probably going to be better if we represent the different types as
-  // extended attributes.
+  // This group is deprecated; clients should use the bookmark EntitySpecifics
+  // protocol buffer extension instead.
   optional group BookmarkData = 11 {
     // We use a required field to differentiate between a bookmark and a
     // bookmark folder.
@@ -206,7 +204,7 @@ message SyncEntity {
   // Similar to server_defined_unique_tag.
   //
   // When initially committing an entity, a client can request that the entity
-  // is unique per that account. To do so, the client should specify a 
+  // is unique per that account. To do so, the client should specify a
   // client_defined_unique_tag. At most one entity per tag value may exist.
   // per account. The server will enforce uniqueness on this tag
   // and fail attempts to create duplicates of this tag.
@@ -274,8 +272,53 @@ message GetUpdatesCallerInfo {
   optional bool notifications_enabled = 2;
 };
 
+message DataTypeProgressMarker {
+  // An integer identifying the data type whose progress is tracked by this
+  // marker.  The legitimate values of this field correspond to the protobuf
+  // field numbers of all EntitySpecifics extensions supported by the server.
+  // These values are externally declared in per-datatype .proto files.
+  optional int32 data_type_id = 1;
+
+  // An opaque-to-the-client sequence of bytes that the server may interpret
+  // as an indicator of the client's knowledge state.  If this is empty or
+  // omitted by the client, it indicates that the client is initiating a
+  // a first-time sync of this datatype.  Otherwise, clients must supply a
+  // value previously returned by the server in an earlier GetUpdatesResponse.
+  // These values are not comparable or generable on the client.
+  //
+  // The opaque semantics of this field are to afford server implementations
+  // some flexibility in implementing progress tracking.  For instance,
+  // a server implementation built on top of a distributed storage service --
+  // or multiple heterogenous such services -- might need to supply a vector
+  // of totally ordered monotonic update timestamps, rather than a single
+  // monotonically increasing value.  Other optimizations may also be
+  // possible if the server is allowed to embed arbitrary information in
+  // the progress token.
+  //
+  // Server implementations should keep the size of these tokens relatively
+  // small, on the order of tens of bytes, and they should remain small
+  // regardless of the number of items synchronized.  (A possible bad server
+  // implementation would be for progress_token to contain a list of all the
+  // items ever sent to the client.  Servers shouldn't do this.)
+  optional bytes token = 2;
+
+  // Clients that previously downloaded updates synced using the timestamp based
+  // progress tracking mechanism, but which wish to switch over to the opaque
+  // token mechanism can set this field in a GetUpdatesMessage.  The server
+  // will perform a get updates operation as normal from the indicated
+  // timestamp, and return only an opaque progress token.
+  optional int64 timestamp_token_for_migration = 3;
+}
+
 message GetUpdatesMessage {
-  required int64 from_timestamp = 1;
+  // Indicates the client's current progress in downloading updates.  A
+  // from_timestamp value of zero means that the client is requesting a first-
+  // time sync.  After that point, clients should fill in this value with the
+  // value returned in the last-seen GetUpdatesResponse.new_timestamp.
+  //
+  // from_timestamp has been deprecated; clients should use
+  // |from_progress_marker| instead, which allows more flexibility.
+  optional int64 from_timestamp = 1;
 
   // Indicates the reason for the GetUpdatesMessage.
   optional GetUpdatesCallerInfo caller_info = 2;
@@ -286,42 +329,38 @@ message GetUpdatesMessage {
   // The presence of an individual EntitySpecifics extension indicates that the
   // client requests sync object types associated with that extension.  This
   // determination depends only on the presence of the extension field, not its
-  // contents -- thus clients should send empty extension messages.  For 
-  // backwards compatibility only bookmark objects will be sent to the client 
+  // contents -- thus clients should send empty extension messages.  For
+  // backwards compatibility only bookmark objects will be sent to the client
   // should requested_types not be present.
   //
   // requested_types may contain multiple EntitySpecifics extensions -- in this
   // event, the server will return items of all the indicated types.
+  //
+  // requested_types has been deprecated; clients should use
+  // |from_progress_marker| instead, which allows more flexibility.
   optional EntitySpecifics requested_types = 4;
 
   // Client-requested limit on the maximum number of updates to return at once.
   // The server may opt to return fewer updates than this amount, but it should
   // not return more.
   optional int32 batch_size = 5;
+
+  // Per-datatype progress marker.  If present, the server will ignore
+  // the values of requested_types and from_timestamp, using this instead.
+  repeated DataTypeProgressMarker from_progress_marker = 6;
 };
 
 message AuthenticateMessage {
   required string auth_token = 1;
 };
 
-enum UserDataStatus {
-  SUCCESS = 0;
-
-  // A transient error happened, e.g. network error.  Clear can be called again.
-  RETRIABLE_ERROR = 1;
-
-  // An internal error happened
-  INTERNAL_SERVER_ERROR = 2;
-}
-
 // This message is sent to the server to clear data.  An asynchronous
 // response is returned to the client indicating that the server has received
 // the request and has begun to clear data.
-message ClearUserDataRequest {
+message ClearUserDataMessage {
 }
 
 message ClearUserDataResponse {
- optional UserDataStatus status = 1;
 }
 
 message ClientToServerMessage {
@@ -338,14 +377,13 @@ message ClientToServerMessage {
   optional CommitMessage commit = 4;
   optional GetUpdatesMessage get_updates = 5;
   optional AuthenticateMessage authenticate = 6;
+  // Request to clear all Chromium data from the server
+  optional ClearUserDataMessage clear_user_data = 9;
 
   optional string store_birthday = 7; // Opaque store ID; if it changes, duck!
   // The client sets this if it detects a sync issue. The server will tell it
   // if it should perform a refresh.
   optional bool sync_problem_detected = 8 [default = false];
-  
-  // Request to clear all Chromium data from the server
-  optional ClearUserDataRequest clear_user_data = 9;
 };
 
 message CommitResponse {
@@ -391,15 +429,47 @@ message CommitResponse {
 };
 
 message GetUpdatesResponse {
+  // New sync entries that the client should apply.
   repeated SyncEntity entries = 1;
+
   // If there are more changes on the server that weren't processed during this
   // GetUpdates request, the client should send another GetUpdates request and
   // use new_timestamp as the from_timestamp value within GetUpdatesMessage.
+  //
+  // This field has been deprecated and will be returned only to clients
+  // that set the also-deprecated |from_timestamp| field in the update request.
+  // Clients should use |from_progress_marker| and |new_progress_marker|
+  // instead.
   optional int64 new_timestamp = 2;
+
   // DEPRECATED FIELD - server does not set this anymore.
   optional int64 deprecated_newest_timestamp = 3;
-  // Estimated number of changes remaining - use this for UI feedback.
+
+  // Approximate count of changes remaining - use this for UI feedback.
+  // If present and zero, this estimate is firm: the server has no changes
+  // after the current batch.
   optional int64 changes_remaining = 4;
+
+  // Opaque, per-datatype timestamp-like tokens.  A client should use this
+  // field in lieu of new_timestamp, which is deprecated in newer versions
+  // of the protocol.  Clients should retain and persist the values returned
+  // in this field, and present them back to the server to indicate the
+  // starting point for future update requests.
+  //
+  // This will be sent only if the client provided |from_progress_marker|
+  // in the update request.
+  //
+  // The server may provide a new progress marker even if this is the end of
+  // the batch, or if there were no new updates on the server; and the client
+  // must save these.  If the server does not provide a |new_progress_marker|
+  // value for a particular datatype, when the request provided a
+  // |from_progress_marker| value for that datatype, the client should
+  // interpret this to mean "no change from the previous state" and retain its
+  // previous progress-marker value for that datatype.
+  //
+  // Progress markers in the context of a response will never have the
+  // |timestamp_token_for_migration| field set.
+  repeated DataTypeProgressMarker new_progress_marker = 5;
 };
 
 // A user-identifying struct.  For a given Google account the email and display
@@ -440,6 +510,7 @@ message ClientToServerResponse {
   optional CommitResponse commit = 1;
   optional GetUpdatesResponse get_updates = 2;
   optional AuthenticateResponse authenticate = 3;
+  optional ClearUserDataResponse clear_user_data = 9;
 
   enum ErrorType {
     SUCCESS            = 0;
@@ -468,6 +539,5 @@ message ClientToServerResponse {
 
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
-  optional ClearUserDataResponse clear_user_data = 9;
 };
 
