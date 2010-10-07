@@ -120,21 +120,25 @@ bool FileSystemDispatcherHost::OnMessageReceived(
 void FileSystemDispatcherHost::OnOpenFileSystem(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size) {
-
-  // TODO(kinuko): hook up ContentSettings cookies type checks.
+  ContentSetting content_setting =
+      host_content_settings_map_->GetContentSetting(
+          origin_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
+  DCHECK((content_setting == CONTENT_SETTING_ALLOW) ||
+         (content_setting == CONTENT_SETTING_BLOCK) ||
+         (content_setting == CONTENT_SETTING_SESSION_ONLY));
+  if (content_setting == CONTENT_SETTING_BLOCK) {
+    // TODO(kinuko): Need to notify the UI thread to indicate that
+    // there's a blocked content.
+    Send(new ViewMsg_OpenFileSystemRequest_Complete(
+        request_id, false, std::string(), FilePath()));
+    return;
+  }
 
   FilePath root_path;
   std::string name;
-
-  if (!context_->GetFileSystemRootPath(origin_url,
-                                       type,
-                                       &root_path,
-                                       &name)) {
+  if (!context_->GetFileSystemRootPath(origin_url, type, &root_path, &name)) {
     Send(new ViewMsg_OpenFileSystemRequest_Complete(
-        request_id,
-        false,
-        std::string(),
-        FilePath()));
+        request_id, false, std::string(), FilePath()));
     return;
   }
 
