@@ -307,7 +307,9 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition1) {
 // This test depends on the fact that the panel state change occurs
 // quicker than stale timeout, thus the stale timeout cannot be set to
 // 0. This test explicitly controls the stale state instead.
-IN_PROC_BROWSER_TEST_F(NotificationTest, TestStateTransition2) {
+
+// TODO(oshima): bug chromium-os:7306 Fix this flaky test on ChromeOS.
+IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestStateTransition2) {
   // Register observer here as the registration does not work in SetUp().
   NotificationRegistrar registrar;
   registrar.Add(this,
