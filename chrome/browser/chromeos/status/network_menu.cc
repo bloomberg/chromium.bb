@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/browser/views/window.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/skbitmap_operations.h"
 #include "grit/generated_resources.h"
@@ -106,9 +107,9 @@ void NetworkMenu::ActivatedAt(int index) {
   } else if (flags & FLAG_OTHER_NETWORK) {
     NetworkConfigView* view = new NetworkConfigView();
     view->set_browser_mode(IsBrowserMode());
-    views::Window* window = views::Window::CreateChromeWindow(GetNativeWindow(),
-                                                              gfx::Rect(),
-                                                              view);
+    views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
+                                                       gfx::Rect(),
+                                                       view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
     view->SetLoginTextfieldFocus();
@@ -121,7 +122,7 @@ void NetworkMenu::ActivatedAt(int index) {
         NetworkConfigView* view =
             new NetworkConfigView(cros->ethernet_network());
         view->set_browser_mode(IsBrowserMode());
-        views::Window* window = views::Window::CreateChromeWindow(
+        views::Window* window = browser::CreateViewsWindow(
             GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
         window->Show();
@@ -144,7 +145,7 @@ void NetworkMenu::ActivatedAt(int index) {
           // If we are already connected, open the config dialog.
           NetworkConfigView* view = new NetworkConfigView(wifi, false);
           view->set_browser_mode(IsBrowserMode());
-          views::Window* window = views::Window::CreateChromeWindow(
+          views::Window* window = browser::CreateViewsWindow(
               GetNativeWindow(), gfx::Rect(), view);
           window->SetIsAlwaysOnTop(true);
           window->Show();
@@ -161,7 +162,7 @@ void NetworkMenu::ActivatedAt(int index) {
       } else {
         NetworkConfigView* view = new NetworkConfigView(wifi, true);
         view->set_browser_mode(IsBrowserMode());
-        views::Window* window = views::Window::CreateChromeWindow(
+        views::Window* window = browser::CreateViewsWindow(
             GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
         window->Show();
@@ -187,7 +188,7 @@ void NetworkMenu::ActivatedAt(int index) {
         } else {
           NetworkConfigView* view = new NetworkConfigView(cellular);
           view->set_browser_mode(IsBrowserMode());
-          views::Window* window = views::Window::CreateChromeWindow(
+          views::Window* window = browser::CreateViewsWindow(
               GetNativeWindow(), gfx::Rect(), view);
           window->SetIsAlwaysOnTop(true);
           window->Show();

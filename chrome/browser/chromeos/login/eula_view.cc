@@ -25,6 +25,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/dom_view.h"
+#include "chrome/browser/views/window.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/url_constants.h"
 #include "cros/chromeos_cryptohome.h"
@@ -372,7 +373,7 @@ void EulaView::LinkActivated(views::Link* source, int event_flags) {
                chromeos::CryptohomeTpmGetPassword(&password)) {
       TpmInfoView* view = new TpmInfoView(ASCIIToWide(password));
       view->Init();
-      views::Window* window = views::Window::CreateChromeWindow(
+      views::Window* window = browser::CreateViewsWindow(
           GetNativeWindow(), gfx::Rect(), view);
       window->SetIsAlwaysOnTop(true);
       window->Show();

@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/views/modal_dialog_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/views/window.h"
 #include "views/window/window.h"
 
 void ModalDialogDelegate::ShowModalDialog() {
@@ -14,7 +15,7 @@ void ModalDialogDelegate::ShowModalDialog() {
   if (!root_hwnd) {
     Cancel();
   } else {
-    dialog_ = views::Window::CreateChromeWindow(root_hwnd, gfx::Rect(), this);
+    dialog_ = browser::CreateViewsWindow(root_hwnd, gfx::Rect(), this);
     dialog_->Show();
   }
 }

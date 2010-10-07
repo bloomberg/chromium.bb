@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/browser/views/window.h"
 #include "grit/generated_resources.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -312,7 +313,7 @@ void ExtensionInstallUI::ShowExtensionInstallUIPrompt2Impl(
     return;
   }
 
-  views::Window::CreateChromeWindow(window->GetNativeHandle(), gfx::Rect(),
+  browser::CreateViewsWindow(window->GetNativeHandle(), gfx::Rect(),
       new InstallDialogContent2(delegate, extension, icon, permissions))
           ->Show();
 }

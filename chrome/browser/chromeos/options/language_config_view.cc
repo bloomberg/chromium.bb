@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/restart_message_box.h"
+#include "chrome/browser/views/window.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
@@ -161,7 +162,7 @@ void LanguageConfigView::ButtonPressed(
       DLOG(FATAL) << "Config view not found: " << button->input_method_id();
       return;
     }
-    views::Window* window = views::Window::CreateChromeWindow(
+    views::Window* window = browser::CreateViewsWindow(
         GetOptionsViewParent(), gfx::Rect(), config_view);
     window->SetIsAlwaysOnTop(true);
     window->Show();
@@ -323,7 +324,7 @@ void LanguageConfigView::InitControlLayout() {
 
 void LanguageConfigView::Show(Profile* profile, gfx::NativeWindow parent) {
   UserMetrics::RecordAction(UserMetricsAction("LanguageConfigView_Open"));
-  views::Window* window = views::Window::CreateChromeWindow(
+  views::Window* window = browser::CreateViewsWindow(
       parent, gfx::Rect(), new LanguageConfigView(profile));
   window->SetIsAlwaysOnTop(true);
   window->Show();

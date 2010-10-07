@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
+#include "chrome/browser/views/window.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
@@ -216,7 +217,7 @@ void NetworkSection::AddNetwork(int id, const SkBitmap& icon,
 }
 
 void NetworkSection::CreateModalPopup(views::WindowDelegate* view) {
-  views::Window* window = views::Window::CreateChromeWindow(
+  views::Window* window = browser::CreateViewsWindow(
       GetOptionsViewParent(), gfx::Rect(), view);
   window->SetIsAlwaysOnTop(true);
   window->Show();

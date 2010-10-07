@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
+#include "chrome/browser/views/window.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/non_client_view.h"
@@ -218,6 +219,7 @@ void NativeDialogHost::Init() {
   gtk_widget_show_all(contents);
 
   contents_view_ = new views::NativeViewHost();
+  // TODO(xiyuan): Find a better way to get proper background.
   contents_view_->set_background(views::Background::CreateSolidBackground(
       BubbleWindow::kBackgroundColor));
   AddChildView(contents_view_);
@@ -265,7 +267,7 @@ void ShowNativeDialog(gfx::NativeWindow parent,
                       const gfx::Size& min_size) {
   NativeDialogHost* native_dialog_host =
       new NativeDialogHost(native_dialog, flags, size, min_size);
-  BubbleWindow::Create(parent, gfx::Rect(), native_dialog_host);
+  browser::CreateViewsWindow(parent, gfx::Rect(), native_dialog_host);
   native_dialog_host->window()->Show();
 }
 

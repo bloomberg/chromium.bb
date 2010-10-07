@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/views/window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "gfx/native_widget_types.h"
@@ -394,7 +395,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
         CaptchaView* view =
             new CaptchaView(failure.error().captcha().image_url);
         view->set_delegate(this);
-        views::Window* window = views::Window::CreateChromeWindow(
+        views::Window* window = browser::CreateViewsWindow(
             GetNativeWindow(), gfx::Rect(), view);
         window->SetIsAlwaysOnTop(true);
         window->Show();
@@ -509,9 +510,9 @@ void ExistingUserController::OnPasswordChangeDetected(
   }
 
   PasswordChangedView* view = new PasswordChangedView(this);
-  views::Window* window = views::Window::CreateChromeWindow(GetNativeWindow(),
-                                                            gfx::Rect(),
-                                                            view);
+  views::Window* window = browser::CreateViewsWindow(GetNativeWindow(),
+                                                     gfx::Rect(),
+                                                     view);
   window->SetIsAlwaysOnTop(true);
   window->Show();
 }

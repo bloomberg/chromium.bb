@@ -7,6 +7,7 @@
 #include "app/keyboard_codes.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/window.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -23,7 +24,7 @@ void ShowHtmlDialogView(gfx::NativeWindow parent, Profile* profile,
                         HtmlDialogUIDelegate* delegate) {
   HtmlDialogView* html_view =
       new HtmlDialogView(profile, delegate);
-  views::Window::CreateChromeWindow(parent, gfx::Rect(), html_view);
+  browser::CreateViewsWindow(parent, gfx::Rect(), html_view);
   html_view->InitDialog();
   html_view->window()->Show();
 }

@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/views/window.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/window/dialog_delegate.h"
@@ -48,7 +49,7 @@ void NetworkMessageObserver::CreateModalPopup(views::WindowDelegate* view) {
                                                true);
   }
   DCHECK(browser);
-  views::Window* window = views::Window::CreateChromeWindow(
+  views::Window* window = browser::CreateViewsWindow(
       browser->window()->GetNativeHandle(), gfx::Rect(), view);
   window->SetIsAlwaysOnTop(true);
   window->Show();

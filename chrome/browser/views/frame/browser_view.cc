@@ -53,6 +53,7 @@
 #include "chrome/browser/views/theme_install_bubble_view.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/views/update_recommended_message_box.h"
+#include "chrome/browser/views/window.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -1163,8 +1164,8 @@ void BrowserView::ShowThemeInstallBubble() {
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressConfirmDialogDelegate* delegate =
       new DownloadInProgressConfirmDialogDelegate(browser_.get());
-  views::Window::CreateChromeWindow(GetNativeHandle(), gfx::Rect(),
-                                    delegate)->Show();
+  browser::CreateViewsWindow(GetNativeHandle(), gfx::Rect(),
+                             delegate)->Show();
 }
 
 void BrowserView::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,

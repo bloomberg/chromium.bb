@@ -17,6 +17,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/accessible_view_helper.h"
+#include "chrome/browser/views/window.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -379,9 +380,9 @@ void ShowOptionsWindow(OptionsPage page,
   chromeos::CloseOptionsWindow();
 
   OptionsWindowView::instance_ = new OptionsWindowView(profile);
-  views::Window::CreateChromeWindow(chromeos::GetOptionsViewParent(),
-                                    gfx::Rect(),
-                                    OptionsWindowView::instance_);
+  browser::CreateViewsWindow(chromeos::GetOptionsViewParent(),
+                             gfx::Rect(),
+                             OptionsWindowView::instance_);
 
   OptionsWindowView::instance_->ShowOptionsPage(page, highlight_group);
 }

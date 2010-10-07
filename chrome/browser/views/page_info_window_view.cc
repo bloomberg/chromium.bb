@@ -11,6 +11,7 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_window.h"
+#include "chrome/browser/views/window.h"
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
@@ -179,7 +180,7 @@ void PageInfoWindowView::Init(gfx::NativeWindow parent) {
     }
   }
 
-  views::Window::CreateChromeWindow(parent, gfx::Rect(), this);
+  browser::CreateViewsWindow(parent, gfx::Rect(), this);
 }
 
 gfx::Size PageInfoWindowView::GetPreferredSize() {
