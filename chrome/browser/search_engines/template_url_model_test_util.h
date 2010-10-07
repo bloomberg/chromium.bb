@@ -48,11 +48,11 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
 
   // Blocks the caller until the service has finished servicing all pending
   // requests.
-  void BlockTillServiceProcessesRequests();
+  static void BlockTillServiceProcessesRequests();
 
   // Blocks the caller until the I/O thread has finished servicing all pending
   // requests.
-  void BlockTillIOThreadProcessesRequests();
+  static void BlockTillIOThreadProcessesRequests();
 
   // Makes sure the load was successful and sent the correct notification.
   void VerifyLoad();
@@ -83,6 +83,9 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
 
   // Returns the TestingProfile.
   TestingProfile* profile() const;
+
+  // Starts an I/O thread.
+  void StartIOThread();
 
  private:
   MessageLoopForUI message_loop_;

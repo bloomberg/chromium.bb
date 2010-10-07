@@ -200,6 +200,9 @@ class TestingProfile : public Profile {
   // the CookieMonster. See implementation comments for more details.
   virtual URLRequestContextGetter* GetRequestContext();
   void CreateRequestContext();
+  // Clears out the created request context (which must be done before shutting
+  // down the IO thread to avoid leaks).
+  void ResetRequestContext();
 
   virtual URLRequestContextGetter* GetRequestContextForMedia() { return NULL; }
   virtual URLRequestContextGetter* GetRequestContextForExtensions();

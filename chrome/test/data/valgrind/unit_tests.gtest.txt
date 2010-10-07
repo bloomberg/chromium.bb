@@ -8,5 +8,3 @@ RenderViewTest.ImeComposition
 PredictorTest.MassiveConcurrentLookupTest
 # Pure virtual method called: see http://crbug.com/50950
 ConnectionTesterTest.RunAllTests
-# Hangs sometimes; see http://crbug.com/58242
-TemplateURLFetcherTest.BasicTest

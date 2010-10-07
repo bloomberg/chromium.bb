@@ -409,6 +409,10 @@ void TestingProfile::CreateRequestContext() {
     request_context_ = new TestURLRequestContextGetter();
 }
 
+void TestingProfile::ResetRequestContext() {
+  request_context_ = NULL;
+}
+
 URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   if (!extensions_request_context_)
       extensions_request_context_ = new TestExtensionURLRequestContextGetter();

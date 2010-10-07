@@ -276,7 +276,7 @@ class TemplateURLModelTest : public testing::Test {
     test_util_.VerifyObserverCount(expected_changed_count);
   }
   void BlockTillServiceProcessesRequests() {
-    test_util_.BlockTillServiceProcessesRequests();
+    TemplateURLModelTestUtil::BlockTillServiceProcessesRequests();
   }
   void VerifyLoad() { test_util_.VerifyLoad(); }
   void ChangeModelToLoadState() { test_util_.ChangeModelToLoadState(); }
@@ -486,15 +486,13 @@ TEST_F(TemplateURLModelTest, GenerateSearchURLUsingTermsData) {
   scoped_refptr<TestGenerateSearchURL> test_generate_search_url(
       new TestGenerateSearchURL(&search_terms_data));
 
-  BrowserThread io_thread(BrowserThread::IO);
-  io_thread.Start();
-  io_thread.message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(test_generate_search_url.get(),
-                        &TestGenerateSearchURL::RunTest));
-  test_util_.BlockTillIOThreadProcessesRequests();
+  test_util_.StartIOThread();
+  BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(test_generate_search_url.get(),
+                            &TestGenerateSearchURL::RunTest));
+  TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests();
   EXPECT_TRUE(test_generate_search_url->passed());
-  io_thread.Stop();
 }
 
 TEST_F(TemplateURLModelTest, ClearBrowsingData_Keywords) {

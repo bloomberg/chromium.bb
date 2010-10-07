@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/platform_thread.h"
+#include "base/file_util.h"
+#include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_model_test_util.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "net/test/test_server.h"
@@ -48,13 +50,9 @@ class TemplateURLFetcherTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(test_server_.Start());
+
     test_util_.SetUp();
-
-    io_thread_.reset(new BrowserThread(BrowserThread::IO));
-    base::Thread::Options options;
-    options.message_loop_type = MessageLoop::TYPE_IO;
-    io_thread_->StartWithOptions(options);
-
+    test_util_.StartIOThread();
     test_util_.profile()->CreateTemplateURLFetcher();
     ASSERT_TRUE(test_util_.profile()->GetTemplateURLFetcher());
 
@@ -63,15 +61,12 @@ class TemplateURLFetcherTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    io_thread_->Stop();
-    io_thread_.reset();
     test_util_.TearDown();
   }
 
  protected:
   TemplateURLModelTestUtil test_util_;
   net::TestServer test_server_;
-  scoped_ptr<BrowserThread> io_thread_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcherTest);
@@ -89,7 +84,17 @@ TEST_F(TemplateURLFetcherTest, BasicTest) {
   test_util_.ResetObserverCount();
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
 
-  GURL osdd_url = test_server_.GetURL("files/osdd/dictionary.xml");
+  std::string osdd_file_name("simple_open_search.xml");
+
+  // Verify that the file exists.
+  FilePath osdd_full_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &osdd_full_path));
+  osdd_full_path = osdd_full_path.AppendASCII(osdd_file_name);
+  ASSERT_TRUE(file_util::PathExists(osdd_full_path));
+  ASSERT_FALSE(file_util::DirectoryExists(osdd_full_path));
+
+  // Start the fetch.
+  GURL osdd_url = test_server_.GetURL("files/" + osdd_file_name);
   GURL favicon_url;
   test_util_.profile()->GetTemplateURLFetcher()->ScheduleDownload(
       keyword, osdd_url, favicon_url, NULL, true);
@@ -102,7 +107,7 @@ TEST_F(TemplateURLFetcherTest, BasicTest) {
   const TemplateURL* t_url = test_util_.model()->GetTemplateURLForKeyword(
       keyword);
   ASSERT_TRUE(t_url);
-  EXPECT_STREQ(L"http://dictionary.reference.com/browse/%s?r=75",
+  EXPECT_STREQ(L"http://example.com/%s/other_stuff",
                t_url->url()->DisplayURL().c_str());
   EXPECT_EQ(true, t_url->safe_for_autoreplace());
 }

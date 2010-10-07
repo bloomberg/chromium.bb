@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/thread.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
@@ -48,10 +49,22 @@ static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
 // Subclass the TestingProfile so that it can return a WebDataService.
 class TemplateURLModelTestingProfile : public TestingProfile {
  public:
-  TemplateURLModelTestingProfile() : TestingProfile() {}
+  TemplateURLModelTestingProfile()
+      : TestingProfile(),
+        db_thread_(BrowserThread::DB),
+        io_thread_(BrowserThread::IO) {
+  }
 
   void SetUp();
   void TearDown();
+
+  // Starts the I/O thread. This isn't done automatically because not every test
+  // needs this.
+  void StartIOThread() {
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_IO;
+    io_thread_.StartWithOptions(options);
+  }
 
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {
     return service_.get();
@@ -60,7 +73,8 @@ class TemplateURLModelTestingProfile : public TestingProfile {
  private:
   scoped_refptr<WebDataService> service_;
   ScopedTempDir temp_dir_;
-  scoped_ptr<BrowserThread> db_thread_;
+  BrowserThread db_thread_;
+  BrowserThread io_thread_;
 };
 
 // Trivial subclass of TemplateURLModel that records the last invocation of
@@ -91,8 +105,7 @@ class TestingTemplateURLModel : public TemplateURLModel {
 };
 
 void TemplateURLModelTestingProfile::SetUp() {
-  db_thread_.reset(new BrowserThread(BrowserThread::DB));
-  db_thread_->Start();
+  db_thread_.Start();
 
   // Make unique temp directory.
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -103,13 +116,24 @@ void TemplateURLModelTestingProfile::SetUp() {
 }
 
 void TemplateURLModelTestingProfile::TearDown() {
+  // Clear the request context so it will get deleted. This should be done
+  // before shutting down the I/O thread to avoid memory leaks.
+  ResetRequestContext();
+
+  // Wait for the delete of the request context to happen.
+  if (io_thread_.IsRunning())
+    TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests();
+
+  // The I/O thread must be shutdown before the DB thread.
+  io_thread_.Stop();
+
   // Clean up the test directory.
   service_->Shutdown();
   // Note that we must ensure the DB thread is stopped after WDS
   // shutdown (so it can commit pending transactions) but before
   // deleting the test profile directory, otherwise we may not be
   // able to delete it due to an open transaction.
-  db_thread_->Stop();
+  db_thread_.Stop();
 }
 
 TemplateURLModelTestUtil::TemplateURLModelTestUtil()
@@ -129,6 +153,7 @@ void TemplateURLModelTestUtil::SetUp() {
 
 void TemplateURLModelTestUtil::TearDown() {
   profile_->TearDown();
+  profile_.reset();
   TemplateURLRef::SetGoogleBaseURL(NULL);
 
   // Flush the message loop to make Purify happy.
@@ -205,4 +230,8 @@ TemplateURLModel* TemplateURLModelTestUtil::model() const {
 
 TestingProfile* TemplateURLModelTestUtil::profile() const {
   return profile_.get();
+}
+
+void TemplateURLModelTestUtil::StartIOThread() {
+  profile_->StartIOThread();
 }
