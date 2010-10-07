@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/pref_names.h"
 #include "webkit/glue/plugins/plugin_group.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -138,7 +140,7 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
 
   bool found_internal_pdf = false;
   bool force_enable_internal_pdf = false;
-  string16 pdf_group_name;
+  string16 pdf_group_name = ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName);
   FilePath pdf_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
   FilePath::StringType pdf_path_str = pdf_path.value();
@@ -184,7 +186,6 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
 
         if (FilePath::CompareIgnoreCase(path, pdf_path_str) == 0) {
           found_internal_pdf = true;
-          plugin->GetString("name", &pdf_group_name);
           if (!enabled && force_enable_internal_pdf) {
             enabled = true;
             plugin->SetBoolean("enabled", true);
@@ -215,6 +216,7 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
     // The internal PDF plugin is disabled by default, and the user hasn't
     // overridden the default.
     NPAPI::PluginList::Singleton()->DisablePlugin(pdf_path);
+    NPAPI::PluginList::Singleton()->EnableGroup(false, pdf_group_name);
   }
 
   if (update_preferences)

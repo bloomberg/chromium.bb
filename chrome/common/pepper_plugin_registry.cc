@@ -15,6 +15,12 @@
 #include "chrome/common/chrome_switches.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
+const char* PepperPluginRegistry::kPDFPluginName = "Chrome PDF Viewer";
+const char* PepperPluginRegistry::kPDFPluginMimeType = "application/pdf";
+const char* PepperPluginRegistry::kPDFPluginExtension = "pdf";
+const char* PepperPluginRegistry::kPDFPluginDescription =
+    "Portable Document Format";
+
 PepperPluginInfo::PepperPluginInfo() : is_internal(false) {
 }
 
@@ -115,10 +121,10 @@ void PepperPluginRegistry::GetExtraPlugins(
     if (skip_pdf_file_check || file_util::PathExists(path)) {
       PepperPluginInfo pdf;
       pdf.path = path;
-      pdf.name = "Chrome PDF Viewer";
-      pdf.mime_types.push_back("application/pdf");
-      pdf.file_extensions = "pdf";
-      pdf.type_descriptions = "Portable Document Format";
+      pdf.name = kPDFPluginName;
+      pdf.mime_types.push_back(kPDFPluginMimeType);
+      pdf.file_extensions = kPDFPluginExtension;
+      pdf.type_descriptions = kPDFPluginDescription;
       plugins->push_back(pdf);
 
       skip_pdf_file_check = true;

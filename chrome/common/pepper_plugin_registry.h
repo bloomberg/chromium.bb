@@ -29,6 +29,11 @@ struct PepperPluginInfo {
 // This class holds references to all of the known pepper plugin modules.
 class PepperPluginRegistry {
  public:
+  static const char* kPDFPluginName;
+  static const char* kPDFPluginMimeType;
+  static const char* kPDFPluginExtension;
+  static const char* kPDFPluginDescription;
+
   static PepperPluginRegistry* GetInstance();
 
   // Returns the list of known pepper plugins.  This method is static so that
