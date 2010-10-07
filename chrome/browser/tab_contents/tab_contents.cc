@@ -59,7 +59,6 @@
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer.h"
-#include "chrome/browser/popup_blocked_animation.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profile.h"
@@ -1515,8 +1514,6 @@ void TabContents::AddPopup(TabContents* new_contents,
     blocked_popups_->AddTabContents(new_contents, initial_pos);
     content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS,
                                                  std::string());
-    if (!is_being_destroyed())
-      PopupBlockedAnimation::Show(this);
   }
 }
 
