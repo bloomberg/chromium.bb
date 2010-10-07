@@ -10,6 +10,9 @@
 #include <cassert>
 #include <cstring>
 #include <new>
+//#include <windows.h>
+//#include "odbgstream.hpp"
+//using std::endl;
 
 mkvparser::IMkvReader::~IMkvReader()
 {
@@ -781,6 +784,7 @@ Segment::Segment(
     m_pInfo(NULL),
     m_pTracks(NULL),
     m_pCues(NULL),
+    m_cues_off(-1),
     m_clusters(NULL),
     m_clusterCount(0),
     m_clusterPreloadCount(0),
@@ -994,16 +998,20 @@ long long Segment::ParseHeaders()
         }
         else if (id == 0x0C53BB6B)  //Cues ID
         {
+#if 0
             if (m_pCues == NULL)
             {
                 m_pCues = new Cues(this, pos, size);
                 assert(m_pCues);  //TODO
             }
+#else
+            if (m_cues_off < 0)
+                m_cues_off = idpos - m_start;  //relative to segment start
+#endif
         }
         else if (id == 0x014D9B74)  //SeekHead ID
         {
-            if (m_pCues == NULL)
-                ParseSeekHead(pos, size);
+            ParseSeekHead(pos, size);
         }
         else if (id == 0x0F43B675)  //Cluster ID
         {
@@ -1239,11 +1247,16 @@ long Segment::LoadCluster()
 
         if (id == 0x0C53BB6B)  //Cues ID
         {
+#if 0
             if (m_pCues == NULL)
             {
                 m_pCues = new Cues(this, pos, size);
                 assert(m_pCues);  //TODO
             }
+#else
+            if (m_cues_off < 0)
+                m_cues_off = idpos - m_start;
+#endif
 
             m_pos = pos + size;  //consume payload
             continue;
@@ -1604,12 +1617,15 @@ void Segment::ParseSeekHead(long long start, long long size_)
 }
 
 
-void Segment::ParseCues(long long off)
+void Segment::ParseCues()
 {
-    assert(off >= 0);
-    assert(off < m_size);
+    //odbgstream os;
+    //os << "Segment::ParseCues (begin)" << endl;
 
-    long long pos = m_start + off;
+    if ((m_pCues != NULL) || (m_cues_off < 0))
+        return;
+
+    long long pos = m_start + m_cues_off;
     const long long stop = m_start + m_size;
 
     long len;
@@ -1640,10 +1656,10 @@ void Segment::ParseCues(long long off)
 
     //Pos now points to start of payload
 
-    assert(m_pCues == NULL);  //TODO: make this check sooner
-
     m_pCues = new Cues(this, pos, size);
     assert(m_pCues);  //TODO
+
+    //os << "Segment::ParseCues (end)" << endl;
 }
 
 
@@ -1729,7 +1745,14 @@ void Segment::ParseSeekEntry(
 #endif
 
     if (seekId == 0x0C53BB6B)  //Cues ID
+    {
+#if 0
         ParseCues(seekOff);
+#else
+        if (m_cues_off < 0)
+            m_cues_off = seekOff;
+#endif
+    }
 }
 
 
@@ -2537,8 +2560,19 @@ bool Segment::SearchCues(
     Cluster*& pCluster,
     const BlockEntry*& pBlockEntry)
 {
-    if (m_pCues == 0)
+#if 0
+    if (m_pCues == NULL)
+    {
+        if (m_cues_off < 0)
+            return false;
+
+        ParseCues();
+        assert(m_pCues);
+    }
+#else
+    if (m_pCues == NULL)
         return false;
+#endif
 
     if (pTrack->GetType() != 1)  //not video
         return false;  //TODO: for now, just handle video stream
@@ -2713,6 +2747,12 @@ Tracks* Segment::GetTracks() const
 const SegmentInfo* Segment::GetInfo() const
 {
     return m_pInfo;
+}
+
+
+const Cues* Segment::GetCues() const
+{
+    return m_pCues;
 }
 
 
@@ -3639,7 +3679,7 @@ Cluster::~Cluster()
 
 bool Cluster::EOS() const
 {
-    return (m_pSegment == 0);
+    return (m_pSegment == NULL);
 }
 
 
@@ -3799,7 +3839,7 @@ long long Cluster::GetFirstTime()
 {
     const BlockEntry* const pEntry = GetFirst();
 
-    if (pEntry == 0)  //empty cluster
+    if (pEntry == NULL)  //empty cluster
         return GetTime();
 
     const Block* const pBlock = pEntry->GetBlock();
@@ -3954,7 +3994,7 @@ const BlockEntry* Cluster::GetMaxKey(const VideoTrack* pTrack)
 {
     assert(pTrack);
 
-    if (m_pSegment == 0)  //EOS
+    if (m_pSegment == NULL)  //EOS
         return pTrack->GetEOS();
 
     LoadBlockEntries();

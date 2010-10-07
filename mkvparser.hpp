@@ -499,6 +499,7 @@ public:
         Cluster*&,
         const BlockEntry*&);
 
+    void ParseCues();
     const Cues* GetCues() const;
 
 private:
@@ -506,6 +507,7 @@ private:
     SegmentInfo* m_pInfo;
     Tracks* m_pTracks;
     Cues* m_pCues;
+    long long m_cues_off;
     Cluster** m_clusters;
     long m_clusterCount;         //number of entries for which m_index >= 0
     long m_clusterPreloadCount;  //number of entries for which m_index < 0
@@ -516,7 +518,6 @@ private:
 
     void ParseSeekHead(long long pos, long long size);
     void ParseSeekEntry(long long pos, long long size);
-    void ParseCues(long long off);
 
     bool SearchCues(
         long long time_ns,
