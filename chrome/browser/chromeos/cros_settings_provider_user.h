@@ -50,9 +50,6 @@ class UserCrosSettingsProvider : public CrosSettingsProvider,
 
  private:
   void StartFetchingBoolSetting(const std::string& name);
-  ListValue* GetUserWhitelist() const;
-
-  bool current_user_is_owner_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCrosSettingsProvider);
 };

@@ -100,12 +100,14 @@ void EnableTooltipsIfNeeded(const std::vector<UserController*>& controllers) {
 // Note this function is for display purpose only and should use
 // CheckWhitelist op for the real whitelist check.
 bool IsEmailInCachedWhitelist(const std::string& email) {
-  StringValue email_value(email);
   const ListValue* whitelist = UserCrosSettingsProvider::cached_whitelist();
-  for (ListValue::const_iterator i(whitelist->begin());
-      i != whitelist->end(); ++i) {
-    if ((*i)->Equals(&email_value))
-      return true;
+  if (whitelist) {
+    StringValue email_value(email);
+    for (ListValue::const_iterator i(whitelist->begin());
+        i != whitelist->end(); ++i) {
+      if ((*i)->Equals(&email_value))
+        return true;
+    }
   }
   return false;
 }
