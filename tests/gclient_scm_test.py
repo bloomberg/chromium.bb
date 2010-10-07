@@ -731,7 +731,7 @@ from :3
          '________ running \'git clone -b master --verbose %s %s\' in \'%s\'\n'
          'Initialized empty Git repository in %s\n') %
             (join(self.root_dir, '.', '.git'), join(root_dir, 'foo'), root_dir,
-             join(root_dir, 'foo', '.git') + '/'))
+             join(gclient_scm.os.path.realpath(root_dir), 'foo', '.git') + '/'))
 
   def testUpdateUpdate(self):
     if not self.enabled:

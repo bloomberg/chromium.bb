@@ -114,18 +114,19 @@ class SCM(object):
     Uses gcl-style settings from the repository.
     """
     if gcl:
-      return gcl.GetCodeReviewSetting(key)
-    else:
-      if self.codereview_settings is None:
-        self.codereview_settings = {}
-        settings_file = self.ReadRootFile(self.codereview_settings_file)
-        if settings_file:
-          for line in settings_file.splitlines():
-            if not line or line.lstrip().startswith('#'):
-              continue
-            k, v = line.split(":", 1)
-            self.codereview_settings[k.strip()] = v.strip()
-      return self.codereview_settings.get(key, '')
+      gcl_setting = gcl.GetCodeReviewSetting(key)
+      if gcl_setting != '':
+        return gcl_setting
+    if self.codereview_settings is None:
+      self.codereview_settings = {}
+      settings_file = self.ReadRootFile(self.codereview_settings_file)
+      if settings_file:
+        for line in settings_file.splitlines():
+          if not line or line.lstrip().startswith('#'):
+            continue
+          k, v = line.split(":", 1)
+          self.codereview_settings[k.strip()] = v.strip()
+    return self.codereview_settings.get(key, '')
 
   def _GclStyleSettings(self):
     """Set default settings based on the gcl-style settings from the
