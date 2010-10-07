@@ -26,6 +26,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -296,9 +297,14 @@ void DesktopNotificationService::Observe(NotificationType type,
                                          const NotificationDetails& details) {
   DCHECK(NotificationType::PREF_CHANGED == type);
   PrefService* prefs = profile_->GetPrefs();
-  std::string* name = Details<std::string>(details).ptr();
+  const std::string& name = *Details<std::string>(details).ptr();
 
-  if (0 == name->compare(prefs::kDesktopNotificationAllowedOrigins)) {
+  if (name == prefs::kDesktopNotificationAllowedOrigins) {
+    NotificationService::current()->Notify(
+        NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+        Source<DesktopNotificationService>(this),
+        NotificationService::NoDetails());
+
     std::vector<GURL> allowed_origins(GetAllowedOrigins());
     // Schedule a cache update on the IO thread.
     ChromeThread::PostTask(
@@ -307,7 +313,12 @@ void DesktopNotificationService::Observe(NotificationType type,
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheAllowedOrigins,
             allowed_origins));
-  } else if (0 == name->compare(prefs::kDesktopNotificationDeniedOrigins)) {
+  } else if (name == prefs::kDesktopNotificationDeniedOrigins) {
+    NotificationService::current()->Notify(
+        NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+        Source<DesktopNotificationService>(this),
+        NotificationService::NoDetails());
+
     std::vector<GURL> denied_origins(GetBlockedOrigins());
     // Schedule a cache update on the IO thread.
     ChromeThread::PostTask(
@@ -316,8 +327,7 @@ void DesktopNotificationService::Observe(NotificationType type,
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheDeniedOrigins,
             denied_origins));
-  } else if (0 == name->compare(
-      prefs::kDesktopNotificationDefaultContentSetting)) {
+  } else if (name == prefs::kDesktopNotificationDefaultContentSetting) {
     const ContentSetting default_content_setting = IntToContentSetting(
         prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
 

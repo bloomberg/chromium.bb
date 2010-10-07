@@ -278,22 +278,37 @@ void ContentSettingsHandler::Initialize() {
   notification_registrar_.Add(
       this, NotificationType::CONTENT_SETTINGS_CHANGED,
       Source<const HostContentSettingsMap>(settings_map));
+  notification_registrar_.Add(
+      this, NotificationType::GEOLOCATION_SETTINGS_CHANGED,
+      NotificationService::AllSources());
 }
 
 void ContentSettingsHandler::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (type != NotificationType::CONTENT_SETTINGS_CHANGED)
-    return OptionsPageUIHandler::Observe(type, source, details);
+  switch (type.value) {
+    case NotificationType::CONTENT_SETTINGS_CHANGED: {
+      const ContentSettingsDetails* settings_details =
+          static_cast<Details<const ContentSettingsDetails> >(details).ptr();
 
-  const ContentSettingsDetails* settings_details =
-      static_cast<Details<const ContentSettingsDetails> >(details).ptr();
-
-  // TODO(estade): we pretend update_all() is always true.
-  if (settings_details->update_all_types())
-    UpdateAllExceptionsViewsFromModel();
-  else
-    UpdateExceptionsViewFromModel(settings_details->type());
+      // TODO(estade): we pretend update_all() is always true.
+      if (settings_details->update_all_types())
+        UpdateAllExceptionsViewsFromModel();
+      else
+        UpdateExceptionsViewFromModel(settings_details->type());
+      break;
+    }
+    case NotificationType::GEOLOCATION_SETTINGS_CHANGED: {
+      UpdateGeolocationExceptionsView();
+      break;
+    }
+    case NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED: {
+      UpdateNotificationExceptionsView();
+      break;
+    }
+    default:
+      OptionsPageUIHandler::Observe(type, source, details);
+  }
 }
 
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
