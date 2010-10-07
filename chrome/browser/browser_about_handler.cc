@@ -1162,11 +1162,11 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
 
   // Handle URLs to wreck the gpu process.
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
-    GpuProcessHost::Get()->SendAboutGpuCrash();
+    GpuProcessHost::SendAboutGpuCrash();
     return true;
   }
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuHangURL)) {
-    GpuProcessHost::Get()->SendAboutGpuHang();
+    GpuProcessHost::SendAboutGpuHang();
     return true;
   }
 

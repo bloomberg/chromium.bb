@@ -11,7 +11,6 @@
 #include "chrome/gpu/gpu_config.h"
 #include "chrome/gpu/gpu_process.h"
 #include "chrome/gpu/gpu_thread.h"
-#include "chrome/gpu/gpu_watchdog_thread.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
@@ -66,20 +65,11 @@ int GpuMain(const MainFunctionParams& parameters) {
   GpuProcess gpu_process;
   gpu_process.set_main_thread(new GpuThread());
 
-  scoped_refptr<GpuWatchdogThread> watchdog_thread(
-      new GpuWatchdogThread(MessageLoop::current()));
-
-  if (!command_line.HasSwitch(switches::kDisableGpuWatchdog))
-    watchdog_thread->Start();
-
 #if defined(USE_X11)
   SetGpuX11ErrorHandlers();
 #endif
 
   main_message_loop.Run();
-
-  if (!command_line.HasSwitch(switches::kDisableGpuWatchdog))
-    watchdog_thread->Stop();
 
   return 0;
 }
