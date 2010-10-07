@@ -1863,11 +1863,16 @@
           # the rules of chrome_strings
           'target_name': 'policy_templates',
           'type': 'none',
+          'variables': {
+            'grd_path': 'app/policy/policy_templates.grd',
+            'template_files': [
+              '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(grd_path))'
+            ]
+          },
           'actions': [
             {
               'action_name': 'policy_templates',
               'variables': {
-                'input_path': 'app/policy/policy_templates.grd',
                 'conditions': [
                   ['branding=="Chrome"', {
                     # TODO(mmoss) The .grd files look for _google_chrome, but for
@@ -1880,14 +1885,14 @@
                 ],
               },
               'inputs': [
-                '<!@(<(grit_info_cmd) --inputs <(input_path))',
+                '<!@(<(grit_info_cmd) --inputs <(grd_path))',
               ],
               'outputs': [
-                '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
+                '<@(template_files)'
               ],
               'action': [
                 '<@(grit_cmd)',
-                '-i', '<(input_path)', 'build',
+                '-i', '<(grd_path)', 'build',
                 '-o', '<(grit_out_dir)',
                 '-D', '<(chrome_build)'
               ],
@@ -1902,7 +1907,7 @@
                   'action': ['-D', 'mac_bundle_id=<(mac_bundle_id)'],
                 }],
               ],
-              'message': 'Generating policy templates from <(input_path)',
+              'message': 'Generating policy templates from <(grd_path)',
             },
           ],
           'direct_dependent_settings': {
@@ -1911,6 +1916,34 @@
             ],
           },
           'conditions': [
+            ['OS=="win"', {
+              'actions': [
+                {
+                  # Add all the templates generated at the previous step into
+                  # a zip archive.
+                  'action_name': 'pack_templates',
+                  'variables': {
+                    'zip_script':
+                        'tools/build/win/make_zip_with_relative_entries.py'
+                  },
+                  'inputs': [
+                    '<@(template_files)',
+                    '<(zip_script)'
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/policy_templates.zip'
+                  ],
+                  'action': [
+                    'python',
+                    '<(zip_script)',
+                    '<@(_outputs)',
+                    '<(grit_out_dir)/app/policy',
+                    '<@(template_files)'
+                  ],
+                  'message': 'Packing generated templates into <(_outputs)',
+                }
+              ]
+            }],
             ['OS=="win"', {
               'dependencies': ['../build/win/system.gyp:cygwin'],
             }],
