@@ -68,6 +68,7 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
                    G_CALLBACK(OnShowPasswordButtonRealizedThunk), this);
 
   password_ = gtk_label_new("");
+  gtk_label_set_selectable(GTK_LABEL(password_), TRUE);
   gtk_widget_set_no_show_all(password_, true);
 
   GtkWidget* buttons = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
