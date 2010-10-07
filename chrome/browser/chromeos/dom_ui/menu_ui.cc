@@ -269,6 +269,8 @@ void MenuUIHTMLSource::OnURLFetchComplete(const URLFetcher* source,
                                           int response_code,
                                           const ResponseCookies& cookies,
                                           const std::string& data) {
+#ifndef NDEBUG
+  // This should not be called in release build.
   const std::string menu_html =
       GetMenuUIHTMLSourceFromString(data);
 
@@ -281,6 +283,7 @@ void MenuUIHTMLSource::OnURLFetchComplete(const URLFetcher* source,
   SendResponse(request_id_, html_bytes);
 
   delete source;
+#endif
 }
 
 
