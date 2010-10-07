@@ -194,7 +194,7 @@ bool Image::LoadMetafile(const std::string& data) {
   DCHECK(!data.empty());
 #if defined(OS_WIN) || defined(OS_MACOSX)
   NativeMetafile metafile;
-  metafile.CreateFromData(data.data(), data.size());
+  metafile.Init(data.data(), data.size());
   return LoadMetafile(metafile);
 #else
   NOTIMPLEMENTED();

@@ -119,7 +119,7 @@ void MockPrinter::PrintPage(const ViewHostMsg_DidPrintPage_Params& params) {
 #endif
   metafile_data.Map(params.data_size);
   printing::NativeMetafile metafile;
-  metafile.CreateFromData(metafile_data.memory(), params.data_size);
+  metafile.Init(metafile_data.memory(), params.data_size);
   printing::Image image(metafile);
   MockPrinterPage* page_data = new MockPrinterPage(metafile_data.memory(),
                                                    params.data_size,

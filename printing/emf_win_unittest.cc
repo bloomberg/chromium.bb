@@ -59,7 +59,7 @@ TEST(EmfTest, DC) {
   // Playback the data.
   hdc = CreateCompatibleDC(NULL);
   EXPECT_TRUE(hdc);
-  EXPECT_TRUE(emf.CreateFromData(&data.front(), size));
+  EXPECT_TRUE(emf.Init(&data.front(), size));
   RECT output_rect = {0, 0, 10, 10};
   EXPECT_TRUE(emf.Playback(hdc, &output_rect));
   EXPECT_TRUE(DeleteDC(hdc));
@@ -91,7 +91,7 @@ TEST_F(EmfPrintingTest, Enumerate) {
   std::string emf_data;
   file_util::ReadFileToString(emf_file, &emf_data);
   ASSERT_TRUE(emf_data.size());
-  EXPECT_TRUE(emf.CreateFromData(&emf_data[0], emf_data.size()));
+  EXPECT_TRUE(emf.Init(&emf_data[0], emf_data.size()));
 
   // This will print to file. The reason is that when running inside a
   // unit_test, printing::PrintingContext automatically dumps its files to the
@@ -144,7 +144,7 @@ TEST_F(EmfPrintingTest, PageBreak) {
   di.cbSize = sizeof(DOCINFO);
   di.lpszDocName = L"Test Job";
   int job_id = ::StartDoc(dc.Get(), &di);
-  EXPECT_TRUE(emf.CreateFromData(&data.front(), size));
+  EXPECT_TRUE(emf.Init(&data.front(), size));
   EXPECT_TRUE(emf.SafePlayback(dc.Get()));
   ::EndDoc(dc.Get());
   // Since presumably the printer is not real, let us just delete the job from

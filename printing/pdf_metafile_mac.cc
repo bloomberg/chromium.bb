@@ -57,11 +57,6 @@ bool PdfMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
   return true;
 }
 
-bool PdfMetafile::CreateFromData(const void* src_buffer,
-                                 uint32 src_buffer_size) {
-  return Init(src_buffer, src_buffer_size);
-}
-
 void PdfMetafile::StartPage(double width, double height, double scale_factor) {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);

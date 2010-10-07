@@ -37,8 +37,6 @@ class PdfMetafile {
 
   // Initializes a copy of metafile from PDF data. Returns true on success.
   bool Init(const void* src_buffer, uint32 src_buffer_size);
-  // Alias for Init, for compatibility with Emf-based code.
-  bool CreateFromData(const void* src_buffer, uint32 src_buffer_size);
 
   // Prepares a new pdf page with the given width and height and a scale
   // factor to use for the drawing.

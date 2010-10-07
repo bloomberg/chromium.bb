@@ -125,7 +125,7 @@ void PrintViewManager::DidPrintPage(
   NOTIMPLEMENTED() << " this printing code doesn't quite work yet.";
 #else
   scoped_ptr<NativeMetafile> metafile(new NativeMetafile());
-  if (!metafile->CreateFromData(shared_buf.memory(), params.data_size)) {
+  if (!metafile->Init(shared_buf.memory(), params.data_size)) {
     NOTREACHED() << "Invalid metafile header";
     owner_.Stop();
     return;
