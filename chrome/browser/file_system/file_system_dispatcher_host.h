@@ -26,17 +26,13 @@ class GURL;
 class HostContentSettingsMap;
 class Receiver;
 class ResourceMessageFilter;
-class URLRequestContextGetter;
 
 class FileSystemDispatcherHost
     : public base::RefCountedThreadSafe<FileSystemDispatcherHost> {
  public:
-  // TODO(ericu): Split this into two constructors when adding worker FileWriter
-  // support.
   FileSystemDispatcherHost(IPC::Message::Sender* sender,
                            FileSystemHostContext* file_system_host_context,
-                           HostContentSettingsMap* host_content_settings_map,
-                           URLRequestContextGetter* url_request_context_getter);
+                           HostContentSettingsMap* host_content_settings_map);
   ~FileSystemDispatcherHost();
   void Init(base::ProcessHandle process_handle);
   void Shutdown();
@@ -100,11 +96,6 @@ class FileSystemDispatcherHost
   // Keeps ongoing file system operations.
   typedef IDMap<fileapi::FileSystemOperation, IDMapOwnPointer> OperationsMap;
   OperationsMap operations_;
-
-  // This holds the URLRequestContextGetter until Init() can be called from the
-  // IO thread, which will extract the URLRequestContext from it.
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
-  scoped_refptr<URLRequestContext> request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);
 };

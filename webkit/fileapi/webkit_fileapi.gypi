@@ -18,8 +18,6 @@
         'file_system_operation.cc',
         'file_system_operation.h',
         'file_system_types.h',
-        'file_writer_delegate.cc',
-        'file_writer_delegate.h',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

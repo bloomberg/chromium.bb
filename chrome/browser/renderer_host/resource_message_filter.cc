@@ -257,8 +257,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
           new FileSystemDispatcherHost(this,
               profile->GetFileSystemHostContext(),
-              profile->GetHostContentSettingsMap(),
-              profile->GetRequestContext()))),
+              profile->GetHostContentSettingsMap()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
           new BlobDispatcherHost(
               this->id(), profile->GetBlobStorageContext()))) {

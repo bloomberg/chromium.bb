@@ -13,11 +13,9 @@
 #include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "googleurl/src/gurl.h"
-#include "net/url_request/url_request_context.h"
 
 // A class to hold an ongoing openFileSystem completion task.
 struct OpenFileSystemCompletionTask {
@@ -71,14 +69,12 @@ struct OpenFileSystemCompletionTask {
 FileSystemDispatcherHost::FileSystemDispatcherHost(
     IPC::Message::Sender* sender,
     FileSystemHostContext* file_system_host_context,
-    HostContentSettingsMap* host_content_settings_map,
-    URLRequestContextGetter* request_context_getter)
+    HostContentSettingsMap* host_content_settings_map)
     : message_sender_(sender),
       process_handle_(0),
       shutdown_(false),
       context_(file_system_host_context),
-      host_content_settings_map_(host_content_settings_map),
-      request_context_getter_(request_context_getter) {
+      host_content_settings_map_(host_content_settings_map) {
   DCHECK(message_sender_);
 }
 
@@ -91,9 +87,6 @@ void FileSystemDispatcherHost::Init(base::ProcessHandle process_handle) {
   DCHECK(!process_handle_);
   DCHECK(process_handle);
   process_handle_ = process_handle;
-  DCHECK(request_context_getter_.get());
-  DCHECK(!request_context_.get());
-  request_context_ = request_context_getter_->GetURLRequestContext();
 }
 
 void FileSystemDispatcherHost::Shutdown() {
@@ -221,8 +214,7 @@ void FileSystemDispatcherHost::OnWrite(
     int64 offset) {
   if (!CheckValidFileSystemPath(path, request_id))
     return;
-  GetNewOperation(request_id)->Write(
-      request_context_, path, blob_url, offset);
+  GetNewOperation(request_id)->Write(path, blob_url, offset);
 }
 
 void FileSystemDispatcherHost::OnTruncate(
