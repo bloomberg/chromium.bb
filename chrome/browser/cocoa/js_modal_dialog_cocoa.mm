@@ -183,8 +183,8 @@ void JSModalDialogCocoa::ShowAppModalDialog() {
                 didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:)
                    contextInfo:this];
 
-  if ([helper_ textField])
-    [[alert_ window] makeFirstResponder:[helper_ textField]];
+  if ([alert_ accessoryView])
+    [[alert_ window] makeFirstResponder:[alert_ accessoryView]];
 }
 
 void JSModalDialogCocoa::ActivateAppModalDialog() {
