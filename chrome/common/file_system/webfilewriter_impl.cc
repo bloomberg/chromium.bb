@@ -11,6 +11,44 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "webkit/glue/webkit_glue.h"
 
+class WebFileWriterImpl::FileSystemCallbackDispatcherImpl :
+    public fileapi::FileSystemCallbackDispatcher {
+ public:
+  explicit FileSystemCallbackDispatcherImpl(
+      const base::WeakPtr<WebFileWriterImpl>& impl) : m_impl(impl) {
+  }
+  virtual ~FileSystemCallbackDispatcherImpl() {
+  }
+
+  virtual void DidReadMetadata(const base::PlatformFileInfo&) {
+    NOTREACHED();
+  }
+  virtual void DidReadDirectory(
+      const std::vector<base::file_util_proxy::Entry>& entries,
+      bool has_more) {
+    NOTREACHED();
+  }
+  virtual void DidOpenFileSystem(const std::string& name,
+                                 const FilePath& root_path) {
+    NOTREACHED();
+  }
+  virtual void DidSucceed() {
+    if (m_impl)
+      m_impl->DidSucceed();
+  }
+  virtual void DidFail(base::PlatformFileError error_code) {
+    if (m_impl)
+      m_impl->DidFail(error_code);
+  }
+  virtual void DidWrite(int64 bytes, bool complete) {
+    if (m_impl)
+      m_impl->DidWrite(bytes, complete);
+  }
+
+ private:
+  base::WeakPtr<WebFileWriterImpl> m_impl;
+};
+
 WebFileWriterImpl::WebFileWriterImpl(
      const WebKit::WebString& path, WebKit::WebFileWriterClient* client)
   : path_(webkit_glue::WebStringToFilePath(path)),
@@ -30,7 +68,9 @@ void WebFileWriterImpl::truncate(
   operation_ = kOperationTruncate;
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Truncate(path_, length, &request_id_, this);
+  dispatcher->Truncate(
+      path_, length, &request_id_,
+      new FileSystemCallbackDispatcherImpl(AsWeakPtr()));
 }
 
 void WebFileWriterImpl::write(
@@ -41,7 +81,9 @@ void WebFileWriterImpl::write(
   operation_ = kOperationWrite;
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Write(path_, blob_url, position, &request_id_, this);
+  dispatcher->Write(
+      path_, blob_url, position, &request_id_,
+      new FileSystemCallbackDispatcherImpl(AsWeakPtr()));
 }
 
 // When we cancel a write/truncate, we always get back the result of the write
@@ -65,15 +107,8 @@ void WebFileWriterImpl::cancel() {
   cancel_state_ = kCancelSent;
   FileSystemDispatcher* dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  dispatcher->Cancel(request_id_, this);
-}
-
-void WebFileWriterImpl::FinishCancel() {
-  DCHECK(kCancelReceivedWriteResponse == cancel_state_);
-  DCHECK(kOperationNone != operation_);
-  cancel_state_ = kCancelNotInProgress;
-  operation_ = kOperationNone;
-  client_->didFail(WebKit::WebFileErrorAbort);
+  dispatcher->Cancel(
+      request_id_, new FileSystemCallbackDispatcherImpl(AsWeakPtr()));
 }
 
 void WebFileWriterImpl::DidSucceed() {
@@ -148,3 +183,12 @@ void WebFileWriterImpl::DidWrite(int64 bytes, bool complete) {
       NOTREACHED();
   }
 }
+
+void WebFileWriterImpl::FinishCancel() {
+  DCHECK(kCancelReceivedWriteResponse == cancel_state_);
+  DCHECK(kOperationNone != operation_);
+  cancel_state_ = kCancelNotInProgress;
+  operation_ = kOperationNone;
+  client_->didFail(WebKit::WebFileErrorAbort);
+}
+

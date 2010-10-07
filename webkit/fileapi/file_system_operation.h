@@ -14,16 +14,20 @@
 #include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
+#include "googleurl/src/gurl.h"
 
 namespace base {
 class Time;
 }
 
 class GURL;
+class URLRequest;
+class URLRequestContext;
 
 namespace fileapi {
 
 class FileSystemCallbackDispatcher;
+class FileWriterDelegate;
 
 // This class is designed to serve one-time file system operation per instance.
 // Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,
@@ -58,7 +62,9 @@ class FileSystemOperation {
 
   void Remove(const FilePath& path, bool recursive);
 
-  void Write(const FilePath& path, const GURL& blob_url, int64 offset);
+  void Write(
+      scoped_refptr<URLRequestContext> url_request_context,
+      const FilePath& path, const GURL& blob_url, int64 offset);
 
   void Truncate(const FilePath& path, int64 length);
 
@@ -107,10 +113,19 @@ class FileSystemOperation {
 
   void DidTouchFile(base::PlatformFileError rv);
 
-  scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
+  // Helper for Write().
+  void OnFileOpenedForWrite(
+      base::PlatformFileError rv,
+      base::PassPlatformFile file,
+      bool created);
 
+  scoped_ptr<FileSystemCallbackDispatcher> dispatcher_;
   base::ScopedCallbackFactory<FileSystemOperation> callback_factory_;
 
+  // These are all used only by Write().
+  friend class FileWriterDelegate;
+  scoped_ptr<FileWriterDelegate> file_writer_delegate_;
+  scoped_ptr<URLRequest> blob_request_;
   FileSystemOperation* cancel_operation_;
 
 #ifndef NDEBUG
