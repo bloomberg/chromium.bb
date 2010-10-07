@@ -75,7 +75,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
   def testPolicyGroup(self):
     empty_policy_group = {
       'name': 'PolicyGroup',
-      'caption': 'Test Caption',
+      'caption': 'Test Group Caption',
       'desc': 'This is the test description of the test policy group.',
       'policies': [
           {'name': 'PolicyStub2',
@@ -94,7 +94,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         '  Supported on Test OS or higher\n'
         '</string>\n'
         '<string id="PolicyGroup_group">\n'
-        '  PolicyGroup\n'
+        '  Test Group Caption\n'
         '</string>')
     self.AssertXMLEquals(output, expected_output)
     # Assert generated presentation elements.
@@ -106,6 +106,8 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     main_policy = {
       'name': 'DummyMainPolicy',
       'type': 'main',
+      'caption': 'Main policy caption',
+      'desc': 'Main policy test description.'
     }
     self. _InitWriterForAddingPolicies(self.writer, main_policy)
     self.writer.WritePolicy(main_policy)
@@ -113,10 +115,10 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     output = self.GetXMLOfChildren(self.writer._string_table_elem)
     expected_output = (
         '<string id="DummyMainPolicy">\n'
-        '  DummyMainPolicy\n'
+        '  Main policy caption\n'
         '</string>\n'
         '<string id="DummyMainPolicy_Explain">\n'
-        '  This is the test description of the test policy group.\n'
+        '  Main policy test description.\n'
         '</string>')
     self.AssertXMLEquals(output, expected_output)
     # Assert generated presentation elements.
@@ -128,7 +130,8 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     string_policy = {
       'name': 'StringPolicyStub',
       'type': 'string',
-      'caption': 'String Policy Caption',
+      'caption': 'String policy caption',
+      'label': 'String policy label',
       'desc': 'This is a test description.',
     }
     self. _InitWriterForAddingPolicies(self.writer, string_policy)
@@ -137,7 +140,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     output = self.GetXMLOfChildren(self.writer._string_table_elem)
     expected_output = (
         '<string id="StringPolicyStub">\n'
-        '  String Policy Caption\n'
+        '  String policy caption\n'
         '</string>\n'
         '<string id="StringPolicyStub_Explain">\n'
         '  This is a test description.\n'
@@ -149,7 +152,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         '<presentation id="StringPolicyStub">\n'
         '  <textBox refId="StringPolicyStub">\n'
         '    <label>\n'
-        '      String Policy Caption\n'
+        '      String policy label\n'
         '    </label>\n'
         '  </textBox>\n'
         '</presentation>')
@@ -159,7 +162,8 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     enum_policy = {
       'name': 'EnumPolicyStub',
       'type': 'enum',
-      'caption': 'Enum Policy Caption',
+      'caption': 'Enum policy caption',
+      'label': 'Enum policy label',
       'desc': 'This is a test description.',
       'items': [
           {
@@ -180,7 +184,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     output = self.GetXMLOfChildren(self.writer._string_table_elem)
     expected_output = (
         '<string id="EnumPolicyStub">\n'
-        '  Enum Policy Caption\n'
+        '  Enum policy caption\n'
         '</string>\n'
         '<string id="EnumPolicyStub_Explain">\n'
         '  This is a test description.\n'
@@ -197,7 +201,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = (
         '<presentation id="EnumPolicyStub">\n'
         '  <dropdownList refId="EnumPolicyStub">\n'
-        '    Enum Policy Caption\n'
+        '    Enum policy label\n'
         '  </dropdownList>\n'
         '</presentation>')
     self.AssertXMLEquals(output, expected_output)
@@ -206,7 +210,8 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     list_policy = {
       'name': 'ListPolicyStub',
       'type': 'list',
-      'caption': 'List Policy Caption',
+      'caption': 'List policy caption',
+      'label': 'List policy label',
       'desc': 'This is a test description.',
     }
     self. _InitWriterForAddingPolicies(self.writer, list_policy)
@@ -215,13 +220,13 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     output = self.GetXMLOfChildren(self.writer._string_table_elem)
     expected_output = (
         '<string id="ListPolicyStub">\n'
-        '  List Policy Caption\n'
+        '  List policy caption\n'
         '</string>\n'
         '<string id="ListPolicyStub_Explain">\n'
         '  This is a test description.\n'
         '</string>\n'
         '<string id="ListPolicyStubDesc">\n'
-        '  List Policy Caption\n'
+        '  List policy caption\n'
         '</string>')
     self.AssertXMLEquals(output, expected_output)
     # Assert generated presentation elements.
@@ -229,7 +234,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     expected_output = (
         '<presentation id="ListPolicyStub">\n'
         '  <listBox refId="ListPolicyStubDesc">\n'
-        '    List Policy Caption\n'
+        '    List policy label\n'
         '  </listBox>\n'
         '</presentation>')
     self.AssertXMLEquals(output, expected_output)

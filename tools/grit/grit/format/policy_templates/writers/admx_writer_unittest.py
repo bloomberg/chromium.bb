@@ -100,7 +100,12 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         self._GetCategoriesElement(self.writer._doc))
     expected_output = (
         '<category displayName="$(string.test_category)"'
-        ' name="test_category"/>')
+        ' name="test_category"/>\n'
+        '<category displayName="$(string.PolicyGroup_group)"'
+        ' name="PolicyGroup">\n'
+        '  <parentCategory ref="test_category"/>\n'
+        '</category>')
+
     self.AssertXMLEquals(output, expected_output)
 
   def testPolicyGroup(self):
@@ -162,7 +167,7 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         ' key="Software\\Policies\\Test" name="DummyMainPolicy"'
         ' presentation="$(presentation.DummyMainPolicy)"'
         ' valueName="DummyMainPolicy">\n'
-        '  <parentCategory ref="test_category"/>\n'
+        '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <enabledValue>\n'
         '    <decimal value="1"/>\n'
@@ -188,7 +193,7 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         ' explainText="$(string.SampleStringPolicy_Explain)"'
         ' key="Software\\Policies\\Test" name="SampleStringPolicy"'
         ' presentation="$(presentation.SampleStringPolicy)">\n'
-        '  <parentCategory ref="test_category"/>\n'
+        '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <text id="SampleStringPolicy" valueName="SampleStringPolicy"/>\n'
@@ -214,7 +219,7 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         ' explainText="$(string.SampleEnumPolicy_Explain)"'
         ' key="Software\\Policies\\Test" name="SampleEnumPolicy"'
         ' presentation="$(presentation.SampleEnumPolicy)">\n'
-        '  <parentCategory ref="test_category"/>\n'
+        '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <enum id="SampleEnumPolicy" valueName="SampleEnumPolicy">\n'
@@ -246,7 +251,7 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         ' explainText="$(string.SampleListPolicy_Explain)"'
         ' key="Software\\Policies\\Test" name="SampleListPolicy"'
         ' presentation="$(presentation.SampleListPolicy)">\n'
-        '  <parentCategory ref="test_category"/>\n'
+        '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <list id="SampleListPolicyDesc"'
