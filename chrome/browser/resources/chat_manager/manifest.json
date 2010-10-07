@@ -1,14 +1,14 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDrlwvcbUtVrbQvI7EPV1BTa63N8YkbBToHzxlMl0IzSBwOV+TUOsHE8vRq0HZWuwMAGeH8WdWVC3HRNdES8lScjlzxb1TsTQJAsF+hLXgcjgCUSSSGCfFzypvuvKsRQTx0d02yfWKJa47o0Ws5wL72NVtc7c51HujwWYg+Mz01wIDAQAB",
-  "name": "Google Chat Manager",
-  "version": "1.0.11",
+  "name": "Google Talk",
+  "version": "1.0.12",
   "icons": {
     "128": "128.png",
     "24": "24.png",
     "32": "32.png",
     "48": "48.png"
   },
-  "description": "Google Chat Manager",
+  "description": "Google Talk",
   "background_page": "background.html",
   "options_page": "options.html",
   "content_scripts": [ {
