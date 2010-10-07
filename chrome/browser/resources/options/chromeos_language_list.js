@@ -146,6 +146,19 @@ cr.define('options.language', function() {
     },
 
     /*
+     * Selects the language by the given language code.
+     * @returns {boolean} True if the operation is successful.
+     */
+    selectLanguageByCode: function(languageCode) {
+      var index = this.dataModel.indexOf(languageCode);
+      if (index >= 0) {
+        this.selectionModel.selectedIndex = index;
+        return true;
+      }
+      return false;
+    },
+
+    /*
      * Removes the currently selected language.
      */
     removeSelectedLanguage: function() {

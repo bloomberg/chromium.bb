@@ -173,6 +173,15 @@ cr.define('options', function() {
     handleLanguageOptionsListChange_: function(e) {
       var languageOptionsList = $('language-options-list');
       var languageCode = languageOptionsList.getSelectedLanguageCode();
+      // Select the language if it's specified in the URL hash (ex. lang=ja).
+      // Used for automated testing.
+      var match = document.location.hash.match(/\blang=([\w-]+)/);
+      if (match) {
+        var specifiedLanguageCode = match[1];
+        if (languageOptionsList.selectLanguageByCode(specifiedLanguageCode)) {
+          languageCode = specifiedLanguageCode;
+        }
+      }
       this.updateSelectedLanguageName_(languageCode);
       this.updateUiLanguageButton_(languageCode);
       this.updateSpellCheckLanguageButton_(languageCode);
@@ -366,15 +375,28 @@ cr.define('options', function() {
      * @private
      */
     updateInputMethodList_: function(languageCode) {
+      // Give one of the checkboxes focus, if it's specified in the URL hash
+      // (ex. focus=mozc). Used for automated testing.
+      var focusInputMethodId = -1;
+      var match = document.location.hash.match(/\bfocus=([\w:-]+)\b/);
+      if (match) {
+        focusInputMethodId = match[1];
+      }
       // Change the visibility of the input method list. Input methods that
       // matches |languageCode| will become visible.
       var inputMethodList = $('language-options-input-method-list');
       var labels = inputMethodList.querySelectorAll('label');
       for (var i = 0; i < labels.length; i++) {
-        if (languageCode in labels[i].languageCodeSet) {
-          labels[i].style.display = 'block';
+        var label = labels[i];
+        if (languageCode in label.languageCodeSet) {
+          label.style.display = 'block';
+          var input = label.childNodes[0];
+          // Give it focus if the ID matches.
+          if (input.inputMethodId == focusInputMethodId) {
+            input.focus();
+          }
         } else {
-          labels[i].style.display = 'none';
+          label.style.display = 'none';
         }
       }
     },
