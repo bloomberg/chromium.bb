@@ -111,7 +111,9 @@ cr.define('options', function() {
     },
 
     setClassicThemeButtonEnabled_: function(enabled) {
-      $('themes_set_classic').disabled = !enabled;
+      if (!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
+        $('themes_set_classic').disabled = !enabled;
+      }
     },
 
     updateControl_: function(control, visible) {
@@ -162,4 +164,3 @@ cr.define('options', function() {
   };
 
 });
-
