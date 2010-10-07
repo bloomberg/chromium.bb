@@ -6,12 +6,19 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/skbitmap_operations.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/escape.h"
 #include "views/window/window.h"
 
 namespace chromeos {
@@ -68,6 +75,17 @@ bool NetworkMenu::IsEnabledAt(int index) const {
   return !(menu_items_[index].flags & FLAG_DISABLED);
 }
 
+void NetworkMenu::ShowTabbedNetworkSettings(const Network& network) {
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser)
+    return;
+  std::string page = StringPrintf("%s?servicePath=%s&networkType=%d",
+      chrome::kInternetOptionsSubPage,
+      EscapeUrlEncodedData(network.service_path()).c_str(),
+      network.type());
+  browser->ShowOptionsTab(page);
+}
+
 void NetworkMenu::ActivatedAt(int index) {
   // When we are refreshing the menu, ignore menu item activation.
   if (refreshing_menu_)
@@ -96,12 +114,18 @@ void NetworkMenu::ActivatedAt(int index) {
     view->SetLoginTextfieldFocus();
   } else if (flags & FLAG_ETHERNET) {
     if (cros->ethernet_connected()) {
-      NetworkConfigView* view = new NetworkConfigView(cros->ethernet_network());
-      view->set_browser_mode(IsBrowserMode());
-      views::Window* window = views::Window::CreateChromeWindow(
-          GetNativeWindow(), gfx::Rect(), view);
-      window->SetIsAlwaysOnTop(true);
-      window->Show();
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedOptions)) {
+        ShowTabbedNetworkSettings(cros->ethernet_network());
+      } else {
+        NetworkConfigView* view =
+            new NetworkConfigView(cros->ethernet_network());
+        view->set_browser_mode(IsBrowserMode());
+        views::Window* window = views::Window::CreateChromeWindow(
+            GetNativeWindow(), gfx::Rect(), view);
+        window->SetIsAlwaysOnTop(true);
+        window->Show();
+      }
     }
   } else if (flags & FLAG_WIFI) {
     WifiNetwork wifi;
@@ -113,13 +137,18 @@ void NetworkMenu::ActivatedAt(int index) {
       // TODO(stevenjb): Show notification.
     } else if (wifi.name() == cros->wifi_name()) {
       if (cros->wifi_connected()) {
-        // If we are already connected, open the config dialog.
-        NetworkConfigView* view = new NetworkConfigView(wifi, false);
-        view->set_browser_mode(IsBrowserMode());
-        views::Window* window = views::Window::CreateChromeWindow(
-            GetNativeWindow(), gfx::Rect(), view);
-        window->SetIsAlwaysOnTop(true);
-        window->Show();
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableTabbedOptions)) {
+          ShowTabbedNetworkSettings(wifi);
+        } else {
+          // If we are already connected, open the config dialog.
+          NetworkConfigView* view = new NetworkConfigView(wifi, false);
+          view->set_browser_mode(IsBrowserMode());
+          views::Window* window = views::Window::CreateChromeWindow(
+              GetNativeWindow(), gfx::Rect(), view);
+          window->SetIsAlwaysOnTop(true);
+          window->Show();
+        }
       } else {
         // TODO(stevenjb): Connection in progress. Show dialog?
       }
@@ -152,12 +181,17 @@ void NetworkMenu::ActivatedAt(int index) {
       // If clicked on a network that we are already connected to or we are
       // currently trying to connect to, then open config dialog.
       if (cros->cellular_connected()) {
-        NetworkConfigView* view = new NetworkConfigView(cellular);
-        view->set_browser_mode(IsBrowserMode());
-        views::Window* window = views::Window::CreateChromeWindow(
-            GetNativeWindow(), gfx::Rect(), view);
-        window->SetIsAlwaysOnTop(true);
-        window->Show();
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableTabbedOptions)) {
+          ShowTabbedNetworkSettings(cellular);
+        } else {
+          NetworkConfigView* view = new NetworkConfigView(cellular);
+          view->set_browser_mode(IsBrowserMode());
+          views::Window* window = views::Window::CreateChromeWindow(
+              GetNativeWindow(), gfx::Rect(), view);
+          window->SetIsAlwaysOnTop(true);
+          window->Show();
+        }
       } else {
         // TODO(stevenjb): Connection in progress. Show dialog?
       }

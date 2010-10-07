@@ -55,3 +55,19 @@ function url(s) {
   }
   return 'url("' + s2 + '")';
 }
+
+/**
+ * Parses query parameters from Location.
+ * @param {string} s The URL to generate the CSS url for.
+ * @return {object} Dictionary containing name value pairs for URL
+ */
+function parseQueryParams(location) {
+  var params = {};
+  var query = unescape(location.search.substring(1));
+  var vars = query.split("&");
+  for (var i=0; i < vars.length; i++) {
+    var pair = vars[i].split("=");
+    params[pair[0]] = pair[1];
+  }
+  return params;
+ }

@@ -64,6 +64,18 @@ cr.define('options', function() {
          chrome.send('disableCellular', []);
       };
 
+      this.showNetworkDetails_();
+    },
+
+    showNetworkDetails_: function() {
+      var params = parseQueryParams(window.location);
+      var servicePath = params.servicePath;
+      var networkType = params.networkType;
+      if (!servicePath || !servicePath.length ||
+          !networkType || !networkType.length)
+        return;
+      chrome.send('buttonClickCallback',
+          [networkType, servicePath, "options"]);
     }
   };
 

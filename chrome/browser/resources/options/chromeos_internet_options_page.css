@@ -92,6 +92,7 @@
 .network-item > * > button {
   min-width: 100px;
   visibility: hidden;
+  margin-right: 5px;
 }
 
 .network-item:hover > * > button,
@@ -105,6 +106,10 @@
 
 .network-item-box-spacer {
   -webkit-box-flex: 1;
+}
+
+#detailsInternetPage {
+  min-width: 350px;
 }
 
 #detailsInternetPage:not([connected]) > #advancedSection,
