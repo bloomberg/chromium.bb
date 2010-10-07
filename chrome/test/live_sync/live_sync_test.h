@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
@@ -57,8 +58,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   explicit LiveSyncTest(TestType test_type)
       : test_type_(test_type),
         num_clients_(-1),
-        test_server_(net::TestServer::TYPE_HTTP, FilePath()),
-        started_local_test_server_(false) {
+        test_server_handle_(base::kNullProcessHandle) {
     InProcessBrowserTest::set_show_window(true);
     switch (test_type_) {
       case SINGLE_CLIENT: {
@@ -151,12 +151,39 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Helper to ProfileManager::CreateProfile that handles path creation.
   static Profile* MakeProfile(const FilePath::StringType name);
 
-  // Helper method used to create a local python test server.
-  virtual void SetUpLocalTestServer();
+  // Helper method used to read GAIA credentials from a local password file
+  // specified via the "--password-file-for-test" command line switch.
+  // Note: The password file must be a plain text file with exactly two lines --
+  // the username on the first line and the password on the second line.
+  void ReadPasswordFile();
 
-  // Helper method used to destroy the local python test server if one was
-  // created.
-  virtual void TearDownLocalTestServer();
+  // Helper method that starts up a sync test server if required.
+  void SetUpTestServerIfRequired();
+
+  // Helper method used to start up a local python sync test server. Returns
+  // true if successful.
+  bool SetUpLocalPythonTestServer();
+
+  // Helper method used to start up a local sync test server. Returns true if
+  // successful.
+  bool SetUpLocalTestServer();
+
+  // Helper method used to destroy the local python sync test server if one was
+  // created. Returns true if successful.
+  bool TearDownLocalPythonTestServer();
+
+  // Helper method used to destroy the local sync test server if one was
+  // created. Returns true if successful.
+  bool TearDownLocalTestServer();
+
+  // Helper method that waits for up to |time_ms| milliseconds for the test
+  // server to start. Splits the time into |intervals| intervals, and polls the
+  // server after each interval to see if it has started. Returns true if
+  // successful.
+  bool WaitForTestServerToStart(int time_ms, int intervals);
+
+  // Helper method used to check if the test server is up and running.
+  bool IsTestServerRunning();
 
   // Used to disable and enable network connectivity by providing and
   // clearing an invalid proxy configuration.
@@ -185,16 +212,13 @@ class LiveSyncTest : public InProcessBrowserTest {
   // verifier profile are strictly local, and are not meant to be synced.
   scoped_ptr<Profile> verifier_;
 
-  // Local instance of python sync server.
-  net::TestServer test_server_;
-
-  // Keeps track of whether a local python sync server was used for a test.
-  bool started_local_test_server_;
-
   // Sync integration tests need to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version
   // to override the default resolver while the test is active.
   scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
+
+  // Used to start and stop the local test server.
+  base::ProcessHandle test_server_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };
