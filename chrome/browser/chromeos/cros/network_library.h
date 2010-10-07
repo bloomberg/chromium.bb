@@ -129,12 +129,21 @@ class CellularNetwork : public WirelessNetwork {
   const NetworkTechnology network_technology() const {
     return network_technology_; }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
+  const std::string& operator_name() const { return payment_url_; }
+  const std::string& operator_code() const { return payment_url_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& meid() const { return meid_; }
   const std::string& imei() const { return imei_; }
   const std::string& imsi() const { return imsi_; }
   const std::string& esn() const { return esn_; }
   const std::string& mdn() const { return mdn_; }
+  const std::string& min() const { return min_; }
+  const std::string& model_id() const { return model_id_; }
+  const std::string& manufacturer() const { return manufacturer_; }
+  const std::string& firmware_revision() const { return firmware_revision_; }
+  const std::string& hardware_revision() const { return hardware_revision_; }
+  const std::string& last_update() const { return last_update_; }
+  const int prl_version() const { return prl_version_; }
 
   // WirelessNetwork overrides.
   virtual void Clear();
@@ -144,12 +153,24 @@ class CellularNetwork : public WirelessNetwork {
   ActivationState activation_state_;
   NetworkTechnology network_technology_;
   NetworkRoamingState roaming_state_;
+  bool restricted_pool_;
+  // Carrier Info
+  std::string operator_name_;
+  std::string operator_code_;
   std::string payment_url_;
+  // Device Info
   std::string meid_;
   std::string imei_;
   std::string imsi_;
   std::string esn_;
   std::string mdn_;
+  std::string min_;
+  std::string model_id_;
+  std::string manufacturer_;
+  std::string firmware_revision_;
+  std::string hardware_revision_;
+  std::string last_update_;
+  int prl_version_;
 };
 
 class WifiNetwork : public WirelessNetwork {

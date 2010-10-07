@@ -9778,6 +9778,79 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CHROMEOS_ACC_TEXT_UNSELECTED" desc="A phrase to indicate to the user that text has been unselected.">
         Unselected
       </message>
+
+      <!-- Network state strings for ChromeOS -->
+      <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">
+	Unknown
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_IDLE" desc="Network state in about:network: IDLE">
+	Idle
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_CARRIER" desc="Network state in about:network: CARRIER">
+	Carrier
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_ASSOCIATION" desc="Network state in about:network: ASSOCIATION">
+	Association
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_CONFIGURATION" desc="Network state in about:network: CONFIGURATION">
+	Configuration
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_READY" desc="Network state in about:network: READY">
+	Ready
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_DISCONNECT" desc="Network state in about:network: DISCONNECT">
+	Disconnect
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_FAILURE" desc="Network state in about:network: FAILURE">
+	Failure
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE" desc="Network state in about:network: ACTIVATION_FAILURE">
+	Activation Failure
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED" desc="Network state in about:network: Unrecognized">
+	Unrecognized State
+      </message>
+
+      <!-- Network error strings for ChromeOS -->
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error in about:network: UNKNOWN">
+	UNKNOWN
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE" desc="Network error in about:network: OUT_OF_RANGE">
+	Out Of Range
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING" desc="Network error in about:network: PIN_MISSING">
+	Pin Missing
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED" desc="Network error in about:network: DHCP_FAILED">
+	DHCP Failed
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED" desc="Network error in about:network: CONNECT_FAILED">
+	Connect Failed
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE" desc="Network error in about:network: BAD_PASSPHRASE">
+	Bad Passphrase
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY" desc="Network error in about:network: BAD_WEPKEY">
+	Bad WEP key
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED" desc="Network error in about:network: ACTIVATION_FAILED">
+	Activation Failed
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO" desc="Network error in about:network: NEED_EVDO">
+	Need EVDO
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK" desc="Network error in about:network: NEED_HOME_NETWORK">
+	Need Home Network
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED" desc="Network error in about:network: OTASP_FAILED">
+	OTASP Failed
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED" desc="Network error in about:network: AAA_FAILED">
+	AAA Failed
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ERRoR_UNRECOGNIZED" desc="Network error in about:network: Unrecognized">
+	Unrecognized Error
+      </message>
     </if>
     <if expr="pp_ifdef('chromeos') and lang == 'ja'">
       <message name="IDS_STATUSBAR_IME_JAPANESE_IME_STATUS_HIRAGANA" desc="In the language menu button, this shows a character set in use is set to Hiragana.">

@@ -6,11 +6,13 @@
 
 #include <algorithm>
 
+#include "app/l10n_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "grit/generated_resources.h"
 
 namespace chromeos {
 
@@ -59,6 +61,12 @@ static std::string ToHtmlTableRow(Network* network) {
   return str;
 }
 
+// Safe string constructor since we can't rely on non NULL pointers
+// for string values from libcros.
+static std::string SafeString(const char* s) {
+  return s ? std::string(s) : std::string();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Network
 
@@ -75,8 +83,8 @@ void Network::ConfigureFromService(const ServiceInfo& service) {
   type_ = service.type;
   state_ = service.state;
   error_ = service.error;
-  service_path_ = service.service_path;
-  device_path_ = service.device_path ? service.device_path : std::string();
+  service_path_ = SafeString(service.service_path);
+  device_path_ = SafeString(service.device_path);
   ip_address_.clear();
   // If connected, get ip config.
   if (connected() && service.device_path) {
@@ -92,52 +100,70 @@ void Network::ConfigureFromService(const ServiceInfo& service) {
   }
 }
 
+// Used by GetHtmlInfo() which is called from the about:network handler.
 std::string Network::GetStateString() {
   switch (state_) {
     case STATE_UNKNOWN:
-      return "Unknown";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNKNOWN);
     case STATE_IDLE:
-      return "Idle";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_IDLE);
     case STATE_CARRIER:
-      return "Carrier";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_CARRIER);
     case STATE_ASSOCIATION:
-      return "Association";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_ASSOCIATION);
     case STATE_CONFIGURATION:
-      return "Configuration";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_CONFIGURATION);
     case STATE_READY:
-      return "Ready";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_READY);
     case STATE_DISCONNECT:
-      return "Disconnect";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_DISCONNECT);
     case STATE_FAILURE:
-      return "Failure";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_FAILURE);
+    case STATE_ACTIVATION_FAILURE:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE);
     default:
       // Usually no default, but changes to libcros may add states.
       break;
   }
-  return "Unrecognized State";
+  return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
 
 std::string Network::GetErrorString() {
   switch (error_) {
     case ERROR_UNKNOWN:
-      return "Unknown Error";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
     case ERROR_OUT_OF_RANGE:
-      return "Out Of Range";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE);
     case ERROR_PIN_MISSING:
-      return "Pin Missing";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING);
     case ERROR_DHCP_FAILED:
-      return "DHCP Failed";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED);
     case ERROR_CONNECT_FAILED:
-      return "Connect Failed";
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED);
     case ERROR_BAD_PASSPHRASE:
-      return "Bad Passphrase";
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE);
     case ERROR_BAD_WEPKEY:
-      return "Bad WEP Key";
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY);
+    case ERROR_ACTIVATION_FAILED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED);
+    case ERROR_NEED_EVDO:
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO);
+    case ERROR_NEED_HOME_NETWORK:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK);
+    case ERROR_OTASP_FAILED:
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED);
+    case ERROR_AAA_FAILED:
+      return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED);
     default:
       // Usually no default, but changes to libcros may add errors.
       break;
   }
-  return "Unrecognized Error";
+  return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +179,7 @@ void WirelessNetwork::Clear() {
 
 void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
   Network::ConfigureFromService(service);
-  name_ = service.name;
+  name_ = SafeString(service.name);
   strength_ = service.strength;
   auto_connect_ = service.auto_connect;
   favorite_ = service.favorite;
@@ -176,9 +202,28 @@ void CellularNetwork::ConfigureFromService(const ServiceInfo& service) {
   activation_state_ = service.activation_state;
   network_technology_ = service.network_technology;
   roaming_state_ = service.roaming_state;
-
-  // TODO(ers): Set other cellular properties here once they get added
-  // to ServiceInfo.
+  restricted_pool_ = service.restricted_pool;
+  // Carrier Info
+  if (service.carrier_info) {
+    operator_name_ = SafeString(service.carrier_info->operator_name);
+    operator_code_ = SafeString(service.carrier_info->operator_code);
+    payment_url_ = SafeString(service.carrier_info->payment_url);
+  }
+  // Device Info
+  if (service.device_info) {
+    meid_ = SafeString(service.device_info->MEID);
+    imei_ = SafeString(service.device_info->IMEI);
+    imsi_ = SafeString(service.device_info->IMSI);
+    esn_ = SafeString(service.device_info->ESN);
+    mdn_ = SafeString(service.device_info->MDN);
+    min_ = SafeString(service.device_info->MIN);
+    model_id_ = SafeString(service.device_info->model_id);
+    manufacturer_ = SafeString(service.device_info->manufacturer);
+    firmware_revision_ = SafeString(service.device_info->firmware_revision);
+    hardware_revision_ = SafeString(service.device_info->hardware_revision);
+    last_update_ = SafeString(service.device_info->last_update);
+    prl_version_ = service.device_info->PRL_version;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -195,9 +240,9 @@ void WifiNetwork::Clear() {
 void WifiNetwork::ConfigureFromService(const ServiceInfo& service) {
   WirelessNetwork::ConfigureFromService(service);
   encryption_ = service.security;
-  passphrase_ = service.passphrase;
-  identity_ = service.identity;
-  cert_path_ = service.cert_path;
+  passphrase_ = SafeString(service.passphrase);
+  identity_ = SafeString(service.identity);
+  cert_path_ = SafeString(service.cert_path);
 }
 
 std::string WifiNetwork::GetEncryptionString() {
@@ -349,8 +394,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       DCHECK(network_list->networks[i].address);
       DCHECK(network_list->networks[i].name);
       WifiAccessPoint ap;
-      ap.mac_address = network_list->networks[i].address;
-      ap.name = network_list->networks[i].name;
+      ap.mac_address = SafeString(network_list->networks[i].address);
+      ap.name = SafeString(network_list->networks[i].name);
       ap.timestamp = now -
           base::TimeDelta::FromSeconds(network_list->networks[i].age_seconds);
       ap.signal_strength = network_list->networks[i].strength;
