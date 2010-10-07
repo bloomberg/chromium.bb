@@ -37,8 +37,8 @@
 // An implementation of the server side of the protocol is provided there
 // as NetworkSourceLineServer.
 
-#ifndef GOOGLE_BREAKPAD_PROCESSOR_NETWORK_SOURCE_LINE_RESOLVER_H_
-#define GOOGLE_BREAKPAD_PROCESSOR_NETWORK_SOURCE_LINE_RESOLVER_H_
+#ifndef GOOGLE_BREAKPAD_PROCESSOR_NETWORK_SOURCE_LINE_RESOLVER_H__
+#define GOOGLE_BREAKPAD_PROCESSOR_NETWORK_SOURCE_LINE_RESOLVER_H__
 
 #include <sys/socket.h>
 
@@ -81,6 +81,8 @@ class NetworkSourceLineResolver : public SourceLineResolverInterface,
   virtual bool LoadModule(const CodeModule *module, const string &map_file);
   virtual bool LoadModuleUsingMapBuffer(const CodeModule *module,
                                         const string &map_buffer);
+  virtual bool LoadModuleUsingMemoryBuffer(const CodeModule *module,
+                                           char *memory_buffer);
 
   void UnloadModule(const CodeModule *module);
 
@@ -104,6 +106,11 @@ class NetworkSourceLineResolver : public SourceLineResolverInterface,
                                      const SystemInfo *system_info,
                                      string *symbol_file,
                                      string *symbol_data);
+  // Similar as the above GetSymbolFile() method, see the comment above.
+  virtual SymbolResult GetCStringSymbolData(const CodeModule *module,
+                                            const SystemInfo *system_info,
+                                            string *symbol_file,
+                                            char **symbol_data);
 
  private:
   int wait_milliseconds_;
@@ -165,4 +172,4 @@ class NetworkSourceLineResolver : public SourceLineResolverInterface,
 
 }  // namespace google_breakpad
 
-#endif  // GOOGLE_BREAKPAD_PROCESSOR_NETWORK_SOURCE_LINE_RESOLVER_H_
+#endif  // GOOGLE_BREAKPAD_PROCESSOR_NETWORK_SOURCE_LINE_RESOLVER_H__

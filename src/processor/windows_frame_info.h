@@ -39,6 +39,7 @@
 #define PROCESSOR_WINDOWS_FRAME_INFO_H__
 
 #include <string.h>
+#include <stdlib.h>
 
 #include <string>
 #include <vector>

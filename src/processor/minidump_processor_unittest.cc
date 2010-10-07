@@ -113,6 +113,11 @@ class TestSymbolSupplier : public SymbolSupplier {
                                      string *symbol_file,
                                      string *symbol_data);
 
+  virtual SymbolResult GetCStringSymbolData(const CodeModule *module,
+                                            const SystemInfo *system_info,
+                                            string *symbol_file,
+                                            char **symbol_data);
+
   // When set to true, causes the SymbolSupplier to return INTERRUPT
   void set_interrupt(bool interrupt) { interrupt_ = interrupt; }
 
@@ -164,6 +169,25 @@ SymbolSupplier::SymbolResult TestSymbolSupplier::GetSymbolFile(
   return s;
 }
 
+SymbolSupplier::SymbolResult TestSymbolSupplier::GetCStringSymbolData(
+    const CodeModule *module,
+    const SystemInfo *system_info,
+    string *symbol_file,
+    char **symbol_data) {
+  string symbol_data_string;
+  SymbolSupplier::SymbolResult s = GetSymbolFile(module,
+                                                 system_info,
+                                                 symbol_file,
+                                                 &symbol_data_string);
+  if (s == FOUND) {
+    unsigned int size = symbol_data_string.size() + 1;
+    *symbol_data = reinterpret_cast<char*>(operator new(size));
+    strcpy(*symbol_data, symbol_data_string.c_str());
+  }
+
+  return s;
+}
+
 // A mock symbol supplier that always returns NOT_FOUND; one current
 // use for testing the processor's caching of symbol lookups.
 class MockSymbolSupplier : public SymbolSupplier {
@@ -176,6 +200,10 @@ class MockSymbolSupplier : public SymbolSupplier {
                                            const SystemInfo*,
                                            string*,
                                            string*));
+  MOCK_METHOD4(GetCStringSymbolData, SymbolResult(const CodeModule*,
+                                                  const SystemInfo*,
+                                                  string*,
+                                                  char**));
 };
 
 class MinidumpProcessorTest : public ::testing::Test {
@@ -217,11 +245,11 @@ TEST_F(MinidumpProcessorTest, TestSymbolSupplierLookupCounts) {
   string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
                          "/src/processor/testdata/minidump2.dmp";
   ProcessState state;
-  EXPECT_CALL(supplier, GetSymbolFile(
+  EXPECT_CALL(supplier, GetCStringSymbolData(
       Property(&google_breakpad::CodeModule::code_file,
                "c:\\test_app.exe"),
       _, _, _)).WillOnce(Return(SymbolSupplier::NOT_FOUND));
-  EXPECT_CALL(supplier, GetSymbolFile(
+  EXPECT_CALL(supplier, GetCStringSymbolData(
       Property(&google_breakpad::CodeModule::code_file,
                Ne("c:\\test_app.exe")),
       _, _, _)).WillRepeatedly(Return(SymbolSupplier::NOT_FOUND));
@@ -232,11 +260,11 @@ TEST_F(MinidumpProcessorTest, TestSymbolSupplierLookupCounts) {
 
   // We need to verify that across minidumps, the processor will refetch
   // symbol files, even with the same symbol supplier.
-  EXPECT_CALL(supplier, GetSymbolFile(
+  EXPECT_CALL(supplier, GetCStringSymbolData(
       Property(&google_breakpad::CodeModule::code_file,
                "c:\\test_app.exe"),
       _, _, _)).WillOnce(Return(SymbolSupplier::NOT_FOUND));
-  EXPECT_CALL(supplier, GetSymbolFile(
+  EXPECT_CALL(supplier, GetCStringSymbolData(
       Property(&google_breakpad::CodeModule::code_file,
                Ne("c:\\test_app.exe")),
       _, _, _)).WillRepeatedly(Return(SymbolSupplier::NOT_FOUND));

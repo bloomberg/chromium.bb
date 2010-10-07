@@ -110,6 +110,12 @@ class SimpleSymbolSupplier : public SymbolSupplier {
                                      const SystemInfo *system_info,
                                      string *symbol_file,
                                      string *symbol_data);
+
+  virtual SymbolResult GetCStringSymbolData(const CodeModule *module,
+                                            const SystemInfo *system_info,
+                                            string *symbol_file,
+                                            char **symbol_data);
+
  protected:
   SymbolResult GetSymbolFileAtPathFromRoot(const CodeModule *module,
                                            const SystemInfo *system_info,

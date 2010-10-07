@@ -75,6 +75,15 @@ class SymbolSupplier {
                                      const SystemInfo *system_info,
                                      string *symbol_file,
                                      string *symbol_data) = 0;
+
+  // Same as above, except places symbol data into symbol_data as C-string in
+  // dynamically allocated memory. Using C-string as type of symbol data enables
+  // passing data by pointer, and thus avoids unncessary copying of data (to
+  // improve memory efficiency).
+  virtual SymbolResult GetCStringSymbolData(const CodeModule *module,
+                                            const SystemInfo *system_info,
+                                            string *symbol_file,
+                                            char **symbol_data) = 0;
 };
 
 }  // namespace google_breakpad

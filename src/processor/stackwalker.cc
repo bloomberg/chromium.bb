@@ -97,15 +97,18 @@ bool Stackwalker::Walk(CallStack *stack) {
             no_symbol_modules_.find(
                 module->code_file()) == no_symbol_modules_.end() &&
             supplier_) {
-          string symbol_data, symbol_file;
+          string symbol_file;
+          char *symbol_data;
           SymbolSupplier::SymbolResult symbol_result =
-              supplier_->GetSymbolFile(module, system_info_,
-                                       &symbol_file, &symbol_data);
+              supplier_->GetCStringSymbolData(module,
+                                              system_info_,
+                                              &symbol_file,
+                                              &symbol_data);
 
           switch (symbol_result) {
             case SymbolSupplier::FOUND:
-              resolver_->LoadModuleUsingMapBuffer(frame->module,
-                                                  symbol_data);
+              resolver_->LoadModuleUsingMemoryBuffer(frame->module,
+                                                     symbol_data);
               break;
             case SymbolSupplier::NOT_FOUND:
               no_symbol_modules_.insert(module->code_file());
@@ -207,13 +210,14 @@ bool Stackwalker::InstructionAddressSeemsValid(u_int64_t address) {
   }
 
   if (!resolver_->HasModule(module)) {
-    string symbol_data, symbol_file;
+    string symbol_file;
+    char *symbol_data;
     SymbolSupplier::SymbolResult symbol_result =
-      supplier_->GetSymbolFile(module, system_info_,
-                               &symbol_file, &symbol_data);
+      supplier_->GetCStringSymbolData(module, system_info_,
+                                      &symbol_file, &symbol_data);
 
     if (symbol_result != SymbolSupplier::FOUND ||
-        !resolver_->LoadModuleUsingMapBuffer(module,
+        !resolver_->LoadModuleUsingMemoryBuffer(module,
                                              symbol_data)) {
       // we don't have symbols, but we're inside a loaded module
       return true;

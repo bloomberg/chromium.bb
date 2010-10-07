@@ -86,15 +86,18 @@ class StackwalkerX86Fixture {
 
     // By default, none of the modules have symbol info; call
     // SetModuleSymbols to override this.
-    EXPECT_CALL(supplier, GetSymbolFile(_, _, _, _))
+    EXPECT_CALL(supplier, GetCStringSymbolData(_, _, _, _))
       .WillRepeatedly(Return(MockSymbolSupplier::NOT_FOUND));
   }
 
   // Set the Breakpad symbol information that supplier should return for
   // MODULE to INFO.
   void SetModuleSymbols(MockCodeModule *module, const string &info) {
-    EXPECT_CALL(supplier, GetSymbolFile(module, &system_info, _, _))
-      .WillRepeatedly(DoAll(SetArgumentPointee<3>(info),
+    unsigned int buffer_size = info.size() + 1;
+    char *buffer = reinterpret_cast<char*>(operator new(buffer_size));
+    strcpy(buffer, info.c_str());
+    EXPECT_CALL(supplier, GetCStringSymbolData(module, &system_info, _, _))
+      .WillRepeatedly(DoAll(SetArgumentPointee<3>(buffer),
                             Return(MockSymbolSupplier::FOUND)));
   }
 

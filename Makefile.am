@@ -90,6 +90,7 @@ src_libbreakpad_a_SOURCES = \
 	src/google_breakpad/processor/minidump_processor.h \
 	src/google-breakpad/processor/network_source_line_resolver.h \
 	src/google_breakpad/processor/process_state.h \
+	src/google_breakpad/processor/source_line_resolver_base.h \
 	src/google_breakpad/processor/source_line_resolver_interface.h \
 	src/google_breakpad/processor/stack_frame.h \
 	src/google_breakpad/processor/stack_frame_cpu.h \
@@ -101,6 +102,7 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/basic_code_module.h \
 	src/processor/basic_code_modules.cc \
 	src/processor/basic_code_modules.h \
+	src/processor/basic_source_line_resolver_types.h \
 	src/processor/basic_source_line_resolver.cc \
 	src/processor/binarystream.h \
 	src/processor/binarystream.cc \
@@ -134,6 +136,8 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/simple_symbol_supplier.cc \
 	src/processor/simple_symbol_supplier.h \
 	src/processor/windows_frame_info.h \
+	src/processor/source_line_resolver_base_types.h \
+	src/processor/source_line_resolver_base.cc \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker_amd64.cc \
 	src/processor/stackwalker_amd64.h \
@@ -322,6 +326,7 @@ src_processor_basic_source_line_resolver_unittest_LDADD = \
 	src/processor/cfi_frame_info.o \
 	src/processor/pathname_stripper.o \
 	src/processor/logging.o \
+	src/processor/source_line_resolver_base.o \
 	src/processor/tokenize.o
 
 src_processor_cfi_frame_info_unittest_SOURCES = \
@@ -370,6 +375,7 @@ src_processor_exploitability_unittest_LDADD = \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
+	src/processor/source_line_resolver_base.o \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
@@ -417,6 +423,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
 	src/processor/process_state.o \
+	src/processor/source_line_resolver_base.o \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
@@ -492,6 +499,7 @@ src_processor_network_source_line_resolver_server_unittest_LDADD = \
 	src/processor/pathname_stripper.o \
 	src/processor/process_state.o \
 	src/processor/simple_symbol_supplier.o \
+	src/processor/source_line_resolver_base.o \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
@@ -563,6 +571,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/logging.o \
 	src/processor/minidump.o \
 	src/processor/pathname_stripper.o \
+	src/processor/source_line_resolver_base.o \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
@@ -676,6 +685,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/process_state.o \
 	src/processor/network_source_line_resolver.o \
 	src/processor/simple_symbol_supplier.o \
+	src/processor/source_line_resolver_base.o \
 	src/processor/stackwalker.o \
 	src/processor/stackwalker_amd64.o \
 	src/processor/stackwalker_arm.o \
@@ -697,6 +707,7 @@ src_processor_source_daemon_LDADD = \
 	src/processor/network_source_line_server.o \
 	src/processor/pathname_stripper.o \
 	src/processor/simple_symbol_supplier.o \
+	src/processor/source_line_resolver_base.o \
 	src/processor/tokenize.o \
 	src/processor/udp_network.o
 endif !DISABLE_PROCESSOR

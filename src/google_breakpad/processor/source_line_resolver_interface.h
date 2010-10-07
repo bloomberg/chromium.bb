@@ -64,6 +64,12 @@ class SourceLineResolverInterface {
   virtual bool LoadModuleUsingMapBuffer(const CodeModule *module,
                                         const string &map_buffer) = 0;
 
+  // Add an interface to load symbol using C-String data insteading string.
+  // This is useful in the optimization design for avoiding unnecessary copying
+  // of symbol data, in order to improve memory efficiency.
+  virtual bool LoadModuleUsingMemoryBuffer(const CodeModule *module,
+                                           char *memory_buffer) = 0;
+
   // Request that the specified module be unloaded from this resolver.
   // A resolver may choose to ignore such a request.
   virtual void UnloadModule(const CodeModule *module) = 0;

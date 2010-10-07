@@ -36,6 +36,7 @@
 #include "processor/simple_symbol_supplier.h"
 
 #include <assert.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -89,6 +90,26 @@ SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetSymbolFile(
     std::getline(in, *symbol_data, std::string::traits_type::to_char_type(
                      std::string::traits_type::eof()));
     in.close();
+  }
+  return s;
+}
+
+SymbolSupplier::SymbolResult SimpleSymbolSupplier::GetCStringSymbolData(
+    const CodeModule *module,
+    const SystemInfo *system_info,
+    string *symbol_file,
+    char **symbol_data) {
+  assert(symbol_data);
+
+  string symbol_data_string;
+  SymbolSupplier::SymbolResult s =
+      GetSymbolFile(module, system_info, symbol_file, &symbol_data_string);
+
+  if (s == FOUND) {
+    unsigned int size = symbol_data_string.size() + 1;
+    *symbol_data = reinterpret_cast<char*>(operator new(size));
+    memcpy(*symbol_data, symbol_data_string.c_str(), size - 1);
+    (*symbol_data)[size - 1] = '\0';
   }
   return s;
 }

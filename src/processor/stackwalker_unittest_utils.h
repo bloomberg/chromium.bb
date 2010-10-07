@@ -170,6 +170,10 @@ class MockSymbolSupplier: public google_breakpad::SymbolSupplier {
                                            const SystemInfo *system_info,
                                            std::string *symbol_file,
                                            std::string *symbol_data));
+  MOCK_METHOD4(GetCStringSymbolData, SymbolResult(const CodeModule *module,
+                                                  const SystemInfo *system_info,
+                                                  std::string *symbol_file,
+                                                  char **symbol_data));
 };
 
 #endif // PROCESSOR_STACKWALKER_UNITTEST_UTILS_H_

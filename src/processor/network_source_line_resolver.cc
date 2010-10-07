@@ -97,6 +97,13 @@ bool NetworkSourceLineResolver::LoadModuleUsingMapBuffer(
   return true;
 }
 
+bool NetworkSourceLineResolver::LoadModuleUsingMemoryBuffer(
+    const CodeModule *module,
+    char *memory_buffer) {
+  // see above
+  return true;
+}
+
 void NetworkSourceLineResolver::UnloadModule(const CodeModule *module) {
   // no-op
 }
@@ -328,6 +335,18 @@ NetworkSourceLineResolver::GetSymbolFile(const CodeModule *module,
 					 string *symbol_data) {
   if(symbol_data)
     symbol_data->clear();
+  return GetSymbolFile(module, system_info, symbol_file);
+}
+
+SymbolSupplier::SymbolResult
+NetworkSourceLineResolver::GetCStringSymbolData(
+    const CodeModule *module,
+    const SystemInfo *system_info,
+    string *symbol_file,
+    char **symbol_data) {
+  if (symbol_data)
+    delete *symbol_data;
+
   return GetSymbolFile(module, system_info, symbol_file);
 }
 

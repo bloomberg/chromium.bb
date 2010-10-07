@@ -192,6 +192,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/google_breakpad/processor/minidump_processor.h \
 	src/google-breakpad/processor/network_source_line_resolver.h \
 	src/google_breakpad/processor/process_state.h \
+	src/google_breakpad/processor/source_line_resolver_base.h \
 	src/google_breakpad/processor/source_line_resolver_interface.h \
 	src/google_breakpad/processor/stack_frame.h \
 	src/google_breakpad/processor/stack_frame_cpu.h \
@@ -202,6 +203,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/processor/basic_code_module.h \
 	src/processor/basic_code_modules.cc \
 	src/processor/basic_code_modules.h \
+	src/processor/basic_source_line_resolver_types.h \
 	src/processor/basic_source_line_resolver.cc \
 	src/processor/binarystream.h src/processor/binarystream.cc \
 	src/processor/call_stack.cc src/processor/cfi_frame_info.cc \
@@ -228,6 +230,8 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 	src/processor/simple_symbol_supplier.cc \
 	src/processor/simple_symbol_supplier.h \
 	src/processor/windows_frame_info.h \
+	src/processor/source_line_resolver_base_types.h \
+	src/processor/source_line_resolver_base.cc \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker_amd64.cc \
 	src/processor/stackwalker_amd64.h \
@@ -260,6 +264,7 @@ am__src_libbreakpad_a_SOURCES_DIST =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.$(OBJEXT) \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.$(OBJEXT) \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.$(OBJEXT) \
@@ -414,6 +419,7 @@ src_processor_basic_source_line_resolver_unittest_OBJECTS = $(am_src_processor_b
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o
 am__src_processor_binarystream_unittest_SOURCES_DIST =  \
 	src/processor/binarystream_unittest.cc \
@@ -487,6 +493,7 @@ src_processor_exploitability_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -527,6 +534,7 @@ src_processor_minidump_processor_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -556,6 +564,7 @@ src_processor_minidump_stackwalk_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -610,6 +619,7 @@ src_processor_network_source_line_resolver_server_unittest_OBJECTS = $(am_src_pr
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -688,6 +698,7 @@ src_processor_source_daemon_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o
 am__src_processor_stackwalker_amd64_unittest_SOURCES_DIST =  \
@@ -735,6 +746,7 @@ src_processor_stackwalker_selftest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -1021,6 +1033,7 @@ lib_LIBRARIES = $(am__append_1) $(am__append_3)
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/minidump_processor.h \
 @DISABLE_PROCESSOR_FALSE@	src/google-breakpad/processor/network_source_line_resolver.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/process_state.h \
+@DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/source_line_resolver_base.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/source_line_resolver_interface.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/stack_frame.h \
 @DISABLE_PROCESSOR_FALSE@	src/google_breakpad/processor/stack_frame_cpu.h \
@@ -1032,6 +1045,7 @@ lib_LIBRARIES = $(am__append_1) $(am__append_3)
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_module.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.h \
+@DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver_types.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/binarystream.cc \
@@ -1065,6 +1079,8 @@ lib_LIBRARIES = $(am__append_1) $(am__append_3)
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.h \
 @DISABLE_PROCESSOR_FALSE@	src/processor/windows_frame_info.h \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base_types.h \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.cc \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.h \
@@ -1201,6 +1217,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/cfi_frame_info.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o
 
 @DISABLE_PROCESSOR_FALSE@src_processor_cfi_frame_info_unittest_SOURCES = \
@@ -1254,6 +1271,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -1305,6 +1323,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -1386,6 +1405,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -1465,6 +1485,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/logging.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -1585,6 +1606,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/process_state.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_resolver.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_amd64.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/stackwalker_arm.o \
@@ -1607,6 +1629,7 @@ TESTS_ENVIRONMENT =
 @DISABLE_PROCESSOR_FALSE@	src/processor/network_source_line_server.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/pathname_stripper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/simple_symbol_supplier.o \
+@DISABLE_PROCESSOR_FALSE@	src/processor/source_line_resolver_base.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/tokenize.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/udp_network.o
 
@@ -1944,6 +1967,9 @@ src/processor/pathname_stripper.$(OBJEXT):  \
 src/processor/process_state.$(OBJEXT): src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/simple_symbol_supplier.$(OBJEXT):  \
+	src/processor/$(am__dirstamp) \
+	src/processor/$(DEPDIR)/$(am__dirstamp)
+src/processor/source_line_resolver_base.$(OBJEXT):  \
 	src/processor/$(am__dirstamp) \
 	src/processor/$(DEPDIR)/$(am__dirstamp)
 src/processor/stackwalker.$(OBJEXT): src/processor/$(am__dirstamp) \
@@ -2475,6 +2501,7 @@ mostlyclean-compile:
 	-rm -f src/processor/range_map_unittest.$(OBJEXT)
 	-rm -f src/processor/simple_symbol_supplier.$(OBJEXT)
 	-rm -f src/processor/source_daemon.$(OBJEXT)
+	-rm -f src/processor/source_line_resolver_base.$(OBJEXT)
 	-rm -f src/processor/src_client_linux_linux_client_unittest-basic_code_modules.$(OBJEXT)
 	-rm -f src/processor/src_client_linux_linux_client_unittest-logging.$(OBJEXT)
 	-rm -f src/processor/src_client_linux_linux_client_unittest-minidump.$(OBJEXT)
@@ -2615,6 +2642,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/range_map_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/simple_symbol_supplier.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_daemon.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/source_line_resolver_base.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest-basic_code_modules.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest-logging.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/processor/$(DEPDIR)/src_client_linux_linux_client_unittest-minidump.Po@am__quote@
