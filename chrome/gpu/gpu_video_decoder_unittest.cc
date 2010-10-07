@@ -88,8 +88,6 @@ class GpuVideoDecoderTest : public testing::Test,
     media::VideoFrame::GlTexture textures[] = { kServiceTexture, 0, 0 };
     media::VideoFrame::CreateFrameGlTexture(media::VideoFrame::RGBA,
                                             kWidth, kHeight, textures,
-                                            base::TimeDelta(),
-                                            base::TimeDelta(),
                                             &device_frame_);
   }
 

@@ -27,8 +27,6 @@ bool FakeGlVideoDevice::CreateVideoFrameFromGlTextures(
                                           width,
                                           height,
                                           texture_array,
-                                          base::TimeDelta(),
-                                          base::TimeDelta(),
                                           frame);
   return *frame != NULL;
 }

@@ -64,8 +64,6 @@ void Gles2VideoDecodeContext::AllocateVideoFrames(
 
     scoped_refptr<media::VideoFrame> frame;
     media::VideoFrame::CreateFrameGlTexture(format, width, height, textures,
-                                            base::TimeDelta(),
-                                            base::TimeDelta(),
                                             &frame);
     frames_[i] = frame;
   }

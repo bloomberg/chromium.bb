@@ -191,7 +191,7 @@ void MftH264Decoder::Initialize(
   // Until we had hardware composition working.
   if (use_dxva_) {
     info_.stream_info.surface_format = VideoFrame::NV12;
-    info_.stream_info.surface_type = VideoFrame::TYPE_D3D_TEXTURE;
+    info_.stream_info.surface_type = VideoFrame::TYPE_GL_TEXTURE;
   } else {
     info_.stream_info.surface_format = VideoFrame::YV12;
     info_.stream_info.surface_type = VideoFrame::TYPE_SYSTEM_MEMORY;
@@ -667,19 +667,6 @@ bool MftH264Decoder::DoDecode() {
       return true;
     }
 
-    // No distinction between the 3 planes - all 3 point to the handle of
-    // the texture. (There are actually only 2 planes since the output
-    // D3D surface is in NV12 format.)
-    VideoFrame::D3dTexture textures[VideoFrame::kMaxPlanes] = { surface.get(),
-                                                                surface.get(),
-                                                                surface.get() };
-    VideoFrame::CreateFrameD3dTexture(info_.stream_info.surface_format,
-                                      info_.stream_info.surface_width,
-                                      info_.stream_info.surface_height,
-                                      textures,
-                                      TimeDelta::FromMicroseconds(timestamp),
-                                      TimeDelta::FromMicroseconds(duration),
-                                      &frame);
   if (!frame.get()) {
     LOG(ERROR) << "Failed to allocate video frame for d3d texture";
     event_handler_->OnError();

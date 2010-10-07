@@ -232,7 +232,8 @@ class RenderToWindowHandler : public MftH264DecoderHandler {
   bool RenderD3dSurface(scoped_refptr<VideoFrame> frame) {
     ScopedComPtr<IDirect3DSurface9> surface;
     IDirect3DDevice9* device = decoder_->device();
-    surface.Attach(static_cast<IDirect3DSurface9*>(frame->d3d_texture(0)));
+    // TODO(hclam): Comment this since this file will be removed later.
+    // surface.Attach(static_cast<IDirect3DSurface9*>(frame->d3d_texture(0)));
     HRESULT hr;
     hr = device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0),
                        1.0f, 0);

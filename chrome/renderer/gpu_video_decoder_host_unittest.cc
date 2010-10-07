@@ -31,8 +31,6 @@ ACTION_P(SimulateAllocateVideoFrames, frames) {
     scoped_refptr<media::VideoFrame> frame;
     media::VideoFrame::CreateFrameGlTexture(media::VideoFrame::YV12,
                                             kWidth, kHeight, textures,
-                                            base::TimeDelta(),
-                                            base::TimeDelta(),
                                             &frame);
     frames->push_back(frame);
     arg4->push_back(frame);
