@@ -53,8 +53,6 @@
     [contentsContainer replaceSubview:[subviews objectAtIndex:0]
                                  with:contentsNativeView];
   }
-  [contentsNativeView setAutoresizingMask:NSViewWidthSizable|
-                                          NSViewHeightSizable];
 }
 
 // Returns YES if the tab represented by this controller is the front-most.
