@@ -18,6 +18,7 @@ using testing::Return;
 using testing::SetArgumentPointee;
 
 static const int32 kFrameId = 10;
+static const int32 kDecoderHostId = 50;
 static const media::VideoFrame::GlTexture kClientTexture = 101;
 static const media::VideoFrame::GlTexture kServiceTexture = 102;
 static const size_t kWidth = 320;
@@ -71,11 +72,8 @@ class GpuVideoDecoderTest : public testing::Test,
     // Create the mock objects.
     gles2_decoder_.reset(new gpu::gles2::MockGLES2Decoder(&group_));
 
-    // Initialize GpuVideoDecoder with the default params.
-    GpuVideoDecoderInfoParam param;
-    memset(&param, 0, sizeof(param));
     gpu_video_decoder_ = new GpuVideoDecoder(
-        &message_loop_, &param, this, base::kNullProcessHandle,
+        &message_loop_, kDecoderHostId, this, base::kNullProcessHandle,
         gles2_decoder_.get());
 
     // Create the mock objects.
@@ -95,7 +93,7 @@ class GpuVideoDecoderTest : public testing::Test,
                                             &device_frame_);
   }
 
-  ~GpuVideoDecoderTest() {
+  virtual ~GpuVideoDecoderTest() {
      gpu_video_decoder_->SetVideoDecodeEngine(NULL);
      gpu_video_decoder_->SetGpuVideoDevice(NULL);
   }

@@ -11,7 +11,8 @@
 GpuVideoServiceHost::GpuVideoServiceHost()
     : channel_host_(NULL),
       router_(NULL),
-      message_loop_(NULL) {
+      message_loop_(NULL),
+      next_decoder_host_id_(0) {
   memset(&service_info_, 0, sizeof(service_info_));
 }
 
@@ -55,14 +56,9 @@ GpuVideoDecoderHost* GpuVideoServiceHost::CreateVideoDecoder(
     int context_route_id) {
   DCHECK(RenderThread::current());
 
-  return new GpuVideoDecoderHost(this, channel_host_, context_route_id);
-}
-
-void GpuVideoServiceHost::AddRoute(int route_id,
-                                   GpuVideoDecoderHost* decoder_host) {
-  router_->AddRoute(route_id, decoder_host);
-}
-
-void GpuVideoServiceHost::RemoveRoute(int route_id) {
-  router_->RemoveRoute(route_id);
+  GpuVideoDecoderHost* host = new GpuVideoDecoderHost(router_, channel_host_,
+                                                      context_route_id,
+                                                      next_decoder_host_id_);
+  ++next_decoder_host_id_;
+  return host;
 }

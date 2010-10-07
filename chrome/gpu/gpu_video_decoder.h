@@ -93,7 +93,7 @@ class GpuVideoDecoder
  public:
   // Constructor and destructor.
   GpuVideoDecoder(MessageLoop* message_loop,
-                  const GpuVideoDecoderInfoParam* param,
+                  int32 decoder_host_id,
                   IPC::Message::Sender* sender,
                   base::ProcessHandle handle,
                   gpu::gles2::GLES2Decoder* decoder);
@@ -139,7 +139,7 @@ class GpuVideoDecoder
     Task* task;
   };
 
-  int32 route_id() { return decoder_host_route_id_; }
+  int32 decoder_host_id() { return decoder_host_id_; }
 
   bool CreateInputTransferBuffer(uint32 size,
                                  base::SharedMemoryHandle* handle);
@@ -168,7 +168,8 @@ class GpuVideoDecoder
   // The message loop that this object should run on.
   MessageLoop* message_loop_;
 
-  int32 decoder_host_route_id_;
+  // ID of GpuVideoDecoderHost in the Renderer Process.
+  int32 decoder_host_id_;
 
   // Used only in system memory path. i.e. Remove this later.
   scoped_refptr<VideoFrame> frame_;

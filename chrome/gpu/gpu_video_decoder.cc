@@ -209,12 +209,12 @@ void GpuVideoDecoder::SetGpuVideoDevice(GpuVideoDevice* device) {
 
 GpuVideoDecoder::GpuVideoDecoder(
     MessageLoop* message_loop,
-    const GpuVideoDecoderInfoParam* param,
+    int32 decoder_host_id,
     IPC::Message::Sender* sender,
     base::ProcessHandle handle,
     gpu::gles2::GLES2Decoder* decoder)
     : message_loop_(message_loop),
-      decoder_host_route_id_(param->decoder_host_route_id),
+      decoder_host_id_(decoder_host_id),
       sender_(sender),
       renderer_handle_(handle),
       gles2_decoder_(decoder) {
@@ -310,33 +310,34 @@ void GpuVideoDecoder::OnVideoFrameAllocated(int32 frame_id,
 void GpuVideoDecoder::SendInitializeDone(
     const GpuVideoDecoderInitDoneParam& param) {
   if (!sender_->Send(
-          new GpuVideoDecoderHostMsg_InitializeACK(route_id(), param))) {
+          new GpuVideoDecoderHostMsg_InitializeACK(decoder_host_id(), param))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_InitializeACK failed";
   }
 }
 
 void GpuVideoDecoder::SendUninitializeDone() {
-  if (!sender_->Send(new GpuVideoDecoderHostMsg_DestroyACK(route_id()))) {
+  if (!sender_->Send(
+          new GpuVideoDecoderHostMsg_DestroyACK(decoder_host_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_DestroyACK failed";
   }
 }
 
 void GpuVideoDecoder::SendFlushDone() {
-  if (!sender_->Send(new GpuVideoDecoderHostMsg_FlushACK(route_id()))) {
+  if (!sender_->Send(new GpuVideoDecoderHostMsg_FlushACK(decoder_host_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FlushACK failed";
   }
 }
 
 void GpuVideoDecoder::SendEmptyBufferDone() {
   if (!sender_->Send(
-          new GpuVideoDecoderHostMsg_EmptyThisBufferDone(route_id()))) {
+          new GpuVideoDecoderHostMsg_EmptyThisBufferDone(decoder_host_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBufferDone failed";
   }
 }
 
 void GpuVideoDecoder::SendEmptyBufferACK() {
   if (!sender_->Send(
-          new GpuVideoDecoderHostMsg_EmptyThisBufferACK(route_id()))) {
+          new GpuVideoDecoderHostMsg_EmptyThisBufferACK(decoder_host_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_EmptyThisBufferACK failed";
   }
 }
@@ -345,7 +346,7 @@ void GpuVideoDecoder::SendConsumeVideoFrame(
     int32 frame_id, int64 timestamp, int64 duration, int32 flags) {
   if (!sender_->Send(
           new GpuVideoDecoderHostMsg_ConsumeVideoFrame(
-              route_id(), frame_id, timestamp, duration, flags))) {
+              decoder_host_id(), frame_id, timestamp, duration, flags))) {
     LOG(ERROR) << "GpuVideoDecodeHostMsg_ConsumeVideoFrame failed.";
   }
 }
@@ -354,14 +355,16 @@ void GpuVideoDecoder::SendAllocateVideoFrames(
     int n, size_t width, size_t height, media::VideoFrame::Format format) {
   if (!sender_->Send(
           new GpuVideoDecoderHostMsg_AllocateVideoFrames(
-              route_id(), n, width, height, static_cast<int32>(format)))) {
+              decoder_host_id(), n, width, height,
+              static_cast<int32>(format)))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_AllocateVideoFrames failed";
   }
 }
 
 void GpuVideoDecoder::SendReleaseAllVideoFrames() {
   if (!sender_->Send(
-          new GpuVideoDecoderHostMsg_ReleaseAllVideoFrames(route_id()))) {
+          new GpuVideoDecoderHostMsg_ReleaseAllVideoFrames(
+              decoder_host_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_ReleaseAllVideoFrames failed";
   }
 }

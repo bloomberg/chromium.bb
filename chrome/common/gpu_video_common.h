@@ -19,25 +19,12 @@ enum GpuVideoBufferFlag {
 struct GpuVideoServiceInfoParam {
   // route id for GpuVideoService on GPU process side for this channel.
   int32 video_service_route_id;
+
   // route id for GpuVideoServiceHost on Render process side for this channel.
   int32 video_service_host_route_id;
+
   // TODO(jiesun): define capabilities of video service.
   int32 service_available;
-};
-
-struct GpuVideoDecoderInfoParam {
-  // Context ID of the GLES2 context what this decoder should assicate with.
-  int context_id;
-
-  // Global decoder id.
-  int32 decoder_id;
-
-  // Route id for GpuVideoDecoder on GPU process side for this channel.
-  int32 decoder_route_id;
-
-  // TODO(hclam): Merge this ID with |decoder_route_id_|.
-  // Route id for GpuVideoServiceHost on Render process side for this channel.
-  int32 decoder_host_route_id;
 };
 
 struct GpuVideoDecoderInitParam {
@@ -80,14 +67,6 @@ namespace IPC {
 template <>
 struct ParamTraits<GpuVideoServiceInfoParam> {
   typedef GpuVideoServiceInfoParam param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<GpuVideoDecoderInfoParam> {
-  typedef GpuVideoDecoderInfoParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_GPU_VIDEO_DECODER_HOST_H_
 
 #include <deque>
+#include <map>
 
 #include "base/singleton.h"
 #include "chrome/common/gpu_video_common.h"
@@ -18,7 +19,7 @@
 using media::VideoFrame;
 using media::Buffer;
 
-class GpuVideoServiceHost;
+class MessageRouter;
 
 // This class is used to talk to GpuVideoDecoder in the GPU process through
 // IPC messages. It implements the interface of VideoDecodeEngine so users
@@ -36,6 +37,10 @@ class GpuVideoServiceHost;
 class GpuVideoDecoderHost : public media::VideoDecodeEngine,
                             public IPC::Channel::Listener {
  public:
+  GpuVideoDecoderHost(MessageRouter* router,
+                      IPC::Message::Sender* ipc_sender,
+                      int context_route_id,
+                      int32 decoder_host_id);
   virtual ~GpuVideoDecoderHost() {}
 
   // IPC::Channel::Listener.
@@ -55,7 +60,7 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
   virtual void Seek();
 
  private:
-  friend class GpuVideoServiceHost;
+  typedef std::map<int32, scoped_refptr<media::VideoFrame> > VideoFrameMap;
 
   // Internal states.
   enum GpuVideoDecoderHostState {
@@ -65,30 +70,38 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
     kStateFlushing,
   };
 
-  // Private constructor.
-  GpuVideoDecoderHost(GpuVideoServiceHost* service_host,
-                      IPC::Message::Sender* ipc_sender,
-                      int context_route_id);
-
-  // Input message handler.
+  // Handlers for messages received from the GPU process.
+  void OnCreateVideoDecoderDone(int32 decoder_id);
   void OnInitializeDone(const GpuVideoDecoderInitDoneParam& param);
   void OnUninitializeDone();
   void OnFlushDone();
-  void OnEmptyThisBufferDone();
+  void OnEmptyThisBufferACK();
+  void OnProduceVideoSample();
   void OnConsumeVideoFrame(int32 frame_id, int64 timestamp,
                            int64 duration, int32 flags);
-  void OnEmptyThisBufferACK();
+  void OnAllocateVideoFrames(int32 n, uint32 width,
+                             uint32 height, int32 format);
+  void OnReleaseAllVideoFrames();
 
-  // Helper function.
-  void SendInputBufferToGpu();
+  // Handler for VideoDecodeContext. This method is called when video frames
+  // allocation is done.
+  void OnAllocateVideoFramesDone();
 
-  // Getter methods for IDs.
-  int32 decoder_id() { return decoder_info_.decoder_id; }
-  int32 route_id() { return decoder_info_.decoder_route_id; }
-  int32 my_route_id() { return decoder_info_.decoder_host_route_id; }
+  // Send a message to the GPU process to inform that a video frame is
+  // allocated.
+  void SendVideoFrameAllocated(int32 frame_id,
+                               scoped_refptr<media::VideoFrame> frame);
 
-  // We expect that GpuVideoServiceHost's always available during our life span.
-  GpuVideoServiceHost* gpu_video_service_host_;
+  // Send a video sample to the GPU process and tell it to use the buffer for
+  // video decoding.
+  void SendConsumeVideoSample();
+
+  // Look up the frame_id for |frame| and send a message to the GPU process
+  // to use that video frame to produce an output.
+  void SendProduceVideoFrame(scoped_refptr<media::VideoFrame> frame);
+
+  // A router used to send us IPC messages.
+  MessageRouter* router_;
 
   // Sends IPC messages to the GPU process.
   IPC::Message::Sender* ipc_sender_;
@@ -96,23 +109,26 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
   // Route ID of the GLES2 context in the GPU process.
   int context_route_id_;
 
+  // Message loop that this object runs on.
+  MessageLoop* message_loop_;
+
   // We expect that the client of us will always available during our life span.
   EventHandler* event_handler_;
 
-  // Globally identify this decoder in the GPU process.
-  GpuVideoDecoderInfoParam decoder_info_;
-
-  // Input buffer id serial number generator.
-  int32 buffer_id_serial_;
+  // A Context for allocating video frame textures.
+  media::VideoDecodeContext* context_;
 
   // Hold information about GpuVideoDecoder configuration.
   media::VideoCodecConfig config_;
 
-  // Hold information about output surface format, etc.
-  GpuVideoDecoderInitDoneParam done_param_;
-
   // Current state of video decoder.
   GpuVideoDecoderHostState state_;
+
+  // ID of this GpuVideoDecoderHost.
+  int32 decoder_host_id_;
+
+  // ID of GpuVideoDecoder in the GPU process.
+  int32 decoder_id_;
 
   // We are not able to push all received buffer to gpu process at once.
   std::deque<scoped_refptr<Buffer> > input_buffer_queue_;
@@ -124,6 +140,15 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
   // Transfer buffers for both input and output.
   // TODO(jiesun): remove output buffer when hardware composition is ready.
   scoped_ptr<base::SharedMemory> input_transfer_buffer_;
+
+  // Frame ID for the newly generated video frame.
+  int32 current_frame_id_;
+
+  // The list of video frames allocated by VideoDecodeContext.
+  std::vector<scoped_refptr<media::VideoFrame> > video_frames_;
+
+  // The mapping between video frame ID and a video frame.
+  VideoFrameMap video_frame_map_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoderHost);
 };

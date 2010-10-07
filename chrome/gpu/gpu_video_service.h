@@ -22,31 +22,29 @@ class GpuVideoService : public IPC::Channel::Listener,
   virtual void OnChannelError();
   virtual void OnMessageReceived(const IPC::Message& message);
 
+  // TODO(hclam): Remove return value.
   bool CreateVideoDecoder(GpuChannel* channel,
                           MessageRouter* router,
-                          GpuVideoDecoderInfoParam* param,
+                          int32 decoder_host_id,
+                          int32 decoder_id,
                           gpu::gles2::GLES2Decoder* gles2_decoder);
   void DestroyVideoDecoder(MessageRouter* router,
                            int32 decoder_id);
 
  private:
   struct GpuVideoDecoderInfo {
-    scoped_refptr<GpuVideoDecoder> decoder_;
-    GpuChannel* channel_;
-    GpuVideoDecoderInfoParam param;
+    scoped_refptr<GpuVideoDecoder> decoder;
+    GpuChannel* channel;
   };
 
   GpuVideoService();
   virtual ~GpuVideoService();
 
   std::map<int32, GpuVideoDecoderInfo> decoder_map_;
-  int32 next_available_decoder_id_;
 
   // Specialize video service on different platform will override.
   virtual bool IntializeGpuVideoService();
   virtual bool UnintializeGpuVideoService();
-
-  int32 GetNextAvailableDecoderID();
 
   friend struct DefaultSingletonTraits<GpuVideoService>;
   DISALLOW_COPY_AND_ASSIGN(GpuVideoService);

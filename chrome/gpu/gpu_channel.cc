@@ -206,24 +206,26 @@ void GpuChannel::OnGetVideoService(GpuVideoServiceInfoParam* info) {
 #endif
 }
 
-void GpuChannel::OnCreateVideoDecoder(GpuVideoDecoderInfoParam* info) {
+void GpuChannel::OnCreateVideoDecoder(int32 context_route_id,
+                                      int32 decoder_host_id) {
 #if defined(ENABLE_GPU)
   LOG(INFO) << "GpuChannel::OnCreateVideoDecoder";
-  info->decoder_id = -1;
   GpuVideoService* service = GpuVideoService::get();
-  if (service == NULL)
+  if (service == NULL) {
+    // TODO(hclam): Need to send a failure message.
     return;
+  }
 
   // The context ID corresponds to the command buffer used.
-  GpuCommandBufferStub* stub = stubs_.Lookup(info->context_id);
-
-  info->decoder_host_route_id = GenerateRouteID();
-  info->decoder_route_id = GenerateRouteID();
+  GpuCommandBufferStub* stub = stubs_.Lookup(context_route_id);
+  int32 decoder_id = GenerateRouteID();
 
   // TODO(hclam): Need to be careful about the lifetime of the command buffer
   // decoder.
-  service->CreateVideoDecoder(this, &router_, info,
-                              stub->processor()->decoder());
+  bool ret = service->CreateVideoDecoder(
+      this, &router_, decoder_host_id, decoder_id,
+      stub->processor()->decoder());
+  DCHECK(ret) << "Failed to create a GpuVideoDecoder";
 #endif
 }
 

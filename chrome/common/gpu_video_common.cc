@@ -32,34 +32,6 @@ void ParamTraits<GpuVideoServiceInfoParam>::Log(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ParamTraits<GpuVideoDecoderInfoParam>::Write(
-    Message* m, const GpuVideoDecoderInfoParam& p) {
-  WriteParam(m, p.context_id);
-  WriteParam(m, p.decoder_id);
-  WriteParam(m, p.decoder_route_id);
-  WriteParam(m, p.decoder_host_route_id);
-}
-
-bool ParamTraits<GpuVideoDecoderInfoParam>::Read(
-    const Message* m, void** iter, GpuVideoDecoderInfoParam* r) {
-  if (!ReadParam(m, iter, &r->context_id) ||
-      !ReadParam(m, iter, &r->decoder_id) ||
-      !ReadParam(m, iter, &r->decoder_route_id) ||
-      !ReadParam(m, iter, &r->decoder_host_route_id))
-    return false;
-  return true;
-}
-
-void ParamTraits<GpuVideoDecoderInfoParam>::Log(
-    const GpuVideoDecoderInfoParam& p, std::string* l) {
-  l->append(StringPrintf("(%d, %d, %d)",
-            p.decoder_id,
-            p.decoder_route_id,
-            p.decoder_host_route_id));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 void ParamTraits<GpuVideoDecoderInitParam>::Write(
     Message* m, const GpuVideoDecoderInitParam& p) {
   WriteParam(m, p.codec_id);

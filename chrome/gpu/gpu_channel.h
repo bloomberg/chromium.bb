@@ -76,7 +76,8 @@ class GpuChannel : public IPC::Channel::Listener,
   void OnDestroyCommandBuffer(int32 route_id);
 
   void OnGetVideoService(GpuVideoServiceInfoParam* info);
-  void OnCreateVideoDecoder(GpuVideoDecoderInfoParam* info);
+  void OnCreateVideoDecoder(int32 context_route_id,
+                            int32 decoder_host_id);
   void OnDestroyVideoDecoder(int32 decoder_id);
 
   scoped_ptr<IPC::SyncChannel> channel_;

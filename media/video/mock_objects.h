@@ -5,6 +5,7 @@
 #ifndef MEDIA_VIDEO_MOCK_OBJECTS_H_
 #define MEDIA_VIDEO_MOCK_OBJECTS_H_
 
+#include "media/video/video_decode_context.h"
 #include "media/video/video_decode_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -27,6 +28,25 @@ class MockVideoDecodeEngine : public VideoDecodeEngine {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockVideoDecodeEngine);
+};
+
+class MockVideoDecodeContext : public VideoDecodeContext {
+ public:
+  MockVideoDecodeContext() {}
+  virtual ~MockVideoDecodeContext() {}
+
+  MOCK_METHOD0(GetDevice, void*());
+  MOCK_METHOD6(AllocateVideoFrames, void(
+      int n, size_t width, size_t height, VideoFrame::Format format,
+      std::vector<scoped_refptr<VideoFrame> >* frames,
+      Task* task));
+  MOCK_METHOD0(ReleaseAllVideoFrames, void());
+  MOCK_METHOD3(UploadToVideoFrame,  void(
+      void* buffer, scoped_refptr<VideoFrame> frame, Task* task));
+  MOCK_METHOD1(Destroy, void(Task* task));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockVideoDecodeContext);
 };
 
 }  // namespace media

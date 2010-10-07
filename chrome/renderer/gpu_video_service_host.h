@@ -45,13 +45,6 @@ class GpuVideoServiceHost : public IPC::Channel::Listener,
   // Returns a GpuVideoDecoderHost as a handle to control the video decoder.
   GpuVideoDecoderHost* CreateVideoDecoder(int context_route_id);
 
-  // TODO(hclam): Provide a method to destroy the decoder. We also need to
-  // listen to context lost event.
-
-  // Methods called by GpuVideoDecoderHost.
-  void AddRoute(int route_id, GpuVideoDecoderHost* decoder_host);
-  void RemoveRoute(int route_id);
-
  private:
   GpuVideoServiceHost();
 
@@ -59,6 +52,9 @@ class GpuVideoServiceHost : public IPC::Channel::Listener,
   MessageRouter* router_;
   GpuVideoServiceInfoParam service_info_;
   MessageLoop* message_loop_;  // Message loop of render thread.
+
+  // ID for the next GpuVideoDecoderHost.
+  int32 next_decoder_host_id_;
 
   friend struct DefaultSingletonTraits<GpuVideoServiceHost>;
   DISALLOW_COPY_AND_ASSIGN(GpuVideoServiceHost);

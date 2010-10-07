@@ -188,11 +188,13 @@ IPC_BEGIN_MESSAGES(GpuChannel)
   // Create hardware video decoder && associate it with the output |decoder_id|;
   // We need this to be control message because we had to map the GpuChannel and
   // |decoder_id|.
-  IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_CreateVideoDecoder,
-                              GpuVideoDecoderInfoParam)
+  IPC_MESSAGE_CONTROL2(GpuChannelMsg_CreateVideoDecoder,
+                       int32, /* context_route_id */
+                       int32) /* decoder_id */
 
   // Release all resource of the hardware video decoder which was assocaited
   // with the input |decoder_id|.
+  // TODO(hclam): This message needs to be asynchronous.
   IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyVideoDecoder,
                               int32 /* decoder_id */)
 
@@ -284,8 +286,8 @@ IPC_BEGIN_MESSAGES(GpuCommandBuffer)
 IPC_END_MESSAGES(GpuCommandBuffer)
 
 //------------------------------------------------------------------------------
-
-// GpuVideoDecoderMsgs : send from renderer process to gpu process.
+// GPU Video Decoder Messages
+// These messages are sent from Renderer process to GPU process.
 IPC_BEGIN_MESSAGES(GpuVideoDecoder)
   // Initialize and configure GpuVideoDecoder asynchronously.
   IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_Initialize,
@@ -314,9 +316,13 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoder)
 IPC_END_MESSAGES(GpuVideoDecoder)
 
 //------------------------------------------------------------------------------
-
-// GpuVideoDecoderMsgs : send from gpu process to renderer process.
+// GPU Video Decoder Host Messages
+// These messages are sent from GPU process to Renderer process.
 IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
+  // Inform GpuVideoDecoderHost that a GpuVideoDecoder is created.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_CreateVideoDecoderDone,
+                      int32) /* decoder_id */
+
   // Confirm GpuVideoDecoder had been initialized or failed to initialize.
   IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_InitializeACK,
                       GpuVideoDecoderInitDoneParam)
@@ -342,7 +348,7 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
 
   // Allocate video frames for output of the hardware video decoder.
   IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_AllocateVideoFrames,
-                      int32,  /* Numer of video frames to generate */
+                      int32,  /* Number of video frames to generate */
                       uint32, /* Width of the video frame */
                       uint32, /* Height of the video frame */
                       int32   /* Format of the video frame */)
