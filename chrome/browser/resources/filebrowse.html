@@ -254,7 +254,7 @@ li.filebrowserow {
 .downloadstatus {
   width: 100%;
   font-size: .6em;
-  height: 10px;
+  height: 20px;
 }
 
 .downloadpause {
@@ -624,7 +624,8 @@ function $(o) {
  */
 function partial(fn, var_args) {
   var args = Array.prototype.slice.call(arguments, 1);
-  return function() {
+  return function(e) {
+    if (e.stopPropagation) e.stopPropagation();
     // Prepend the bound arguments to the current arguments.
     var newArgs = Array.prototype.slice.call(arguments);
     newArgs.unshift.apply(newArgs, args);
@@ -1140,6 +1141,14 @@ function downloadsList(results) {
 function allowDownload(id, path) {
   var element = $(path);
   element.removeAttribute('dangerous');
+  var pauseDiv = $('downloaditem' + id);
+  if (pauseDiv) {
+    if (pauseDiv.firstChild) {
+      pauseDiv.removeChild(pauseDiv.firstChild);
+    }
+    pauseDiv.onclick = partial(pauseToggleDownload, id);
+    pauseDiv.textContent = kPauseDownload;
+  }
   chrome.send('allowDownload', ['' + id]);
 }
 
@@ -1160,7 +1169,7 @@ function newDownload(results) {
       var extracted = getPathAndFilenameForPath(results[x].file_path);
       var dirId = $('list/dir/' + extracted[1]);
       if (dirId) {
-        element = createNewItem(extracted[2], results[x].file_path, false);
+        element = createNewItem(results[x].file_name, results[x].file_path, false);
         downloadList.push(element);
         if (dirId.firstChild) {
           dirId.insertBefore(element, dirId.firstChild);
@@ -1173,7 +1182,7 @@ function newDownload(results) {
   }
 }
 
-function removeDownload(element) {
+function removeDownload(element, dirId) {
   var status = undefined;
   var pause = undefined;
   for (var x = 0; x < element.children.length; x++) {
@@ -1199,10 +1208,18 @@ function removeDownload(element) {
     }
   }
   downloadList = elementList;
+  if (dirId) {
+    dirId.removeChild(element);
+  }
 }
 
 function downloadUpdated(results) {
   var removeDownloads = [];
+  removeDownloads.pushUnique = function (element) {
+  if (this.indexOf(element) === -1) {
+      this.push(element);
+    }
+  };
   for (var y = 0; y < downloadList.length; y++) {
     var found = false;
     for (var x = 0; x < results.length; x++) {
@@ -1213,19 +1230,18 @@ function downloadUpdated(results) {
       }
     }
     if (!found) {
-      removeDownloads.push(downloadList[y]);
+      removeDownloads.pushUnique(downloadList[y]);
     }
   }
-  for (var x = 0; x < removeDownloads.length; x++) {
-    removeDownload(removeDownloads[x]);
-  }
+
   for (var x = 0; x < results.length; x++) {
     var element = $(results[x].file_path);
+    // extracted and dirId should be computed outside this loop.
+    var extracted = getPathAndFilenameForPath(results[x].file_path);
+    var dirId = $('list/dir/' + extracted[1]);
     if (!element && results[x].state != 'CANCELLED') {
-      extracted = getPathAndFilenameForPath(results[x].file_path);
-      var dirId = $('list/dir/' + extracted[1]);
-      if (dirId) {
-        element = createNewItem(extracted[2], results[x].file_path, false);
+       if (dirId) {
+        element = createNewItem(results[x].file_name, results[x].file_path, false);
         if (dirId.firstChild) {
           dirId.insertBefore(element, dirId.firstChild);
         } else {
@@ -1236,8 +1252,8 @@ function downloadUpdated(results) {
     }
     if (element) {
       if (results[x].state == 'CANCELLED') {
-         element.parentNode.removeChild(element);
-         continue;
+        element.parentNode.removeChild(element);
+        continue;
       }
       if (results[x].percent < 100 || results[x].state == 'DANGEROUS') {
         var progressDiv = null;
@@ -1250,6 +1266,7 @@ function downloadUpdated(results) {
         if (progressDiv == null) {
           downloadList.push(element);
           element.className = 'filebrowserow downloading';
+          fixTitleForItem(element, results[x]);
           var progressDiv = document.createElement('div');
           progressDiv.className = 'downloadstatus';
           element.appendChild(progressDiv);
@@ -1279,23 +1296,32 @@ function downloadUpdated(results) {
             pauseDiv.appendChild(yes);
             pauseDiv.appendChild(no);
             progressDiv.textContent = '';
-          } else if (results[x].state == "PAUSED") {
-            pauseDiv.textContent = kResumeDownload;
-          } else if (results[x].state == "IN_PROGRESS") {
-            pauseDiv.textContent = kPauseDownload;
           }
           pauseDiv.id = 'downloaditem' + results[x].id;
           element.appendChild(pauseDiv);
+        }
+        var pauseDiv = $('downloaditem' + results[x].id);
+        if (pauseDiv &&
+            results[x].state == "PAUSED" &&
+            pauseDiv.textContent != kResumeDownload) {
+          pauseDiv.textContent = kResumeDownload;
+        } else if (pauseDiv &&
+                   results[x].state == "IN_PROGRESS" &&
+                   pauseDiv.textContent != kPauseDownload) {
+          pauseDiv.textContent = kPauseDownload;
         }
         if (results[x].percent < 100 &&
             results[x].state != 'DANGEROUS') {
           progressDiv.textContent = results[x].progress_status_text;
         }
 
-      } else {
-        removeDownload(element);
+      } else if (downloadList.indexOf(element) !== -1) {
+        removeDownloads.pushUnique(element);
       }
     }
+  }
+  for (x = 0; x < removeDownloads.length; x++) {
+    removeDownload(removeDownloads[x], dirId);
   }
 }
 
@@ -1675,6 +1701,12 @@ function createNewItem(title, path, isDirectory) {
     link.appendChild(rightarrow);
   }
   return element;
+}
+
+function fixTitleForItem(element, result) {
+  element.title = result.file_name;
+  // This is a bit fragile.
+  element.getElementsByTagName('span')[0].textContent = result.file_name;
 }
 
 function clearChildren(element) {
