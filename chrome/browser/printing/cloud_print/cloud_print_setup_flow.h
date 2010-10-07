@@ -56,15 +56,6 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   static CloudPrintSetupFlow* OpenDialog(Profile* service, Delegate* delegate,
                                          gfx::NativeWindow parent_window);
 
-  // Disables the cloud print proxy if it's enabled and running.
-  static void DisableCloudPrintProxy(Profile* profile);
-
-  // Ping the cloud print proxy service in order to get the true
-  // enablement state and user e-mail that the service is using, and
-  // reflect those back into the browser preferences.
-  static void RefreshPreferencesFromService(
-      Profile* profile, Callback2<bool, std::string>::Type* callback);
-
   // Focuses the dialog.  This is useful in cases where the dialog has been
   // obscured by a browser window.
   void Focus();
@@ -105,9 +96,6 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
                            const std::string& password,
                            const std::string& captcha);
 
-  // Event triggered when the service process was launched.
-  void OnProcessLaunched();
-
   // The following methods control which iframe is visible.
   void ShowGaiaLogin(const DictionaryValue& args);
   void ShowGaiaSuccessAndSettingUp();
@@ -131,8 +119,6 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
 
   // Handle to the ServiceProcessControl which talks to the service process.
   ServiceProcessControl* process_control_;
-  scoped_refptr<CloudPrintServiceProcessHelper> service_process_helper_;
-
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintSetupFlow);

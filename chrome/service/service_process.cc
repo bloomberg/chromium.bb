@@ -52,7 +52,8 @@ static const int64 kShutdownDelay = 60000;
 ServiceProcess::ServiceProcess()
   : shutdown_event_(true, false),
     main_message_loop_(NULL),
-    enabled_services_(0) {
+    enabled_services_(0),
+    update_available_(false) {
   DCHECK(!g_service_process);
   g_service_process = this;
 }
@@ -150,6 +151,17 @@ void ServiceProcess::Shutdown() {
   main_message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
+bool ServiceProcess::HandleClientDisconnect() {
+  // If there are no enabled services or if there is an update available
+  // we want to shutdown right away. Else we want to keep listening for
+  // new connections.
+  if (!enabled_services_ || update_available()) {
+    Shutdown();
+    return false;
+  }
+  return true;
+}
+
 CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
   if (!cloud_print_proxy_.get()) {
     cloud_print_proxy_.reset(new CloudPrintProxy());
@@ -180,7 +192,7 @@ void ServiceProcess::OnServiceEnabled() {
 }
 
 void ServiceProcess::OnServiceDisabled() {
-  DCHECK(0 != enabled_services_);
+  DCHECK_NE(enabled_services_, 0);
   enabled_services_--;
   if (0 == enabled_services_) {
     RemoveServiceProcessFromAutoStart();

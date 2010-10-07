@@ -32,6 +32,7 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profile.h"
@@ -1377,9 +1378,6 @@ class CloudPrintProxySection : public AdvancedSection,
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // Callback that gets the cloud print proxy status.
-  void StatusCallback(bool enabled, std::string email);
-
   // CloudPrintSetupFlow::Delegate implementation.
   virtual void OnDialogClosed();
 
@@ -1421,7 +1419,7 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
       // Enabled, we must be the disable button.
       UserMetricsRecordAction(
           UserMetricsAction("Options_DisableCloudPrintProxy"), NULL);
-      CloudPrintSetupFlow::DisableCloudPrintProxy(profile());
+      profile()->GetCloudPrintProxyService()->DisableForUser();
     } else {
       UserMetricsRecordAction(
           UserMetricsAction("Options_EnableCloudPrintProxy"), NULL);
@@ -1442,11 +1440,6 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
     browser->OpenURL(CloudPrintURL(profile()).GetCloudPrintServiceManageURL(),
                      GURL(), NEW_WINDOW, PageTransition::LINK);
   }
-}
-
-void CloudPrintProxySection::StatusCallback(bool enabled, std::string email) {
-  profile()->GetPrefs()->SetString(prefs::kCloudPrintEmail,
-                                   enabled ? email : std::string());
 }
 
 void CloudPrintProxySection::OnDialogClosed() {
@@ -1498,9 +1491,7 @@ void CloudPrintProxySection::InitControlLayout() {
 
   // Kick off a task to ask the background service what the real
   // answer is.
-  CloudPrintSetupFlow::RefreshPreferencesFromService(
-      profile(),
-      factory_.NewCallback(&CloudPrintProxySection::StatusCallback));
+  profile()->GetCloudPrintProxyService()->RefreshStatusFromService();
 }
 
 void CloudPrintProxySection::NotifyPrefChanged(const std::string* pref_name) {

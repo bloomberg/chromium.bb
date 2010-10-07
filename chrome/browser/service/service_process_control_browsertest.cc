@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/in_process_browser_test.h"
-#include "chrome/test/ui_test_utils.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/service/service_process_control.h"
 #include "chrome/browser/service/service_process_control_manager.h"
+#include "chrome/common/service_process_util.h"
+#include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/ui_test_utils.h"
 
 class ServiceProcessControlBrowserTest
     : public InProcessBrowserTest,
@@ -29,9 +31,30 @@ class ServiceProcessControlBrowserTest
   }
 
   void SayHelloAndWait() {
-   // Send a hello message to the service process and wait for a reply.
+    // Send a hello message to the service process and wait for a reply.
     process()->SendHello();
     ui_test_utils::RunMessageLoop();
+  }
+
+  void DisconnectAndWaitForShutdown() {
+    // This will delete all instances of ServiceProcessControl and close the IPC
+    // connections.
+    ServiceProcessControlManager::instance()->Shutdown();
+    process_ = NULL;
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &ServiceProcessControlBrowserTest::DoDetectShutdown),
+        TestTimeouts::wait_for_terminate_timeout_ms());
+    ui_test_utils::RunMessageLoop();
+  }
+
+
+  void DoDetectShutdown() {
+    EXPECT_FALSE(CheckServiceProcessRunning());
+    // Quit the current message loop.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        new MessageLoop::QuitTask());
   }
 
   void ProcessControlLaunched() {
@@ -85,6 +108,17 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
   // And then shutdown the service process.
   EXPECT_TRUE(process()->Shutdown());
 }
+
+// Tests whether disconnecting from the service IPC causes the service process
+// to die.
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, DieOnDisconnect) {
+  // Launch the service process the first time.
+  LaunchServiceProcessControl();
+  // Make sure we are connected to the service process.
+  EXPECT_TRUE(process()->is_connected());
+  DisconnectAndWaitForShutdown();
+}
+
 #endif
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControlBrowserTest);

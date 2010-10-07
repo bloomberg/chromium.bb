@@ -19,6 +19,7 @@
 #endif  // defined(TOOLKIT_GTK)
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_message_handler.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/remoting/remoting_resources_source.h"
@@ -39,139 +40,6 @@
 
 static const wchar_t kLoginIFrameXPath[] = L"//iframe[@id='login']";
 static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='done']";
-
-////////////////////////////////////////////////////////////////////////////////
-// CloudPrintServiceProcessHelper
-//
-// This is a helper class to perform actions when the service process
-// is connected or launched. The events are sent back to CloudPrintSetupFlow
-// when the dialog is still active. CloudPrintSetupFlow can detach from this
-// helper class when the dialog is closed.
-
-class CloudPrintServiceProcessHelper
-    : public base::RefCountedThreadSafe<CloudPrintServiceProcessHelper> {
- public:
-  explicit CloudPrintServiceProcessHelper(CloudPrintSetupFlow* flow)
-      : flow_(flow) {
-  }
-
-  void Detach() {
-    flow_ = NULL;
-  }
-
-  void OnProcessLaunched() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    // If the flow is detached then show the done page.
-    if (!flow_)
-      return;
-
-    flow_->OnProcessLaunched();
-  }
-
- private:
-  CloudPrintSetupFlow* flow_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintServiceProcessHelper);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// CloudPrintServiceDisableTask
-//
-// This is a helper class to get the proxy service launched if it
-// isn't, in order to properly inform it that it should be disabled.
-
-class CloudPrintServiceDisableTask
-    : public base::RefCountedThreadSafe<CloudPrintServiceDisableTask> {
- public:
-  explicit CloudPrintServiceDisableTask(Profile* profile)
-      : profile_(profile),
-        process_control_(NULL) {
-  }
-
-  void StartDisable() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-    process_control_ =
-        ServiceProcessControlManager::instance()->GetProcessControl(profile_);
-
-    if (process_control_) {
-      // If the process isn't connected, launch it now.  This will run
-      // the task whether the process is already launched or not, as
-      // long as it's able to connect back up.
-      process_control_->Launch(
-          NewRunnableMethod(
-              this, &CloudPrintServiceDisableTask::OnProcessLaunched));
-    }
-  }
-
-  void OnProcessLaunched() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    DCHECK(process_control_);
-    if (process_control_->is_connected())
-      process_control_->Send(new ServiceMsg_DisableCloudPrintProxy());
-    profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
-  }
-
- private:
-  Profile* profile_;
-  ServiceProcessControl* process_control_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintServiceDisableTask);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// CloudPrintServiceRefreshTask
-//
-// This is a helper class to perform a preferences refresh of the
-// enablement state and registered e-mail from the cloud print proxy
-// service.
-
-class CloudPrintServiceRefreshTask
-    : public base::RefCountedThreadSafe<CloudPrintServiceRefreshTask> {
- public:
-  explicit CloudPrintServiceRefreshTask(
-      Profile* profile,
-      Callback2<bool, std::string>::Type* callback)
-      : profile_(profile),
-        process_control_(NULL),
-        callback_(callback) {
-    DCHECK(callback);
-  }
-
-  void StartRefresh() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-    process_control_ =
-        ServiceProcessControlManager::instance()->GetProcessControl(profile_);
-
-    if (process_control_) {
-      // If the process isn't connected, launch it now.  This will run
-      // the task whether the process is already launched or not, as
-      // long as it's able to connect back up.
-      process_control_->Launch(
-          NewRunnableMethod(
-              this, &CloudPrintServiceRefreshTask::OnProcessLaunched));
-    }
-  }
-
-  void OnProcessLaunched() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    DCHECK(process_control_);
-
-    if (callback_ != NULL)
-      process_control_->GetCloudPrintProxyStatus(callback_.release());
-  }
-
- private:
-  Profile* profile_;
-  ServiceProcessControl* process_control_;
-
-  // Callback that gets invoked when a status message is received from
-  // the cloud print proxy.
-  scoped_ptr<Callback2<bool, std::string>::Type> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloudPrintServiceRefreshTask);
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // CloudPrintSetupFlow implementation.
@@ -214,28 +82,6 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
   // TODO(sanjeevr): Implement the "no browser" scenario for the Mac.
   }
   return flow;
-}
-
-// static
-void CloudPrintSetupFlow::DisableCloudPrintProxy(Profile* profile) {
-  scoped_refptr<CloudPrintServiceDisableTask> refresh_task =
-      new CloudPrintServiceDisableTask(profile);
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(refresh_task.get(),
-                        &CloudPrintServiceDisableTask::StartDisable));
-}
-
-// static
-void CloudPrintSetupFlow::RefreshPreferencesFromService(
-    Profile* profile,
-    Callback2<bool, std::string>::Type* callback) {
-  scoped_refptr<CloudPrintServiceRefreshTask> refresh_task =
-      new CloudPrintServiceRefreshTask(profile, callback);
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(refresh_task.get(),
-                        &CloudPrintServiceRefreshTask::StartRefresh));
 }
 
 CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
@@ -296,12 +142,6 @@ void CloudPrintSetupFlow::OnDialogClosed(const std::string& json_retval) {
   if (authenticator_.get())
     authenticator_->CancelRequest();
 
-  // If the service process helper is still active then detach outself from it.
-  // This is because the dialog is closing and this object is going to be
-  // deleted but the service process launch is still in progress so we don't
-  // the service process helper to call us when the process is launched.
-  if (service_process_helper_.get())
-    service_process_helper_->Detach();
   if (delegate_) {
     delegate_->OnDialogClosed();
   }
@@ -342,26 +182,10 @@ void CloudPrintSetupFlow::OnClientLoginSuccess(
   ShowGaiaSuccessAndSettingUp();
   authenticator_.reset();
 
-  // And then launch the service process if it has not started yet.
-  // If we have already connected to the service process then submit the tokens
-  // to it to register the host.
-  process_control_ =
-      ServiceProcessControlManager::instance()->GetProcessControl(profile_);
-
-#if defined(OS_WIN)
-  // TODO(hclam): This call only works on Windows. I need to make it
-  // work on other platforms.
-  service_process_helper_ = new CloudPrintServiceProcessHelper(this);
-
-  // If the process isn't connected, launch it now.  This will run the
-  // task whether the process is already launched or not, as long as
-  // it's able to connect back up.
-  process_control_->Launch(
-      NewRunnableMethod(service_process_helper_.get(),
-                        &CloudPrintServiceProcessHelper::OnProcessLaunched));
-#else
+  profile_->GetCloudPrintProxyService()->EnableForUser(credentials.lsid,
+                                                       login_);
+  // TODO(sanjeevr): Should we wait and verify that the enable succeeded?
   ShowSetupDone();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -384,21 +208,6 @@ void CloudPrintSetupFlow::OnUserSubmittedAuth(const std::string& user,
                                    GaiaConstants::kCloudPrintService,
                                    "", captcha,
                                    GaiaAuthenticator2::HostedAccountsAllowed);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Method called by CloudPrintServiceProcessHelper
-void CloudPrintSetupFlow::OnProcessLaunched() {
-  DCHECK(process_control_->is_connected());
-  // TODO(scottbyer): Need to wait for an ACK to be sure that it is
-  // actually active.
-  if (!lsid_.empty())
-    process_control_->Send(new ServiceMsg_EnableCloudPrintProxy(lsid_));
-
-  // Save the preference that we have completed the setup of cloud
-  // print.
-  profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, login_);
-  ShowSetupDone();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

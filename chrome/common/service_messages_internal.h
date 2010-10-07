@@ -45,6 +45,9 @@ IPC_BEGIN_MESSAGES(Service)
   // Tell the service process to shutdown.
   IPC_MESSAGE_CONTROL0(ServiceMsg_Shutdown)
 
+  // Tell the service process that an update is available.
+  IPC_MESSAGE_CONTROL0(ServiceMsg_UpdateAvailable)
+
 IPC_END_MESSAGES(Service)
 
 //------------------------------------------------------------------------------

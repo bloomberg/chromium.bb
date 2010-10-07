@@ -61,8 +61,11 @@ void ServiceIPCServer::OnChannelError() {
   // client requests, we will recreate the channel.
   bool client_was_connected = client_connected_;
   client_connected_ = false;
-  if (client_was_connected)
+  // TODO(sanjeevr): Instead of invoking the service process for such handlers,
+  // define a Client interface that the ServiceProcess can implement.
+  if (client_was_connected && g_service_process->HandleClientDisconnect()) {
     CreateChannel();
+  }
 }
 
 bool ServiceIPCServer::Send(IPC::Message* msg) {
@@ -88,6 +91,7 @@ void ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
                         OnIsCloudPrintProxyEnabled)
     IPC_MESSAGE_HANDLER(ServiceMsg_Hello, OnHello);
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
+    IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
   IPC_END_MESSAGE_MAP()
 }
 
@@ -129,3 +133,8 @@ void ServiceIPCServer::OnHello() {
 void ServiceIPCServer::OnShutdown() {
   g_service_process->Shutdown();
 }
+
+void ServiceIPCServer::OnUpdateAvailable() {
+  g_service_process->SetUpdateAvailable();
+}
+

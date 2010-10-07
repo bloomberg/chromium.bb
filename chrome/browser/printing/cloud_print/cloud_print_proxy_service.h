@@ -17,7 +17,9 @@ class Profile;
 
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
-class CloudPrintProxyService : public CloudPrintSetupFlow::Delegate {
+class CloudPrintProxyService
+    : public CloudPrintSetupFlow::Delegate,
+      public base::RefCountedThreadSafe<CloudPrintProxyService> {
  public:
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();
@@ -27,8 +29,12 @@ class CloudPrintProxyService : public CloudPrintSetupFlow::Delegate {
   void Initialize();
 
   // Enables/disables cloud printing for the user
-  virtual void EnableForUser(const std::string& auth_token);
+  virtual void EnableForUser(const std::string& lsid, const std::string& email);
   virtual void DisableForUser();
+
+  // Query the service process for the status of the cloud print proxy and
+  // update the browser prefs.
+  void RefreshStatusFromService();
 
   bool ShowTokenExpiredNotification();
 
@@ -43,7 +49,18 @@ class CloudPrintProxyService : public CloudPrintSetupFlow::Delegate {
   Profile* profile_;
   scoped_refptr<TokenExpiredNotificationDelegate> token_expired_delegate_;
 
-  void Shutdown();
+  // Methods that send an IPC to the service.
+  void RefreshCloudPrintProxyStatus();
+  void EnableCloudPrintProxy(const std::string& lsid, const std::string& email);
+  void DisableCloudPrintProxy();
+
+  // Callback that gets the cloud print proxy status.
+  void StatusCallback(bool enabled, std::string email);
+  // Invoke a task that gets run after the service process successfully
+  // launches. The task typically involves sending an IPC to the service
+  // process.
+  bool InvokeServiceTask(Task* task);
+
   void OnTokenExpiredNotificationError();
   void OnTokenExpiredNotificationClosed(bool by_user);
   void OnTokenExpiredNotificationClick();

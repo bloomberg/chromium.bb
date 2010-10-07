@@ -16,7 +16,10 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/service/service_process_control.h"
+#include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/service_messages.h"
 #include "grit/generated_resources.h"
 
 // TODO(sanjeevr): Localize the product name?
@@ -51,25 +54,34 @@ CloudPrintProxyService::CloudPrintProxyService(Profile* profile)
 }
 
 CloudPrintProxyService::~CloudPrintProxyService() {
-  Shutdown();
 }
 
 void CloudPrintProxyService::Initialize() {
+  if (profile_->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail) &&
+      !profile_->GetPrefs()->GetString(prefs::kCloudPrintEmail).empty()) {
+    // If the cloud print proxy is enabled, establish a channel with the
+    // service process and update the status.
+    RefreshStatusFromService();
+  }
 }
 
+void CloudPrintProxyService::RefreshStatusFromService() {
+  InvokeServiceTask(
+      NewRunnableMethod(
+          this, &CloudPrintProxyService::RefreshCloudPrintProxyStatus));
+}
 
-void CloudPrintProxyService::EnableForUser(const std::string& auth_token) {
-  // TODO(sanjeevr): Add code to communicate with the cloud print proxy code
-  // running in the service process here.
+void CloudPrintProxyService::EnableForUser(const std::string& lsid,
+                                           const std::string& email) {
+  InvokeServiceTask(
+      NewRunnableMethod(
+          this, &CloudPrintProxyService::EnableCloudPrintProxy, lsid, email));
 }
 
 void CloudPrintProxyService::DisableForUser() {
-  Shutdown();
-}
-
-void CloudPrintProxyService::Shutdown() {
-  // TODO(sanjeevr): Add code to communicate with the cloud print proxy code
-  // running in the service process here.
+  InvokeServiceTask(
+      NewRunnableMethod(
+          this, &CloudPrintProxyService::DisableCloudPrintProxy));
 }
 
 bool CloudPrintProxyService::ShowTokenExpiredNotification() {
@@ -124,5 +136,55 @@ void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
 void CloudPrintProxyService::OnDialogClosed() {
   MessageLoop::current()->PostTask(
       FROM_HERE, NewRunnableFunction(&BrowserList::EndKeepAlive));
+}
+
+void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  ServiceProcessControl* process_control =
+      ServiceProcessControlManager::instance()->GetProcessControl(profile_);
+  DCHECK(process_control && process_control->is_connected());
+  if (process_control && process_control->is_connected()) {
+    Callback2<bool, std::string>::Type* callback =
+         NewCallback(this, &CloudPrintProxyService::StatusCallback);
+    // GetCloudPrintProxyStatus takes ownership of callback.
+    process_control->GetCloudPrintProxyStatus(callback);
+  }
+}
+
+void CloudPrintProxyService::EnableCloudPrintProxy(const std::string& lsid,
+                                                   const std::string& email) {
+  ServiceProcessControl* process_control =
+      ServiceProcessControlManager::instance()->GetProcessControl(profile_);
+  DCHECK(process_control && process_control->is_connected());
+  if (process_control->is_connected()) {
+    process_control->Send(new ServiceMsg_EnableCloudPrintProxy(lsid));
+    // Assume the IPC worked.
+    profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, email);
+  }
+}
+
+void CloudPrintProxyService::DisableCloudPrintProxy() {
+  ServiceProcessControl* process_control =
+      ServiceProcessControlManager::instance()->GetProcessControl(profile_);
+  DCHECK(process_control && process_control->is_connected());
+  if (process_control->is_connected()) {
+    process_control->Send(new ServiceMsg_DisableCloudPrintProxy);
+    // Assume the IPC worked.
+    profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
+  }
+}
+
+void CloudPrintProxyService::StatusCallback(bool enabled, std::string email) {
+  profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail,
+                                  enabled ? email : std::string());
+}
+
+bool CloudPrintProxyService::InvokeServiceTask(Task* task) {
+  ServiceProcessControl* process_control =
+      ServiceProcessControlManager::instance()->GetProcessControl(profile_);
+  DCHECK(process_control);
+  if (process_control)
+    process_control->Launch(task);
+  return !!process_control;
 }
 

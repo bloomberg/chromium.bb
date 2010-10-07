@@ -11,8 +11,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
 
@@ -108,6 +110,16 @@ void ServiceProcessControl::ConnectInternal(Task* task) {
                            io_thread->message_loop(), true,
                            g_browser_process->shutdown_event()));
   channel_->set_sync_messages_with_no_timeout_allowed(false);
+
+  // We just established a channel with the service process. Notify it if an
+  // upgrade is available.
+  if (Singleton<UpgradeDetector>::get()->notify_upgrade()) {
+    Send(new ServiceMsg_UpdateAvailable);
+  } else {
+    if (registrar_.IsEmpty())
+      registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
+                     NotificationService::AllSources());
+  }
 }
 
 void ServiceProcessControl::Launch(Task* task) {
@@ -199,6 +211,16 @@ bool ServiceProcessControl::Send(IPC::Message* message) {
     return false;
   return channel_->Send(message);
 }
+
+// NotificationObserver implementation.
+void ServiceProcessControl::Observe(NotificationType type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  if (type == NotificationType::UPGRADE_RECOMMENDED) {
+    Send(new ServiceMsg_UpdateAvailable);
+  }
+}
+
 
 void ServiceProcessControl::OnGoodDay() {
   if (!message_handler_)

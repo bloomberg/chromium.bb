@@ -6,6 +6,8 @@
 #define CHROME_SERVICE_SERVICE_PROCESS_H_
 #pragma once
 
+#include <string>
+
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -73,6 +75,16 @@ class ServiceProcess : public RemotingDirectoryService::Client,
 
   // Shutdown the service process. This is likely triggered by a IPC message.
   void Shutdown();
+
+  void SetUpdateAvailable() {
+    update_available_ = true;
+  }
+  bool update_available() const { return update_available_; }
+
+  // Called by the IPC server when a client disconnects. A return value of
+  // true indicates that the IPC server should continue listening for new
+  // connections.
+  bool HandleClientDisconnect();
 
   CloudPrintProxy* GetCloudPrintProxy();
 
@@ -167,6 +179,9 @@ class ServiceProcess : public RemotingDirectoryService::Client,
 
   // Count of currently enabled services in this process.
   int enabled_services_;
+
+  // Speficies whether a product update is available.
+  bool update_available_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

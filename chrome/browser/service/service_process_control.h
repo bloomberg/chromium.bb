@@ -13,6 +13,8 @@
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "ipc/ipc_sync_channel.h"
 
 class Profile;
@@ -28,7 +30,8 @@ class Profile;
 // This class is accessed on the UI thread through some UI actions. It then
 // talks to the IPC channel on the IO thread.
 class ServiceProcessControl : public IPC::Channel::Sender,
-                              public IPC::Channel::Listener {
+                              public IPC::Channel::Listener,
+                              public NotificationObserver {
  public:
   typedef IDMap<ServiceProcessControl>::iterator iterator;
   typedef std::queue<IPC::Message> MessageQueue;
@@ -66,6 +69,11 @@ class ServiceProcessControl : public IPC::Channel::Sender,
 
   // IPC::Channel::Sender implementation
   virtual bool Send(IPC::Message* message);
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Message handlers
   void OnGoodDay();
@@ -127,6 +135,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
 
   // Handler for messages from service process.
   MessageHandler* message_handler_;
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_SERVICE_SERVICE_PROCESS_CONTROL_H_

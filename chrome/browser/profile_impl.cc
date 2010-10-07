@@ -1242,7 +1242,7 @@ void ProfileImpl::InitSyncService(const std::string& cros_user) {
 }
 
 void ProfileImpl::InitCloudPrintProxyService() {
-  cloud_print_proxy_service_.reset(new CloudPrintProxyService(this));
+  cloud_print_proxy_service_ = new CloudPrintProxyService(this);
   cloud_print_proxy_service_->Initialize();
 }
 
