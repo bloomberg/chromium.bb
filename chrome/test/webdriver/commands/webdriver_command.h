@@ -54,8 +54,11 @@ class WebDriverCommand : public Command {
 
   Session* session_;
   scoped_refptr<TabProxy> tab_;
+
   DISALLOW_COPY_AND_ASSIGN(WebDriverCommand);
 };
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_WEBDRIVER_COMMAND_H_
 

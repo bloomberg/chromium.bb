@@ -48,6 +48,8 @@ class SessionManager {
 
   DISALLOW_COPY_AND_ASSIGN(SessionManager);
 };
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_SESSION_MANAGER_H_
 

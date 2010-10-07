@@ -22,7 +22,7 @@ class KeyMap {
              const app::KeyboardCode key_code,
              const wchar_t& key);
 
-  // Sets the Shift, Alt, Cntl, and Cmd keys to not pressed
+  // Sets the Shift, Alt, Cntl, and Cmd keys to not pressed.
   void ClearModifiers();
 
  private:
@@ -34,6 +34,8 @@ class KeyMap {
   std::map<wchar_t, app::KeyboardCode> shifted_keys_;
   DISALLOW_COPY_AND_ASSIGN(KeyMap);
 };
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_KEYMAP_H_
 

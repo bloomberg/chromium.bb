@@ -25,11 +25,15 @@
 #include "chrome/test/webdriver/session_manager.h"
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/create_session.h"
+#include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/session_with_id.h"
+#include "chrome/test/webdriver/commands/source_command.h"
+#include "chrome/test/webdriver/commands/title_command.h"
+#include "chrome/test/webdriver/commands/url_command.h"
 
 #include "third_party/mongoose/mongoose.h"
 
-// Make sure we have ho zombies from CGIs
+// Make sure we have ho zombies from CGIs.
 static void
 signal_handler(int sig_num) {
   switch (sig_num) {
@@ -38,7 +42,7 @@ signal_handler(int sig_num) {
     while (waitpid(-1, &sig_num, WNOHANG) > 0) { }
     break;
 #elif OS_WIN
-  case 0:  // The win compiler demands at least 1 case statement
+  case 0:  // The win compiler demands at least 1 case statement.
 #endif
   default:
     break;
@@ -52,17 +56,23 @@ void SetCallback(struct mg_context* ctx, const char* pattern) {
 }
 
 void InitCallbacks(struct mg_context* ctx) {
-  SetCallback<CreateSession>(ctx, "/session");
+  SetCallback<CreateSession>(ctx,   "/session");
+  SetCallback<BackCommand>(ctx,     "/session/*/back");
+  SetCallback<ForwardCommand>(ctx,  "/session/*/forward");
+  SetCallback<RefreshCommand>(ctx,  "/session/*/refresh");
+  SetCallback<SourceCommand>(ctx,   "/session/*/source");
+  SetCallback<TitleCommand>(ctx,    "/session/*/title");
+  SetCallback<URLCommand>(ctx,      "/session/*/url");
 
   // Since the /session/* is a wild card that would match the above URIs, this
-  // line MUST be the last registered URI with the server
+  // line MUST be the last registered URI with the server.
   SetCallback<SessionWithID>(ctx, "/session/*");
 }
 }  // namespace webdriver
 
 // Sets up and runs the Mongoose HTTP server for the JSON over HTTP
 // protcol of webdriver.  The spec is located at:
-// http://code.google.com/p/selenium/wiki/JsonWireProtocol
+// http://code.google.com/p/selenium/wiki/JsonWireProtocol.
 int main(int argc, char *argv[]) {
   struct mg_context *ctx;
   base::AtExitManager exit;
@@ -76,6 +86,9 @@ int main(int argc, char *argv[]) {
   }
   CommandLine& cmd_line = CommandLine::FromString(ASCIIToWide(c));
 #endif
+
+  // Init the commandline singleton from the env.
+  CommandLine::Init(0, NULL);
 
 #if OS_POSIX
   signal(SIGPIPE, SIG_IGN);
@@ -94,23 +107,19 @@ int main(int argc, char *argv[]) {
 
   // Initialize SHTTPD context.
   // Listen on port 8080 or port specified on command line.
-  // TODO(jmikhail) Maybe add port 8081 as a secure connection
+  // TODO(jmikhail) Maybe add port 8081 as a secure connection.
   ctx = mg_start();
   mg_set_option(ctx, "ports", port.c_str());
 
   webdriver::InitCallbacks(ctx);
 
   std::cout << "Starting server" << std::endl;
-  // the default behavior is to run this service forever
+  // The default behavior is to run this service forever.
   while (true) {
-#ifdef OS_POSIX
-    sleep(3600);
-#elif OS_WIN
-    Sleep(3600);
-#endif
+    PlatformThread::Sleep(3600);
   }
 
-  // we should not reach here since the service should never quit
+  // We should not reach here since the service should never quit.
   // TODO(jmikhail): register a listener for SIGTERM and break the
   // message loop gracefully.
   mg_stop(ctx);

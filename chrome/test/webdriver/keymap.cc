@@ -78,7 +78,7 @@ KeyMap::KeyMap() {
 
   keys_[L' '] = app::VKEY_SPACE;
 
-  // Alpha keys match their ASCII values
+  // Alpha keys match their ASCII values.
   for (int i = 0; i < 26; ++i) {
     keys_[static_cast<wchar_t>(L'a' + i)] = \
       static_cast<app::KeyboardCode>(app::VKEY_A + i);
@@ -86,7 +86,7 @@ KeyMap::KeyMap() {
       static_cast<app::KeyboardCode>(app::VKEY_A + i);
   }
 
-  // Numeric keys match their ASCII values
+  // Numeric keys match their ASCII values.
   for (int i = 0; i < 10; ++i) {
     keys_[static_cast<wchar_t>(L'0' + i)] = \
       static_cast<app::KeyboardCode>(app::VKEY_0 + i);
@@ -94,7 +94,7 @@ KeyMap::KeyMap() {
 
   // The following all assumes the standard US keyboard.
   // TODO(jmikhail): Lookup correct keycode based on the current system keyboard
-  // layout.  Right now it's fixed assuming standard ANSI
+  // layout.  Right now it's fixed assuming standard ANSI.
   keys_[L'=']  = shifted_keys_[L'+'] = app::VKEY_OEM_PLUS;
   keys_[L'-']  = shifted_keys_[L'_'] = app::VKEY_OEM_MINUS;
   keys_[L';']  = shifted_keys_[L':'] = app::VKEY_OEM_1;
@@ -158,7 +158,7 @@ bool KeyMap::Press(const scoped_refptr<WindowProxy>& window,
     modifiers = modifiers | views::Event::EF_COMMAND_DOWN;
   }
 
-  // TODO(jmikhail): need to be able to capture modifier key up
+  // TODO(jmikhail): need to be able to capture modifier key up.
   window->SimulateOSKeyPress(key_code, modifiers);
 
   return true;
@@ -170,5 +170,6 @@ void KeyMap::ClearModifiers() {
   control_ = false;
   command_ = false;
 }
+
 }  // namespace webdriver
 

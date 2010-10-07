@@ -7,7 +7,7 @@
 
 namespace webdriver {
 // These are the error codes defined in the WebDriver wire protcol. For more
-// information, see
+// information, see:
 // http://code.google.com/p/selenium/wiki/JsonWireProtocol#Response_Status_Codes
 enum ErrorCode {
   kSuccess = 0,
@@ -27,7 +27,10 @@ enum ErrorCode {
   kBadRequest = 400,
   kSessionNotFound = 404,
   kMethodNotAllowed = 405,
+  kInternalServerError = 500,
 };
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_ERROR_CODES_H_
 

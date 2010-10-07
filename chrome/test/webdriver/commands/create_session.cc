@@ -17,18 +17,20 @@ namespace webdriver {
 void CreateSession::ExecutePost(Response* const response) {
   SessionManager* session_manager = Singleton<SessionManager>::get();
   std::string session_id;
-  LOG(INFO) << "Creating new session";
-  if (session_manager->Create(&session_id)) {
-    LOG(INFO) << "Created session " << session_id;
-    std::ostringstream stream;
-    stream << "http://" << session_manager->GetIPAddress() << "/session/"
-    << session_id;
-    response->set_status(kSeeOther);
-    response->set_value(Value::CreateStringValue(stream.str()));
-  } else {
+
+  if (!session_manager->Create(&session_id)) {
     response->set_status(kUnknownError);
     response->set_value(Value::CreateStringValue("Failed to create session"));
+    return;
   }
+
+  LOG(INFO) << "Created session " << session_id;
+  std::ostringstream stream;
+  stream << "http://" << session_manager->GetIPAddress() << "/session/"
+         << session_id;
+  response->set_status(kSeeOther);
+  response->set_value(Value::CreateStringValue(stream.str()));
 }
+
 }  // namespace webdriver
 

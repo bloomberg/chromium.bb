@@ -32,6 +32,8 @@ class CreateSession : public Command {
  private:
   DISALLOW_COPY_AND_ASSIGN(CreateSession);
 };
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_CREATE_SESSION_H_
 

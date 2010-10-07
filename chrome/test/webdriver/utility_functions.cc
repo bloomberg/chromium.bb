@@ -84,5 +84,6 @@ bool ParseJSONDictionary(const std::string& json, DictionaryValue** dict,
   *dict = static_cast<DictionaryValue*>(params);
   return true;
 }
+
 }  // namespace webdriver
 

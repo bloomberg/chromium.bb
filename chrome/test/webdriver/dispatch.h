@@ -73,6 +73,8 @@ void Dispatch(struct mg_connection* connection,
   DispatchCommand(ptr.get(), method, &response);
   SendResponse(connection, request_info, response);
 }
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_DISPATCH_H_
 

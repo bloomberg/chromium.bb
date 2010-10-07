@@ -13,6 +13,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
+#include "chrome/test/ui/ui_test.h"
 #include "chrome/test/webdriver/error_codes.h"
 
 namespace webdriver {
@@ -20,7 +21,9 @@ namespace webdriver {
 // Every connection made by WebDriver maps to a session object.
 // This object creates the chrome instance and keeps track of the
 // state necessary to control the chrome browser created.
-class Session {
+// TODO(phajdan.jr):  Abstract UITestBase classes, see:
+// http://code.google.com/p/chromium/issues/detail?id=56865
+class Session : private UITestBase {
  public:
 #if defined(OS_POSIX)
   typedef char ProfileDir[L_tmpnam + 1];  // +1 for \0
@@ -28,17 +31,16 @@ class Session {
   typedef char ProfileDir[MAX_PATH + 1];  // +1 for \0
 #endif
 
-  Session(const std::string& id, AutomationProxy* proxy);
+  explicit Session(const std::string& id);
 
-  bool Init(base::ProcessHandle process_handle);
-  bool CreateTemporaryProfileDirectory();
+  bool Init();
 
   // Terminates this session and disconnects its automation proxy. After
   // invoking this method, the Session can safely be deleted.
   void Terminate();
 
-  scoped_refptr<WindowProxy> GetWindow();
-  scoped_refptr<TabProxy> ActivateTab();
+  // Finds the active tab that webdriver commands should go to.
+  scoped_refptr<TabProxy> ActiveTab();
 
   void SetBrowserAndTab(const int window_num,
                         const scoped_refptr<BrowserProxy>& browser,
@@ -54,9 +56,7 @@ class Session {
                           Value** value);
 
   inline const std::string& id() const { return id_; }
-  inline AutomationProxy* proxy() { return proxy_.get(); }
 
-  inline int window_num() const { return window_num_; }
   inline int implicit_wait() { return implicit_wait_; }
   inline void set_implicit_wait(const int& timeout) {
     implicit_wait_ = timeout > 0 ? timeout : 0;
@@ -75,13 +75,11 @@ class Session {
   }
 
  private:
+  bool CreateTemporaryProfileDirectory();
   bool LoadProxies();
-  bool WaitForLaunch();
-  const std::string id_;
-  const scoped_ptr<AutomationProxy> proxy_;
+  void SetupCommandLine();
 
-  // The chrome process that was started for this session.
-  base::Process process_;
+  const std::string id_;
 
   int window_num_;
   scoped_refptr<BrowserProxy> browser_;
@@ -95,11 +93,13 @@ class Session {
   // down the tree (across multiple frame DOMs).
   // Example, /html/body/table/tbody/tr/td/iframe\n/frameset/frame[1]
   // should break into 2 xpaths
-  // /html/body/table/tbody/tr/td/iframe & /frameset/frame[1]
+  // /html/body/table/tbody/tr/td/iframe & /frameset/frame[1].
   std::wstring current_frame_xpath_;
 
   DISALLOW_COPY_AND_ASSIGN(Session);
 };
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_SESSION_H_
 

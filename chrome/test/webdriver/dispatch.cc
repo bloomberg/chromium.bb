@@ -29,7 +29,7 @@ void SendHttpOk(struct mg_connection* const connection,
   if (strcmp(request_info->request_method, "HEAD") != 0) {
     out << json << "\r\n";
   }
-  LOG(INFO) << out.str() << std::endl;
+  LOG(INFO) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -48,7 +48,7 @@ void SendHttpSeeOther(struct mg_connection* const connection,
       << "Location: " << location << "\r\n"
       << "Content-Type: text/html\r\n"
       << "Content-Length: 0\r\n\r\n";
-  LOG(INFO) << out.str() << std::endl;
+  LOG(INFO) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -66,7 +66,7 @@ void SendHttpBadRequest(struct mg_connection* const connection,
   if (strcmp(request_info->request_method, "HEAD") != 0) {
     out << json << "\r\n";
   }
-  LOG(INFO) << out.str() << std::endl;
+  LOG(INFO) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -84,7 +84,7 @@ void SendHttpNotFound(struct mg_connection* const connection,
   if (strcmp(request_info->request_method, "HEAD") != 0) {
     out << json << "\r\n";
   }
-  LOG(INFO) << out.str() << std::endl;
+  LOG(INFO) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -108,7 +108,7 @@ void SendHttpMethodNotAllowed(struct mg_connection* const connection,
       << "Content-Type: text/html\r\n"
       << "Content-Length: 0\r\n"
       << "Allow: " << JoinString(allowed_methods, ',') << "\r\n\r\n";
-  LOG(INFO) << out.str() << std::endl;
+  LOG(INFO) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -126,7 +126,7 @@ void SendHttpInternalError(struct mg_connection* const connection,
   if (strcmp(request_info->request_method, "HEAD") != 0) {
     out << json << "\r\n";
   }
-  LOG(INFO) << out.str() << std::endl;
+  LOG(INFO) << out.str();
   mg_printf(connection, "%s", out.str().c_str());
 }
 
@@ -190,10 +190,12 @@ void SendResponse(struct mg_connection* const connection,
 
     // All other errors should be treated as generic 500s. The client will be
     // responsible for inspecting the message body for details.
-    default:
+  case kInternalServerError:
+  default:
       SendHttpInternalError(connection, request_info, response);
       break;
   }
 }
+
 }  // namespace webdriver
 

@@ -38,6 +38,8 @@ class SessionWithID : public WebDriverCommand {
 
   DISALLOW_COPY_AND_ASSIGN(SessionWithID);
 };
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_SESSION_WITH_ID_H_
 

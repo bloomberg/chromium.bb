@@ -27,6 +27,8 @@ void CheckValueType(const Value::ValueType expected, const Value* const actual);
 // memory in |dict|.
 bool ParseJSONDictionary(const std::string& json, DictionaryValue** dict,
                          std::string* error);
+
 }  // namespace webdriver
+
 #endif  // CHROME_TEST_WEBDRIVER_UTILITY_FUNCTIONS_H_
 
