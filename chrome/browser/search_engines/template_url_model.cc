@@ -1093,13 +1093,25 @@ void TemplateURLModel::UpdateDefaultSearch() {
     if (TemplateURLsHaveSamePrefs(default_search_provider_,
                                   new_default_from_prefs.get()))
       return;
-    if (new_default_from_prefs.get()) {
-      new_default_from_prefs->set_created_by_policy(true);
-      UpdateNoNotify(default_search_provider_, *new_default_from_prefs.get());
-    } else {
+    if (new_default_from_prefs.get() == NULL) {
+      // default_search_provider_ can't be NULL otherwise
+      // TemplateURLsHaveSamePrefs would have returned true.  Remove this now
+      // invalid value.
       const TemplateURL* old_default = default_search_provider_;
       SetDefaultSearchProviderNoNotify(NULL);
       RemoveNoNotify(old_default);
+    } else if (default_search_provider_) {
+      new_default_from_prefs->set_created_by_policy(true);
+      UpdateNoNotify(default_search_provider_, *new_default_from_prefs.get());
+    } else {
+      // AddNoNotify will take ownership of new_template, so it's safe to
+      // release.
+      TemplateURL* new_template = new_default_from_prefs.release();
+      if (new_template) {
+        new_template->set_created_by_policy(true);
+        AddNoNotify(new_template);
+      }
+      SetDefaultSearchProviderNoNotify(new_template);
     }
   } else if (!is_default_search_managed_ && new_is_default_managed) {
     // The default used to be unmanaged and is now managed.  Add the new

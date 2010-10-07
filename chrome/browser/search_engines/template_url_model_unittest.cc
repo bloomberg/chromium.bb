@@ -1126,17 +1126,17 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   EXPECT_EQ(2 + initial_count, model()->GetTemplateURLs().size());
 
   // Verify that the default manager we are getting is the managed one.
-  scoped_ptr<TemplateURL> expected_managed_default(new TemplateURL());
-  expected_managed_default->SetURL(kSearchURL, 0, 0);
-  expected_managed_default->SetFavIconURL(GURL(kIconURL));
-  expected_managed_default->set_short_name(L"test1");
+  scoped_ptr<TemplateURL> expected_managed_default1(new TemplateURL());
+  expected_managed_default1->SetURL(kSearchURL, 0, 0);
+  expected_managed_default1->SetFavIconURL(GURL(kIconURL));
+  expected_managed_default1->set_short_name(L"test1");
   std::vector<std::string> encodings_vector;
   SplitString(kEncodings, ';', &encodings_vector);
-  expected_managed_default->set_input_encodings(encodings_vector);
-  expected_managed_default->set_show_in_default_list(true);
+  expected_managed_default1->set_input_encodings(encodings_vector);
+  expected_managed_default1->set_show_in_default_list(true);
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
-  ExpectSimilar(actual_managed_default, expected_managed_default.get());
+  ExpectSimilar(actual_managed_default, expected_managed_default1.get());
   EXPECT_EQ(actual_managed_default->show_in_default_list(), true);
 
   // Update the managed preference and check that the model has changed.
@@ -1150,15 +1150,14 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   EXPECT_EQ(2 + initial_count, model()->GetTemplateURLs().size());
 
   // Verify that the default manager we are now getting is the correct one.
-  scoped_ptr<TemplateURL> expected_new_managed_default(new TemplateURL());
-  expected_new_managed_default->SetURL(kNewSearchURL, 0, 0);
-  expected_new_managed_default->SetSuggestionsURL(kNewSuggestURL, 0, 0);
-  expected_new_managed_default->set_short_name(L"test2");
-  expected_new_managed_default->set_show_in_default_list(true);
-  const TemplateURL* actual_new_managed_default =
-      model()->GetDefaultSearchProvider();
-  ExpectSimilar(actual_new_managed_default, expected_new_managed_default.get());
-  EXPECT_EQ(actual_new_managed_default->show_in_default_list(), true);
+  scoped_ptr<TemplateURL> expected_managed_default2(new TemplateURL());
+  expected_managed_default2->SetURL(kNewSearchURL, 0, 0);
+  expected_managed_default2->SetSuggestionsURL(kNewSuggestURL, 0, 0);
+  expected_managed_default2->set_short_name(L"test2");
+  expected_managed_default2->set_show_in_default_list(true);
+  actual_managed_default = model()->GetDefaultSearchProvider();
+  ExpectSimilar(actual_managed_default, expected_managed_default2.get());
+  EXPECT_EQ(actual_managed_default->show_in_default_list(), true);
 
   // Remove all the managed prefs and check that we are no longer managed.
   RemoveManagedDefaultSearchPreferences();
@@ -1179,4 +1178,16 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_TRUE(NULL == model()->GetDefaultSearchProvider());
   EXPECT_EQ(1 + initial_count, model()->GetTemplateURLs().size());
+
+  // Re-enable it.
+  SetManagedDefaultSearchPreferences(kName, kSearchURL, "", kIconURL,
+                                     kEncodings, "");
+  VerifyObserverCount(1);
+  EXPECT_TRUE(model()->is_default_search_managed());
+  EXPECT_EQ(2 + initial_count, model()->GetTemplateURLs().size());
+
+  // Verify that the default manager we are getting is the managed one.
+  actual_managed_default = model()->GetDefaultSearchProvider();
+  ExpectSimilar(actual_managed_default, expected_managed_default1.get());
+  EXPECT_EQ(actual_managed_default->show_in_default_list(), true);
 }
