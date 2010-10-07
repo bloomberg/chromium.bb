@@ -335,6 +335,7 @@ class SpdySessionDependencies {
   static HttpNetworkSession* SpdyCreateSession(
       SpdySessionDependencies* session_deps) {
     return new HttpNetworkSession(session_deps->host_resolver.get(),
+                                  NULL /* dnsrr_resolver */,
                                   session_deps->proxy_service,
                                   session_deps->socket_factory.get(),
                                   session_deps->ssl_config_service,
@@ -346,6 +347,7 @@ class SpdySessionDependencies {
   static HttpNetworkSession* SpdyCreateSessionDeterministic(
       SpdySessionDependencies* session_deps) {
     return new HttpNetworkSession(session_deps->host_resolver.get(),
+                                  NULL /* dnsrr_resolver */,
                                   session_deps->proxy_service,
                                   session_deps->
                                       deterministic_socket_factory.get(),
@@ -368,6 +370,7 @@ class SpdyURLRequestContext : public URLRequestContext {
     http_transaction_factory_ = new net::HttpCache(
         new HttpNetworkLayer(&socket_factory_,
                              host_resolver_,
+                             NULL /* dnsrr_resolver */,
                              proxy_service_,
                              ssl_config_service_,
                              new SpdySessionPool(NULL),

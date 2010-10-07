@@ -41,8 +41,8 @@ class RequestContext : public URLRequestContext {
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
 
     http_transaction_factory_ = new net::HttpCache(
-        net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
-            ssl_config_service_, NULL, NULL, NULL),
+        net::HttpNetworkLayer::CreateFactory(host_resolver_, NULL,
+            proxy_service_, ssl_config_service_, NULL, NULL, NULL),
         net::HttpCache::DefaultBackend::InMemory(0));
   }
 

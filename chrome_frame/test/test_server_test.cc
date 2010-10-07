@@ -69,7 +69,8 @@ class URLRequestTestContext : public URLRequestContext {
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
         host_resolver_);
     http_transaction_factory_ = new net::HttpCache(
-        net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
+        net::HttpNetworkLayer::CreateFactory(
+            host_resolver_, NULL /* dnsrr_resolver */, proxy_service_,
             ssl_config_service_, http_auth_handler_factory_, NULL, NULL),
         net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.

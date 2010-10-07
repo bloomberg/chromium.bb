@@ -24,6 +24,7 @@ class Predictor;
 }  // namespace chrome_browser_net
 
 namespace net {
+class DnsRRResolver;
 class HttpAuthHandlerFactory;
 class URLSecurityManager;
 }  // namespace net
@@ -33,6 +34,7 @@ class IOThread : public BrowserProcessSubThread {
   struct Globals {
     scoped_ptr<ChromeNetLog> net_log;
     scoped_ptr<net::HostResolver> host_resolver;
+    scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
     ChromeNetworkDelegate network_delegate;
