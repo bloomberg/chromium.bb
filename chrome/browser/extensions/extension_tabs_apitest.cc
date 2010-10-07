@@ -14,7 +14,9 @@
 // http://crbug.com/53779
 #define MAYBE_Tabs FAILS_Tabs
 #else
-#define MAYBE_Tabs Tabs
+// It's flaky on win and linux.
+// http://crbug.com/58269
+#define MAYBE_Tabs FLAKY_Tabs
 #endif
 
 // TabOnRemoved is flaky on chromeos and linux views debug build.
