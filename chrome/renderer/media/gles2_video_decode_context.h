@@ -5,8 +5,11 @@
 #ifndef CHROME_RENDERER_MEDIA_GLES2_VIDEO_DECODE_CONTEXT_H_
 #define CHROME_RENDERER_MEDIA_GLES2_VIDEO_DECODE_CONTEXT_H_
 
-#include "base/message_loop.h"
+#include <vector>
+
 #include "media/video/video_decode_context.h"
+
+class MessageLoop;
 
 namespace ggl {
 class Context;
@@ -79,8 +82,9 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
   // media::VideoDecodeContext implementation.
   virtual void* GetDevice();
   virtual void AllocateVideoFrames(
-      int n, size_t width, size_t height, media::VideoFrame::Format format,
-      std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task);
+      int frames_num, size_t width, size_t height,
+      media::VideoFrame::Format format,
+      std::vector<scoped_refptr<media::VideoFrame> >* frames_out, Task* task);
   virtual void ReleaseAllVideoFrames();
   virtual void UploadToVideoFrame(void* buffer,
                                   scoped_refptr<media::VideoFrame> frame,
@@ -99,6 +103,9 @@ class Gles2VideoDecodeContext : public media::VideoDecodeContext {
 
   // Pointer to the GLES2 context.
   ggl::Context* context_;
+
+  // VideoFrames allocated.
+  std::vector<scoped_refptr<media::VideoFrame> > frames_;
 
   DISALLOW_COPY_AND_ASSIGN(Gles2VideoDecodeContext);
 };

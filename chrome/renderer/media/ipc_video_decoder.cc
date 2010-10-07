@@ -4,8 +4,6 @@
 
 #include "chrome/renderer/media/ipc_video_decoder.h"
 
-#include <GLES2/gl2.h>
-
 #include "base/task.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "media/base/callback.h"

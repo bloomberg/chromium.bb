@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GLES2/gl2.h>
+
+#include "base/message_loop.h"
+#include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/media/gles2_video_decode_context.h"
 
 Gles2VideoDecodeContext::Gles2VideoDecodeContext(
@@ -12,7 +16,6 @@ Gles2VideoDecodeContext::Gles2VideoDecodeContext(
 }
 
 Gles2VideoDecodeContext::~Gles2VideoDecodeContext() {
-  // TODO(hclam): Implement.
 }
 
 void* Gles2VideoDecodeContext::GetDevice() {
@@ -22,20 +25,97 @@ void* Gles2VideoDecodeContext::GetDevice() {
 }
 
 void Gles2VideoDecodeContext::AllocateVideoFrames(
-    int n, size_t width, size_t height, media::VideoFrame::Format format,
-    std::vector<scoped_refptr<media::VideoFrame> >* frames, Task* task) {
-  // TODO(hclam): Implement.
+    int frames_num, size_t width, size_t height,
+    media::VideoFrame::Format format,
+    std::vector<scoped_refptr<media::VideoFrame> >* frames_out, Task* task) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &Gles2VideoDecodeContext::AllocateVideoFrames,
+                          frames_num, width, height, format, frames_out,
+                          task));
+    return;
+  }
+
+  // In this method we need to make the ggl context current and then generate
+  // textures for each video frame. We also need to allocate memory for each
+  // texture generated.
+  bool ret = ggl::MakeCurrent(context_);
+  CHECK(ret) << "Failed to switch context";
+
+  frames_.resize(frames_num);
+  for (int i = 0; i < frames_num; ++i) {
+    int planes = media::VideoFrame::GetNumberOfPlanes(format);
+    media::VideoFrame::GlTexture textures[media::VideoFrame::kMaxPlanes];
+
+    // Set the color format of the textures.
+    DCHECK(format == media::VideoFrame::RGBA ||
+           format == media::VideoFrame::YV12);
+    int gl_format = format == media::VideoFrame::RGBA ? GL_RGBA : GL_LUMINANCE;
+
+    glGenTextures(planes, textures);
+    for (int j = 0; j < planes; ++j) {
+      glBindTexture(GL_TEXTURE_2D, textures[j]);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      glTexImage2D(GL_TEXTURE_2D, 0, gl_format, width, height, 0, gl_format,
+                   GL_UNSIGNED_BYTE, NULL);
+    }
+
+    scoped_refptr<media::VideoFrame> frame;
+    media::VideoFrame::CreateFrameGlTexture(format, width, height, textures,
+                                            base::TimeDelta(),
+                                            base::TimeDelta(),
+                                            &frame);
+    frames_[i] = frame;
+  }
+  *frames_out = frames_;
+
+  task->Run();
+  delete task;
 }
 
 void Gles2VideoDecodeContext::ReleaseAllVideoFrames() {
-  // TODO(hclam): Implement.
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &Gles2VideoDecodeContext::ReleaseAllVideoFrames));
+    return;
+  }
+
+  // Make the context current and then release the video frames.
+  bool ret = ggl::MakeCurrent(context_);
+  CHECK(ret) << "Failed to switch context";
+
+  for (size_t i = 0; i < frames_.size(); ++i) {
+    for (size_t j = 0; j < frames_[i]->planes(); ++j) {
+      media::VideoFrame::GlTexture texture = frames_[i]->gl_texture(j);
+      glDeleteTextures(1, &texture);
+    }
+  }
+  frames_.clear();
 }
 
 void Gles2VideoDecodeContext::UploadToVideoFrame(
     void* buffer, scoped_refptr<media::VideoFrame> frame, Task* task) {
+  DCHECK(memory_mapped_);
   // TODO(hclam): Implement.
 }
 
 void Gles2VideoDecodeContext::Destroy(Task* task) {
-  // TODO(hclam): Implement.
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this, &Gles2VideoDecodeContext::Destroy, task));
+    return;
+  }
+
+  ReleaseAllVideoFrames();
+  DCHECK_EQ(0u, frames_.size());
+
+  task->Run();
+  delete task;
 }
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(Gles2VideoDecodeContext);
