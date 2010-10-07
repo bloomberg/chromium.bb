@@ -138,8 +138,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
       : ViewEventTestBase(),
         model_(NULL),
         bb_view_(NULL),
-        ui_thread_(ChromeThread::UI, MessageLoop::current()),
-        file_thread_(ChromeThread::FILE, MessageLoop::current()) {
+        ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        file_thread_(BrowserThread::FILE, MessageLoop::current()) {
   }
 
   virtual void SetUp() {
@@ -248,8 +248,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
   gfx::Size bb_view_pref_;
   scoped_ptr<TestingProfile> profile_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
   ViewsDelegateImpl views_delegate_;
 };
 

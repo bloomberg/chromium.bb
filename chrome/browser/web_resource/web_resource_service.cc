@@ -120,10 +120,10 @@ class WebResourceService::UnpackerClient
         web_resource_service_->resource_dispatcher_host_ != NULL &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
     if (use_utility_process) {
-      ChromeThread::ID thread_id;
-      CHECK(ChromeThread::GetCurrentThreadIdentifier(&thread_id));
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+      BrowserThread::ID thread_id;
+      CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(this, &UnpackerClient::StartProcessOnIOThread,
                             web_resource_service_->resource_dispatcher_host_,
                             thread_id));
@@ -170,7 +170,7 @@ class WebResourceService::UnpackerClient
   }
 
   void StartProcessOnIOThread(ResourceDispatcherHost* rdh,
-                              ChromeThread::ID thread_id) {
+                              BrowserThread::ID thread_id) {
     UtilityProcessHost* host = new UtilityProcessHost(rdh, this, thread_id);
     // TODO(mrc): get proper file path when we start using web resources
     // that need to be unpacked.

@@ -1450,7 +1450,7 @@ void CloudPrintProxySection::StatusCallback(bool enabled, std::string email) {
 }
 
 void CloudPrintProxySection::OnDialogClosed() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   enable_disable_button_->SetEnabled(true);
   // If the dialog is canceled, the preference won't change, and so we
   // have to revert the button text back to the disabled state.

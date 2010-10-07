@@ -67,8 +67,8 @@ class AutofillDBThreadObserverHelper : public DBThreadObserverHelper {
 class WebDataServiceTest : public testing::Test {
  public:
   WebDataServiceTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        db_thread_(ChromeThread::DB) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB) {}
 
  protected:
   virtual void SetUp() {
@@ -94,8 +94,8 @@ class WebDataServiceTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread db_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread db_thread_;
   FilePath profile_dir_;
   scoped_refptr<WebDataService> wds_;
 };

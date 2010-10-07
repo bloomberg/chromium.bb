@@ -495,8 +495,8 @@ void TaskManagerModel::StartUpdating() {
 
   // Register jobs notifications so we can compute network usage (it must be
   // done from the IO thread).
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
          this, &TaskManagerModel::RegisterForJobDoneNotifications));
 
@@ -518,8 +518,8 @@ void TaskManagerModel::StopUpdating() {
   }
 
   // Unregister jobs notification (must be done from the IO thread).
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &TaskManagerModel::UnregisterForJobDoneNotifications));
 }
@@ -844,8 +844,8 @@ void TaskManagerModel::OnBytesRead(URLRequestJob* job, const char* buf,
   // This happens in the IO thread, post it to the UI thread.
   int origin_child_id =
       chrome_browser_net::GetOriginProcessUniqueIDForRequest(job->request());
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this,
           &TaskManagerModel::BytesRead,

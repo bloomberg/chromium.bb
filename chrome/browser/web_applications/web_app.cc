@@ -259,7 +259,7 @@ void CreateShortcutTask::Run() {
 }
 
 bool CreateShortcutTask::CreateShortcut() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
 #if defined(OS_LINUX)
   scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -516,7 +516,7 @@ void UpdateShortcutWorker::Observe(NotificationType type,
 void UpdateShortcutWorker::DownloadIcon() {
   // FetchIcon must run on UI thread because it relies on TabContents
   // to download the icon.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (tab_contents_ == NULL) {
     DeleteMe();  // We are done if underlying TabContents is gone.
@@ -557,7 +557,7 @@ void UpdateShortcutWorker::OnIconDownloaded(int download_id,
 }
 
 void UpdateShortcutWorker::CheckExistingShortcuts() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Locations to check to shortcut_paths.
   struct {
@@ -605,13 +605,13 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
 }
 
 void UpdateShortcutWorker::UpdateShortcuts() {
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
       &UpdateShortcutWorker::UpdateShortcutsOnFileThread));
 }
 
 void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath web_app_path = GetWebAppDataDirectory(
       web_app::GetDataDir(profile_path_), shortcut_info_.url);
@@ -660,16 +660,16 @@ void UpdateShortcutWorker::OnShortcutsUpdated(bool) {
 }
 
 void UpdateShortcutWorker::DeleteMe() {
-  if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     DeleteMeOnUIThread();
   } else {
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &UpdateShortcutWorker::DeleteMeOnUIThread));
   }
 }
 
 void UpdateShortcutWorker::DeleteMeOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   delete this;
 }
 #endif  // defined(OS_WIN)
@@ -696,7 +696,7 @@ void CreateShortcut(
     const FilePath& data_dir,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     CreateShortcutCallback* callback) {
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       new CreateShortcutTask(data_dir, shortcut_info, callback));
 }
 

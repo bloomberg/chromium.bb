@@ -103,8 +103,8 @@ WorkerProcessHost::~WorkerProcessHost() {
         i->worker_document_set()->documents();
     for (WorkerDocumentSet::DocumentInfoSet::const_iterator parent_iter =
              parents.begin(); parent_iter != parents.end(); ++parent_iter) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           new WorkerCrashTask(parent_iter->renderer_id(),
                               parent_iter->render_view_route_id()));
     }

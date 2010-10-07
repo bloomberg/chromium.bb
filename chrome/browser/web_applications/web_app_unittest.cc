@@ -18,7 +18,7 @@ class WebApplicationTest : public RenderViewHostTestHarness {
  public:
   WebApplicationTest()
       : RenderViewHostTestHarness(),
-        ui_thread_(ChromeThread::UI, &message_loop_) {
+        ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
  private:
@@ -36,7 +36,7 @@ class WebApplicationTest : public RenderViewHostTestHarness {
     profile_.reset(NULL);
   }
 
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 };
 
 TEST_F(WebApplicationTest, GetShortcutInfoForTab) {

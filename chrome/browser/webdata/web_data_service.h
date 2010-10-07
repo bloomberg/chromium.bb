@@ -159,7 +159,7 @@ class WebDataServiceConsumer;
 
 class WebDataService
     : public base::RefCountedThreadSafe<WebDataService,
-                                        ChromeThread::DeleteOnUIThread> {
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   // All requests return an opaque handle of the following type.
   typedef int Handle;

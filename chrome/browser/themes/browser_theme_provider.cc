@@ -610,8 +610,8 @@ void BrowserThemeProvider::BuildFromExtension(Extension* extension) {
 
   // Write the packed file to disk.
   FilePath pack_path = extension->path().Append(chrome::kThemePackFilename);
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                         new WritePackToDiskTask(pack, pack_path));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          new WritePackToDiskTask(pack, pack_path));
 
   SavePackName(pack_path);
   theme_pack_ = pack;

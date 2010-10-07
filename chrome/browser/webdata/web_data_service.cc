@@ -82,7 +82,7 @@ bool WebDataService::IsDatabaseLoaded() {
 }
 
 WebDatabase* WebDataService::GetDatabase() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   return db_;
 }
 
@@ -565,8 +565,8 @@ void WebDataService::InitializeDatabaseIfNecessary() {
     return;
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &WebDataService::NotifyDatabaseLoadedOnUIThread));
 
   db_ = db;
@@ -603,7 +603,7 @@ void WebDataService::Commit() {
 
 void WebDataService::ScheduleTask(Task* t) {
   if (is_running_)
-    ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, t);
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, t);
   else
     NOTREACHED() << "Task scheduled after Shutdown()";
 }

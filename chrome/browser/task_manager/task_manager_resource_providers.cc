@@ -391,8 +391,8 @@ void TaskManagerChildProcessResourceProvider::StartUpdating() {
                  NotificationService::AllSources());
 
   // Get the existing child processes.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this,
           &TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo));
@@ -496,8 +496,8 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
   }
   // Now notify the UI thread that we have retrieved information about child
   // processes.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
           &TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived));
 }

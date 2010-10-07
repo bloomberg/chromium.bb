@@ -22,8 +22,8 @@ class BrowserThemePackTest : public ::testing::Test {
  public:
   BrowserThemePackTest()
       : message_loop(),
-        fake_ui_thread(ChromeThread::UI, &message_loop),
-        fake_file_thread(ChromeThread::FILE, &message_loop),
+        fake_ui_thread(BrowserThread::UI, &message_loop),
+        fake_file_thread(BrowserThread::FILE, &message_loop),
         theme_pack_(new BrowserThemePack) {
   }
 
@@ -191,8 +191,8 @@ class BrowserThemePackTest : public ::testing::Test {
   }
 
   MessageLoop message_loop;
-  ChromeThread fake_ui_thread;
-  ChromeThread fake_file_thread;
+  BrowserThread fake_ui_thread;
+  BrowserThread fake_file_thread;
 
   scoped_refptr<BrowserThemePack> theme_pack_;
 };

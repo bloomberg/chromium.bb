@@ -159,8 +159,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
 
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return new SelectFileDialogImpl(listener);
 }
 
@@ -227,8 +227,8 @@ void SelectFileDialogImpl::SelectFile(
     DCHECK(browser);
     browser->BrowserShowHtmlDialog(file_browse_delegate, owning_window);
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::UI,
+    BrowserThread::PostTask(
+        BrowserThread::UI,
         FROM_HERE,
         NewRunnableMethod(this,
                           &SelectFileDialogImpl::OpenHtmlDialog,

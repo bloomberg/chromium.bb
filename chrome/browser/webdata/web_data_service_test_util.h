@@ -19,7 +19,7 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
 
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle handle,
                                            const WDTypedResult* result) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     handle_ = handle;
     const WDResult<T>* wrapped_result =
         static_cast<const WDResult<T>*>(result);

@@ -327,7 +327,7 @@ BrowserThemePack::~BrowserThemePack() {
 
 // static
 BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(extension);
   DCHECK(extension->is_theme());
 
@@ -366,7 +366,7 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
 // static
 scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
     FilePath path, const std::string& expected_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<BrowserThemePack> pack = new BrowserThemePack;
   pack->data_pack_.reset(new base::DataPack);
 
@@ -418,7 +418,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
 }
 
 bool BrowserThemePack::WriteToDisk(FilePath path) const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Add resources for each of the property arrays.
   RawDataForWriting resources;
   resources[kHeaderID] = base::StringPiece(
@@ -991,7 +991,7 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
 
 void BrowserThemePack::RepackImages(const ImageCache& images,
                                     RawImages* reencoded_images) const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   for (ImageCache::const_iterator it = images.begin();
        it != images.end(); ++it) {
     std::vector<unsigned char> image_data;
@@ -1019,7 +1019,7 @@ void BrowserThemePack::MergeImageCaches(
 
 void BrowserThemePack::AddRawImagesTo(const RawImages& images,
                                       RawDataForWriting* out) const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   for (RawImages::const_iterator it = images.begin(); it != images.end();
        ++it) {
     (*out)[it->first] = base::StringPiece(

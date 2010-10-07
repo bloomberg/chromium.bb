@@ -712,8 +712,8 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     std::vector<FilePath> paths;
     if (RunOpenMultiFileDialog(params.title, filter,
                                params.run_state.owner, &paths)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(
               this, &SelectFileDialogImpl::MultiFilesSelected, paths,
               params.params, params.run_state));
@@ -722,14 +722,14 @@ void SelectFileDialogImpl::ExecuteSelectFile(
   }
 
   if (success) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &SelectFileDialogImpl::FileSelected, path, filter_index,
             params.params, params.run_state));
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &SelectFileDialogImpl::FileNotSelected, params.params,
             params.run_state));
@@ -1026,14 +1026,14 @@ void SelectFontDialogImpl::ExecuteSelectFont(RunState run_state, void* params) {
   bool success = !!ChooseFont(&cf);
   DisableOwner(run_state.owner);
   if (success) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &SelectFontDialogImpl::FontSelected, logfont, params,
             run_state));
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &SelectFontDialogImpl::FontNotSelected, params, run_state));
   }
@@ -1089,14 +1089,14 @@ void SelectFontDialogImpl::ExecuteSelectFontWithNameSize(
   bool success = !!ChooseFont(&cf);
   DisableOwner(run_state.owner);
   if (success) {
-    ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &SelectFontDialogImpl::FontSelected, logfont, params,
           run_state));
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &SelectFontDialogImpl::FontNotSelected, params,
         run_state));
   }
