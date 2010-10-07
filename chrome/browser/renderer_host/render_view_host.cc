@@ -594,18 +594,21 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
   process()->set_ignore_input_events(false);
   bool is_waiting =
       is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_;
-  if (is_waiting) {
-    if (are_javascript_messages_suppressed_) {
-      delegate_->RendererUnresponsive(this, is_waiting);
-      return;
-    }
-
+  if (is_waiting)
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
-  }
 
   ViewHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
                                                      success, prompt);
   Send(reply_msg);
+
+  // If we are waiting for an unload or beforeunload ack and the user has
+  // suppressed messages, kill the tab immediately; a page that's spamming
+  // alerts in onbeforeunload is presumably malicious, so there's no point in
+  // continuing to run its script and dragging out the process.
+  // This must be done after sending the reply since RenderView can't close
+  // correctly while waiting for a response.
+  if (is_waiting && are_javascript_messages_suppressed_)
+    delegate_->RendererUnresponsive(this, is_waiting);
 }
 
 void RenderViewHost::ModalHTMLDialogClosed(IPC::Message* reply_msg,
