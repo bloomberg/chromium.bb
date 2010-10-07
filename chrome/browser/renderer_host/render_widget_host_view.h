@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "app/surface/transport_dib.h"
-#include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
@@ -48,7 +47,7 @@ struct WebPluginGeometry;
 // the surrounding environment and passing them to the RenderWidgetHost, and
 // for actually displaying the content of the RenderWidgetHost when it
 // changes.
-class RenderWidgetHostView : public BrowserAccessibilityDelegate {
+class RenderWidgetHostView {
  public:
   virtual ~RenderWidgetHostView() {}
 
@@ -256,10 +255,6 @@ class RenderWidgetHostView : public BrowserAccessibilityDelegate {
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
   }
-
-  // Implementation of BrowserAccessibilityDelegate:
-  virtual void SetAccessibilityFocus(int acc_obj_id) { }
-  virtual void AccessibilityDoDefaultAction(int acc_obj_id) { }
 
  protected:
   // Interface class only, do not construct.
