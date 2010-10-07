@@ -356,6 +356,7 @@ int IsTabMessage(const IPC::Message& message) {
 
 bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
                                   const IPC::Message& m) {
+  // The first argument of the message is always the tab handle.
   void* iter = 0;
   switch (m.type()) {
     case AutomationMsg_NavigationStateChanged__ID: {
@@ -375,76 +376,139 @@ bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
     }
 
     case AutomationMsg_HandleAccelerator__ID: {
+      // Tuple2<int, MSG>
       AutomationMsg_HandleAccelerator::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->HandleAccelerator(params.b);
       return true;
     }
 
     case AutomationMsg_TabbedOut__ID: {
+      // Tuple2<int, bool>
       AutomationMsg_TabbedOut::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->TabbedOut(params.b);
       return true;
     }
 
     case AutomationMsg_OpenURL__ID: {
+      // Tuple4<int, GURL, GURL, int>
       AutomationMsg_OpenURL::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->OpenURL(params.b, params.c, params.d);
       return true;
     }
 
     case AutomationMsg_NavigationFailed__ID: {
+      // Tuple3<int, int, GURL>
       AutomationMsg_NavigationFailed::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->NavigationFailed(params.b, params.c);
       return true;
     }
 
     case AutomationMsg_DidNavigate__ID: {
+      // Tuple2<int, IPC::NavigationInfo>
       AutomationMsg_DidNavigate::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->DidNavigate(params.b);
       return true;
     }
 
     case AutomationMsg_TabLoaded__ID: {
+      // Tuple2<int, GURL>
+      AutomationMsg_TabLoaded::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->TabLoaded(params.b);
       return true;
     }
+
     case AutomationMsg_ForwardMessageToExternalHost__ID: {
+      // Tuple4<int, string, string, string>
+      AutomationMsg_ForwardMessageToExternalHost::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->MessageToHost(params.b, params.c, params.d);
       return true;
     }
 
     case AutomationMsg_ForwardContextMenuToExternalHost__ID: {
+      // Tuple4<int, HANDLE, int, IPC::ContextMenuParams>
+      AutomationMsg_ForwardContextMenuToExternalHost::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->HandleContextMenu(params.b, params.c, params.d);
       return true;
     }
 
     case AutomationMsg_RequestStart__ID: {
+      // Tuple3<int, int, IPC::AutomationURLRequest>
+      AutomationMsg_RequestStart::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->Network_Start(params.b, params.c);
       return true;
     }
 
     case AutomationMsg_RequestRead__ID: {
+      // Tuple3<int, int, int>
+      AutomationMsg_RequestRead::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->Network_Read(params.b, params.c);
       return true;
     }
 
     case AutomationMsg_RequestEnd__ID: {
+      // Tuple3<int, int, URLRequestStatus>
+      AutomationMsg_RequestEnd::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->Network_End(params.b, params.c);
       return true;
     }
 
     case AutomationMsg_DownloadRequestInHost__ID: {
+      // Tuple2<int, int>
+      AutomationMsg_DownloadRequestInHost::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->Network_DownloadInHost(params.b);
       return true;
     }
 
     case AutomationMsg_SetCookieAsync__ID: {
+      // Tuple3<int, GURL, string>
+      AutomationMsg_SetCookieAsync::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->SetCookie(params.b, params.c);
       return true;
     }
 
     case AutomationMsg_AttachExternalTab__ID: {
+      // Tuple2<int, IPC::AttachExternalTabParams>
+      AutomationMsg_AttachExternalTab::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->AttachTab(params.b);
       return true;
     }
 
     case AutomationMsg_RequestGoToHistoryEntryOffset__ID: {
+      // Tuple2<int, int>
+      AutomationMsg_RequestGoToHistoryEntryOffset::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->GoToHistoryOffset(params.b);
       return true;
     }
 
     case AutomationMsg_GetCookiesFromHost__ID: {
+      // Tuple3<int, GURL, int>
+      AutomationMsg_GetCookiesFromHost::Param params;
+      if (ReadParam(&m, &iter, &params))
+        delegate->GetCookies(params.b, params.c);
       return true;
     }
 
     case AutomationMsg_CloseExternalTab__ID: {
+      // Tuple1<int>
+      delegate->TabClosed();
       return true;
     }
   }
-  return true;
+
+  return false;
 }

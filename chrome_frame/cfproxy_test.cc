@@ -19,6 +19,8 @@ using testing::StrictMock;
 using testing::InvokeWithoutArgs;
 using testing::WithoutArgs;
 using testing::CreateFunctor;
+using testing::StrEq;
+using testing::Eq;
 
 // There is not much to test here since CFProxy is pretty dumb.
 struct MockFactory : public ChromeProxyFactory {
@@ -70,6 +72,8 @@ struct MockChromeProxyDelegate : public ChromeProxyDelegate {
 
   // Misc. UI.
   MOCK_METHOD1(HandleAccelerator, void(const MSG& accel_message));
+  MOCK_METHOD3(HandleContextMenu, void(HANDLE menu_handle, int align_flags,
+      const IPC::ContextMenuParams& params));
   MOCK_METHOD1(TabbedOut, void(bool reverse));
 
   //
@@ -314,3 +318,173 @@ TEST(SyncMsgSender, OnChannelClosed) {
   // TODO(stoyan): implement.
 }
 
+MATCHER_P(EqNavigationInfo, ni, "") {
+  return arg.navigation_type == ni.navigation_type &&
+      arg.relative_offset == ni.relative_offset &&
+      arg.navigation_index == ni.navigation_index &&
+      arg.title == ni.title &&
+      arg.url == ni.url &&
+      arg.referrer == ni.referrer &&
+      arg.security_style == ni.security_style &&
+      arg.displayed_insecure_content == ni.displayed_insecure_content &&
+      arg.ran_insecure_content == ni.ran_insecure_content;
+}
+
+MATCHER_P(EqMSG, msg, "") {
+  return arg.hwnd == msg.hwnd &&
+      arg.message == msg.message &&
+      arg.wParam == msg.wParam &&
+      arg.lParam == msg.lParam &&
+      arg.time == msg.time &&
+      arg.pt.x == msg.pt.x &&
+      arg.pt.y == msg.pt.y;
+}
+
+MATCHER_P(EqContextMenuParam, p, "") {
+  return arg.screen_x == p.screen_x &&
+    arg.screen_y == p.screen_y &&
+    arg.link_url == p.link_url &&
+    arg.unfiltered_link_url == p.unfiltered_link_url &&
+    arg.src_url == p.src_url &&
+    arg.page_url == p.page_url &&
+    arg.frame_url == p.frame_url;
+}
+
+MATCHER_P(EqURLRequest, p, "") {
+  return arg.url == p.url &&
+      arg.method == p.method &&
+      arg.referrer == p.referrer &&
+      arg.extra_request_headers == p.extra_request_headers &&
+      // TODO(stoyan): scoped_refptr<net::UploadData> upload_data;
+      arg.resource_type == p.resource_type;
+}
+
+
+MATCHER_P(EqAttachExternalTab, p, "") {
+  return arg.cookie == p.cookie &&
+      arg.url == p.url &&
+      arg.dimensions == p.dimensions &&
+      arg.disposition == p.disposition &&
+      arg.user_gesture == p.user_gesture &&
+      arg.profile_name == p.profile_name;
+}
+
+TEST(Deserialize, DispatchTabMessage) {
+  testing::InSequence s;
+  StrictMock<MockChromeProxyDelegate> delegate;
+  GURL url("http://destination");
+  GURL ref("http://referer");
+
+  // Tuple3<int, int, IPC::NavigationInfo>
+  int flags = 2;
+  IPC::NavigationInfo ni = {2, 3, 4, L"title", url,
+      ref, SECURITY_STYLE_AUTHENTICATION_BROKEN, true, true};
+  AutomationMsg_NavigationStateChanged m1(0, 1, flags, ni);
+  EXPECT_CALL(delegate, NavigationStateChanged(flags, EqNavigationInfo(ni)));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m1));
+
+  // Tuple2<int, std::wstring>
+  AutomationMsg_UpdateTargetUrl m2(0, 1, L"hello");
+  EXPECT_CALL(delegate, UpdateTargetUrl(StrEq(L"hello")));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m2));
+
+  // Tuple2<int, MSG>
+  MSG wnd_msg = {0, WM_DESTROY, 1, 9, 0x5671, { 11, 12 }};
+  AutomationMsg_HandleAccelerator m3(0, 1, wnd_msg);
+  EXPECT_CALL(delegate, HandleAccelerator(EqMSG(wnd_msg)));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m3));
+
+  // Tuple2<int, bool>
+  AutomationMsg_TabbedOut m4(0, 1, true);
+  EXPECT_CALL(delegate, TabbedOut(true));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m4));
+
+
+  // Tuple4<int, GURL, GURL, int>
+  AutomationMsg_OpenURL m5(0, 1, url, ref, 4);
+  EXPECT_CALL(delegate, OpenURL(url, ref, 4));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m5));
+
+  // Tuple3<int, int, GURL>
+  AutomationMsg_NavigationFailed m6(0, 1, 2, url);
+  EXPECT_CALL(delegate, NavigationFailed(2, url));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m6));
+
+
+  // Tuple2<int, IPC::NavigationInfo>
+  AutomationMsg_DidNavigate m7(0, 1, ni);
+  EXPECT_CALL(delegate, DidNavigate(EqNavigationInfo(ni)));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m7));
+
+
+  // Tuple2<int, GURL>
+  AutomationMsg_TabLoaded m8(0, 1, url);
+  EXPECT_CALL(delegate, TabLoaded(url));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m8));
+
+  // Tuple4<int, string, string, string>
+  std::string msg("Load oranges barrels");
+  std::string origin("Brothers Karamazov");
+  std::string target("Alexander Ivanovich");
+  AutomationMsg_ForwardMessageToExternalHost m9(0, 1, msg, origin, target);
+  EXPECT_CALL(delegate, MessageToHost(msg, origin, target));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m9));
+
+  // Tuple4<int, HANDLE, int, IPC::ContextMenuParams>
+  IPC::ContextMenuParams ctxmenu = { 711, 512, GURL("http://link_src"),
+      GURL("http://unfiltered_link_url"), GURL("http://src_url"),
+      GURL("http://page_url"), GURL("http://frame_url") };
+  AutomationMsg_ForwardContextMenuToExternalHost m10(0, 1, HANDLE(7), 4,
+                                                     ctxmenu);
+  EXPECT_CALL(delegate, HandleContextMenu(HANDLE(7), 4,
+                                          EqContextMenuParam(ctxmenu)));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m10));
+
+  // Tuple3<int, int, IPC::AutomationURLRequest>
+  IPC::AutomationURLRequest url_request = {"url", "post", "referer",
+      "extra_headers", 0, 3 };
+  AutomationMsg_RequestStart m11(0, 1, 7, url_request);
+  EXPECT_CALL(delegate, Network_Start(7, EqURLRequest(url_request)));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m11));
+
+  // Tuple3<int, int, int>
+  AutomationMsg_RequestRead m12(0, 1, 7, 16384);
+  EXPECT_CALL(delegate, Network_Read(7, 16384));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m12));
+
+  // Tuple3<int, int, URLRequestStatus>
+  AutomationMsg_RequestEnd m13(0, 1, 7, URLRequestStatus());
+  EXPECT_CALL(delegate, Network_End(7, _));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m13));
+
+  // Tuple2<int, int>
+  AutomationMsg_DownloadRequestInHost m14(0, 1, 7);
+  EXPECT_CALL(delegate, Network_DownloadInHost(7));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m14));
+
+  // Tuple3<int, GURL, string>
+  AutomationMsg_SetCookieAsync m15(0, 1, url, "cake=big");
+  EXPECT_CALL(delegate, SetCookie(url, "cake=big"));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m15));
+
+  // Tuple2<int, IPC::AttachExternalTabParams>
+  IPC::AttachExternalTabParams ext_tab = { 0xFEDCBA0987654321i64, url,
+      gfx::Rect(6, 9, 123, 999), 1, false, "theprofile" };
+  AutomationMsg_AttachExternalTab m16(0, 1, ext_tab);
+  EXPECT_CALL(delegate, AttachTab(EqAttachExternalTab(ext_tab)));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m16));
+
+  // Tuple2<int, int>
+  AutomationMsg_RequestGoToHistoryEntryOffset m17(0, 1, -4);
+  EXPECT_CALL(delegate, GoToHistoryOffset(-4));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m17));
+
+  // Tuple3<int, GURL, int>
+  AutomationMsg_GetCookiesFromHost m18(0, 1, url, 903);
+  EXPECT_CALL(delegate, GetCookies(url, 903));
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m18));
+
+  AutomationMsg_CloseExternalTab m19(0, 1);
+  EXPECT_CALL(delegate, TabClosed());
+  EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m19));
+}
