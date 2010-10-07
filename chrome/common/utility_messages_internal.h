@@ -15,7 +15,6 @@
 
 #include "base/platform_file.h"
 #include "gfx/rect.h"
-#include "printing/native_metafile.h"
 #include "printing/page_range.h"
 
 class FilePath;
