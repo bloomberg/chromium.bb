@@ -17,8 +17,14 @@ void ShouldNotRun() {
 
 class ChromeSystemResourcesTest : public testing::Test {
  public:
+  // Used as a callback.
   void IncrementCounter() {
     ++counter_;
+  }
+
+  // Used as a callback.
+  void ExpectFalse(bool result) {
+    EXPECT_FALSE(result);
   }
 
  protected:
@@ -89,6 +95,17 @@ TEST_F(ChromeSystemResourcesTest, ScheduleImmediately) {
   EXPECT_EQ(1, counter_);
 }
 
+TEST_F(ChromeSystemResourcesTest, ScheduleOnListenerThread) {
+  chrome_system_resources_.StartScheduler();
+  chrome_system_resources_.ScheduleOnListenerThread(
+      invalidation::NewPermanentCallback(
+          this, &ChromeSystemResourcesTest::IncrementCounter));
+  EXPECT_TRUE(chrome_system_resources_.IsRunningOnInternalThread());
+  EXPECT_EQ(0, counter_);
+  message_loop_.RunAllPending();
+  EXPECT_EQ(1, counter_);
+}
+
 TEST_F(ChromeSystemResourcesTest, ScheduleWithZeroDelay) {
   chrome_system_resources_.StartScheduler();
   chrome_system_resources_.ScheduleWithDelay(
@@ -101,6 +118,17 @@ TEST_F(ChromeSystemResourcesTest, ScheduleWithZeroDelay) {
 }
 
 // TODO(akalin): Figure out how to test with a non-zero delay.
+
+TEST_F(ChromeSystemResourcesTest, WriteState) {
+  // Explicitness hack here to work around broken callback
+  // implementations.
+  ChromeSystemResourcesTest* run_object = this;
+  void (ChromeSystemResourcesTest::*run_function)(bool) =
+      &ChromeSystemResourcesTest::ExpectFalse;
+
+  chrome_system_resources_.WriteState(
+      "state", invalidation::NewPermanentCallback(run_object, run_function));
+}
 
 }  // namespace
 }  // namespace notifier

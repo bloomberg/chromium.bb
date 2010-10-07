@@ -49,10 +49,12 @@ void ChromeInvalidationClient::Start(
   // replies we get.
   client_config.max_registrations_per_message = 20;
   client_config.max_ops_per_message = 40;
+  // TODO(akalin): Grab |persisted_state| from persistent storage.
+  std::string persisted_state;
   invalidation_client_.reset(
       new invalidation::InvalidationClientImpl(
-          &chrome_system_resources_, client_type, client_id, this,
-          client_config));
+          &chrome_system_resources_, client_type, client_id,
+          persisted_state, client_config, this));
   cache_invalidation_packet_handler_.reset(
       new CacheInvalidationPacketHandler(base_task,
                                          invalidation_client_.get()));

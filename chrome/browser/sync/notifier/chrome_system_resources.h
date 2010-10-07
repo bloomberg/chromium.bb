@@ -11,6 +11,7 @@
 #pragma once
 
 #include <set>
+#include <string>
 
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
@@ -38,8 +39,15 @@ class ChromeSystemResources : public invalidation::SystemResources {
 
   virtual void ScheduleImmediately(invalidation::Closure* task);
 
+  virtual void ScheduleOnListenerThread(invalidation::Closure* task);
+
+  virtual bool IsRunningOnInternalThread();
+
   virtual void Log(LogLevel level, const char* file, int line,
                    const char* format, ...);
+
+  virtual void WriteState(const invalidation::string& state,
+                          invalidation::StorageCallback* callback);
 
  private:
   NonThreadSafe non_thread_safe_;

@@ -64,6 +64,19 @@ void ChromeSystemResources::ScheduleImmediately(
   MessageLoop::current()->PostTask(FROM_HERE, task_to_post);
 }
 
+// The listener thread is just our current thread.
+void ChromeSystemResources::ScheduleOnListenerThread(
+    invalidation::Closure* task) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  ScheduleImmediately(task);
+}
+
+// We're already on a separate thread, so always return true.
+bool ChromeSystemResources::IsRunningOnInternalThread() {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  return true;
+}
+
 void ChromeSystemResources::Log(
     LogLevel level, const char* file, int line,
     const char* format, ...) {
@@ -91,6 +104,14 @@ void ChromeSystemResources::Log(
     logging::LogMessage(file, line, log_severity).stream() << result;
     va_end(ap);
   }
+}
+
+void ChromeSystemResources::WriteState(
+    const invalidation::string& state,
+    invalidation::StorageCallback* callback) {
+  // TODO(akalin): Write the given state to persistent storage.
+  callback->Run(false);
+  delete callback;
 }
 
 Task* ChromeSystemResources::MakeTaskToPost(

@@ -120,14 +120,15 @@
       'target_name': 'cacheinvalidation_unittests',
       'type': 'executable',
       'sources': [
+        '../../base/test/run_all_unittests.cc',
         'files/src/google/cacheinvalidation/system-resources-for-test.h',
         'files/src/google/cacheinvalidation/invalidation-client-impl_test.cc',
         'files/src/google/cacheinvalidation/throttle_test.cc',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
-        '../../testing/gtest.gyp:gtestmain',
         'cacheinvalidation',
       ],
     },

@@ -41,24 +41,24 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
     }
   }
 
-  void Register(const invalidation::ObjectId& oid,
-                invalidation::RegistrationCallback* callback) {
+  virtual void Register(const invalidation::ObjectId& oid,
+                        invalidation::RegistrationCallback* callback) {
     register_calls.push_back(Args(oid, callback));
   }
 
-  void Unregister(const invalidation::ObjectId& oid,
-                  invalidation::RegistrationCallback* callback) {
+  virtual void Unregister(const invalidation::ObjectId& oid,
+                          invalidation::RegistrationCallback* callback) {
     ADD_FAILURE();
     delete callback;
   }
 
-  invalidation::NetworkEndpoint* network_endpoint() {
+  virtual void PermanentShutdown() {
     ADD_FAILURE();
-    return NULL;
   }
 
-  void GetClientUniquifier(invalidation::string* uniquifier) const {
+  virtual invalidation::NetworkEndpoint* network_endpoint() {
     ADD_FAILURE();
+    return NULL;
   }
 
   std::deque<Args> register_calls;
