@@ -727,6 +727,8 @@ TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
+// TODO(ericu): Add tests for Write, Cancel.
+
 TEST_F(FileSystemOperationTest, TestTruncate) {
   ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
