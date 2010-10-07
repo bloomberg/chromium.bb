@@ -764,10 +764,8 @@ void HistoryService::OnDBLoaded() {
 }
 
 void HistoryService::StartTopSitesMigration() {
-  if (history::TopSites::IsEnabled()) {
-    history::TopSites* ts = profile_->GetTopSites();
-    ts->StartMigration();
-  }
+  history::TopSites* ts = profile_->GetTopSites();
+  ts->StartMigration();
 }
 
 void HistoryService::OnTopSitesReady() {
