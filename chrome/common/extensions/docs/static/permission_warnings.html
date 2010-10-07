@@ -1,0 +1,312 @@
+<div id="pageData-name" class="pageData">Permission Warnings</div>
+<div id="pageData-showTOC" class="pageData">true</div>
+
+<p>
+To use most chrome.* APIs and extension capabilities,
+your extension must declare its intent in the manifest,
+often in the "permissions" field.
+Some of these declarations
+result in a warning when
+a user installs your extension.
+</p>
+
+<p>
+When you autoupdate your extension,
+the user might see another warning
+if the extension requests new permissions.
+These new permissions might be new APIs that your extension uses,
+or they might be new websites
+that your extension needs access to.
+</p>
+
+
+<h2 id="examples"> Examples of permission warnings </h2>
+
+<p>
+Here's a typical dialog
+that a user might see when installing an extension:
+</p>
+
+<img src="images/perms-hw1.png"
+  width="387" height="162"
+  alt="Permission warning: 'This extension can access: Your data on api.flickr.com'"
+  />
+
+<p>
+The warning about access to data on api.flickr.com
+is caused by the following lines
+in the extension's manifest:
+</p>
+
+<pre>
+"permissions": [
+  <b>"http://api.flickr.com/"</b>
+],
+</pre>
+
+<p class="note">
+<b>Note:</b>
+You don't see permission warnings when
+you load an unpacked extension.
+You get permission warnings only when you install an extension
+from a <code>.crx</code> file.
+</p>
+
+<p>
+If you add a permission to the extension when you autoupdate it,
+the user might see a new permission warning.
+For example,
+assume you add a new site and the "tabs" permission 
+to the previous example:
+</p>
+
+<pre>
+"permissions": [
+  "http://api.flickr.com/",
+  <b>"http://*.flickr.com/",
+  "tabs"</b>
+],
+</pre>
+
+<p>
+When the extension autoupdates,
+the increased permissions
+cause the extension to be disabled
+until the user re-enables it.
+Here's the warning the user sees:
+</p>
+
+<img src="images/perms-hw2-disabled.png"
+  width="814" height="30"
+  alt="Warning text: 'The newest version of the extension Hello World requires more permissions, so it has been disabled. [Re-enable].'"
+  />
+
+<p>
+Clicking the Re-enable button
+brings up the following warning:
+</p>
+
+<img src="images/perms-hw2.png"
+  width="387" height="190"
+  alt="Permission warning: 'This extension can access: Your data on api.flickr.com and flickr.com; Your browsing history'"
+  />
+
+
+<h2 id="warnings"> Warnings and their triggers </h2>
+
+<p>
+It can be surprising when adding a permission such as "tabs"
+results in the seemingly unrelated warning
+that the extension can access your browsing history.
+The reason for the warning is that
+although the <code>chrome.tabs</code> API
+might be used only to open new tabs
+(<a href="tabs.html#method-create"><code>chrome.tabs.create()</code></a>),
+it can also be used to see the URL that's associated
+with every newly opened tab
+(using their <a href="tabs.html#type-Tab">Tab</a> objects).
+</p>
+
+<p class="note">
+<b>Note:</b>
+As of Google Chrome 7,
+you no longer need to specify the "tabs" permission
+just to call <code>chrome.tabs.create()</code>.
+</p>
+
+<p>
+The following table lists the warning messages
+that users can see,
+along with the <a href="manifest.html">manifest</a> entries
+that trigger them.
+</p>
+
+<p>
+<table>
+<tr>
+  <th>Warning&nbsp;message</th> <th>Manifest&nbsp;entry&nbsp;that&nbsp;causes&nbsp;it</th> <th>Notes</th>
+</tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS -->
+    All data on your computer and the websites you visit
+  </td>
+  <td>
+    "plugins"
+  </td>
+  <td>
+    The "plugins" permission is required by
+    <a href="npapi.html">NPAPI plugins</a>.
+  </td>
+</tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT2_WARNING_BOOKMARKS -->
+    Your bookmarks
+  </td>
+  <td>
+    "bookmarks" permission
+  </td>
+  <td>
+    The "bookmarks" permission is required by the
+    <a href="bookmarks.html"><code>chrome.bookmarks</code></a> module.
+  </td>
+</tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY -->
+    Your browsing history
+  </td>
+  <td>
+    <!-- HasEffectiveBrowsingHistoryPermission -->
+     "history" or "tabs" permission
+  </td>
+  <td>
+    <p>
+      The "tabs" permission is required by the
+      <a href="tabs.html"><code>chrome.tabs</code></a> and 
+      <a href="windows.html"><code>chrome.windows</code></a> modules.
+    </p>
+    <p>
+      The "history" permission is required by
+      <a href="history.html"><code>chrome.history</code></a>.
+    </p>
+    <p>
+      Adding "tabs" to an existing extension
+      that already has "history", or vice versa,
+      doesn't cause a warning when the extension is autoupdated.
+    </p>
+  </td>
+</tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS -->
+    Your data on all websites
+  </td>
+  <td>
+    <!-- HasEffectiveAccessToAllHosts() -->
+    Any of the following:
+    <ul>
+      <li> "proxy" permission (experimental) </li>
+      <li> A match pattern in the "permissions" field
+        that matches all hosts </li>
+      <li> A&nbsp;"content_scripts" field with a "matches" entry
+        that matches all hosts </li>
+    </ul>
+  </td>
+  <td>
+    <p>
+      The "proxy" permission is required by the
+      <a href="http://code.google.com/chrome/extensions/dev/experimental.proxy.html">experimental proxy</a> module.
+    </p>
+
+    <p>
+      Any of the following URLs match all hosts:
+    </p>
+    <ul>
+      <li> <code>http://*/*</code> </li>
+      <li> <code>https://*/*</code> </li>
+      <li> <code>*://*/*</code> </li>
+      <li> <code>&lt;all_urls&gt;</code> </li>
+    </ul>
+  </td>
+</tr>
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT2_WARNING_?_HOST -->
+    <!-- IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS -->
+    Your data on <em>{list of websites}</em>
+  </td>
+  <td>
+    A match pattern in the "permissions" field
+    that specifies one or more hosts,
+    but not all hosts
+  </td>
+  <td>
+    <p>
+    Up to 3 sites are listed by name.
+    Subdomains aren't treated specially.
+    For example, <code>a.com</code> and <code>b.a.com</code>
+    are listed as different sites.
+    </p>
+
+    <p>
+    On autoupdate,
+    the user sees a permission warning
+    if the extension adds or changes sites.
+    For example, going from <code>a.com,b.com</code>
+    to <code>a.com,b.com,c.com</code>
+    triggers a warning.
+    Going from <code>b.a.com</code>
+    to <code>a.com</code>,
+    or vice versa,
+    also triggers a warning.
+    </p>
+  </td>
+</tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION -->
+    Your physical location
+  </td>
+  <td>
+    "geolocation" permission
+  </td>
+  <td>
+    Allows the extension to use the proposed HTML5
+    <a href="http://dev.w3.org/geo/api/spec-source.html">geolocation API</a>
+    without prompting the user for permission.
+  </td>
+</tr>
+</table>
+</p>
+
+
+<h2 id="nowarning"> Permissions that don't cause warnings </h2>
+
+<p>
+The following permissions don't result in a warning:
+</p>
+
+<ul>
+  <li>"chrome://favicon/"</li>
+  <li>"contextMenus"</li>
+  <li>"cookies"</li>
+  <li>"experimental"</li>
+  <li>"idle"</li>
+  <li>"notifications"</li>
+  <li>"unlimitedStorage"</li>
+</ul>
+
+<h2 id="test"> Testing permission warnings </h2>
+
+<p>
+If you'd like to see exactly which warnings your users will get,
+<a href="packaging.html">package your extension</a>
+into a <code>.crx</code> file,
+and install it.
+</p>
+
+<p>
+To see the warnings users will get when your extension is autoupdated,
+you can go to a little more trouble
+and set up an autoupdate server.
+To do this, first create an update manifest
+and point to it from your extension,
+using the "update_url" key
+(see <a href="autoupdate.html">Autoupdating</a>).
+Next, <a href="packaging.html">package the extension</a>
+into a new <code>.crx</code> file,
+and install the app from this <code>.crx</code> file.
+Now, change the extension's manifest to contain the new permissions,
+and <a href="packaging.html#update">repackage the extension</a>.
+Finally, update the extension
+(and all other extensions that have outstanding updates)
+by clicking the <b>chrome://extensions</b> page's
+<b>Update extensions now</b> button.
+</p>
