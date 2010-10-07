@@ -14,13 +14,13 @@
 #include <map>
 #include <string>
 #include <utility>
+#include "ppapi/c/dev/ppb_var_deprecated.h"
+#include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp.h"
-#include "ppapi/c/ppp_class.h"
 #include "ppapi/c/ppp_instance.h"
 
 
@@ -28,7 +28,7 @@ namespace {
 
 PP_Module g_module_id;
 PPB_GetInterface g_get_browser_interface = NULL;
-const PPB_Var* g_var_interface = NULL;
+const PPB_Var_Deprecated* g_var_interface = NULL;
 
 const PP_Var kGetFailed = PP_MakeNull();
 const PP_Var kSetFailed = PP_MakeInt32(-1);
@@ -49,8 +49,8 @@ const uint32_t kHelloWorldLength = static_cast<uint32_t>(sizeof(kHelloWorld));
 void PrintPpVar(PP_Var var) {
   printf("PP_Var(");
   switch (var.type) {
-    case PP_VARTYPE_VOID:
-      printf("void");
+    case PP_VARTYPE_UNDEFINED:
+      printf("undefined");
       break;
     case PP_VARTYPE_NULL:
       printf("null");
@@ -91,10 +91,10 @@ class TestObject {
   PP_Var Call(PP_Var name, uint32_t argc, PP_Var* argv, PP_Var* exception);
 
  private:
-  // Getter/setter/function for PP_VARTYPE_VOID.
-  PP_Var prop_void() const { return prop_void_; }
-  bool set_prop_void(PP_Var prop_void);
-  PP_Var func_void(uint32_t argc, PP_Var* argv, PP_Var* exception);
+  // Getter/setter/function for PP_VARTYPE_UNDEFINED.
+  PP_Var prop_undefined() const { return prop_undefined_; }
+  bool set_prop_undefined(PP_Var prop_undefined);
+  PP_Var func_undefined(uint32_t argc, PP_Var* argv, PP_Var* exception);
   // Getter/setter/function for PP_VARTYPE_NULL.
   PP_Var prop_null() const { return prop_null_; }
   bool set_prop_null(PP_Var prop_null);
@@ -133,7 +133,7 @@ class TestObject {
                                        PP_Var* exception);
   typedef std::map<std::string, Method> MethodMap;
 
-  PP_Var prop_void_;
+  PP_Var prop_undefined_;
   PP_Var prop_null_;
   PP_Var prop_bool_;
   PP_Var prop_int32_;
@@ -150,7 +150,7 @@ TestObject::PropertyMap TestObject::property_map;
 TestObject::MethodMap TestObject::method_map;
 bool TestObject::class_is_initialized = false;
 
-TestObject::TestObject() : prop_void_(PP_MakeNull()),
+TestObject::TestObject() : prop_undefined_(PP_MakeNull()),
   prop_null_(PP_MakeNull()),
   prop_int32_(PP_MakeNull()),
   prop_double_(PP_MakeNull()),
@@ -161,7 +161,7 @@ TestObject::TestObject() : prop_void_(PP_MakeNull()),
   }
   // Property map initialization.
   property_map[kPropVoid] =
-      Property(&TestObject::prop_void, &TestObject::set_prop_void);
+      Property(&TestObject::prop_undefined, &TestObject::set_prop_undefined);
   property_map[kPropNull] =
       Property(&TestObject::prop_null, &TestObject::set_prop_null);
   property_map[kPropBool] =
@@ -175,7 +175,7 @@ TestObject::TestObject() : prop_void_(PP_MakeNull()),
   property_map[kPropObject] =
       Property(&TestObject::prop_object, &TestObject::set_prop_object);
   // Method map initialization.
-  method_map[kPropVoid] = &TestObject::func_void;
+  method_map[kPropVoid] = &TestObject::func_undefined;
   method_map[kPropNull] = &TestObject::func_null;
   method_map[kPropBool] = &TestObject::func_bool;
   method_map[kPropInt32] = &TestObject::func_int32;
@@ -249,9 +249,9 @@ PP_Var TestObject::Call(PP_Var name,
   return (this->*method_map[name_str])(argc, argv, exception);
 }
 
-bool TestObject::set_prop_void(PP_Var prop_void) {
-  if (prop_void.type != PP_VARTYPE_VOID) return false;
-  prop_void_ = prop_void;
+bool TestObject::set_prop_undefined(PP_Var prop_undefined) {
+  if (prop_undefined.type != PP_VARTYPE_UNDEFINED) return false;
+  prop_undefined_ = prop_undefined;
   return true;
 }
 
@@ -291,12 +291,12 @@ bool TestObject::set_prop_object(PP_Var prop_object) {
   return true;
 }
 
-PP_Var TestObject::func_void(uint32_t argc,
-                             PP_Var* argv,
-                             PP_Var* exception) {
+PP_Var TestObject::func_undefined(uint32_t argc,
+                                  PP_Var* argv,
+                                  PP_Var* exception) {
   if (argc != 2 ||
-      argv[0].type != PP_VARTYPE_VOID ||
-      argv[1].type != PP_VARTYPE_VOID) {
+      argv[0].type != PP_VARTYPE_UNDEFINED ||
+      argv[1].type != PP_VARTYPE_UNDEFINED) {
     *exception = kCallFailed;
   }
   return argv[0];
@@ -387,7 +387,7 @@ PP_Var TestObject::func_window(uint32_t argc,
   PP_Var location =
       g_var_interface->GetProperty(argv[0], location_name, exception);
   if (location.type != PP_VARTYPE_OBJECT ||
-      exception->type != PP_VARTYPE_VOID) {
+      exception->type != PP_VARTYPE_UNDEFINED) {
     *exception = kCallFailed;
     return kCallFailed;
   }
@@ -400,14 +400,15 @@ PP_Var TestObject::func_window(uint32_t argc,
   printf("window.location.href = ");
   PrintPpVar(href);
   printf("\n");
-  if (href.type != PP_VARTYPE_STRING || exception->type != PP_VARTYPE_VOID) {
+  if (href.type != PP_VARTYPE_STRING ||
+      exception->type != PP_VARTYPE_UNDEFINED) {
     *exception = kCallFailed;
     return kCallFailed;
   }
   return PP_MakeBool(true);
 }
 
-// PPP_Class
+// PPP_Class_Deprecated
 
 bool HasProperty(void* object,
                  PP_Var name,
@@ -442,7 +443,7 @@ PP_Var Call(void* object,
   return test_object->Call(name, argc, argv, exception);
 }
 
-static const PPP_Class object_class = {
+static const PPP_Class_Deprecated object_class = {
   HasProperty,
   NULL,
   GetProperty,
@@ -509,8 +510,8 @@ PP_EXPORT int32_t PPP_InitializeModule(PP_Module module_id,
          get_browser_interface);
 
   g_var_interface =
-      reinterpret_cast<const PPB_Var*>(
-          get_browser_interface(PPB_VAR_INTERFACE));
+      reinterpret_cast<const PPB_Var_Deprecated*>(
+          get_browser_interface(PPB_VAR_DEPRECATED_INTERFACE));
 
   return PP_OK;
 }

@@ -42,7 +42,7 @@ namespace fake_browser_ppapi {
 Host::Host(const char* plugin_file,
            const PPB_Core* core_interface,
            const PPB_Instance* instance_interface,
-           const PPB_Var* var_interface) :
+           const PPB_Var_Deprecated* var_interface) :
   core_interface_(core_interface),
   instance_interface_(instance_interface),
   var_interface_(var_interface) {

@@ -176,7 +176,7 @@ PP_Var GetInstanceObject(PP_Instance instance) {
           &capability_bytes,
           reinterpret_cast<char*>(&capability));
   if (retval != NACL_SRPC_RESULT_OK) {
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
   return ObjectProxy::New(capability, channel);
 }
@@ -187,7 +187,7 @@ PP_Var GetSelectedText(PP_Instance instance, bool html) {
   // TODO(sehr): implement object proxying.
   UNREFERENCED_PARAMETER(instance);
   UNREFERENCED_PARAMETER(html);
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 }  // namespace

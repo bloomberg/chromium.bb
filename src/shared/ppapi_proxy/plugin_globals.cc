@@ -51,7 +51,7 @@ const PPB_Core* CoreInterface() {
   return reinterpret_cast<const PPB_Core*>(PluginCore::GetInterface());
 }
 
-const PPB_Var* VarInterface() {
+const PPB_Var_Deprecated* VarInterface() {
   return PluginVar::GetInterface();
 }
 

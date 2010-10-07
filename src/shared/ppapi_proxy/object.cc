@@ -83,7 +83,7 @@ void DeallocateThunk(void* object) {
 
 }  // namespace
 
-const PPP_Class Object::object_class = {
+const PPP_Class_Deprecated Object::object_class = {
   HasPropertyThunk,
   HasMethodThunk,
   GetPropertyThunk,

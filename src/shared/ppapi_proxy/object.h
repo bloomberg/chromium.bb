@@ -11,15 +11,15 @@
 #include <string>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppp_class.h"
 
 namespace ppapi_proxy {
 
 // Implements a scriptable object in PPAPI.
 // This class is used in both the browser and plugin.
 // These methods are in one to one correspondence with the methods exported by
-// the interface in ppapi/c/ppp_class.h.
+// the interface in ppapi/c/dev/ppp_class_deprecated.h.
 class Object {
  public:
   Object() {}
@@ -50,7 +50,7 @@ class Object {
   virtual void Deallocate() = 0;
 
   // For use by derived classes in constructing ObjectProxies.
-  static const PPP_Class object_class;
+  static const PPP_Class_Deprecated object_class;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Object);

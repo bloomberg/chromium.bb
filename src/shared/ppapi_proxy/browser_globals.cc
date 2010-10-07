@@ -21,7 +21,7 @@ std::map<NaClSrpcChannel*, PP_Module>* channel_to_module_id_map = NULL;
 PPB_GetInterface get_interface;
 // For efficiency, cached results from GetInterface.
 const PPB_Core* core_interface;
-const PPB_Var* var_interface;
+const PPB_Var_Deprecated* var_interface;
 
 }  // namespace
 
@@ -93,8 +93,8 @@ void SetBrowserGetInterface(PPB_GetInterface get_interface_function) {
   get_interface = get_interface_function;
   const void* core = (*get_interface_function)(PPB_CORE_INTERFACE);
   core_interface = reinterpret_cast<const PPB_Core*>(core);
-  const void* var = (*get_interface_function)(PPB_VAR_INTERFACE);
-  var_interface = reinterpret_cast<const PPB_Var*>(var);
+  const void* var = (*get_interface_function)(PPB_VAR_DEPRECATED_INTERFACE);
+  var_interface = reinterpret_cast<const PPB_Var_Deprecated*>(var);
 }
 
 const void* GetBrowserInterface(const char* interface_name) {
@@ -105,7 +105,7 @@ const PPB_Core* CoreInterface() {
   return core_interface;
 }
 
-const PPB_Var* VarInterface() {
+const PPB_Var_Deprecated* VarInterface() {
   return var_interface;
 }
 

@@ -54,7 +54,7 @@ const InterfaceMapElement interface_map[] = {
     reinterpret_cast<GetInterfacePtr>(PluginURLRequestInfo::GetInterface) },
   { PPB_URLRESPONSEINFO_DEV_INTERFACE,
     reinterpret_cast<GetInterfacePtr>(PluginURLResponseInfo::GetInterface) },
-  { PPB_VAR_INTERFACE,
+  { PPB_VAR_DEPRECATED_INTERFACE,
     reinterpret_cast<GetInterfacePtr>(PluginVar::GetInterface) },
 };
 }

@@ -12,8 +12,8 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
+#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/instance.h"
-#include "ppapi/cpp/scriptable_object.h"
 #include "ppapi/cpp/var.h"
 
 namespace plugin {
@@ -21,7 +21,7 @@ namespace plugin {
 // Wraps a JavaScript array where each element is an indexed property.
 // Can be used to represent single arguments and return values of array type
 // as well as multiple return values from invoking SRPC methods.
-class ArrayPpapi : public pp::ScriptableObject {
+class ArrayPpapi : public pp::deprecated::ScriptableObject {
  public:
   explicit ArrayPpapi(PluginPpapi* instance);
   virtual ~ArrayPpapi() {}

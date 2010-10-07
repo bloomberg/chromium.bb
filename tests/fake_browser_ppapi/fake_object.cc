@@ -14,8 +14,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppb_var.h"
 
 using ppapi_proxy::DebugPrintf;
 using ppapi_proxy::PluginVar;
@@ -23,7 +23,7 @@ using fake_browser_ppapi::Object;
 
 namespace fake_browser_ppapi {
 
-const PPB_Var* ppb_var = NULL;
+const PPB_Var_Deprecated* ppb_var = NULL;
 
 bool Object::HasProperty(PP_Var name,
                          PP_Var* exception) {
@@ -65,7 +65,7 @@ PP_Var Object::GetProperty(PP_Var name,
     ppb_var->AddRef(*(i->second));
     return *(i->second);
   }
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 void Object::GetAllPropertyNames(uint32_t* property_count,
@@ -170,7 +170,7 @@ PP_Var Object::Call(PP_Var method_name,
   if (i != browser_obj->methods()->end()) {
     return (i->second)(browser_obj, argc, argv, exception);
   }
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 PP_Var Object::Construct(uint32_t argc,
@@ -188,7 +188,7 @@ PP_Var Object::Construct(uint32_t argc,
   }
   DebugPrintf(" }\n");
   NACL_UNIMPLEMENTED();
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 void Object::Deallocate() {
@@ -213,16 +213,17 @@ Object::Object(PP_Module module,
 PP_Var Object::New(PP_Module module,
                    const PropertyMap& properties,
                    const MethodMap& methods) {
-  // Save the PPB_Var interface to be used in constructing objects.
+  // Save the PPB_Var_Deprecated interface to be used in constructing objects.
   if (ppb_var == NULL) {
-    ppb_var = reinterpret_cast<const PPB_Var*>(PluginVar::GetInterface());
+    ppb_var = reinterpret_cast<const PPB_Var_Deprecated*>(
+        PluginVar::GetInterface());
     if (ppb_var == NULL) {
-      return PP_MakeVoid();
+      return PP_MakeUndefined();
     }
   }
   Object* obj = new Object(module, properties, methods);
   if (obj == NULL) {
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
   return ppb_var->CreateObject(module, &ppapi_proxy::Object::object_class, obj);
 }

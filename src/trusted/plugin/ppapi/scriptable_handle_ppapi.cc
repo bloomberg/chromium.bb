@@ -29,7 +29,7 @@ pp::Var Error(nacl::string call_name, const char* caller,
                      const char* error, pp::Var* exception) {
   nacl::stringstream error_stream;
   error_stream << call_name << ": " << error;
-  if (!exception->is_void()) {
+  if (!exception->is_undefined()) {
     error_stream << " - " + exception->AsString();
   }
   const char* e = error_stream.str().c_str();
@@ -174,7 +174,7 @@ pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
       }
       retvar = pp::Var(array);
     }
-    if (!exception->is_void()) {
+    if (!exception->is_undefined()) {
       return Error(call_name, caller, "srpc output marshalling failed",
                    exception);
     }
@@ -239,7 +239,7 @@ pp::Var ScriptableHandlePpapi::Call(const pp::Var& name,
                                     pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (name=%s, %"NACL_PRIuS
                  " args)\n", name.DebugString().c_str(), args.size()));
-  if (name.is_void())  // invoke default
+  if (name.is_undefined())  // invoke default
     return pp::Var();
   assert(name.is_string());
   return Invoke(METHOD_CALL, name.AsString(), "Call", args, exception);

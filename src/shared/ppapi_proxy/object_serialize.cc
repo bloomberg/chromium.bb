@@ -97,7 +97,7 @@ uint32_t RoundedStringBytes(uint32_t string_length) {
 
 uint32_t PpVarSize(const PP_Var& var) {
   switch (var.type) {
-    case PP_VARTYPE_VOID:
+    case PP_VARTYPE_UNDEFINED:
     case PP_VARTYPE_NULL:
     case PP_VARTYPE_BOOL:
     case PP_VARTYPE_INT32:
@@ -165,7 +165,7 @@ bool SerializePpVar(const PP_Var* vars,
     s->u.int32_value = 0;
 
     switch (vars[i].type) {
-      case PP_VARTYPE_VOID:
+      case PP_VARTYPE_UNDEFINED:
       case PP_VARTYPE_NULL:
         element_size = sizeof(SerializedFixed);
         break;
@@ -228,7 +228,7 @@ bool DeserializeString(char* p,
   }
   uint32_t rounded_length = RoundedStringBytes(string_length);
   if (0 == string_length) {
-    // Zero-length string.  Rely on what the PPB_Var does.
+    // Zero-length string.  Rely on what the PPB_Var_Deprecated does.
     *var = VarInterface()->VarFromUtf8(LookupModuleIdForSrpcChannel(channel),
                                        ss->string_bytes,
                                        0);
@@ -272,7 +272,7 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
 
     vars[i].type = static_cast<PP_VarType>(s->type);
     switch (vars[i].type) {
-      case PP_VARTYPE_VOID:
+      case PP_VARTYPE_UNDEFINED:
       case PP_VARTYPE_NULL:
         element_size = sizeof(SerializedFixed);
         break;

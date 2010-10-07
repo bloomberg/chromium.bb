@@ -13,8 +13,8 @@
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
 #include "native_client/tests/fake_browser_ppapi/fake_object.h"
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppb_var.h"
 
 using fake_browser_ppapi::Object;
 using ppapi_proxy::PluginVar;
@@ -22,9 +22,10 @@ using ppapi_proxy::PluginVar;
 namespace {
 
 PP_Var* NewStringVar(PP_Module browser_module, const char* str) {
-  static const PPB_Var* ppb_var = NULL;
+  static const PPB_Var_Deprecated* ppb_var = NULL;
   if (ppb_var == NULL) {
-    ppb_var = reinterpret_cast<const PPB_Var*>(PluginVar::GetInterface());
+    ppb_var = reinterpret_cast<const PPB_Var_Deprecated*>(
+        PluginVar::GetInterface());
     if (ppb_var == NULL) {
       return NULL;
     }
@@ -68,7 +69,7 @@ PP_Var ConsoleLog(Object* object,
     }
   }
   printf(")\n");
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 // Returns a PP_Var that mocks the window.console object.
@@ -99,7 +100,7 @@ PP_Var Alert(Object* object,
     printf("<BAD PARAMETER COUNT: %d>", argc);
   }
   printf(")\n");
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 }  // namespace

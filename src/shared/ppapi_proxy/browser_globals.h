@@ -5,11 +5,11 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_GLOBALS_H_
 
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
-#include "ppapi/c/ppb_var.h"
 
 struct NaClSrpcChannel;
 
@@ -53,10 +53,10 @@ const void* GetBrowserInterface(const char* interface_name);
 // Set by SetBrowserGetInterface.
 const PPB_Core* CoreInterface();
 
-// We need an interface to get PPB_Var that is spelled the same way for
-// both plugins and the browser side of the proxy.
+// We need an interface to get PPB_Var_Deprecated that is spelled the same way
+// for both plugins and the browser side of the proxy.
 // Set by SetBrowserGetInterface.
-const PPB_Var* VarInterface();
+const PPB_Var_Deprecated* VarInterface();
 
 }  // namespace ppapi_proxy
 

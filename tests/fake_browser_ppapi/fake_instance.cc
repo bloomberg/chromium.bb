@@ -27,7 +27,7 @@ PP_Var Instance::GetOwnerElementObject() {
   DebugPrintf("Instance::GetOwnerElementObject: instance=%p\n",
               reinterpret_cast<void*>(this));
   NACL_UNIMPLEMENTED();
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 bool Instance::BindGraphics(PP_Resource device) {
@@ -52,7 +52,7 @@ PP_Var Instance::ExecuteScript(PP_Var script,
   NACL_UNIMPLEMENTED();
   UNREFERENCED_PARAMETER(script);
   UNREFERENCED_PARAMETER(exception);
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 }  // namespace fake_browser_ppapi

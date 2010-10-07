@@ -28,7 +28,7 @@ PP_Var GetProperty(PP_Resource response,
                    PP_URLResponseProperty_Dev property) {
   UNREFERENCED_PARAMETER(response);
   UNREFERENCED_PARAMETER(property);
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 PP_Resource GetBody(PP_Resource response) {

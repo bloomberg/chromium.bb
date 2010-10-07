@@ -11,9 +11,9 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_host.h"
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppb_var.h"
 
 namespace fake_browser_ppapi {
 
@@ -22,7 +22,7 @@ class Host : public ppapi_proxy::BrowserHost {
   Host(const char* plugin_file,
        const PPB_Core* core_interface,
        const PPB_Instance* instance_interface,
-       const PPB_Var* var_interface);
+       const PPB_Var_Deprecated* var_interface);
   virtual ~Host();
 
   // Implementations of the methods invoked by the browser.
@@ -33,7 +33,7 @@ class Host : public ppapi_proxy::BrowserHost {
   // Getters for the browser interfaces.
   const PPB_Core* core_interface() const { return core_interface_; }
   const PPB_Instance* instance_interface() const { return instance_interface_; }
-  const PPB_Var* var_interface() const { return var_interface_; }
+  const PPB_Var_Deprecated* var_interface() const { return var_interface_; }
 
  private:
   typedef int32_t (*InitializeModuleFunc)(PP_Module module,
@@ -49,7 +49,7 @@ class Host : public ppapi_proxy::BrowserHost {
   // Store interface pointers.
   const PPB_Core* core_interface_;
   const PPB_Instance* instance_interface_;
-  const PPB_Var* var_interface_;
+  const PPB_Var_Deprecated* var_interface_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(Host);
 };

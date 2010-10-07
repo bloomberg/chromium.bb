@@ -15,7 +15,7 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/portable_handle.h"
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
-#include "ppapi/cpp/scriptable_object.h"
+#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/var.h"
 
 namespace plugin {
@@ -23,7 +23,7 @@ namespace plugin {
 class PortableHandle;
 
 // Encapsulates a browser scriptable object for a PPAPI NaCl plugin.
-class ScriptableHandlePpapi : public pp::ScriptableObject,
+class ScriptableHandlePpapi : public pp::deprecated::ScriptableObject,
                               public ScriptableHandle {
  public:
   // Factory method for creation.
@@ -32,7 +32,7 @@ class ScriptableHandlePpapi : public pp::ScriptableObject,
   // If not NULL, this var should be reused to pass this object to the browser.
   pp::Var* var() { return var_; }
 
-  // ------ Methods inherited from pp::ScriptableObject:
+  // ------ Methods inherited from pp::deprecated::ScriptableObject:
 
   // Returns true for preloaded NaCl Plugin properties.
   // Does not set |exception|.

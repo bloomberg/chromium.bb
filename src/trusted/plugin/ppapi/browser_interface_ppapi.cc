@@ -55,7 +55,7 @@ bool BrowserInterfacePpapi::Alert(InstanceIdentifier instance_id,
                                   const nacl::string& text) {
   pp::Var exception;
   GetWindow(instance_id).Call("alert", text, &exception);
-  return exception.is_void();
+  return exception.is_undefined();
 }
 
 bool BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
@@ -63,14 +63,14 @@ bool BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
   pp::Var exception;
   pp::Var window = GetWindow(instance_id);
   window.GetProperty("console", &exception).Call("log", text, &exception);
-  return exception.is_void();
+  return exception.is_undefined();
 }
 
 bool BrowserInterfacePpapi::EvalString(InstanceIdentifier instance_id,
                                        const nacl::string& expression) {
   pp::Var exception;
   GetWindow(instance_id).Call("eval", expression, &exception);
-  return exception.is_void();
+  return exception.is_undefined();
 }
 
 

@@ -45,7 +45,6 @@ cpp_sources = [
     'cpp/paint_manager.cc',
     'cpp/rect.cc',
     'cpp/resource.cc',
-    'cpp/scriptable_object.cc',
     'cpp/var.cc',
     'cpp/dev/audio_config_dev.cc',
     'cpp/dev/audio_dev.cc',
@@ -60,6 +59,7 @@ cpp_sources = [
     'cpp/dev/font_dev.cc',
     'cpp/dev/fullscreen_dev.cc',
     'cpp/dev/graphics_3d_dev.cc',
+    'cpp/dev/scriptable_object_deprecated.cc',
     'cpp/dev/scrollbar_dev.cc',
     'cpp/dev/transport_dev.cc',
     'cpp/dev/url_loader_dev.cc',
@@ -80,6 +80,8 @@ env.ComponentLibrary('ppapi_cpp', cpp_sources)
 c_headers = [
     # Updated automatically by update-scons.py.
     # From ppapi.gyp:ppapi_c:c/[^/]*\.h
+    'c/dev/ppb_var_deprecated.h',
+    'c/dev/ppp_class_deprecated.h',
     'c/pp_completion_callback.h',
     'c/pp_errors.h',
     'c/pp_input_event.h',
@@ -97,9 +99,7 @@ c_headers = [
     'c/ppb_graphics_2d.h',
     'c/ppb_image_data.h',
     'c/ppb_instance.h',
-    'c/ppb_var.h',
     'c/ppp.h',
-    'c/ppp_class.h',
     'c/ppp_instance.h',
     # End ppapi.gyp
     ]

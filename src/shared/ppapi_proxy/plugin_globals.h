@@ -5,10 +5,10 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 #define NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_GLOBALS_H_
 
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
-#include "ppapi/c/ppb_var.h"
 
 struct NaClSrpcChannel;
 
@@ -33,8 +33,8 @@ PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel);
 // Get the PPB_Core interface passed in from the browser.
 const PPB_Core* CoreInterface();
 
-// Get the PPB_Var interface passed in from the browser.
-const PPB_Var* VarInterface();
+// Get the PPB_Var_Deprecated interface passed in from the browser.
+const PPB_Var_Deprecated* VarInterface();
 
 // PPAPI constants used in the proxy.
 extern const PP_Resource kInvalidResourceId;

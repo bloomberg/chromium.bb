@@ -12,14 +12,14 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_io.h"
-#include  "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/ppapi/array_ppapi.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
 #include "native_client/src/trusted/plugin/socket_address.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
-#include "ppapi/cpp/scriptable_object.h"
+#include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 
 namespace plugin {
 
@@ -88,7 +88,7 @@ template<typename T> void PPVarToArray(const pp::Var& var,
   PLUGIN_PRINTF(("  PPVarToArray (length=%s)\n",
                  length_var.DebugString().c_str()));
   PPVarToAllocateArray(length_var, array_length, array_data, exception);
-  if (!exception->is_void()) {
+  if (!exception->is_undefined()) {
     return;
   }
 
@@ -97,7 +97,7 @@ template<typename T> void PPVarToArray(const pp::Var& var,
     pp::Var element = var.GetProperty(pp::Var(index), exception);
     PLUGIN_PRINTF(("  PPVarToArray (array[%d]=%s)\n",
                    index, element.DebugString().c_str()));
-    if (!exception->is_void()) {
+    if (!exception->is_undefined()) {
       break;
     }
     if (!element.is_number()) {
@@ -112,7 +112,7 @@ template<typename T> void PPVarToArray(const pp::Var& var,
       NACL_NOTREACHED();
     }
   }
-  if (!exception->is_void()) {
+  if (!exception->is_undefined()) {
     free(array_data);
     *array_length = 0;
     *array_data = NULL;
@@ -127,7 +127,8 @@ ScriptableHandle* PPVarToScriptableHandle(const pp::Var& var,
     *exception = "incompatible argument: type is not object";
     return NULL;
   }
-  pp::ScriptableObject* scriptable_object = var.AsScriptableObject();
+  pp::deprecated::ScriptableObject* scriptable_object =
+      var.AsScriptableObject();
   if (scriptable_object == NULL) {
     *exception = "incompatible argument: type is not scriptable object";
     return NULL;
@@ -232,7 +233,7 @@ bool PPVarToAllocateNaClSrpcArg(const pp::Var& var,
   }
   PLUGIN_PRINTF(("  PPVarToAllocateNaClSrpcArg (return exception=%s)\n",
                  exception->DebugString().c_str()));
-  return exception->is_void();
+  return exception->is_undefined();
 }
 
 
@@ -290,7 +291,7 @@ bool PPVarToNaClSrpcArg(const pp::Var& var,
   }
   PLUGIN_PRINTF(("  PPVarToNaClSrpcArg (return exception=%s)\n",
                  exception->DebugString().c_str()));
-  return exception->is_void();
+  return exception->is_undefined();
 }
 
 
@@ -346,7 +347,8 @@ pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
     desc_handle = DescBasedHandle::New(plugin, wrapper);
   }
 
-  pp::ScriptableObject* object = ScriptableHandlePpapi::New(desc_handle);
+  pp::deprecated::ScriptableObject* object =
+      ScriptableHandlePpapi::New(desc_handle);
   if (object == NULL) {
     *exception = "incompatible argument: failed to create handle var";
     return pp::Var();

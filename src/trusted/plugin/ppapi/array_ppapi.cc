@@ -20,11 +20,11 @@ ArrayPpapi::ArrayPpapi(PluginPpapi* instance) {
                  static_cast<void*>(this), static_cast<void*>(instance)));
   pp::Var window = instance->GetWindowObject();
   PLUGIN_PRINTF(("ArrayPpapi::ArrayPpapi (window=%d)\n",
-                !window.is_void()));
+                !window.is_undefined()));
   js_array_ = window.Call(pp::Var("eval"), pp::Var("new Array;"));
   PLUGIN_PRINTF(("ArrayPpapi::ArrayPpapi (js_array_=%d)\n",
-                 !js_array_.is_void()));
-  assert(!js_array_.is_void());
+                 !js_array_.is_undefined()));
+  assert(!js_array_.is_undefined());
 }
 
 }  // namespace plugin

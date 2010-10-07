@@ -16,9 +16,9 @@
 #include "native_client/tests/fake_browser_ppapi/fake_host.h"
 #include "native_client/tests/fake_browser_ppapi/fake_instance.h"
 #include "native_client/tests/fake_browser_ppapi/fake_window.h"
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -32,13 +32,13 @@ const double kDoubleValue = 3.1415;
 const char kStringValue[] = "hello, world";
 
 // Some global state.
-const PPB_Var* g_var_interface;
+const PPB_Var_Deprecated* g_var_interface;
 const PPB_Instance* g_instance_interface;
 PP_Instance g_instance_id;
 PP_Instance g_browser_module_id;
 int64_t g_object_as_id;
 
-// TODO(sehr,polina): add this to the ppapi/c/ppb_var.h?
+// TODO(sehr,polina): add this to the ppapi/c/dev/ppb_var_deprecated.h?
 PP_Var MakeString(const char* str) {
   return g_var_interface->VarFromUtf8(g_browser_module_id,
                                       str,
@@ -48,7 +48,7 @@ PP_Var MakeString(const char* str) {
 // PP_Var of string type that names a property of the specified type.
 PP_Var PropertyName(PP_VarType type) {
   switch (type) {
-    case PP_VARTYPE_VOID:
+    case PP_VARTYPE_UNDEFINED:
       return MakeString("identVoid");
     case PP_VARTYPE_NULL:
       return MakeString("identNull");
@@ -64,14 +64,14 @@ PP_Var PropertyName(PP_VarType type) {
       return MakeString("identObject");
   }
   CHECK(0);
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 // Returns a canonical PP_Var of type.
 PP_Var PropertyValue(PP_VarType type) {
   switch (type) {
-    case PP_VARTYPE_VOID:
-      return PP_MakeVoid();
+    case PP_VARTYPE_UNDEFINED:
+      return PP_MakeUndefined();
     case PP_VARTYPE_NULL:
       return PP_MakeNull();
     case PP_VARTYPE_BOOL:
@@ -86,14 +86,14 @@ PP_Var PropertyValue(PP_VarType type) {
       return g_instance_interface->GetWindowObject(g_instance_id);
   }
   CHECK(0);
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 // Checks that the var matches the canonical var for the specified type.
 bool PropertyIsValidValue(PP_VarType type, PP_Var value) {
   switch (type) {
-    case PP_VARTYPE_VOID:
-      return (value.type == PP_VARTYPE_VOID);
+    case PP_VARTYPE_UNDEFINED:
+      return (value.type == PP_VARTYPE_UNDEFINED);
     case PP_VARTYPE_NULL:
       return (value.type == PP_VARTYPE_NULL);
     case PP_VARTYPE_BOOL:
@@ -127,10 +127,10 @@ bool PropertyIsValidValue(PP_VarType type, PP_Var value) {
 
 // Test that the "ident<Type>" property is present on object.
 void CheckPresentProperty(PP_VarType type, PP_Var object) {
-  PP_Var exception = PP_MakeVoid();
+  PP_Var exception = PP_MakeUndefined();
   // PropertyName always returns a string PP_Var that names a valid property.
   CHECK(g_var_interface->HasProperty(object, PropertyName(type), &exception));
-  CHECK(exception.type == PP_VARTYPE_VOID);
+  CHECK(exception.type == PP_VARTYPE_UNDEFINED);
 }
 
 void CheckAbsentProperty(PP_VarType type, PP_Var object) {
@@ -138,23 +138,23 @@ void CheckAbsentProperty(PP_VarType type, PP_Var object) {
   // == PP_VARTYPE_STRING can HasProperty succeed, and then only for valid
   // property names.  PropertyValue(PP_VARTYPE_STRING) returns a string
   // that is not a valid property name.
-  PP_Var exception = PP_MakeVoid();
+  PP_Var exception = PP_MakeUndefined();
   CHECK(!g_var_interface->HasProperty(object,
                                       PropertyValue(type),
                                       &exception));
   // TODO(sehr): Exception should be raised if type is not int or string.
-  CHECK(exception.type == PP_VARTYPE_VOID);
+  CHECK(exception.type == PP_VARTYPE_UNDEFINED);
 }
 
 void TestHasProperty(PP_Var object) {
-  CheckAbsentProperty(PP_VARTYPE_VOID, object);
+  CheckAbsentProperty(PP_VARTYPE_UNDEFINED, object);
   CheckAbsentProperty(PP_VARTYPE_NULL, object);
   CheckAbsentProperty(PP_VARTYPE_BOOL, object);
   CheckAbsentProperty(PP_VARTYPE_INT32, object);
   CheckAbsentProperty(PP_VARTYPE_DOUBLE, object);
   CheckAbsentProperty(PP_VARTYPE_STRING, object);
   CheckAbsentProperty(PP_VARTYPE_OBJECT, object);
-  CheckPresentProperty(PP_VARTYPE_VOID, object);
+  CheckPresentProperty(PP_VARTYPE_UNDEFINED, object);
   CheckPresentProperty(PP_VARTYPE_NULL, object);
   CheckPresentProperty(PP_VARTYPE_BOOL, object);
   CheckPresentProperty(PP_VARTYPE_INT32, object);
@@ -168,7 +168,7 @@ void TestHasProperty(PP_Var object) {
 void CheckSetProperty(PP_VarType property_type,
                       PP_VarType value_type,
                       PP_Var object) {
-  PP_Var exception = PP_MakeVoid();
+  PP_Var exception = PP_MakeUndefined();
   g_var_interface->SetProperty(object,
                                PropertyName(property_type),
                                PropertyValue(value_type),
@@ -176,16 +176,16 @@ void CheckSetProperty(PP_VarType property_type,
   // Only setting an property to a value of it's intrinsic type should succeed.
   // Success is indicated by the SetProperty returning a void exception.
   if (property_type == value_type) {
-    CHECK(exception.type == PP_VARTYPE_VOID);
+    CHECK(exception.type == PP_VARTYPE_UNDEFINED);
   } else {
-    CHECK(exception.type != PP_VARTYPE_VOID);
+    CHECK(exception.type != PP_VARTYPE_UNDEFINED);
   }
 }
 
 // Test setting one the "ident<Property_type>" property of object with all
 // argument types.
 void TestSetPropertyForType(PP_VarType property_type, PP_Var object) {
-  CheckSetProperty(property_type, PP_VARTYPE_VOID, object);
+  CheckSetProperty(property_type, PP_VARTYPE_UNDEFINED, object);
   CheckSetProperty(property_type, PP_VARTYPE_NULL, object);
   CheckSetProperty(property_type, PP_VARTYPE_BOOL, object);
   CheckSetProperty(property_type, PP_VARTYPE_INT32, object);
@@ -197,7 +197,7 @@ void TestSetPropertyForType(PP_VarType property_type, PP_Var object) {
 // Test setting each type of property of object in succession.
 // The values set in this function are used in TestGetProperty.
 void TestSetProperty(PP_Var object) {
-  TestSetPropertyForType(PP_VARTYPE_VOID, object);
+  TestSetPropertyForType(PP_VARTYPE_UNDEFINED, object);
   TestSetPropertyForType(PP_VARTYPE_NULL, object);
   TestSetPropertyForType(PP_VARTYPE_BOOL, object);
   TestSetPropertyForType(PP_VARTYPE_INT32, object);
@@ -210,17 +210,17 @@ void TestSetProperty(PP_Var object) {
 // for "property_type" and checking that the return value agrees in type
 // and value.
 void TestGetPropertyForType(PP_VarType property_type, PP_Var object) {
-  PP_Var exception = PP_MakeVoid();
+  PP_Var exception = PP_MakeUndefined();
   PP_Var result = g_var_interface->GetProperty(object,
                                                PropertyName(property_type),
                                                &exception);
   CHECK(PropertyIsValidValue(property_type, result));
-  CHECK(exception.type == PP_VARTYPE_VOID);
+  CHECK(exception.type == PP_VARTYPE_UNDEFINED);
 }
 
 // Test getting each type of property of object in succession.
 void TestGetProperty(PP_Var object) {
-  TestGetPropertyForType(PP_VARTYPE_VOID, object);
+  TestGetPropertyForType(PP_VARTYPE_UNDEFINED, object);
   TestGetPropertyForType(PP_VARTYPE_NULL, object);
   TestGetPropertyForType(PP_VARTYPE_BOOL, object);
   TestGetPropertyForType(PP_VARTYPE_INT32, object);
@@ -237,7 +237,7 @@ void CheckCallWithArgPair(PP_VarType type,
                           PP_Var object) {
   PP_Var argv[] = { PropertyValue(arg1_type), PropertyValue(arg2_type) };
   uint32_t argc = static_cast<uint32_t>(sizeof argv / sizeof argv[0]);
-  PP_Var exception = PP_MakeVoid();
+  PP_Var exception = PP_MakeUndefined();
   PP_Var retval = g_var_interface->Call(object,
                                         PropertyName(type),
                                         argc,
@@ -247,9 +247,9 @@ void CheckCallWithArgPair(PP_VarType type,
   // void.  A failing call's exception should be non-void.
   if (type == arg1_type && type == arg2_type) {
     CHECK(PropertyIsValidValue(type, retval));
-    CHECK(exception.type == PP_VARTYPE_VOID);
+    CHECK(exception.type == PP_VARTYPE_UNDEFINED);
   } else {
-    CHECK(exception.type != PP_VARTYPE_VOID);
+    CHECK(exception.type != PP_VARTYPE_UNDEFINED);
   }
 }
 
@@ -258,7 +258,7 @@ void CheckCallWithArgPair(PP_VarType type,
 void TestCallForTypeWithArg1Type(PP_VarType type,
                                  PP_VarType arg1_type,
                                  PP_Var object) {
-  CheckCallWithArgPair(type, arg1_type, PP_VARTYPE_VOID, object);
+  CheckCallWithArgPair(type, arg1_type, PP_VARTYPE_UNDEFINED, object);
   CheckCallWithArgPair(type, arg1_type, PP_VARTYPE_NULL, object);
   CheckCallWithArgPair(type, arg1_type, PP_VARTYPE_BOOL, object);
   CheckCallWithArgPair(type, arg1_type, PP_VARTYPE_INT32, object);
@@ -271,13 +271,13 @@ void TestCallForTypeWithArg1Type(PP_VarType type,
 void CallWithTooFewParameters(PP_VarType type, PP_Var object) {
   PP_Var argv[] = { PropertyValue(type) };
   uint32_t argc = static_cast<uint32_t>(sizeof argv / sizeof argv[0]);
-  PP_Var exception = PP_MakeVoid();
+  PP_Var exception = PP_MakeUndefined();
   (void) g_var_interface->Call(object,
                                PropertyName(type),
                                argc,
                                argv,
                                &exception);
-  CHECK(exception.type != PP_VARTYPE_VOID);
+  CHECK(exception.type != PP_VARTYPE_UNDEFINED);
 }
 
 // Invoke the "ident<Type>" method of object with three parameters of type
@@ -289,13 +289,13 @@ void CallWithTooManyParameters(PP_VarType type, PP_Var object) {
     PropertyValue(type)
   };
   uint32_t argc = static_cast<uint32_t>(sizeof argv / sizeof argv[0]);
-  PP_Var exception = PP_MakeVoid();
+  PP_Var exception = PP_MakeUndefined();
   (void) g_var_interface->Call(object,
                                PropertyName(type),
                                argc,
                                argv,
                                &exception);
-  CHECK(exception.type != PP_VARTYPE_VOID);
+  CHECK(exception.type != PP_VARTYPE_UNDEFINED);
 }
 
 // Invoke the "ident<Type>" method of object with all combinations of types for
@@ -304,7 +304,7 @@ void TestCallForType(PP_VarType method_type, PP_Var object) {
   CallWithTooFewParameters(method_type, object);
   CallWithTooManyParameters(method_type, object);
   // Try with various parameter type combinations.
-  TestCallForTypeWithArg1Type(method_type, PP_VARTYPE_VOID, object);
+  TestCallForTypeWithArg1Type(method_type, PP_VARTYPE_UNDEFINED, object);
   TestCallForTypeWithArg1Type(method_type, PP_VARTYPE_NULL, object);
   TestCallForTypeWithArg1Type(method_type, PP_VARTYPE_BOOL, object);
   TestCallForTypeWithArg1Type(method_type, PP_VARTYPE_INT32, object);
@@ -315,7 +315,7 @@ void TestCallForType(PP_VarType method_type, PP_Var object) {
 
 // Test invoking each method of object in succession.
 void TestCall(PP_Var object) {
-  TestCallForType(PP_VARTYPE_VOID, object);
+  TestCallForType(PP_VARTYPE_UNDEFINED, object);
   TestCallForType(PP_VARTYPE_NULL, object);
   TestCallForType(PP_VARTYPE_BOOL, object);
   TestCallForType(PP_VARTYPE_INT32, object);
@@ -328,14 +328,14 @@ void TestCall(PP_Var object) {
 // beginning of a test of NaCl to browser scripting.
 void TestWindowScripting(PP_Var object) {
   PP_Var argv = PropertyValue(PP_VARTYPE_OBJECT);
-  PP_Var exception = PP_MakeVoid();
+  PP_Var exception = PP_MakeUndefined();
   PP_Var retval = g_var_interface->Call(object,
                                         MakeString("identWindow"),
                                         1,
                                         &argv,
                                         &exception);
   CHECK(PropertyIsValidValue(PP_VARTYPE_BOOL, retval));
-  CHECK(exception.type == PP_VARTYPE_VOID);
+  CHECK(exception.type == PP_VARTYPE_UNDEFINED);
 }
 
 }  // namespace
@@ -350,7 +350,7 @@ void TestWindowScripting(PP_Var object) {
 //    arg2.type == type.  It returns arg1.type.
 void TestScriptableObject(PP_Var object,
                           const PPB_Instance* browser_instance_interface,
-                          const PPB_Var* var_interface,
+                          const PPB_Var_Deprecated* var_interface,
                           PP_Instance instance_id,
                           PP_Module browser_module_id) {
   // Receiver needs to be a valid scriptable object.  We cannot use

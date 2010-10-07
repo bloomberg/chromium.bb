@@ -22,8 +22,8 @@
 #include "native_client/src/shared/ppapi_proxy/object_capability.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppp_class.h"
 
 namespace ppapi_proxy {
 
@@ -114,7 +114,7 @@ bool ObjectProxy::HasMethod(PP_Var name,
 PP_Var ObjectProxy::GetProperty(PP_Var name,
                                 PP_Var* exception) {
   DebugPrintf("ObjectProxy::GetProperty\n");
-  PP_Var value = PP_MakeVoid();
+  PP_Var value = PP_MakeUndefined();
   uint32_t name_length = kMaxVarSize;
   nacl::scoped_array<char> name_chars(Serialize(&name, 1, &name_length));
   if (name_chars == NULL) {
@@ -249,7 +249,7 @@ PP_Var ObjectProxy::Call(PP_Var method_name,
                          PP_Var* argv,
                          PP_Var* exception) {
   DebugPrintf("ObjectProxy::Call\n");
-  PP_Var ret = PP_MakeVoid();
+  PP_Var ret = PP_MakeUndefined();
   uint32_t name_length = kMaxVarSize;
   nacl::scoped_array<char> name_chars(Serialize(&method_name, 1, &name_length));
   if (name_chars == NULL) {
@@ -303,7 +303,7 @@ PP_Var ObjectProxy::Construct(uint32_t argc,
                               PP_Var* argv,
                               PP_Var* exception) {
   DebugPrintf("ObjectProxy::Construct\n");
-  PP_Var ret = PP_MakeVoid();
+  PP_Var ret = PP_MakeUndefined();
   uint32_t argv_length = kMaxVarSize;
   nacl::scoped_array<char> argv_chars(Serialize(argv, argc, &argv_length));
   if (argv_chars == NULL) {

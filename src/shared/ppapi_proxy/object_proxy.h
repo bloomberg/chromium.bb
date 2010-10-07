@@ -10,8 +10,8 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/ppapi_proxy/object.h"
 #include "native_client/src/shared/ppapi_proxy/object_capability.h"
+#include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/pp_var.h"
-#include "ppapi/c/ppp_class.h"
 
 struct NaClSrpcChannel;
 
@@ -20,7 +20,7 @@ namespace ppapi_proxy {
 // Implements a scriptable object in PPAPI.
 // This class is used in both the browser and plugin.
 // These methods are in one to one correspondence with the methods exported by
-// the interface in ppapi/c/ppp_class.h.
+// the interface in ppapi/c/dev/ppp_class_deprecated.h.
 class ObjectProxy : public Object {
  public:
   ObjectProxy(const ObjectCapability& capability, NaClSrpcChannel* channel)

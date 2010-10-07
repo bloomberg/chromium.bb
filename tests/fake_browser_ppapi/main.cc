@@ -16,9 +16,9 @@
 #include "native_client/tests/fake_browser_ppapi/fake_instance.h"
 #include "native_client/tests/fake_browser_ppapi/fake_window.h"
 #include "native_client/tests/fake_browser_ppapi/test_scriptable.h"
+#include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_instance.h"
-#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -36,7 +36,7 @@ const void* FakeGetInterface(const char* interface_name) {
     return host->core_interface();
   } else if (strcmp(interface_name, PPB_INSTANCE_INTERFACE) == 0) {
     return host->instance_interface();
-  } else if (strcmp(interface_name, PPB_VAR_INTERFACE) == 0) {
+  } else if (strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
     return host->var_interface();
   }
   return NULL;
@@ -106,8 +106,9 @@ void TestInstance(PP_Module browser_module_id,
   CHECK(instance_interface->DidCreate(instance_id, argc, argn, argv));
   // Test the scriptable object for the instance.
   PP_Var instance_object = instance_interface->GetInstanceObject(instance_id);
-  const PPB_Var* var_interface =
-      reinterpret_cast<const PPB_Var*>(FakeGetInterface(PPB_VAR_INTERFACE));
+  const PPB_Var_Deprecated* var_interface =
+      reinterpret_cast<const PPB_Var_Deprecated*>(
+      FakeGetInterface(PPB_VAR_DEPRECATED_INTERFACE));
   TestScriptableObject(instance_object,
                        browser_instance.GetInterface(),
                        var_interface,
