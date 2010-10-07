@@ -66,7 +66,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // away.
   GtkWidget* BuildChromeButton();
 
-  // FIXME
+  // Creates a theme-aware vertical separator widget.
   GtkWidget* CreateToolbarSeparator();
 
   // Whether we should use the GTK system theme.

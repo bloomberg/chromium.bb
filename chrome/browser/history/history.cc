@@ -658,7 +658,7 @@ void HistoryService::ScheduleAutocomplete(HistoryURLProvider* provider,
 
 void HistoryService::ScheduleTask(SchedulePriority priority,
                                   Task* task) {
-  // FIXME(brettw) do prioritization.
+  // TODO(brettw): do prioritization.
   thread_->message_loop()->PostTask(FROM_HERE, task);
 }
 

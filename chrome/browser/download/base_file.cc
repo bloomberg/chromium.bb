@@ -59,7 +59,7 @@ bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {
 
   bytes_so_far_ += data_len;
 
-  // FIXME bug 595247: handle errors on file writes.
+  // TODO(phajdan.jr): handle errors on file writes. http://crbug.com/58355
   size_t written = file_stream_->Write(data, data_len, NULL);
   return (written == data_len);
 }

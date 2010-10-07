@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
   BrowserInit::LaunchWithProfile launch(FilePath(), cmdline);
   launch.Launch(browser()->profile(), false);
 
-  // Give the browser a chance to start first. FIXME(jschuh)
+  // TODO(jschuh): Give the browser a chance to start first.
   PlatformThread::Sleep(50);
 
   // Skip about:blank in the first tab

@@ -52,7 +52,7 @@ void DownloadHistory::AddEntry(
   // handles, so we use a negative value. Eventually, they could overlap, but
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
+  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (download_item->is_otr() || download_item->is_extension_install() ||
       download_item->is_temporary() || !hs) {
@@ -71,7 +71,7 @@ void DownloadHistory::UpdateEntry(DownloadItem* download_item) {
   if (download_item->db_handle() <= kUninitializedHandle)
     return;
 
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
+  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (!hs)
     return;
@@ -87,7 +87,7 @@ void DownloadHistory::UpdateDownloadPath(DownloadItem* download_item,
   if (download_item->db_handle() <= kUninitializedHandle)
     return;
 
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
+  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->UpdateDownloadPath(new_path, download_item->db_handle());
@@ -98,7 +98,7 @@ void DownloadHistory::RemoveEntry(DownloadItem* download_item) {
   if (download_item->db_handle() <= kUninitializedHandle)
     return;
 
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
+  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->RemoveDownload(download_item->db_handle());
@@ -106,7 +106,7 @@ void DownloadHistory::RemoveEntry(DownloadItem* download_item) {
 
 void DownloadHistory::RemoveEntriesBetween(const base::Time remove_begin,
                                            const base::Time remove_end) {
-  // FIXME(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
+  // TODO(paulg) see bug 958058. EXPLICIT_ACCESS below is wrong.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->RemoveDownloadsBetween(remove_begin, remove_end);

@@ -429,7 +429,7 @@ URLID ExpireHistoryBackend::ArchiveOneURL(const URLRow& url_row) {
   URLRow archived_row;
   if (archived_db_->GetRowForURL(url_row.url(), &archived_row)) {
     // TODO(sky): bug 1168470, need to archive past search terms.
-    // FIXME(brettw) should be copy the visit counts over? This will mean that
+    // TODO(brettw): should be copy the visit counts over? This will mean that
     // the main DB's visit counts are only for the last 3 months rather than
     // accumulative.
     archived_row.set_last_visit(url_row.last_visit());
@@ -655,7 +655,7 @@ bool ExpireHistoryBackend::ArchiveSomeOldHistory(
 }
 
 void ExpireHistoryBackend::ParanoidExpireHistory() {
-  // FIXME(brettw): Bug 1067331: write this to clean up any errors.
+  // TODO(brettw): Bug 1067331: write this to clean up any errors.
 }
 
 void ExpireHistoryBackend::ScheduleExpireHistoryIndexFiles() {

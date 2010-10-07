@@ -62,7 +62,7 @@ URLRequestContextGetter* Profile::default_request_context_;
 
 namespace {
 
-// FIXME: Duplicated in profile_impl.cc
+// TODO(pathorn): Duplicated in profile_impl.cc
 void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
   if (context)
     context->CleanupOnUIThread();

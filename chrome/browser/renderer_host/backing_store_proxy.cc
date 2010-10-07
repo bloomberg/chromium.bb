@@ -90,7 +90,7 @@ void BackingStoreProxy::OnChannelError() {
     OnPaintToBackingStoreACK();
   }
 
-  // FIXME(brettw) does this mean we aren't getting any more messages and we
+  // TODO(brettw): does this mean we aren't getting any more messages and we
   // should delete outselves?
 }
 
