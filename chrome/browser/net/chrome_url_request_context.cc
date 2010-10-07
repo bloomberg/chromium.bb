@@ -272,7 +272,6 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
       ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver(),
-                         context->dnsrr_resolver(),
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
@@ -405,7 +404,6 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
 
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver(),
-                         context->dnsrr_resolver(),
                          context->proxy_service(),
                          context->ssl_config_service(),
                          context->http_auth_handler_factory(),
@@ -501,7 +499,6 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
     // If original HttpCache doesn't exist, simply construct one with a whole
     // new set of network stack.
     cache = new net::HttpCache(main_context->host_resolver(),
-                               main_context->dnsrr_resolver(),
                                main_context->proxy_service(),
                                main_context->ssl_config_service(),
                                main_context->http_auth_handler_factory(),

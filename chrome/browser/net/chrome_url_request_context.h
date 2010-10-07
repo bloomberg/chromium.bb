@@ -127,9 +127,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_host_resolver(net::HostResolver* resolver) {
     host_resolver_ = resolver;
   }
-  void set_dnsrr_resolver(net::DnsRRResolver* dnsrr_resolver) {
-    dnsrr_resolver_ = dnsrr_resolver;
-  }
   void set_http_transaction_factory(net::HttpTransactionFactory* factory) {
     http_transaction_factory_ = factory;
   }

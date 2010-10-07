@@ -18,7 +18,6 @@
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "net/base/dnsrr_resolver.h"
 #include "net/base/mapped_host_resolver.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
@@ -172,7 +171,6 @@ void IOThread::Init() {
 
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(globals_->net_log.get()));
-  globals_->dnsrr_resolver.reset(new net::DnsRRResolver);
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
 }
