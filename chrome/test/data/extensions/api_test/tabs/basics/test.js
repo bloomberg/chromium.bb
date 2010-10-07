@@ -440,6 +440,7 @@ chrome.test.runTests([
     chrome.windows.create({"url": pageUrl("a")}, pass(function(tab) {}));
   },
 
+  /* Disabled -- see http://bugs.chromium.org/58229.
   function windowSetFocused() {
     chrome.windows.getCurrent(function(oldWin) {
       chrome.windows.create({}, function(newWin) {
@@ -451,6 +452,7 @@ chrome.test.runTests([
       });
     });
   },
+  */
 
   /* TODO: Enable this test when crbug.com/28055 is fixed. This bug causes a
      newly created window not to be set as the current window, if
