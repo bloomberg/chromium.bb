@@ -59,7 +59,7 @@ cpp_sources = [
     'cpp/dev/font_dev.cc',
     'cpp/dev/fullscreen_dev.cc',
     'cpp/dev/graphics_3d_dev.cc',
-    'cpp/dev/scriptable_object_deprecated.cc',
+    'cpp/dev/printing_dev.cc',
     'cpp/dev/scrollbar_dev.cc',
     'cpp/dev/transport_dev.cc',
     'cpp/dev/url_loader_dev.cc',
@@ -68,6 +68,8 @@ cpp_sources = [
     'cpp/dev/url_util_dev.cc',
     'cpp/dev/video_decoder_dev.cc',
     'cpp/dev/widget_dev.cc',
+    'cpp/dev/zoom_dev.cc',
+    'cpp/dev/scriptable_object_deprecated.cc',
     # End ppapi.gyp
     # Updated automatically by update-scons.py.
     # From ppapi.gyp:ppapi_cpp:.*\.cc
@@ -80,8 +82,6 @@ env.ComponentLibrary('ppapi_cpp', cpp_sources)
 c_headers = [
     # Updated automatically by update-scons.py.
     # From ppapi.gyp:ppapi_c:c/[^/]*\.h
-    'c/dev/ppb_var_deprecated.h',
-    'c/dev/ppp_class_deprecated.h',
     'c/pp_completion_callback.h',
     'c/pp_errors.h',
     'c/pp_input_event.h',
@@ -136,12 +136,15 @@ c_dev_headers = [
     'c/dev/ppb_url_response_info_dev.h',
     'c/dev/ppb_url_util_dev.h',
     'c/dev/ppb_video_decoder_dev.h',
+    'c/dev/ppb_zoom_dev.h',
     'c/dev/ppp_cursor_control_dev.h',
     'c/dev/ppp_find_dev.h',
     'c/dev/ppp_graphics_3d_dev.h',
     'c/dev/ppp_printing_dev.h',
     'c/dev/ppp_widget_dev.h',
     'c/dev/ppp_zoom_dev.h',
+    'c/dev/ppb_var_deprecated.h',
+    'c/dev/ppp_class_deprecated.h',
     # End ppapi.gyp
     ]
 
@@ -161,7 +164,6 @@ cpp_headers = [
     'cpp/point.h',
     'cpp/rect.h',
     'cpp/resource.h',
-    'cpp/scriptable_object.h',
     'cpp/size.h',
     'cpp/var.h',
     # End ppapi.gyp
@@ -187,6 +189,7 @@ cpp_dev_headers = [
     'cpp/dev/font_dev.h',
     'cpp/dev/fullscreen_dev.h',
     'cpp/dev/graphics_3d_dev.h',
+    'cpp/dev/printing_dev.h',
     'cpp/dev/scrollbar_dev.h',
     'cpp/dev/transport_dev.h',
     'cpp/dev/url_loader_dev.h',
@@ -195,6 +198,8 @@ cpp_dev_headers = [
     'cpp/dev/url_util_dev.h',
     'cpp/dev/video_decoder_dev.h',
     'cpp/dev/widget_dev.h',
+    'cpp/dev/zoom_dev.h',
+    'cpp/dev/scriptable_object_deprecated.h',
     # End ppapi.gyp
     ]
 

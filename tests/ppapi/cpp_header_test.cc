@@ -37,6 +37,5 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/resource.h"
-#include "ppapi/cpp/scriptable_object.h"
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/var.h"
