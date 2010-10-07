@@ -23,7 +23,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     "http://www.apple.com/quicktime/download/" },
   { "java-runtime-environment", "Java", "Java", "", "", "",
     "http://support.apple.com/kb/HT1338" },
-  { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.82",
+  { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.85",
     "http://get.adobe.com/flashplayer/" },
   { "silverlight-3", "Silverlight 3", "Silverlight", "0", "4", "3.0.50106.0",
     "http://www.microsoft.com/getsilverlight/" },
@@ -39,15 +39,15 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
 // TODO(panayiotis): We should group "RealJukebox NS Plugin" with the rest of
 // the RealPlayer files.
 static const PluginGroupDefinition kGroupDefinitions[] = {
-  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", "", "", "7.6.7",
+  { "apple-quicktime", "Quicktime", "QuickTime Plug-in", "", "", "7.6.8",
     "http://www.apple.com/quicktime/download/" },
   { "java-runtime-environment", "Java 6", "Java", "", "6", "6.0.200",
     "http://www.java.com/" },
-  { "adobe-reader", "Adobe Reader 9", "Adobe Acrobat", "9", "10", "9.3.3",
+  { "adobe-reader", "Adobe Reader 9", "Adobe Acrobat", "9", "10", "9.4.0",
     "http://get.adobe.com/reader/" },
-  { "adobe-reader-8", "Adobe Reader 8", "Adobe Acrobat", "0", "9", "8.2.3",
+  { "adobe-reader-8", "Adobe Reader 8", "Adobe Acrobat", "0", "9", "8.2.5",
     "http://get.adobe.com/reader/" },
-  { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.82",
+  { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.85",
     "http://get.adobe.com/flashplayer/" },
   { "silverlight-3", "Silverlight 3", "Silverlight", "0", "4", "3.0.50106.0",
     "http://www.microsoft.com/getsilverlight/" },
