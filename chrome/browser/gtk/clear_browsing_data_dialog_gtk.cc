@@ -6,15 +6,20 @@
 
 #include <string>
 
+#include "app/gtk_util.h"
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -46,21 +51,48 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
       NULL);
 
   GtkWidget* cancel_button = gtk_dialog_add_button(GTK_DIALOG(dialog_),
-      GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT);
+      GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE);
   gtk_widget_grab_focus(cancel_button);
 
   accessible_widget_helper_.reset(new AccessibleWidgetHelper(dialog_, profile));
   accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
-  gtk_util::AddButtonToDialog(dialog_,
-      l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_COMMIT).c_str(),
-      GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
-
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
+  // Build the first notebook page.
+  notebook_ = gtk_notebook_new();
+
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      BuildClearBrowsingDataPage(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_CLEAR_CHROME_DATA_TAB_LABEL).c_str()));
+
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      BuildOtherDataPage(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_CLEAR_OTHER_DATA_TAB_LABEL).c_str()));
+
+  gtk_box_pack_start(GTK_BOX(content_area), notebook_, FALSE, FALSE, 0);
+
+  g_signal_connect(dialog_, "response",
+                   G_CALLBACK(OnDialogResponseThunk), this);
+
+  UpdateDialogButtons();
+
+  gtk_util::ShowModalDialogWithMinLocalizedWidth(dialog_,
+      IDS_CLEARDATA_DIALOG_WIDTH_CHARS);
+}
+
+ClearBrowsingDataDialogGtk::~ClearBrowsingDataDialogGtk() {
+}
+
+GtkWidget* ClearBrowsingDataDialogGtk::BuildClearBrowsingDataPage() {
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_container_add(GTK_CONTAINER(content_area), vbox);
+  gtk_container_set_border_width(GTK_CONTAINER(vbox),
+                                 gtk_util::kContentAreaBorder);
 
   // Label on top of the checkboxes.
   GtkWidget* description = gtk_label_new(
@@ -150,72 +182,145 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   // Add the combo/label time period box to the vertical layout.
   gtk_box_pack_start(GTK_BOX(vbox), combo_hbox, FALSE, FALSE, 0);
 
-  // Add widgets for the area below the accept buttons.
+  // Create a right aligned button for clearing the browsing data.
+  GtkWidget* button_box = gtk_hbutton_box_new();
+  gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
+  clear_browsing_data_button_ = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_COMMIT).c_str());
+  g_signal_connect(clear_browsing_data_button_, "clicked",
+                   G_CALLBACK(OnClearBrowsingDataClickThunk), this);
+  gtk_container_add(GTK_CONTAINER(button_box), clear_browsing_data_button_);
+  gtk_box_pack_start(GTK_BOX(vbox), button_box, FALSE, FALSE, 0);
+
+  return vbox;
+}
+
+GtkWidget* ClearBrowsingDataDialogGtk::BuildOtherDataPage() {
+  scoped_ptr<OptionsLayoutBuilderGtk>
+      options_builder(OptionsLayoutBuilderGtk::Create());
+
+  GtkWidget* adobe_flash_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* description = gtk_label_new(l10n_util::GetStringUTF8(
+      IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION).c_str());
+  gtk_misc_set_alignment(GTK_MISC(description), 0, 0);
+  gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
+  gtk_box_pack_start(GTK_BOX(adobe_flash_vbox), description, FALSE, FALSE, 0);
+
   GtkWidget* flash_link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_SETTINGS).c_str());
   g_signal_connect(G_OBJECT(flash_link), "clicked",
                    G_CALLBACK(OnFlashLinkClickedThunk), this);
+
+  // Stick it in an hbox so it doesn't expand to the whole width.
   GtkWidget* flash_link_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(flash_link_hbox), flash_link, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(content_area), flash_link_hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(adobe_flash_vbox),
+                     flash_link_hbox, FALSE, FALSE, 0);
 
-  GtkWidget* separator = gtk_hseparator_new();
-  gtk_box_pack_end(GTK_BOX(content_area), separator, FALSE, FALSE, 0);
+  options_builder->AddOptionGroup(
+      l10n_util::GetStringUTF8(IDS_CLEAR_DATA_ADOBE_FLASH_TITLE),
+      adobe_flash_vbox, false);
 
-  // Make sure we can move things around.
-  DCHECK_EQ(GTK_DIALOG(dialog_)->action_area->parent, content_area);
+  bool allow_clear_server_data_ui =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClearServerData);
+  bool sync_enabled =
+      allow_clear_server_data_ui &&
+      profile_->GetProfileSyncService()->HasSyncSetupCompleted();
 
-  // Now rearrange those because they're *above* the accept buttons...there's
-  // no way to place them in the correct position with gtk_box_pack_end() so
-  // manually move things into the correct order.
-  gtk_box_reorder_child(GTK_BOX(content_area), flash_link_hbox, -1);
-  gtk_box_reorder_child(GTK_BOX(content_area), separator, -1);
-  gtk_box_reorder_child(GTK_BOX(content_area), GTK_DIALOG(dialog_)->action_area,
-                        -1);
+  if (sync_enabled) {
+    GtkWidget* clear_sync_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+    GtkWidget* description = gtk_label_new(l10n_util::GetStringUTF8(
+        IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION).c_str());
+    gtk_misc_set_alignment(GTK_MISC(description), 0, 0);
+    gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
+    gtk_box_pack_start(GTK_BOX(clear_sync_vbox), description, FALSE, FALSE, 0);
 
-  g_signal_connect(dialog_, "response",
-                   G_CALLBACK(OnDialogResponseThunk), this);
+    GtkWidget* clear_button = gtk_button_new_with_label(
+        l10n_util::GetStringUTF8(IDS_CLEAR_DATA_CLEAR_BUTTON).c_str());
+    g_signal_connect(clear_button, "clicked",
+                     G_CALLBACK(OnClearSyncDataClickThunk), this);
+    gtk_box_pack_start(GTK_BOX(clear_sync_vbox), clear_button, FALSE, FALSE, 0);
 
-  UpdateDialogButtons();
+    // TODO(erg): We still need to have a link to the google privacy dashboard
+    // here, which is a label with a link embedded in it. This is too hard for
+    // the first pass. crbug.com/57877
 
-  gtk_util::ShowModalDialogWithMinLocalizedWidth(dialog_,
-      IDS_CLEARDATA_DIALOG_WIDTH_CHARS);
-}
+    options_builder->AddOptionGroup(
+        l10n_util::GetStringUTF8(IDS_CLEAR_DATA_CHROME_SYNC_TITLE),
+        clear_sync_vbox, false);
+  }
 
-ClearBrowsingDataDialogGtk::~ClearBrowsingDataDialogGtk() {
+  return options_builder->get_page_widget();
 }
 
 void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,
                                                   int response) {
-  if (response == GTK_RESPONSE_ACCEPT) {
-    PrefService* prefs = profile_->GetPrefs();
-    prefs->SetBoolean(prefs::kDeleteBrowsingHistory,
-                      IsChecked(del_history_checkbox_));
-    prefs->SetBoolean(prefs::kDeleteDownloadHistory,
-                      IsChecked(del_downloads_checkbox_));
-    prefs->SetBoolean(prefs::kDeleteCache,
-                      IsChecked(del_cache_checkbox_));
-    prefs->SetBoolean(prefs::kDeleteCookies,
-                      IsChecked(del_cookies_checkbox_));
-    prefs->SetBoolean(prefs::kDeletePasswords,
-                      IsChecked(del_passwords_checkbox_));
-    prefs->SetBoolean(prefs::kDeleteFormData,
-                      IsChecked(del_form_data_checkbox_));
-    prefs->SetInteger(prefs::kDeleteTimePeriod,
-        gtk_combo_box_get_active(GTK_COMBO_BOX(time_period_combobox_)));
-
-    int period_selected = gtk_combo_box_get_active(
-        GTK_COMBO_BOX(time_period_combobox_));
-
-    // BrowsingDataRemover deletes itself when done.
-    remover_ = new BrowsingDataRemover(profile_,
-        static_cast<BrowsingDataRemover::TimePeriod>(period_selected),
-        base::Time());
-    remover_->Remove(GetCheckedItems());
-  }
-
   delete this;
   gtk_widget_destroy(GTK_WIDGET(widget));
+}
+
+void ClearBrowsingDataDialogGtk::OnClearBrowsingDataClick(GtkWidget* widget) {
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->SetBoolean(prefs::kDeleteBrowsingHistory,
+                    IsChecked(del_history_checkbox_));
+  prefs->SetBoolean(prefs::kDeleteDownloadHistory,
+                    IsChecked(del_downloads_checkbox_));
+  prefs->SetBoolean(prefs::kDeleteCache,
+                    IsChecked(del_cache_checkbox_));
+  prefs->SetBoolean(prefs::kDeleteCookies,
+                    IsChecked(del_cookies_checkbox_));
+  prefs->SetBoolean(prefs::kDeletePasswords,
+                    IsChecked(del_passwords_checkbox_));
+  prefs->SetBoolean(prefs::kDeleteFormData,
+                    IsChecked(del_form_data_checkbox_));
+  prefs->SetInteger(prefs::kDeleteTimePeriod, gtk_combo_box_get_active(
+      GTK_COMBO_BOX(time_period_combobox_)));
+
+  int period_selected = gtk_combo_box_get_active(
+      GTK_COMBO_BOX(time_period_combobox_));
+
+  // BrowsingDataRemover deletes itself when done.
+  remover_ = new BrowsingDataRemover(
+      profile_,
+      static_cast<BrowsingDataRemover::TimePeriod>(period_selected),
+      base::Time());
+  remover_->Remove(GetCheckedItems());
+
+  OnDialogResponse(dialog_, GTK_RESPONSE_CLOSE);
+}
+
+void ClearBrowsingDataDialogGtk::OnClearSyncDataClick(GtkWidget* widget) {
+  GtkWidget* confirm = gtk_message_dialog_new(
+      GTK_WINDOW(dialog_),
+      static_cast<GtkDialogFlags>(
+          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+      GTK_MESSAGE_QUESTION,
+      GTK_BUTTONS_YES_NO,
+      "%s",
+      l10n_util::GetStringUTF8(IDS_CONFIRM_CLEAR_DESCRIPTION).c_str());
+  gtk_util::ApplyMessageDialogQuirks(confirm);
+  gtk_window_set_title(GTK_WINDOW(confirm), l10n_util::GetStringUTF8(
+      IDS_CONFIRM_CLEAR_TITLE).c_str());
+  g_signal_connect(confirm, "response",
+                   G_CALLBACK(OnClearSyncDataConfirmResponseThunk), this);
+  gtk_widget_show_all(confirm);
+}
+
+void ClearBrowsingDataDialogGtk::OnClearSyncDataConfirmResponse(
+    GtkWidget* confirm,
+    gint response) {
+  gtk_widget_destroy(confirm);
+  if (response != GTK_RESPONSE_YES)
+    return;
+
+  // TODO(erg): The views version disables all controls and then starts a
+  // throbber, in both tabs. We currently don't have a way to do this in the
+  // GTK+ UI. It was a purely cosmetic thing, but now that this sync step can
+  // fail and needs to report stuff to the user, we'll need to implement that.
+  profile_->GetProfileSyncService()->ClearServerData();
+
+  OnDialogResponse(dialog_, GTK_RESPONSE_CLOSE);
 }
 
 void ClearBrowsingDataDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {
@@ -232,8 +337,8 @@ void ClearBrowsingDataDialogGtk::OnFlashLinkClicked(GtkWidget* button) {
 }
 
 void ClearBrowsingDataDialogGtk::UpdateDialogButtons() {
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT,
-                                    GetCheckedItems() != 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(clear_browsing_data_button_),
+                           GetCheckedItems() != 0);
 }
 
 int ClearBrowsingDataDialogGtk::GetCheckedItems() {

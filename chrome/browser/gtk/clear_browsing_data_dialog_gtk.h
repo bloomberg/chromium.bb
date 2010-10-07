@@ -26,8 +26,26 @@ class ClearBrowsingDataDialogGtk {
   ClearBrowsingDataDialogGtk(GtkWindow* parent, Profile* profile);
   ~ClearBrowsingDataDialogGtk();
 
-  // Handler to respond to Ok and Cancel responses from the dialog.
+  // Builds the first notebook page in the dialog.
+  GtkWidget* BuildClearBrowsingDataPage();
+
+  // Builds the second notebook page in the dialog.
+  GtkWidget* BuildOtherDataPage();
+
+  // Handler to respond to Close responses from the dialog.
   CHROMEGTK_CALLBACK_1(ClearBrowsingDataDialogGtk, void, OnDialogResponse, int);
+
+  // Handler that handles clearing browsing data.
+  CHROMEGTK_CALLBACK_0(ClearBrowsingDataDialogGtk,
+                       void, OnClearBrowsingDataClick);
+
+  // Handles the appearance of the clear server side conformation box, and
+  // handling the response of the "are you sure you want to do this?" message
+  // box.
+  CHROMEGTK_CALLBACK_0(ClearBrowsingDataDialogGtk,
+                       void, OnClearSyncDataClick);
+  CHROMEGTK_CALLBACK_1(ClearBrowsingDataDialogGtk, void,
+                       OnClearSyncDataConfirmResponse, int);
 
   // Handler to respond to widget clicked actions from the dialog.
   CHROMEGTK_CALLBACK_0(ClearBrowsingDataDialogGtk, void, OnDialogWidgetClicked);
@@ -44,7 +62,10 @@ class ClearBrowsingDataDialogGtk {
   // The dialog window.
   GtkWidget* dialog_;
 
-  // UI elements.
+  // The notebook in the dialog.
+  GtkWidget* notebook_;
+
+  // UI elements on the first page.
   GtkWidget* del_history_checkbox_;
   GtkWidget* del_downloads_checkbox_;
   GtkWidget* del_cache_checkbox_;
@@ -52,6 +73,7 @@ class ClearBrowsingDataDialogGtk {
   GtkWidget* del_passwords_checkbox_;
   GtkWidget* del_form_data_checkbox_;
   GtkWidget* time_period_combobox_;
+  GtkWidget* clear_browsing_data_button_;
 
   // Our current profile.
   Profile* profile_;
