@@ -136,6 +136,7 @@ TEST_F(SearchProviderTest, FLAKY_TestIsSearchProviderInstalled) {
   for (size_t i = 0; i < arraysize(test_hosts); ++i) {
     test_data[i] = StartIsSearchProviderInstalledTest(
         browser, test_hosts[i], expected_results[i]);
+    FinishIsSearchProviderInstalledTest(test_data[i]);
   }
 
   // Start tests for incognito mode (and verify the result is 0).
@@ -145,10 +146,18 @@ TEST_F(SearchProviderTest, FLAKY_TestIsSearchProviderInstalled) {
   for (size_t i = 0; i < arraysize(test_hosts); ++i) {
     test_data[i + arraysize(test_hosts)] = StartIsSearchProviderInstalledTest(
         incognito, test_hosts[i], "0");
+    FinishIsSearchProviderInstalledTest(test_data[i + arraysize(test_hosts)]);
   }
+
+  // The following should be re-enabled. At the moment, there are problems with
+  // doing all of these queries in parallel -- see http://crbug.com/57491.
+#if 0
+  // Remove the calls to FinishIsSearchProviderInstalledTest above when
+  // re-enabling this code.
 
   // Do the verification.
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     FinishIsSearchProviderInstalledTest(test_data[i]);
   }
+#endif
 }
