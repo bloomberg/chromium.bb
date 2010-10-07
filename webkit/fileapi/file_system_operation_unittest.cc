@@ -89,9 +89,7 @@ class FileSystemOperationTest : public testing::Test {
   }
 
  protected:
-  // Common temp base for all non-existing file/dir path test cases.
-  // This is in case a dir on test machine exists. It's better to
-  // create temp and then create non-existing file paths under it.
+  // Common temp base for nondestructive uses.
   ScopedTempDir base_;
 
   int request_id_;
@@ -112,17 +110,14 @@ TEST_F(FileSystemOperationTest, TestMoveFailureSrcDoesntExist) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
-// crbug.com/57940
-#if defined(OS_WINDOWS)
-#define MAYBE_TestMoveFailureContainsPath FAILS_TestMoveFailureContainsPath
-#else
-#define MAYBE_TestMoveFailureContainsPath TestMoveFailureContainsPath
-#endif
-
-TEST_F(FileSystemOperationTest, MAYBE_TestMoveFailureContainsPath) {
-  ScopedTempDir dir_under_base;
-  dir_under_base.CreateUniqueTempDirUnderPath(base_.path());
-  operation()->Move(base_.path(), dir_under_base.path());
+TEST_F(FileSystemOperationTest, TestMoveFailureContainsPath) {
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+  FilePath dest_dir_path;
+  ASSERT_TRUE(file_util::CreateTemporaryDirInDir(src_dir.path(),
+                                                 FILE_PATH_LITERAL("child_dir"),
+                                                 &dest_dir_path));
+  operation()->Move(src_dir.path(), dest_dir_path);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
             mock_dispatcher_->status());
@@ -131,14 +126,51 @@ TEST_F(FileSystemOperationTest, MAYBE_TestMoveFailureContainsPath) {
 
 TEST_F(FileSystemOperationTest, TestMoveFailureSrcDirExistsDestFile) {
   // Src exists and is dir. Dest is a file.
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
   FilePath dest_file;
   file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
 
-  operation()->Move(base_.path(), dest_file);
+  operation()->Move(src_dir.path(), dest_file);
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, mock_dispatcher_->status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+            mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+}
+
+TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestNonEmptyDir) {
+  // Src exists and is a directory. Dest is a non-empty directory.
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+
+  ScopedTempDir dest_dir;
+  ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
+  FilePath child_file;
+  file_util::CreateTemporaryFileInDir(dest_dir.path(), &child_file);
+
+  operation()->Move(src_dir.path(), dest_dir.path());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+}
+
+TEST_F(FileSystemOperationTest, TestMoveFailureSrcFileExistsDestDir) {
+  // Src exists and is a file. Dest is a directory.
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+  FilePath src_file;
+  file_util::CreateTemporaryFileInDir(src_dir.path(), &src_file);
+
+  ScopedTempDir dest_dir;
+  ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
+
+  operation()->Move(src_file, dest_dir.path());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
+            mock_dispatcher_->status());
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
@@ -148,7 +180,7 @@ TEST_F(FileSystemOperationTest, TestMoveFailureDestParentDoesntExist) {
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
   FilePath nonexisting_file = base_.path().Append(
       FILE_PATH_LITERAL("NonexistingDir")).Append(
-          FILE_PATH_LITERAL("NonexistingFile"));;
+          FILE_PATH_LITERAL("NonexistingFile"));
 
   operation()->Move(src_dir.path(), nonexisting_file);
   MessageLoop::current()->RunAllPending();
@@ -191,6 +223,57 @@ TEST_F(FileSystemOperationTest, TestMoveSuccessSrcFileAndNew) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
+TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndOverwrite) {
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+
+  ScopedTempDir dest_dir;
+  ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
+
+  operation()->Move(src_dir.path(), dest_dir.path());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+  EXPECT_FALSE(file_util::DirectoryExists(src_dir.path()));
+
+  // Make sure we've overwritten but not moved the source under the |dest_dir|.
+  EXPECT_TRUE(file_util::DirectoryExists(dest_dir.path()));
+  EXPECT_FALSE(file_util::DirectoryExists(
+      dest_dir.path().Append(src_dir.path().BaseName())));
+}
+
+TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirAndNew) {
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath dest_dir_path(dir.path().Append(FILE_PATH_LITERAL("NewDirectory")));
+
+  operation()->Move(src_dir.path(), dest_dir_path);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+  EXPECT_FALSE(file_util::DirectoryExists(src_dir.path()));
+  EXPECT_TRUE(file_util::DirectoryExists(dest_dir_path));
+}
+
+TEST_F(FileSystemOperationTest, TestMoveSuccessSrcDirRecursive) {
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+  FilePath child_file;
+  file_util::CreateTemporaryFileInDir(src_dir.path(), &child_file);
+
+  ScopedTempDir dest_dir;
+  ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
+
+  operation()->Move(src_dir.path(), dest_dir.path());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+  EXPECT_TRUE(FileExists(dest_dir.path().Append(child_file.BaseName())));
+}
+
 TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
   FilePath src(base_.path().Append(FILE_PATH_LITERAL("a")));
   FilePath dest(base_.path().Append(FILE_PATH_LITERAL("b")));
@@ -200,31 +283,66 @@ TEST_F(FileSystemOperationTest, TestCopyFailureSrcDoesntExist) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
-// crbug.com/57940
-#if defined(OS_WINDOWS)
-#define MAYBE_TestCopyFailureContainsPath FAILS_TestCopyFailureContainsPath
-#else
-#define MAYBE_TestCopyFailureContainsPath TestCopyFailureContainsPath
-#endif
-
-TEST_F(FileSystemOperationTest, MAYBE_TestCopyFailureContainsPath) {
-  FilePath file_under_base = base_.path().Append(FILE_PATH_LITERAL("b"));
-  operation()->Copy(base_.path(), file_under_base);
+TEST_F(FileSystemOperationTest, TestCopyFailureContainsPath) {
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+  FilePath dest_dir_path;
+  ASSERT_TRUE(file_util::CreateTemporaryDirInDir(src_dir.path(),
+                                                 FILE_PATH_LITERAL("child_dir"),
+                                                 &dest_dir_path));
+  operation()->Copy(src_dir.path(), dest_dir_path);
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_FAILED, mock_dispatcher_->status());
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+            mock_dispatcher_->status());
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
 TEST_F(FileSystemOperationTest, TestCopyFailureSrcDirExistsDestFile) {
   // Src exists and is dir. Dest is a file.
-  ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath dest_file;
-  file_util::CreateTemporaryFileInDir(dir.path(), &dest_file);
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
 
-  operation()->Copy(base_.path(), dest_file);
+  ScopedTempDir dest_dir;
+  ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
+  FilePath dest_file;
+  file_util::CreateTemporaryFileInDir(dest_dir.path(), &dest_file);
+
+  operation()->Copy(src_dir.path(), dest_file);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY,
+            mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+}
+
+TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestNonEmptyDir) {
+  // Src exists and is a directory. Dest is a non-empty directory.
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+
+  ScopedTempDir dest_dir;
+  ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
+  FilePath child_file;
+  file_util::CreateTemporaryFileInDir(dest_dir.path(), &child_file);
+
+  operation()->Copy(src_dir.path(), dest_dir.path());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY, mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+}
+
+TEST_F(FileSystemOperationTest, TestCopyFailureSrcFileExistsDestDir) {
+  // Src exists and is a file. Dest is a directory.
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+  FilePath src_file;
+  file_util::CreateTemporaryFileInDir(src_dir.path(), &src_file);
+
+  ScopedTempDir dest_dir;
+  ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
+
+  operation()->Copy(src_file, dest_dir.path());
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_A_FILE,
             mock_dispatcher_->status());
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
@@ -281,7 +399,7 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcFileAndNew) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 
-TEST_F(FileSystemOperationTest, TestCopySuccessSrcDir) {
+TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndOverwrite) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
 
@@ -292,24 +410,42 @@ TEST_F(FileSystemOperationTest, TestCopySuccessSrcDir) {
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+
+  // Make sure we've overwritten but not copied the source under the |dest_dir|.
+  EXPECT_TRUE(file_util::DirectoryExists(dest_dir.path()));
+  EXPECT_FALSE(file_util::DirectoryExists(
+      dest_dir.path().Append(src_dir.path().BaseName())));
 }
 
-TEST_F(FileSystemOperationTest, TestCopyDestParentExistsSuccess) {
+TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirAndNew) {
   ScopedTempDir src_dir;
   ASSERT_TRUE(src_dir.CreateUniqueTempDir());
-  FilePath src_file;
-  file_util::CreateTemporaryFileInDir(src_dir.path(), &src_file);
+
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath dest_dir(dir.path().Append(FILE_PATH_LITERAL("NewDirectory")));
+
+  operation()->Copy(src_dir.path(), dest_dir);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+  EXPECT_TRUE(file_util::DirectoryExists(dest_dir));
+}
+
+TEST_F(FileSystemOperationTest, TestCopySuccessSrcDirRecursive) {
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+  FilePath child_file;
+  file_util::CreateTemporaryFileInDir(src_dir.path(), &child_file);
 
   ScopedTempDir dest_dir;
   ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
 
-  operation()->Copy(src_file, dest_dir.path());
+  operation()->Copy(src_dir.path(), dest_dir.path());
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
-
-  FilePath src_filename(src_file.BaseName());
-  EXPECT_TRUE(FileExists(dest_dir.path().Append(src_filename)));
+  EXPECT_TRUE(FileExists(dest_dir.path().Append(child_file.BaseName())));
 }
 
 TEST_F(FileSystemOperationTest, TestCreateFileFailure) {
@@ -367,7 +503,6 @@ TEST_F(FileSystemOperationTest,
   // Dest. parent path does not exist.
   FilePath nonexisting(base_.path().Append(
       FILE_PATH_LITERAL("DirDoesntExist")));
-  file_util::EnsureEndsWithSeparator(&nonexisting);
   FilePath nonexisting_file = nonexisting.Append(
       FILE_PATH_LITERAL("FileDoesntExist"));
   operation()->CreateDirectory(nonexisting_file, false, false);
@@ -378,7 +513,9 @@ TEST_F(FileSystemOperationTest,
 
 TEST_F(FileSystemOperationTest, TestCreateDirFailureDirExists) {
   // Exclusive and dir existing at path.
-  operation()->CreateDirectory(base_.path(), true, false);
+  ScopedTempDir src_dir;
+  ASSERT_TRUE(src_dir.CreateUniqueTempDir());
+  operation()->CreateDirectory(src_dir.path(), true, false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_EXISTS, mock_dispatcher_->status());
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
@@ -406,7 +543,8 @@ TEST_F(FileSystemOperationTest, TestCreateDirSuccess) {
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 
   // Dir doesn't exist.
-  FilePath nonexisting_dir_path(FILE_PATH_LITERAL("nonexistingdir"));
+  FilePath nonexisting_dir_path(base_.path().Append(
+      FILE_PATH_LITERAL("nonexistingdir")));
   operation()->CreateDirectory(nonexisting_dir_path, false, false);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
@@ -416,9 +554,7 @@ TEST_F(FileSystemOperationTest, TestCreateDirSuccess) {
 
 TEST_F(FileSystemOperationTest, TestCreateDirSuccessExclusive) {
   // Dir doesn't exist.
-  ScopedTempDir dir;
-  ASSERT_TRUE(dir.CreateUniqueTempDir());
-  FilePath nonexisting_dir_path(dir.path().Append(
+  FilePath nonexisting_dir_path(base_.path().Append(
       FILE_PATH_LITERAL("nonexistingdir")));
 
   operation()->CreateDirectory(nonexisting_dir_path, true, false);
@@ -534,12 +670,13 @@ TEST_F(FileSystemOperationTest, TestRemoveFailure) {
       FILE_PATH_LITERAL("NonExistingDir")));
   file_util::EnsureEndsWithSeparator(&nonexisting);
 
-  operation()->Remove(nonexisting);
+  operation()->Remove(nonexisting, false /* recursive */);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, mock_dispatcher_->status());
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 
-  // By spec recursive is always false. Non-empty dir should fail.
+  // It's an error to try to remove a non-empty directory if recursive flag
+  // is false.
   //      parent_dir
   //       |       |
   //  child_dir  child_file
@@ -552,9 +689,9 @@ TEST_F(FileSystemOperationTest, TestRemoveFailure) {
   ASSERT_TRUE(file_util::CreateTemporaryDirInDir(
       parent_dir.path(), FILE_PATH_LITERAL("child_dir"), &child_dir));
 
-  operation()->Remove(parent_dir.path());
+  operation()->Remove(parent_dir.path(), false /* recursive */);
   MessageLoop::current()->RunAllPending();
-  EXPECT_EQ(base::PLATFORM_FILE_ERROR_INVALID_OPERATION,
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_EMPTY,
             mock_dispatcher_->status());
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
@@ -564,10 +701,29 @@ TEST_F(FileSystemOperationTest, TestRemoveSuccess) {
   ASSERT_TRUE(empty_dir.CreateUniqueTempDir());
   EXPECT_TRUE(file_util::DirectoryExists(empty_dir.path()));
 
-  operation()->Remove(empty_dir.path());
+  operation()->Remove(empty_dir.path(), false /* recursive */);
   MessageLoop::current()->RunAllPending();
   EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
   EXPECT_FALSE(file_util::DirectoryExists(empty_dir.path()));
+  EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
+
+  // Removing a non-empty directory with recursive flag == true should be ok.
+  //      parent_dir
+  //       |       |
+  //  child_dir  child_file
+  // Verify deleting parent_dir.
+  ScopedTempDir parent_dir;
+  ASSERT_TRUE(parent_dir.CreateUniqueTempDir());
+  FilePath child_file;
+  file_util::CreateTemporaryFileInDir(parent_dir.path(), &child_file);
+  FilePath child_dir;
+  ASSERT_TRUE(file_util::CreateTemporaryDirInDir(
+      parent_dir.path(), FILE_PATH_LITERAL("child_dir"), &child_dir));
+
+  operation()->Remove(parent_dir.path(), true /* recursive */);
+  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(kFileOperationSucceeded, mock_dispatcher_->status());
+  EXPECT_FALSE(file_util::DirectoryExists(parent_dir.path()));
   EXPECT_EQ(request_id_, mock_dispatcher_->request_id());
 }
 

@@ -43,6 +43,7 @@ class FileSystemDispatcher {
             const FilePath& dest_path,
             fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool Remove(const FilePath& path,
+              bool recursive,
               fileapi::FileSystemCallbackDispatcher* dispatcher);
   bool ReadMetadata(const FilePath& path,
                     fileapi::FileSystemCallbackDispatcher* dispatcher);

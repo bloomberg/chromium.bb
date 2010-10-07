@@ -21,7 +21,6 @@ namespace base {
 class Time;
 }
 
-class ChromeFileSystemOperation;
 class FileSystemHostContext;
 class GURL;
 class HostContentSettingsMap;
@@ -50,7 +49,7 @@ class FileSystemDispatcherHost
   void OnCopy(int request_id,
               const FilePath& src_path,
               const FilePath& dest_path);
-  void OnRemove(int request_id, const FilePath& path);
+  void OnRemove(int request_id, const FilePath& path, bool recursive);
   void OnReadMetadata(int request_id, const FilePath& path);
   void OnCreate(int request_id,
                 const FilePath& path,
