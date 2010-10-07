@@ -62,6 +62,7 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/geolocation_dispatcher.h"
+#include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "chrome/renderer/media/ipc_video_decoder.h"
@@ -116,6 +117,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
@@ -2463,6 +2465,19 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     // Add the chrome specific audio renderer.
     factory->AddFactory(
         AudioRendererImpl::CreateFactory(audio_message_filter()));
+  }
+
+  if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
+      !cmd_line->HasSwitch(switches::kDisableAcceleratedCompositing)) {
+    // Add the hardware video decoder factory.
+    // TODO(hclam): This assumes that ggl::Context is set to current
+    // internally. I need to make it more explicit to get the context.
+    bool ret = frame->view()->graphicsContext3D()->makeContextCurrent();
+    CHECK(ret) << "Failed to switch context";
+
+    factory->AddFactory(IpcVideoDecoder::CreateFactory(
+        MessageLoop::current(),
+        ggl::GetCurrentContext()));
   }
 
   WebApplicationCacheHostImpl* appcache_host =

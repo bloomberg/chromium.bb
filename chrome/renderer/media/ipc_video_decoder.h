@@ -50,6 +50,8 @@ class IpcVideoDecoder : public media::VideoDecoder,
   virtual void OnFlushComplete();
   virtual void OnSeekComplete();
   virtual void OnError();
+
+  // TODO(hclam): Remove this method.
   virtual void OnFormatChange(media::VideoStreamInfo stream_info) {}
   virtual void ProduceVideoSample(scoped_refptr<media::Buffer> buffer);
   virtual void ConsumeVideoFrame(scoped_refptr<media::VideoFrame> frame);

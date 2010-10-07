@@ -56,7 +56,10 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
 
   // Create a video decode context that assocates with the graphics
   // context.
-  decode_context_.reset(ggl::CreateVideoDecodeContext(ggl_context_, true));
+  // TODO(hclam): Need to define a message loop that hosts decode context.
+  decode_context_.reset(
+      ggl::CreateVideoDecodeContext(
+          ggl_context_, decode_engine_message_loop_, true));
 
   // Create a hardware video decoder handle.
   decode_engine_.reset(ggl::CreateVideoDecodeEngine(ggl_context_));
@@ -104,6 +107,10 @@ void IpcVideoDecoder::OnInitializeComplete(const media::VideoCodecInfo& info) {
   if (info.success) {
     media_format_.SetAsString(media::MediaFormat::kMimeType,
                               media::mime_type::kUncompressedVideo);
+    media_format_.SetAsInteger(media::MediaFormat::kSurfaceType,
+                               media::VideoFrame::TYPE_GL_TEXTURE);
+    media_format_.SetAsInteger(media::MediaFormat::kSurfaceFormat,
+                               info.stream_info.surface_format);
     media_format_.SetAsInteger(media::MediaFormat::kWidth,
                                info.stream_info.surface_width);
     media_format_.SetAsInteger(media::MediaFormat::kHeight,
@@ -201,6 +208,5 @@ bool IpcVideoDecoder::IsMediaFormatSupported(const media::MediaFormat& format) {
   // TODO(jiesun): Although we current only support H264 hardware decoding,
   // in the future, we should query GpuVideoService for capabilities.
   int codec_id;
-  return format.GetAsInteger(media::MediaFormat::kFFmpegCodecID, &codec_id) &&
-      codec_id == CODEC_ID_H264;
+  return format.GetAsInteger(media::MediaFormat::kFFmpegCodecID, &codec_id);
 }

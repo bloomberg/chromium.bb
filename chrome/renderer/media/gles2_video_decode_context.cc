@@ -25,14 +25,14 @@ void* Gles2VideoDecodeContext::GetDevice() {
 }
 
 void Gles2VideoDecodeContext::AllocateVideoFrames(
-    int frames_num, size_t width, size_t height,
+    int num_frames, size_t width, size_t height,
     media::VideoFrame::Format format,
     std::vector<scoped_refptr<media::VideoFrame> >* frames_out, Task* task) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &Gles2VideoDecodeContext::AllocateVideoFrames,
-                          frames_num, width, height, format, frames_out,
+                          num_frames, width, height, format, frames_out,
                           task));
     return;
   }
@@ -43,8 +43,8 @@ void Gles2VideoDecodeContext::AllocateVideoFrames(
   bool ret = ggl::MakeCurrent(context_);
   CHECK(ret) << "Failed to switch context";
 
-  frames_.resize(frames_num);
-  for (int i = 0; i < frames_num; ++i) {
+  frames_.resize(num_frames);
+  for (int i = 0; i < num_frames; ++i) {
     int planes = media::VideoFrame::GetNumberOfPlanes(format);
     media::VideoFrame::GlTexture textures[media::VideoFrame::kMaxPlanes];
 
@@ -61,6 +61,7 @@ void Gles2VideoDecodeContext::AllocateVideoFrames(
       glTexImage2D(GL_TEXTURE_2D, 0, gl_format, width, height, 0, gl_format,
                    GL_UNSIGNED_BYTE, NULL);
     }
+    glFlush();
 
     scoped_refptr<media::VideoFrame> frame;
     media::VideoFrame::CreateFrameGlTexture(format, width, height, textures,

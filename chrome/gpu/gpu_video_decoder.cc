@@ -26,6 +26,8 @@ void GpuVideoDecoder::OnMessageReceived(const IPC::Message& msg) {
                         OnUninitialize)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_Flush,
                         OnFlush)
+    IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_Preroll,
+                        OnPreroll)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_EmptyThisBuffer,
                         OnEmptyThisBuffer)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderMsg_ProduceVideoFrame,
@@ -87,7 +89,7 @@ void GpuVideoDecoder::OnFlushComplete() {
 }
 
 void GpuVideoDecoder::OnSeekComplete() {
-  NOTIMPLEMENTED();
+  SendPrerollDone();
 }
 
 void GpuVideoDecoder::OnError() {
@@ -200,7 +202,7 @@ void GpuVideoDecoder::Destroy(Task* task) {
 }
 
 void GpuVideoDecoder::SetVideoDecodeEngine(media::VideoDecodeEngine* engine) {
-    decode_engine_.reset(engine);
+  decode_engine_.reset(engine);
 }
 
 void GpuVideoDecoder::SetGpuVideoDevice(GpuVideoDevice* device) {
@@ -242,6 +244,10 @@ void GpuVideoDecoder::OnUninitialize() {
 
 void GpuVideoDecoder::OnFlush() {
   decode_engine_->Flush();
+}
+
+void GpuVideoDecoder::OnPreroll() {
+  decode_engine_->Seek();
 }
 
 void GpuVideoDecoder::OnEmptyThisBuffer(
@@ -325,6 +331,13 @@ void GpuVideoDecoder::SendUninitializeDone() {
 void GpuVideoDecoder::SendFlushDone() {
   if (!sender_->Send(new GpuVideoDecoderHostMsg_FlushACK(decoder_host_id()))) {
     LOG(ERROR) << "GpuVideoDecoderMsg_FlushACK failed";
+  }
+}
+
+void GpuVideoDecoder::SendPrerollDone() {
+  if (!sender_->Send(new GpuVideoDecoderHostMsg_PrerollDone(
+          decoder_host_id()))) {
+    LOG(ERROR) << "GpuVideoDecoderMsg_PrerollDone failed";
   }
 }
 

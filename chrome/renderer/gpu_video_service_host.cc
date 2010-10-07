@@ -54,11 +54,10 @@ void GpuVideoServiceHost::OnGpuChannelConnected(
 
 GpuVideoDecoderHost* GpuVideoServiceHost::CreateVideoDecoder(
     int context_route_id) {
-  DCHECK(RenderThread::current());
-
   GpuVideoDecoderHost* host = new GpuVideoDecoderHost(router_, channel_host_,
                                                       context_route_id,
                                                       next_decoder_host_id_);
+  // TODO(hclam): Handle thread safety of incrementing the ID.
   ++next_decoder_host_id_;
   return host;
 }

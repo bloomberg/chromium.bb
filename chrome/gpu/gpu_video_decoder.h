@@ -149,6 +149,7 @@ class GpuVideoDecoder
   void OnInitialize(const GpuVideoDecoderInitParam& param);
   void OnUninitialize();
   void OnFlush();
+  void OnPreroll();
   void OnEmptyThisBuffer(const GpuVideoDecoderInputBufferParam& buffer);
   void OnProduceVideoFrame(int32 frame_id);
   void OnVideoFrameAllocated(int32 frame_id, std::vector<uint32> textures);
@@ -157,6 +158,7 @@ class GpuVideoDecoder
   void SendInitializeDone(const GpuVideoDecoderInitDoneParam& param);
   void SendUninitializeDone();
   void SendFlushDone();
+  void SendPrerollDone();
   void SendEmptyBufferDone();
   void SendEmptyBufferACK();
   void SendConsumeVideoFrame(int32 frame_id, int64 timestamp, int64 duration,

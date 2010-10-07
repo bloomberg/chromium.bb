@@ -4,6 +4,7 @@
 
 #include "chrome/gpu/media/fake_gl_video_decode_engine.h"
 
+#include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "media/video/video_decode_context.h"
 
@@ -37,14 +38,18 @@ void FakeGlVideoDecodeEngine::Initialize(
 
   // Use VideoDecodeContext to allocate VideoFrame that can be consumed by
   // external body.
+  // TODO(hclam): It is horrible to use constants everywhere in the code!
+  // The number of frames come from VideoRendererBase in the renderer, this is
+  // horrible!
   context_->AllocateVideoFrames(
-      1, width_, height_, media::VideoFrame::RGBA, &external_frames_,
+      media::Limits::kMaxVideoFrames, width_, height_, media::VideoFrame::RGBA,
+      &external_frames_,
       NewRunnableMethod(this,
                         &FakeGlVideoDecodeEngine::AllocationCompleteTask));
 }
 
 void FakeGlVideoDecodeEngine::AllocationCompleteTask() {
-  DCHECK_EQ(1u, external_frames_.size());
+  DCHECK(media::Limits::kMaxVideoFrames == external_frames_.size());
   DCHECK_EQ(media::VideoFrame::TYPE_GL_TEXTURE, external_frames_[0]->type());
 
   media::VideoCodecInfo info;
@@ -66,22 +71,27 @@ void FakeGlVideoDecodeEngine::Flush() {
 }
 
 void FakeGlVideoDecodeEngine::Seek() {
+  // TODO(hclam): This is a big hack to continue playing because we need to
+  // *push* decoded frames to downstream. The model used in VideoRendererBase
+  // to wait for *push* is flawed.
+  for (size_t i = 0; i < external_frames_.size(); ++i)
+    handler_->ConsumeVideoFrame(external_frames_[i]);
   handler_->OnSeekComplete();
 }
 
 void FakeGlVideoDecodeEngine::ConsumeVideoSample(
-    scoped_refptr<media::Buffer> buffer) {
-  // Don't care.
-}
+    scoped_refptr<media::Buffer> sample) {
+  DCHECK(!pending_frames_.empty());
+  scoped_refptr<media::VideoFrame> frame = pending_frames_.front();
+  pending_frames_.pop();
 
-void FakeGlVideoDecodeEngine::ProduceVideoFrame(
-    scoped_refptr<media::VideoFrame> frame) {
-  // Fake that we need some buffer.
-  handler_->ProduceVideoSample(NULL);
+  frame->SetDuration(sample->GetDuration());
+  frame->SetTimestamp(sample->GetTimestamp());
 
+  // Generate a pattern to the internal frame and then uploads it.
   int size = width_ * height_ * 4;
   scoped_array<uint8> buffer(new uint8[size]);
-  memset(buffer.get(), 0, size);
+  memset(buffer.get(), 255, size);
 
   uint8* row = internal_frame_->data(media::VideoFrame::kRGBPlane);
   static int seed = 0;
@@ -89,7 +99,7 @@ void FakeGlVideoDecodeEngine::ProduceVideoFrame(
   for (int y = 0; y < height_; ++y) {
     int offset = y % 3;
     for (int x = 0; x < width_; ++x) {
-      row[x * 4 + offset] = seed++;
+      row[x * 4 + offset + 1] = seed++;
       seed &= 255;
     }
     row += width_ * 4;
@@ -99,9 +109,18 @@ void FakeGlVideoDecodeEngine::ProduceVideoFrame(
   // After we have filled the content upload the internal frame to the
   // VideoFrame allocated through VideoDecodeContext.
   context_->UploadToVideoFrame(
-      internal_frame_, external_frames_[0],
+      internal_frame_, frame,
       NewRunnableMethod(this, &FakeGlVideoDecodeEngine::UploadCompleteTask,
-                        external_frames_[0]));
+                        frame));
+}
+
+void FakeGlVideoDecodeEngine::ProduceVideoFrame(
+    scoped_refptr<media::VideoFrame> frame) {
+  // Enqueue the frame to the pending queue.
+  pending_frames_.push(frame);
+
+  // Fake that we need some buffer.
+  handler_->ProduceVideoSample(NULL);
 }
 
 void FakeGlVideoDecodeEngine::UploadCompleteTask(

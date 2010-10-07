@@ -299,6 +299,9 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoder)
   // Start decoder flushing operation.
   IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_Flush)
 
+  // Tell the decoder to start prerolling.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_Preroll)
+
   // Send input buffer to GpuVideoDecoder.
   IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_EmptyThisBuffer,
                       GpuVideoDecoderInputBufferParam)
@@ -324,16 +327,23 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
                       int32) /* decoder_id */
 
   // Confirm GpuVideoDecoder had been initialized or failed to initialize.
+  // TODO(hclam): Change this to Done instead of ACK.
   IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_InitializeACK,
                       GpuVideoDecoderInitDoneParam)
 
   // Confrim GpuVideoDecoder had been destroyed properly.
+  // TODO(hclam): Change this to Done instead of ACK.
   IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_DestroyACK)
 
   // Confirm decoder had been flushed.
+  // TODO(hclam): Change this to Done instead of ACK.
   IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_FlushACK)
 
+  // Confirm preroll operation is done.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_PrerollDone)
+
   // GpuVideoDecoder has consumed input buffer from transfer buffer.
+  // TODO(hclam): Change this to Done instead of ACK.
   IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_EmptyThisBufferACK)
 
   // GpuVideoDecoder require new input buffer.

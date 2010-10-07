@@ -13,7 +13,6 @@
 #include "chrome/renderer/gpu_channel_host.h"
 #include "chrome/renderer/gpu_video_service_host.h"
 #include "chrome/renderer/media/gles2_video_decode_context.h"
-#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_widget.h"
 #include "ipc/ipc_channel_handle.h"
 
@@ -105,7 +104,8 @@ class Context : public base::SupportsWeakPtr<Context> {
   media::VideoDecodeEngine* CreateVideoDecodeEngine();
 
   // Create a hardware video decode context associated with this context.
-  media::VideoDecodeContext* CreateVideoDecodeContext(bool hardware_decoder);
+  media::VideoDecodeContext* CreateVideoDecodeContext(MessageLoop* message_loop,
+                                                      bool hardware_decoder);
 
   // Get the current error code.  Clears context's error code afterwards.
   Error GetError();
@@ -372,9 +372,8 @@ media::VideoDecodeEngine* Context::CreateVideoDecodeEngine() {
 }
 
 media::VideoDecodeContext* Context::CreateVideoDecodeContext(
-    bool hardware_decoder) {
-  return new Gles2VideoDecodeContext(
-      RenderThread::current()->message_loop(), hardware_decoder, this);
+    MessageLoop* message_loop, bool hardware_decoder) {
+  return new Gles2VideoDecodeContext(message_loop, hardware_decoder, this);
 }
 
 Error Context::GetError() {
@@ -526,8 +525,8 @@ media::VideoDecodeEngine* CreateVideoDecodeEngine(Context* context) {
 }
 
 media::VideoDecodeContext* CreateVideoDecodeContext(
-    Context* context, bool hardware_decoder) {
-  return context->CreateVideoDecodeContext(hardware_decoder);
+    Context* context, MessageLoop* message_loop, bool hardware_decoder) {
+  return context->CreateVideoDecodeContext(message_loop, hardware_decoder);
 }
 
 Error GetError() {

@@ -16,6 +16,7 @@
 #include "gfx/size.h"
 
 class GpuChannelHost;
+class MessageLoop;
 
 namespace media {
 
@@ -144,8 +145,9 @@ media::VideoDecodeEngine* CreateVideoDecodeEngine(Context* context);
 // decode engine. It can also be used with a software decode engine.
 //
 // Set |hardware_decoder| to true if this context is for a hardware video
-// engine.
+// engine. |message_loop| is where the decode context should run on.
 media::VideoDecodeContext* CreateVideoDecodeContext(Context* context,
+                                                    MessageLoop* message_loop,
                                                     bool hardware_decoder);
 
 // TODO(gman): Remove this

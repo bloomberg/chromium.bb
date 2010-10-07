@@ -5,6 +5,7 @@
 #ifndef CHROME_GPU_MEDIA_FAKE_GL_VIDEO_DECODE_ENGINE_H_
 #define CHROME_GPU_MEDIA_FAKE_GL_VIDEO_DECODE_ENGINE_H_
 
+#include <queue>
 #include <vector>
 
 #include "base/scoped_ptr.h"
@@ -52,6 +53,10 @@ class FakeGlVideoDecodeEngine : public media::VideoDecodeEngine {
   // VideoFrame(s) allocated through VideoDecodeContext. These frames are
   // opaque to us. And we need an extra upload step.
   std::vector<scoped_refptr<media::VideoFrame> > external_frames_;
+
+  // These are the video frames that are waiting for input buffer to generate
+  // fake pattern in them.
+  std::queue<scoped_refptr<media::VideoFrame> > pending_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGlVideoDecodeEngine);
 };

@@ -40,6 +40,8 @@ void GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
                         OnUninitializeDone)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderHostMsg_FlushACK,
                         OnFlushDone)
+    IPC_MESSAGE_HANDLER(GpuVideoDecoderHostMsg_PrerollDone,
+                        OnPrerollDone)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderHostMsg_EmptyThisBufferACK,
                         OnEmptyThisBufferACK)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderHostMsg_EmptyThisBufferDone,
@@ -169,7 +171,17 @@ void GpuVideoDecoderHost::Flush() {
 }
 
 void GpuVideoDecoderHost::Seek() {
-  // TODO(hclam): Implement.
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &GpuVideoDecoderHost::Seek));
+    return;
+  }
+
+  if (!ipc_sender_->Send(new GpuVideoDecoderMsg_Preroll(decoder_id_))) {
+    LOG(ERROR) << "GpuVideoDecoderMsg_Preroll failed";
+    event_handler_->OnError();
+    return;
+  }
 }
 
 void GpuVideoDecoderHost::OnCreateVideoDecoderDone(int32 decoder_id) {
@@ -226,6 +238,13 @@ void GpuVideoDecoderHost::OnFlushDone() {
 
   state_ = kStateNormal;
   event_handler_->OnFlushComplete();
+}
+
+void GpuVideoDecoderHost::OnPrerollDone() {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+
+  state_ = kStateNormal;
+  event_handler_->OnSeekComplete();
 }
 
 void GpuVideoDecoderHost::OnEmptyThisBufferACK() {

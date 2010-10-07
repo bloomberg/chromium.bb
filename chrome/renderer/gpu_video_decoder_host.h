@@ -75,6 +75,7 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
   void OnInitializeDone(const GpuVideoDecoderInitDoneParam& param);
   void OnUninitializeDone();
   void OnFlushDone();
+  void OnPrerollDone();
   void OnEmptyThisBufferACK();
   void OnProduceVideoSample();
   void OnConsumeVideoFrame(int32 frame_id, int64 timestamp,
