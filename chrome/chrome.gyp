@@ -1623,6 +1623,7 @@
             '../third_party/codesighs/codesighs.gyp:*',
             '../third_party/icu/icu.gyp:*',
             '../third_party/libjpeg/libjpeg.gyp:*',
+            '../third_party/libwebp/libwebp.gyp:*',
             '../third_party/libpng/libpng.gyp:*',
             '../third_party/libxslt/libxslt.gyp:*',
             '../third_party/lzma_sdk/lzma_sdk.gyp:*',
