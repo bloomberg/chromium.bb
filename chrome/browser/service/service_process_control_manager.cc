@@ -19,7 +19,7 @@ ServiceProcessControlManager::~ServiceProcessControlManager() {
 
 ServiceProcessControl* ServiceProcessControlManager::GetProcessControl(
     Profile* profile) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // TODO(hclam): We will have different service process for different types of
   // service, but now we only create a new process for a different profile.

@@ -402,8 +402,8 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
 
       client_key_ = client_key;
       wrapped_key_ = wrapped_key;
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(
               sb_service_, &SafeBrowsingService::OnNewMacKeys, client_key_,
               wrapped_key_));

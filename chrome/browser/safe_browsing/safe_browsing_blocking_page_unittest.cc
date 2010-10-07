@@ -58,8 +58,8 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
   };
 
   SafeBrowsingBlockingPageTest()
-      : ui_thread_(ChromeThread::UI, MessageLoop::current()),
-        io_thread_(ChromeThread::IO, MessageLoop::current()) {
+      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        io_thread_(BrowserThread::IO, MessageLoop::current()) {
     ResetUserResponse();
     service_ = new SafeBrowsingService();
   }
@@ -143,8 +143,8 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
   UserResponse user_response_;
   scoped_refptr<SafeBrowsingService> service_;
   TestSafeBrowsingBlockingPageFactory factory_;
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
 };
 
 // Tests showing a blocking page for a malware page and not proceeding.

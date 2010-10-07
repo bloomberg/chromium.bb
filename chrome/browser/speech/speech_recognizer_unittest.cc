@@ -21,7 +21,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
                              public testing::Test {
  public:
   SpeechRecognizerTest()
-      : io_thread_(ChromeThread::IO, &message_loop_),
+      : io_thread_(BrowserThread::IO, &message_loop_),
         ALLOW_THIS_IN_INITIALIZER_LIST(
             recognizer_(new SpeechRecognizer(this, 1))),
         recording_complete_(false),
@@ -87,7 +87,7 @@ class SpeechRecognizerTest : public SpeechRecognizerDelegate,
 
  protected:
   MessageLoopForIO message_loop_;
-  ChromeThread io_thread_;
+  BrowserThread io_thread_;
   scoped_refptr<SpeechRecognizer> recognizer_;
   bool recording_complete_;
   bool recognition_complete_;

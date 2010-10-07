@@ -222,7 +222,7 @@ void SpeechInputManagerImpl::CancelRecognitionAndInformDelegate(int caller_id) {
 
 void SpeechInputManagerImpl::InfoBubbleButtonClicked(
     int caller_id, SpeechInputBubble::Button button) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Ignore if the caller id was not in our active recognizers list because the
   // user might have clicked more than once, or recognition could have been
   // cancelled due to other reasons before the user click was processed.
@@ -237,7 +237,7 @@ void SpeechInputManagerImpl::InfoBubbleButtonClicked(
 }
 
 void SpeechInputManagerImpl::InfoBubbleFocusChanged(int caller_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Ignore if the caller id was not in our active recognizers list because the
   // user might have clicked more than once, or recognition could have been
   // ended due to other reasons before the user click was processed.

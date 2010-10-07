@@ -133,14 +133,14 @@ class SafeBrowsingServiceTestHelper
   // Functions and callbacks related to CheckUrl. These are used to verify if
   // a URL is a phishing URL.
   void CheckUrl(const GURL& url) {
-    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, NewRunnableMethod(this,
-        &SafeBrowsingServiceTestHelper::CheckUrlOnIOThread, url));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableMethod(
+        this, &SafeBrowsingServiceTestHelper::CheckUrlOnIOThread, url));
   }
   void CheckUrlOnIOThread(const GURL& url) {
-    CHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     safe_browsing_test_->CheckUrl(this, url);
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(this,
-        &SafeBrowsingServiceTestHelper::OnCheckUrlOnIOThreadDone));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
+        this, &SafeBrowsingServiceTestHelper::OnCheckUrlOnIOThreadDone));
   }
   void OnCheckUrlOnIOThreadDone() {
     StopUILoop();
@@ -148,7 +148,7 @@ class SafeBrowsingServiceTestHelper
 
   // Updates status from IO Thread.
   void CheckStatusOnIOThread() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     safe_browsing_test_->UpdateSafeBrowsingStatus();
     safe_browsing_test_->SafeBrowsingMessageLoop()->PostTask(
         FROM_HERE, NewRunnableMethod(this,
@@ -160,8 +160,8 @@ class SafeBrowsingServiceTestHelper
     DCHECK_EQ(MessageLoop::current(),
               safe_browsing_test_->SafeBrowsingMessageLoop());
     safe_browsing_test_->CheckIsDatabaseReady();
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(this,
-        &SafeBrowsingServiceTestHelper::OnCheckStatusAfterDelayDone));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
+        this, &SafeBrowsingServiceTestHelper::OnCheckStatusAfterDelayDone));
   }
 
   void OnCheckStatusAfterDelayDone() {
@@ -170,8 +170,8 @@ class SafeBrowsingServiceTestHelper
 
   // Checks safebrowsing status after a given latency.
   void CheckStatusAfterDelay(int64 wait_time_sec) {
-    ChromeThread::PostDelayedTask(
-        ChromeThread::IO,
+    BrowserThread::PostDelayedTask(
+        BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(this,
             &SafeBrowsingServiceTestHelper::CheckStatusOnIOThread),
@@ -181,7 +181,7 @@ class SafeBrowsingServiceTestHelper
  private:
   // Stops UI loop after desired status is updated.
   void StopUILoop() {
-    CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     MessageLoopForUI::current()->Quit();
   }
 

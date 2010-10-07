@@ -50,7 +50,7 @@ class TemplateURLFetcherTest : public testing::Test {
     ASSERT_TRUE(test_server_.Start());
     test_util_.SetUp();
 
-    io_thread_.reset(new ChromeThread(ChromeThread::IO));
+    io_thread_.reset(new BrowserThread(BrowserThread::IO));
     base::Thread::Options options;
     options.message_loop_type = MessageLoop::TYPE_IO;
     io_thread_->StartWithOptions(options);
@@ -71,7 +71,7 @@ class TemplateURLFetcherTest : public testing::Test {
  protected:
   TemplateURLModelTestUtil test_util_;
   net::TestServer test_server_;
-  scoped_ptr<ChromeThread> io_thread_;
+  scoped_ptr<BrowserThread> io_thread_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TemplateURLFetcherTest);

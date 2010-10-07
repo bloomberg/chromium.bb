@@ -54,27 +54,27 @@ std::string* UIThreadSearchTermsData::google_base_url_ = NULL;
 UIThreadSearchTermsData::UIThreadSearchTermsData() {
   // GoogleURLTracker::GoogleURL() DCHECKs this also, but adding it here helps
   // us catch bad behavior at a more common place in this code.
-  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
-         ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 std::string UIThreadSearchTermsData::GoogleBaseURLValue() const {
-  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
-         ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
   return google_base_url_ ?
     (*google_base_url_) : GoogleURLTracker::GoogleURL().spec();
 }
 
 std::string UIThreadSearchTermsData::GetApplicationLocale() const {
-  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
-         ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
   return g_browser_process->GetApplicationLocale();
 }
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 std::wstring UIThreadSearchTermsData::GetRlzParameterValue() const {
-  DCHECK(!ChromeThread::IsWellKnownThread(ChromeThread::UI) ||
-         ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::wstring rlz_string;
   // For organic brandcodes do not use rlz at all. Empty brandcode usually
   // means a chromium install. This is ok.

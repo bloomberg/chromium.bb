@@ -481,8 +481,8 @@ void SafeBrowsingBlockingPage::NotifySafeBrowsingService(
     SafeBrowsingService* sb_service,
     const UnsafeResourceList& unsafe_resources,
     bool proceed) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           sb_service, &SafeBrowsingService::OnBlockingPageDone,
           unsafe_resources, proceed));

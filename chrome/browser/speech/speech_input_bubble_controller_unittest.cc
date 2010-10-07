@@ -66,8 +66,8 @@ class SpeechInputBubbleControllerTest
  public:
   SpeechInputBubbleControllerTest()
       : io_loop_(MessageLoop::TYPE_IO),
-        ui_thread_(ChromeThread::UI),  // constructs a new thread and loop
-        io_thread_(ChromeThread::IO, &io_loop_),  // resuses main thread loop
+        ui_thread_(BrowserThread::UI),  // constructs a new thread and loop
+        io_thread_(BrowserThread::IO, &io_loop_),  // resuses main thread loop
         cancel_clicked_(false),
         try_again_clicked_(false),
         focus_changed_(false),
@@ -85,7 +85,7 @@ class SpeechInputBubbleControllerTest
   virtual void InfoBubbleButtonClicked(int caller_id,
                                        SpeechInputBubble::Button button) {
     LOG(INFO) << "Received InfoBubbleButtonClicked for button " << button;
-    EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (button == SpeechInputBubble::BUTTON_CANCEL) {
       cancel_clicked_ = true;
     } else if (button == SpeechInputBubble::BUTTON_TRY_AGAIN) {
@@ -96,7 +96,7 @@ class SpeechInputBubbleControllerTest
 
   virtual void InfoBubbleFocusChanged(int caller_id) {
     LOG(INFO) << "Received InfoBubbleFocusChanged";
-    EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     focus_changed_ = true;
     MessageLoop::current()->Quit();
   }
@@ -126,7 +126,7 @@ class SpeechInputBubbleControllerTest
   static SpeechInputBubble* CreateBubble(TabContents* tab_contents,
                                          SpeechInputBubble::Delegate* delegate,
                                          const gfx::Rect& element_rect) {
-    EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // Set up to activate the bubble soon after it gets created, since we test
     // events sent by the bubble and those are handled only when the bubble is
     // active.
@@ -139,8 +139,8 @@ class SpeechInputBubbleControllerTest
   // The main thread of the test is marked as the IO thread and we create a new
   // one for the UI thread.
   MessageLoop io_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
   bool cancel_clicked_;
   bool try_again_clicked_;
   bool focus_changed_;

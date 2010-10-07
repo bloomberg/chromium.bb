@@ -119,7 +119,7 @@ SpeechInputManager* SpeechInputDispatcherHost::manager() {
 
 bool SpeechInputDispatcherHost::OnMessageReceived(
     const IPC::Message& msg, bool* msg_was_ok) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(SpeechInputDispatcherHost, msg, *msg_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_StartRecognition,
@@ -169,7 +169,7 @@ void SpeechInputDispatcherHost::SendMessageToRenderView(IPC::Message* message,
 void SpeechInputDispatcherHost::SetRecognitionResult(int caller_id,
                                                      const string16& result) {
   LOG(INFO) << "SpeechInputDispatcherHost::SetRecognitionResult enter";
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);
   int caller_request_id = callers_->request_id(caller_id);
   SendMessageToRenderView(
@@ -182,7 +182,7 @@ void SpeechInputDispatcherHost::SetRecognitionResult(int caller_id,
 
 void SpeechInputDispatcherHost::DidCompleteRecording(int caller_id) {
   LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecording enter";
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);
   int caller_request_id = callers_->request_id(caller_id);
   SendMessageToRenderView(
@@ -194,7 +194,7 @@ void SpeechInputDispatcherHost::DidCompleteRecording(int caller_id) {
 
 void SpeechInputDispatcherHost::DidCompleteRecognition(int caller_id) {
   LOG(INFO) << "SpeechInputDispatcherHost::DidCompleteRecognition enter";
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int caller_render_view_id = callers_->render_view_id(caller_id);
   int caller_request_id = callers_->request_id(caller_id);
   SendMessageToRenderView(

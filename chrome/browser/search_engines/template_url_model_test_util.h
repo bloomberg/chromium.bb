@@ -88,7 +88,7 @@ class TemplateURLModelTestUtil : public TemplateURLModelObserver {
   MessageLoopForUI message_loop_;
   // Needed to make the DeleteOnUIThread trait of WebDataService work
   // properly.
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   scoped_ptr<TemplateURLModelTestingProfile> profile_;
   scoped_ptr<TestingTemplateURLModel> model_;
   int changed_count_;

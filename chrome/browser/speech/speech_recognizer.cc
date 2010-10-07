@@ -131,7 +131,7 @@ SpeechRecognizer::~SpeechRecognizer() {
 }
 
 bool SpeechRecognizer::StartRecording() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
 
@@ -155,7 +155,7 @@ bool SpeechRecognizer::StartRecording() {
 }
 
 void SpeechRecognizer::CancelRecognition() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(audio_controller_.get() || request_.get());
 
   // Stop recording if required.
@@ -171,7 +171,7 @@ void SpeechRecognizer::CancelRecognition() {
 }
 
 void SpeechRecognizer::StopRecording() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // If audio recording has already stopped and we are in recognition phase,
   // silently ignore any more calls to stop recording.
@@ -225,7 +225,7 @@ void SpeechRecognizer::ReleaseAudioBuffers() {
 // Invoked in the audio thread.
 void SpeechRecognizer::OnError(AudioInputController* controller,
                                int error_code) {
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                          NewRunnableMethod(this,
                                            &SpeechRecognizer::HandleOnError,
                                            error_code));
@@ -249,7 +249,7 @@ void SpeechRecognizer::OnData(AudioInputController* controller,
     return;
 
   string* str_data = new string(reinterpret_cast<const char*>(data), size);
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                          NewRunnableMethod(this,
                                            &SpeechRecognizer::HandleOnData,
                                            str_data));

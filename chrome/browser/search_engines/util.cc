@@ -41,7 +41,7 @@ static void RemoveDuplicatePrepopulateIDs(
     std::vector<TemplateURL*>* template_urls,
     WebDataService* service) {
   DCHECK(template_urls);
-  DCHECK(service == NULL || ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::set<int> ids;
   for (std::vector<TemplateURL*>::iterator i = template_urls->begin();
@@ -70,7 +70,7 @@ void MergeEnginesFromPrepopulateData(
     WebDataService* service,
     std::vector<TemplateURL*>* template_urls,
     const TemplateURL** default_search_provider) {
-  DCHECK(service == NULL || ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(template_urls);
   DCHECK(default_search_provider);
 
@@ -156,7 +156,7 @@ void GetSearchProvidersUsingKeywordResult(
     std::vector<TemplateURL*>* template_urls,
     const TemplateURL** default_search_provider,
     int* new_resource_keyword_version) {
-  DCHECK(service == NULL || ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(service == NULL || BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(template_urls);
   DCHECK(template_urls->empty());
   DCHECK(default_search_provider);

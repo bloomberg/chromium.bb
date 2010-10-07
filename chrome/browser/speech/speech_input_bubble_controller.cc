@@ -24,15 +24,15 @@ void SpeechInputBubbleController::CreateBubble(int caller_id,
                                                int render_process_id,
                                                int render_view_id,
                                                const gfx::Rect& element_rect) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &SpeechInputBubbleController::CreateBubble,
                           caller_id, render_process_id, render_view_id,
                           element_rect));
     return;
   }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabContents* tab_contents = tab_util::GetTabContentsByID(render_process_id,
                                                            render_view_id);
 
@@ -72,13 +72,13 @@ void SpeechInputBubbleController::SetBubbleMessage(int caller_id,
 
 void SpeechInputBubbleController::ProcessRequestInUiThread(
     int caller_id, RequestType type, const string16& text, float volume) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
         this, &SpeechInputBubbleController::ProcessRequestInUiThread,
         caller_id, type, text, volume));
     return;
   }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // The bubble may have been closed before we got a chance to process this
   // request. So check before proceeding.
   if (!bubbles_.count(caller_id))
@@ -123,11 +123,11 @@ void SpeechInputBubbleController::ProcessRequestInUiThread(
 
 void SpeechInputBubbleController::InfoBubbleButtonClicked(
     SpeechInputBubble::Button button) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(current_bubble_caller_id_);
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this,
           &SpeechInputBubbleController::InvokeDelegateButtonClicked,
@@ -135,15 +135,15 @@ void SpeechInputBubbleController::InfoBubbleButtonClicked(
 }
 
 void SpeechInputBubbleController::InfoBubbleFocusChanged() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(current_bubble_caller_id_);
 
   int old_bubble_caller_id = current_bubble_caller_id_;
   current_bubble_caller_id_ = 0;
   bubbles_[old_bubble_caller_id]->Hide();
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this,
           &SpeechInputBubbleController::InvokeDelegateFocusChanged,

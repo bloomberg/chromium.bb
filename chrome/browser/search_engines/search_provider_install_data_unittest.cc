@@ -52,7 +52,7 @@ class TestGetInstallState :
   }
 
   // Runs the test. Returns true if all passed. False if any failed.
-  bool RunTests(const ChromeThread& io_thread);
+  bool RunTests(const BrowserThread& io_thread);
 
  private:
   friend class base::RefCountedThreadSafe<TestGetInstallState>;
@@ -84,7 +84,7 @@ class TestGetInstallState :
   DISALLOW_COPY_AND_ASSIGN(TestGetInstallState);
 };
 
-bool TestGetInstallState::RunTests(const ChromeThread& io_thread) {
+bool TestGetInstallState::RunTests(const BrowserThread& io_thread) {
   passed_ = true;
 
   main_loop_ = MessageLoop::current();
@@ -167,7 +167,7 @@ class SearchProviderInstallDataTest : public testing::Test {
         util_.GetWebDataService(),
         NotificationType::RENDERER_PROCESS_TERMINATED,
         Source<SearchProviderInstallDataTest>(this));
-    io_thread_.reset(new ChromeThread(ChromeThread::IO));
+    io_thread_.reset(new BrowserThread(BrowserThread::IO));
     io_thread_->Start();
   }
 
@@ -216,7 +216,7 @@ class SearchProviderInstallDataTest : public testing::Test {
 
  protected:
   TemplateURLModelTestUtil util_;
-  scoped_ptr<ChromeThread> io_thread_;
+  scoped_ptr<BrowserThread> io_thread_;
 
   // Provides the search provider install state on the I/O thread. It must be
   // deleted on the I/O thread, which is why it isn't a scoped_ptr.

@@ -486,7 +486,7 @@ TEST_F(TemplateURLModelTest, GenerateSearchURLUsingTermsData) {
   scoped_refptr<TestGenerateSearchURL> test_generate_search_url(
       new TestGenerateSearchURL(&search_terms_data));
 
-  ChromeThread io_thread(ChromeThread::IO);
+  BrowserThread io_thread(BrowserThread::IO);
   io_thread.Start();
   io_thread.message_loop()->PostTask(
       FROM_HERE,

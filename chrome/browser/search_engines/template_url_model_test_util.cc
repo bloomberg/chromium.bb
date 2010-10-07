@@ -34,10 +34,10 @@ class QuitTask2 : public Task {
 
 // Blocks the caller until thread has finished servicing all pending
 // requests.
-static void WaitForThreadToProcessRequests(ChromeThread::ID identifier) {
+static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
   // Schedule a task on the thread that is processed after all
   // pending requests on the thread.
-  ChromeThread::PostTask(identifier, FROM_HERE, new QuitTask2());
+  BrowserThread::PostTask(identifier, FROM_HERE, new QuitTask2());
   // Run the current message loop. QuitTask2, when run, invokes Quit,
   // which unblocks this.
   MessageLoop::current()->Run();
@@ -60,7 +60,7 @@ class TemplateURLModelTestingProfile : public TestingProfile {
  private:
   scoped_refptr<WebDataService> service_;
   ScopedTempDir temp_dir_;
-  scoped_ptr<ChromeThread> db_thread_;
+  scoped_ptr<BrowserThread> db_thread_;
 };
 
 // Trivial subclass of TemplateURLModel that records the last invocation of
@@ -91,7 +91,7 @@ class TestingTemplateURLModel : public TemplateURLModel {
 };
 
 void TemplateURLModelTestingProfile::SetUp() {
-  db_thread_.reset(new ChromeThread(ChromeThread::DB));
+  db_thread_.reset(new BrowserThread(BrowserThread::DB));
   db_thread_->Start();
 
   // Make unique temp directory.
@@ -113,7 +113,7 @@ void TemplateURLModelTestingProfile::TearDown() {
 }
 
 TemplateURLModelTestUtil::TemplateURLModelTestUtil()
-    : ui_thread_(ChromeThread::UI, &message_loop_),
+    : ui_thread_(BrowserThread::UI, &message_loop_),
       changed_count_(0) {
 }
 
@@ -149,11 +149,11 @@ void TemplateURLModelTestUtil::ResetObserverCount() {
 }
 
 void TemplateURLModelTestUtil::BlockTillServiceProcessesRequests() {
-  WaitForThreadToProcessRequests(ChromeThread::DB);
+  WaitForThreadToProcessRequests(BrowserThread::DB);
 }
 
 void TemplateURLModelTestUtil::BlockTillIOThreadProcessesRequests() {
-  WaitForThreadToProcessRequests(ChromeThread::IO);
+  WaitForThreadToProcessRequests(BrowserThread::IO);
 }
 
 void TemplateURLModelTestUtil::VerifyLoad() {
