@@ -16,6 +16,7 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/labs.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -135,7 +136,8 @@ void LabsDOMHandler::RegisterMessages() {
 void LabsDOMHandler::HandleRequestLabsExperiments(const ListValue* args) {
   DictionaryValue results;
   results.Set("labsExperiments",
-              about_labs::GetLabsExperimentsData(dom_ui_->GetProfile()));
+              about_labs::GetLabsExperimentsData(
+                  dom_ui_->GetProfile()->GetPrefs()));
   results.SetBoolean("needsRestart",
                      about_labs::IsRestartNeededToCommitChanges());
   dom_ui_->CallJavascriptFunction(L"returnLabsExperiments", results);
@@ -153,7 +155,9 @@ void LabsDOMHandler::HandleEnableLabsExperimentMessage(const ListValue* args) {
     return;
 
   about_labs::SetExperimentEnabled(
-      dom_ui_->GetProfile(), experiment_internal_name, enable_str == "true");
+      dom_ui_->GetProfile()->GetPrefs(),
+      experiment_internal_name,
+      enable_str == "true");
 }
 
 void LabsDOMHandler::HandleRestartBrowser(const ListValue* args) {

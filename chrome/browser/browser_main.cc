@@ -1202,6 +1202,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   SetBrowserX11ErrorHandlers();
 #endif
 
+  // Modifies the current command line based on active labs.
   Profile* profile = CreateProfile(parameters, user_data_dir);
   if (!profile)
     return ResultCodes::NORMAL_EXIT;
@@ -1210,9 +1211,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
-
-  // Convert active labs into switches. Modifies the current command line.
-  about_labs::ConvertLabsToSwitches(profile, CommandLine::ForCurrentProcess());
 
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.

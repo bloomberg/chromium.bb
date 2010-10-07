@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -133,7 +132,7 @@ const Experiment kExperiments[] = {
   }
 };
 
-// Extracts the list of enabled lab experiments from a profile and stores them
+// Extracts the list of enabled lab experiments from preferences and stores them
 // in a set.
 void GetEnabledLabs(const PrefService* prefs, std::set<std::string>* result) {
   const ListValue* enabled_experiments = prefs->GetList(
@@ -218,12 +217,12 @@ bool IsEnabled() {
 #endif
 }
 
-void ConvertLabsToSwitches(Profile* profile, CommandLine* command_line) {
+void ConvertLabsToSwitches(PrefService* prefs, CommandLine* command_line) {
   if (!IsEnabled())
     return;
 
   std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledLabs(profile->GetPrefs(), &enabled_experiments);
+  GetSanitizedEnabledLabs(prefs, &enabled_experiments);
 
   std::map<std::string, const Experiment*> experiments;
   for (size_t i = 0; i < arraysize(kExperiments); ++i)
@@ -243,9 +242,9 @@ void ConvertLabsToSwitches(Profile* profile, CommandLine* command_line) {
   }
 }
 
-ListValue* GetLabsExperimentsData(Profile* profile) {
+ListValue* GetLabsExperimentsData(PrefService* prefs) {
   std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledLabs(profile->GetPrefs(), &enabled_experiments);
+  GetSanitizedEnabledLabs(prefs, &enabled_experiments);
 
   int current_platform = GetCurrentPlatform();
 
@@ -277,18 +276,18 @@ bool IsRestartNeededToCommitChanges() {
 }
 
 void SetExperimentEnabled(
-    Profile* profile, const std::string& internal_name, bool enable) {
+    PrefService* prefs, const std::string& internal_name, bool enable) {
   needs_restart_ = true;
 
   std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledLabs(profile->GetPrefs(), &enabled_experiments);
+  GetSanitizedEnabledLabs(prefs, &enabled_experiments);
 
   if (enable)
     enabled_experiments.insert(internal_name);
   else
     enabled_experiments.erase(internal_name);
 
-  SetEnabledLabs(profile->GetPrefs(), enabled_experiments);
+  SetEnabledLabs(prefs, enabled_experiments);
 }
 
 }  // namespace Labs

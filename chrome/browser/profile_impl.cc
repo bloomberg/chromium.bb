@@ -43,6 +43,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/labs.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/net_pref_observer.h"
@@ -271,6 +272,9 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   pref_change_registrar_.Add(prefs::kSpellCheckDictionary, this);
   pref_change_registrar_.Add(prefs::kEnableSpellCheck, this);
   pref_change_registrar_.Add(prefs::kEnableAutoSpellCorrect, this);
+
+  // Convert active labs into switches. Modifies the current command line.
+  about_labs::ConvertLabsToSwitches(prefs, CommandLine::ForCurrentProcess());
 
 #if defined(OS_MACOSX)
   // If the profile directory doesn't already have a cache directory and it
