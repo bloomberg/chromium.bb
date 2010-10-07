@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
 #include "base/string16.h"
@@ -294,6 +295,18 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
   localized_strings.SetString("web_store_url",
       GetUrlWithLang(GURL(Extension::ChromeStoreURL())));
+  localized_strings.SetString("appspromohide",
+      l10n_util::GetStringUTF16(IDS_APPS_PROMO_HIDE));
+  localized_strings.SetString("appspromoheader",
+      l10n_util::GetStringUTF16(IDS_APPS_PROMO_HEADER));
+  localized_strings.SetString("appspromotext1",
+      l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_1));
+  localized_strings.SetString("appspromotext2",
+      l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_2));
+
+  localized_strings.SetString("appspromovisible",
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceAppsPromoVisible) ? "true" : "false");
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
@@ -422,6 +435,8 @@ void NTPResourceCache::CreateNewTabCSS() {
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_RULE);
   SkColor color_section_header_rule_light =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_HEADER_RULE_LIGHT);
+  SkColor color_text_light =
+      tp->GetColor(BrowserThemeProvider::COLOR_NTP_TEXT_LIGHT);
 
   SkColor color_header =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER);
@@ -477,6 +492,7 @@ void NTPResourceCache::CreateNewTabCSS() {
       color_section_header_rule_light));  // $$$1
   subst3.push_back(SkColorToRGBAString(
       SkColorSetA(color_section_header_rule, 0)));  // $$$2
+  subst3.push_back(SkColorToRGBAString(color_text_light));  // $$$3
 
 
   // Get our template.

@@ -137,3 +137,11 @@ body {
   color: $$3; /* COLOR_NTP_SECTION_TEXT */
   background-color: $$1; /* COLOR_NTP_SECTION */;
 }
+
+#apps-promo-hide {
+  color: $9; /* COLOR_NTP_LINK */
+}
+
+#apps-promo-text2 {
+  color: $$$3; /* COLOR_NTP_TEXT_LIGHT */
+}

@@ -90,10 +90,57 @@ html[install-animation-enabled=true] .app[new=installed] {
   -webkit-transition: opacity .5s;
 }
 
-a[app-id=web-store-entry] {
+.app[app-id=web-store-entry] > a {
   background-image: url("web_store_icon.png");
 }
 
 menu > button.default {
   font-weight: bold;
 }
+
+#apps-promo {
+  display: none;
+}
+
+html[appspromovisible=true] #apps-promo {
+  display: block;
+}
+
+#apps-promo > h3 {
+  font-size: 16px;
+  margin-top: 1em;
+  margin-bottom: 0.25em;
+}
+
+#apps-promo-text1 {
+  margin-top: 0;
+}
+
+#apps-promo-hide {
+  float: right;
+  -webkit-appearance: none;
+  -webkit-transition: opacity .15s;
+  background-color: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 90%;
+  text-decoration: underline;
+}
+
+html[dir=rtl] #apps-promo-hide {
+  float: left;
+}
+
+html[appspromovisible=true] .app[app-id=web-store-entry] {
+  left: 25px;
+}
+
+html[appspromovisible=true][dir=rtl] .app[app-id=web-store-entry] {
+  right: 25px;
+}
+
+html[appspromovisible=true] .app[app-id=web-store-entry] a {
+  font-weight: bold;
+}
+

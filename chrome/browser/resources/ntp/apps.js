@@ -7,8 +7,12 @@ function getAppsCallback(data) {
   var appsSection = $('apps');
   var appsSectionContent = $('apps-maxiview');
   var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
-  appsSectionContent.textContent = '';
+  var appsPromo = $('apps-promo');
+
   appsMiniview.textContent = '';
+  while (appsSectionContent.lastChild != appsPromo) {
+    appsSectionContent.removeChild(appsSectionContent.lastChild);
+  }
 
   clearClosedMenu(apps.menu);
   if (data.apps.length == 0) {
@@ -275,11 +279,13 @@ var apps = (function() {
     },
 
     createWebStoreElement: function() {
-      return createElement({
+      var elm = createElement({
         'id': 'web-store-entry',
         'name': localStrings.getString('web_store_title'),
         'launch_url': localStrings.getString('web_store_url')
       });
+      elm.setAttribute('app-id', 'web-store-entry');
+      return elm;
     }
   };
 })();

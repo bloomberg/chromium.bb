@@ -238,6 +238,8 @@ SkColor BrowserThemeProvider::GetColor(int id) const {
       return IncreaseLightness(GetColor(COLOR_NTP_TEXT), 0.70);
     case COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
       return IncreaseLightness(GetColor(COLOR_NTP_TEXT), 0.86);
+    case COLOR_NTP_TEXT_LIGHT:
+      return IncreaseLightness(GetColor(COLOR_NTP_TEXT), 0.40);
   }
 
   return GetDefaultColor(id);

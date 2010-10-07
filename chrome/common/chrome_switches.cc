@@ -593,6 +593,10 @@ const char kFileDescriptorLimit[]           = "file-descriptor-limit";
 // whether or not it's actually the first run.
 const char kFirstRun[]                      = "first-run";
 
+// Forces the apps/webstore promo to be shown, independent of whether it has
+// timed out, etc. Useful for testing.
+const char kForceAppsPromoVisible[]         = "force-apps-promo-visible";
+
 // Some field tests may rendomized in the browser, and the randomly selected
 // outcome needs to be propogated to the renderer.  For instance, this is used
 // to modify histograms recorded in the renderer, or to get the renderer to

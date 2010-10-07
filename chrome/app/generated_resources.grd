@@ -3828,7 +3828,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allow
       </message>
       <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
-        Get More Apps
+        Get more apps
+      </message>
+      <message name="IDS_APPS_PROMO_HEADER" desc="Header for the apps promo">
+        New! Discover a world of apps &amp; games
+      </message>
+      <message name="IDS_APPS_PROMO_TEXT_1" desc="First paragraph of text on the apps promo">
+        Visit the &lt;a&gt; Chrome Web Store&lt;/a&gt; to add great apps and games to your startpage
+      </message>
+      <message name="IDS_APPS_PROMO_TEXT_2" desc="Second paragraph of text on the apps promo">
+        What's an app? Try one of these:
+      </message>
+      <message name="IDS_APPS_PROMO_HIDE" desc="Text on the button that hides the apps promo">
+        Hide this message
       </message>
 
       <!-- Plugins -->

@@ -1095,3 +1095,10 @@ function maybeDoneLoading() {
 function isDoneLoading() {
   return !document.body.classList.contains('loading');
 }
+
+// Initialize the apps promo.
+document.addEventListener('DOMContentLoaded', function() {
+  var promoText1 = $('apps-promo-text1');
+  promoText1.innerHTML = promoText1.textContent;
+  promoText1.querySelector('a').href = localStrings.getString('web_store_url');
+});
