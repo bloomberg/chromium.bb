@@ -41,9 +41,10 @@ drm_authenticate(struct wl_client *client,
 static void
 destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 {
-	struct wlsc_buffer *buffer =
-		container_of(resource, struct wlsc_buffer, base.base);
-	struct wlsc_compositor *compositor = buffer->compositor;
+	struct wlsc_drm_buffer *buffer =
+		container_of(resource, struct wlsc_drm_buffer, base.base);
+	struct wlsc_compositor *compositor =
+		(struct wlsc_compositor *) buffer->base.compositor;
 
 	eglDestroyImageKHR(compositor->display, buffer->image);
 	free(buffer);
@@ -60,6 +61,25 @@ const static struct wl_buffer_interface buffer_interface = {
 };
 
 static void
+drm_buffer_attach(struct wl_buffer *buffer_base, struct wl_surface *surface)
+{
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_drm_buffer *buffer =
+		(struct wlsc_drm_buffer *) buffer_base;
+
+	glBindTexture(GL_TEXTURE_2D, es->texture);
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
+	es->visual = buffer->base.visual;
+}
+
+static void
+drm_buffer_damage(struct wl_buffer *buffer,
+		  struct wl_surface *surface,
+		  int32_t x, int32_t y, int32_t width, int32_t height)
+{
+}
+
+static void
 drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 		  uint32_t id, uint32_t name, int32_t width, int32_t height,
 		  uint32_t stride, struct wl_visual *visual)
@@ -67,7 +87,7 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	struct wlsc_drm *drm = (struct wlsc_drm *) drm_base;
 	struct wlsc_compositor *compositor =
 		container_of(drm, struct wlsc_compositor, drm);
-	struct wlsc_buffer *buffer;
+	struct wlsc_drm_buffer *buffer;
 	EGLint attribs[] = {
 		EGL_WIDTH,		0,
 		EGL_HEIGHT,		0,
@@ -98,10 +118,11 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	attribs[3] = height;
 	attribs[5] = stride / 4;
 
-	buffer->compositor = compositor;
-	buffer->width = width;
-	buffer->height = height;
-	buffer->visual = visual;
+	buffer->base.compositor = &compositor->base;
+	buffer->base.width = width;
+	buffer->base.height = height;
+	buffer->base.visual = visual;
+	buffer->base.attach = drm_buffer_attach;
 	buffer->image = eglCreateImageKHR(compositor->display,
 					  compositor->context,
 					  EGL_DRM_BUFFER_MESA,
@@ -156,4 +177,41 @@ wlsc_drm_init(struct wlsc_compositor *ec, int fd, const char *filename)
 	wl_display_add_global(ec->wl_display, &drm->base, post_drm_device);
 
 	return 0;
+}
+
+struct wlsc_drm_buffer *
+wlsc_drm_buffer_create(struct wlsc_compositor *ec,
+		       int width, int height, struct wl_visual *visual)
+{
+	struct wlsc_drm_buffer *buffer;
+
+	EGLint image_attribs[] = {
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
+		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
+		EGL_NONE
+	};
+
+	image_attribs[1] = width;
+	image_attribs[3] = height;
+
+	buffer = malloc(sizeof *buffer);
+	if (buffer == NULL)
+		return NULL;
+
+	buffer->image =
+		eglCreateDRMImageMESA(ec->display, image_attribs);
+	if (buffer->image == NULL) {
+		free(buffer);
+		return NULL;
+	}
+
+	buffer->base.visual = visual;
+	buffer->base.width = width;
+	buffer->base.height = height;
+	buffer->base.attach = drm_buffer_attach;
+	buffer->base.damage = drm_buffer_damage;
+
+	return buffer;
 }

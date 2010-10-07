@@ -1,6 +1,6 @@
 include ../config.mk
 
-CFLAGS += $(COMPOSITOR_CFLAGS)
+CFLAGS += -I../wayland $(COMPOSITOR_CFLAGS)
 LDLIBS += -L../wayland -lwayland-server $(COMPOSITOR_LIBS) -rdynamic -lrt -lm
 
 all : compositor
@@ -11,7 +11,8 @@ compositor :					\
 	compositor-x11.o			\
 	screenshooter.o				\
 	screenshooter-protocol.o		\
-	drm.o
+	drm.o					\
+	shm.o
 
 screenshooter.c : screenshooter-server-protocol.h
 

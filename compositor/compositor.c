@@ -221,14 +221,6 @@ create_pointer_images(struct wlsc_compositor *ec)
 	GLuint texture;
 	const int width = 32, height = 32;
 
-	EGLint image_attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
-		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
-
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -236,19 +228,15 @@ create_pointer_images(struct wlsc_compositor *ec)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	image_attribs[1] = width;
-	image_attribs[3] = height;
 	count = ARRAY_LENGTH(pointer_images);
 	ec->pointer_buffers = malloc(count * sizeof *ec->pointer_buffers);
 	for (i = 0; i < count; i++) {
-		ec->pointer_buffers[i].image =
-			eglCreateDRMImageMESA(ec->display, image_attribs);
+		ec->pointer_buffers[i] =
+			wlsc_drm_buffer_create(ec, width, height,
+					       &ec->argb_visual);
 		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,
-					     ec->pointer_buffers[i].image);
+					     ec->pointer_buffers[i]->image);
 		texture_from_png(pointer_images[i].filename, width, height);
-		ec->pointer_buffers[i].visual = &ec->argb_visual;
-		ec->pointer_buffers[i].width = width;
-		ec->pointer_buffers[i].height = height;
 	}
 }
 
@@ -413,15 +401,12 @@ surface_destroy(struct wl_client *client,
 
 static void
 surface_attach(struct wl_client *client,
-	       struct wl_surface *surface, struct wl_buffer *buffer_base)
+	       struct wl_surface *surface, struct wl_buffer *buffer)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_buffer *buffer = (struct wlsc_buffer *) buffer_base;
 
-	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
-	es->visual = buffer->visual;
-	wlsc_compositor_schedule_repaint(es->compositor);
+	buffer->attach(buffer, surface);
+	es->buffer = buffer;
 }
 
 static void
@@ -447,6 +432,7 @@ surface_damage(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
+	es->buffer->damage(es->buffer, surface, x, y, width, height);
 	wlsc_compositor_schedule_repaint(es->compositor);
 }
 
@@ -459,13 +445,11 @@ const static struct wl_surface_interface surface_interface = {
 
 static void
 wlsc_input_device_attach(struct wlsc_input_device *device,
-			 struct wlsc_buffer *buffer, int x, int y)
+			 struct wl_buffer *buffer, int x, int y)
 {
 	struct wlsc_compositor *ec = device->ec;
 
-	glBindTexture(GL_TEXTURE_2D, device->sprite->texture);
-	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
-	device->sprite->visual = buffer->visual;
+	buffer->attach(buffer, &device->sprite->base);
 	device->hotspot_x = x;
 	device->hotspot_y = y;
 
@@ -486,7 +470,7 @@ wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
 	struct wlsc_compositor *compositor = device->ec;
 
 	wlsc_input_device_attach(device,
-				 &compositor->pointer_buffers[type],
+				 &compositor->pointer_buffers[type]->base,
 				 pointer_images[type].hotspot_x,
 				 pointer_images[type].hotspot_y);
 }
@@ -982,11 +966,10 @@ static void
 input_device_attach(struct wl_client *client,
 		    struct wl_input_device *device_base,
 		    uint32_t time,
-		    struct wl_buffer *buffer_base, int32_t x, int32_t y)
+		    struct wl_buffer *buffer, int32_t x, int32_t y)
 {
 	struct wlsc_input_device *device =
 		(struct wlsc_input_device *) device_base;
-	struct wlsc_buffer *buffer = (struct wlsc_buffer *) buffer_base;
 
 	if (time < device->pointer_focus_time)
 		return;
@@ -1390,6 +1373,8 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	wl_display_add_object(display, &ec->base.base);
 	if (wl_display_add_global(display, &ec->base.base, NULL))
 		return -1;
+
+	wlsc_shm_init(ec);
 
 	ec->shell.base.interface = &wl_shell_interface;
 	ec->shell.base.implementation = (void (**)(void)) &shell_interface;

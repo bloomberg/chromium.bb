@@ -17,12 +17,14 @@ Core wayland protocol
 
       buffer = drm.create_buffer(); /* buffer with stuff in it */
 
-      cache.upload(buffer, x, y, width, height, int key)
+      cache.upload(buffer, x, y, width, height, int hash)
 
       drm.buffer: id, name, stride etc /* event to announce cache buffer */
 
-      cache.image: key, buffer, x, y, stride /* event to announce
+      cache.image: hash, buffer, x, y, stride /* event to announce
 					      * location in cache */
+
+      cache.reject: hash   /* no upload for you! */
 
       cache.retire: buffer /* cache has stopped using buffer, please
 			    * reupload whatever you had in that buffer */

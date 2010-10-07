@@ -68,6 +68,17 @@
     <event name="authenticated"/>
   </interface>
 
+  <interface name="shm" version="1">
+    <request name="create_buffer">
+      <arg name="id" type="new_id" interface="buffer"/>
+      <arg name="fd" type="fd"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="stride" type="uint"/>
+      <arg name="visual" type="object" interface="visual"/>
+    </request>
+  </interface>
+
   <interface name="buffer" version="1">
     <request name="destroy" type="destructor"/>
   </interface>

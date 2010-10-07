@@ -119,12 +119,19 @@ struct wlsc_drm {
 	char *filename;
 };
 
-struct wlsc_buffer {
+struct wlsc_drm_buffer {
 	struct wl_buffer base;
-	struct wlsc_compositor *compositor;
-	int32_t width, height;
 	EGLImageKHR image;
-	struct wl_visual *visual;
+};
+
+struct wlsc_shm {
+	struct wl_object base;
+};
+
+struct wlsc_shm_buffer {
+	struct wl_buffer base;
+	int32_t stride;
+	void *data;
 };
 
 struct wlsc_compositor {
@@ -132,11 +139,12 @@ struct wlsc_compositor {
 	struct wl_visual argb_visual, premultiplied_argb_visual, rgb_visual;
 
 	struct wlsc_drm drm;
+	struct wlsc_shm shm;
 	EGLDisplay display;
 	EGLContext context;
 	GLuint fbo, vbo;
 	GLuint proj_uniform, tex_uniform;
-	struct wlsc_buffer *pointer_buffers;
+	struct wlsc_drm_buffer **pointer_buffers;
 	struct wl_display *wl_display;
 
 	/* We implement the shell interface. */
@@ -180,6 +188,7 @@ struct wlsc_surface {
 	struct wlsc_matrix matrix;
 	struct wlsc_matrix matrix_inv;
 	struct wl_visual *visual;
+	struct wl_buffer *buffer;
 };
 
 void
@@ -197,6 +206,10 @@ wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs);
 void
 wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor);
 
+struct wlsc_drm_buffer *
+wlsc_drm_buffer_create(struct wlsc_compositor *ec,
+		       int width, int height, struct wl_visual *visual);
+
 int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display);
 void
@@ -207,6 +220,13 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);
 int
 wlsc_drm_init(struct wlsc_compositor *ec, int fd, const char *filename);
+
+int
+wlsc_shm_init(struct wlsc_compositor *ec);
+
+struct wl_buffer *
+wl_buffer_create_drm(struct wlsc_compositor *compositor,
+		     struct wl_visual *visual);
 
 struct wlsc_compositor *
 x11_compositor_create(struct wl_display *display);

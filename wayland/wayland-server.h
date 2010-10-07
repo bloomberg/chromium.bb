@@ -107,6 +107,13 @@ struct wl_resource {
 
 struct wl_buffer {
 	struct wl_resource base;
+	struct wl_compositor *compositor;
+	struct wl_visual *visual;
+	int32_t width, height;
+	void (*attach)(struct wl_buffer *buffer, struct wl_surface *surface);
+	void (*damage)(struct wl_buffer *buffer,
+		       struct wl_surface *surface,
+		       int32_t x, int32_t y, int32_t width, int32_t height);
 };
 
 struct wl_surface {
