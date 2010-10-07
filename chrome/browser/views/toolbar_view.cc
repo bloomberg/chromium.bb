@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #if defined(OS_CHROMEOS)
@@ -185,6 +186,12 @@ void ToolbarView::Init(Profile* profile) {
   browser_actions_->Init();
 
   SetProfile(profile);
+
+  // Accessibility specific tooltip text.
+  if (Singleton<BrowserAccessibilityState>()->IsAccessibleBrowser()) {
+    back_->SetTooltipText(l10n_util::GetString(IDS_ACCNAME_TOOLTIP_BACK));
+    forward_->SetTooltipText(l10n_util::GetString(IDS_ACCNAME_TOOLTIP_FORWARD));
+  }
 }
 
 void ToolbarView::SetProfile(Profile* profile) {
