@@ -24,6 +24,27 @@ struct timespec;
 union NaClMultimediaEvent;
 
 #define NACL_SYSCALL(s) ((TYPE_nacl_ ## s) NACL_SYSCALL_ADDR(NACL_sys_ ## s))
+
+/*
+ * These hook functions and the GC_WRAP macro are for wrapping a subset of
+ * syscalls that are likely to take a long time, which will interfere with
+ * thread parking for garbage collection. In particular, we don't want to
+ * wrap all of the syscalls because some of them are used within the thread
+ * parking instrumentation (tls related calls).
+ */
+
+extern void nacl_pre_syscall_hook();
+extern void nacl_post_syscall_hook();
+
+#define NACL_GC_WRAP_SYSCALL(_expr) \
+  ({                                \
+    __typeof__(_expr) __sysret;     \
+    nacl_pre_syscall_hook();        \
+    __sysret = _expr;               \
+    nacl_post_syscall_hook();       \
+    __sysret;                       \
+  })
+
 /* ============================================================ */
 /* files */
 /* ============================================================ */

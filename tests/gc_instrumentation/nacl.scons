@@ -1,0 +1,26 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+import os
+
+Import('env')
+
+# ARM doesn't have -finstrument-for-thread-suspension currently
+if env['TARGET_ARCHITECTURE'] != 'arm':
+  inputs = ['gc_noinst.c']
+
+  # Compile gc_instrumentation.c with -finstrument-for-thread-suspension
+  env_inst = env.Clone()
+  env_inst.Append(CFLAGS=['-finstrument-for-thread-suspension'])
+  inputs += env_inst.ComponentObject('gc_instrumentation.c')
+
+  env.Replace(EXTRA_LIBS=['pthread'])
+  env.ComponentProgram('gc_instrumentation.nexe', inputs)
+
+  node = env.CommandSelLdrTestNacl(
+        'gc_instrumentation.out',
+        command=[env.File('gc_instrumentation.nexe')] )
+
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_gc_instrumentation_test')

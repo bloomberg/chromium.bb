@@ -21,6 +21,7 @@ sources = [
     'dyncode_copy.c',
     '_exit.c',
     'fstat.c',
+    'gc_stub.c',
     'getdents.c',
     'getpid.c',
     'gettimeofday.c',

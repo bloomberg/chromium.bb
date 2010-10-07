@@ -15,7 +15,7 @@
 int nanosleep(const struct timespec *req,
               struct timespec *rem) {
   int retval;
-  retval = NACL_SYSCALL(nanosleep)(req, rem);
+  retval = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(nanosleep)(req, rem));
   if (retval < 0) {
     errno = -retval;
     retval = -1;

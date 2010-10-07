@@ -65,27 +65,29 @@ int pthread_cond_destroy (pthread_cond_t *cond) {
  */
 int pthread_cond_signal (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return -NACL_SYSCALL(cond_signal)(cond->handle);
+  return -NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(cond_signal)(cond->handle));
 }
 
 int pthread_cond_broadcast (pthread_cond_t *cond) {
   pthread_cond_validate(cond);
-  return -NACL_SYSCALL(cond_broadcast)(cond->handle);
+  return -NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(cond_broadcast)(cond->handle));
 }
 
 int pthread_cond_wait (pthread_cond_t *cond,
                        pthread_mutex_t *mutex) {
   pthread_cond_validate(cond);
-  return -NACL_SYSCALL(cond_wait)(cond->handle, mutex->mutex_handle);
+  return -NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(cond_wait)(cond->handle,
+                                                       mutex->mutex_handle));
 }
 
 int pthread_cond_timedwait_abs(pthread_cond_t *cond,
                                pthread_mutex_t *mutex,
                                struct timespec *abstime) {
   pthread_cond_validate(cond);
-  return -NACL_SYSCALL(cond_timed_wait_abs)(cond->handle,
-                                            mutex->mutex_handle,
-                                            abstime);
+  return -NACL_GC_WRAP_SYSCALL(
+            NACL_SYSCALL(cond_timed_wait_abs)(cond->handle,
+                                              mutex->mutex_handle,
+                                              abstime));
 }
 
 int nc_pthread_condvar_ctor(pthread_cond_t *cond) {

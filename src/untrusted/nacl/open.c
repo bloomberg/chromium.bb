@@ -22,7 +22,7 @@ int open(char const *pathname, int flags, ...) {
   mode_t mode;
   va_start(ap, flags);
   mode = va_arg(ap, mode_t);
-  retval = NACL_SYSCALL(open)(pathname, flags, mode);
+  retval = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(open)(pathname, flags, mode));
   va_end(ap);
   if (retval < 0) {
     errno = -retval;

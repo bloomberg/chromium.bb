@@ -16,7 +16,7 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int sched_yield() {
-  int retval = NACL_SYSCALL(sched_yield)();
+  int retval = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(sched_yield)());
   if (retval < 0) {
     errno = -retval;
     return -1;

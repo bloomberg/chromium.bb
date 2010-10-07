@@ -36,11 +36,11 @@ int sem_destroy (sem_t *sem) {
 }
 
 int sem_wait (sem_t *sem) {
-  return NACL_SYSCALL(sem_wait)(sem->handle);
+  return NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(sem_wait)(sem->handle));
 }
 
 int sem_post (sem_t *sem) {
-  int32_t rv = NACL_SYSCALL(sem_post)(sem->handle);
+  int rv = NACL_SYSCALL(sem_post)(sem->handle);
   if (0 != rv) {
     errno = -rv;
     return -1;

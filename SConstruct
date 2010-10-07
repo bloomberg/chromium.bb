@@ -1579,6 +1579,7 @@ nacl_env.Append(
     'tests/fake_browser_ppapi/nacl.scons',
     'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
+    'tests/gc_instrumentation/nacl.scons',
     'tests/hello_world/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
     'tests/imc_sockets/nacl.scons',

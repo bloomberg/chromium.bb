@@ -30,6 +30,9 @@
 
 Import('env')
 
+# (elijahtaylor): Removing so braced groups will work for GC syscall wrapping.
+env.FilterOut(CCFLAGS=['-pedantic'])
+
 env.ComponentLibrary('libpthread', ['nc_thread.c',
                                     'nc_mutex.c',
                                     'nc_condvar.c',

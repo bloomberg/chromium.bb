@@ -16,7 +16,7 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 int write(int desc, void const *buf, size_t count) {
-  int retval = NACL_SYSCALL(write)(desc, buf, count);
+  int retval = NACL_GC_WRAP_SYSCALL(NACL_SYSCALL(write)(desc, buf, count));
   if (retval < 0) {
     errno = -retval;
     return -1;
