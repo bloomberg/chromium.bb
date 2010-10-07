@@ -9,15 +9,9 @@ import sys
 
 import breakpad
 
-from git_cl_repo import git_cl
-from git_cl_repo import upload
-
 import presubmit_support
 import scm
 import watchlists
-
-# Really ugly hack to quiet upload.py
-upload.verbosity = 0
 
 def Backquote(cmd, cwd=None):
   """Like running `cmd` in a shell script."""
@@ -49,11 +43,10 @@ class ChangeOptions:
     # We use the sha1 of HEAD as a name of this change.
     name = Backquote(['git', 'rev-parse', 'HEAD'])
     files = scm.GIT.CaptureStatus([root], upstream_branch)
-    cl = git_cl.Changelist()
-    issue = cl.GetIssue()
-    patchset = cl.GetPatchset()
+    issue = BackquoteAsInteger(['git', 'cl', 'status', '--field=id'])
+    patchset = BackquoteAsInteger(['git', 'cl', 'status', '--field=patch'])
     if issue:
-      description = cl.GetDescription()
+      description = Backquote(['git', 'cl', 'status', '--field=desc'])
     else:
       # If the change was never uploaded, use the log messages of all commits
       # up to the branch point, as git cl upload will prefill the description
