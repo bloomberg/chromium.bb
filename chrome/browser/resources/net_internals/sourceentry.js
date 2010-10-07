@@ -228,6 +228,8 @@ SourceEntry.prototype.getDescription = function() {
     case LogSourceType.HOST_RESOLVER_IMPL_REQUEST:
     case LogSourceType.HOST_RESOLVER_IMPL_JOB:
       return e.params.host;
+    case LogSourceType.SPDY_SESSION:
+      return e.params.host + ' (' + e.params.proxy + ')';
   }
 
   return '';
