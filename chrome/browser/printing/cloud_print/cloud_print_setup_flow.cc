@@ -430,7 +430,8 @@ void CloudPrintSetupFlow::ShowGaiaFailed(const GoogleServiceAuthError& error) {
 }
 
 void CloudPrintSetupFlow::ShowSetupDone() {
-  std::wstring javascript = L"setMessage('You are all set!');";
+  std::wstring message = l10n_util::GetString(IDS_CLOUD_PRINT_SETUP_DONE);
+  std::wstring javascript = L"setMessage('" + message + L"');";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 
   if (dom_ui_)

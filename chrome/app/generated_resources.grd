@@ -5115,6 +5115,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE" desc="Title of the cloud print setup dialog.">
         Set up cloud printing
       </message>
+      <message name="IDS_CLOUD_PRINT_SETUP_DONE" desc="Message on completed set up of cloud print.">
+        You have successfully enabled <ph name="CLOUD_PRINT_NAME">Cloud Print</ph>!
+      </message>
 
       <!-- Print Preview -->
       <message name="IDS_PRINTPREVIEW_TITLE" desc="Title for print preview page ">
