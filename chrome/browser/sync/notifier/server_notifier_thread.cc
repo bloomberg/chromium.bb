@@ -110,6 +110,11 @@ void ServerNotifierThread::StartInvalidationListener() {
 
 void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  // |chrome_invalidation_client_| can be NULL if we receive an
+  // OnDisconnect() event after we gets posted but before we run.
+  if (!chrome_invalidation_client_.get()) {
+    return;
+  }
   chrome_invalidation_client_->RegisterTypes();
   parent_message_loop_->PostTask(
       FROM_HERE,
