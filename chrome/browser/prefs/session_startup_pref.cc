@@ -95,17 +95,18 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
 
   // Always load the urls, even if the pref type isn't URLS. This way the
-  // preferenes panels can show the user their last choice.
-  ListValue* url_pref_list = prefs->GetMutableList(
+  // preferences panels can show the user their last choice.
+  const ListValue* url_pref_list = prefs->GetList(
       prefs::kURLsToRestoreOnStartup);
-  DCHECK(url_pref_list);
-  for (size_t i = 0; i < url_pref_list->GetSize(); ++i) {
-    Value* value = NULL;
-    if (url_pref_list->Get(i, &value)) {
-      std::string url_text;
-      if (value->GetAsString(&url_text)) {
-        GURL fixed_url = URLFixerUpper::FixupURL(url_text, "");
-        pref.urls.push_back(fixed_url);
+  if (url_pref_list) {
+    for (size_t i = 0; i < url_pref_list->GetSize(); ++i) {
+      Value* value = NULL;
+      if (url_pref_list->Get(i, &value)) {
+        std::string url_text;
+        if (value->GetAsString(&url_text)) {
+          GURL fixed_url = URLFixerUpper::FixupURL(url_text, "");
+          pref.urls.push_back(fixed_url);
+        }
       }
     }
   }

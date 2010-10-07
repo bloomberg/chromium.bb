@@ -1381,6 +1381,7 @@
         'browser/prefs/pref_service_unittest.cc',
         'browser/prefs/pref_set_observer_unittest.cc',
         'browser/prefs/pref_value_store_unittest.cc',
+        'browser/prefs/session_startup_pref_unittest.cc',
         'browser/printing/print_dialog_cloud_unittest.cc',
         'browser/printing/print_job_unittest.cc',
         'browser/process_info_snapshot_mac_unittest.cc',
