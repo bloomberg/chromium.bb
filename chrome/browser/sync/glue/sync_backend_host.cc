@@ -22,6 +22,8 @@
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/sessions/session_state.h"
+// TODO(tim): Remove this! We should have a syncapi pass-thru instead.
+#include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -115,12 +117,13 @@ void SyncBackendHost::Initialize(
     registrar_.routing_info[(*it)] = GROUP_PASSIVE;
   }
 
-  // TODO(tim): This should be encryption-specific instead of passwords
-  // specific.  For now we have to do this to avoid NIGORI node lookups when
-  // we haven't downloaded that node.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncPasswords)) {
+  // TODO(tim): Remove this special case once NIGORI is populated by
+  // default.  We piggy back off of the passwords flag for now to not
+  // require both encryption and passwords flags.
+  bool enable_encryption = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncPasswords) || types.count(syncable::PASSWORDS);
+  if (enable_encryption)
     registrar_.routing_info[syncable::NIGORI] = GROUP_PASSIVE;
-  }
 
   InitCore(Core::DoInitializeOptions(
       sync_service_url,
@@ -144,6 +147,20 @@ std::string SyncBackendHost::RestoreEncryptionBootstrapToken() {
   PrefService* prefs = profile_->GetPrefs();
   std::string token = prefs->GetString(prefs::kEncryptionBootstrapToken);
   return token;
+}
+
+bool SyncBackendHost::IsNigoriEnabled() const {
+  AutoLock lock(registrar_lock_);
+  // Note that NIGORI is only ever added/removed from routing_info once,
+  // during initialization / first configuration, so there is no real 'race'
+  // possible here or possibility of stale return value.
+  return registrar_.routing_info.find(syncable::NIGORI) !=
+      registrar_.routing_info.end();
+}
+
+bool SyncBackendHost::IsCryptographerReady() const {
+  return syncapi_initialized_ &&
+      GetUserShareHandle()->dir_manager->cryptographer()->is_ready();
 }
 
 sync_api::HttpPostProviderFactory* SyncBackendHost::MakeHttpBridgeFactory(
@@ -170,6 +187,12 @@ void SyncBackendHost::StartSyncingWithServer() {
 }
 
 void SyncBackendHost::SetPassphrase(const std::string& passphrase) {
+  if (!IsNigoriEnabled()) {
+    LOG(WARNING) << "Silently dropping SetPassphrase request.";
+    return;
+  }
+
+  // If encryption is enabled and we've got a SetPassphrase
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoSetPassphrase,
                         passphrase));

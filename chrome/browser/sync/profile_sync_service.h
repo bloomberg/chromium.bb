@@ -328,9 +328,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // for sensitive data types.
   virtual bool IsCryptographerReady() const;
 
-  // Sets the Cryptographer's passphrase. This will check asynchronously whether
-  // the passphrase is valid and notify ProfileSyncServiceObservers via the
-  // NotificationService when the outcome is known.
+  // Sets the Cryptographer's passphrase, or caches it until that is possible.
+  // This will check asynchronously whether the passphrase is valid and notify
+  // ProfileSyncServiceObservers via the NotificationService when the outcome
+  // is known.
   virtual void SetPassphrase(const std::string& passphrase);
 
   // Returns whether processing changes is allowed.  Check this before doing
@@ -483,6 +484,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // we don't StartUp until we have a valid token, which happens after valid
   // credentials were provided.
   std::string cached_passphrase_;
+
+  // Whether we have seen a SYNC_PASSPHRASE_REQUIRED since initializing the
+  // backend, telling us that it is safe to send a passphrase down ASAP.
+  bool observed_passphrase_required_;
 
   // Keep track of where we are in a server clear operation
   ClearServerDataState clear_server_data_state_;

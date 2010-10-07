@@ -1863,7 +1863,7 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
         sync_api::ReadTransaction trans(GetUserShare());
         sync_api::ReadNode node(&trans);
         if (!node.InitByTagLookup(kNigoriTag)) {
-          NOTREACHED();
+          DCHECK(!event.snapshot->is_share_usable);
           return;
         }
         const sync_pb::NigoriSpecifics& nigori = node.GetNigoriSpecifics();

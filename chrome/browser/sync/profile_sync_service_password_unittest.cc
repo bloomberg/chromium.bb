@@ -144,7 +144,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       service_.reset(new TestProfileSyncService(&factory_, &profile_,
                                                 "test_user", false, root_task));
       service_->RegisterPreferences();
-      profile_.GetPrefs()->SetBoolean(prefs::kSyncPasswords, true); 
+      profile_.GetPrefs()->SetBoolean(prefs::kSyncPasswords, true);
       service_->set_num_expected_resumes(num_resume_expectations);
       service_->set_num_expected_pauses(num_pause_expectations);
       PasswordDataTypeController* data_type_controller =

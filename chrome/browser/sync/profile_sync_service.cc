@@ -23,16 +23,13 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
-#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/token_migrator.h"
-#include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_details.h"
@@ -73,6 +70,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       unrecoverable_error_detected_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
       token_migrator_(NULL),
+      observed_passphrase_required_(false),
       clear_server_data_state_(CLEAR_NOT_STARTED) {
   DCHECK(factory);
   DCHECK(profile);
@@ -307,7 +305,7 @@ void ProfileSyncService::RegisterPreferences() {
 #endif
 
   pref_service->RegisterBooleanPref(prefs::kSyncBookmarks, true);
-  pref_service->RegisterBooleanPref(prefs::kSyncPasswords, false);
+  pref_service->RegisterBooleanPref(prefs::kSyncPasswords, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncPreferences, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncAutofill, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);
@@ -408,26 +406,40 @@ void ProfileSyncService::StartUp() {
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
   // Stop all data type controllers, if needed.
-  if (data_type_manager_.get() &&
-      data_type_manager_->state() != DataTypeManager::STOPPED) {
-    data_type_manager_->Stop();
-  }
+  if (data_type_manager_.get()) {
+    if (data_type_manager_->state() != DataTypeManager::STOPPED) {
+      data_type_manager_->Stop();
+    }
 
-  data_type_manager_.reset();
+    registrar_.Remove(this,
+                      NotificationType::SYNC_CONFIGURE_START,
+                      Source<DataTypeManager>(data_type_manager_.get()));
+    registrar_.Remove(this,
+                      NotificationType::SYNC_CONFIGURE_DONE,
+                      Source<DataTypeManager>(data_type_manager_.get()));
+    data_type_manager_.reset();
+  }
 
   // Move aside the backend so nobody else tries to use it while we are
   // shutting it down.
   scoped_ptr<SyncBackendHost> doomed_backend(backend_.release());
-
-  if (doomed_backend.get())
+  if (doomed_backend.get()) {
     doomed_backend->Shutdown(sync_disabled);
 
-  doomed_backend.reset();
+    registrar_.Remove(this,
+                   NotificationType::SYNC_PASSPHRASE_REQUIRED,
+                   Source<SyncBackendHost>(doomed_backend.get()));
+    registrar_.Remove(this,
+                   NotificationType::SYNC_PASSPHRASE_ACCEPTED,
+                   Source<SyncBackendHost>(doomed_backend.get()));
 
+    doomed_backend.reset();
+  }
 
   // Clear various flags.
   is_auth_in_progress_ = false;
   backend_initialized_ = false;
+  observed_passphrase_required_ = false;
   last_attempted_user_email_.clear();
 }
 
@@ -819,24 +831,7 @@ void ProfileSyncService::GetRegisteredDataTypes(
 }
 
 bool ProfileSyncService::IsCryptographerReady() const {
-  return backend_.get() && backend_initialized_ &&
-      backend_->GetUserShareHandle()->dir_manager->cryptographer()->is_ready();
-}
-
-void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
-  // TODO(tim): This should be encryption-specific instead of passwords
-  // specific.  For now we have to do this to avoid NIGORI node lookups when
-  // we haven't downloaded that node.
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kSyncPasswords)) {
-    LOG(WARNING) << "Silently dropping SetPassphrase request.";
-    return;
-  }
-
-  if (!sync_initialized()) {
-    cached_passphrase_ = passphrase;
-  } else {
-    backend_->SetPassphrase(passphrase);
-  }
+  return backend_.get() && backend_->IsCryptographerReady();
 }
 
 void ProfileSyncService::ConfigureDataTypeManager() {
@@ -877,6 +872,14 @@ void ProfileSyncService::DeactivateDataType(
     backend_->DeactivateDataType(data_type_controller, change_processor);
 }
 
+void ProfileSyncService::SetPassphrase(const std::string& passphrase) {
+  if (ShouldPushChanges() || observed_passphrase_required_) {
+    backend_->SetPassphrase(passphrase);
+  } else {
+    cached_passphrase_ = passphrase;
+  }
+}
+
 void ProfileSyncService::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
@@ -913,6 +916,9 @@ void ProfileSyncService::Observe(NotificationType type,
     }
     case NotificationType::SYNC_PASSPHRASE_REQUIRED: {
       DCHECK(backend_.get());
+      DCHECK(backend_->IsNigoriEnabled());
+      observed_passphrase_required_ = true;
+
       if (!cached_passphrase_.empty()) {
         SetPassphrase(cached_passphrase_);
         cached_passphrase_.clear();
@@ -955,8 +961,8 @@ void ProfileSyncService::Observe(NotificationType type,
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_SUCCESSFUL: {
-      if (!profile_->GetPrefs()->GetBoolean(
-          prefs::kSyncUsingSecondaryPassphrase)) {
+      PrefService* prefs = profile_->GetPrefs();
+      if (!prefs->GetBoolean(prefs::kSyncUsingSecondaryPassphrase)) {
         const GoogleServiceSigninSuccessDetails* successful =
             (Details<const GoogleServiceSigninSuccessDetails>(details).ptr());
         SetPassphrase(successful->password);
