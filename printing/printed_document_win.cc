@@ -4,8 +4,10 @@
 
 #include "printing/printed_document.h"
 
+#include "app/win_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 #include "printing/page_number.h"
 #include "printing/page_overlays.h"
@@ -110,6 +112,34 @@ void PrintedDocument::RenderPrintedPage(
                     font);
   PrintHeaderFooter(context, page, PageOverlays::RIGHT, PageOverlays::BOTTOM,
                     font);
+  int res = RestoreDC(context, saved_state);
+  DCHECK_NE(res, 0);
+}
+
+void PrintedDocument::Immutable::SetDocumentDate() {
+  // Use the native time formatting for printing on Windows.
+  SYSTEMTIME systemtime;
+  GetLocalTime(&systemtime);
+  date_ =
+      WideToUTF16Hack(win_util::FormatSystemDate(systemtime, std::wstring()));
+  time_ =
+      WideToUTF16Hack(win_util::FormatSystemTime(systemtime, std::wstring()));
+}
+
+void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,
+                                       std::wstring text,
+                                       gfx::Rect bounds) const {
+  // Save the state for the clipping region.
+  int saved_state = SaveDC(context);
+  DCHECK_NE(saved_state, 0);
+
+  int result = IntersectClipRect(context, bounds.x(), bounds.y(),
+                                 bounds.right() + 1, bounds.bottom() + 1);
+  DCHECK(result == SIMPLEREGION || result == COMPLEXREGION);
+  TextOut(context,
+          bounds.x(), bounds.y(),
+          text.c_str(),
+          static_cast<int>(text.size()));
   int res = RestoreDC(context, saved_state);
   DCHECK_NE(res, 0);
 }

@@ -46,6 +46,7 @@
         'printed_document.cc',
         'printed_document_cairo.cc',
         'printed_document_mac.cc',
+        'printed_document_posix.cc',
         'printed_document_win.cc',
         'printed_document.h',
         'printed_page.cc',

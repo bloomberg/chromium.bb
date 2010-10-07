@@ -40,4 +40,10 @@ void PrintedDocument::RenderPrintedPage(
   // TODO(stuartmorgan): Print the header and footer.
 }
 
+void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,
+                                       std::wstring text,
+                                       gfx::Rect bounds) const {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace printing

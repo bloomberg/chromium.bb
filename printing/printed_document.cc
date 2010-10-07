@@ -17,7 +17,6 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/time.h"
 #include "base/i18n/time_formatting.h"
 #include "gfx/font.h"
 #include "printing/page_number.h"
@@ -26,12 +25,6 @@
 #include "printing/printed_page.h"
 #include "printing/units.h"
 #include "skia/ext/platform_device.h"
-
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
-
-using base::Time;
 
 namespace {
 
@@ -245,25 +238,7 @@ void PrintedDocument::PrintHeaderFooter(gfx::NativeDrawingContext context,
     }
   }
 
-  // TODO(stuartmorgan): Factor out this platform-specific part into another
-  // method that can be moved into the platform files.
-#if defined(OS_WIN)
-  // Save the state (again) for the clipping region.
-  int saved_state = SaveDC(context);
-  DCHECK_NE(saved_state, 0);
-
-  int result = IntersectClipRect(context, bounding.x(), bounding.y(),
-                                 bounding.right() + 1, bounding.bottom() + 1);
-  DCHECK(result == SIMPLEREGION || result == COMPLEXREGION);
-  TextOut(context,
-          bounding.x(), bounding.y(),
-          output.c_str(),
-          static_cast<int>(output.size()));
-  int res = RestoreDC(context, saved_state);
-  DCHECK_NE(res, 0);
-#else  // OS_WIN
-  NOTIMPLEMENTED();
-#endif  // OS_WIN
+  DrawHeaderFooter(context, output, bounding);
 }
 
 void PrintedDocument::DebugDump(const PrintedPage& page) {
@@ -314,20 +289,7 @@ PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
       name_(source->RenderSourceName()),
       url_(source->RenderSourceUrl()),
       cookie_(cookie) {
-  // Setup the document's date.
-#if defined(OS_WIN)
-  // On Windows, use the native time formatting for printing.
-  SYSTEMTIME systemtime;
-  GetLocalTime(&systemtime);
-  date_ =
-      WideToUTF16Hack(win_util::FormatSystemDate(systemtime, std::wstring()));
-  time_ =
-      WideToUTF16Hack(win_util::FormatSystemTime(systemtime, std::wstring()));
-#else  // OS_WIN
-  Time now = Time::Now();
-  date_ = WideToUTF16Hack(base::TimeFormatShortDateNumeric(now));
-  time_ = WideToUTF16Hack(base::TimeFormatTimeOfDay(now));
-#endif  // OS_WIN
+  SetDocumentDate();
 }
 
 PrintedDocument::Immutable::~Immutable() {

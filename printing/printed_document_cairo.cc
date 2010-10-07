@@ -27,4 +27,10 @@ void PrintedDocument::RenderPrintedPage(
   NOTIMPLEMENTED();
 }
 
+void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,
+                                       std::wstring text,
+                                       gfx::Rect bounds) const {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace printing

@@ -149,6 +149,9 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
               int cookie);
     ~Immutable();
 
+    // Sets the document's |date_| and |time_|.
+    void SetDocumentDate();
+
     // Print settings used to generate this document. Immutable.
     PrintSettings settings_;
 
@@ -183,6 +186,15 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
                          PageOverlays::HorizontalPosition x,
                          PageOverlays::VerticalPosition y,
                          const gfx::Font& font) const;
+
+  // Draws the computed |text| into |context| taking into account the bounding
+  // region |bounds|. |bounds| is the position in which to draw |text| and
+  // the minimum area needed to contain |text| which may not be larger than the
+  // header or footer itself.
+  // TODO(jhawkins): string16.
+  void DrawHeaderFooter(gfx::NativeDrawingContext context,
+                        std::wstring text,
+                        gfx::Rect bounds) const;
 
   void DebugDump(const PrintedPage& page);
 
