@@ -6,32 +6,39 @@
 var SUBMENU_OPEN_DELAY_MS = 200;
 // How long to wait to close submenu when mouse left.
 var SUBMENU_CLOSE_DELAY_MS = 500;
+// Scroll repeat interval.
+var SCROLL_INTERVAL_MS = 20;
+// Scrolling amount in pixel.
+var SCROLL_TICK_PX = 4;
 // Regular expression to match/find mnemonic key.
-var MNEMONIC_REGEXP = /&(.)/;
+var MNEMONIC_REGEXP = /([^&]*)&(.)(.*)/;
 
 /**
  * Sends 'click' DOMUI message.
  */
-function sendClick(id) {
-  chrome.send('click', [ id + '' ]);
+function sendClick(index) {
+  chrome.send('click', [String(index)]);
 }
 
 /**
  * MenuItem class.
+ * @param {Menu} menu A {@code Menu} object to which this menu item will be
+ * added to.
+ * @param {Object} attrs JSON object that represents this menu items
+ *      properties.  This is created from menu model in C code.  See
+ *      chromeos/views/native_menu_domui.cc.
  */
-function MenuItem(menu, id, attrs) {
+function MenuItem(menu, attrs) {
   this.menu_ = menu;
-  this.id = id;
   this.attrs = attrs;
 }
 
 MenuItem.prototype = {
   /**
    * Initialize the MenuItem.
-   * @param {boolean} has_icon True if the menu has left icon.
-   * @public
+   * @param {boolean} hasIcon True if the menu has left icon.
    */
-  init: function(has_icon) {
+  init: function(hasIcon) {
     this.div = document.createElement('div');
     var attrs = this.attrs;
     if (attrs.type == 'separator') {
@@ -40,101 +47,90 @@ MenuItem.prototype = {
                attrs.type == 'submenu' ||
                attrs.type == 'check' ||
                attrs.type == 'radio') {
-      this.initMenuItem(has_icon);
+      this.initMenuItem_(hasIcon);
     } else {
-      this.div.className = 'menu_item disabled';
-      this.div.innerHTML = 'unknown';
+      this.div.className = 'menu-item disabled';
+      this.div.textContent = 'unknown';
     }
-    this.div.classList.add(has_icon ? 'has_icon' : 'noicon');
+    this.div.classList.add(hasIcon ? 'has-icon' : 'noicon');
   },
 
   /**
-   * Select this item.
-   * @public
+   * Chagnes the selection state of the menu item.
+   * @param {boolean} b True to set the selection, or false otherwise.
    */
-  select: function() {
-    this.div.classList.add('selected');
-    this.menu_.setSelection(this);
+  set select(b) {
+    if (b) {
+      this.div.classList.add('selected');
+      this.menu_.selectedItem = this;
+    } else {
+      this.div.classList.remove('selected');
+    }
   },
 
   /**
-   * Unselect this item.
-   * @public
-   */
-  unselect: function() {
-    this.div.classList.remove('selected');
-  },
-
-  /**
-   * Activat the menu item.
-   * @public
+   * Activate the menu item.
    */
   activate: function() {
     if (this.attrs.type == 'submenu') {
       this.menu_.openSubmenu(this);
     } else if (this.attrs.type != 'separator' &&
                this.div.className.indexOf('selected') >= 0) {
-      sendClick(this.id);
+      sendClick(this.menu_.getMenuItemIndexOf(this));
     }
   },
 
   /**
    * Sends open_submenu DOMUI message.
-   * @public
    */
   sendOpenSubmenuCommand: function() {
-    chrome.send('open_submenu', [ this.id + '', this.getYCoord_() + '']);
-  },
-
-  /**
-   * Returns y coordinate of this menu item
-   * in the menu window.
-   * @private
-   */
-  getYCoord_: function() {
-    var element = this.div;
-    var y = 0;
-    while (element != null) {
-      y += element.offsetTop;
-      element = element.offsetParent;
-    }
-    return y;
+    chrome.send('open_submenu',
+                [String(this.menu_.getMenuItemIndexOf(this)),
+                 String(this.div.getBoundingClientRect().top)]);
   },
 
   /**
    * Internal method to initiailze the MenuItem's div element.
    * @private
    */
-  initMenuItem: function(has_icon) {
+  initMenuItem_: function(hasIcon) {
     var attrs = this.attrs;
-    this.div.className = 'menu_item ' + attrs.type;
+    this.div.className = 'menu-item ' + attrs.type;
     this.menu_.addHandlers(this);
     var mnemonic = MNEMONIC_REGEXP.exec(attrs.label);
     if (mnemonic) {
-       var c = mnemonic[1];
+       var c = mnemonic[2];
        this.menu_.registerMnemonicKey(c, this);
     }
-    var text = attrs.label.replace(
-        MNEMONIC_REGEXP, '<span class="mnemonic">$1</span>');
-    if (has_icon) {
-      var icon = document.createElement('image');
-      icon.className = 'left_icon';
+    if (hasIcon) {
+      this.div.classList.add('left-icon');
 
+      var url;
       if (attrs.type == 'radio') {
-        icon.src = attrs.checked ?
-          menu_.config_.radioOnUrl : menu_.config_.radioOffUrl;
+        url = attrs.checked ?
+            this.menu_.config_.radioOnUrl :
+            this.menu_.config_.radioOffUrl;
       } else if (attrs.icon) {
-        icon.src = attrs.icon;
+        url = attrs.icon;
       } else if (attrs.type == 'check' && attrs.checked) {
-        icon.src = menu_.config_.checkUrl;
-      } else {
-        icon.style.width = '12px';
+        url = this.menu_.config_.checkUrl;
       }
-      this.div.appendChild(icon);
+      if (url) {
+        this.div.style.backgroundImage = "url(" + url + ")";
+      }
     }
     var label = document.createElement('div');
-    label.className = 'menu_label';
-    label.innerHTML = text;
+    label.className = 'menu-label';
+
+    if (!mnemonic) {
+      label.textContent = attrs.label;
+    } else {
+      label.appendChild(document.createTextNode(mnemonic[1]));
+      label.appendChild(document.createElement('span'));
+      label.appendChild(document.createTextNode(mnemonic[3]));
+      label.childNodes[1].className = 'mnemonic';
+      label.childNodes[1].textContent = mnemonic[2];
+    }
 
     if (attrs.font) {
       label.style.font = attrs.font;
@@ -142,10 +138,11 @@ MenuItem.prototype = {
     this.div.appendChild(label);
 
     if (attrs.type == 'submenu') {
-      var icon = document.createElement('image');
-      icon.src = menu_.config_.arrowUrl;
-      icon.className = 'right_icon';
-      this.div.appendChild(icon);
+      // This overrides left-icon's position, but it's OK as submenu
+      // shoudln't have left-icon.
+      this.div.classList.add('right-icon');
+      this.div.style.backgroundImage =
+          "url(" + this.menu_.config_.arrowUrl + ")";
     }
   },
 };
@@ -154,200 +151,269 @@ MenuItem.prototype = {
  * Menu class.
  */
 function Menu() {
-  /* configuration object */
-  this.config_ = null;
-  /* currently selected menu item */
-  this.current_ = null;
-  /* the id of last element */
-  this.last_id_ = -1;
-  /* timers for opening/closing submenu */
-  this.open_submenu_timer_ = 0;
-  this.close_submenu_timer_ = 0;
-  /* pointer to a submenu currently shown, if any */
-  this.submenu_shown_ = null;
-  /* list of menu items */
+  // List of menu items
   this.items_ = [];
-  /* map from mnemonic character to item to activate */
+  // Map from mnemonic character to item to activate
   this.mnemonics_ = {};
-  /* true if this menu is root */
-  this.is_root_ = false;
 }
 
 Menu.prototype = {
   /**
+   * Configuration object.
+   * @type {Object}
+   */
+  config_ : null,
+  /**
+   * Currently selected menu item.
+   * @type {MenuItem}
+   */
+  current_ : null,
+  /**
+   * Timers for opening/closing submenu.
+   * @type {number}
+   */
+  openSubmenuTimer_ : 0,
+  closeSubmenuTimer_ : 0,
+  /**
+   * Auto scroll timer.
+   * @type {number}
+   */
+  scrollTimer_ : 0,
+  /**
+   * Pointer to a submenu currently shown, if any.
+   * @type {MenuItem}
+   */
+  submenuShown_ : null,
+  /**
+   * True if this menu is root.
+   * @type {boolean}
+   */
+  isRoot_ : false,
+  /**
+   * Scrollable Viewport.
+   * @type {HTMLElement}
+   */
+  viewpotr_ : null,
+  /**
+   * Total hight of scroll buttons. Used to adjust the height of
+   * viewport in order to show scroll bottons without scrollbar.
+   * @type {number}
+   */
+  buttonHeight_ : 0,
+
+  /**
    * Initialize the menu.
-   * @public
    */
   init: function(config) {
     this.config_ = config;
-    document.getElementById('menu').onmouseout = this.onMouseout_.bind(this);
+    this.viewport_ = document.getElementById('viewport');
+    this.viewport_.addEventListener('mouseout', this.onMouseout_.bind(this));
+
     document.addEventListener('keydown', this.onKeydown_.bind(this));
-    /* disable text select */
-    document.onselectstart = function() { return false; }
+    document.addEventListener('keypress', this.onKeypress_.bind(this));
+    window.addEventListener('resize', this.onResize_.bind(this));
+    window.addEventListener('mousewheel', this.onMouseWheel_.bind(this));
+
+    // Setup scroll events.
+    var up = document.getElementById('scroll-up');
+    var down = document.getElementById('scroll-down');
+    up.addEventListener('mouseout', this.stopScroll_.bind(this));
+    down.addEventListener('mouseout', this.stopScroll_.bind(this));
+    var menu = this;
+    up.addEventListener('mouseover',
+                        function() {
+                          menu.autoScroll_(-SCROLL_TICK_PX);
+                        });
+    down.addEventListener('mouseover',
+                          function() {
+                            menu.autoScroll_(SCROLL_TICK_PX);
+                          });
+
+    this.buttonHeight_ =
+        up.getBoundingClientRect().height +
+        down.getBoundingClientRect().height;
+  },
+
+  /**
+   * Returns the index of the {@code item}.
+   */
+  getMenuItemIndexOf: function(item) {
+    return this.items_.indexOf(item);
   },
 
   /**
    * A template method to create MenuItem object.
    * Subclass class can override to return custom menu item.
-   * @public
    */
-  createMenuItem: function(id, attrs) {
-    return new MenuItem(this, id, attrs);
+  createMenuItem: function(attrs) {
+    return new MenuItem(this, attrs);
   },
 
   /**
    * Update and display the new model.
-   * @public
    */
   updateModel: function(model) {
-    this.is_root = model.is_root;
+    this.isRoot = model.isRoot;
     this.current_ = null;
     this.items_ = [];
     this.mnemonics_ = {};
+    this.viewport_.innerHTML = '';  // remove menu items
 
-    var menu = document.getElementById('menu');
-    menu.innerHTML = '';  // remove menu items
-
-    var id = 0;
-
-    for (i in model.items) {
+    for (var i = 0; i < model.items.length; i++) {
       var attrs = model.items[i];
-      var item = this.createMenuItem(id++, attrs);
-      this.items_[item.id] = item;
-      this.last_id_ = item.id;
+      var item = this.createMenuItem(attrs);
+      this.items_.push(item);
       if (!item.attrs.visible) {
         continue;
       }
-
-      item.init(model.has_icon);
-      menu.appendChild(item.div);
+      item.init(model.hasIcon);
+      this.viewport_.appendChild(item.div);
     }
+    this.onResize_();
   },
 
   /**
    * Highlights the currently selected item, or
    * select the 1st selectable item if none is selected.
-   * @public
    */
   showSelection: function() {
     if (this.current_) {
-      this.current_.select();
+      this.current_.select = true;
     } else  {
-      this.findNextEnabled_(1).select();
+      this.findNextEnabled_(1).select = true;
     }
   },
 
   /**
    * Registers mnemonic key.
-   * @param {c} a mnemonic key to activate item.
-   * @param {item} an item to be activated when {c} is pressed.
-   * @public
+   * @param {string} c A mnemonic key to activate item.
+   * @param {MenuItem} item An item to be activated when {@code c} is pressed.
    */
   registerMnemonicKey: function(c, item) {
-    this.mnemonics_[c.toUpperCase()] = item;
     this.mnemonics_[c.toLowerCase()] = item;
   },
 
   /**
    * Add event handlers for the item.
-   * @public
    */
   addHandlers: function(item) {
     var menu = this;
     item.div.addEventListener('mouseover', function(event) {
-        menu.onMouseover_(event, item);
-      });
+      menu.onMouseover_(event, item);
+    });
     if (item.attrs.enabled) {
       item.div.addEventListener('mouseup', function(event) {
-          menu.onClick_(event, item);
-        });
+        menu.onClick_(event, item);
+      });
     } else {
       item.div.classList.add('disabled');
     }
   },
 
   /**
-   * Set the selected item. This also start or cancel
-   * @public
+   * Set the selected item. This controls timers to open/close submenus.
+   * 1) If the selected menu is submenu, and that submenu is not yet opeend,
+   *    start timer to open. This will not cancel close timer, so
+   *    if there is a submenu opened, it will be closed before new submenu is
+   *    open.
+   * 2) If the selected menu is submenu, and that submenu is already opened,
+   *    cancel both open/close timer.
+   * 3) If the selected menu is not submenu, cancel all timers and start
+   *    timer to close submenu.
+   * This prevents from opening/closing menus while you're actively
+   * navigating menus. To open submenu, you need to wait a bit, or click
+   * submenu.
+   *
+   * @param {MenuItem} item The selected item.
    */
-  setSelection: function(item) {
-    if (this.current_ == item)
-      return;
-
-    if (this.current_ != null)
-      this.current_.unselect();
-
-    this.current_ = item;
+  set selectedItem(item) {
+    if (this.current_ != item) {
+      if (this.current_ != null)
+        this.current_.select = false;
+      this.current_ = item;
+      this.makeSelectedItemVisible_();
+    }
 
     var menu = this;
     if (item.attrs.type == 'submenu') {
-      if (this.submenu_shown_ != item) {
-        this.open_submenu_timer_ =
-            setTimeout(function() { menu.openSubmenu(item); },
-                       SUBMENU_OPEN_DELAY_MS);
+      if (this.submenuShown_ != item) {
+        this.openSubmenuTimer_ =
+            setTimeout(
+                function() {
+                  menu.openSubmenu(item);
+                },
+                SUBMENU_OPEN_DELAY_MS);
       } else {
         this.cancelSubmenuTimer_();
       }
-    } else if (this.submenu_shown_) {
+    } else if (this.submenuShown_) {
       this.cancelSubmenuTimer_();
-      this.close_submenu_timer_ =
-          setTimeout(function() { menu.closeSubmenu_(item); },
-                     SUBMENU_CLOSE_DELAY_MS);
+      this.closeSubmenuTimer_ =
+          setTimeout(
+              function() {
+                menu.closeSubmenu_(item);
+              },
+              SUBMENU_CLOSE_DELAY_MS);
     }
   },
 
   /**
-   * Open submenu {item}. It does nothing if the submenu is
+   * Open submenu {@code item}. It does nothing if the submenu is
    * already opened.
-   * @param {item} the submenu item to open.
-   * @public
+   * @param {MenuItem} item the submenu item to open.
    */
   openSubmenu: function(item) {
     this.cancelSubmenuTimer_();
-    if (this.submenu_shown_ != item) {
-      this.submenu_shown_ = item;
+    if (this.submenuShown_ != item) {
+      this.submenuShown_ = item;
       item.sendOpenSubmenuCommand();
     }
   },
 
   /**
-   * Handle keyboard navigatio and mnemonic keys.
+   * Handle keyboard navigation and activation.
    * @private
    */
   onKeydown_: function(event) {
-    switch (event.keyCode) {
-      case 27: /* escape */
-        sendClick(-1); // -1 closes the menu.
-        break;
-      case 37: /* left */
+    switch (event.keyIdentifier) {
+      case 'Left':
         this.moveToParent_();
         break;
-      case 39: /* right */
+      case 'Right':
         this.moveToSubmenu_();
         break;
-      case 38: /* up */
-        document.getElementById('menu').className = 'mnemonic_enabled';
-        this.findNextEnabled_(-1).select();
+      case 'Up':
+        this.viewport_.className = 'mnemonic-enabled';
+        this.findNextEnabled_(-1).select = true;
+      break;
+      case 'Down':
+        this.viewport_.className = 'mnemonic-enabled';
+        this.findNextEnabled_(1).select = true;
         break;
-      case 40: /* down */
-        document.getElementById('menu').className = 'mnemonic_enabled';
-        this.findNextEnabled_(1).select();
-        break;
-      case 9:  /* tab */
-        // TBD.
+      case 'U+0009':  // tab
          break;
-      case 13: /* return */
-      case 32: /* space */
+      case 'U+001B':  // escape
+        sendClick(-1);  // -1 closes the menu.
+        break;
+      case 'Enter':
+      case 'U+0020':  // space
         if (this.current_) {
           this.current_.activate();
         }
         break;
-      default:
-        // Handles mnemonic.
-        var c = String.fromCharCode(event.keyCode);
-        var item = this.mnemonics_[c];
-        if (item) item.activate();
     }
+  },
+
+  /**
+   * Handle mnemonic keys.
+   * @private
+   */
+  onKeypress_: function(event) {
+    // Handles mnemonic.
+    var c = String.fromCharCode(event.keyCode);
+    var item = this.mnemonics_[c.toLowerCase()];
+    if (item)
+      item.activate();
   },
 
   // Mouse Event handlers
@@ -359,16 +425,33 @@ Menu.prototype = {
     this.cancelSubmenuTimer_();
     // Ignore false mouseover event at (0,0) which is
     // emitted when opening submenu.
-    if (item.attrs.enabled &&
-        (event.x != 0 && event.y != 0)) {
-      item.select();
+    if (item.attrs.enabled && event.clientX != 0 && event.clientY != 0) {
+      item.select = true;
     }
   },
 
   onMouseout_: function(event) {
     if (this.current_) {
-      this.current_.unselect();
+      this.current_.select = false;
     }
+  },
+
+  onResize_: function() {
+    if (this.viewport_.scrollHeight > window.innerHeight) {
+      this.viewport_.style.height =
+          (window.innerHeight - this.buttonHeight_) + 'px';
+      document.getElementById('scroll-up').classList.remove('hidden');
+      document.getElementById('scroll-down').classList.remove('hidden');
+    } else {
+      this.viewport_.style.height = '';
+      document.getElementById('scroll-up').classList.add('hidden');
+      document.getElementById('scroll-down').classList.add('hidden');
+    }
+  },
+
+  onMouseWheel_: function(event) {
+    var delta = event.wheelDelta / 5;
+    this.viewport_.scrollTop -= delta;
   },
 
   /**
@@ -377,7 +460,7 @@ Menu.prototype = {
    * @private
    */
   closeSubmenu_: function(item) {
-    this.submenu_shown_ = null;
+    this.submenuShown_ = null;
     this.cancelSubmenuTimer_();
     chrome.send('close_submenu', []);
   },
@@ -388,9 +471,9 @@ Menu.prototype = {
    * @private
    */
   moveToParent_: function() {
-    if (!this.is_root) {
+    if (!this.isRoot) {
       if (this.current_) {
-        this.current_.unselect();
+        this.current_.select = false;
       }
       chrome.send('move_to_parent', []);
     }
@@ -403,7 +486,7 @@ Menu.prototype = {
    */
   moveToSubmenu_: function () {
     var current = this.current_;
-    if(current && current.attrs.type == 'submenu') {
+    if (current && current.attrs.type == 'submenu') {
       this.openSubmenu(current);
       chrome.send('move_to_submenu', []);
     }
@@ -418,24 +501,20 @@ Menu.prototype = {
    * @private
    */
   findNextEnabled_: function(incr) {
-     if (this.current_) {
-       var id = parseInt(this.current_.id);
-     } else {
-       var id = incr > 0 ? -1 : this.last_id_ + 1;
-     }
-     for (var i = 0; i <= this.last_id_; i++) {
-       if (id == 0 && incr < 0) {
-         id = this.last_id_;
-       } else if (id == this.last_id_ && incr > 0) {
-         id = 0;
-       } else {
-         id += incr;
-       }
-       var item = this.items_[id];
-       if (item.attrs.enabled && item.attrs.type != 'separator')
-         return item;
-     }
-     return null;
+    var len = this.items_.length;
+    var index;
+    if (this.current_) {
+      index = this.getMenuItemIndexOf(this.current_);
+    } else {
+      index = incr > 0 ? -1 : len;
+    }
+    for (var i = 0; i < len; i++) {
+      index = (index + incr + len) % len;
+      var item = this.items_[index];
+      if (item.attrs.enabled && item.attrs.type != 'separator')
+        return item;
+    }
+    return null;
   },
 
   /**
@@ -443,14 +522,51 @@ Menu.prototype = {
    * @private
    */
   cancelSubmenuTimer_: function() {
-    if (this.open_submenu_timer_) {
-      clearTimeout(this.open_submenu_timer_);
-      this.open_submenu_timer_ = 0;
+    if (this.openSubmenuTimer_) {
+      clearTimeout(this.openSubmenuTimer_);
+      this.openSubmenuTimer_ = 0;
     }
-    if (this.close_submenu_timer_) {
-      clearTimeout(this.close_submenu_timer_);
-      this.close_submenu_timer_ = 0;
+    if (this.closeSubmenuTimer_) {
+      clearTimeout(this.closeSubmenuTimer_);
+      this.closeSubmenuTimer_ = 0;
     }
+  },
+
+  /**
+   * Starts auto scroll.
+   * @param {number} tick the number of pixels to scroll.
+   * @private
+   */
+  autoScroll_: function(tick) {
+    var previous = this.viewport_.scrollTop;
+    this.viewport_.scrollTop += tick;
+    if (this.viewport_.scrollTop != previous) {
+      var menu = this;
+      this.scrollTimer_ = setTimeout(
+          function() {
+            menu.autoScroll_(tick);
+          },
+          SCROLL_INTERVAL_MS);
+    }
+  },
+
+  /**
+   * Stops auto scroll.
+   * @private
+   */
+  stopScroll_: function () {
+    if (this.scrollTimer_) {
+      clearTimeout(this.scrollTimer_);
+      this.scrollTimer_ = 0;
+    }
+  },
+
+  /**
+   * Scrolls the viewport to make the selected item visible.
+   * @private
+   */
+  makeSelectedItemVisible_: function(){
+    this.current_.div.scrollIntoViewIfNeeded();
   },
 };
 

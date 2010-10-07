@@ -187,8 +187,8 @@ void NativeMenuDOMUI::Rebuild() {
     }
     items->Set(index, item);
   }
-  model.SetBoolean("has_icon", has_icon);
-  model.SetBoolean("is_root", menu_widget_->is_root());
+  model.SetBoolean("hasIcon", has_icon);
+  model.SetBoolean("isRoot", menu_widget_->is_root());
 
   std::string json_model;
   base::JSONWriter::Write(&model, false, &json_model);

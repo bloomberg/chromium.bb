@@ -7,6 +7,7 @@
 #include "app/menus/menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
@@ -18,9 +19,13 @@
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/url_fetcher.h"
+#include "gfx/canvas_skia.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
 #include "views/controls/menu/menu_config.h"
@@ -29,17 +34,111 @@
 
 namespace {
 
-std::string GetImageUrlForRadioOn() {
-  return dom_ui_util::GetImageDataUrl(*views::GetRadioButtonImage(true));
+// Creates scroll button's up image when |up| is true or
+// down image if |up| is false.
+SkBitmap CreateMenuScrollArrowImage(bool up) {
+  const views::MenuConfig& config = views::MenuConfig::instance();
+
+  int height = config.scroll_arrow_height;
+  gfx::CanvasSkia canvas(height * 2, height, false);
+
+  if (!up) {
+    // flip the direction.
+    canvas.scale(1.0, -1.0);
+    canvas.translate(0, -height);
+  }
+  // Draw triangle.
+  SkPath path;
+  path.moveTo(height, 0);
+  path.lineTo(0, height);
+  path.lineTo(height * 2, height);
+  SkPaint paint;
+  paint.setColor(SK_ColorBLACK);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
+  canvas.drawPath(path, paint);
+  return canvas.ExtractBitmap();
 }
 
-std::string GetImageUrlForRadioOff() {
-  return dom_ui_util::GetImageDataUrl(*views::GetRadioButtonImage(false));
+// Returns the scroll button's up image if |up| is true, or
+// "down" image otherwise.
+const std::string& GetImageDataUrlForMenuScrollArrow(bool up) {
+  static const std::string upImage =
+      dom_ui_util::GetImageDataUrl(CreateMenuScrollArrowImage(true));
+  static const std::string downImage =
+      dom_ui_util::GetImageDataUrl(CreateMenuScrollArrowImage(false));
+  return up ? upImage : downImage;
 }
 
-class MenuUIHTMLSource : public ChromeURLDataManager::DataSource {
+// Returns the radio button's "on" image if |on| is true, or
+// "off" image otherwise.
+const std::string& GetImageDataUrlForRadio(bool on) {
+  static const std::string onImage =
+      dom_ui_util::GetImageDataUrl(*views::GetRadioButtonImage(true));
+  static const std::string offImage =
+       dom_ui_util::GetImageDataUrl(*views::GetRadioButtonImage(false));
+  return on ? onImage : offImage;
+}
+
+std::string GetMenuUIHTMLSourceFromString(const std::string& menu_html) {
+#define SET_INTEGER_PROPERTY(prop) \
+  value_config.SetInteger(#prop, menu_config.prop)
+
+  const views::MenuConfig& menu_config = views::MenuConfig::instance();
+
+  DictionaryValue value_config;
+  value_config.SetString("radioOnUrl", GetImageDataUrlForRadio(true));
+  value_config.SetString("radioOffUrl", GetImageDataUrlForRadio(false));
+  value_config.SetString(
+      "arrowUrl", dom_ui_util::GetImageDataUrlFromResource(IDR_MENU_ARROW));
+  value_config.SetString(
+      "checkUrl", dom_ui_util::GetImageDataUrlFromResource(IDR_MENU_CHECK));
+
+  value_config.SetString(
+      "scrollUpUrl", GetImageDataUrlForMenuScrollArrow(true));
+  value_config.SetString(
+      "scrollDownUrl", GetImageDataUrlForMenuScrollArrow(false));
+
+  SET_INTEGER_PROPERTY(item_top_margin);
+  SET_INTEGER_PROPERTY(item_bottom_margin);
+  SET_INTEGER_PROPERTY(item_no_icon_top_margin);
+  SET_INTEGER_PROPERTY(item_no_icon_bottom_margin);
+  SET_INTEGER_PROPERTY(item_left_margin);
+  SET_INTEGER_PROPERTY(label_to_arrow_padding);
+  SET_INTEGER_PROPERTY(arrow_to_edge_padding);
+  SET_INTEGER_PROPERTY(icon_to_label_padding);
+  SET_INTEGER_PROPERTY(gutter_to_label);
+  SET_INTEGER_PROPERTY(check_width);
+  SET_INTEGER_PROPERTY(check_height);
+  SET_INTEGER_PROPERTY(radio_width);
+  SET_INTEGER_PROPERTY(radio_height);
+  SET_INTEGER_PROPERTY(arrow_height);
+  SET_INTEGER_PROPERTY(arrow_width);
+  SET_INTEGER_PROPERTY(gutter_width);
+  SET_INTEGER_PROPERTY(separator_height);
+  SET_INTEGER_PROPERTY(render_gutter);
+  SET_INTEGER_PROPERTY(show_mnemonics);
+  SET_INTEGER_PROPERTY(scroll_arrow_height);
+  SET_INTEGER_PROPERTY(label_to_accelerator_padding);
+
+  std::string json_config;
+  base::JSONWriter::Write(&value_config, false, &json_config);
+  return menu_html + "<script>init(" + json_config + ");</script>";
+}
+
+// Returns the menu's html code given by the resource id with the code
+// to intialization the menu. The resource string should be pure code
+// and should not contain i18n string.
+std::string GetMenuUIHTMLSourceFromResource(int res) {
+  const base::StringPiece menu_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(res));
+  return GetMenuUIHTMLSourceFromString(menu_html.as_string());
+}
+
+class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
+                         public URLFetcher::Delegate {
  public:
-  MenuUIHTMLSource();
+  explicit MenuUIHTMLSource(Profile* profile);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -50,9 +149,20 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource {
     return "text/html";
   }
 
+  // URLFetcher::Delegate implements:
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const URLRequestStatus& status,
+                                  int response_code,
+                                  const ResponseCookies& cookies,
+                                  const std::string& data);
+
  private:
   virtual ~MenuUIHTMLSource() {}
-
+#ifndef NDEBUG
+  int request_id_;
+  Profile* profile_;
+#endif
   DISALLOW_COPY_AND_ASSIGN(MenuUIHTMLSource);
 };
 
@@ -117,15 +227,32 @@ class MenuHandler : public chromeos::MenuHandlerBase,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MenuUIHTMLSource::MenuUIHTMLSource()
-    : DataSource(chrome::kChromeUIMenu, MessageLoop::current()) {
+MenuUIHTMLSource::MenuUIHTMLSource(Profile* profile)
+    : DataSource(chrome::kChromeUIMenu, MessageLoop::current())
+#ifndef NDEBUG
+    , request_id_(-1),
+      profile_(profile)
+#endif
+     {
 }
 
 void MenuUIHTMLSource::StartDataRequest(const std::string& path,
                                         bool is_off_the_record,
                                         int request_id) {
+#ifndef NDEBUG
+  std::string url = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kDOMUIMenuUrl);
+  if (!url.empty()) {
+    request_id_ = request_id;
+    URLFetcher* fetcher = new URLFetcher(GURL(url), URLFetcher::GET, this);
+    fetcher->set_request_context(profile_->GetRequestContext());
+    fetcher->Start();
+    return;
+  }
+#endif
+
   static const std::string menu_html =
-      chromeos::GetMenuUIHTMLSourceFromResource(IDR_MENU_HTML);
+      GetMenuUIHTMLSourceFromResource(IDR_MENU_HTML);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -135,6 +262,27 @@ void MenuUIHTMLSource::StartDataRequest(const std::string& path,
             html_bytes->data.begin());
   SendResponse(request_id, html_bytes);
 }
+
+void MenuUIHTMLSource::OnURLFetchComplete(const URLFetcher* source,
+                                          const GURL& url,
+                                          const URLRequestStatus& status,
+                                          int response_code,
+                                          const ResponseCookies& cookies,
+                                          const std::string& data) {
+  const std::string menu_html =
+      GetMenuUIHTMLSourceFromString(data);
+
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+
+  // TODO(oshima): Eliminate boilerplate code. See http://crbug.com/57583 .
+  html_bytes->data.resize(menu_html.size());
+  std::copy(menu_html.begin(), menu_html.end(),
+            html_bytes->data.begin());
+  SendResponse(request_id_, html_bytes);
+
+  delete source;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -178,14 +326,12 @@ void MenuHandler::RegisterMessages() {
 
 void MenuHandler::HandleClick(const ListValue* values) {
   CHECK_EQ(1U, values->GetSize());
-  std::string value;
-  bool success = values->GetString(0, &value);
+  std::string index_str;
+  bool success = values->GetString(0, &index_str);
   DCHECK(success);
-
   int index;
-  success = base::StringToInt(value, &index);
-  DCHECK(success) << " Faild to convert string to int " << value;
-
+  success = base::StringToInt(index_str, &index);
+  DCHECK(success);
   chromeos::DOMUIMenuControl* control = GetMenuControl();
   if (control) {
     menus::MenuModel* model = GetMenuModel();
@@ -199,14 +345,19 @@ void MenuHandler::HandleClick(const ListValue* values) {
 }
 
 void MenuHandler::HandleOpenSubmenu(const ListValue* values) {
+  CHECK_EQ(2U, values->GetSize());
   std::string index_str;
-  values->GetString(0, &index_str);
+  bool success = values->GetString(0, &index_str);
+  DCHECK(success);
   std::string y_str;
-  values->GetString(1, &y_str);
+  success = values->GetString(1, &y_str);
+  DCHECK(success);
   int index;
+  success = base::StringToInt(index_str, &index);
+  DCHECK(success);
   int y;
-  base::StringToInt(index_str, &index);
-  base::StringToInt(y_str, &y);
+  success = base::StringToInt(y_str, &y);
+  DCHECK(success);
   chromeos::DOMUIMenuControl* control = GetMenuControl();
   if (control)
     control->OpenSubmenu(index, y);
@@ -293,53 +444,7 @@ MenuUI::MenuUI(TabContents* contents) : DOMUI(contents) {
 }
 
 ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {
-  return new MenuUIHTMLSource();
-}
-
-std::string GetMenuUIHTMLSourceFromResource(int res) {
-#define SET_INTEGER_PROPERTY(prop) \
-  value_config.SetInteger(#prop, menu_config.prop)
-
-  const base::StringPiece menu_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(res));
-
-  const views::MenuConfig& menu_config = views::MenuConfig::instance();
-
-  DictionaryValue value_config;
-  value_config.SetString("radioOnUrl", GetImageUrlForRadioOn());
-  value_config.SetString("radioOffUrl", GetImageUrlForRadioOff());
-  value_config.SetString(
-      "arrowUrl", dom_ui_util::GetImageDataUrlFromResource(IDR_MENU_ARROW));
-  value_config.SetString(
-      "checkUrl", dom_ui_util::GetImageDataUrlFromResource(IDR_MENU_CHECK));
-
-  SET_INTEGER_PROPERTY(item_top_margin);
-  SET_INTEGER_PROPERTY(item_bottom_margin);
-  SET_INTEGER_PROPERTY(item_no_icon_top_margin);
-  SET_INTEGER_PROPERTY(item_no_icon_bottom_margin);
-  SET_INTEGER_PROPERTY(item_left_margin);
-  SET_INTEGER_PROPERTY(label_to_arrow_padding);
-  SET_INTEGER_PROPERTY(arrow_to_edge_padding);
-  SET_INTEGER_PROPERTY(icon_to_label_padding);
-  SET_INTEGER_PROPERTY(gutter_to_label);
-  SET_INTEGER_PROPERTY(check_width);
-  SET_INTEGER_PROPERTY(check_height);
-  SET_INTEGER_PROPERTY(radio_width);
-  SET_INTEGER_PROPERTY(radio_height);
-  SET_INTEGER_PROPERTY(arrow_height);
-  SET_INTEGER_PROPERTY(arrow_width);
-  SET_INTEGER_PROPERTY(gutter_width);
-  SET_INTEGER_PROPERTY(separator_height);
-  SET_INTEGER_PROPERTY(render_gutter);
-  SET_INTEGER_PROPERTY(show_mnemonics);
-  SET_INTEGER_PROPERTY(scroll_arrow_height);
-  SET_INTEGER_PROPERTY(label_to_accelerator_padding);
-
-  std::string json_config;
-  base::JSONWriter::Write(&value_config, false, &json_config);
-
-  return menu_html.as_string() +
-      "<script>init(" + json_config + ");</script>";
+  return new MenuUIHTMLSource(GetProfile());
 }
 
 }  // namespace chromeos

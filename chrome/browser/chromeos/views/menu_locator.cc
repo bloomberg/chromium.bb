@@ -16,7 +16,7 @@ namespace {
 using views::Widget;
 
 // Menu's corner radious.
-const int kMenuCornerRadius = 4;
+const int kMenuCornerRadius = 3;
 const int kSubmenuOverlapPx = 1;
 
 gfx::Rect GetBoundsOf(const views::Widget* widget) {
@@ -61,12 +61,10 @@ class DropDownMenuLocator : public chromeos::MenuLocator {
     gfx::Rect screen_rect = GetScreenRectAt(origin_.x(), origin_.y());
     int x = origin_.x() - size.width();
     int y = origin_.y();
-    if (x + size.width() > screen_rect.right()) {
+    if (x + size.width() > screen_rect.right())
       x = screen_rect.right() - size.width();
-    }
-    if (y + size.height() > screen_rect.bottom()) {
+    if (y + size.height() > screen_rect.bottom())
       y = screen_rect.bottom() - size.height();
-    }
     return gfx::Rect(x, y, size.width(), size.height());
   }
 
@@ -115,15 +113,17 @@ class ContextMenuLocator : public chromeos::MenuLocator {
 
   gfx::Rect ComputeBounds(const gfx::Size& size) {
     gfx::Rect screen_rect = GetScreenRectAt(origin_.x(), origin_.y());
+    int height = size.height();
+    if (height > screen_rect.height())
+      height = screen_rect.height();
+
     int x = origin_.x();
     int y = origin_.y();
-    if (x + size.width() > screen_rect.right()) {
+    if (x + size.width() > screen_rect.right())
       x = screen_rect.right() - size.width();
-    }
-    if (y + size.height() > screen_rect.bottom()) {
-      y = screen_rect.bottom() - size.height();
-    }
-    return gfx::Rect(x, y, size.width(), size.height());
+    if (y + height > screen_rect.bottom())
+      y = screen_rect.bottom() - height;
+    return gfx::Rect(x, y, size.width(), height);
   }
 
   virtual const SkScalar* GetCorners() const {
@@ -189,20 +189,22 @@ class SubMenuLocator : public chromeos::MenuLocator {
 
   gfx::Rect ComputeBounds(const gfx::Size& size) {
     gfx::Rect screen_rect = GetScreenRectAt(parent_rect_.x(), root_y_);
+    int height = size.height();
+    if (height > screen_rect.height())
+      height = screen_rect.height();
+
     SubmenuDirection direction = parent_direction_;
-    if (direction == DEFAULT) {
+    if (direction == DEFAULT)
       direction = RIGHT; // TOOD(oshima): support RTL
-    }
     // Adjust Y to fit the screen.
     int y = root_y_;
-    if (root_y_ + size.height() > screen_rect.bottom()) {
-      y = screen_rect.bottom() - size.height();
-    }
+    if (root_y_ + height > screen_rect.bottom())
+      y = screen_rect.bottom() - height;
     // Decide the attachment.
     int x = direction == RIGHT ?
         ComputeXToRight(screen_rect, size) :
         ComputeXToLeft(screen_rect, size);
-    return gfx::Rect(x, y, size.width(), size.height());
+    return gfx::Rect(x, y, size.width(), height);
   }
 
   int ComputeXToRight(const gfx::Rect& screen_rect, const gfx::Size& size) {

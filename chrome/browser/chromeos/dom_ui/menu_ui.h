@@ -48,11 +48,6 @@ class MenuHandlerBase : public DOMMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(MenuHandlerBase);
 };
 
-// Returns the menu's html code given by the resource id with the code
-// to intialization the menu. The resource string should be pure code
-// and should not contain i18n string.
-std::string GetMenuUIHTMLSourceFromResource(int res);
-
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_MENU_UI_H_

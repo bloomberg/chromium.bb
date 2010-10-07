@@ -1,17 +1,16 @@
 body {
-  margin: 0px;
   background: -webkit-gradient(linear, left top, left bottom,
                                from(white),
                                to(#EEE));
-  margin: 0px 0px 0px 0px;
+  margin: 0 0 0 0;
+  -webkit-user-select: none;
 }
 
-.menu_item {
-  margin-left: 0px;
-  margin-right: 0px;
-  margin-top: 0px;
+.menu-item {
   white-space: nowrap;
-  padding: 0px 20px 0px 5px;
+  margin: 0 0 0 0;
+  padding: 0 20px 0 5px;
+  background-repeat: no-repeat;
 }
 
 .disabled {
@@ -19,45 +18,66 @@ body {
 }
 
 .noicon {
-  padding-left: 20px;
+  -webkit-padding-start: 20px;
 }
 
-.menu_label {
+.menu-label {
   display: inline-block;
   vertical-align: middle;
 }
 
-.left_icon {
-  vertical-align: middle;
-  margin-right: 10px;
+.left-icon {
+  background-position: 4px center;
+  text-indent: 12px;
 }
 
-.right_icon {
-  vertical-align: middle;
-  right: 10px;
-}
-
-#menu {
-  width: 100%;
-  height: 100%;
+.right-icon { 
+  background-position: right center;
 }
 
 .separator {
-  width: 85%;
+  background: -webkit-gradient(linear, 0 0, 96% 0, from(rgba(0, 0, 0, .10)),
+                               to(rgba(0, 0, 0, .02)));
+  border: 0;
   height: 1px;
-  margin-top: 3px;
-  margin-bottom: 3px;
-  background: -webkit-gradient(linear, left top, right top,
-                               from(transparent),
-                               color-stop(0.3, rgba(20, 20, 20, 0.5)),
-                               color-stop(0.7, rgba(20, 20, 20, 0.5)),
-                               to(transparent));
+  margin: 4px 0;
 }
 
-.mnemonic_enabled .mnemonic {
+.mnemonic-enabled .mnemonic {
   text-decoration: underline;
 }
 
 .selected {
-  background: #DCE4FA;
+  background-color: #DCE5FA;
 }
+
+#viewport {
+  overflow: hidden;
+  height: 100%;
+}
+
+.scroll-button {
+  height: 20px;
+  width: 100%;
+  line-height: 20px;
+  text-align: center;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+#scroll-up {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAI0lEQVQImWNgQIA4BgaGuQxoII6BgeEvAwPDf2RJZEEYngsA2N8I6FqZBpwAAAAASUVORK5CYII=");
+}
+
+#scroll-down {
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAIklEQVQImWNgYGCIY2Bg+MfAwPAfCc9jgAJkSbggsiRcEACghQjtUFgYGwAAAABJRU5ErkJggg==");
+}
+
+.scroll-button:hover {
+  background-color: #DCE5FA;
+}
+
+.hidden {
+  display: none;
+}
+

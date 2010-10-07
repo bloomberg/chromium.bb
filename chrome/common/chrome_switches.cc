@@ -1171,6 +1171,10 @@ const char kStubCros[]                      = "stub-cros";
 
 // URL of the html page for Screen Saver.
 const char kScreenSaverUrl[]                = "screen-saver-url";
+
+#ifndef NDEBUG
+extern const char kDOMUIMenuUrl[]           = "domui-menu-url";
+#endif
 #endif
 
 #if defined(OS_LINUX)

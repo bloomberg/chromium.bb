@@ -334,6 +334,9 @@ extern const char kCandidateWindowLang[];
 extern const char kBWSI[];
 extern const char kStubCros[];
 extern const char kScreenSaverUrl[];
+#ifndef NDEBUG
+extern const char kDOMUIMenuUrl[];
+#endif
 #endif
 
 #if defined(OS_LINUX)
