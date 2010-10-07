@@ -91,6 +91,7 @@ bool GpuProcessHost::Init() {
   // Propagate relevant command line switches.
   static const char* const kSwitchNames[] = {
     switches::kUseGL,
+    switches::kDisableGpuVsync,
     switches::kDisableLogging,
     switches::kEnableLogging,
     switches::kGpuStartupDialog,

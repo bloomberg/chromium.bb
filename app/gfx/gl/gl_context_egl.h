@@ -23,6 +23,9 @@ class BaseEGLContext : public GLContext {
   virtual ~BaseEGLContext() {}
 
   // Implement GLContext.
+  virtual std::string GetExtensions();
+
+  // Get the associated EGL surface.
   virtual EGLSurface GetSurface() = 0;
 
   static bool InitializeOneOff();
@@ -50,6 +53,7 @@ class NativeViewEGLContext : public BaseEGLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
   // Implement BaseEGLContext.
   virtual EGLSurface GetSurface();
@@ -82,6 +86,7 @@ class SecondaryEGLContext : public BaseEGLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
   // Implement BaseEGLContext.
   virtual EGLSurface GetSurface();

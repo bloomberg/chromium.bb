@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Stop the GPU from synchronizing on the vsync before presenting.
+const char kDisableGpuVsync[]               = "disable-gpu-vsync";
+
 // The language file that we want to try to open.  Of the form
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[]                          = "lang";

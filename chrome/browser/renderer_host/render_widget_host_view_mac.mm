@@ -7,6 +7,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
 #include "chrome/browser/chrome_thread.h"
+#include "app/app_switches.h"
 #include "app/surface/io_surface_support_mac.h"
 #import "base/chrome_application_mac.h"
 #include "base/command_line.h"
@@ -242,7 +243,11 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     cglPixelFormat_ = (CGLPixelFormatObj)[glPixelFormat_ CGLPixelFormatObj];
 
     // Draw at beam vsync.
-    GLint swapInterval = 1;
+    GLint swapInterval;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
+      swapInterval = 0;
+    else
+      swapInterval = 1;
     [glContext_ setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
     // Set up a display link to do OpenGL rendering on a background thread.

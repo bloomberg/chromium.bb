@@ -31,6 +31,7 @@ class OSMesaGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
   // Resize the back buffer, preserving the old content. Does nothing if the
   // size is unchanged.

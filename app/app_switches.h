@@ -10,6 +10,7 @@
 
 namespace switches {
 
+extern const char kDisableGpuVsync[];
 extern const char kLang[];
 extern const char kUseGL[];
 

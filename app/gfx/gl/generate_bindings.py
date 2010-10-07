@@ -332,6 +332,7 @@ WGL_FUNCTIONS = [
 ['HDC', ['wglGetCurrentDC'], ''],
 ['BOOL', ['wglMakeCurrent'], 'HDC hdc, HGLRC hglrc'],
 ['BOOL', ['wglShareLists'], 'HGLRC hglrc1, HGLRC hglrc2'],
+['BOOL', ['wglSwapIntervalEXT'], 'int interval'],
 ['BOOL', ['wglSwapLayerBuffers'], 'HDC hdc, UINT fuPlanes'],
 ['const char*', ['wglGetExtensionsStringARB', 'wglGetExtensionsStringEXT'],
     'HDC hDC'],
@@ -407,6 +408,8 @@ GLX_FUNCTIONS = [
     'Display* dpy, GLXDrawable drawable, unsigned long mask'],
 ['void', ['glXGetSelectedEvent'],
     'Display* dpy, GLXDrawable drawable, unsigned long* mask'],
+['void', ['glXSwapIntervalEXT'],
+    'Display* dpy, GLXDrawable drawable, int interval'],
 ]
 
 FUNCTION_SETS = [

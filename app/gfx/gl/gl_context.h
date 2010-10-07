@@ -6,6 +6,8 @@
 #define APP_GFX_GL_GL_CONTEXT_H_
 #pragma once
 
+#include <string>
+
 #include "build/build_config.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
@@ -40,9 +42,15 @@ class GLContext {
   // Get the underlying platform specific GL context "handle".
   virtual void* GetHandle() = 0;
 
+  // Set swap interval. This context must be current.
+  virtual void SetSwapInterval(int interval) = 0;
+
+  // Returns space separated list of extensions. The context must be current.
+  virtual std::string GetExtensions();
+
   // Returns whether the current context supports the named extension. The
   // context must be current.
-  virtual bool HasExtension(const char* name);
+  bool HasExtension(const char* name);
 
   static bool InitializeOneOff();
 

@@ -97,6 +97,11 @@ void* OSMesaGLContext::GetHandle() {
   return context_;
 }
 
+void OSMesaGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  NOTREACHED() << "Attempt to call SetSwapInterval on an OSMesaGLContext.";
+}
+
 void OSMesaGLContext::Resize(const gfx::Size& new_size) {
   if (new_size == size_)
     return;

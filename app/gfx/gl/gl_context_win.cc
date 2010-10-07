@@ -24,9 +24,16 @@ namespace gfx {
 typedef HGLRC GLContextHandle;
 typedef HPBUFFERARB PbufferHandle;
 
+class BaseWinGLContext : public GLContext {
+ public:
+  virtual std::string GetExtensions();
+
+  virtual HDC GetDC() = 0;
+};
+
 // This class is a wrapper around a GL context that renders directly to a
 // window.
-class NativeViewGLContext : public GLContext {
+class NativeViewGLContext : public BaseWinGLContext {
  public:
   explicit NativeViewGLContext(gfx::PluginWindowHandle window)
       : window_(window),
@@ -45,6 +52,9 @@ class NativeViewGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
+
+  virtual HDC GetDC();
 
  private:
   gfx::PluginWindowHandle window_;
@@ -74,6 +84,7 @@ class OSMesaViewGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
  private:
   void UpdateSize();
@@ -106,6 +117,9 @@ class PbufferGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
+
+  virtual HDC GetDC();
 
  private:
   GLContextHandle context_;
@@ -310,9 +324,21 @@ bool GLContext::InitializeOneOff() {
   return true;
 }
 
+
+std::string BaseWinGLContext::GetExtensions() {
+  if (wglGetExtensionsStringARB) {
+    const char* extensions = wglGetExtensionsStringARB(GetDC());
+    if (extensions) {
+      return GLContext::GetExtensions() + " " + extensions;
+    }
+  }
+
+  return GetExtensions();
+}
+
 bool NativeViewGLContext::Initialize(bool multisampled) {
   // The GL context will render to this window.
-  device_context_ = GetDC(window_);
+  device_context_ = ::GetDC(window_);
 
   int pixel_format =
       multisampled ? g_multisampled_pixel_format : g_regular_pixel_format;
@@ -395,6 +421,17 @@ void* NativeViewGLContext::GetHandle() {
   return context_;
 }
 
+void NativeViewGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  if (HasExtension("WGL_EXT_swap_control") && wglSwapIntervalEXT) {
+    wglSwapIntervalEXT(interval);
+  }
+}
+
+HDC NativeViewGLContext::GetDC() {
+  return device_context_;
+}
+
 bool OSMesaViewGLContext::Initialize() {
   // The GL context will render to this window.
   device_context_ = GetDC(window_);
@@ -474,6 +511,12 @@ gfx::Size OSMesaViewGLContext::GetSize() {
 
 void* OSMesaViewGLContext::GetHandle() {
   return osmesa_context_.GetHandle();
+}
+
+void OSMesaViewGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  // Fail silently. It is legitimate to set the swap interval on a view context
+  // but GDI does not have those semantics.
 }
 
 void OSMesaViewGLContext::UpdateSize() {
@@ -626,6 +669,15 @@ gfx::Size PbufferGLContext::GetSize() {
 
 void* PbufferGLContext::GetHandle() {
   return context_;
+}
+
+void PbufferGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  NOTREACHED() << "Attempt to call SetSwapInterval on a PbufferGLContext.";
+}
+
+HDC PbufferGLContext::GetDC() {
+  return device_context_;
 }
 
 GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {

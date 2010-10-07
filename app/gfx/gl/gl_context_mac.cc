@@ -42,6 +42,7 @@ class PbufferGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
  private:
   GLContextHandle context_;
@@ -173,6 +174,11 @@ gfx::Size PbufferGLContext::GetSize() {
 
 void* PbufferGLContext::GetHandle() {
   return context_;
+}
+
+void PbufferGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  NOTREACHED() << "Attempt to call SetSwapInterval on a PbufferGLContext.";
 }
 
 GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {

@@ -97,6 +97,14 @@ EGLDisplay BaseEGLContext::GetDisplay() {
   return g_display;
 }
 
+std::string BaseEGLContext::GetExtensions() {
+  const char* extensions = eglQueryString(g_display, EGL_EXTENSIONS);
+  if (!extensions)
+    return GLContext::GetExtensions();
+
+  return GLContext::GetExtensions() + " " + extensions;
+}
+
 NativeViewEGLContext::NativeViewEGLContext(void* window)
     : window_(window),
       surface_(NULL),
@@ -198,6 +206,11 @@ gfx::Size NativeViewEGLContext::GetSize() {
 
 void* NativeViewEGLContext::GetHandle() {
   return context_;
+}
+
+void NativeViewEGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  eglSwapInterval(g_display, interval);
 }
 
 EGLSurface NativeViewEGLContext::GetSurface() {
@@ -305,6 +318,11 @@ gfx::Size SecondaryEGLContext::GetSize() {
 
 void* SecondaryEGLContext::GetHandle() {
   return context_;
+}
+
+void SecondaryEGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  NOTREACHED() << "Attempt to call SetSwapInterval on a SecondaryEGLContext.";
 }
 
 EGLSurface SecondaryEGLContext::GetSurface() {

@@ -23,6 +23,11 @@ namespace gfx {
 typedef GLXContext GLContextHandle;
 typedef GLXPbuffer PbufferHandle;
 
+class BaseLinuxGLContext : public GLContext {
+ public:
+  virtual std::string GetExtensions();
+};
+
 // This class is a wrapper around a GL context that renders directly to a
 // window.
 class ViewGLContext : public GLContext {
@@ -43,6 +48,7 @@ class ViewGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
  private:
   gfx::PluginWindowHandle window_;
@@ -73,6 +79,7 @@ class OSMesaViewGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
  private:
   bool UpdateSize();
@@ -106,6 +113,7 @@ class PbufferGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
  private:
   GLContextHandle context_;
@@ -133,6 +141,7 @@ class PixmapGLContext : public GLContext {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
+  virtual void SetSwapInterval(int interval);
 
  private:
   GLContextHandle context_;
@@ -199,6 +208,16 @@ bool GLContext::InitializeOneOff() {
 
   initialized = true;
   return true;
+}
+
+std::string BaseLinuxGLContext::GetExtensions() {
+  Display* display = x11_util::GetXDisplay();
+  const char* extensions = glXQueryExtensionsString(display, 0);
+  if (extensions) {
+    return GLContext::GetExtensions() + " " + extensions;
+  }
+
+  return GLContext::GetExtensions();
 }
 
 bool ViewGLContext::Initialize(bool multisampled) {
@@ -298,6 +317,14 @@ gfx::Size ViewGLContext::GetSize() {
 
 void* ViewGLContext::GetHandle() {
   return context_;
+}
+
+void ViewGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  if (HasExtension("GLX_EXT_swap_control") && glXSwapIntervalEXT) {
+    Display* display = x11_util::GetXDisplay();
+    glXSwapIntervalEXT(display, window_, interval);
+  }
 }
 
 bool OSMesaViewGLContext::Initialize() {
@@ -401,6 +428,12 @@ gfx::Size OSMesaViewGLContext::GetSize() {
 
 void* OSMesaViewGLContext::GetHandle() {
   return osmesa_context_.GetHandle();
+}
+
+void OSMesaViewGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  // Fail silently. It is legitimate to set the swap interval on a view context
+  // but XLib does not have those semantics.
 }
 
 bool OSMesaViewGLContext::UpdateSize() {
@@ -610,6 +643,11 @@ void* PbufferGLContext::GetHandle() {
   return context_;
 }
 
+void PbufferGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  NOTREACHED();
+}
+
 bool PixmapGLContext::Initialize(GLContext* shared_context) {
   LOG(INFO) << "GL context: using pixmaps.";
 
@@ -726,6 +764,11 @@ gfx::Size PixmapGLContext::GetSize() {
 
 void* PixmapGLContext::GetHandle() {
   return context_;
+}
+
+void PixmapGLContext::SetSwapInterval(int interval) {
+  DCHECK(IsCurrent());
+  NOTREACHED();
 }
 
 GLContext* GLContext::CreateOffscreenGLContext(GLContext* shared_context) {
