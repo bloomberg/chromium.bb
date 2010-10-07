@@ -47,6 +47,9 @@
         {
           'target_name': 'crash_inspector',
           'type': 'executable',
+          'variables': {
+            'mac_real_dsym': 1,
+          },
           'dependencies': [
             'breakpad_utilities',
           ],
@@ -67,6 +70,9 @@
           'target_name': 'crash_report_sender',
           'type': 'executable',
           'mac_bundle': 1,
+          'variables': {
+            'mac_real_dsym': 1,
+          },
           'include_dirs': [
             'src/common/mac',
           ],
