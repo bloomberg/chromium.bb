@@ -393,9 +393,15 @@ public:
         const CuePoint*&,
         const CuePoint::TrackPosition*&) const;
 
+    size_t LoadCuePoint();
+    const CuePoint* GetFirst() const;
+    const CuePoint* GetLast() const;
+
 private:
     CuePoint* m_cue_points;
     size_t m_cue_points_count;
+    size_t m_cue_points_size;
+    long long m_pos;
 
 };
 
@@ -499,15 +505,14 @@ public:
         Cluster*&,
         const BlockEntry*&);
 
-    void ParseCues();
-    const Cues* GetCues() const;
+    Cues* GetCues() const;
 
 private:
+
     long long m_pos;  //absolute file posn; what has been consumed so far
     SegmentInfo* m_pInfo;
     Tracks* m_pTracks;
     Cues* m_pCues;
-    long long m_cues_off;
     Cluster** m_clusters;
     long m_clusterCount;         //number of entries for which m_index >= 0
     long m_clusterPreloadCount;  //number of entries for which m_index < 0
@@ -518,6 +523,7 @@ private:
 
     void ParseSeekHead(long long pos, long long size);
     void ParseSeekEntry(long long pos, long long size);
+    void ParseCues(long long);
 
     bool SearchCues(
         long long time_ns,

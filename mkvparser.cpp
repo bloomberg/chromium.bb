@@ -784,7 +784,6 @@ Segment::Segment(
     m_pInfo(NULL),
     m_pTracks(NULL),
     m_pCues(NULL),
-    m_cues_off(-1),
     m_clusters(NULL),
     m_clusterCount(0),
     m_clusterPreloadCount(0),
@@ -998,16 +997,11 @@ long long Segment::ParseHeaders()
         }
         else if (id == 0x0C53BB6B)  //Cues ID
         {
-#if 0
             if (m_pCues == NULL)
             {
                 m_pCues = new Cues(this, pos, size);
                 assert(m_pCues);  //TODO
             }
-#else
-            if (m_cues_off < 0)
-                m_cues_off = idpos - m_start;  //relative to segment start
-#endif
         }
         else if (id == 0x014D9B74)  //SeekHead ID
         {
@@ -1029,10 +1023,6 @@ long long Segment::ParseHeaders()
 
     if (m_pTracks == NULL)
         return E_FILE_FORMAT_INVALID;
-
-    //TODO: require Cues too?
-    //No, don't require it, but use its presence or abscense
-    //to determine whether seeking is allowed.
 
     return 0;  //success
 }
@@ -1247,16 +1237,11 @@ long Segment::LoadCluster()
 
         if (id == 0x0C53BB6B)  //Cues ID
         {
-#if 0
             if (m_pCues == NULL)
             {
                 m_pCues = new Cues(this, pos, size);
                 assert(m_pCues);  //TODO
             }
-#else
-            if (m_cues_off < 0)
-                m_cues_off = idpos - m_start;
-#endif
 
             m_pos = pos + size;  //consume payload
             continue;
@@ -1617,15 +1602,15 @@ void Segment::ParseSeekHead(long long start, long long size_)
 }
 
 
-void Segment::ParseCues()
+void Segment::ParseCues(long long off)
 {
+    if (m_pCues)
+        return;
+
     //odbgstream os;
     //os << "Segment::ParseCues (begin)" << endl;
 
-    if ((m_pCues != NULL) || (m_cues_off < 0))
-        return;
-
-    long long pos = m_start + m_cues_off;
+    long long pos = m_start + off;
     const long long stop = m_start + m_size;
 
     long len;
@@ -1717,42 +1702,8 @@ void Segment::ParseSeekEntry(
     const long long seekPos = m_start + seekOff;
     assert(seekPos < (m_start + m_size));
 
-#if 0
-    if (seekId == 0x0F43B675)  //cluster id
-    {
-        if (pIndex == NULL)
-            ++m_clusterCount;
-        else
-        {
-            assert(m_clusters);
-            assert(m_clusterCount > 0);
-
-            size_t& index = *pIndex;
-            assert(index < m_clusterCount);
-
-            Cluster*& pCluster = m_clusters[index];
-
-            pCluster = Cluster::Parse(this, index, seekOff);
-            assert(pCluster);  //TODO
-
-            ++index;
-        }
-    }
-    else if (seekId == 0x014D9B74)  //SeekHead ID
-    {
-        ParseSecondarySeekHead(seekOff, pIndex);
-    }
-#endif
-
     if (seekId == 0x0C53BB6B)  //Cues ID
-    {
-#if 0
         ParseCues(seekOff);
-#else
-        if (m_cues_off < 0)
-            m_cues_off = seekOff;
-#endif
-    }
 }
 
 
@@ -1760,13 +1711,17 @@ Cues::Cues(Segment* pSegment, long long start_, long long size_) :
     m_pSegment(pSegment),
     m_start(start_),
     m_size(size_),
-    m_cue_points(NULL),
-    m_cue_points_count(0)
+    m_cue_points_size(0),
+    m_cue_points_count(0),
+    m_pos(start_)
 {
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
     const long long stop = m_start + m_size;
     long long pos = m_start;
+
+    //odbgstream os;
+    //os << "Cues: ctor (begin)" << endl;
 
     //First count the cue points
 
@@ -1788,56 +1743,93 @@ Cues::Cues(Segment* pSegment, long long start_, long long size_) :
         assert((pos + size) <= stop);
 
         if (id == 0x3B)  //CuePoint ID
-            ++m_cue_points_count;
+            ++m_cue_points_size;
 
         pos += size;  //consume payload
         assert(pos <= stop);
     }
 
-    assert(m_cue_points_count > 0);
+    assert(m_cue_points_size > 0);  //TODO
 
-    m_cue_points = new CuePoint[m_cue_points_count];
+    //os << "Cues::ctor: count=" << m_cue_points_size << endl;
 
-    //Now parse the cue points
+    m_cue_points = new CuePoint[m_cue_points_size];
 
-    CuePoint* pCP = m_cue_points;
-    pos = m_start;
-
-    while (pos < stop)
-    {
-        long len;
-
-        const long long id = ReadUInt(pReader, pos, len);
-        assert(id >= 0);  //TODO
-        assert((pos + len) <= stop);
-
-        pos += len;  //consume ID
-
-        const long long size = ReadUInt(pReader, pos, len);
-        assert(size >= 0);
-        assert((pos + len) <= stop);
-
-        pos += len;  //consume Size field
-        assert((pos + size) <= stop);
-
-        if (id == 0x3B)  //CuePoint ID
-        {
-            CuePoint& cp = *pCP++;
-            cp.Parse(pReader, pos, size);
-        }
-
-        pos += size;  //consume payload
-        assert(pos <= stop);
-    }
-
-    assert(pos == stop);
-    assert(size_t(pCP - m_cue_points) == m_cue_points_count);
+    //os << "Cues: ctor (end)" << endl;
 }
 
 
 Cues::~Cues()
 {
     delete[] m_cue_points;
+}
+
+
+const CuePoint* Cues::GetFirst() const
+{
+    if ((m_cue_points == NULL) || (m_cue_points_count < 1))
+        return NULL;
+
+    CuePoint& cp = m_cue_points[0];
+
+    return &cp;
+}
+
+
+const CuePoint* Cues::GetLast() const
+{
+    if ((m_cue_points == NULL) || (m_cue_points_count < 1))
+        return NULL;
+
+    const size_t idx = m_cue_points_count - 1;
+
+    CuePoint& cp = m_cue_points[idx];
+
+    return &cp;
+}
+
+
+size_t Cues::LoadCuePoint()
+{
+    if (m_cue_points_count >= m_cue_points_size)
+        return 0;
+
+    IMkvReader* const pReader = m_pSegment->m_pReader;
+
+    const long long stop = m_start + m_size;
+    bool bDone = false;
+
+    while (!bDone && (m_pos < stop))
+    {
+        long len;
+
+        const long long id = ReadUInt(pReader, m_pos, len);
+        assert(id >= 0);  //TODO
+        assert((m_pos + len) <= stop);
+
+        m_pos += len;  //consume ID
+
+        const long long size = ReadUInt(pReader, m_pos, len);
+        assert(size >= 0);
+        assert((m_pos + len) <= stop);
+
+        m_pos += len;  //consume Size field
+        assert((m_pos + size) <= stop);
+
+        if (id == 0x3B)  //CuePoint ID
+        {
+            CuePoint& cp = m_cue_points[m_cue_points_count++];
+            cp.Parse(pReader, m_pos, size);
+
+            bDone = true;
+        }
+
+        m_pos += size;  //consume payload
+        assert(m_pos <= stop);
+    }
+
+    const size_t result = m_cue_points_size - m_cue_points_count;
+    return result;
 }
 
 
@@ -2560,113 +2552,30 @@ bool Segment::SearchCues(
     Cluster*& pCluster,
     const BlockEntry*& pBlockEntry)
 {
-#if 0
-    if (m_pCues == NULL)
-    {
-        if (m_cues_off < 0)
-            return false;
-
-        ParseCues();
-        assert(m_pCues);
-    }
-#else
-    if (m_pCues == NULL)
-        return false;
-#endif
-
     if (pTrack->GetType() != 1)  //not video
         return false;  //TODO: for now, just handle video stream
 
-#if 0
-    if ((m_clusters == NULL) || (m_clusterCount <= 0))
+    if (m_pCues == NULL)
         return false;
 
-    const long last_idx = m_clusterCount - 1;
+    //odbgstream os;
+    //os << "SearchCues:: loading cue points; time[sec]="
+    //   << (double(time_ns) / 1000000000)
+    //   << endl;
 
-    Cluster* const pLastCluster = m_clusters[last_idx];
-    assert(pLastCluster);
-    assert(pLastCluster->m_index == last_idx);
-    assert(pLastCluster->m_pos);
-
-    const long long last_pos_ = pLastCluster->m_pos;
-    const long long last_pos = last_pos_ * ((last_pos_ < 0) ? -1 : 1);
-    last_pos;
-
-    const long long last_ns = pLastCluster->GetTime();
-    long long time_ns;
-
-    if (Unparsed() <= 0)  //all clusters loaded
-        time_ns = time_ns_;
-
-    else if (time_ns_ < last_ns)
-        time_ns = time_ns_;
-
-    else
-        time_ns = last_ns;
-
-    const CuePoint* pCP;
-    const CuePoint::TrackPosition* pTP;
-
-    if (!m_pCues->Find(time_ns, pTrack, pCP, pTP))
-        return false;  //weird
-
-    assert(pCP);
-    assert(pTP);
-    assert(pTP->m_track == pTrack->GetNumber());
-    assert(pTP->m_pos <= last_pos);
-
-    //We have the cue point and track position we want,
-    //so we now need to search for the cluster having
-    //the indicated position.
-
-    Cluster** const ii = m_clusters;
-    Cluster** i = ii;
-
-    Cluster* const pFirstCluster = *i;
-    assert(pFirstCluster);
-
-    const long long first_pos_ = pFirstCluster->m_pos;
-    const long long first_pos = first_pos_ * ((first_pos_ < 0) ? -1 : 1);
-    first_pos;
-    assert(pTP->m_pos >= first_pos);
-
-    Cluster** const jj = ii + m_clusterCount;
-    Cluster** j = jj;
-    assert(j > i);
-
-    for (;;)
+    while (m_pCues->LoadCuePoint())
     {
-        //INVARIANT:
-        //[0, i) < pTP->m_pos
-        //[i, j) ?
-        //[j, jj)  > pTP->m_pos
+        const CuePoint* const pCP = m_pCues->GetLast();
+        assert(pCP);
 
-        Cluster** const k = i + (j - i) / 2;
-        assert(k < jj);
+        const long long ns = pCP->GetTime(this);
 
-        pCluster = *k;
-        assert(pCluster);
-
-        const long long pos_ = pCluster->m_pos;
-        assert(pos_);
-
-        const long long pos = pos_ * ((pos_ < 0) ? -1 : 1);
-
-        if (pos < pTP->m_pos)
-            i = k + 1;
-        else if (pos > pTP->m_pos)
-            j = k;
-        else
-        {
-            pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
-            assert(pBlockEntry);
-
-            return true;
-        }
-
-        assert(i < j);
+        if (ns >= time_ns)
+            break;
     }
-#else
+
+    //os << "SearchCues:: loading cue points done" << endl;
+
     const CuePoint* pCP;
     const CuePoint::TrackPosition* pTP;
 
@@ -2734,7 +2643,6 @@ bool Segment::SearchCues(
     assert(pBlockEntry);
 
     return true;
-#endif
 }
 
 
@@ -2750,7 +2658,7 @@ const SegmentInfo* Segment::GetInfo() const
 }
 
 
-const Cues* Segment::GetCues() const
+Cues* Segment::GetCues() const
 {
     return m_pCues;
 }
