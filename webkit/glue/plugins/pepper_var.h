@@ -10,7 +10,7 @@
 #include "webkit/glue/plugins/pepper_resource.h"
 
 struct PP_Var;
-struct PPB_Var;
+struct PPB_Var_Deprecated;
 typedef struct NPObject NPObject;
 typedef struct _NPVariant NPVariant;
 typedef void* NPIdentifier;
@@ -79,8 +79,8 @@ class Var : public Resource {
   static void PluginAddRefPPVar(PP_Var var);
   static void PluginReleasePPVar(PP_Var var);
 
-  // Returns the PPB_Var interface for the plugin to use.
-  static const PPB_Var* GetInterface();
+  // Returns the PPB_Var_Deprecated interface for the plugin to use.
+  static const PPB_Var_Deprecated* GetDeprecatedInterface();
 
  protected:
   // This can only be constructed as a StringVar or an ObjectVar.

@@ -77,17 +77,17 @@ PP_FileSystemType_Dev GetFileSystemType(PP_Resource file_ref_id) {
 PP_Var GetName(PP_Resource file_ref_id) {
   scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   return StringVar::StringToPPVar(file_ref->module(), file_ref->GetName());
 }
 
 PP_Var GetPath(PP_Resource file_ref_id) {
   scoped_refptr<FileRef> file_ref(Resource::GetAs<FileRef>(file_ref_id));
   if (!file_ref)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   if (file_ref->file_system_type() == PP_FILESYSTEMTYPE_EXTERNAL)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   return StringVar::StringToPPVar(file_ref->module(), file_ref->path());
 }

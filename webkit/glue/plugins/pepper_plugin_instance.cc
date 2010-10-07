@@ -143,14 +143,14 @@ void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
 PP_Var GetWindowObject(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   return instance->GetWindowObject();
 }
 
 PP_Var GetOwnerElementObject(PP_Instance instance_id) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   return instance->GetOwnerElementObject();
 }
 
@@ -173,7 +173,7 @@ PP_Var ExecuteScript(PP_Instance instance_id,
                      PP_Var* exception) {
   PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
   if (!instance)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   return instance->ExecuteScript(script, exception);
 }
 
@@ -348,18 +348,18 @@ void PluginInstance::InvalidateRect(const gfx::Rect& rect) {
 
 PP_Var PluginInstance::GetWindowObject() {
   if (!container_)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   WebFrame* frame = container_->element().document().frame();
   if (!frame)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   return ObjectVar::NPObjectToPPVar(module(), frame->windowObject());
 }
 
 PP_Var PluginInstance::GetOwnerElementObject() {
   if (!container_)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   return ObjectVar::NPObjectToPPVar(module(),
                                     container_->scriptableObjectForElement());
 }
@@ -415,13 +415,13 @@ bool PluginInstance::SetCursor(PP_CursorType_Dev type) {
 PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
   TryCatch try_catch(module(), exception);
   if (try_catch.has_exception())
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   // Convert the script into an inconvenient NPString object.
   scoped_refptr<StringVar> script_string(StringVar::FromPPVar(script));
   if (!script_string) {
     try_catch.SetException("Script param to ExecuteScript must be a string.");
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
   NPString np_script;
   np_script.UTF8Characters = script_string->value().c_str();
@@ -431,7 +431,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
   WebFrame* frame = container_->element().document().frame();
   if (!frame) {
     try_catch.SetException("No frame to execute script in.");
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
 
   NPVariant result;
@@ -442,7 +442,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
     // doesn't actually catch this exception.
     try_catch.SetException("Exception caught");
     WebBindings::releaseVariantValue(&result);
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
 
   PP_Var ret = Var::NPVariantToPPVar(module_, &result);

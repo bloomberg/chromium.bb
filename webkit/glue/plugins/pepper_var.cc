@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "third_party/ppapi/c/dev/ppb_var_deprecated.h"
 #include "third_party/ppapi/c/pp_var.h"
-#include "third_party/ppapi/c/ppb_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_plugin_object.h"
@@ -43,7 +43,7 @@ const char kUnableToConstructException[] = "Error: Unable to construct";
 // the PP_Var remains valid while the resultant NPVariant is in use.
 bool PPVarToNPVariantNoCopy(PP_Var var, NPVariant* result) {
   switch (var.type) {
-    case PP_VARTYPE_VOID:
+    case PP_VARTYPE_UNDEFINED:
       VOID_TO_NPVARIANT(*result);
       break;
     case PP_VARTYPE_NULL:
@@ -185,9 +185,9 @@ bool HasProperty(PP_Var var,
                                   accessor.identifier());
 }
 
-bool HasMethod(PP_Var var,
-               PP_Var name,
-               PP_Var* exception) {
+bool HasMethodDeprecated(PP_Var var,
+                         PP_Var name,
+                         PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
     return false;
@@ -200,14 +200,14 @@ PP_Var GetProperty(PP_Var var,
                    PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   NPVariant result;
   if (!WebBindings::getProperty(NULL, accessor.object()->np_object(),
                                 accessor.identifier(), &result)) {
     // An exception may have been raised.
     accessor.SetException(kUnableToGetPropertyException);
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
 
   PP_Var ret = Var::NPVariantToPPVar(accessor.object()->module(), &result);
@@ -215,7 +215,7 @@ PP_Var GetProperty(PP_Var var,
   return ret;
 }
 
-void GetAllPropertyNames(PP_Var var,
+void EnumerateProperties(PP_Var var,
                          uint32_t* property_count,
                          PP_Var** properties,
                          PP_Var* exception) {
@@ -246,10 +246,10 @@ void GetAllPropertyNames(PP_Var var,
   free(identifiers);
 }
 
-void SetProperty(PP_Var var,
-                 PP_Var name,
-                 PP_Var value,
-                 PP_Var* exception) {
+void SetPropertyDeprecated(PP_Var var,
+                           PP_Var name,
+                           PP_Var value,
+                           PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
   if (accessor.has_exception())
     return;
@@ -264,7 +264,7 @@ void SetProperty(PP_Var var,
     accessor.SetException(kUnableToSetPropertyException);
 }
 
-void RemoveProperty(PP_Var var,
+void DeleteProperty(PP_Var var,
                     PP_Var name,
                     PP_Var* exception) {
   ObjectAccessorWithIdentifierTryCatch accessor(var, name, exception);
@@ -276,28 +276,28 @@ void RemoveProperty(PP_Var var,
     accessor.SetException(kUnableToRemovePropertyException);
 }
 
-PP_Var Call(PP_Var var,
-            PP_Var method_name,
-            uint32_t argc,
-            PP_Var* argv,
-            PP_Var* exception) {
+PP_Var CallDeprecated(PP_Var var,
+                      PP_Var method_name,
+                      uint32_t argc,
+                      PP_Var* argv,
+                      PP_Var* exception) {
   ObjectAccessorTryCatch accessor(var, exception);
   if (accessor.has_exception())
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   NPIdentifier identifier;
-  if (method_name.type == PP_VARTYPE_VOID) {
+  if (method_name.type == PP_VARTYPE_UNDEFINED) {
     identifier = NULL;
   } else if (method_name.type == PP_VARTYPE_STRING) {
     // Specifically allow only string functions to be called.
     identifier = Var::PPVarToNPIdentifier(method_name);
     if (!identifier) {
       accessor.SetException(kInvalidPropertyException);
-      return PP_MakeVoid();
+      return PP_MakeUndefined();
     }
   } else {
     accessor.SetException(kInvalidPropertyException);
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
 
   scoped_array<NPVariant> args;
@@ -307,7 +307,7 @@ PP_Var Call(PP_Var var,
       if (!PPVarToNPVariantNoCopy(argv[i], &args[i])) {
         // This argument was invalid, throw an exception & give up.
         accessor.SetException(kInvalidValueException);
-        return PP_MakeVoid();
+        return PP_MakeUndefined();
       }
     }
   }
@@ -326,7 +326,7 @@ PP_Var Call(PP_Var var,
   if (!ok) {
     // An exception may have been raised.
     accessor.SetException(kUnableToCallMethodException);
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
 
   PP_Var ret = Var::NPVariantToPPVar(accessor.module(), &result);
@@ -340,7 +340,7 @@ PP_Var Construct(PP_Var var,
                  PP_Var* exception) {
   ObjectAccessorTryCatch accessor(var, exception);
   if (accessor.has_exception())
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   scoped_array<NPVariant> args;
   if (argc) {
@@ -349,7 +349,7 @@ PP_Var Construct(PP_Var var,
       if (!PPVarToNPVariantNoCopy(argv[i], &args[i])) {
         // This argument was invalid, throw an exception & give up.
         accessor.SetException(kInvalidValueException);
-        return PP_MakeVoid();
+        return PP_MakeUndefined();
       }
     }
   }
@@ -359,7 +359,7 @@ PP_Var Construct(PP_Var var,
                               args.get(), argc, &result)) {
     // An exception may have been raised.
     accessor.SetException(kUnableToConstructException);
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
   }
 
   PP_Var ret = Var::NPVariantToPPVar(accessor.module(), &result);
@@ -367,9 +367,9 @@ PP_Var Construct(PP_Var var,
   return ret;
 }
 
-bool IsInstanceOf(PP_Var var,
-                  const PPP_Class* ppp_class,
-                  void** ppp_class_data) {
+bool IsInstanceOfDeprecated(PP_Var var,
+                            const PPP_Class_Deprecated* ppp_class,
+                            void** ppp_class_data) {
   scoped_refptr<ObjectVar> object(ObjectVar::FromPPVar(var));
   if (!object)
     return false;  // Not an object at all.
@@ -378,30 +378,30 @@ bool IsInstanceOf(PP_Var var,
                                     ppp_class, ppp_class_data);
 }
 
-PP_Var CreateObject(PP_Module module_id,
-                    const PPP_Class* ppp_class,
-                    void* ppp_class_data) {
+PP_Var CreateObjectDeprecated(PP_Module module_id,
+                              const PPP_Class_Deprecated* ppp_class,
+                              void* ppp_class_data) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
     return PP_MakeNull();
   return PluginObject::Create(module, ppp_class, ppp_class_data);
 }
 
-const PPB_Var var_interface = {
+const PPB_Var_Deprecated var_deprecated_interface = {
   &Var::PluginAddRefPPVar,
   &Var::PluginReleasePPVar,
   &VarFromUtf8,
   &VarToUtf8,
   &HasProperty,
-  &HasMethod,
+  &HasMethodDeprecated,
   &GetProperty,
-  &GetAllPropertyNames,
-  &SetProperty,
-  &RemoveProperty,
-  &Call,
+  &EnumerateProperties,
+  &SetPropertyDeprecated,
+  &DeleteProperty,
+  &CallDeprecated,
   &Construct,
-  &IsInstanceOf,
-  &CreateObject
+  &IsInstanceOfDeprecated,
+  &CreateObjectDeprecated
 };
 
 }  // namespace
@@ -418,7 +418,7 @@ Var::~Var() {
 PP_Var Var::NPVariantToPPVar(PluginModule* module, const NPVariant* variant) {
   switch (variant->type) {
     case NPVariantType_Void:
-      return PP_MakeVoid();
+      return PP_MakeUndefined();
     case NPVariantType_Null:
       return PP_MakeNull();
     case NPVariantType_Bool:
@@ -436,7 +436,7 @@ PP_Var Var::NPVariantToPPVar(PluginModule* module, const NPVariant* variant) {
       return ObjectVar::NPObjectToPPVar(module, NPVARIANT_TO_OBJECT(*variant));
   }
   NOTREACHED();
-  return PP_MakeVoid();
+  return PP_MakeUndefined();
 }
 
 // static
@@ -488,8 +488,8 @@ void Var::PluginReleasePPVar(PP_Var var) {
 }
 
 // static
-const PPB_Var* Var::GetInterface() {
-  return &var_interface;
+const PPB_Var_Deprecated* Var::GetDeprecatedInterface() {
+  return &var_deprecated_interface;
 }
 
 // StringVar -------------------------------------------------------------------
@@ -550,7 +550,7 @@ PP_Var ObjectVar::NPObjectToPPVar(PluginModule* module, NPObject* object) {
     object_var = new ObjectVar(module, object);
 
   if (!object_var)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   // Convert to a PP_Var, GetReference will AddRef for us.
   PP_Var result;
@@ -570,7 +570,7 @@ scoped_refptr<ObjectVar> ObjectVar::FromPPVar(PP_Var var) {
 
 TryCatch::TryCatch(PluginModule* module, PP_Var* exception)
     : module_(module),
-      has_exception_(exception && exception->type != PP_VARTYPE_VOID),
+      has_exception_(exception && exception->type != PP_VARTYPE_UNDEFINED),
       exception_(exception) {
   WebBindings::pushExceptionHandler(&TryCatch::Catch, this);
 }

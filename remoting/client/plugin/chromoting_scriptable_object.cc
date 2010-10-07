@@ -125,7 +125,7 @@ Var ChromotingScriptableObject::Call(const Var& method_name,
   PropertyNameMap::const_iterator iter =
       property_names_.find(method_name.AsString());
   if (iter == property_names_.end()) {
-    return pp::ScriptableObject::Call(method_name, args, exception);
+    return pp::deprecated::ScriptableObject::Call(method_name, args, exception);
   }
 
   return (this->*(properties_[iter->second].method))(args, exception);

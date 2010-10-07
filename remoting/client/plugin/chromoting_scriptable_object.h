@@ -33,14 +33,14 @@
 #include <string>
 #include <vector>
 
-#include "third_party/ppapi/cpp/scriptable_object.h"
+#include "third_party/ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "third_party/ppapi/cpp/var.h"
 
 namespace remoting {
 
 class ChromotingInstance;
 
-class ChromotingScriptableObject : public pp::ScriptableObject {
+class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
  public:
   explicit ChromotingScriptableObject(ChromotingInstance* instance);
   virtual ~ChromotingScriptableObject();

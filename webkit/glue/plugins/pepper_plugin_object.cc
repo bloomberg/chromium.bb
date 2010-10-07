@@ -10,9 +10,9 @@
 #include "base/string_util.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
+#include "third_party/ppapi/c/dev/ppb_var_deprecated.h"
+#include "third_party/ppapi/c/dev/ppp_class_deprecated.h"
 #include "third_party/ppapi/c/pp_var.h"
-#include "third_party/ppapi/c/ppb_var.h"
-#include "third_party/ppapi/c/ppp_class.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_string.h"
@@ -38,7 +38,7 @@ const char kInvalidPluginValue[] = "Error: Plugin returned invalid value.";
 // an object.
 bool PPVarToNPVariant(PP_Var var, NPVariant* result) {
   switch (var.type) {
-    case PP_VARTYPE_VOID:
+    case PP_VARTYPE_UNDEFINED:
       VOID_TO_NPVARIANT(*result);
       break;
     case PP_VARTYPE_NULL:
@@ -139,7 +139,7 @@ class PPResultAndExceptionToNPResult {
                                  NPVariant* np_result)
       : object_var_(object_var),
         np_result_(np_result),
-        exception_(PP_MakeVoid()),
+        exception_(PP_MakeUndefined()),
         success_(false),
         checked_exception_(false) {
   }
@@ -154,7 +154,7 @@ class PPResultAndExceptionToNPResult {
   }
 
   // Returns true if an exception has been set.
-  bool has_exception() const { return exception_.type != PP_VARTYPE_VOID; }
+  bool has_exception() const { return exception_.type != PP_VARTYPE_UNDEFINED; }
 
   // Returns a pointer to the exception. You would pass this to the PPAPI
   // function as the exception parameter. If it is set to non-void, this object
@@ -267,11 +267,11 @@ class NPObjectAccessorWithIdentifier {
                                  NPIdentifier identifier,
                                  bool allow_integer_identifier)
       : object_(PluginObject::FromNPObject(object)),
-        identifier_(PP_MakeVoid()) {
+        identifier_(PP_MakeUndefined()) {
     if (object_) {
       identifier_ = Var::NPIdentifierToPPVar(object_->module(), identifier);
       if (identifier_.type == PP_VARTYPE_INT32 && !allow_integer_identifier)
-        identifier_.type = PP_VARTYPE_VOID;  // Make the identifier invalid.
+        identifier_.type = PP_VARTYPE_UNDEFINED;  // Mark it invalid.
     }
   }
 
@@ -281,7 +281,7 @@ class NPObjectAccessorWithIdentifier {
 
   // Returns true if both the object and identifier are valid.
   bool is_valid() const {
-    return object_ && identifier_.type != PP_VARTYPE_VOID;
+    return object_ && identifier_.type != PP_VARTYPE_UNDEFINED;
   }
 
   PluginObject* object() { return object_; }
@@ -294,7 +294,7 @@ class NPObjectAccessorWithIdentifier {
   DISALLOW_COPY_AND_ASSIGN(NPObjectAccessorWithIdentifier);
 };
 
-// NPObject implementation in terms of PPP_Class -------------------------------
+// NPObject implementation in terms of PPP_Class_Deprecated --------------------
 
 NPObject* WrapperClass_Allocate(NPP npp, NPClass* unused) {
   return PluginObject::AllocateObjectWrapper();
@@ -349,7 +349,7 @@ bool WrapperClass_InvokeDefault(NPObject* np_object, const NPVariant* argv,
   PPResultAndExceptionToNPResult result_converter(obj, result);
 
   result_converter.SetResult(obj->ppp_class()->Call(
-      obj->ppp_class_data(), PP_MakeVoid(), argc, args.array(),
+      obj->ppp_class_data(), PP_MakeUndefined(), argc, args.array(),
       result_converter.exception()));
   return result_converter.success();
 }
@@ -518,7 +518,7 @@ struct PluginObject::NPObjectWrapper : public NPObject {
 
 PluginObject::PluginObject(PluginModule* module,
                            NPObjectWrapper* object_wrapper,
-                           const PPP_Class* ppp_class,
+                           const PPP_Class_Deprecated* ppp_class,
                            void* ppp_class_data)
     : module_(module),
       object_wrapper_(object_wrapper),
@@ -542,7 +542,7 @@ PluginObject::~PluginObject() {
 }
 
 PP_Var PluginObject::Create(PluginModule* module,
-                            const PPP_Class* ppp_class,
+                            const PPP_Class_Deprecated* ppp_class,
                             void* ppp_class_data) {
   // This will internally end up calling our AllocateObjectWrapper via the
   // WrapperClass_Allocated function which will have created an object wrapper
@@ -568,7 +568,7 @@ NPObject* PluginObject::GetNPObject() const {
 
 // static
 bool PluginObject::IsInstanceOf(NPObject* np_object,
-                                const PPP_Class* ppp_class,
+                                const PPP_Class_Deprecated* ppp_class,
                                 void** ppp_class_data) {
   // Validate that this object is implemented by our wrapper class before
   // trying to get the PluginObject.

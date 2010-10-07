@@ -47,7 +47,7 @@ PP_Var GetProperty(PP_Resource response_id,
   scoped_refptr<URLResponseInfo> response(
       Resource::GetAs<URLResponseInfo>(response_id));
   if (!response)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   return response->GetProperty(property);
 }
@@ -97,7 +97,7 @@ PP_Var URLResponseInfo::GetProperty(PP_URLResponseProperty_Dev property) {
       return StringVar::StringToPPVar(module(), headers_);
     default:
       NOTIMPLEMENTED();  // TODO(darin): Implement me!
-      return PP_MakeVoid();
+      return PP_MakeUndefined();
   }
 }
 

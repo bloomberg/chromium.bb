@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 
 struct PP_Var;
-struct PPP_Class;
+struct PPP_Class_Deprecated;
 typedef struct NPObject NPObject;
 typedef struct _NPVariant NPVariant;
 
@@ -25,12 +25,12 @@ class PluginObject {
   // Allocates a new PluginObject and returns it as a PP_Var with a
   // refcount of 1.
   static PP_Var Create(PluginModule* module,
-                       const PPP_Class* ppp_class,
+                       const PPP_Class_Deprecated* ppp_class,
                        void* ppp_class_data);
 
   PluginModule* module() const { return module_; }
 
-  const PPP_Class* ppp_class() { return ppp_class_; }
+  const PPP_Class_Deprecated* ppp_class() { return ppp_class_; }
   void* ppp_class_data() { return ppp_class_data_; };
 
   NPObject* GetNPObject() const;
@@ -40,7 +40,7 @@ class PluginObject {
   // returns true and places the class data into |*ppp_class_data| (which can
   // optionally be NULL if no class data is desired).
   static bool IsInstanceOf(NPObject* np_object,
-                           const PPP_Class* ppp_class,
+                           const PPP_Class_Deprecated* ppp_class,
                            void** ppp_class_data);
 
   // Converts the given NPObject to the corresponding ObjectVar.
@@ -65,7 +65,7 @@ class PluginObject {
   // incremented on it, and this class will take ownership of that reference.
   PluginObject(PluginModule* module,
                NPObjectWrapper* object_wrapper,
-               const PPP_Class* ppp_class,
+               const PPP_Class_Deprecated* ppp_class,
                void* ppp_class_data);
 
   PluginModule* module_;
@@ -78,7 +78,7 @@ class PluginObject {
   // owns us.
   NPObjectWrapper* object_wrapper_;
 
-  const PPP_Class* ppp_class_;
+  const PPP_Class_Deprecated* ppp_class_;
   void* ppp_class_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginObject);

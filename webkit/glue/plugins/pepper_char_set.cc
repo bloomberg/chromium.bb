@@ -143,7 +143,7 @@ uint16_t* CharSetToUTF16(const char* input, uint32_t input_len,
 PP_Var GetDefaultCharSet(PP_Module pp_module) {
   PluginModule* module = PluginModule::FromPPModule(pp_module);
   if (!module)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   std::string encoding =
       module->GetSomeInstance()->delegate()->GetDefaultEncoding();

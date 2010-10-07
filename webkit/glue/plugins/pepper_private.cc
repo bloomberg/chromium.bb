@@ -77,7 +77,7 @@ static const ResourceImageInfo kResourceImageMap[] = {
 PP_Var GetLocalizedString(PP_Module module_id, PP_ResourceString string_id) {
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
-    return PP_MakeVoid();
+    return PP_MakeUndefined();
 
   std::string rv;
   if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD)

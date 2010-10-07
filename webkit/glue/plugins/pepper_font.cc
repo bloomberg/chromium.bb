@@ -33,7 +33,8 @@ namespace {
 
 bool IsPPFontDescriptionValid(const PP_FontDescription_Dev& desc) {
   // Check validity of UTF-8.
-  if (desc.face.type != PP_VARTYPE_STRING && desc.face.type != PP_VARTYPE_VOID)
+  if (desc.face.type != PP_VARTYPE_STRING &&
+      desc.face.type != PP_VARTYPE_UNDEFINED)
     return false;
 
   // Check enum ranges.
@@ -198,7 +199,7 @@ const PPB_Font_Dev* Font::GetInterface() {
 
 bool Font::Describe(PP_FontDescription_Dev* description,
                     PP_FontMetrics_Dev* metrics) {
-  if (description->face.type != PP_VARTYPE_VOID)
+  if (description->face.type != PP_VARTYPE_UNDEFINED)
     return false;
 
   WebFontDescription web_desc = font_->fontDescription();

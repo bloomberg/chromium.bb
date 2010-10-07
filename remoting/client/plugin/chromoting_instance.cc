@@ -156,7 +156,7 @@ bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
 
 pp::Var ChromotingInstance::GetInstanceObject() {
   LOG(ERROR) << "Getting instance object.";
-  if (instance_object_.is_void()) {
+  if (instance_object_.is_undefined()) {
     ChromotingScriptableObject* object = new ChromotingScriptableObject(this);
     object->Init();
 
