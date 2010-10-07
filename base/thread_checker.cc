@@ -6,11 +6,24 @@
 
 // This code is only done in debug builds.
 #ifndef NDEBUG
-ThreadChecker::ThreadChecker() : valid_thread_id_(PlatformThread::CurrentId()) {
+
+ThreadChecker::ThreadChecker() {
+  EnsureThreadIdAssigned();
 }
 
 bool ThreadChecker::CalledOnValidThread() const {
-  return valid_thread_id_ == PlatformThread::CurrentId();
+  EnsureThreadIdAssigned();
+  return *valid_thread_id_ == PlatformThread::CurrentId();
+}
+
+void ThreadChecker::DetachFromThread() {
+  valid_thread_id_.reset();
+}
+
+void ThreadChecker::EnsureThreadIdAssigned() const {
+  if (valid_thread_id_.get())
+    return;
+  valid_thread_id_.reset(new PlatformThreadId(PlatformThread::CurrentId()));
 }
 
 #endif  // NDEBUG

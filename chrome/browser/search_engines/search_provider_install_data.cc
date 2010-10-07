@@ -62,9 +62,11 @@ std::string IOThreadSearchTermsData::GetApplicationLocale() const {
 }
 
 // Handles telling SearchProviderInstallData about changes to the google base
-// url.
+// url. (Ensure that this is deleted on the I/O thread so that the WeakPtr is
+// deleted on the correct thread.)
 class GoogleURLChangeNotifier
-    : public base::RefCountedThreadSafe<GoogleURLChangeNotifier> {
+    : public base::RefCountedThreadSafe<GoogleURLChangeNotifier,
+                                        ChromeThread::DeleteOnIOThread> {
  public:
   explicit GoogleURLChangeNotifier(
       const base::WeakPtr<SearchProviderInstallData>& install_data);
@@ -74,7 +76,9 @@ class GoogleURLChangeNotifier
   void OnChange(const std::string& google_base_url);
 
  private:
-  friend class base::RefCountedThreadSafe<GoogleURLChangeNotifier>;
+  friend struct ChromeThread::DeleteOnThread<ChromeThread::IO>;
+  friend class DeleteTask<GoogleURLChangeNotifier>;
+
   ~GoogleURLChangeNotifier() {}
 
   base::WeakPtr<SearchProviderInstallData> install_data_;
@@ -167,6 +171,7 @@ SearchProviderInstallData::SearchProviderInstallData(
   // the given notification occurs.
   new GoogleURLObserver(new GoogleURLChangeNotifier(AsWeakPtr()),
                         ui_death_notification, ui_death_source);
+  DetachFromThread();
 }
 
 SearchProviderInstallData::~SearchProviderInstallData() {

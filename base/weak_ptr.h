@@ -74,6 +74,8 @@ class WeakReference {
     void Invalidate() { handle_ = NULL; }
     bool is_valid() const { return handle_ != NULL; }
 
+    void DetachFromThread() { NonThreadSafe::DetachFromThread(); }
+
    private:
     Flag** handle_;
   };
@@ -100,6 +102,11 @@ class WeakReferenceOwner {
   }
 
   void Invalidate();
+
+  // Indicates that this object will be used on another thread from now on.
+  void DetachFromThread() {
+    if (flag_) flag_->DetachFromThread();
+  }
 
  private:
   mutable WeakReference::Flag* flag_;
@@ -190,6 +197,11 @@ class SupportsWeakPtr {
 
   WeakPtr<T> AsWeakPtr() {
     return WeakPtr<T>(weak_reference_owner_.GetRef(), static_cast<T*>(this));
+  }
+
+  // Indicates that this object will be used on another thread from now on.
+  void DetachFromThread() {
+    weak_reference_owner_.DetachFromThread();
   }
 
  private:

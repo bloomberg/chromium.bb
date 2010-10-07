@@ -23,6 +23,10 @@ class ThreadCheckerClass : public ThreadChecker {
     DCHECK(CalledOnValidThread());
   }
 
+  void DetachFromThread() {
+    ThreadChecker::DetachFromThread();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ThreadCheckerClass);
 };
@@ -87,6 +91,19 @@ TEST(ThreadCheckerTest, DestructorAllowedOnDifferentThread) {
   delete_on_thread.Join();
 }
 
+TEST(ThreadCheckerTest, DetachFromThread) {
+  scoped_ptr<ThreadCheckerClass> thread_checker_class(
+      new ThreadCheckerClass);
+
+  // Verify that DoStuff doesn't assert when called on a different thread after
+  // a call to DetachFromThread.
+  thread_checker_class->DetachFromThread();
+  CallDoStuffOnThread call_on_thread(thread_checker_class.get());
+
+  call_on_thread.Start();
+  call_on_thread.Join();
+}
+
 #if GTEST_HAS_DEATH_TEST
 
 TEST(ThreadCheckerDeathTest, MethodNotAllowedOnDifferentThread) {
@@ -99,6 +116,24 @@ TEST(ThreadCheckerDeathTest, MethodNotAllowedOnDifferentThread) {
 
       call_on_thread.Start();
       call_on_thread.Join();
+    }, "");
+}
+
+TEST(ThreadCheckerDeathTest, DetachFromThread) {
+  ASSERT_DEBUG_DEATH({
+      scoped_ptr<ThreadCheckerClass> thread_checker_class(
+          new ThreadCheckerClass);
+
+      // Verify that DoStuff doesn't assert when called on a different thread
+      // after a call to DetachFromThread.
+      thread_checker_class->DetachFromThread();
+      CallDoStuffOnThread call_on_thread(thread_checker_class.get());
+
+      call_on_thread.Start();
+      call_on_thread.Join();
+
+      // Verify that DoStuff asserts after moving to another thread.
+      thread_checker_class->DoStuff();
     }, "");
 }
 

@@ -34,6 +34,14 @@ class NonThreadSafe {
 
   bool CalledOnValidThread() const;
 
+ protected:
+  // Changes the thread that is checked for in CalledOnValidThread. The next
+  // call to CalledOnValidThread will attach this class to a new thread. It is
+  // up to the NonThreadSafe derived class to decide to expose this or not.
+  // This may be useful when an object may be created on one thread and then
+  // used exclusively on another thread.
+  void DetachFromThread();
+
  private:
   ThreadChecker thread_checker_;
 };
@@ -44,6 +52,9 @@ class NonThreadSafe {
   bool CalledOnValidThread() const {
     return true;
   }
+
+ protected:
+  void DetachFromThread() {}
 };
 #endif  // NDEBUG
 

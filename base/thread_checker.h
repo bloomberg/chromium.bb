@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/platform_thread.h"
+#include "base/scoped_ptr.h"
 
 // Before using this class, please consider using NonThreadSafe as it
 // makes it much easier to determine the nature of your class.
@@ -37,8 +38,16 @@ class ThreadChecker {
 
   bool CalledOnValidThread() const;
 
+  // Changes the thread that is checked for in CalledOnValidThread.  This may
+  // be useful when an object may be created on one thread and then used
+  // exclusively on another thread.
+  void DetachFromThread();
+
  private:
-  const PlatformThreadId valid_thread_id_;
+  void EnsureThreadIdAssigned() const;
+
+  // This is mutable so that CalledOnValidThread can set it.
+  mutable scoped_ptr<PlatformThreadId> valid_thread_id_;
 };
 #else
 // Do nothing in release mode.
@@ -47,6 +56,8 @@ class ThreadChecker {
   bool CalledOnValidThread() const {
     return true;
   }
+
+  void DetachFromThread() {}
 };
 #endif  // NDEBUG
 

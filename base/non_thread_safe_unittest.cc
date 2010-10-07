@@ -23,6 +23,10 @@ class NonThreadSafeClass : public NonThreadSafe {
     DCHECK(CalledOnValidThread());
   }
 
+  void DetachFromThread() {
+    NonThreadSafe::DetachFromThread();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NonThreadSafeClass);
 };
@@ -72,6 +76,20 @@ TEST(NonThreadSafeTest, CallsAllowedOnSameThread) {
 
   // Verify that the destructor doesn't assert.
   non_thread_safe_class.reset();
+}
+
+TEST(NonThreadSafeTest, DetachThenDestructOnDifferentThread) {
+  scoped_ptr<NonThreadSafeClass> non_thread_safe_class(
+      new NonThreadSafeClass);
+
+  // Verify that the destructor doesn't assert when called on a different thread
+  // after a detach.
+  non_thread_safe_class->DetachFromThread();
+  DeleteNonThreadSafeClassOnThread delete_on_thread(
+      non_thread_safe_class.release());
+
+  delete_on_thread.Start();
+  delete_on_thread.Join();
 }
 
 #if GTEST_HAS_DEATH_TEST

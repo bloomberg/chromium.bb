@@ -9,12 +9,16 @@
 
 #include "base/logging.h"
 
+NonThreadSafe::~NonThreadSafe() {
+  DCHECK(CalledOnValidThread());
+}
+
 bool NonThreadSafe::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
 }
 
-NonThreadSafe::~NonThreadSafe() {
-  DCHECK(CalledOnValidThread());
+void NonThreadSafe::DetachFromThread() {
+  thread_checker_.DetachFromThread();
 }
 
 #endif  // NDEBUG
