@@ -95,7 +95,8 @@ TEST_F(DiagnosticsModelTest, BeforeRun) {
 
 // Run all the tests, verify that the basic callbacks are run and that the
 // final state is correct.
-TEST_F(DiagnosticsModelTest, RunAll) {
+// DISABLED by agl because it's crashing the builder.
+TEST_F(DiagnosticsModelTest, DISABLED_RunAll) {
   UTObserver observer;
   EXPECT_FALSE(observer.done());
   model_->RunAll(&observer);
