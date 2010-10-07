@@ -13,23 +13,17 @@
 #include "media/base/buffers.h"
 #include "media/base/video_frame.h"
 
-// A GpuVideoServiceHost is a singleton in the renderer process that provides
-// access to hardware accelerated video decoding device in the GPU process
-// though a GpuVideoDecoderHost.
-class GpuVideoServiceHost : public IPC::Channel::Listener,
-                            public Singleton<GpuVideoServiceHost> {
+// GpuVideoServiceHost lives on IO thread and is used to dispatch IPC messages
+// to GpuVideoDecoderHost objects.
+class GpuVideoServiceHost : public IPC::ChannelProxy::MessageFilter {
  public:
-  // IPC::Channel::Listener.
-  virtual void OnChannelConnected(int32 peer_pid) {}
-  virtual void OnChannelError();
-  virtual void OnMessageReceived(const IPC::Message& message);
+  GpuVideoServiceHost();
 
-  void OnRendererThreadInit(MessageLoop* message_loop);
-
-  // Called by GpuChannelHost when a GPU channel is established.
-  void OnGpuChannelConnected(GpuChannelHost* channel_host,
-                             MessageRouter* router,
-                             IPC::SyncChannel* channel);
+  // IPC::ChannelProxy::MessageFilter implementations.
+  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnFilterAdded(IPC::Channel* channel);
+  virtual void OnFilterRemoved();
+  virtual void OnChannelClosing();
 
   // Called on RenderThread to create a hardware accelerated video decoder
   // in the GPU process.
@@ -46,17 +40,14 @@ class GpuVideoServiceHost : public IPC::Channel::Listener,
   GpuVideoDecoderHost* CreateVideoDecoder(int context_route_id);
 
  private:
-  GpuVideoServiceHost();
+  IPC::Channel* channel_;
 
-  GpuChannelHost* channel_host_;
-  MessageRouter* router_;
-  GpuVideoServiceInfoParam service_info_;
-  MessageLoop* message_loop_;  // Message loop of render thread.
+  // Router to send messages to a GpuVideoDecoderHost.
+  MessageRouter router_;
 
   // ID for the next GpuVideoDecoderHost.
   int32 next_decoder_host_id_;
 
-  friend struct DefaultSingletonTraits<GpuVideoServiceHost>;
   DISALLOW_COPY_AND_ASSIGN(GpuVideoServiceHost);
 };
 

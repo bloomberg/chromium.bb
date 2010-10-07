@@ -181,10 +181,6 @@ IPC_BEGIN_MESSAGES(GpuChannel)
   IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                               int32 /* instance_id */)
 
-  // Get hardware video service routing id.
-  IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_GetVideoService,
-                              GpuVideoServiceInfoParam)
-
   // Create hardware video decoder && associate it with the output |decoder_id|;
   // We need this to be control message because we had to map the GpuChannel and
   // |decoder_id|.

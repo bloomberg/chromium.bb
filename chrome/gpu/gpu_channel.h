@@ -75,7 +75,6 @@ class GpuChannel : public IPC::Channel::Listener,
                                       int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);
 
-  void OnGetVideoService(GpuVideoServiceInfoParam* info);
   void OnCreateVideoDecoder(int32 context_route_id,
                             int32 decoder_host_id);
   void OnDestroyVideoDecoder(int32 decoder_id);

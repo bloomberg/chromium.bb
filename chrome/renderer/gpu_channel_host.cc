@@ -47,9 +47,10 @@ void GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuChannelHost::OnChannelConnected(int32 peer_pid) {
-  GpuVideoServiceHost::get()->OnGpuChannelConnected(this,
-                                                    &router_,
-                                                    channel_.get());
+  // When the channel is connected we create a GpuVideoServiceHost and add it
+  // as a message filter.
+  gpu_video_service_host_.reset(new GpuVideoServiceHost());
+  channel_->AddFilter(gpu_video_service_host_.get());
 }
 
 void GpuChannelHost::OnChannelError() {

@@ -89,8 +89,6 @@ void GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
         OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_GetVideoService,
-        OnGetVideoService)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateVideoDecoder,
         OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoDecoder,
@@ -187,22 +185,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 #if defined(ENABLE_GPU)
   router_.RemoveRoute(route_id);
   stubs_.Remove(route_id);
-#endif
-}
-
-void GpuChannel::OnGetVideoService(GpuVideoServiceInfoParam* info) {
-  info->service_available = 0;
-#if defined(ENABLE_GPU)
-  LOG(INFO) << "GpuChannel::OnGetVideoService";
-  GpuVideoService* service = GpuVideoService::get();
-  if (service == NULL)
-    return;
-
-  info->video_service_host_route_id = GenerateRouteID();
-  info->video_service_route_id = GenerateRouteID();
-  // TODO(jiesun): we could had multiple entries in this routing table.
-  router_.AddRoute(info->video_service_route_id, service);
-  info->service_available = 1;
 #endif
 }
 

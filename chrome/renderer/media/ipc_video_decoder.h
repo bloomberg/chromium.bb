@@ -72,8 +72,8 @@ class IpcVideoDecoder : public media::VideoDecoder,
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<media::DemuxerStream> demuxer_stream_;
 
-  // This is the message loop that we should assign to VideoDecodeEngine.
-  MessageLoop* decode_engine_message_loop_;
+  // This is the message loop that we should assign to VideoDecodeContext.
+  MessageLoop* decode_context_message_loop_;
 
   // A context for allocating textures and issuing GLES2 commands.
   // TODO(hclam): A ggl::Context lives on the Render Thread while this object

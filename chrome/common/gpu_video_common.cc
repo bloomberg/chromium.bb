@@ -6,30 +6,6 @@
 
 namespace IPC {
 
-void ParamTraits<GpuVideoServiceInfoParam>::Write(
-    Message* m, const GpuVideoServiceInfoParam& p) {
-  WriteParam(m, p.video_service_route_id);
-  WriteParam(m, p.video_service_host_route_id);
-  WriteParam(m, p.service_available);
-}
-
-bool ParamTraits<GpuVideoServiceInfoParam>::Read(
-    const Message* m, void** iter, GpuVideoServiceInfoParam* r) {
-  if (!ReadParam(m, iter, &r->video_service_route_id) ||
-      !ReadParam(m, iter, &r->video_service_host_route_id) ||
-      !ReadParam(m, iter, &r->service_available))
-    return false;
-  return true;
-}
-
-void ParamTraits<GpuVideoServiceInfoParam>::Log(
-    const GpuVideoServiceInfoParam& p, std::string* l) {
-  l->append(StringPrintf("(%d, %d, %d)",
-            p.video_service_route_id,
-            p.video_service_host_route_id,
-            p.service_available));
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void ParamTraits<GpuVideoDecoderInitParam>::Write(

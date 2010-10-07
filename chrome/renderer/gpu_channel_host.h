@@ -20,6 +20,7 @@
 #include "ipc/ipc_sync_channel.h"
 
 class CommandBufferProxy;
+class GpuVideoServiceHost;
 
 // Encapsulates an IPC channel between the renderer and one plugin process.
 // On the plugin side there's a corresponding GpuChannel.
@@ -72,6 +73,10 @@ class GpuChannelHost : public IPC::Channel::Listener,
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
 
+  GpuVideoServiceHost* gpu_video_service_host() {
+    return gpu_video_service_host_.get();
+  }
+
  private:
   State state_;
 
@@ -87,6 +92,10 @@ class GpuChannelHost : public IPC::Channel::Listener,
   // inform about OnChannelError
   typedef base::hash_map<int, IPC::Channel::Listener*> ProxyMap;
   ProxyMap proxies_;
+
+  // This is a MessageFilter to intercept IPC messages and distribute them
+  // to the corresponding GpuVideoDecoderHost.
+  scoped_ptr<GpuVideoServiceHost> gpu_video_service_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };

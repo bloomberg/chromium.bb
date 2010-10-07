@@ -2476,8 +2476,7 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     CHECK(ret) << "Failed to switch context";
 
     factory->AddFactory(IpcVideoDecoder::CreateFactory(
-        MessageLoop::current(),
-        ggl::GetCurrentContext()));
+        MessageLoop::current(), ggl::GetCurrentContext()));
   }
 
   WebApplicationCacheHostImpl* appcache_host =

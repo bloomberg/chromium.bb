@@ -296,8 +296,6 @@ void RenderThread::Init() {
                                     kPrelauchGpuProcessDelayMS);
   }
 
-  GpuVideoServiceHost::get()->OnRendererThreadInit(MessageLoop::current());
-
   TRACE_EVENT_END("RenderThread::Init", 0, "");
 }
 

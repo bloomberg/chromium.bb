@@ -5,6 +5,7 @@
 #include "chrome/renderer/media/ipc_video_decoder.h"
 
 #include "base/task.h"
+#include "chrome/common/child_process.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "media/base/callback.h"
 #include "media/base/filters.h"
@@ -21,7 +22,7 @@ IpcVideoDecoder::IpcVideoDecoder(MessageLoop* message_loop,
                                  ggl::Context* ggl_context)
     : width_(0),
       height_(0),
-      decode_engine_message_loop_(message_loop),
+      decode_context_message_loop_(message_loop),
       ggl_context_(ggl_context) {
 }
 
@@ -56,10 +57,9 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
 
   // Create a video decode context that assocates with the graphics
   // context.
-  // TODO(hclam): Need to define a message loop that hosts decode context.
   decode_context_.reset(
       ggl::CreateVideoDecodeContext(
-          ggl_context_, decode_engine_message_loop_, true));
+          ggl_context_, decode_context_message_loop_, true));
 
   // Create a hardware video decoder handle.
   decode_engine_.reset(ggl::CreateVideoDecodeEngine(ggl_context_));
@@ -70,11 +70,9 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
   param.width = width_;
   param.height = height_;
 
-  // TODO(hclam): Move VideoDecodeEngine to IO Thread, this will avoid
-  // dead lock during teardown.
   // VideoDecodeEngine will perform initialization on the message loop
   // given to it so it doesn't matter on which thread we are calling this.
-  decode_engine_->Initialize(decode_engine_message_loop_, this,
+  decode_engine_->Initialize(ChildProcess::current()->io_message_loop(), this,
                              decode_context_.get(), param);
 }
 
@@ -102,7 +100,7 @@ void IpcVideoDecoder::Seek(base::TimeDelta time,
 }
 
 void IpcVideoDecoder::OnInitializeComplete(const media::VideoCodecInfo& info) {
-  DCHECK_EQ(decode_engine_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ChildProcess::current()->io_message_loop(), MessageLoop::current());
 
   if (info.success) {
     media_format_.SetAsString(media::MediaFormat::kMimeType,
@@ -128,7 +126,7 @@ void IpcVideoDecoder::OnInitializeComplete(const media::VideoCodecInfo& info) {
 }
 
 void IpcVideoDecoder::OnUninitializeComplete() {
-  DCHECK_EQ(decode_engine_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ChildProcess::current()->io_message_loop(), MessageLoop::current());
 
   // After the decode engine is uninitialized we are safe to destroy the decode
   // context. The task will add a refcount to this object so don't need to worry
@@ -144,19 +142,19 @@ void IpcVideoDecoder::OnUninitializeComplete() {
 }
 
 void IpcVideoDecoder::OnFlushComplete() {
-  DCHECK_EQ(decode_engine_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ChildProcess::current()->io_message_loop(), MessageLoop::current());
   flush_callback_->Run();
   flush_callback_.reset();
 }
 
 void IpcVideoDecoder::OnSeekComplete() {
-  DCHECK_EQ(decode_engine_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ChildProcess::current()->io_message_loop(), MessageLoop::current());
   seek_callback_->Run();
   seek_callback_.reset();
 }
 
 void IpcVideoDecoder::OnError() {
-  DCHECK_EQ(decode_engine_message_loop_, MessageLoop::current());
+  DCHECK_EQ(ChildProcess::current()->io_message_loop(), MessageLoop::current());
   host()->SetError(media::PIPELINE_ERROR_DECODE);
 }
 

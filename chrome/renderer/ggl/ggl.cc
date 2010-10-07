@@ -367,7 +367,7 @@ bool Context::SwapBuffers() {
 }
 
 media::VideoDecodeEngine* Context::CreateVideoDecodeEngine() {
-  return GpuVideoServiceHost::get()->CreateVideoDecoder(
+  return channel_->gpu_video_service_host()->CreateVideoDecoder(
       command_buffer_->route_id());
 }
 

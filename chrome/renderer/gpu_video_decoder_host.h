@@ -37,6 +37,10 @@ class MessageRouter;
 class GpuVideoDecoderHost : public media::VideoDecodeEngine,
                             public IPC::Channel::Listener {
  public:
+  // |router| is used to dispatch IPC messages to this object.
+  // |ipc_sender| is used to send IPC messages to GPU process.
+  // It is important that the above two objects are accessed on the
+  // |message_loop_|.
   GpuVideoDecoderHost(MessageRouter* router,
                       IPC::Message::Sender* ipc_sender,
                       int context_route_id,

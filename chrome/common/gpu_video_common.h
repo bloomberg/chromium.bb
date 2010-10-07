@@ -16,17 +16,6 @@ enum GpuVideoBufferFlag {
   kGpuVideoDiscontinuous = 1 << 1,
 };
 
-struct GpuVideoServiceInfoParam {
-  // route id for GpuVideoService on GPU process side for this channel.
-  int32 video_service_route_id;
-
-  // route id for GpuVideoServiceHost on Render process side for this channel.
-  int32 video_service_host_route_id;
-
-  // TODO(jiesun): define capabilities of video service.
-  int32 service_available;
-};
-
 struct GpuVideoDecoderInitParam {
   int32 codec_id;
   int32 width;
@@ -63,14 +52,6 @@ struct GpuVideoDecoderFormatChangeParam {
 };
 
 namespace IPC {
-
-template <>
-struct ParamTraits<GpuVideoServiceInfoParam> {
-  typedef GpuVideoServiceInfoParam param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
 
 template <>
 struct ParamTraits<GpuVideoDecoderInitParam> {
