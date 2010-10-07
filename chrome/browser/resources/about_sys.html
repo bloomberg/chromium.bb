@@ -13,7 +13,7 @@ body {
 }
 
 h1, h2 {
- font-size: 110%;
+ font-size: 120%;
  letter-spacing: -1px;
  margin: 0;
 }
@@ -37,6 +37,8 @@ h2 {
 h2:first-child {
   border-top: 0;
   padding-top: 0;
+  float: left;
+  vertical-align: text-bottom;
 }
 
 #header {
@@ -113,11 +115,19 @@ html[dir='rtl'] #header h1 {
   width: 20%;
 }
 
+.list .button_cell {
+  width: 7%;
+}
+
 .list .name div {
   height: 1.6em;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.button_hidden {
+  display: none;
 }
 
 .number_expanded, .number_collapsed  {
@@ -129,15 +139,15 @@ html[dir='rtl'] .number_expanded, html[dir='rtl'] .number_collapsed  {
   text-align: right;
 }
 
-tr:not(.firstRow) > *:nth-child(1),
-tr:not(.firstRow) > *:nth-child(4),
+tr:not(.firstRow) > *:nth-child(1,
+tr:not(.firstRow) > *:nth-child(2),
 tr.firstRow th:nth-child(1),
 tr.firstRow th:nth-child(2) {
   border-right: 1px solid #b5c6de;
 }
 
 html[dir='rtl'] tr:not(.firstRow) > *:nth-child(1),
-html[dir='rtl'] tr:not(.firstRow) > *:nth-child(4),
+html[dir='rtl'] tr:not(.firstRow) > *:nth-child(2),
 html[dir='rtl'] tr.firstRow th:nth-child(1),
 html[dir='rtl'] tr.firstRow th:nth-child(2) {
   border-right: auto;
@@ -145,7 +155,6 @@ html[dir='rtl'] tr.firstRow th:nth-child(2) {
 }
 
 .name {
-  -webkit-padding-start: 25px;
   background-position: 5em center;
   background-repeat: no-repeat;
 }
@@ -168,41 +177,56 @@ html[dir='rtl'] #details .name {
 }
 
 .globalButton {
-  float: right;
+  float: left;
   margin: 1px 5px;
 }
 
 html[dir='rtl'] .globalButton {
-  float: left;
+  float: right;
 }
 </style>
 <script src="shared/js/local_strings.js"></script>
 <script>
 var localStrings;
 
+function getValueDivForButton(button) {
+  return document.getElementById(button.id.substr(0, button.id.length - 4));
+}
+
+function getButtonForValueDiv(valueDiv) {
+  return document.getElementById(valueDiv.id + '-btn');
+}
+
 function changeCollapsedStatus() {
-  if (this.parentNode.className == 'number_collapsed') {
-    this.parentNode.className = 'number_expanded';
+  var valueDiv = getValueDivForButton(this);
+  if (valueDiv.parentNode.className == 'number_collapsed') {
+    valueDiv.parentNode.className = 'number_expanded';
     this.textContent = localStrings.getString('collapse_btn');
   } else {
-    this.parentNode.className = 'number_collapsed';
+    valueDiv.parentNode.className = 'number_collapsed';
     this.textContent = localStrings.getString('expand_btn');
   }
 }
 
 function collapseAll() {
-  var expandStatusDivs = document.getElementsByClassName('expand_status');
-  for(var i = 0; i < expandStatusDivs.length; i++) {
-    expandStatusDivs[i].textContent = localStrings.getString('expand_btn');
-    expandStatusDivs[i].parentNode.className = 'number_collapsed';
+  var valueDivs = document.getElementsByClassName('stat_value');
+  for(var i = 0; i < valueDivs.length; i++) {
+    var button = getButtonForValueDiv(valueDivs[i]);
+    if (button && button.className != 'button_hidden') {
+      button.textContent = localStrings.getString('expand_btn');
+      valueDivs[i].parentNode.className = 'number_collapsed';
+    }
   }
 }
 
 function expandAll() {
-  var expandStatusDivs = document.getElementsByClassName('expand_status');
-  for(var i = 0; i < expandStatusDivs.length; i++) {
-    expandStatusDivs[i].textContent = localStrings.getString('collapse_btn');
-    expandStatusDivs[i].parentNode.className = 'number_expanded';
+  var valueDivs = document.getElementsByClassName('stat_value');
+  for(var i = 0; i < valueDivs.length; i++) {
+    var button = getButtonForValueDiv(valueDivs[i]);
+    if (button && button.className != 'button_hidden') {
+      button.textContent = localStrings.getString('collapse_btn');
+      valueDivs[i].parentNode.className = 'number_expanded';
+    }
   }
 }
 
@@ -216,19 +240,15 @@ document.addEventListener('DOMContentLoaded', function() {
   expandAllBtn.onclick = expandAll;
   
   var anchorName = document.getElementById('anchor').textContent;
-  var expandStatusDivs = document.getElementsByClassName('expand_status');
-  for(var i = 0; i < expandStatusDivs.length; i++) {
-    expandStatusDivs[i].onclick = changeCollapsedStatus;
-    if (expandStatusDivs[i].id != anchorName + 'Btn') {
-      expandStatusDivs[i].textContent = localStrings.getString('expand_btn');
-      expandStatusDivs[i].parentNode.className = 'number_collapsed';
+  var valueDivs = document.getElementsByClassName('stat_value');
+  for(var i = 0; i < valueDivs.length; i++) {
+    var button = getButtonForValueDiv(valueDivs[i]);
+    button.onclick = changeCollapsedStatus;
+    if (valueDivs[i].textContent.split('\n').length > 1) {
+      button.textContent = localStrings.getString('expand_btn');
+      valueDivs[i].parentNode.className = 'number_collapsed';
     } else {
-      var anchor = document.createElement('a');
-      anchor.name = anchorName;
-      expandStatusDivs[i].parentNode.insertBefore(anchor, expandStatusDivs[i]);
-      window.location.hash = anchorName; 
-      expandStatusDivs[i].textContent = localStrings.getString('collapse_btn');
-      expandStatusDivs[i].parentNode.className = 'number_expanded';
+      button.className = 'button_hidden';
     }
   }    
 });
@@ -249,15 +269,12 @@ document.addEventListener('DOMContentLoaded', function() {
         i18n-content="collapse_all_btn"></button>
     <table class="list" id="details">
       <tr jsselect="details">
-        <td class="name">
-          <a jsvalues="name:anchor_value"></a>
-          <div jscontent="stat_name"></div>
-        </td>
-        <td class="number">
-          <button jsvalues="id:stat_name + 'Btn'" class="expand_status">
-          </button>
-          <div class="stat_value" jscontent="stat_value"></div>
-        </td>
+        <td class="name"><a jsvalues="name:anchor_value"><div
+            jscontent="stat_name"></div></a></td>
+        <td class="button_cell"><button jsvalues="id:stat_name + '-value-btn'"
+            class="expand_status"></button></td>
+        <td class="number"><div class="stat_value" jscontent="stat_value"
+            jsvalues="id:stat_name + '-value'"></div></td>
       </tr>
     </table>
   </div>
