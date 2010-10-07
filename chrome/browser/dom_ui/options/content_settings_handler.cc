@@ -175,6 +175,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_EDIT_BUTTON));
   localized_strings->SetString("otr_exceptions_explanation",
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_OTR_LABEL));
+  localized_strings->SetString("examplePattern",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_PATTERN_EXAMPLE));
 
   // Cookies filter.
   localized_strings->SetString("cookies_tab_label",
@@ -278,37 +280,22 @@ void ContentSettingsHandler::Initialize() {
   notification_registrar_.Add(
       this, NotificationType::CONTENT_SETTINGS_CHANGED,
       Source<const HostContentSettingsMap>(settings_map));
-  notification_registrar_.Add(
-      this, NotificationType::GEOLOCATION_SETTINGS_CHANGED,
-      NotificationService::AllSources());
 }
 
 void ContentSettingsHandler::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  switch (type.value) {
-    case NotificationType::CONTENT_SETTINGS_CHANGED: {
-      const ContentSettingsDetails* settings_details =
-          static_cast<Details<const ContentSettingsDetails> >(details).ptr();
+  if (type != NotificationType::CONTENT_SETTINGS_CHANGED)
+    return OptionsPageUIHandler::Observe(type, source, details);
 
-      // TODO(estade): we pretend update_all() is always true.
-      if (settings_details->update_all_types())
-        UpdateAllExceptionsViewsFromModel();
-      else
-        UpdateExceptionsViewFromModel(settings_details->type());
-      break;
-    }
-    case NotificationType::GEOLOCATION_SETTINGS_CHANGED: {
-      UpdateGeolocationExceptionsView();
-      break;
-    }
-    case NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED: {
-      UpdateNotificationExceptionsView();
-      break;
-    }
-    default:
-      OptionsPageUIHandler::Observe(type, source, details);
-  }
+  const ContentSettingsDetails* settings_details =
+      static_cast<Details<const ContentSettingsDetails> >(details).ptr();
+
+  // TODO(estade): we pretend update_all() is always true.
+  if (settings_details->update_all_types())
+    UpdateAllExceptionsViewsFromModel();
+  else
+    UpdateExceptionsViewFromModel(settings_details->type());
 }
 
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(

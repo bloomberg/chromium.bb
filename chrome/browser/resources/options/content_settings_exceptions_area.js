@@ -13,7 +13,8 @@ cr.define('options.contentSettings', function() {
    * @param {string} mode The browser mode, 'otr' or 'normal'.
    * @param {boolean} enableAskOption Whether to show an 'ask every time'
    *     option in the select.
-   * @param {Array} exception A pair of the form [filter, setting].
+   * @param {Object} exception A dictionary that contains the data of the
+   *     exception.
    * @constructor
    * @extends {cr.ui.ListItem}
    */
@@ -100,6 +101,8 @@ cr.define('options.contentSettings', function() {
       this.optionBlock = optionBlock;
 
       this.updateEditables();
+      if (!this.pattern)
+        input.value = templateData.examplePattern;
 
       var listItem = this;
       this.ondblclick = function(event) {
@@ -125,7 +128,7 @@ cr.define('options.contentSettings', function() {
             // Reset the inputs.
             listItem.updateEditables();
             if (listItem.pattern)
-              listItem.maybeSetPatternValidity(listItem.pattern, true);
+              listItem.maybeSetPatternValid(listItem.pattern, true);
           case 'Enter':
             if (listItem.parentNode)
               listItem.parentNode.focus();
@@ -216,9 +219,6 @@ cr.define('options.contentSettings', function() {
      * Copy the data model values to the editable nodes.
      */
     updateEditables: function() {
-      if (!(this.pattern && this.setting))
-        return;
-
       this.input.value = this.pattern;
 
       if (this.setting == 'allow')
@@ -255,18 +255,18 @@ cr.define('options.contentSettings', function() {
       var optionSession = this.optionSession;
       var optionAsk = this.optionAsk;
 
+      // Just delete this row if it was added via the Add button.
+      if (!editing && !pattern && !input.value) {
+        var model = listItem.parentNode.dataModel;
+        model.splice(model.indexOf(listItem.dataItem), 1);
+        return;
+      }
+
       // Check that we have a valid pattern and if not we do not change the
       // editing mode.
       if (!editing && (!this.inputValidityKnown || !this.inputIsValid)) {
-        if (this.pattern) {
-          input.focus();
-          input.select();
-        } else {
-          // Just delete this row if it was added via the Add button.
-          var model = listItem.parentNode.dataModel;
-          model.splice(model.indexOf(listItem.dataItem), 1);
-        }
-
+        input.focus();
+        input.select();
         return;
       }
 
@@ -350,7 +350,7 @@ cr.define('options.contentSettings', function() {
 
     /**
      * Adds an exception to the js model.
-     * @param {Array} entry A pair of the form [filter, setting].
+     * @param {Object} entry A dictionary of values for the exception.
      */
     addException: function(entry) {
       this.dataModel.push(entry);
@@ -445,7 +445,10 @@ cr.define('options.contentSettings', function() {
         this.appendChild(addRow);
 
         addRow.onclick = function(event) {
-          self.exceptionsList.addException(['', '']);
+          var emptyException = new Object;
+          emptyException.displayPattern = '';
+          emptyException.setting = '';
+          self.exceptionsList.addException(emptyException);
         };
 
         var editRow = cr.doc.createElement('button');
