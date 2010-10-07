@@ -30,6 +30,10 @@ class InstantLoaderDelegateImpl : public InstantLoaderDelegate {
   virtual void CommitInstantLoader(InstantLoader* loader) {
   }
 
+  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
+                                                 bool needs_reload) {
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InstantLoaderDelegateImpl);
 };
@@ -206,4 +210,42 @@ TEST_F(InstantLoaderManagerTest, ThreeInstant) {
   EXPECT_NE(instant_loader1, instant_loader3);
   EXPECT_NE(instant_loader2, instant_loader3);
   EXPECT_EQ(instant_loader1, manager.current_loader());
+}
+
+// Tests DestroyLoader with an instant loader.
+TEST_F(InstantLoaderManagerTest, DestroyInstantLoader) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
+  manager.UpdateLoader(1, &loader);
+  ASSERT_TRUE(manager.current_loader());
+  EXPECT_EQ(1, manager.current_loader()->template_url_id());
+  // Now destroy it.
+  manager.DestroyLoader(manager.current_loader());
+
+  // There should be no current, pending and 0 instant loaders.
+  ASSERT_EQ(NULL, manager.current_loader());
+  ASSERT_EQ(NULL, manager.pending_loader());
+  EXPECT_EQ(0u, manager.num_instant_loaders());
+}
+
+// Tests DestroyLoader when the loader is pending.
+TEST_F(InstantLoaderManagerTest, DestroyPendingLoader) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
+  manager.UpdateLoader(1, &loader);
+  InstantLoader* first_loader = manager.active_loader();
+  MarkReady(first_loader);
+
+  // Create another loader.
+  manager.UpdateLoader(0, &loader);
+  InstantLoader* second_loader = manager.pending_loader();
+  ASSERT_TRUE(second_loader);
+  ASSERT_NE(second_loader, first_loader);
+
+  // Destroy it.
+  manager.DestroyLoader(second_loader);
+  EXPECT_EQ(NULL, manager.pending_loader());
+  EXPECT_EQ(first_loader, manager.current_loader());
 }

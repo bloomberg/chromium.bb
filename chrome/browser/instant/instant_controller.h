@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_INSTANT_INSTANT_CONTROLLER_H_
 #pragma once
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -20,6 +22,7 @@ struct AutocompleteMatch;
 class InstantDelegate;
 class InstantLoaderManager;
 class TabContents;
+class TemplateURL;
 
 // InstantController maintains a TabContents that is intended to give a preview
 // of a URL. InstantController is owned by Browser.
@@ -54,6 +57,12 @@ class InstantController : public InstantLoaderDelegate {
   // Destroys the preview TabContents. Does nothing if the preview TabContents
   // has not been created.
   void DestroyPreviewContents();
+
+  // Returns true if we're showing the last URL passed to |Update|. If this is
+  // false a commit does not result in committing the last url passed to update.
+  // A return value of false happens if we're in the process of determining if
+  // the page supports instant.
+  bool IsCurrent();
 
   // Invoked when the user does some gesture that should trigger making the
   // current previewed page the permanent page.
@@ -99,6 +108,8 @@ class InstantController : public InstantLoaderDelegate {
   virtual gfx::Rect GetInstantBounds();
   virtual bool ShouldCommitInstantOnMouseUp();
   virtual void CommitInstantLoader(InstantLoader* loader);
+  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
+                                                 bool needs_reload);
 
  private:
   // Invoked when the page wants to update the suggested text. If |user_text_|
@@ -114,8 +125,27 @@ class InstantController : public InstantLoaderDelegate {
   // Invoked once the page has finished loading and the script has been sent.
   void PageFinishedLoading();
 
+  // Updates InstantLoaderManager and its current InstantLoader. This is invoked
+  // internally from Update.
+  void UpdateLoader(TemplateURLID template_url_id,
+                    const GURL& url,
+                    PageTransition::Type transition_type,
+                    const string16& user_text,
+                    const TemplateURL* template_url,
+                    string16* suggested_text);
+
   // Returns true if we should show preview for |url|.
   bool ShouldShowPreviewFor(const GURL& url);
+
+  // Marks the specified search engine id as not supporting instant.
+  void BlacklistFromInstant(TemplateURLID id);
+
+  // Returns true if the specified id has been blacklisted from supporting
+  // instant.
+  bool IsBlacklistedFromInstant(TemplateURLID id);
+
+  // Clears the set of search engines blacklisted.
+  void ClearBlacklist();
 
   InstantDelegate* delegate_;
 
@@ -136,6 +166,12 @@ class InstantController : public InstantLoaderDelegate {
   PageTransition::Type last_transition_type_;
 
   scoped_ptr<InstantLoaderManager> loader_manager_;
+
+  // The IDs of any search engines that don't support instant. We assume all
+  // search engines support instant, but if we determine an engine doesn't
+  // support instant it is added to this list. The list is cleared out on every
+  // reset/commit.
+  std::set<TemplateURLID> blacklisted_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

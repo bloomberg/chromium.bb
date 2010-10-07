@@ -4141,7 +4141,7 @@ void Browser::TabRestoreServiceDestroyed(TabRestoreService* service) {
 }
 
 bool Browser::OpenInstant(WindowOpenDisposition disposition) {
-  if (!instant() || !instant()->is_active())
+  if (!instant() || !instant()->is_active() || !instant()->IsCurrent())
     return false;
 
   if (disposition == CURRENT_TAB) {

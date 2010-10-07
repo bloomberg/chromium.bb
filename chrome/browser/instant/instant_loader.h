@@ -15,7 +15,6 @@
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
-struct AutocompleteMatch;
 class InstantLoaderDelegate;
 class InstantLoaderManagerTest;
 class TabContents;
@@ -24,6 +23,13 @@ class TemplateURL;
 // InstantLoader does the loading of a particular URL for InstantController.
 // InstantLoader notifies its delegate, which is typically InstantController, of
 // all interesting events.
+//
+// InstantLoader is created with a TemplateURLID. If non-zero InstantLoader
+// first determines if the site actually supports instant. If it doesn't, the
+// delegate is notified by way of |InstantLoaderDoesntSupportInstant|.
+//
+// If the TemplateURLID supplied to the constructor is zero, then the url is
+// loaded as is.
 class InstantLoader {
  public:
   InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id);
@@ -32,7 +38,8 @@ class InstantLoader {
   // Invoked to load a URL. |tab_contents| is the TabContents the preview is
   // going to be shown on top of and potentially replace.
   void Update(TabContents* tab_contents,
-              const AutocompleteMatch& match,
+              const GURL& url,
+              PageTransition::Type transition_type,
               const string16& user_text,
               const TemplateURL* template_url,
               string16* suggested_text);
@@ -59,6 +66,10 @@ class InstantLoader {
   bool ShouldCommitInstantOnMouseUp();
   void CommitInstantLoader();
 
+  // Resets the template_url_id_ to zero and shows this loader. This is only
+  // intended to be invoked from InstantLoaderDoesntSupportInstant.
+  void ClearTemplateURLID();
+
   // The preview TabContents; may be null.
   TabContents* preview_contents() const { return preview_contents_.get(); }
 
@@ -72,6 +83,9 @@ class InstantLoader {
 
   // If we're showing instant this returns non-zero.
   TemplateURLID template_url_id() const { return template_url_id_; }
+
+  // See description above field.
+  const string16& user_text() const { return user_text_; }
 
  private:
   friend class InstantLoaderManagerTest;
@@ -103,11 +117,16 @@ class InstantLoader {
     return frame_load_observer_.get() != NULL;
   }
 
+  // Invoked if it the page doesn't really support instant when we thought it
+  // did. If |needs_reload| is true, the text changed since the first load and
+  // the page needs to be reloaded.
+  void PageDoesntSupportInstant(bool needs_reload);
+
   InstantLoaderDelegate* delegate_;
 
   // If we're showing instant results this is the ID of the TemplateURL driving
   // the results. A value of 0 means there is no TemplateURL.
-  const TemplateURLID template_url_id_;
+  TemplateURLID template_url_id_;
 
   // The url we're displaying.
   GURL url_;
@@ -132,6 +151,9 @@ class InstantLoader {
   gfx::Rect omnibox_bounds_;
 
   scoped_ptr<FrameLoadObserver> frame_load_observer_;
+
+  // Transition type of the match last passed to Update.
+  PageTransition::Type last_transition_type_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };

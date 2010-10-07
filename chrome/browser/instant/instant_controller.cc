@@ -70,25 +70,15 @@ void InstantController::Update(TabContents* tab_contents,
     TemplateURLModel* model = tab_contents->profile()->GetTemplateURLModel();
     template_url = model ? model->GetDefaultSearchProvider() : NULL;
   }
-  // TODO(sky): remove the id check. It's only necessary because the search
-  // engine saved to prefs doesn't have an id. Jean-luc is fixing separately.
-  if (template_url && (!template_url->supports_instant() ||
-                       !template_url->id() ||
+  if (template_url && (!template_url->id() ||
+                       IsBlacklistedFromInstant(template_url->id()) ||
                        !TemplateURL::SupportsReplacement(template_url))) {
     template_url = NULL;
   }
   TemplateURLID template_url_id = template_url ? template_url->id() : 0;
 
-  InstantLoader* old_loader = loader_manager_->current_loader();
-  scoped_ptr<InstantLoader> owned_loader;
-  InstantLoader* new_loader =
-      loader_manager_->UpdateLoader(template_url_id, &owned_loader);
-
-  new_loader->SetOmniboxBounds(omnibox_bounds_);
-  new_loader->Update(tab_contents, match, user_text, template_url,
-                     suggested_text);
-  if (old_loader != new_loader && new_loader->ready())
-    delegate_->ShowInstant(new_loader->preview_contents());
+  UpdateLoader(template_url_id, match.destination_url, match.transition,
+               user_text, template_url, suggested_text);
 }
 
 void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
@@ -96,6 +86,7 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
     return;
 
   if (loader_manager_.get()) {
+    omnibox_bounds_ = bounds;
     if (loader_manager_->current_loader())
       loader_manager_->current_loader()->SetOmniboxBounds(bounds);
     if (loader_manager_->pending_loader())
@@ -111,6 +102,10 @@ void InstantController::DestroyPreviewContents() {
 
   delegate_->HideInstant();
   delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);
+}
+
+bool InstantController::IsCurrent() {
+  return loader_manager_.get() && loader_manager_->active_loader()->ready();
 }
 
 void InstantController::CommitCurrentPreview(InstantCommitType type) {
@@ -136,6 +131,7 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   scoped_ptr<InstantLoader> loader(loader_manager_->ReleaseCurrentLoader());
   TabContents* tab = loader->ReleasePreviewContents(type);
 
+  ClearBlacklist();
   is_active_ = false;
   omnibox_bounds_ = gfx::Rect();
   commit_on_mouse_up_ = false;
@@ -163,7 +159,7 @@ void InstantController::ShowInstantLoader(InstantLoader* loader) {
     loader_manager_->MakePendingCurrent(&old_loader);
     delegate_->ShowInstant(loader->preview_contents());
   } else {
-    NOTREACHED();
+    // The loader supports instant but isn't active yet. Nothing to do.
   }
 }
 
@@ -192,6 +188,63 @@ void InstantController::CommitInstantLoader(InstantLoader* loader) {
   }
 }
 
+void InstantController::InstantLoaderDoesntSupportInstant(
+    InstantLoader* loader,
+    bool needs_reload) {
+  DCHECK(!loader->ready());  // We better not be showing this loader.
+  DCHECK(loader->template_url_id());
+
+  BlacklistFromInstant(loader->template_url_id());
+
+  if (loader_manager_->active_loader() == loader) {
+    // The loader is active. Continue to use it, but make sure it isn't tied to
+    // to the search engine anymore. ClearTemplateURLID ends up showing the
+    // loader.
+    loader_manager_->RemoveLoaderFromInstant(loader);
+    loader->ClearTemplateURLID();
+
+    if (needs_reload) {
+      string16 suggested_text;
+      loader->Update(tab_contents_, loader->url(), last_transition_type_,
+                     loader->user_text(), NULL, &suggested_text);
+    }
+
+  } else {
+    loader_manager_->DestroyLoader(loader);
+    loader = NULL;
+  }
+}
+
+void InstantController::UpdateLoader(TemplateURLID template_url_id,
+                                     const GURL& url,
+                                     PageTransition::Type transition_type,
+                                     const string16& user_text,
+                                     const TemplateURL* template_url,
+                                     string16* suggested_text) {
+  InstantLoader* old_loader = loader_manager_->current_loader();
+  scoped_ptr<InstantLoader> owned_loader;
+  InstantLoader* new_loader =
+      loader_manager_->UpdateLoader(template_url_id, &owned_loader);
+
+  new_loader->SetOmniboxBounds(omnibox_bounds_);
+  new_loader->Update(tab_contents_, url, transition_type, user_text,
+                     template_url, suggested_text);
+  if (old_loader != new_loader && new_loader->ready())
+    delegate_->ShowInstant(new_loader->preview_contents());
+}
+
 bool InstantController::ShouldShowPreviewFor(const GURL& url) {
   return !url.SchemeIs(chrome::kJavaScriptScheme);
+}
+
+void InstantController::BlacklistFromInstant(TemplateURLID id) {
+  blacklisted_ids_.insert(id);
+}
+
+bool InstantController::IsBlacklistedFromInstant(TemplateURLID id) {
+  return blacklisted_ids_.count(id) > 0;
+}
+
+void InstantController::ClearBlacklist() {
+  blacklisted_ids_.clear();
 }

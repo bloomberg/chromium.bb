@@ -33,6 +33,13 @@ class InstantLoaderDelegate {
   // Invoked when the the loader should be committed.
   virtual void CommitInstantLoader(InstantLoader* loader) = 0;
 
+  // Invoked if the loader was created with the intention that the site supports
+  // instant, but it turned out the site doesn't support instant. If
+  // |needs_reload| is true, |Update| was invoked on the loader with a url that
+  // has changed since the initial url.
+  virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
+                                                 bool needs_reload) = 0;
+
  protected:
   virtual ~InstantLoaderDelegate() {}
 };

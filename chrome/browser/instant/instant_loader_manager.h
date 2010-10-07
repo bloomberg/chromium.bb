@@ -52,6 +52,12 @@ class InstantLoaderManager {
   // of InstantLoaderManager wants to take ownership of the loader.
   InstantLoader* ReleaseCurrentLoader();
 
+  // Destroyes the specified loader.
+  void DestroyLoader(InstantLoader* loader);
+
+  // If |loader| is in |instant_loaders_| is it removed.
+  void RemoveLoaderFromInstant(InstantLoader* loader);
+
   // Returns the current loader, may be null.
   InstantLoader* current_loader() const { return current_loader_; }
 

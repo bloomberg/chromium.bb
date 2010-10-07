@@ -101,14 +101,35 @@ void InstantLoaderManager::MakePendingCurrent(
 InstantLoader* InstantLoaderManager::ReleaseCurrentLoader() {
   DCHECK(current_loader_);
   InstantLoader* loader = current_loader_;
-  if (current_loader_->template_url_id()) {
-    Loaders::iterator i =
-        instant_loaders_.find(current_loader_->template_url_id());
-    DCHECK(i != instant_loaders_.end());
-    instant_loaders_.erase(i);
-  }
+  RemoveLoaderFromInstant(current_loader_);
   current_loader_ = NULL;
   return loader;
+}
+
+void InstantLoaderManager::DestroyLoader(InstantLoader* loader) {
+  DCHECK(loader == current_loader_ || loader == pending_loader_ ||
+         (loader->template_url_id() &&
+          instant_loaders_.find(loader->template_url_id()) !=
+          instant_loaders_.end()));
+
+  if (current_loader_ == loader)
+    current_loader_ = pending_loader_;
+
+  if (pending_loader_ == loader)
+    pending_loader_ = NULL;
+
+  RemoveLoaderFromInstant(loader);
+
+  delete loader;
+}
+
+void InstantLoaderManager::RemoveLoaderFromInstant(InstantLoader* loader) {
+  if (!loader->template_url_id())
+    return;
+
+  Loaders::iterator i = instant_loaders_.find(loader->template_url_id());
+  DCHECK(i != instant_loaders_.end());
+  instant_loaders_.erase(i);
 }
 
 InstantLoader* InstantLoaderManager::CreateLoader(TemplateURLID id) {
