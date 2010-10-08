@@ -1784,6 +1784,18 @@
    obj:*
 }
 {
+   bug_42942
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN3sql9MetaTable19PrepareGetStatementEPNS_9StatementEPKc
+   fun:_ZN3sql9MetaTable8GetValueEPKcPi
+   fun:_ZN3sql9MetaTable26GetCompatibleVersionNumberEv
+   ...
+   fun:_ZN3net13CookieMonster9InitStoreEv
+}
+{
    bug_42958_a
    Memcheck:Leak
    fun:malloc
