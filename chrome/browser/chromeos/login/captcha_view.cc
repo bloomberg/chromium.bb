@@ -59,6 +59,10 @@ void CaptchaView::ViewHierarchyChanged(bool is_add,
 
 bool CaptchaView::HandleKeystroke(views::Textfield* sender,
     const views::Textfield::Keystroke& keystroke) {
+  if (sender == captcha_textfield_ &&
+      keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+    GetDialogClientView()->AcceptWindow();
+  }
   return false;
 }
 
