@@ -133,6 +133,15 @@ UserController::UserController(Delegate* delegate,
 }
 
 UserController::~UserController() {
+  // Reset the widget delegate of every window to NULL, so the user
+  // controller will not get notified about the active window change.
+  // See also crosbug.com/7400.
+  controls_window_->SetWidgetDelegate(NULL);
+  image_window_->SetWidgetDelegate(NULL);
+  border_window_->SetWidgetDelegate(NULL);
+  label_window_->SetWidgetDelegate(NULL);
+  unselected_label_window_->SetWidgetDelegate(NULL);
+
   controls_window_->Close();
   image_window_->Close();
   border_window_->Close();
