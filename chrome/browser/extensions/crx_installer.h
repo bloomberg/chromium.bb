@@ -98,12 +98,8 @@ class CrxInstaller
   bool allow_silent_install() const { return allow_silent_install_; }
   void set_allow_silent_install(bool val) { allow_silent_install_ = val; }
 
-  bool limit_web_extent_to_download_host() const {
-    return limit_web_extent_to_download_host_;
-  }
-  void set_limit_web_extent_to_download_host(bool val) {
-    limit_web_extent_to_download_host_ = val;
-  }
+  bool is_gallery_install() const { return is_gallery_install_; }
+  void set_is_gallery_install(bool val) { is_gallery_install_ = val; }
 
   // If |apps_require_extension_mime_type_| is set to true, be sure to set
   // |original_mime_type_| as well.
@@ -121,6 +117,10 @@ class CrxInstaller
 
   // Converts the source user script to an extension.
   void ConvertUserScriptOnFileThread();
+
+  // Called after OnUnpackSuccess as a last check to see whether the install
+  // should complete.
+  bool AllowInstall(Extension* extension, std::string* error);
 
   // SandboxedExtensionUnpackerClient
   virtual void OnUnpackFailure(const std::string& error_message);
@@ -177,9 +177,8 @@ class CrxInstaller
   // either. Defaults to false.
   bool allow_privilege_increase_;
 
-  // Limits the web extent to the app being installed to the host of the
-  // download URL. If the crx being installed is not an app, this is a no-op.
-  bool limit_web_extent_to_download_host_;
+  // Whether the install originated from the gallery.
+  bool is_gallery_install_;
 
   // Whether to create an app shortcut after successful installation. This is
   // set based on the user's selection in the UI and can only ever be true for

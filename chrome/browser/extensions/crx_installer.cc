@@ -78,7 +78,7 @@ CrxInstaller::CrxInstaller(const FilePath& install_directory,
       install_source_(Extension::INTERNAL),
       delete_source_(false),
       allow_privilege_increase_(false),
-      limit_web_extent_to_download_host_(false),
+      is_gallery_install_(false),
       create_app_shortcut_(false),
       frontend_(frontend),
       client_(client),
@@ -151,6 +151,78 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
   OnUnpackSuccess(extension->path(), extension->path(), extension);
 }
 
+bool CrxInstaller::AllowInstall(Extension* extension, std::string* error) {
+  DCHECK(error);
+
+  // We always allow themes and external installs.
+  if (extension->is_theme() || Extension::IsExternalLocation(install_source_))
+    return true;
+
+  if (!extensions_enabled_) {
+    *error = "Extensions are not enabled.";
+    return false;
+  }
+
+  // Make sure the expected id matches.
+  // TODO(aa): Also support expected version?
+  if (!expected_id_.empty() && expected_id_ != extension->id()) {
+    *error = base::StringPrintf(
+        "ID in new extension manifest (%s) does not match expected id (%s)",
+        extension->id().c_str(),
+        expected_id_.c_str());
+    return false;
+  }
+
+  if (extension_->is_app()) {
+    // If the app was downloaded, apps_require_extension_mime_type_
+    // will be set.  In this case, check that it was served with the
+    // right mime type.  Make an exception for file URLs, which come
+    // from the users computer and have no headers.
+    if (!original_url_.SchemeIsFile() &&
+        apps_require_extension_mime_type_ &&
+        original_mime_type_ != Extension::kMimeType) {
+      *error = base::StringPrintf(
+          "Apps must be served with content type %s.",
+          Extension::kMimeType);
+      return false;
+    }
+
+    // For self-hosted apps, verify that the entire extent is on the same
+    // host (or a subdomain of the host) the download happened from.  There's
+    // no way for us to verify that the app controls any other hosts.
+    if (!is_gallery_install_) {
+      URLPattern pattern(UserScript::kValidUserScriptSchemes);
+      pattern.set_host(original_url_.host());
+      pattern.set_match_subdomains(true);
+
+      ExtensionExtent::PatternList patterns =
+          extension_->web_extent().patterns();
+      for (size_t i = 0; i < patterns.size(); ++i) {
+        if (!pattern.MatchesHost(patterns[i].host())) {
+          *error = base::StringPrintf(
+              "Apps must be served from the host that they affect.");
+          return false;
+        }
+      }
+
+      // For apps with a gallery update URL, require that they be installed
+      // from the gallery.
+      // TODO(erikkay) Apply this rule for paid extensions and themes as well.
+      if ((extension->update_url() ==
+           GURL(extension_urls::kGalleryUpdateHttpsUrl)) ||
+          (extension->update_url() ==
+           GURL(extension_urls::kGalleryUpdateHttpUrl))) {
+        *error = l10n_util::GetStringFUTF8(
+            IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
+            l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 void CrxInstaller::OnUnpackFailure(const std::string& error_message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   ReportFailureFromFileThread(error_message);
@@ -165,56 +237,14 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   extension_.reset(extension);
   temp_dir_ = temp_dir;
 
-  // If the extension was downloaded, apps_require_extension_mime_type_
-  // will be set.  In this case, check that if the extension is an app,
-  // it was served with the right mime type.  Make an exception for file
-  // URLs, which come from the users computer and have no headers.
-  if (extension->is_app() &&
-      !original_url_.SchemeIsFile() &&
-      apps_require_extension_mime_type_ &&
-      original_mime_type_ != Extension::kMimeType) {
-    ReportFailureFromFileThread(base::StringPrintf(
-        "Applications must be served with content type %s.",
-        Extension::kMimeType));
-    return;
-  }
-
   // We don't have to delete the unpack dir explicity since it is a child of
   // the temp dir.
   unpacked_extension_root_ = extension_dir;
 
-  // Determine whether to allow installation. We always allow themes and
-  // external installs.
-  if (!extensions_enabled_ && !extension->is_theme() &&
-      !Extension::IsExternalLocation(install_source_)) {
-    ReportFailureFromFileThread("Extensions are not enabled.");
+  std::string error;
+  if (!AllowInstall(extension, &error)) {
+    ReportFailureFromFileThread(error);
     return;
-  }
-
-  // Make sure the expected id matches.
-  // TODO(aa): Also support expected version?
-  if (!expected_id_.empty() && expected_id_ != extension->id()) {
-    ReportFailureFromFileThread(base::StringPrintf(
-        "ID in new extension manifest (%s) does not match expected id (%s)",
-        extension->id().c_str(),
-        expected_id_.c_str()));
-    return;
-  }
-
-  // Require that apps are served from the domain they claim in their extent,
-  // or some ancestor domain.
-  if (extension_->is_app() && limit_web_extent_to_download_host_) {
-    URLPattern pattern(UserScript::kValidUserScriptSchemes);
-    pattern.set_host(original_url_.host());
-    pattern.set_match_subdomains(true);
-
-    for (size_t i = 0; i < extension_->web_extent().patterns().size(); ++i) {
-      if (!pattern.MatchesHost(extension_->web_extent().patterns()[i].host())) {
-        ReportFailureFromFileThread(base::StringPrintf(
-            "Apps must be served from the host that they affect."));
-        return;
-      }
-    }
   }
 
   if (client_ || extension_->GetFullLaunchURL().is_valid()) {
