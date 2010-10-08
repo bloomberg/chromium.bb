@@ -2784,3 +2784,10 @@
    ...
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_58449
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN11ProfileImpl18GetDownloadManagerEv
+}
