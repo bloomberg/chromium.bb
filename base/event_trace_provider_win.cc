@@ -41,12 +41,12 @@ ULONG EtwTraceProvider::EnableEvents(void* buffer) {
 }
 
 ULONG EtwTraceProvider::DisableEvents() {
+  // Give subclasses a chance to digest the state change.
+  OnEventsDisabled();
+
   enable_level_ = 0;
   enable_flags_ = 0;
   session_handle_ = NULL;
-
-  // Give subclasses a chance to digest the state change.
-  OnEventsDisabled();
 
   return ERROR_SUCCESS;
 }
