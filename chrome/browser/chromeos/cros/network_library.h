@@ -23,6 +23,7 @@ class Network {
   const std::string& device_path() const { return device_path_; }
   const std::string& ip_address() const { return ip_address_; }
   ConnectionType type() const { return type_; }
+  ConnectionState connection_state() const { return state_; }
   bool connecting() const { return state_ == STATE_ASSOCIATION ||
       state_ == STATE_CONFIGURATION || state_ == STATE_CARRIER; }
   bool connected() const { return state_ == STATE_READY; }
@@ -62,7 +63,7 @@ class Network {
   std::string device_path_;
   std::string ip_address_;
   ConnectionType type_;
-  int state_;
+  ConnectionState state_;
   ConnectionError error_;
 };
 
@@ -129,8 +130,8 @@ class CellularNetwork : public WirelessNetwork {
   const NetworkTechnology network_technology() const {
     return network_technology_; }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
-  const std::string& operator_name() const { return payment_url_; }
-  const std::string& operator_code() const { return payment_url_; }
+  const std::string& operator_name() const { return operator_name_; }
+  const std::string& operator_code() const { return operator_code_; }
   const std::string& payment_url() const { return payment_url_; }
   const std::string& meid() const { return meid_; }
   const std::string& imei() const { return imei_; }
