@@ -301,6 +301,8 @@ nacl_glibc_skiplist = [
     'run_sysbrk_test',
     # Needs further investigation.
     'sdk_minimal_test',
+    # TODO(elijahtaylor) add apropriate syscall hooks for glibc
+    'run_gc_instrumentation_test',
     ]
 
 
