@@ -26,7 +26,6 @@ found in the LICENSE file.
     <script src="socketpoolwrapper.js"></script>
     <script src="socketsview.js"></script>
     <script src="serviceprovidersview.js"></script>
-    <script src="kernelextensionsview.js"></script>
   </head>
   <body onload="onLoaded()">
     <!-- Tab switcher for main categories. -->
@@ -40,8 +39,6 @@ found in the LICENSE file.
         <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
         <!-- Tab is only shown on Windows -->
         <li><a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a></li>
-        <!-- Tab is only shown on Mac -->
-        <li><a href="#kernelExtensions" id=kernelExtensionsTab style="display: none;">Kexts</a></li>
         <li><a href="#tests" id=testTab>Tests</a></li>
       </ul>
       <div style="clear: both;"></div>
@@ -171,11 +168,6 @@ found in the LICENSE file.
         <tbody id=namespaceProvidersTbody>
         </tbody>
       </table>
-    </div>
-    <!-- Only shown on Mac -->
-    <div id=kernelExtensionsTabContent style="display: none;">
-      <h4>Kernel extensions</h4>
-      <pre id=kernelExtensionsText></pre>
     </div>
     <!-- Import/Export data -->
     <div id=dataTabContent>

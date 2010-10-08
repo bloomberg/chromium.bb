@@ -98,13 +98,6 @@ function onLoaded() {
                                            "namespaceProvidersTbody");
   }
 
-  var extensionsView;
-  if (g_browser.isPlatformMac()) {
-    extensionsView = new KernelExtensionsView("kernelExtensionsTab",
-                                              "kernelExtensionsTabContent",
-                                              "kernelExtensionsText");
-  }
-
   // Create a view which lets you tab between the different sub-views.
   var categoryTabSwitcher =
       new TabSwitcherView(new DivView('categoryTabHandles'));
@@ -118,8 +111,6 @@ function onLoaded() {
   categoryTabSwitcher.addTab('dataTab', dataView, false);
   if (g_browser.isPlatformWindows())
     categoryTabSwitcher.addTab('serviceProvidersTab', serviceView, false);
-  if (g_browser.isPlatformMac())
-    categoryTabSwitcher.addTab('kernelExtensionsTab', extensionsView, false);
   categoryTabSwitcher.addTab('testTab', testView, false);
 
   // Build a map from the anchor name of each tab handle to its "tab ID".
@@ -180,10 +171,6 @@ function BrowserBridge() {
     this.pollableDataHelpers_.serviceProviders =
         new PollableDataHelper('onServiceProvidersChanged',
                                this.sendGetServiceProviders.bind(this));
-  } else if (this.isPlatformMac()) {
-    this.pollableDataHelpers_.kernelExtensions =
-        new PollableDataHelper('onKernelExtensionsChanged',
-                               this.sendGetKernelExtensions.bind(this));
   }
 
   // Cache of the data received.
@@ -249,10 +236,6 @@ BrowserBridge.prototype.isPlatformWindows = function() {
   return /Win/.test(navigator.platform);
 };
 
-BrowserBridge.prototype.isPlatformMac = function() {
-  return /Mac/.test(navigator.platform);
-};
-
 BrowserBridge.prototype.sendGetProxySettings = function() {
   // The browser will call receivedProxySettings on completion.
   chrome.send('getProxySettings');
@@ -294,10 +277,6 @@ BrowserBridge.prototype.sendGetSocketPoolInfo = function() {
 
 BrowserBridge.prototype.sendGetServiceProviders = function() {
   chrome.send('getServiceProviders');
-};
-
-BrowserBridge.prototype.sendGetKernelExtensions = function() {
-  chrome.send('getKernelExtensions');
 };
 
 BrowserBridge.prototype.enableIPv6 = function() {
@@ -377,10 +356,6 @@ BrowserBridge.prototype.receivedSocketPoolInfo = function(socketPoolInfo) {
 
 BrowserBridge.prototype.receivedServiceProviders = function(serviceProviders) {
   this.pollableDataHelpers_.serviceProviders.update(serviceProviders);
-};
-
-BrowserBridge.prototype.receivedKernelExtensions = function(kernelExtensions) {
-  this.pollableDataHelpers_.kernelExtensions.update(kernelExtensions);
 };
 
 BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
@@ -507,16 +482,6 @@ BrowserBridge.prototype.addSocketPoolInfoObserver = function(observer) {
  */
 BrowserBridge.prototype.addServiceProvidersObserver = function(observer) {
   this.pollableDataHelpers_.serviceProviders.addObserver(observer);
-};
-
-/**
- * Adds a listener of the kernel extensions. |observer| will be called
- * back when data is received, through:
- *
- *   observer.onKernelExtensionsChanged(kernelExtensions)
- */
-BrowserBridge.prototype.addKernelExtensionsObserver = function(observer) {
-  this.pollableDataHelpers_.kernelExtensions.addObserver(observer);
 };
 
 /**
