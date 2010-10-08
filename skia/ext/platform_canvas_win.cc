@@ -10,6 +10,9 @@
 
 namespace skia {
 
+// Disable optimizations during crash analysis.
+#pragma optimize("", off)
+
 // Crash on failure.
 #define CHECK(condition) if (!(condition)) __debugbreak();
 
@@ -22,7 +25,15 @@ namespace skia {
 // Note that in a sandboxed renderer this function crashes when trying to
 // call GetProcessMemoryInfo() because it tries to load psapi.dll, which
 // is fine but gives you a very hard to read crash dump.
-__declspec(noinline) void CrashForBitmapAllocationFailure(int w, int h) {
+void CrashForBitmapAllocationFailure(int w, int h) {
+  // Store the extended error info in a place easy to find at debug time.
+  struct {
+    unsigned int last_error;
+    unsigned int diag_error;
+  } extended_error_info;
+  extended_error_info.last_error = GetLastError();
+  extended_error_info.diag_error = 0;
+
   // If the bitmap is ginormous, then we probably can't allocate it.
   // We use 64M pixels = 256MB @ 4 bytes per pixel.
   const __int64 kGinormousBitmapPxl = 64000000;
@@ -31,15 +42,24 @@ __declspec(noinline) void CrashForBitmapAllocationFailure(int w, int h) {
 
   // The maximum number of GDI objects per process is 10K. If we're very close
   // to that, it's probably the problem.
-  const int kLotsOfGDIObjs = 9990;
-  CHECK(GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS) < kLotsOfGDIObjs);
+  const unsigned int kLotsOfGDIObjects = 9990;
+  unsigned int num_gdi_objects = GetGuiResources(GetCurrentProcess(),
+                                                 GR_GDIOBJECTS);
+  if (num_gdi_objects == 0) {
+    extended_error_info.diag_error = GetLastError();
+    CHECK(0);
+  }
+  CHECK(num_gdi_objects < kLotsOfGDIObjects);
 
   // If we're using a crazy amount of virtual address space, then maybe there
   // isn't enough for our bitmap.
-  const __int64 kLotsOfMem = 1500000000;  // 1.5GB.
+  const SIZE_T kLotsOfMem = 1500000000;  // 1.5GB.
   PROCESS_MEMORY_COUNTERS pmc;
-  if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
-    CHECK(pmc.PagefileUsage < kLotsOfMem);
+  if (!GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+    extended_error_info.diag_error = GetLastError();
+    CHECK(0);
+  }
+  CHECK(pmc.PagefileUsage < kLotsOfMem);
 
   // Everything else.
   CHECK(0);
@@ -48,10 +68,13 @@ __declspec(noinline) void CrashForBitmapAllocationFailure(int w, int h) {
 // Crashes the process. This is called when a bitmap allocation fails but
 // unlike its cousin CrashForBitmapAllocationFailure() it tries to detect if
 // the issue was a non-valid shared bitmap handle. 
-__declspec(noinline) void CrashIfInvalidSection(HANDLE shared_section) {
+void CrashIfInvalidSection(HANDLE shared_section) {
   DWORD handle_info = 0;
   CHECK(::GetHandleInformation(shared_section, &handle_info) == TRUE);
 }
+
+// Restore the optimization options.
+#pragma optimize("", on)
 
 PlatformCanvas::PlatformCanvas() : SkCanvas() {
 }
