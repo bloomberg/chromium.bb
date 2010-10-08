@@ -7,3 +7,7 @@
 BUG_AJWONG WIN : fast/dom/Window/window-screen-properties.html = TEXT
 BUG_AJWONG WIN : fast/media/color-does-not-include-alpha.html = TEXT
 BUG_AJWONG MAC : fast/css/transformed-mask.html = IMAGE
+
+// Remove these when rolling past r69383.
+BUG10479 DEBUG MAC : svg/hixie/perf/001.xml = FAIL
+BUG10479 DEBUG MAC : svg/hixie/perf/002.xml = FAIL
