@@ -74,7 +74,7 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
     // network request like this.
     *defer = true;
     base::FileUtilProxy::CreateTemporary(
-        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
         callback_factory_.NewCallback(
             &RedirectToFileResourceHandler::DidCreateTemporaryFile));
     return true;
@@ -158,7 +158,7 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
     FilePath file_path) {
   deletable_file_ = DeletableFileReference::GetOrCreate(
       file_path,
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   file_stream_.reset(new net::FileStream(file_handle.ReleaseValue(),
                                          base::PLATFORM_FILE_WRITE |
                                          base::PLATFORM_FILE_ASYNC));

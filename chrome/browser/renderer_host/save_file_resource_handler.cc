@@ -52,8 +52,8 @@ bool SaveFileResourceHandler::OnResponseStarted(int request_id,
   info->request_id = request_id;
   info->content_disposition = content_disposition_;
   info->save_source = SaveFileCreateInfo::SAVE_FILE_FROM_NET;
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(save_manager_,
                         &SaveFileManager::StartSave,
                         info));
@@ -82,8 +82,8 @@ bool SaveFileResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   // We are passing ownership of this buffer to the save file manager.
   scoped_refptr<net::IOBuffer> buffer = NULL;
   read_buffer_.swap(buffer);
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(save_manager_,
                         &SaveFileManager::UpdateSaveProgress,
                         save_id_,
@@ -96,8 +96,8 @@ bool SaveFileResourceHandler::OnResponseCompleted(
     int request_id,
     const URLRequestStatus& status,
     const std::string& security_info) {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(save_manager_,
                         &SaveFileManager::SaveFinished,
                         save_id_,

@@ -26,7 +26,7 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
       frame_origin_(frame_origin),
       main_frame_origin_(main_frame_origin),
       request_has_been_notified_(false) {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
@@ -47,7 +47,7 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
 }
 
 void SSLErrorHandler::Dispatch() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TabContents* tab_contents = GetTabContents();
   if (!tab_contents) {
@@ -68,46 +68,46 @@ TabContents* SSLErrorHandler::GetTabContents() {
 }
 
 void SSLErrorHandler::CancelRequest() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We need to complete this task on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &SSLErrorHandler::CompleteCancelRequest, net::ERR_ABORTED));
 }
 
 void SSLErrorHandler::DenyRequest() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We need to complete this task on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &SSLErrorHandler::CompleteCancelRequest,
           net::ERR_INSECURE_RESPONSE));
 }
 
 void SSLErrorHandler::ContinueRequest() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We need to complete this task on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &SSLErrorHandler::CompleteContinueRequest));
 }
 
 void SSLErrorHandler::TakeNoAction() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We need to complete this task on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &SSLErrorHandler::CompleteTakeNoAction));
 }
 
 void SSLErrorHandler::CompleteCancelRequest(int error) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // It is important that we notify the URLRequest only once.  If we try to
   // notify the request twice, it may no longer exist and |this| might have
@@ -134,7 +134,7 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
 }
 
 void SSLErrorHandler::CompleteContinueRequest() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // It is important that we notify the URLRequest only once.  If we try to
   // notify the request twice, it may no longer exist and |this| might have
@@ -157,7 +157,7 @@ void SSLErrorHandler::CompleteContinueRequest() {
 }
 
 void SSLErrorHandler::CompleteTakeNoAction() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // It is important that we notify the URLRequest only once.  If we try to
   // notify the request twice, it may no longer exist and |this| might have

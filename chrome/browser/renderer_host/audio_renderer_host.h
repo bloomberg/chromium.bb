@@ -77,7 +77,7 @@ struct ViewHostMsg_Audio_CreateStream_Params;
 
 class AudioRendererHost : public base::RefCountedThreadSafe<
                               AudioRendererHost,
-                              ChromeThread::DeleteOnIOThread>,
+                              BrowserThread::DeleteOnIOThread>,
                           public media::AudioOutputController::EventHandler {
  public:
   typedef std::pair<int32, int> AudioEntryId;

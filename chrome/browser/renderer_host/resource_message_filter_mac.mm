@@ -36,8 +36,8 @@ void ResourceMessageFilter::OnClipboardFindPboardWriteString(
     NSString* nsText = base::SysUTF16ToNSString(text);
     if (nsText) {
       // FindPasteboard must be used on the UI thread.
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE, new WriteFindPboardTask(nsText));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, new WriteFindPboardTask(nsText));
     }
   }
 }

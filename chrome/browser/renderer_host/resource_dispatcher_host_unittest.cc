@@ -158,8 +158,8 @@ class ResourceDispatcherHostTest : public testing::Test,
  public:
   ResourceDispatcherHostTest()
       : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
-        ui_thread_(ChromeThread::UI, &message_loop_),
-        io_thread_(ChromeThread::IO, &message_loop_),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_),
         old_factory_(NULL),
         resource_type_(ResourceType::SUB_RESOURCE) {
     set_handle(base::GetCurrentProcessHandle());
@@ -265,8 +265,8 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   MessageLoopForIO message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;
   std::string response_headers_;

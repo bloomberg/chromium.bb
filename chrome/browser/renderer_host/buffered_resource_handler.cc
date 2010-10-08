@@ -363,8 +363,8 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
   host_->PauseRequest(info->child_id(), info->request_id(), true);
 
   // Schedule plugin loading on the file thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &BufferedResourceHandler::LoadPlugins));
   return true;
 }
@@ -468,8 +468,8 @@ void BufferedResourceHandler::LoadPlugins() {
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &BufferedResourceHandler::OnPluginsLoaded));
 }
 

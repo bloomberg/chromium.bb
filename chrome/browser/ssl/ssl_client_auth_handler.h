@@ -22,7 +22,7 @@ class URLRequest;
 // when the URLRequest is cancelled.
 class SSLClientAuthHandler
     : public base::RefCountedThreadSafe<SSLClientAuthHandler,
-                                        ChromeThread::DeleteOnIOThread> {
+                                        BrowserThread::DeleteOnIOThread> {
  public:
   SSLClientAuthHandler(URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info);

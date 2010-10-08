@@ -91,8 +91,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->is_dangerous = false;
   info->referrer_charset = request_->context()->referrer_charset();
   info->save_info = save_info_;
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           download_file_manager_, &DownloadFileManager::StartDownload, info));
 
@@ -135,8 +135,8 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   read_buffer_.swap(&buffer);
   buffer_->contents.push_back(std::make_pair(buffer, *bytes_read));
   if (need_update) {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(download_file_manager_,
                           &DownloadFileManager::UpdateDownload,
                           download_id_,
@@ -155,8 +155,8 @@ bool DownloadResourceHandler::OnResponseCompleted(
     int request_id,
     const URLRequestStatus& status,
     const std::string& security_info) {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(download_file_manager_,
                         &DownloadFileManager::OnResponseCompleted,
                         download_id_,

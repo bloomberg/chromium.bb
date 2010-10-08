@@ -241,17 +241,17 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
 }
 
 void ResourceDispatcherHost::Initialize() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   webkit_thread_->Initialize();
   safe_browsing_->Initialize();
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&appcache::AppCacheInterceptor::EnsureRegistered));
 }
 
 void ResourceDispatcherHost::Shutdown() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, new ShutdownTask(this));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, new ShutdownTask(this));
 }
 
 void ResourceDispatcherHost::SetRequestInfo(
@@ -261,7 +261,7 @@ void ResourceDispatcherHost::SetRequestInfo(
 }
 
 void ResourceDispatcherHost::OnShutdown() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   is_shutdown_ = true;
   resource_queue_.Shutdown();
   STLDeleteValues(&pending_requests_);
@@ -297,8 +297,8 @@ bool ResourceDispatcherHost::HandleExternalProtocol(int request_id,
   if (!ResourceType::IsFrame(type) || URLRequest::IsHandledURL(url))
     return false;
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
           &ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
 
@@ -1561,7 +1561,7 @@ void ResourceDispatcherHost::RemoveObserver(Observer* obs) {
 URLRequest* ResourceDispatcherHost::GetURLRequest(
     const GlobalRequestID& request_id) const {
   // This should be running in the IO loop.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   PendingRequestList::const_iterator i = pending_requests_.find(request_id);
   if (i == pending_requests_.end())
@@ -1745,7 +1745,7 @@ void ResourceDispatcherHost::UpdateLoadStates() {
 
   LoadInfoUpdateTask* task = new LoadInfoUpdateTask;
   task->info_map.swap(info_map);
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, task);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
 }
 
 // Calls the ResourceHandler to send upload progress messages to the renderer.

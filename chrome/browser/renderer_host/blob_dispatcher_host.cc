@@ -24,7 +24,7 @@ BlobDispatcherHost::~BlobDispatcherHost() {
 }
 
 void BlobDispatcherHost::Shutdown() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Unregister all the blob URLs that are previously registered in this
   // process.
@@ -36,7 +36,7 @@ void BlobDispatcherHost::Shutdown() {
 
 bool BlobDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                            bool* msg_is_ok) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   *msg_is_ok = true;
   bool handled = true;
@@ -67,7 +67,7 @@ bool BlobDispatcherHost::CheckPermission(
 
 void BlobDispatcherHost::OnRegisterBlobUrl(
     const GURL& url, const scoped_refptr<webkit_blob::BlobData>& blob_data) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!CheckPermission(blob_data.get()))
     return;
   blob_storage_context_->controller()->RegisterBlobUrl(url, blob_data);
@@ -76,13 +76,13 @@ void BlobDispatcherHost::OnRegisterBlobUrl(
 
 void BlobDispatcherHost::OnRegisterBlobUrlFrom(
     const GURL& url, const GURL& src_url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->RegisterBlobUrlFrom(url, src_url);
   blob_urls_.insert(url.spec());
 }
 
 void BlobDispatcherHost::OnUnregisterBlobUrl(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   blob_storage_context_->controller()->UnregisterBlobUrl(url);
   blob_urls_.erase(url.spec());
 }

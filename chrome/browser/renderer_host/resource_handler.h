@@ -30,7 +30,7 @@ class URLRequestStatus;
 // See the implementations of this interface defined below.
 class ResourceHandler
     : public base::RefCountedThreadSafe<
-          ResourceHandler, ChromeThread::DeleteOnIOThread> {
+          ResourceHandler, BrowserThread::DeleteOnIOThread> {
  public:
   // Called as upload progress is made.
   virtual bool OnUploadProgress(int request_id,

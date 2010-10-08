@@ -36,8 +36,8 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
 
   // A certificate error occurred.  Construct a SSLCertErrorHandler object and
   // hand it over to the UI thread for processing.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(new SSLCertErrorHandler(rdh,
                                                 request,
                                                 info->resource_type(),

@@ -280,7 +280,7 @@ ResourceMessageFilter::ResourceMessageFilter(
 
 ResourceMessageFilter::~ResourceMessageFilter() {
   // This function should be called on the IO thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Tell the DOM Storage dispatcher host to stop sending messages via us.
   dom_storage_dispatcher_host_->Shutdown();
@@ -315,7 +315,7 @@ void ResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
 // Called on the IPC thread:
 void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   DCHECK(!handle()) << " " << handle();
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   base::ProcessHandle peer_handle;
   if (!base::OpenProcessHandle(peer_pid, &peer_handle)) {
@@ -540,7 +540,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void ResourceMessageFilter::OnDestruct() {
-  ChromeThread::DeleteOnIOThread::Destruct(this);
+  BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
 void ResourceMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
@@ -551,8 +551,8 @@ void ResourceMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
 
   // Create a new ViewHostMsg_ContextMenu message.
   const ViewHostMsg_ContextMenu context_menu_message(msg.routing_id(), params);
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       new ContextMenuMessageDispatcher(id(), context_menu_message));
 }
 
@@ -744,8 +744,8 @@ void ResourceMessageFilter::OnGetPlugins(bool refresh,
   }
 
   // Can't load plugins on IO thread, so go to the FILE thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGetPluginsOnFileThread, refresh,
           reply_msg));
@@ -753,12 +753,12 @@ void ResourceMessageFilter::OnGetPlugins(bool refresh,
 
 void ResourceMessageFilter::OnGetPluginsOnFileThread(
     bool refresh, IPC::Message* reply_msg) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetEnabledPlugins(refresh, &plugins);
   ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
@@ -768,8 +768,8 @@ void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
                                             IPC::Message* reply_msg) {
   // The PluginList::GetPluginInfo may need to load the plugins.  Don't do it
   // on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGetPluginInfoOnFileThread,
           url, policy_url, mime_type, reply_msg));
@@ -785,8 +785,8 @@ void ResourceMessageFilter::OnGetPluginInfoOnFileThread(
   bool allow_wildcard = true;
   bool found = NPAPI::PluginList::Singleton()->GetPluginInfo(
       url, mime_type, allow_wildcard, &info, &actual_mime_type);
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGotPluginInfo,
           found, info, actual_mime_type, policy_url, reply_msg));
@@ -909,8 +909,8 @@ void ResourceMessageFilter::OnClipboardWriteObjectsSync(
   Clipboard::ReplaceSharedMemHandle(long_living_objects, bitmap_handle,
                                     handle());
 
-  ChromeThread::PostTask(
-      ChromeThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       new WriteClipboardTask(long_living_objects));
 }
@@ -926,8 +926,8 @@ void ResourceMessageFilter::OnClipboardWriteObjectsAsync(
   // be removed otherwise we might dereference a rubbish pointer.
   long_living_objects->erase(Clipboard::CBF_SMBITMAP);
 
-  ChromeThread::PostTask(
-      ChromeThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       new WriteClipboardTask(long_living_objects));
 }
@@ -1089,8 +1089,8 @@ void ResourceMessageFilter::OnResourceTypeStats(
                    static_cast<int>(stats.fonts.size / 1024));
   // We need to notify the TaskManager of these statistics from the UI
   // thread.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
           &ResourceMessageFilter::OnResourceTypeStatsOnUIThread,
           stats,
@@ -1099,7 +1099,7 @@ void ResourceMessageFilter::OnResourceTypeStats(
 
 void ResourceMessageFilter::OnResourceTypeStatsOnUIThread(
     WebCache::ResourceTypeStats stats, base::ProcessId renderer_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TaskManager::GetInstance()->model()->NotifyResourceTypeStats(
       renderer_id, stats);
 }
@@ -1107,8 +1107,8 @@ void ResourceMessageFilter::OnResourceTypeStatsOnUIThread(
 
 void ResourceMessageFilter::OnV8HeapStats(int v8_memory_allocated,
                                           int v8_memory_used) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&ResourceMessageFilter::OnV8HeapStatsOnUIThread,
                           v8_memory_allocated,
                           v8_memory_used,
@@ -1118,7 +1118,7 @@ void ResourceMessageFilter::OnV8HeapStats(int v8_memory_allocated,
 // static
 void ResourceMessageFilter::OnV8HeapStatsOnUIThread(
     int v8_memory_allocated, int v8_memory_used, base::ProcessId renderer_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TaskManager::GetInstance()->model()->NotifyV8HeapStats(
       renderer_id,
       static_cast<size_t>(v8_memory_allocated),
@@ -1141,7 +1141,7 @@ void ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread(
     const GURL& url,
     int render_process_id,
     int render_view_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (remember) {
     host_zoom_map_->SetZoomLevel(url, zoom_level);
     // Notify renderers from this profile.
@@ -1285,7 +1285,7 @@ Clipboard* ResourceMessageFilter::GetClipboard() {
 
 ChromeURLRequestContext* ResourceMessageFilter::GetRequestContextForURL(
     const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   URLRequestContextGetter* context_getter =
       url.SchemeIs(chrome::kExtensionScheme) ?
           extensions_request_context_ : request_context_;
@@ -1355,8 +1355,8 @@ void ResourceMessageFilter::OnOpenChannelToExtension(
   int port2_id;
   ExtensionMessageService::AllocatePortIdPair(port_id, &port2_id);
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OpenChannelToExtensionOnUIThread,
           id(), routing_id, port2_id, source_extension_id,
@@ -1369,7 +1369,7 @@ void ResourceMessageFilter::OpenChannelToExtensionOnUIThread(
     const std::string& source_extension_id,
     const std::string& target_extension_id,
     const std::string& channel_name) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_->GetExtensionMessageService()->OpenChannelToExtension(
       source_process_id, source_routing_id, receiver_port_id,
       source_extension_id, target_extension_id, channel_name);
@@ -1381,8 +1381,8 @@ void ResourceMessageFilter::OnOpenChannelToTab(
   int port2_id;
   ExtensionMessageService::AllocatePortIdPair(port_id, &port2_id);
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OpenChannelToTabOnUIThread,
           id(), routing_id, port2_id, tab_id, extension_id, channel_name));
@@ -1394,7 +1394,7 @@ void ResourceMessageFilter::OpenChannelToTabOnUIThread(
     int tab_id,
     const std::string& extension_id,
     const std::string& channel_name) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_->GetExtensionMessageService()->OpenChannelToTab(
       source_process_id, source_routing_id, receiver_port_id,
       tab_id, extension_id, channel_name);
@@ -1507,8 +1507,8 @@ void ResourceMessageFilter::OnGetFileSize(const FilePath& path,
 
   // Getting file size could take long time if it lives on a network share,
   // so run it on FILE thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGetFileInfoOnFileThread, path,
           reply_msg, &WriteFileSize));
@@ -1527,8 +1527,8 @@ void ResourceMessageFilter::OnGetFileModificationTime(const FilePath& path,
 
   // Getting file modification time could take a long time if it lives on a
   // network share, so run it on the FILE thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGetFileInfoOnFileThread,
           path, reply_msg, &WriteFileModificationTime));
@@ -1538,7 +1538,7 @@ void ResourceMessageFilter::OnGetFileInfoOnFileThread(
     const FilePath& path,
     IPC::Message* reply_msg,
     FileInfoWriteFunc write_func) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::PlatformFileInfo file_info;
   file_info.size = 0;
@@ -1546,8 +1546,8 @@ void ResourceMessageFilter::OnGetFileInfoOnFileThread(
 
   (*write_func)(reply_msg, file_info);
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
@@ -1572,8 +1572,8 @@ void ResourceMessageFilter::OnOpenFile(const FilePath& path,
 
   // Opening the file could take a long time if it lives on a network share,
   // so run it on the FILE thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnOpenFileOnFileThread,
           path, mode, reply_msg));
@@ -1582,7 +1582,7 @@ void ResourceMessageFilter::OnOpenFile(const FilePath& path,
 void ResourceMessageFilter::OnOpenFileOnFileThread(const FilePath& path,
                                                    int mode,
                                                    IPC::Message* reply_msg) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::PlatformFile file_handle = base::CreatePlatformFile(
       path,
@@ -1613,8 +1613,8 @@ void ResourceMessageFilter::OnOpenFileOnFileThread(const FilePath& path,
 #endif
       );
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
@@ -1670,16 +1670,16 @@ void ResourceMessageFilter::OnKeygenOnWorkerThread(
       reply_msg,
       keygen_handler.GenKeyAndSignChallenge());
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
 #if defined(USE_TCMALLOC)
 void ResourceMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
                                                const std::string& output) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(AboutTcmallocRendererCallback, pid, output));
 }
 #endif
@@ -1707,8 +1707,8 @@ void ResourceMessageFilter::OnGetExtensionMessageBundle(
   std::string default_locale =
       context->extension_info_map()->GetDefaultLocaleForExtension(extension_id);
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread,
           extension_path, extension_id, default_locale, reply_msg));
@@ -1719,7 +1719,7 @@ void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
     const std::string& extension_id,
     const std::string& default_locale,
     IPC::Message* reply_msg) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::map<std::string, std::string> dictionary_map;
   if (!default_locale.empty()) {
@@ -1741,8 +1741,8 @@ void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
   ViewHostMsg_GetExtensionMessageBundle::WriteReplyParams(
       reply_msg, dictionary_map);
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
@@ -1750,7 +1750,7 @@ void ResourceMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
                                             const FilePath& path,
                                             int flags,
                                             int message_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!ChildProcessSecurityPolicy::GetInstance()->HasPermissionsForFile(
           id(), path, flags)) {
@@ -1760,8 +1760,8 @@ void ResourceMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
     return;
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
           this, &ResourceMessageFilter::AsyncOpenFileOnFileThread,
           path, flags, message_id, msg.routing_id()));
 }
@@ -1770,7 +1770,7 @@ void ResourceMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
                                                       int flags,
                                                       int message_id,
                                                       int routing_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
   base::PlatformFile file = base::CreatePlatformFile(
       path, flags, NULL, &error_code);
@@ -1787,8 +1787,8 @@ void ResourceMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
 
   IPC::Message* reply = new ViewMsg_AsyncOpenFile_ACK(
       routing_id, error_code, file_for_transit, message_id);
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE, NewRunnableMethod(
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, NewRunnableMethod(
           this, &ResourceMessageFilter::Send, reply));
 }
 

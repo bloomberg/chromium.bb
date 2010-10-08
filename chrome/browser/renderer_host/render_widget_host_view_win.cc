@@ -510,8 +510,8 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
       0, 0, 0, 0, ::GetParent(window), 0, GetModuleHandle(NULL), 0);
   DCHECK(parent);
   ::SetParent(window, parent);
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new NotifyPluginProcessHostTask(window, parent));
   return parent;
 }

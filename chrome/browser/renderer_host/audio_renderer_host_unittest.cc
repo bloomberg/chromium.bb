@@ -171,7 +171,7 @@ class AudioRendererHostTest : public testing::Test {
   virtual void SetUp() {
     // Create a message loop so AudioRendererHost can use it.
     message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
-    io_thread_.reset(new ChromeThread(ChromeThread::IO, message_loop_.get()));
+    io_thread_.reset(new BrowserThread(BrowserThread::IO, message_loop_.get()));
     host_ = new MockAudioRendererHost();
 
     // Simulate IPC channel connected.
@@ -349,7 +349,7 @@ class AudioRendererHostTest : public testing::Test {
   bool mock_stream_;
   scoped_refptr<MockAudioRendererHost> host_;
   scoped_ptr<MessageLoop> message_loop_;
-  scoped_ptr<ChromeThread> io_thread_;
+  scoped_ptr<BrowserThread> io_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };

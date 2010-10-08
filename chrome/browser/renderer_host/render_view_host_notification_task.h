@@ -62,8 +62,8 @@ class RenderViewHostNotificationTask : public Task {
 template <typename Method, typename Params>
 inline void CallRenderViewHostHelper(int render_process_id, int render_view_id,
                                      Method method, const Params& params) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       new RenderViewHostNotificationTask<Method, Params>(render_process_id,
                                                          render_view_id,
                                                          method,
@@ -86,8 +86,8 @@ inline void CallRenderViewHostResourceDelegateHelper(int render_process_id,
                                                      Method method,
                                                      const Params& params) {
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       new RenderViewHostNotificationTask<
           Method, Params, RenderViewHostToResourceDelegate>(render_process_id,
                                                             render_view_id,
@@ -112,8 +112,8 @@ inline void CallRenderViewHostContentSettingsDelegateHelper(
     Method method,
     const Params& params) {
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       new RenderViewHostNotificationTask<
           Method, Params, RenderViewHostToContentSettingsDelegate>(
               render_process_id,
@@ -138,8 +138,8 @@ inline void CallRenderViewHostRendererManagementDelegateHelper(
     int render_view_id,
     Method method,
     const Params& params) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       new RenderViewHostNotificationTask<
           Method, Params, RenderViewHostToRendererManagementDelegate>(
               render_process_id,
@@ -164,8 +164,8 @@ inline void CallRenderViewHostSSLDelegateHelper(
     int render_view_id,
     Method method,
     const Params& params) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       new RenderViewHostNotificationTask<
           Method, Params, RenderViewHostToSSLDelegate>(
               render_process_id,

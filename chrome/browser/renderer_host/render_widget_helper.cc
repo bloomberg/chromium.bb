@@ -78,8 +78,8 @@ void RenderWidgetHelper::CancelResourceRequests(int render_widget_id) {
   if (render_process_id_ == -1)
     return;
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
                         &RenderWidgetHelper::OnCancelResourceRequests,
                         render_widget_id));
@@ -87,8 +87,8 @@ void RenderWidgetHelper::CancelResourceRequests(int render_widget_id) {
 
 void RenderWidgetHelper::CrossSiteClosePageACK(
     const ViewMsg_ClosePage_Params& params) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
                         &RenderWidgetHelper::OnCrossSiteClosePageACK,
                         params));
@@ -161,7 +161,7 @@ void RenderWidgetHelper::DidReceiveUpdateMsg(const IPC::Message& msg) {
   event_.Signal();
 
   // The proxy will be deleted when it is run as a task.
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, proxy);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, proxy);
 }
 
 void RenderWidgetHelper::OnDiscardUpdateMsg(UpdateMsgProxy* proxy) {
@@ -212,8 +212,8 @@ void RenderWidgetHelper::CreateNewWindow(
   resource_dispatcher_host_->BlockRequestsForRoute(
       render_process_id_, *route_id);
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &RenderWidgetHelper::OnCreateWindowOnUI, opener_id, *route_id,
           window_container_type, frame_name));
@@ -228,8 +228,8 @@ void RenderWidgetHelper::OnCreateWindowOnUI(
   if (host)
     host->CreateNewWindow(route_id, window_container_type, frame_name);
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &RenderWidgetHelper::OnCreateWindowOnIO,
                         route_id));
 }
@@ -243,8 +243,8 @@ void RenderWidgetHelper::CreateNewWidget(int opener_id,
                                          WebKit::WebPopupType popup_type,
                                          int* route_id) {
   *route_id = GetNextRoutingID();
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &RenderWidgetHelper::OnCreateWidgetOnUI, opener_id, *route_id,
           popup_type));
@@ -253,8 +253,8 @@ void RenderWidgetHelper::CreateNewWidget(int opener_id,
 void RenderWidgetHelper::CreateNewFullscreenWidget(
     int opener_id, WebKit::WebPopupType popup_type, int* route_id) {
   *route_id = GetNextRoutingID();
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &RenderWidgetHelper::OnCreateFullscreenWidgetOnUI,
           opener_id, *route_id, popup_type));

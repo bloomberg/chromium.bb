@@ -70,8 +70,8 @@ bool OfflineResourceHandler::OnWillStart(int request_id,
     deferred_url_ = url;
     DLOG(INFO) << "WillStart: this=" << this << ", request id=" << request_id;
     AddRef();  //  Balanced with OnBlockingPageComplete
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &OfflineResourceHandler::ShowOfflinePage));
     *defer = true;
     return true;
@@ -98,9 +98,9 @@ void OfflineResourceHandler::OnBlockingPageComplete(bool proceed) {
     NOTREACHED();
     return;
   }
-  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this,
                           &OfflineResourceHandler::OnBlockingPageComplete,
                           proceed));
