@@ -792,6 +792,9 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
   Extension::Location location(extension->location());
   UninstalledExtensionInfo uninstalled_extension_info(*extension);
 
+  UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
+                            extension->GetHistogramType(), 100);
+
   // Also copy the extension identifier since the reference might have been
   // obtained via Extension::id().
   std::string extension_id_copy(extension_id);
@@ -960,6 +963,9 @@ void ExtensionsService::ContinueLoadAllExtensions(
   UMA_HISTOGRAM_TIMES("Extensions.LoadAllTime",
                       base::TimeTicks::Now() - start_time);
 
+  int app_count = 0;
+  int hosted_app_count = 0;
+  int packaged_app_count = 0;
   int user_script_count = 0;
   int extension_count = 0;
   int theme_count = 0;
@@ -968,33 +974,60 @@ void ExtensionsService::ContinueLoadAllExtensions(
   int browser_action_count = 0;
   ExtensionList::iterator ex;
   for (ex = extensions_.begin(); ex != extensions_.end(); ++ex) {
+    Extension::Location location = (*ex)->location();
+    Extension::HistogramType type = (*ex)->GetHistogramType();
+    if ((*ex)->is_app()) {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.AppLocation",
+                                location, 100);
+    } else if (type == Extension::TYPE_EXTENSION) {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionLocation",
+                                location, 100);
+    }
+
     // Don't count component extensions, since they are only extensions as an
     // implementation detail.
-    if ((*ex)->location() == Extension::COMPONENT)
+    if (location == Extension::COMPONENT)
       continue;
 
     // Don't count unpacked extensions, since they're a developer-specific
     // feature.
-    if ((*ex)->location() == Extension::LOAD)
+    if (location == Extension::LOAD)
       continue;
 
-    if ((*ex)->is_theme()) {
-      theme_count++;
-    } else if ((*ex)->converted_from_user_script()) {
-      user_script_count++;
-    } else {
-      extension_count++;
+    // Using an enumeration shows us the total installed ratio across all users.
+    // Using the totals per user at each startup tells us the distribution of
+    // usage for each user (e.g. 40% of users have at least one app installed).
+    UMA_HISTOGRAM_ENUMERATION("Extensions.LoadType", type, 100);
+    switch (type) {
+      case Extension::TYPE_THEME:
+        theme_count++;
+        break;
+      case Extension::TYPE_USER_SCRIPT:
+        user_script_count++;
+        break;
+      case Extension::TYPE_HOSTED_APP:
+        app_count++;
+        hosted_app_count++;
+        break;
+      case Extension::TYPE_PACKAGED_APP:
+        app_count++;
+        packaged_app_count++;
+        break;
+      case Extension::TYPE_EXTENSION:
+      default:
+        extension_count++;
+        break;
     }
-    if (Extension::IsExternalLocation((*ex)->location())) {
+    if (Extension::IsExternalLocation(location))
       external_count++;
-    }
-    if ((*ex)->page_action() != NULL) {
+    if ((*ex)->page_action() != NULL)
       page_action_count++;
-    }
-    if ((*ex)->browser_action() != NULL) {
+    if ((*ex)->browser_action() != NULL)
       browser_action_count++;
-    }
   }
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadApp", app_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadHostedApp", hosted_app_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.LoadPackagedApp", packaged_app_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadExtension", extension_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadUserScript", user_script_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.LoadTheme", theme_count);
@@ -1569,6 +1602,8 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
         extension_prefs_->IsIncognitoEnabled(extension->id());
   }
 
+  UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
+                            extension->GetHistogramType(), 100);
   extension_prefs_->OnExtensionInstalled(
       extension, initial_state, initial_enable_incognito);
 

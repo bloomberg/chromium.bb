@@ -36,8 +36,9 @@ class Extension {
   typedef std::vector<std::string> ScriptingWhitelist;
 
   // What an extension was loaded from.
-  // NOTE: These values are stored as integers in the preferences, so you
-  // really don't want to change any existing ones.
+  // NOTE: These values are stored as integers in the preferences and used
+  // in histograms so don't remove or reorder existing items.  Just append
+  // to the end.
   enum Location {
     INVALID,
     INTERNAL,           // A crx file from the internal Extensions directory.
@@ -76,6 +77,17 @@ class Extension {
     EXTENSION_ICON_SMALL = 32,
     EXTENSION_ICON_SMALLISH = 24,
     EXTENSION_ICON_BITTY = 16,
+  };
+
+  // Type used for UMA_HISTOGRAM_ENUMERATION about extensions.
+  // Do not change the order of entries or remove entries in this list.
+  enum HistogramType {
+    TYPE_UNKNOWN = 0,
+    TYPE_EXTENSION,
+    TYPE_THEME,
+    TYPE_USER_SCRIPT,
+    TYPE_HOSTED_APP,
+    TYPE_PACKAGED_APP
   };
 
   // Contains a subset of the extension's data that doesn't change once
@@ -240,6 +252,9 @@ class Extension {
            location == Extension::EXTERNAL_REGISTRY ||
            location == Extension::EXTERNAL_PREF_DOWNLOAD;
   }
+
+  // See HistogramType definition above.
+  HistogramType GetHistogramType();
 
   // Returns an absolute url to a resource inside of an extension. The
   // |extension_url| argument should be the url() from an Extension object. The

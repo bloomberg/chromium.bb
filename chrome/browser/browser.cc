@@ -16,6 +16,7 @@
 #include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -492,6 +493,8 @@ TabContents* Browser::OpenApplication(
     extension_misc::LaunchContainer container) {
   TabContents* tab = NULL;
 
+  UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
+
   // The app is not yet open.  Load it.
   switch (container) {
     case extension_misc::LAUNCH_WINDOW:
@@ -576,6 +579,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
 
   ExtensionPrefs::LaunchType launch_type =
       extensions_service->extension_prefs()->GetLaunchType(extension->id());
+  UMA_HISTOGRAM_ENUMERATION("Extensions.AppTabLaunchType", launch_type, 100);
   int add_type = TabStripModel::ADD_SELECTED;
   if (launch_type == ExtensionPrefs::LAUNCH_PINNED)
     add_type |= TabStripModel::ADD_PINNED;

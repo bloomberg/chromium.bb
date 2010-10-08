@@ -30,6 +30,8 @@ class ExtensionPrefs {
 
   // This enum is used for the launch type the user wants to use for an
   // application.
+  // Do not remove items or re-order this enum as it is used in preferences
+  // and histograms.
   enum LaunchType {
     LAUNCH_PINNED,
     LAUNCH_REGULAR,
