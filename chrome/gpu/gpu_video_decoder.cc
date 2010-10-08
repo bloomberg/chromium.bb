@@ -4,7 +4,9 @@
 
 #include "chrome/gpu/gpu_video_decoder.h"
 
+#include "base/command_line.h"
 #include "chrome/common/child_thread.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/media/fake_gl_video_decode_engine.h"
@@ -236,8 +238,11 @@ GpuVideoDecoder::GpuVideoDecoder(
   // TODO(jiesun): find a better way to determine which VideoDecodeEngine
   // to return on current platform.
 #if defined(OS_WIN)
-  decode_engine_.reset(new media::MftH264DecodeEngine(true));
-  video_device_.reset(new MftAngleVideoDevice());
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableAcceleratedDecoding)) {
+    decode_engine_.reset(new media::MftH264DecodeEngine(true));
+    video_device_.reset(new MftAngleVideoDevice());
+  }
 #else
   decode_engine_.reset(new FakeGlVideoDecodeEngine());
   video_device_.reset(new FakeGlVideoDevice());
