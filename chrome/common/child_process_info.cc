@@ -82,29 +82,43 @@ string16 ChildProcessInfo::GetLocalizedTitle() const {
   // or Arabic word for "plugin".
   base::i18n::AdjustStringForLocaleDirection(title, &title);
 
-  int message_id;
-  if (type_ == ChildProcessInfo::PLUGIN_PROCESS) {
-    message_id = IDS_TASK_MANAGER_PLUGIN_PREFIX;
-    return l10n_util::GetStringFUTF16(message_id, title,
-                                      WideToUTF16Hack(version_.c_str()));
-  } else if (type_ == ChildProcessInfo::WORKER_PROCESS) {
-    message_id = IDS_TASK_MANAGER_WORKER_PREFIX;
-  } else if (type_ == ChildProcessInfo::UTILITY_PROCESS) {
-    message_id = IDS_TASK_MANAGER_UTILITY_PREFIX;
-  } else if (type_ == ChildProcessInfo::PROFILE_IMPORT_PROCESS) {
-    message_id = IDS_TASK_MANAGER_PROFILE_IMPORT_PREFIX;
-  } else if (type_ == ChildProcessInfo::NACL_LOADER_PROCESS) {
-    message_id = IDS_TASK_MANAGER_NACL_PREFIX;
-  } else if (type_ == ChildProcessInfo::NACL_BROKER_PROCESS) {
-    message_id = IDS_TASK_MANAGER_NACL_BROKER_PREFIX;
-  } else if (type_ == ChildProcessInfo::GPU_PROCESS) {
-    message_id = IDS_TASK_MANAGER_GPU_PREFIX;
-  } else {
-    DCHECK(false) << "Need localized name for child process type.";
-    return title;
+  switch (type_) {
+    case ChildProcessInfo::UTILITY_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
+
+    case ChildProcessInfo::PROFILE_IMPORT_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
+
+    case ChildProcessInfo::GPU_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_GPU_PREFIX);
+
+    case ChildProcessInfo::NACL_BROKER_PROCESS:
+      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NACL_BROKER_PREFIX);
+
+    case ChildProcessInfo::PLUGIN_PROCESS:
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_PREFIX,
+                                        title,
+                                        WideToUTF16Hack(version_));
+
+    case ChildProcessInfo::NACL_LOADER_PROCESS:
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX, title);
+
+    case ChildProcessInfo::WORKER_PROCESS:
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_WORKER_PREFIX, title);
+
+    // These types don't need display names or get them from elsewhere.
+    case BROWSER_PROCESS:
+    case RENDER_PROCESS:
+    case ZYGOTE_PROCESS:
+    case SANDBOX_HELPER_PROCESS:
+      NOTREACHED();
+      break;
+
+    case UNKNOWN_PROCESS:
+      NOTREACHED() << "Need localized name for child process type.";
   }
 
-  return l10n_util::GetStringFUTF16(message_id, title);
+  return title;
 }
 
 ChildProcessInfo::ChildProcessInfo(ProcessType type, int id) : type_(type) {
