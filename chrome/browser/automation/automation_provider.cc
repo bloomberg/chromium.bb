@@ -455,7 +455,7 @@ void AutomationProvider::HandleFindRequest(
     const AutomationMsg_Find_Params& params,
     IPC::Message* reply_message) {
   if (!tab_tracker_->ContainsHandle(handle)) {
-    AutomationMsg_FindInPage::WriteReplyParams(reply_message, -1, -1);
+    AutomationMsg_Find::WriteReplyParams(reply_message, -1, -1);
     Send(reply_message);
     return;
   }
@@ -463,15 +463,36 @@ void AutomationProvider::HandleFindRequest(
   NavigationController* nav = tab_tracker_->GetResource(handle);
   TabContents* tab_contents = nav->tab_contents();
 
-  find_in_page_observer_.reset(new
-      FindInPageNotificationObserver(this, tab_contents, reply_message));
+  SendFindRequest(tab_contents,
+                  false,
+                  params.search_string,
+                  params.forward,
+                  params.match_case,
+                  params.find_next,
+                  reply_message);
+}
 
-  tab_contents->set_current_find_request_id(
-      FindInPageNotificationObserver::kFindInPageRequestId);
+void AutomationProvider::SendFindRequest(
+    TabContents* tab_contents,
+    bool with_json,
+    const string16& search_string,
+    bool forward,
+    bool match_case,
+    bool find_next,
+    IPC::Message* reply_message) {
+  int request_id = FindInPageNotificationObserver::kFindInPageRequestId;
+  find_in_page_observer_.reset(
+      new FindInPageNotificationObserver(this,
+                                         tab_contents,
+                                         with_json,
+                                         reply_message));
+  tab_contents->set_current_find_request_id(request_id);
   tab_contents->render_view_host()->StartFinding(
       FindInPageNotificationObserver::kFindInPageRequestId,
-      params.search_string, params.forward, params.match_case,
-      params.find_next);
+      search_string,
+      forward,
+      match_case,
+      find_next);
 }
 
 class SetProxyConfigTask : public Task {

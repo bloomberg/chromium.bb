@@ -12,6 +12,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/common/notification_registrar.h"
 
+class DictionaryValue;
 class TemplateURLModel;
 
 // This is an automation provider containing testing calls.
@@ -154,14 +155,6 @@ class TestingAutomationProvider : public AutomationProvider,
                          IPC::Message* reply_message);
 
   void GetConstrainedWindowCount(int handle, int* count);
-
-  // This function has been deprecated, please use HandleFindRequest.
-  void HandleFindInPageRequest(int handle,
-                               const std::wstring& find_request,
-                               int forward,
-                               int match_case,
-                               int* active_ordinal,
-                               int* matches_found);
 
 #if defined(TOOLKIT_VIEWS)
   void GetFocusedViewID(int handle, int* view_id);
@@ -563,6 +556,11 @@ class TestingAutomationProvider : public AutomationProvider,
   void UninstallExtensionById(Browser* browser,
                               DictionaryValue* args,
                               IPC::Message* reply_message);
+
+  // Responds to the Find request and returns the match count.
+  void FindInPage(Browser* browser,
+                  DictionaryValue* args,
+                  IPC::Message* reply_message);
 
   // Returns information about translation for a given tab. Includes
   // information about the translate bar if it is showing.

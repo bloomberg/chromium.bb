@@ -31,6 +31,7 @@
     'cookies',
     'crash_reporter',
     'downloads',
+    'find_in_page',
     'execute_javascript',
     'history',
     'imports',

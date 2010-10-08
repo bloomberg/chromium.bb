@@ -1383,6 +1383,42 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
+  def FindInPage(self, search_string, forward=True,
+                 match_case=False, find_next=False,
+                 tab_index=0, windex=0):
+    """Find the match count for the given search string and search parameters.
+    This is equivalent to using the find box
+
+    Args:
+      search_string: The string to find on the page.
+      forward: Boolean to set if the search direction is forward or backwards
+      match_case: Boolean to set for case sensitive search.
+      find_next: Boolean to set to continue the search or start from beginning.
+      tab_index: The tab index, default is 0.
+      window_index: The window index, default is 0.
+
+    Returns:
+      number of matches found for the given search string and parameters
+    SAMPLE:
+    { u'match_count': 10,
+      u'match_left': 100,
+      u'match_top': 100,
+      u'match_right': 200,
+      u'match_bottom': 200}
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+      'command': 'FindInPage',
+      'tab_index' : tab_index,
+      'search_string' : search_string,
+      'forward' : forward,
+      'match_case' : match_case,
+      'find_next' : find_next,
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=windex)
+
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):
   """Base TestSuite for PyAuto UI tests."""

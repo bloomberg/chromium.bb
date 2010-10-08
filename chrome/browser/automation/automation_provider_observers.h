@@ -441,6 +441,7 @@ class FindInPageNotificationObserver : public NotificationObserver {
  public:
   FindInPageNotificationObserver(AutomationProvider* automation,
                                  TabContents* parent_tab,
+                                 bool reply_with_json,
                                  IPC::Message* reply_message);
   ~FindInPageNotificationObserver();
 
@@ -463,6 +464,8 @@ class FindInPageNotificationObserver : public NotificationObserver {
   // We will at some point (before final update) be notified of the ordinal and
   // we need to preserve it so we can send it later.
   int active_match_ordinal_;
+  // Send reply using json automation interface.
+  bool reply_with_json_;
   IPC::Message* reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
