@@ -645,6 +645,24 @@ DECLARE_BINARY_OINST(Vdq, I__);
  * exists that simply dispatches calls to the corresponding Begin and End forms.
  ***************************************************************************/
 
+/* Defines target machine.*/
+typedef enum {
+  T32,   /* 32 only. */
+  T64,   /* 64 only. */
+  Tall,  /* both 32 and 64. */
+} NaClTargetPlatform;
+
+/* Defines the beginning of the modeling of a platform instruction.
+ * Parameters are:
+ *   platform - The platform(s) the instruction applies to.
+ *   desc - the opcode description string.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ */
+void NaClBegDefPlatform(NaClTargetPlatform platform,
+                        const char* desc, NaClInstType insttype,
+                        struct NaClSymbolTable* st);
+
 /* Defines the beginning of the modeling of both a x86-32 and x86-64
  * instruction.
  * Parameters are:
@@ -681,6 +699,19 @@ void NaClBegD64(const char* desc, NaClInstType insttype,
  *   icat - The set/use categorization for the instruction being defined.
  */
 void NaClEndDef(NaClInstCat icat);
+
+/* Defines a platform instruction, using dispatching
+ * calls to NaClBegDefPlatform and NaClEndDef.
+ * Parameters are:
+ *   platform - the platform(s) the instruction applies to.
+ *   desc - the opcode description string.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ *   icat - The set/use categorization for the instruction being defined.
+ */
+void NaClDefinePlatform(NaClTargetPlatform platform,
+                        const char* desc, NaClInstType insttype,
+                        struct NaClSymbolTable* st, NaClInstCat cat);
 
 /* Defines both a x86-32 and x86-64 instruction, using dispatching
  * calls to NaClBegDef and NaClEndDef.

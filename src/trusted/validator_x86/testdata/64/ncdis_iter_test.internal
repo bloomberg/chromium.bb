@@ -271,8 +271,8 @@ NaClExpVector[4] = {
 };
 000000000040046a: 74 02                                        jz 0x40046e
   74                          JMP8 OpcodeHasImmed OperandSize_b
-    Jz {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jz {%rip}, $Jb
+      RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
@@ -3013,8 +3013,8 @@ NaClExpVector[8] = {
 };
 0000000000001000: 40 e0 00                                     loopne 0x1003
   e0                          JMP8 OpcodeHasImmed OperandSize_b
-    Loopne {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Loopne {%rip}, $Jb
+      RegRIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
@@ -3024,24 +3024,30 @@ NaClExpVector[4] = {
 };
 0000000000000000: 40 e3 00                                     jrcxz 0x3
   e3                          JMP8 OpcodeHasImmed OperandSize_b AddressSize_o
-    Jrcxz {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jrcxz {%rip}, {%rcx}, $Jb
+      RegRIP                  OpSet OpImplicit
+      RegRCX                  OpUse OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
-NaClExpVector[4] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
-  { OperandReference[1] , 1, 0 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %rcx, ExprUsed | ExprSize64 },
+  { OperandReference[1] , 2, 0 },
   { ExprConstant[0] , 0x3, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: 67 40 e3 00                                  jecxz 0x4
   e3                          JMP8 OpcodeHasImmed OperandSize_b AddressSize_v
-    Jecxz {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jecxz {%rip}, {%ecx}, $Jb
+      RegRIP                  OpSet OpImplicit
+      RegECX                  OpUse OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
-NaClExpVector[4] = {
+NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprRegister[0] , %eip, ExprSet | ExprSize32 },
-  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %ecx, ExprUsed | ExprSize32 },
+  { OperandReference[1] , 2, 0 },
   { ExprConstant[0] , 0x4, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: 41 d9 f0                                     f2xm1 %st0

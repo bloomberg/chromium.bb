@@ -579,83 +579,83 @@ Target: x86-32 bit mode
       RegES_EDI               OpUse OpImplicit
   --- 70 ---
   70                          JMP8 OpcodeHasImmed OperandSize_b
-    Jo {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jo {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 71 ---
   71                          JMP8 OpcodeHasImmed OperandSize_b
-    Jno {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jno {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 72 ---
   72                          JMP8 OpcodeHasImmed OperandSize_b
-    Jb {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jb {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 73 ---
   73                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnb {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jnb {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 74 ---
   74                          JMP8 OpcodeHasImmed OperandSize_b
-    Jz {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jz {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 75 ---
   75                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnz {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jnz {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 76 ---
   76                          JMP8 OpcodeHasImmed OperandSize_b
-    Jbe {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jbe {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 77 ---
   77                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnbe {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jnbe {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 78 ---
   78                          JMP8 OpcodeHasImmed OperandSize_b
-    Js {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Js {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 79 ---
   79                          JMP8 OpcodeHasImmed OperandSize_b
-    Jns {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jns {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7a ---
   7a                          JMP8 OpcodeHasImmed OperandSize_b
-    Jp {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jp {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7b ---
   7b                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnp {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jnp {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7c ---
   7c                          JMP8 OpcodeHasImmed OperandSize_b
-    Jl {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jl {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7d ---
   7d                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnl {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jnl {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7e ---
   7e                          JMP8 OpcodeHasImmed OperandSize_b
-    Jle {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jle {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 7f ---
   7f                          JMP8 OpcodeHasImmed OperandSize_b
-    Jnle {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jnle {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- 80 ---
   80 / 0                      386L OpcodeInModRm OpcodeHasImmed OpcodeLockable OperandSize_b
@@ -1676,27 +1676,29 @@ Target: x86-32 bit mode
       RegST0                  OpUse
   --- e0 ---
   e0                          JMP8 OpcodeHasImmed OperandSize_b
-    Loopne {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Loopne {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e1 ---
   e1                          JMP8 OpcodeHasImmed OperandSize_b
-    Loope {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Loope {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e2 ---
   e2                          JMP8 OpcodeHasImmed OperandSize_b
-    Loop {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Loop {%eip}, $Jb
+      RegEIP                  OpSet OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e3 ---
   e3                          JMP8 OpcodeHasImmed OperandSize_b AddressSize_w
-    Jcxz {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jcxz {%eip}, {%cx}, $Jb
+      RegEIP                  OpSet OpImplicit
+      RegCX                   OpUse OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   e3                          JMP8 OpcodeHasImmed OperandSize_b AddressSize_v
-    Jecxz {%REIP}, $I
-      RegREIP                 OpSet OpImplicit
+    Jecxz {%eip}, {%ecx}, $Jb
+      RegEIP                  OpSet OpImplicit
+      RegECX                  OpUse OpImplicit
       J_Operand               OpUse OperandNear OperandRelative
   --- e4 ---
   e4                          ILLEGAL OpcodeHasImmed_b

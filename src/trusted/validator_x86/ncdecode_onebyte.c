@@ -170,13 +170,46 @@ static void NaClDefGroup1OpcodesInModRm(struct NaClSymbolTable* context_st) {
   NaClSymbolTableDestroy(st);
 }
 
-static void NaClDefJump8Opcode(uint8_t opcode, NaClMnemonic name) {
-  NaClDefInst(opcode, NACLi_JMP8,
-              NACL_IFLAG(OperandSize_b) | NACL_IFLAG(OpcodeHasImmed),
-              name);
-  NaClDefOp(RegREIP,  NACL_OPFLAG(OpImplicit));
-  NaClDefOp(J_Operand, NACL_OPFLAG(OperandNear) | NACL_OPFLAG(OperandRelative));
-  NaClSetInstCat(Jump);
+static void NaClDefJump8Opcode(uint8_t opcode, NaClMnemonic name,
+                               struct NaClSymbolTable* context_st) {
+  struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
+  NaClSymbolTablePutByte("opcode", opcode, st);
+  NaClSymbolTablePutText("name", NaClMnemonicName(name), st);
+  NaClDefine("@opcode: @name {%@ip}, $Jb", NACLi_JMP8, st, Jump);
+}
+
+/* Generates a jXXz instruction, based on the use of register XX
+ * (XX in cx, ecx, rcx).
+ *
+ * Parameters are:
+ *   platform - Which platform(s) the jump instruction is defined on.
+ */
+static void NaClDefJumpRegZero(struct NaClSymbolTable* context_st) {
+  struct {
+    /* The platform(s) the instruction is defined on. */
+    const NaClTargetPlatform platform;
+    /* The register XX the instruction conditionalizes the jump on. */
+    const char* reg;
+    /* The address size held in register XX. */
+    const NaClOpKind addr_size;
+    /* The mnemonic name of the instruction. */
+    const char* name;
+  } inst[3] = {
+    { T32,  "cx",  AddressSize_w, "Jcxz" },
+    { Tall, "ecx", AddressSize_v, "Jecxz" },
+    { T64,  "rcx", AddressSize_o, "Jrcxz" }
+  };
+  int i;
+  struct NaClSymbolTable* st = NaClSymbolTableCreate(NACL_SMALL_ST, context_st);
+  NaClDefInstChoices(0xe3, 2);
+  for (i = 0; i < 3; ++i) {
+    NaClSymbolTablePutText("name", inst[i].name, st);
+    NaClSymbolTablePutText("reg",  inst[i].reg, st);
+    NaClBegDefPlatform(inst[i].platform, "e3: @name {%@ip}, {%@reg}, $Jb",
+                       NACLi_JMP8, st);
+    NaClAddIFlags(NACL_IFLAG(inst[i].addr_size));
+    NaClEndDef(Jump);
+  }
 }
 
 static const NaClMnemonic NaClGroup2OpcodeName[8] = {
@@ -468,22 +501,22 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   NaClDefine("6f: Outsw {%dx}, {$Xzw}", NACLi_ILLEGAL, st, Uses);
   NaClDefine("6f: Outsd {%dx}, {$Xzd}", NACLi_ILLEGAL, st, Uses);
 
-  NaClDefJump8Opcode(0x70, InstJo);
-  NaClDefJump8Opcode(0x71, InstJno);
-  NaClDefJump8Opcode(0x72, InstJb);
-  NaClDefJump8Opcode(0x73, InstJnb);
-  NaClDefJump8Opcode(0x74, InstJz);
-  NaClDefJump8Opcode(0x75, InstJnz);
-  NaClDefJump8Opcode(0x76, InstJbe);
-  NaClDefJump8Opcode(0x77, InstJnbe);
-  NaClDefJump8Opcode(0x78, InstJs);
-  NaClDefJump8Opcode(0x79, InstJns);
-  NaClDefJump8Opcode(0x7a, InstJp);
-  NaClDefJump8Opcode(0x7b, InstJnp);
-  NaClDefJump8Opcode(0x7c, InstJl);
-  NaClDefJump8Opcode(0x7d, InstJnl);
-  NaClDefJump8Opcode(0x7e, InstJle);
-  NaClDefJump8Opcode(0x7f, InstJnle);
+  NaClDefJump8Opcode(0x70, InstJo, st);
+  NaClDefJump8Opcode(0x71, InstJno, st);
+  NaClDefJump8Opcode(0x72, InstJb, st);
+  NaClDefJump8Opcode(0x73, InstJnb, st);
+  NaClDefJump8Opcode(0x74, InstJz, st);
+  NaClDefJump8Opcode(0x75, InstJnz, st);
+  NaClDefJump8Opcode(0x76, InstJbe, st);
+  NaClDefJump8Opcode(0x77, InstJnbe, st);
+  NaClDefJump8Opcode(0x78, InstJs, st);
+  NaClDefJump8Opcode(0x79, InstJns, st);
+  NaClDefJump8Opcode(0x7a, InstJp, st);
+  NaClDefJump8Opcode(0x7b, InstJnp, st);
+  NaClDefJump8Opcode(0x7c, InstJl, st);
+  NaClDefJump8Opcode(0x7d, InstJnl, st);
+  NaClDefJump8Opcode(0x7e, InstJle, st);
+  NaClDefJump8Opcode(0x7f, InstJnle, st);
 
   /* For the moment, show some examples of Opcodes in Mod/Rm. */
   NaClDefGroup1OpcodesInModRm(st);
@@ -1013,16 +1046,11 @@ void NaClDefOneByteInsts(struct NaClSymbolTable* st) {
   /* Note: 0xdd /4 is already defined in ncdecodeX87.c */
 
   /* ISE reviewers suggested making loopne, loope, loop, jcxz illegal */
-  NaClDefJump8Opcode(0xe0, InstLoopne);
-  NaClDefJump8Opcode(0xe1, InstLoope);
-  NaClDefJump8Opcode(0xe2, InstLoop);
-  NaClDefInstChoices(0xe3, 2);
-  NaClDefJump8Opcode(0xe3, InstJcxz);
-  NaClAddIFlags(NACL_IFLAG(AddressSize_w) | NACL_IFLAG(Opcode32Only));
-  NaClDefJump8Opcode(0xe3, InstJecxz);
-  NaClAddIFlags(NACL_IFLAG(AddressSize_v));
-  NaClDefJump8Opcode(0xe3, InstJrcxz);
-  NaClAddIFlags(NACL_IFLAG(AddressSize_o) | NACL_IFLAG(Opcode64Only));
+  NaClDefJump8Opcode(0xe0, InstLoopne, st);
+  NaClDefJump8Opcode(0xe1, InstLoope, st);
+  NaClDefJump8Opcode(0xe2, InstLoop, st);
+  /* 0xe3 - jXXz */
+  NaClDefJumpRegZero(st);
 
   NaClDefInst(0xE4, NACLi_ILLEGAL,
               NACL_IFLAG(OpcodeHasImmed_b),

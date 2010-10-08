@@ -420,6 +420,12 @@ void DEF_OPERAND(Iz_)() {
   NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed_z));
 }
 
+static void DEF_OPERAND(Jb_)() {
+  NaClDefOp(J_Operand,
+            NACL_OPFLAG(OperandRelative) | NACL_OPFLAG(OperandNear));
+  NaClAddIFlags(NACL_IFLAG(OpcodeHasImmed) | NACL_IFLAG(OperandSize_b));
+}
+
 /* Installs Jz, except for size constraints. */
 static void DefOperandJzBase() {
   NaClDefOp(J_Operand,
@@ -1324,6 +1330,7 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("Ib",    DEF_OPERAND(Ib_),  defop_st);
     NaClSymbolTablePutDefOp("Iw",    DEF_OPERAND(Iw_),  defop_st);
     NaClSymbolTablePutDefOp("Iz",    DEF_OPERAND(Iz_),  defop_st);
+    NaClSymbolTablePutDefOp("Jb",    DEF_OPERAND(Jb_),  defop_st);
     NaClSymbolTablePutDefOp("Jz",    DEF_OPERAND(Jz_),  defop_st);
     NaClSymbolTablePutDefOp("Jzd",   DEF_OPERAND(Jzd),  defop_st);
     NaClSymbolTablePutDefOp("Jzw",   DEF_OPERAND(Jzw),  defop_st);
@@ -1488,6 +1495,25 @@ void NaClBegD64(const char* desc, NaClInstType insttype,
   NaClAddIFlags(NACL_IFLAG(Opcode64Only));
 }
 
+void NaClBegDefPlatform(NaClTargetPlatform platform,
+                        const char* desc, NaClInstType insttype,
+                        struct NaClSymbolTable* st) {
+  switch (platform) {
+    case T32:
+      NaClBegD32(desc, insttype, st);
+      break;
+    case T64:
+      NaClBegD64(desc, insttype, st);
+      break;
+    case Tall:
+      NaClBegDef(desc, insttype, st);
+      break;
+    default:
+      /* This shouldn't happen. */
+      NaClDefFatal("Don't understand platform");
+  }
+}
+
 void NaClEndDef(NaClInstCat icat) {
   NaClSetInstCat(icat);
   NaClApplySanityChecks();
@@ -1510,4 +1536,23 @@ void NaClDef_64(const char* desc, NaClInstType insttype,
                 struct NaClSymbolTable* st, NaClInstCat cat) {
   NaClBegD64(desc, insttype, st);
   NaClEndDef(cat);
+}
+
+void NaClDefinePlatform(NaClTargetPlatform platform,
+                        const char* desc, NaClInstType insttype,
+                        struct NaClSymbolTable* st, NaClInstCat cat) {
+  switch (platform) {
+    case T32:
+      NaClDef_32(desc, insttype, st, cat);
+      break;
+    case T64:
+      NaClDef_64(desc, insttype, st, cat);
+      break;
+    case Tall:
+      NaClDefine(desc, insttype, st, cat);
+      break;
+    default:
+      /* This shouldn't happen. */
+      NaClDefFatal("Don't understand platform");
+  }
 }
