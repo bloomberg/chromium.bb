@@ -1213,7 +1213,7 @@ void BrowserView::ShowPageInfo(Profile* profile,
 #endif  // defined(OS_CHROMEOS)
 
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble))
+  if (!command_line->HasSwitch(switches::kDisableNewPageInfoBubble))
     browser::ShowPageInfoBubble(parent, profile, url, ssl, show_history);
   else
     browser::ShowPageInfo(parent, profile, url, ssl, show_history);

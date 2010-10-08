@@ -96,13 +96,6 @@ const Experiment kExperiments[] = {
     switches::kEnableRemoting
   },
   {
-    "page-info-bubble",  // Do not change; see above.
-    IDS_LABS_PAGE_INFO_BUBBLE_NAME,
-    IDS_LABS_PAGE_INFO_BUBBLE_DESCRIPTION,
-    kOsAll,
-    switches::kEnableNewPageInfoBubble
-  },
-  {
     "disable-outdated-plugins",  // Do not change; see above.
     IDS_LABS_DISABLE_OUTDATED_PLUGINS_NAME,
     IDS_LABS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION,

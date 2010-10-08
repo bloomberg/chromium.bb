@@ -234,6 +234,10 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
+// Disable the Page Info SSL dialog as a bubble, reverting back to a separate
+// window.
+const char kDisableNewPageInfoBubble[]      = "disable-new-page-info-bubble";
+
 // Whether we should prevent the new tab page from showing the first run
 // notification.
 const char kDisableNewTabFirstRun[]         = "disable-new-tab-first-run";
@@ -466,9 +470,6 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
-
-// Enables the Page Info SSL dialog as a bubble, rather than a separate window.
-const char kEnableNewPageInfoBubble[]       = "enable-new-page-info-bubble";
 
 // Enable content settings based on host *and* plug-in.
 const char kEnableResourceContentSettings[] =

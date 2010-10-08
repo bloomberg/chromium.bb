@@ -1024,7 +1024,7 @@ void BrowserWindowGtk::ShowPageInfo(Profile* profile,
                                     const NavigationEntry::SSLStatus& ssl,
                                     bool show_history) {
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble))
+  if (!command_line->HasSwitch(switches::kDisableNewPageInfoBubble))
     browser::ShowPageInfoBubble(window_, profile, url, ssl, show_history);
   else
     browser::ShowPageInfo(window_, profile, url, ssl, show_history);

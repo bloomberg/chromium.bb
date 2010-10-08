@@ -3984,12 +3984,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LABS_REMOTING_HOST_DESCRIPTION" desc="Description of the 'Remoting' host lab.">
         Enable Remoting Host support.
       </message>
-      <message name="IDS_LABS_PAGE_INFO_BUBBLE_NAME" desc="Description of the 'Page Info Bubble' lab.">
-        Page Info Bubble
-      </message>
-      <message name="IDS_LABS_PAGE_INFO_BUBBLE_DESCRIPTION" desc="Description of the 'Page Info Bubble' lab.">
-        Shows the Page Information as an info bubble instead of a dialog window.
-      </message>
       <message name="IDS_LABS_DISABLE_OUTDATED_PLUGINS_NAME" desc="Name of the 'Disable outdated plug-ins' lab">
         Disable outdated plug-ins
       </message>

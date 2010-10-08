@@ -182,7 +182,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
       // so we check. The command line check will go away once we eliminate
       // the old dialogs.
       const CommandLine* command_line(CommandLine::ForCurrentProcess());
-      if (command_line->HasSwitch(switches::kEnableNewPageInfoBubble) &&
+      if (!command_line->HasSwitch(switches::kDisableNewPageInfoBubble) &&
           !ssl.ran_insecure_content()) {
         icon_id = ICON_STATE_WARNING_MINOR;
       } else {
@@ -285,11 +285,11 @@ gfx::NativeImage PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
     return NULL;
   // TODO(rsesek): Remove once the window is replaced with the bubble.
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  if (!command_line->HasSwitch(switches::kEnableNewPageInfoBubble) &&
+  if (command_line->HasSwitch(switches::kDisableNewPageInfoBubble) &&
       icon_id != ICON_STATE_OK) {
     return icons_[ICON_STATE_WARNING_MAJOR];
   }
-  // The buble uses new, various icons.
+  // The bubble uses new, various icons.
   return icons_[icon_id];
 }
 
@@ -312,7 +312,8 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
   // We only show the Site Information heading for the new dialogs.
   string16 title;
   const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  bool as_bubble = command_line->HasSwitch(switches::kEnableNewPageInfoBubble);
+  bool as_bubble = !command_line->HasSwitch(
+      switches::kDisableNewPageInfoBubble);
   if (as_bubble)
     title = l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE);
 
