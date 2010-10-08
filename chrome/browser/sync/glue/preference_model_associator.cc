@@ -25,7 +25,7 @@ PreferenceModelAssociator::PreferenceModelAssociator(
     ProfileSyncService* sync_service)
     : sync_service_(sync_service),
       preferences_node_id_(sync_api::kInvalidId) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(sync_service_);
 
   // Add the list of kSynchronizedPreferences to our local
@@ -40,7 +40,7 @@ PreferenceModelAssociator::PreferenceModelAssociator(
 }
 
 PreferenceModelAssociator::~PreferenceModelAssociator() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 bool PreferenceModelAssociator::InitPrefNodeAndAssociate(
@@ -106,7 +106,7 @@ bool PreferenceModelAssociator::InitPrefNodeAndAssociate(
 }
 
 bool PreferenceModelAssociator::AssociateModels() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = sync_service_->profile()->GetPrefs();
 
   int64 root_id;
@@ -174,7 +174,7 @@ int64 PreferenceModelAssociator::GetSyncIdFromChromeId(
 
 void PreferenceModelAssociator::Associate(
     const PrefService::Preference* preference, int64 sync_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(sync_api::kInvalidId, sync_id);
   DCHECK(id_map_.find(preference->name()) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
@@ -183,7 +183,7 @@ void PreferenceModelAssociator::Associate(
 }
 
 void PreferenceModelAssociator::Disassociate(int64 sync_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SyncIdToPreferenceNameMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;

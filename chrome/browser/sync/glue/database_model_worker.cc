@@ -12,13 +12,13 @@ using base::WaitableEvent;
 namespace browser_sync {
 
 void DatabaseModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
-  if (ChromeThread::CurrentlyOn(ChromeThread::DB)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::DB)) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from the DB thread.";
     work->Run();
     return;
   }
   WaitableEvent done(false, false);
-  if (!ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+  if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       NewRunnableMethod(this, &DatabaseModelWorker::CallDoWorkAndSignalTask,
                         work, &done))) {
     NOTREACHED() << "Failed to post task to the db thread.";
@@ -29,13 +29,13 @@ void DatabaseModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
 
 void DatabaseModelWorker::CallDoWorkAndSignalTask(Callback0::Type* work,
                                                   WaitableEvent* done) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   work->Run();
   done->Signal();
 }
 
 bool DatabaseModelWorker::CurrentThreadIsWorkThread() {
-  return ChromeThread::CurrentlyOn(ChromeThread::DB);
+  return BrowserThread::CurrentlyOn(BrowserThread::DB);
 }
 
 }  // namespace browser_sync

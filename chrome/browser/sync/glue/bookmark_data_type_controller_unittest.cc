@@ -46,7 +46,7 @@ class BookmarkModelMock : public BookmarkModel {
 class BookmarkDataTypeControllerTest : public testing::Test {
  public:
   BookmarkDataTypeControllerTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
     model_associator_ = new ModelAssociatorMock();
@@ -82,7 +82,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   ProfileMock profile_;

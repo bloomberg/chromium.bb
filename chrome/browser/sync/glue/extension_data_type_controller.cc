@@ -31,7 +31,7 @@ ExtensionDataTypeController::~ExtensionDataTypeController() {
 }
 
 void ExtensionDataTypeController::Start(StartCallback* start_callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
@@ -69,7 +69,7 @@ void ExtensionDataTypeController::Start(StartCallback* start_callback) {
 }
 
 void ExtensionDataTypeController::Stop() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
@@ -87,7 +87,7 @@ void ExtensionDataTypeController::Stop() {
 void ExtensionDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_COUNTS("Sync.ExtensionRunFailures", 1);
   sync_service_->OnUnrecoverableError(from_here, message);
 }

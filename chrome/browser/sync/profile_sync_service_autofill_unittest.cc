@@ -125,8 +125,8 @@ class PersonalDataManagerMock: public PersonalDataManager {
 };
 
 ACTION_P4(MakeAutofillSyncComponents, service, wd, pdm, dtc) {
-  EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  if (!ChromeThread::CurrentlyOn(ChromeThread::DB))
+  EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::DB))
     return ProfileSyncFactory::SyncComponents(NULL, NULL);
   AutofillModelAssociator* model_associator =
       new AutofillModelAssociator(service, wd, pdm);
@@ -138,7 +138,7 @@ ACTION_P4(MakeAutofillSyncComponents, service, wd, pdm, dtc) {
 
 class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
  protected:
-  ProfileSyncServiceAutofillTest() : db_thread_(ChromeThread::DB) {
+  ProfileSyncServiceAutofillTest() : db_thread_(BrowserThread::DB) {
   }
 
   virtual void SetUp() {
@@ -303,7 +303,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
   friend class AddAutofillEntriesTask;
   friend class FakeServerUpdater;
 
-  ChromeThread db_thread_;
+  BrowserThread db_thread_;
   scoped_refptr<ThreadNotificationService> notification_service_;
 
   ProfileMock profile_;
@@ -381,7 +381,7 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
 
   void Update() {
     // This gets called in a modelsafeworker thread.
-    ASSERT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
     UserShare* user_share = service_->backend()->GetUserShareHandle();
     DirectoryManager* dir_manager = user_share->dir_manager.get();
@@ -438,8 +438,8 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     std::vector<browser_sync::ModelSafeWorker*> workers;
     service_->backend()->GetWorkers(&workers);
 
-    ASSERT_FALSE(ChromeThread::CurrentlyOn(ChromeThread::DB));
-    if (!ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+    ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
          NewRunnableMethod(this, &FakeServerUpdater::Update))) {
       NOTREACHED() << "Failed to post task to the db thread.";
       return;
@@ -453,9 +453,9 @@ class FakeServerUpdater: public base::RefCountedThreadSafe<FakeServerUpdater> {
     std::vector<browser_sync::ModelSafeWorker*> workers;
     service_->backend()->GetWorkers(&workers);
 
-    ASSERT_FALSE(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     is_finished_.Reset();
-    if (!ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+    if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
          NewRunnableMethod(this, &FakeServerUpdater::Update))) {
       NOTREACHED() << "Failed to post task to the db thread.";
       return;

@@ -22,19 +22,19 @@ SessionChangeProcessor::SessionChangeProcessor(
     : ChangeProcessor(error_handler),
       session_model_associator_(session_model_associator),
       profile_(NULL) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error_handler);
   DCHECK(session_model_associator_);
 }
 
 SessionChangeProcessor::~SessionChangeProcessor() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void SessionChangeProcessor::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(running());
   DCHECK(profile_);
   switch (type.value) {
@@ -57,7 +57,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!running()) {
     return;
   }
@@ -99,7 +99,7 @@ void SessionChangeProcessor::UpdateModel(const sync_api::BaseTransaction* trans,
 }
 
 void SessionChangeProcessor::StartImpl(Profile* profile) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
   DCHECK(profile_ == NULL);
   profile_ = profile;
@@ -107,13 +107,13 @@ void SessionChangeProcessor::StartImpl(Profile* profile) {
 }
 
 void SessionChangeProcessor::StopImpl() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   StopObserving();
   profile_ = NULL;
 }
 
 void SessionChangeProcessor::StartObserving() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   LOG(INFO) << "Observing SESSION_SERVICE_SAVED";
   notification_registrar_.Add(
@@ -122,7 +122,7 @@ void SessionChangeProcessor::StartObserving() {
 }
 
 void SessionChangeProcessor::StopObserving() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   LOG(INFO) << "removing observation of all notifications";
   notification_registrar_.RemoveAll();

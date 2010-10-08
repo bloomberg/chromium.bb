@@ -20,7 +20,7 @@ using browser_sync::DataTypeController;
 class ProfileSyncFactoryImplTest : public testing::Test {
  protected:
   ProfileSyncFactoryImplTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
@@ -31,7 +31,7 @@ class ProfileSyncFactoryImplTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   scoped_ptr<Profile> profile_;
   scoped_ptr<CommandLine> command_line_;
   scoped_ptr<ProfileSyncFactoryImpl> profile_sync_service_factory_;

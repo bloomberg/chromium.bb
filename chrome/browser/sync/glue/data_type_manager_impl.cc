@@ -73,7 +73,7 @@ DataTypeManagerImpl::~DataTypeManagerImpl() {
 }
 
 void DataTypeManagerImpl::Configure(const TypeSet& desired_types) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPING) {
     // You can not set a configuration while stopping.
     LOG(ERROR) << "Configuration set while stopping.";
@@ -228,7 +228,7 @@ void DataTypeManagerImpl::TypeStartCallback(
     DataTypeController::StartResult result) {
   // When the data type controller invokes this callback, it must be
   // on the UI thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(current_dtc_);
 
   // If configuration changed while this data type was starting, we
@@ -300,7 +300,7 @@ void DataTypeManagerImpl::TypeStartCallback(
 }
 
 void DataTypeManagerImpl::Stop() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPED)
     return;
 

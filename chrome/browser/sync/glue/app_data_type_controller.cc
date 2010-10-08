@@ -31,7 +31,7 @@ AppDataTypeController::~AppDataTypeController() {
 }
 
 void AppDataTypeController::Start(StartCallback* start_callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
@@ -69,7 +69,7 @@ void AppDataTypeController::Start(StartCallback* start_callback) {
 }
 
 void AppDataTypeController::Stop() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
@@ -87,7 +87,7 @@ void AppDataTypeController::Stop() {
 void AppDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_COUNTS("Sync.AppRunFailures", 1);
   sync_service_->OnUnrecoverableError(from_here, message);
 }

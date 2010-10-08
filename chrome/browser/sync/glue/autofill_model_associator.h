@@ -58,7 +58,7 @@ class AutofillModelAssociator
    public:
     explicit DoOptimisticRefreshTask(PersonalDataManager* pdm) : pdm_(pdm) {}
     virtual void Run() {
-      DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
       pdm_->Refresh();
     }
    private:

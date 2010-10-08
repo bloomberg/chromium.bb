@@ -22,8 +22,8 @@ class DatabaseModelWorkerTest : public testing::Test {
  public:
   DatabaseModelWorkerTest() :
       did_do_work_(false),
-      db_thread_(ChromeThread::DB),
-      io_thread_(ChromeThread::IO, &io_loop_),
+      db_thread_(BrowserThread::DB),
+      io_thread_(BrowserThread::IO, &io_loop_),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
 
   bool did_do_work() { return did_do_work_; }
@@ -45,10 +45,10 @@ class DatabaseModelWorkerTest : public testing::Test {
 
   // This is the work that will be scheduled to be done on the DB thread.
   void DoWork() {
-    EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     timer_.Stop();  // Stop the failure timer so the test succeeds.
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, new MessageLoop::QuitTask());
     did_do_work_ = true;
   }
 
@@ -56,8 +56,8 @@ class DatabaseModelWorkerTest : public testing::Test {
   // DoWork is called first.
   void Timeout() {
     ADD_FAILURE() << "Timed out waiting for work to be done on the DB thread.";
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE, new MessageLoop::QuitTask());
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, new MessageLoop::QuitTask());
   }
 
  protected:
@@ -76,9 +76,9 @@ class DatabaseModelWorkerTest : public testing::Test {
   scoped_refptr<DatabaseModelWorker> worker_;
   OneShotTimer<DatabaseModelWorkerTest> timer_;
 
-  ChromeThread db_thread_;
+  BrowserThread db_thread_;
   MessageLoopForIO io_loop_;
-  ChromeThread io_thread_;
+  BrowserThread io_thread_;
 
   ScopedRunnableMethodFactory<DatabaseModelWorkerTest> method_factory_;
 };

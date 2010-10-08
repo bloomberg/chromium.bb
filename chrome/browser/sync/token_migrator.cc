@@ -26,13 +26,13 @@ TokenMigrator::~TokenMigrator() {
 }
 
 void TokenMigrator::TryMigration() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       NewRunnableMethod(this, &TokenMigrator::LoadTokens));
 }
 
 void TokenMigrator::LoadTokens() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   scoped_ptr<UserSettings> user_settings(new UserSettings());
   FilePath settings_db_file =
       database_location_.Append(FilePath(kBookmarkSyncUserSettingsDatabase));
@@ -43,11 +43,11 @@ void TokenMigrator::LoadTokens() {
                                                  &username_, &token_))
     return;
 
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &TokenMigrator::PostTokensBack));
 }
 
 void TokenMigrator::PostTokensBack() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   service_->LoadMigratedCredentials(username_, token_);
 }

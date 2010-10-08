@@ -44,7 +44,7 @@ class ExtensionsActivityMonitor : public NotificationObserver {
   typedef std::map<std::string, Record> Records;
 
   // Creates an ExtensionsActivityMonitor to monitor extensions activities on
-  // ChromeThread::UI.
+  // BrowserThread::UI.
   ExtensionsActivityMonitor();
   ~ExtensionsActivityMonitor();
 

@@ -923,12 +923,12 @@ class SyncManager::SyncInternal
         notification_pending_(false),
         initialized_(false),
         ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   ~SyncInternal() {
     DCHECK(!core_message_loop_);
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   bool Init(const FilePath& database_location,

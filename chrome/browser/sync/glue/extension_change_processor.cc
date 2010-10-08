@@ -27,12 +27,12 @@ ExtensionChangeProcessor::ExtensionChangeProcessor(
     : ChangeProcessor(error_handler),
       traits_(traits),
       profile_(NULL) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(error_handler);
 }
 
 ExtensionChangeProcessor::~ExtensionChangeProcessor() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 // TODO(akalin): We need to make sure events we receive from either
@@ -42,7 +42,7 @@ ExtensionChangeProcessor::~ExtensionChangeProcessor() {
 void ExtensionChangeProcessor::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(running());
   DCHECK(profile_);
   if ((type != NotificationType::EXTENSION_INSTALLED) &&
@@ -92,7 +92,7 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
     const sync_api::BaseTransaction* trans,
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!running()) {
     return;
   }
@@ -147,20 +147,20 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
 }
 
 void ExtensionChangeProcessor::StartImpl(Profile* profile) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile);
   profile_ = profile;
   StartObserving();
 }
 
 void ExtensionChangeProcessor::StopImpl() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   StopObserving();
   profile_ = NULL;
 }
 
 void ExtensionChangeProcessor::StartObserving() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_INSTALLED,
@@ -187,7 +187,7 @@ void ExtensionChangeProcessor::StartObserving() {
 }
 
 void ExtensionChangeProcessor::StopObserving() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
   LOG(INFO) << "Unobserving all notifications";
   notification_registrar_.RemoveAll();

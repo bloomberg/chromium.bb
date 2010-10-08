@@ -24,7 +24,7 @@ class RegistrationTask : public Task {
   virtual ~RegistrationTask() {}
 
   virtual void Run() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // It would be nice if we could specify a Source for each specific function
     // we wanted to observe, but the actual function objects are allocated on
@@ -43,8 +43,8 @@ class RegistrationTask : public Task {
 }  // namespace
 
 ExtensionsActivityMonitor::ExtensionsActivityMonitor() {
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         new RegistrationTask(this, &registrar_));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          new RegistrationTask(this, &registrar_));
 }
 
 ExtensionsActivityMonitor::~ExtensionsActivityMonitor() {
@@ -55,7 +55,7 @@ ExtensionsActivityMonitor::~ExtensionsActivityMonitor() {
   // isn't something a client of this class can control; it happens implicitly
   // by not having a running UI thread.
   if (!registrar_.IsEmpty()) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // The registrar calls RemoveAll in its dtor (which would happen in a
     // moment but explicitly call this so it is clear why we need to be on the
@@ -82,7 +82,7 @@ void ExtensionsActivityMonitor::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   AutoLock lock(records_lock_);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const Extension* extension = Source<const Extension>(source).ptr();
   const BookmarksFunction* f = Details<const BookmarksFunction>(details).ptr();
   if (f->name() == "bookmarks.update" ||

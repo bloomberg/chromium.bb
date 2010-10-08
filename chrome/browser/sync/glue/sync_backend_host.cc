@@ -383,7 +383,7 @@ void SyncBackendHost::Core::NotifyPassphraseAccepted(
 }
 
 void SyncBackendHost::Core::NotifyUpdatedToken(const std::string& token) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TokenAvailableDetails details(GaiaConstants::kSyncService, token);
   NotificationService::current()->Notify(
       NotificationType::TOKEN_UPDATED,

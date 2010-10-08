@@ -27,7 +27,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
     return context_;
   }
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
-    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
 
  private:
@@ -41,7 +41,7 @@ class HttpBridgeTest : public testing::Test {
   HttpBridgeTest()
       : test_server_(net::TestServer::TYPE_HTTP, FilePath(kDocRoot)),
         fake_default_request_context_getter_(NULL),
-        io_thread_(ChromeThread::IO) {
+        io_thread_(BrowserThread::IO) {
   }
 
   virtual void SetUp() {
@@ -97,7 +97,7 @@ class HttpBridgeTest : public testing::Test {
   TestURLRequestContextGetter* fake_default_request_context_getter_;
 
   // Separate thread for IO used by the HttpBridge.
-  ChromeThread io_thread_;
+  BrowserThread io_thread_;
   MessageLoop loop_;
 };
 
@@ -146,8 +146,8 @@ class ShuntedHttpBridge : public HttpBridge {
 TEST_F(HttpBridgeTest, TestUsesSameHttpNetworkSession) {
   // Run this test on the IO thread because we can only call
   // URLRequestContextGetter::GetURLRequestContext on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&HttpBridgeTest::TestSameHttpNetworkSession,
                           MessageLoop::current(), this));
   MessageLoop::current()->Run();

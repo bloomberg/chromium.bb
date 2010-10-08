@@ -70,7 +70,7 @@ using testing::SetArgumentPointee;
 using webkit_glue::PasswordForm;
 
 ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   PasswordModelAssociator* model_associator =
       new PasswordModelAssociator(service, ps);
   PasswordChangeProcessor* change_processor =
@@ -104,7 +104,7 @@ class MockPasswordStore : public PasswordStore {
 class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
  protected:
   ProfileSyncServicePasswordTest()
-      : db_thread_(ChromeThread::DB) {
+      : db_thread_(BrowserThread::DB) {
   }
 
   virtual void SetUp() {
@@ -263,7 +263,7 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
 
   friend class AddPasswordEntriesTask;
 
-  ChromeThread db_thread_;
+  BrowserThread db_thread_;
   scoped_refptr<ThreadNotificationService> notification_service_;
   NotificationObserverMock observer_;
   ProfileMock profile_;

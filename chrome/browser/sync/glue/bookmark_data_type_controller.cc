@@ -27,18 +27,18 @@ BookmarkDataTypeController::BookmarkDataTypeController(
       profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
 }
 
 BookmarkDataTypeController::~BookmarkDataTypeController() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void BookmarkDataTypeController::Start(StartCallback* start_callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
@@ -68,7 +68,7 @@ void BookmarkDataTypeController::Start(StartCallback* start_callback) {
 }
 
 void BookmarkDataTypeController::Stop() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If Stop() is called while Start() is waiting for the bookmark
   // model to load, abort the start.
   if (state_ == MODEL_STARTING)
@@ -97,14 +97,14 @@ void BookmarkDataTypeController::OnUnrecoverableError(
 void BookmarkDataTypeController::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(NotificationType::BOOKMARK_MODEL_LOADED, type.value);
   registrar_.RemoveAll();
   Associate();
 }
 
 void BookmarkDataTypeController::Associate() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state_, MODEL_STARTING);
   state_ = ASSOCIATING;
 
@@ -134,13 +134,13 @@ void BookmarkDataTypeController::Associate() {
 }
 
 void BookmarkDataTypeController::FinishStart(StartResult result) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   start_callback_->Run(result);
   start_callback_.reset();
 }
 
 void BookmarkDataTypeController::StartFailed(StartResult result) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   model_associator_.reset();
   change_processor_.reset();
   state_ = NOT_RUNNING;

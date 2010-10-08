@@ -52,19 +52,19 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
       profile_(profile),
       sync_service_(sync_service),
       state_(NOT_RUNNING) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_sync_factory);
   DCHECK(profile);
   DCHECK(sync_service);
 }
 
 TypedUrlDataTypeController::~TypedUrlDataTypeController() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void TypedUrlDataTypeController::Start(StartCallback* start_callback) {
   LOG(INFO) << "Starting typed_url data controller.";
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING || start_callback_.get()) {
     start_callback->Run(BUSY);
@@ -101,7 +101,7 @@ void TypedUrlDataTypeController::Observe(NotificationType type,
 
 void TypedUrlDataTypeController::Stop() {
   LOG(INFO) << "Stopping typed_url data type controller.";
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
@@ -149,7 +149,7 @@ void TypedUrlDataTypeController::StartDone(
     DataTypeController::StartResult result,
     DataTypeController::State new_state) {
   LOG(INFO) << "TypedUrl data type controller StartDone called.";
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                          NewRunnableMethod(
                              this,
                              &TypedUrlDataTypeController::StartDoneImpl,
@@ -161,7 +161,7 @@ void TypedUrlDataTypeController::StartDoneImpl(
     DataTypeController::StartResult result,
     DataTypeController::State new_state) {
   LOG(INFO) << "TypedUrl data type controller StartDoneImpl called.";
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   set_state(new_state);
   start_callback_->Run(result);
   start_callback_.reset();
@@ -191,8 +191,8 @@ void TypedUrlDataTypeController::StartFailed(StartResult result) {
 void TypedUrlDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
-  ChromeThread::PostTask(
-    ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+    BrowserThread::UI, FROM_HERE,
     NewRunnableMethod(this,
                       &TypedUrlDataTypeController::OnUnrecoverableErrorImpl,
                       from_here, message));
@@ -201,7 +201,7 @@ void TypedUrlDataTypeController::OnUnrecoverableError(
 void TypedUrlDataTypeController::OnUnrecoverableErrorImpl(
   const tracked_objects::Location& from_here,
   const std::string& message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_COUNTS("Sync.TypedUrlRunFailures", 1);
   sync_service_->OnUnrecoverableError(from_here, message);
 }

@@ -99,7 +99,7 @@ class TypedUrlDataTypeController : public DataTypeController,
                                 const std::string& message);
 
   void set_state(State state) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     state_ = state;
   }
 

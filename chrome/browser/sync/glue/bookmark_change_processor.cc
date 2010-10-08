@@ -26,13 +26,13 @@ BookmarkChangeProcessor::BookmarkChangeProcessor(
     : ChangeProcessor(error_handler),
       bookmark_model_(NULL),
       model_associator_(model_associator) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(model_associator);
   DCHECK(error_handler);
 }
 
 void BookmarkChangeProcessor::StartImpl(Profile* profile) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!bookmark_model_);
   bookmark_model_ = profile->GetBookmarkModel();
   DCHECK(bookmark_model_->IsLoaded());
@@ -40,7 +40,7 @@ void BookmarkChangeProcessor::StartImpl(Profile* profile) {
 }
 
 void BookmarkChangeProcessor::StopImpl() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(bookmark_model_);
   bookmark_model_->RemoveObserver(this);
   bookmark_model_ = NULL;
@@ -351,7 +351,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     int change_count) {
   if (!running())
     return;
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // A note about ordering.  Sync backend is responsible for ordering the change
   // records in the following order:
   //

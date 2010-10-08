@@ -58,7 +58,7 @@ class AutofillDataTypeController : public DataTypeController,
   }
 
   virtual State state() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return state_;
   }
 
@@ -88,7 +88,7 @@ class AutofillDataTypeController : public DataTypeController,
   void ContinueStartAfterPersonalDataLoaded();
 
   void set_state(State state) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     state_ = state;
   }
 

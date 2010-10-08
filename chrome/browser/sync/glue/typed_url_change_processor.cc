@@ -29,7 +29,7 @@ TypedUrlChangeProcessor::TypedUrlChangeProcessor(
   DCHECK(model_associator);
   DCHECK(history_backend);
   DCHECK(error_handler);
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.
   if (!NotificationService::current())
@@ -319,7 +319,7 @@ void TypedUrlChangeProcessor::StartImpl(Profile* profile) {
 }
 
 void TypedUrlChangeProcessor::StopImpl() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observing_ = false;
 }
 

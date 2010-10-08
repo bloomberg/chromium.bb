@@ -109,7 +109,7 @@ class ProfileSyncServiceTestHelper {
 class AbstractProfileSyncServiceTest : public testing::Test {
  public:
   AbstractProfileSyncServiceTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   bool CreateRoot(ModelType model_type) {
     return ProfileSyncServiceTestHelper::CreateRoot(model_type,
@@ -119,7 +119,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
  protected:
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   ProfileSyncFactoryMock factory_;
   TokenService token_service_;
   scoped_ptr<TestProfileSyncService> service_;

@@ -201,8 +201,8 @@ SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
       parent_window_(NULL) {
   // Add our network layer data source for 'cloudy' URLs.
   SyncResourcesSource* sync_source = new SyncResourcesSource();
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(sync_source)));

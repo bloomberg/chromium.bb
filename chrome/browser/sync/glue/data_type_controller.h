@@ -20,7 +20,7 @@ namespace browser_sync {
 // need to run model associator or change processor on other threads.
 class DataTypeController
     : public base::RefCountedThreadSafe<DataTypeController,
-                                        ChromeThread::DeleteOnUIThread>,
+                                        BrowserThread::DeleteOnUIThread>,
       public UnrecoverableErrorHandler {
  public:
   enum State {

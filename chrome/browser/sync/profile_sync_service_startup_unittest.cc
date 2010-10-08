@@ -45,7 +45,7 @@ ACTION_P(InvokeCallback, callback_result) {
 class ProfileSyncServiceStartupTest : public testing::Test {
  public:
   ProfileSyncServiceStartupTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual ~ProfileSyncServiceStartupTest() {
     // The PSS has some deletes that are scheduled on the main thread
@@ -76,7 +76,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   TestingProfile profile_;
   ProfileSyncFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> service_;

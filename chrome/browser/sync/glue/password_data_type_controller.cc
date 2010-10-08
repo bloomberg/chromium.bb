@@ -34,7 +34,7 @@ PasswordDataTypeController::~PasswordDataTypeController() {
 }
 
 void PasswordDataTypeController::Start(StartCallback* start_callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
@@ -58,7 +58,7 @@ void PasswordDataTypeController::Start(StartCallback* start_callback) {
 }
 
 void PasswordDataTypeController::Stop() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
@@ -105,18 +105,18 @@ void PasswordDataTypeController::StartImpl() {
 void PasswordDataTypeController::StartDone(
     DataTypeController::StartResult result,
     DataTypeController::State new_state) {
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableMethod(
-                             this,
-                             &PasswordDataTypeController::StartDoneImpl,
-                             result,
-                             new_state));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(
+                              this,
+                              &PasswordDataTypeController::StartDoneImpl,
+                              result,
+                              new_state));
 }
 
 void PasswordDataTypeController::StartDoneImpl(
     DataTypeController::StartResult result,
     DataTypeController::State new_state) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   set_state(new_state);
   start_callback_->Run(result);
   start_callback_.reset();
@@ -137,8 +137,8 @@ void PasswordDataTypeController::StartFailed(StartResult result) {
 
 void PasswordDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &PasswordDataTypeController::OnUnrecoverableErrorImpl,
                         from_here, message));
@@ -147,7 +147,7 @@ void PasswordDataTypeController::OnUnrecoverableError(
 void PasswordDataTypeController::OnUnrecoverableErrorImpl(
     const tracked_objects::Location& from_here,
     const std::string& message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   sync_service_->OnUnrecoverableError(from_here, message);
 }
 

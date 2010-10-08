@@ -32,7 +32,7 @@ ThemeDataTypeController::~ThemeDataTypeController() {
 }
 
 void ThemeDataTypeController::Start(StartCallback* start_callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
     start_callback->Run(BUSY);
@@ -70,7 +70,7 @@ void ThemeDataTypeController::Start(StartCallback* start_callback) {
 }
 
 void ThemeDataTypeController::Stop() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (change_processor_ != NULL)
     sync_service_->DeactivateDataType(this, change_processor_.get());
@@ -88,7 +88,7 @@ void ThemeDataTypeController::Stop() {
 void ThemeDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UMA_HISTOGRAM_COUNTS("Sync.ThemeRunFailures", 1);
   sync_service_->OnUnrecoverableError(from_here, message);
 }

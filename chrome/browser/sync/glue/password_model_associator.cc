@@ -31,9 +31,9 @@ PasswordModelAssociator::PasswordModelAssociator(
   DCHECK(sync_service_);
   DCHECK(password_store_);
 #if defined(OS_MACOSX)
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 #else
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 #endif
 }
 
@@ -192,7 +192,7 @@ bool PasswordModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 }
 
 void PasswordModelAssociator::AbortAssociation() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   AutoLock lock(abort_association_pending_lock_);
   abort_association_pending_ = true;
 }

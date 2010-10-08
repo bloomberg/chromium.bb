@@ -77,7 +77,7 @@ class BookmarkAPIEventGenerator {
     extension->InitFromValue(input, false, &error);
     bookmarks_function->set_name(T::function_name());
     base::WaitableEvent done_event(false, false);
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         new BookmarkAPIEventTask<T>(bookmarks_function, extension,
                                     repeats, &done_event));
     done_event.Wait();
@@ -107,7 +107,7 @@ class DoUIThreadSetupTask : public Task {
 class ExtensionsActivityMonitorTest : public testing::Test {
  public:
   ExtensionsActivityMonitorTest() : service_(NULL),
-      ui_thread_(ChromeThread::UI) { }
+      ui_thread_(BrowserThread::UI) { }
   virtual ~ExtensionsActivityMonitorTest() {}
 
   virtual void SetUp() {
@@ -139,7 +139,7 @@ class ExtensionsActivityMonitorTest : public testing::Test {
   }
  private:
   NotificationService* service_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 };
 
 TEST_F(ExtensionsActivityMonitorTest, Basic) {

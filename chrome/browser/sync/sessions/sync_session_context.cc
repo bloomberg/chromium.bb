@@ -26,7 +26,7 @@ SyncSessionContext::SyncSessionContext(
 
 SyncSessionContext::~SyncSessionContext() {
   // In unittests, there may be no UI thread, so the above will fail.
-  if (!ChromeThread::DeleteSoon(ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
                                 extensions_activity_monitor_)) {
     delete extensions_activity_monitor_;
   }

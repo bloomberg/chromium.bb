@@ -84,8 +84,8 @@ class SignalEventTask : public Task {
 class AutofillDataTypeControllerTest : public testing::Test {
  public:
   AutofillDataTypeControllerTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        db_thread_(ChromeThread::DB) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB) {}
 
   virtual void SetUp() {
     db_thread_.Start();
@@ -138,15 +138,15 @@ class AutofillDataTypeControllerTest : public testing::Test {
     // Run a task through the DB message loop to ensure that
     // everything before it has been run.
     WaitableEvent done_event(false, false);
-    ChromeThread::PostTask(ChromeThread::DB,
-                           FROM_HERE,
-                           new SignalEventTask(&done_event));
+    BrowserThread::PostTask(BrowserThread::DB,
+                            FROM_HERE,
+                            new SignalEventTask(&done_event));
     done_event.Wait();
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread db_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread db_thread_;
   scoped_refptr<AutofillDataTypeController> autofill_dtc_;
   ProfileSyncFactoryMock profile_sync_factory_;
   ProfileMock profile_;

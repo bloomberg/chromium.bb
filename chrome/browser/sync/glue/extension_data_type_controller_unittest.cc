@@ -34,7 +34,7 @@ class StartCallback {
 class ExtensionDataTypeControllerTest : public testing::Test {
  public:
   ExtensionDataTypeControllerTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
     profile_sync_factory_.reset(new ProfileSyncFactoryMock());
@@ -70,7 +70,7 @@ class ExtensionDataTypeControllerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   scoped_refptr<ExtensionDataTypeController> extension_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   ProfileMock profile_;

@@ -45,7 +45,7 @@ ACTION_P(InvokeCallback, callback_result) {
 class DataTypeManagerImplTest : public testing::Test {
  public:
   DataTypeManagerImplTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual ~DataTypeManagerImplTest() {
   }
@@ -127,7 +127,7 @@ class DataTypeManagerImplTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   DataTypeController::TypeMap controllers_;
   SyncBackendHostMock backend_;
   NotificationObserverMock observer_;
