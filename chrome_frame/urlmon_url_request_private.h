@@ -125,6 +125,7 @@ class UrlmonUrlRequest
 
   HRESULT StartAsyncDownload();
   void NotifyDelegateAndDie();
+  void TerminateTransaction();
   static net::Error HresultToNetError(HRESULT hr);
 
  private:
@@ -241,6 +242,13 @@ class UrlmonUrlRequest
   bool pending_;
   scoped_ptr<TerminateBindCallback> terminate_bind_callback_;
   std::string response_headers_;
+  // Set to true when Chrome issues a read request for the URL.
+  bool read_received_from_chrome_;
+  // Set to true if the Urlmon transaction object needs to be cleaned up
+  // when this object is destroyed. Happens if we return
+  // INET_E_TERMINATE_BIND from OnDataAvailable in the last data notification.
+  bool cleanup_transaction_;
+
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);
 };
 
