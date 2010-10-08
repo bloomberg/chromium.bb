@@ -31,12 +31,13 @@ int GetTitleWidth(gfx::Font* font, std::wstring title) {
 
 }  // namespace
 
-class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate {
+class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
+                                      public MenuGtk::Delegate {
  public:
   explicit ContextMenuController(TabGtk* tab)
       : tab_(tab),
         model_(this, tab->delegate()->IsTabPinned(tab)) {
-    menu_.reset(new MenuGtk(NULL, &model_));
+    menu_.reset(new MenuGtk(this, &model_));
   }
 
   virtual ~ContextMenuController() {}
@@ -91,11 +92,44 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate {
       *accelerator = *accelerator_gtk;
     return !!accelerator_gtk;
   }
+
   virtual void ExecuteCommand(int command_id) {
     if (!tab_)
       return;
     tab_->delegate()->ExecuteCommandForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id), tab_);
+  }
+
+  GtkWidget* GetImageForCommandId(int command_id) const {
+    int browser_cmd_id;
+    switch (command_id) {
+      case TabStripModel::CommandNewTab:
+        browser_cmd_id = IDC_NEW_TAB;
+        break;
+
+      case TabStripModel::CommandReload:
+        browser_cmd_id = IDC_RELOAD;
+        break;
+
+      case TabStripModel::CommandCloseTab:
+        browser_cmd_id = IDC_CLOSE_TAB;
+        break;
+
+      case TabStripModel::CommandRestoreTab:
+        browser_cmd_id = IDC_RESTORE_TAB;
+        break;
+
+      case TabStripModel::CommandDuplicate:
+      case TabStripModel::CommandCloseOtherTabs:
+      case TabStripModel::CommandCloseTabsToRight:
+      case TabStripModel::CommandTogglePinned:
+      case TabStripModel::CommandBookmarkAllTabs:
+      case TabStripModel::CommandUseVerticalTabs:
+      default:
+        return NULL;
+    }
+
+    return MenuGtk::Delegate::GetImageForCommandId(browser_cmd_id);
   }
 
   // The context menu.

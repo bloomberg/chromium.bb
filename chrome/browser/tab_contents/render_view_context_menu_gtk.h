@@ -27,6 +27,7 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
 
   // Menu::Delegate implementation ---------------------------------------------
   virtual void StoppedShowing();
+  virtual bool AlwaysShowIconForCmd(int command_id) const;
 
  protected:
   // RenderViewContextMenu implementation --------------------------------------

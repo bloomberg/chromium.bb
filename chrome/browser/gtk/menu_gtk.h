@@ -43,10 +43,13 @@ class MenuGtk {
 
     // Return true if we should override the "gtk-menu-images" system setting
     // when showing image menu items for this menu.
-    virtual bool AlwaysShowImages() const { return false; }
+    virtual bool AlwaysShowIconForCmd(int command_id) const { return false; }
 
     // Returns a tinted image used in button in a menu.
     virtual GtkIconSet* GetIconSetForId(int idr) { return NULL; }
+
+    // Returns an icon for the menu item, if available.
+    virtual GtkWidget* GetImageForCommandId(int command_id) const;
   };
 
   MenuGtk(MenuGtk::Delegate* delegate, menus::MenuModel* model);
@@ -124,6 +127,12 @@ class MenuGtk {
   // Builds a GtkImageMenuItem.
   GtkWidget* BuildMenuItemWithImage(const std::string& label,
                                     const SkBitmap& icon);
+
+  GtkWidget* BuildMenuItemWithImage(const std::string& label,
+                                    GtkWidget *image);
+
+  GtkWidget* BuildMenuItemWithLabel(const std::string& label,
+                                    int command_id);
 
   // A function that creates a GtkMenu from |model_|.
   void BuildMenuFromModel();

@@ -15,6 +15,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/gtk/gtk_custom_menu.h"
 #include "chrome/browser/gtk/gtk_custom_menu_item.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -116,6 +117,138 @@ int CalculateMenuYPosition(const GdkRectangle* screen_rect,
 
 }  // namespace
 
+GtkWidget* MenuGtk::Delegate::GetImageForCommandId(int command_id) const {
+  const char *stock;
+  switch (command_id) {
+    case IDC_NEW_TAB:
+      stock = GTK_STOCK_NEW;
+      break;
+
+    case IDC_CLOSE_TAB:
+      stock = GTK_STOCK_CLOSE;
+      break;
+
+    case IDC_CONTENT_CONTEXT_SAVEIMAGEAS:
+    case IDC_CONTENT_CONTEXT_SAVEAVAS:
+    case IDC_CONTENT_CONTEXT_SAVELINKAS:
+    case IDC_SAVE_PAGE:
+      stock = GTK_STOCK_SAVE;
+      break;
+
+    case IDC_COPY:
+    case IDC_COPY_URL:
+    case IDC_CONTENT_CONTEXT_COPYIMAGELOCATION:
+    case IDC_CONTENT_CONTEXT_COPYLINKLOCATION:
+    case IDC_CONTENT_CONTEXT_COPYAVLOCATION:
+    case IDC_CONTENT_CONTEXT_COPYEMAILADDRESS:
+    case IDC_CONTENT_CONTEXT_COPY:
+      stock = GTK_STOCK_COPY;
+      break;
+
+    case IDC_CUT:
+    case IDC_CONTENT_CONTEXT_CUT:
+      stock = GTK_STOCK_CUT;
+      break;
+
+    case IDC_PASTE:
+    case IDC_CONTENT_CONTEXT_PASTE:
+      stock = GTK_STOCK_PASTE;
+      break;
+
+    case IDC_CONTENT_CONTEXT_DELETE:
+      stock = GTK_STOCK_DELETE;
+      break;
+
+    case IDC_CONTENT_CONTEXT_UNDO:
+      stock = GTK_STOCK_UNDO;
+      break;
+
+    case IDC_CONTENT_CONTEXT_REDO:
+      stock = GTK_STOCK_REDO;
+      break;
+
+    case IDC_SEARCH:
+    case IDC_FIND:
+    case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
+      stock = GTK_STOCK_FIND;
+      break;
+
+    case IDC_CONTENT_CONTEXT_SELECTALL:
+      stock = GTK_STOCK_SELECT_ALL;
+      break;
+
+    case IDC_CLEAR_BROWSING_DATA:
+      stock = GTK_STOCK_CLEAR;
+      break;
+
+    case IDC_BACK:
+      stock = GTK_STOCK_GO_BACK;
+      break;
+
+    case IDC_RELOAD:
+      stock = GTK_STOCK_REFRESH;
+      break;
+
+    case IDC_FORWARD:
+      stock = GTK_STOCK_GO_FORWARD;
+      break;
+
+    case IDC_PRINT:
+      stock = GTK_STOCK_PRINT;
+      break;
+
+    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
+      stock = GTK_STOCK_INFO;
+      break;
+
+    case IDC_SPELLCHECK_MENU:
+      stock = GTK_STOCK_SPELL_CHECK;
+      break;
+
+    case IDC_RESTORE_TAB:
+      stock = GTK_STOCK_UNDELETE;
+      break;
+
+    case IDC_HOME:
+      stock = GTK_STOCK_HOME;
+      break;
+
+    case IDC_STOP:
+      stock = GTK_STOCK_STOP;
+      break;
+
+    case IDC_ABOUT:
+      stock = GTK_STOCK_ABOUT;
+      break;
+
+    case IDC_EXIT:
+      stock = GTK_STOCK_QUIT;
+      break;
+
+    case IDC_HELP_PAGE:
+      stock = GTK_STOCK_HELP;
+      break;
+
+    case IDC_OPTIONS:
+      stock = GTK_STOCK_PREFERENCES;
+      break;
+
+    case IDC_CONTENT_CONTEXT_GOTOURL:
+      stock = GTK_STOCK_JUMP_TO;
+      break;
+
+    case IDC_DEV_TOOLS_INSPECT:
+    case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
+      stock = GTK_STOCK_PROPERTIES;
+      break;
+
+    default:
+      stock = NULL;
+  }
+
+  return stock ? gtk_image_new_from_stock(stock, GTK_ICON_SIZE_MENU) : NULL;
+}
+
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  menus::MenuModel* model)
     : delegate_(delegate),
@@ -149,8 +282,7 @@ void MenuGtk::ConnectSignalHandlers() {
 GtkWidget* MenuGtk::AppendMenuItemWithLabel(int command_id,
                                             const std::string& label) {
   std::string converted_label = ConvertAcceleratorsFromWindowsStyle(label);
-  GtkWidget* menu_item =
-      gtk_menu_item_new_with_mnemonic(converted_label.c_str());
+  GtkWidget* menu_item = BuildMenuItemWithLabel(label, command_id);
   return AppendMenuItem(command_id, menu_item);
 }
 
@@ -178,6 +310,9 @@ GtkWidget* MenuGtk::AppendSeparator() {
 }
 
 GtkWidget* MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
+  if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id))
+    gtk_util::SetAlwaysShowImage(menu_item);
+
   return AppendMenuItemToMenu(command_id, NULL, menu_item, menu_, true);
 }
 
@@ -253,18 +388,28 @@ void MenuGtk::UpdateMenu() {
 }
 
 GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
-                                           const SkBitmap& icon) {
+                                  GtkWidget *image) {
   GtkWidget* menu_item =
       gtk_image_menu_item_new_with_mnemonic(label.c_str());
+  gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item), image);
+  return menu_item;
+}
 
+GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
+                                           const SkBitmap& icon) {
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
-  gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+  GtkWidget *menu_item = BuildMenuItemWithImage(label,
                                 gtk_image_new_from_pixbuf(pixbuf));
   g_object_unref(pixbuf);
-  if (delegate_ && delegate_->AlwaysShowImages())
-    gtk_util::SetAlwaysShowImage(menu_item);
-
   return menu_item;
+}
+
+GtkWidget* MenuGtk::BuildMenuItemWithLabel(const std::string& label,
+                                           int command_id) {
+  GtkWidget *img =
+    delegate_ ? delegate_->GetImageForCommandId(command_id) : NULL;
+  return img ? BuildMenuItemWithImage(label, img) :
+    gtk_menu_item_new_with_mnemonic(label.c_str());
 }
 
 void MenuGtk::BuildMenuFromModel() {
@@ -311,12 +456,16 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
         break;
       }
       case menus::MenuModel::TYPE_SUBMENU:
-      case menus::MenuModel::TYPE_COMMAND:
+      case menus::MenuModel::TYPE_COMMAND: {
+        int command_id = model->GetCommandIdAt(i);
         if (model->GetIconAt(i, &icon))
           menu_item = BuildMenuItemWithImage(label, icon);
         else
-          menu_item = gtk_menu_item_new_with_mnemonic(label.c_str());
+          menu_item = BuildMenuItemWithLabel(label, command_id);
+        if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id))
+            gtk_util::SetAlwaysShowImage(menu_item);
         break;
+      }
 
       default:
         NOTREACHED();
