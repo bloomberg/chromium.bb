@@ -159,6 +159,8 @@ PluginService::PluginService()
   registrar_.Add(this, NotificationType::APP_ACTIVATED,
                  NotificationService::AllSources());
 #endif
+  registrar_.Add(this, NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
+                 NotificationService::AllSources());
 }
 
 PluginService::~PluginService() {
@@ -335,6 +337,10 @@ void PluginService::Observe(NotificationType type,
     }
 #endif
 
+    case NotificationType::PLUGIN_ENABLE_STATUS_CHANGED: {
+      PurgePluginListCache(false);
+      break;
+    }
     default:
       DCHECK(false);
   }
