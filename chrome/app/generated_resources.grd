@@ -8899,7 +8899,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         System security setting
       </message>
       <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION" desc="Dialog box text">
-        Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS.\n\nBelow is the randomly generated TPM password that has been assigned to your computer:
+        Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS.
+      </message>
+      <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY" desc="Dialog box text">
+        Below is the randomly generated TPM password that has been assigned to your computer:
+      </message>
+      <message name="IDS_EULA_SYSTEM_SECURITY_SETTING_WAIT" desc="Dialog box text">
+       The TPM is being set up. Please be patient; this may take a few minutes.
       </message>
       <message name="IDS_EULA_TPM_BUSY" desc="Message bubble text">
         TPM is not ready yet, try later.

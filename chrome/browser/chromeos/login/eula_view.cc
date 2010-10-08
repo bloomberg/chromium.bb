@@ -122,6 +122,13 @@ void TpmInfoView::Init() {
   layout->AddView(label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
+  layout->StartRow(0, 0);
+  label = new views::Label(
+      l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY));
+  label->SetMultiLine(true);
+  layout->AddView(label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
