@@ -22,6 +22,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/window_sizer.h"
@@ -571,12 +572,6 @@ bool CreateTabFunction::RunImpl() {
   if (args->HasKey(keys::kSelectedKey))
     EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kSelectedKey,
                                                  &selected));
-  // If index is specified, honor the value, but keep it bound to
-  // 0 <= index <= tab_strip->count()
-  int index = -1;
-  if (args->HasKey(keys::kIndexKey))
-    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kIndexKey,
-                                                 &index));
 
   // We can't load extension URLs into incognito windows. Special case to
   // fall back to a normal window.
@@ -591,15 +586,15 @@ bool CreateTabFunction::RunImpl() {
     }
   }
 
+  // If index is specified, honor the value, but keep it bound to
+  // -1 <= index <= tab_strip->count() where -1 invokes the default behavior.
+  int index = -1;
+  if (args->HasKey(keys::kIndexKey))
+    EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kIndexKey, &index));
+
   TabStripModel* tab_strip = browser->tabstrip_model();
 
-  if (index < 0) {
-    // Default insert behavior.
-    index = -1;
-  }
-  if (index > tab_strip->count()) {
-    index = tab_strip->count();
-  }
+  index = std::min(std::max(index, -1), tab_strip->count());
 
   int add_types = selected ? TabStripModel::ADD_SELECTED :
                              TabStripModel::ADD_NONE;
@@ -611,7 +606,7 @@ bool CreateTabFunction::RunImpl() {
   index = browser->tabstrip_model()->GetIndexOfTabContents(contents);
 
   if (selected)
-    contents->Focus();
+    contents->view()->SetInitialFocus();
 
   // Return data about the newly created tab.
   if (has_callback())
