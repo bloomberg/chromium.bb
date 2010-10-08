@@ -10,17 +10,17 @@
 #include "base/task.h"
 #include "remoting/client/host_connection.h"
 #include "remoting/client/client_config.h"
+#include "remoting/client/chromoting_view.h"
 #include "remoting/protocol/messages_decoder.h"
 
 class MessageLoop;
 
 namespace remoting {
 
-class ChromotingView;
-class ClientContext;
-class InputHandler;
 class ChromotingHostMessage;
+class ClientContext;
 class InitClientMessage;
+class InputHandler;
 class RectangleUpdateDecoder;
 
 class ChromotingClient : public HostConnection::HostEventCallback {
@@ -58,17 +58,10 @@ class ChromotingClient : public HostConnection::HostEventCallback {
   virtual void OnConnectionFailed(HostConnection* conn);
 
  private:
-  enum State {
-    CREATED,
-    CONNECTED,
-    DISCONNECTED,
-    FAILED,
-  };
-
   MessageLoop* message_loop();
 
   // Convenience method for modifying the state on this object's message loop.
-  void SetState(State s);
+  void SetConnectionState(ConnectionState s);
 
   // If a message is not being processed, dispatches a single message from the
   // |received_messages_| queue.
@@ -90,7 +83,7 @@ class ChromotingClient : public HostConnection::HostEventCallback {
   // If non-NULL, this is called when the client is done.
   CancelableTask* client_done_;
 
-  State state_;
+  ConnectionState state_;
 
   // Contains all messages that have been received, but have not yet been
   // processed.

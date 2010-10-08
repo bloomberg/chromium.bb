@@ -130,9 +130,9 @@ function extractAuthToken(message) {
 }
 
 // Open a chromoting connection in a new tab.
-function openChromotingTab(host_jid) {
+function openChromotingTab(hostName, hostJid) {
   var background = chrome.extension.getBackgroundPage();
-  background.openChromotingTab(host_jid);
+  background.openChromotingTab(hostName, hostJid);
 }
 
 // Erase the content of the specified element.
@@ -248,8 +248,8 @@ function addHostInfo(host) {
   var connect = document.createElement('input');
   connect.setAttribute('type', 'button');
   connect.setAttribute('value', 'Connect');
-  connect.setAttribute('onclick', 'openChromotingTab(\'' + host.jabberId +
-                       '\'); return false;');
+  connect.setAttribute('onclick', "openChromotingTab('" + host.hostName +
+                       "', '" + host.jabberId + "'); return false;");
   span.appendChild(connect);
   hostEntry.appendChild(span);
 

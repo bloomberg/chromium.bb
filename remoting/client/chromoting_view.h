@@ -16,6 +16,18 @@ class WaitableEvent;
 
 namespace remoting {
 
+static const uint32 kCreatedColor = 0xffccccff;
+static const uint32 kDisconnectedColor = 0xff00ccff;
+static const uint32 kFailedColor = 0xffcc00ff;
+
+// TODO(garykac): Move this into a proper class that keeps track of state.
+enum ConnectionState {
+  CREATED,
+  CONNECTED,
+  DISCONNECTED,
+  FAILED,
+};
+
 // ChromotingView defines the behavior of an object that draws a view of the
 // remote desktop. Its main function is to render the update stream onto the
 // screen.
@@ -45,6 +57,9 @@ class ChromotingView {
   // Removes a previously set solid fill.  If no fill was previous set, this
   // does nothing.
   virtual void UnsetSolidFill() = 0;
+
+  // Record the update the state of the connection, updating the UI as needed.
+  virtual void SetConnectionState(ConnectionState s) = 0;
 
   // Reposition and resize the viewport into the backing store. If the viewport
   // extends past the end of the backing store, it is filled with black.

@@ -29,6 +29,7 @@ class X11View : public ChromotingView, public FrameConsumer {
   virtual void Paint();
   virtual void SetSolidFill(uint32 color);
   virtual void UnsetSolidFill();
+  virtual void SetConnectionState(ConnectionState s);
   virtual void SetViewport(int x, int y, int width, int height);
 
   // FrameConsumer implementation.

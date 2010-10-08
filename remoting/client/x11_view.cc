@@ -133,6 +133,10 @@ void X11View::UnsetSolidFill() {
   // NOTIMPLEMENTED();
 }
 
+void X11View::SetConnectionState(ConnectionState s) {
+  // TODO(garykac): Implement.
+}
+
 void X11View::SetViewport(int x, int y, int width, int height) {
   // TODO(garykac): Implement.
   // NOTIMPLEMENTED();

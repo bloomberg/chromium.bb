@@ -12,6 +12,10 @@
 using pp::Var;
 
 namespace remoting {
+
+const char kStatusAttribute[] = "status";
+const char kQualityAttribute[] = "quality";
+
 ChromotingScriptableObject::ChromotingScriptableObject(
     ChromotingInstance* instance)
     : instance_(instance) {
@@ -23,15 +27,27 @@ ChromotingScriptableObject::~ChromotingScriptableObject() {
 void ChromotingScriptableObject::Init() {
   // Property addition order should match the interface description at the
   // top of chromoting_scriptable_object.h.
-  AddAttribute("onreadystatechange", Var());
 
-  AddAttribute("NOT_CONNECTED", Var(0));
-  AddAttribute("CONNECTED", Var(1));
+  // Connection status.
+  AddAttribute(kStatusAttribute, Var(STATUS_UNKNOWN));
+  // Connection status values.
+  AddAttribute("STATUS_UNKNOWN", Var(STATUS_UNKNOWN));
+  AddAttribute("STATUS_CONNECTING", Var(STATUS_CONNECTING));
+  AddAttribute("STATUS_INITIALIZING", Var(STATUS_INITIALIZING));
+  AddAttribute("STATUS_CONNECTED", Var(STATUS_CONNECTED));
+  AddAttribute("STATUS_CLOSED", Var(STATUS_CLOSED));
+  AddAttribute("STATUS_FAILED", Var(STATUS_FAILED));
+
+  // Connection quality.
+  AddAttribute(kQualityAttribute, Var(QUALITY_UNKNOWN));
+  AddAttribute("QUALITY_UNKNOWN", Var(QUALITY_UNKNOWN));
+  AddAttribute("QUALITY_GOOD", Var(QUALITY_GOOD));
+  AddAttribute("QUALITY_BAD", Var(QUALITY_BAD));
+
+  AddAttribute("connectionInfoUpdate", Var());
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
-
-  // TODO(ajwong): Figure out how to implement the status variable.
-  AddAttribute("status", Var("not_implemented_yet"));
+  AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
 }
 
 bool ChromotingScriptableObject::HasProperty(const Var& name, Var* exception) {
@@ -99,7 +115,7 @@ void ChromotingScriptableObject::GetAllPropertyNames(
 void ChromotingScriptableObject::SetProperty(const Var& name,
                                              const Var& value,
                                              Var* exception) {
-  // TODO(ajwong): Check if all these name.is_string() sentinels are required.
+  // TODO(ajwong): Check if all these name.is_string() sentinels are required.   120   // No externally settable properties for Chromoting.
   if (!name.is_string()) {
     *exception = Var("SetProperty expects a string for the name.");
     return;
@@ -108,7 +124,7 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
   // Only allow writing to onreadystatechange.  See top of
   // chromoting_scriptable_object.h for the object interface definition.
   std::string property_name = name.AsString();
-  if (property_name != "onstatechange") {
+  if (property_name != "connectionInfoUpdate") {
     *exception =
         Var("Cannot set property " + property_name + " on this object.");
     return;
@@ -131,6 +147,22 @@ Var ChromotingScriptableObject::Call(const Var& method_name,
   return (this->*(properties_[iter->second].method))(args, exception);
 }
 
+void ChromotingScriptableObject::SetConnectionInfo(ConnectionStatus status,
+                                                   ConnectionQuality quality) {
+  int status_index = property_names_[kStatusAttribute];
+  int quality_index = property_names_[kQualityAttribute];
+
+  if (properties_[status_index].attribute.AsInt() != status ||
+      properties_[quality_index].attribute.AsInt() != quality) {
+    // Update the connection state properties..
+    properties_[status_index].attribute = Var(status);
+    properties_[quality_index].attribute = Var(quality);
+
+    // Signal the Chromoting Tab UI to get the update connection state values.
+    SignalConnectionInfoChange();
+  }
+}
+
 void ChromotingScriptableObject::AddAttribute(const std::string& name,
                                               Var attribute) {
   property_names_[name] = properties_.size();
@@ -143,10 +175,27 @@ void ChromotingScriptableObject::AddMethod(const std::string& name,
   properties_.push_back(PropertyDescriptor(name, handler));
 }
 
+void ChromotingScriptableObject::SignalConnectionInfoChange() {
+  pp::Var exception;
+
+  // The JavaScript callback function is the 'callback' property on the
+  // 'connectionInfoUpdate' object.
+  Var cb = GetProperty(Var("connectionInfoUpdate"), &exception);
+
+  // Var() means call the object directly as a function rather than calling
+  // a method in the object.
+  cb.Call(Var(), 0, NULL, &exception);
+
+  if (!exception.is_undefined()) {
+    LOG(WARNING) << "Exception when invoking JS callback"
+                 << exception.AsString();
+  }
+}
+
 pp::Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
-                                           Var* exception) {
+                                              Var* exception) {
   if (args.size() != 3) {
-    *exception = Var("Usage: connect(username, host_jid, auth_token");
+    *exception = Var("Usage: connect(username, host_jid, auth_token)");
     return Var();
   }
 
@@ -172,6 +221,12 @@ pp::Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
 
   instance_->Connect(config);
 
+  return Var();
+}
+
+pp::Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
+                                                 Var* exception) {
+  instance_->Disconnect();
   return Var();
 }
 

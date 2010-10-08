@@ -135,6 +135,37 @@ void PepperView::UnsetSolidFill() {
   is_static_fill_ = false;
 }
 
+void PepperView::SetConnectionState(ConnectionState state) {
+  if (!instance_->CurrentlyOnPluginThread()) {
+    RunTaskOnPluginThread(
+        NewRunnableMethod(this, &PepperView::SetConnectionState, state));
+    return;
+  }
+
+  ChromotingScriptableObject* scriptable_obj = instance_->GetScriptableObject();
+  switch (state) {
+    case CREATED:
+      SetSolidFill(kCreatedColor);
+      scriptable_obj->SetConnectionInfo(STATUS_CONNECTING, QUALITY_UNKNOWN);
+      break;
+
+    case CONNECTED:
+      UnsetSolidFill();
+      scriptable_obj->SetConnectionInfo(STATUS_CONNECTED, QUALITY_UNKNOWN);
+      break;
+
+    case DISCONNECTED:
+      SetSolidFill(kDisconnectedColor);
+      scriptable_obj->SetConnectionInfo(STATUS_CLOSED, QUALITY_UNKNOWN);
+      break;
+
+    case FAILED:
+      SetSolidFill(kFailedColor);
+      scriptable_obj->SetConnectionInfo(STATUS_FAILED, QUALITY_UNKNOWN);
+      break;
+  }
+}
+
 void PepperView::SetViewport(int x, int y, int width, int height) {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewTracedMethod(this, &PepperView::SetViewport,

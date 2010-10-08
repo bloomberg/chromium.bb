@@ -41,6 +41,7 @@ class PepperView : public ChromotingView,
   virtual void Paint();
   virtual void SetSolidFill(uint32 color);
   virtual void UnsetSolidFill();
+  virtual void SetConnectionState(ConnectionState state);
   virtual void SetViewport(int x, int y, int width, int height);
 
   // FrameConsumer implementation.

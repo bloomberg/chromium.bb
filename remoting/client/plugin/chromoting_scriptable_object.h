@@ -6,25 +6,33 @@
 // The Javascript API is defined as follows.
 //
 // interface ChromotingScriptableObject {
-//   // Called when the Chromoting instance has had a state change such as
-//   // connection completed.
-//   attribute Function onreadystatechange;
 //
-//   // Constants for states, etc.
-//   const unsigned short NOT_CONNECTED = 0;
-//   const unsigned short CONNECTED = 1;
+//   // Connection status.
+//   readonly attribute unsigned short connection_status;
+
+//   // Constants for connection status.
+//   const unsigned short STATUS_UNKNOWN = 0;
+//   const unsigned short STATUS_CONNECTING = 1;
+//   const unsigned short STATUS_INITIALIZING = 2;
+//   const unsigned short STATUS_CONNECTED = 3;
+//   const unsigned short STATUS_CLOSED = 4;
+//   const unsigned short STATUS_FAILED = 5;
+//
+//   // Connection quality.
+//   readonly attribute unsigned short connection_quality;
+//   // Constants for connection quality
+//   const unsigned short QUALITY_UNKNOWN = 0;
+//   const unsigned short QUALITY_GOOD = 1;
+//   const unsigned short QUALITY_BAD = 2;
+//
+//   // JS callback function so we can signal the JS UI when the connection
+//   // status has been updated.
+//   attribute Function connectionInfoUpdate;
 //
 //   // Methods on the object.
 //   void connect(string username, string host_jid, string auth_token);
-//
-//   // Attributes.
-//   readonly attribute unsigned short status;
+//   void disconnect();
 // }
-//
-//  onreadystatechange
-//
-// Methods:
-//   Connect(username, auth_token, host_jid, onstatechange);
 
 #ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_SCRIPTABLE_OBJECT_H_
 #define REMOTING_CLIENT_PLUGIN_CHROMOTING_SCRIPTABLE_OBJECT_H_
@@ -39,6 +47,25 @@
 namespace remoting {
 
 class ChromotingInstance;
+
+extern const char kStatusAttribute[];
+
+enum ConnectionStatus {
+  STATUS_UNKNOWN = 0,
+  STATUS_CONNECTING,
+  STATUS_INITIALIZING,
+  STATUS_CONNECTED,
+  STATUS_CLOSED,
+  STATUS_FAILED,
+};
+
+extern const char kQualityAttribute[];
+
+enum ConnectionQuality {
+  QUALITY_UNKNOWN = 0,
+  QUALITY_GOOD,
+  QUALITY_BAD,
+};
 
 class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
  public:
@@ -59,6 +86,8 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
   virtual pp::Var Call(const pp::Var& method_name,
                        const std::vector<pp::Var>& args,
                        pp::Var* exception);
+
+  void SetConnectionInfo(ConnectionStatus status, ConnectionQuality quality);
 
  private:
   typedef std::map<std::string, int> PropertyNameMap;
@@ -84,10 +113,16 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
   };
 
 
+  // Routines to add new attribute, method properties.
   void AddAttribute(const std::string& name, pp::Var attribute);
   void AddMethod(const std::string& name, MethodHandler handler);
 
+  // This should be called to signal the JS code that the connection status has
+  // changed.
+  void SignalConnectionInfoChange();
+
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
+  pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
 
   PropertyNameMap property_names_;
   std::vector<PropertyDescriptor> properties_;

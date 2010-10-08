@@ -2,24 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function openChromotingTab(host_jid) {
+function openChromotingTab(hostName, hostJid) {
   var username = getCookie('username');
-  var xmpp_auth = getCookie('xmpp_auth');
-  var new_tab_url = chrome.extension.getURL("chromoting_tab.html");
+  var xmppAuth = getCookie('xmpp_auth');
+  var newTabUrl = chrome.extension.getURL("chromoting_tab.html");
   var request = {
     username: getCookie('username'),
-    xmpp_auth: getCookie('xmpp_auth'),
-    host_jid: host_jid,
+    xmppAuth: getCookie('xmpp_auth'),
+    hostName: hostName,
+    hostJid: hostJid,
   };
-  var tab_args = {
-    url: new_tab_url,
+  var tabArgs = {
+    url: newTabUrl,
   };
 
   console.log("Attempt to connect with" +
               " username='" + request.username + "'" +
-              " host_jid='" + request.host_jid + "'" +
-              " auth_token='" + request.xmpp_auth + "'");
-  chrome.tabs.create(tab_args, function(tab) {
+              " hostName='" + request.hostName + "'" +
+              " hostJid='" + request.hostJid + "'" +
+              " auth_token='" + request.xmppAuth + "'");
+  chrome.tabs.create(tabArgs, function(tab) {
       console.log("We're trying now to send to " + tab.id);
       chrome.tabs.sendRequest(
           tab.id, request, function() {

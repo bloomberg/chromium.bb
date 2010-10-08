@@ -42,6 +42,7 @@ class FakeView : public ChromotingView {
   void Paint() {}
   void SetSolidFill(uint32 color) {}
   void UnsetSolidFill() {}
+  void SetConnectionState(ConnectionState s) {}
   void SetViewport(int x, int y, int width, int height) {
     frame_width_ = width;
     frame_height_ = height;

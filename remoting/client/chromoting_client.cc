@@ -12,10 +12,6 @@
 #include "remoting/client/input_handler.h"
 #include "remoting/client/rectangle_update_decoder.h"
 
-static const uint32 kCreatedColor = 0xffccccff;
-static const uint32 kDisconnectedColor = 0xff00ccff;
-static const uint32 kFailedColor = 0xffcc00ff;
-
 namespace remoting {
 
 ChromotingClient::ChromotingClient(const ClientConfig& config,
@@ -155,51 +151,35 @@ void ChromotingClient::DispatchMessage() {
 
 void ChromotingClient::OnConnectionOpened(HostConnection* conn) {
   LOG(INFO) << "ChromotingClient::OnConnectionOpened";
-  SetState(CONNECTED);
+  SetConnectionState(CONNECTED);
 }
 
 void ChromotingClient::OnConnectionClosed(HostConnection* conn) {
   LOG(INFO) << "ChromotingClient::OnConnectionClosed";
-  SetState(DISCONNECTED);
+  SetConnectionState(DISCONNECTED);
 }
 
 void ChromotingClient::OnConnectionFailed(HostConnection* conn) {
   LOG(INFO) << "ChromotingClient::OnConnectionFailed";
-  SetState(FAILED);
+  SetConnectionState(FAILED);
 }
 
 MessageLoop* ChromotingClient::message_loop() {
   return context_->jingle_thread()->message_loop();
 }
 
-void ChromotingClient::SetState(State s) {
+void ChromotingClient::SetConnectionState(ConnectionState s) {
   // TODO(ajwong): We actually may want state to be a shared variable. Think
   // through later.
   if (message_loop() != MessageLoop::current()) {
     message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &ChromotingClient::SetState, s));
+        NewRunnableMethod(this, &ChromotingClient::SetConnectionState, s));
     return;
   }
 
   state_ = s;
-  switch (state_) {
-    case CREATED:
-      view_->SetSolidFill(kCreatedColor);
-      break;
-
-    case CONNECTED:
-      view_->UnsetSolidFill();
-      break;
-
-    case DISCONNECTED:
-      view_->SetSolidFill(kDisconnectedColor);
-      break;
-
-    case FAILED:
-      view_->SetSolidFill(kFailedColor);
-      break;
-  }
+  view_->SetConnectionState(s);
 
   Repaint();
 }

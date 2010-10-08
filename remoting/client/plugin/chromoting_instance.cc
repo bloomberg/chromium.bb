@@ -93,10 +93,23 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
 
   // Kick off the connection.
   client_->Start();
+
+  GetScriptableObject()->SetConnectionInfo(STATUS_INITIALIZING,
+                                           QUALITY_UNKNOWN);
+}
+
+void ChromotingInstance::Disconnect() {
+  DCHECK(CurrentlyOnPluginThread());
+
+  if (client_.get()) {
+    client_->Stop();
+  }
+
+  GetScriptableObject()->SetConnectionInfo(STATUS_CLOSED, QUALITY_UNKNOWN);
 }
 
 void ChromotingInstance::ViewChanged(const pp::Rect& position,
-                                   const pp::Rect& clip) {
+                                     const pp::Rect& clip) {
   DCHECK(CurrentlyOnPluginThread());
 
   // TODO(ajwong): This is going to be a race condition when the view changes
@@ -154,13 +167,22 @@ bool ChromotingInstance::HandleInputEvent(const PP_InputEvent& event) {
   return false;
 }
 
+ChromotingScriptableObject* ChromotingInstance::GetScriptableObject() {
+  pp::Var object = GetInstanceObject();
+  if (!object.is_undefined()) {
+    pp::deprecated::ScriptableObject* so = object.AsScriptableObject();
+    DCHECK(so != NULL);
+    return static_cast<ChromotingScriptableObject*>(so);
+  }
+  LOG(ERROR) << "Unable to get ScriptableObject for Chromoting plugin.";
+  return NULL;
+}
+
 pp::Var ChromotingInstance::GetInstanceObject() {
-  LOG(ERROR) << "Getting instance object.";
   if (instance_object_.is_undefined()) {
     ChromotingScriptableObject* object = new ChromotingScriptableObject(this);
     object->Init();
 
-    LOG(ERROR) << "Object initted.";
     // The pp::Var takes ownership of object here.
     instance_object_ = pp::Var(object);
   }
