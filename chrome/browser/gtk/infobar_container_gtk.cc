@@ -6,13 +6,18 @@
 
 #include <gtk/gtk.h>
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/gtk/infobar_gtk.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
+#include "third_party/skia/include/core/SkPaint.h"
 
 namespace {
 
@@ -82,6 +87,7 @@ void InfoBarContainerGtk::ChangeTabContents(TabContents* contents) {
     registrar_.RemoveAll();
 
   gtk_util::RemoveAllChildren(widget());
+  UpdateToolbarInfoBarState(NULL, false);
 
   tab_contents_ = contents;
   if (tab_contents_) {
@@ -139,12 +145,16 @@ void InfoBarContainerGtk::AddInfoBar(InfoBarDelegate* delegate, bool animate) {
   InfoBar* infobar = delegate->CreateInfoBar();
   infobar->set_container(this);
   infobar->SetThemeProvider(GtkThemeProvider::GetFrom(profile_));
-  gtk_box_pack_end(GTK_BOX(widget()), infobar->widget(),
-                   FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(widget()), infobar->widget(),
+                     FALSE, FALSE, 0);
+
   if (animate)
     infobar->AnimateOpen();
   else
     infobar->Open();
+
+  if (tab_contents_->GetInfoBarDelegateAt(0) == delegate)
+    UpdateToolbarInfoBarState(infobar, animate);
 }
 
 void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
@@ -156,4 +166,33 @@ void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
     gtk_container_foreach(GTK_CONTAINER(widget()), ClosingForDelegate,
                           delegate);
   }
+
+  if (tab_contents_->GetInfoBarDelegateAt(0) == delegate)
+    UpdateToolbarInfoBarState(NULL, animate);
+}
+
+void InfoBarContainerGtk::UpdateToolbarInfoBarState(
+    InfoBar* infobar, bool animate) {
+  if (!CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableSecureInfoBars)) {
+    return;
+  }
+
+  scoped_ptr<std::pair<SkColor, SkColor> > colors;
+
+  if (infobar) {
+    double r, g, b;
+    infobar->GetTopColor(infobar->delegate()->GetInfoBarType(), &r, &g, &b);
+    SkColor top = SkColorSetRGB(r * 0xff, g * 0xff, b * 0xff);
+    infobar->GetBottomColor(infobar->delegate()->GetInfoBarType(), &r, &g, &b);
+    SkColor bottom = SkColorSetRGB(r * 0xff, g * 0xff, b * 0xff);
+
+    colors.reset(new std::pair<SkColor, SkColor>(top, bottom));
+  }
+
+  GtkWindow* parent = platform_util::GetTopLevel(widget());
+  BrowserWindowGtk* browser_window =
+      BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
+  if (browser_window)
+    browser_window->SetInfoBarShowing(colors.get(), animate);
 }

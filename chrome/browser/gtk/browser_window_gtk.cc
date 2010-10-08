@@ -53,6 +53,7 @@
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/gtk/infobar_container_gtk.h"
+#include "chrome/browser/gtk/infobar_gtk.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/gtk/nine_box.h"
@@ -80,6 +81,7 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "gfx/canvas_skia_paint.h"
 #include "gfx/color_utils.h"
 #include "gfx/gtk_util.h"
 #include "gfx/rect.h"
@@ -88,6 +90,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
 
 namespace {
 
@@ -335,12 +338,14 @@ std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
 BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     :  browser_(browser),
        state_(GDK_WINDOW_STATE_WITHDRAWN),
+       bookmark_bar_is_floating_(false),
        frame_cursor_(NULL),
        is_active_(true),
        last_click_time_(0),
        maximize_after_show_(false),
        suppress_window_raise_(false),
-       accel_group_(NULL) {
+       accel_group_(NULL),
+       infobar_animation_(this) {
   // We register first so that other views like the toolbar can use the
   // is_active() function in their ActiveWindowChanged() handlers.
   ActiveWindowWatcherX::AddObserver(this);
@@ -383,6 +388,8 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
   // Set the initial background color of widgets.
   SetBackgroundColor();
   HideUnsupportedWindowFeatures();
+
+  infobar_animation_.SetTweenType(Tween::LINEAR);
 
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
@@ -1476,6 +1483,7 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
 }
 
 void BrowserWindowGtk::BookmarkBarIsFloating(bool is_floating) {
+  bookmark_bar_is_floating_ = is_floating;
   toolbar_->UpdateForBookmarkBarVisibility(is_floating);
 
   // This can be NULL during initialization of the bookmark bar.
@@ -1556,7 +1564,7 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_widget_set_double_buffered(window_container_, FALSE);
   gtk_widget_set_redraw_on_allocate(window_container_, TRUE);
   g_signal_connect(window_container_, "expose-event",
-                   G_CALLBACK(&OnCustomFrameExposeThunk), this);
+                   G_CALLBACK(OnCustomFrameExposeThunk), this);
   gtk_container_add(GTK_CONTAINER(window_container_), window_vbox_);
 
   tabstrip_.reset(new TabStripGtk(browser_->tabstrip_model(), this));
@@ -1573,6 +1581,8 @@ void BrowserWindowGtk::InitWidgets() {
   toolbar_->Init(browser_->profile(), window_);
   gtk_box_pack_start(GTK_BOX(window_vbox_), toolbar_->widget(),
                      FALSE, FALSE, 0);
+  g_signal_connect_after(toolbar_->widget(), "expose-event",
+                         G_CALLBACK(OnExposeDrawInfobarBitsThunk), this);
   // This vbox surrounds the render area: find bar, info bars and render view.
   // The reason is that this area as a whole needs to be grouped in its own
   // GdkWindow hierarchy so that animations originating inside it (infobar,
@@ -1589,6 +1599,8 @@ void BrowserWindowGtk::InitWidgets() {
                      toolbar_border_, FALSE, FALSE, 0);
   gtk_widget_set_size_request(toolbar_border_, -1, 1);
   gtk_widget_set_no_show_all(toolbar_border_, TRUE);
+  g_signal_connect_after(toolbar_border_, "expose-event",
+                         G_CALLBACK(OnExposeDrawInfobarBitsThunk), this);
 
   if (IsToolbarSupported())
     gtk_widget_show(toolbar_border_);
@@ -1638,6 +1650,11 @@ void BrowserWindowGtk::InitWidgets() {
                                            tabstrip_.get()));
     PlaceBookmarkBar(false);
     gtk_widget_show(bookmark_bar_->widget());
+
+    g_signal_connect_after(bookmark_bar_->widget(), "expose-event",
+                           G_CALLBACK(OnBookmarkBarExposeThunk), this);
+    g_signal_connect(bookmark_bar_->widget(), "size-allocate",
+                     G_CALLBACK(OnBookmarkBarSizeAllocateThunk), this);
   }
 
   // We have to realize the window before we try to apply a window shape mask.
@@ -1787,6 +1804,161 @@ void BrowserWindowGtk::SaveWindowPosition() {
   window_preferences->SetInteger("work_area_top", work_area.y());
   window_preferences->SetInteger("work_area_right", work_area.right());
   window_preferences->SetInteger("work_area_bottom", work_area.bottom());
+}
+
+void BrowserWindowGtk::AnimationEnded(const Animation* animation) {
+  InvalidateInfoBarBits();
+}
+
+void BrowserWindowGtk::AnimationProgressed(const Animation* animation) {
+  InvalidateInfoBarBits();
+}
+
+void BrowserWindowGtk::AnimationCanceled(const Animation* animation) {
+  InvalidateInfoBarBits();
+}
+
+void BrowserWindowGtk::SetInfoBarShowing(
+    const std::pair<SkColor, SkColor>* colors,
+    bool animate) {
+  if (colors) {
+    infobar_colors_ = *colors;
+
+    if (animate)
+      infobar_animation_.Show();
+    else
+      infobar_animation_.Reset(1.0);
+  } else {
+    infobar_colors_ = std::pair<SkColor, SkColor>();
+
+    if (animate)
+      infobar_animation_.Hide();
+    else
+      infobar_animation_.Reset();
+  }
+
+  InvalidateInfoBarBits();
+}
+
+bool BrowserWindowGtk::ShouldDrawInfobarDropShadowOnRenderView() {
+  return infobar_animation_.GetCurrentValue() != 0.0 &&
+      !(bookmark_bar_.get() && bookmark_bar_is_floating_);
+}
+
+void BrowserWindowGtk::InvalidateInfoBarBits() {
+  gtk_widget_queue_draw(toolbar_border_);
+  gtk_widget_queue_draw(toolbar_->widget());
+  if (bookmark_bar_.get())
+    gtk_widget_queue_draw(bookmark_bar_->widget());
+}
+
+gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,
+                                                   GdkEventExpose* expose) {
+  double alpha = infobar_animation_.GetCurrentValue();
+  if (alpha == 0.0)
+    return FALSE;
+
+  GtkWidget* location_icon = toolbar_->GetLocationBarView()->
+      location_icon_widget();
+  int x = 0;
+  int top_y = 0;
+  // The offset between the vertical center of the location icon and the top
+  // of the arrow.
+  const int kArrowVerticalOffset = 4;
+  gtk_widget_translate_coordinates(
+      location_icon, sender,
+      location_icon->allocation.width / 2,
+      location_icon->allocation.height / 2 + kArrowVerticalOffset,
+      &x, &top_y);
+
+  gfx::Rect toolbar_border(toolbar_border_->allocation);
+  int y = 0;
+  gtk_widget_translate_coordinates(toolbar_border_, sender,
+                                   0, toolbar_border.bottom(),
+                                   NULL, &y);
+
+  int arrow_height = y - top_y;
+  // The width of half the arrow.
+  const int kArrowWidth = 15;
+
+  if (GTK_WIDGET_NO_WINDOW(sender)) {
+    x += sender->allocation.x;
+    y += sender->allocation.y;
+  }
+
+  SkPath path;
+  path.moveTo(SkPoint::Make(x - kArrowWidth, y));
+  path.lineTo(SkPoint::Make(x, y - arrow_height));
+  path.lineTo(SkPoint::Make(x + kArrowWidth, y));
+  path.close();
+
+  SkPaint paint;
+  paint.setStyle(SkPaint::kFill_Style);
+
+  SkPoint grad_points[2];
+  grad_points[0].set(SkIntToScalar(0), SkIntToScalar(y));
+  grad_points[1].set(SkIntToScalar(0),
+                     SkIntToScalar(y + InfoBar::kInfoBarHeight));
+
+  SkColor grad_colors[2];
+  grad_colors[0] = SkColorSetA(infobar_colors_.first, alpha * 0xff);
+  grad_colors[1] = SkColorSetA(infobar_colors_.second, alpha * 0xff);
+
+  SkShader* gradient_shader = SkGradientShader::CreateLinear(
+      grad_points, grad_colors, NULL, 2, SkShader::kMirror_TileMode);
+  paint.setShader(gradient_shader);
+  gradient_shader->unref();
+
+  gfx::CanvasSkiaPaint canvas(expose, false);
+  canvas.drawPath(path, paint);
+
+  paint.setShader(NULL);
+  paint.setStyle(SkPaint::kStroke_Style);
+
+  const int kMaxShading = 100;
+  const int kShadingPixels = 5;
+  for (int i = 1; i <= kShadingPixels; ++i) {
+    SkPath shadow_path;
+    shadow_path.moveTo(0, y - i);
+    shadow_path.rLineTo(x - kArrowWidth + 1, 0);
+    shadow_path.rLineTo(kArrowWidth, -arrow_height);
+    // This rMoveTo() is necessary to give the path a sharp point at the top.
+    shadow_path.rMoveTo(-1, 0);
+    shadow_path.rLineTo(kArrowWidth, arrow_height);
+    shadow_path.rLineTo(sender->allocation.width, 0);
+
+    int shading = (kShadingPixels - i + 1) * kMaxShading / kShadingPixels;
+    paint.setColor(SkColorSetARGB(alpha * shading, 0, 0, 0));
+    canvas.drawPath(shadow_path, paint);
+  }
+
+  return FALSE;
+}
+
+gboolean BrowserWindowGtk::OnBookmarkBarExpose(GtkWidget* sender,
+                                               GdkEventExpose* expose) {
+  if (infobar_animation_.GetCurrentValue() == 0.0)
+    return FALSE;
+
+  // This shares the same draw path as the other widgets when it's not floating.
+  if (!bookmark_bar_is_floating_)
+    return OnExposeDrawInfobarBits(sender, expose);
+
+  gfx::Point origin;
+  if (GTK_WIDGET_NO_WINDOW(sender))
+    origin = gfx::Point(sender->allocation.x, sender->allocation.y);
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(expose->window));
+  gtk_util::DrawTopDropShadowForRenderView(cr, origin, gfx::Rect(expose->area));
+  cairo_destroy(cr);
+  return FALSE;
+}
+
+void BrowserWindowGtk::OnBookmarkBarSizeAllocate(GtkWidget* sender,
+                                                 GtkAllocation* allocation) {
+  // The size of the bookmark bar affects how the infobar arrow is drawn on
+  // the toolbar.
+  if (infobar_animation_.GetCurrentValue() != 0.0)
+    gtk_widget_queue_draw(toolbar_->widget());
 }
 
 // static

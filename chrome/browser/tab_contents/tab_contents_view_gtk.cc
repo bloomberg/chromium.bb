@@ -247,6 +247,19 @@ void TabContentsViewGtk::RestoreFocus() {
     SetInitialFocus();
 }
 
+bool TabContentsViewGtk::ShouldDrawDropShadow() {
+  GtkWindow* window = GetTopLevelNativeWindow();
+  if (!window)
+    return false;
+
+  BrowserWindowGtk* browser_window =
+      BrowserWindowGtk::GetBrowserWindowForNativeWindow(window);
+  if (!browser_window)
+    return false;
+
+  return browser_window->ShouldDrawInfobarDropShadowOnRenderView();
+}
+
 void TabContentsViewGtk::SetFocusedWidget(GtkWidget* widget) {
   focus_store_.SetWidget(widget);
 }

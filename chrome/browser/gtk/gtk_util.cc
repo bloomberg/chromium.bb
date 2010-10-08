@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/gtk_util.h"
 
+#include <cairo/cairo.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
@@ -1104,6 +1105,28 @@ void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label) {
   gtk_widget_size_request(label, &size);
   gtk_widget_set_size_request(label, size.width, size.height);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+}
+
+void DrawTopDropShadowForRenderView(cairo_t* cr, const gfx::Point& origin,
+    const gfx::Rect& paint_rect) {
+  const int kShadowHeight = 6;
+  gfx::Rect shadow_rect(paint_rect.x(), origin.y(),
+                        paint_rect.width(), kShadowHeight);
+
+  // Avoid this extra work if we can.
+  if (!shadow_rect.Intersects(paint_rect))
+    return;
+
+  cairo_pattern_t* shadow =
+      cairo_pattern_create_linear(0.0, shadow_rect.y(),
+                                  0.0, shadow_rect.bottom());
+  cairo_pattern_add_color_stop_rgba(shadow, 0, 0, 0, 0, 0.6);
+  cairo_pattern_add_color_stop_rgba(shadow, 1, 0, 0, 0, 0.1);
+  cairo_rectangle(cr, shadow_rect.x(), shadow_rect.y(),
+                  shadow_rect.width(), shadow_rect.height());
+  cairo_set_source(cr, shadow);
+  cairo_fill(cr);
+  cairo_pattern_destroy(shadow);
 }
 
 }  // namespace gtk_util

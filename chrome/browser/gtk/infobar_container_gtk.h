@@ -11,6 +11,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+class InfoBar;
 class InfoBarDelegate;
 class Profile;
 class TabContents;
@@ -58,6 +59,10 @@ class InfoBarContainerGtk : public NotificationObserver {
   // notification from the selected TabContents. The InfoBar's disappearance
   // will be animated.
   void RemoveInfoBar(InfoBarDelegate* delegate, bool animate);
+
+  // Tells the browser window about our state so it can draw the arrow
+  // appropriately.
+  void UpdateToolbarInfoBarState(InfoBar* infobar, bool animate);
 
   NotificationRegistrar registrar_;
 

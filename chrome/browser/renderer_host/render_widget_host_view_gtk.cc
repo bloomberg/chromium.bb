@@ -32,6 +32,8 @@
 #include "chrome/browser/renderer_host/gpu_view_host.h"
 #include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
 #include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/video_layer_x.h"
 #include "chrome/common/chrome_switches.h"
@@ -874,7 +876,11 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
     if (window) {
-      if (!visually_deemphasized_) {
+      bool drop_shadow = host_->IsRenderView() &&
+          static_cast<RenderViewHost*>(host_)->delegate()->GetViewDelegate()->
+              ShouldDrawDropShadow();
+
+      if (!visually_deemphasized_ && !drop_shadow) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
         backing_store->XShowRect(
@@ -898,9 +904,15 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
         backing_store->CairoShowRect(paint_rect, GDK_DRAWABLE(window));
 
         cairo_t* cr = gdk_cairo_create(window);
-        gdk_cairo_rectangle(cr, &rect);
-        cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
-        cairo_fill(cr);
+        if (visually_deemphasized_) {
+          gdk_cairo_rectangle(cr, &rect);
+          cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
+          cairo_fill(cr);
+        }
+        if (drop_shadow) {
+          gtk_util::DrawTopDropShadowForRenderView(
+              cr, gfx::Point(), paint_rect);
+        }
         cairo_destroy(cr);
 
         gdk_window_end_paint(window);

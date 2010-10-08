@@ -16,6 +16,7 @@
 #include "gfx/rect.h"
 #include "webkit/glue/window_open_disposition.h"
 
+typedef struct _cairo cairo_t;
 typedef struct _GtkWidget GtkWidget;
 
 class GtkThemeProvider;
@@ -81,7 +82,6 @@ GtkWidget* LeftAlignMisc(GtkWidget* misc);
 
 // Create a left-aligned label with the given text in bold.
 GtkWidget* CreateBoldLabel(const std::string& text);
-
 
 // As above, but a convenience method for configuring dialog size.
 // |width_id| and |height_id| are resource IDs for the size.  If either of these
@@ -334,6 +334,11 @@ void SetLabelWidth(GtkWidget* label, int pixel_width);
 // It must be done when the label is mapped (become visible on the screen),
 // to make sure the pango can get correct font information for the calculation.
 void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label);
+
+// Code to draw the drop shadow below an infobar (at the top of the render
+// view).
+void DrawTopDropShadowForRenderView(cairo_t* cr, const gfx::Point& origin,
+                                    const gfx::Rect& paint_rect);
 
 }  // namespace gtk_util
 

@@ -16,15 +16,14 @@
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
 
+extern const int InfoBar::kInfoBarHeight = 37;
+
 namespace {
 
 // Spacing after message (and before buttons).
 const int kEndOfLabelSpacing = 6;
 // Spacing between buttons.
 const int kButtonButtonSpacing = 3;
-
-// The total height of the info bar.
-const int kInfoBarHeight = 37;
 
 // Pixels between infobar elements.
 const int kElementPadding = 5;

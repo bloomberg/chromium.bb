@@ -63,6 +63,16 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Retrieves the component colors for the infobar's background
+  // gradient. (This varies by infobars and can be animated to change).
+  virtual void GetTopColor(InfoBarDelegate::Type type,
+                           double* r, double* g, double *b);
+  virtual void GetBottomColor(InfoBarDelegate::Type type,
+                              double* r, double* g, double *b);
+
+  // The total height of the info bar.
+  static const int kInfoBarHeight;
+
  protected:
   // Removes our associated InfoBarDelegate from the associated TabContents.
   // (Will lead to this InfoBar being closed).
@@ -82,14 +92,6 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   void AddLabelAndLink(const string16& display_text,
                        const string16& link_text,
                        GCallback callback);
-
-  // Retrieves the component colors for the infobar's background
-  // gradient. (This varies by infobars and can be animated to change).
-  virtual void GetTopColor(InfoBarDelegate::Type type,
-                           double* r, double* g, double *b);
-  virtual void GetBottomColor(InfoBarDelegate::Type type,
-                              double* r, double* g, double *b);
-
   // The top level widget of the infobar.
   scoped_ptr<SlideAnimatorGtk> slide_widget_;
 

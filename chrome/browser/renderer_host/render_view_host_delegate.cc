@@ -112,3 +112,7 @@ gfx::Rect RenderViewHostDelegate::GetRootWindowResizerRect() const {
 bool RenderViewHostDelegate::IsExternalTabContainer() const {
   return false;
 }
+
+bool RenderViewHostDelegate::View::ShouldDrawDropShadow() {
+  return false;
+}
