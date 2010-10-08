@@ -33,6 +33,16 @@ View.prototype.isVisible = function() {
   return this.isVisible_;
 };
 
+/**
+ * Method of the observer class.
+ *
+ * Called to check if an observer needs the data it is
+ * observing to be actively updated.
+ */
+View.prototype.isActive = function() {
+  return this.isVisible();
+};
+
 View.prototype.getLeft = function() {
   return this.left_;
 };

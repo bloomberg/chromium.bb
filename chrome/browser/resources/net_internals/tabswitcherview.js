@@ -119,6 +119,10 @@ TabSwitcherView.prototype.switchToTab = function(id, params) {
   newTab.setSelected(true);
   if (params)
     newTab.contentView.setParameters(params);
+
+  // Update data needed by newly active tab, as it may be
+  // significantly out of date.
+  g_browser.checkForUpdatedInfo();
 };
 
 TabSwitcherView.prototype.getAllTabIds = function() {

@@ -150,13 +150,28 @@ function BrowserBridge() {
   // List of observers for various bits of browser state.
   this.logObservers_ = [];
   this.connectionTestsObservers_ = [];
-  this.proxySettings_ = new PollableDataHelper('onProxySettingsChanged');
-  this.badProxies_ = new PollableDataHelper('onBadProxiesChanged');
-  this.httpCacheInfo_ = new PollableDataHelper('onHttpCacheInfoChanged');
-  this.hostResolverInfo_ =
-      new PollableDataHelper('onHostResolverInfoChanged');
-  this.socketPoolInfo_ = new PollableDataHelper('onSocketPoolInfoChanged');
-  this.serviceProviders_ = new PollableDataHelper('onServiceProvidersChanged');
+
+  this.pollableDataHelpers_ = {};
+  this.pollableDataHelpers_.proxySettings =
+      new PollableDataHelper('onProxySettingsChanged',
+                             this.sendGetProxySettings.bind(this));
+  this.pollableDataHelpers_.badProxies =
+      new PollableDataHelper('onBadProxiesChanged',
+                             this.sendGetBadProxies.bind(this));
+  this.pollableDataHelpers_.httpCacheInfo =
+      new PollableDataHelper('onHttpCacheInfoChanged',
+                             this.sendGetHttpCacheInfo.bind(this));
+  this.pollableDataHelpers_.hostResolverInfo =
+      new PollableDataHelper('onHostResolverInfoChanged',
+                             this.sendGetHostResolverInfo.bind(this));
+  this.pollableDataHelpers_.socketPoolInfo =
+      new PollableDataHelper('onSocketPoolInfoChanged',
+                             this.sendGetSocketPoolInfo.bind(this));
+  if (this.isPlatformWindows()) {
+    this.pollableDataHelpers_.serviceProviders =
+        new PollableDataHelper('onServiceProvidersChanged',
+                               this.sendGetServiceProviders.bind(this));
+  }
 
   // Cache of the data received.
   this.numPassivelyCapturedEvents_ = 0;
@@ -199,7 +214,7 @@ function onUrlHashChange(anchorMap, categoryTabSwitcher) {
 }
 
 /**
- * Delay in milliseconds between polling of certain browser information.
+ * Delay in milliseconds between updates of certain browser information.
  */
 BrowserBridge.POLL_INTERVAL_MS = 5000;
 
@@ -213,8 +228,8 @@ BrowserBridge.prototype.sendReady = function() {
   // Some of the data we are interested is not currently exposed as a stream,
   // so we will poll the browser to find out when it changes and then notify
   // the observers.
-  window.setInterval(
-      this.doPolling_.bind(this), BrowserBridge.POLL_INTERVAL_MS);
+  window.setInterval(this.checkForUpdatedInfo.bind(this, false),
+                     BrowserBridge.POLL_INTERVAL_MS);
 };
 
 BrowserBridge.prototype.isPlatformWindows = function() {
@@ -323,24 +338,24 @@ BrowserBridge.prototype.receivedTimeTickOffset = function(timeTickOffset) {
 };
 
 BrowserBridge.prototype.receivedProxySettings = function(proxySettings) {
-  this.proxySettings_.update(proxySettings);
+  this.pollableDataHelpers_.proxySettings.update(proxySettings);
 };
 
 BrowserBridge.prototype.receivedBadProxies = function(badProxies) {
-  this.badProxies_.update(badProxies);
+  this.pollableDataHelpers_.badProxies.update(badProxies);
 };
 
 BrowserBridge.prototype.receivedHostResolverInfo =
 function(hostResolverInfo) {
-  this.hostResolverInfo_.update(hostResolverInfo);
+  this.pollableDataHelpers_.hostResolverInfo.update(hostResolverInfo);
 };
 
 BrowserBridge.prototype.receivedSocketPoolInfo = function(socketPoolInfo) {
-  this.socketPoolInfo_.update(socketPoolInfo);
+  this.pollableDataHelpers_.socketPoolInfo.update(socketPoolInfo);
 };
 
 BrowserBridge.prototype.receivedServiceProviders = function(serviceProviders) {
-  this.serviceProviders_.update(serviceProviders);
+  this.pollableDataHelpers_.serviceProviders.update(serviceProviders);
 };
 
 BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
@@ -380,14 +395,14 @@ BrowserBridge.prototype.receivedCompletedConnectionTestSuite = function() {
 };
 
 BrowserBridge.prototype.receivedHttpCacheInfo = function(info) {
-  this.httpCacheInfo_.update(info);
+  this.pollableDataHelpers_.httpCacheInfo.update(info);
 };
 
 BrowserBridge.prototype.areLogTypesReady_ = function() {
   return (LogEventType  != null &&
           LogEventPhase != null &&
           LogSourceType != null);
-}
+};
 
 //------------------------------------------------------------------------------
 
@@ -421,7 +436,7 @@ BrowserBridge.prototype.addLogObserver = function(observer) {
  * TODO(eroman): send a dictionary instead.
  */
 BrowserBridge.prototype.addProxySettingsObserver = function(observer) {
-  this.proxySettings_.addObserver(observer);
+  this.pollableDataHelpers_.proxySettings.addObserver(observer);
 };
 
 /**
@@ -436,7 +451,7 @@ BrowserBridge.prototype.addProxySettingsObserver = function(observer) {
  *                            bad. Note the time is in time ticks.
  */
 BrowserBridge.prototype.addBadProxiesObserver = function(observer) {
-  this.badProxies_.addObserver(observer);
+  this.pollableDataHelpers_.badProxies.addObserver(observer);
 };
 
 /**
@@ -446,7 +461,7 @@ BrowserBridge.prototype.addBadProxiesObserver = function(observer) {
  *   observer.onHostResolverInfoChanged(hostResolverInfo)
  */
 BrowserBridge.prototype.addHostResolverInfoObserver = function(observer) {
-  this.hostResolverInfo_.addObserver(observer);
+  this.pollableDataHelpers_.hostResolverInfo.addObserver(observer);
 };
 
 /**
@@ -456,7 +471,7 @@ BrowserBridge.prototype.addHostResolverInfoObserver = function(observer) {
  *   observer.onSocketPoolInfoChanged(socketPoolInfo)
  */
 BrowserBridge.prototype.addSocketPoolInfoObserver = function(observer) {
-  this.socketPoolInfo_.addObserver(observer);
+  this.pollableDataHelpers_.socketPoolInfo.addObserver(observer);
 };
 
 /**
@@ -466,7 +481,7 @@ BrowserBridge.prototype.addSocketPoolInfoObserver = function(observer) {
  *   observer.onServiceProvidersChanged(serviceProviders)
  */
 BrowserBridge.prototype.addServiceProvidersObserver = function(observer) {
-  this.serviceProviders_.addObserver(observer);
+  this.pollableDataHelpers_.serviceProviders.addObserver(observer);
 };
 
 /**
@@ -489,7 +504,7 @@ BrowserBridge.prototype.addConnectionTestsObserver = function(observer) {
  *   observer.onHttpCacheInfoChanged(info);
  */
 BrowserBridge.prototype.addHttpCacheInfoObserver = function(observer) {
-  this.httpCacheInfo_.addObserver(observer);
+  this.pollableDataHelpers_.httpCacheInfo.addObserver(observer);
 };
 
 /**
@@ -565,17 +580,26 @@ BrowserBridge.prototype.deleteAllEvents = function() {
     this.logObservers_[i].onAllLogEntriesDeleted();
 };
 
-BrowserBridge.prototype.doPolling_ = function() {
-  // TODO(eroman): Optimize this by using a separate polling frequency for the
-  // data consumed by the currently active view. Everything else can be on a low
-  // frequency poll since it won't impact the display.
-  this.sendGetProxySettings();
-  this.sendGetBadProxies();
-  this.sendGetHostResolverInfo();
-  this.sendGetHttpCacheInfo();
-  this.sendGetSocketPoolInfo();
-  if (this.isPlatformWindows())
-    this.sendGetServiceProviders();
+/**
+ * If |force| is true, calls all startUpdate functions.  Otherwise, just
+ * runs updates with active observers.
+ */
+BrowserBridge.prototype.checkForUpdatedInfo = function(force) {
+  for (name in this.pollableDataHelpers_) {
+    var helper = this.pollableDataHelpers_[name];
+    if (force || helper.hasActiveObserver())
+      helper.startUpdate();
+  }
+};
+
+/**
+ * Calls all startUpdate functions and, if |callback| is non-null,
+ * calls it with the results of all updates.
+ */
+BrowserBridge.prototype.updateAllInfo = function(callback) {
+  if (callback)
+    new UpdateAllObserver(callback, this.pollableDataHelpers_);
+  this.checkForUpdatedInfo(true);
 };
 
 /**
@@ -583,33 +607,113 @@ BrowserBridge.prototype.doPolling_ = function() {
  *   - the list of observers interested in some piece of data.
  *   - the last known value of that piece of data.
  *   - the name of the callback method to invoke on observers.
+ *   - the update function.
  * @constructor
  */
-function PollableDataHelper(observerMethodName) {
+function PollableDataHelper(observerMethodName, startUpdateFunction) {
   this.observerMethodName_ = observerMethodName;
-  this.observers_ = [];
+  this.startUpdate = startUpdateFunction;
+  this.observerInfos_ = [];
+}
+
+PollableDataHelper.prototype.getObserverMethodName = function() {
+  return this.observerMethodName_;
+};
+
+/**
+ * This is a helper class used by PollableDataHelper, to keep track of
+ * each observer and whether or not it has received any data.  The
+ * latter is used to make sure that new observers get sent data on the
+ * update following their creation.
+ * @constructor
+ */
+function ObserverInfo(observer) {
+  this.observer = observer;
+  this.hasReceivedData = false;
 }
 
 PollableDataHelper.prototype.addObserver = function(observer) {
-  this.observers_.push(observer);
+  this.observerInfos_.push(new ObserverInfo(observer));
+};
+
+PollableDataHelper.prototype.removeObserver = function(observer) {
+  for (var i = 0; i < this.observerInfos_.length; ++i) {
+    if (this.observerInfos_[i].observer == observer) {
+      this.observerInfos_.splice(i, 1);
+      return;
+    }
+  }
 };
 
 /**
  * Helper function to handle calling all the observers, but ONLY if the data has
- * actually changed since last time. This is used for data we received from
- * browser on a poll loop.
+ * actually changed since last time or the observer has yet to receive any data.
+ * This is used for data we received from browser on an update loop.
  */
 PollableDataHelper.prototype.update = function(data) {
   var prevData = this.currentData_;
+  var changed = false;
 
-  // If the data hasn't changed since last time, no need to notify observers.
-  if (prevData && JSON.stringify(prevData) == JSON.stringify(data))
-    return;
+  // If the data hasn't changed since last time, will only need to notify
+  // observers that have not yet received any data.
+  if (!prevData || JSON.stringify(prevData) != JSON.stringify(data)) {
+    changed = true;
+    this.currentData_ = data;
+  }
 
-  this.currentData_ = data;
+  // Notify the observers of the change, as needed.
+  for (var i = 0; i < this.observerInfos_.length; ++i) {
+    var observerInfo = this.observerInfos_[i];
+    if (changed || !observerInfo.hasReceivedData) {
+      observerInfo.observer[this.observerMethodName_](this.currentData_);
+      observerInfo.hasReceivedData = true;
+    }
+  }
+};
 
-  // Ok, notify the observers of the change.
-  for (var i = 0; i < this.observers_.length; ++i)
-    var observer = this.observers_[i];
-    observer[this.observerMethodName_](data);
+/**
+ * Returns true if one of the observers actively wants the data
+ * (i.e. is visible).
+ */
+PollableDataHelper.prototype.hasActiveObserver = function() {
+  for (var i = 0; i < this.observerInfos_.length; ++i) {
+    if (this.observerInfos_[i].observer.isActive())
+      return true;
+  }
+  return false;
+};
+
+/**
+ * This is a helper class used by BrowserBridge to send data to
+ * a callback once data from all polls has been received.
+ *
+ * It works by keeping track of how many polling functions have
+ * yet to receive data, and recording the data as it it received.
+ *
+ * @constructor
+ */
+function UpdateAllObserver(callback, pollableDataHelpers) {
+  this.callback_ = callback;
+  this.observingCount_ = 0;
+  this.updatedData_ = {};
+
+  for (name in pollableDataHelpers) {
+    ++this.observingCount_;
+    var helper = pollableDataHelpers[name];
+    helper.addObserver(this);
+    this[helper.getObserverMethodName()] =
+        this.onDataReceived_.bind(this, helper, name);
+  }
+}
+
+UpdateAllObserver.prototype.isActive = function() {
+  return true;
+};
+
+UpdateAllObserver.prototype.onDataReceived_ = function(helper, name, data) {
+  helper.removeObserver(this);
+  --this.observingCount_;
+  this.updatedData_[name] = data;
+  if (this.observingCount_ == 0)
+    this.callback_(this.updatedData_);
 };
