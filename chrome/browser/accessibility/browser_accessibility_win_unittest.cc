@@ -274,3 +274,88 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   delete manager;
   ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
 }
+
+TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
+  WebAccessibility text1;
+  text1.id = 11;
+  text1.role = WebAccessibility::ROLE_TEXT_FIELD;
+  text1.state = 0;
+  text1.value = L"One two three.\nFour five six.";
+
+  WebAccessibility root;
+  root.id = 1;
+  root.role = WebAccessibility::ROLE_DOCUMENT;
+  root.state = 0;
+  root.children.push_back(text1);
+
+  CountedBrowserAccessibility::global_obj_count_ = 0;
+  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
+      GetDesktopWindow(), root, NULL,
+      new CountedBrowserAccessibilityFactory());
+  ASSERT_EQ(2, CountedBrowserAccessibility::global_obj_count_);
+
+  BrowserAccessibilityWin* root_obj =
+      manager->GetRoot()->toBrowserAccessibilityWin();
+  BrowserAccessibilityWin* text1_obj =
+      root_obj->GetChild(0)->toBrowserAccessibilityWin();
+
+  BSTR text;
+  long start;
+  long end;
+
+  long text1_len;
+  ASSERT_EQ(S_OK, text1_obj->get_nCharacters(&text1_len));
+
+  ASSERT_EQ(S_OK, text1_obj->get_text(0, text1_len, &text));
+  ASSERT_EQ(text, text1.value);
+  SysFreeString(text);
+
+  ASSERT_EQ(S_OK, text1_obj->get_text(0, 4, &text));
+  ASSERT_EQ(text, std::wstring(L"One "));
+  SysFreeString(text);
+
+  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+      1, IA2_TEXT_BOUNDARY_CHAR, &start, &end, &text));
+  ASSERT_EQ(start, 1);
+  ASSERT_EQ(end, 2);
+  ASSERT_EQ(text, std::wstring(L"n"));
+  SysFreeString(text);
+
+  ASSERT_EQ(S_FALSE, text1_obj->get_textAtOffset(
+      text1_len, IA2_TEXT_BOUNDARY_CHAR, &start, &end, &text));
+  ASSERT_EQ(start, text1_len);
+  ASSERT_EQ(end, text1_len);
+
+  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+      1, IA2_TEXT_BOUNDARY_WORD, &start, &end, &text));
+  ASSERT_EQ(start, 0);
+  ASSERT_EQ(end, 3);
+  ASSERT_EQ(text, std::wstring(L"One"));
+  SysFreeString(text);
+
+  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+      6, IA2_TEXT_BOUNDARY_WORD, &start, &end, &text));
+  ASSERT_EQ(start, 4);
+  ASSERT_EQ(end, 7);
+  ASSERT_EQ(text, std::wstring(L"two"));
+  SysFreeString(text);
+
+  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+      text1_len, IA2_TEXT_BOUNDARY_WORD, &start, &end, &text));
+  ASSERT_EQ(start, 25);
+  ASSERT_EQ(end, 29);
+  ASSERT_EQ(text, std::wstring(L"six."));
+  SysFreeString(text);
+
+  ASSERT_EQ(S_OK, text1_obj->get_textAtOffset(
+      1, IA2_TEXT_BOUNDARY_LINE, &start, &end, &text));
+  ASSERT_EQ(start, 0);
+  ASSERT_EQ(end, 13);
+  ASSERT_EQ(text, std::wstring(L"One two three"));
+  SysFreeString(text);
+
+  // Delete the manager and test that all BrowserAccessibility instances are
+  // deleted.
+  delete manager;
+  ASSERT_EQ(0, CountedBrowserAccessibility::global_obj_count_);
+}

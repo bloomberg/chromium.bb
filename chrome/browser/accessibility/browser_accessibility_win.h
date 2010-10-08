@@ -230,8 +230,6 @@ class BrowserAccessibilityWin
 
   STDMETHODIMP get_nCharacters(LONG* n_characters);
 
-  STDMETHODIMP get_text(LONG start_offset, LONG end_offset, BSTR* text);
-
   STDMETHODIMP get_caretOffset(LONG* offset);
 
   STDMETHODIMP get_nSelections(LONG* n_selections);
@@ -240,6 +238,22 @@ class BrowserAccessibilityWin
                              LONG* start_offset,
                              LONG* end_offset);
 
+  STDMETHODIMP get_text(LONG start_offset, LONG end_offset, BSTR* text);
+
+  STDMETHODIMP get_textAtOffset(LONG offset,
+                                enum IA2TextBoundaryType boundary_type,
+                                LONG* start_offset, LONG* end_offset,
+                                BSTR* text);
+
+  STDMETHODIMP get_textBeforeOffset(LONG offset,
+                                    enum IA2TextBoundaryType boundary_type,
+                                    LONG* start_offset, LONG* end_offset,
+                                    BSTR* text);
+
+  STDMETHODIMP get_textAfterOffset(LONG offset,
+                                   enum IA2TextBoundaryType boundary_type,
+                                   LONG* start_offset, LONG* end_offset,
+                                   BSTR* text);
 
   // IAccessibleText methods not implemented.
   STDMETHODIMP addSelection(LONG start_offset, LONG end_offset) {
@@ -256,26 +270,8 @@ class BrowserAccessibilityWin
     return E_NOTIMPL;
   }
   STDMETHODIMP get_offsetAtPoint(LONG x, LONG y,
-                             enum IA2CoordinateType coord_type,
-                             LONG* offset) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_textBeforeOffset(LONG offset,
-                                enum IA2TextBoundaryType boundary_type,
-                                LONG* start_offset, LONG* end_offset,
-                                BSTR* text) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_textAfterOffset(LONG offset,
-                               enum IA2TextBoundaryType boundary_type,
-                               LONG* start_offset, LONG* end_offset,
-                               BSTR* text) {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_textAtOffset(LONG offset,
-                            enum IA2TextBoundaryType boundary_type,
-                            LONG* start_offset, LONG* end_offset,
-                            BSTR* text) {
+                                 enum IA2CoordinateType coord_type,
+                                 LONG* offset) {
     return E_NOTIMPL;
   }
   STDMETHODIMP removeSelection(LONG selection_index) {
@@ -483,6 +479,18 @@ class BrowserAccessibilityWin
 
   // Escape a string like it would be escaped for a URL or HTML form.
   string16 Escape(string16 str);
+
+  // Get the text of this node for the purposes of IAccessibleText - it may
+  // be the name, it may be the value, etc. depending on the role.
+  const string16& TextForIAccessibleText();
+
+  // Search forwards (direction == 1) or backwards (direction == -1) from
+  // the given offset until the given IAccessible2 boundary (like word,
+  // sentence) is found, and return its offset.
+  LONG FindBoundary(const string16& text,
+                    IA2TextBoundaryType boundary,
+                    LONG start_offset,
+                    LONG direction);
 
   // COM objects are reference-counted. When we're done with this object
   // and it's removed from our accessibility tree, a client may still be

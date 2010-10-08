@@ -54,7 +54,7 @@ HRESULT BrowserAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left, LONG y_top,
-                                              VARIANT* child) {
+                                                 VARIANT* child) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -65,8 +65,8 @@ STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left, LONG y_top,
 }
 
 STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left, LONG* y_top,
-                                               LONG* width, LONG* height,
-                                               VARIANT var_id) {
+                                                  LONG* width, LONG* height,
+                                                  VARIANT var_id) {
   if (!instance_active_)
     return E_FAIL;
 
@@ -534,45 +534,6 @@ STDMETHODIMP BrowserAccessibilityWin::get_nCharacters(LONG* n_characters) {
   return S_OK;
 }
 
-STDMETHODIMP BrowserAccessibilityWin::get_text(
-    LONG start_offset, LONG end_offset, BSTR* text) {
-  if (!instance_active_)
-    return E_FAIL;
-
-  if (!text)
-    return E_INVALIDARG;
-
-  string16 text_str;
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD) {
-    text_str = value_;
-  } else {
-    text_str = name_;
-  }
-
-  // The spec allows the arguments to be reversed.
-  if (start_offset > end_offset) {
-    LONG tmp = start_offset;
-    start_offset = end_offset;
-    end_offset = tmp;
-  }
-
-  // The spec does not allow the start or end offsets to be out or range;
-  // we must return an error if so.
-  LONG len = text_str.length();
-  if (start_offset < 0)
-    return E_INVALIDARG;
-  if (end_offset > len)
-    return E_INVALIDARG;
-
-  string16 substr = text_str.substr(start_offset, end_offset - start_offset);
-  if (substr.empty())
-    return S_FALSE;
-
-  *text = SysAllocString(substr.c_str());
-  DCHECK(*text);
-  return S_OK;
-}
-
 STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
   if (!instance_active_)
     return E_FAIL;
@@ -585,7 +546,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
     if (GetAttributeAsInt(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start)) {
       *offset = sel_start;
     } else {
-  *offset = 0;
+      *offset = 0;
     }
   } else {
     *offset = 0;
@@ -644,6 +605,121 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
   }
 
   return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_text(
+    LONG start_offset, LONG end_offset, BSTR* text) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!text)
+    return E_INVALIDARG;
+
+  const string16& text_str = TextForIAccessibleText();
+
+  // The spec allows the arguments to be reversed.
+  if (start_offset > end_offset) {
+    LONG tmp = start_offset;
+    start_offset = end_offset;
+    end_offset = tmp;
+  }
+
+  // The spec does not allow the start or end offsets to be out or range;
+  // we must return an error if so.
+  LONG len = text_str.length();
+  if (start_offset < 0)
+    return E_INVALIDARG;
+  if (end_offset > len)
+    return E_INVALIDARG;
+
+  string16 substr = text_str.substr(start_offset, end_offset - start_offset);
+  if (substr.empty())
+    return S_FALSE;
+
+  *text = SysAllocString(substr.c_str());
+  DCHECK(*text);
+  return S_OK;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
+    LONG offset,
+    enum IA2TextBoundaryType boundary_type,
+    LONG* start_offset, LONG* end_offset,
+    BSTR* text) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!start_offset || !end_offset || !text)
+    return E_INVALIDARG;
+
+  // The IAccessible2 spec says we don't have to implement the "sentence"
+  // boundary type, we can just let the screenreader handle it.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
+    *start_offset = 0;
+    *end_offset = 0;
+    *text = NULL;
+    return S_FALSE;
+  }
+
+  const string16& text_str = TextForIAccessibleText();
+
+  *start_offset = FindBoundary(text_str, boundary_type, offset, -1);
+  *end_offset = FindBoundary(text_str, boundary_type, offset, 1);
+  return get_text(*start_offset, *end_offset, text);
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_textBeforeOffset(
+    LONG offset,
+    enum IA2TextBoundaryType boundary_type,
+    LONG* start_offset, LONG* end_offset,
+    BSTR* text) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!start_offset || !end_offset || !text)
+    return E_INVALIDARG;
+
+  // The IAccessible2 spec says we don't have to implement the "sentence"
+  // boundary type, we can just let the screenreader handle it.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
+    *start_offset = 0;
+    *end_offset = 0;
+    *text = NULL;
+    return S_FALSE;
+  }
+
+  const string16& text_str = TextForIAccessibleText();
+
+  *start_offset = FindBoundary(text_str, boundary_type, offset, -1);
+  *end_offset = offset;
+  return get_text(*start_offset, *end_offset, text);
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_textAfterOffset(
+    LONG offset,
+    enum IA2TextBoundaryType boundary_type,
+    LONG* start_offset, LONG* end_offset,
+    BSTR* text) {
+  if (!instance_active_)
+    return E_FAIL;
+
+  if (!start_offset || !end_offset || !text)
+    return E_INVALIDARG;
+
+  // The IAccessible2 spec says we don't have to implement the "sentence"
+  // boundary type, we can just let the screenreader handle it.
+  if (boundary_type == IA2_TEXT_BOUNDARY_SENTENCE) {
+    *start_offset = 0;
+    *end_offset = 0;
+    *text = NULL;
+    return S_FALSE;
+  }
+
+  const string16& text_str = TextForIAccessibleText();
+
+  *start_offset = offset;
+  *end_offset = FindBoundary(text_str, boundary_type, offset, 1);
+  return get_text(*start_offset, *end_offset, text);
 }
 
 //
@@ -1127,6 +1203,76 @@ bool BrowserAccessibilityWin::GetAttributeAsInt(
 
 string16 BrowserAccessibilityWin::Escape(string16 str) {
   return EscapeQueryParamValueUTF8(str, false);
+}
+
+const string16& BrowserAccessibilityWin::TextForIAccessibleText() {
+  if (role_ == WebAccessibility::ROLE_TEXT_FIELD) {
+    return value_;
+  } else {
+    return name_;
+  }
+}
+
+LONG BrowserAccessibilityWin::FindBoundary(
+    const string16& text,
+    IA2TextBoundaryType boundary,
+    LONG start_offset,
+    LONG direction) {
+  LONG text_size = static_cast<LONG>(text.size());
+  DCHECK(start_offset >= 0 && start_offset <= text_size);
+  DCHECK(direction == 1 || direction == -1);
+
+  if (boundary == IA2_TEXT_BOUNDARY_CHAR) {
+    if (direction == 1 && start_offset < text_size)
+      return start_offset + 1;
+    else
+      return start_offset;
+  }
+
+  LONG result = start_offset;
+  for (;;) {
+    LONG pos;
+    if (direction == 1) {
+      if (result >= text_size)
+        return text_size;
+      pos = result;
+    } else {
+      if (result <= 0)
+        return 0;
+      pos = result - 1;
+    }
+
+    switch (boundary) {
+      case IA2_TEXT_BOUNDARY_WORD:
+        if (IsWhitespace(text[pos]))
+          return result;
+        break;
+      case IA2_TEXT_BOUNDARY_LINE:
+      case IA2_TEXT_BOUNDARY_PARAGRAPH:
+        if (text[pos] == '\n')
+          return result;
+      case IA2_TEXT_BOUNDARY_SENTENCE:
+        // Note that we don't actually have to implement sentence support;
+        // currently IAccessibleText functions return S_FALSE so that
+        // screenreaders will handle it on their own.
+        if ((text[pos] == '.' || text[pos] == '!' || text[pos] == '?') &&
+            (pos == text_size - 1 || IsWhitespace(text[pos + 1]))) {
+          return result;
+        }
+      case IA2_TEXT_BOUNDARY_ALL:
+      default:
+        break;
+    }
+
+    if (direction > 0) {
+      result++;
+    } else if (direction < 0) {
+      result--;
+    } else {
+      NOTREACHED();
+      return result;
+    }
+  }
 }
 
 void BrowserAccessibilityWin::InitRoleAndState() {
