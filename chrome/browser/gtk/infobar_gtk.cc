@@ -354,6 +354,7 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
   GtkWidget* label = gtk_label_new(label_text.c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
   gtk_util::CenterWidgetInHBox(confirm_hbox_, label, false, kEndOfLabelSpacing);
+  gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkBlack);
   g_signal_connect(label, "map",
                    G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                    NULL);
