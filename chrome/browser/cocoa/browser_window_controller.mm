@@ -33,6 +33,7 @@
 #import "chrome/browser/cocoa/fullscreen_window.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/location_bar/autocomplete_text_field_editor.h"
+#import "chrome/browser/cocoa/previewable_contents_controller.h"
 #import "chrome/browser/cocoa/nswindow_additions.h"
 #import "chrome/browser/cocoa/sad_tab_controller.h"
 #import "chrome/browser/cocoa/sidebar_controller.h"
@@ -242,11 +243,20 @@
     [[self tabContentArea] addSubview:[devToolsController_ view]];
 
     // Create a sub-controller for the docked sidebar and add its view to the
-    // hierarchy.  This must happen before the tabstrip controller is
-    // instantiated.
+    // hierarchy.  This must happen before the previewable contents controller
+    // is instantiated.
     sidebarController_.reset([[SidebarController alloc] init]);
     [[sidebarController_ view] setFrame:[[devToolsController_ view] bounds]];
     [[devToolsController_ view] addSubview:[sidebarController_ view]];
+
+    // Create the previewable contents controller.  This provides the switch
+    // view that TabStripController needs.
+    previewableContentsController_.reset(
+        [[PreviewableContentsController alloc] init]);
+    [[previewableContentsController_ view]
+        setFrame:[[sidebarController_ view] bounds]];
+    [[sidebarController_ view]
+        addSubview:[previewableContentsController_ view]];
 
     // Create a controller for the tab strip, giving it the model object for
     // this window's Browser and the tab strip view. The controller will handle
@@ -1015,11 +1025,8 @@
 // StatusBubble delegate method: tell the status bubble the frame it should
 // position itself in.
 - (NSRect)statusBubbleBaseFrame {
-  NSView* baseView = [sidebarController_ view];
-  NSArray* contentsSubviews = [baseView subviews];
-  if ([contentsSubviews count] > 0)
-    baseView = [contentsSubviews objectAtIndex:0];
-  return [[baseView superview] convertRect:[baseView frame] toView:nil];
+  NSView* view = [previewableContentsController_ view];
+  return [view convertRect:[view bounds] toView:nil];
 }
 
 - (GTMWindowSheetController*)sheetController {

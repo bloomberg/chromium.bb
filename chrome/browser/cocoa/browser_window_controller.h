@@ -38,6 +38,7 @@ class ConstrainedWindowMac;
 @class IncognitoImageView;
 @class InfoBarContainerController;
 class LocationBarViewMac;
+@class PreviewableContentsController;
 @class SidebarController;
 class StatusBubbleMac;
 class TabContents;
@@ -68,6 +69,7 @@ class TabContents;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
   scoped_nsobject<DevToolsController> devToolsController_;
   scoped_nsobject<SidebarController> sidebarController_;
+  scoped_nsobject<PreviewableContentsController> previewableContentsController_;
   scoped_nsobject<FullscreenController> fullscreenController_;
 
   // Strong. StatusBubble is a special case of a strong reference that

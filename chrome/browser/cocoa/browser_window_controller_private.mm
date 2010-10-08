@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/cocoa/framed_browser_window.h"
 #import "chrome/browser/cocoa/fullscreen_controller.h"
+#import "chrome/browser/cocoa/previewable_contents_controller.h"
 #import "chrome/browser/cocoa/side_tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
@@ -50,13 +51,13 @@ const CGFloat kLocBarBottomInset = 1;
   if ([self useVerticalTabs])
     factory = [SideTabStripController class];
 
-  DCHECK([sidebarController_ view]);
-  DCHECK([[sidebarController_ view] window]);
+  DCHECK([previewableContentsController_ activeContainer]);
+  DCHECK([[previewableContentsController_ activeContainer] window]);
   tabStripController_.reset([[factory alloc]
-                              initWithView:[self tabStripView]
-                                switchView:[sidebarController_ view]
-                                   browser:browser_.get()
-                                  delegate:self]);
+      initWithView:[self tabStripView]
+        switchView:[previewableContentsController_ activeContainer]
+           browser:browser_.get()
+          delegate:self]);
 }
 
 - (void)saveWindowPositionIfNeeded {
