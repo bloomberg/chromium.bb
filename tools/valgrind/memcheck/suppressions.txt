@@ -2838,3 +2838,16 @@
    fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
    fun:_ZN14ProfileManager17GetDefaultProfileEv
 }
+{
+   bug_58561
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper16GetOrCreateGroupERKSs
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper13RequestSocketERKSsPKNS1_7RequestE
+   fun:_ZN3net20ClientSocketPoolBaseINS_15TCPSocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net19TCPClientSocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net18ClientSocketHandle4InitINS_15TCPSocketParamsENS_19TCPClientSocketPoolEEEiRKSsRK13scoped_refptrIT_ENS_15RequestPriorityEP14CallbackRunnerI6Tuple1IiEEPT0_RKNS_11BoundNetLogE
+   fun:_ZN3net17HttpStreamRequest16DoInitConnectionEv
+   fun:_ZN3net17HttpStreamRequest6DoLoopEi
+}
