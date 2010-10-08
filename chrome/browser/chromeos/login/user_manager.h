@@ -85,6 +85,10 @@ class UserManager : public UserImageLoader::Delegate,
   void SaveUserImage(const std::string& username,
                      const SkBitmap& image);
 
+  // Sets one of the default images to the specified user and saves this
+  // setting in local state.
+  void SetDefaultUserImage(const std::string& username);
+
   // chromeos::UserImageLoader::Delegate implementation.
   virtual void OnImageLoaded(const std::string& username,
                              const SkBitmap& image);

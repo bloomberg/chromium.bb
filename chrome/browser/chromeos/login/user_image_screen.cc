@@ -93,12 +93,12 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
   if (camera_.get())
     camera_->Uninitialize();
   UserManager* user_manager = UserManager::Get();
-  if (user_manager) {
-    // TODO(avayvod): Check that there's logged in user actually.
-    user_manager->SetLoggedInUserImage(image);
-    const UserManager::User& user = user_manager->logged_in_user();
-    user_manager->SaveUserImage(user.email(), image);
-  }
+  DCHECK(user_manager);
+
+  const UserManager::User& user = user_manager->logged_in_user();
+  DCHECK(!user.email().empty());
+
+  user_manager->SaveUserImage(user.email(), image);
   if (delegate())
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }
@@ -106,7 +106,13 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
 void UserImageScreen::OnSkip() {
   if (camera_.get())
     camera_->Uninitialize();
-  // TODO(avayvod): Use one of the default images. See http://crosbug.com/5780.
+  UserManager* user_manager = UserManager::Get();
+  DCHECK(user_manager);
+
+  const UserManager::User& user = user_manager->logged_in_user();
+  DCHECK(!user.email().empty());
+
+  user_manager->SetDefaultUserImage(user.email());
   if (delegate())
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SKIPPED);
 }
