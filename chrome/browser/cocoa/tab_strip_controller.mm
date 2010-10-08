@@ -971,9 +971,8 @@ private:
 
   // Make a new tab. Load the contents of this tab from the nib and associate
   // the new controller with |contents| so it can be looked up later.
-  TabContentsController* contentsController =
-      [[[TabContentsController alloc] initWithContents:contents]
-          autorelease];
+  scoped_nsobject<TabContentsController> contentsController(
+      [[TabContentsController alloc] initWithContents:contents]);
   [tabContentsArray_ insertObject:contentsController atIndex:index];
 
   // Make a new tab and add it to the strip. Keep track of its controller.
@@ -1066,6 +1065,26 @@ private:
     if (newContents->find_ui_active())
       browser_->GetFindBarController()->find_bar()->SetFocusAndSelection();
   }
+}
+
+- (void)tabReplacedWithContents:(TabContents*)newContents
+               previousContents:(TabContents*)oldContents
+                        atIndex:(NSInteger)modelIndex {
+  NSInteger index = [self indexFromModelIndex:modelIndex];
+  TabContentsController* oldController =
+      [tabContentsArray_ objectAtIndex:index];
+  DCHECK_EQ(oldContents, [oldController tabContents]);
+
+  // Simply create a new TabContentsController for |newContents| and place it
+  // into the array, replacing |oldContents|.  A TabSelectedAt notification will
+  // follow, at which point we will install the new view.
+  scoped_nsobject<TabContentsController> newController(
+      [[TabContentsController alloc] initWithContents:newContents]);
+
+  // Bye bye, |oldController|.
+  [tabContentsArray_ replaceObjectAtIndex:index withObject:newController];
+
+  [delegate_ onReplaceTabWithContents:newContents];
 }
 
 // Remove all knowledge about this tab and its associated controller, and remove

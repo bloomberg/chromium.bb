@@ -23,6 +23,8 @@
 @implementation TestTabStripControllerDelegate
 - (void)onSelectTabWithContents:(TabContents*)contents {
 }
+- (void)onReplaceTabWithContents:(TabContents*)contents {
+}
 - (void)onSelectedTabChange:(TabStripModelObserver::TabChangeType)change {
 }
 - (void)onTabDetachedWithContents:(TabContents*)contents {

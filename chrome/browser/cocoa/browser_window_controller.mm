@@ -1371,6 +1371,9 @@
   [infoBarContainerController_ changeTabContents:contents];
 }
 
+- (void)onReplaceTabWithContents:(TabContents*)contents {
+}
+
 - (void)onSelectedTabChange:(TabStripModelObserver::TabChangeType)change {
   // Update titles if this is the currently selected tab and if it isn't just
   // the loading state which changed.

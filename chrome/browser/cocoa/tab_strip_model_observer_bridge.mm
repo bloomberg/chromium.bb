@@ -86,7 +86,14 @@ void TabStripModelObserverBridge::TabChangedAt(TabContents* contents,
 void TabStripModelObserverBridge::TabReplacedAt(TabContents* old_contents,
                                                 TabContents* new_contents,
                                                 int index) {
-  TabChangedAt(new_contents, index, ALL);
+  if ([controller_ respondsToSelector:
+          @selector(tabReplacedWithContents:previousContents:atIndex:)]) {
+    [controller_ tabReplacedWithContents:new_contents
+                        previousContents:old_contents
+                                 atIndex:index];
+  } else {
+    TabChangedAt(new_contents, index, ALL);
+  }
 }
 
 void TabStripModelObserverBridge::TabMiniStateChanged(TabContents* contents,

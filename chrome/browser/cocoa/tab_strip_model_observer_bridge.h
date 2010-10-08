@@ -71,6 +71,9 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
 - (void)tabChangedWithContents:(TabContents*)contents
                        atIndex:(NSInteger)index
                     changeType:(TabStripModelObserver::TabChangeType)change;
+- (void)tabReplacedWithContents:(TabContents*)newContents
+               previousContents:(TabContents*)oldContents
+                        atIndex:(NSInteger)index;
 - (void)tabMiniStateChangedWithContents:(TabContents*)contents
                                 atIndex:(NSInteger)index;
 - (void)tabStripEmpty;

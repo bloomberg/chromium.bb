@@ -38,6 +38,9 @@ class ToolbarModel;
 // Stripped down version of TabStripModelObserverBridge:selectTabWithContents.
 - (void)onSelectTabWithContents:(TabContents*)contents;
 
+// Stripped down version of TabStripModelObserverBridge:tabReplacedWithContents.
+- (void)onReplaceTabWithContents:(TabContents*)contents;
+
 // Stripped down version of TabStripModelObserverBridge:tabChangedWithContents.
 - (void)onSelectedTabChange:(TabStripModelObserver::TabChangeType)change;
 
