@@ -56,6 +56,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "webkit/glue/webkit_glue.h"
+#include "net/base/escape.h"
 #ifdef CHROME_V8
 #include "v8/include/v8.h"
 #endif
@@ -793,6 +794,43 @@ std::string VersionNumberToString(uint32 value) {
   return base::IntToString(hi) + "." + base::IntToString(low);
 }
 
+namespace {
+
+// Output DxDiagNode tree as HTML tables and nested HTML unordered list
+// elements.
+void DxDiagNodeToHTML(std::string* output, const DxDiagNode& node) {
+  output->append("<table>\n");
+
+  for (std::map<std::string, std::string>::const_iterator it =
+           node.values.begin();
+       it != node.values.end();
+       ++it) {
+     output->append("<tr><td><strong>");
+     output->append(EscapeForHTML(it->first));
+     output->append("</strong></td><td>");
+     output->append(EscapeForHTML(it->second));
+     output->append("</td></tr>\n");
+  }
+
+  output->append("</table>\n<ul>\n");
+
+  for (std::map<std::string, DxDiagNode>::const_iterator it =
+           node.children.begin();
+       it != node.children.end();
+       ++it) {
+     output->append("<li><strong>");
+     output->append(EscapeForHTML(it->first));
+     output->append("</strong>");
+
+     DxDiagNodeToHTML(output, it->second);
+
+     output->append("</li>\n");
+  }
+
+  output->append("</ul>\n");
+}
+}
+
 std::string AboutGpu() {
   GPUInfo gpu_info = GpuProcessHost::Get()->gpu_info();
 
@@ -823,6 +861,12 @@ std::string AboutGpu() {
                     gpu_info.vertex_shader_version()).c_str());
     html.append("<li><strong>GL Version:</strong> ");
     html.append(VersionNumberToString(gpu_info.gl_version()).c_str());
+
+#if defined(OS_WIN)
+    html.append("<li><strong>DirectX Diagnostics:</strong> ");
+    DxDiagNodeToHTML(&html, gpu_info.dx_diagnostics());
+#endif
+
     html.append("</ul></body></html> ");
   }
   return html;

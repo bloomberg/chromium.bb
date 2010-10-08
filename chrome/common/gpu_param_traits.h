@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "chrome/common/common_param_traits.h"
+#include "chrome/common/dx_diag_node.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_native_window_handle.h"
 #include "gfx/native_widget_types.h"
@@ -46,6 +47,14 @@ struct ParamTraits<GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params> {
 template <>
 struct ParamTraits<GPUInfo> {
   typedef GPUInfo param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<DxDiagNode> {
+  typedef DxDiagNode param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
