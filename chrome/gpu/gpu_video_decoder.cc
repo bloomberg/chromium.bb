@@ -240,8 +240,10 @@ GpuVideoDecoder::GpuVideoDecoder(
 #if defined(OS_WIN)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableAcceleratedDecoding)) {
-    decode_engine_.reset(new media::MftH264DecodeEngine(true));
-    video_device_.reset(new MftAngleVideoDevice());
+    // The following code are removed so that we don't link them.
+    // TODO(hclam): Enable the code once the crash is solved on XP.
+    // decode_engine_.reset(new media::MftH264DecodeEngine(true));
+    // video_device_.reset(new MftAngleVideoDevice());
   }
 #else
   decode_engine_.reset(new FakeGlVideoDecodeEngine());
