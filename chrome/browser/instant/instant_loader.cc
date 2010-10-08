@@ -130,8 +130,6 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
         execute_js_id_(0) {
     registrar_.Add(this, NotificationType::LOAD_COMPLETED_MAIN_FRAME,
                    Source<TabContents>(tab_contents_));
-    registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_contents_));
   }
 
   // Sets the text to send to the page.
@@ -172,10 +170,6 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
         SupportsInstant();
         return;
       }
-
-      case NotificationType::TAB_CONTENTS_DESTROYED:
-        delete this;
-        return;
 
       default:
         NOTREACHED();
