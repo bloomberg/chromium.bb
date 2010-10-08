@@ -281,7 +281,7 @@
         ['OS=="mac"', {
           'product_name': 'TestShell',
           'dependencies': [
-            'layout_test_helper',
+            'layout_test_helper', 'copy_mesa',
           ],
           'variables': {
             'repack_path': '../../../tools/data_pack/repack.py',
@@ -770,6 +770,15 @@
               '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
             ],
           },
+        },
+        {
+          'target_name': 'copy_mesa',
+          'type': 'none',
+          'dependencies': ['<(DEPTH)/third_party/mesa/mesa.gyp:osmesa'],
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/MacOS/',
+            'files': ['<(PRODUCT_DIR)/osmesa.so'],
+          }],
         },
       ],
     }],

@@ -12,4 +12,12 @@ BUG_AJWONG MAC : fast/css/transformed-mask.html = IMAGE
 BUG10479 DEBUG MAC : svg/hixie/perf/001.xml = FAIL
 BUG10479 DEBUG MAC : svg/hixie/perf/002.xml = FAIL
 
+// Remove these when rolling past r69412
+BUGWEBGL MAC : fast/canvas/webgl/gl-uniform-arrays.html = TEXT
+BUGWEBGL MAC : fast/canvas/webgl/object-deletion-behaviour.html = TEXT
+BUGWEBGL MAC : fast/canvas/webgl/point-size.html = TEXT
+BUGWEBGL MAC : fast/canvas/webgl/gl-object-get-calls.html = TIMEOUT
+BUGWEBGL MAC : fast/canvas/webgl/tex-image-and-uniform-binding-bugs.html = TIMEOUT
+BUGWEBGL MAC : fast/canvas/webgl/uniform-location.html = TIMEOUT
+
 BUG58481 WIN : fast/html/object-image-nested-fallback.html = CRASH
