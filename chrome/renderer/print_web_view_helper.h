@@ -88,14 +88,6 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   // Notification when printing is done - signal teardown
   void DidFinishPrinting(bool success);
 
-  // Prints the page listed in |params| as a JPEG image. The width and height of
-  // the image will scale propotionally given the |zoom_factor| multiplier. The
-  // encoded JPEG data will be written into the supplied vector |image_data|.
-  void PrintPageAsJPEG(const ViewMsg_PrintPage_Params& params,
-                       WebKit::WebFrame* frame,
-                       float zoom_factor,
-                       std::vector<unsigned char>* image_data);
-
  protected:
   bool CopyAndPrint(const ViewMsg_PrintPages_Params& params,
                     WebKit::WebFrame* web_frame);

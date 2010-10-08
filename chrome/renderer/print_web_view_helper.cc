@@ -10,7 +10,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
-#include "gfx/codec/jpeg_codec.h"
 #include "grit/generated_resources.h"
 #include "printing/units.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
@@ -270,41 +269,6 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
   print_web_view_->mainFrame()->loadRequest(WebURLRequest(url));
 
   return true;
-}
-
-void PrintWebViewHelper::PrintPageAsJPEG(
-    const ViewMsg_PrintPage_Params& params,
-    WebFrame* frame,
-    float zoom_factor,
-    std::vector<unsigned char>* image_data) {
-  PrepareFrameAndViewForPrint prep_frame_view(params.params,
-                                              frame,
-                                              frame->view());
-  const gfx::Size& canvas_size(prep_frame_view.GetPrintCanvasSize());
-
-  // Since WebKit extends the page width depending on the magical shrink
-  // factor we make sure the canvas covers the worst case scenario
-  // (x2.0 currently).  PrintContext will then set the correct clipping region.
-  int size_x = static_cast<int>(canvas_size.width() * params.params.max_shrink);
-  int size_y = static_cast<int>(canvas_size.height() *
-      params.params.max_shrink);
-
-  // Access the bitmap from the canvas device.
-  skia::PlatformCanvas canvas(size_x, size_y, true);
-  frame->printPage(params.page_number, webkit_glue::ToWebCanvas(&canvas));
-  const SkBitmap& bitmap = canvas.getDevice()->accessBitmap(false);
-
-  // Encode the SkBitmap to jpeg.
-  SkAutoLockPixels image_lock(bitmap);
-  bool encoded = gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_BGRA,
-      static_cast<int>(bitmap.width() * zoom_factor),
-      static_cast<int>(bitmap.height() * zoom_factor),
-      static_cast<int>(bitmap.rowBytes()),
-      90,
-      image_data);
-  DCHECK(encoded);
 }
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
