@@ -476,8 +476,10 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   msg.msg_flags = 0;
 #if OSX_BLEMISH_HEURISTIC
   for (retry_count = 0; retry_count < kRecvMsgRetries; ++retry_count) {
-    if (0 != (count = recvmsg(handle, &msg,
-                              (flags & kDontWait) ? MSG_DONTWAIT : 0))) {
+    // We have to pass MSG_WAITALL here, because we have already consumed
+    // the header.  If we returned EAGAIN here, subsequent calls would read
+    // data as a header, and much hilarity would ensue.
+    if (0 != (count = recvmsg(handle, &msg, MSG_WAITALL))) {
       break;
     }
   }
@@ -489,6 +491,8 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags) {
   count = recvmsg(handle, &msg, MSG_WAITALL);
 #endif  // OSX_BLEMISH_HEURISTIC
   if (0 < count) {
+    // If the caller requested fewer bytes than the message contained, we need
+    // to read the remaining bytes, discard them, and report message truncated.
     if (static_cast<size_t>(count) < header.message_bytes) {
       if (!SkipFile(handle, header.message_bytes - count)) {
         return -1;
