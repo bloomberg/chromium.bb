@@ -168,6 +168,15 @@ PluginList::PluginList()
   PlatformInit();
 }
 
+bool PluginList::ShouldDisableGroup(const string16& group_name) {
+  AutoLock lock(lock_);
+  if (PluginGroup::IsPluginNameDisabledByPolicy(group_name)) {
+    disabled_groups_.insert(group_name);
+    return true;
+  }
+  return disabled_groups_.count(group_name) > 0;
+}
+
 void PluginList::LoadPlugins(bool refresh) {
   // Don't want to hold the lock while loading new plugins, so we don't block
   // other methods if they're called on other threads.
@@ -229,15 +238,6 @@ void PluginList::LoadPlugins(bool refresh) {
   if (webkit_glue::IsDefaultPluginEnabled())
     LoadPlugin(FilePath(kDefaultPluginLibraryName), &new_plugins);
 
-  // Only update the data now since loading plugins can take a while.
-  AutoLock lock(lock_);
-
-  // Mark disabled plugins as such.
-  for (size_t i = 0; i < new_plugins.size(); ++i) {
-    if (disabled_plugins_.count(new_plugins[i].path))
-      new_plugins[i].enabled = false;
-  }
-
   // Disable all of the plugins and plugin groups that are disabled by policy.
   // There's currenly a bug that makes it impossible to correctly re-enable
   // plugins or plugin-groups to their original, "pre-policy" state, so
@@ -247,28 +247,28 @@ void PluginList::LoadPlugins(bool refresh) {
   GetPluginGroups(&new_plugins, &plugin_groups);
   for (PluginMap::const_iterator it = plugin_groups.begin();
        it != plugin_groups.end(); ++it) {
-    string16 group_name = it->second->GetGroupName();
-    if (PluginGroup::IsPluginNameDisabledByPolicy(group_name) &&
-        !disabled_groups_.count(group_name)) {
-      disabled_groups_.insert(group_name);
+    PluginGroup* group = it->second.get();
+    string16 group_name = group->GetGroupName();
+    if (ShouldDisableGroup(group_name)) {
+      it->second->Enable(false);
     }
 
-    if (disabled_groups_.count(group_name)) {
-      // Disable the plugins manually instead of PluginGroup::Enable(false)
-      // since that will need to acquire a lock which we already have.
-      std::vector<FilePath> paths = it->second->GetPaths();
-      for (size_t i = 0; i < paths.size(); ++i) {
-        for (size_t j = 0; j < new_plugins.size(); ++j) {
-          if (new_plugins[j].path == paths[i]) {
-            new_plugins[j].enabled = false;
-            break;
-          }
-        }
+    if (disable_outdated_plugins_) {
+      group->DisableOutdatedPlugins();
+      if (!group->Enabled()) {
+        AutoLock lock(lock_);
+        disabled_groups_.insert(group_name);
       }
     }
+  }
 
-    if (disable_outdated_plugins_)
-      it->second->DisableOutdatedPlugins();
+  // Only update the data now since loading plugins can take a while.
+  AutoLock lock(lock_);
+
+  // Mark disabled plugins as such.
+  for (size_t i = 0; i < new_plugins.size(); ++i) {
+    if (disabled_plugins_.count(new_plugins[i].path))
+      new_plugins[i].enabled = false;
   }
 
   plugins_ = new_plugins;

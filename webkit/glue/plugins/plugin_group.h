@@ -131,10 +131,6 @@ class PluginGroup {
   // minimum version.
   void DisableOutdatedPlugins();
 
- protected:
-  friend class NPAPI::PluginList;
-  std::vector<FilePath> GetPaths() const;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(PluginGroupTest, PluginGroupDefinition);
 

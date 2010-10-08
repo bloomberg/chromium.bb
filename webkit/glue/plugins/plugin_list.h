@@ -211,6 +211,12 @@ class PluginList {
   bool ShouldLoadPlugin(const WebPluginInfo& info,
                         std::vector<WebPluginInfo>* plugins);
 
+  // Return whether a plug-in group with the given name should be disabled,
+  // either because it already is on the list of disabled groups, or because it
+  // is blacklisted by a policy. In the latter case, add the plugin group to the
+  // list of disabled groups as well.
+  bool ShouldDisableGroup(const string16& group_name);
+
   // Find a plugin by mime type; only searches enabled plugins.
   // The allow_wildcard parameter controls whether this function returns
   // plugins which support wildcard mime types (* as the mime type)
