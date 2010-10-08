@@ -119,15 +119,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallThenCancel) {
                                    "1.0"));
 }
 
-#if defined(OS_MACOSX)
-// See http://crbug.com/46097
-#define MAYBE_Incognito FLAKY_Incognito
-#else
-#define MAYBE_Incognito Incognito
-#endif
 // Tests that installing and uninstalling extensions don't crash with an
 // incognito window open.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_Incognito) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
   // Open an incognito window to the extensions management page.  We just
   // want to make sure that we don't crash while playing with extensions when
   // this guy is around.
