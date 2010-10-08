@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,9 +9,15 @@ import sys
 
 import breakpad
 
+from git_cl_repo import git_cl
+from git_cl_repo import upload
+
 import presubmit_support
 import scm
 import watchlists
+
+# Really ugly hack to quiet upload.py
+upload.verbosity = 0
 
 def Backquote(cmd, cwd=None):
   """Like running `cmd` in a shell script."""
@@ -19,11 +25,11 @@ def Backquote(cmd, cwd=None):
                           cwd=cwd,
                           stdout=subprocess.PIPE).communicate()[0].strip()
 
-def BackquoteAsInteger(cmd, cwd=None):
-  """Like Backquote, but returns either an int or None."""
+def ConvertToInteger(input):
+  """Convert a string to integer, but returns either an int or None."""
   try:
-    return int(Backquote(cmd, cwd))
-  except ValueError:
+    return int(input)
+  except TypeError, ValueError:
     return None
 
 
@@ -43,10 +49,11 @@ class ChangeOptions:
     # We use the sha1 of HEAD as a name of this change.
     name = Backquote(['git', 'rev-parse', 'HEAD'])
     files = scm.GIT.CaptureStatus([root], upstream_branch)
-    issue = BackquoteAsInteger(['git', 'cl', 'status', '--field=id'])
-    patchset = BackquoteAsInteger(['git', 'cl', 'status', '--field=patch'])
+    cl = git_cl.Changelist()
+    issue = ConvertToInteger(cl.GetIssue())
+    patchset = ConvertToInteger(cl.GetPatchset())
     if issue:
-      description = Backquote(['git', 'cl', 'status', '--field=desc'])
+      description = cl.GetDescription()
     else:
       # If the change was never uploaded, use the log messages of all commits
       # up to the branch point, as git cl upload will prefill the description
