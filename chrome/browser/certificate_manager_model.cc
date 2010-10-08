@@ -129,6 +129,17 @@ int CertificateManagerModel::ExportToPKCS12(const net::CertificateList& certs,
   return cert_db_.ExportToPKCS12(certs, password, output);
 }
 
+unsigned int CertificateManagerModel::GetCertTrust(
+    const net::X509Certificate* cert, net::CertType type) const {
+  return cert_db_.GetCertTrust(cert, type);
+}
+
+bool CertificateManagerModel::SetCertTrust(const net::X509Certificate* cert,
+                                           net::CertType type,
+                                           unsigned int trust_bits) {
+  return cert_db_.SetCertTrust(cert, type, trust_bits);
+}
+
 bool CertificateManagerModel::Delete(net::X509Certificate* cert) {
   bool result = cert_db_.DeleteCertAndKey(cert);
   if (result)

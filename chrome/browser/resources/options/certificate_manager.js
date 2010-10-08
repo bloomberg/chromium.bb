@@ -37,8 +37,8 @@ cr.define('options', function() {
         }
       } else if (id == 'caCertsTab') {
         this.editButton.onclick = function(e) {
-          var selected = tree.selectedItem;
-          chrome.send('editCaCertificate', [selected.data.id]);
+          var data = tree.selectedItem.data;
+          CertificateEditCaTrustOverlay.show(data.id, data.name);
         }
       } else {
         console.log('unknown edit button for: ' + id);

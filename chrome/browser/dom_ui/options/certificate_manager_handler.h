@@ -41,8 +41,12 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   // Edit server certificate trust values.
   void EditServer(const ListValue* args);
 
-  // Edit certificate authority trust values.
-  void EditCA(const ListValue* args);
+  // Edit certificate authority trust values.  The sequence goes like:
+  //  1. user clicks edit button -> CertificateEditCaTrustOverlay.show ->
+  //  GetCATrust -> CertificateEditCaTrustOverlay.populateTrust
+  //  2. user clicks ok -> EditCATrust -> CertificateEditCaTrustOverlay.dismiss
+  void GetCATrust(const ListValue* args);
+  void EditCATrust(const ListValue* args);
 
   // Cleanup state stored during import or export process.
   void CancelImportExportProcess(const ListValue* args);

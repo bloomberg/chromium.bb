@@ -63,6 +63,20 @@ class CertificateManagerModel {
                      const string16& password,
                      std::string* output) const;
 
+  // Get trust bits for certificate.
+  // Return value will be a bit field of TRUST_* values from CertDatabase, or
+  // UNTRUSTED.
+  unsigned int GetCertTrust(const net::X509Certificate* cert,
+                            net::CertType type) const;
+
+  // Set trust values for certificate.
+  // |trust_bits| should be a bit field of TRUST_* values from CertDatabase, or
+  // UNTRUSTED.
+  // Returns true on success or false on failure.
+  bool SetCertTrust(const net::X509Certificate* cert,
+                    net::CertType type,
+                    unsigned int trust_bits);
+
   // Delete the cert.  Returns true on success.  |cert| is still valid when this
   // function returns.
   bool Delete(net::X509Certificate* cert);

@@ -79,6 +79,15 @@ net::X509Certificate* CallbackArgsToCert(const ListValue* args) {
   return cert;
 }
 
+bool CallbackArgsToBool(const ListValue* args, int index, bool* result) {
+  std::string string_value;
+  if (!args->GetString(index, &string_value))
+    return false;
+
+  *result = string_value[0] == 't';
+  return true;
+}
+
 struct DictionaryIdComparator {
   explicit DictionaryIdComparator(icu::Collator* collator)
       : collator_(collator) {
@@ -310,14 +319,29 @@ void CertificateManagerHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EXPORT_PASSWORD_HELP));
   localized_strings->SetString("certificateConfirmPasswordLabel",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_CONFIRM_PASSWORD_LABEL));
+
+  // Edit CA Trust overlay strings.
+  localized_strings->SetString("certificateEditTrustLabel",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_TRUST_LABEL));
+  localized_strings->SetString("certificateEditCaTrustDescriptionFormat",
+      l10n_util::GetStringUTF16(
+          IDS_CERT_MANAGER_EDIT_CA_TRUST_DESCRIPTION_FORMAT));
+  localized_strings->SetString("certificateCaTrustSSLLabel",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_CA_TRUST_SSL_LABEL));
+  localized_strings->SetString("certificateCaTrustEmailLabel",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_CA_TRUST_EMAIL_LABEL));
+  localized_strings->SetString("certificateCaTrustObjSignLabel",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_CA_TRUST_OBJSIGN_LABEL));
 }
 
 void CertificateManagerHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("viewCertificate",
       NewCallback(this, &CertificateManagerHandler::View));
 
-  dom_ui_->RegisterMessageCallback("editCaCertificate",
-      NewCallback(this, &CertificateManagerHandler::EditCA));
+  dom_ui_->RegisterMessageCallback("getCaCertificateTrust",
+      NewCallback(this, &CertificateManagerHandler::GetCATrust));
+  dom_ui_->RegisterMessageCallback("editCaCertificateTrust",
+      NewCallback(this, &CertificateManagerHandler::EditCATrust));
 
   dom_ui_->RegisterMessageCallback("editServerCertificate",
       NewCallback(this, &CertificateManagerHandler::EditServer));
@@ -393,8 +417,51 @@ void CertificateManagerHandler::View(const ListValue* args) {
   ShowCertificateViewer(GetParentWindow(), cert);
 }
 
-void CertificateManagerHandler::EditCA(const ListValue* args) {
-  NOTIMPLEMENTED();
+void CertificateManagerHandler::GetCATrust(const ListValue* args) {
+  net::X509Certificate* cert = CallbackArgsToCert(args);
+  if (!cert) {
+    dom_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+    return;
+  }
+
+  int trust = certificate_manager_model_->GetCertTrust(cert, net::CA_CERT);
+  FundamentalValue ssl_value(bool(trust & net::CertDatabase::TRUSTED_SSL));
+  FundamentalValue email_value(bool(trust & net::CertDatabase::TRUSTED_EMAIL));
+  FundamentalValue obj_sign_value(
+      bool(trust & net::CertDatabase::TRUSTED_OBJ_SIGN));
+  dom_ui_->CallJavascriptFunction(
+      L"CertificateEditCaTrustOverlay.populateTrust",
+      ssl_value, email_value, obj_sign_value);
+}
+
+void CertificateManagerHandler::EditCATrust(const ListValue* args) {
+  net::X509Certificate* cert = CallbackArgsToCert(args);
+  bool fail = !cert;
+  bool trust_ssl;
+  bool trust_email;
+  bool trust_obj_sign;
+  fail |= !CallbackArgsToBool(args, 1, &trust_ssl);
+  fail |= !CallbackArgsToBool(args, 2, &trust_email);
+  fail |= !CallbackArgsToBool(args, 3, &trust_obj_sign);
+  if (fail) {
+    LOG(ERROR) << "EditCATrust args fail";
+    dom_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+    return;
+  }
+
+  bool result = certificate_manager_model_->SetCertTrust(
+      cert,
+      net::CA_CERT,
+      trust_ssl * net::CertDatabase::TRUSTED_SSL +
+          trust_email * net::CertDatabase::TRUSTED_EMAIL +
+          trust_obj_sign * net::CertDatabase::TRUSTED_OBJ_SIGN);
+  dom_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+  if (!result) {
+    // TODO(mattm): better error messages?
+    ShowError(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SET_TRUST_ERROR_TITLE),
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+  }
 }
 
 void CertificateManagerHandler::EditServer(const ListValue* args) {
