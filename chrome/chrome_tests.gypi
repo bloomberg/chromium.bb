@@ -1192,6 +1192,7 @@
         'browser/cocoa/page_info_bubble_controller_unittest.mm',
         'browser/cocoa/page_info_window_mac_unittest.mm',
         'browser/cocoa/preferences_window_controller_unittest.mm',
+        'browser/cocoa/previewable_contents_controller_unittest.mm',
         'browser/cocoa/reload_button_unittest.mm',
         'browser/cocoa/rwhvm_editcommand_helper_unittest.mm',
         'browser/cocoa/sad_tab_controller_unittest.mm',

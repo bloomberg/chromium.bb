@@ -1087,6 +1087,8 @@
         'browser/cocoa/page_info_window_mac.mm',
         'browser/cocoa/preferences_window_controller.h',
         'browser/cocoa/preferences_window_controller.mm',
+        'browser/cocoa/previewable_contents_controller.h',
+        'browser/cocoa/previewable_contents_controller.mm',
         'browser/cocoa/reload_button.h',
         'browser/cocoa/reload_button.mm',
         'browser/cocoa/repost_form_warning_mac.h',
