@@ -38,6 +38,9 @@
 
 namespace {
 
+// a fake resource id for not loading extra resource.
+const int kNoExtraSource = -1;
+
 // A utility function that generates css font property from gfx::Font.
 std::wstring GetFontShorthand(const gfx::Font* font) {
   std::wstring out;
@@ -114,14 +117,14 @@ const std::string& GetImageDataUrlForRadio(bool on) {
 
 /**
  * Generates a html file that uses |menu_class| as a menu implementation.
- * |menu_source| specifies the source that contains the definition of the
+ * |menu_source_id| specifies the source that contains the definition of the
  * |menu_class|, or empty string to use plain "Menu".
  */
 std::string GetMenuUIHTMLSourceFromString(
     const chromeos::MenuUI& menu_ui,
     const base::StringPiece& menu_template,
     const std::string& menu_class,
-    const std::string& menu_source) {
+    int menu_source_id) {
 #define SET_INTEGER_PROPERTY(prop) \
   value_config.SetInteger(#prop, menu_config.prop)
 
@@ -168,11 +171,19 @@ std::string GetMenuUIHTMLSourceFromString(
   base::JSONWriter::Write(&value_config, false, &json_config);
 
   DictionaryValue strings;
+
   strings.SetString(
       "init_script",
       menu_class + ".decorate(document.getElementById('viewport'));" +
       " init(" + json_config + ");");
-  strings.SetString("menu_source", menu_source);
+
+  if (menu_source_id == kNoExtraSource) {
+    strings.SetString("menu_source", "");
+  } else {
+    base::StringPiece menu_source(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(menu_source_id));
+    strings.SetString("menu_source", menu_source.as_string());
+  }
 
   return jstemplate_builder::GetI18nTemplateHtml(menu_template, &strings);
 }
@@ -181,9 +192,9 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
                          public URLFetcher::Delegate {
  public:
   MenuUIHTMLSource(const chromeos::MenuUI& menu_ui,
-                   Profile* profile,
+                   const std::string& source_name,
                    const std::string& menu_class,
-                   const std::string& menu_source);
+                   int menu_source_id);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -211,11 +222,10 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
   // The name of JS Menu class to use.
   const std::string menu_class_;
 
-  // The source file of the menu subclass.
-  const std::string menu_source_;
+  // The resource id of the file of the menu subclass.
+  int menu_source_id_;
 #ifndef NDEBUG
   int request_id_;
-  Profile* profile_;
 #endif
   DISALLOW_COPY_AND_ASSIGN(MenuUIHTMLSource);
 };
@@ -289,18 +299,19 @@ class MenuHandler : public chromeos::MenuHandlerBase,
 ////////////////////////////////////////////////////////////////////////////////
 
 MenuUIHTMLSource::MenuUIHTMLSource(const chromeos::MenuUI& menu_ui,
-                                   Profile* profile,
+                                   const std::string& source_name,
                                    const std::string& menu_class,
-                                   const std::string& menu_source)
-    : DataSource(chrome::kChromeUIMenu, MessageLoop::current()),
+                                   int menu_source_id)
+    : DataSource(source_name, MessageLoop::current()),
       menu_ui_(menu_ui),
       menu_class_(menu_class),
-      menu_source_(menu_source)
+      menu_source_id_(menu_source_id)
 #ifndef NDEBUG
-    , request_id_(-1),
-      profile_(profile)
+    , request_id_(-1)
 #endif
-     {
+{
+  // Important !
+  // Don't call any method on menu_ui. MenuUI object is not yet initialized
 }
 
 void MenuUIHTMLSource::StartDataRequest(const std::string& path,
@@ -312,7 +323,7 @@ void MenuUIHTMLSource::StartDataRequest(const std::string& path,
   if (!url.empty()) {
     request_id_ = request_id;
     URLFetcher* fetcher = new URLFetcher(GURL(url), URLFetcher::GET, this);
-    fetcher->set_request_context(profile_->GetRequestContext());
+    fetcher->set_request_context(menu_ui_.GetProfile()->GetRequestContext());
     fetcher->Start();
     return;
   }
@@ -323,7 +334,7 @@ void MenuUIHTMLSource::StartDataRequest(const std::string& path,
   // The resource string should be pure code and should not contain
   // i18n string.
   const std::string menu_html = GetMenuUIHTMLSourceFromString(
-      menu_ui_, menu_template, menu_class_, menu_source_);
+      menu_ui_, menu_template, menu_class_, menu_source_id_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -342,8 +353,8 @@ void MenuUIHTMLSource::OnURLFetchComplete(const URLFetcher* source,
                                           const std::string& data) {
 #ifndef NDEBUG
   // This should not be called in release build.
-  const std::string menu_html =
-      GetMenuUIHTMLSourceFromString(menu_ui_, data, menu_class_, menu_source_);
+  const std::string menu_html = GetMenuUIHTMLSourceFromString(
+      menu_ui_, data, menu_class_, menu_source_id_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -559,6 +570,19 @@ MenuUI::MenuUI(TabContents* contents) : DOMUI(contents) {
           make_scoped_refptr(CreateDataSource())));
 }
 
+MenuUI::MenuUI(TabContents* contents, ChromeURLDataManager::DataSource* source)
+    : DOMUI(contents) {
+  MenuHandler* handler = new MenuHandler();
+  AddMessageHandler((handler)->Attach(this));
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(source)));
+}
+
 void MenuUI::ModelUpdated(const menus::MenuModel* model) {
   DictionaryValue json_model;
   ListValue* items = new ListValue();
@@ -631,17 +655,17 @@ DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
 
 ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {
   return CreateMenuUIHTMLSource(*this,
-                                GetProfile(),
+                                chrome::kChromeUIMenu,
                                 "Menu" /* class name */,
-                                "" /* no extra source */);
+                                kNoExtraSource);
 }
 
 ChromeURLDataManager::DataSource* MenuUI::CreateMenuUIHTMLSource(
     const MenuUI& menu_ui,
-    Profile* profile,
+    const std::string& source_name,
     const std::string& menu_class,
-    const std::string& menu_source) {
-  return new MenuUIHTMLSource(menu_ui, profile, menu_class, menu_source);
+    int menu_source_id) {
+  return new MenuUIHTMLSource(menu_ui, source_name, menu_class, menu_source_id);
 }
 
 }  // namespace chromeos

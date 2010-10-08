@@ -38,19 +38,26 @@ class MenuUI : public DOMUI {
   // Subclass can add extra parameters or replaces default configuration.
   virtual void AddCustomConfigValues(DictionaryValue* config) const {};
 
-  // Create HTML Data source for the menu.  Extended menu
-  // implementation may provide its own menu implmentation.
-  virtual ChromeURLDataManager::DataSource* CreateDataSource();
-
-  // A utility function that create a concrete html file from
-  // template for given |menu_class|.
+  // A utility function which creates a concrete html file from
+  // template file |menu_resource_id| for given |menu_class|.
+  // The resource_name is the host part of DOMUI's url.
+  // Caution: This calls MenuUI::GetProfile() when creating the data source,
+  // thus, it has to be initialized.
   static ChromeURLDataManager::DataSource* CreateMenuUIHTMLSource(
       const MenuUI& menu_ui,
-      Profile* profile,
+      const std::string& source_name,
       const std::string& menu_class,
-      const std::string& menu_source);
+      int menu_source_res_id);
+
+ protected:
+  // A constructor for subclass to initialize the MenuUI with
+  // different data source.
+  MenuUI(TabContents* contents, ChromeURLDataManager::DataSource* source);
 
  private:
+  // Create HTML Data source for the menu.
+  ChromeURLDataManager::DataSource* CreateDataSource();
+
   DISALLOW_COPY_AND_ASSIGN(MenuUI);
 };
 

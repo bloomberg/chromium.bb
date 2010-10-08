@@ -8,6 +8,14 @@
 
 #include "chrome/browser/chromeos/dom_ui/menu_ui.h"
 
+namespace views {
+class Menu2;
+}  // namespace views
+
+namespace menus {
+class MenuModel;
+} // namespace menus
+
 namespace chromeos {
 
 class WrenchMenuUI : public MenuUI {
@@ -17,9 +25,8 @@ class WrenchMenuUI : public MenuUI {
   // MenuUI overrides:
   virtual void AddCustomConfigValues(DictionaryValue* config) const;
 
-  // Create HTML Data source for the menu.  Extended menu
-  // implementation may provide its own menu implmentation.
-  virtual ChromeURLDataManager::DataSource* CreateDataSource();
+  // A convenient factory method to create Menu2 for wrench menu.
+  static views::Menu2* CreateMenu2(menus::MenuModel* model);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuUI);

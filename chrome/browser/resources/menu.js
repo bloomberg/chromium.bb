@@ -38,10 +38,10 @@ MenuItem.prototype = {
   /**
    * Initialize the MenuItem.
    * @param {Menu} menu A {@code Menu} object to which this menu item
-   *   will be added to.
+   *    will be added to.
    * @param {Object} attrs JSON object that represents this menu items
-   *   properties.  This is created from menu model in C code.  See
-   *   chromeos/views/native_menu_domui.cc.
+   *    properties.  This is created from menu model in C code.  See
+   *    chromeos/views/native_menu_domui.cc.
    * @param {number} leftIconWidth The left icon's width. 0 if no icon.
    */
   init: function(menu, attrs, leftIconWidth) {
@@ -127,7 +127,7 @@ MenuItem.prototype = {
         url = this.menu_.config_.checkUrl;
       }
       if (url) {
-        this.style.backgroundImage = "url(" + url + ")";
+        this.style.backgroundImage = 'url(' + url + ')';
       }
       // TODO(oshima): figure out how to update left padding in rule.
       // 4 is the padding on left side of icon.
@@ -158,7 +158,7 @@ MenuItem.prototype = {
       // This overrides left-icon's position, but it's OK as submenu
       // shoudln't have left-icon.
       this.classList.add('right-icon');
-      this.style.backgroundImage = "url(" + this.menu_.config_.arrowUrl + ")";
+      this.style.backgroundImage = 'url(' + this.menu_.config_.arrowUrl + ')';
     }
   },
 };
