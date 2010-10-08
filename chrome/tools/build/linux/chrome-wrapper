@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -130,4 +130,20 @@ export CHROME_VERSION_EXTRA="custom"
 
 exists_desktop_file || generate_desktop_file
 
-exec "$HERE/chrome" "$@"
+CMD_PREFIX=
+ARGS=()
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+    "--")
+        shift
+        break ;;
+    "--gdb")
+        CMD_PREFIX="gdb --args" ;;
+    *)
+        ARGS=( "${ARGS[@]}" "$1" ) ;;
+    esac
+    shift
+done
+set -- "${ARGS[@]}" "$@"
+
+exec $CMD_PREFIX "$HERE/chrome" "$@"
