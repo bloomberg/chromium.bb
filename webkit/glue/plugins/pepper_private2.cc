@@ -19,7 +19,8 @@ void SetInstanceAlwaysOnTop(PP_Instance pp_instance, bool on_top) {
 }
 
 const PPB_Private2 ppb_private2 = {
-  &SetInstanceAlwaysOnTop
+  &SetInstanceAlwaysOnTop,
+  &Private2::DrawGlyphs
 };
 
 }  // namespace

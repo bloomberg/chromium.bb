@@ -18,14 +18,19 @@
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_var.h"
 #include "webkit/glue/plugins/ppb_private.h"
+#include "webkit/glue/plugins/pepper_var.h"
 
 namespace pepper {
 
 #if defined(OS_LINUX)
 class PrivateFontFile : public Resource {
  public:
-  PrivateFontFile(PluginModule* module, int fd) : Resource(module), fd_(fd) {}
-  virtual ~PrivateFontFile() {}
+  PrivateFontFile(PluginModule* module, int fd)
+      : Resource(module),
+        fd_(fd) {
+  }
+  virtual ~PrivateFontFile() {
+  }
 
   // Resource overrides.
   PrivateFontFile* AsPrivateFontFile() { return this; }
@@ -125,16 +130,22 @@ PP_Resource GetResourceImage(PP_Module module_id, PP_ResourceImage image_id) {
 
 PP_Resource GetFontFileWithFallback(
     PP_Module module_id,
-    const PP_PrivateFontFileDescription* description) {
+    const PP_FontDescription_Dev* description,
+    PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX)
   PluginModule* module = PluginModule::FromPPModule(module_id);
   if (!module)
     return 0;
 
-  int fd = webkit_glue::MatchFontWithFallback(description->face,
-                                              description->weight >= 700,
-                                              description->italic,
-                                              description->charset);
+  scoped_refptr<StringVar> face_name(StringVar::FromPPVar(description->face));
+  if (!face_name)
+    return 0;
+
+  int fd = webkit_glue::MatchFontWithFallback(
+      face_name->value().c_str(),
+      description->weight >= PP_FONTWEIGHT_BOLD,
+      description->italic,
+      charset);
   if (fd == -1)
     return 0;
 

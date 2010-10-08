@@ -6,10 +6,14 @@
 #define WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
 
 #include "base/string16.h"
+#include "third_party/ppapi/c/dev/ppb_font_dev.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_var.h"
 
 #define PPB_PRIVATE_INTERFACE "PPB_Private;1"
+
+// From the public PPB_Font_Dev file.
+struct PP_FontDescription_Dev;
 
 typedef enum {
   PP_RESOURCESTRING_PDFGETPASSWORD = 0,
@@ -42,17 +46,6 @@ typedef enum {
 } PP_ResourceImage;
 
 typedef enum {
-  PP_PRIVATEFONTPITCH_DEFAULT = 0,
-  PP_PRIVATEFONTPITCH_FIXED = 1
-} PP_PrivateFontPitch;
-
-typedef enum {
-  PP_PRIVATEFONTFAMILY_DEFAULT = 0,
-  PP_PRIVATEFONTFAMILY_ROMAN = 1,
-  PP_PRIVATEFONTFAMILY_SCRIPT = 2
-} PP_PrivateFontFamily;
-
-typedef enum {
   PP_PRIVATEFONTCHARSET_ANSI = 0,
   PP_PRIVATEFONTCHARSET_DEFAULT = 1,
   PP_PRIVATEFONTCHARSET_SYMBOL = 2,
@@ -78,9 +71,6 @@ struct PP_PrivateFontFileDescription {
   const char* face;
   uint32_t weight;
   bool italic;
-  PP_PrivateFontPitch pitch;
-  PP_PrivateFontFamily family;
-  PP_PrivateFontCharset charset;
 };
 
 struct PP_PrivateFindResult {
@@ -97,10 +87,13 @@ struct PPB_Private {
                                   PP_ResourceImage image_id);
 
   // Returns a resource identifying a font file corresponding to the given font
-  // request after applying the browser-specific fallback. Linux only.
+  // request after applying the browser-specific fallback.
+  //
+  // Currently Linux-only.
   PP_Resource (*GetFontFileWithFallback)(
       PP_Module module,
-      const PP_PrivateFontFileDescription* description);
+      const PP_FontDescription_Dev* description,
+      PP_PrivateFontCharset charset);
 
   // Given a resource previously returned by GetFontFileWithFallback, returns
   // a pointer to the requested font table. Linux only.

@@ -226,6 +226,7 @@
         'plugins/pepper_private.h',
         'plugins/pepper_private2.cc',
         'plugins/pepper_private2.h',
+        'plugins/pepper_private2_linux.cc',
         'plugins/pepper_resource_tracker.cc',
         'plugins/pepper_resource_tracker.h',
         'plugins/pepper_resource.cc',

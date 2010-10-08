@@ -7,15 +7,29 @@
 
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_module.h"
+#include "third_party/ppapi/c/pp_point.h"
+#include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_var.h"
 
 #define PPB_PRIVATE2_INTERFACE "PPB_Private2;1"
+
+struct PP_FontDescription_Dev;
 
 struct PPB_Private2 {
   // Sets or clears the rendering hint that the given plugin instance is always
   // on top of page content. Somewhat more optimized painting can be used in
   // this case.
   void (*SetInstanceAlwaysOnTop)(PP_Instance instance, bool on_top);
+
+  bool (*DrawGlyphs)(PP_Resource pp_image_data,
+                     const PP_FontDescription_Dev* font_desc,
+                     uint32_t color,
+                     PP_Point position,
+                     PP_Rect clip,
+                     float transformation[3][3],
+                     uint32_t glyph_count,
+                     uint16_t glyph_indices[],
+                     PP_Point glyph_advances[]);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE2_H_
