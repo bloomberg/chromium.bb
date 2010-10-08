@@ -7,6 +7,7 @@
 #include "chrome/service/service_process.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
+#include "net/base/dnsrr_resolver.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/ftp/ftp_network_layer.h"
@@ -35,12 +36,14 @@ ServiceURLRequestContext::ServiceURLRequestContext() {
   proxy_service_ =
       net::ProxyService::Create(
           proxy_config_service, false, 0u, this, NULL, NULL);
+  dnsrr_resolver_ = new net::DnsRRResolver;
   ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
   ssl_config_service_ = new net::SSLConfigServiceDefaults;
   http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
       host_resolver_);
   http_transaction_factory_ = new net::HttpCache(
       net::HttpNetworkLayer::CreateFactory(host_resolver_,
+                                           dnsrr_resolver_,
                                            proxy_service_,
                                            ssl_config_service_,
                                            http_auth_handler_factory_,
@@ -57,4 +60,5 @@ ServiceURLRequestContext::~ServiceURLRequestContext() {
   delete ftp_transaction_factory_;
   delete http_transaction_factory_;
   delete http_auth_handler_factory_;
+  delete dnsrr_resolver_;
 }
