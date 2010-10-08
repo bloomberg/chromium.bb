@@ -2,33 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// MFT H.264 decode engine.
+// MFT H.264 decoder.
 
-#ifndef MEDIA_VIDEO_MFT_H264_DECODE_ENGINE_H_
-#define MEDIA_VIDEO_MFT_H264_DECODE_ENGINE_H_
+#ifndef MEDIA_MF_MFT_H264_DECODER_H_
+#define MEDIA_MF_MFT_H264_DECODER_H_
 
-// TODO(imcheng): Get rid of this header by:
-// - forward declaring IMFTransform and its IID as in
-//   mft_h264_decode_engine_context.h
-// - turning the general SendMFTMessage method into specific methods
-//   (SendFlushMessage, SendDrainMessage, etc.) to avoid having
-//   MFT_MESSAGE_TYPE in here
+#include "build/build_config.h"  // For OS_WIN.
+
+#if defined(OS_WIN)
+
+#include <d3d9.h>
+#include <dxva2api.h>
 #include <mfidl.h>
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_comptr_win.h"
 #include "media/video/video_decode_engine.h"
 
-struct IDirect3DSurface9;
-extern "C" const GUID IID_IDirect3DSurface9;
-
 class MessageLoop;
 
 namespace media {
 
-class VideoDecodeContext;
-
-class MftH264DecodeEngine : public media::VideoDecodeEngine {
+class MftH264Decoder : public media::VideoDecodeEngine {
  public:
   typedef enum {
     kUninitialized,   // un-initialized.
@@ -38,12 +33,10 @@ class MftH264DecodeEngine : public media::VideoDecodeEngine {
     kStopped,         // upon output EOS received.
   } State;
 
-  explicit MftH264DecodeEngine(bool use_dxva);
-  virtual ~MftH264DecodeEngine();
-
-  // VideoDecodeEngine implementation.
+  explicit MftH264Decoder(bool use_dxva, HWND draw_window);
+  ~MftH264Decoder();
   virtual void Initialize(MessageLoop* message_loop,
-                          media::VideoDecodeEngine::EventHandler* event_handler,
+                          VideoDecodeEngine::EventHandler* event_handler,
                           VideoDecodeContext* context,
                           const VideoCodecConfig& config);
   virtual void Uninitialize();
@@ -53,34 +46,37 @@ class MftH264DecodeEngine : public media::VideoDecodeEngine {
   virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
 
   bool use_dxva() const { return use_dxva_; }
+  IDirect3DDevice9* device() const { return device_.get(); }
   State state() const { return state_; }
 
  private:
-  friend class MftH264DecodeEngineTest;
-  FRIEND_TEST_ALL_PREFIXES(MftH264DecodeEngineTest, LibraryInit);
+  friend class MftH264DecoderTest;
+  FRIEND_TEST_ALL_PREFIXES(MftH264DecoderTest, LibraryInit);
 
   // TODO(jiesun): Find a way to move all these to GpuVideoService..
   static bool StartupComLibraries();
   static void ShutdownComLibraries();
-  bool EnableDxva();
+  bool CreateD3DDevManager();
 
   bool InitInternal();
-  bool InitDecodeEngine();
-  void AllocFramesFromContext();
-  bool CheckDecodeEngineDxvaSupport();
-  bool SetDecodeEngineMediaTypes();
-  bool SetDecodeEngineInputMediaType();
-  bool SetDecodeEngineOutputMediaType(const GUID subtype);
+  bool InitDecoder();
+  bool CheckDecoderDxvaSupport();
+  bool SetDecoderMediaTypes();
+  bool SetDecoderInputMediaType();
+  bool SetDecoderOutputMediaType(const GUID subtype);
   bool SendMFTMessage(MFT_MESSAGE_TYPE msg);
   bool GetStreamsInfoAndBufferReqs();
+
   bool DoDecode();
-  void OnAllocFramesDone();
-  void OnUploadVideoFrameDone(
-      ScopedComPtr<IDirect3DSurface9, &IID_IDirect3DSurface9> surface,
-      scoped_refptr<media::VideoFrame> frame);
+
 
   bool use_dxva_;
-  ScopedComPtr<IMFTransform> decode_engine_;
+
+  ScopedComPtr<IDirect3D9> d3d9_;
+  ScopedComPtr<IDirect3DDevice9> device_;
+  ScopedComPtr<IDirect3DDeviceManager9> device_manager_;
+  HWND draw_window_;
+  ScopedComPtr<IMFTransform> decoder_;
 
   MFT_INPUT_STREAM_INFO input_stream_info_;
   MFT_OUTPUT_STREAM_INFO output_stream_info_;
@@ -91,12 +87,11 @@ class MftH264DecodeEngine : public media::VideoDecodeEngine {
   VideoCodecConfig config_;
   VideoCodecInfo info_;
 
-  VideoDecodeContext* context_;
-  std::vector<scoped_refptr<VideoFrame> > output_frames_;
-
-  DISALLOW_COPY_AND_ASSIGN(MftH264DecodeEngine);
+  DISALLOW_COPY_AND_ASSIGN(MftH264Decoder);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_MFT_H264_DECODE_ENGINE_H_
+#endif  // defined(OS_WIN)
+
+#endif  // MEDIA_MF_MFT_H264_DECODER_H_

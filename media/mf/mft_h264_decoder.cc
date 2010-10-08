@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/video/mft_h264_decode_engine.h"
+#include "media/mf/mft_h264_decoder.h"
 
 #include <d3d9.h>
 #include <dxva2api.h>
@@ -15,8 +15,6 @@
 
 #include "base/time.h"
 #include "base/message_loop.h"
-#include "media/base/limits.h"
-#include "media/video/video_decode_context.h"
 
 #pragma comment(lib, "dxva2.lib")
 #pragma comment(lib, "d3d9.lib")
@@ -151,42 +149,48 @@ namespace media {
 
 // public methods
 
-MftH264DecodeEngine::MftH264DecodeEngine(bool use_dxva)
+MftH264Decoder::MftH264Decoder(bool use_dxva, HWND draw_window)
     : use_dxva_(use_dxva),
+      d3d9_(NULL),
+      device_(NULL),
+      device_manager_(NULL),
+      draw_window_(draw_window),
+      decoder_(NULL),
+      input_stream_info_(),
+      output_stream_info_(),
       state_(kUninitialized),
       event_handler_(NULL) {
-  memset(&input_stream_info_, 0, sizeof(input_stream_info_));
-  memset(&output_stream_info_, 0, sizeof(output_stream_info_));
   memset(&config_, 0, sizeof(config_));
   memset(&info_, 0, sizeof(info_));
 }
 
-MftH264DecodeEngine::~MftH264DecodeEngine() {
+MftH264Decoder::~MftH264Decoder() {
 }
 
-void MftH264DecodeEngine::Initialize(
+void MftH264Decoder::Initialize(
     MessageLoop* message_loop,
     VideoDecodeEngine::EventHandler* event_handler,
     VideoDecodeContext* context,
     const VideoCodecConfig& config) {
-  DCHECK(!use_dxva_ || context);
+  LOG(INFO) << "MftH264Decoder::Initialize";
   if (state_ != kUninitialized) {
     LOG(ERROR) << "Initialize: invalid state";
     return;
   }
   if (!message_loop || !event_handler) {
-    LOG(ERROR) << "MftH264DecodeEngine::Initialize: parameters cannot be NULL";
+    LOG(ERROR) << "MftH264Decoder::Initialize: parameters cannot be NULL";
     return;
   }
-  context_ = context;
+
   config_ = config;
   event_handler_ = event_handler;
+
   info_.provides_buffers = true;
 
+  // TODO(jiesun): Actually it is more likely an NV12 D3DSuface9.
+  // Until we had hardware composition working.
   if (use_dxva_) {
     info_.stream_info.surface_format = VideoFrame::NV12;
-    // TODO(hclam): Need to correct this since this is not really GL texture.
-    // We should just remove surface_type from stream_info.
     info_.stream_info.surface_type = VideoFrame::TYPE_GL_TEXTURE;
   } else {
     info_.stream_info.surface_format = VideoFrame::YV12;
@@ -198,56 +202,58 @@ void MftH264DecodeEngine::Initialize(
   info_.success = InitInternal();
   if (info_.success) {
     state_ = kNormal;
-    AllocFramesFromContext();
-  } else {
-    LOG(ERROR) << "MftH264DecodeEngine::Initialize failed";
     event_handler_->OnInitializeComplete(info_);
+  } else {
+    LOG(ERROR) << "MftH264Decoder::Initialize failed";
   }
 }
 
-void MftH264DecodeEngine::Uninitialize() {
+void MftH264Decoder::Uninitialize() {
+  LOG(INFO) << "MftH264Decoder::Uninitialize";
   if (state_ == kUninitialized) {
     LOG(ERROR) << "Uninitialize: invalid state";
     return;
   }
 
-  // TODO(hclam): Call ShutdownComLibraries only after MFT is released.
-  decode_engine_.Release();
+  // TODO(imcheng):
+  // Cannot shutdown COM libraries here because the COM objects still needs
+  // to be Release()'ed. We can explicitly release them here, or move the
+  // uninitialize to GpuVideoService...
+  decoder_.Release();
+  device_manager_.Release();
+  device_.Release();
+  d3d9_.Release();
   ShutdownComLibraries();
   state_ = kUninitialized;
   event_handler_->OnUninitializeComplete();
 }
 
-void MftH264DecodeEngine::Flush() {
+void MftH264Decoder::Flush() {
+  LOG(INFO) << "MftH264Decoder::Flush";
   if (state_ != kNormal) {
     LOG(ERROR) << "Flush: invalid state";
     return;
   }
   state_ = kFlushing;
   if (!SendMFTMessage(MFT_MESSAGE_COMMAND_FLUSH)) {
-    LOG(WARNING) << "MftH264DecodeEngine::Flush failed to send message";
+    LOG(WARNING) << "MftH264Decoder::Flush failed to send message";
   }
   state_ = kNormal;
   event_handler_->OnFlushComplete();
 }
 
-void MftH264DecodeEngine::Seek() {
+void MftH264Decoder::Seek() {
   if (state_ != kNormal) {
     LOG(ERROR) << "Seek: invalid state";
     return;
   }
-
-  // TODO(hclam): Seriously the logic in VideoRendererBase is flawed that we
-  // have to perform the following hack to get playback going.
-  for (size_t i = 0; i < Limits::kMaxVideoFrames; ++i) {
-    event_handler_->ConsumeVideoFrame(output_frames_[0]);
-  }
-
+  LOG(INFO) << "MftH264Decoder::Seek";
   // Seek not implemented.
   event_handler_->OnSeekComplete();
 }
 
-void MftH264DecodeEngine::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
+void MftH264Decoder::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
+  LOG(INFO) << "MftH264Decoder::ConsumeVideoSample";
   if (state_ == kUninitialized) {
     LOG(ERROR) << "ConsumeVideoSample: invalid state";
   }
@@ -263,37 +269,39 @@ void MftH264DecodeEngine::ConsumeVideoSample(scoped_refptr<Buffer> buffer) {
     if (!sample.get()) {
       LOG(ERROR) << "Failed to create an input sample";
     } else {
-      if (FAILED(decode_engine_->ProcessInput(0, sample.get(), 0))) {
+      if (FAILED(decoder_->ProcessInput(0, sample.get(), 0))) {
         event_handler_->OnError();
       }
     }
   } else {
-    if (state_ != MftH264DecodeEngine::kEosDrain) {
+    if (state_ != MftH264Decoder::kEosDrain) {
       // End of stream, send drain messages.
       if (!SendMFTMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM) ||
           !SendMFTMessage(MFT_MESSAGE_COMMAND_DRAIN)) {
         LOG(ERROR) << "Failed to send EOS / drain messages to MFT";
         event_handler_->OnError();
       } else {
-        state_ = MftH264DecodeEngine::kEosDrain;
+        state_ = MftH264Decoder::kEosDrain;
       }
     }
   }
   DoDecode();
 }
 
-void MftH264DecodeEngine::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
+void MftH264Decoder::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
+  LOG(INFO) << "MftH264Decoder::ProduceVideoFrame";
   if (state_ == kUninitialized) {
     LOG(ERROR) << "ProduceVideoFrame: invalid state";
     return;
   }
-  event_handler_->ProduceVideoSample(NULL);
+  scoped_refptr<Buffer> buffer;
+  event_handler_->ProduceVideoSample(buffer);
 }
 
 // private methods
 
 // static
-bool MftH264DecodeEngine::StartupComLibraries() {
+bool MftH264Decoder::StartupComLibraries() {
   HRESULT hr;
   hr = CoInitializeEx(NULL,
                       COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -312,7 +320,7 @@ bool MftH264DecodeEngine::StartupComLibraries() {
 }
 
 // static
-void MftH264DecodeEngine::ShutdownComLibraries() {
+void MftH264Decoder::ShutdownComLibraries() {
   HRESULT hr;
   hr = MFShutdown();
   if (FAILED(hr)) {
@@ -321,85 +329,100 @@ void MftH264DecodeEngine::ShutdownComLibraries() {
   CoUninitialize();
 }
 
-bool MftH264DecodeEngine::EnableDxva() {
-  IDirect3DDevice9* device = static_cast<IDirect3DDevice9*>(
-      context_->GetDevice());
-  ScopedComPtr<IDirect3DDeviceManager9> device_manager;
+bool MftH264Decoder::CreateD3DDevManager() {
+  CHECK(draw_window_);
+  d3d9_.Attach(Direct3DCreate9(D3D_SDK_VERSION));
+  if (d3d9_.get() == NULL) {
+    LOG(ERROR) << "Failed to create D3D9";
+    return false;
+  }
+
+  D3DPRESENT_PARAMETERS present_params = {0};
+  present_params.BackBufferWidth = 0;
+  present_params.BackBufferHeight = 0;
+  present_params.BackBufferFormat = D3DFMT_UNKNOWN;
+  present_params.BackBufferCount = 1;
+  present_params.SwapEffect = D3DSWAPEFFECT_DISCARD;
+  present_params.hDeviceWindow = draw_window_;
+  present_params.Windowed = TRUE;
+  present_params.Flags = D3DPRESENTFLAG_VIDEO;
+  present_params.FullScreen_RefreshRateInHz = 0;
+  present_params.PresentationInterval = 0;
+
+  // D3DCREATE_HARDWARE_VERTEXPROCESSING specifies hardware vertex processing.
+  // (Is it even needed for just video decoding?)
+  HRESULT hr = d3d9_->CreateDevice(D3DADAPTER_DEFAULT,
+                                   D3DDEVTYPE_HAL,
+                                   draw_window_,
+                                   (D3DCREATE_HARDWARE_VERTEXPROCESSING |
+                                    D3DCREATE_MULTITHREADED),
+                                   &present_params,
+                                   device_.Receive());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to create D3D Device";
+    return false;
+  }
+
   UINT dev_manager_reset_token = 0;
-  HRESULT hr = DXVA2CreateDirect3DDeviceManager9(&dev_manager_reset_token,
-                                                 device_manager.Receive());
+  hr = DXVA2CreateDirect3DDeviceManager9(&dev_manager_reset_token,
+                                         device_manager_.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Couldn't create D3D Device manager";
     return false;
   }
 
-  hr = device_manager->ResetDevice(device, dev_manager_reset_token);
+  hr = device_manager_->ResetDevice(device_.get(),
+                                    dev_manager_reset_token);
   if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to reset device";
+    LOG(ERROR) << "Failed to set device to device manager";
     return false;
   }
-
-  hr = decode_engine_->ProcessMessage(
-      MFT_MESSAGE_SET_D3D_MANAGER,
-      reinterpret_cast<ULONG_PTR>(device_manager.get()));
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to set D3D9 device manager to decoder "
-               << std::hex << hr;
-    return false;
-  }
-
   return true;
 }
 
-bool MftH264DecodeEngine::InitInternal() {
+bool MftH264Decoder::InitInternal() {
   if (!StartupComLibraries())
     return false;
-  if (!InitDecodeEngine())
+  if (use_dxva_ && !CreateD3DDevManager())
+    return false;
+  if (!InitDecoder())
     return false;
   if (!GetStreamsInfoAndBufferReqs())
     return false;
   return SendMFTMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING);
 }
 
-bool MftH264DecodeEngine::InitDecodeEngine() {
+bool MftH264Decoder::InitDecoder() {
   // TODO(jiesun): use MFEnum to get decoder CLSID.
   HRESULT hr = CoCreateInstance(__uuidof(CMSH264DecoderMFT),
                                 NULL,
                                 CLSCTX_INPROC_SERVER,
                                 __uuidof(IMFTransform),
-                                reinterpret_cast<void**>(
-                                    decode_engine_.Receive()));
-  if (FAILED(hr) || !decode_engine_.get()) {
+                                reinterpret_cast<void**>(decoder_.Receive()));
+  if (FAILED(hr) || !decoder_.get()) {
     LOG(ERROR) << "CoCreateInstance failed " << std::hex << std::showbase << hr;
     return false;
   }
-  if (!CheckDecodeEngineDxvaSupport())
+
+  if (!CheckDecoderDxvaSupport())
     return false;
-  if (use_dxva_ && !EnableDxva())
-    return false;
-  return SetDecodeEngineMediaTypes();
+
+  if (use_dxva_) {
+    hr = decoder_->ProcessMessage(
+        MFT_MESSAGE_SET_D3D_MANAGER,
+        reinterpret_cast<ULONG_PTR>(device_manager_.get()));
+    if (FAILED(hr)) {
+      LOG(ERROR) << "Failed to set D3D9 device to decoder " << std::hex << hr;
+      return false;
+    }
+  }
+
+  return SetDecoderMediaTypes();
 }
 
-void MftH264DecodeEngine::AllocFramesFromContext() {
-  if (!use_dxva_)
-    return;
-
-  // TODO(imcheng): Pass in an actual task. (From EventHandler?)
-  context_->ReleaseAllVideoFrames();
-  output_frames_.clear();
-  context_->AllocateVideoFrames(
-      1, info_.stream_info.surface_width, info_.stream_info.surface_height,
-      VideoFrame::RGBA, &output_frames_,
-      NewRunnableMethod(this, &MftH264DecodeEngine::OnAllocFramesDone));
-}
-
-void MftH264DecodeEngine::OnAllocFramesDone() {
-  event_handler_->OnInitializeComplete(info_);
-}
-
-bool MftH264DecodeEngine::CheckDecodeEngineDxvaSupport() {
+bool MftH264Decoder::CheckDecoderDxvaSupport() {
   ScopedComPtr<IMFAttributes> attributes;
-  HRESULT hr = decode_engine_->GetAttributes(attributes.Receive());
+  HRESULT hr = decoder_->GetAttributes(attributes.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Unlock: Failed to get attributes, hr = "
                << std::hex << std::showbase << hr;
@@ -417,14 +440,14 @@ bool MftH264DecodeEngine::CheckDecodeEngineDxvaSupport() {
   return true;
 }
 
-bool MftH264DecodeEngine::SetDecodeEngineMediaTypes() {
-  if (!SetDecodeEngineInputMediaType())
+bool MftH264Decoder::SetDecoderMediaTypes() {
+  if (!SetDecoderInputMediaType())
     return false;
-  return SetDecodeEngineOutputMediaType(
-      ConvertVideoFrameFormatToGuid(info_.stream_info.surface_format));
+  return SetDecoderOutputMediaType(ConvertVideoFrameFormatToGuid(
+                                       info_.stream_info.surface_format));
 }
 
-bool MftH264DecodeEngine::SetDecodeEngineInputMediaType() {
+bool MftH264Decoder::SetDecoderInputMediaType() {
   ScopedComPtr<IMFMediaType> media_type;
   HRESULT hr = MFCreateMediaType(media_type.Receive());
   if (FAILED(hr)) {
@@ -444,7 +467,7 @@ bool MftH264DecodeEngine::SetDecodeEngineInputMediaType() {
     return false;
   }
 
-  hr = decode_engine_->SetInputType(0, media_type.get(), 0);  // No flags
+  hr = decoder_->SetInputType(0, media_type.get(), 0);  // No flags
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to set decoder's input type";
     return false;
@@ -453,12 +476,11 @@ bool MftH264DecodeEngine::SetDecodeEngineInputMediaType() {
   return true;
 }
 
-bool MftH264DecodeEngine::SetDecodeEngineOutputMediaType(const GUID subtype) {
+bool MftH264Decoder::SetDecoderOutputMediaType(const GUID subtype) {
   DWORD i = 0;
   IMFMediaType* out_media_type;
   bool found = false;
-  while (SUCCEEDED(decode_engine_->GetOutputAvailableType(0, i,
-                                                          &out_media_type))) {
+  while (SUCCEEDED(decoder_->GetOutputAvailableType(0, i, &out_media_type))) {
     GUID out_subtype;
     HRESULT hr = out_media_type->GetGUID(MF_MT_SUBTYPE, &out_subtype);
     if (FAILED(hr)) {
@@ -467,7 +489,7 @@ bool MftH264DecodeEngine::SetDecodeEngineOutputMediaType(const GUID subtype) {
       continue;
     }
     if (out_subtype == subtype) {
-      hr = decode_engine_->SetOutputType(0, out_media_type, 0);  // No flags
+      hr = decoder_->SetOutputType(0, out_media_type, 0);  // No flags
       hr = MFGetAttributeSize(out_media_type, MF_MT_FRAME_SIZE,
           reinterpret_cast<UINT32*>(&info_.stream_info.surface_width),
           reinterpret_cast<UINT32*>(&info_.stream_info.surface_height));
@@ -487,8 +509,8 @@ bool MftH264DecodeEngine::SetDecodeEngineOutputMediaType(const GUID subtype) {
   return false;
 }
 
-bool MftH264DecodeEngine::SendMFTMessage(MFT_MESSAGE_TYPE msg) {
-  HRESULT hr = decode_engine_->ProcessMessage(msg, NULL);
+bool MftH264Decoder::SendMFTMessage(MFT_MESSAGE_TYPE msg) {
+  HRESULT hr = decoder_->ProcessMessage(msg, NULL);
   return SUCCEEDED(hr);
 }
 
@@ -497,8 +519,8 @@ bool MftH264DecodeEngine::SendMFTMessage(MFT_MESSAGE_TYPE msg) {
 // The MFT will not allocate buffer for neither input nor output, so we have
 // to do it ourselves and make sure they're the correct size.
 // Exception is when dxva is enabled, the decoder will allocate output.
-bool MftH264DecodeEngine::GetStreamsInfoAndBufferReqs() {
-  HRESULT hr = decode_engine_->GetInputStreamInfo(0, &input_stream_info_);
+bool MftH264Decoder::GetStreamsInfoAndBufferReqs() {
+  HRESULT hr = decoder_->GetInputStreamInfo(0, &input_stream_info_);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get input stream info";
     return false;
@@ -516,7 +538,7 @@ bool MftH264DecodeEngine::GetStreamsInfoAndBufferReqs() {
   LOG(INFO) << "Max lookahead: " << input_stream_info_.cbMaxLookahead;
   LOG(INFO) << "Alignment: " << input_stream_info_.cbAlignment;
 
-  hr = decode_engine_->GetOutputStreamInfo(0, &output_stream_info_);
+  hr = decoder_->GetOutputStreamInfo(0, &output_stream_info_);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get output stream info";
     return false;
@@ -534,7 +556,7 @@ bool MftH264DecodeEngine::GetStreamsInfoAndBufferReqs() {
   return true;
 }
 
-bool MftH264DecodeEngine::DoDecode() {
+bool MftH264Decoder::DoDecode() {
   if (state_ != kNormal && state_ != kEosDrain) {
     LOG(ERROR) << "DoDecode: not in normal or drain state";
     return false;
@@ -557,10 +579,10 @@ bool MftH264DecodeEngine::DoDecode() {
   output_data_buffer.pSample = output_sample;
 
   DWORD status;
-  HRESULT hr = decode_engine_->ProcessOutput(0,  // No flags
-                                             1,  // # of out streams to pull
-                                             &output_data_buffer,
-                                             &status);
+  HRESULT hr = decoder_->ProcessOutput(0,  // No flags
+                                       1,  // # of out streams to pull from
+                                       &output_data_buffer,
+                                       &status);
 
   IMFCollection* events = output_data_buffer.pEvents;
   if (events != NULL) {
@@ -570,15 +592,10 @@ bool MftH264DecodeEngine::DoDecode() {
 
   if (FAILED(hr)) {
     if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
-      hr = SetDecodeEngineOutputMediaType(
-          ConvertVideoFrameFormatToGuid(info_.stream_info.surface_format));
+      hr = SetDecoderOutputMediaType(ConvertVideoFrameFormatToGuid(
+                                         info_.stream_info.surface_format));
       if (SUCCEEDED(hr)) {
-        // TODO(hclam): Need to fix this case. This happens when we have a
-        // format change. We have to resume decoding only after we have
-        // allocated a new set of video frames.
-        // AllocFramesFromContext();
-        // event_handler_->OnFormatChange(info_.stream_info);
-        event_handler_->ProduceVideoSample(NULL);
+        event_handler_->OnFormatChange(info_.stream_info);
         return true;
       } else {
         event_handler_->OnError();
@@ -590,14 +607,13 @@ bool MftH264DecodeEngine::DoDecode() {
         scoped_refptr<VideoFrame> frame;
         VideoFrame::CreateEmptyFrame(&frame);
         event_handler_->ConsumeVideoFrame(frame);
-        state_ = MftH264DecodeEngine::kStopped;
+        state_ = MftH264Decoder::kStopped;
         return false;
       }
-      event_handler_->ProduceVideoSample(NULL);
       return true;
     } else {
       LOG(ERROR) << "Unhandled error in DoDecode()";
-      state_ = MftH264DecodeEngine::kStopped;
+      state_ = MftH264Decoder::kStopped;
       event_handler_->OnError();
       return false;
     }
@@ -639,25 +655,27 @@ bool MftH264DecodeEngine::DoDecode() {
     LOG(ERROR) << "Failed to get buffer from sample";
     return true;
   }
+
+
+
   if (use_dxva_) {
-    ScopedComPtr<IDirect3DSurface9, &IID_IDirect3DSurface9> surface;
+    ScopedComPtr<IDirect3DSurface9> surface;
     hr = MFGetService(output_buffer, MR_BUFFER_SERVICE,
                       IID_PPV_ARGS(surface.Receive()));
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get surface from buffer";
       return true;
     }
-    // Since we only allocated 1 frame from context.
-    // TODO(imcheng): Detect error.
-    output_frames_[0]->SetTimestamp(TimeDelta::FromMicroseconds(timestamp));
-    output_frames_[0]->SetDuration(TimeDelta::FromMicroseconds(duration));
-    context_->UploadToVideoFrame(
-        surface.get(), output_frames_[0],
-        NewRunnableMethod(this, &MftH264DecodeEngine::OnUploadVideoFrameDone,
-                          surface, output_frames_[0]));
+
+  if (!frame.get()) {
+    LOG(ERROR) << "Failed to allocate video frame for d3d texture";
+    event_handler_->OnError();
     return true;
+  }
+
+  // The reference is now in the VideoFrame.
+  surface.Detach();
   } else {
-    // TODO(hclam): Remove this branch.
     // Not DXVA.
     VideoFrame::CreateFrame(info_.stream_info.surface_format,
                             info_.stream_info.surface_width,
@@ -679,18 +697,10 @@ bool MftH264DecodeEngine::DoDecode() {
 
     memcpy(dst_y, src_y, current_length);
     CHECK(SUCCEEDED(output_buffer->Unlock()));
-    event_handler_->ConsumeVideoFrame(frame);
-    return true;
   }
-}
-
-void MftH264DecodeEngine::OnUploadVideoFrameDone(
-    ScopedComPtr<IDirect3DSurface9, &IID_IDirect3DSurface9> surface,
-    scoped_refptr<media::VideoFrame> frame) {
-  // After this method is exited the reference to surface is released.
+  // TODO(jiesun): non-System memory case
   event_handler_->ConsumeVideoFrame(frame);
+  return true;
 }
 
 }  // namespace media
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(media::MftH264DecodeEngine);

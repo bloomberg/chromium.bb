@@ -787,10 +787,6 @@
               ],
             },
           ],
-          'sources': [
-            'gpu/media/mft_angle_video_device.cc',
-            'gpu/media/mft_angle_video_device.h',
-          ],
         }],
         ['OS=="linux" and target_arch!="arm"', {
           'sources': [
