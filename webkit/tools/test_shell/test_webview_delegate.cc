@@ -730,7 +730,7 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   // should be grouped together.
   webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory =
       new webkit_glue::MediaResourceLoaderBridgeFactory(
-          GURL(),  // referrer
+          GURL(frame->url()),  // referrer
           "null",  // frame origin
           "null",  // main_frame_origin
           base::GetCurrentProcId(),
