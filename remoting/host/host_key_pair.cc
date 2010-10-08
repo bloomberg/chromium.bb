@@ -55,9 +55,7 @@ void HostKeyPair::Save(MutableHostConfig* host_config) {
   DCHECK(key_.get() != NULL);
 
   host_config->Update(
-      NewRunnableMethod(this,
-                        &HostKeyPair::DoSave,
-                        make_scoped_refptr(host_config)));
+      NewRunnableMethod(this, &HostKeyPair::DoSave, host_config));
 }
 
 void HostKeyPair::DoSave(MutableHostConfig* host_config) const {

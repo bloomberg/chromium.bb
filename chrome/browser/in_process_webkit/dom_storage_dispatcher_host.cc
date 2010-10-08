@@ -151,17 +151,9 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   ChromeURLRequestContext* url_request_context =
       resource_message_filter_->GetRequestContextForURL(GURL(origin));
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT,
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &DOMStorageDispatcherHost::OnStorageAreaIdWebKit,
-          namespace_id,
-          origin,
-          reply_msg,
-          make_scoped_refptr(
-              url_request_context->host_content_settings_map())));
+  ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
+      this, &DOMStorageDispatcherHost::OnStorageAreaIdWebKit, namespace_id,
+      origin, reply_msg, url_request_context->host_content_settings_map()));
 }
 
 void DOMStorageDispatcherHost::OnStorageAreaIdWebKit(

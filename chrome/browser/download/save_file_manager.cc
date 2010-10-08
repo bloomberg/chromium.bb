@@ -131,16 +131,14 @@ void SaveFileManager::SaveURL(const GURL& url,
     DCHECK(url.is_valid());
 
     ChromeThread::PostTask(
-        ChromeThread::IO,
-        FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &SaveFileManager::OnSaveURL,
-            url,
-            referrer,
-            render_process_host_id,
-            render_view_id,
-            make_scoped_refptr(request_context_getter)));
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &SaveFileManager::OnSaveURL,
+                          url,
+                          referrer,
+                          render_process_host_id,
+                          render_view_id,
+                          request_context_getter));
   } else {
     // We manually start the save job.
     SaveFileCreateInfo* info = new SaveFileCreateInfo(file_full_path,
@@ -252,6 +250,7 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
             this, &SaveFileManager::OnUpdateSaveProgress, save_file->save_id(),
             save_file->bytes_so_far(), write_success));
   }
+  data->Release();
 }
 
 // The IO thread will call this when saving is completed or it got error when

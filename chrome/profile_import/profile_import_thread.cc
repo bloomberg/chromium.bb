@@ -32,8 +32,6 @@ ProfileImportThread::ProfileImportThread()
   ChildProcess::current()->AddRefProcess();  // Balanced in Cleanup().
 }
 
-ProfileImportThread::~ProfileImportThread() {}
-
 void ProfileImportThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(ProfileImportThread, msg)
     IPC_MESSAGE_HANDLER(ProfileImportProcessMsg_StartImport,
@@ -51,6 +49,7 @@ void ProfileImportThread::OnImportStart(
     const DictionaryValue& localized_strings,
     bool import_to_bookmark_bar) {
   bridge_ = new ExternalProcessImporterBridge(this, localized_strings);
+  bridge_->AddRef();  // Balanced in Cleanup().
 
   ImporterList importer_list;
   importer_ = importer_list.CreateImporterByType(profile_info.browser_type);
@@ -60,6 +59,7 @@ void ProfileImportThread::OnImportStart(
     return;
   }
 
+  importer_->AddRef();  // Balanced in Cleanup().
   importer_->set_import_to_bookmark_bar(import_to_bookmark_bar);
   items_to_import_ = items;
 
@@ -71,14 +71,9 @@ void ProfileImportThread::OnImportStart(
     NOTREACHED();
     Cleanup();
   }
-  import_thread_->message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          importer_.get(),
-          &Importer::StartImport,
-          profile_info,
-          items,
-          bridge_));
+  import_thread_->message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(importer_, &Importer::StartImport,
+          profile_info, items, bridge_));
 }
 
 void ProfileImportThread::OnImportCancel() {
@@ -189,7 +184,7 @@ void ProfileImportThread::NotifyKeywordsReady(
 
 void ProfileImportThread::Cleanup() {
   importer_->Cancel();
-  importer_ = NULL;
-  bridge_ = NULL;
+  importer_->Release();
+  bridge_->Release();
   ChildProcess::current()->ReleaseProcess();
 }

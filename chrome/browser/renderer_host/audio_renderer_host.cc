@@ -126,7 +126,7 @@ void AudioRendererHost::OnCreated(media::AudioOutputController* controller) {
       NewRunnableMethod(
           this,
           &AudioRendererHost::DoCompleteCreation,
-          make_scoped_refptr(controller)));
+          controller));
 }
 
 void AudioRendererHost::OnPlaying(media::AudioOutputController* controller) {
@@ -136,7 +136,7 @@ void AudioRendererHost::OnPlaying(media::AudioOutputController* controller) {
       NewRunnableMethod(
           this,
           &AudioRendererHost::DoSendPlayingMessage,
-          make_scoped_refptr(controller)));
+          controller));
 }
 
 void AudioRendererHost::OnPaused(media::AudioOutputController* controller) {
@@ -146,7 +146,7 @@ void AudioRendererHost::OnPaused(media::AudioOutputController* controller) {
       NewRunnableMethod(
           this,
           &AudioRendererHost::DoSendPausedMessage,
-          make_scoped_refptr(controller)));
+          controller));
 }
 
 void AudioRendererHost::OnError(media::AudioOutputController* controller,
@@ -156,7 +156,7 @@ void AudioRendererHost::OnError(media::AudioOutputController* controller,
       FROM_HERE,
       NewRunnableMethod(this,
                         &AudioRendererHost::DoHandleError,
-                        make_scoped_refptr(controller),
+                        controller,
                         error_code));
 }
 
@@ -167,7 +167,7 @@ void AudioRendererHost::OnMoreData(media::AudioOutputController* controller,
       FROM_HERE,
       NewRunnableMethod(this,
                         &AudioRendererHost::DoRequestMoreData,
-                        make_scoped_refptr(controller),
+                        controller,
                         buffers_state));
 }
 

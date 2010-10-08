@@ -196,6 +196,9 @@ void ChannelProxy::Context::OnAddFilter(MessageFilter* filter) {
   // so that the filter gets access to the Channel.
   if (channel_)
     filter->OnFilterAdded(channel_);
+
+  // Balances the AddRef in ChannelProxy::AddFilter.
+  filter->Release();
 }
 
 // Called on the IPC::Channel thread
@@ -314,20 +317,16 @@ bool ChannelProxy::Send(Message* message) {
 }
 
 void ChannelProxy::AddFilter(MessageFilter* filter) {
-  context_->ipc_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          context_.get(),
-          &Context::OnAddFilter,
-          make_scoped_refptr(filter)));
+  // We want to addref the filter to prevent it from
+  // being destroyed before the OnAddFilter call is invoked.
+  filter->AddRef();
+  context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+      context_.get(), &Context::OnAddFilter, filter));
 }
 
 void ChannelProxy::RemoveFilter(MessageFilter* filter) {
-  context_->ipc_message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(
-          context_.get(),
-          &Context::OnRemoveFilter,
-          make_scoped_refptr(filter)));
+  context_->ipc_message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+      context_.get(), &Context::OnRemoveFilter, filter));
 }
 
 void ChannelProxy::ClearIPCMessageLoop() {

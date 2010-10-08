@@ -174,13 +174,9 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
     return;
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE,
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &DownloadFileManager::CreateDownloadFile,
-                        info,
-                        make_scoped_refptr(manager)));
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
+                        info, manager));
 }
 
 // We don't forward an update to the UI thread here, since we want to throttle
