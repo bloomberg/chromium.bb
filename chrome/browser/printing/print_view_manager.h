@@ -90,12 +90,6 @@ class PrintViewManager : public NotificationObserver,
   // no print job has been created.
   void ReleasePrintJob();
 
-  // Prints the document. Starts the actual print job. Requests asynchronously
-  // the renderered pages from the renderer. Is called once the printing context
-  // is initialized, on a DEFAULT_INIT_DONE notification when waiting_to_print_
-  // is true.
-  void PrintNowInternal();
-
   // Runs an inner message loop. It will set inside_inner_message_loop_ to true
   // while the blocking inner message loop is running. This is useful in cases
   // where the RenderView is about to be destroyed while a printing job isn't

@@ -344,17 +344,6 @@ void PrintViewManager::ReleasePrintJob() {
   print_job_ = NULL;
 }
 
-void PrintViewManager::PrintNowInternal() {
-  DCHECK(waiting_to_print_);
-
-  // Settings are already loaded. Go ahead. This will set
-  // print_job_->is_job_pending() to true.
-  print_job_->StartPrinting();
-
-  DCHECK(print_job_->document());
-  DCHECK(print_job_->document()->IsComplete());
-}
-
 bool PrintViewManager::RunInnerMessageLoop() {
   // This value may actually be too low:
   //
