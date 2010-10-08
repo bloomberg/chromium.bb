@@ -119,7 +119,6 @@ const char kChromeUISettingsHost[] = "settings";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUIThemePath[] = "theme";
 const char kChromeUIThumbnailPath[] = "thumb";
-const char kChromeUIMenu[] = "menu";
 
 #if defined(OS_CHROMEOS)
 const char kChromeUIFileBrowseHost[] = "filebrowse";
@@ -129,6 +128,8 @@ const char kChromeUIMobileSetupHost[] = "mobilesetup";
 const char kChromeUIRegisterPageHost[] = "register";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISystemInfoHost[] = "system";
+const char kChromeUIMenu[] = "menu";
+const char kChromeUIWrenchMenu[] = "wrench-menu";
 #endif
 
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";

@@ -243,7 +243,7 @@ void DOMUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
     container->set_border(new RoundedBorder(locator));
     container->SetLayoutManager(new InsetsLayout());
     SetContentsView(container);
-    dom_view_->LoadURL(GURL("chrome://menu"));
+    dom_view_->LoadURL(domui_menu_->menu_url());
   } else {
     domui_menu_->UpdateStates();
     dom_view_->GetParent()->set_border(new RoundedBorder(locator));

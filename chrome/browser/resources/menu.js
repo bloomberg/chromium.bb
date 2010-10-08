@@ -42,9 +42,9 @@ MenuItem.prototype = {
    * @param {Object} attrs JSON object that represents this menu items
    *   properties.  This is created from menu model in C code.  See
    *   chromeos/views/native_menu_domui.cc.
-   * @param {boolean} hasIcon True if the menu has left icon.
+   * @param {number} leftIconWidth The left icon's width. 0 if no icon.
    */
-  init: function(menu, attrs, hasIcon) {
+  init: function(menu, attrs, leftIconWidth) {
     this.menu_ = menu;
     this.attrs = attrs;
     var attrs = this.attrs;
@@ -54,12 +54,12 @@ MenuItem.prototype = {
                attrs.type == 'submenu' ||
                attrs.type == 'check' ||
                attrs.type == 'radio') {
-      this.initMenuItem_(hasIcon);
+      this.initMenuItem_(leftIconWidth);
     } else {
       this.classList.add('disabled');
       this.textContent = 'unknown';
     }
-    this.classList.add(hasIcon ? 'has-icon' : 'noicon');
+    this.classList.add(leftIconWidth ? 'has-icon' : 'no-icon');
 
     if (attrs.visible) {
       menu.appendChild(this);
@@ -104,7 +104,7 @@ MenuItem.prototype = {
    * Internal method to initiailze the MenuItem.
    * @private
    */
-  initMenuItem_: function(hasIcon) {
+  initMenuItem_: function(leftIconWidth) {
     var attrs = this.attrs;
     this.className = 'menu-item ' + attrs.type;
     this.menu_.addHandlers(this);
@@ -113,7 +113,7 @@ MenuItem.prototype = {
        var c = mnemonic[2];
        this.menu_.registerMnemonicKey(c, this);
     }
-    if (hasIcon) {
+    if (leftIconWidth > 0) {
       this.classList.add('left-icon');
 
       var url;
@@ -129,8 +129,14 @@ MenuItem.prototype = {
       if (url) {
         this.style.backgroundImage = "url(" + url + ")";
       }
+      // TODO(oshima): figure out how to update left padding in rule.
+      // 4 is the padding on left side of icon.
+      var padding =
+          4 + leftIconWidth + this.menu_.config_.icon_to_label_padding;
+      this.style.paddingLeft = padding + 'px';
     }
     var label = document.createElement('div');
+
     label.className = 'menu-label';
 
     if (!mnemonic) {
@@ -289,7 +295,7 @@ Menu.prototype = {
     for (var i = 0; i < model.items.length; i++) {
       var attrs = model.items[i];
       var item = this.createMenuItem(attrs);
-      item.init(this, attrs, model.hasIcon);
+      item.init(this, attrs, model.maxIconWidth);
       this.items_.push(item);
     }
     this.onResize_();
@@ -613,4 +619,8 @@ function selectItem() {
 
 function updateModel(model) {
   document.getElementById('viewport').updateModel(model);
+}
+
+function modelUpdated() {
+  chrome.send('model_updated', []);
 }

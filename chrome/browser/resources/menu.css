@@ -10,16 +10,19 @@ body {
 .menu-item {
   white-space: nowrap;
   margin: 0;
-  padding: 0 20px 0 5px;
+  padding-top: 0;
+  padding-right: 19px;
+  padding-bottom: 0;
   background-repeat: no-repeat;
+  -webkit-padding-end: 19px;
 }
 
 .disabled {
   color: #b7b7b7;
 }
 
-.noicon {
-  -webkit-padding-start: 20px;
+.no-icon {
+  -webkit-padding-start: 19px;
 }
 
 .menu-label {
@@ -29,7 +32,6 @@ body {
 
 .left-icon {
   background-position: 4px center;
-  padding-left: 30px;
 }
 
 .right-icon { 

@@ -477,6 +477,8 @@
         'browser/chromeos/dom_ui/system_options_handler.h',
         'browser/chromeos/dom_ui/system_settings_provider.cc',
         'browser/chromeos/dom_ui/system_settings_provider.h',
+        'browser/chromeos/dom_ui/wrench_menu_ui.cc',
+        'browser/chromeos/dom_ui/wrench_menu_ui.h',
         'browser/chromeos/drop_shadow_label.cc',
         'browser/chromeos/external_cookie_handler.cc',
         'browser/chromeos/external_cookie_handler.h',

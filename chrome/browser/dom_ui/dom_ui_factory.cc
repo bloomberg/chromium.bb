@@ -38,10 +38,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/dom_ui/imageburner_ui.h"
+#include "chrome/browser/chromeos/dom_ui/menu_ui.h"
 #include "chrome/browser/chromeos/dom_ui/mobile_setup_ui.h"
 #include "chrome/browser/chromeos/dom_ui/register_page_ui.h"
 #include "chrome/browser/chromeos/dom_ui/system_info_ui.h"
-#include "chrome/browser/chromeos/dom_ui/menu_ui.h"
+#include "chrome/browser/chromeos/dom_ui/wrench_menu_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #endif
@@ -166,6 +167,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<SystemInfoUI>;
   if (url.host() == chrome::kChromeUIMenu)
     return &NewDOMUI<chromeos::MenuUI>;
+  if (url.host() == chrome::kChromeUIWrenchMenu)
+    return &NewDOMUI<chromeos::WrenchMenuUI>;
 #else
   if (url.host() == chrome::kChromeUISettingsHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(

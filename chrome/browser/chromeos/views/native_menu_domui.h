@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/dom_ui/domui_menu_control.h"
+#include "googleurl/src/gurl.h"
 #include "views/controls/menu/menu_wrapper.h"
 
 class SkBitmap;
@@ -77,15 +78,18 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   // Returns the profile to create DOMView.
   Profile* GetProfile();
 
+  // Sets/Gets the url for the domui menu.
+  void set_menu_url(const GURL& url) { menu_url_ = url; }
+  const GURL& menu_url() const { return menu_url_; }
+
+  // Sets the menu url of menu2. This has to be called before
+  // RunMenuAt/RunContextMenuAt is called.
+  static void SetMenuURL(views::Menu2* menu2, const GURL& url);
+
  private:
   // Callback that we should really process the menu activation.
   // See description above class for why we delay processing activation.
   void ProcessActivate();
-
-  // Creates a menu item for the menu item at index.
-  DictionaryValue* CreateMenuItem(int index,
-                                  const char* type,
-                                  bool* has_icon_out);
 
   // Show the menu using given |locator|.
   void ShowAt(MenuLocator* locator);
@@ -123,6 +127,11 @@ class NativeMenuDOMUI : public views::MenuWrapper,
 
   // Vector of listeners to receive callbacks when the menu opens.
   ObserverList<views::MenuListener> listeners_;
+
+  // URL to invoke Menu DOMUI. Default menu is chrome://menu, but
+  // custom menu can use different url using SetMenuURL method
+  // (e.g. chrome://wrench-menu for wrench menu).
+  GURL menu_url_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuDOMUI);
 };

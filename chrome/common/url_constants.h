@@ -113,7 +113,6 @@ extern const char kChromeUISettingsHost[];
 extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUIThemePath[];
 extern const char kChromeUIThumbnailPath[];
-extern const char kChromeUIMenu[];
 
 #if defined(OS_CHROMEOS)
 extern const char kChromeUIFileBrowseHost[];
@@ -123,6 +122,8 @@ extern const char kChromeUIMobileSetupHost[];
 extern const char kChromeUIRegisterPageHost[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISystemInfoHost[];
+extern const char kChromeUIMenu[];
+extern const char kChromeUIWrenchMenu[];
 #endif
 
 // AppCache related URL.

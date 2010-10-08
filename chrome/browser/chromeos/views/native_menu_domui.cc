@@ -7,24 +7,16 @@
 #include <string>
 
 #include "app/menus/menu_model.h"
-#include "base/json/json_writer.h"
 #include "base/message_loop.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
-#include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/profile_manager.h"
-#include "gfx/favicon_size.h"
-#include "gfx/font.h"
+#include "chrome/common/url_constants.h"
 #include "gfx/rect.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/controls/menu/menu_config.h"
 
 namespace {
 
@@ -35,40 +27,21 @@ bool MenuTypeCanExecute(menus::MenuModel::ItemType type) {
       type == menus::MenuModel::TYPE_RADIO;
 }
 
-// A utility function that generates css font property from gfx::Font.
-std::wstring GetFontShorthand(const gfx::Font* font) {
-  std::wstring out;
-  if (font == NULL) {
-    font = &(views::MenuConfig::instance().font);
-  }
-  if (font->GetStyle() & gfx::Font::BOLD) {
-    out.append(L"bold ");
-  }
-  if (font->GetStyle() & gfx::Font::ITALIC) {
-    out.append(L"italic ");
-  }
-  if (font->GetStyle() & gfx::Font::UNDERLINED) {
-    out.append(L"underline ");
-  }
-
-  // TODO(oshima): The font size from gfx::Font is too small when
-  // used in webkit. Figure out the reason.
-  out.append(ASCIIToWide(base::IntToString(font->GetFontSize() + 4)));
-  out.append(L"px/");
-  out.append(ASCIIToWide(base::IntToString(
-      std::max(kFavIconSize, font->GetHeight()))));
-  out.append(L"px \"");
-  out.append(font->GetFontName());
-  out.append(L"\",sans-serif");
-  return out;
-}
-
 // Currently opened menu. See RunMenuAt for reason why we need this.
 chromeos::NativeMenuDOMUI* current_ = NULL;
 
 }  // namespace
 
 namespace chromeos {
+
+// static
+void NativeMenuDOMUI::SetMenuURL(views::Menu2* menu2, const GURL& url) {
+  gfx::NativeView native = menu2->GetNativeMenu();
+  DCHECK(native);
+  DOMUIMenuWidget* widget = DOMUIMenuWidget::FindDOMUIMenuWidget(native);
+  DCHECK(widget);
+  widget->domui_menu()->set_menu_url(url);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuDOMUI, public:
@@ -81,7 +54,8 @@ NativeMenuDOMUI::NativeMenuDOMUI(menus::MenuModel* menu_model, bool root)
       menu_shown_(false),
       activated_menu_(NULL),
       activated_index_(-1),
-      menu_action_(MENU_ACTION_NONE)  {
+      menu_action_(MENU_ACTION_NONE),
+      menu_url_(StringPrintf("chrome://%s", chrome::kChromeUIMenu)) {
   menu_widget_ = new DOMUIMenuWidget(this, root);
   // Set the initial location off the screen not to show small
   // window with dropshadow.
@@ -153,47 +127,7 @@ void NativeMenuDOMUI::CancelMenu() {
 
 void NativeMenuDOMUI::Rebuild() {
   activated_menu_ = NULL;
-  DictionaryValue model;
-  ListValue* items = new ListValue();
-  model.Set("items", items);
-  bool has_icon = false;
-  for (int index = 0; index < model_->GetItemCount(); ++index) {
-    menus::MenuModel::ItemType type = model_->GetTypeAt(index);
-    DictionaryValue* item;
-    switch (type) {
-      case menus::MenuModel::TYPE_SEPARATOR:
-        item = CreateMenuItem(index, "separator", &has_icon);
-        break;
-      case menus::MenuModel::TYPE_RADIO:
-        has_icon = true;  // all radio buttons has indicator icon.
-        item = CreateMenuItem(index, "radio", &has_icon);
-        break;
-      case menus::MenuModel::TYPE_SUBMENU:
-        item = CreateMenuItem(index, "submenu", &has_icon);
-        break;
-      case menus::MenuModel::TYPE_COMMAND:
-        item = CreateMenuItem(index, "command", &has_icon);
-        break;
-      case menus::MenuModel::TYPE_CHECK:
-        item = CreateMenuItem(index, "check", &has_icon);
-        break;
-      default:
-        // TODO(oshima): We don't support BUTTOM_ITEM for now.
-        // I haven't decided how to implement zoom/cut&paste
-        // stuff, but may do somethign similar to what linux_views
-        // does.
-        NOTREACHED();
-        continue;
-    }
-    items->Set(index, item);
-  }
-  model.SetBoolean("hasIcon", has_icon);
-  model.SetBoolean("isRoot", menu_widget_->is_root());
-
-  std::string json_model;
-  base::JSONWriter::Write(&model, false, &json_model);
-  std::wstring script = UTF8ToWide("updateModel(" + json_model + ")");
-  menu_widget_->ExecuteJavascript(script);
+  menu_widget_->ExecuteJavascript(L"modelUpdated()");
 }
 
 void NativeMenuDOMUI::UpdateStates() {
@@ -202,8 +136,7 @@ void NativeMenuDOMUI::UpdateStates() {
 }
 
 gfx::NativeMenu NativeMenuDOMUI::GetNativeMenu() const {
-  NOTREACHED();
-  return NULL;
+  return menu_widget_->GetNativeView();
 }
 
 NativeMenuDOMUI::MenuAction NativeMenuDOMUI::GetMenuAction() const {
@@ -277,6 +210,7 @@ void NativeMenuDOMUI::OpenSubmenu(int index, int y) {
   // Returns the model for the submenu at the specified index.
   menus::MenuModel* submenu = model_->GetSubmenuModelAt(index);
   submenu_.reset(new chromeos::NativeMenuDOMUI(submenu, false));
+  submenu_->set_menu_url(menu_url_);
   // y in menu_widget_ coordinate.
   submenu_->set_parent(this);
   submenu_->ShowAt(
@@ -310,7 +244,9 @@ void NativeMenuDOMUI::MoveInputToParent() {
 }
 
 void NativeMenuDOMUI::OnLoad() {
-  Rebuild();
+  // TODO(oshima): OnLoad is no longer used, but kept in case
+  // we may need it. Delete this if this is not necessary to
+  // implement wrench/network/bookmark menus.
 }
 
 void NativeMenuDOMUI::SetSize(const gfx::Size& size) {
@@ -361,28 +297,6 @@ void NativeMenuDOMUI::ProcessActivate() {
       MenuTypeCanExecute(activated_menu_->GetTypeAt(activated_index_))) {
     activated_menu_->ActivatedAt(activated_index_);
   }
-}
-
-DictionaryValue* NativeMenuDOMUI::CreateMenuItem(
-    int index,  const char* type, bool* has_icon_out) {
-  // Note: DOM UI uses '&' as mnemonic.
-  string16 label16 = model_->GetLabelAt(index);
-  DictionaryValue* item = new DictionaryValue();
-
-  item->SetString("type", type);
-  item->SetString("label", label16);
-  item->SetBoolean("enabled", model_->IsEnabledAt(index));
-  item->SetBoolean("visible", model_->IsVisibleAt(index));
-  item->SetBoolean("checked", model_->IsItemCheckedAt(index));
-  item->SetInteger("command_id", model_->GetCommandIdAt(index));
-  item->SetString(
-      "font", WideToUTF16(GetFontShorthand(model_->GetLabelFontAt(index))));
-  SkBitmap icon;
-  if (model_->GetIconAt(index, &icon) && !icon.isNull() && !icon.empty()) {
-    item->SetString("icon", dom_ui_util::GetImageDataUrl(icon));
-    *has_icon_out = true;
-  }
-  return item;
 }
 
 void NativeMenuDOMUI::ShowAt(MenuLocator* locator) {

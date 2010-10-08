@@ -13,6 +13,7 @@
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/chrome_thread.h"
@@ -27,6 +28,8 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "gfx/canvas_skia.h"
+#include "gfx/favicon_size.h"
+#include "gfx/font.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
 #include "views/controls/menu/menu_config.h"
@@ -34,6 +37,34 @@
 #include "views/widget/widget_gtk.h"
 
 namespace {
+
+// A utility function that generates css font property from gfx::Font.
+std::wstring GetFontShorthand(const gfx::Font* font) {
+  std::wstring out;
+  if (font == NULL) {
+    font = &(views::MenuConfig::instance().font);
+  }
+  if (font->GetStyle() & gfx::Font::BOLD) {
+    out.append(L"bold ");
+  }
+  if (font->GetStyle() & gfx::Font::ITALIC) {
+    out.append(L"italic ");
+  }
+  if (font->GetStyle() & gfx::Font::UNDERLINED) {
+    out.append(L"underline ");
+  }
+
+  // TODO(oshima): The font size from gfx::Font is too small when
+  // used in webkit. Figure out the reason.
+  out.append(ASCIIToWide(base::IntToString(font->GetFontSize() + 4)));
+  out.append(L"px/");
+  out.append(ASCIIToWide(base::IntToString(
+      std::max(kFavIconSize, font->GetHeight()))));
+  out.append(L"px \"");
+  out.append(font->GetFontName());
+  out.append(L"\",sans-serif");
+  return out;
+}
 
 // Creates scroll button's up image when |up| is true or
 // down image if |up| is false.
@@ -87,6 +118,7 @@ const std::string& GetImageDataUrlForRadio(bool on) {
  * |menu_class|, or empty string to use plain "Menu".
  */
 std::string GetMenuUIHTMLSourceFromString(
+    const chromeos::MenuUI& menu_ui,
     const base::StringPiece& menu_template,
     const std::string& menu_class,
     const std::string& menu_source) {
@@ -130,6 +162,8 @@ std::string GetMenuUIHTMLSourceFromString(
   SET_INTEGER_PROPERTY(scroll_arrow_height);
   SET_INTEGER_PROPERTY(label_to_accelerator_padding);
 
+  menu_ui.AddCustomConfigValues(&value_config);
+
   std::string json_config;
   base::JSONWriter::Write(&value_config, false, &json_config);
 
@@ -146,7 +180,8 @@ std::string GetMenuUIHTMLSourceFromString(
 class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
                          public URLFetcher::Delegate {
  public:
-  MenuUIHTMLSource(Profile* profile,
+  MenuUIHTMLSource(const chromeos::MenuUI& menu_ui,
+                   Profile* profile,
                    const std::string& menu_class,
                    const std::string& menu_source);
 
@@ -170,8 +205,12 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
  private:
   virtual ~MenuUIHTMLSource() {}
 
+  // The menu ui the source is created for.
+  const chromeos::MenuUI& menu_ui_;
+
   // The name of JS Menu class to use.
   const std::string menu_class_;
+
   // The source file of the menu subclass.
   const std::string menu_source_;
 #ifndef NDEBUG
@@ -200,6 +239,7 @@ class MenuHandler : public chromeos::MenuHandlerBase,
   void HandleMoveInputToSubmenu(const ListValue* values);
   void HandleMoveInputToParent(const ListValue* values);
   void HandleCloseAll(const ListValue* values);
+  void HandleModelUpdated(const ListValue* values);
   // This is a utility DOMUI message to print debug message.
   // Menu can't use dev tool as it lives outside of browser.
   // TODO(oshima): This is inconvenient and figure out how we can use
@@ -248,10 +288,12 @@ class MenuHandler : public chromeos::MenuHandlerBase,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MenuUIHTMLSource::MenuUIHTMLSource(Profile* profile,
+MenuUIHTMLSource::MenuUIHTMLSource(const chromeos::MenuUI& menu_ui,
+                                   Profile* profile,
                                    const std::string& menu_class,
                                    const std::string& menu_source)
     : DataSource(chrome::kChromeUIMenu, MessageLoop::current()),
+      menu_ui_(menu_ui),
       menu_class_(menu_class),
       menu_source_(menu_source)
 #ifndef NDEBUG
@@ -280,8 +322,8 @@ void MenuUIHTMLSource::StartDataRequest(const std::string& path,
 
   // The resource string should be pure code and should not contain
   // i18n string.
-  const std::string menu_html =
-      GetMenuUIHTMLSourceFromString(menu_template, menu_class_, menu_source_);
+  const std::string menu_html = GetMenuUIHTMLSourceFromString(
+      menu_ui_, menu_template, menu_class_, menu_source_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -301,7 +343,7 @@ void MenuUIHTMLSource::OnURLFetchComplete(const URLFetcher* source,
 #ifndef NDEBUG
   // This should not be called in release build.
   const std::string menu_html =
-      GetMenuUIHTMLSourceFromString(data, menu_class_, menu_source_);
+      GetMenuUIHTMLSourceFromString(menu_ui_, data, menu_class_, menu_source_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -358,6 +400,10 @@ void MenuHandler::RegisterMessages() {
       "close_all",
       NewCallback(this,
                   &MenuHandler::HandleCloseAll));
+  dom_ui_->RegisterMessageCallback(
+      "model_updated",
+      NewCallback(this,
+                  &MenuHandler::HandleModelUpdated));
   dom_ui_->RegisterMessageCallback(
       "log",
       NewCallback(this,
@@ -436,6 +482,12 @@ void MenuHandler::HandleCloseAll(const ListValue* values) {
     control->CloseAll();
 }
 
+void MenuHandler::HandleModelUpdated(const ListValue* values) {
+  menus::MenuModel* model = GetMenuModel();
+  if (model)
+    static_cast<chromeos::MenuUI*>(dom_ui_)->ModelUpdated(model);
+}
+
 void MenuHandler::HandleLog(const ListValue* values) {
   CHECK_EQ(1U, values->GetSize());
   std::string msg;
@@ -457,6 +509,7 @@ void MenuHandler::LoadingStateChanged(TabContents* contents) {
   if (control && !contents->is_loading()) {
     loaded_ = true;
     control->OnLoad();
+    HandleModelUpdated(NULL);
   }
 }
 
@@ -506,8 +559,89 @@ MenuUI::MenuUI(TabContents* contents) : DOMUI(contents) {
           make_scoped_refptr(CreateDataSource())));
 }
 
+void MenuUI::ModelUpdated(const menus::MenuModel* model) {
+  DictionaryValue json_model;
+  ListValue* items = new ListValue();
+  json_model.Set("items", items);
+  int max_icon_width = 0;
+  for (int index = 0; index < model->GetItemCount(); ++index) {
+    menus::MenuModel::ItemType type = model->GetTypeAt(index);
+    DictionaryValue* item;
+    switch (type) {
+      case menus::MenuModel::TYPE_SEPARATOR:
+        item = CreateMenuItem(model, index, "separator", &max_icon_width);
+        break;
+      case menus::MenuModel::TYPE_RADIO:
+        max_icon_width = std::max(max_icon_width, 12);
+        item = CreateMenuItem(model, index, "radio", &max_icon_width);
+        break;
+      case menus::MenuModel::TYPE_SUBMENU:
+        item = CreateMenuItem(model, index, "submenu", &max_icon_width);
+        break;
+      case menus::MenuModel::TYPE_COMMAND:
+        item = CreateMenuItem(model, index, "command", &max_icon_width);
+        break;
+      case menus::MenuModel::TYPE_CHECK:
+        // Add space even when unchecked.
+        max_icon_width = std::max(max_icon_width, 12);
+        item = CreateMenuItem(model, index, "check", &max_icon_width);
+        break;
+      default:
+        // TODO(oshima): We don't support BUTTOM_ITEM for now.
+        // I haven't decided how to implement zoom/cut&paste
+        // stuff, but may do somethign similar to what linux_views
+        // does.
+        NOTREACHED();
+        continue;
+    }
+    items->Set(index, item);
+  }
+  DOMUIMenuWidget* widget =
+      chromeos::DOMUIMenuWidget::FindDOMUIMenuWidget(
+          tab_contents()->GetNativeView());
+  DCHECK(widget);
+  json_model.SetInteger("maxIconWidth", max_icon_width);
+  json_model.SetBoolean("isRoot", widget->is_root());
+  CallJavascriptFunction(L"updateModel", json_model);
+}
+
+DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
+                                        int index,
+                                        const char* type,
+                                        int* max_icon_width) const {
+  // Note: DOM UI uses '&' as mnemonic.
+  string16 label16 = model->GetLabelAt(index);
+  DictionaryValue* item = new DictionaryValue();
+
+  item->SetString("type", type);
+  item->SetString("label", label16);
+  item->SetBoolean("enabled", model->IsEnabledAt(index));
+  item->SetBoolean("visible", model->IsVisibleAt(index));
+  item->SetBoolean("checked", model->IsItemCheckedAt(index));
+  item->SetInteger("command_id", model->GetCommandIdAt(index));
+  item->SetString(
+      "font", WideToUTF16(GetFontShorthand(model->GetLabelFontAt(index))));
+  SkBitmap icon;
+  if (model->GetIconAt(index, &icon) && !icon.isNull() && !icon.empty()) {
+    item->SetString("icon", dom_ui_util::GetImageDataUrl(icon));
+    *max_icon_width = std::max(*max_icon_width, icon.width());
+  }
+  return item;
+}
+
 ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {
-  return new MenuUIHTMLSource(GetProfile(), "Menu", "" /* no extra source */);
+  return CreateMenuUIHTMLSource(*this,
+                                GetProfile(),
+                                "Menu" /* class name */,
+                                "" /* no extra source */);
+}
+
+ChromeURLDataManager::DataSource* MenuUI::CreateMenuUIHTMLSource(
+    const MenuUI& menu_ui,
+    Profile* profile,
+    const std::string& menu_class,
+    const std::string& menu_source) {
+  return new MenuUIHTMLSource(menu_ui, profile, menu_class, menu_source);
 }
 
 }  // namespace chromeos
