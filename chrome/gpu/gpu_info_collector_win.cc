@@ -37,12 +37,6 @@ bool CollectGraphicsInfo(GPUInfo* gpu_info) {
   if (FAILED(device->GetDirect3D(&d3d)))
     return false;
 
-  // Don't fail if DirectX diagnostics are not available. Just leave the tree
-  // empty. The other GPU info is still valuable.
-  DxDiagNode dx_diagnostics;
-  if (GetDxDiagnostics(&dx_diagnostics))
-    gpu_info->SetDxDiagnostics(dx_diagnostics);
-
   return CollectGraphicsInfoD3D(d3d, gpu_info);
 }
 

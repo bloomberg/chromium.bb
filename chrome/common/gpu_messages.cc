@@ -5,7 +5,6 @@
 #include "chrome/common/gpu_messages.h"
 
 #include "chrome/common/gpu_info.h"
-#include "chrome/common/dx_diag_node.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel_handle.h"
@@ -86,10 +85,6 @@ void ParamTraits<GPUInfo> ::Write(Message* m, const param_type& p) {
   m->WriteUInt32(p.vertex_shader_version());
   m->WriteUInt32(p.gl_version());
   m->WriteBool(p.can_lose_context());
-
-#if defined(OS_WIN)
-  ParamTraits<DxDiagNode> ::Write(m, p.dx_diagnostics());
-#endif
 }
 
 bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
@@ -114,13 +109,6 @@ bool ParamTraits<GPUInfo> ::Read(const Message* m, void** iter, param_type* p) {
                      vertex_shader_version,
                      gl_version,
                      can_lose_context);
-
-#if defined(OS_WIN)
-  DxDiagNode dx_diagnostics;
-  ret = ret && ParamTraits<DxDiagNode> ::Read(m, iter, &dx_diagnostics);
-  p->SetDxDiagnostics(dx_diagnostics);
-#endif
-
   return ret;
 }
 
@@ -130,29 +118,6 @@ void ParamTraits<GPUInfo> ::Log(const param_type& p, std::string* l) {
                          p.device_id(),
                          p.driver_version().c_str(),
                          p.can_lose_context()));
-}
-
-void ParamTraits<DxDiagNode> ::Write(Message* m, const param_type& p) {
-  ParamTraits<std::map<std::string, std::string> >::Write(m, p.values);
-  ParamTraits<std::map<std::string, DxDiagNode> >::Write(m, p.children);
-}
-
-bool ParamTraits<DxDiagNode> ::Read(const Message* m,
-                                    void** iter,
-                                    param_type* p) {
-  bool ret = ParamTraits<std::map<std::string, std::string> >::Read(
-      m,
-      iter,
-      &p->values);
-  ret = ret && ParamTraits<std::map<std::string, DxDiagNode> >::Read(
-      m,
-      iter,
-      &p->children);
-  return ret;
-}
-
-void ParamTraits<DxDiagNode> ::Log(const param_type& p, std::string* l) {
-  l->append("<DxDiagNode>");
 }
 
 void ParamTraits<gpu::CommandBuffer::State> ::Write(Message* m,

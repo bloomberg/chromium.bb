@@ -708,7 +708,6 @@
         'gpu/gpu_command_buffer_stub.cc',
         'gpu/gpu_command_buffer_stub.h',
         'gpu/gpu_config.h',
-        'gpu/gpu_dx_diagnostics_win.cc',
         'gpu/gpu_info_collector_linux.cc',
         'gpu/gpu_info_collector_mac.mm',
         'gpu/gpu_info_collector_win.cc',
