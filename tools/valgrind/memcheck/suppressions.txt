@@ -2803,3 +2803,16 @@
    fun:_Znw*
    fun:_ZN42FileSystemHostContextTest_GetRootPath_Test8TestBodyEv
 }
+{
+   bug_58546
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN27SSLConfigServiceManagerPrefC1EP7Profile
+   fun:_ZN23SSLConfigServiceManager20CreateDefaultManagerEP7Profile
+   fun:_ZN11ProfileImplC1ERK8FilePath
+   fun:_ZN7Profile13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager10GetProfileERK8FilePathb
+   fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
+   fun:_ZN14ProfileManager17GetDefaultProfileEv
+}
