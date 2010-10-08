@@ -387,6 +387,8 @@
         'browser/chromeos/audio_handler.h',
         'browser/chromeos/boot_times_loader.cc',
         'browser/chromeos/boot_times_loader.h',
+        'browser/chromeos/browser_main_chromeos.cc',
+        'browser/chromeos/browser_main_chromeos.h',
         'browser/chromeos/cros_settings.cc',
         'browser/chromeos/cros_settings.h',
         'browser/chromeos/cros_settings_names.cc',

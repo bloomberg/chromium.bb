@@ -219,8 +219,8 @@ void BrowserMainPartsPosix::PostMainMessageLoopStart() {
   }
 }
 
-// Mac further subclasses BrowserMainPartsPosix
-#if !defined(OS_MACOSX)
+// Mac and Chromeos further subclass BrowserMainPartsPosix.
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 // static
 BrowserMainParts* BrowserMainParts::CreateBrowserMainParts(
     const MainFunctionParams& parameters) {
