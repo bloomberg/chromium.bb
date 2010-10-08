@@ -337,11 +337,15 @@ private:
 
 class CuePoint
 {
+    CuePoint(const CuePoint&);
+    CuePoint& operator=(const CuePoint&);
+
 public:
-    CuePoint();
+    explicit CuePoint(long long);
     ~CuePoint();
 
-    void Parse(IMkvReader*, long long start, long long size);
+    //void Parse(IMkvReader*, long long start, long long size);
+    void Load(IMkvReader*, long long);
 
     long long GetTimeCode() const;      //absolute but unscaled
     long long GetTime(Segment*) const;  //absolute and scaled (ns units)
@@ -361,6 +365,7 @@ public:
     const TrackPosition* Find(const Track*) const;
 
 private:
+    //long long m_pos;
     long long m_timecode;
     TrackPosition* m_track_positions;
     size_t m_track_positions_count;
@@ -393,14 +398,23 @@ public:
         const CuePoint*&,
         const CuePoint::TrackPosition*&) const;
 
-    size_t LoadCuePoint();
     const CuePoint* GetFirst() const;
     const CuePoint* GetLast() const;
 
+    bool LoadCuePoint();
+
+    const CuePoint* LoadCuePoint(
+        long long time_ns,
+        const Track*,
+        const CuePoint::TrackPosition*&) const;
+
 private:
-    CuePoint* m_cue_points;
-    size_t m_cue_points_count;
-    size_t m_cue_points_size;
+    void PreloadCuePoint(size_t&, long long);
+
+    CuePoint** m_cue_points;
+    //size_t m_cue_points_size;
+    size_t m_count;
+    size_t m_preload_count;
     long long m_pos;
 
 };
