@@ -1031,13 +1031,34 @@ void NaClDefOp(
     case Mpw_Operand:
     case Mpv_Operand:
     case Mpo_Operand:
-      current_inst->flags |= NACL_IFLAG(ModRmModIsnt0x3);
-      NaClApplySanityChecksToInst();
+      NaClAddIFlags(NACL_IFLAG(ModRmModIsnt0x3));
       break;
     case Mmx_N_Operand:
       kind = Mmx_E_Operand;
-      current_inst->flags |= NACL_IFLAG(ModRmModIs0x3);
-      NaClApplySanityChecksToInst();
+      NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
+      /* Automatically fall to the next case. */
+    case E_Operand:
+    case Eb_Operand:
+    case Ew_Operand:
+    case Ev_Operand:
+    case Eo_Operand:
+    case Edq_Operand:
+    case G_Operand:
+    case Gb_Operand:
+    case Gw_Operand:
+    case Gv_Operand:
+    case Go_Operand:
+    case Gdq_Operand:
+    case Mmx_G_Operand:
+    case Mmx_Gd_Operand:
+    case Xmm_E_Operand:
+    case Xmm_Eo_Operand:
+    case Xmm_G_Operand:
+    case Xmm_Go_Operand:
+      if (NACL_EMPTY_IFLAGS ==
+          (current_inst->flags & NACL_IFLAG(OpcodeInModRm))) {
+        NaClAddIFlags(NACL_IFLAG(OpcodeUsesModRm));
+      }
       break;
     default:
       break;
@@ -1715,7 +1736,7 @@ static void NaClBuildInstTables() {
   NaClInitInstTables();
   NaClDefPrefixBytes();
   NaClDefOneByteInsts(st);
-  NaClDef0FInsts();
+  NaClDef0FInsts(st);
   NaClDefSseInsts();
   NaClDefX87Insts();
   NaClDefNops();

@@ -34,6 +34,7 @@ Cdq
 Cdqe
 Cld
 Clflush
+Clts
 Cmovo
 Cmovno
 Cmovb
@@ -122,6 +123,7 @@ Fdiv
 Fdivp
 Fdivrp
 Fdivr
+Femms
 Ffree
 Fiadd
 Ficom
@@ -200,6 +202,8 @@ Insw
 Int
 Int0
 Int3
+Invd
+Invlpg
 Iret
 Iretd
 Iretq
@@ -224,12 +228,17 @@ Jrcxz
 Js
 Jz
 Lahf
+Lar
 Lddqu
 Lds
 Lea
 Leave
 Les
 Lfence
+Lgdt
+Lidt
+Lldt
+Lmsw
 Lodsb
 Lodsd
 Lodsq
@@ -237,6 +246,8 @@ Lodsw
 Loop
 Loope
 Loopne
+Lsl
+Ltr
 Maskmovdqu
 Maskmovq
 Maxpd
@@ -391,6 +402,7 @@ Popf
 Popfd
 Popfq
 Por
+Prefetch
 Prefetchnta
 Prefetcht0
 Prefetcht1
@@ -475,12 +487,16 @@ Setnl
 Setle
 Setnle
 Sfence
+Sgdt
 Shl
 Shld
 Shr
 Shrd
 Shufpd
 Shufps
+Sidt
+Sldt
+Smsw
 Sqrtps
 Sqrtpd
 Sqrtsd
@@ -489,12 +505,14 @@ Stosb
 Stosd
 Stosq
 Stosw
+Str
 Sub
 Subps
 Subpd
 Subsd
 Subss
 Syscall
+Sysret
 Test
 Ucomisd
 Ucomiss
@@ -503,9 +521,16 @@ Unpckhpd
 Unpckhps
 Unpcklpd
 Unpcklps
+Verr
+Verw
+Wbinvd
 Wrmsr
 Xadd
 Xchg
 Xor
 Xorpd
 Xorps
+# The following is just a place holder for instructions of the form:
+# 0f 0f [modrm] [sib] [displacement] imm8_opcode, which will be decoded
+# as: 0f0f: 3DNow $Pq, $Qq, $Ib
+3DNow

@@ -2391,15 +2391,15 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprDest | ExprSize32 },
 };
 0000000000000000: 0f 05                                        syscall
-  0f 05                       SYSCALL 
-    Syscall {%RCX}, {%RIP}
-      RegRCX                  OpSet OpImplicit
+  0f 05                       SYSCALL NaClIllegal
+    Syscall {%rip}, {%rcx}
       RegRIP                  OpUse OpSet OpImplicit
+      RegRCX                  OpSet OpImplicit
 NaClExpVector[4] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprRegister[0] , %rcx, ExprSet | ExprSize64 },
-  { OperandReference[1] , 1, ExprImplicit },
   { ExprRegister[0] , %rip, ExprSet | ExprUsed | ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %rcx, ExprSet | ExprSize64 },
 };
 0000000000000000: e4 08                                        in %al, 0x8
   e4                          ILLEGAL OpcodeHasImmed_b
@@ -3457,4 +3457,40 @@ NaClExpVector[6] = {
   { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %fs, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
+};
+0000000000000000: 0f 0f 00 90                                  3dnow %mmx0, [%rax], 0x90
+  0f 0f                       3DNOW OpcodeUsesModRm OpcodeHasImmed_b NaClIllegal
+    3DNow $Pq, $Qq, $Ib
+      Mmx_G_Operand
+      Mmx_E_Operand
+      I_Operand
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %mmx0, 0 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x90, ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: 0f 0f 00 90                                  3dnow %mmx0, [%rax], 0x90
+  0f 0f                       3DNOW OpcodeUsesModRm OpcodeHasImmed_b NaClIllegal
+    3DNow $Pq, $Qq, $Ib
+      Mmx_G_Operand
+      Mmx_E_Operand
+      I_Operand
+NaClExpVector[10] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %mmx0, 0 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprSize64 },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x90, ExprSize8 | ExprUnsignedHex },
 };

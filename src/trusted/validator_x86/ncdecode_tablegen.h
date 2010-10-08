@@ -191,7 +191,7 @@ NaClIFlags NaClOperandSizes(NaClInst* inst);
 void NaClDefOneByteInsts(struct NaClSymbolTable* context_st);
 
 /* Defines two byte opcodes beginning with OF. */
-void NaClDef0FInsts();
+void NaClDef0FInsts(struct NaClSymbolTable* context_st);
 
 /* Defines two byte opcodes beginning with DC. */
 void NaClDefDCInsts();

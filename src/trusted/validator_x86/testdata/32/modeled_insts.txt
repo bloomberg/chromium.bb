@@ -1854,12 +1854,105 @@ Target: x86-32 bit mode
 
 *** Prefix0F ***
 
+  --- 00 ---
+  0f 00 / 0                   SYSTEM OpcodeInModRm OperandSize_w OperandSize_v NaClIllegal
+    Sldt $Mw/Rv
+      E_Operand               OpUse OpSet OpDest
+  0f 00 / 1                   SYSTEM OpcodeInModRm OperandSize_w OperandSize_v NaClIllegal
+    Str $Mw/Rv
+      E_Operand               OpUse OpSet OpDest
+  0f 00 / 2                   SYSTEM OpcodeInModRm NaClIllegal
+    Lldt $Ew
+      Ew_Operand              OpUse
+  0f 00 / 3                   SYSTEM OpcodeInModRm NaClIllegal
+    Ltr $Ew
+      Ew_Operand              OpUse
+  0f 00 / 4                   SYSTEM OpcodeInModRm NaClIllegal
+    Verr $Ew
+      Ew_Operand
+  0f 00 / 5                   SYSTEM OpcodeInModRm NaClIllegal
+    Verw $Ew
+      Ew_Operand
+  0f 00 / 6                   INVALID OpcodeInModRm NaClIllegal
+  0f 00 / 7                   INVALID OpcodeInModRm NaClIllegal
+  --- 01 ---
+  0f 01 / 0                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 NaClIllegal
+    Sgdt $Ms
+      M_Operand               OpUse OpSet OpDest
+  0f 01 / 1                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 NaClIllegal
+    Sidt $Ms
+      M_Operand               OpUse OpSet OpDest
+  0f 01 / 1                   INVALID OpcodeInModRm NaClIllegal
+  0f 01 / 2                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 NaClIllegal
+    Lgdt $Ms
+      M_Operand               OpUse
+  0f 01 / 3                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 NaClIllegal
+    Lidt $Ms
+      M_Operand               OpUse
+  0f 01 / 3                   INVALID OpcodeInModRm NaClIllegal
+  0f 01 / 4                   SYSTEM OpcodeInModRm OperandSize_w OperandSize_v NaClIllegal
+    Smsw $Mw/Rv
+      E_Operand               OpUse OpSet OpDest
+  0f 01 / 5                   INVALID OpcodeInModRm NaClIllegal
+  0f 01 / 6                   INVALID OpcodeInModRm NaClIllegal
+  0f 01 / 7                   SYSTEM OpcodeInModRm ModRmModIsnt0x3 NaClIllegal
+    Invlpg $Mb
+      Mb_Operand              OpUse
+  0f 01 / 7                   INVALID OpcodeInModRm NaClIllegal
+  --- 02 ---
+  0f 02                       SYSTEM OpcodeUsesModRm OperandSize_w OperandSize_v NaClIllegal
+    Lar $Gv, $Ew
+      G_Operand
+      Ew_Operand
+  --- 03 ---
+  0f 03                       SYSTEM OpcodeUsesModRm OperandSize_w OperandSize_v NaClIllegal
+    Lsl $Gv, $Ew
+      G_Operand
+      Ew_Operand
   --- 04 ---
-  0f 04                       INVALID 
+  0f 04                       INVALID NaClIllegal
+  --- 06 ---
+  0f 06                       SYSTEM NaClIllegal
+    Clts
+  --- 08 ---
+  0f 08                       SYSTEM NaClIllegal
+    Invd
+  --- 09 ---
+  0f 09                       SYSTEM NaClIllegal
+    Wbinvd
   --- 0a ---
-  0f 0a                       INVALID 
+  0f 0a                       INVALID NaClIllegal
+  --- 0b ---
+  0f 0b                       386 NaClIllegal
+    Ud2
   --- 0c ---
-  0f 0c                       INVALID 
+  0f 0c                       INVALID NaClIllegal
+  --- 0d ---
+  0f 0d / 0                   3DNOW OpcodeInModRm
+    Prefetch
+  0f 0d / 1                   3DNOW OpcodeInModRm
+    Prefetch
+  0f 0d / 2                   3DNOW OpcodeInModRm NaClIllegal
+    Prefetch
+  0f 0d / 3                   3DNOW OpcodeInModRm NaClIllegal
+    Prefetch
+  0f 0d / 4                   3DNOW OpcodeInModRm NaClIllegal
+    Prefetch
+  0f 0d / 5                   3DNOW OpcodeInModRm NaClIllegal
+    Prefetch
+  0f 0d / 6                   3DNOW OpcodeInModRm NaClIllegal
+    Prefetch
+  0f 0d / 7                   3DNOW OpcodeInModRm NaClIllegal
+    Prefetch
+  --- 0e ---
+  0f 0e                       3DNOW 
+    Femms
+  --- 0f ---
+  0f 0f                       3DNOW OpcodeUsesModRm OpcodeHasImmed_b NaClIllegal
+    3DNow $Pq, $Qq, $Ib
+      Mmx_G_Operand
+      Mmx_E_Operand
+      I_Operand
   --- 10 ---
   0f 10                       SSE OpcodeUsesModRm
     Movups $G(xmm), $E(xmm)

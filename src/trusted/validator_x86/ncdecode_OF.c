@@ -80,18 +80,73 @@ static void NaClDefBswap() {
   }
 }
 
-void NaClDef0FInsts() {
+void NaClDef0FInsts(struct NaClSymbolTable* st) {
   int i;
   NaClDefDefaultInstPrefix(Prefix0F);
 
-  NaClDefInvalid(0x04);
-  NaClDefInst(0x05, NACLi_SYSCALL, NACL_IFLAG(Opcode64Only), InstSyscall);
-  NaClDefOp(RegRCX, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpImplicit));
-  NaClDefOp(RegRIP, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse) |
-            NACL_OPFLAG(OpImplicit));
+  NaClDefine("0f00/0: Sldt $Mw/Rv", NACLi_SYSTEM, st, UnarySet);
+  NaClDefine("0f00/1: Str $Mw/Rv", NACLi_SYSTEM, st, UnarySet);
+  NaClDefine("0f00/2: Lldt $Ew", NACLi_SYSTEM, st, Uses);
+  NaClDefine("0f00/3: Ltr $Ew", NACLi_SYSTEM, st, Uses);
+  NaClDefine("0f00/4: Verr $Ew", NACLi_SYSTEM, st, Other);
+  NaClDefine("0f00/5: Verw $Ew", NACLi_SYSTEM, st, Other);
+  NaClDefine("0f00/6: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("0f00/7: Invalid", NACLi_INVALID, st, Other);
 
-  NaClDefInvalid(0x0a);
-  NaClDefInvalid(0x0c);
+  NaClDefine("0f01/0: Sgdt $Ms", NACLi_SYSTEM, st, UnarySet);
+  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, Opcode1, 2);
+  NaClDefine("0f01/1: Sidt $Ms", NACLi_SYSTEM, st, UnarySet);
+  /* Disallows Monitor/mwait.*/
+  NaClDefine("0f01/1: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("0f01/2: Lgdt $Ms", NACLi_SYSTEM, st, Uses);
+  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, Opcode3, 2);
+  NaClDefine("0f01/3: Lidt $Ms", NACLi_SYSTEM, st, Uses);
+  /* Disallows Vmrun, Vmmcall, Vmload, Vmsave, Stgi, Clgi, Skinit, Invlpga */
+  NaClDefine("0f01/3: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("0f01/4: Smsw $Mw/Rv", NACLi_SYSTEM, st, UnarySet);
+  NaClDefine("0f01/5: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("0f01/6: Lmsw $Ew", NACLi_INVALID, st, Uses);
+  NaClDefPrefixInstMrmChoices(Prefix0F, 0x01, Opcode7, 2);
+  NaClDefine("0f01/7: Invlpg $Mb", NACLi_SYSTEM, st, Uses);
+  /* Disallows Swapgs, Rdtscp. */
+  NaClDefine("0f01/7: Invalid", NACLi_INVALID, st, Other);
+
+  NaClDefine("0f02: Lar $Gv, $Ew", NACLi_SYSTEM, st, Other);
+  NaClDefine("0f03: Lsl $Gv, $Ew", NACLi_SYSTEM, st, Other);
+  NaClDefine("0f04: Invalid", NACLi_INVALID, st, Other);
+  /* Intel manual that this only applies in 64-bit mode. */
+  NaClDef_64("0f05: Syscall {%rip}, {%rcx}", NACLi_SYSCALL, st, SysCall);
+  NaClDefine("0f06: Clts", NACLi_SYSTEM, st, Other);
+  /* Intel manual that this only applies in 64-bit mode. */
+  NaClDef_64("0f07: Sysret {%rip}, {%rcx}", NACLi_ILLEGAL, st, SysReturn);
+  NaClDefine("0f08: Invd", NACLi_SYSTEM, st, Other);
+  NaClDefine("0f09: Wbinvd", NACLi_SYSTEM, st, Other);
+  NaClDefine("0f0a: Invalid", NACLi_INVALID, st, Other);
+  /* Note: ud2 with no prefix bytes is currently understood as a NOP sequence.
+   * The definition here only applies to cases where prefix bytes are added.
+   */
+  NaClDefine("0f0b: Ud2", NACLi_386, st, Other);
+  NaClDefine("0f0c: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("0f0d/0: Prefetch", NACLi_3DNOW, st, Other);   /* exclusive */
+  NaClDefine("0f0d/1: Prefetch", NACLi_3DNOW, st, Other);   /* modified */
+  NaClDefine("0f0d/2: Prefetch", NACLi_3DNOW, st, Other); /* reserved */
+  NaClDefine("0f0d/3: Prefetch", NACLi_3DNOW, st, Other); /* modified */
+  NaClDefine("0f0d/4: Prefetch", NACLi_3DNOW, st, Other); /* reserved */
+  NaClDefine("0f0d/5: Prefetch", NACLi_3DNOW, st, Other); /* reserved */
+  NaClDefine("0f0d/6: Prefetch", NACLi_3DNOW, st, Other); /* reserved */
+  NaClDefine("0f0d/7: Prefetch", NACLi_3DNOW, st, Other); /* reserved */
+  NaClDefine("0f0e: Femms", NACLi_3DNOW, st, Other);
+
+  /* All 3DNOW instructions of form: 0f 0f [modrm] [sib] [displacement]
+   *      imm8_opcode
+   *
+   * These instructions encode into "OP Pq, Qq", based on the value of
+   * imm8_opcode. We will (poorly) decode these for now, making them
+   * illegal. However, by decoding this approximation, we at least
+   * recognize the instruction length.
+   * TODO(karl): Decide what (if anything) we should do besides this.
+   */
+  NaClDefine("0f0f: 3DNow $Pq, $Qq, $Ib", NACLi_3DNOW, st, Other);
 
   /* Note: The SSE instructions that begin with 0F are not defined here. Look
    * at ncdecode_sse.c for the definitions of SSE instruction.

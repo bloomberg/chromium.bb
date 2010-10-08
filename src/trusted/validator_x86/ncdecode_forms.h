@@ -66,8 +66,14 @@ typedef enum NaClInstCat {
   Call,       /* Implicit ip first argument that is updated. Stack second
                * argument that is updated. Third argument is used.
                */
+  SysCall,    /* Implicit ip first argument that is updated, Implicit register
+               * second argument that is set.
+               */
   Return,     /* Implicit ip first argument that is set. Stack second
                * argument that is updated. Third argument, if given, is used.
+               */
+  SysReturn,  /* Implicit ip first argument that is set. Implicit register
+               * second argument that is used.
                */
   Jump,       /* Implicit first (IP) argument is updated to the
                * value of the Dest argument.

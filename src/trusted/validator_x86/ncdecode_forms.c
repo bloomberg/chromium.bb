@@ -48,7 +48,9 @@ const char* NaClInstCatName(NaClInstCat cat) {
     { Push, "Push" },
     { Pop, "Pop" },
     { Call, "Call"},
+    { SysCall, "SysCall"},
     { Return, "Return"},
+    { SysReturn, "SysReturn"},
     { Jump, "Jump" },
     { Uses, "Uses" },
     { Lea, "Lea" },
@@ -76,6 +78,7 @@ static NaClOpFlags NaClGetArg1Flags(NaClInstCat icat, int num_ops) {
     case UnarySet:
     case Exchange:
     case Call:
+    case SysCall:
     case UnaryUpdate:
       return NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
     case Binary:
@@ -91,6 +94,7 @@ static NaClOpFlags NaClGetArg1Flags(NaClInstCat icat, int num_ops) {
       return NACL_OPFLAG(OpUse) | NACL_OPFLAG(OpSet);
     case Jump:
     case Return:
+    case SysReturn:
       return NACL_OPFLAG(OpSet);
     case Uses:
       return NACL_OPFLAG(OpUse);
@@ -130,6 +134,7 @@ static NaClOpFlags NaClGetArg2PlusFlags(NaClInstCat icat,
     case Push:
     case Jump:
     case Uses:
+    case SysReturn:
       return NACL_OPFLAG(OpUse);
     case Compare:
       return NACL_OPFLAG(OpUse);
@@ -144,6 +149,7 @@ static NaClOpFlags NaClGetArg2PlusFlags(NaClInstCat icat,
         return NACL_OPFLAG(OpUse);
       }
     case Pop:
+    case SysCall:
       return NACL_OPFLAG(OpSet);
     case Call:
     case Return:
@@ -323,39 +329,32 @@ Bool NaClInInstructionSet(const NaClMnemonic* names,
   return FALSE;
 }
 
-/* adds instruction flag denoting that a modrm byte is needed, if the
- * instruction doesn't already define it.
- */
-static void NaClAddUsesModRmOperand(NaClOpKind op_kind) {
-  NaClInst* inst = NaClGetDefInst();
-  if (NACL_EMPTY_IFLAGS == (inst->flags & NACL_IFLAG(OpcodeInModRm))) {
-    NaClAddIFlags(NACL_IFLAG(OpcodeUsesModRm));
-  }
-  NaClDefOp(op_kind, NACL_EMPTY_OPFLAGS);
-}
-
 void DEF_OPERAND(E__)() {
-  NaClAddUsesModRmOperand(E_Operand);
+  NaClDefOp(E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(Eb_)() {
-  NaClAddUsesModRmOperand(E_Operand);
+  NaClDefOp(E_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_b));
 }
 
 void DEF_OPERAND(Edq)() {
-  NaClAddUsesModRmOperand(Edq_Operand);
+  NaClDefOp(Edq_Operand, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(EdQ)() {
   /* TODO(karl) fix measurement of size to use Rex.W */
-  NaClAddUsesModRmOperand(E_Operand);
+  NaClDefOp(E_Operand, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(Ev_)() {
-  NaClAddUsesModRmOperand(E_Operand);
+  NaClDefOp(E_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
+}
+
+void DEF_OPERAND(Ew_)() {
+  NaClDefOp(Ew_Operand, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(Fvw)() {
@@ -374,25 +373,25 @@ void DEF_OPERAND(Fvq)() {
 }
 
 void DEF_OPERAND(Gb_)() {
-  NaClAddUsesModRmOperand(G_Operand);
+  NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_b));
 }
 
 void DEF_OPERAND(Gd_)() {
-  NaClAddUsesModRmOperand(Gv_Operand);
+  NaClDefOp(Gv_Operand, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(Gdq)() {
-  NaClAddUsesModRmOperand(Gdq_Operand);
+  NaClDefOp(Gdq_Operand, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(GdQ)() {
-  NaClAddUsesModRmOperand(G_Operand);
+  NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_v) | NACL_IFLAG(OperandSize_o));
 }
 
 void DEF_OPERAND(Gv_)() {
-  NaClAddUsesModRmOperand(G_Operand);
+  NaClDefOp(G_Operand, NACL_EMPTY_OPFLAGS);
   NaClAddIFlags(NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
                 NACL_IFLAG(OperandSize_o));
 }
@@ -488,13 +487,22 @@ void DEF_OPERAND(Mps)() {
   NaClDefOp(Mdq_Operand, NACL_EMPTY_OPFLAGS);
 }
 
+void DEF_OPERAND(Ms_)() {
+  /* TODO(karl): fix size of data accessed in memory. */
+  NaClDefOp(M_Operand, NACL_EMPTY_OPFLAGS);
+}
+
 void DEF_OPERAND(Mq_)() {
   NaClDefOp(Mo_Operand, NACL_EMPTY_OPFLAGS);
 }
 
 void DEF_OPERAND(Nq_)() {
   NaClDefOp(Mmx_N_Operand, NACL_EMPTY_OPFLAGS);
-  NaClAddIFlags(NACL_IFLAG(ModRmModIs0x3));
+}
+
+void DEF_OPERAND(MwSlRv)() {
+  /* TODO(karl) Verify that Mw/Rv as same as Ev? */
+  DEF_OPERAND(Ev_)();
 }
 
 void DEF_OPERAND(One)() {
@@ -1307,6 +1315,7 @@ static void NaClExtractOperandForm(const char* form) {
     defop_st = NaClSymbolTableCreate(MAX_DEFOPS, NULL);
     NaClSymbolTablePutDefOp("Eb",    DEF_OPERAND(Eb_),  defop_st);
     NaClSymbolTablePutDefOp("Ev",    DEF_OPERAND(Ev_),  defop_st);
+    NaClSymbolTablePutDefOp("Ew",    DEF_OPERAND(Ew_),  defop_st);
     NaClSymbolTablePutDefOp("Fvd",   DEF_OPERAND(Fvd),  defop_st);
     NaClSymbolTablePutDefOp("Fvq",   DEF_OPERAND(Fvq),  defop_st);
     NaClSymbolTablePutDefOp("Fvw",   DEF_OPERAND(Fvw),  defop_st);
@@ -1318,6 +1327,11 @@ static void NaClExtractOperandForm(const char* form) {
     NaClSymbolTablePutDefOp("Jz",    DEF_OPERAND(Jz_),  defop_st);
     NaClSymbolTablePutDefOp("Jzd",   DEF_OPERAND(Jzd),  defop_st);
     NaClSymbolTablePutDefOp("Jzw",   DEF_OPERAND(Jzw),  defop_st);
+    NaClSymbolTablePutDefOp("Mb",    DEF_OPERAND(Mb_),  defop_st);
+    NaClSymbolTablePutDefOp("Ms",    DEF_OPERAND(Ms_),  defop_st);
+    NaClSymbolTablePutDefOp("Mw/Rv", DEF_OPERAND(MwSlRv), defop_st);
+    NaClSymbolTablePutDefOp("Pq",    DEF_OPERAND(Pq_),  defop_st);
+    NaClSymbolTablePutDefOp("Qq",    DEF_OPERAND(Qq_),  defop_st);
     NaClSymbolTablePutDefOp("rAXv",  DEF_OPERAND(rAXv), defop_st);
     NaClSymbolTablePutDefOp("rAXvd", DEF_OPERAND(rAXvd), defop_st);
     NaClSymbolTablePutDefOp("rAXvq", DEF_OPERAND(rAXvq), defop_st);

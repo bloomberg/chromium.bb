@@ -7,7 +7,8 @@
 /* Captures instructions that are considered illegal in native client.
  *
  * Note: This is used by the x86-64 validator to decide what instructions
- * should be flagged as illegal.
+ * should be flagged as illegal. It is expected to also be used for
+ * the x86-32 validator sometime in the future.
  *
  * Note: This code doesn't include rules to check for the case of
  * instructions that are near (relative) jumps with operand word size,
@@ -32,6 +33,15 @@ static const NaClMnemonic kNaClIllegalOp[] = {
    */
   InstDas,
   InstLeave,
+  /* Note: Ud2 is special. We except the instruction sequence "0f0b" (with no
+   * no prefix bytes) as a special case on a nop instruction. The entry below
+   * amkes all forms with a prefix bytes illegal.
+   */
+  InstUd2,
+  /* Note: Disallow 3DNow, since it is a placeholder for decoding 3DNOW
+   * instructions that we can detect, but not properly decode.
+   */
+  Inst3DNow
 };
 
 static const NaClNameOpcodeSeq kNaClIllegalOpSeq[] = {
@@ -46,6 +56,15 @@ static const NaClNameOpcodeSeq kNaClIllegalOpSeq[] = {
   { InstSub , { 0x82 , SL(5) , END_OPCODE_SEQ } },
   { InstXor , { 0x82 , SL(6) , END_OPCODE_SEQ } },
   { InstCmp , { 0x82 , SL(7) , END_OPCODE_SEQ } },
+
+  /* It may be the case that these can also be enabled by CPUID_ECX_PRE; */
+  /* This enabling is not supported by the validator at this time. */
+  { InstPrefetch , { 0x0f , 0x0d , SL(2) , END_OPCODE_SEQ } },
+  { InstPrefetch , { 0x0f , 0x0d , SL(3) , END_OPCODE_SEQ } },
+  { InstPrefetch , { 0x0f , 0x0d , SL(4) , END_OPCODE_SEQ } },
+  { InstPrefetch , { 0x0f , 0x0d , SL(5) , END_OPCODE_SEQ } },
+  { InstPrefetch , { 0x0f , 0x0d , SL(6) , END_OPCODE_SEQ } },
+  { InstPrefetch , { 0x0f , 0x0d , SL(7) , END_OPCODE_SEQ } },
 };
 
 void NaClAddNaClIllegalIfApplicable() {
