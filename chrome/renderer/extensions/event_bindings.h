@@ -44,7 +44,7 @@ class EventBindings {
   static void CallFunction(const std::string& function_name, int argc,
                            v8::Handle<v8::Value>* argv,
                            RenderView* render_view,
-                           bool requires_incognito_access,
+                           bool cross_incognito,
                            const GURL& event_url);
 };
 

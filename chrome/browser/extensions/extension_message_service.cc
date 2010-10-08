@@ -96,13 +96,13 @@ static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
 static void DispatchEvent(const ExtensionMessageService::MessagePort& port,
                           const std::string& event_name,
                           const std::string& event_args,
-                          bool has_incognito_data,
+                          bool cross_incognito,
                           const GURL& event_url) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, Value::CreateStringValue(event_args));
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(port.routing_id,
-      ExtensionMessageService::kDispatchEvent, args, has_incognito_data,
+      ExtensionMessageService::kDispatchEvent, args, cross_incognito,
       event_url));
 }
 
@@ -392,12 +392,12 @@ void ExtensionMessageService::PostMessageFromRenderer(
 
 void ExtensionMessageService::DispatchEventToRenderers(
     const std::string& event_name, const std::string& event_args,
-    Profile* source_profile, const GURL& event_url) {
+    Profile* restrict_to_profile, const GURL& event_url) {
   if (!profile_)
     return;
 
   // We don't expect to get events from a completely different profile.
-  DCHECK(!source_profile || profile_->IsSameProfile(source_profile));
+  DCHECK(!restrict_to_profile || profile_->IsSameProfile(restrict_to_profile));
 
   ListenerMap::iterator it = listeners_.find(event_name);
   if (it == listeners_.end())
@@ -418,18 +418,18 @@ void ExtensionMessageService::DispatchEventToRenderers(
 
     // Is this event from a different profile than the renderer (ie, an
     // incognito tab event sent to a normal process, or vice versa).
-    bool cross_profile =
-        source_profile && renderer->profile() != source_profile;
-    DispatchEvent(renderer, event_name, event_args, cross_profile, event_url);
+    bool cross_incognito =
+        restrict_to_profile && renderer->profile() != restrict_to_profile;
+    DispatchEvent(renderer, event_name, event_args, cross_incognito, event_url);
   }
 }
 
 void ExtensionMessageService::DispatchEventToExtension(
     const std::string& extension_id,
     const std::string& event_name, const std::string& event_args,
-    Profile* source_profile, const GURL& event_url) {
+    Profile* restrict_to_profile, const GURL& event_url) {
   DispatchEventToRenderers(GetPerExtensionEventName(event_name, extension_id),
-                           event_args, source_profile, event_url);
+                           event_args, restrict_to_profile, event_url);
 }
 
 void ExtensionMessageService::Observe(NotificationType type,

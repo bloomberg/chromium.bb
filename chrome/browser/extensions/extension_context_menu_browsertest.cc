@@ -180,8 +180,8 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
 
 // Tests adding a simple context menu item.
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Simple) {
-  ExtensionTestMessageListener listener1("created item");
-  ExtensionTestMessageListener listener2("onclick fired");
+  ExtensionTestMessageListener listener1("created item", false);
+  ExtensionTestMessageListener listener2("onclick fired", false);
   ASSERT_TRUE(LoadContextMenuExtension("simple"));
 
   // Wait for the extension to tell us it's created an item.
@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Simple) {
 // Tests that setting "documentUrlPatterns" for an item properly restricts
 // those items to matching pages.
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Patterns) {
-  ExtensionTestMessageListener listener("created items");
+  ExtensionTestMessageListener listener("created items", false);
 
   ASSERT_TRUE(LoadContextMenuExtension("patterns"));
 
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Patterns) {
 // Tests registering an item with a very long title that should get truncated in
 // the actual menu displayed.
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, LongTitle) {
-  ExtensionTestMessageListener listener("created");
+  ExtensionTestMessageListener listener("created", false);
 
   // Load the extension and wait until it's created a menu item.
   ASSERT_TRUE(LoadContextMenuExtension("long_title"));
@@ -307,7 +307,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   // Navigate to test1.html inside the extension, which should create a bunch
   // of items at the top-level (but they'll get pushed into an auto-generated
   // parent).
-  ExtensionTestMessageListener listener1("test1 create finished");
+  ExtensionTestMessageListener listener1("test1 create finished", false);
   ui_test_utils::NavigateToURL(browser(),
                                GURL(extension->GetResourceURL("test1.html")));
   listener1.WaitUntilSatisfied();
@@ -332,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
 
   // Now run our second test - navigate to test2.html which creates an explicit
   // parent node and populates that with the same items as in test1.
-  ExtensionTestMessageListener listener2("test2 create finished");
+  ExtensionTestMessageListener listener2("test2 create finished", false);
   ui_test_utils::NavigateToURL(browser(),
                                GURL(extension->GetResourceURL("test2.html")));
   listener2.WaitUntilSatisfied();
@@ -348,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
 // Tests that targetUrlPattern keeps items from appearing when there is no
 // target url.
 IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, TargetURLs) {
-  ExtensionTestMessageListener listener("created items");
+  ExtensionTestMessageListener listener("created items", false);
   ASSERT_TRUE(LoadContextMenuExtension("target_urls"));
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 

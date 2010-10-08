@@ -140,12 +140,12 @@ class ExtensionImpl : public ExtensionBase {
 // Returns true if the extension running in the given |context| has sufficient
 // permissions to access the data.
 static bool HasSufficientPermissions(ContextInfo* context,
-                                     bool requires_incognito_access,
+                                     bool cross_incognito,
                                      const GURL& event_url) {
   v8::Context::Scope context_scope(context->context);
 
-  bool cross_profile_ok = (!requires_incognito_access ||
-      ExtensionProcessBindings::AllowCrossProfile(context->extension_id));
+  bool cross_profile_ok = (!cross_incognito ||
+      ExtensionProcessBindings::AllowCrossIncognito(context->extension_id));
   if (!cross_profile_ok)
     return false;
 
@@ -338,7 +338,7 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
 void EventBindings::CallFunction(const std::string& function_name,
                                  int argc, v8::Handle<v8::Value>* argv,
                                  RenderView* render_view,
-                                 bool requires_incognito_access,
+                                 bool cross_incognito,
                                  const GURL& event_url) {
   // We copy the context list, because calling into javascript may modify it
   // out from under us. We also guard against deleted contexts by checking if
@@ -353,11 +353,8 @@ void EventBindings::CallFunction(const std::string& function_name,
     if ((*it)->context.IsEmpty())
       continue;
 
-    if (!HasSufficientPermissions(it->get(),
-                                  requires_incognito_access,
-                                  event_url)) {
+    if (!HasSufficientPermissions(it->get(), cross_incognito, event_url))
       continue;
-    }
 
     v8::Handle<v8::Value> retval = CallFunctionInContext((*it)->context,
         function_name, argc, argv);

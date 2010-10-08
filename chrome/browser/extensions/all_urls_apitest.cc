@@ -46,32 +46,32 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
 
   // Now verify we run content scripts on chrome://newtab/.
   url = "chrome://newtab/";
-  ExtensionTestMessageListener listener1a("content script: " + url);
-  ExtensionTestMessageListener listener1b("execute: " + url);
+  ExtensionTestMessageListener listener1a("content script: " + url, false);
+  ExtensionTestMessageListener listener1b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
   ASSERT_TRUE(listener1a.WaitUntilSatisfied());
   ASSERT_TRUE(listener1b.WaitUntilSatisfied());
 
   // Now verify data: urls.
   url = "data:text/html;charset=utf-8,<html>asdf</html>";
-  ExtensionTestMessageListener listener2a("content script: " + url);
-  ExtensionTestMessageListener listener2b("execute: " + url);
+  ExtensionTestMessageListener listener2a("content script: " + url, false);
+  ExtensionTestMessageListener listener2b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
   ASSERT_TRUE(listener2a.WaitUntilSatisfied());
   ASSERT_TRUE(listener2b.WaitUntilSatisfied());
 
   // Now verify about:version.
   url = "about:version";
-  ExtensionTestMessageListener listener3a("content script: " + url);
-  ExtensionTestMessageListener listener3b("execute: " + url);
+  ExtensionTestMessageListener listener3a("content script: " + url, false);
+  ExtensionTestMessageListener listener3b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
   ASSERT_TRUE(listener3a.WaitUntilSatisfied());
   ASSERT_TRUE(listener3b.WaitUntilSatisfied());
 
   // Now verify about:blank.
   url = "about:blank";
-  ExtensionTestMessageListener listener4a("content script: " + url);
-  ExtensionTestMessageListener listener4b("execute: " + url);
+  ExtensionTestMessageListener listener4a("content script: " + url, false);
+  ExtensionTestMessageListener listener4b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
   ASSERT_TRUE(listener4a.WaitUntilSatisfied());
   ASSERT_TRUE(listener4b.WaitUntilSatisfied());
@@ -79,8 +79,9 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   // Now verify we can script a regular http page.
   ASSERT_TRUE(test_server()->Start());
   GURL page_url = test_server()->GetURL(kAllUrlsTarget);
-  ExtensionTestMessageListener listener5a("content script: " + page_url.spec());
-  ExtensionTestMessageListener listener5b("execute: " + page_url.spec());
+  ExtensionTestMessageListener listener5a("content script: " + page_url.spec(),
+                                          false);
+  ExtensionTestMessageListener listener5b("execute: " + page_url.spec(), false);
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_TRUE(listener5a.WaitUntilSatisfied());
   ASSERT_TRUE(listener5b.WaitUntilSatisfied());
@@ -104,8 +105,9 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, RegularExtensions) {
   // Now verify we can script a regular http page.
   ASSERT_TRUE(test_server()->Start());
   GURL page_url = test_server()->GetURL(kAllUrlsTarget);
-  ExtensionTestMessageListener listener1a("content script: " + page_url.spec());
-  ExtensionTestMessageListener listener1b("execute: " + page_url.spec());
+  ExtensionTestMessageListener listener1a("content script: " + page_url.spec(),
+                                          false);
+  ExtensionTestMessageListener listener1b("execute: " + page_url.spec(), false);
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_TRUE(listener1a.WaitUntilSatisfied());
   ASSERT_TRUE(listener1b.WaitUntilSatisfied());

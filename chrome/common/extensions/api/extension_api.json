@@ -3431,7 +3431,15 @@
         "type": "function",
         "description": "Sends a string message to the browser process, generating a Notification that C++ test code can wait for.",
         "parameters": [
-          {"type": "string", "name": "message"}
+          {"type": "string", "name": "message"},
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {"type": "string", "name": "response"}
+            ]
+          }
         ]
       }
     ],

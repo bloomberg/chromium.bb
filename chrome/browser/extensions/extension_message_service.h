@@ -81,20 +81,22 @@ class ExtensionMessageService
   // Returns true if there is at least one listener for the given event.
   bool HasEventListener(const std::string& event_name);
 
-  // Send an event to every registered extension renderer.  If
-  // |has_incognito_data| is true, the event is only sent to extension with the
-  // permission to access incognito data. If |event_url| is not empty, the
-  // event is only sent to extension with host permissions for this url.
+  // Send an event to every registered extension renderer. If
+  // |restrict_to_profile| is non-NULL, then the event will not be sent to other
+  // profiles unless the extension has permission (e.g. incognito tab update ->
+  // normal profile only works if extension is allowed incognito access). If
+  // |event_url| is not empty, the event is only sent to extension with host
+  // permissions for this url.
   virtual void DispatchEventToRenderers(
       const std::string& event_name, const std::string& event_args,
-      Profile* source_profile, const GURL& event_url);
+      Profile* restrict_to_profile, const GURL& event_url);
 
   // Same as above, except use the extension-specific naming scheme for the
   // event. This is used by events that are per-extension.
   void DispatchEventToExtension(
       const std::string& extension_id,
       const std::string& event_name, const std::string& event_args,
-      Profile* source_profile, const GURL& event_url);
+      Profile* restrict_to_profile, const GURL& event_url);
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is

@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profile.h"
@@ -131,6 +132,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoSplitMode) {
 
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
       .AppendASCII("incognito").AppendASCII("split")));
+
+  // Wait for both extensions to be ready before telling them to proceed.
+  ExtensionTestMessageListener listener("waiting", true);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ExtensionTestMessageListener listener_incognito("waiting", true);
+  EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());
+  listener.Reply("go");
+  listener_incognito.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();

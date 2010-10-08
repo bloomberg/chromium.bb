@@ -26,7 +26,7 @@ class RendererExtensionBindings {
 
   // Call the given javascript function with the specified arguments.
   static void Invoke(const std::string& function_name, const ListValue& args,
-                     RenderView* renderview, bool requires_incognito_access,
+                     RenderView* renderview, bool cross_incognito,
                      const GURL& event_url);
 };
 

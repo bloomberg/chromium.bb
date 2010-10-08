@@ -11,14 +11,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-// A message from javascript sent via chrome.test.sendMessage().
-struct ExtensionTestMessage {
-  // The sender's extension id.
-  std::string extension_id;
-
-  // The message content.
-  std::string content;
-};
+class ExtensionTestSendMessageFunction;
 
 // This class helps us wait for incoming messages sent from javascript via
 // chrome.test.sendMessage(). A sample usage would be:
@@ -26,6 +19,18 @@ struct ExtensionTestMessage {
 //   ExtensionTestMessageListener listener("foo");
 //   ... do some work
 //   ASSERT_TRUE(listener.WaitUntilSatisfied());
+//
+// It is also possible to have the extension wait for our reply. This is
+// useful for coordinating multiple pages/processes and having them wait on
+// each other. Example:
+//
+//   ExtensionTestMessageListener listener1("foo1");
+//   ExtensionTestMessageListener listener2("foo2");
+//   ASSERT_TRUE(listener1.WaitUntilSatisfied());
+//   ASSERT_TRUE(listener2.WaitUntilSatisfied());
+//   ... do some work
+//   listener1.Reply("foo2 is ready");
+//   listener2.Reply("foo1 is ready");
 //
 // TODO(asargent) - In the future we may want to add the ability to listen for
 // multiple messages, and/or to wait for "any" message and then retrieve the
@@ -40,13 +45,18 @@ struct ExtensionTestMessage {
 class ExtensionTestMessageListener : public NotificationObserver {
  public:
   // We immediately start listening for |expected_message|.
-  explicit ExtensionTestMessageListener(const std::string& expected_message);
+  ExtensionTestMessageListener(const std::string& expected_message,
+                               bool will_reply);
   ~ExtensionTestMessageListener();
 
   // This returns true immediately if we've already gotten the expected
   // message, or waits until it arrives. Returns false if the wait is
   // interrupted and we still haven't gotten the message.
   bool WaitUntilSatisfied();
+
+  // Send the given message as a reply. It is only valid to call this after
+  // WaitUntilSatisfied has returned true, and if will_reply is true.
+  void Reply(const std::string& message);
 
   // Implements the NotificationObserver interface.
   virtual void Observe(NotificationType type,
@@ -65,6 +75,13 @@ class ExtensionTestMessageListener : public NotificationObserver {
   // If we're waiting, then we want to post a quit task when the expected
   // message arrives.
   bool waiting_;
+
+  // If true, we expect the calling code to manually send a reply. Otherwise,
+  // we send an automatic empty reply to the extension.
+  bool will_reply_;
+
+  // The function we need to reply to.
+  ExtensionTestSendMessageFunction* function_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_MESSAGE_LISTENER_H_

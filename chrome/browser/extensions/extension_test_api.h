@@ -38,7 +38,13 @@ class ExtensionTestCreateIncognitoTabFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("test.createIncognitoTab")
 };
 
-class ExtensionTestSendMessageFunction : public SyncExtensionFunction {
+class ExtensionTestSendMessageFunction : public AsyncExtensionFunction {
+ public:
+  // Sends a reply back to the calling extension. Many extensions don't need
+  // a reply and will just ignore it.
+  void Reply(const std::string& message);
+
+ private:
   ~ExtensionTestSendMessageFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("test.sendMessage")

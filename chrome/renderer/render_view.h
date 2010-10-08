@@ -797,7 +797,7 @@ class RenderView : public RenderWidget,
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnExtensionMessageInvoke(const std::string& function_name,
                                 const ListValue& args,
-                                bool requires_incognito_access,
+                                bool cross_incognito,
                                 const GURL& event_url);
   void OnFileChooserResponse(const std::vector<FilePath>& paths);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);

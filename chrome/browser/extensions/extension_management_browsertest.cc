@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
                                      basedir.AppendASCII("v2.crx"));
 
   // Install version 1 of the extension.
-  ExtensionTestMessageListener listener1("v1 installed");
+  ExtensionTestMessageListener listener1("v1 installed", false);
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(service->disabled_extensions()->empty());
@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   service->updater()->set_blacklist_checks_enabled(false);
 
   // Run autoupdate and make sure version 2 of the extension was installed.
-  ExtensionTestMessageListener listener2("v2 installed");
+  ExtensionTestMessageListener listener2("v2 installed", false);
   service->updater()->CheckNow();
   ASSERT_TRUE(WaitForExtensionInstall());
   listener2.WaitUntilSatisfied();

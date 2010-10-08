@@ -976,10 +976,10 @@ void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
 
 void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
                                             const ListValue& args,
-                                            bool requires_incognito_access,
+                                            bool cross_incognito,
                                             const GURL& event_url) {
   RendererExtensionBindings::Invoke(
-      function_name, args, NULL, requires_incognito_access, event_url);
+      function_name, args, NULL, cross_incognito, event_url);
 
   // Reset the idle handler each time there's any activity like event or message
   // dispatch, for which Invoke is the chokepoint.

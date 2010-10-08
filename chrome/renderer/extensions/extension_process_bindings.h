@@ -54,7 +54,7 @@ class ExtensionProcessBindings {
 
   // Checks whether the given extension can see events/data from another
   // profile (normal to incognito or vice versa).
-  static bool AllowCrossProfile(const std::string& extension_id);
+  static bool AllowCrossIncognito(const std::string& extension_id);
 
   // Check if the extension in the currently running context has permission to
   // access the given extension function. Must be called with a valid V8

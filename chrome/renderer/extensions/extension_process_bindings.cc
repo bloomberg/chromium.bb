@@ -65,7 +65,7 @@ typedef std::map<std::string, PermissionsList> ExtensionPermissionsList;
 
 // A map of extension ID to whether this extension can access data from other
 // profiles.
-typedef std::map<std::string, bool> CrossProfileAccessMap;
+typedef std::map<std::string, bool> CrossIncognitoAccessMap;
 
 const char kExtensionName[] = "chrome/ExtensionProcessBindings";
 const char* kExtensionDeps[] = {
@@ -80,7 +80,7 @@ struct SingletonData {
   std::set<std::string> function_names_;
   PageActionIdMap page_action_ids_;
   ExtensionPermissionsList permissions_;
-  CrossProfileAccessMap cross_profile_access_map_;
+  CrossIncognitoAccessMap cross_incognito_access_map_;
 };
 
 static std::set<std::string>* GetFunctionNameSet() {
@@ -95,8 +95,8 @@ static PermissionsList* GetPermissionsList(const std::string& extension_id) {
   return &Singleton<SingletonData>()->permissions_[extension_id];
 }
 
-static CrossProfileAccessMap* GetCrossProfileAccessMap() {
-  return &Singleton<SingletonData>()->cross_profile_access_map_;
+static CrossIncognitoAccessMap* GetCrossIncognitoAccessMap() {
+  return &Singleton<SingletonData>()->cross_incognito_access_map_;
 }
 
 static void GetActiveExtensionIDs(std::set<std::string>* extension_ids) {
@@ -586,14 +586,15 @@ void ExtensionProcessBindings::SetIncognitoEnabled(
   // We allow the extension to see events and data from another profile iff it
   // uses "spanning" behavior and it has incognito access. "split" mode
   // extensions only see events for a matching profile.
-  (*GetCrossProfileAccessMap())[extension_id] =
+  (*GetCrossIncognitoAccessMap())[extension_id] =
       enabled && !incognito_split_mode;
 }
 
 // static
-bool ExtensionProcessBindings::AllowCrossProfile(
+bool ExtensionProcessBindings::AllowCrossIncognito(
     const std::string& extension_id) {
-  return (!extension_id.empty() && (*GetCrossProfileAccessMap())[extension_id]);
+  return (!extension_id.empty() &&
+          (*GetCrossIncognitoAccessMap())[extension_id]);
 }
 
 // static

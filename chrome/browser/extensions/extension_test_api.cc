@@ -54,10 +54,16 @@ bool ExtensionTestCreateIncognitoTabFunction::RunImpl() {
 bool ExtensionTestSendMessageFunction::RunImpl() {
   std::string message;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &message));
-  std::string id = extension_id();
+  AddRef();  // balanced in Reply
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_TEST_MESSAGE,
-      Source<std::string>(&id),
+      Source<ExtensionTestSendMessageFunction>(this),
       Details<std::string>(&message));
   return true;
+}
+
+void ExtensionTestSendMessageFunction::Reply(const std::string& message) {
+  result_.reset(Value::CreateStringValue(message));
+  SendResponse(true);
+  Release();  // balanced in RunImpl
 }

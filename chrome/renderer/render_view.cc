@@ -4869,10 +4869,10 @@ void RenderView::OnExtensionResponse(int request_id,
 
 void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
                                           const ListValue& args,
-                                          bool requires_incognito_access,
+                                          bool cross_incognito,
                                           const GURL& event_url) {
   RendererExtensionBindings::Invoke(
-      function_name, args, this, requires_incognito_access, event_url);
+      function_name, args, this, cross_incognito, event_url);
 }
 
 // Dump all load time histograms.
