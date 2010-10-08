@@ -35,6 +35,8 @@ class BlobStorageController {
   void ResolveBlobReferencesInUploadData(net::UploadData* upload_data);
 
  private:
+  friend class ViewBlobInternalsJob;
+
   void AppendStorageItems(BlobData* target_blob_data,
                           BlobData* src_blob_data,
                           uint64 offset,

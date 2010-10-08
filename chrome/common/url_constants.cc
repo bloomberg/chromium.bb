@@ -134,6 +134,8 @@ const char kChromeUIWrenchMenu[] = "wrench-menu";
 
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";
 
+const char kBlobViewInternalsURL[] = "chrome://blob-internals/";
+
 const char kCloudPrintResourcesURL[] = "chrome://cloudprintresources/";
 const char kCloudPrintResourcesHost[] = "cloudprintresources";
 

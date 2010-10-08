@@ -129,6 +129,9 @@ extern const char kChromeUIWrenchMenu[];
 // AppCache related URL.
 extern const char kAppCacheViewInternalsURL[];
 
+// Blob related URL.
+extern const char kBlobViewInternalsURL[];
+
 // Cloud Print dialog URL components.
 extern const char kCloudPrintResourcesURL[];
 extern const char kCloudPrintResourcesHost[];

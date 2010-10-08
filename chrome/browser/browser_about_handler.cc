@@ -96,6 +96,7 @@ namespace {
 // The (alphabetized) paths used for the about pages.
 // Note: Keep these in sync with url_constants.h
 const char kAppCacheInternalsPath[] = "appcache-internals";
+const char kBlobInternalsPath[] = "blob-internals";
 const char kCreditsPath[] = "credits";
 const char kCachePath[] = "view-http-cache";
 const char kDnsPath[] = "dns";
@@ -128,6 +129,7 @@ const char kOSCreditsPath[] = "os-credits";
 // Add path here to be included in about:about
 const char *kAllAboutPaths[] = {
   kAppCacheInternalsPath,
+  kBlobInternalsPath,
   kCachePath,
   kCreditsPath,
   kDnsPath,
@@ -259,6 +261,7 @@ std::string AboutAbout() {
     if (kAllAboutPaths[i] == kLabsPath && !about_labs::IsEnabled())
       continue;
     if (kAllAboutPaths[i] == kAppCacheInternalsPath ||
+        kAllAboutPaths[i] == kBlobInternalsPath ||
         kAllAboutPaths[i] == kCachePath ||
         kAllAboutPaths[i] == kLabsPath ||
         kAllAboutPaths[i] == kNetInternalsPath ||

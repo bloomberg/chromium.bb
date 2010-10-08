@@ -22,6 +22,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/shared_resources_data_source.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/net/view_blob_internals_job_factory.h"
 #include "chrome/browser/net/view_http_cache_job_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/ref_counted_util.h"
@@ -328,6 +329,10 @@ URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
   // Next check for chrome://appcache-internals/, which uses its own job type.
   if (ViewAppCacheInternalsJobFactory::IsSupportedURL(request->url()))
     return ViewAppCacheInternalsJobFactory::CreateJobForRequest(request);
+
+  // Next check for chrome://blob-internals/, which uses its own job type.
+  if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url()))
+    return ViewBlobInternalsJobFactory::CreateJobForRequest(request);
 
   // Fall back to using a custom handler
   return new URLRequestChromeJob(request);
