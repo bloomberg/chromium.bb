@@ -2199,6 +2199,15 @@
             },
           },
         }],
+        ['OS=="mac"', {
+          # See crbug.com/43791 - libwebcore.a is too large to mmap on Mac.
+          'dependencies+++': [
+            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
+          # These flags are needed to run the test on Mac.
+          # Search for comments about "xcode_settings" elsewhere in this file.
+          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+        }],
       ],
     },  # target safe_browsing_tests
     {
