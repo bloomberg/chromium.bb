@@ -184,18 +184,6 @@ class ScopedResolvedFrameBufferBinder {
   DISALLOW_COPY_AND_ASSIGN(ScopedResolvedFrameBufferBinder);
 };
 
-// Temporarily switch to a decoder's default GL context, having known default
-// state.
-class ScopedDefaultGLContext {
- public:
-  explicit ScopedDefaultGLContext(GLES2DecoderImpl* decoder);
-  ~ScopedDefaultGLContext();
-
- private:
-  GLES2DecoderImpl* decoder_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedDefaultGLContext);
-};
-
 // Encapsulates an OpenGL texture.
 class Texture {
  public:
@@ -660,7 +648,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
  private:
   friend class ScopedGLErrorSuppressor;
-  friend class ScopedDefaultGLContext;
   friend class ScopedResolvedFrameBufferBinder;
   friend class RenderBuffer;
   friend class FrameBuffer;
