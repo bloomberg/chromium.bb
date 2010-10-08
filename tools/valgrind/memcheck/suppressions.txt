@@ -2791,3 +2791,15 @@
    ...
    fun:_ZN11ProfileImpl18GetDownloadManagerEv
 }
+{
+   bug_58474_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN45FileSystemHostContextTest_CheckValidPath_Test8TestBodyEv
+}
+{
+   bug_58474_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN42FileSystemHostContextTest_GetRootPath_Test8TestBodyEv
+}
