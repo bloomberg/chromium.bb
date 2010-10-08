@@ -75,6 +75,10 @@ class ProtobufExtensionNotUnique(Error):
   """An entry should not have more than one protobuf extension present."""
 
 
+class DataTypeIdNotRecognized(Error):
+  """The requested data type is not recognized."""
+
+
 def GetEntryType(entry):
   """Extract the sync type from a SyncEntry.
 
@@ -119,13 +123,17 @@ def GetEntryTypesFromSpecifics(specifics):
           if specifics.HasExtension(extension)]
 
 
-def GetRequestedTypes(get_updates_message):
-  """Determine the sync types requested by a client GetUpdates operation."""
-  types = GetEntryTypesFromSpecifics(
-      get_updates_message.requested_types)
-  if types:
-    types.append(TOP_LEVEL)
-  return types
+def SyncTypeToProtocolDataTypeId(data_type):
+  """Convert from a sync type (python enum) to the protocol's data type id."""
+  return SYNC_TYPE_TO_EXTENSION[data_type].number
+
+
+def ProtocolDataTypeIdToSyncType(protocol_data_type_id):
+  """Convert from the protocol's data type id to a sync type (python enum)."""
+  for data_type, protocol_extension in SYNC_TYPE_TO_EXTENSION.iteritems():
+    if protocol_extension.number == protocol_data_type_id:
+      return data_type
+  raise DataTypeIdNotRecognized
 
 
 def GetDefaultEntitySpecifics(data_type):
@@ -135,6 +143,7 @@ def GetDefaultEntitySpecifics(data_type):
     extension_handle = SYNC_TYPE_TO_EXTENSION[data_type]
     specifics.Extensions[extension_handle].SetInParent()
   return specifics
+
 
 def DeepCopyOfProto(proto):
   """Return a deep copy of a protocol buffer."""
@@ -163,6 +172,62 @@ class PermanentItem(object):
     self.name = name
     self.parent_tag = parent_tag
     self.sync_type = sync_type
+
+
+class UpdateSieve(object):
+  """A filter to remove items the client has already seen."""
+  def __init__(self, request):
+    self._original_request = request
+    self._state = {}
+    if request.from_progress_marker:
+      for marker in request.from_progress_marker:
+        if marker.HasField("timestamp_token_for_migration"):
+          timestamp = marker.timestamp_token_for_migration
+        elif marker.token:
+          timestamp = int(marker.token)
+        elif marker.HasField("token"):
+          timestamp = 0
+        else:
+          raise ValueError("No timestamp information in progress marker.")
+        data_type = ProtocolDataTypeIdToSyncType(marker.data_type_id)
+        self._state[data_type] = timestamp
+    elif request.HasField("from_timestamp"):
+      for data_type in GetEntryTypesFromSpecifics(request.requested_types):
+        self._state[data_type] = request.from_timestamp
+    if self._state:
+      self._state[TOP_LEVEL] = min(self._state.itervalues())
+
+  def ClientWantsItem(self, item):
+    """Return true if the client hasn't already seen an item."""
+    return self._state.get(GetEntryType(item), sys.maxint) < item.version
+
+  def HasAnyTimestamp(self):
+    """Return true if at least one datatype was requested."""
+    return bool(self._state)
+
+  def GetMinTimestamp(self):
+    """Return true the smallest timestamp requested across all datatypes."""
+    return min(self._state.itervalues())
+
+  def GetFirstTimeTypes(self):
+    """Return a list of datatypes requesting updates from timestamp zero."""
+    return [datatype for datatype, timestamp in self._state.iteritems()
+            if timestamp == 0]
+
+  def SaveProgress(self, new_timestamp, get_updates_response):
+    """Write the new_timestamp or new_progress_marker fields to a response."""
+    if self._original_request.from_progress_marker:
+      for data_type, old_timestamp in self._state.iteritems():
+        if data_type == TOP_LEVEL:
+          continue
+        new_marker = sync_pb2.DataTypeProgressMarker()
+        new_marker.data_type_id = SyncTypeToProtocolDataTypeId(data_type)
+        new_marker.token = str(max(old_timestamp, new_timestamp))
+        if new_marker not in self._original_request.from_progress_marker:
+          get_updates_response.new_progress_marker.add().MergeFrom(new_marker)
+    elif self._original_request.HasField("from_timestamp"):
+      if self._original_request.from_timestamp < new_timestamp:
+        get_updates_response.new_timestamp = new_timestamp
 
 
 class SyncDataModel(object):
@@ -383,19 +448,15 @@ class SyncDataModel(object):
       if spec.sync_type in requested_types:
         self._CreatePermanentItem(spec)
 
-  def GetChangesFromTimestamp(self, requested_types, timestamp):
-    """Get entries which have changed since a given timestamp, oldest first.
+  def GetChanges(self, sieve):
+    """Get entries which have changed, oldest first.
 
     The returned entries are limited to being _BATCH_SIZE many.  The entries
     are returned in strict version order.
 
     Args:
-      requested_types: A list of sync data types from ALL_TYPES.
-        Only items of these types will be retrieved; others will be filtered
-        out.
-      timestamp: A timestamp / version number.  Only items that have changed
-        more recently than this value will be retrieved; older items will
-        be filtered out.
+      sieve: An update sieve to use to filter out updates the client
+        has already seen.
     Returns:
       A tuple of (version, entries, changes_remaining).  Version is a new
       timestamp value, which should be used as the starting point for the
@@ -403,22 +464,24 @@ class SyncDataModel(object):
       timestamp query.  Changes_remaining indicates the number of changes
       left on the server after this batch.
     """
-    if timestamp == 0:
-      self._CreatePermanentItems(requested_types)
+    if not sieve.HasAnyTimestamp():
+      return (0, [], 0)
+    min_timestamp = sieve.GetMinTimestamp()
+    self._CreatePermanentItems(sieve.GetFirstTimeTypes())
     change_log = sorted(self._entries.values(),
                         key=operator.attrgetter('version'))
-    new_changes = [x for x in change_log if x.version > timestamp]
+    new_changes = [x for x in change_log if x.version > min_timestamp]
     # Pick batch_size new changes, and then filter them.  This matches
     # the RPC behavior of the production sync server.
     batch = new_changes[:self._BATCH_SIZE]
     if not batch:
       # Client is up to date.
-      return (timestamp, [], 0)
+      return (min_timestamp, [], 0)
 
     # Restrict batch to requested types.  Tombstones are untyped
     # and will always get included.
     filtered = [DeepCopyOfProto(item) for item in batch
-                if item.deleted or (GetEntryType(item) in requested_types)]
+                if item.deleted or sieve.ClientWantsItem(item)]
 
     # The new client timestamp is the timestamp of the last item in the
     # batch, even if that item was filtered out.
@@ -737,15 +800,11 @@ class TestServer(object):
         to the client request will be written.
     """
     update_response.SetInParent()
-    requested_types = GetRequestedTypes(update_request)
-    new_timestamp, entries, remaining = self.account.GetChangesFromTimestamp(
-        requested_types, update_request.from_timestamp)
+    update_sieve = UpdateSieve(update_request)
+    new_timestamp, entries, remaining = self.account.GetChanges(update_sieve)
 
     update_response.changes_remaining = remaining
-    # If the client is up to date, we are careful not to set the
-    # new_timestamp field.
-    if new_timestamp != update_request.from_timestamp:
-      update_response.new_timestamp = new_timestamp
-      for entry in entries:
-        reply = update_response.entries.add()
-        reply.CopyFrom(entry)
+    for entry in entries:
+      reply = update_response.entries.add()
+      reply.CopyFrom(entry)
+    update_sieve.SaveProgress(new_timestamp, update_response)
