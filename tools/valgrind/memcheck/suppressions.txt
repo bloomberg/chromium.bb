@@ -2851,3 +2851,14 @@
    fun:_ZN3net17HttpStreamRequest16DoInitConnectionEv
    fun:_ZN3net17HttpStreamRequest6DoLoopEi
 }
+{
+   bug_58564
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:SSL_ImportFD
+   fun:_ZN3net18SSLClientSocketNSS20InitializeSSLOptionsEv
+   fun:_ZN3net18SSLClientSocketNSS7ConnectEP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
+   fun:_ZN3net13SSLConnectJob6DoLoopEi
+}
