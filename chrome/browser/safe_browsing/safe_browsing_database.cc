@@ -189,6 +189,11 @@ FilePath SafeBrowsingDatabase::BloomFilterForFilename(
   return FilePath(db_filename.value() + kBloomFilterFile);
 }
 
+// static
+void SafeBrowsingDatabase::RecordFailure(FailureType failure_type) {
+  UMA_HISTOGRAM_ENUMERATION("SB2.DatabaseFailure", failure_type, FAILURE_MAX);
+}
+
 SafeBrowsingDatabaseNew::SafeBrowsingDatabaseNew(SafeBrowsingStore* store)
     : creation_loop_(MessageLoop::current()),
       store_(store),
@@ -509,6 +514,7 @@ bool SafeBrowsingDatabaseNew::UpdateStarted(
 
   // If |BeginUpdate()| fails, reset the database.
   if (!store_->BeginUpdate()) {
+    RecordFailure(FAILURE_DATABASE_UPDATE_BEGIN);
     HandleCorruptDatabase();
     return false;
   }
@@ -556,8 +562,10 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   std::vector<SBAddPrefix> add_prefixes;
   std::vector<SBAddFullHash> add_full_hashes;
   if (!store_->FinishUpdate(pending_add_hashes,
-                            &add_prefixes, &add_full_hashes))
+                            &add_prefixes, &add_full_hashes)) {
+    RecordFailure(FAILURE_DATABASE_UPDATE_FINISH);
     return;
+  }
 
   // Measure the amount of IO during the bloom filter build.
   base::IoCounters io_before, io_after;
@@ -616,12 +624,12 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
 
   // Gather statistics.
   if (got_counters && metric->GetIOCounters(&io_after)) {
-    UMA_HISTOGRAM_COUNTS("SB2.BuildReadBytes",
+    UMA_HISTOGRAM_COUNTS("SB2.BuildReadKilobytes",
                          static_cast<int>(io_after.ReadTransferCount -
-                                          io_before.ReadTransferCount));
-    UMA_HISTOGRAM_COUNTS("SB2.BuildWriteBytes",
+                                          io_before.ReadTransferCount) / 1024);
+    UMA_HISTOGRAM_COUNTS("SB2.BuildWriteKilobytes",
                          static_cast<int>(io_after.WriteTransferCount -
-                                          io_before.WriteTransferCount));
+                                          io_before.WriteTransferCount) / 1024);
     UMA_HISTOGRAM_COUNTS("SB2.BuildReadOperations",
                          static_cast<int>(io_after.ReadOperationCount -
                                           io_before.ReadOperationCount));
@@ -633,23 +641,28 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
                 << bloom_gen.InMilliseconds()
                 << " ms total.  prefix count: "<< add_prefixes.size();
   UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", bloom_gen);
-  UMA_HISTOGRAM_COUNTS("SB2.FilterSize", bloom_filter_->size());
+  UMA_HISTOGRAM_COUNTS("SB2.FilterKilobytes", bloom_filter_->size() / 1024);
   int64 size_64;
-  if (file_util::GetFileSize(filename_, &size_64))
-    UMA_HISTOGRAM_COUNTS("SB2.DatabaseBytes", static_cast<int>(size_64));
+  if (file_util::GetFileSize(filename_, &size_64)) {
+    UMA_HISTOGRAM_COUNTS("SB2.DatabaseKilobytes",
+                         static_cast<int>(size_64 / 1024));
+  }
 }
 
 void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
   // Reset the database after the current task has unwound (but only
   // reset once within the scope of a given task).
-  if (reset_factory_.empty())
+  if (reset_factory_.empty()) {
+    RecordFailure(FAILURE_DATABASE_CORRUPT);
     MessageLoop::current()->PostTask(FROM_HERE,
         reset_factory_.NewRunnableMethod(
             &SafeBrowsingDatabaseNew::OnHandleCorruptDatabase));
+  }
 }
 
 void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
   UMA_HISTOGRAM_COUNTS("SB2.HandleCorrupt", 1);
+  RecordFailure(FAILURE_DATABASE_CORRUPT_HANDLER);
   corruption_detected_ = true;  // Stop updating the database.
   ResetDatabase();
   DCHECK(false) << "SafeBrowsing database was corrupt and reset";
@@ -672,6 +685,7 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
   if (!file_util::GetFileSize(bloom_filter_filename_, &size_64) ||
       size_64 == 0) {
     UMA_HISTOGRAM_COUNTS("SB2.FilterMissing", 1);
+    RecordFailure(FAILURE_DATABASE_FILTER_MISSING);
     return;
   }
 
@@ -680,15 +694,21 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
   SB_DLOG(INFO) << "SafeBrowsingDatabaseNew read bloom filter in "
                 << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
 
-  if (!bloom_filter_.get())
+  if (!bloom_filter_.get()) {
     UMA_HISTOGRAM_COUNTS("SB2.FilterReadFail", 1);
+    RecordFailure(FAILURE_DATABASE_FILTER_READ);
+  }
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
   DCHECK_EQ(creation_loop_, MessageLoop::current());
 
   const bool r1 = store_->Delete();
+  if (!r1)
+    RecordFailure(FAILURE_DATABASE_STORE_DELETE);
   const bool r2 = file_util::Delete(bloom_filter_filename_, false);
+  if (!r2)
+    RecordFailure(FAILURE_DATABASE_FILTER_DELETE);
   return r1 && r2;
 }
 
@@ -703,6 +723,8 @@ void SafeBrowsingDatabaseNew::WriteBloomFilter() {
   SB_DLOG(INFO) << "SafeBrowsingDatabaseNew wrote bloom filter in " <<
       (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
 
-  if (!write_ok)
+  if (!write_ok) {
     UMA_HISTOGRAM_COUNTS("SB2.FilterWriteFail", 1);
+    RecordFailure(FAILURE_DATABASE_FILTER_WRITE);
+  }
 }

@@ -91,6 +91,27 @@ class SafeBrowsingDatabase {
 
   // The name of the bloom-filter file for the given database file.
   static FilePath BloomFilterForFilename(const FilePath& db_filename);
+
+  // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
+  // ORDERING OF THESE VALUES.
+  enum FailureType {
+    FAILURE_DATABASE_CORRUPT,
+    FAILURE_DATABASE_CORRUPT_HANDLER,
+    FAILURE_DATABASE_UPDATE_BEGIN,
+    FAILURE_DATABASE_UPDATE_FINISH,
+    FAILURE_DATABASE_FILTER_MISSING,
+    FAILURE_DATABASE_FILTER_READ,
+    FAILURE_DATABASE_FILTER_WRITE,
+    FAILURE_DATABASE_FILTER_DELETE,
+    FAILURE_DATABASE_STORE_MISSING,
+    FAILURE_DATABASE_STORE_DELETE,
+
+    // Histogram space is determined by the max.  If this is exceeded,
+    // simply start a new histogram.
+    FAILURE_MAX = 50
+  };
+
+  static void RecordFailure(FailureType failure_type);
 };
 
 class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
