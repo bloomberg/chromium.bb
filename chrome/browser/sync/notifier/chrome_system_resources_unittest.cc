@@ -100,7 +100,7 @@ TEST_F(ChromeSystemResourcesTest, ScheduleOnListenerThread) {
   chrome_system_resources_.ScheduleOnListenerThread(
       invalidation::NewPermanentCallback(
           this, &ChromeSystemResourcesTest::IncrementCounter));
-  EXPECT_TRUE(chrome_system_resources_.IsRunningOnInternalThread());
+  EXPECT_FALSE(chrome_system_resources_.IsRunningOnInternalThread());
   EXPECT_EQ(0, counter_);
   message_loop_.RunAllPending();
   EXPECT_EQ(1, counter_);
