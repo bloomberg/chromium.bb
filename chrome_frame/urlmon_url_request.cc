@@ -30,9 +30,7 @@ UrlmonUrlRequest::UrlmonUrlRequest()
       thread_(NULL),
       parent_window_(NULL),
       privileged_mode_(false),
-      pending_(false),
-      read_received_from_chrome_(false),
-      cleanup_transaction_(false) {
+      pending_(false) {
   DLOG(INFO) << __FUNCTION__ << me();
 }
 
@@ -95,8 +93,6 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
   DCHECK_GE(bytes_to_read, 0);
   DCHECK_EQ(0, calling_delegate_);
   DLOG(INFO) << __FUNCTION__ << me();
-
-  read_received_from_chrome_ = true;
 
   // Re-entrancy check. Thou shall not call Read() while process OnReadComplete!
   DCHECK_EQ(0u, pending_read_size_);
@@ -350,15 +346,12 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   // Mark we a are done.
   status_.Done();
 
-  if (result == INET_E_TERMINATED_BIND) {
-    if (terminate_requested()) {
-      terminate_bind_callback_->Run(moniker_, bind_context_);
-    } else {
-      cleanup_transaction_ = true;
-    }
-    // We may have returned INET_E_TERMINATED_BIND from OnDataAvailable.
+  if (result == INET_E_TERMINATED_BIND && terminate_requested())
+    terminate_bind_callback_->Run(moniker_, bind_context_);
+
+  // We always return INET_E_TERMINATED_BIND from OnDataAvailable
+  if (result == INET_E_TERMINATED_BIND)
     result = S_OK;
-  }
 
   if (state == Status::WORKING) {
     status_.set_result(result);
@@ -483,10 +476,8 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
   DLOG(INFO) << __FUNCTION__ << me() << "bytes available: " << size;
 
-  if (terminate_requested()) {
-    DLOG(INFO) << " Download requested. INET_E_TERMINATED_BIND returned";
+  if (terminate_requested())
     return INET_E_TERMINATED_BIND;
-  }
 
   if (!storage || (storage->tymed != TYMED_ISTREAM)) {
     NOTREACHED();
@@ -511,15 +502,12 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
   }
 
   if (BSCF_LASTDATANOTIFICATION & flags) {
-    if (read_received_from_chrome_) {
-      DLOG(INFO) << __FUNCTION__ << me() << "EOF";
-      return S_OK;
-    }
+    DLOG(INFO) << __FUNCTION__ << me() << "end of data.";
     // Always return INET_E_TERMINATED_BIND to allow bind context reuse
     // if DownloadToHost is suddenly requested.
-    DLOG(INFO) << __FUNCTION__ << " EOF: INET_E_TERMINATED_BIND returned";
     return INET_E_TERMINATED_BIND;
   }
+
   return S_OK;
 }
 
@@ -825,34 +813,13 @@ void UrlmonUrlRequest::NotifyDelegateAndDie() {
   PluginUrlRequestDelegate* delegate = delegate_;
   delegate_ = NULL;
   ReleaseBindings();
-  TerminateTransaction();
+  bind_context_.Release();
   if (delegate) {
     URLRequestStatus result = status_.get_result();
     delegate->OnResponseEnd(id(), result);
   } else {
     DLOG(WARNING) << __FUNCTION__ << me() << "no delegate";
   }
-}
-
-void UrlmonUrlRequest::TerminateTransaction() {
-  if (cleanup_transaction_ && bind_context_ && moniker_) {
-    // We return INET_E_TERMINATED_BIND from our OnDataAvailable implementation
-    // to ensure that the transaction stays around if Chrome decides to issue
-    // a download request when it finishes inspecting the headers received in
-    // OnResponse. However this causes the urlmon transaction object to leak.
-    // To workaround this we issue a dummy BindToObject call which should fail
-    // and clean up the transaction. We overwrite the __PrecreatedObject object
-    // param which ensures that urlmon does not end up instantiating mshtml
-    ScopedComPtr<IStream> dummy_stream;
-    CreateStreamOnHGlobal(NULL, TRUE, dummy_stream.Receive());
-    DCHECK(dummy_stream);
-    bind_context_->RegisterObjectParam(L"__PrecreatedObject",
-                                       dummy_stream);
-    ScopedComPtr<IUnknown> dummy;
-    moniker_->BindToObject(bind_context_, NULL, IID_IUnknown,
-                           reinterpret_cast<void**>(dummy.Receive()));
-  }
-  bind_context_.Release();
 }
 
 void UrlmonUrlRequest::ReleaseBindings() {
