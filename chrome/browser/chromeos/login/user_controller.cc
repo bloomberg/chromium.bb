@@ -27,6 +27,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/grid_layout.h"
+#include "views/painter.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
@@ -45,6 +46,9 @@ const int kUserNameGap = 4;
 // Approximate height of controls window, this constant is used in new user
 // case to make border window size close to existing users.
 const int kControlsHeight = 26;
+
+// Username label background color.
+const SkColor kLabelBackgoundColor = 0x55000000;
 
 // Widget that notifies window manager about clicking on itself.
 // Doesn't send anything if user is selected.
@@ -67,6 +71,53 @@ class ClickNotifyingWidget : public views::WidgetGtk {
   UserController* controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickNotifyingWidget);
+};
+
+// View that contains two parts. First one is a label with username, second one
+// is an empty view with gradient transparency background.
+class UsernameView : public views::View {
+ public:
+  explicit UsernameView(const std::wstring& username) {
+    label_ = new views::Label(username);
+    label_->set_background(
+        views::Background::CreateSolidBackground(kLabelBackgoundColor));
+    label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    AddChildView(label_);
+
+    gradient_ = new views::View;
+    gradient_->SetVisible(false);
+    views::Background* gradient_background =
+        views::Background::CreateBackgroundPainter(true,
+            views::Painter::CreateHorizontalGradient(
+                kLabelBackgoundColor, 0x00000000));
+    gradient_->set_background(gradient_background);
+    AddChildView(gradient_);
+  }
+
+  virtual ~UsernameView() {}
+
+  // Returns username label.
+  views::Label* get_label() {
+    return label_;
+  }
+
+  // views::View
+  virtual void Layout() {
+    int text_width = std::min(label_->GetPreferredSize().width(), width());
+    label_->SetBounds(x(), y(), text_width, height());
+    int gradient_width = std::min(width() - text_width, height());
+    if (gradient_width > 0)  {
+      gradient_->SetVisible(true);
+      gradient_->SetBounds(x() + text_width, y(), gradient_width, height());
+    } else {
+      // No place for the gradient part.
+      gradient_->SetVisible(false);
+    }
+  }
+
+ private:
+  views::Label* label_;
+  views::View* gradient_;
 };
 
 }  // namespace
@@ -453,7 +504,17 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
     text = UTF8ToWide(user_.GetDisplayName());
   }
 
-  views::Label* label = new views::Label(text);
+  views::Label *label;
+  views::View *view;
+  if (is_new_user_) {
+    label = new views::Label(text);
+    view = label;
+  } else {
+    UsernameView* username_view = new UsernameView(text);
+    label = username_view->get_label();
+    view = username_view;
+  }
+
   label->SetColor(kTextColor);
   label->SetFont(font);
   if (type == WM_IPC_WINDOW_LOGIN_LABEL)
@@ -469,7 +530,7 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
                        index,
                        gfx::Rect(0, 0, width, height),
                        type,
-                       label);
+                       view);
   return window;
 }
 
