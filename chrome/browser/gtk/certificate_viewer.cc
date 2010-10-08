@@ -4,10 +4,7 @@
 
 #include "chrome/browser/gtk/certificate_viewer.h"
 
-#include <cert.h>
 #include <gtk/gtk.h>
-#include <hasht.h>
-#include <sechash.h>
 
 #include <algorithm>
 #include <vector>
@@ -22,71 +19,13 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/certificate_dialogs.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
-#include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
+#include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
-
-// PSM = Mozilla's Personal Security Manager.
-namespace psm = mozilla_security_manager;
 
 namespace {
 
 const char kDetailsFontFamily[] = "monospace";
-
-////////////////////////////////////////////////////////////////////////////////
-// NSS utility functions.
-
-// Convert a char* return value from NSS into a std::string and free the NSS
-// memory.  If the arg is NULL, a "Field Not Present" string will be returned
-// instead.
-std::string Stringize(char* nss_text) {
-  std::string s;
-  if (nss_text) {
-    s = nss_text;
-    PORT_Free(nss_text);
-  } else {
-    s = l10n_util::GetStringUTF8(IDS_CERT_INFO_FIELD_NOT_PRESENT);
-  }
-  return s;
-}
-
-// Hash a certificate using the given algorithm, return the result as a
-// colon-seperated hex string.  The len specified is the number of bytes
-// required for storing the raw fingerprint.
-// (It's a bit redundant that the caller needs to specify len in addition to the
-// algorithm, but given the limited uses, not worth fixing.)
-std::string HashCert(CERTCertificate* cert, HASH_HashType algorithm, int len) {
-  unsigned char fingerprint[HASH_LENGTH_MAX];
-  SECItem fingerprint_item;
-
-  DCHECK(NULL != cert->derCert.data);
-  DCHECK(0 != cert->derCert.len);
-  DCHECK(len <= HASH_LENGTH_MAX);
-  memset(fingerprint, 0, len);
-  SECStatus rv = HASH_HashBuf(algorithm, fingerprint, cert->derCert.data,
-                              cert->derCert.len);
-  DCHECK(rv == SECSuccess);
-  fingerprint_item.data = fingerprint;
-  fingerprint_item.len = len;
-  return psm::ProcessRawBytes(&fingerprint_item);
-}
-
-std::string ProcessSecAlgorithm(SECAlgorithmID* algorithm_id) {
-  return psm::GetOIDText(&algorithm_id->algorithm);
-}
-
-std::string ProcessExtension(CERTCertExtension* extension) {
-  std::string rv;
-  int criticality = IDS_CERT_EXTENSION_NON_CRITICAL;
-  if (extension->critical.data && extension->critical.data[0])
-    criticality = IDS_CERT_EXTENSION_CRITICAL;
-  rv = l10n_util::GetStringUTF8(criticality) + "\n" +
-      psm::ProcessExtensionData(SECOID_FindOIDTag(&extension->id),
-                                &extension->value);
-  return rv;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Gtk utility functions.
@@ -116,7 +55,8 @@ void AddKeyValue(GtkTable* table, int row, const std::string& text,
 
 class CertificateViewer {
  public:
-  CertificateViewer(gfx::NativeWindow parent, CERTCertList* cert_chain_list);
+  CertificateViewer(gfx::NativeWindow parent,
+                    const net::X509Certificate::OSCertHandles& cert_chain_list);
   ~CertificateViewer();
 
   void InitGeneralPage();
@@ -146,11 +86,12 @@ class CertificateViewer {
                           GtkTreeIter* leaf) const;
 
   // Fill the tree store with the details of the given certificate.
-  static void FillTreeStoreWithCertFields(GtkTreeStore* store,
-                                          CERTCertificate* cert);
+  static void FillTreeStoreWithCertFields(
+      GtkTreeStore* store, net::X509Certificate::OSCertHandle cert);
 
   // Create a tree store filled with the details of the given certificate.
-  static GtkTreeStore* CreateFieldsTreeStore(CERTCertificate* cert);
+  static GtkTreeStore* CreateFieldsTreeStore(
+      net::X509Certificate::OSCertHandle cert);
 
   // Callbacks for user selecting elements in the trees.
   static void OnHierarchySelectionChanged(GtkTreeSelection* selection,
@@ -162,10 +103,7 @@ class CertificateViewer {
   static void OnExportClicked(GtkButton *button, CertificateViewer* viewer);
 
   // The certificate hierarchy (leaf cert first).
-  CERTCertList* cert_chain_list_;
-  // The same contents of cert_chain_list_ in a vector for easier access.
-  typedef std::vector<CERTCertificate*> CertificateVector;
-  CertificateVector cert_chain_;
+  net::X509Certificate::OSCertHandles cert_chain_list_;
 
   GtkWidget* dialog_;
   GtkWidget* notebook_;
@@ -193,20 +131,16 @@ void OnDestroy(GtkDialog* dialog, CertificateViewer* cert_viewer) {
   delete cert_viewer;
 }
 
-CertificateViewer::CertificateViewer(gfx::NativeWindow parent,
-                                     CERTCertList* cert_chain_list)
+CertificateViewer::CertificateViewer(
+    gfx::NativeWindow parent,
+    const net::X509Certificate::OSCertHandles& cert_chain_list)
     : cert_chain_list_(cert_chain_list) {
-  CERTCertListNode* node;
-  for (node = CERT_LIST_HEAD(cert_chain_list_);
-       !CERT_LIST_END(node, cert_chain_list_);
-       node = CERT_LIST_NEXT(node)) {
-    cert_chain_.push_back(node->cert);
-  }
-
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringFUTF8(
           IDS_CERT_INFO_DIALOG_TITLE,
-          UTF8ToUTF16(psm::GetCertTitle(cert_chain_.front()))).c_str(),
+          UTF8ToUTF16(
+              x509_certificate_model::GetTitle(
+                  cert_chain_list_.front()))).c_str(),
       parent,
       // Non-modal.
       GTK_DIALOG_NO_SEPARATOR,
@@ -216,7 +150,7 @@ CertificateViewer::CertificateViewer(gfx::NativeWindow parent,
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
 
-  psm::RegisterDynamicOids();
+  x509_certificate_model::RegisterDynamicOids();
   InitGeneralPage();
   InitDetailsPage();
 
@@ -244,11 +178,11 @@ CertificateViewer::CertificateViewer(gfx::NativeWindow parent,
 }
 
 CertificateViewer::~CertificateViewer() {
-  CERT_DestroyCertList(cert_chain_list_);
+  x509_certificate_model::DestroyCertChain(&cert_chain_list_);
 }
 
 void CertificateViewer::InitGeneralPage() {
-  CERTCertificate* cert = cert_chain_.front();
+  net::X509Certificate::OSCertHandle cert = cert_chain_list_.front();
   general_page_vbox_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
   gtk_container_set_border_width(GTK_CONTAINER(general_page_vbox_),
                                  gtk_util::kContentAreaBorder);
@@ -262,7 +196,7 @@ void CertificateViewer::InitGeneralPage() {
       FALSE, FALSE, 0);
 
   std::vector<std::string> usages;
-  psm::GetCertUsageStrings(cert, &usages);
+  x509_certificate_model::GetUsageStrings(cert, &usages);
   for (size_t i = 0; i < usages.size(); ++i)
     gtk_box_pack_start(
         GTK_BOX(uses_vbox),
@@ -281,20 +215,27 @@ void CertificateViewer::InitGeneralPage() {
   gtk_box_pack_start(GTK_BOX(general_page_vbox_), GTK_WIDGET(table),
                      FALSE, FALSE, 0);
   int row = 0;
+  const std::string alternative_text =
+      l10n_util::GetStringUTF8(IDS_CERT_INFO_FIELD_NOT_PRESENT);
   AddTitle(table, row++,
            l10n_util::GetStringUTF8(IDS_CERT_INFO_SUBJECT_GROUP));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_COMMON_NAME_LABEL),
-              psm::ProcessIDN(Stringize(CERT_GetCommonName(&cert->subject))));
+              x509_certificate_model::ProcessIDN(
+                  x509_certificate_model::GetSubjectCommonName(
+                      cert, alternative_text)));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_ORGANIZATION_LABEL),
-              Stringize(CERT_GetOrgName(&cert->subject)));
+              x509_certificate_model::GetSubjectOrgName(
+                  cert, alternative_text));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_ORGANIZATIONAL_UNIT_LABEL),
-              Stringize(CERT_GetOrgUnitName(&cert->subject)));
+              x509_certificate_model::GetSubjectOrgUnitName(
+                  cert, alternative_text));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_SERIAL_NUMBER_LABEL),
-              Stringize(CERT_Hexify(&cert->serialNumber, TRUE)));
+              x509_certificate_model::GetSerialNumberHexified(
+                  cert, alternative_text));
 
   row += 2;  // Add spacing (kControlSpacing * 3 == kContentAreaSpacing).
 
@@ -302,26 +243,30 @@ void CertificateViewer::InitGeneralPage() {
            l10n_util::GetStringUTF8(IDS_CERT_INFO_ISSUER_GROUP));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_COMMON_NAME_LABEL),
-              psm::ProcessIDN(Stringize(CERT_GetCommonName(&cert->issuer))));
+              x509_certificate_model::ProcessIDN(
+                  x509_certificate_model::GetIssuerCommonName(
+                      cert, alternative_text)));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_ORGANIZATION_LABEL),
-              Stringize(CERT_GetOrgName(&cert->issuer)));
+              x509_certificate_model::GetIssuerOrgName(
+                  cert, alternative_text));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_ORGANIZATIONAL_UNIT_LABEL),
-              Stringize(CERT_GetOrgUnitName(&cert->issuer)));
+              x509_certificate_model::GetIssuerOrgUnitName(
+                  cert, alternative_text));
 
   row += 2;  // Add spacing (kControlSpacing * 3 == kContentAreaSpacing).
 
-  PRTime issued, expires;
+  base::Time issued, expires;
   std::string issued_str, expires_str;
-  if (CERT_GetCertTimes(cert, &issued, &expires) == SECSuccess) {
+  if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
     issued_str = WideToUTF8(
-        base::TimeFormatShortDateNumeric(base::PRTimeToBaseTime(issued)));
+        base::TimeFormatShortDateNumeric(issued));
     expires_str = WideToUTF8(
-        base::TimeFormatShortDateNumeric(base::PRTimeToBaseTime(expires)));
+        base::TimeFormatShortDateNumeric(expires));
   } else {
-    issued_str = l10n_util::GetStringUTF8(IDS_CERT_INFO_FIELD_NOT_PRESENT);
-    expires_str = l10n_util::GetStringUTF8(IDS_CERT_INFO_FIELD_NOT_PRESENT);
+    issued_str = alternative_text;
+    expires_str = alternative_text;
   }
   AddTitle(table, row++,
            l10n_util::GetStringUTF8(IDS_CERT_INFO_VALIDITY_GROUP));
@@ -338,10 +283,10 @@ void CertificateViewer::InitGeneralPage() {
            l10n_util::GetStringUTF8(IDS_CERT_INFO_FINGERPRINTS_GROUP));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_SHA256_FINGERPRINT_LABEL),
-              HashCert(cert, HASH_AlgSHA256, SHA256_LENGTH));
+              x509_certificate_model::HashCertSHA256(cert));
   AddKeyValue(table, row++,
               l10n_util::GetStringUTF8(IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL),
-              HashCert(cert, HASH_AlgSHA1, SHA1_LENGTH));
+              x509_certificate_model::HashCertSHA1(cert));
 
   DCHECK_EQ(row, num_rows);
 }
@@ -351,14 +296,15 @@ void CertificateViewer::FillHierarchyStore(GtkTreeStore* hierarchy_store,
   GtkTreeIter parent;
   GtkTreeIter* parent_ptr = NULL;
   GtkTreeIter iter;
-  gint index = cert_chain_.size() - 1;
-  for (CertificateVector::const_reverse_iterator i = cert_chain_.rbegin();
-       i != cert_chain_.rend(); ++i, --index) {
+  gint index = cert_chain_list_.size() - 1;
+  for (net::X509Certificate::OSCertHandles::const_reverse_iterator i =
+          cert_chain_list_.rbegin();
+       i != cert_chain_list_.rend(); ++i, --index) {
     gtk_tree_store_append(hierarchy_store, &iter, parent_ptr);
     GtkTreeStore* fields_store = CreateFieldsTreeStore(*i);
     gtk_tree_store_set(
         hierarchy_store, &iter,
-        HIERARCHY_NAME, psm::GetCertTitle(*i).c_str(),
+        HIERARCHY_NAME, x509_certificate_model::GetTitle(*i).c_str(),
         HIERARCHY_OBJECT, fields_store,
         HIERARCHY_INDEX, index,
         -1);
@@ -370,13 +316,13 @@ void CertificateViewer::FillHierarchyStore(GtkTreeStore* hierarchy_store,
 }
 
 // static
-void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
-                                                    CERTCertificate* cert) {
+void CertificateViewer::FillTreeStoreWithCertFields(
+    GtkTreeStore* store, net::X509Certificate::OSCertHandle cert) {
   GtkTreeIter top;
   gtk_tree_store_append(store, &top, NULL);
   gtk_tree_store_set(
       store, &top,
-      FIELDS_NAME, psm::GetCertTitle(cert).c_str(),
+      FIELDS_NAME, x509_certificate_model::GetTitle(cert).c_str(),
       FIELDS_VALUE, "",
       -1);
 
@@ -389,12 +335,11 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       FIELDS_VALUE, "",
       -1);
 
-  unsigned long version = ULONG_MAX;
   std::string version_str;
-  if (SEC_ASN1DecodeInteger(&cert->version, &version) == SECSuccess &&
-      version != ULONG_MAX)
+  std::string version = x509_certificate_model::GetVersion(cert);
+  if (!version.empty())
     version_str = l10n_util::GetStringFUTF8(IDS_CERT_DETAILS_VERSION_FORMAT,
-                                            base::UintToString16(version + 1));
+                                            UTF8ToUTF16(version));
   GtkTreeIter iter;
   gtk_tree_store_append(store, &iter, &cert_iter);
   gtk_tree_store_set(
@@ -409,7 +354,10 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       store, &iter,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SERIAL_NUMBER).c_str(),
-      FIELDS_VALUE, Stringize(CERT_Hexify(&cert->serialNumber, TRUE)).c_str(),
+      FIELDS_VALUE,
+      x509_certificate_model::GetSerialNumberHexified(
+          cert,
+          l10n_util::GetStringUTF8(IDS_CERT_INFO_FIELD_NOT_PRESENT)).c_str(),
       -1);
 
   gtk_tree_store_append(store, &iter, &cert_iter);
@@ -417,7 +365,8 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       store, &iter,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_CERTIFICATE_SIG_ALG).c_str(),
-      FIELDS_VALUE, ProcessSecAlgorithm(&cert->signature).c_str(),
+      FIELDS_VALUE,
+      x509_certificate_model::ProcessSecAlgorithmSignature(cert).c_str(),
       -1);
 
   gtk_tree_store_append(store, &iter, &cert_iter);
@@ -425,7 +374,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       store, &iter,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_ISSUER).c_str(),
-      FIELDS_VALUE, psm::ProcessName(&cert->issuer).c_str(),
+      FIELDS_VALUE, x509_certificate_model::GetIssuerName(cert).c_str(),
       -1);
 
   GtkTreeIter validity_iter;
@@ -437,13 +386,11 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       FIELDS_VALUE, "",
       -1);
 
-  PRTime issued, expires;
+  base::Time issued, expires;
   std::string issued_str, expires_str;
-  if (CERT_GetCertTimes(cert, &issued, &expires) == SECSuccess) {
-    issued_str = WideToUTF8(
-        base::TimeFormatShortDateAndTime(base::PRTimeToBaseTime(issued)));
-    expires_str = WideToUTF8(
-        base::TimeFormatShortDateAndTime(base::PRTimeToBaseTime(expires)));
+  if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
+    issued_str = WideToUTF8(base::TimeFormatShortDateAndTime(issued));
+    expires_str = WideToUTF8(base::TimeFormatShortDateAndTime(expires));
   }
   gtk_tree_store_append(store, &iter, &validity_iter);
   gtk_tree_store_set(
@@ -465,7 +412,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       store, &iter,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT).c_str(),
-      FIELDS_VALUE, psm::ProcessName(&cert->subject).c_str(),
+      FIELDS_VALUE, x509_certificate_model::GetSubjectName(cert).c_str(),
       -1);
 
   GtkTreeIter subject_public_key_iter;
@@ -483,7 +430,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT_KEY_ALG).c_str(),
       FIELDS_VALUE,
-      ProcessSecAlgorithm(&cert->subjectPublicKeyInfo.algorithm).c_str(),
+      x509_certificate_model::ProcessSecAlgorithmSubjectPublicKey(cert).c_str(),
       -1);
 
   gtk_tree_store_append(store, &iter, &subject_public_key_iter);
@@ -492,10 +439,16 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT_KEY).c_str(),
       FIELDS_VALUE,
-      psm::ProcessSubjectPublicKeyInfo(&cert->subjectPublicKeyInfo).c_str(),
+      x509_certificate_model::ProcessSubjectPublicKeyInfo(cert).c_str(),
       -1);
 
-  if (cert->extensions) {
+  x509_certificate_model::Extensions extensions;
+  x509_certificate_model::GetExtensions(
+      l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_CRITICAL),
+      l10n_util::GetStringUTF8(IDS_CERT_EXTENSION_NON_CRITICAL),
+      cert, &extensions);
+
+  if (!extensions.empty()) {
     GtkTreeIter extensions_iter;
     gtk_tree_store_append(store, &extensions_iter, &cert_iter);
     gtk_tree_store_set(
@@ -505,12 +458,13 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
         FIELDS_VALUE, "",
         -1);
 
-    for (size_t i = 0; cert->extensions[i] != NULL; ++i) {
+    for (x509_certificate_model::Extensions::const_iterator i =
+         extensions.begin(); i != extensions.end(); ++i) {
       gtk_tree_store_append(store, &iter, &extensions_iter);
       gtk_tree_store_set(
           store, &iter,
-          FIELDS_NAME, psm::GetOIDText(&cert->extensions[i]->id).c_str(),
-          FIELDS_VALUE, ProcessExtension(cert->extensions[i]).c_str(),
+          FIELDS_NAME, i->name.c_str(),
+          FIELDS_VALUE, i->value.c_str(),
           -1);
     }
   }
@@ -521,7 +475,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_CERTIFICATE_SIG_ALG).c_str(),
       FIELDS_VALUE,
-      ProcessSecAlgorithm(&cert->signatureWrap.signatureAlgorithm).c_str(),
+      x509_certificate_model::ProcessSecAlgorithmSignatureWrap(cert).c_str(),
       -1);
 
   gtk_tree_store_append(store, &iter, &top);
@@ -529,12 +483,14 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       store, &iter,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_CERTIFICATE_SIG_VALUE).c_str(),
-      FIELDS_VALUE, psm::ProcessRawBits(&cert->signatureWrap.signature).c_str(),
+      FIELDS_VALUE,
+      x509_certificate_model::ProcessRawBitsSignatureWrap(cert).c_str(),
       -1);
 }
 
 // static
-GtkTreeStore* CertificateViewer::CreateFieldsTreeStore(CERTCertificate* cert) {
+GtkTreeStore* CertificateViewer::CreateFieldsTreeStore(
+    net::X509Certificate::OSCertHandle cert) {
   GtkTreeStore* fields_store = gtk_tree_store_new(FIELDS_COLUMNS, G_TYPE_STRING,
                                                   G_TYPE_STRING);
   FillTreeStoreWithCertFields(fields_store, cert);
@@ -716,7 +672,7 @@ void CertificateViewer::OnExportClicked(GtkButton *button,
   }
 
   ShowCertExportDialog(GTK_WINDOW(viewer->dialog_),
-                       viewer->cert_chain_[cert_index]);
+                       viewer->cert_chain_list_[cert_index]);
 }
 
 void CertificateViewer::Show() {
@@ -725,10 +681,10 @@ void CertificateViewer::Show() {
 
 } // namespace
 
-void ShowCertificateViewer(gfx::NativeWindow parent, CERTCertificate* cert) {
-  CERTCertList* cert_chain = CERT_GetCertChainFromCert(
-      cert, PR_Now(), certUsageSSLServer);
-  DCHECK(cert_chain);
+void ShowCertificateViewer(gfx::NativeWindow parent,
+                           net::X509Certificate::OSCertHandle cert) {
+  net::X509Certificate::OSCertHandles cert_chain;
+  x509_certificate_model::GetCertChainFromCert(cert, &cert_chain);
   (new CertificateViewer(parent, cert_chain))->Show();
 }
 

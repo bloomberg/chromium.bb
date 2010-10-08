@@ -1716,8 +1716,6 @@
         'browser/gtk/browser_window_gtk.h',
         'browser/gtk/cairo_cached_surface.cc',
         'browser/gtk/cairo_cached_surface.h',
-        'browser/gtk/certificate_manager.cc',
-        'browser/gtk/certificate_manager.h',
         'browser/gtk/certificate_dialogs.cc',
         'browser/gtk/certificate_dialogs.h',
         'browser/gtk/certificate_viewer.cc',

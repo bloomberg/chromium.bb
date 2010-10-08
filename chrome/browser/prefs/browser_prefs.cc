@@ -22,7 +22,6 @@
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/google/google_url_tracker.h"
-#include "chrome/browser/gtk/certificate_manager.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/intranet_redirect_detector.h"
@@ -137,7 +136,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #elif defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
-  certificate_manager_util::RegisterUserPrefs(user_prefs);
 #endif
 #if defined(OS_CHROMEOS)
   chromeos::Preferences::RegisterUserPrefs(user_prefs);

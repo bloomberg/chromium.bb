@@ -71,11 +71,6 @@ std::string ProcessRawBytes(SECItem* data);
 // For fields which have the length specified in bits, rather than bytes.
 std::string ProcessRawBits(SECItem* data);
 
-// For host values, if they contain IDN Punycode-encoded A-labels, this will
-// return a string suitable for display that contains both the original and the
-// decoded U-label form.  Otherwise, the string will be returned as is.
-std::string ProcessIDN(const std::string& input);
-
 std::string DumpOidString(SECItem* oid);
 std::string GetOIDText(SECItem* oid);
 

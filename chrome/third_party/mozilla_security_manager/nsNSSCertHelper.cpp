@@ -48,6 +48,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
@@ -166,43 +167,6 @@ std::string ProcessRawBits(SECItem* data) {
   bytedata.data = data->data;
   bytedata.len = data->len / 8;
   return ProcessRawBytes(&bytedata);
-}
-
-std::string ProcessIDN(const std::string& input) {
-  // Convert the ASCII input to a string16 for ICU.
-  string16 input16;
-  input16.reserve(input.length());
-  std::copy(input.begin(), input.end(), std::back_inserter(input16));
-
-  string16 output16;
-  output16.resize(input.length());
-
-  UErrorCode status = U_ZERO_ERROR;
-  int output_chars = uidna_IDNToUnicode(input16.data(), input.length(),
-                                        &output16[0], output16.length(),
-                                        UIDNA_DEFAULT, NULL, &status);
-  if (status == U_ZERO_ERROR) {
-    output16.resize(output_chars);
-  } else if (status != U_BUFFER_OVERFLOW_ERROR) {
-    return input;
-  } else {
-    output16.resize(output_chars);
-    output_chars = uidna_IDNToUnicode(input16.data(), input.length(),
-                                      &output16[0], output16.length(),
-                                      UIDNA_DEFAULT, NULL, &status);
-    if (status != U_ZERO_ERROR)
-      return input;
-    DCHECK_EQ(static_cast<size_t>(output_chars), output16.length());
-    output16.resize(output_chars);  // Just to be safe.
-  }
-
-  if (input16 == output16)
-    return input;  // Input did not contain any encoded data.
-
-  // Input contained encoded data, return formatted string showing original and
-  // decoded forms.
-  return l10n_util::GetStringFUTF8(IDS_CERT_INFO_IDN_VALUE_FORMAT,
-                                   input16, output16);
 }
 
 std::string DumpOidString(SECItem* oid) {
@@ -442,7 +406,7 @@ std::string ProcessRDN(CERTRDN* rdn) {
       std::string value(reinterpret_cast<char*>(decode_item->data),
                         decode_item->len);
       if (SECOID_FindOIDTag(&avas[i]->type) == SEC_OID_AVA_COMMON_NAME)
-        value = ProcessIDN(value);
+        value = x509_certificate_model::ProcessIDN(value);
       rv += value;
       SECITEM_FreeItem(decode_item, PR_TRUE);
     }
@@ -547,7 +511,7 @@ std::string ProcessGeneralName(PRArenaPool* arena,
       key = l10n_util::GetStringUTF8(IDS_CERT_GENERAL_NAME_DNS_NAME);
       value = std::string(reinterpret_cast<char*>(current->name.other.data),
                           current->name.other.len);
-      value = ProcessIDN(value);
+      value = x509_certificate_model::ProcessIDN(value);
       break;
     case certX400Address:
       key = l10n_util::GetStringUTF8(IDS_CERT_GENERAL_NAME_X400_ADDRESS);

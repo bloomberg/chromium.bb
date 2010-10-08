@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_GTK_CERTIFICATE_DIALOGS_H_
 #pragma once
 
-#include <cert.h>
-
 #include "chrome/browser/shell_dialogs.h"
+#include "net/base/x509_certificate.h"
 
-void ShowCertExportDialog(gfx::NativeWindow parent, CERTCertificate* cert);
+void ShowCertExportDialog(gfx::NativeWindow parent,
+                          net::X509Certificate::OSCertHandle cert);
 
 #endif  // CHROME_BROWSER_GTK_CERTIFICATE_DIALOGS_H_

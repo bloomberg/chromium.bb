@@ -445,6 +445,10 @@
         'common/net/gaia/gaia_authenticator2.cc',
         'common/net/gaia/gaia_authenticator2.h',
         'common/net/gaia/google_service_auth_error.h',
+        'common/net/x509_certificate_model.cc',
+        'common/net/x509_certificate_model_nss.cc',
+        'common/net/x509_certificate_model_openssl.cc',
+        'common/net/x509_certificate_model.h',
       ],
       'dependencies': [
         'chrome_resources',
@@ -453,7 +457,34 @@
         '../base/base.gyp:base',
         '../net/net.gyp:net_resources',
         '../net/net.gyp:net',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
       ],
+      'conditions': [
+        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
+            'dependencies': [
+              '../build/linux/system.gyp:nss',
+            ],
+          },
+          {  # else: OS is not in the above list
+            'sources!': [
+              'common/net/x509_certificate_model_nss.cc',
+              'common/net/x509_certificate_model_openssl.cc',
+            ],
+          },
+        ],
+        ['use_openssl==1', {
+            'sources!': [
+              'common/net/x509_certificate_model_nss.cc',
+            ],
+          },
+          {  # else !use_openssl: remove the unneeded files
+            'sources!': [
+              'common/net/x509_certificate_model_openssl.cc',
+            ],
+          },
+        ],
+       ],
     },
   ],
   'conditions': [

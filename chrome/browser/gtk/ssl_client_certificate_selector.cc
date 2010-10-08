@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ssl_client_certificate_selector.h"
 
-#include <cert.h>
 #include <gtk/gtk.h>
 
 #include <string>
@@ -22,15 +21,10 @@
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
-#include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
+#include "chrome/common/net/x509_certificate_model.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
-
-// PSM = Mozilla's Personal Security Manager.
-namespace psm = mozilla_security_manager;
 
 namespace {
 
@@ -60,9 +54,11 @@ class SSLClientCertificateSelector : public ConstrainedDialogDelegate {
 
   net::X509Certificate* GetSelectedCert();
 
-  static std::string FormatComboBoxText(CERTCertificate* cert,
-                                        const char* nickname);
-  static std::string FormatDetailsText(CERTCertificate* cert);
+  static std::string FormatComboBoxText(
+      net::X509Certificate::OSCertHandle cert,
+      const std::string& nickname);
+  static std::string FormatDetailsText(
+      net::X509Certificate::OSCertHandle cert);
 
   CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnComboBoxChanged);
   CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnViewClicked);
@@ -191,38 +187,26 @@ void SSLClientCertificateSelector::Show() {
 }
 
 void SSLClientCertificateSelector::PopulateCerts() {
-  CERTCertList* cert_list = CERT_NewCertList();
-  for (size_t i = 0; i < cert_request_info_->client_certs.size(); ++i) {
-    CERT_AddCertToListTail(
-        cert_list,
-        CERT_DupCertificate(
-            cert_request_info_->client_certs[i]->os_cert_handle()));
-  }
-  // Would like to use CERT_GetCertNicknameWithValidity on each cert
-  // individually instead of having to build a CERTCertList for this, but that
-  // function is not exported.
-  CERTCertNicknames* nicknames = CERT_NicknameStringsFromCertList(
-      cert_list,
-      const_cast<char*>(l10n_util::GetStringUTF8(
-          IDS_CERT_SELECTOR_CERT_EXPIRED).c_str()),
-      const_cast<char*>(l10n_util::GetStringUTF8(
-          IDS_CERT_SELECTOR_CERT_NOT_YET_VALID).c_str()));
-  DCHECK_EQ(nicknames->numnicknames,
-            static_cast<int>(cert_request_info_->client_certs.size()));
+  std::vector<std::string> nicknames;
+  x509_certificate_model::GetNicknameStringsFromCertList(
+      cert_request_info_->client_certs,
+      l10n_util::GetStringUTF8(IDS_CERT_SELECTOR_CERT_EXPIRED),
+      l10n_util::GetStringUTF8(IDS_CERT_SELECTOR_CERT_NOT_YET_VALID),
+      &nicknames);
+
+  DCHECK_EQ(nicknames.size(),
+            cert_request_info_->client_certs.size());
 
   for (size_t i = 0; i < cert_request_info_->client_certs.size(); ++i) {
-    CERTCertificate* cert =
+    net::X509Certificate::OSCertHandle cert =
         cert_request_info_->client_certs[i]->os_cert_handle();
 
     details_strings_.push_back(FormatDetailsText(cert));
 
     gtk_combo_box_append_text(
         GTK_COMBO_BOX(cert_combo_box_),
-        FormatComboBoxText(cert, nicknames->nicknames[i]).c_str());
+        FormatComboBoxText(cert, nicknames[i]).c_str());
   }
-
-  CERT_FreeNicknames(nicknames);
-  CERT_DestroyCertList(cert_list);
 
   // Auto-select the first cert.
   gtk_combo_box_set_active(GTK_COMBO_BOX(cert_combo_box_), 0);
@@ -239,70 +223,57 @@ net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() {
 
 // static
 std::string SSLClientCertificateSelector::FormatComboBoxText(
-    CERTCertificate* cert, const char* nickname) {
+    net::X509Certificate::OSCertHandle cert, const std::string& nickname) {
   std::string rv(nickname);
-  char* serial_hex = CERT_Hexify(&cert->serialNumber, TRUE);
   rv += " [";
-  rv += serial_hex;
+  rv += x509_certificate_model::GetSerialNumberHexified(cert, "");
   rv += ']';
-  PORT_Free(serial_hex);
   return rv;
 }
 
 // static
 std::string SSLClientCertificateSelector::FormatDetailsText(
-    CERTCertificate* cert) {
+    net::X509Certificate::OSCertHandle cert) {
   std::string rv;
 
-  rv += l10n_util::GetStringFUTF8(IDS_CERT_SUBJECTNAME_FORMAT,
-                                  UTF8ToUTF16(cert->subjectName));
+  rv += l10n_util::GetStringFUTF8(
+      IDS_CERT_SUBJECTNAME_FORMAT,
+      UTF8ToUTF16(x509_certificate_model::GetSubjectName(cert)));;
 
-  char* serial_hex = CERT_Hexify(&cert->serialNumber, TRUE);
   rv += "\n  ";
-  rv += l10n_util::GetStringFUTF8(IDS_CERT_SERIAL_NUMBER_FORMAT,
-                                  UTF8ToUTF16(serial_hex));
-  PORT_Free(serial_hex);
+  rv += l10n_util::GetStringFUTF8(
+      IDS_CERT_SERIAL_NUMBER_FORMAT,
+      UTF8ToUTF16(
+          x509_certificate_model::GetSerialNumberHexified(cert, "")));
 
-  PRTime issued, expires;
-  if (CERT_GetCertTimes(cert, &issued, &expires) == SECSuccess) {
+  base::Time issued, expires;
+  if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
     string16 issued_str = WideToUTF16(
-        base::TimeFormatShortDateAndTime(base::PRTimeToBaseTime(issued)));
+        base::TimeFormatShortDateAndTime(issued));
     string16 expires_str = WideToUTF16(
-        base::TimeFormatShortDateAndTime(base::PRTimeToBaseTime(expires)));
+        base::TimeFormatShortDateAndTime(expires));
     rv += "\n  ";
     rv += l10n_util::GetStringFUTF8(IDS_CERT_VALIDITY_RANGE_FORMAT,
                                     issued_str, expires_str);
   }
 
   std::vector<std::string> usages;
-  psm::GetCertUsageStrings(cert, &usages);
+  x509_certificate_model::GetUsageStrings(cert, &usages);
   if (usages.size()) {
     rv += "\n  ";
     rv += l10n_util::GetStringFUTF8(IDS_CERT_X509_EXTENDED_KEY_USAGE_FORMAT,
                                     UTF8ToUTF16(JoinString(usages, ',')));
   }
 
-  SECItem key_usage;
-  key_usage.data = NULL;
-  if (CERT_FindKeyUsageExtension(cert, &key_usage) == SECSuccess) {
-    std::string key_usage_str = psm::ProcessKeyUsageBitString(&key_usage, ',');
-    PORT_Free(key_usage.data);
-    if (!key_usage_str.empty()) {
-      rv += "\n  ";
-      rv += l10n_util::GetStringFUTF8(IDS_CERT_X509_KEY_USAGE_FORMAT,
-                                      UTF8ToUTF16(key_usage_str));
-    }
+  std::string key_usage_str = x509_certificate_model::GetKeyUsageString(cert);
+  if (!key_usage_str.empty()) {
+    rv += "\n  ";
+    rv += l10n_util::GetStringFUTF8(IDS_CERT_X509_KEY_USAGE_FORMAT,
+                                    UTF8ToUTF16(key_usage_str));
   }
 
   std::vector<std::string> email_addresses;
-  for (const char* addr = CERT_GetFirstEmailAddress(cert);
-       addr; addr = CERT_GetNextEmailAddress(cert, addr)) {
-    // The first email addr (from Subject) may be duplicated in Subject
-    // Alternative Name, so check subsequent addresses are not equal to the
-    // first one before adding to the list.
-    if (!email_addresses.size() || email_addresses[0] != addr)
-      email_addresses.push_back(addr);
-  }
+  x509_certificate_model::GetEmailAddresses(cert, &email_addresses);
   if (email_addresses.size()) {
     rv += "\n  ";
     rv += l10n_util::GetStringFUTF8(
@@ -311,10 +282,11 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
   }
 
   rv += '\n';
-  rv += l10n_util::GetStringFUTF8(IDS_CERT_ISSUERNAME_FORMAT,
-                                  UTF8ToUTF16(cert->issuerName));
+  rv += l10n_util::GetStringFUTF8(
+      IDS_CERT_ISSUERNAME_FORMAT,
+      UTF8ToUTF16(x509_certificate_model::GetIssuerName(cert)));
 
-  string16 token(UTF8ToUTF16(psm::GetCertTokenName(cert)));
+  string16 token(UTF8ToUTF16(x509_certificate_model::GetTokenName(cert)));
   if (!token.empty()) {
     rv += '\n';
     rv += l10n_util::GetStringFUTF8(IDS_CERT_TOKEN_FORMAT, token);
