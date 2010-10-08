@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/scoped_handle_win.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "printing/printing_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -162,8 +163,11 @@ TEST(EmfTest, FileBackedDC) {
   RECT rect = {100, 100, 200, 200};
   HDC hdc = CreateCompatibleDC(NULL);
   EXPECT_TRUE(hdc != NULL);
+  ScopedTempDir scratch_metafile_dir;
+  ASSERT_TRUE(scratch_metafile_dir.CreateUniqueTempDir());
   FilePath metafile_path;
-  EXPECT_TRUE(file_util::CreateTemporaryFile(&metafile_path));
+  EXPECT_TRUE(file_util::CreateTemporaryFileInDir(scratch_metafile_dir.path(),
+                                                  &metafile_path));
   EXPECT_TRUE(emf.CreateFileBackedDc(hdc, &rect, metafile_path));
   EXPECT_TRUE(emf.hdc() != NULL);
   // In theory, you'd use the HDC with GDI functions here.
@@ -187,5 +191,6 @@ TEST(EmfTest, FileBackedDC) {
   RECT output_rect = {0, 0, 10, 10};
   EXPECT_TRUE(emf.Playback(hdc, &output_rect));
   EXPECT_TRUE(DeleteDC(hdc));
+  emf.CloseEmf();
 }
 
