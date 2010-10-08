@@ -149,6 +149,11 @@ class EulaView
   // it will be deleted on bubble closing.
   MessageBubble* bubble_;
 
+  // TPM password local storage. By convention, we clear the password
+  // from TPM as soon as we read it. We store it here locally until
+  // EULA screen is closed.
+  std::string tpm_password_;
+
   DISALLOW_COPY_AND_ASSIGN(EulaView);
 };
 

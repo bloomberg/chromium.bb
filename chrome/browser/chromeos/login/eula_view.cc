@@ -221,6 +221,14 @@ static GURL GetOemEulaPagePath() {
 }
 
 void EulaView::Init() {
+  // First, command to own the TPM.
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    chromeos::CryptohomeTpmCanAttemptOwnership();
+  } else {
+    LOG(ERROR) << "Cros library not loaded. "
+               << "We must have disabled the link that led here.";
+  }
+
   // Use rounded rect background.
   views::Painter* painter = CreateWizardPainter(
       &BorderDefinition::kScreenBorder);
@@ -364,14 +372,15 @@ void EulaView::LinkActivated(views::Link* source, int event_flags) {
     help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
   } else if (source == system_security_settings_link_) {
     // Pull the password from TPM.
-    std::string password;
-    if (!chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-      LOG(ERROR) << "Cros library not loaded. "
-                 << "We must have disabled the link that led here.";
-      return;
-    } else if (chromeos::CryptohomeTpmIsReady() &&
-               chromeos::CryptohomeTpmGetPassword(&password)) {
-      TpmInfoView* view = new TpmInfoView(ASCIIToWide(password));
+    bool password_acquired = false;
+    if (tpm_password_.empty() && chromeos::CryptohomeTpmIsReady()) {
+      // TODO(glotov): Sanitize memory used to store password when
+      // it's destroyed.
+      password_acquired = chromeos::CryptohomeTpmGetPassword(&tpm_password_);
+      chromeos::CryptohomeTpmClearStoredPassword();
+    }
+    if (!tpm_password_.empty() || password_acquired) {
+      TpmInfoView* view = new TpmInfoView(ASCIIToWide(tpm_password_));
       view->Init();
       views::Window* window = browser::CreateViewsWindow(
           GetNativeWindow(), gfx::Rect(), view);
