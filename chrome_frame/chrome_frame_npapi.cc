@@ -1440,6 +1440,16 @@ bool ChromeFrameNPAPI::GetBrowserIncognitoMode() {
   return incognito_mode;
 }
 
+bool ChromeFrameNPAPI::PreProcessContextMenu(HMENU menu) {
+  // TODO: Remove this overridden method once HandleContextMenuCommand
+  // implements "About Chrome Frame" handling.
+  if (!is_privileged_) {
+    // Call base class (adds 'About' item).
+    return ChromeFramePlugin::PreProcessContextMenu(menu);
+  }
+  return true;
+}
+
 bool ChromeFrameNPAPI::HandleContextMenuCommand(UINT cmd,
     const IPC::ContextMenuParams& params) {
   if (cmd == IDC_ABOUT_CHROME_FRAME) {
