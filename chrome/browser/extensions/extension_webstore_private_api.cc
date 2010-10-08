@@ -19,18 +19,13 @@ namespace {
 
 const char* install_base_url = extension_urls::kGalleryUpdateHttpsUrl;
 
+bool IsWebStoreURL(Profile* profile, const GURL& url) {
+  ExtensionsService* service = profile->GetExtensionsService();
+  Extension* store = service->GetWebStoreApp();
+  DCHECK(store);
+  return (service->GetExtensionByWebExtent(url) == store);
 }
 
-static bool IsWebStoreURL(const GURL& url) {
-  GURL store_url(Extension::ChromeStoreURL());
-  if (!url.is_valid() || !store_url.is_valid()) {
-    return false;
-  }
-
-  // Ignore port. It may be set on |url| during tests, but cannot be set on
-  // ChromeStoreURL.
-  return store_url.scheme() == url.scheme() &&
-         store_url.host() == url.host();
 }
 
 // static
@@ -40,7 +35,7 @@ void InstallFunction::SetTestingInstallBaseUrl(
 }
 
 bool InstallFunction::RunImpl() {
-  if (!IsWebStoreURL(source_url()))
+  if (!IsWebStoreURL(profile_, source_url()))
     return false;
 
   std::string id;
@@ -73,7 +68,7 @@ bool InstallFunction::RunImpl() {
 }
 
 bool GetSyncLoginFunction::RunImpl() {
-  if (!IsWebStoreURL(source_url()))
+  if (!IsWebStoreURL(profile_, source_url()))
     return false;
   ProfileSyncService* sync_service = profile_->GetProfileSyncService();
   string16 username = sync_service->GetAuthenticatedUsername();
@@ -82,7 +77,7 @@ bool GetSyncLoginFunction::RunImpl() {
 }
 
 bool GetStoreLoginFunction::RunImpl() {
-  if (!IsWebStoreURL(source_url()))
+  if (!IsWebStoreURL(profile_, source_url()))
     return false;
   ExtensionsService* service = profile_->GetExtensionsService();
   ExtensionPrefs* prefs = service->extension_prefs();
@@ -96,7 +91,7 @@ bool GetStoreLoginFunction::RunImpl() {
 }
 
 bool SetStoreLoginFunction::RunImpl() {
-  if (!IsWebStoreURL(source_url()))
+  if (!IsWebStoreURL(profile_, source_url()))
     return false;
   std::string login;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &login));

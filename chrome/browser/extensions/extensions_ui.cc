@@ -112,15 +112,17 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString("suggestGallery",
       l10n_util::GetStringFUTF16(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
           ASCIIToUTF16("<a href='") +
-          ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-              GURL(Extension::ChromeStoreURL())).spec()) + ASCIIToUTF16("'>"),
+              ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+                  GURL(Extension::ChromeStoreLaunchURL())).spec()) +
+              ASCIIToUTF16("'>"),
           ASCIIToUTF16("</a>")));
   localized_strings.SetString("getMoreExtensions",
       ASCIIToUTF16("<a href='") +
-          ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
-              GURL(Extension::ChromeStoreURL())).spec()) + ASCIIToUTF16("'>") +
-          l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS) +
-          ASCIIToUTF16("</a>"));
+      ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+          GURL(Extension::ChromeStoreLaunchURL())).spec()) +
+      ASCIIToUTF16("'>") +
+      l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS) +
+      ASCIIToUTF16("</a>"));
   localized_strings.SetString("extensionDisabled",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLED_EXTENSION));
   localized_strings.SetString("inDevelopment",

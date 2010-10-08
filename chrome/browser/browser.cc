@@ -3002,10 +3002,13 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
 
 #if defined(OS_CHROMEOS)
   // Don't show content browser for extension/theme downloads from gallery.
-  if (download->is_extension_install() &&
-      ExtensionsService::IsDownloadFromGallery(download->url(),
-                                               download->referrer_url()))
-    return;
+  if (download->is_extension_install()) {
+    ExtensionsService* service = profile_->GetExtensionsService();
+    if (service && service->IsDownloadFromGallery(download->url(),
+                                                  download->referrer_url())) {
+      return;
+    }
+  }
 
   // skip the download shelf and just open the file browser in chromeos
   std::string arg = download->full_path().DirName().value();

@@ -150,42 +150,6 @@ PendingExtensionInfo::PendingExtensionInfo()
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
 
-namespace {
-
-bool IsGalleryDownloadURL(const GURL& download_url) {
-  if (StartsWithASCII(download_url.spec(),
-                      extension_urls::kMiniGalleryDownloadPrefix, false))
-     return true;
-
-  if (StartsWithASCII(download_url.spec(),
-                      extension_urls::kGalleryDownloadPrefix, false))
-     return true;
-
-  // Allow command line gallery url to be referrer for the gallery downloads.
-  std::string command_line_gallery_url =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAppsGalleryURL);
-  if (!command_line_gallery_url.empty()) {
-    if (StartsWithASCII(download_url.spec(), command_line_gallery_url, false))
-      return true;
-
-    // When using the command-line gallery switch, be a bit more lenient with
-    // the check and allow hosts that match the root host.
-    std::string download_domain =
-        net::RegistryControlledDomainService::GetDomainAndRegistry(
-            download_url);
-    std::string command_line_domain =
-        net::RegistryControlledDomainService::GetDomainAndRegistry(
-            GURL(command_line_gallery_url));
-    if (download_domain == command_line_domain)
-      return true;
-  }
-
-  return false;
-}
-
-}  // namespace
-
 // Implements IO for the ExtensionsService.
 
 class ExtensionsServiceBackend
@@ -512,47 +476,53 @@ void ExtensionsServiceBackend::ReloadExtensionManifests(
           true));
 }
 
-// static
 bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
                                               const GURL& referrer_url) {
-  if (referrer_url.is_empty() || !referrer_url.is_valid())
-    return false;
-
-  if (!IsGalleryDownloadURL(download_url))
-    return false;
-
-  if (StartsWithASCII(referrer_url.spec(),
-                      extension_urls::kMiniGalleryBrowsePrefix, false))
+  // Special-case the themes mini-gallery.
+  // TODO(erikkay) When that gallery goes away, remove this code.
+  if (IsDownloadFromMiniGallery(download_url) &&
+      StartsWithASCII(referrer_url.spec(),
+                      extension_urls::kMiniGalleryBrowsePrefix, false)) {
     return true;
-
-  if (StartsWithASCII(referrer_url.spec(),
-                      Extension::ChromeStoreURL(), false))
-    return true;
-
-  // Allow command line gallery url to be referrer for the gallery downloads.
-  std::string command_line_gallery_url =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAppsGalleryURL);
-  if (!command_line_gallery_url.empty()) {
-    if (StartsWithASCII(referrer_url.spec(), command_line_gallery_url, false))
-      return true;
-
-    // When using the command-line gallery switch, be a bit more lenient with
-    // the check and allow hosts that match the root host.
-    // TODO(erikkay) On test galleries, the current config sometimes leaves us
-    // with an empty referrer.  With the command-line flag set, maybe we should
-    // just ignore referrer altogether?
-    std::string referrer_domain =
-        net::RegistryControlledDomainService::GetDomainAndRegistry(
-            referrer_url);
-    std::string command_line_domain =
-        net::RegistryControlledDomainService::GetDomainAndRegistry(
-            GURL(command_line_gallery_url));
-    if (referrer_domain == command_line_domain)
-      return true;
   }
 
-  return false;
+  Extension* download_extension = GetExtensionByWebExtent(download_url);
+  Extension* referrer_extension = GetExtensionByWebExtent(referrer_url);
+  Extension* webstore_app = GetWebStoreApp();
+
+  bool referrer_valid = (referrer_extension == webstore_app);
+  bool download_valid = (download_extension == webstore_app);
+
+  // If the command-line gallery URL is set, then be a bit more lenient.
+  GURL store_url =
+      GURL(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+           switches::kAppsGalleryURL));
+  if (!store_url.is_empty()) {
+    std::string store_tld =
+        net::RegistryControlledDomainService::GetDomainAndRegistry(store_url);
+    if (!referrer_valid) {
+      std::string referrer_tld =
+          net::RegistryControlledDomainService::GetDomainAndRegistry(
+              referrer_url);
+      // The referrer gets stripped when transitioning from https to http,
+      // or when hitting an unknown test cert and that commonly happens in
+      // testing environments.  Given this, we allow an empty referrer when
+      // the command-line flag is set.
+      // Otherwise, the TLD must match the TLD of the command-line url.
+      referrer_valid = referrer_url.is_empty() || (referrer_tld == store_tld);
+    }
+
+    if (!download_valid) {
+      std::string download_tld =
+          net::RegistryControlledDomainService::GetDomainAndRegistry(
+              GURL(download_url));
+
+      // Otherwise, the TLD must match the TLD of the command-line url.
+      download_valid = (download_tld == store_tld);
+    }
+  }
+
+  return (referrer_valid && download_valid);
 }
 
 bool ExtensionsService::IsDownloadFromMiniGallery(const GURL& download_url) {
@@ -1644,6 +1614,10 @@ Extension* ExtensionsService::GetExtensionByIdInternal(const std::string& id,
     }
   }
   return NULL;
+}
+
+Extension* ExtensionsService::GetWebStoreApp() {
+  return GetExtensionById(extension_misc::kWebStoreAppId, false);
 }
 
 Extension* ExtensionsService::GetExtensionByURL(const GURL& url) {

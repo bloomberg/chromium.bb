@@ -213,6 +213,9 @@ int GetUniquePathNumberWithCrDownload(const FilePath& path);
 // Returns a .crdownload intermediate path for the |suggested_path|.
 FilePath GetCrDownloadPath(const FilePath& suggested_path);
 
+// Whether a given download should be considered potentially dangerous.
+bool IsDangerous(DownloadCreateInfo *info, Profile* profile);
+
 }  // namespace download_util
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_UTIL_H_

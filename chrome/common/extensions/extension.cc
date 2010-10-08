@@ -1813,7 +1813,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
 }
 
 // static
-std::string Extension::ChromeStoreURL() {
+std::string Extension::ChromeStoreLaunchURL() {
   std::string gallery_prefix = extension_urls::kGalleryBrowsePrefix;
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsGalleryURL))
     gallery_prefix = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -1827,7 +1827,10 @@ GURL Extension::GalleryUrl() const {
   if (!update_url_.DomainIs("google.com"))
     return GURL();
 
-  GURL url(ChromeStoreURL() + std::string("/detail/") + id());
+  // TODO(erikkay): This may not be entirely correct with the webstore.
+  // I think it will have a mixture of /extensions/detail and /webstore/detail
+  // URLs.  Perhaps they'll handle this nicely with redirects?
+  GURL url(ChromeStoreLaunchURL() + std::string("/detail/") + id());
 
   return url;
 }
@@ -2061,7 +2064,9 @@ bool Extension::CanExecuteScriptOnPage(
   // The gallery is special-cased as a restricted URL for scripting to prevent
   // access to special JS bindings we expose to the gallery (and avoid things
   // like extensions removing the "report abuse" link).
-  if ((page_url.host() == GURL(Extension::ChromeStoreURL()).host()) &&
+  // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
+  // against the store app extent?
+  if ((page_url.host() == GURL(Extension::ChromeStoreLaunchURL()).host()) &&
       !can_execute_script_everywhere &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowScriptingGallery)) {

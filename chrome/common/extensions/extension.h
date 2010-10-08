@@ -305,10 +305,12 @@ class Extension {
   // it was explicitly turned on via a command line switch).
   static bool AppsAreEnabled();
 
-  // Returns the url prefix for the extension/apps gallery. Can be set via the
+  // Returns the launch URL for the extension/apps gallery. Can be set via the
   // --apps-gallery-url switch. The URL returned will not contain a trailing
-  // slash.
-  static std::string ChromeStoreURL();
+  // slash. Do not use this as a prefix/extent for the store.  Instead see
+  // ExtensionsService::GetWebStoreApp or
+  // ExtensionsService::IsDownloadFromGallery
+  static std::string ChromeStoreLaunchURL();
 
   // Helper function that consolidates the check for whether the script can
   // execute into one location. |page_url| is the page that is the candidate

@@ -295,16 +295,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
 
   if (!info->prompt_user_for_save_location &&
       info->save_info.file_path.empty()) {
-    // Downloads can be marked as dangerous for two reasons:
-    // a) They have a dangerous-looking filename
-    // b) They are an extension that is not from the gallery
-    if (download_util::IsExecutableFile(info->suggested_path.BaseName()))
-      info->is_dangerous = true;
-    else if (info->is_extension_install &&
-             !ExtensionsService::IsDownloadFromGallery(info->url,
-                                                       info->referrer_url)) {
-      info->is_dangerous = true;
-    }
+    info->is_dangerous = download_util::IsDangerous(info, profile());
   }
 
   // We need to move over to the download thread because we don't want to stat

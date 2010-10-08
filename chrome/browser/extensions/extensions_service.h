@@ -129,11 +129,10 @@ class ExtensionsService
   static const char* kCurrentVersionFileName;
 
   // Determine if a given extension download should be treated as if it came
-  // from the gallery. Note that this is different from IsGalleryDownloadURL
-  // (above) in that in requires *both* that the download_url match and
-  // that the download was referred from a gallery page.
-  static bool IsDownloadFromGallery(const GURL& download_url,
-                                    const GURL& referrer_url);
+  // from the gallery. Note that this is requires *both* that the download_url
+  // match and that the download was referred from a gallery page.
+  bool IsDownloadFromGallery(const GURL& download_url,
+                             const GURL& referrer_url);
 
   // Determine if the downloaded extension came from the theme mini-gallery,
   // Used to test if we need to show the "Loading" dialog for themes.
@@ -274,6 +273,9 @@ class ExtensionsService
 
   // Scan the extension directory and clean up the cruft.
   void GarbageCollectExtensions();
+
+  // The App that represents the web store.
+  Extension* GetWebStoreApp();
 
   // Lookup an extension by |url|.
   Extension* GetExtensionByURL(const GURL& url);

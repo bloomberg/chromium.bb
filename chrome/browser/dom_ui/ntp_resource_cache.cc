@@ -294,7 +294,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   localized_strings.SetString("web_store_title",
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
   localized_strings.SetString("web_store_url",
-      GetUrlWithLang(GURL(Extension::ChromeStoreURL())));
+      GetUrlWithLang(GURL(Extension::ChromeStoreLaunchURL())));
   localized_strings.SetString("appspromohide",
       l10n_util::GetStringUTF16(IDS_APPS_PROMO_HIDE));
   localized_strings.SetString("appspromoheader",

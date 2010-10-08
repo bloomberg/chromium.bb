@@ -252,7 +252,7 @@ void OpenChromeExtension(Profile* profile,
       installer->InstallUserScript(download_item.full_path(),
                                    download_item.url());
     } else {
-      bool is_gallery_download = ExtensionsService::IsDownloadFromGallery(
+      bool is_gallery_download = service->IsDownloadFromGallery(
           download_item.url(), download_item.referrer_url());
       installer->set_original_mime_type(download_item.original_mime_type());
       installer->set_apps_require_extension_mime_type(true);
@@ -729,6 +729,23 @@ FilePath GetCrDownloadPath(const FilePath& suggested_path) {
   SStringPrintf(&file_name, PRFilePathLiteral FILE_PATH_LITERAL(".crdownload"),
                 suggested_path.value().c_str());
   return FilePath(file_name);
+}
+
+// TODO(erikkay,phajdan.jr): This is apparently not being exercised in tests.
+bool IsDangerous(DownloadCreateInfo* info, Profile* profile) {
+  // Downloads can be marked as dangerous for two reasons:
+  // a) They have a dangerous-looking filename
+  // b) They are an extension that is not from the gallery
+  if (IsExecutableFile(info->suggested_path.BaseName())) {
+    return true;
+  } else if (info->is_extension_install) {
+    ExtensionsService* service = profile->GetExtensionsService();
+    if (!service ||
+        !service->IsDownloadFromGallery(info->url, info->referrer_url)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace download_util
