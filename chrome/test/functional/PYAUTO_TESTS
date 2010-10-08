@@ -71,6 +71,7 @@
     '-codesign',
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
     '-downloads.DownloadsTest.testSaveDangerousFile',  # crbug.com/57875
+    '-cookies.CookiesTest.testCookiesFile',  # crbug.com/58553
   ],
 
   'linux': [  # linux != chromeos
