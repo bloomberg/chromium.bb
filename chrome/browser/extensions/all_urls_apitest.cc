@@ -15,8 +15,7 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-// Flaky, see http://crbug.com/57694.
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FLAKY_WhitelistedExtension) {
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   // First load the two extension.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");
@@ -31,12 +30,11 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FLAKY_WhitelistedExtension) {
   Extension* extensionA = service->extensions()->at(size_before);
   Extension* extensionB = service->extensions()->at(size_before + 1);
 
-  const char* kCanExecuteScriptsEverywhere[] = {
-    extensionA->id().c_str(),
-    extensionB->id().c_str(),
-  };
-  Extension::SetScriptingWhitelist(kCanExecuteScriptsEverywhere,
-                                   arraysize(kCanExecuteScriptsEverywhere));
+  // Then add the two extensions to the whitelist.
+  Extension::ScriptingWhitelist whitelist;
+  whitelist.push_back(extensionA->id().c_str());
+  whitelist.push_back(extensionB->id().c_str());
+  Extension::SetScriptingWhitelist(whitelist);
 
   // Ideally, we'd set the whitelist first and then load the extensions.
   // However, we can't reliably know the ids of the extensions until we load

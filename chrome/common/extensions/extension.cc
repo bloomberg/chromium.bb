@@ -131,51 +131,43 @@ const char* kNonPermissionFunctionNames[] = {
 const size_t kNumNonPermissionFunctionNames =
     arraysize(kNonPermissionFunctionNames);
 
-// Ids of extensions allowed to execute scripts everywhere. Do not add to this
-// list without consulting the Extensions team first.
-// Note: Component extensions have this right implicitly and do not need to be
-// added to this list.
-const char* kCanExecuteScriptsEverywhere[] = {
-  "", // Extension ids for whitelisted extensions go here.
-};
-
-// The size of the kCanExecuteScriptsEverywhere list.
-static size_t kNumCanExecuteScriptsEverywhere =
-    arraysize(kCanExecuteScriptsEverywhere);
-
-// A map between permission name and its install warning message.
-class PermissionMap {
+// A singleton object containing global data needed by the extension objects.
+class ExtensionConfig {
  public:
-  static PermissionMap* GetSingleton() {
-    return Singleton<PermissionMap>::get();
+  static ExtensionConfig* GetSingleton() {
+    return Singleton<ExtensionConfig>::get();
   }
 
   int GetPermissionMessageId(const std::string& permission) {
     return Extension::kPermissions[permission_map_[permission]].message_id;
   }
 
- private:
-  friend struct DefaultSingletonTraits<PermissionMap>;
+  Extension::ScriptingWhitelist* whitelist() { return &scripting_whitelist_; }
 
-  PermissionMap() {
+ private:
+  friend struct DefaultSingletonTraits<ExtensionConfig>;
+
+  ExtensionConfig() {
     for (size_t i = 0; i < Extension::kNumPermissions; ++i)
       permission_map_[Extension::kPermissions[i].name] = i;
   };
 
-  ~PermissionMap() { }
+  ~ExtensionConfig() { }
 
   std::map<const std::string, size_t> permission_map_;
-};
 
+  // A whitelist of extensions that can script anywhere. Do not add to this
+  // list (except in tests) without consulting the Extensions team first.
+  // Note: Component extensions have this right implicitly and do not need to be
+  // added to this list.
+  Extension::ScriptingWhitelist scripting_whitelist_;
+};
 
 // Aliased to kTabPermission for purposes of API checks, but not allowed
 // in the permissions field of the manifest.
 static const char kWindowPermission[] = "windows";
 
 }  // namespace
-
-char** Extension::scripting_whitelist_ =
-    const_cast<char**>(&kCanExecuteScriptsEverywhere[0]);
 
 const FilePath::CharType Extension::kManifestFilename[] =
     FILE_PATH_LITERAL("manifest.json");
@@ -273,7 +265,7 @@ Extension::StaticData::~StaticData() {
 
 // static
 int Extension::GetPermissionMessageId(const std::string& permission) {
-  return PermissionMap::GetSingleton()->GetPermissionMessageId(permission);
+  return ExtensionConfig::GetSingleton()->GetPermissionMessageId(permission);
 }
 
 std::vector<string16> Extension::GetPermissionMessages() {
@@ -1909,10 +1901,15 @@ static std::string SizeToString(const gfx::Size& max_size) {
 }
 
 // static
-void Extension::SetScriptingWhitelist(const char** whitelist, size_t size) {
-  DCHECK(whitelist);
-  scripting_whitelist_ = const_cast<char**>(whitelist);
-  kNumCanExecuteScriptsEverywhere = size;
+void Extension::SetScriptingWhitelist(
+    const std::vector<std::string>& whitelist) {
+ ScriptingWhitelist* current_whitelist =
+     ExtensionConfig::GetSingleton()->whitelist();
+ current_whitelist->clear();
+ for (ScriptingWhitelist::const_iterator it = whitelist.begin();
+      it != whitelist.end(); ++it) {
+   current_whitelist->push_back(*it);
+  }
 }
 
 void Extension::SetCachedImage(const ExtensionResource& source,
@@ -2143,8 +2140,12 @@ bool Extension::CanExecuteScriptEverywhere() const {
   if (location() == Extension::COMPONENT)
     return true;
 
-  for (size_t i = 0; i < kNumCanExecuteScriptsEverywhere; ++i) {
-    if (id() == scripting_whitelist_[i])
+  ScriptingWhitelist* whitelist =
+      ExtensionConfig::GetSingleton()->whitelist();
+
+  for (ScriptingWhitelist::const_iterator it = whitelist->begin();
+       it != whitelist->end(); ++it) {
+    if (id() == *it)
       return true;
   }
 
