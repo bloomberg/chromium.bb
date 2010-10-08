@@ -1089,3 +1089,31 @@
    fun:cricket::Session::SendTransportInfoMessage
    fun:cricket::Session::OnTransportCandidatesReady
 }
+{
+   bug_58474_a
+   Heapcheck:Leak
+   ...
+   fun:FileSystemHostContextTest_CheckValidPath_Test::TestBody
+   fun:testing::Test::Run
+   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestCase::Run
+   fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::UnitTest::Run
+   fun:base::TestSuite::Run
+   fun:main
+   fun:__libc_start_main
+}
+{
+   bug_58474_b
+   Heapcheck:Leak
+   ...
+   fun:FileSystemHostContextTest_GetRootPath_Test::TestBody
+   fun:testing::Test::Run
+   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestCase::Run
+   fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::UnitTest::Run
+   fun:base::TestSuite::Run
+   fun:main
+   fun:__libc_start_main
+}
