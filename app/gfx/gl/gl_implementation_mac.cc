@@ -33,9 +33,9 @@ bool InitializeGLBindings(GLImplementation implementation) {
 
       // When using OSMesa, just use OSMesaGetProcAddress to find entry points.
       base::NativeLibrary library = base::LoadNativeLibrary(
-          module_path.Append("libosmesa.dylib"));
+          module_path.Append("osmesa.so"));
       if (!library) {
-        DLOG(INFO) << "libosmesa.so not found";
+        DLOG(INFO) << "osmesa.so not found";
         return false;
       }
 
