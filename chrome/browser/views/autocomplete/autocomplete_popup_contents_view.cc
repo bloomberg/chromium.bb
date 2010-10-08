@@ -15,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/instant/instant_opt_in.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #include "gfx/canvas_skia.h"
@@ -24,6 +25,10 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "views/controls/button/text_button.h"
+#include "views/controls/label.h"
+#include "views/grid_layout.h"
+#include "views/standard_layout.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
@@ -117,7 +122,87 @@ const int kEditFontAdjust = -1;
 const int kEditFontAdjust = 0;
 #endif
 
-}
+// Horizontal padding between the buttons on the opt in promo.
+const int kOptInButtonPadding = 2;
+
+// Padding around the opt in view.
+const int kOptInLeftPadding = 12;
+const int kOptInRightPadding = 0;
+const int kOptInTopPadding = 6;
+const int kOptInBottomPadding = 3;
+
+// Padding between the top of the opt-in view and the separator.
+const int kOptInSeparatorSpacing = 2;
+
+}  // namespace
+
+class AutocompletePopupContentsView::InstantOptInView :
+    public views::View,
+    public views::ButtonListener {
+ public:
+  InstantOptInView(AutocompletePopupContentsView* contents_view,
+                   const gfx::Font& label_font,
+                   const gfx::Font& button_font)
+      : contents_view_(contents_view) {
+    views::Label* label =
+        new views::Label(l10n_util::GetString(IDS_INSTANT_OPT_IN_LABEL));
+    label->SetFont(label_font);
+
+    views::GridLayout* layout = new views::GridLayout(this);
+    layout->SetInsets(kOptInTopPadding, kOptInLeftPadding,
+                      kOptInBottomPadding, kOptInRightPadding);
+    SetLayoutManager(layout);
+
+    const int first_column_set = 1;
+    views::GridLayout::Alignment v_align = views::GridLayout::CENTER;
+    views::ColumnSet* column_set = layout->AddColumnSet(first_column_set);
+    column_set->AddColumn(views::GridLayout::LEADING, v_align, 1,
+                          views::GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    column_set->AddColumn(views::GridLayout::CENTER, v_align, 0,
+                          views::GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, kOptInButtonPadding);
+    column_set->AddColumn(views::GridLayout::CENTER, v_align, 0,
+                          views::GridLayout::USE_PREF, 0, 0);
+    column_set->LinkColumnSizes(2, 4, -1);
+    layout->StartRow(0, first_column_set);
+    layout->AddView(label);
+    layout->AddView(CreateButton(IDS_INSTANT_OPT_IN_NO_THANKS, button_font));
+    layout->AddView(CreateButton(IDS_INSTANT_OPT_IN_ENABLE, button_font));
+  }
+
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
+    contents_view_->UserPressedOptIn(
+        sender->tag() == IDS_INSTANT_OPT_IN_ENABLE);
+    // WARNING: we've been deleted.
+  }
+
+  virtual void Paint(gfx::Canvas* canvas) {
+    canvas->DrawLineInt(
+        GetColor(NORMAL, DIMMED_TEXT), 0, kOptInSeparatorSpacing, width(),
+        kOptInSeparatorSpacing);
+  }
+
+ private:
+  // Creates and returns a button configured for the opt-in promo.
+  views::View* CreateButton(int id, const gfx::Font& font) {
+    // NOTE: we can't use NativeButton as the popup is a layered window and
+    // native buttons don't draw  in layered windows.
+    // TODO: these buttons look crap. Figure out the right border/background to
+    // use.
+    views::TextButton* button =
+        new views::TextButton(this, l10n_util::GetString(id));
+    button->SetNormalHasBorder(true);
+    button->set_tag(IDS_INSTANT_OPT_IN_NO_THANKS);
+    button->SetFont(font);
+    button->set_animate_on_state_change(false);
+    return button;
+  }
+
+  AutocompletePopupContentsView* contents_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstantOptInView);
+};
 
 class AutocompleteResultView : public views::View {
  public:
@@ -630,7 +715,8 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
       result_font_(font.DeriveFont(kEditFontAdjust)),
       result_bold_font_(result_font_.DeriveFont(0, gfx::Font::BOLD)),
       ignore_mouse_drag_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)),
+      opt_in_view_(NULL) {
   // The following little dance is required because set_border() requires a
   // pointer to a non-const object.
   BubbleBorder* bubble_border = new BubbleBorder(BubbleBorder::NONE);
@@ -689,19 +775,34 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   // Update the match cached by each row, in the process of doing so make sure
   // we have enough row views.
   int total_child_height = 0;
-  size_t child_view_count = GetChildViewCount();
+  size_t child_rv_count = GetChildViewCount();
+  if (opt_in_view_) {
+    DCHECK(child_rv_count > 0);
+    child_rv_count--;
+  }
   for (size_t i = 0; i < model_->result().size(); ++i) {
     AutocompleteResultView* result_view;
-    if (i >= child_view_count) {
+    if (i >= child_rv_count) {
       result_view =
           new AutocompleteResultView(this, i, result_font_, result_bold_font_);
-      AddChildView(result_view);
+      AddChildView(static_cast<int>(i), result_view);
     } else {
       result_view = static_cast<AutocompleteResultView*>(GetChildViewAt(i));
+      result_view->SetVisible(true);
     }
     result_view->set_match(GetMatchAtIndex(i));
     total_child_height += result_view->GetPreferredSize().height();
   }
+  for (size_t i = model_->result().size(); i < child_rv_count; ++i)
+    GetChildViewAt(i)->SetVisible(false);
+
+  if (!opt_in_view_ && browser::ShouldShowInstantOptIn(model_->profile())) {
+    opt_in_view_ = new InstantOptInView(this, result_bold_font_, result_font_);
+    AddChildView(opt_in_view_);
+  }
+
+  if (opt_in_view_)
+    total_child_height += opt_in_view_->GetPreferredSize().height();
 
   gfx::Rect new_target_bounds = CalculateTargetBounds(total_child_height);
 
@@ -836,9 +937,11 @@ void AutocompletePopupContentsView::Layout() {
   int top = contents_rect.y();
   for (int i = 0; i < child_count; ++i) {
     View* v = GetChildViewAt(i);
-    v->SetBounds(contents_rect.x(), top, contents_rect.width(),
-                 v->GetPreferredSize().height());
-    top = v->bounds().bottom();
+    if (v->IsVisible()) {
+      v->SetBounds(contents_rect.x(), top, contents_rect.width(),
+                   v->GetPreferredSize().height());
+      top = v->bounds().bottom();
+    }
   }
 
   // We need to manually schedule a paint here since we are a layered window and
@@ -901,10 +1004,17 @@ bool AutocompletePopupContentsView::OnMouseDragged(
 }
 
 views::View* AutocompletePopupContentsView::GetViewForPoint(
-    const gfx::Point& /*point*/) {
-  // This View takes control of the mouse events, so it should be considered the
-  // active view for any point inside of it.
-  return this;
+    const gfx::Point& point) {
+  // If there is no opt in view, then we want all mouse events. Otherwise let
+  // any descendants of the opt-in view get mouse events.
+  if (!opt_in_view_)
+    return this;
+
+  views::View* child = views::View::GetViewForPoint(point);
+  views::View* ancestor = child;
+  while (ancestor && ancestor != opt_in_view_)
+    ancestor = ancestor->GetParent();
+  return ancestor ? child : this;
 }
 
 
@@ -1026,4 +1136,11 @@ gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
   location_bar_bounds.set_origin(location_bar_origin);
   return bubble_border_->GetBounds(
       location_bar_bounds, gfx::Size(location_bar_bounds.width(), h));
+}
+
+void AutocompletePopupContentsView::UserPressedOptIn(bool opt_in) {
+  delete opt_in_view_;
+  opt_in_view_ = NULL;
+  browser::UserPickedInstantOptIn(model_->profile(), opt_in);
+  UpdatePopupAppearance();
 }

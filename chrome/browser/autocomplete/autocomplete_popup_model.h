@@ -119,6 +119,8 @@ class AutocompletePopupModel : public NotificationObserver {
   // use a standard style icon.
   const SkBitmap* GetSpecialIconForMatch(const AutocompleteMatch& match) const;
 
+  Profile* profile() const { return profile_; }
+
   // The token value for selected_line_, hover_line_ and functions dealing with
   // a "line number" that indicates "no line".
   static const size_t kNoMatch = -1;

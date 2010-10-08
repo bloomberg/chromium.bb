@@ -63,6 +63,11 @@ class CustomButton : public Button,
   }
   bool request_focus_on_press() const { return request_focus_on_press_; }
 
+  // See description above field.
+  void set_animate_on_state_change(bool value) {
+    animate_on_state_change_ = value;
+  }
+
   // Returns true if the mouse pointer is over this control.  Note that this
   // isn't the same as IsHotTracked() because the mouse may be over the control
   // when it's disabled.
@@ -108,9 +113,11 @@ class CustomButton : public Button,
   scoped_ptr<ThrobAnimation> hover_animation_;
 
  private:
-  // Should we animate when the state changes? Defaults to true, but false while
-  // throbbing.
+  // Should we animate when the state changes? Defaults to true.
   bool animate_on_state_change_;
+
+  // Is the hover animation running because StartThrob was invoked?
+  bool is_throbbing_;
 
   // Mouse event flags which can trigger button actions.
   int triggerable_event_flags_;

@@ -95,6 +95,7 @@ class AutocompletePopupContentsView : public views::View,
 #else
   typedef AutocompletePopupGtk AutocompletePopupClass;
 #endif
+  class InstantOptInView;
 
   // Returns true if the model has a match at the specified index.
   bool HasMatchAt(size_t index) const;
@@ -123,6 +124,10 @@ class AutocompletePopupContentsView : public views::View,
 
   // Returns the target bounds given the specified content height.
   gfx::Rect CalculateTargetBounds(int h);
+
+  // Invoked if the user clicks on one of the opt-in buttons. Removes the opt-in
+  // view.
+  void UserPressedOptIn(bool opt_in);
 
   // The popup that contains this view.  We create this, but it deletes itself
   // when its window is destroyed.  This is a WeakPtr because it's possible for
@@ -162,6 +167,9 @@ class AutocompletePopupContentsView : public views::View,
   SlideAnimation size_animation_;
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
+
+  // If non-NULL the instant opt-in-view is visible.
+  views::View* opt_in_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupContentsView);
 };

@@ -2079,6 +2079,8 @@
         'browser/instant/instant_loader_delegate.h',
         'browser/instant/instant_loader_manager.cc',
         'browser/instant/instant_loader_manager.h',
+        'browser/instant/instant_opt_in.cc',
+        'browser/instant/instant_opt_in.h',
         'browser/intranet_redirect_detector.cc',
         'browser/intranet_redirect_detector.h',
         'browser/io_thread.cc',

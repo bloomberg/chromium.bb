@@ -23,8 +23,9 @@ void CustomButton::SetState(ButtonState state) {
   if (state == state_)
     return;
 
-  if (animate_on_state_change_ || !hover_animation_->is_animating()) {
-    animate_on_state_change_ = true;
+  if (animate_on_state_change_ &&
+      (!is_throbbing_ || !hover_animation_->is_animating())) {
+    is_throbbing_ = false;
     if (state_ == BS_NORMAL && state == BS_HOT) {
       // Button is hovered from a normal state, start hover animation.
       hover_animation_->Show();
@@ -42,7 +43,7 @@ void CustomButton::SetState(ButtonState state) {
 }
 
 void CustomButton::StartThrobbing(int cycles_til_stop) {
-  animate_on_state_change_ = false;
+  is_throbbing_ = true;
   hover_animation_->StartThrobbing(cycles_til_stop);
 }
 
@@ -109,6 +110,7 @@ CustomButton::CustomButton(ButtonListener* listener)
     : Button(listener),
       state_(BS_NORMAL),
       animate_on_state_change_(true),
+      is_throbbing_(false),
       triggerable_event_flags_(MouseEvent::EF_LEFT_BUTTON_DOWN),
       request_focus_on_press_(true) {
   hover_animation_.reset(new ThrobAnimation(this));
