@@ -1018,7 +1018,7 @@ long long Segment::ParseHeaders()
 
     assert(m_pos <= stop);
 
-    if (m_pInfo == NULL)
+    if (m_pInfo == NULL)  //TODO: liberalize this behavior
         return E_FILE_FORMAT_INVALID;
 
     if (m_pTracks == NULL)
@@ -1718,8 +1718,35 @@ Cues::Cues(Segment* pSegment, long long start_, long long size_) :
     m_preload_count(0),
     m_pos(start_)
 {
-    //odbgstream os;
-    //os << "Cues: ctor (begin)" << endl;
+}
+
+
+Cues::~Cues()
+{
+    const size_t n = m_count + m_preload_count;
+
+    CuePoint** p = m_cue_points;
+    CuePoint** const q = p + n;
+
+    while (p != q)
+    {
+        CuePoint* const pCP = *p++;
+        assert(pCP);
+
+        delete pCP;
+    }
+
+    delete[] m_cue_points;
+}
+
+
+void Cues::Init()
+{
+    if (m_cue_points)
+        return;
+
+    assert(m_count == 0);
+    assert(m_preload_count == 0);
 
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
@@ -1754,32 +1781,7 @@ Cues::Cues(Segment* pSegment, long long start_, long long size_) :
         assert(pos <= stop);
     }
 
-    //os << "Cues: ctor (end): preload_count="
-    //   << m_preload_count
-    //   << " cue_points_size="
-    //   << cue_points_size
-    //   << endl;
-
     LoadCuePoint();
-}
-
-
-Cues::~Cues()
-{
-    const size_t n = m_count + m_preload_count;
-
-    CuePoint** p = m_cue_points;
-    CuePoint** const q = p + n;
-
-    while (p != q)
-    {
-        CuePoint* const pCP = *p++;
-        assert(pCP);
-
-        delete pCP;
-    }
-
-    delete[] m_cue_points;
 }
 
 
@@ -1875,6 +1877,8 @@ bool Cues::LoadCuePoint()
     if (m_pos >= stop)
         return false;  //nothing else to do
 
+    Init();
+
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
     while (m_pos < stop)
@@ -1934,6 +1938,8 @@ bool Cues::Find(
 {
     assert(time_ns >= 0);
     assert(pTrack);
+
+    const_cast<Cues*>(this)->Init();
 
     assert(m_cue_points);
     assert(m_count > 0);

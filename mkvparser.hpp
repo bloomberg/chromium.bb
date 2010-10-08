@@ -415,6 +415,7 @@ public:
 #endif
 
 private:
+    void Init();
     void PreloadCuePoint(size_t&, long long);
 
     CuePoint** m_cue_points;
