@@ -8,8 +8,8 @@
 
 #include <gtk/gtk.h>
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/singleton.h"
@@ -28,8 +28,7 @@ class Profile;
 // events for all of its descendants.
 //
 // Most controls have default behavior for accessibility; when this needs
-// to be augmented, call one of the methods below to ignore a particular
-// widget or change its details.
+// to be augmented, call one of the methods below to change its details.
 //
 // All of the information managed by this class is registered with the
 // (global) AccessibilityEventRouterGtk and unregistered when this object is
@@ -48,9 +47,6 @@ class AccessibleWidgetHelper {
   // goes out of scope.
   void SendOpenWindowNotification(const std::string& window_title);
 
-  // Do not send accessibility events for this widget
-  void IgnoreWidget(GtkWidget* widget);
-
   // Use the following string as the name of this widget, instead of the
   // gtk label associated with the widget.
   void SetWidgetName(GtkWidget* widget, std::string name);
@@ -64,7 +60,7 @@ class AccessibleWidgetHelper {
   Profile* profile_;
   GtkWidget* root_widget_;
   std::string window_title_;
-  std::vector<GtkWidget*> managed_widgets_;
+  std::set<GtkWidget*> managed_widgets_;
 };
 
 #endif  // CHROME_BROWSER_GTK_ACCESSIBLE_WIDGET_HELPER_GTK_H_

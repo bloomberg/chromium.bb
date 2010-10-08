@@ -29,8 +29,10 @@ AccessibleWidgetHelper::~AccessibleWidgetHelper() {
 
   if (root_widget_)
     accessibility_event_router_->RemoveRootWidget(root_widget_);
-  for (unsigned int i = 0; i < managed_widgets_.size(); i++) {
-    accessibility_event_router_->RemoveWidget(managed_widgets_[i]);
+  for (std::set<GtkWidget*>::iterator it = managed_widgets_.begin();
+       it != managed_widgets_.end();
+       ++it) {
+    accessibility_event_router_->RemoveWidgetNameOverride(*it);
   }
 }
 
@@ -44,20 +46,21 @@ void AccessibleWidgetHelper::SendOpenWindowNotification(
       Details<AccessibilityWindowInfo>(&info));
 }
 
-void AccessibleWidgetHelper::IgnoreWidget(GtkWidget* widget) {
-  accessibility_event_router_->IgnoreWidget(widget);
-  managed_widgets_.push_back(widget);
-}
-
 void AccessibleWidgetHelper::SetWidgetName(
     GtkWidget* widget, std::string name) {
-  accessibility_event_router_->SetWidgetName(widget, name);
-  managed_widgets_.push_back(widget);
+  if (managed_widgets_.find(widget) != managed_widgets_.end()) {
+    // AccessibilityEventRouterGtk reference-counts its widgets, but we
+    // don't. In order to avoid a memory leak, tell the event router
+    // to deref first, so the resulting refcount is unchanged after we
+    // call SetWidgetName.
+    accessibility_event_router_->RemoveWidgetNameOverride(widget);
+  }
+
+  accessibility_event_router_->AddWidgetNameOverride(widget, name);
+  managed_widgets_.insert(widget);
 }
 
 void AccessibleWidgetHelper::SetWidgetName(
     GtkWidget* widget, int string_id) {
-  std::string name = l10n_util::GetStringUTF8(string_id);
-  accessibility_event_router_->SetWidgetName(widget, name);
-  managed_widgets_.push_back(widget);
+  SetWidgetName(widget, l10n_util::GetStringUTF8(string_id));
 }

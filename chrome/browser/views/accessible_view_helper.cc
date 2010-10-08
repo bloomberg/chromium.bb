@@ -39,8 +39,10 @@ AccessibleViewHelper::~AccessibleViewHelper() {
   if (view_tree_) {
     accessibility_event_router_->RemoveViewTree(view_tree_);
     for (std::vector<views::View*>::iterator iter = managed_views_.begin();
-         iter != managed_views_.end(); ++iter)
+         iter != managed_views_.end();
+         ++iter) {
       accessibility_event_router_->RemoveView(*iter);
+    }
   }
 }
 
@@ -52,20 +54,6 @@ void AccessibleViewHelper::SendOpenWindowNotification(
       NotificationType::ACCESSIBILITY_WINDOW_OPENED,
       Source<Profile>(profile_),
       Details<AccessibilityWindowInfo>(&info));
-}
-
-void AccessibleViewHelper::IgnoreView(views::View* view) {
-  if (!view_tree_)
-    return;
-
-  accessibility_event_router_->IgnoreView(view);
-  managed_views_.push_back(view);
-
- #if defined(OS_LINUX)
-  gfx::NativeView native_view = GetNativeView(view);
-  if (native_view)
-    widget_helper_->IgnoreWidget(native_view);
- #endif
 }
 
 void AccessibleViewHelper::SetViewName(views::View* view, std::string name) {

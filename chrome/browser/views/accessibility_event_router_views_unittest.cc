@@ -106,6 +106,7 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   const char kButton1ASCII[] = "Button1";
   const char kButton2ASCII[] = "Button2";
   const char kButton3ASCII[] = "Button3";
+  const char kButton3NewASCII[] = "Button3";
 
   // Create a window and layout.
   views::Widget* window = CreateWidget();
@@ -148,9 +149,8 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
 
   // Create an AccessibleViewHelper for this window, which will send
   // accessibility notifications for all events that happen in child views.
-  // Tell it to ignore button 3.
   AccessibleViewHelper accessible_view_helper(root_view, &profile);
-  accessible_view_helper.IgnoreView(button3);
+  accessible_view_helper.SetViewName(button3, std::string(kButton3NewASCII));
 
   // Advance focus to the next button and test that we got the
   // expected notification with the name of button 2.
@@ -160,14 +160,14 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   EXPECT_EQ(1, focus_event_count_);
   EXPECT_EQ(kButton2ASCII, last_control_name_);
 
-  // Advance to button 3. We expect no notification because we told it
-  // to ignore this view.
+  // Advance to button 3. Expect the new accessible name we assigned.
   focus_manager->AdvanceFocus(false);
-  EXPECT_EQ(1, focus_event_count_);
+  EXPECT_EQ(2, focus_event_count_);
+  EXPECT_EQ(kButton3NewASCII, last_control_name_);
 
   // Advance to button 1 and check the notification.
   focus_manager->AdvanceFocus(false);
-  EXPECT_EQ(2, focus_event_count_);
+  EXPECT_EQ(3, focus_event_count_);
   EXPECT_EQ(kButton1ASCII, last_control_name_);
 }
 

@@ -55,9 +55,6 @@ class AccessibleViewHelper {
   // goes out of scope.
   void SendOpenWindowNotification(const std::string& window_title);
 
-  // Will not send accessibility events for this view.
-  void IgnoreView(views::View* view);
-
   // Uses the following string as the name of this view, instead of
   // view->GetAccessibleName().
   void SetViewName(views::View* view, std::string name);
