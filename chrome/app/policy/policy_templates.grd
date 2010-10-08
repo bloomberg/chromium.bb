@@ -478,7 +478,64 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_RESTOREONSTARTUPURLS_DESC" desc="Description of the list editor 'restore startup urls' of the policy settings page 'restore on startup'.">
       If 'Open a list of URLs' is selected as the startup action, this allows you to specify the list of URLs that are opened.
     </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDER_CAPTION" desc="Caption of the group of 'Default Search Provider' related policies.">
+      Default search provider
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDER_DESC" desc="Description of the group of 'Default Search Provider' related policies.">
+      Configures the default search provider. You can specify the default search provider that the user will use or choose to disable default search.
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERENABLED_CAPTION" desc="Caption of the 'Default Search Provider' policy.">
+      Enable the default search provider
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERENABLED_DESC" desc="Description of the 'Default Search Provider' policy.">
+      Enables the use of a default search provider.
 
+      If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.
+
+      You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
+
+      If you diable this setting, no search is performed when the user enters non-URL text in the omnibox.
+      
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">
+        $1<ex>Google Chrome</ex>
+      </ph>.
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERNAME_CAPTION" desc="The label of the 'Name' text field in the 'Default Search Provider' policy settings page.">
+      Default search provider name
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERNAME_DESC" desc="Caption of the 'Name' text field in the 'Default Search Provider' policy settings page.">
+      Specifies the name of the default search provider. If left empty, the host name specified by the search URL will be used.
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERKEYWORD_CAPTION" desc="The label of the 'Keyword' text field in the 'Default Search Provider' policy settings page.">
+      Default search provider keyword
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERKEYWORD_DESC" desc="Caption of the 'Keyword' text field in the 'Default Search Provider' policy settings page.">
+      Specifies the keyword, which is the shortcut used in the omnibox to trigger the search for this provider. Optional.
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERSEARCHURL_CAPTION" desc="The label of the 'Search URL' text field in the 'Default Search Provider' policy settings page.">
+      Default search provider search URL
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERSEARCHURL_DESC" desc="Caption of the 'Search URL' text field in the 'Default Search Provider' policy settings page.">
+      Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the terms the user is searching for.
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERSUGGESTURL_CAPTION" desc="The label of the 'Suggest URL' text field in the 'Default Search Provider' policy settings page.">
+      Default search provider suggest URL
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERSUGGESTURL_DESC" desc="Caption of the 'Suggest URL' text field in the 'Default Search Provider' policy settings page.">
+      Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far. Optional.
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERICONURL_CAPTION" desc="The label of the 'Icon URL' text field in the 'Default Search Provider' policy settings page.">
+      Default search provider icon
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERICONURL_DESC" desc="Caption of the 'Icon URL' text field in the 'Default Search Provider' policy settings page.">
+      Specifies the favorite icon URL of the default search provider. Optional.
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERENCODINGS_CAPTION" desc="The label of the 'Encodings' text field in the 'Default Search Provider' policy settings page.">
+      Default search provider encodings
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERENCODINGS_DESC" desc="Caption of the 'Encodings' text field in the 'Default Search Provider' policy settings page.">
+      Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided. The default is UTF-8.
+    </message>
     <!-- Begin Chrome Frame messages -->
     <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_CAPTION"
              desc="Caption of Chrome Frame renderer policy group">

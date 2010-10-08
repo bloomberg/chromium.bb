@@ -355,6 +355,82 @@
       }]
     },
     {
+      'name': 'DefaultSearchProvider',
+      'type': 'group',
+      'policies': [
+        {
+          'name': 'DefaultSearchProviderEnabled',
+          'type': 'main',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': True,
+          }
+        },
+        {
+          'name': 'DefaultSearchProviderName',
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': 'My Intranet Search',
+          }
+        },
+        {
+          'name': 'DefaultSearchProviderKeyword',
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': 'mis',
+          }
+        },
+        {
+          'name': 'DefaultSearchProviderSearchURL',
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': 'http://search.my.company/search?q={searchTerms}',
+          }
+        },
+        {
+          'name': 'DefaultSearchProviderSuggestURL',
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': 'http://search.my.company/suggest?q={searchTerms}',
+          }
+        },
+        {
+          'name': 'DefaultSearchProviderIconURL',
+          'type': 'string',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': 'http://search.my.company/favicon.ico',
+          }
+        },
+        {
+          'name': 'DefaultSearchProviderEncodings',
+          'type': 'list',
+          'annotations': {
+            'platforms': ['linux', 'mac', 'win'],
+            'products': ['chrome'],
+            'features': {'dynamic_refresh': 1},
+            'example_value': ['UTF-8', 'UTF-16', 'GB2312', 'ISO-8859-1']
+          }
+        },
+      ]
+    },
+    {
       'name': 'ChromeFrameRendererSettings',
       'type': 'group',
       'policies': [{
