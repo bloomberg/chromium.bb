@@ -64,19 +64,17 @@ void ChromeSystemResources::ScheduleImmediately(
   MessageLoop::current()->PostTask(FROM_HERE, task_to_post);
 }
 
-// The listener thread is just our current thread (i.e., the
-// notifications thread).
+// The listener thread is just our current thread.
 void ChromeSystemResources::ScheduleOnListenerThread(
     invalidation::Closure* task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   ScheduleImmediately(task);
 }
 
-// 'Internal thread' means 'not the listener thread'.  Since the
-// listener thread is the notifications thread, always return false.
+// We're already on a separate thread, so always return true.
 bool ChromeSystemResources::IsRunningOnInternalThread() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  return false;
+  return true;
 }
 
 void ChromeSystemResources::Log(
