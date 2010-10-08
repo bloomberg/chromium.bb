@@ -4,7 +4,7 @@
 # The content of this file is evaluated as a Python expression.
 #
 # This file is used as input to generate the following policy templates:
-# ADM,ADMX+ADML,MCX/plist
+# ADM, ADMX+ADML, MCX/plist and html documentation.
 #
 # Policy templates are user interface definitions or documents about the
 # policies that can be used to configure Chrome. Each policy is a name-value
@@ -42,15 +42,14 @@
 #     Windows ignore this. Policies on Mac are using this instead of caption.
 #
 # Generated grd names:
-#   Each name has two parts: the second part is either CAPTION or DESC,
+#   Each name has two parts: the second part is either CAPTION, DESC or LABEL,
 #   and the first part identifies the item the text applies to:
-#   -For policy groups:
 #   -For policies and groups:
 #     IDS_POLICY_<NAME OF THE POLICY OR GROUP>
 #     e.g. the name of the caption of policy HomepageLocation:
 #       IDS_POLICY_HOMEPAGELOCATION_CAPTION
 #     or other messages of the policy HomepageLocation:
-#       IDS_POLICY_HOMEPAGELOCATION_VALUE_CAPTION
+#       IDS_POLICY_HOMEPAGELOCATION_LABEL
 #       IDS_POLICY_HOMEPAGELOCATION_DESC
 #   -For enum items:
 #     IDS_POLICY_ENUM_<NAME OF THE ITEM>
@@ -58,11 +57,12 @@
 #       IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION
 #
 # Annotations:
-#   Each policy has metadata under the key 'annotations'. Currently only
-#   the value of 'platforms' is used. It is a list enumerating the platforms
-#   on which Chrome supports the given policy. In a given template, only
-#   those policies are included that are compatible with the target OS of
-#   that template.
+#   Each policy has metadata under the key 'annotations'.
+#   These values are only used for the generated documentation, except for
+#   'platforms', that is also used for filtering policies. It is a list
+#   enumerating the platforms on which Chrome supports the given policy.
+#   In a given template, only those policies are included that are compatible
+#   with the target OS of that template.
 #     Windows: ADM,ADMX,ADML
 #     Mac: plist,plist_strings
 #
