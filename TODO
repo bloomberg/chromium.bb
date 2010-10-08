@@ -168,7 +168,21 @@ Core wayland protocol
     - clients needs to allocate the surface to be suitable for
       scanout, which they can do whenever they go fullscreen.
 
- - multihead, screen geometry and crtc layout protocol, hotplug
+ - multihead, screen geometry and crtc layout protocol, hotplug, lcd
+   subpixel info
+
+ - a wayland settings protocol to tell clients about themes (icons,
+   cursors, widget themes), fonts details (family, hinting
+   preferences) etc.  Just send all settings at connect time, send
+   updates when a setting change.  Getting a little close to gconf
+   here, but could be pretty simple:
+
+     interface "settings":
+       event int_value(string name, int value)
+       event string_value(string name, string value)
+
+   but maybe it's better to just require that clients get that from
+   somewhere else (gconf/dbus).
 
  - input device discovery, hotplug
 
