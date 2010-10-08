@@ -28,7 +28,8 @@ class ScopedSSL {
 // Access it via EnsureOpenSSLInit().
 class OpenSSLInitSingleton {
  public:
-  X509_STORE* x509_store() const;
+  SSL_CTX* ssl_ctx() const { return ssl_ctx_.get(); }
+  X509_STORE* x509_store() const { return store_.get(); }
 
  private:
   friend struct DefaultSingletonTraits<OpenSSLInitSingleton>;
@@ -38,6 +39,7 @@ class OpenSSLInitSingleton {
   static void LockingCallback(int mode, int n, const char* file, int line);
   void OnLockingCallback(int mode, int n, const char* file, int line);
 
+  ScopedSSL<SSL_CTX, SSL_CTX_free> ssl_ctx_;
   ScopedSSL<X509_STORE, X509_STORE_free> store_;
   // These locks are used and managed by OpenSSL via LockingCallback().
   ScopedVector<Lock> locks_;
