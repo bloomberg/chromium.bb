@@ -121,7 +121,7 @@ readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
 
 # Current milestones in each repo
 readonly LLVM_REV=56d4d118c5ea
-readonly LLVM_GCC_REV=7c37d9fced8b
+readonly LLVM_GCC_REV=956e8ab93cab
 readonly NEWLIB_REV=03ddd92d699d
 readonly BINUTILS_REV=a5b54c0cc733
 
@@ -179,6 +179,7 @@ setup-tools-common() {
   # C++ flags
   CXXFLAGS_FOR_SFI_TARGET=${CFLAGS_FOR_SFI_TARGET}
 
+  # NOTE: this seems to be no longer  used
   STD_ENV_FOR_GCC_ETC=(
     CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
     CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
@@ -2359,37 +2360,22 @@ organize-native-code() {
   StepBanner "PNaCl" "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
   local startup_dir=${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}
-  cp -f ${startup_dir}/libgcc.a \
-        ${PNACL_ARM_ROOT}
-  # NOTE: create an empty archive until this is resolved
-  # http://code.google.com/p/nativeclient/issues/detail?id=835
-  rm -f ${PNACL_ARM_ROOT}/libgcc_eh.a
-  ${CROSS_TARGET_AR} -r ${PNACL_ARM_ROOT}/libgcc_eh.a
-
+  cp -f ${startup_dir}/libgcc.a ${PNACL_ARM_ROOT}
+  cp -f ${startup_dir}/libgcc_eh.a ${PNACL_ARM_ROOT}
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
   StepBanner "PNaCl" "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
   local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}
-  cp -f ${startup_dir}/libgcc.a \
-        ${PNACL_X8632_ROOT}
-  # NOTE: create an empty archive until this is resolved
-  # http://code.google.com/p/nativeclient/issues/detail?id=835
-  rm -f ${PNACL_X8632_ROOT}/libgcc_eh.a
-  ${CROSS_TARGET_AR} -r ${PNACL_X8632_ROOT}/libgcc_eh.a
-
+  cp -f ${startup_dir}/libgcc.a ${PNACL_X8632_ROOT}
+  cp -f ${startup_dir}/libgcc_eh.a ${PNACL_X8632_ROOT}
   DebugRun ls -l ${PNACL_X8632_ROOT}
 
   StepBanner "PNaCl" "x86-64 native code: ${PNACL_X8664_ROOT}"
   mkdir -p ${PNACL_X8664_ROOT}
   local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}
-  cp -f ${startup_dir}/libgcc.a \
-        ${PNACL_X8664_ROOT}
-  # NOTE: create an empty archive until this is resolved
-  # http://code.google.com/p/nativeclient/issues/detail?id=835
-  rm -f ${PNACL_X8664_ROOT}/libgcc_eh.a
-  ${CROSS_TARGET_AR} -r ${PNACL_X8664_ROOT}/libgcc_eh.a
-
+  cp -f ${startup_dir}/libgcc.a ${PNACL_X8664_ROOT}
+  cp -f ${startup_dir}/libgcc_eh.a ${PNACL_X8664_ROOT}
   DebugRun ls -l ${PNACL_X8664_ROOT}
 }
 
@@ -2408,11 +2394,8 @@ readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 # Usage: VerifyObject <regexp> <filename>
 # Ensure that the ELF "file format" string for <filename> matches <regexp>.
 VerifyObject() {
-  if [[ $(basename $2) = "libgcc_eh.a" ]] ; then
-    echo "WARNING SKIPPPING EMPTY libgcc_eh"
-    return
-  fi
-  local pattern=$1 filename=$2
+  local pattern=$1
+  local filename=$2
   echo -n "verify $(basename "$filename") [$pattern]: "
   local format=$(objdump -a "$filename" |
                  sed -ne 's/^.* file format //p' |
@@ -2438,10 +2421,6 @@ VerifyArchive() {
   ${LLVM_AR} x $(basename ${archive})
   for i in *.o ; do
     if [ "$i" = "*.o" ]; then
-      if [[ $(basename ${archive}) = "libgcc_eh.a" ]] ; then
-        echo "WARNING SKIPPPING EMPTY libgcc_eh"
-        return
-      fi
       echo "FAIL (no object files in ${archive})"
       exit -1
     fi
