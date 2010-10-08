@@ -453,7 +453,11 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
 
 void NaClSecureCommandChannel(struct NaClApp  *nap);
 
-void NaClWaitForModuleStartStatusCall(struct NaClApp *nap);
+NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap)
+    NACL_WUR;
+
+NaClErrorCode NaClWaitForModuleStartStatusCall(struct NaClApp *nap)
+    NACL_WUR;
 
 void NaClFillMemoryRegionWithHalt(void *start, size_t size);
 
