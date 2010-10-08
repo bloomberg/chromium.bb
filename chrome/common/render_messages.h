@@ -20,18 +20,15 @@
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/indexed_db_param_traits.h"
 #include "chrome/common/page_transition_types.h"
-#include "chrome/common/resource_response.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/webkit_param_traits.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
-#include "media/audio/audio_buffers_state.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
 #include "webkit/fileapi/file_system_types.h"  // enum fileapi::FileSystemType
-#include "webkit/glue/resource_loader_bridge.h"   // nested classes
 
 #if defined(OS_MACOSX)
 struct FontDescriptor;
@@ -55,18 +52,24 @@ namespace webkit_glue {
 struct FormData;
 class FormField;
 struct PasswordFormFillData;
+struct ResourceDevToolsInfo;
+struct ResourceLoadTimingInfo;
+struct ResourceResponseInfo;
 struct WebAccessibility;
 struct WebCookie;
 struct WebPluginGeometry;
 struct WebAccessibility;
 }
 
+struct AudioBuffersState;
 class ExtensionExtent;
 class GURL;
 class SkBitmap;
 class URLPattern;
 struct ContextMenuParams;
 struct EditCommand;
+struct ResourceResponseHead;
+struct SyncLoadResult;
 struct RendererPreferences;
 struct WebDropData;
 struct WebMenuItem;
@@ -191,239 +194,46 @@ struct ParamTraits<scoped_refptr<net::HttpResponseHeaders> > {
   static void Log(const param_type& p, std::string* l);
 };
 
-// Traits for webkit_glue::ResourceLoaderBridge::LoadTimingInfo
+// Traits for webkit_glue::ResourceLoadTimingInfo
 template <>
-struct ParamTraits<webkit_glue::ResourceLoaderBridge::LoadTimingInfo> {
-  typedef webkit_glue::ResourceLoaderBridge::LoadTimingInfo param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.base_time.is_null());
-    if (p.base_time.is_null())
-      return;
-    WriteParam(m, p.base_time);
-    WriteParam(m, p.proxy_start);
-    WriteParam(m, p.proxy_end);
-    WriteParam(m, p.dns_start);
-    WriteParam(m, p.dns_end);
-    WriteParam(m, p.connect_start);
-    WriteParam(m, p.connect_end);
-    WriteParam(m, p.ssl_start);
-    WriteParam(m, p.ssl_end);
-    WriteParam(m, p.send_start);
-    WriteParam(m, p.send_end);
-    WriteParam(m, p.receive_headers_start);
-    WriteParam(m, p.receive_headers_end);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    bool is_null;
-    if (!ReadParam(m, iter, &is_null))
-      return false;
-    if (is_null)
-      return true;
-
-    return
-        ReadParam(m, iter, &r->base_time) &&
-        ReadParam(m, iter, &r->proxy_start) &&
-        ReadParam(m, iter, &r->proxy_end) &&
-        ReadParam(m, iter, &r->dns_start) &&
-        ReadParam(m, iter, &r->dns_end) &&
-        ReadParam(m, iter, &r->connect_start) &&
-        ReadParam(m, iter, &r->connect_end) &&
-        ReadParam(m, iter, &r->ssl_start) &&
-        ReadParam(m, iter, &r->ssl_end) &&
-        ReadParam(m, iter, &r->send_start) &&
-        ReadParam(m, iter, &r->send_end) &&
-        ReadParam(m, iter, &r->receive_headers_start) &&
-        ReadParam(m, iter, &r->receive_headers_end);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.base_time, l);
-    l->append(", ");
-    LogParam(p.proxy_start, l);
-    l->append(", ");
-    LogParam(p.proxy_end, l);
-    l->append(", ");
-    LogParam(p.dns_start, l);
-    l->append(", ");
-    LogParam(p.dns_end, l);
-    l->append(", ");
-    LogParam(p.connect_start, l);
-    l->append(", ");
-    LogParam(p.connect_end, l);
-    l->append(", ");
-    LogParam(p.ssl_start, l);
-    l->append(", ");
-    LogParam(p.ssl_end, l);
-    l->append(", ");
-    LogParam(p.send_start, l);
-    l->append(", ");
-    LogParam(p.send_end, l);
-    l->append(", ");
-    LogParam(p.receive_headers_start, l);
-    l->append(", ");
-    LogParam(p.receive_headers_end, l);
-    l->append(")");
-  }
+struct ParamTraits<webkit_glue::ResourceLoadTimingInfo> {
+  typedef webkit_glue::ResourceLoadTimingInfo param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
-struct ParamTraits<
-    scoped_refptr<webkit_glue::ResourceLoaderBridge::DevToolsInfo> > {
-  typedef scoped_refptr<webkit_glue::ResourceLoaderBridge::DevToolsInfo>
-      param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.get() != NULL);
-    if (p.get()) {
-      WriteParam(m, p->request_headers);
-      WriteParam(m, p->response_headers);
-    }
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    bool has_object;
-    if (!ReadParam(m, iter, &has_object))
-        return false;
-    if (!has_object)
-        return true;
-    *r = new webkit_glue::ResourceLoaderBridge::DevToolsInfo();
-    return
-        ReadParam(m, iter, &(*r)->request_headers) &&
-        ReadParam(m, iter, &(*r)->response_headers);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    if (p) {
-      LogParam(p->request_headers, l);
-      l->append(", ");
-      LogParam(p->response_headers, l);
-    }
-    l->append(")");
-  }
+struct ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> > {
+  typedef scoped_refptr<webkit_glue::ResourceDevToolsInfo> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
-// Traits for webkit_glue::ResourceLoaderBridge::ResponseInfo
+// Traits for webkit_glue::ResourceResponseInfo
 template <>
-struct ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo> {
-  typedef webkit_glue::ResourceLoaderBridge::ResponseInfo param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.request_time);
-    WriteParam(m, p.response_time);
-    WriteParam(m, p.headers);
-    WriteParam(m, p.mime_type);
-    WriteParam(m, p.charset);
-    WriteParam(m, p.security_info);
-    WriteParam(m, p.content_length);
-    WriteParam(m, p.appcache_id);
-    WriteParam(m, p.appcache_manifest_url);
-    WriteParam(m, p.connection_id);
-    WriteParam(m, p.connection_reused);
-    WriteParam(m, p.load_timing);
-    WriteParam(m, p.devtools_info);
-    WriteParam(m, p.download_file_path);
-    WriteParam(m, p.was_fetched_via_spdy);
-    WriteParam(m, p.was_npn_negotiated);
-    WriteParam(m, p.was_alternate_protocol_available);
-    WriteParam(m, p.was_fetched_via_proxy);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return
-        ReadParam(m, iter, &r->request_time) &&
-        ReadParam(m, iter, &r->response_time) &&
-        ReadParam(m, iter, &r->headers) &&
-        ReadParam(m, iter, &r->mime_type) &&
-        ReadParam(m, iter, &r->charset) &&
-        ReadParam(m, iter, &r->security_info) &&
-        ReadParam(m, iter, &r->content_length) &&
-        ReadParam(m, iter, &r->appcache_id) &&
-        ReadParam(m, iter, &r->appcache_manifest_url) &&
-        ReadParam(m, iter, &r->connection_id) &&
-        ReadParam(m, iter, &r->connection_reused) &&
-        ReadParam(m, iter, &r->load_timing) &&
-        ReadParam(m, iter, &r->devtools_info) &&
-        ReadParam(m, iter, &r->download_file_path) &&
-        ReadParam(m, iter, &r->was_fetched_via_spdy) &&
-        ReadParam(m, iter, &r->was_npn_negotiated) &&
-        ReadParam(m, iter, &r->was_alternate_protocol_available) &&
-        ReadParam(m, iter, &r->was_fetched_via_proxy);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.request_time, l);
-    l->append(", ");
-    LogParam(p.response_time, l);
-    l->append(", ");
-    LogParam(p.headers, l);
-    l->append(", ");
-    LogParam(p.mime_type, l);
-    l->append(", ");
-    LogParam(p.charset, l);
-    l->append(", ");
-    LogParam(p.security_info, l);
-    l->append(", ");
-    LogParam(p.content_length, l);
-    l->append(", ");
-    LogParam(p.appcache_id, l);
-    l->append(", ");
-    LogParam(p.appcache_manifest_url, l);
-    l->append(", ");
-    LogParam(p.connection_id, l);
-    l->append(", ");
-    LogParam(p.connection_reused, l);
-    l->append(", ");
-    LogParam(p.load_timing, l);
-    l->append(", ");
-    LogParam(p.devtools_info, l);
-    l->append(", ");
-    LogParam(p.download_file_path, l);
-    l->append(", ");
-    LogParam(p.was_fetched_via_spdy, l);
-    l->append(", ");
-    LogParam(p.was_npn_negotiated, l);
-    l->append(", ");
-    LogParam(p.was_alternate_protocol_available, l);
-    l->append(", ");
-    LogParam(p.was_fetched_via_proxy, l);
-    l->append(")");
-  }
+struct ParamTraits<webkit_glue::ResourceResponseInfo> {
+  typedef webkit_glue::ResourceResponseInfo param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<ResourceResponseHead> {
   typedef ResourceResponseHead param_type;
-  static void Write(Message* m, const param_type& p) {
-    ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo>::Write(m, p);
-    WriteParam(m, p.status);
-    WriteParam(m, p.replace_extension_localization_templates);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo>::Read(
-        m, iter, r) &&
-        ReadParam(m, iter, &r->status) &&
-        ReadParam(m, iter, &r->replace_extension_localization_templates);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    // log more?
-    ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo>::Log(p, l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<SyncLoadResult> {
   typedef SyncLoadResult param_type;
-  static void Write(Message* m, const param_type& p) {
-    ParamTraits<ResourceResponseHead>::Write(m, p);
-    WriteParam(m, p.final_url);
-    WriteParam(m, p.data);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return
-      ParamTraits<ResourceResponseHead>::Read(m, iter, r) &&
-      ReadParam(m, iter, &r->final_url) &&
-      ReadParam(m, iter, &r->data);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    // log more?
-    ParamTraits<webkit_glue::ResourceLoaderBridge::ResponseInfo>::Log(p, l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 // Traits for FormData structure to pack/unpack.

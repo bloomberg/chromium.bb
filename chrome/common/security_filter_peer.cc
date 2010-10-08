@@ -67,7 +67,7 @@ void SecurityFilterPeer::OnUploadProgress(uint64 position, uint64 size) {
 
 bool SecurityFilterPeer::OnReceivedRedirect(
     const GURL& new_url,
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   NOTREACHED();
@@ -75,7 +75,7 @@ bool SecurityFilterPeer::OnReceivedRedirect(
 }
 
 void SecurityFilterPeer::OnReceivedResponse(
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool content_filtered) {
   NOTREACHED();
 }
@@ -96,8 +96,8 @@ GURL SecurityFilterPeer::GetURLForDebugging() const {
 
 // static
 void ProcessResponseInfo(
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info_in,
-    webkit_glue::ResourceLoaderBridge::ResponseInfo* info_out,
+    const webkit_glue::ResourceResponseInfo& info_in,
+    webkit_glue::ResourceResponseInfo* info_out,
     const std::string& mime_type) {
   DCHECK(info_out);
   *info_out = info_in;
@@ -138,7 +138,7 @@ BufferedPeer::~BufferedPeer() {
 }
 
 void BufferedPeer::OnReceivedResponse(
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool response_filtered) {
   ProcessResponseInfo(info, &response_info_, mime_type_);
 }
@@ -186,7 +186,7 @@ ReplaceContentPeer::~ReplaceContentPeer() {
 }
 
 void ReplaceContentPeer::OnReceivedResponse(
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool content_filtered) {
   // Ignore this, we'll serve some alternate content in OnCompletedRequest.
 }
@@ -199,7 +199,7 @@ void ReplaceContentPeer::OnCompletedRequest(
     const URLRequestStatus& status,
     const std::string& security_info,
     const base::Time& completion_time) {
-  webkit_glue::ResourceLoaderBridge::ResponseInfo info;
+  webkit_glue::ResourceResponseInfo info;
   ProcessResponseInfo(info, &info, mime_type_);
   info.security_info = security_info;
   info.content_length = static_cast<int>(data_.size());

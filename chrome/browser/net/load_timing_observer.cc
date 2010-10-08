@@ -15,6 +15,7 @@
 using base::Time;
 using base::TimeTicks;
 using webkit_glue::ResourceLoaderBridge;
+using webkit_glue::ResourceLoadTimingInfo;
 
 const size_t kMaxNumEntries = 1000;
 
@@ -143,7 +144,7 @@ void LoadTimingObserver::OnAddURLRequestEntry(
   if (!record)
     return;
 
-  ResourceLoaderBridge::LoadTimingInfo& timing = record->timing;
+  ResourceLoadTimingInfo& timing = record->timing;
 
   switch (type) {
     case net::NetLog::TYPE_PROXY_SERVICE:

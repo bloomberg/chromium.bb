@@ -16,8 +16,7 @@
 #include "webkit/glue/resource_loader_bridge.h"
 
 // Parameters for a resource response header.
-struct ResourceResponseHead
-    : webkit_glue::ResourceLoaderBridge::ResponseInfo {
+struct ResourceResponseHead : webkit_glue::ResourceResponseInfo {
   ResourceResponseHead();
   ~ResourceResponseHead();
 

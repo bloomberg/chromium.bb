@@ -12,31 +12,34 @@
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/indexed_db_param_traits.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/resource_response.h"
 #include "chrome/common/serialized_script_value.h"
 #include "chrome/common/thumbnail_score.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_channel_handle.h"
+#include "media/audio/audio_buffers_state.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/glue/context_menu.h"
+#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
-#include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/password_form.h"
+#include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/plugins/webplugininfo.h"
+#include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/glue/plugins/webplugin.h"
-#include "webkit/glue/plugins/webplugininfo.h"
-#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/webmenuitem.h"
 
 #if defined(OS_MACOSX)
@@ -344,6 +347,240 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Log(
     const param_type& p, std::string* l) {
   l->append("<HttpResponseHeaders>");
 }
+
+void ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.base_time.is_null());
+  if (p.base_time.is_null())
+    return;
+  WriteParam(m, p.base_time);
+  WriteParam(m, p.proxy_start);
+  WriteParam(m, p.proxy_end);
+  WriteParam(m, p.dns_start);
+  WriteParam(m, p.dns_end);
+  WriteParam(m, p.connect_start);
+  WriteParam(m, p.connect_end);
+  WriteParam(m, p.ssl_start);
+  WriteParam(m, p.ssl_end);
+  WriteParam(m, p.send_start);
+  WriteParam(m, p.send_end);
+  WriteParam(m, p.receive_headers_start);
+  WriteParam(m, p.receive_headers_end);
+}
+
+bool ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Read(
+    const Message* m, void** iter, param_type* r) {
+  bool is_null;
+  if (!ReadParam(m, iter, &is_null))
+    return false;
+  if (is_null)
+    return true;
+
+  return
+      ReadParam(m, iter, &r->base_time) &&
+      ReadParam(m, iter, &r->proxy_start) &&
+      ReadParam(m, iter, &r->proxy_end) &&
+      ReadParam(m, iter, &r->dns_start) &&
+      ReadParam(m, iter, &r->dns_end) &&
+      ReadParam(m, iter, &r->connect_start) &&
+      ReadParam(m, iter, &r->connect_end) &&
+      ReadParam(m, iter, &r->ssl_start) &&
+      ReadParam(m, iter, &r->ssl_end) &&
+      ReadParam(m, iter, &r->send_start) &&
+      ReadParam(m, iter, &r->send_end) &&
+      ReadParam(m, iter, &r->receive_headers_start) &&
+      ReadParam(m, iter, &r->receive_headers_end);
+}
+
+void ParamTraits<webkit_glue::ResourceLoadTimingInfo>::Log(const param_type& p,
+                                                           std::string* l) {
+  l->append("(");
+  LogParam(p.base_time, l);
+  l->append(", ");
+  LogParam(p.proxy_start, l);
+  l->append(", ");
+  LogParam(p.proxy_end, l);
+  l->append(", ");
+  LogParam(p.dns_start, l);
+  l->append(", ");
+  LogParam(p.dns_end, l);
+  l->append(", ");
+  LogParam(p.connect_start, l);
+  l->append(", ");
+  LogParam(p.connect_end, l);
+  l->append(", ");
+  LogParam(p.ssl_start, l);
+  l->append(", ");
+  LogParam(p.ssl_end, l);
+  l->append(", ");
+  LogParam(p.send_start, l);
+  l->append(", ");
+  LogParam(p.send_end, l);
+  l->append(", ");
+  LogParam(p.receive_headers_start, l);
+  l->append(", ");
+  LogParam(p.receive_headers_end, l);
+  l->append(")");
+}
+
+void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.get() != NULL);
+  if (p.get()) {
+    WriteParam(m, p->request_headers);
+    WriteParam(m, p->response_headers);
+  }
+}
+
+bool ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Read(
+    const Message* m, void** iter, param_type* r) {
+  bool has_object;
+  if (!ReadParam(m, iter, &has_object))
+    return false;
+  if (!has_object)
+    return true;
+  *r = new webkit_glue::ResourceDevToolsInfo();
+  return
+      ReadParam(m, iter, &(*r)->request_headers) &&
+      ReadParam(m, iter, &(*r)->response_headers);
+}
+
+void ParamTraits<scoped_refptr<webkit_glue::ResourceDevToolsInfo> >::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  if (p) {
+    LogParam(p->request_headers, l);
+    l->append(", ");
+    LogParam(p->response_headers, l);
+  }
+  l->append(")");
+}
+
+void ParamTraits<webkit_glue::ResourceResponseInfo>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.request_time);
+  WriteParam(m, p.response_time);
+  WriteParam(m, p.headers);
+  WriteParam(m, p.mime_type);
+  WriteParam(m, p.charset);
+  WriteParam(m, p.security_info);
+  WriteParam(m, p.content_length);
+  WriteParam(m, p.appcache_id);
+  WriteParam(m, p.appcache_manifest_url);
+  WriteParam(m, p.connection_id);
+  WriteParam(m, p.connection_reused);
+  WriteParam(m, p.load_timing);
+  WriteParam(m, p.devtools_info);
+  WriteParam(m, p.download_file_path);
+  WriteParam(m, p.was_fetched_via_spdy);
+  WriteParam(m, p.was_npn_negotiated);
+  WriteParam(m, p.was_alternate_protocol_available);
+  WriteParam(m, p.was_fetched_via_proxy);
+}
+
+bool ParamTraits<webkit_glue::ResourceResponseInfo>::Read(
+    const Message* m, void** iter, param_type* r) {
+  return
+      ReadParam(m, iter, &r->request_time) &&
+      ReadParam(m, iter, &r->response_time) &&
+      ReadParam(m, iter, &r->headers) &&
+      ReadParam(m, iter, &r->mime_type) &&
+      ReadParam(m, iter, &r->charset) &&
+      ReadParam(m, iter, &r->security_info) &&
+      ReadParam(m, iter, &r->content_length) &&
+      ReadParam(m, iter, &r->appcache_id) &&
+      ReadParam(m, iter, &r->appcache_manifest_url) &&
+      ReadParam(m, iter, &r->connection_id) &&
+      ReadParam(m, iter, &r->connection_reused) &&
+      ReadParam(m, iter, &r->load_timing) &&
+      ReadParam(m, iter, &r->devtools_info) &&
+      ReadParam(m, iter, &r->download_file_path) &&
+      ReadParam(m, iter, &r->was_fetched_via_spdy) &&
+      ReadParam(m, iter, &r->was_npn_negotiated) &&
+      ReadParam(m, iter, &r->was_alternate_protocol_available) &&
+      ReadParam(m, iter, &r->was_fetched_via_proxy);
+}
+
+void ParamTraits<webkit_glue::ResourceResponseInfo>::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.request_time, l);
+  l->append(", ");
+  LogParam(p.response_time, l);
+  l->append(", ");
+  LogParam(p.headers, l);
+  l->append(", ");
+  LogParam(p.mime_type, l);
+  l->append(", ");
+  LogParam(p.charset, l);
+  l->append(", ");
+  LogParam(p.security_info, l);
+  l->append(", ");
+  LogParam(p.content_length, l);
+  l->append(", ");
+  LogParam(p.appcache_id, l);
+  l->append(", ");
+  LogParam(p.appcache_manifest_url, l);
+  l->append(", ");
+  LogParam(p.connection_id, l);
+  l->append(", ");
+  LogParam(p.connection_reused, l);
+  l->append(", ");
+  LogParam(p.load_timing, l);
+  l->append(", ");
+  LogParam(p.devtools_info, l);
+  l->append(", ");
+  LogParam(p.download_file_path, l);
+  l->append(", ");
+  LogParam(p.was_fetched_via_spdy, l);
+  l->append(", ");
+  LogParam(p.was_npn_negotiated, l);
+  l->append(", ");
+  LogParam(p.was_alternate_protocol_available, l);
+  l->append(", ");
+  LogParam(p.was_fetched_via_proxy, l);
+  l->append(")");
+}
+
+void ParamTraits<ResourceResponseHead>::Write(Message* m, const param_type& p) {
+  ParamTraits<webkit_glue::ResourceResponseInfo>::Write(m, p);
+  WriteParam(m, p.status);
+  WriteParam(m, p.replace_extension_localization_templates);
+}
+
+bool ParamTraits<ResourceResponseHead>::Read(const Message* m,
+                                             void** iter,
+                                             param_type* r) {
+  return ParamTraits<webkit_glue::ResourceResponseInfo>::Read(
+      m, iter, r) &&
+      ReadParam(m, iter, &r->status) &&
+      ReadParam(m, iter, &r->replace_extension_localization_templates);
+}
+
+void ParamTraits<ResourceResponseHead>::Log(const param_type& p,
+                                            std::string* l) {
+  // log more?
+  ParamTraits<webkit_glue::ResourceResponseInfo>::Log(p, l);
+}
+
+void ParamTraits<SyncLoadResult>::Write(Message* m, const param_type& p) {
+    ParamTraits<ResourceResponseHead>::Write(m, p);
+    WriteParam(m, p.final_url);
+    WriteParam(m, p.data);
+  }
+
+bool ParamTraits<SyncLoadResult>::Read(const Message* m, void** iter,
+                                       param_type* r) {
+    return
+      ParamTraits<ResourceResponseHead>::Read(m, iter, r) &&
+      ReadParam(m, iter, &r->final_url) &&
+      ReadParam(m, iter, &r->data);
+  }
+
+void ParamTraits<SyncLoadResult>::Log(const param_type& p, std::string* l) {
+    // log more?
+    ParamTraits<webkit_glue::ResourceResponseInfo>::Log(p, l);
+  }
 
 void ParamTraits<webkit_glue::FormData>::Write(Message* m,
                                                const param_type& p) {

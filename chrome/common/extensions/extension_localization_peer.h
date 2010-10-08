@@ -34,11 +34,11 @@ class ExtensionLocalizationPeer
   virtual void OnUploadProgress(uint64 position, uint64 size);
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool content_filtered);
   virtual void OnDownloadedData(int len) {}
   virtual void OnReceivedData(const char* data, int len);
@@ -64,7 +64,7 @@ class ExtensionLocalizationPeer
   webkit_glue::ResourceLoaderBridge::Peer* original_peer_;
 
   // We just pass though the response info. This holds the copy of the original.
-  webkit_glue::ResourceLoaderBridge::ResponseInfo response_info_;
+  webkit_glue::ResourceResponseInfo response_info_;
 
   // Sends ViewHostMsg_GetExtensionMessageBundle message to the browser to fetch
   // message catalog.

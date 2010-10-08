@@ -33,11 +33,11 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
   virtual void OnUploadProgress(uint64 position, uint64 size);
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool content_filtered);
   virtual void OnDownloadedData(int len) {}
   virtual void OnReceivedData(const char* data, int len);
@@ -68,7 +68,7 @@ class BufferedPeer : public SecurityFilterPeer {
 
   // ResourceLoaderBridge::Peer Implementation.
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool content_filtered);
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnCompletedRequest(const URLRequestStatus& status,
@@ -82,7 +82,7 @@ class BufferedPeer : public SecurityFilterPeer {
   // original peer, if it returns false, an error is sent instead.
   virtual bool DataReady() = 0;
 
-  webkit_glue::ResourceLoaderBridge::ResponseInfo response_info_;
+  webkit_glue::ResourceResponseInfo response_info_;
   std::string data_;
 
  private:
@@ -109,7 +109,7 @@ class ReplaceContentPeer : public SecurityFilterPeer {
 
   // ResourceLoaderBridge::Peer Implementation.
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool content_filtered);
   void OnReceivedData(const char* data, int len);
   void OnCompletedRequest(const URLRequestStatus& status,
@@ -117,7 +117,7 @@ class ReplaceContentPeer : public SecurityFilterPeer {
                           const base::Time& completion_time);
 
  private:
-  webkit_glue::ResourceLoaderBridge::ResponseInfo response_info_;
+  webkit_glue::ResourceResponseInfo response_info_;
   std::string mime_type_;
   std::string data_;
 

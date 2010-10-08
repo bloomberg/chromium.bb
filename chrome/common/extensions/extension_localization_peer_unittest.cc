@@ -60,11 +60,11 @@ class MockResourceLoaderBridgePeer
   MOCK_METHOD2(OnUploadProgress, void(uint64 position, uint64 size));
   MOCK_METHOD4(OnReceivedRedirect, bool(
       const GURL& new_url,
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies));
   MOCK_METHOD2(OnReceivedResponse, void(
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool content_filtered));
   MOCK_METHOD1(OnDownloadedData, void(int len));
   MOCK_METHOD2(OnReceivedData, void(const char* data, int len));

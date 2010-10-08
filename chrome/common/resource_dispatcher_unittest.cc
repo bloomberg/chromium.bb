@@ -12,12 +12,14 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/resource_dispatcher.h"
+#include "chrome/common/resource_response.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
 using webkit_glue::ResourceLoaderBridge;
+using webkit_glue::ResourceResponseInfo;
 
 static const char test_page_url[] = "http://www.google.com/";
 static const char test_page_headers[] =
@@ -40,7 +42,7 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
 
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const ResourceLoaderBridge::ResponseInfo& info,
+      const ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies) {
     *has_new_first_party_for_cookies = false;
@@ -48,7 +50,7 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
   }
 
   virtual void OnReceivedResponse(
-      const ResourceLoaderBridge::ResponseInfo& info,
+      const ResourceResponseInfo& info,
       bool content_filtered) {
   }
 
@@ -264,7 +266,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
 
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const ResourceLoaderBridge::ResponseInfo& info,
+      const ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies) {
     *has_new_first_party_for_cookies = false;
@@ -272,7 +274,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   }
 
   virtual void OnReceivedResponse(
-      const ResourceLoaderBridge::ResponseInfo& info,
+      const ResourceResponseInfo& info,
       bool content_filtered) {
     EXPECT_EQ(defer_loading_, false);
     set_defer_loading(true);

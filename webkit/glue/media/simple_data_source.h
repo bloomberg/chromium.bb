@@ -54,11 +54,11 @@ class SimpleDataSource : public media::DataSource,
   virtual void OnUploadProgress(uint64 position, uint64 size) {}
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      const webkit_glue::ResourceResponseInfo& info,
       bool content_filtered);
   virtual void OnDownloadedData(int len) {}
   virtual void OnReceivedData(const char* data, int len);

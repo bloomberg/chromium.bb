@@ -235,7 +235,7 @@ void BufferedResourceLoader::SetAllowDefer(bool is_allowed) {
 //     webkit_glue::ResourceLoaderBridge::Peer implementations
 bool BufferedResourceLoader::OnReceivedRedirect(
     const GURL& new_url,
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   DCHECK(bridge_.get());
@@ -259,7 +259,7 @@ bool BufferedResourceLoader::OnReceivedRedirect(
 }
 
 void BufferedResourceLoader::OnReceivedResponse(
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool content_filtered) {
   DCHECK(bridge_.get());
 
@@ -479,7 +479,7 @@ void BufferedResourceLoader::ReadInternal() {
 }
 
 bool BufferedResourceLoader::VerifyPartialResponse(
-    const ResourceLoaderBridge::ResponseInfo& info) {
+    const ResourceResponseInfo& info) {
   int64 first_byte_position, last_byte_position, instance_size;
   if (!info.headers->GetContentRange(&first_byte_position,
                                      &last_byte_position,

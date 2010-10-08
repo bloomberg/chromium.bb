@@ -98,7 +98,7 @@ class ResourceDispatcher {
       const IPC::Message& message,
       int request_id,
       const GURL& new_url,
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info);
+      const webkit_glue::ResourceResponseInfo& info);
   void OnReceivedData(
       const IPC::Message& message,
       int request_id,

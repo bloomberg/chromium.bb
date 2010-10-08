@@ -48,7 +48,7 @@ void ExtensionLocalizationPeer::OnUploadProgress(
 
 bool ExtensionLocalizationPeer::OnReceivedRedirect(
     const GURL& new_url,
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   NOTREACHED();
@@ -56,7 +56,7 @@ bool ExtensionLocalizationPeer::OnReceivedRedirect(
 }
 
 void ExtensionLocalizationPeer::OnReceivedResponse(
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool content_filtered) {
   response_info_ = info;
 }

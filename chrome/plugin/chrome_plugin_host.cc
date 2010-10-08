@@ -33,6 +33,7 @@
 namespace {
 
 using webkit_glue::ResourceLoaderBridge;
+using webkit_glue::ResourceResponseInfo;
 
 static MessageLoop* g_plugin_thread_message_loop;
 
@@ -71,7 +72,7 @@ class PluginRequestHandlerProxy
 
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const ResourceLoaderBridge::ResponseInfo& info,
+      const ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies) {
     plugin_->functions().response_funcs->received_redirect(
@@ -82,7 +83,7 @@ class PluginRequestHandlerProxy
   }
 
   virtual void OnReceivedResponse(
-      const ResourceLoaderBridge::ResponseInfo& info,
+      const ResourceResponseInfo& info,
       bool content_filtered) {
     response_headers_ = info.headers;
     plugin_->functions().response_funcs->start_completed(

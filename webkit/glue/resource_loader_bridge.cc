@@ -9,6 +9,42 @@
 
 namespace webkit_glue {
 
+ResourceLoadTimingInfo::ResourceLoadTimingInfo()
+    : proxy_start(-1),
+      proxy_end(-1),
+      dns_start(-1),
+      dns_end(-1),
+      connect_start(-1),
+      connect_end(-1),
+      ssl_start(-1),
+      ssl_end(-1),
+      send_start(0),
+      send_end(0),
+      receive_headers_start(0),
+      receive_headers_end(0) {
+}
+
+ResourceLoadTimingInfo::~ResourceLoadTimingInfo() {
+}
+
+ResourceDevToolsInfo::ResourceDevToolsInfo() {}
+
+ResourceDevToolsInfo::~ResourceDevToolsInfo() {}
+
+ResourceResponseInfo::ResourceResponseInfo()
+    : content_length(-1),
+      appcache_id(appcache::kNoCacheId),
+      connection_id(0),
+      connection_reused(false),
+      was_fetched_via_spdy(false),
+      was_npn_negotiated(false),
+      was_alternate_protocol_available(false),
+      was_fetched_via_proxy(false) {
+}
+
+ResourceResponseInfo::~ResourceResponseInfo() {
+}
+
 ResourceLoaderBridge::RequestInfo::RequestInfo()
     : load_flags(0),
       requestor_pid(0),
@@ -20,38 +56,6 @@ ResourceLoaderBridge::RequestInfo::RequestInfo()
 }
 
 ResourceLoaderBridge::RequestInfo::~RequestInfo() {
-}
-
-ResourceLoaderBridge::LoadTimingInfo::LoadTimingInfo() {
-  proxy_start = -1;
-  proxy_end = -1;
-  dns_start = -1;
-  dns_end = -1;
-  connect_start = -1;
-  connect_end = -1;
-  ssl_start = -1;
-  ssl_end = -1;
-  send_start = 0;
-  send_end = 0;
-  receive_headers_start = 0;
-  receive_headers_end = 0;
-}
-
-ResourceLoaderBridge::LoadTimingInfo::~LoadTimingInfo() {
-}
-
-ResourceLoaderBridge::ResponseInfo::ResponseInfo() {
-  content_length = -1;
-  appcache_id = appcache::kNoCacheId;
-  was_fetched_via_spdy = false;
-  was_npn_negotiated = false;
-  connection_id = 0;
-  connection_reused = false;
-  was_alternate_protocol_available = false;
-  was_fetched_via_proxy = false;
-}
-
-ResourceLoaderBridge::ResponseInfo::~ResponseInfo() {
 }
 
 ResourceLoaderBridge::SyncLoadResponse::SyncLoadResponse() {

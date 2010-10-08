@@ -23,7 +23,7 @@ class LoadTimingObserver : public ChromeNetLog::Observer {
   struct URLRequestRecord {
     URLRequestRecord();
 
-    webkit_glue::ResourceLoaderBridge::LoadTimingInfo timing;
+    webkit_glue::ResourceLoadTimingInfo timing;
     uint32 connect_job_id;
     uint32 socket_log_id;
     bool socket_reused;

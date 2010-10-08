@@ -40,6 +40,148 @@ class HttpResponseHeaders;
 
 namespace webkit_glue {
 
+// Structure containing timing information for the request. It addresses
+// http://groups.google.com/group/http-archive-specification/web/har-1-1-spec
+// and http://dev.w3.org/2006/webapi/WebTiming/ needs.
+//
+// All the values for starts and ends are given in milliseconds and are
+// offsets with respect to the given base time.
+struct ResourceLoadTimingInfo {
+  ResourceLoadTimingInfo();
+  ~ResourceLoadTimingInfo();
+
+  // All the values in this struct are given as offsets in milliseconds wrt
+  // this base time.
+  base::Time base_time;
+
+  // The time that proxy processing started. For requests with no proxy phase,
+  // this time is -1.
+  int32 proxy_start;
+
+  // The time that proxy processing ended. For reused sockets this time
+  // is -1.
+  int32 proxy_end;
+
+  // The time that DNS lookup started. For reused sockets this time is -1.
+  int32 dns_start;
+
+  // The time that DNS lookup ended. For reused sockets this time is -1.
+  int32 dns_end;
+
+  // The time that establishing connection started. Connect time includes
+  // DNS, blocking, TCP, TCP retries and SSL time.
+  int32 connect_start;
+
+  // The time that establishing connection ended. Connect time includes
+  // DNS, blocking, TCP, TCP retries and SSL time.
+  int32 connect_end;
+
+  // The time at which SSL handshake started. For non-HTTPS requests this
+  // is 0.
+  int32 ssl_start;
+
+  // The time at which SSL handshake ended. For non-HTTPS requests this is 0.
+  int32 ssl_end;
+
+  // The time that HTTP request started. For non-HTTP requests this is 0.
+  int32 send_start;
+
+  // The time that HTTP request ended. For non-HTTP requests this is 0.
+  int32 send_end;
+
+  // The time at which receiving HTTP headers started. For non-HTTP requests
+  // this is 0.
+  int32 receive_headers_start;
+
+  // The time at which receiving HTTP headers ended. For non-HTTP requests
+  // this is 0.
+  int32 receive_headers_end;
+};
+
+struct ResourceDevToolsInfo : base::RefCounted<ResourceDevToolsInfo> {
+  typedef std::vector<std::pair<std::string, std::string> >
+      HeadersVector;
+
+  ResourceDevToolsInfo();
+  ~ResourceDevToolsInfo();
+
+  HeadersVector request_headers;
+  HeadersVector response_headers;
+};
+
+struct ResourceResponseInfo {
+  ResourceResponseInfo();
+  ~ResourceResponseInfo();
+
+  // The time at which the request was made that resulted in this response.
+  // For cached responses, this time could be "far" in the past.
+  base::Time request_time;
+
+  // The time at which the response headers were received.  For cached
+  // responses, this time could be "far" in the past.
+  base::Time response_time;
+
+  // The response headers or NULL if the URL type does not support headers.
+  scoped_refptr<net::HttpResponseHeaders> headers;
+
+  // The mime type of the response.  This may be a derived value.
+  std::string mime_type;
+
+  // The character encoding of the response or none if not applicable to the
+  // response's mime type.  This may be a derived value.
+  std::string charset;
+
+  // An opaque string carrying security information pertaining to this
+  // response.  This may include information about the SSL connection used.
+  std::string security_info;
+
+  // Content length if available. -1 if not available
+  int64 content_length;
+
+  // The appcache this response was loaded from, or kNoCacheId.
+  int64 appcache_id;
+
+  // The manifest url of the appcache this response was loaded from.
+  // Note: this value is only populated for main resource requests.
+  GURL appcache_manifest_url;
+
+  // Connection identifier from the underlying network stack. In case there
+  // is no associated connection, contains 0.
+  uint32 connection_id;
+
+  // Determines whether physical connection reused.
+  bool connection_reused;
+
+  // Detailed timing information used by the WebTiming, HAR and Developer
+  // Tools.
+  ResourceLoadTimingInfo load_timing;
+
+  // Actual request and response headers, as obtained from the network stack.
+  // Only present if request had LOAD_REPORT_RAW_HEADERS in load_flags, and
+  // requesting renderer had CanReadRowCookies permission.
+  scoped_refptr<ResourceDevToolsInfo> devtools_info;
+
+  // The path to a file that will contain the response body.  It may only
+  // contain a portion of the response body at the time that the ResponseInfo
+  // becomes available.
+  FilePath download_file_path;
+
+  // True if the response was delivered using SPDY.
+  bool was_fetched_via_spdy;
+
+  // True if the response was delivered after NPN is negotiated.
+  bool was_npn_negotiated;
+
+  // True if response could use alternate protocol. However, browser will
+  // ignore the alternate protocol when spdy is not enabled on browser side.
+  bool was_alternate_protocol_available;
+
+  // True if the response was fetched via an explicit proxy (as opposed to a
+  // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
+  // Note: we cannot tell if a transparent proxy may have been involved.
+  bool was_fetched_via_proxy;
+};
+
 class ResourceLoaderBridge {
  public:
   // Structure used when calling ResourceLoaderBridge::Create().
@@ -94,147 +236,9 @@ class ResourceLoaderBridge {
     bool download_to_file;
   };
 
-  // Structure containing timing information for the request. It addresses
-  // http://groups.google.com/group/http-archive-specification/web/har-1-1-spec
-  // and http://dev.w3.org/2006/webapi/WebTiming/ needs.
-  //
-  // All the values for starts and ends are given in milliseconds and are
-  // offsets with respect to the given base time.
-  struct LoadTimingInfo {
-    LoadTimingInfo();
-    ~LoadTimingInfo();
-
-    // All the values in this struct are given as offsets in milliseconds wrt
-    // this base time.
-    base::Time base_time;
-
-    // The time that proxy processing started. For requests with no proxy phase,
-    // this time is -1.
-    int32 proxy_start;
-
-    // The time that proxy processing ended. For reused sockets this time
-    // is -1.
-    int32 proxy_end;
-
-    // The time that DNS lookup started. For reused sockets this time is -1.
-    int32 dns_start;
-
-    // The time that DNS lookup ended. For reused sockets this time is -1.
-    int32 dns_end;
-
-    // The time that establishing connection started. Connect time includes
-    // DNS, blocking, TCP, TCP retries and SSL time.
-    int32 connect_start;
-
-    // The time that establishing connection ended. Connect time includes
-    // DNS, blocking, TCP, TCP retries and SSL time.
-    int32 connect_end;
-
-    // The time at which SSL handshake started. For non-HTTPS requests this
-    // is 0.
-    int32 ssl_start;
-
-    // The time at which SSL handshake ended. For non-HTTPS requests this is 0.
-    int32 ssl_end;
-
-    // The time that HTTP request started. For non-HTTP requests this is 0.
-    int32 send_start;
-
-    // The time that HTTP request ended. For non-HTTP requests this is 0.
-    int32 send_end;
-
-    // The time at which receiving HTTP headers started. For non-HTTP requests
-    // this is 0.
-    int32 receive_headers_start;
-
-    // The time at which receiving HTTP headers ended. For non-HTTP requests
-    // this is 0.
-    int32 receive_headers_end;
-  };
-
-  struct DevToolsInfo : base::RefCounted<DevToolsInfo> {
-    typedef std::vector<std::pair<std::string, std::string> >
-        HeadersVector;
-    HeadersVector request_headers;
-    HeadersVector response_headers;
-  };
-
-  struct ResponseInfo {
-    ResponseInfo();
-    ~ResponseInfo();
-
-    // The time at which the request was made that resulted in this response.
-    // For cached responses, this time could be "far" in the past.
-    base::Time request_time;
-
-    // The time at which the response headers were received.  For cached
-    // responses, this time could be "far" in the past.
-    base::Time response_time;
-
-    // The response headers or NULL if the URL type does not support headers.
-    scoped_refptr<net::HttpResponseHeaders> headers;
-
-    // The mime type of the response.  This may be a derived value.
-    std::string mime_type;
-
-    // The character encoding of the response or none if not applicable to the
-    // response's mime type.  This may be a derived value.
-    std::string charset;
-
-    // An opaque string carrying security information pertaining to this
-    // response.  This may include information about the SSL connection used.
-    std::string security_info;
-
-    // Content length if available. -1 if not available
-    int64 content_length;
-
-    // The appcache this response was loaded from, or kNoCacheId.
-    int64 appcache_id;
-
-    // The manifest url of the appcache this response was loaded from.
-    // Note: this value is only populated for main resource requests.
-    GURL appcache_manifest_url;
-
-    // Connection identifier from the underlying network stack. In case there
-    // is no associated connection, contains 0.
-    uint32 connection_id;
-
-    // Determines whether physical connection reused.
-    bool connection_reused;
-
-    // Detailed timing information used by the WebTiming, HAR and Developer
-    // Tools.
-    LoadTimingInfo load_timing;
-
-    // Actual request and response headers, as obtained from the network stack.
-    // Only present if request had LOAD_REPORT_RAW_HEADERS in load_flags, and
-    // requesting renderer had CanReadRowCookies permission.
-    scoped_refptr<DevToolsInfo> devtools_info;
-
-    // The path to a file that will contain the response body.  It may only
-    // contain a portion of the response body at the time that the ResponseInfo
-    // becomes available.
-    FilePath download_file_path;
-
-    // True if the response was delivered using SPDY.
-    bool was_fetched_via_spdy;
-
-    // True if the response was delivered after NPN is negotiated.
-    bool was_npn_negotiated;
-
-    // True if response could use alternate protocol. However, browser will
-    // ignore the alternate protocol when spdy is not enabled on browser side.
-    bool was_alternate_protocol_available;
-
-    // True if the response was fetched via an explicit proxy (as opposed to a
-    // transparent proxy). The proxy could be any type of proxy, HTTP or SOCKS.
-    // Note: we cannot tell if a transparent proxy may have been involved.
-    bool was_fetched_via_proxy;
-  };
-
   // See the SyncLoad method declared below.  (The name of this struct is not
   // suffixed with "Info" because it also contains the response data.)
-  struct SyncLoadResponse : ResponseInfo {
+  struct SyncLoadResponse : ResourceResponseInfo {
     SyncLoadResponse();
     ~SyncLoadResponse();
 
@@ -272,7 +276,7 @@ class ResourceLoaderBridge {
     // output parameter *new_first_party_for_cookies contains the new URL that
     // should be consulted for the third-party cookie blocking policy.
     virtual bool OnReceivedRedirect(const GURL& new_url,
-                                    const ResponseInfo& info,
+                                    const ResourceResponseInfo& info,
                                     bool* has_new_first_party_for_cookies,
                                     GURL* new_first_party_for_cookies) = 0;
 
@@ -280,7 +284,7 @@ class ResourceLoaderBridge {
     // been followed).  |content_filtered| is set to true if the contents is
     // altered or replaced (usually for security reasons when the resource is
     // deemed unsafe).
-    virtual void OnReceivedResponse(const ResponseInfo& info,
+    virtual void OnReceivedResponse(const ResourceResponseInfo& info,
                                     bool content_filtered) = 0;
 
     // Called when a chunk of response data is downloaded.  This method may be

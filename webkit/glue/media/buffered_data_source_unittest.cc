@@ -99,7 +99,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
   void FullResponse(int64 instance_size) {
     EXPECT_CALL(*this, StartCallback(net::OK));
-    ResourceLoaderBridge::ResponseInfo info;
+    ResourceResponseInfo info;
     std::string header = base::StringPrintf("HTTP/1.1 200 OK\n"
                                             "Content-Length: %" PRId64,
                                             instance_size);
@@ -116,7 +116,7 @@ class BufferedResourceLoaderTest : public testing::Test {
                        int64 instance_size) {
     EXPECT_CALL(*this, StartCallback(net::OK));
     int64 content_length = last_position - first_position + 1;
-    ResourceLoaderBridge::ResponseInfo info;
+    ResourceResponseInfo info;
     std::string header = base::StringPrintf("HTTP/1.1 206 Partial Content\n"
                                             "Content-Range: bytes "
                                             "%" PRId64 "-%" PRId64 "/%" PRId64,
@@ -213,7 +213,7 @@ TEST_F(BufferedResourceLoaderTest, MissingHttpHeader) {
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
 
-  ResourceLoaderBridge::ResponseInfo info;
+  ResourceResponseInfo info;
   loader_->OnReceivedResponse(info, false);
 }
 
@@ -228,7 +228,7 @@ TEST_F(BufferedResourceLoaderTest, BadHttpResponse) {
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
 
-  ResourceLoaderBridge::ResponseInfo info;
+  ResourceResponseInfo info;
   info.headers = new net::HttpResponseHeaders("HTTP/1.1 404 Not Found\n");
   loader_->OnReceivedResponse(info, false);
 }
@@ -268,7 +268,7 @@ TEST_F(BufferedResourceLoaderTest, InvalidPartialResponse) {
   EXPECT_CALL(*bridge_, OnDestroy())
       .WillOnce(Invoke(this, &BufferedResourceLoaderTest::ReleaseBridge));
 
-  ResourceLoaderBridge::ResponseInfo info;
+  ResourceResponseInfo info;
   std::string header = base::StringPrintf("HTTP/1.1 206 Partial Content\n"
                                           "Content-Range: bytes %d-%d/%d",
                                           1, 10, 1024);

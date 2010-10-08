@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/extension_localization_peer.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/common/resource_response.h"
 #include "chrome/common/security_filter_peer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -427,7 +428,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     const IPC::Message& message,
     int request_id,
     const GURL& new_url,
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
+    const webkit_glue::ResourceResponseInfo& info) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;

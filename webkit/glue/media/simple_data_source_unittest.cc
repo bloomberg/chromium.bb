@@ -81,7 +81,7 @@ class SimpleDataSourceTest : public testing::Test {
   }
 
   void RequestSucceeded(bool is_loaded) {
-    ResourceLoaderBridge::ResponseInfo info;
+    ResourceResponseInfo info;
     info.content_length = kDataSize;
 
     data_source_->OnReceivedResponse(info, false);

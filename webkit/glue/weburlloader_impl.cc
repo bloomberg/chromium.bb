@@ -144,7 +144,7 @@ ResourceType::Type FromTargetType(WebURLRequest::TargetType type) {
 
 // Extracts the information from a data: url.
 bool GetInfoFromDataURL(const GURL& url,
-                        ResourceLoaderBridge::ResponseInfo* info,
+                        ResourceResponseInfo* info,
                         std::string* data, URLRequestStatus* status) {
   std::string mime_type;
   std::string charset;
@@ -165,11 +165,11 @@ bool GetInfoFromDataURL(const GURL& url,
   return false;
 }
 
-typedef ResourceLoaderBridge::DevToolsInfo::HeadersVector HeadersVector;
+typedef ResourceDevToolsInfo::HeadersVector HeadersVector;
 
 void PopulateURLResponse(
     const GURL& url,
-    const ResourceLoaderBridge::ResponseInfo& info,
+    const ResourceResponseInfo& info,
     WebURLResponse* response) {
   response->setURL(url);
   response->setResponseTime(info.response_time.ToDoubleT());
@@ -192,7 +192,7 @@ void PopulateURLResponse(
 
   WebURLLoadTiming timing;
   timing.initialize();
-  const ResourceLoaderBridge::LoadTimingInfo& timing_info = info.load_timing;
+  const ResourceLoadTimingInfo& timing_info = info.load_timing;
   timing.setRequestTime(timing_info.base_time.ToDoubleT());
   timing.setProxyStart(timing_info.proxy_start);
   timing.setProxyEnd(timing_info.proxy_end);
@@ -281,11 +281,11 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual void OnUploadProgress(uint64 position, uint64 size);
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const ResourceLoaderBridge::ResponseInfo& info,
+      const ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(
-      const ResourceLoaderBridge::ResponseInfo& info, bool content_filtered);
+      const ResourceResponseInfo& info, bool content_filtered);
   virtual void OnDownloadedData(int len);
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnReceivedCachedMetadata(const char* data, int len);
@@ -488,7 +488,7 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
     const GURL& new_url,
-    const ResourceLoaderBridge::ResponseInfo& info,
+    const ResourceResponseInfo& info,
     bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   if (!client_)
@@ -528,7 +528,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 }
 
 void WebURLLoaderImpl::Context::OnReceivedResponse(
-    const ResourceLoaderBridge::ResponseInfo& info,
+    const ResourceResponseInfo& info,
     bool content_filtered) {
   if (!client_)
     return;
@@ -663,7 +663,7 @@ GURL WebURLLoaderImpl::Context::GetURLForDebugging() const {
 }
 
 void WebURLLoaderImpl::Context::HandleDataURL() {
-  ResourceLoaderBridge::ResponseInfo info;
+  ResourceResponseInfo info;
   URLRequestStatus status;
   std::string data;
 

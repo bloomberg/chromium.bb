@@ -12,8 +12,6 @@
 #define CHROME_COMMON_COMMON_PARAM_TRAITS_H_
 #pragma once
 
-#include <vector>
-
 #include "app/surface/transport_dib.h"
 #include "base/file_util.h"
 #include "base/ref_counted.h"

@@ -122,7 +122,7 @@ bool SimpleDataSource::IsStreaming() {
 
 bool SimpleDataSource::OnReceivedRedirect(
     const GURL& new_url,
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   SetURL(new_url);
@@ -132,7 +132,7 @@ bool SimpleDataSource::OnReceivedRedirect(
 }
 
 void SimpleDataSource::OnReceivedResponse(
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    const webkit_glue::ResourceResponseInfo& info,
     bool content_filtered) {
   size_ = info.content_length;
 }

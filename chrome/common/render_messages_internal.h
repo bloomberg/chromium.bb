@@ -54,6 +54,10 @@ struct Entry;
 }
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace IPC {
 struct ChannelHandle;
 class Message;

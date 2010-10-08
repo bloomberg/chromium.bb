@@ -19,7 +19,7 @@ struct ResourceResponse;
 // stuff that may be of interest to DevTools. Currently, this only includes
 // actual HTTP/SPDY headers sent and received over the network.
 class DevToolsNetLogObserver: public ChromeNetLog::Observer {
-  typedef webkit_glue::ResourceLoaderBridge::DevToolsInfo ResourceInfo;
+  typedef webkit_glue::ResourceDevToolsInfo ResourceInfo;
 
  public:
   // Observer implementation:
