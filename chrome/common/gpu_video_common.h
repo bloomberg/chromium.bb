@@ -10,6 +10,9 @@
 #include "chrome/common/common_param_traits.h"
 #include "media/base/video_frame.h"
 
+// This is used in messages when only buffer flag is meaningful.
+extern const int32 kGpuVideoInvalidFrameId;
+
 // Flags assigned to a video buffer for both input and output.
 enum GpuVideoBufferFlag {
   kGpuVideoEndOfStream = 1 << 0,

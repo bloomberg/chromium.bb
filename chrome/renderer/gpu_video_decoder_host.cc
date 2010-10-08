@@ -272,8 +272,8 @@ void GpuVideoDecoderHost::OnConsumeVideoFrame(int32 frame_id, int64 timestamp,
     frame = video_frame_map_[frame_id];
     DCHECK(frame) << "Invalid frame ID received";
 
-    frame->SetDuration(base::TimeDelta::FromMilliseconds(duration));
-    frame->SetTimestamp(base::TimeDelta::FromMilliseconds(timestamp));
+    frame->SetDuration(base::TimeDelta::FromMicroseconds(duration));
+    frame->SetTimestamp(base::TimeDelta::FromMicroseconds(timestamp));
   }
 
   event_handler_->ConsumeVideoFrame(frame);
