@@ -15,6 +15,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -51,7 +52,7 @@
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/tcp_client_socket_pool.h"
 #include "net/url_request/url_request_context.h"
-#ifdef OS_WIN
+#if defined(OS_WIN)
 #include "chrome/browser/net/service_providers_win.h"
 #endif
 
@@ -214,8 +215,10 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnStartConnectionTests(const ListValue* list);
   void OnGetHttpCacheInfo(const ListValue* list);
   void OnGetSocketPoolInfo(const ListValue* list);
-#ifdef OS_WIN
+#if defined(OS_WIN)
   void OnGetServiceProviders(const ListValue* list);
+#elif defined(OS_MACOSX)
+  void OnGetKernelExtensions(const ListValue* list);
 #endif
 
   // ChromeNetLog::Observer implementation:
@@ -403,10 +406,14 @@ void NetInternalsMessageHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "getSocketPoolInfo",
       proxy_->CreateCallback(&IOThreadImpl::OnGetSocketPoolInfo));
-#ifdef OS_WIN
+#if defined(OS_WIN)
   dom_ui_->RegisterMessageCallback(
       "getServiceProviders",
       proxy_->CreateCallback(&IOThreadImpl::OnGetServiceProviders));
+#elif defined(OS_MACOSX)
+  dom_ui_->RegisterMessageCallback(
+      "getKernelExtensions",
+      proxy_->CreateCallback(&IOThreadImpl::OnGetKernelExtensions));
 #endif
 }
 
@@ -610,8 +617,10 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   OnGetHostResolverInfo(NULL);
   OnGetHttpCacheInfo(NULL);
   OnGetSocketPoolInfo(NULL);
-#ifdef OS_WIN
+#if defined(OS_WIN)
   OnGetServiceProviders(NULL);
+#elif defined(OS_MACOSX)
+  OnGetKernelExtensions(NULL);
 #endif
 }
 
@@ -837,10 +846,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSocketPoolInfo(
   CallJavascriptFunction(L"g_browser.receivedSocketPoolInfo", socket_pool_info);
 }
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
     const ListValue* list) {
-
   DictionaryValue* service_providers = new DictionaryValue();
 
   WinsockLayeredServiceProviderList layered_providers;
@@ -876,6 +884,19 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
 
   CallJavascriptFunction(L"g_browser.receivedServiceProviders",
                          service_providers);
+}
+
+#elif defined(OS_MACOSX)
+void NetInternalsMessageHandler::IOThreadImpl::OnGetKernelExtensions(
+    const ListValue* list) {
+  std::string kextstat_output;
+  Value* string_value;
+
+  CommandLine command_line(FilePath("kextstat"));
+  if (base::GetAppOutput(command_line, &kextstat_output))
+    string_value = new StringValue(kextstat_output);
+
+  CallJavascriptFunction(L"g_browser.receivedKernelExtensions", string_value);
 }
 #endif
 
