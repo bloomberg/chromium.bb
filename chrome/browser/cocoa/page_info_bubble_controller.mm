@@ -4,16 +4,20 @@
 
 #import "chrome/browser/cocoa/page_info_bubble_controller.h"
 
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/certificate_viewer.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
-#import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/cocoa/info_bubble_view.h"
 #import "chrome/browser/cocoa/info_bubble_window.h"
+#import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/x509_certificate.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -33,6 +37,10 @@
 - (void)addImageViewForInfo:(const PageInfoModel::SectionInfo&)info
                  toSubviews:(NSMutableArray*)subviews
                    atOffset:(CGFloat)offset;
+- (CGFloat)addHelpButtonToSubviews:(NSMutableArray*)subviews
+                          atOffset:(CGFloat)offset;
+- (CGFloat)addSeparatorToSubviews:(NSMutableArray*)subviews
+                         atOffset:(CGFloat)offset;
 @end
 
 namespace {
@@ -161,6 +169,12 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   ShowCertificateViewerByID([self parentWindow], certID_);
 }
 
+- (IBAction)showHelpPage:(id)sender {
+  GURL url = GURL(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER));
+  Browser* browser = BrowserList::GetLastActive();
+  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+}
+
 // This will create the subviews for the page info window. The general layout
 // is 2 or 3 boxed and titled sections, each of which has a status image to
 // provide visual feedback and a description that explains it. The description
@@ -173,6 +187,11 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
   // Keep the new subviews in an array that gets replaced at the end.
   NSMutableArray* subviews = [NSMutableArray array];
+
+  // First item, drawn at the bottom of the window, is the help center link.
+  offset += [self addHelpButtonToSubviews:subviews atOffset:offset];
+  offset += kVerticalSpacing;
+  offset += [self addSeparatorToSubviews:subviews atOffset:offset];
 
   // Build the window from bottom-up because Cocoa's coordinate origin is the
   // lower left.
@@ -205,14 +224,9 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
     }
 
     // Add the separators.
-    offset += kVerticalSpacing;
     if (i != 0) {
-      scoped_nsobject<NSBox> spacer(
-          [[NSBox alloc] initWithFrame:NSMakeRect(0, offset, kWindowWidth, 1)]);
-      [spacer setBoxType:NSBoxSeparator];
-      [spacer setBorderType:NSLineBorder];
-      [subviews addObject:spacer.get()];
       offset += kVerticalSpacing;
+      offset += [self addSeparatorToSubviews:subviews atOffset:offset];
     }
   }
 
@@ -248,6 +262,10 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   [certButton setBezelStyle:NSRoundRectBezelStyle];
   [certButton setTarget:self];
   [certButton setAction:@selector(showCertWindow:)];
+  [[certButton cell] setControlSize:NSSmallControlSize];
+  NSFont* font = [NSFont systemFontOfSize:
+      [NSFont systemFontSizeForControlSize:NSSmallControlSize]];
+  [[certButton cell] setFont:font];
   return certButton;
 }
 
@@ -269,7 +287,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
       [[NSTextField alloc] initWithFrame:frame]);
   [self configureTextFieldAsLabel:titleField.get()];
   [titleField setStringValue:base::SysUTF16ToNSString(info.title)];
-  [titleField setFont:[NSFont boldSystemFontOfSize:11]];
+  NSFont* font = [NSFont boldSystemFontOfSize:[NSFont smallSystemFontSize]];
+  [titleField setFont:font];
   frame.size.height +=
       [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
           titleField];
@@ -288,7 +307,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
       [[NSTextField alloc] initWithFrame:frame]);
   [self configureTextFieldAsLabel:textField.get()];
   [textField setStringValue:base::SysUTF16ToNSString(info.description)];
-  [textField setFont:[NSFont labelFontOfSize:11]];
+  [textField setFont:[NSFont labelFontOfSize:[NSFont smallSystemFontSize]]];
 
   // If the text is oversized, resize the text field.
   frame.size.height +=
@@ -304,7 +323,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                                  atOffset:(CGFloat)offset {
   // Create the certificate button. The frame will be fixed up by GTM, so
   // use arbitrary values.
-  NSRect frame = NSMakeRect(kTextXPosition, offset, 100, 20);
+  NSRect frame = NSMakeRect(kTextXPosition, offset, 100, 14);
   NSButton* certButton = [self certificateButtonWithFrame:frame];
   [subviews addObject:certButton];
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:certButton];
@@ -338,6 +357,46 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   [imageView setImageFrameStyle:NSImageFrameNone];
   [imageView setImage:model_->GetIconImage(info.icon_id)];
   [subviews addObject:imageView.get()];
+}
+
+// Adds the help center button that explains the icons. Returns the y position
+// delta for the next offset.
+- (CGFloat)addHelpButtonToSubviews:(NSMutableArray*)subviews
+                          atOffset:(CGFloat)offset {
+  scoped_nsobject<NSButton> button(
+      [[NSButton alloc] initWithFrame:NSMakeRect(0, offset, 100, 10)]);
+  NSString* string =
+      l10n_util::GetNSStringWithFixup(IDS_PAGE_INFO_HELP_CENTER_LINK);
+  scoped_nsobject<HyperlinkButtonCell> cell(
+      [[HyperlinkButtonCell alloc] initTextCell:string]);
+  [cell setControlSize:NSSmallControlSize];
+  [button setCell:cell.get()];
+  [button setButtonType:NSMomentaryPushInButton];
+  [button setBezelStyle:NSRegularSquareBezelStyle];
+  [button setTarget:self];
+  [button setAction:@selector(showHelpPage:)];
+  [subviews addObject:button.get()];
+
+  // Call size-to-fit to fixup for the localized string, then center the button
+  // in the window.
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:button.get()];
+  NSRect frame = [button frame];
+  frame.origin.x = (kWindowWidth / 2) - (NSWidth(frame) / 2);
+  [button setFrame:frame];
+
+  return NSHeight(frame);
+}
+
+// Adds a 1px separator between sections. Returns the y position delta for the
+// next offset.
+- (CGFloat)addSeparatorToSubviews:(NSMutableArray*)subviews
+                         atOffset:(CGFloat)offset {
+  scoped_nsobject<NSBox> spacer(
+      [[NSBox alloc] initWithFrame:NSMakeRect(0, offset, kWindowWidth, 1)]);
+  [spacer setBoxType:NSBoxSeparator];
+  [spacer setBorderType:NSLineBorder];
+  [subviews addObject:spacer.get()];
+  return kVerticalSpacing;
 }
 
 @end

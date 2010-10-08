@@ -37,6 +37,9 @@
 // information attaches itself as a sheet to the |parentWindow|.
 - (IBAction)showCertWindow:(id)sender;
 
+// Opens the help center link that explains the contents of the page info.
+- (IBAction)showHelpPage:(id)sender;
+
 @end
 
 @interface PageInfoBubbleController (ExposedForUnitTesting)

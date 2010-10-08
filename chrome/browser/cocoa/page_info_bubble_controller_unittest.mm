@@ -8,6 +8,7 @@
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#import "chrome/browser/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/cocoa/page_info_bubble_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -62,6 +63,10 @@ class PageInfoBubbleControllerTest : public CocoaTest {
                    int image_count,
                    int spacer_count,
                    int button_count) {
+    // All windows have the help center link and a spacer for it.
+    int link_count = 1;
+    ++spacer_count;
+
     for (NSView* view in [[window_ contentView] subviews]) {
       if ([view isKindOfClass:[NSTextField class]]) {
         --text_count;
@@ -70,8 +75,15 @@ class PageInfoBubbleControllerTest : public CocoaTest {
       } else if ([view isKindOfClass:[NSBox class]]) {
         --spacer_count;
       } else if ([view isKindOfClass:[NSButton class]]) {
-        --button_count;
-        CheckButton(static_cast<NSButton*>(view));
+        NSButton* button = static_cast<NSButton*>(view);
+        // Every window should have a single link button to the help page.
+        if ([[button cell] isKindOfClass:[HyperlinkButtonCell class]]) {
+          --link_count;
+          CheckButton(button, @selector(showHelpPage:));
+        } else {
+          --button_count;
+          CheckButton(button, @selector(showCertWindow:));
+        }
       } else {
         ADD_FAILURE() << "Unknown subview: " << [[view description] UTF8String];
       }
@@ -80,12 +92,13 @@ class PageInfoBubbleControllerTest : public CocoaTest {
     EXPECT_EQ(0, image_count);
     EXPECT_EQ(0, spacer_count);
     EXPECT_EQ(0, button_count);
+    EXPECT_EQ(0, link_count);
     EXPECT_EQ([window_ delegate], controller_);
   }
 
   // Checks that a button is hooked up correctly.
-  void CheckButton(NSButton* button) {
-    EXPECT_EQ(@selector(showCertWindow:), [button action]);
+  void CheckButton(NSButton* button, SEL action) {
+    EXPECT_EQ(action, [button action]);
     EXPECT_EQ(controller_, [button target]);
     EXPECT_TRUE([button stringValue]);
   }
