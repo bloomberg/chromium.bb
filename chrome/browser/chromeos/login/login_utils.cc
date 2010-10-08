@@ -156,6 +156,17 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   OwnershipService::GetSharedInstance()->StartTakeOwnershipAttempt(
       UserManager::Get()->logged_in_user().email());
 
+  // Own TPM device if, for any reason, it has not been done in EULA
+  // wizard screen.
+  if (chromeos::CryptohomeTpmIsEnabled() &&
+      !chromeos::CryptohomeTpmIsBeingOwned()) {
+    if (chromeos::CryptohomeTpmIsOwned()) {
+      chromeos::CryptohomeTpmClearStoredPassword();
+    } else {
+      chromeos::CryptohomeTpmCanAttemptOwnership();
+    }
+  }
+
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is
   // best-effort; it's possible that we'll fail due to network
