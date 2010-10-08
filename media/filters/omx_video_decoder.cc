@@ -57,7 +57,7 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
         FROM_HERE,
         NewRunnableMethod(this,
                           &OmxVideoDecoder::Initialize,
-                          demuxer_stream,
+                          make_scoped_refptr(demuxer_stream),
                           callback));
     return;
   }

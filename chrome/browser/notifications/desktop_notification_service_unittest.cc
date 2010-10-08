@@ -41,8 +41,10 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
   int CacheHasPermission(NotificationsPrefsCache* cache, const GURL& url) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
     ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &ThreadProxy::CacheHasPermissionIO,
-                          cache, url));
+        NewRunnableMethod(this,
+                          &ThreadProxy::CacheHasPermissionIO,
+                          make_scoped_refptr(cache),
+                          url));
     io_event_.Signal();
     ui_event_.Wait();  // Wait for IO thread to be done.
     ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,

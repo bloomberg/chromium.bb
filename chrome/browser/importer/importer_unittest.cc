@@ -120,9 +120,15 @@ class ImporterTest : public testing::Test {
     int items = HISTORY | PASSWORDS | FAVORITES;
     if (import_search_plugins)
       items = items | SEARCH_ENGINES;
-    loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
-        &ImporterHost::StartImportSettings, profile_info,
-        static_cast<Profile*>(NULL), items, writer, true));
+    loop->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(host.get(),
+                          &ImporterHost::StartImportSettings,
+                          profile_info,
+                          static_cast<Profile*>(NULL),
+                          items,
+                          make_scoped_refptr(writer),
+                          true));
     loop->Run();
   }
 
@@ -698,17 +704,23 @@ TEST_F(ImporterTest, MAYBE(Firefox2Importer)) {
 
   MessageLoop* loop = MessageLoop::current();
   scoped_refptr<ImporterHost> host = new ImporterHost();
-  FirefoxObserver* observer = new FirefoxObserver();
+  scoped_refptr<FirefoxObserver> observer = new FirefoxObserver();
   host->SetObserver(observer);
   ProfileInfo profile_info;
   profile_info.browser_type = FIREFOX2;
   profile_info.app_path = app_path_;
   profile_info.source_path = profile_path_;
 
-  loop->PostTask(FROM_HERE, NewRunnableMethod(host.get(),
-      &ImporterHost::StartImportSettings, profile_info,
-      static_cast<Profile*>(NULL),
-      HISTORY | PASSWORDS | FAVORITES | SEARCH_ENGINES, observer, true));
+  loop->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(
+          host.get(),
+          &ImporterHost::StartImportSettings,
+          profile_info,
+          static_cast<Profile*>(NULL),
+          HISTORY | PASSWORDS | FAVORITES | SEARCH_ENGINES,
+          observer,
+          true));
   loop->Run();
 }
 

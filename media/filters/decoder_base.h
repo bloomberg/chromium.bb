@@ -30,21 +30,26 @@ class DecoderBase : public Decoder {
 
   // MediaFilter implementation.
   virtual void Stop(FilterCallback* callback) {
-    this->message_loop()->PostTask(FROM_HERE,
+    this->message_loop()->PostTask(
+        FROM_HERE,
         NewRunnableMethod(this, &DecoderBase::StopTask, callback));
   }
 
   virtual void Seek(base::TimeDelta time,
                     FilterCallback* callback) {
-    this->message_loop()->PostTask(FROM_HERE,
+    this->message_loop()->PostTask(
+        FROM_HERE,
         NewRunnableMethod(this, &DecoderBase::SeekTask, time, callback));
   }
 
   // Decoder implementation.
   virtual void Initialize(DemuxerStream* demuxer_stream,
                           FilterCallback* callback) {
-    this->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &DecoderBase::InitializeTask, demuxer_stream,
+    this->message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &DecoderBase::InitializeTask,
+                          make_scoped_refptr(demuxer_stream),
                           callback));
   }
 

@@ -226,7 +226,11 @@ bool AutomationResourceMessageFilter::RegisterRenderView(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(
           AutomationResourceMessageFilter::RegisterRenderViewInIOThread,
-          renderer_pid, renderer_id, tab_handle, filter, pending_view));
+          renderer_pid,
+          renderer_id,
+          tab_handle,
+          make_scoped_refptr(filter),
+          pending_view));
   return true;
 }
 
@@ -251,7 +255,10 @@ bool AutomationResourceMessageFilter::ResumePendingRenderView(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(
           AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread,
-          renderer_pid, renderer_id, tab_handle, filter));
+          renderer_pid,
+          renderer_id,
+          tab_handle,
+          make_scoped_refptr(filter)));
   return true;
 }
 

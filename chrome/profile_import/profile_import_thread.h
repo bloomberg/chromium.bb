@@ -28,7 +28,7 @@ class InProcessImporterBridge;
 class ProfileImportThread : public ChildThread {
  public:
   ProfileImportThread();
-  virtual ~ProfileImportThread() {}
+  virtual ~ProfileImportThread();
 
   // Returns the one profile import thread.
   static ProfileImportThread* current() {
@@ -84,7 +84,7 @@ class ProfileImportThread : public ChildThread {
 
   // Bridge object is passed to importer, so that it can send IPC calls
   // directly back to the ProfileImportProcessHost.
-  ExternalProcessImporterBridge* bridge_;
+  scoped_refptr<ExternalProcessImporterBridge> bridge_;
 
   // importer::ProfileType enum from importer_list, stored in ProfileInfo
   // struct in importer.
@@ -94,7 +94,7 @@ class ProfileImportThread : public ChildThread {
   uint16 items_to_import_;
 
   // Importer of the appropriate type (Firefox, Safari, IE, etc.)
-  Importer* importer_;
+  scoped_refptr<Importer> importer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImportThread);
 };

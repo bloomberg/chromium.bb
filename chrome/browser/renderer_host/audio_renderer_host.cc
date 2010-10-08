@@ -121,39 +121,54 @@ void AudioRendererHost::IPCChannelClosing() {
 // media::AudioOutputController::EventHandler implementations.
 void AudioRendererHost::OnCreated(media::AudioOutputController* controller) {
   ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::DoCompleteCreation,
-                        controller));
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &AudioRendererHost::DoCompleteCreation,
+          make_scoped_refptr(controller)));
 }
 
 void AudioRendererHost::OnPlaying(media::AudioOutputController* controller) {
   ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::DoSendPlayingMessage,
-                        controller));
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &AudioRendererHost::DoSendPlayingMessage,
+          make_scoped_refptr(controller)));
 }
 
 void AudioRendererHost::OnPaused(media::AudioOutputController* controller) {
   ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::DoSendPausedMessage,
-                        controller));
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &AudioRendererHost::DoSendPausedMessage,
+          make_scoped_refptr(controller)));
 }
 
 void AudioRendererHost::OnError(media::AudioOutputController* controller,
                                 int error_code) {
   ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::DoHandleError,
-                        controller, error_code));
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &AudioRendererHost::DoHandleError,
+                        make_scoped_refptr(controller),
+                        error_code));
 }
 
 void AudioRendererHost::OnMoreData(media::AudioOutputController* controller,
                                    AudioBuffersState buffers_state) {
   ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererHost::DoRequestMoreData,
-                        controller, buffers_state));
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &AudioRendererHost::DoRequestMoreData,
+                        make_scoped_refptr(controller),
+                        buffers_state));
 }
 
 void AudioRendererHost::DoCompleteCreation(

@@ -76,7 +76,7 @@ void DownloadManager::Shutdown() {
     ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(file_manager_,
                           &DownloadFileManager::OnDownloadManagerShutdown,
-                          this));
+                          make_scoped_refptr(this)));
   }
 
   // 'in_progress_' may contain DownloadItems that have not finished the start
@@ -446,8 +446,12 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info,
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
-            file_manager_, &DownloadFileManager::OnFinalDownloadName,
-            download->id(), target_path, !info->is_dangerous, this));
+            file_manager_,
+            &DownloadFileManager::OnFinalDownloadName,
+            download->id(),
+            target_path,
+            !info->is_dangerous,
+            make_scoped_refptr(this)));
   } else {
     // The download hasn't finished and it is a safe download.  We need to
     // rename it to its intermediate '.crdownload' path.
@@ -455,8 +459,11 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info,
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
-            file_manager_, &DownloadFileManager::OnIntermediateDownloadName,
-            download->id(), download_path, this));
+            file_manager_,
+            &DownloadFileManager::OnIntermediateDownloadName,
+            download->id(),
+            download_path,
+            make_scoped_refptr(this)));
     download->set_need_final_rename(true);
   }
 
@@ -541,8 +548,12 @@ void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
-            file_manager_, &DownloadFileManager::OnFinalDownloadName,
-            download->id(), download->full_path(), false, this));
+            file_manager_,
+            &DownloadFileManager::OnFinalDownloadName,
+            download->id(),
+            download->full_path(),
+            false,
+            make_scoped_refptr(this)));
     return;
   }
 
