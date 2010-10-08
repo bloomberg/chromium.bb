@@ -1028,6 +1028,7 @@ long long Segment::ParseHeaders()
 }
 
 
+#if 0
 long Segment::ParseCluster(Cluster*& pCluster, long long& pos_) const
 {
     pCluster = NULL;
@@ -1180,6 +1181,7 @@ bool Segment::AddCluster(Cluster* pCluster, long long pos)
 
     return (pos >= stop);
 }
+#endif
 
 
 long Segment::LoadCluster()
@@ -1833,6 +1835,7 @@ void Cues::PreloadCuePoint(
 }
 
 
+#if 0
 const CuePoint* Cues::GetFirst() const
 {
     if (m_count < 1)
@@ -1859,6 +1862,7 @@ const CuePoint* Cues::GetLast() const
 
     return pCP;
 }
+#endif
 
 
 bool Cues::LoadCuePoint()
@@ -1931,16 +1935,14 @@ bool Cues::Find(
     assert(time_ns >= 0);
     assert(pTrack);
 
-    if (m_count == 0)
-        return false;
-
     assert(m_cue_points);
+    assert(m_count > 0);
 
-    const CuePoint* const* const ii = m_cue_points;
-    const CuePoint* const* i = ii;
+    CuePoint** const ii = m_cue_points;
+    CuePoint** i = ii;
 
-    const CuePoint* const* const jj = ii + m_count;
-    const CuePoint* const* j = jj;
+    CuePoint** const jj = ii + m_count + m_preload_count;
+    CuePoint** j = jj;
 
     pCP = *i;
     assert(pCP);
@@ -1951,6 +1953,8 @@ bool Cues::Find(
         return (pTP != NULL);
     }
 
+    IMkvReader* const pReader = m_pSegment->m_pReader;
+
     while (i < j)
     {
         //INVARIANT:
@@ -1958,11 +1962,13 @@ bool Cues::Find(
         //[i, j)  ?
         //[j, jj) > time_ns
 
-        const CuePoint* const* const k = i + (j - i) / 2;
+        CuePoint** const k = i + (j - i) / 2;
         assert(k < jj);
 
-        pCP = *k;
+        CuePoint* const pCP = *k;
         assert(pCP);
+
+        pCP->Load(pReader, 0);
 
         const long long t = pCP->GetTime(m_pSegment);
 
@@ -1975,26 +1981,27 @@ bool Cues::Find(
     }
 
     assert(i == j);
-    assert(i > ii);
     assert(i <= jj);
+    assert(i > ii);
 
     pCP = *--i;
     assert(pCP);
     assert(pCP->GetTime(m_pSegment) <= time_ns);
 
-    pTP = pCP->Find(pTrack);
-    return (pTP != NULL);
-
     //TODO: here and elsewhere, it's probably not correct to search
-    //for the cue point with this time, and the search for a matching
+    //for the cue point with this time, and then search for a matching
     //track.  In principle, the matching track could be on some earlier
     //cue point, and with our current algorithm, we'd miss it.  To make
     //this bullet-proof, we'd need to create a secondary structure,
     //with a list of cue points that apply to a track, and then search
     //that track-based structure for a matching cue point.
+
+    pTP = pCP->Find(pTrack);
+    return (pTP != NULL);
 }
 
 
+#if 0
 bool Cues::FindNext(
     long long time_ns,
     const Track* pTrack,
@@ -2051,8 +2058,10 @@ bool Cues::FindNext(
     pTP = pCP->Find(pTrack);
     return (pTP != NULL);
 }
+#endif
 
 
+#if 0
 const CuePoint* Cues::LoadCuePoint(
     long long time_ns,
     const Track* pTrack,
@@ -2135,6 +2144,7 @@ const CuePoint* Cues::LoadCuePoint(
 
     return pCP;
 }
+#endif
 
 
 CuePoint::CuePoint(long long pos) :
@@ -2789,25 +2799,6 @@ bool Segment::SearchCues(
     if (m_pCues == NULL)
         return false;
 
-    //odbgstream os;
-    //os << "SearchCues:: loading cue points; time[sec]="
-    //   << (double(time_ns) / 1000000000)
-    //   << endl;
-
-#if 0
-    while (m_pCues->LoadCuePoint())
-    {
-        const CuePoint* const pCP = m_pCues->GetLast();
-        assert(pCP);
-
-        const long long ns = pCP->GetTime(this);
-
-        if (ns >= time_ns)
-            break;
-    }
-
-    //os << "SearchCues:: loading cue points done" << endl;
-
     const CuePoint* pCP;
     const CuePoint::TrackPosition* pTP;
 
@@ -2817,13 +2808,6 @@ bool Segment::SearchCues(
     assert(pCP);
     assert(pTP);
     assert(pTP->m_track == pTrack->GetNumber());
-#else
-    const CuePoint::TrackPosition* pTP;
-    const CuePoint* const pCP = m_pCues->LoadCuePoint(time_ns, pTrack, pTP);
-    assert(pCP);
-    assert(pTP);
-    assert(pTP->m_track == pTrack->GetNumber());
-#endif
 
     //We have the cue point and track position we want,
     //so we now need to search for the cluster having

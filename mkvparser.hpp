@@ -392,21 +392,27 @@ public:
         const CuePoint*&,
         const CuePoint::TrackPosition*&) const;
 
+#if 0
     bool FindNext(  //upper_bound of time_ns
         long long time_ns,
         const Track*,
         const CuePoint*&,
         const CuePoint::TrackPosition*&) const;
+#endif
 
+#if 0
     const CuePoint* GetFirst() const;
     const CuePoint* GetLast() const;
+#endif
 
     bool LoadCuePoint();
 
+#if 0
     const CuePoint* LoadCuePoint(
         long long time_ns,
         const Track*,
         const CuePoint::TrackPosition*&) const;
+#endif
 
 private:
     void PreloadCuePoint(size_t&, long long);
@@ -494,10 +500,12 @@ public:
     long long ParseHeaders();  //stops when first cluster is found
     long LoadCluster();        //loads one cluster
 
+#if 0
     //This pair parses one cluster, but only changes the state of the
     //segment object when the cluster is actually added to the index.
     long ParseCluster(Cluster*&, long long& newpos) const;
     bool AddCluster(Cluster*, long long);
+#endif
 
     Tracks* GetTracks() const;
     const SegmentInfo* GetInfo() const;
