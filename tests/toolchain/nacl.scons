@@ -34,3 +34,15 @@ if not ARGUMENTS.get('bitcode'):
                                    command=[nexe],
                                    exit_status='55')
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_setlongjmp_test')
+
+# NOTE: this currently only works for PNaCl, c.f:
+# http://code.google.com/p/nativeclient/issues/detail?id=968
+INITFINIT_TESTS=['small_tests']
+if not ARGUMENTS.get('bitcode'):
+  INITFINIT_TESTS=[]
+
+nexe = env.ComponentProgram('initfini.nexe', 'initfini.c')
+node = env.CommandSelLdrTestNacl('initfini.out',
+                                 command=[nexe],
+                                 stdout_golden=env.File('initfini.stdout'))
+env.AddNodeToTestSuite(node, INITFINIT_TESTS, 'run_initfini_test')
