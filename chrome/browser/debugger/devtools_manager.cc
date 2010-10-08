@@ -187,7 +187,6 @@ void DevToolsManager::ClientHostClosing(DevToolsClientHost* host) {
       Source<Profile>(inspected_rvh->site_instance()->GetProcess()->profile()),
       Details<RenderViewHost>(inspected_rvh));
 
-  SendDetachToAgent(inspected_rvh);
   UnbindClientHost(inspected_rvh, host);
 }
 
@@ -205,25 +204,8 @@ void DevToolsManager::UnregisterDevToolsClientHostFor(
   DevToolsClientHost* host = GetDevToolsClientHostFor(inspected_rvh);
   if (!host)
     return;
-  SendDetachToAgent(inspected_rvh);
   UnbindClientHost(inspected_rvh, host);
-
-  if (inspected_rvh_for_reopen_ == inspected_rvh)
-    inspected_rvh_for_reopen_ = NULL;
-
-  // Issue tab closing event post unbound.
   host->InspectedTabClosing();
-
-  int process_id = inspected_rvh->process()->id();
-  for (InspectedRvhToClientHostMap::iterator it =
-           inspected_rvh_to_client_host_.begin();
-       it != inspected_rvh_to_client_host_.end();
-       ++it) {
-    if (it->first->process()->id() == process_id)
-      return;
-  }
-  // We've disconnected from the last renderer -> revoke cookie permissions.
-  ChildProcessSecurityPolicy::GetInstance()->RevokeReadRawCookies(process_id);
 }
 
 void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
@@ -417,4 +399,18 @@ void DevToolsManager::UnbindClientHost(RenderViewHost* inspected_rvh,
         FROM_HERE,
         NewRunnableFunction(&DevToolsNetLogObserver::Detach));
   }
+  SendDetachToAgent(inspected_rvh);
+  if (inspected_rvh_for_reopen_ == inspected_rvh)
+    inspected_rvh_for_reopen_ = NULL;
+
+  int process_id = inspected_rvh->process()->id();
+  for (InspectedRvhToClientHostMap::iterator it =
+           inspected_rvh_to_client_host_.begin();
+       it != inspected_rvh_to_client_host_.end();
+       ++it) {
+    if (it->first->process()->id() == process_id)
+      return;
+  }
+  // We've disconnected from the last renderer -> revoke cookie permissions.
+  ChildProcessSecurityPolicy::GetInstance()->RevokeReadRawCookies(process_id);
 }
