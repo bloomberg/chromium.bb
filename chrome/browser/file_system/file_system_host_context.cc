@@ -4,13 +4,23 @@
 
 #include "chrome/browser/file_system/file_system_host_context.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "webkit/glue/webkit_glue.h"
+
+// We use some of WebKit types for conversions between storage identifiers
+// and origin URLs.
+using WebKit::WebFileSystem;
+using WebKit::WebSecurityOrigin;
+using WebKit::WebString;
 
 const FilePath::CharType FileSystemHostContext::kFileSystemDirectory[] =
     FILE_PATH_LITERAL("FileSystem");
@@ -18,10 +28,27 @@ const FilePath::CharType FileSystemHostContext::kFileSystemDirectory[] =
 const char FileSystemHostContext::kPersistentName[] = "Persistent";
 const char FileSystemHostContext::kTemporaryName[] = "Temporary";
 
+namespace {
+
+static inline std::string FilePathStringToASCII(
+    const FilePath::StringType& path_string) {
+#if defined(OS_WIN)
+  return WideToASCII(path_string);
+#elif defined(OS_POSIX)
+  return path_string;
+#endif
+}
+
+}  // anonymous namespace
+
 FileSystemHostContext::FileSystemHostContext(
     const FilePath& data_path, bool is_incognito)
     : base_path_(data_path.Append(kFileSystemDirectory)),
-      is_incognito_(is_incognito) {
+      is_incognito_(is_incognito),
+      quota_manager_(new fileapi::FileSystemQuota()) {
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    allow_file_access_from_files_ = command_line.HasSwitch(
+      switches::kAllowFileAccessFromFiles);
 }
 
 bool FileSystemHostContext::GetFileSystemRootPath(
@@ -30,6 +57,10 @@ bool FileSystemHostContext::GetFileSystemRootPath(
   // TODO(kinuko): should return an isolated temporary file system space.
   if (is_incognito_)
     return false;
+
+  if (!IsAllowedScheme(origin_url))
+    return false;
+
   std::string storage_identifier = GetStorageIdentifierFromURL(origin_url);
   switch (type) {
     case fileapi::kFileSystemTypeTemporary:
@@ -54,7 +85,87 @@ bool FileSystemHostContext::GetFileSystemRootPath(
 bool FileSystemHostContext::CheckValidFileSystemPath(
     const FilePath& path) const {
   // Any paths that includes parent references are considered invalid.
-  return !path.ReferencesParent() && base_path_.IsParent(path);
+  if (path.ReferencesParent())
+    return false;
+
+  // The path should be a child of the profile FileSystem path.
+  FilePath relative;
+  if (!base_path_.AppendRelativePath(path, &relative))
+    return false;
+
+  // The relative path from the profile FileSystem path should at least
+  // contains two components, one for storage identifier and the other for type.
+  std::vector<FilePath::StringType> components;
+  relative.GetComponents(&components);
+  if (components.size() < 2)
+    return false;
+
+  // The second component of the relative path to the root directory
+  // must be kPersistent or kTemporary.
+  if (!IsStringASCII(components[1]))
+    return false;
+  std::string ascii_type_component = FilePathStringToASCII(components[1]);
+  if (ascii_type_component != kPersistentName &&
+      ascii_type_component != kTemporaryName)
+    return false;
+
+  return true;
+}
+
+bool FileSystemHostContext::GetOriginFromPath(
+    const FilePath& path, GURL* origin_url) {
+  DCHECK(origin_url);
+  FilePath relative;
+  if (!base_path_.AppendRelativePath(path, &relative)) {
+    // The path should be a child of the profile's FileSystem path.
+    return false;
+  }
+  std::vector<FilePath::StringType> components;
+  relative.GetComponents(&components);
+  if (components.size() < 2) {
+    // The relative path should at least contain storage identifier and type.
+    return false;
+  }
+  WebSecurityOrigin web_security_origin =
+      WebSecurityOrigin::createFromDatabaseIdentifier(
+          webkit_glue::FilePathStringToWebString(components[0]));
+  *origin_url = GURL(web_security_origin.toString());
+
+  // We need this work-around for file:/// URIs as
+  // createFromDatabaseIdentifier returns empty origin_url for them.
+  if (allow_file_access_from_files_ && origin_url->spec().empty() &&
+      components[0].find(FILE_PATH_LITERAL("file")) == 0) {
+    *origin_url = GURL("file:///");
+    return true;
+  }
+
+  return IsAllowedScheme(*origin_url);
+}
+
+bool FileSystemHostContext::IsAllowedScheme(const GURL& url) const {
+  // Basically we only accept http or https. We allow file:// URLs
+  // only if --allow-file-access-from-files flag is given.
+  return url.SchemeIs("http") || url.SchemeIs("https") ||
+         (url.SchemeIsFile() && allow_file_access_from_files_);
+}
+
+bool FileSystemHostContext::CheckOriginQuota(const GURL& url, int64 growth) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // If allow-file-access-from-files flag is explicitly given and the scheme
+  // is file, always return true.
+  if (url.SchemeIsFile() && allow_file_access_from_files_)
+    return true;
+  return quota_manager_->CheckOriginQuota(url, growth);
+}
+
+void FileSystemHostContext::SetOriginQuotaUnlimited(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  quota_manager_->SetOriginQuotaUnlimited(url);
+}
+
+void FileSystemHostContext::ResetOriginQuotaUnlimited(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  quota_manager_->ResetOriginQuotaUnlimited(url);
 }
 
 std::string FileSystemHostContext::GetStorageIdentifierFromURL(
@@ -64,7 +175,7 @@ std::string FileSystemHostContext::GetStorageIdentifierFromURL(
   return web_security_origin.databaseIdentifier().utf8();
 }
 
-COMPILE_ASSERT(int(WebKit::WebFileSystem::TypeTemporary) == \
+COMPILE_ASSERT(int(WebFileSystem::TypeTemporary) == \
                int(fileapi::kFileSystemTypeTemporary), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebFileSystem::TypePersistent) == \
+COMPILE_ASSERT(int(WebFileSystem::TypePersistent) == \
                int(fileapi::kFileSystemTypePersistent), mismatching_enums);

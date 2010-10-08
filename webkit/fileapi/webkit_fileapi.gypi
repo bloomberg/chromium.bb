@@ -17,6 +17,8 @@
         'file_system_callback_dispatcher.h',
         'file_system_operation.cc',
         'file_system_operation.h',
+        'file_system_quota.cc',
+        'file_system_quota.h',
         'file_system_types.h',
         'file_writer_delegate.cc',
         'file_writer_delegate.h',

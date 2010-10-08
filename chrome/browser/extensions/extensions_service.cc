@@ -1168,6 +1168,12 @@ void ExtensionsService::GrantUnlimitedStorage(Extension* extension) {
               &ChromeAppCacheService::SetOriginQuotaInMemory,
               origin,
               kint64max));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              profile_->GetFileSystemHostContext(),
+              &FileSystemHostContext::SetOriginQuotaUnlimited,
+              origin));
     }
   }
 }
@@ -1196,6 +1202,12 @@ void ExtensionsService::RevokeUnlimitedStorage(Extension* extension) {
           NewRunnableMethod(
               profile_->GetAppCacheService(),
               &ChromeAppCacheService::ResetOriginQuotaInMemory,
+              origin));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              profile_->GetFileSystemHostContext(),
+              &FileSystemHostContext::ResetOriginQuotaUnlimited,
               origin));
     }
   }

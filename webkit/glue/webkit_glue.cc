@@ -330,6 +330,10 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
       return WebKit::WebFileErrorInvalidState;
     case base::PLATFORM_FILE_ERROR_ABORT:
       return WebKit::WebFileErrorAbort;
+    case base::PLATFORM_FILE_ERROR_SECURITY:
+      return WebKit::WebFileErrorSecurity;
+    case base::PLATFORM_FILE_ERROR_NO_SPACE:
+      return WebKit::WebFileErrorQuotaExceeded;
     default:
       return WebKit::WebFileErrorInvalidModification;
   }

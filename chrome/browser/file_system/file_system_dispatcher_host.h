@@ -80,9 +80,16 @@ class FileSystemDispatcherHost
   fileapi::FileSystemOperation* GetNewOperation(int request_id);
 
   // Checks the validity of a given |path|. Returns true if the given |path|
-  // is valid as a path for FileSystem API. Otherwise it sends back a
-  // security error code to the dispatcher and returns false.
+  // is valid as a path for FileSystem API. Otherwise it sends back
+  // PLATFORM_FILE_ERROR_SECURITY to the dispatcher and returns false.
   bool CheckValidFileSystemPath(const FilePath& path, int request_id);
+
+  // Checks the quota for the given |path|. This method only performs a
+  // in-memory quick check and returns immediately.
+  // Returns true if the given |path| will be able to grow by |growth|.
+  // Otherwise it sends back PLATFORM_FILE_ERROR_NO_SPACE to the dispatcher
+  // and returns false.
+  bool CheckQuotaForPath(const FilePath& path, int64 growth, int request_id);
 
   // The sender to be used for sending out IPC messages.
   IPC::Message::Sender* message_sender_;

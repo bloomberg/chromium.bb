@@ -18,6 +18,9 @@
 #include "chrome/common/render_messages_params.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/fileapi/file_system_quota.h"
+
+using fileapi::FileSystemQuota;
 
 // A class to hold an ongoing openFileSystem completion task.
 struct OpenFileSystemCompletionTask {
@@ -157,7 +160,8 @@ void FileSystemDispatcherHost::OnOpenFileSystem(
 void FileSystemDispatcherHost::OnMove(
     int request_id, const FilePath& src_path, const FilePath& dest_path) {
   if (!CheckValidFileSystemPath(src_path, request_id) ||
-      !CheckValidFileSystemPath(dest_path, request_id))
+      !CheckValidFileSystemPath(dest_path, request_id) ||
+      !CheckQuotaForPath(dest_path, FileSystemQuota::kUnknownSize, request_id))
     return;
 
   GetNewOperation(request_id)->Move(src_path, dest_path);
@@ -166,7 +170,8 @@ void FileSystemDispatcherHost::OnMove(
 void FileSystemDispatcherHost::OnCopy(
     int request_id, const FilePath& src_path, const FilePath& dest_path) {
   if (!CheckValidFileSystemPath(src_path, request_id) ||
-      !CheckValidFileSystemPath(dest_path, request_id))
+      !CheckValidFileSystemPath(dest_path, request_id) ||
+      !CheckQuotaForPath(dest_path, FileSystemQuota::kUnknownSize, request_id))
     return;
 
   GetNewOperation(request_id)->Copy(src_path, dest_path);
@@ -189,7 +194,8 @@ void FileSystemDispatcherHost::OnReadMetadata(
 void FileSystemDispatcherHost::OnCreate(
     int request_id, const FilePath& path, bool exclusive,
     bool is_directory, bool recursive) {
-  if (!CheckValidFileSystemPath(path, request_id))
+  if (!CheckValidFileSystemPath(path, request_id) ||
+      !CheckQuotaForPath(path, 0L, request_id))
     return;
   if (is_directory)
     GetNewOperation(request_id)->CreateDirectory(path, exclusive, recursive);
@@ -219,7 +225,8 @@ void FileSystemDispatcherHost::OnWrite(
     const FilePath& path,
     const GURL& blob_url,
     int64 offset) {
-  if (!CheckValidFileSystemPath(path, request_id))
+  if (!CheckValidFileSystemPath(path, request_id) ||
+      !CheckQuotaForPath(path, FileSystemQuota::kUnknownSize, request_id))
     return;
   GetNewOperation(request_id)->Write(
       request_context_, path, blob_url, offset);
@@ -276,6 +283,25 @@ bool FileSystemDispatcherHost::CheckValidFileSystemPath(
   if (!context_->CheckValidFileSystemPath(path)) {
     Send(new ViewMsg_FileSystem_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_SECURITY));
+    return false;
+  }
+  return true;
+}
+
+bool FileSystemDispatcherHost::CheckQuotaForPath(
+    const FilePath& path, int64 growth, int request_id) {
+  GURL origin_url;
+  if (!context_->GetOriginFromPath(path, &origin_url)) {
+    // Appears to be an ill-formed path or for an unallowed scheme.
+    Send(new ViewMsg_FileSystem_DidFail(
+        request_id, base::PLATFORM_FILE_ERROR_SECURITY));
+    return false;
+  }
+  // TODO(kinuko): For operations with kUnknownSize we'll eventually
+  // need to resolve what amount of size it's going to write.
+  if (!context_->CheckOriginQuota(origin_url, growth)) {
+    Send(new ViewMsg_FileSystem_DidFail(
+        request_id, base::PLATFORM_FILE_ERROR_NO_SPACE));
     return false;
   }
   return true;

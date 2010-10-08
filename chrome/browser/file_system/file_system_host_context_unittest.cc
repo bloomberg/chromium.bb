@@ -37,6 +37,9 @@ const struct RootPathTest {
     false, "" },
   { fileapi::kFileSystemTypePersistent,  true,  "http://host:4/",
     false, "" },
+  // We disallow file:// URIs to access filesystem.
+  { fileapi::kFileSystemTypeTemporary, false, "file:///some/path", false, "" },
+  { fileapi::kFileSystemTypePersistent, false, "file:///some/path", false, "" },
 };
 
 const struct CheckValidPathTest {
