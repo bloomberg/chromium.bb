@@ -16,6 +16,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 
+// Number of ms to delay between loading urls.
+static const int kUpdateDelayMS = 200;
+
 // static
 bool InstantController::IsEnabled() {
   static bool enabled = false;
@@ -60,25 +63,17 @@ void InstantController::Update(TabContents* tab_contents,
     return;
   }
 
+  TemplateURLID template_url_id = GetTemplateURLID(match);
+
   if (!loader_manager_.get())
     loader_manager_.reset(new InstantLoaderManager(this));
 
-  const TemplateURL* template_url = match.template_url;
-  if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
-      match.type == AutocompleteMatch::SEARCH_HISTORY ||
-      match.type == AutocompleteMatch::SEARCH_SUGGEST) {
-    TemplateURLModel* model = tab_contents->profile()->GetTemplateURLModel();
-    template_url = model ? model->GetDefaultSearchProvider() : NULL;
+  if (ShouldUpdateNow(template_url_id, match.destination_url)) {
+    UpdateLoader(template_url_id, match.destination_url, match.transition,
+                 user_text, suggested_text);
+  } else {
+    ScheduleUpdate(match.destination_url);
   }
-  if (template_url && (!template_url->id() ||
-                       IsBlacklistedFromInstant(template_url->id()) ||
-                       !TemplateURL::SupportsReplacement(template_url))) {
-    template_url = NULL;
-  }
-  TemplateURLID template_url_id = template_url ? template_url->id() : 0;
-
-  UpdateLoader(template_url_id, match.destination_url, match.transition,
-               user_text, template_url, suggested_text);
 }
 
 void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
@@ -105,7 +100,8 @@ void InstantController::DestroyPreviewContents() {
 }
 
 bool InstantController::IsCurrent() {
-  return loader_manager_.get() && loader_manager_->active_loader()->ready();
+  return loader_manager_.get() && loader_manager_->active_loader()->ready() &&
+      !update_timer_.IsRunning();
 }
 
 void InstantController::CommitCurrentPreview(InstantCommitType type) {
@@ -136,6 +132,7 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   omnibox_bounds_ = gfx::Rect();
   commit_on_mouse_up_ = false;
   loader_manager_.reset(NULL);
+  update_timer_.Stop();
   return tab;
 }
 
@@ -190,7 +187,8 @@ void InstantController::CommitInstantLoader(InstantLoader* loader) {
 
 void InstantController::InstantLoaderDoesntSupportInstant(
     InstantLoader* loader,
-    bool needs_reload) {
+    bool needs_reload,
+    const GURL& url_to_load) {
   DCHECK(!loader->ready());  // We better not be showing this loader.
   DCHECK(loader->template_url_id());
 
@@ -205,30 +203,76 @@ void InstantController::InstantLoaderDoesntSupportInstant(
 
     if (needs_reload) {
       string16 suggested_text;
-      loader->Update(tab_contents_, loader->url(), last_transition_type_,
-                     loader->user_text(), NULL, &suggested_text);
+      loader->Update(tab_contents_, 0, url_to_load, last_transition_type_,
+                     loader->user_text(), &suggested_text);
     }
-
   } else {
     loader_manager_->DestroyLoader(loader);
     loader = NULL;
   }
 }
 
+bool InstantController::ShouldUpdateNow(TemplateURLID instant_id,
+                                        const GURL& url) {
+  DCHECK(loader_manager_.get());
+
+  if (instant_id) {
+    // Update sites that support instant immediately, they can do their own
+    // throttling.
+    return true;
+  }
+
+  if (url.SchemeIsFile())
+    return true;  // File urls should load quickly, so don't delay loading them.
+
+  if (loader_manager_->WillUpateChangeActiveLoader(instant_id)) {
+    // If Update would change loaders, update now. This indicates transitioning
+    // from an instant to non-instant loader.
+    return true;
+  }
+
+  InstantLoader* active_loader = loader_manager_->active_loader();
+  // WillUpateChangeActiveLoader should return true if no active loader, so
+  // we know there will be an active loader if we get here.
+  DCHECK(active_loader);
+  // Immediately update if the hosts differ, otherwise we'll delay the update.
+  return active_loader->url().host() != url.host();
+}
+
+void InstantController::ScheduleUpdate(const GURL& url) {
+  scheduled_url_ = url;
+
+  if (update_timer_.IsRunning())
+    update_timer_.Stop();
+  update_timer_.Start(base::TimeDelta::FromMilliseconds(kUpdateDelayMS),
+                      this, &InstantController::ProcessScheduledUpdate);
+}
+
+void InstantController::ProcessScheduledUpdate() {
+  DCHECK(loader_manager_.get());
+
+  // We only delay loading of sites that don't support instant, so we can ignore
+  // suggested_text here.
+  string16 suggested_text;
+  UpdateLoader(0, scheduled_url_, last_transition_type_, string16(),
+               &suggested_text);
+}
+
 void InstantController::UpdateLoader(TemplateURLID template_url_id,
                                      const GURL& url,
                                      PageTransition::Type transition_type,
                                      const string16& user_text,
-                                     const TemplateURL* template_url,
                                      string16* suggested_text) {
+  update_timer_.Stop();
+
   InstantLoader* old_loader = loader_manager_->current_loader();
   scoped_ptr<InstantLoader> owned_loader;
   InstantLoader* new_loader =
       loader_manager_->UpdateLoader(template_url_id, &owned_loader);
 
   new_loader->SetOmniboxBounds(omnibox_bounds_);
-  new_loader->Update(tab_contents_, url, transition_type, user_text,
-                     template_url, suggested_text);
+  new_loader->Update(tab_contents_, template_url_id, url, transition_type,
+                     user_text, suggested_text);
   if (old_loader != new_loader && new_loader->ready())
     delegate_->ShowInstant(new_loader->preview_contents());
 }
@@ -247,4 +291,21 @@ bool InstantController::IsBlacklistedFromInstant(TemplateURLID id) {
 
 void InstantController::ClearBlacklist() {
   blacklisted_ids_.clear();
+}
+
+TemplateURLID InstantController::GetTemplateURLID(
+    const AutocompleteMatch& match) {
+  const TemplateURL* template_url = match.template_url;
+  if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
+      match.type == AutocompleteMatch::SEARCH_HISTORY ||
+      match.type == AutocompleteMatch::SEARCH_SUGGEST) {
+    TemplateURLModel* model = tab_contents_->profile()->GetTemplateURLModel();
+    template_url = model ? model->GetDefaultSearchProvider() : NULL;
+  }
+  if (template_url && template_url->id() &&
+      !IsBlacklistedFromInstant(template_url->id()) &&
+      TemplateURL::SupportsReplacement(template_url)) {
+    return template_url->id();
+  }
+  return 0;
 }

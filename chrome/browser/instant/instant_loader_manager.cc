@@ -86,6 +86,11 @@ InstantLoader* InstantLoaderManager::UpdateLoader(
   return active_loader();
 }
 
+bool InstantLoaderManager::WillUpateChangeActiveLoader(
+    TemplateURLID instant_id) {
+  return !active_loader() || active_loader()->template_url_id() != instant_id;
+}
+
 void InstantLoaderManager::MakePendingCurrent(
     scoped_ptr<InstantLoader>* old_loader) {
   DCHECK(current_loader_);

@@ -43,6 +43,10 @@ class InstantLoaderManager {
   InstantLoader* UpdateLoader(TemplateURLID instant_id,
                               scoped_ptr<InstantLoader>* old_loader);
 
+  // Returns true if invoking |UpdateLoader| with |instant_id| would change the
+  // active loader.
+  bool WillUpateChangeActiveLoader(TemplateURLID instant_id);
+
   // Makes the pending loader the current loader. If ownership of the old
   // loader is to pass to the caller |old_loader| is set appropriately.
   void MakePendingCurrent(scoped_ptr<InstantLoader>* old_loader);

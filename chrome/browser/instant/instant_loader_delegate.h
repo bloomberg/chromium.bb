@@ -8,6 +8,8 @@
 
 #include "base/string16.h"
 
+class GURL;
+
 namespace gfx {
 class Rect;
 }
@@ -36,9 +38,10 @@ class InstantLoaderDelegate {
   // Invoked if the loader was created with the intention that the site supports
   // instant, but it turned out the site doesn't support instant. If
   // |needs_reload| is true, |Update| was invoked on the loader with a url that
-  // has changed since the initial url.
+  // has changed since the initial url, and |url_to_load| is that url.
   virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
-                                                 bool needs_reload) = 0;
+                                                 bool needs_reload,
+                                                 const GURL& url_to_load) = 0;
 
  protected:
   virtual ~InstantLoaderDelegate() {}

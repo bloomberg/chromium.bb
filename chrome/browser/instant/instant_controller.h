@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -109,21 +110,18 @@ class InstantController : public InstantLoaderDelegate {
   virtual bool ShouldCommitInstantOnMouseUp();
   virtual void CommitInstantLoader(InstantLoader* loader);
   virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
-                                                 bool needs_reload);
+                                                 bool needs_reload,
+                                                 const GURL& url_to_load);
 
  private:
-  // Invoked when the page wants to update the suggested text. If |user_text_|
-  // starts with |suggested_text|, then the delegate is notified of the change,
-  // which results in updating the omnibox.
-  void SetCompleteSuggestedText(const string16& suggested_text);
+  // Returns true if we should update immediately.
+  bool ShouldUpdateNow(TemplateURLID instant_id, const GURL& url);
 
-  // Invoked to show the preview. This is invoked in two possible cases: when
-  // the renderer paints, or when an auth dialog is shown. This notifies the
-  // delegate the preview is ready to be shown.
-  void ShowPreview();
+  // Schedules a delayed update to load the specified url.
+  void ScheduleUpdate(const GURL& url);
 
-  // Invoked once the page has finished loading and the script has been sent.
-  void PageFinishedLoading();
+  // Invoked from the timer to process the last scheduled url.
+  void ProcessScheduledUpdate();
 
   // Updates InstantLoaderManager and its current InstantLoader. This is invoked
   // internally from Update.
@@ -131,7 +129,6 @@ class InstantController : public InstantLoaderDelegate {
                     const GURL& url,
                     PageTransition::Type transition_type,
                     const string16& user_text,
-                    const TemplateURL* template_url,
                     string16* suggested_text);
 
   // Returns true if we should show preview for |url|.
@@ -146,6 +143,10 @@ class InstantController : public InstantLoaderDelegate {
 
   // Clears the set of search engines blacklisted.
   void ClearBlacklist();
+
+  // Returns the id of the template url to use for the specified
+  // AutocompleteMatch.
+  TemplateURLID GetTemplateURLID(const AutocompleteMatch& match);
 
   InstantDelegate* delegate_;
 
@@ -172,6 +173,11 @@ class InstantController : public InstantLoaderDelegate {
   // support instant it is added to this list. The list is cleared out on every
   // reset/commit.
   std::set<TemplateURLID> blacklisted_ids_;
+
+  base::OneShotTimer<InstantController> update_timer_;
+
+  // URL last pased to ScheduleUpdate.
+  GURL scheduled_url_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantController);
 };

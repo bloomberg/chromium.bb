@@ -31,7 +31,8 @@ class InstantLoaderDelegateImpl : public InstantLoaderDelegate {
   }
 
   virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader,
-                                                 bool needs_reload) {
+                                                 bool needs_reload,
+                                                 const GURL& url_to_load) {
   }
 
  private:
@@ -249,3 +250,27 @@ TEST_F(InstantLoaderManagerTest, DestroyPendingLoader) {
   EXPECT_EQ(NULL, manager.pending_loader());
   EXPECT_EQ(first_loader, manager.current_loader());
 }
+
+// Makes sure WillUpateChangeActiveLoader works.
+TEST_F(InstantLoaderManagerTest, WillUpateChangeActiveLoader) {
+  InstantLoaderDelegateImpl delegate;
+  InstantLoaderManager manager(&delegate);
+  scoped_ptr<InstantLoader> loader;
+
+  // When there is no loader WillUpateChangeActiveLoader should return true.
+  EXPECT_TRUE(manager.WillUpateChangeActiveLoader(0));
+  EXPECT_TRUE(manager.WillUpateChangeActiveLoader(1));
+
+  // Add a loder with id 0 and test again.
+  manager.UpdateLoader(0, &loader);
+  EXPECT_FALSE(manager.WillUpateChangeActiveLoader(0));
+  EXPECT_TRUE(manager.WillUpateChangeActiveLoader(1));
+  ASSERT_TRUE(manager.active_loader());
+  MarkReady(manager.active_loader());
+
+  // Add a loader with id 1 and test again.
+  manager.UpdateLoader(1, &loader);
+  EXPECT_TRUE(manager.WillUpateChangeActiveLoader(0));
+  EXPECT_FALSE(manager.WillUpateChangeActiveLoader(1));
+}
+

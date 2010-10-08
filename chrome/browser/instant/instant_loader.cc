@@ -518,10 +518,10 @@ InstantLoader::~InstantLoader() {
 }
 
 void InstantLoader::Update(TabContents* tab_contents,
+                           TemplateURLID template_url_id,
                            const GURL& url,
                            PageTransition::Type transition_type,
                            const string16& user_text,
-                           const TemplateURL* template_url,
                            string16* suggested_text) {
   if (url_ == url)
     return;
@@ -557,8 +557,8 @@ void InstantLoader::Update(TabContents* tab_contents,
   }
   preview_tab_contents_delegate_->PrepareForNewLoad();
 
-  if (template_url) {
-    DCHECK(template_url_id_ == template_url->id());
+  if (template_url_id) {
+    DCHECK(template_url_id_ == template_url_id);
     if (!created_preview_contents) {
       if (is_waiting_for_load()) {
         // The page hasn't loaded yet. We'll send the script down when it does.
@@ -571,6 +571,7 @@ void InstantLoader::Update(TabContents* tab_contents,
         *suggested_text = complete_suggested_text_.substr(user_text_.size());
       }
     } else {
+      initial_instant_url_ = url;
       preview_contents_->controller().LoadURL(url, GURL(), transition_type);
       frame_load_observer_.reset(new FrameLoadObserver(this, user_text_));
     }
@@ -714,7 +715,14 @@ gfx::Rect InstantLoader::GetOmniboxBoundsInTermsOfPreview() {
 }
 
 void InstantLoader::PageDoesntSupportInstant(bool needs_reload) {
+  GURL url_to_load = url_;
+
+  // Because we didn't process any of the requests to load in Update we're
+  // actually at initial_instant_url_. We need to reset url_ so that callers see
+  // the correct state.
+  url_ = initial_instant_url_;
+
   frame_load_observer_.reset(NULL);
 
-  delegate_->InstantLoaderDoesntSupportInstant(this, needs_reload);
+  delegate_->InstantLoaderDoesntSupportInstant(this, needs_reload, url_to_load);
 }

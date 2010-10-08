@@ -38,10 +38,10 @@ class InstantLoader {
   // Invoked to load a URL. |tab_contents| is the TabContents the preview is
   // going to be shown on top of and potentially replace.
   void Update(TabContents* tab_contents,
+              TemplateURLID template_url_id,
               const GURL& url,
               PageTransition::Type transition_type,
               const string16& user_text,
-              const TemplateURL* template_url,
               string16* suggested_text);
 
   // Sets the bounds of the omnibox (in screen coordinates). The bounds are
@@ -130,6 +130,9 @@ class InstantLoader {
 
   // The url we're displaying.
   GURL url_;
+
+  // The URL first used to load instant results.
+  GURL initial_instant_url_;
 
   // Delegate of the preview TabContents. Used to detect when the user does some
   // gesture on the TabContents and the preview needs to be activated.
