@@ -7,6 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
+#include "chrome/common/dx_diag_node.h"
 #include "chrome/common/gpu_info.h"
 
 struct IDirect3D9;
@@ -27,6 +29,9 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d, GPUInfo* gpu_info);
 
 // The GL version of collecting information
 bool CollectGraphicsInfoGL(GPUInfo* gpu_info);
+
+// Collect the DirectX Disagnostics information about the attached displays.
+bool GetDxDiagnostics(DxDiagNode* output);
 #endif
 
 }  // namespace gpu_info_collector

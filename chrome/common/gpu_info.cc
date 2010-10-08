@@ -60,3 +60,13 @@ void GPUInfo::SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
   can_lose_context_ = can_lose_context;
   initialized_ = true;
 }
+
+#if defined(OS_WIN)
+const DxDiagNode& GPUInfo::dx_diagnostics() const {
+  return dx_diagnostics_;
+}
+
+void GPUInfo::SetDxDiagnostics(const DxDiagNode& dx_diagnostics) {
+  dx_diagnostics_ = dx_diagnostics;
+}
+#endif

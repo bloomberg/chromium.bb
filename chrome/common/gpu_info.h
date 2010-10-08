@@ -12,6 +12,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
+#include "chrome/common/dx_diag_node.h"
 
 class GPUInfo {
  public:
@@ -60,6 +62,14 @@ class GPUInfo {
                        uint32 vertex_shader_version,
                        uint32 gl_version,
                        bool can_lose_context);
+
+#if defined(OS_WIN)
+  // The information returned by the DirectX Diagnostics Tool.
+  const DxDiagNode& dx_diagnostics() const;
+
+  void SetDxDiagnostics(const DxDiagNode& dx_diagnostics);
+#endif
+
  private:
   bool initialized_;
   uint32 vendor_id_;
@@ -69,6 +79,10 @@ class GPUInfo {
   uint32 vertex_shader_version_;
   uint32 gl_version_;
   bool can_lose_context_;
+
+#if defined(OS_WIN)
+  DxDiagNode dx_diagnostics_;
+#endif
 };
 
 #endif  // CHROME_COMMON_GPU_INFO_H__
