@@ -2409,7 +2409,7 @@ readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 # Ensure that the ELF "file format" string for <filename> matches <regexp>.
 VerifyObject() {
   if [[ $(basename $2) = "libgcc_eh.a" ]] ; then
-    echo "SKIPPPING EMPTY libgcc_eh"
+    echo "WARNING SKIPPPING EMPTY libgcc_eh"
     return
   fi
   local pattern=$1 filename=$2
@@ -2425,69 +2425,88 @@ VerifyObject() {
   fi
 }
 
-
-# Usage: VerifyLLVMArchive <filename>
-VerifyLLVMArchive() {
-  local archive="$1"
+# Usage: VerifyArchive <checker> <filename>
+VerifyArchive() {
+  local checker="$1"
+  local archive="$2"
   local tmp="/tmp/ar-verify-${RANDOM}"
   rm -rf ${tmp}
   mkdir -p ${tmp}
   cp "${archive}" "${tmp}"
   spushd ${tmp}
-  echo -n "verify $(basename "$1"): "
+  echo -n "verify $(basename "${archive}"): "
   ${LLVM_AR} x $(basename ${archive})
   for i in *.o ; do
     if [ "$i" = "*.o" ]; then
+      if [[ $(basename ${archive}) = "libgcc_eh.a" ]] ; then
+        echo "WARNING SKIPPPING EMPTY libgcc_eh"
+        return
+      fi
       echo "FAIL (no object files in ${archive})"
       exit -1
-    elif ! ${LLVM_DIS} $i -o $i.ll; then
-      echo "FAIL (disassembly of $(pwd)/$i failed)"
-      exit -1
-    elif grep -ql asm $i.ll; then
-      echo "FAIL ($(pwd)/$i.ll contained inline assembly)"
-      exit -1
-    else
-      : ok
     fi
+    ${checker} $i
   done
   echo "PASS"
   rm -rf "${tmp}"
   spopd
-
 }
 
-# Usage: VerifyLLVMObj <filename>
-VerifyLLVMObj() {
-  echo -n "verify $(basename "$1"): "
+
+#
+# verify-object-llvm <obj>
+#
+#   Verifies that a given .o file is bitcode and free of ASMSs
+verify-object-llvm() {
   t=$(${LLVM_DIS} $1 -o -)
 
-  if  grep asm <<<$t ; then
+  if grep asm <<<$t ; then
     echo
-    echo "ERROR"
+    echo "ERROR asm in $1"
     echo
     exit -1
   fi
-  echo "PASS"
 }
 
+
+# verify-object-arm <obj>
 #
-# verify-llvm-archive <archive>
+#   Ensure that the ARCH properties are what we expect, this is a little
+#   fragile and needs to be updated when tools change
+verify-object-arm() {
+  arch_info=$(readelf -A $1)
+  #TODO(robertm): some refactoring and cleanup needed
+  if ! grep -q "Tag_VFP_arch: VFPv3" <<< ${arch_info} ; then
+    echo "WARNING $1 - bad Tag_VFP_arch\n"
+    #TODO(robertm): figure out what the right thing to do is here, c.f.
+    # http://code.google.com/p/nativeclient/issues/detail?id=966
+    readelf -A $1 | grep  Tag_VFP_arch
+    #exit -1
+  fi
+
+  if ! grep -q "Tag_CPU_arch: v7" <<< ${arch_info} ; then
+    echo "FAIL bad $1 Tag_CPU_arch\n"
+    readelf -A $1 | grep Tag_CPU_arch
+    exit -1
+  fi
+}
+
+
+#
+# verify-archive-llvm <archive>
 # Verifies that a given archive is bitcode and free of ASMSs
 #
-verify-llvm-archive() {
-  echo "verify $1"
-  VerifyLLVMArchive "$@"
+verify-archive-llvm() {
+  VerifyArchive verify-object-llvm "$@"
 }
 
 #
-# verify-llvm-object <archive>
+# verify-archive-arm <archive>
+# Verifies that a given archive is a proper arm achive
 #
-#   Verifies that a given .o file is bitcode and free of ASMSs
-verify-llvm-object() {
-  echo "verify $1"
-  VerifyLLVMObj "$@"
+verify-archive-arm() {
+  VerifyArchive verify-object-arm "$@"
 }
-
 #@-------------------------------------------------------------------------
 #+ verify                - Verifies that toolchain/pnacl-untrusted ELF files
 #+                         are of the correct architecture.
@@ -2495,8 +2514,12 @@ verify() {
   StepBanner "VERIFY"
 
   SubBanner "VERIFY: ${PNACL_ARM_ROOT}"
-  for i in ${PNACL_ARM_ROOT}/*.[oa] ; do
-    VerifyObject 'elf32-little\(arm\)\?' "$i"  # objdumps vary in their output.
+  for i in ${PNACL_ARM_ROOT}/*.o ; do
+    verify-object-arm $i
+  done
+
+  for i in ${PNACL_ARM_ROOT}/*.a ; do
+    verify-archive-arm $i
   done
 
   SubBanner "VERIFY: ${PNACL_X8632_ROOT}"
@@ -2511,7 +2534,7 @@ verify() {
 
   SubBanner "VERIFY: ${PNACL_BITCODE_ROOT}"
   for i in ${PNACL_BITCODE_ROOT}/*.a ; do
-    VerifyLLVMArchive "$i"
+    verify-archive-llvm "$i"
   done
 
   # we currently do not expect any .o files in this directory
