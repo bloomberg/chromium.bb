@@ -628,8 +628,8 @@ void ScreenLocker::InfoBubbleClosing(InfoBubble* info_bubble,
 void ScreenLocker::Authenticate(const string16& password) {
   screen_lock_view_->SetEnabled(false);
   screen_lock_view_->SetSignoutEnabled(false);
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::AuthenticateToUnlock,
                         user_.email(),

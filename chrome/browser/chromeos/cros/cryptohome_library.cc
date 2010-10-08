@@ -156,8 +156,8 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   bool AsyncCheckKey(const std::string& user_email,
                      const std::string& passhash,
                      Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
@@ -172,8 +172,8 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
                        const std::string& old_hash,
                        const std::string& new_hash,
                        Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
@@ -183,8 +183,8 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   bool AsyncRemove(const std::string& user_email, Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
@@ -199,8 +199,8 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
                   const std::string& passhash,
                   const bool create_if_missing,
                   Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
@@ -210,8 +210,8 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   bool AsyncMountForBwsi(Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }

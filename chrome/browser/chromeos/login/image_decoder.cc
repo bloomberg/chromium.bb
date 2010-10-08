@@ -16,9 +16,9 @@ ImageDecoder::ImageDecoder(Delegate* delegate,
 }
 
 void ImageDecoder::Start() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(
-     ChromeThread::IO, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+     BrowserThread::IO, FROM_HERE,
      NewRunnableMethod(
          this, &ImageDecoder::DecodeImageInSandbox,
          g_browser_process->resource_dispatcher_host(),
@@ -26,7 +26,7 @@ void ImageDecoder::Start() {
 }
 
 void ImageDecoder::OnDecodeImageSucceeded(const SkBitmap& decoded_image) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (delegate_)
     delegate_->OnImageDecoded(decoded_image);
 }
@@ -34,11 +34,11 @@ void ImageDecoder::OnDecodeImageSucceeded(const SkBitmap& decoded_image) {
 void ImageDecoder::DecodeImageInSandbox(
     ResourceDispatcherHost* rdh,
     const std::vector<unsigned char>& image_data) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UtilityProcessHost* utility_process_host =
       new UtilityProcessHost(rdh,
                              this,
-                             ChromeThread::UI);
+                             BrowserThread::UI);
   utility_process_host->StartImageDecoding(image_data);
 }
 

@@ -24,7 +24,7 @@ OwnerManager::OwnerManager()
 OwnerManager::~OwnerManager() {}
 
 void OwnerManager::LoadOwnerKey() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   LOG(INFO) << "Loading owner key";
   NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
 
@@ -37,8 +37,8 @@ void OwnerManager::LoadOwnerKey() {
 
   // Whether we loaded the public key or not, send a notification indicating
   // that we're done with this attempt.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::SendNotification,
                         result,
@@ -46,21 +46,21 @@ void OwnerManager::LoadOwnerKey() {
 }
 
 void OwnerManager::GenerateKeysAndExportPublic() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   LOG(INFO) << "Generating key pair";
 
   private_key_.reset(utils_->GenerateKeyPair());
 
   if (private_key_.get() && private_key_->ExportPublicKey(&public_key_)) {
     // If we generated the keys successfully, export them.
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &OwnerManager::ExportKey));
   } else {
     private_key_.reset(NULL);
     // If we didn't generate the key, send along a notification of failure.
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &OwnerManager::SendNotification,
                           NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
@@ -72,8 +72,8 @@ void OwnerManager::ExportKey() {
   LOG(INFO) << "Exporting public key";
   if (!utils_->ExportPublicKeyViaDbus(private_key_.get(), this)) {
     private_key_.reset(NULL);
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &OwnerManager::SendNotification,
                           NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
@@ -89,8 +89,8 @@ void OwnerManager::OnComplete(bool value) {
 
   // Whether we exported the public key or not, send a notification indicating
   // that we're done with this attempt.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::SendNotification,
                         result,
@@ -115,14 +115,14 @@ bool OwnerManager::EnsurePrivateKey() {
   return private_key_.get() != NULL;
 }
 
-void OwnerManager::Sign(const ChromeThread::ID thread_id,
+void OwnerManager::Sign(const BrowserThread::ID thread_id,
                         const std::string& data,
                         Delegate* d) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // If it's not the case that we can get both keys...
   if (!(EnsurePublicKey() && EnsurePrivateKey())) {
-    ChromeThread::PostTask(
+    BrowserThread::PostTask(
         thread_id, FROM_HERE,
         NewRunnableMethod(this,
                           &OwnerManager::CallDelegate,
@@ -137,21 +137,21 @@ void OwnerManager::Sign(const ChromeThread::ID thread_id,
     return_code = OPERATION_FAILED;
   }
 
-  ChromeThread::PostTask(
+  BrowserThread::PostTask(
       thread_id, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::CallDelegate,
                         d, return_code, signature));
 }
 
-void OwnerManager::Verify(const ChromeThread::ID thread_id,
+void OwnerManager::Verify(const BrowserThread::ID thread_id,
                           const std::string& data,
                           const std::vector<uint8>& signature,
                           Delegate* d) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!EnsurePublicKey()) {
-    ChromeThread::PostTask(
+    BrowserThread::PostTask(
         thread_id, FROM_HERE,
         NewRunnableMethod(this,
                           &OwnerManager::CallDelegate,
@@ -164,7 +164,7 @@ void OwnerManager::Verify(const ChromeThread::ID thread_id,
   if (!utils_->Verify(data, signature, public_key_)) {
     return_code = OPERATION_FAILED;
   }
-  ChromeThread::PostTask(
+  BrowserThread::PostTask(
       thread_id, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::CallDelegate,

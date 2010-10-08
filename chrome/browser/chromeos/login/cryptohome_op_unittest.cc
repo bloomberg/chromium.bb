@@ -28,8 +28,8 @@ class CryptohomeOpTest : public ::testing::Test {
  public:
   CryptohomeOpTest()
       : message_loop_(MessageLoop::TYPE_UI),
-        ui_thread_(ChromeThread::UI, &message_loop_),
-        io_thread_(ChromeThread::IO),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        io_thread_(BrowserThread::IO),
         username_("me@nowhere.org"),
         hash_ascii_("0a010000000000a0"),
         state_(username_, "", hash_ascii_, "", ""),
@@ -124,8 +124,8 @@ class CryptohomeOpTest : public ::testing::Test {
   }
 
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
   std::string username_;
   std::string hash_ascii_;
   TestAttemptState state_;

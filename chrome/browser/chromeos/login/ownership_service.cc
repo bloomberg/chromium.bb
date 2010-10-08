@@ -36,8 +36,8 @@ bool OwnershipService::StartLoadOwnerKeyAttempt() {
     LOG(WARNING) << "Device not yet owned";
     return false;
   }
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager_.get(), &OwnerManager::LoadOwnerKey));
   return true;
 }
@@ -47,8 +47,8 @@ bool OwnershipService::StartTakeOwnershipAttempt(const std::string& owner) {
     LOG(INFO) << "Device is already owned";
     return false;
   }
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager_.get(),
                         &OwnerManager::GenerateKeysAndExportPublic));
   whitelister_ = SignedSettings::CreateWhitelistOp(owner, true, this);
@@ -62,11 +62,11 @@ void OwnershipService::StartSigningAttempt(const std::string& data,
     d->OnKeyOpComplete(OwnerManager::KEY_UNAVAILABLE, std::vector<uint8>());
     return;
   }
-  ChromeThread::ID thread_id;
-  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id))
-    thread_id = ChromeThread::UI;
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::ID thread_id;
+  if (!BrowserThread::GetCurrentThreadIdentifier(&thread_id))
+    thread_id = BrowserThread::UI;
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager_.get(),
                         &OwnerManager::Sign,
                         thread_id,
@@ -82,11 +82,11 @@ void OwnershipService::StartVerifyAttempt(const std::string& data,
     d->OnKeyOpComplete(OwnerManager::KEY_UNAVAILABLE, std::vector<uint8>());
     return;
   }
-  ChromeThread::ID thread_id;
-  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id))
-    thread_id = ChromeThread::UI;
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::ID thread_id;
+  if (!BrowserThread::GetCurrentThreadIdentifier(&thread_id))
+    thread_id = BrowserThread::UI;
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager_.get(),
                         &OwnerManager::Verify,
                         thread_id,

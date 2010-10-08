@@ -25,8 +25,8 @@ class SyslogsLibraryImpl : public SyslogsLibrary {
 
     // Schedule a task on the FILE thread which will then trigger a request
     // callback on the calling thread (e.g. UI) when complete.
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             this, &SyslogsLibraryImpl::ReadSyslogs, request, tmpfilename));
 

@@ -31,8 +31,8 @@ class OnlineAttemptTest : public ::testing::Test {
  public:
   OnlineAttemptTest()
       : message_loop_(MessageLoop::TYPE_UI),
-        ui_thread_(ChromeThread::UI, &message_loop_),
-        io_thread_(ChromeThread::IO),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        io_thread_(BrowserThread::IO),
         state_("", "", "", "", ""),
         resolver_(new MockAuthAttemptStateResolver) {
   }
@@ -68,8 +68,8 @@ class OnlineAttemptTest : public ::testing::Test {
         .Times(1)
         .RetiresOnSaturation();
 
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(attempt_.get(),
                           &OnlineAttempt::OnClientLoginFailure,
                           error));
@@ -79,16 +79,16 @@ class OnlineAttemptTest : public ::testing::Test {
   }
 
   void CancelLogin(OnlineAttempt* auth) {
-    ChromeThread::PostTask(
-        ChromeThread::IO,
+    BrowserThread::PostTask(
+        BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(auth,
                           &OnlineAttempt::CancelClientLogin));
   }
 
   static void Quit() {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask());
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask());
   }
 
   static void RunCancelTest(OnlineAttempt* attempt, Profile* profile) {
@@ -97,8 +97,8 @@ class OnlineAttemptTest : public ::testing::Test {
   }
 
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
   TestAttemptState state_;
   scoped_ptr<MockAuthAttemptStateResolver> resolver_;
   scoped_refptr<OnlineAttempt> attempt_;
@@ -110,8 +110,8 @@ TEST_F(OnlineAttemptTest, LoginSuccess) {
       .Times(1)
       .RetiresOnSaturation();
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(attempt_.get(),
                         &OnlineAttempt::OnClientLoginSuccess,
                         result));
@@ -134,8 +134,8 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
   MockFactory<GotCanceledFetcher> factory;
   URLFetcher::set_factory(&factory);
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&OnlineAttemptTest::RunCancelTest,
                           attempt_.get(), &profile));
 
@@ -161,8 +161,8 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
   MockFactory<ExpectCanceledFetcher> factory;
   URLFetcher::set_factory(&factory);
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&OnlineAttemptTest::RunCancelTest,
                           attempt_.get(), &profile));
 
@@ -214,8 +214,8 @@ TEST_F(OnlineAttemptTest, TwoFactorSuccess) {
       .Times(1)
       .RetiresOnSaturation();
   GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(attempt_.get(),
                         &OnlineAttempt::OnClientLoginFailure,
                         error));

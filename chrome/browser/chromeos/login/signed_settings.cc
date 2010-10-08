@@ -148,9 +148,9 @@ void CheckWhitelistOp::OnKeyOpComplete(
     const OwnerManager::KeyOpCode return_code,
     const std::vector<uint8>& payload) {
   // Ensure we're on the UI thread, due to the need to send DBus traffic.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &CheckWhitelistOp::OnKeyOpComplete,
                           return_code, payload));
@@ -181,9 +181,9 @@ bool WhitelistOp::Execute() {
 void WhitelistOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                                   const std::vector<uint8>& payload) {
   // Ensure we're on the UI thread, due to the need to send DBus traffic.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &WhitelistOp::OnKeyOpComplete,
                           return_code, payload));
@@ -235,9 +235,9 @@ bool StorePropertyOp::Execute() {
 void StorePropertyOp::OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                                       const std::vector<uint8>& payload) {
   // Ensure we're on the UI thread, due to the need to send DBus traffic.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &StorePropertyOp::OnKeyOpComplete,
                           return_code, payload));
@@ -290,9 +290,9 @@ bool RetrievePropertyOp::Execute() {
 void RetrievePropertyOp::OnKeyOpComplete(
     const OwnerManager::KeyOpCode return_code,
     const std::vector<uint8>& payload) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &RetrievePropertyOp::OnKeyOpComplete,
                           return_code, payload));

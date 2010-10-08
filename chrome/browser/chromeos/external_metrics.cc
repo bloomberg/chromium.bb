@@ -75,8 +75,8 @@ void ExternalMetrics::RecordActionUI(std::string action_string) {
 
 void ExternalMetrics::RecordAction(const char* action) {
   std::string action_string(action);
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &ExternalMetrics::RecordActionUI, action));
 }
 
@@ -229,8 +229,8 @@ void ExternalMetrics::CollectEventsAndReschedule() {
 
 void ExternalMetrics::ScheduleCollector() {
   bool result;
-  result = ChromeThread::PostDelayedTask(
-    ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
+  result = BrowserThread::PostDelayedTask(
+    BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
         this, &chromeos::ExternalMetrics::CollectEventsAndReschedule),
     kExternalMetricsCollectionIntervalMs);
   DCHECK(result);

@@ -212,10 +212,10 @@ class ProxyConfigServiceImpl
   // Posted from UI thread to IO thread to carry the new config information.
   void IOSetProxyConfig(const ProxyConfig& new_config);
 
-  // Checks that method is called on ChromeThread::IO thread.
+  // Checks that method is called on BrowserThread::IO thread.
   void CheckCurrentlyOnIOThread();
 
-  // Checks that method is called on ChromeThread::UI thread.
+  // Checks that method is called on BrowserThread::UI thread.
   void CheckCurrentlyOnUIThread();
 
   // Data members.

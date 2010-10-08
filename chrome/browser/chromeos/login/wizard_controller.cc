@@ -173,8 +173,8 @@ void DeleteWizardControllerAndLaunchBrowser(WizardController* controller) {
   delete controller;
   // Launch browser after controller is deleted and its windows are closed.
   chromeos::LoginUtils::Get()->EnableBrowserLaunch(true);
-  ChromeThread::PostTask(
-      ChromeThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       NewRunnableFunction(&chromeos::LoginUtils::DoBrowserLaunch,
                           ProfileManager::GetDefaultProfile()));
@@ -579,8 +579,8 @@ void WizardController::OnUserImageSelected() {
   // We're on the stack, so don't try and delete us now.
   // We should launch browser only after we delete the controller and close
   // its windows.
-  ChromeThread::PostTask(
-      ChromeThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       NewRunnableFunction(&DeleteWizardControllerAndLaunchBrowser,
                           this));

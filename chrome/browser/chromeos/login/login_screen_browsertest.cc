@@ -70,8 +70,8 @@ class LoginScreenTest : public WizardInProcessBrowserTest {
 
 static void Quit() {
   LOG(INFO) << "Posting a QuitTask to UI thread";
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask);
 }
 IN_PROC_BROWSER_TEST_F(LoginScreenTest, TestBasic) {
   ASSERT_TRUE(controller() != NULL);

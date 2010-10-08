@@ -43,7 +43,7 @@ OnlineAttempt::~OnlineAttempt() {
 }
 
 void OnlineAttempt::Initiate(Profile* profile) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   gaia_authenticator_.reset(
       new GaiaAuthenticator2(this,
                              GaiaConstants::kChromeOSSource,
@@ -53,7 +53,7 @@ void OnlineAttempt::Initiate(Profile* profile) {
 
 void OnlineAttempt::OnClientLoginSuccess(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   LOG(INFO) << "Online login successful!";
   if (fetch_canceler_) {
     fetch_canceler_->Cancel();
@@ -65,7 +65,7 @@ void OnlineAttempt::OnClientLoginSuccess(
 
 void OnlineAttempt::OnClientLoginFailure(
     const GoogleServiceAuthError& error) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (fetch_canceler_) {
     fetch_canceler_->Cancel();
     fetch_canceler_ = NULL;
@@ -93,11 +93,11 @@ void OnlineAttempt::OnClientLoginFailure(
 }
 
 void OnlineAttempt::TryClientLogin() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   fetch_canceler_ = NewRunnableMethod(this, &OnlineAttempt::CancelClientLogin);
-  ChromeThread::PostDelayedTask(ChromeThread::IO, FROM_HERE,
-                                fetch_canceler_,
-                                kClientLoginTimeoutMs);
+  BrowserThread::PostDelayedTask(BrowserThread::IO, FROM_HERE,
+                                 fetch_canceler_,
+                                 kClientLoginTimeoutMs);
   gaia_authenticator_->StartClientLogin(
       attempt_->username,
       attempt_->password,
@@ -108,7 +108,7 @@ void OnlineAttempt::TryClientLogin() {
 }
 
 void OnlineAttempt::CancelClientLogin() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (gaia_authenticator_->HasPendingFetch()) {
     LOG(WARNING) << "Canceling ClientLogin attempt.";
     gaia_authenticator_->CancelRequest();

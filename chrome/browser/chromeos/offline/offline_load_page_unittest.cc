@@ -46,8 +46,8 @@ class OfflineLoadPageTest : public RenderViewHostTestHarness,
   };
 
   OfflineLoadPageTest()
-      : ui_thread_(ChromeThread::UI, MessageLoop::current()),
-        io_thread_(ChromeThread::IO, MessageLoop::current()) {
+      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+        io_thread_(BrowserThread::IO, MessageLoop::current()) {
   }
 
   virtual void SetUp() {
@@ -83,8 +83,8 @@ class OfflineLoadPageTest : public RenderViewHostTestHarness,
 
  private:
   UserResponse user_response_;
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
 };
 
 

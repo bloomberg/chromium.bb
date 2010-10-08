@@ -48,7 +48,7 @@ AuthAttemptState::~AuthAttemptState() {}
 void AuthAttemptState::RecordOnlineLoginStatus(
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     const LoginFailure& outcome) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   online_complete_ = true;
   online_outcome_ = outcome;
   credentials_ = credentials;
@@ -56,46 +56,46 @@ void AuthAttemptState::RecordOnlineLoginStatus(
 
 void AuthAttemptState::RecordCryptohomeStatus(bool cryptohome_outcome,
                                               int cryptohome_code) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   cryptohome_complete_ = true;
   cryptohome_outcome_ = cryptohome_outcome;
   cryptohome_code_ = cryptohome_code;
 }
 
 void AuthAttemptState::ResetCryptohomeStatus() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   cryptohome_complete_ = false;
   cryptohome_outcome_ = false;
   cryptohome_code_ = kCryptohomeMountErrorNone;
 }
 
 bool AuthAttemptState::online_complete() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return online_complete_;
 }
 
 const LoginFailure& AuthAttemptState::online_outcome() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return online_outcome_;
 }
 
 const GaiaAuthConsumer::ClientLoginResult& AuthAttemptState::credentials() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return credentials_;
 }
 
 bool AuthAttemptState::cryptohome_complete() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return cryptohome_complete_;
 }
 
 bool AuthAttemptState::cryptohome_outcome() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return cryptohome_outcome_;
 }
 
 int AuthAttemptState::cryptohome_code() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return cryptohome_code_;
 }
 

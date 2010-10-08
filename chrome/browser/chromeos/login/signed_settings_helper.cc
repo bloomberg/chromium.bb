@@ -370,7 +370,7 @@ void SignedSettingsHelperImpl::StartRetrieveProperty(
 
 void SignedSettingsHelperImpl::CancelCallback(
     SignedSettingsHelper::Callback* callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   for (size_t i = 0; i < pending_contexts_.size(); ++i) {
     if (pending_contexts_[i]->callback() == callback) {
@@ -380,7 +380,7 @@ void SignedSettingsHelperImpl::CancelCallback(
 }
 
 void SignedSettingsHelperImpl::AddOpContext(OpContext* context) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(context);
 
   pending_contexts_.push_back(context);
@@ -402,14 +402,14 @@ void SignedSettingsHelperImpl::OnOpCreated(OpContext* context) {
 }
 
 void SignedSettingsHelperImpl::OnOpStarted(OpContext* context) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (test_delegate_)
     test_delegate_->OnOpStarted(context->op());
 }
 
 void SignedSettingsHelperImpl::OnOpCompleted(OpContext* context) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(pending_contexts_.front() == context);
 
   pending_contexts_.erase(pending_contexts_.begin());

@@ -48,16 +48,16 @@ class MockKeyUtils : public OwnerKeyUtils {
 
   static bool ExportPublicKeyViaDbusWin(RSAPrivateKey* key,
                                         LoginLibrary::Delegate* d) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&SetOwnerKeyCallback, d, true));
     return true;
   }
 
   static bool ExportPublicKeyViaDbusFail(RSAPrivateKey* key,
                                          LoginLibrary::Delegate* d) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&SetOwnerKeyCallback, d, false));
     return false;
   }

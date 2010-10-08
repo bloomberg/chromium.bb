@@ -25,12 +25,12 @@ void UserImageLoader::Start(const std::string& username,
                             const std::string& filename) {
   target_message_loop_ = MessageLoop::current();
 
-  ChromeThread::PostTask(ChromeThread::FILE,
-                         FROM_HERE,
-                         NewRunnableMethod(this,
-                                           &UserImageLoader::LoadImage,
-                                           username,
-                                           filename));
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
+                          NewRunnableMethod(this,
+                                            &UserImageLoader::LoadImage,
+                                            username,
+                                            filename));
 }
 
 void UserImageLoader::LoadImage(const std::string& username,

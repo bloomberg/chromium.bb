@@ -17,16 +17,16 @@ class TouchpadLibraryImpl : public TouchpadLibrary {
 
   void SetSensitivity(int value) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      ChromeThread::PostTask(
-          ChromeThread::FILE, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
           NewRunnableFunction(&SetTouchpadSensitivity, value));
     }
   }
 
   void SetTapToClick(bool enabled) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
-      ChromeThread::PostTask(
-          ChromeThread::FILE, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
           NewRunnableFunction(&SetTouchpadTapToClick, enabled));
     }
   }

@@ -36,9 +36,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
 
   void NotifyScreenLockRequested() {
     // Make sure we run on IO thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ScreenLockLibraryImpl::NotifyScreenLockRequested));
@@ -49,9 +49,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
 
   void NotifyScreenLockCompleted() {
     // Make sure we run on IO thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ScreenLockLibraryImpl::NotifyScreenLockCompleted));
@@ -62,9 +62,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
 
   void NotifyScreenUnlockRequested() {
     // Make sure we run on IO thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ScreenLockLibraryImpl::NotifyScreenUnlockRequested));
@@ -75,9 +75,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
 
   void NotifyScreenUnlockCompleted() {
     // Make sure we run on IO thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ScreenLockLibraryImpl::NotifyScreenUnlockCompleted));
@@ -94,9 +94,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
 
   void LockScreen() {
     // Make sure we run on UI thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &ScreenLockLibraryImpl::LockScreen));
       return;
     }
@@ -105,9 +105,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
 
   void UnlockScreen() {
     // Make sure we run on UI thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &ScreenLockLibraryImpl::UnlockScreen));
       return;
     }
@@ -116,9 +116,9 @@ class ScreenLockLibraryImpl : public ScreenLockLibrary {
 
   void UnlockScreenFailed() {
     // Make sure we run on UI thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &ScreenLockLibraryImpl::UnlockScreenFailed));
       return;
     }

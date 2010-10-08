@@ -41,7 +41,7 @@ UserImageDownloader::UserImageDownloader(const std::string& username,
                                          const std::string& auth_token)
     : username_(username),
       auth_token_(auth_token) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (auth_token_.empty())
     return;
 
@@ -64,7 +64,7 @@ void UserImageDownloader::OnURLFetchComplete(const URLFetcher* source,
                                              int response_code,
                                              const ResponseCookies& cookies,
                                              const std::string& data) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (response_code != 200) {
     LOG(ERROR) << "Response code is " << response_code;
     LOG(ERROR) << "Url is " << url.spec();

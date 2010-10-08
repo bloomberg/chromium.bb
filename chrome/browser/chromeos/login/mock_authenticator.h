@@ -39,8 +39,8 @@ class MockAuthenticator : public Authenticator {
                                    const std::string& login_captcha) {
     if (expected_username_ == username &&
         expected_password_ == password) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this,
                             &MockAuthenticator::OnLoginSuccess,
                             GaiaAuthConsumer::ClientLoginResult(),
@@ -49,8 +49,8 @@ class MockAuthenticator : public Authenticator {
     } else {
       GoogleServiceAuthError error(
           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this,
                             &MockAuthenticator::OnLoginFailure,
                             LoginFailure::FromNetworkAuthFailure(error)));
@@ -80,8 +80,8 @@ class MockAuthenticator : public Authenticator {
   void OnLoginFailure(const LoginFailure& failure) {
       consumer_->OnLoginFailure(failure);
       LOG(INFO) << "Posting a QuitTask to UI thread";
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE, new MessageLoop::QuitTask);
   }
 
   virtual void RecoverEncryptedData(

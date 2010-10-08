@@ -97,7 +97,7 @@ class MountLibraryImpl : public MountLibrary {
                                        MountEventType evt,
                                        const std::string& path) {
     // Make sure we run on UI thread.
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     FOR_EACH_OBSERVER(
         Observer, observers_, MountChanged(this, evt, path));

@@ -37,7 +37,7 @@ class CookieFetcherTest : public ::testing::Test {
         ta_url_(AuthResponseHandler::kTokenAuthUrl),
         client_login_data_("SID n' LSID"),
         token_("auth token"),
-        ui_thread_(ChromeThread::UI, &message_loop_) {
+        ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
   const GURL iat_url_;
@@ -45,7 +45,7 @@ class CookieFetcherTest : public ::testing::Test {
   const std::string client_login_data_;
   const std::string token_;
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   TestingProfile profile_;
 };
 

@@ -236,8 +236,8 @@ void ImageBurnHandler::HandleDownloadImage(const ListValue* args) {
 void ImageBurnHandler::HandleBurnImage(const ListValue* args) {
   ImageBurnTaskProxy* task = new ImageBurnTaskProxy(AsWeakPtr());
   task->AddRef();
-  ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(task, &ImageBurnTaskProxy::BurnImage));
 }
 
@@ -279,7 +279,7 @@ void ImageBurnHandler::BurnImage() {
 }
 
 void ImageBurnHandler::FinalizeBurn(bool successful) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (successful)
     dom_ui_->CallJavascriptFunction(L"burnSuccessful");
   else
@@ -614,8 +614,8 @@ ImageBurnUI::ImageBurnUI(TabContents* contents) : DOMUI(contents) {
   ImageBurnHandler* handler = new ImageBurnHandler(contents);
   AddMessageHandler((handler)->Attach(this));
   ImageBurnUIHTMLSource* html_source = new ImageBurnUIHTMLSource();
-  ChromeThread::PostTask(
-       ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+       BrowserThread::IO, FROM_HERE,
        NewRunnableMethod(
            Singleton<ChromeURLDataManager>::get(),
            &ChromeURLDataManager::AddDataSource,

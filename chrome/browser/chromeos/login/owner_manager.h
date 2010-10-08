@@ -77,7 +77,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
   // successful return code, passing the signaure blob in |payload|.
   // On failure, calls d->OnKeyOpComplete() on |thread_id| with an appropriate
   // error and passes an empty string for |payload|.
-  void Sign(const ChromeThread::ID thread_id,
+  void Sign(const BrowserThread::ID thread_id,
             const std::string& data,
             Delegate* d);
 
@@ -89,7 +89,7 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager>,
   // successful return code, passing an empty string for |payload|.
   // On failure, calls d->OnKeyOpComplete() on |thread_id| with an appropriate
   // error code, passing an empty string for |payload|.
-  void Verify(const ChromeThread::ID thread_id,
+  void Verify(const BrowserThread::ID thread_id,
               const std::string& data,
               const std::vector<uint8>& signature,
               Delegate* d);

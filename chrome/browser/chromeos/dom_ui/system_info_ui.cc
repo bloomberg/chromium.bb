@@ -176,8 +176,8 @@ SystemInfoUI::SystemInfoUI(TabContents* contents) : DOMUI(contents) {
   SystemInfoUIHTMLSource* html_source = new SystemInfoUIHTMLSource();
 
   // Set up the chrome://system/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

@@ -61,8 +61,8 @@ static URLRequestJob* InspectorHook(URLRequest* request,
   EXPECT_STREQ("cros://inspector/?param1=value1+param2",
                request->url().spec().c_str());
   inspector_called = true;
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableFunction(QuitUIMessageLoop));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableFunction(QuitUIMessageLoop));
 
   // Do not navigate to the given URL. Navigate to about:blank instead.
   return new URLRequestAboutJob(request);

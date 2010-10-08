@@ -32,8 +32,8 @@ class OwnerManagerTest : public ::testing::Test {
  public:
   OwnerManagerTest()
       : message_loop_(MessageLoop::TYPE_UI),
-        ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE),
         mock_(new MockKeyUtils),
         injector_(mock_) /* injector_ takes ownership of mock_ */ {
   }
@@ -69,8 +69,8 @@ class OwnerManagerTest : public ::testing::Test {
   FilePath tmpfile_;
 
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   std::vector<uint8> fake_public_key_;
   scoped_ptr<RSAPrivateKey> fake_private_key_;
@@ -91,8 +91,8 @@ TEST_F(OwnerManagerTest, LoadOwnerKeyFail) {
       .WillOnce(Return(false))
       .RetiresOnSaturation();
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::LoadOwnerKey));
   message_loop_.Run();
@@ -108,8 +108,8 @@ TEST_F(OwnerManagerTest, AlreadyLoadedOwnerKey) {
 
   InjectKeys(manager.get());
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::LoadOwnerKey));
 
@@ -128,8 +128,8 @@ TEST_F(OwnerManagerTest, LoadOwnerKey) {
                       Return(true)))
       .RetiresOnSaturation();
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::LoadOwnerKey));
 
@@ -148,8 +148,8 @@ TEST_F(OwnerManagerTest, KeyGenerationFail) {
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::GenerateKeysAndExportPublic));
 
@@ -172,8 +172,8 @@ TEST_F(OwnerManagerTest, KeyExportFail) {
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::GenerateKeysAndExportPublic));
 
@@ -196,8 +196,8 @@ TEST_F(OwnerManagerTest, TakeOwnership) {
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::GenerateKeysAndExportPublic));
 
@@ -218,11 +218,11 @@ TEST_F(OwnerManagerTest, GetKeyFailDuringVerify) {
 
   MockKeyUser delegate(OwnerManager::KEY_UNAVAILABLE);
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::Verify,
-                        ChromeThread::UI,
+                        BrowserThread::UI,
                         std::string(),
                         std::vector<uint8>(),
                         &delegate));
@@ -244,11 +244,11 @@ TEST_F(OwnerManagerTest, AlreadyHaveKeysVerify) {
   InjectKeys(manager.get());
   MockKeyUser delegate(OwnerManager::SUCCESS);
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::Verify,
-                        ChromeThread::UI,
+                        BrowserThread::UI,
                         data,
                         sig,
                         &delegate));
@@ -276,11 +276,11 @@ TEST_F(OwnerManagerTest, GetKeyAndVerify) {
 
   MockKeyUser delegate(OwnerManager::SUCCESS);
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::Verify,
-                        ChromeThread::UI,
+                        BrowserThread::UI,
                         data,
                         sig,
                         &delegate));
@@ -303,11 +303,11 @@ TEST_F(OwnerManagerTest, AlreadyHaveKeysSign) {
   InjectKeys(manager.get());
   MockSigner delegate(OwnerManager::SUCCESS, sig);
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(manager.get(),
                         &OwnerManager::Sign,
-                        ChromeThread::UI,
+                        BrowserThread::UI,
                         data,
                         &delegate));
   message_loop_.Run();

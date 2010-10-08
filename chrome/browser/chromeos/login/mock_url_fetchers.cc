@@ -29,10 +29,10 @@ ExpectCanceledFetcher::~ExpectCanceledFetcher() {
 void ExpectCanceledFetcher::Start() {
   LOG(INFO) << "Delaying fetch completion in mock";
   task_ = NewRunnableFunction(&ExpectCanceledFetcher::CompleteFetch);
-  ChromeThread::PostDelayedTask(ChromeThread::UI,
-                                FROM_HERE,
-                                task_,
-                                100);
+  BrowserThread::PostDelayedTask(BrowserThread::UI,
+                                 FROM_HERE,
+                                 task_,
+                                 100);
 }
 
 // static

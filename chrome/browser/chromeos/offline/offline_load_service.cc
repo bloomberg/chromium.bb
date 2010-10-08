@@ -42,12 +42,12 @@ OfflineLoadService* OfflineLoadService::Get() {
 void OfflineLoadService::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (type.value == NotificationType::TAB_CLOSED) {
     registrar_.Remove(this, NotificationType::TAB_CLOSED, source);
     NavigationController* tab = Source<NavigationController>(source).ptr();
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this,
                           &OfflineLoadService::RemoveTabContents,
                           tab->tab_contents()));
@@ -57,7 +57,7 @@ void OfflineLoadService::Observe(NotificationType type,
 bool OfflineLoadService::ShouldProceed(int process_host_id,
                                        int render_view_id,
                                        const GURL& url) const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TabContents* tab_contents = tab_util::GetTabContentsByID(
       process_host_id, render_view_id);
   DCHECK(tab_contents);
@@ -70,7 +70,7 @@ bool OfflineLoadService::ShouldProceed(int process_host_id,
 void OfflineLoadService::Proceeded(int process_host_id,
                                    int render_view_id,
                                    const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TabContents* tab_contents = tab_util::GetTabContentsByID(
       process_host_id, render_view_id);
   DCHECK(tab_contents);
@@ -78,8 +78,8 @@ void OfflineLoadService::Proceeded(int process_host_id,
     DLOG(INFO) << "Proceeded: url=" << url.spec()
                << ", tab_contents=" << tab_contents;
     tabs_.insert(tab_contents);
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &OfflineLoadService::RegisterNotification,
                           &tab_contents->controller()));
@@ -89,13 +89,13 @@ void OfflineLoadService::Proceeded(int process_host_id,
 }
 
 void OfflineLoadService::RemoveTabContents(TabContents* tab_contents) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   tabs_.erase(tabs_.find(tab_contents));
 }
 
 void OfflineLoadService::RegisterNotification(
     NavigationController* navigation_controller) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, NotificationType::TAB_CLOSED,
                    Source<NavigationController>(
                        navigation_controller));

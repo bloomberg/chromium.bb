@@ -321,8 +321,8 @@ RegisterPageUI::RegisterPageUI(TabContents* contents) : DOMUI(contents){
   RegisterPageUIHTMLSource* html_source = new RegisterPageUIHTMLSource();
 
   // Set up the chrome://register/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

@@ -39,8 +39,8 @@ class SignedSettingsHelperTest : public ::testing::Test,
         fake_prop_("prop_name"),
         fake_value_("stub"),
         message_loop_(MessageLoop::TYPE_UI),
-        ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE),
+        ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE),
         pending_ops_(0) {
   }
 
@@ -75,8 +75,8 @@ class SignedSettingsHelperTest : public ::testing::Test,
   MockOwnershipService m_;
 
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   int pending_ops_;
 };

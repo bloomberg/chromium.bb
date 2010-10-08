@@ -107,15 +107,15 @@ void LoginPerformer::Login(const std::string& username,
 
 void LoginPerformer::LoginOffTheRecord() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::LoginOffTheRecord));
 }
 
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::RecoverEncryptedData,
                         old_password,
@@ -124,8 +124,8 @@ void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
 }
 
 void LoginPerformer::ResyncEncryptedData() {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::ResyncEncryptedData,
                         cached_credentials_));
@@ -138,8 +138,8 @@ void LoginPerformer::ResyncEncryptedData() {
 void LoginPerformer::StartAuthentication() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::AuthenticateToLogin,
                         profile,

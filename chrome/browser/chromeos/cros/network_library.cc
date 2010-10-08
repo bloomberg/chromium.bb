@@ -894,9 +894,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   void UpdateNetworkStatus() {
     // Make sure we run on UI thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this,
                             &NetworkLibraryImpl::UpdateNetworkStatus));
       return;

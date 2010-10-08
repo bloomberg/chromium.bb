@@ -65,9 +65,9 @@ class PowerLibraryImpl : public PowerLibrary {
 
     // Make sure we run on FILE thread becuase chromeos::EnableScreenLock
     // would write power manager config file to disk.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
-      ChromeThread::PostTask(
-          ChromeThread::FILE, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
           NewRunnableMethod(this, &PowerLibraryImpl::EnableScreenLock, enable));
       return;
     }
@@ -89,9 +89,9 @@ class PowerLibraryImpl : public PowerLibrary {
 
   void UpdatePowerStatus(const chromeos::PowerStatus& status) {
     // Make sure we run on UI thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(
               this, &PowerLibraryImpl::UpdatePowerStatus, status));
       return;

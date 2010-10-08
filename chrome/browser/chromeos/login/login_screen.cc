@@ -50,8 +50,8 @@ void LoginScreen::OnLogin(const std::string& username,
                           const std::string& password) {
   BootTimesLoader::Get()->RecordLoginAttempted();
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::AuthenticateToLogin,
                         profile, username, password,
@@ -59,8 +59,8 @@ void LoginScreen::OnLogin(const std::string& username,
 }
 
 void LoginScreen::OnLoginOffTheRecord() {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(authenticator_.get(),
                         &Authenticator::LoginOffTheRecord));
 }

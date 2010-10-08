@@ -71,8 +71,8 @@ void GoogleAuthenticator::CancelClientLogin() {
     LOG(INFO) << "Canceling ClientLogin attempt.";
     gaia_authenticator_->CancelRequest();
 
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this,
                           &GoogleAuthenticator::LoadLocalaccount,
                           std::string(kLocalaccountFile)));
@@ -90,8 +90,8 @@ void GoogleAuthenticator::TryClientLogin() {
       login_captcha_,
       GaiaAuthenticator2::HostedAccountsAllowed);
 
-  ChromeThread::PostDelayedTask(
-      ChromeThread::UI,
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI,
       FROM_HERE,
       NewRunnableMethod(this,
                         &GoogleAuthenticator::CancelClientLogin),
@@ -146,14 +146,14 @@ bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
   LoadLocalaccount(kLocalaccountFile);
   if (!localaccount_.empty() && localaccount_ == username) {
     LOG(INFO) << "unlocking local account";
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &GoogleAuthenticator::OnLoginSuccess,
                           GaiaAuthConsumer::ClientLoginResult(), false));
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
                           LoginFailure(LoginFailure::UNLOCK_FAILED)));
   }
@@ -161,7 +161,7 @@ bool GoogleAuthenticator::AuthenticateToUnlock(const std::string& username,
 }
 
 void GoogleAuthenticator::LoginOffTheRecord() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int mount_error = chromeos::kCryptohomeMountErrorNone;
   if (CrosLibrary::Get()->GetCryptohomeLibrary()->MountForBwsi(&mount_error)) {
     AuthenticationNotificationDetails details(true);
@@ -183,8 +183,8 @@ void GoogleAuthenticator::OnClientLoginSuccess(
   LOG(INFO) << "Online login successful!";
   ClearClientLoginAttempt();
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &GoogleAuthenticator::OnLoginSuccess,
                         credentials, false));
@@ -211,8 +211,8 @@ void GoogleAuthenticator::OnClientLoginFailure(
     return;
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
                         &GoogleAuthenticator::LoadLocalaccount,
                         std::string(kLocalaccountFile)));
@@ -221,16 +221,16 @@ void GoogleAuthenticator::OnClientLoginFailure(
 
   if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
     // The fetch failed for network reasons, try offline login.
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &GoogleAuthenticator::CheckOffline,
                           failure_details));
     return;
   }
 
   // The fetch succeeded, but ClientLogin said no, or we exhausted retries.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
         &GoogleAuthenticator::CheckLocalaccount,
         failure_details));
@@ -279,8 +279,8 @@ void GoogleAuthenticator::CheckLocalaccount(const LoginFailure& error) {
     AutoLock for_this_block(localaccount_lock_);
     LOG(INFO) << "Checking localaccount";
     if (!checked_for_localaccount_) {
-      ChromeThread::PostDelayedTask(
-          ChromeThread::UI,
+      BrowserThread::PostDelayedTask(
+          BrowserThread::UI,
           FROM_HERE,
           NewRunnableMethod(this,
                             &GoogleAuthenticator::CheckLocalaccount,
@@ -351,7 +351,7 @@ void GoogleAuthenticator::LoadSystemSalt() {
 }
 
 void GoogleAuthenticator::LoadLocalaccount(const std::string& filename) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   {
     AutoLock for_this_block(localaccount_lock_);
     if (checked_for_localaccount_)

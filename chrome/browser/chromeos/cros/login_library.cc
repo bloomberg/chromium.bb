@@ -179,8 +179,8 @@ class LoginLibraryStubImpl : public LoginLibrary {
   }
   bool SetOwnerKeyAsync(const std::vector<uint8>& public_key_der,
                         Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
@@ -188,24 +188,24 @@ class LoginLibraryStubImpl : public LoginLibrary {
                           const std::string& value,
                           const std::vector<uint8>& signature,
                           Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
   bool UnwhitelistAsync(const std::string& email,
                         const std::vector<uint8>& signature,
                         Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }
   bool WhitelistAsync(const std::string& email,
                       const std::vector<uint8>& signature,
                       Delegate* callback) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));
     return true;
   }

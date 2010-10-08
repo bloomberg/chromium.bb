@@ -38,7 +38,7 @@ bool BurnLibraryImpl::DoBurn(const FilePath& from_path,
   BurnLibraryTaskProxy* task = new BurnLibraryTaskProxy(AsWeakPtr());
   task->AddRef();
   task->BurnImage(from_path, to_path);
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(task, &BurnLibraryTaskProxy::BurnImage,
                         from_path, to_path));
   return true;
@@ -47,7 +47,7 @@ bool BurnLibraryImpl::DoBurn(const FilePath& from_path,
 bool BurnLibraryImpl::BurnImage(const FilePath& from_path,
                                 const FilePath& to_path) {
   // Make sure we run on file thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Check if there is a target path already being burnt to.
   if (target_path_ == "") {
@@ -71,7 +71,7 @@ void BurnLibraryImpl::BurnStatusChangedHandler(void* object,
 
   BurnLibraryTaskProxy* task = new BurnLibraryTaskProxy(burn->AsWeakPtr());
   task->AddRef();
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(task, &BurnLibraryTaskProxy::UpdateBurnStatus,
                         status_copy, evt));
 }
@@ -83,7 +83,7 @@ void BurnLibraryImpl::Init() {
 void BurnLibraryImpl::UpdateBurnStatus(const ImageBurnStatus& status,
                                        BurnEventType evt) {
   // Make sure we run on UI thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If burn is finished, remove target paths from paths being burnt to.
   // This has to be done in thread-safe way, hence using task proxy class.

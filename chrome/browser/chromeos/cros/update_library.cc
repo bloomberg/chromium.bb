@@ -67,9 +67,9 @@ class UpdateLibraryImpl : public UpdateLibrary {
 
   void UpdateStatus(const Status& status) {
     // Make sure we run on UI thread.
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &UpdateLibraryImpl::UpdateStatus, status));
       return;
     }

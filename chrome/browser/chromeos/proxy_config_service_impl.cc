@@ -566,7 +566,7 @@ void ProxyConfigServiceImpl::OnUISetProxyConfig(bool persist_to_device) {
   // |cached_config_|.
   Task* task = NewRunnableMethod(this,
       &ProxyConfigServiceImpl::IOSetProxyConfig, reference_config_);
-  if (!ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, task)) {
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task)) {
     LOG(INFO) << "Couldn't post task to IO thread to set new proxy config";
     delete task;
   }
@@ -582,11 +582,11 @@ void ProxyConfigServiceImpl::OnUISetProxyConfig(bool persist_to_device) {
 }
 
 void ProxyConfigServiceImpl::CheckCurrentlyOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 void ProxyConfigServiceImpl::CheckCurrentlyOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void ProxyConfigServiceImpl::IOSetProxyConfig(const ProxyConfig& new_config) {

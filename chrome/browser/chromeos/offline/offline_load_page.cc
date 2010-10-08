@@ -40,7 +40,7 @@ namespace chromeos {
 // static
 void OfflineLoadPage::Show(int process_host_id, int render_view_id,
                            const GURL& url, Delegate* delegate) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (NetworkStateNotifier::is_connected()) {
     // Check again in UI thread and proceed if it's connected.
     delegate->OnBlockingPageComplete(true);
