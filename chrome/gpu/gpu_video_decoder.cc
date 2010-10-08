@@ -4,13 +4,21 @@
 
 #include "chrome/gpu/gpu_video_decoder.h"
 
+#include "base/command_line.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/media/fake_gl_video_decode_engine.h"
 #include "chrome/gpu/media/fake_gl_video_device.h"
 #include "media/base/data_buffer.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
+
+#if defined(OS_WIN)
+#include "chrome/gpu/media/mft_angle_video_device.h"
+#include "media/video/mft_h264_decode_engine.h"
+#include <d3d9.h>
+#endif
 
 void GpuVideoDecoder::OnChannelConnected(int32 peer_pid) {
 }
@@ -105,7 +113,12 @@ void GpuVideoDecoder::ProduceVideoSample(scoped_refptr<Buffer> buffer) {
 }
 
 void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
-  int32 frame_id = -1;
+  if (frame->IsEndOfStream()) {
+    SendConsumeVideoFrame(kGpuVideoInvalidFrameId, 0, 0, kGpuVideoEndOfStream);
+    return;
+  }
+
+  int32 frame_id = kGpuVideoInvalidFrameId;
   for (VideoFrameMap::iterator i = video_frame_map_.begin();
        i != video_frame_map_.end(); ++i) {
     if (i->second == frame) {
@@ -116,8 +129,7 @@ void GpuVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
   DCHECK_NE(-1, frame_id) << "VideoFrame not recognized";
 
   SendConsumeVideoFrame(frame_id, frame->GetTimestamp().InMicroseconds(),
-                        frame->GetDuration().InMicroseconds(),
-                        frame->IsEndOfStream() ? kGpuVideoEndOfStream : 0);
+                        frame->GetDuration().InMicroseconds(), 0);
 }
 
 void* GpuVideoDecoder::GetDevice() {
@@ -225,8 +237,16 @@ GpuVideoDecoder::GpuVideoDecoder(
 
   // TODO(jiesun): find a better way to determine which VideoDecodeEngine
   // to return on current platform.
+#if defined(OS_WIN)
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableAcceleratedDecoding)) {
+    decode_engine_.reset(new media::MftH264DecodeEngine(true));
+    video_device_.reset(new MftAngleVideoDevice());
+  }
+#else
   decode_engine_.reset(new FakeGlVideoDecodeEngine());
   video_device_.reset(new FakeGlVideoDevice());
+#endif
 }
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
@@ -235,7 +255,7 @@ void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {
   config_.width = param.width;
   config_.height = param.height;
   config_.opaque_context = NULL;
-  decode_engine_->Initialize(NULL, this, this, config_);
+  decode_engine_->Initialize(message_loop_, this, this, config_);
 }
 
 void GpuVideoDecoder::OnUninitialize() {

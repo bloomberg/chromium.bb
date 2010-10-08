@@ -348,8 +348,8 @@ IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
   // GpuVideoDecoder reports that a video frame is ready to be consumed.
   IPC_MESSAGE_ROUTED4(GpuVideoDecoderHostMsg_ConsumeVideoFrame,
                       int32, /* Video Frame ID */
-                      int64, /* Timestamp in ms */
-                      int64, /* Duration in ms */
+                      int64, /* Timestamp in microseconds */
+                      int64, /* Duration in microseconds */
                       int32) /* Flags */
 
   // Allocate video frames for output of the hardware video decoder.

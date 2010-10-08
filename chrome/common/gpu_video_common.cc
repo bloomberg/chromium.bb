@@ -4,6 +4,8 @@
 
 #include "chrome/common/gpu_video_common.h"
 
+const int32 kGpuVideoInvalidFrameId = -1;
+
 namespace IPC {
 
 ///////////////////////////////////////////////////////////////////////////////
