@@ -67,8 +67,14 @@ void GPUProcessor::Destroy() {
 }
 
 uint64 GPUProcessor::SetWindowSizeForIOSurface(const gfx::Size& size) {
+  // This is called from an IPC handler, so it's undefined which context is
+  // current. Make sure the right one is.
+  decoder_->GetGLContext()->MakeCurrent();
+
   ResizeOffscreenFrameBuffer(size);
   decoder_->UpdateOffscreenFrameBufferSize();
+
+  // Note: The following line changes the current context again.
   return surface_->SetSurfaceSize(size);
 }
 
