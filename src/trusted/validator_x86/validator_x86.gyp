@@ -464,12 +464,16 @@
       ],
       # we depend on ncvalidate build to generate the headers
       'dependencies': ['ncvalidate_gen' ],
-      'sources': [ 'ncdis_util.c', 'ncdis_segments.c' ],
+      'sources': [ 'ncdis_util.c', 
+                   'ncdis_segments.c',
+		   'ncenuminsts.c'
+                 ],
       'cflags!': [
         '-Wextra',
         '-Wswitch-enum',
         '-Wsign-compare'
       ],
+      'defines': [ 'NACL_TRUSTED_TEST_ENV' ],
       'xcode_settings': {
         'WARNING_CFLAGS!': [
           '-Wextra',

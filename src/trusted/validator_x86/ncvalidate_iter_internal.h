@@ -108,5 +108,10 @@ struct NaClValidatorState {
   Bool do_stub_out;
 };
 
+/* Add validators to validator state if missing. Assumed to be called just
+ * before analyzing a code segment.
+ */
+void NaClValidatorStateInitializeValidators(NaClValidatorState* state);
+
 #endif
   /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVALIDATE_ITER_INTERNAL_H__ */

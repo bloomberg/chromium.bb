@@ -26,27 +26,65 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+/* Return the segment register to use, based on prefix specification,
+ * or reg_default if no prefix specified.
+ */
+static NaClOpKind NaClGetSegmentPrefixReg(NaClInstState* state,
+                                          NaClOpKind reg_default) {
+  /* Note: We need to find the LAST segment prefix byte, since it overrides
+   * other segment prefix bytes, if multiple segment prefixes are specified.
+   */
+  if (32 == NACL_TARGET_SUBARCH) {
+    if (state->prefix_mask &
+        (kPrefixSEGCS | kPrefixSEGSS | kPrefixSEGFS |
+         kPrefixSEGGS | kPrefixSEGES | kPrefixSEGDS)) {
+      int i;
+      for (i = state->num_prefix_bytes - 1; (i >= 0); --i) {
+        switch (state->mpc[i]) {
+          case kValueSEGCS:
+            return RegCS;
+          case kValueSEGSS:
+            return RegSS;
+          case kValueSEGFS:
+            return RegFS;
+          case kValueSEGGS:
+            return RegGS;
+          case kValueSEGES:
+            return RegES;
+          case kValueSEGDS:
+            return RegDS;
+          default:
+            break;
+        }
+      }
+    }
+  } else if (state->prefix_mask &
+             /* Only GS and FS matter in 64-bit mode. */
+             (kPrefixSEGGS | kPrefixSEGFS)) {
+    int i;
+    for (i = state->num_prefix_bytes - 1; (i >= 0); --i) {
+    /* for (i = 0; i < state->num_prefix_bytes; ++i) { */
+      switch (state->mpc[i]) {
+        case kValueSEGFS:
+          return RegFS;
+        case kValueSEGGS:
+          return RegGS;
+        default:
+          break;
+      }
+    }
+  }
+  return reg_default;
+}
+
 /* Return the segment register to use if DS is the default. */
 static NaClOpKind NaClGetDsSegmentReg(NaClInstState* state) {
-  if (NACL_TARGET_SUBARCH == 32) {
-    if (state->prefix_mask & kPrefixSEGCS) {
-      return RegCS;
-    } else if (state->prefix_mask & kPrefixSEGSS) {
-      return RegSS;
-    } else if (state->prefix_mask & kPrefixSEGFS) {
-      return RegFS;
-    } else if (state->prefix_mask & kPrefixSEGGS) {
-      return RegGS;
-    } else if (state->prefix_mask & kPrefixSEGES) {
-      return RegES;
-    } else if (state->prefix_mask & kPrefixSEGDS) {
-      return RegDS;
-    } else {
-      return RegDS;
-    }
-  } else {
-    return RegDS;
-  }
+  return NaClGetSegmentPrefixReg(state, RegDS);
+}
+
+/* Return the segment register to use if ES is the default. */
+static NaClOpKind NaClGetEsSegmentReg(NaClInstState* state) {
+  return NaClGetSegmentPrefixReg(state, RegES);
 }
 
 /* Append the given expression node onto the given vector of expression
@@ -863,7 +901,7 @@ static NaClExp* NaClAppendEsOpReg(
     int reg_index,
     NaClModRmRegKind modrm_reg_kind) {
   NaClExp* results = NaClAppendSegmentAddress(state);
-  NaClAppendReg(RegES, &state->nodes);
+  NaClAppendReg(NaClGetEsSegmentReg(state), &state->nodes);
   NaClAppendOperandReg(state, operand, reg_index, modrm_reg_kind);
   return results;
 }
@@ -1212,25 +1250,7 @@ static NaClExp* NaClAppendMemoryOffset(NaClInstState* state,
                 displacement->flags));
   if (NACL_TARGET_SUBARCH == 64) {
     if (state->prefix_mask & (kPrefixSEGFS | kPrefixSEGGS)) {
-      int i;
-      NaClOpKind seg_reg = RegUnknown;
-
-      /* Note: We need to find the LAST segment prefix byte, since it overrides
-       * other segment prefix bytes, if multiple segment prefixes are specified.
-       */
-      for (i = state->num_prefix_bytes - 1;
-           (seg_reg == RegUnknown) && (i >= 0); --i) {
-        switch (state->mpc[i]) {
-          case kValueSEGFS:
-            seg_reg = RegFS;
-            break;
-          case kValueSEGGS:
-            seg_reg = RegGS;
-            break;
-          default:
-            break;
-        }
-      }
+      NaClOpKind seg_reg = NaClGetSegmentPrefixReg(state, RegUnknown);
       if (seg_reg != RegUnknown) {
         root = NaClAppendSegmentAddress(state);
         n = NaClAppendReg(seg_reg, &state->nodes);
@@ -1353,6 +1373,7 @@ static void NaClAppendEDI(NaClInstState* state) {
 
 static NaClExp* NaClAppendDS_EDI(NaClInstState* state) {
   NaClExp* results = NaClAppendSegmentAddress(state);
+  results->flags |= NACL_EFLAG(ExprDSrDICase);
   NaClAppendReg(NaClGetDsSegmentReg(state),  &state->nodes);
   NaClAppendEDI(state);
   return results;
@@ -1360,7 +1381,8 @@ static NaClExp* NaClAppendDS_EDI(NaClInstState* state) {
 
 static NaClExp* NaClAppendES_EDI(NaClInstState* state) {
   NaClExp* results = NaClAppendSegmentAddress(state);
-  NaClAppendReg(RegES, &state->nodes);
+  results->flags |= NACL_EFLAG(ExprESrDICase);
+  NaClAppendReg(NaClGetEsSegmentReg(state),  &state->nodes);
   NaClAppendEDI(state);
   return results;
 }

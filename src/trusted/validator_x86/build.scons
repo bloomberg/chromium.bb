@@ -46,6 +46,12 @@ env.ComponentLibrary('nchelper', ['ncfileutil.c'])
 if env['TARGET_ARCHITECTURE'] != 'x86':
   Return()
 
+# Create environment for testing, rather than part of the TCB. Then
+# define compile-time flag that communicates that we are compiling
+# in the test environment (rather than for the TCB).
+test_env = env.Clone();
+test_env.Append(CCFLAGS=['-DNACL_TRUSTED_TEST_ENV'])
+
 # Define where generated code should be put.
 ncv_gen_basedir = '${TARGET_ROOT}'
 ncv_gen_dir = ncv_gen_basedir +'/gen/native_client/src/trusted/validator_x86'
@@ -164,7 +170,10 @@ env.ComponentLibrary('ncvalidate_sfi',
                       'nc_jumps.c',
                       'ncval_driver.c'])
 
-env.ComponentLibrary('ncdis_util', ['ncdis_util.c', 'ncdis_segments.c'])
+test_env.ComponentLibrary('ncdis_util',
+                          ['ncdis_util.c',
+                           'ncdis_segments.c',
+                           'ncenuminsts.c'])
 
 #------------------------------------------------------------------
 # Generate the header files containing the modeled x86 instructions.
@@ -193,23 +202,23 @@ env.Command(
 
 # ======================================================================
 # Decoder unittests
-if env['TARGET_SUBARCH'] == '32':
+if test_env['TARGET_SUBARCH'] == '32':
   # TODO(kschimpf): remove this when the validator builds as 64-bits.
-  if env['BUILD_SUBARCH'] == '32':
-    ncdecode_tests = env.ComponentProgram('ncdecode_tests',
-                                          ['ncdecode_tests.c'],
-                                          EXTRA_LIBS=['ncvalidate',
-                                                      'ncdis_util'])
+  if test_env['BUILD_SUBARCH'] == '32':
+    ncdecode_tests = test_env.ComponentProgram('ncdecode_tests',
+                                               ['ncdecode_tests.c'],
+                                               EXTRA_LIBS=['ncvalidate',
+                                                           'ncdis_util'])
 
-    node = env.CommandTest(
+    node = test_env.CommandTest(
         'ncdecode_tests.out',
         [ncdecode_tests[0]],
         )
 
-    env.AddNodeToTestSuite(node, ['small_tests'])
+    test_env.AddNodeToTestSuite(node, ['small_tests'])
 
 # ======================================================================
-ncdis = env.ComponentProgram(
+ncdis = test_env.ComponentProgram(
   'ncdis', [
     'ncdis.c',
     force_cpp,
@@ -229,32 +238,32 @@ env.Requires(ncdis, crt)
 
 # ======================================================================
 # Valiator unittests
-if env['TARGET_SUBARCH'] == '32':
-  ncval_tests = env.ComponentProgram('ncval_tests',
-                                     ['ncval_tests.c'],
-                                     EXTRA_LIBS=['ncvalidate', 'nchelper'])
-  env.Requires(ncval_tests, crt)
+if test_env['TARGET_SUBARCH'] == '32':
+  ncval_tests = test_env.ComponentProgram('ncval_tests',
+                                          ['ncval_tests.c'],
+                                          EXTRA_LIBS=['ncvalidate', 'nchelper'])
+  test_env.Requires(ncval_tests, crt)
 
-  node = env.CommandTest(
+  node = test_env.CommandTest(
       'ncval_tests.out',
       [ncval_tests[0]],
       )
 
-  env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'])
+  test_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'])
 
 # ======================================================================
-if env['TARGET_SUBARCH'] == '32':
-  nacl_cpuid = env.ComponentProgram('nacl_cpuid',
-                                    ['nacl_cpuid_test.c'],
-                                    EXTRA_LIBS=['ncvalidate'])
-  env.Requires(nacl_cpuid, crt)
+if test_env['TARGET_SUBARCH'] == '32':
+  nacl_cpuid = test_env.ComponentProgram('nacl_cpuid',
+                                         ['nacl_cpuid_test.c'],
+                                         EXTRA_LIBS=['ncvalidate'])
+  test_env.Requires(nacl_cpuid, crt)
 
 
-  node = env.CommandTest(
+  node = test_env.CommandTest(
       'nacl_cpuid_test.out',
       [nacl_cpuid[0]])
 
-  env.AddNodeToTestSuite(node, ['large_tests'])
+  test_env.AddNodeToTestSuite(node, ['large_tests'])
 
 # ======================================================================
 # Helper functions for getting automated tests from the corresponding
@@ -278,7 +287,7 @@ def __GoldenBases(ext):
 
 # Generates the corresponding test file from the given base.
 def __BaseTestFile(base, ext):
-  return env.File(TESTDATA_DIR + base + '.' + ext)
+  return test_env.File(TESTDATA_DIR + base + '.' + ext)
 
 # Generates the corresponding test name from the given base.
 def __BaseTestName(test, base, ext):
@@ -289,19 +298,19 @@ def __OutTestFile(test, base, ext):
   return test + "_" + base + '.' + ext + '.out'
 
 def __AddTest(test, base, ext, command, groups):
-  env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
+  test_env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
 
 
 # ======================================================================
 # Decoder vs objdump tests
 # TODO: add tests using the toolchain binaries in the sdk
-if env.Bit('linux') and env['TARGET_SUBARCH'] == '32':
+if test_env.Bit('linux') and test_env['TARGET_SUBARCH'] == '32':
   test = 'discmp'
   ext = 'nexe'
   for base in __GoldenBases(ext):
-    node = env.CommandTest(
+    node = test_env.CommandTest(
         __OutTestFile(test, base, ext),
-        ["${PYTHON}", env.File('discmp.py'), env.File('ncdis'),
+        ["${PYTHON}", test_env.File('discmp.py'), test_env.File('ncdis'),
          __BaseTestFile(base, ext)],
         )
     __AddTest(test, base, ext, node, ['large_tests'])
@@ -312,48 +321,48 @@ TARGET_ARCH_NAME =  env['TARGET_ARCHITECTURE'] + '_' + env['TARGET_SUBARCH']
 
 NCDIS_TEST_NAME = 'ncdis_' + TARGET_ARCH_NAME + '_test'
 
-ncdis_input_golden = env.File(TESTDATA_DIR + 'ncdis_test.input')
+ncdis_input_golden = test_env.File(TESTDATA_DIR + 'ncdis_test.input')
 
-ncdis_test = env.CommandTest(
+ncdis_test = test_env.CommandTest(
     NCDIS_TEST_NAME + '.out',
     [ncdis[0] , '--use_iter=false', '--self_document', '--commands=-'],
     stdin=ncdis_input_golden,
     stdout_golden=ncdis_input_golden)
 
-env.AddNodeToTestSuite(ncdis_test, ['small_tests'], NCDIS_TEST_NAME)
+test_env.AddNodeToTestSuite(ncdis_test, ['small_tests'], NCDIS_TEST_NAME)
 
 # ======================================================================
 # Decoder on sample instruction sequences using new iterator model.
 
 NCDIS_ITER_TEST_NAME = 'ncdis_iter_' + TARGET_ARCH_NAME + '_test'
 
-ncdis_iter_input_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.input')
+ncdis_iter_input_golden = test_env.File(TESTDATA_DIR + 'ncdis_iter_test.input')
 
-ncdis_iter_test = env.CommandTest(
+ncdis_iter_test = test_env.CommandTest(
     NCDIS_ITER_TEST_NAME + '.out',
     [ncdis[0] , '--use_iter', '--self_document', '--commands=-'],
     stdin=ncdis_iter_input_golden,
     stdout_golden=ncdis_iter_input_golden)
 
-env.AddNodeToTestSuite(ncdis_iter_test, ['small_tests'], NCDIS_ITER_TEST_NAME)
+test_env.AddNodeToTestSuite(ncdis_iter_test, ['small_tests'], NCDIS_ITER_TEST_NAME)
 
 # Same as above, but comparing internal representation against golde files.
 
-ncdis_iter_internal_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.internal')
+ncdis_iter_internal_golden = test_env.File(TESTDATA_DIR + 'ncdis_iter_test.internal')
 
-ncdis_internal_test = env.CommandTest(
+ncdis_internal_test = test_env.CommandTest(
     NCDIS_ITER_TEST_NAME + "_int.out",
     [ncdis[0], "--use_iter", "--internal", "--commands=-"],
     stdin=ncdis_iter_input_golden,
     stdout_golden=ncdis_iter_internal_golden)
 
-env.AddNodeToTestSuite(ncdis_internal_test,
-                       ['small_tests'],
-                       NCDIS_ITER_TEST_NAME)
+test_env.AddNodeToTestSuite(ncdis_internal_test,
+                            ['small_tests'],
+                            NCDIS_ITER_TEST_NAME)
 
 # ======================================================================
 # Segment register validator.
-ncval = env.ComponentProgram(
+ncval = test_env.ComponentProgram(
   'ncval', [
     'ncval.c',
     force_cpp,
@@ -369,7 +378,7 @@ ncval = env.ComponentProgram(
     'utils'
   ])
 
-env.Requires(ncval, crt)
+test_env.Requires(ncval, crt)
 
 # ======================================================================
 # Validator tests against real nacl images
@@ -381,7 +390,7 @@ if env['TARGET_SUBARCH'] == '32':
   test = 'validate'
   ext = 'nexe'
   for base in __GoldenBases(ext):
-    node = env.CommandTest(
+    node = test_env.CommandTest(
         __OutTestFile(test, base, ext),
         [ncval[0], '-t', __BaseTestFile(base, ext)],
         )
@@ -401,7 +410,7 @@ def __AddNcDisTests(use_iter):
   else:
     options.append('--use_iter=false');
   for base in __GoldenBases(ext):
-    node_dis = env.CommandTest(
+    node_dis = test_env.CommandTest(
         __OutTestFile(test, base, ext),
         [ncdis[0]] + options,
         stdin = __BaseTestFile(base, 'hex'),
@@ -426,7 +435,7 @@ def __AddNcvalSfiTests(test_readwrite):
         command.append('--readwrite_sfi')
       else:
         command.append("--write_sfi")
-      node_val = env.CommandTest(
+      node_val = test_env.CommandTest(
           __OutTestFile(test, base, ext),
           command,
           stdin = __BaseTestFile(base, 'hex'),
@@ -446,7 +455,7 @@ def __AddNcvalSegmentTests():
                  '--use_iter=false',
                  '--hex_text=-',
                  '--max_errors=1000']
-      node_val = env.CommandTest(
+      node_val = test_env.CommandTest(
           __OutTestFile(test, base, ext),
           command,
           stdin = __BaseTestFile(base, 'hex'),
@@ -470,7 +479,7 @@ def __AddNcValStuboutTests(use_sfi):
       options.append('--use_iter=false')
     for base in __GoldenBases(ext):
       command = [ncval[0]] + options
-      node_stubout = env.CommandTest(
+      node_stubout = test_env.CommandTest(
           __OutTestFile(test, base, ext),
           command,
           stdin = __BaseTestFile(base, 'hex'),
@@ -488,7 +497,7 @@ def __AddModeledInstsTest():
   command = [ncdecode_tablegen[0],
              '-m%s' % (env['TARGET_SUBARCH']),
              '-documentation']
-  model = env.CommandTest(
+  model = test_env.CommandTest(
       __OutTestFile(test, base, ext),
       command,
       stdout_golden = __BaseTestFile(base, ext))
@@ -505,7 +514,7 @@ def __AddNegMaxErrors():
     test = 'neg_max_errs'
     base = 'ret'
     ext = 'nval'
-    node_val = env.CommandTest(
+    node_val = test_env.CommandTest(
         __OutTestFile(test, base, ext),
         [ncval[0], '--use_iter=false', '--max_errors=-1', '--hex_text=-'],
         stdin = __BaseTestFile(base, 'hex'),

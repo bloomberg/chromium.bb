@@ -285,6 +285,56 @@ static int NaClPrintDisassembledExp(struct Gio* file,
   }
 }
 
+/* Returns true if there is a segment override in the segment address
+ * node defined by vector[seg_addr_index].
+ *
+ * Parameters:
+ *   vector - The node expression tree associated with the instruction.
+ *   seg_addr_index - The index to the segment address node to check.
+ *   seg_eflag - The expr flag that must be associated with the
+ *      segment address node to be considered for an override.
+ *   seg_reg - The expected (i.e. default) segment register
+ *      to be associated with the segment address.
+ */
+static Bool NaClHasSegmentOverride(NaClExpVector* vector,
+                                   int seg_addr_index,
+                                   NaClExpFlag seg_eflag,
+                                   NaClOpKind seg_reg) {
+  NaClExp* seg_node = &vector->node[seg_addr_index];
+  if (seg_node->flags & NACL_EFLAG(seg_eflag)) {
+    int seg_index = seg_addr_index + 1;
+    NaClExp* node = &vector->node[seg_index];
+    if ((ExprRegister == node->kind) &&
+        (seg_reg != NaClGetExpRegister(node))) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/* Prints out the segment register associated with the segment
+ * address node defined by vector[seg_addr_index].
+ *
+ * Parameters:
+ *    file - The Gio file to print the segment register to.
+ *    is_first - True if the first operand of the instruction.
+ *    vector - The node expression tree associated with the instruction.
+ *   seg_addr_index - The index to the segment address node to check.
+ */
+static void NaClPrintSegmentOverride(struct Gio* file,
+                                     Bool* is_first,
+                                     NaClExpVector* vector,
+                                     int seg_addr_index) {
+  int seg_index = seg_addr_index + 1;
+  if (*is_first) {
+    gprintf(file, " ");
+    *is_first = FALSE;
+  } else {
+    gprintf(file, ", ");
+  }
+  NaClPrintDisassembledExp(file, vector, seg_index);
+}
+
 /* Print the given instruction opcode of the give state, to the
  * given file.
  */
@@ -293,21 +343,42 @@ static void NaClPrintDisassembled(struct Gio* file,
                                   NaClInst* inst) {
   uint32_t tree_index = 0;
   Bool is_first = TRUE;
+  Bool not_printed_prefix_segment = TRUE;
+  NaClExp* node;
   NaClExpVector* vector = NaClInstStateExpVector(state);
   NaClPrintLower(file, (char*) NaClMnemonicName(inst->name));
   while (tree_index < vector->number_expr_nodes) {
-    if (vector->node[tree_index].kind != OperandReference ||
-        (0 == (vector->node[tree_index].flags & NACL_EFLAG(ExprImplicit)))) {
+    node = &vector->node[tree_index];
+    if (node->kind != OperandReference ||
+        (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprImplicit)))) {
       if (is_first) {
         gprintf(file, " ");
         is_first = FALSE;
       } else {
         gprintf(file, ", ");
       }
-      tree_index = NaClPrintDisassembledExp(file, vector, tree_index);
-    } else {
-      tree_index += NaClExpWidth(vector, tree_index);
+      NaClPrintDisassembledExp(file, vector, tree_index);
+    } else if (not_printed_prefix_segment &&
+               (OperandReference == node->kind) &&
+               (node->flags & NACL_EFLAG(ExprImplicit))) {
+      /* Print out segment override of implicit segment address, if
+       * applicable.
+       */
+      if (OperandReference == node->kind) {
+        int seg_addr_index = tree_index + 1;
+        if (ExprSegmentAddress == vector->node[seg_addr_index].kind) {
+          if (NaClHasSegmentOverride(vector, seg_addr_index,
+                                     ExprDSrDICase, RegDS)) {
+            NaClPrintSegmentOverride(file, &is_first, vector, seg_addr_index);
+          } else if (NaClHasSegmentOverride(vector, seg_addr_index,
+                                            ExprESrDICase, RegES)) {
+            NaClPrintSegmentOverride(file, &is_first, vector, seg_addr_index);
+          }
+        }
+      }
     }
+    /* Skip over expression to next expresssion. */
+    tree_index += NaClExpWidth(vector, tree_index);
   }
 }
 

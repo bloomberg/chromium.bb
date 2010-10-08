@@ -328,7 +328,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
 /* Add validators to validator state if missing. Assumed to be called just
  * before analyzing a code segment.
  */
-static void NaClValidatorStateInitializeValidators(NaClValidatorState* state) {
+void NaClValidatorStateInitializeValidators(NaClValidatorState* state) {
   /* Note: Need to lazy initialize validators until after the call to
    * NaClValidateSegment, so that the user of the API can change flags.
    * Also, we must lazy initialize so that we don't break all callers,

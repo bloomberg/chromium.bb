@@ -31,3 +31,11 @@ ExprSignedInt
 ExprImplicit
 # Defines that the corresponding constant is a jump target.
 ExprJumpTarget
+# Defines that we have special case of segment register that should
+# be printed in the segment address, even if the operand is implicit,
+# which happens for instances of DS.[rDI].
+ExprDSrDICase
+# Defines that we have special case of segment register that should
+# be printed in the segment address, even if the operand is implicit,
+# which happens for instances of ES.[rDI].
+ExprESrDICase

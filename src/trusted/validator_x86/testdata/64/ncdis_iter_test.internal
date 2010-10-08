@@ -844,7 +844,7 @@ NaClExpVector[4] = {
       RegDX                   OpUse OpImplicit
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -857,7 +857,7 @@ NaClExpVector[6] = {
       RegDX                   OpUse OpImplicit
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -870,7 +870,7 @@ NaClExpVector[6] = {
       RegDX                   OpUse OpImplicit
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -885,7 +885,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -898,7 +898,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -911,7 +911,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1038,11 +1038,11 @@ NaClExpVector[8] = {
       RegES_EDI               OpUse OpImplicit
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1053,11 +1053,11 @@ NaClExpVector[8] = {
       RegES_EDI               OpUse OpImplicit
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1068,11 +1068,11 @@ NaClExpVector[8] = {
       RegES_EDI               OpUse OpImplicit
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1083,11 +1083,11 @@ NaClExpVector[8] = {
       RegES_EDI               OpUse OpImplicit
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1098,7 +1098,7 @@ NaClExpVector[8] = {
       RegAL                   OpUse OpImplicit
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1111,7 +1111,7 @@ NaClExpVector[6] = {
       RegEAX                  OpUse OpImplicit
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1124,7 +1124,7 @@ NaClExpVector[6] = {
       RegAX                   OpUse OpImplicit
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1137,7 +1137,7 @@ NaClExpVector[6] = {
       RegRAX                  OpUse OpImplicit
 NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
@@ -1150,11 +1150,11 @@ NaClExpVector[6] = {
       RegDS_EDI               OpUse OpImplicit
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1165,11 +1165,11 @@ NaClExpVector[8] = {
       RegDS_EDI               OpUse OpImplicit
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1180,11 +1180,11 @@ NaClExpVector[8] = {
       RegDS_EDI               OpUse OpImplicit
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1195,11 +1195,11 @@ NaClExpVector[8] = {
       RegDS_EDI               OpUse OpImplicit
 NaClExpVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprSet | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1234,7 +1234,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %al, ExprSet | ExprSize8 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1247,7 +1247,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1260,7 +1260,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1273,7 +1273,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprDSrDICase },
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1286,7 +1286,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %al, ExprUsed | ExprSize8 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1299,7 +1299,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1312,7 +1312,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %ax, ExprUsed | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -1325,7 +1325,7 @@ NaClExpVector[6] = {
   { OperandReference[1] , 0, ExprImplicit },
   { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
   { OperandReference[1] , 1, ExprImplicit },
-  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
@@ -3444,4 +3444,17 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x3020100, ExprSize32 | ExprSignedHex },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+};
+0000000000000000: 36 64 6f                                     outsd %fs
+  6f                          ILLEGAL OpcodeAllowsRep OperandSize_v OperandSize_o NaClIllegal
+    Outsd {%dx}, {$Xzd}
+      RegDX                   OpUse OpImplicit
+      RegES_EDI               OpUse OpImplicit
+NaClExpVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprUsed | ExprSize64 | ExprESrDICase },
+  { ExprRegister[0] , %fs, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
 };
