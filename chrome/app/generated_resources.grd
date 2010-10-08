@@ -4757,10 +4757,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Clearing...
       </message>
       <message name="IDS_CLEAR_DATA_ADOBE_FLASH_TITLE" desc="Title of Adobe flash section">
-        Adobe Flash
+        Adobe Flash Player
       </message>
       <message name="IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION" desc="Description of Adobe flash section">
-        Flash can store data associated with your computer. You can access and control this data using a website provided by Adobe.
+        Adobe Flash Player enables websites you visit to store data on your computer. You can manage this data using a website provided by Adobe:
       </message>
       <message name="IDS_CLEAR_DATA_CHROME_SYNC_TITLE" desc="Title of Chrome Sync section">
         Chrome Sync
