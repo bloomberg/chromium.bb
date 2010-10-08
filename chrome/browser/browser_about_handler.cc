@@ -799,6 +799,8 @@ std::string VersionNumberToString(uint32 value) {
 
 namespace {
 
+#if defined(OS_WIN)
+
 // Output DxDiagNode tree as HTML tables and nested HTML unordered list
 // elements.
 void DxDiagNodeToHTML(std::string* output, const DxDiagNode& node) {
@@ -832,6 +834,9 @@ void DxDiagNodeToHTML(std::string* output, const DxDiagNode& node) {
 
   output->append("</ul>\n");
 }
+
+#endif  // OS_WIN
+
 }
 
 std::string AboutGpu() {
