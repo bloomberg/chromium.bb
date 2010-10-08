@@ -97,12 +97,12 @@ TEST_F(FileSystemQuotaTest, CheckOriginQuotaMixedWithDifferentScheme) {
     GURL url(kTestOrigins[i]);
     if (url.SchemeIsFile())
       continue;
-    DCHECK(url == url.GetOrigin());
+    ASSERT_TRUE(url == url.GetOrigin());
     std::string new_scheme = "https";
     if (url.SchemeIsSecure())
       new_scheme = "http";
     else
-      DCHECK(url.SchemeIs("http"));
+      ASSERT_TRUE(url.SchemeIs("http"));
     std::string new_url_string = new_scheme + "://" + url.host();
     if (url.has_port())
       new_url_string += ":" + url.port();
@@ -126,7 +126,7 @@ TEST_F(FileSystemQuotaTest, CheckOriginQuotaMixedWithDifferentPort) {
     GURL url(kTestOrigins[i]);
     if (url.SchemeIsFile())
       continue;
-    DCHECK(url == url.GetOrigin());
+    ASSERT_TRUE(url == url.GetOrigin());
     int port = 81;
     if (url.has_port())
       port = url.IntPort() + 1;
