@@ -148,15 +148,17 @@ bool AmIBundled() {
   ProcessSerialNumber psn = {0, kCurrentProcess};
 
   FSRef fsref;
-  if (GetProcessBundleLocation(&psn, &fsref) != noErr) {
-    LOG(ERROR) << "GetProcessBundleLocation failed, returning false";
+  OSStatus pbErr;
+  if ((pbErr = GetProcessBundleLocation(&psn, &fsref)) != noErr) {
+    LOG(ERROR) << "GetProcessBundleLocation failed: error " << pbErr;
     return false;
   }
 
   FSCatalogInfo info;
-  if (FSGetCatalogInfo(&fsref, kFSCatInfoNodeFlags, &info,
-                       NULL, NULL, NULL) != noErr) {
-    LOG(ERROR) << "FSGetCatalogInfo failed, returning false";
+  OSErr fsErr;
+  if ((fsErr = FSGetCatalogInfo(&fsref, kFSCatInfoNodeFlags, &info,
+                                NULL, NULL, NULL)) != noErr) {
+    LOG(ERROR) << "FSGetCatalogInfo failed: error " << fsErr;
     return false;
   }
 
