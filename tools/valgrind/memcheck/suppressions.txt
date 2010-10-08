@@ -1432,6 +1432,16 @@
    fun:_ZN26SandboxedExtensionUnpacker17RewriteImageFilesEv
 }
 {
+   bug_31985
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net16HttpNetworkLayer10GetSessionEv
+   fun:_ZN3net16HttpNetworkLayer17CreateTransactionEP10scoped_ptrINS_15HttpTransactionEE
+   fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
+   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
+}
+{
    bug_32085
    Memcheck:Leak
    fun:_Znw*
