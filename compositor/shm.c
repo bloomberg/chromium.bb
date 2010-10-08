@@ -24,7 +24,6 @@
 
 #include "compositor.h"
 
-
 static void
 destroy_buffer(struct wl_resource *resource, struct wl_client *client)
 {
@@ -53,9 +52,9 @@ shm_buffer_attach(struct wl_buffer *buffer_base, struct wl_surface *surface)
 		(struct wlsc_shm_buffer *) buffer_base;
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 		     buffer->base.width, buffer->base.height, 0,
-		     GL_RGBA, GL_UNSIGNED_BYTE, buffer->data);
+		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer->data);
 	es->visual = buffer->base.visual;
 }
 
@@ -69,9 +68,9 @@ shm_buffer_damage(struct wl_buffer *buffer_base,
 		(struct wlsc_shm_buffer *) buffer_base;
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
 		     buffer->base.width, buffer->base.height, 0,
-		     GL_RGBA, GL_UNSIGNED_BYTE, buffer->data);
+		     GL_BGRA_EXT, GL_UNSIGNED_BYTE, buffer->data);
 
 	/* Hmm, should use glTexSubImage2D() here but GLES2 doesn't
 	 * support any unpack attributes except GL_UNPACK_ALIGNMENT. */
