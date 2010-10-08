@@ -2,13 +2,14 @@ body {
   background: -webkit-gradient(linear, left top, left bottom,
                                from(white),
                                to(#EEE));
-  margin: 0 0 0 0;
+  margin: 0;
   -webkit-user-select: none;
+  overflow: hidden;
 }
 
 .menu-item {
   white-space: nowrap;
-  margin: 0 0 0 0;
+  margin: 0;
   padding: 0 20px 0 5px;
   background-repeat: no-repeat;
 }
@@ -28,7 +29,7 @@ body {
 
 .left-icon {
   background-position: 4px center;
-  text-indent: 12px;
+  padding-left: 30px;
 }
 
 .right-icon { 
@@ -53,7 +54,6 @@ body {
 
 #viewport {
   overflow: hidden;
-  height: 100%;
 }
 
 .scroll-button {
@@ -66,6 +66,7 @@ body {
 }
 
 #scroll-up {
+  /* TODO(oshima): get right icons from UX designer */
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAADCAYAAACwAX77AAAAI0lEQVQImWNgQIA4BgaGuQxoII6BgeEvAwPDf2RJZEEYngsA2N8I6FqZBpwAAAAASUVORK5CYII=");
 }
 

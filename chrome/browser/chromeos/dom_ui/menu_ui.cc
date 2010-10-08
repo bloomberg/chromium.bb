@@ -24,6 +24,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "gfx/canvas_skia.h"
 #include "grit/app_resources.h"
@@ -80,7 +81,15 @@ const std::string& GetImageDataUrlForRadio(bool on) {
   return on ? onImage : offImage;
 }
 
-std::string GetMenuUIHTMLSourceFromString(const std::string& menu_html) {
+/**
+ * Generates a html file that uses |menu_class| as a menu implementation.
+ * |menu_source| specifies the source that contains the definition of the
+ * |menu_class|, or empty string to use plain "Menu".
+ */
+std::string GetMenuUIHTMLSourceFromString(
+    const base::StringPiece& menu_template,
+    const std::string& menu_class,
+    const std::string& menu_source) {
 #define SET_INTEGER_PROPERTY(prop) \
   value_config.SetInteger(#prop, menu_config.prop)
 
@@ -123,22 +132,23 @@ std::string GetMenuUIHTMLSourceFromString(const std::string& menu_html) {
 
   std::string json_config;
   base::JSONWriter::Write(&value_config, false, &json_config);
-  return menu_html + "<script>init(" + json_config + ");</script>";
-}
 
-// Returns the menu's html code given by the resource id with the code
-// to intialization the menu. The resource string should be pure code
-// and should not contain i18n string.
-std::string GetMenuUIHTMLSourceFromResource(int res) {
-  const base::StringPiece menu_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(res));
-  return GetMenuUIHTMLSourceFromString(menu_html.as_string());
+  DictionaryValue strings;
+  strings.SetString(
+      "init_script",
+      menu_class + ".decorate(document.getElementById('viewport'));" +
+      " init(" + json_config + ");");
+  strings.SetString("menu_source", menu_source);
+
+  return jstemplate_builder::GetI18nTemplateHtml(menu_template, &strings);
 }
 
 class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
                          public URLFetcher::Delegate {
  public:
-  explicit MenuUIHTMLSource(Profile* profile);
+  MenuUIHTMLSource(Profile* profile,
+                   const std::string& menu_class,
+                   const std::string& menu_source);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -159,6 +169,11 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
 
  private:
   virtual ~MenuUIHTMLSource() {}
+
+  // The name of JS Menu class to use.
+  const std::string menu_class_;
+  // The source file of the menu subclass.
+  const std::string menu_source_;
 #ifndef NDEBUG
   int request_id_;
   Profile* profile_;
@@ -179,11 +194,17 @@ class MenuHandler : public chromeos::MenuHandlerBase,
   virtual void RegisterMessages();
 
  private:
-  void HandleClick(const ListValue* values);
+  void HandleActivate(const ListValue* values);
   void HandleOpenSubmenu(const ListValue* values);
   void HandleCloseSubmenu(const ListValue* values);
   void HandleMoveInputToSubmenu(const ListValue* values);
   void HandleMoveInputToParent(const ListValue* values);
+  void HandleCloseAll(const ListValue* values);
+  // This is a utility DOMUI message to print debug message.
+  // Menu can't use dev tool as it lives outside of browser.
+  // TODO(oshima): This is inconvenient and figure out how we can use
+  // dev tools for menus (and other domui that does not belong to browser).
+  void HandleLog(const ListValue* values);
 
   // TabContentsDelegate implements:
   virtual void UpdatePreferredSize(const gfx::Size& new_size);
@@ -227,8 +248,12 @@ class MenuHandler : public chromeos::MenuHandlerBase,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MenuUIHTMLSource::MenuUIHTMLSource(Profile* profile)
-    : DataSource(chrome::kChromeUIMenu, MessageLoop::current())
+MenuUIHTMLSource::MenuUIHTMLSource(Profile* profile,
+                                   const std::string& menu_class,
+                                   const std::string& menu_source)
+    : DataSource(chrome::kChromeUIMenu, MessageLoop::current()),
+      menu_class_(menu_class),
+      menu_source_(menu_source)
 #ifndef NDEBUG
     , request_id_(-1),
       profile_(profile)
@@ -250,9 +275,13 @@ void MenuUIHTMLSource::StartDataRequest(const std::string& path,
     return;
   }
 #endif
+  static const base::StringPiece menu_template(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_MENU_HTML));
 
-  static const std::string menu_html =
-      GetMenuUIHTMLSourceFromResource(IDR_MENU_HTML);
+  // The resource string should be pure code and should not contain
+  // i18n string.
+  const std::string menu_html =
+      GetMenuUIHTMLSourceFromString(menu_template, menu_class_, menu_source_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -272,7 +301,7 @@ void MenuUIHTMLSource::OnURLFetchComplete(const URLFetcher* source,
 #ifndef NDEBUG
   // This should not be called in release build.
   const std::string menu_html =
-      GetMenuUIHTMLSourceFromString(data);
+      GetMenuUIHTMLSourceFromString(data, menu_class_, menu_source_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -306,9 +335,9 @@ DOMMessageHandler* MenuHandler::Attach(DOMUI* dom_ui) {
 
 void MenuHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
-      "click",
+      "activate",
       NewCallback(this,
-                  &MenuHandler::HandleClick));
+                  &MenuHandler::HandleActivate));
   dom_ui_->RegisterMessageCallback(
       "open_submenu",
       NewCallback(this,
@@ -325,13 +354,25 @@ void MenuHandler::RegisterMessages() {
       "move_to_parent",
       NewCallback(this,
                   &MenuHandler::HandleMoveInputToParent));
+  dom_ui_->RegisterMessageCallback(
+      "close_all",
+      NewCallback(this,
+                  &MenuHandler::HandleCloseAll));
+  dom_ui_->RegisterMessageCallback(
+      "log",
+      NewCallback(this,
+                  &MenuHandler::HandleLog));
 }
 
-void MenuHandler::HandleClick(const ListValue* values) {
-  CHECK_EQ(1U, values->GetSize());
+void MenuHandler::HandleActivate(const ListValue* values) {
+  CHECK_EQ(2U, values->GetSize());
   std::string index_str;
   bool success = values->GetString(0, &index_str);
   DCHECK(success);
+  std::string activation;
+  success = values->GetString(1, &activation);
+  DCHECK(success);
+
   int index;
   success = base::StringToInt(index_str, &index);
   DCHECK(success);
@@ -339,10 +380,15 @@ void MenuHandler::HandleClick(const ListValue* values) {
   if (control) {
     menus::MenuModel* model = GetMenuModel();
     DCHECK(model);
-    if (index < 0) {
-      control->CloseAll();
-    } else if (model->IsEnabledAt(index)) {
-      control->Activate(model, index);
+    DCHECK_GE(index, 0);
+    DCHECK(activation == "close_and_activate" ||
+           activation == "activate_no_close") << activation;
+    if (model->IsEnabledAt(index)) {
+      control->Activate(model,
+                        index,
+                        activation == "close_and_activate" ?
+                        chromeos::DOMUIMenuControl::CLOSE_AND_ACTIVATE :
+                        chromeos::DOMUIMenuControl::ACTIVATE_NO_CLOSE);
     }
   }
 }
@@ -382,6 +428,20 @@ void MenuHandler::HandleMoveInputToParent(const ListValue* values) {
   chromeos::DOMUIMenuControl* control = GetMenuControl();
   if (control)
     control->MoveInputToParent();
+}
+
+void MenuHandler::HandleCloseAll(const ListValue* values) {
+  chromeos::DOMUIMenuControl* control = GetMenuControl();
+  if (control)
+    control->CloseAll();
+}
+
+void MenuHandler::HandleLog(const ListValue* values) {
+  CHECK_EQ(1U, values->GetSize());
+  std::string msg;
+  bool success = values->GetString(0, &msg);
+  DCHECK(success);
+  DLOG(INFO) << msg;
 }
 
 void MenuHandler::UpdatePreferredSize(const gfx::Size& new_size) {
@@ -447,7 +507,7 @@ MenuUI::MenuUI(TabContents* contents) : DOMUI(contents) {
 }
 
 ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {
-  return new MenuUIHTMLSource(GetProfile());
+  return new MenuUIHTMLSource(GetProfile(), "Menu", "" /* no extra source */);
 }
 
 }  // namespace chromeos

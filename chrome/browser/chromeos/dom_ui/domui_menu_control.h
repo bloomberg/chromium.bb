@@ -22,13 +22,19 @@ namespace chromeos {
 // DOMUIMenuControl.
 class DOMUIMenuControl {
  public:
+  enum ActivationMode {
+    ACTIVATE_NO_CLOSE,   // Activate the command without closing menu.
+    CLOSE_AND_ACTIVATE,  // Close the menu and then activate the command.
+  };
   virtual ~DOMUIMenuControl() {}
 
   // Returns the MenuModel associated with this control.
   virtual menus::MenuModel* GetMenuModel() = 0;
 
   // Activates an item in the |model| at |index|.
-  virtual void Activate(menus::MenuModel* model, int index) = 0;
+  virtual void Activate(menus::MenuModel* model,
+                        int index,
+                        ActivationMode activation_mode) = 0;
 
   // Close All menu window from root menu to leaf submenus.
   virtual void CloseAll() = 0;

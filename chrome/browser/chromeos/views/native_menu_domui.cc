@@ -253,13 +253,22 @@ bool NativeMenuDOMUI::Dispatch(GdkEvent* event) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuDOMUI, MenuControl implementation:
 
-void NativeMenuDOMUI::Activate(menus::MenuModel* model, int index) {
+void NativeMenuDOMUI::Activate(menus::MenuModel* model,
+                               int index,
+                               ActivationMode activation) {
   NativeMenuDOMUI* root = GetRoot();
   if (root) {
-    root->activated_menu_ = model;
-    root->activated_index_ = index;
-    root->menu_action_ = MENU_ACTION_SELECTED;
-    root->Hide();
+    if (activation == CLOSE_AND_ACTIVATE) {
+      root->activated_menu_ = model;
+      root->activated_index_ = index;
+      root->menu_action_ = MENU_ACTION_SELECTED;
+      root->Hide();
+    } else {
+      if (model->IsEnabledAt(index) &&
+          MenuTypeCanExecute(model->GetTypeAt(index))) {
+        model->ActivatedAt(index);
+      }
+    }
   }
 }
 

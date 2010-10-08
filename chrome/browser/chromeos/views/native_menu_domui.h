@@ -56,7 +56,9 @@ class NativeMenuDOMUI : public views::MenuWrapper,
 
   // Overriden from DOMUIMenuControl;
   virtual menus::MenuModel* GetMenuModel() { return model_; }
-  virtual void Activate(menus::MenuModel* model, int index);
+  virtual void Activate(menus::MenuModel* model,
+                        int index,
+                        ActivationMode activation_mode);
   virtual void CloseAll();
   virtual void CloseSubmenu();
   virtual void MoveInputToParent();
