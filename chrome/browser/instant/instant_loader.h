@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/timer.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/page_transition_types.h"
@@ -122,6 +123,9 @@ class InstantLoader {
   // the page needs to be reloaded.
   void PageDoesntSupportInstant(bool needs_reload);
 
+  // Invoked from the timer to update the bounds of the omnibox.
+  void ProcessBoundsChange();
+
   InstantLoaderDelegate* delegate_;
 
   // If we're showing instant results this is the ID of the TemplateURL driving
@@ -153,10 +157,16 @@ class InstantLoader {
   // See description above setter.
   gfx::Rect omnibox_bounds_;
 
+  // Last bounds passed to the page.
+  gfx::Rect last_omnibox_bounds_;
+
   scoped_ptr<FrameLoadObserver> frame_load_observer_;
 
   // Transition type of the match last passed to Update.
   PageTransition::Type last_transition_type_;
+
+  // Timer used to update the bounds of the omnibox.
+  base::OneShotTimer<InstantLoader> update_bounds_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantLoader);
 };

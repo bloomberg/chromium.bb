@@ -61,6 +61,10 @@ const char kSetOmniboxBoundsScript[] =
 const char kSupportsInstantScript[] =
     "if (window.chrome.setDropdownDimensions) true; else false;";
 
+// Number of ms to delay before updating the omnibox bounds. This is a bit long
+// as updating the bounds ends up being quite expensive.
+const int kUpdateBoundsDelayMS = 500;
+
 // Escapes quotes in the |text| so that it be passed to JavaScript as a quoted
 // string.
 string16 EscapeUserText(const string16& text) {
@@ -205,6 +209,7 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
     DCHECK(loader_);
 
     gfx::Rect bounds = loader_->GetOmniboxBoundsInTermsOfPreview();
+    loader_->last_omnibox_bounds_ = loader_->omnibox_bounds_;
     if (!bounds.IsEmpty())
       SendOmniboxBoundsScript(tab_contents_, bounds);
 
@@ -583,8 +588,14 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
   omnibox_bounds_ = bounds;
   if (preview_contents_.get() && is_showing_instant() &&
       !is_waiting_for_load()) {
-    SendOmniboxBoundsScript(preview_contents_.get(),
-                            GetOmniboxBoundsInTermsOfPreview());
+    // Updating the bounds is rather expensive, and because of the async nature
+    // of the omnibox the bounds can dance around a bit. Delay the update in
+    // hopes of things settling down.
+    if (update_bounds_timer_.IsRunning())
+      update_bounds_timer_.Stop();
+    update_bounds_timer_.Start(
+        base::TimeDelta::FromMilliseconds(kUpdateBoundsDelayMS),
+        this, &InstantLoader::ProcessBoundsChange);
   }
 }
 
@@ -615,6 +626,7 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type) {
                    type == INSTANT_COMMIT_PRESSED_ENTER);
   }
   omnibox_bounds_ = gfx::Rect();
+  last_omnibox_bounds_ = gfx::Rect();
   url_ = GURL();
   user_text_.clear();
   complete_suggested_text_.clear();
@@ -631,6 +643,7 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type) {
     preview_tab_contents_delegate_->Reset();
     ready_ = false;
   }
+  update_bounds_timer_.Stop();
   return preview_contents_.release();
 }
 
@@ -719,4 +732,16 @@ void InstantLoader::PageDoesntSupportInstant(bool needs_reload) {
   frame_load_observer_.reset(NULL);
 
   delegate_->InstantLoaderDoesntSupportInstant(this, needs_reload, url_to_load);
+}
+
+void InstantLoader::ProcessBoundsChange() {
+  if (last_omnibox_bounds_ == omnibox_bounds_)
+    return;
+
+  last_omnibox_bounds_ = omnibox_bounds_;
+  if (preview_contents_.get() && is_showing_instant() &&
+      !is_waiting_for_load()) {
+    SendOmniboxBoundsScript(preview_contents_.get(),
+                            GetOmniboxBoundsInTermsOfPreview());
+  }
 }
