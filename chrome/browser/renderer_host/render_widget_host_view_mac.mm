@@ -137,6 +137,18 @@ void DisablePasswordInput() {
 // This subclass of NSView hosts the output of accelerated plugins on
 // the page.
 
+// This class takes a couple of locks, some indirectly. The lock hiearchy is:
+// 1. The DisplayLink lock, implicit to the display link owned by this view.
+//    It is taken by the framework before |DrawOneAcceleratedPluginCallback()|
+//    is called, and during CVDisplayLink* function calls.
+// 2. The CGL lock, taken explicitly.
+// 3. The AcceleratedSurfaceContainerManagerMac's lock, which it takes when any
+//    of its methods are called.
+//
+// No code should ever try to acquire a lock further up in the hierarchy if it
+// already owns a lower lock. For example, while the CGL lock is taken, no
+// CVDisplayLink* functions must be called.
+
 // Informal protocol implemented by windows that need to be informed explicitly
 // about underlay surfaces.
 @interface NSObject (UnderlayableSurface)
