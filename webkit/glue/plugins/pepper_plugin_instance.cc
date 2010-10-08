@@ -141,28 +141,28 @@ void RectToPPRect(const gfx::Rect& input, PP_Rect* output) {
 }
 
 PP_Var GetWindowObject(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeUndefined();
   return instance->GetWindowObject();
 }
 
 PP_Var GetOwnerElementObject(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeUndefined();
   return instance->GetOwnerElementObject();
 }
 
 bool BindGraphics(PP_Instance instance_id, PP_Resource device_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
   return instance->BindGraphics(device_id);
 }
 
 bool IsFullFrame(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
   return instance->full_frame();
@@ -171,7 +171,7 @@ bool IsFullFrame(PP_Instance instance_id) {
 PP_Var ExecuteScript(PP_Instance instance_id,
                      PP_Var script,
                      PP_Var* exception) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeUndefined();
   return instance->ExecuteScript(script, exception);
@@ -188,7 +188,7 @@ const PPB_Instance ppb_instance = {
 void NumberOfFindResultsChanged(PP_Instance instance_id,
                                 int32_t total,
                                 bool final_result) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
 
@@ -199,7 +199,7 @@ void NumberOfFindResultsChanged(PP_Instance instance_id,
 
 void SelectedFindResultChanged(PP_Instance instance_id,
                                int32_t index) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
 
@@ -214,14 +214,14 @@ const PPB_Find_Dev ppb_find = {
 };
 
 bool IsFullscreen(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
   return instance->IsFullscreen();
 }
 
 bool SetFullscreen(PP_Instance instance_id, bool fullscreen) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
   return instance->SetFullscreen(fullscreen);
@@ -233,7 +233,7 @@ const PPB_Fullscreen_Dev ppb_fullscreen = {
 };
 
 void ZoomChanged(PP_Instance instance_id, double factor) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   double zoom_level = WebView::zoomFactorToZoomLevel(factor);
@@ -248,7 +248,7 @@ void ZoomLimitsChanged(PP_Instance instance_id,
     return;
   }
 
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
   instance->delegate()->ZoomLimitsChanged(minimum_factor, maximium_factor);
@@ -267,6 +267,7 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
     : delegate_(delegate),
       module_(module),
       instance_interface_(instance_interface),
+      pp_instance_(0),
       container_(NULL),
       full_frame_(false),
       has_webkit_focus_(false),
@@ -283,6 +284,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
       fullscreen_container_(NULL) {
+  pp_instance_ = ResourceTracker::Get()->AddInstance(this);
+
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   DCHECK(delegate);
   module_->InstanceCreated(this);
@@ -292,16 +295,13 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
 PluginInstance::~PluginInstance() {
   delegate_->InstanceDeleted(this);
   module_->InstanceDeleted(this);
+
+  ResourceTracker::Get()->InstanceDeleted(pp_instance_);
 }
 
 // static
 const PPB_Instance* PluginInstance::GetInterface() {
   return &ppb_instance;
-}
-
-// static
-PluginInstance* PluginInstance::FromPPInstance(PP_Instance instance) {
-  return reinterpret_cast<PluginInstance*>(instance);
 }
 
 // static
@@ -317,10 +317,6 @@ const PPB_Fullscreen_Dev* PluginInstance::GetFullscreenInterface() {
 // static
 const PPB_Zoom_Dev* PluginInstance::GetZoomInterface() {
   return &ppb_zoom;
-}
-
-PP_Instance PluginInstance::GetPPInstance() {
-  return reinterpret_cast<intptr_t>(this);
 }
 
 void PluginInstance::Paint(WebCanvas* canvas,
@@ -451,7 +447,7 @@ PP_Var PluginInstance::ExecuteScript(PP_Var script, PP_Var* exception) {
 }
 
 void PluginInstance::Delete() {
-  instance_interface_->DidDestroy(GetPPInstance());
+  instance_interface_->DidDestroy(pp_instance());
 
   if (fullscreen_container_) {
     fullscreen_container_->Destroy();
@@ -476,13 +472,13 @@ bool PluginInstance::Initialize(WebPluginContainer* container,
     argc++;
   }
 
-  return instance_interface_->DidCreate(GetPPInstance(),
+  return instance_interface_->DidCreate(pp_instance(),
                                         argc, argn.get(), argv.get());
 }
 
 bool PluginInstance::HandleDocumentLoad(URLLoader* loader) {
   Resource::ScopedResourceId resource(loader);
-  return instance_interface_->HandleDocumentLoad(GetPPInstance(), resource.id);
+  return instance_interface_->HandleDocumentLoad(pp_instance(), resource.id);
 }
 
 bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
@@ -493,7 +489,7 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
   // Each input event may generate more than one PP_InputEvent.
   bool rv = false;
   for (size_t i = 0; i < pp_events.size(); i++)
-    rv |= instance_interface_->HandleInputEvent(GetPPInstance(), &pp_events[i]);
+    rv |= instance_interface_->HandleInputEvent(pp_instance(), &pp_events[i]);
 
   if (cursor_.get())
     *cursor_info = *cursor_;
@@ -501,7 +497,7 @@ bool PluginInstance::HandleInputEvent(const WebKit::WebInputEvent& event,
 }
 
 PP_Var PluginInstance::GetInstanceObject() {
-  return instance_interface_->GetInstanceObject(GetPPInstance());
+  return instance_interface_->GetInstanceObject(pp_instance());
 }
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
@@ -520,7 +516,7 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
   PP_Rect pp_position, pp_clip;
   RectToPPRect(position_, &pp_position);
   RectToPPRect(clip_, &pp_clip);
-  instance_interface_->DidChangeView(GetPPInstance(), &pp_position, &pp_clip);
+  instance_interface_->DidChangeView(pp_instance(), &pp_position, &pp_clip);
 }
 
 void PluginInstance::SetWebKitFocus(bool has_focus) {
@@ -530,7 +526,7 @@ void PluginInstance::SetWebKitFocus(bool has_focus) {
   bool old_plugin_focus = PluginHasFocus();
   has_webkit_focus_ = has_focus;
   if (PluginHasFocus() != old_plugin_focus)
-    instance_interface_->DidChangeFocus(GetPPInstance(), PluginHasFocus());
+    instance_interface_->DidChangeFocus(pp_instance(), PluginHasFocus());
 }
 
 void PluginInstance::SetContentAreaFocus(bool has_focus) {
@@ -540,7 +536,7 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
   bool old_plugin_focus = PluginHasFocus();
   has_content_area_focus_ = has_focus;
   if (PluginHasFocus() != old_plugin_focus)
-    instance_interface_->DidChangeFocus(GetPPInstance(), PluginHasFocus());
+    instance_interface_->DidChangeFocus(pp_instance(), PluginHasFocus());
 }
 
 void PluginInstance::ViewInitiatedPaint() {
@@ -581,7 +577,7 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
 }
 
 string16 PluginInstance::GetSelectedText(bool html) {
-  PP_Var rv = instance_interface_->GetSelectedText(GetPPInstance(), html);
+  PP_Var rv = instance_interface_->GetSelectedText(pp_instance(), html);
   scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
   Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
   if (!string)
@@ -596,7 +592,7 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
   PP_Point p;
   p.x = point.x();
   p.y = point.y();
-  PP_Var rv = plugin_private_interface_->GetLinkAtPosition(GetPPInstance(), p);
+  PP_Var rv = plugin_private_interface_->GetLinkAtPosition(pp_instance(), p);
   scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
   Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
   if (!string)
@@ -607,7 +603,7 @@ string16 PluginInstance::GetLinkAtPosition(const gfx::Point& point) {
 void PluginInstance::Zoom(double factor, bool text_only) {
   if (!LoadZoomInterface())
     return;
-  plugin_zoom_interface_->Zoom(GetPPInstance(), factor, text_only);
+  plugin_zoom_interface_->Zoom(pp_instance(), factor, text_only);
 }
 
 bool PluginInstance::StartFind(const string16& search_text,
@@ -617,21 +613,21 @@ bool PluginInstance::StartFind(const string16& search_text,
     return false;
   find_identifier_ = identifier;
   return plugin_find_interface_->StartFind(
-      GetPPInstance(),
+      pp_instance(),
       UTF16ToUTF8(search_text.c_str()).c_str(),
       case_sensitive);
 }
 
 void PluginInstance::SelectFindResult(bool forward) {
   if (LoadFindInterface())
-    plugin_find_interface_->SelectFindResult(GetPPInstance(), forward);
+    plugin_find_interface_->SelectFindResult(pp_instance(), forward);
 }
 
 void PluginInstance::StopFind() {
   if (!LoadFindInterface())
     return;
   find_identifier_ = -1;
-  plugin_find_interface_->StopFind(GetPPInstance());
+  plugin_find_interface_->StopFind(pp_instance());
 }
 
 bool PluginInstance::LoadFindInterface() {
@@ -679,7 +675,7 @@ bool PluginInstance::GetPreferredPrintOutputFormat(
     return false;
   uint32_t format_count = 0;
   PP_PrintOutputFormat_Dev* supported_formats =
-      plugin_print_interface_->QuerySupportedFormats(GetPPInstance(),
+      plugin_print_interface_->QuerySupportedFormats(pp_instance(),
                                                      &format_count);
   if (!supported_formats)
     return false;
@@ -722,7 +718,7 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
   print_settings.orientation = PP_PRINTORIENTATION_NORMAL;
   print_settings.grayscale = false;
   print_settings.format = format;
-  int num_pages = plugin_print_interface_->Begin(GetPPInstance(),
+  int num_pages = plugin_print_interface_->Begin(pp_instance(),
                                                  &print_settings);
   if (!num_pages)
     return 0;
@@ -753,7 +749,7 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
 #endif  // defined(OS_LINUX)
 
   PP_Resource print_output =
-      plugin_print_interface_->PrintPages(GetPPInstance(), &page_range, 1);
+      plugin_print_interface_->PrintPages(pp_instance(), &page_range, 1);
 
   if (!print_output)
     return false;
@@ -774,7 +770,7 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
 void PluginInstance::PrintEnd() {
   DCHECK(plugin_print_interface_);
   if (plugin_print_interface_)
-    plugin_print_interface_->End(GetPPInstance());
+    plugin_print_interface_->End(pp_instance());
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
 #if defined(OS_MACOSX)
   last_printed_page_ = NULL;
@@ -791,7 +787,7 @@ void PluginInstance::Graphics3DContextLost() {
             PPP_GRAPHICS_3D_DEV_INTERFACE));
   }
   if (plugin_graphics_3d_interface_)
-    plugin_graphics_3d_interface_->Graphics3DContextLost(GetPPInstance());
+    plugin_graphics_3d_interface_->Graphics3DContextLost(pp_instance());
 }
 
 bool PluginInstance::IsFullscreen() {

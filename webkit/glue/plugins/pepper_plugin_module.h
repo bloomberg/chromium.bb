@@ -27,6 +27,11 @@ class PluginDelegate;
 class PluginInstance;
 class PluginObject;
 
+// Represents one plugin library loaded into one renderer. This library may
+// have multiple instances.
+//
+// Note: to get from a PP_Instance to a PluginInstance*, use the
+// ResourceTracker.
 class PluginModule : public base::RefCounted<PluginModule>,
                      public base::SupportsWeakPtr<PluginModule> {
  public:
@@ -52,13 +57,9 @@ class PluginModule : public base::RefCounted<PluginModule>,
   static scoped_refptr<PluginModule> CreateInternalModule(
       EntryPoints entry_points);
 
-  // Converts the given module ID to an actual module object. Will return NULL
-  // if the module is invalid.
-  static PluginModule* FromPPModule(PP_Module module);
-
   static const PPB_Core* GetCore();
 
-  PP_Module GetPPModule() const;
+  PP_Module pp_module() const { return pp_module_; }
 
   PluginInstance* CreateInstance(PluginDelegate* delegate);
 
@@ -99,6 +100,8 @@ class PluginModule : public base::RefCounted<PluginModule>,
   bool InitFromFile(const FilePath& path);
   static bool LoadEntryPoints(const base::NativeLibrary& library,
                               EntryPoints* entry_points);
+
+  PP_Module pp_module_;
 
   bool initialized_;
 

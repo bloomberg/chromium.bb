@@ -34,7 +34,7 @@ PP_Resource Create(PP_Module module_id,
                    PP_ImageDataFormat format,
                    const PP_Size* size,
                    bool init_to_zero) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
 

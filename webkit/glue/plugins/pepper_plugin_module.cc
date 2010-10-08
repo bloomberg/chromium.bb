@@ -179,21 +179,21 @@ void QuitMessageLoop() {
 }
 
 uint32_t GetLiveObjectCount(PP_Module module_id) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return static_cast<uint32_t>(-1);
   return ResourceTracker::Get()->GetLiveObjectsForModule(module);
 }
 
 PP_Resource GetInaccessibleFileRef(PP_Module module_id) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return static_cast<uint32_t>(-1);
   return FileRef::GetInaccessibleFileRef(module)->GetReference();
 }
 
 PP_Resource GetNonexistentFileRef(PP_Module module_id) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return static_cast<uint32_t>(-1);
   return FileRef::GetNonexistentFileRef(module)->GetReference();
@@ -299,6 +299,7 @@ const void* GetInterface(const char* name) {
 PluginModule::PluginModule()
     : initialized_(false),
       library_(NULL) {
+  pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
 }
@@ -326,6 +327,8 @@ PluginModule::~PluginModule() {
 
   if (library_)
     base::UnloadNativeLibrary(library_);
+
+  ResourceTracker::Get()->ModuleDeleted(pp_module_);
 }
 
 // static
@@ -350,14 +353,6 @@ scoped_refptr<PluginModule> PluginModule::CreateInternalModule(
 }
 
 // static
-PluginModule* PluginModule::FromPPModule(PP_Module module) {
-  PluginModule* lib = reinterpret_cast<PluginModule*>(module);
-  if (GetLivePluginSet()->find(lib) == GetLivePluginSet()->end())
-    return NULL;  // Invalid plugin.
-  return lib;
-}
-
-// static
 const PPB_Core* PluginModule::GetCore() {
   return &core_interface;
 }
@@ -367,7 +362,7 @@ bool PluginModule::InitFromEntryPoints(const EntryPoints& entry_points) {
     return true;
 
   // Attempt to run the initialization funciton.
-  int retval = entry_points.initialize_module(GetPPModule(), &GetInterface);
+  int retval = entry_points.initialize_module(pp_module(), &GetInterface);
   if (retval != 0) {
     LOG(WARNING) << "PPP_InitializeModule returned failure " << retval;
     return false;
@@ -429,10 +424,6 @@ bool PluginModule::LoadEntryPoints(const base::NativeLibrary& library,
                                                     "PPP_ShutdownModule"));
 
   return true;
-}
-
-PP_Module PluginModule::GetPPModule() const {
-  return reinterpret_cast<intptr_t>(this);
 }
 
 PluginInstance* PluginModule::CreateInstance(PluginDelegate* delegate) {

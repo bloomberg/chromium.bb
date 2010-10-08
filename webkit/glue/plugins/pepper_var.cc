@@ -157,7 +157,7 @@ class ObjectAccessorWithIdentifierTryCatch : public ObjectAccessorTryCatch {
 // PPB_Var methods -------------------------------------------------------------
 
 PP_Var VarFromUtf8(PP_Module module_id, const char* data, uint32_t len) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return PP_MakeNull();
   return StringVar::StringToPPVar(module, data, len);
@@ -381,7 +381,7 @@ bool IsInstanceOfDeprecated(PP_Var var,
 PP_Var CreateObjectDeprecated(PP_Module module_id,
                               const PPP_Class_Deprecated* ppp_class,
                               void* ppp_class_data) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return PP_MakeNull();
   return PluginObject::Create(module, ppp_class, ppp_class_data);

@@ -80,7 +80,7 @@ static const ResourceImageInfo kResourceImageMap[] = {
 };
 
 PP_Var GetLocalizedString(PP_Module module_id, PP_ResourceString string_id) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return PP_MakeUndefined();
 
@@ -105,7 +105,7 @@ PP_Resource GetResourceImage(PP_Module module_id, PP_ResourceImage image_id) {
   SkBitmap* res_bitmap =
       ResourceBundle::GetSharedInstance().GetBitmapNamed(res_id);
 
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
   scoped_refptr<pepper::ImageData> image_data(new pepper::ImageData(module));
@@ -133,7 +133,7 @@ PP_Resource GetFontFileWithFallback(
     const PP_FontDescription_Dev* description,
     PP_PrivateFontCharset charset) {
 #if defined(OS_LINUX)
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
 

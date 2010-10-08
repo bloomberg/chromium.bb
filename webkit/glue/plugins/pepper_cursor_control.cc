@@ -22,7 +22,7 @@ bool SetCursor(PP_Instance instance_id,
                PP_CursorType_Dev type,
                PP_Resource custom_image_id,
                const PP_Point* hot_spot) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
 
@@ -38,7 +38,7 @@ bool SetCursor(PP_Instance instance_id,
 }
 
 bool LockCursor(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
 
@@ -47,7 +47,7 @@ bool LockCursor(PP_Instance instance_id) {
 }
 
 bool UnlockCursor(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
 
@@ -56,7 +56,7 @@ bool UnlockCursor(PP_Instance instance_id) {
 }
 
 bool HasCursorLock(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
 
@@ -65,7 +65,7 @@ bool HasCursorLock(PP_Instance instance_id) {
 }
 
 bool CanLockCursor(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
 

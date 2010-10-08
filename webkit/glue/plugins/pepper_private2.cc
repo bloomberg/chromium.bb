@@ -12,7 +12,7 @@ namespace pepper {
 namespace {
 
 void SetInstanceAlwaysOnTop(PP_Instance pp_instance, bool on_top) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(pp_instance);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(pp_instance);
   if (!instance)
     return;
   instance->set_always_on_top(on_top);

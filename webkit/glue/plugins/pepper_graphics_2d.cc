@@ -66,7 +66,7 @@ bool ValidateAndConvertRect(const PP_Rect* rect,
 PP_Resource Create(PP_Module module_id,
                    const PP_Size* size,
                    bool is_always_opaque) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
 

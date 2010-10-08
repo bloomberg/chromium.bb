@@ -108,7 +108,7 @@ bool PPTextRunToWebTextRun(const PP_TextRun_Dev* run, WebTextRun* output) {
 
 PP_Resource Create(PP_Module module_id,
                    const PP_FontDescription_Dev* description) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
 

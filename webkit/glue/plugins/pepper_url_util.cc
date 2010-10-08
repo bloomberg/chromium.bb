@@ -60,7 +60,7 @@ PP_Var GenerateUrlReturn(PluginModule* module, const GURL& url,
 // unchanged.
 bool SecurityOriginForInstance(PP_Instance instance_id,
                                WebKit::WebSecurityOrigin* security_origin) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return false;
 
@@ -100,7 +100,7 @@ PP_Var ResolveRelativeToUrl(PP_Var base_url,
 PP_Var ResolveRelativeToDocument(PP_Instance instance_id,
                                  PP_Var relative,
                                  PP_UrlComponents_Dev* components) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return PP_MakeNull();
 

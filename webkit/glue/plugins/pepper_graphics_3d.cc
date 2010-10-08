@@ -62,7 +62,7 @@ PP_Resource CreateContext(PP_Instance instance_id, int32_t config,
                           const int32_t* attrib_list) {
   DCHECK_EQ(0, share_context);
 
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance) {
     return 0;
   }
@@ -146,7 +146,7 @@ Graphics3D::~Graphics3D() {
 
 bool Graphics3D::Init(PP_Instance instance_id, int32_t config,
                       const int32_t* attrib_list) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance) {
     return false;
   }
@@ -241,7 +241,7 @@ void Graphics3D::Destroy() {
 }
 
 void Graphics3D::HandleRepaint(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (instance) {
     instance->Graphics3DContextLost();
     if (platform_context_.get()) {

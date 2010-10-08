@@ -88,7 +88,7 @@ void Widget::Invalidate(const PP_Rect* dirty) {
   if (!widget)
     return;
   ScopedResourceId resource(this);
-  widget->Invalidate(instance_->GetPPInstance(), resource.id, dirty);
+  widget->Invalidate(instance_->pp_instance(), resource.id, dirty);
 }
 
 }  // namespace pepper

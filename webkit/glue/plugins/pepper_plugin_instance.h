@@ -53,6 +53,10 @@ class PluginModule;
 class URLLoader;
 class FullscreenContainer;
 
+// Represents one time a plugin appears on one web page.
+//
+// Note: to get from a PP_Instance to a PluginInstance*, use the
+// ResourceTracker.
 class PluginInstance : public base::RefCounted<PluginInstance> {
  public:
   PluginInstance(PluginDelegate* delegate,
@@ -61,9 +65,6 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   ~PluginInstance();
 
   static const PPB_Instance* GetInterface();
-
-  // Converts the given instance ID to an actual instance object.
-  static PluginInstance* FromPPInstance(PP_Instance instance);
 
   // Returns a pointer to the interface implementing PPB_Find that is
   // exposed to the plugin.
@@ -83,7 +84,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   void set_always_on_top(bool on_top) { always_on_top_ = on_top; }
 
-  PP_Instance GetPPInstance();
+  // Returns the PP_Instance uniquely identifying this instance. Guaranteed
+  // nonzero.
+  PP_Instance pp_instance() const { return pp_instance_; }
 
   // Paints the current backing store to the web page.
   void Paint(WebKit::WebCanvas* canvas,
@@ -185,6 +188,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   const PPP_Instance* instance_interface_;
+
+  PP_Instance pp_instance_;
 
   // NULL until we have been initialized.
   WebKit::WebPluginContainer* container_;

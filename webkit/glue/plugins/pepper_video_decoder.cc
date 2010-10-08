@@ -22,7 +22,7 @@ bool GetConfig(PP_Instance instance_id,
                PP_VideoConfig_Dev* configs,
                int32_t config_size,
                int32_t *num_config) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   *num_config = 0;
   if (!instance)
     return false;
@@ -40,7 +40,7 @@ bool GetConfig(PP_Instance instance_id,
 
 PP_Resource Create(PP_Instance instance_id,
                    const PP_VideoDecoderConfig_Dev* decoder_config) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
 

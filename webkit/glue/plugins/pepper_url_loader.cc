@@ -40,12 +40,11 @@ namespace pepper {
 namespace {
 
 PP_Resource Create(PP_Instance instance_id) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
 
   URLLoader* loader = new URLLoader(instance);
-
   return loader->GetReference();
 }
 

@@ -18,7 +18,7 @@ PP_Resource CreateStereo16bit(PP_Module module_id,
                               PP_AudioSampleRate_Dev sample_rate,
                               uint32_t sample_frame_count,
                               uint32_t* obtained_frame_count) {
-  PluginModule* module = PluginModule::FromPPModule(module_id);
+  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
 
@@ -43,7 +43,7 @@ uint32_t GetSampleFrameCount(PP_Resource config_id) {
 
 PP_Resource Create(PP_Instance instance_id, PP_Resource config_id,
                    PPB_Audio_Callback callback, void* user_data) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
   // TODO(neb): Require callback to be present for untrusted plugins.

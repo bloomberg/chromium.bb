@@ -33,7 +33,7 @@ namespace {
 
 PP_Resource Create(PP_Instance instance_id,
                    const PP_FileChooserOptions_Dev* options) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
 

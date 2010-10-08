@@ -37,7 +37,7 @@ void TrimTrailingSlash(std::string* path) {
 PP_Resource CreateFileRef(PP_Instance instance_id,
                           PP_FileSystemType_Dev fs_type,
                           const char* path) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
 
