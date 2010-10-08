@@ -154,15 +154,27 @@ void UserImageView::UpdateVideoFrame(const SkBitmap& frame) {
   if (!is_capturing_)
     return;
 
-  last_frame_.reset(new SkBitmap(frame));
+  if (!snapshot_button_->IsEnabled()) {
+    snapshot_button_->SetEnabled(true);
+    snapshot_button_->RequestFocus();
+  }
   SkBitmap user_image =
       skia::ImageOperations::Resize(
-          *last_frame_,
+          frame,
           skia::ImageOperations::RESIZE_BOX,
           kUserImageSize,
           kUserImageSize);
 
   user_image_->SetImage(&user_image);
+}
+
+void UserImageView::ShowCameraError() {
+  if (!is_capturing_ || !snapshot_button_->IsEnabled())
+    return;
+  snapshot_button_->SetEnabled(false);
+  user_image_->SetImage(
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(
+          IDR_USER_IMAGE_NO_VIDEO));
 }
 
 void UserImageView::ViewHierarchyChanged(bool is_add,

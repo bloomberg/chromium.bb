@@ -46,6 +46,10 @@ class UserImageView : public views::View,
   // Updates image from camera.
   void UpdateVideoFrame(const SkBitmap& frame);
 
+  // If in capturing mode, shows that camera is broken instead of video
+  // frame and disables snapshot button.
+  void ShowCameraError();
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
 
@@ -74,9 +78,6 @@ class UserImageView : public views::View,
   // Indicates that we're in capturing mode. When |false|, new video frames
   // are not shown to user if received.
   bool is_capturing_;
-
-  // Last frame that was received from the camera in its original resolution.
-  scoped_ptr<SkBitmap> last_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageView);
 };

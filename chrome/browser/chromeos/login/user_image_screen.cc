@@ -24,36 +24,33 @@ const int kFrameHeight = 480;
 
 // Frame rate in milliseconds for video capturing.
 // We want 25 FPS.
-const int kFrameRate = 40;
+const int64 kFrameRate = 40;
 
 }  // namespace
 
 UserImageScreen::UserImageScreen(WizardScreenDelegate* delegate)
     : ViewScreen<UserImageView>(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(camera_(new Camera(this))) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(camera_(new Camera(this, true))),
+      camera_initialized_(false) {
   registrar_.Add(
       this,
       NotificationType::SCREEN_LOCK_STATE_CHANGED,
       NotificationService::AllSources());
-  if (!camera_->Initialize(kFrameWidth, kFrameHeight)) {
-    camera_.reset();
-  } else {
-    // We want to mimic mirror behavior so we want the image reflected from Y
-    // axis.
-    camera_->set_mirrored(true);
-  }
+  camera_->Initialize(kFrameWidth, kFrameHeight);
 }
 
 UserImageScreen::~UserImageScreen() {
+  if (camera_.get())
+    camera_->set_delegate(NULL);
 }
 
 void UserImageScreen::Refresh() {
-  if (camera_.get())
-    camera_->StartCapturing(base::TimeDelta::FromMilliseconds(kFrameRate));
+  if (camera_.get() && camera_initialized_)
+    camera_->StartCapturing(kFrameRate);
 }
 
 void UserImageScreen::Hide() {
-  if (camera_.get())
+  if (camera_.get() && camera_initialized_)
     camera_->StopCapturing();
   ViewScreen<UserImageView>::Hide();
 }
@@ -62,12 +59,39 @@ UserImageView* UserImageScreen::AllocateView() {
   return new UserImageView(this);
 }
 
-void UserImageScreen::OnVideoFrameCaptured(const SkBitmap& frame) {
+void UserImageScreen::OnInitializeSuccess() {
+  camera_initialized_ = true;
+  if (camera_.get())
+    camera_->StartCapturing(kFrameRate);
+}
+
+void UserImageScreen::OnInitializeFailure() {
+  if (view())
+    view()->ShowCameraError();
+  camera_initialized_ = false;
+}
+
+void UserImageScreen::OnStartCapturingSuccess() {
+}
+
+void UserImageScreen::OnStartCapturingFailure() {
+  if (view())
+    view()->ShowCameraError();
+}
+
+void UserImageScreen::OnCaptureSuccess(const SkBitmap& frame) {
   if (view())
     view()->UpdateVideoFrame(frame);
 }
 
+void UserImageScreen::OnCaptureFailure() {
+  if (view())
+    view()->ShowCameraError();
+}
+
 void UserImageScreen::OnOK(const SkBitmap& image) {
+  if (camera_.get())
+    camera_->Uninitialize();
   UserManager* user_manager = UserManager::Get();
   if (user_manager) {
     // TODO(avayvod): Check that there's logged in user actually.
@@ -80,6 +104,8 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
 }
 
 void UserImageScreen::OnSkip() {
+  if (camera_.get())
+    camera_->Uninitialize();
   // TODO(avayvod): Use one of the default images. See http://crosbug.com/5780.
   if (delegate())
     delegate()->GetObserver(this)->OnExit(ScreenObserver::USER_IMAGE_SKIPPED);
@@ -96,7 +122,7 @@ void UserImageScreen::Observe(NotificationType type,
   if (is_screen_locked)
     camera_->StopCapturing();
   else
-    camera_->StartCapturing(base::TimeDelta::FromMilliseconds(kFrameRate));
+    camera_->StartCapturing(kFrameRate);
 }
 
 }  // namespace chromeos

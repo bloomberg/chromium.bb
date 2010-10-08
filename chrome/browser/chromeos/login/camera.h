@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/ref_counted.h"
 #include "base/timer.h"
 
 class SkBitmap;
@@ -21,39 +22,62 @@ namespace chromeos {
 
 // Class that wraps interaction with video capturing device. Returns
 // frames captured with specified intervals of time via delegate interface.
-class Camera {
+// All communication with camera driver is performed on IO thread.
+// Delegate's callback are called on UI thread.
+class Camera : public base::RefCountedThreadSafe<Camera> {
  public:
   class Delegate {
    public:
     virtual ~Delegate() {}
 
-    // Called with specified intervals with decoded frame as a parameter.
-    virtual void OnVideoFrameCaptured(const SkBitmap& frame) = 0;
+    // Callbacks that notify of the initialization status.
+    virtual void OnInitializeSuccess() = 0;
+    virtual void OnInitializeFailure() = 0;
+
+    // Callbacks that notify if video capturing was started successfully or
+    // not.
+    virtual void OnStartCapturingSuccess() = 0;
+    virtual void OnStartCapturingFailure() = 0;
+
+    // Called if video frame was captured successfully.
+    virtual void OnCaptureSuccess(const SkBitmap& frame) = 0;
+    // Called if capturing the current frame failed.
+    virtual void OnCaptureFailure() = 0;
   };
 
-  explicit Camera(Delegate* delegate);
-  ~Camera();
+  // Initializes object members. |delegate| is object that will receive
+  // notifications about success of async method calls. |mirrored|
+  // determines if the returned video image is mirrored horizontally.
+  Camera(Delegate* delegate, bool mirrored);
 
-  // Initializes camera device. Returns true if succeeded, false otherwise.
-  // Does nothing on subsequent calls until Uninitialize is called.
-  // Sets the desired width and height of the frame to receive from camera.
-  bool Initialize(int desired_width, int desired_height);
+  // Initializes camera device on IO thread. Corresponding delegate's callback
+  // is called on UI thread to notify about success or failure. Does nothing if
+  // camera is successfully initialized already. Sets the desired width and
+  // height of the frame to receive from camera.
+  void Initialize(int desired_width, int desired_height);
 
-  // Uninitializes the camera. Can be called anytime, any number of times.
+  // Uninitializes the camera on IO thread. Can be called anytime, any number
+  // of times.
   void Uninitialize();
 
-  // Starts capturing video frames with specified interval.
-  // Does nothing on subsequent calls until StopCapturing is called.
-  // Returns true if succeeded, false otherwise.
-  bool StartCapturing(const base::TimeDelta& interval);
+  // Starts capturing video frames with specified interval, in ms. Calls the
+  // corresponding method of delegate to report about success or failure. If
+  // succeeded, subsequent call doesn't do anything.
+  void StartCapturing(int64 rate);
 
   // Stops capturing video frames. Can be called anytime, any number of
   // times.
   void StopCapturing();
 
-  void set_mirrored(bool mirrored) { mirrored_ = mirrored; }
+  // Setter for delegate: allows to set it to NULL when delegate is about to
+  // be destroyed.
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
  private:
+  // Destructor is private so only its base class can delete Camera objects.
+  ~Camera();
+  friend class base::RefCountedThreadSafe<Camera>;
+
   // Tries to open the device with specified name. Returns opened device
   // descriptor if succeeds, -1 otherwise.
   int OpenDevice(const char* device_name) const;
@@ -65,8 +89,9 @@ class Camera {
   // Unmaps video buffers stored in |buffers_|.
   void UnmapVideoBuffers();
 
-  // Called by |timer_| to get the frame from video device and send it to
-  // |delegate_| via its method.
+  // Task for IO thread that queries camera about the next frame and sends it to
+  // |delegate_| via its method or reports failure. Schedules the next task
+  // for itself if capturing still takes place.
   void OnCapture();
 
   // Reads a frame from the video device. If retry is needed, returns false.
@@ -77,6 +102,27 @@ class Camera {
   // size and notifies the delegate that the image is ready.
   void ProcessImage(void* data);
 
+  // Actual routines that run on IO thread and call delegate's callbacks. See
+  // the corresponding methods without Do prefix for details.
+  void DoInitialize(int desired_width, int desired_height);
+  void DoStartCapturing(int64 rate);
+
+  // Helper method that reports failure to the delegate via method
+  // corresponding to the current state of the object.
+  void ReportFailure();
+
+  // Methods called on UI thread to call delegate.
+  void OnInitializeSuccess();
+  void OnInitializeFailure();
+  void OnStartCapturingSuccess();
+  void OnStartCapturingFailure();
+  void OnCaptureSuccess(const SkBitmap& frame);
+  void OnCaptureFailure();
+
+  // IO thread routines that implement the corresponding public methods.
+  void DoUninitialize();
+  void DoStopCapturing();
+
   // Defines a buffer in memory where one frame from the camera is stored.
   struct VideoBuffer {
     void* start;
@@ -84,8 +130,10 @@ class Camera {
   };
 
   // Delegate that receives the frames from the camera.
+  // Delegate is accessed only on UI thread.
   Delegate* delegate_;
 
+  // All the members below are accessed only on IO thread.
   // Name of the device file, i.e. "/dev/video0".
   std::string device_name_;
 
@@ -95,8 +143,11 @@ class Camera {
   // Vector of buffers where to store video frames from camera.
   std::vector<VideoBuffer> buffers_;
 
-  // Timer for getting frames.
-  base::RepeatingTimer<Camera> timer_;
+  // Indicates if capturing has been started.
+  bool is_capturing_;
+
+  // Rate at which camera device should be queried about new image, in ms.
+  int64 capturing_rate_;
 
   // Desired size of the frame to get from camera. If it doesn't match
   // camera's supported resolution, higher resolution is selected (if
