@@ -160,7 +160,11 @@
       'filepath': 'chrome/test/pyautolib' \
                   '|chrome/test/functional' \
                   '|chrome/browser/automation/automation_provider_json'
-    }
+    },
+    'labs': {
+      'filepath': 'chrome/browser/labs' \
+                  '|chrome/browser/dom_ui/labs'
+    },
   },
 
   'WATCHLISTS': {
@@ -218,5 +222,6 @@
     'i18n': ['jshin+watch@chromium.org'],
     'pyauto': ['anantha@chromium.org', 'jrg@chromium.org',
                'nirnimesh@chromium.org'],
+    'labs': ['thakis@chromium.org'],
   },
 }
