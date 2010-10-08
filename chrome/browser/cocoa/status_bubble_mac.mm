@@ -413,6 +413,8 @@ void StatusBubbleMac::Detach() {
   // This method may be called several times in the process of hiding or
   // destroying a status bubble.
   if (is_attached()) {
+    // Magic setFrame: See crbug.com/58506, and codereview.chromium.org/3573014
+    [window_ setFrame:CalculateWindowFrame(/*expand=*/false) display:NO];
     [parent_ removeChildWindow:window_];  // See crbug.com/28107 ...
     [window_ orderOut:nil];               // ... and crbug.com/29054.
   }
