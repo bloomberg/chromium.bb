@@ -1,0 +1,51 @@
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <openssl/ssl.h>
+
+#include "base/lock.h"
+#include "base/scoped_vector.h"
+#include "base/singleton.h"
+
+namespace net {
+
+// A helper class that takes care of destroying OpenSSL objects when it goes out
+// of scope.
+template <typename T, void (*destructor)(T*)>
+class ScopedSSL {
+ public:
+  explicit ScopedSSL(T* ptr_) : ptr_(ptr_) { }
+  ~ScopedSSL() { if (ptr_) (*destructor)(ptr_); }
+
+  T* get() const { return ptr_; }
+
+ private:
+  T* ptr_;
+};
+
+// Singleton for initializing / cleaning up OpenSSL and holding a X509 store.
+// Access it via EnsureOpenSSLInit().
+class OpenSSLInitSingleton {
+ public:
+  X509_STORE* x509_store() const;
+
+ private:
+  friend struct DefaultSingletonTraits<OpenSSLInitSingleton>;
+  OpenSSLInitSingleton();
+  ~OpenSSLInitSingleton();
+
+  static void LockingCallback(int mode, int n, const char* file, int line);
+  void OnLockingCallback(int mode, int n, const char* file, int line);
+
+  ScopedSSL<X509_STORE, X509_STORE_free> store_;
+  // These locks are used and managed by OpenSSL via LockingCallback().
+  ScopedVector<Lock> locks_;
+
+  DISALLOW_COPY_AND_ASSIGN(OpenSSLInitSingleton);
+};
+
+OpenSSLInitSingleton* GetOpenSSLInitSingleton();
+
+}  // namespace net
+
