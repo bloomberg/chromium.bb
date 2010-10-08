@@ -187,10 +187,26 @@ bool CrxInstaller::AllowInstall(Extension* extension, std::string* error) {
       return false;
     }
 
-    // For self-hosted apps, verify that the entire extent is on the same
-    // host (or a subdomain of the host) the download happened from.  There's
-    // no way for us to verify that the app controls any other hosts.
-    if (!is_gallery_install_) {
+    // If the client_ is NULL, then the app is either being installed via
+    // an internal mechanism like sync, external_extensions, or default apps.
+    // In that case, we don't want to enforce things like the install origin.
+    if (!is_gallery_install_ && client_) {
+      // For apps with a gallery update URL, require that they be installed
+      // from the gallery.
+      // TODO(erikkay) Apply this rule for paid extensions and themes as well.
+      if ((extension->update_url() ==
+           GURL(extension_urls::kGalleryUpdateHttpsUrl)) ||
+          (extension->update_url() ==
+           GURL(extension_urls::kGalleryUpdateHttpUrl))) {
+        *error = l10n_util::GetStringFUTF8(
+            IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
+            l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
+        return false;
+      }
+
+      // For self-hosted apps, verify that the entire extent is on the same
+      // host (or a subdomain of the host) the download happened from.  There's
+      // no way for us to verify that the app controls any other hosts.
       URLPattern pattern(UserScript::kValidUserScriptSchemes);
       pattern.set_host(original_url_.host());
       pattern.set_match_subdomains(true);
@@ -203,19 +219,6 @@ bool CrxInstaller::AllowInstall(Extension* extension, std::string* error) {
               "Apps must be served from the host that they affect.");
           return false;
         }
-      }
-
-      // For apps with a gallery update URL, require that they be installed
-      // from the gallery.
-      // TODO(erikkay) Apply this rule for paid extensions and themes as well.
-      if ((extension->update_url() ==
-           GURL(extension_urls::kGalleryUpdateHttpsUrl)) ||
-          (extension->update_url() ==
-           GURL(extension_urls::kGalleryUpdateHttpUrl))) {
-        *error = l10n_util::GetStringFUTF8(
-            IDS_EXTENSION_DISALLOW_NON_DOWNLOADED_GALLERY_INSTALLS,
-            l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
-        return false;
       }
     }
   }
