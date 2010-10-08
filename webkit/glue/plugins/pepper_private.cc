@@ -175,11 +175,14 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
 }
 
 void SearchString(PP_Module module,
-                  const char16* string,
-                  const char16* term,
+                  const unsigned short* input_string,
+                  const unsigned short* input_term,
                   bool case_sensitive,
                   PP_PrivateFindResult** results,
                   int* count) {
+  const char16* string = reinterpret_cast<const char16*>(input_string);
+  const char16* term = reinterpret_cast<const char16*>(input_term);
+
   UErrorCode status = U_ZERO_ERROR;
   UStringSearch* searcher = usearch_open(
       term, -1, string, -1, webkit_glue::GetWebKitLocale().c_str(), 0,

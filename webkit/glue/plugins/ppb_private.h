@@ -5,7 +5,6 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
 #define WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
 
-#include "base/string16.h"
 #include "third_party/ppapi/c/dev/ppb_font_dev.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_var.h"
@@ -106,8 +105,8 @@ struct PPB_Private {
   // done.
   void (*SearchString)(
      PP_Module module,
-     const char16* string,
-     const char16* term,
+     const unsigned short* string,
+     const unsigned short* term,
      bool case_sensitive,
      PP_PrivateFindResult** results,
      int* count);
