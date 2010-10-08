@@ -161,6 +161,10 @@ FormGroup* AutoFillProfile::Clone() const {
   return profile;
 }
 
+const string16& AutoFillProfile::Label() const {
+  return label_;
+}
+
 string16 AutoFillProfile::PreviewSummary() const {
   // Fetch the components of the summary string.  Any or all of these
   // may be an empty string.

@@ -48,7 +48,7 @@ class SSLClientAuthHandler
   friend class ChromeThread;
   friend class DeleteTask<SSLClientAuthHandler>;
 
-  ~SSLClientAuthHandler();
+  virtual ~SSLClientAuthHandler();
 
   // Notifies that the user has selected a cert.
   // Called on the IO thread.

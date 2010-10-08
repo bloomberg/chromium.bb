@@ -242,6 +242,13 @@ CookieTreeOriginNode::CookieTreeOriginNode(const GURL& url)
       indexed_dbs_child_(NULL),
       url_(url) {}
 
+CookieTreeOriginNode::~CookieTreeOriginNode() {}
+
+CookieTreeNode::DetailedInfo CookieTreeOriginNode::GetDetailedInfo() const {
+  return DetailedInfo(GetTitle(),
+                      DetailedInfo::TYPE_ORIGIN,
+                      NULL, NULL, NULL, NULL, NULL, NULL);
+}
 
 CookieTreeCookiesNode* CookieTreeOriginNode::GetOrCreateCookiesNode() {
   if (cookies_child_)

@@ -93,13 +93,13 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
                   const std::string& frame_origin,
                   const std::string& main_frame_origin);
 
-  virtual ~SSLErrorHandler() { }
+  virtual ~SSLErrorHandler();
 
   // The following 2 methods are the methods subclasses should implement.
-  virtual void OnDispatchFailed() { TakeNoAction(); }
+  virtual void OnDispatchFailed();
 
   // Can use the manager_ member.
-  virtual void OnDispatched() { TakeNoAction(); }
+  virtual void OnDispatched();
 
   // Should only be accessed on the UI thread.
   SSLManager* manager_;  // Our manager.

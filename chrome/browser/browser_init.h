@@ -24,14 +24,12 @@ class TabContents;
 // initialize the profile.
 class BrowserInit {
  public:
-  BrowserInit() {}
-  ~BrowserInit() {}
+  BrowserInit();
+  ~BrowserInit();
 
   // Adds a url to be opened during first run. This overrides the standard
   // tabs shown at first run.
-  void AddFirstRunTab(const GURL& url) {
-    first_run_tabs_.push_back(url);
-  }
+  void AddFirstRunTab(const GURL& url);
 
   // This function is equivalent to ProcessCommandLine but should only be
   // called during actual process startup.
@@ -79,7 +77,8 @@ class BrowserInit {
    public:
     // Used by OpenTabsInBrowser.
     struct Tab {
-      Tab() : is_app(false), is_pinned(true) {}
+      Tab();
+      ~Tab();
 
       // The url to load.
       GURL url;

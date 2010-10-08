@@ -27,6 +27,8 @@ ContentExceptionsTableModel::ContentExceptionsTableModel(
   }
 }
 
+ContentExceptionsTableModel::~ContentExceptionsTableModel() {}
+
 void ContentExceptionsTableModel::AddException(
     const HostContentSettingsMap::Pattern& pattern,
     ContentSetting setting,

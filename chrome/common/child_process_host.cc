@@ -138,6 +138,10 @@ void ChildProcessHost::OnChildDied() {
   delete this;
 }
 
+bool ChildProcessHost::InterceptMessageFromChild(const IPC::Message& msg) {
+  return false;
+}
+
 ChildProcessHost::ListenerHook::ListenerHook(ChildProcessHost* host)
     : host_(host) {
 }

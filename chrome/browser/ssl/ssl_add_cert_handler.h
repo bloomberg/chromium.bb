@@ -33,6 +33,7 @@ class SSLAddCertHandler : public base::RefCountedThreadSafe<SSLAddCertHandler> {
 
  private:
   friend class base::RefCountedThreadSafe<SSLAddCertHandler>;
+  virtual ~SSLAddCertHandler();
 
   // Runs the handler. Called on the IO thread.
   void Run();

@@ -42,7 +42,7 @@ class AutoFillProfile : public FormGroup {
   // Returns a copy of the profile it is called on. The caller is responsible
   // for deleting profile when they are done with it.
   virtual FormGroup* Clone() const;
-  virtual const string16& Label() const { return label_; }
+  virtual const string16& Label() const;
 
   void set_unique_id(int id) { unique_id_ = id; }
   int unique_id() const { return unique_id_; }

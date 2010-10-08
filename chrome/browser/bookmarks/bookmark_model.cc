@@ -54,6 +54,11 @@ void BookmarkNode::Initialize(int64 id) {
   date_added_ = Time::Now();
 }
 
+void BookmarkNode::InvalidateFavicon() {
+  loaded_favicon_ = false;
+  favicon_ = SkBitmap();
+}
+
 void BookmarkNode::Reset(const history::StarredEntry& entry) {
   DCHECK(entry.type != history::StarredEntry::URL || entry.url == url_);
 
@@ -309,6 +314,10 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkNodeChanged(this, node));
+}
+
+bool BookmarkModel::IsLoaded() {
+  return loaded_;
 }
 
 void BookmarkModel::GetNodesByURL(const GURL& url,

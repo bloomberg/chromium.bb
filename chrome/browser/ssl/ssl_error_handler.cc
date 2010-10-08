@@ -46,6 +46,16 @@ SSLErrorHandler::SSLErrorHandler(ResourceDispatcherHost* rdh,
   AddRef();
 }
 
+SSLErrorHandler::~SSLErrorHandler() {}
+
+void SSLErrorHandler::OnDispatchFailed() {
+  TakeNoAction();
+}
+
+void SSLErrorHandler::OnDispatched() {
+  TakeNoAction();
+}
+
 void SSLErrorHandler::Dispatch() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

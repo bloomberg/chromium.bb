@@ -188,14 +188,10 @@ class CookieTreeOriginNode : public CookieTreeNode {
   static std::wstring TitleForUrl(const GURL& url);
 
   explicit CookieTreeOriginNode(const GURL& url);
-  virtual ~CookieTreeOriginNode() {}
+  virtual ~CookieTreeOriginNode();
 
   // CookieTreeNode methods:
-  virtual DetailedInfo GetDetailedInfo() const {
-    return DetailedInfo(GetTitle(),
-                        DetailedInfo::TYPE_ORIGIN,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  }
+  virtual DetailedInfo GetDetailedInfo() const;
 
   // CookieTreeOriginNode methods:
   CookieTreeCookiesNode* GetOrCreateCookiesNode();

@@ -23,13 +23,11 @@ class CPCommandInterface {
   // Called when the command has been invoked.  The default action is deletion,
   // but some callers may want to use output or check the return value before
   // deleting.
-  virtual void OnCommandInvoked(CPError retval) {
-    delete this;
-  }
+  virtual void OnCommandInvoked(CPError retval);
 
   // Some commands have an asynchronous response.  This is called some time
   // after OnCommandInvoked.
-  virtual void OnCommandResponse(CPError retval) { }
+  virtual void OnCommandResponse(CPError retval);
 };
 
 // Called when a builtin or plugin-registered UI command is invoked by a user

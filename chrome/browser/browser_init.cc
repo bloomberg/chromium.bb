@@ -361,6 +361,14 @@ void UrlsToTabs(const std::vector<GURL>& urls,
 
 }  // namespace
 
+BrowserInit::BrowserInit() {}
+
+BrowserInit::~BrowserInit() {}
+
+void BrowserInit::AddFirstRunTab(const GURL& url) {
+  first_run_tabs_.push_back(url);
+}
+
 // static
 bool BrowserInit::InProcessStartup() {
   return in_startup;
@@ -440,6 +448,12 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 #endif
   return true;
 }
+
+// Tab ------------------------------------------------------------------------
+
+BrowserInit::LaunchWithProfile::Tab::Tab() : is_app(false), is_pinned(true) {}
+
+BrowserInit::LaunchWithProfile::Tab::~Tab() {}
 
 // LaunchWithProfile ----------------------------------------------------------
 

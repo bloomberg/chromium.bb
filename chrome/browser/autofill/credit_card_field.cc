@@ -35,6 +35,10 @@ bool CreditCardField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   return ok;
 }
 
+FormFieldType CreditCardField::GetFormFieldType() const {
+  return kCreditCardType;
+}
+
 // static
 CreditCardField* CreditCardField::Parse(
     std::vector<AutoFillField*>::const_iterator* iter,

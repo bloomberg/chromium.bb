@@ -7,6 +7,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/ssl/ssl_policy.h"
+#include "net/base/x509_certificate.h"
 
 SSLCertErrorHandler::SSLCertErrorHandler(
     ResourceDispatcherHost* rdh,
@@ -34,3 +35,5 @@ void SSLCertErrorHandler::OnDispatchFailed() {
 void SSLCertErrorHandler::OnDispatched() {
   manager_->policy()->OnCertError(this);
 }
+
+SSLCertErrorHandler::~SSLCertErrorHandler() {}

@@ -662,10 +662,7 @@ class AutocompleteResult {
   GURL alternate_nav_url() const { return alternate_nav_url_; }
 
   // Clears the matches for this result set.
-  void Reset() {
-    matches_.clear();
-    default_match_ = end();
-  }
+  void Reset();
 
 #ifndef NDEBUG
   // Does a data integrity check on this result.

@@ -19,6 +19,7 @@ class ContentExceptionsTableModel : public TableModel {
   ContentExceptionsTableModel(HostContentSettingsMap* map,
                               HostContentSettingsMap* off_the_record_map,
                               ContentSettingsType content_type);
+  virtual ~ContentExceptionsTableModel();
 
   HostContentSettingsMap* map() const { return map_; }
   HostContentSettingsMap* off_the_record_map() const {

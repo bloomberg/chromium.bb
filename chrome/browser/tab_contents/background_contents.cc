@@ -10,6 +10,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_preferences_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
@@ -46,23 +47,6 @@ BackgroundContents::BackgroundContents()
       render_view_host_(NULL) {
 }
 
-void BackgroundContents::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  // TODO(rafaelw): Implement pagegroup ref-counting so that non-persistent
-  // background pages are closed when the last referencing frame is closed.
-  switch (type.value) {
-    case NotificationType::PROFILE_DESTROYED:
-    case NotificationType::APP_TERMINATING: {
-      delete this;
-      break;
-    }
-    default:
-      NOTREACHED() << "Unexpected notification sent.";
-      break;
-  }
-}
-
 BackgroundContents::~BackgroundContents() {
   if (!render_view_host_)   // Will be null for unit tests.
     return;
@@ -72,6 +56,14 @@ BackgroundContents::~BackgroundContents() {
       Source<Profile>(profile),
       Details<BackgroundContents>(this));
   render_view_host_->Shutdown();  // deletes render_view_host
+}
+
+ViewType::Type BackgroundContents::GetRenderViewType() const {
+  return ViewType::BACKGROUND_CONTENTS;
+}
+
+int BackgroundContents::GetBrowserWindowID() const {
+  return extension_misc::kUnknownWindowId;
 }
 
 void BackgroundContents::DidNavigate(
@@ -109,15 +101,38 @@ void BackgroundContents::RunJavaScriptMessage(
   *did_suppress_message = true;
 }
 
-gfx::NativeWindow BackgroundContents::GetMessageBoxRootWindow() {
-  NOTIMPLEMENTED();
-  return NULL;
+bool BackgroundContents::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event,
+    bool* is_keyboard_shortcut) {
+  return false;
+}
+
+void BackgroundContents::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  // TODO(rafaelw): Implement pagegroup ref-counting so that non-persistent
+  // background pages are closed when the last referencing frame is closed.
+  switch (type.value) {
+    case NotificationType::PROFILE_DESTROYED:
+    case NotificationType::APP_TERMINATING: {
+      delete this;
+      break;
+    }
+    default:
+      NOTREACHED() << "Unexpected notification sent.";
+      break;
+  }
 }
 
 void BackgroundContents::OnMessageBoxClosed(IPC::Message* reply_msg,
                                             bool success,
                                             const std::wstring& prompt) {
   render_view_host_->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
+}
+
+gfx::NativeWindow BackgroundContents::GetMessageBoxRootWindow() {
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 void BackgroundContents::Close(RenderViewHost* render_view_host) {

@@ -93,9 +93,7 @@ class ChildProcessHost : public IPC::Channel::Listener {
   virtual void OnChildDied();
   // Allows the derived implementation to intercept a message before it is
   // handed to the IPC::Channel::Listener::OnMessageReceived implementation.
-  virtual bool InterceptMessageFromChild(const IPC::Message& msg) {
-    return false;
-  }
+  virtual bool InterceptMessageFromChild(const IPC::Message& msg);
   // Subclasses can implement specific notification methods.
   virtual void Notify(NotificationType type) { }
 

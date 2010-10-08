@@ -752,6 +752,11 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
     alternate_nav_url_ = input.canonicalized_url();
 }
 
+void AutocompleteResult::Reset() {
+  matches_.clear();
+  default_match_ = end();
+}
+
 #ifndef NDEBUG
 void AutocompleteResult::Validate() const {
   for (const_iterator i(begin()); i != end(); ++i)

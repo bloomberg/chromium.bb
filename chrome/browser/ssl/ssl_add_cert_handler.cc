@@ -32,6 +32,8 @@ SSLAddCertHandler::SSLAddCertHandler(URLRequest* request,
       NewRunnableMethod(this, &SSLAddCertHandler::Run));
 }
 
+SSLAddCertHandler::~SSLAddCertHandler() {}
+
 void SSLAddCertHandler::Run() {
   int cert_error;
   {

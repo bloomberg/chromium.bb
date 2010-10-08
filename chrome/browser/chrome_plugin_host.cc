@@ -813,6 +813,12 @@ CPBrowserFuncs* GetCPBrowserFuncsForBrowser() {
   return &browser_funcs;
 }
 
+void CPCommandInterface::OnCommandInvoked(CPError retval) {
+  delete this;
+}
+
+void CPCommandInterface::OnCommandResponse(CPError retval) {}
+
 void CPHandleCommand(int command, CPCommandInterface* data,
                      CPBrowsingContext context) {
   // Sadly if we try and pass context through, we seem to break cl's little
