@@ -1,4 +1,4 @@
-#!/usr/bin/python2.5
+#!/usr/bin/python
 # Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -175,7 +175,9 @@ def AskIsGoodBuild(rev):
 
 def main():
   usage = ('%prog [options] [-- chromium-options]\n'
-           'Perform binary search on the snapshot builds.')
+           'Perform binary search on the snapshot builds.\n'
+           '\n'
+           'Tip: add "-- --no-first-run" to bypass the first run prompts.')
   parser = optparse.OptionParser(usage=usage)
   # Strangely, the default help output doesn't include the choice list.
   choices = ['mac', 'xp', 'linux', 'linux-64', 'linux-chromiumos']
@@ -193,6 +195,8 @@ def main():
   (opts, args) = parser.parse_args()
 
   if opts.archive is None:
+    print 'Error: missing required parameter: --archive'
+    print
     parser.print_help()
     return 1
 
