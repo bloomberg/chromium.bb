@@ -251,6 +251,8 @@ WizardController::~WizardController() {
     widget_->Close();
 
   default_controller_ = NULL;
+  chromeos::WizardAccessibilityHelper::GetInstance()->
+      UnregisterNotifications();
 }
 
 void WizardController::Init(const std::string& first_screen_name,

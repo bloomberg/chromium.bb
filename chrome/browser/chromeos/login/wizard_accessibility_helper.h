@@ -51,12 +51,17 @@ class WizardAccessibilityHelper {
   // subsequent utterance.
   void MaybeSpeak(const char* str, bool queue, bool interruptible);
 
+  // Unregisters all accessibility notifications
+  void UnregisterNotifications();
+
  private:
   friend struct DefaultSingletonTraits<WizardAccessibilityHelper>;
 
   WizardAccessibilityHelper();
 
   virtual ~WizardAccessibilityHelper() {}
+
+  void RegisterNotifications();
 
   static scoped_ptr<views::Accelerator> accelerator_;
 
@@ -72,6 +77,8 @@ class WizardAccessibilityHelper {
 
   // Used for tracking registrations to accessibility notifications.
   NotificationRegistrar registrar_;
+
+  bool registered_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardAccessibilityHelper);
 };

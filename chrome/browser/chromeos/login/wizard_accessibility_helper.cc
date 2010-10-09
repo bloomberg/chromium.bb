@@ -37,28 +37,33 @@ WizardAccessibilityHelper* WizardAccessibilityHelper::GetInstance() {
 WizardAccessibilityHelper::WizardAccessibilityHelper() {
   accessibility_handler_.reset(new WizardAccessibilityHandler());
   profile_ = ProfileManager::GetDefaultProfile();
+  registered_notifications_ = false;
+}
 
-  // http://crosbug.com/7238
-  // TODO(dmazzoni), TODO(chaitanyag)
-  // Commented out to disable trapping handling and responding to
-  // accessibility notifications until the root cause of this bug has
-  // been determined.
-  //
-  //registrar_.Add(accessibility_handler_.get(),
-  //               NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
-  //               NotificationService::AllSources());
-  //registrar_.Add(accessibility_handler_.get(),
-  //               NotificationType::ACCESSIBILITY_CONTROL_ACTION,
-  //               NotificationService::AllSources());
-  //registrar_.Add(accessibility_handler_.get(),
-  //               NotificationType::ACCESSIBILITY_TEXT_CHANGED,
-  //               NotificationService::AllSources());
-  //registrar_.Add(accessibility_handler_.get(),
-  //               NotificationType::ACCESSIBILITY_MENU_OPENED,
-  //               NotificationService::AllSources());
-  //registrar_.Add(accessibility_handler_.get(),
-  //               NotificationType::ACCESSIBILITY_MENU_CLOSED,
-  //               NotificationService::AllSources());
+void WizardAccessibilityHelper::RegisterNotifications() {
+  registrar_.Add(accessibility_handler_.get(),
+                 NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
+                 NotificationService::AllSources());
+  registrar_.Add(accessibility_handler_.get(),
+                 NotificationType::ACCESSIBILITY_CONTROL_ACTION,
+                 NotificationService::AllSources());
+  registrar_.Add(accessibility_handler_.get(),
+                 NotificationType::ACCESSIBILITY_TEXT_CHANGED,
+                 NotificationService::AllSources());
+  registrar_.Add(accessibility_handler_.get(),
+                 NotificationType::ACCESSIBILITY_MENU_OPENED,
+                 NotificationService::AllSources());
+  registrar_.Add(accessibility_handler_.get(),
+                 NotificationType::ACCESSIBILITY_MENU_CLOSED,
+                 NotificationService::AllSources());
+  registered_notifications_ = true;
+}
+
+void WizardAccessibilityHelper::UnregisterNotifications() {
+  if (!registered_notifications_)
+    return;
+  registrar_.RemoveAll();
+  registered_notifications_ = false;
 }
 
 void WizardAccessibilityHelper::MaybeEnableAccessibility(
@@ -83,6 +88,8 @@ void WizardAccessibilityHelper::MaybeSpeak(const char* str, bool queue,
 
 void WizardAccessibilityHelper::EnableAccessibility(views::View* view_tree) {
   LOG(INFO) << "Enabling accessibility.";
+  if (!registered_notifications_)
+    RegisterNotifications();
   if (g_browser_process) {
     PrefService* prefService = g_browser_process->local_state();
     if (!prefService->GetBoolean(prefs::kAccessibilityEnabled)) {
