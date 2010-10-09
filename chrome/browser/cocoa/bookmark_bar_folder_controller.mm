@@ -56,6 +56,10 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // Return the new width (so that the window can be adjusted, if necessary).
 - (CGFloat)adjustButtonWidths;
 
+// Returns the total menu height needed to display |buttonCount| buttons.
+// Does not do any fancy tricks like trimming the height to fit on the screen.
+- (int)windowHeightForButtonCount:(int)buttonCount;
+
 // Adjust the height and horizontal position of the window such that the
 // scroll arrows are shown as needed and the window appears completely
 // on screen.
@@ -382,6 +386,12 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   [[self window] setLevel:NSPopUpMenuWindowLevel];
 }
 
+- (int)windowHeightForButtonCount:(int)buttonCount {
+  return (buttonCount * (bookmarks::kBookmarkButtonHeight +
+                         bookmarks::kBookmarkVerticalPadding)) +
+      bookmarks::kBookmarkVerticalPadding;
+}
+
 - (void)adjustWindowForHeight:(int)windowHeight {
   // Adjust all button widths to be consistent, determine the best size for
   // the window, and set the window frame.
@@ -457,9 +467,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   int buttons = std::max(node->GetChildCount() - startingIndex, 1);
 
   // Prelim height of the window.  We'll trim later as needed.
-  int height = (buttons * (bookmarks::kBookmarkButtonHeight +
-                           bookmarks::kBookmarkVerticalPadding)) +
-      bookmarks::kBookmarkVerticalPadding;
+  int height = [self windowHeightForButtonCount:buttons];
   // We'll need this soon...
   [self window];
 
@@ -1283,9 +1291,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self closeBookmarkFolder:self];
 
   // Prelim height of the window.  We'll trim later as needed.
-  int height = [buttons_ count] * (bookmarks::kBookmarkButtonHeight +
-                                   bookmarks::kBookmarkVerticalPadding) +
-      bookmarks::kBookmarkVerticalPadding;
+  int height = [self windowHeightForButtonCount:[buttons_ count]];
   [self adjustWindowForHeight:height];
 }
 
@@ -1402,7 +1408,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   for (NSInteger i = 0; i < buttonIndex; ++i) {
     BookmarkButton* button = [buttons_ objectAtIndex:i];
     NSRect buttonFrame = [button frame];
-    buttonFrame.origin.y -= bookmarks::kBookmarkBarHeight -
+    buttonFrame.origin.y -= bookmarks::kBookmarkButtonHeight +
       bookmarks::kBookmarkVerticalPadding;
     [button setFrame:buttonFrame];
   }
@@ -1436,9 +1442,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 
   // Propose a height for the window.  We'll trim later as needed.
-  int height = buttonCount * bookmarks::kBookmarkButtonHeight +
-      bookmarks::kBookmarkVerticalPadding;
-  [self adjustWindowForHeight:height];
+  [self adjustWindowForHeight:[self windowHeightForButtonCount:buttonCount]];
 }
 
 - (id<BookmarkButtonControllerProtocol>)controllerForNode:
