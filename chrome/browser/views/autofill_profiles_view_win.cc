@@ -377,8 +377,9 @@ void AutoFillProfilesView::ButtonPressed(views::Button* sender,
 // AutoFillProfilesView, views::LinkController implementations:
 void AutoFillProfilesView::LinkActivated(views::Link* source, int event_flags) {
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(GURL(kAutoFillLearnMoreUrl), GURL(), NEW_FOREGROUND_TAB,
-                   PageTransition::TYPED);
+  if (!browser || !browser->GetSelectedTabContents())
+    browser = Browser::Create(profile_);
+  browser->OpenAutoFillHelpTabAndActivate();
 }
 
 

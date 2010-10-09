@@ -366,8 +366,9 @@ gboolean AutoFillDialog::OnSelectionFilter(GtkTreeSelection* selection,
 
 void AutoFillDialog::OnLinkActivated() {
   Browser* browser = BrowserList::GetLastActive();
-  browser->OpenURL(GURL(kAutoFillLearnMoreUrl), GURL(), NEW_FOREGROUND_TAB,
-                   PageTransition::TYPED);
+  if (!browser || !browser->GetSelectedTabContents())
+    browser = Browser::Create(profile_);
+  browser->OpenAutoFillHelpTabAndActivate();
 }
 
 void AutoFillDialog::LoadAutoFillData() {

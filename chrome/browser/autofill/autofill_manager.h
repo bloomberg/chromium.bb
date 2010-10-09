@@ -30,9 +30,6 @@ struct FormData;
 class FormField;
 }  // namespace webkit_glue
 
-// TODO(jhawkins): Maybe this should be in a grd file?
-extern const char* kAutoFillLearnMoreUrl;
-
 // Manages saving and restoring the user's personal information entered into web
 // forms.
 class AutoFillManager : public RenderViewHostDelegate::AutoFill,

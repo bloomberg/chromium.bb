@@ -92,10 +92,6 @@ bool FormIsHTTPS(FormStructure* form) {
 
 }  // namespace
 
-// TODO(jhawkins): Maybe this should be in a grd file?
-const char* kAutoFillLearnMoreUrl =
-    "http://www.google.com/support/chrome/bin/answer.py?answer=142893";
-
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       personal_data_(NULL),
