@@ -1414,6 +1414,8 @@
         'browser/extensions/crashed_extension_infobar.h',
         'browser/extensions/crx_installer.cc',
         'browser/extensions/crx_installer.h',
+        'browser/extensions/default_apps.cc',
+        'browser/extensions/default_apps.h',
         'browser/extensions/extension_accessibility_api.cc',
         'browser/extensions/extension_accessibility_api.h',
         'browser/extensions/extension_accessibility_api_constants.cc',
@@ -4033,41 +4035,6 @@
       'target_name': 'component_extensions',
       'type': 'none',
       'msvs_guid': '50B52703-525F-404C-BFE2-C46D3375D73E',
-      # TODO(aa): Once the msvs port supports it, change this to recursively
-      # copy the entire directory instead of listing the files.
-      # http://code.google.com/p/gyp/issues/detail?id=143.
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)/resources/gmail_app',
-          'files': [
-            'browser/resources/gmail_app/manifest.json',
-            'browser/resources/gmail_app/128.png',
-            'browser/resources/gmail_app/48.png',
-            'browser/resources/gmail_app/32.png',
-            'browser/resources/gmail_app/24.png',
-          ]
-        },
-        {
-          'destination': '<(PRODUCT_DIR)/resources/calendar_app',
-          'files': [
-            'browser/resources/calendar_app/manifest.json',
-            'browser/resources/calendar_app/128.png',
-            'browser/resources/calendar_app/48.png',
-            'browser/resources/calendar_app/32.png',
-            'browser/resources/calendar_app/24.png',
-          ]
-        },
-        {
-          'destination': '<(PRODUCT_DIR)/resources/docs_app',
-          'files': [
-            'browser/resources/docs_app/manifest.json',
-            'browser/resources/docs_app/128.png',
-            'browser/resources/docs_app/48.png',
-            'browser/resources/docs_app/32.png',
-            'browser/resources/docs_app/24.png',
-          ]
-        },
-      ],
       'conditions': [
         ['OS=="linux" and chromeos==1 and branding=="Chrome"',{
           'copies': [

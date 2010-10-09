@@ -102,7 +102,7 @@ menu > button.default {
   display: none;
 }
 
-html[appspromovisible=true] #apps-promo {
+html.apps-promo-visible #apps-promo {
   display: block;
 }
 
@@ -132,15 +132,15 @@ html[dir=rtl] #apps-promo-hide {
   float: left;
 }
 
-html[appspromovisible=true] .app[app-id=web-store-entry] {
+html.apps-promo-visible .app[app-id=web-store-entry] {
   left: 25px;
 }
 
-html[appspromovisible=true][dir=rtl] .app[app-id=web-store-entry] {
+html.apps-promo-visible[dir=rtl] .app[app-id=web-store-entry] {
   right: 25px;
 }
 
-html[appspromovisible=true] .app[app-id=web-store-entry] a {
+html.apps-promo-visible .app[app-id=web-store-entry] a {
   font-weight: bold;
 }
 

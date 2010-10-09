@@ -42,7 +42,7 @@ std::string ShellIntegration::GetCommandLineArgumentsCommon(const GURL& url,
   // If |extension_app_id| is present, we use the kAppId switch rather than
   // the kApp switch (the launch url will be read from the extension app
   // during launch.
-  if (!cmd.HasSwitch(switches::kDisableApps) && !extension_app_id.empty()) {
+  if (!extension_app_id.empty()) {
     arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kAppId) +
         L"=\"" + ASCIIToWide(UTF16ToASCII(extension_app_id));
   } else {

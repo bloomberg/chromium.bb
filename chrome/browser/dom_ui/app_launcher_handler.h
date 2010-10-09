@@ -61,6 +61,9 @@ class AppLauncherHandler
   // Callback for the "uninstallApp" message.
   void HandleUninstallApp(const ListValue* args);
 
+  // Callback for the "hideAppPromo" message.
+  void HandleHideAppsPromo(const ListValue* args);
+
  private:
   // ExtensionInstallUI::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.

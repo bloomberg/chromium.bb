@@ -130,7 +130,7 @@ void CreateTestPendingExtensions(int count, const GURL& update_url,
     (*pending_extensions)[id] =
         PendingExtensionInfo(update_url, crx_type, kIsFromSync,
                              kInstallSilently, kInitialState,
-                             kInitialIncognitoEnabled);
+                             kInitialIncognitoEnabled, Extension::INTERNAL);
   }
 }
 
@@ -568,7 +568,7 @@ class ExtensionUpdaterTest : public testing::Test {
       pending_extensions[id] =
           PendingExtensionInfo(test_url, kExpectedCrxType, kIsFromSync,
                                kInstallSilently, kInitialState,
-                               kInitialIncognitoEnabled);
+                               kInitialIncognitoEnabled, Extension::INTERNAL);
       service.set_pending_extensions(pending_extensions);
     }
 
@@ -897,13 +897,15 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL("http:google.com:foo"),
                                               PendingExtensionInfo::EXTENSION,
-                                              false, false, true, false));
+                                              false, false, true, false,
+                                              Extension::INTERNAL));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // Extensions with empty IDs should be rejected.
   builder.AddPendingExtension(
       "", PendingExtensionInfo(GURL(), PendingExtensionInfo::EXTENSION,
-                               false, false, true, false));
+                               false, false, true, false,
+                               Extension::INTERNAL));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // TODO(akalin): Test that extensions with empty update URLs
@@ -914,7 +916,8 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL(),
                                               PendingExtensionInfo::EXTENSION,
-                                              false, false, true, false));
+                                              false, false, true, false,
+                                              Extension::INTERNAL));
   std::vector<ManifestFetchData*> fetches = builder.GetFetches();
   ASSERT_EQ(1u, fetches.size());
   scoped_ptr<ManifestFetchData> fetch(fetches[0]);

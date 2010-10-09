@@ -23,6 +23,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -129,13 +130,15 @@ PendingExtensionInfo::PendingExtensionInfo(
     bool is_from_sync,
     bool install_silently,
     bool enable_on_install,
-    bool enable_incognito_on_install)
+    bool enable_incognito_on_install,
+    Extension::Location location)
     : update_url(update_url),
       expected_crx_type(expected_crx_type),
       is_from_sync(is_from_sync),
       install_silently(install_silently),
       enable_on_install(enable_on_install),
-      enable_incognito_on_install(enable_incognito_on_install) {}
+      enable_incognito_on_install(enable_incognito_on_install),
+      install_source(location) {}
 
 PendingExtensionInfo::PendingExtensionInfo()
     : update_url(),
@@ -143,7 +146,8 @@ PendingExtensionInfo::PendingExtensionInfo()
       is_from_sync(true),
       install_silently(false),
       enable_on_install(false),
-      enable_incognito_on_install(false) {}
+      enable_incognito_on_install(false),
+      install_source(Extension::INVALID) {}
 
 // ExtensionsService.
 
@@ -561,7 +565,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
       extensions_enabled_(true),
       show_extensions_prompts_(true),
       ready_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(toolbar_model_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(toolbar_model_(this)),
+      default_apps_(profile->GetPrefs()) {
   // Figure out if extension installation should be enabled.
   if (command_line->HasSwitch(switches::kDisableExtensions)) {
     extensions_enabled_ = false;
@@ -682,8 +687,8 @@ void ExtensionsService::UpdateExtension(const std::string& id,
                        this,  // frontend
                        client));
   installer->set_expected_id(id);
-  if (is_pending_extension && !it->second.is_from_sync)
-    installer->set_install_source(Extension::EXTERNAL_PREF_DOWNLOAD);
+  if (is_pending_extension)
+    installer->set_install_source(it->second.install_source);
   installer->set_delete_source(true);
   installer->set_original_url(download_url);
   installer->InstallCrx(extension_path);
@@ -699,15 +704,16 @@ void ExtensionsService::AddPendingExtensionFromSync(
                 << " which already exists";
     return;
   }
-  AddPendingExtensionInternal(
-      id, update_url, expected_crx_type, true, install_silently,
-      enable_on_install, enable_incognito_on_install);
+
+  AddPendingExtensionInternal(id, update_url, expected_crx_type, true,
+                              install_silently, enable_on_install,
+                              enable_incognito_on_install,
+                              Extension::INTERNAL);
 }
 
 void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
     const std::string& id, const GURL& update_url) {
   // Add the extension to this list of extensions to update.
-  // We do not know if the id refers to a theme, so make is_theme unknown.
   const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
       PendingExtensionInfo::UNKNOWN;
   const bool kIsFromSync = false;
@@ -723,18 +729,41 @@ void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
 
   AddPendingExtensionInternal(id, update_url, kExpectedCrxType, kIsFromSync,
                               kInstallSilently, kEnableOnInstall,
-                              kEnableIncognitoOnInstall);
+                              kEnableIncognitoOnInstall,
+                              Extension::EXTERNAL_PREF_DOWNLOAD);
+}
+
+void ExtensionsService::AddPendingExtensionFromDefaultAppList(
+    const std::string& id) {
+  // Add the extension to this list of extensions to update.
+  const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
+      PendingExtensionInfo::APP;
+  const bool kIsFromSync = false;
+  const bool kInstallSilently = true;
+  const bool kEnableOnInstall = true;
+  const bool kEnableIncognitoOnInstall = true;
+
+  // This can legitimately happen if the user manually installed one of the
+  // default apps before this code ran.
+  if (GetExtensionByIdInternal(id, true, true))
+    return;
+
+  AddPendingExtensionInternal(id, GURL(), kExpectedCrxType, kIsFromSync,
+                              kInstallSilently, kEnableOnInstall,
+                              kEnableIncognitoOnInstall,
+                              Extension::INTERNAL);
 }
 
 void ExtensionsService::AddPendingExtensionInternal(
     const std::string& id, const GURL& update_url,
     PendingExtensionInfo::ExpectedCrxType expected_crx_type,
     bool is_from_sync, bool install_silently,
-    bool enable_on_install, bool enable_incognito_on_install) {
+    bool enable_on_install, bool enable_incognito_on_install,
+    Extension::Location install_source) {
   pending_extensions_[id] =
       PendingExtensionInfo(update_url, expected_crx_type, is_from_sync,
                            install_silently, enable_on_install,
-                           enable_incognito_on_install);
+                           enable_incognito_on_install, install_source);
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
@@ -1514,8 +1543,11 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
 
     // Set initial state from pending extension data.
     PendingExtensionInfo::ExpectedCrxType actual_crx_type =
-        (extension->is_theme() ? PendingExtensionInfo::THEME
-                               : PendingExtensionInfo::EXTENSION);
+        PendingExtensionInfo::EXTENSION;
+    if (extension->is_app())
+      actual_crx_type = PendingExtensionInfo::APP;
+    else if (extension->is_theme())
+      actual_crx_type = PendingExtensionInfo::THEME;
 
     if (expected_crx_type != PendingExtensionInfo::UNKNOWN &&
         expected_crx_type != actual_crx_type) {
@@ -1624,6 +1656,12 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
         NotificationType::EXTENSION_INSTALLED,
         Source<Profile>(profile_),
         Details<Extension>(extension));
+  }
+
+  if (extension->is_app()) {
+    ExtensionIdSet installed_ids = GetAppIds();
+    installed_ids.insert(extension->id());
+    default_apps_.DidInstallApp(installed_ids);
   }
 
   // Transfer ownership of |extension| to OnExtensionLoaded.
@@ -1825,15 +1863,17 @@ void ExtensionsService::Observe(NotificationType type,
   }
 }
 
-bool ExtensionsService::HasApps() {
-  if (!extensions_enabled_)
-    return false;
+bool ExtensionsService::HasApps() const {
+  return !GetAppIds().empty();
+}
 
+ExtensionIdSet ExtensionsService::GetAppIds() const {
+  ExtensionIdSet result;
   for (ExtensionList::const_iterator it = extensions_.begin();
        it != extensions_.end(); ++it) {
-    if ((*it)->is_app())
-      return true;
+    if ((*it)->is_app() && (*it)->location() != Extension::COMPONENT)
+      result.insert((*it)->id());
   }
 
-  return false;
+  return result;
 }

@@ -11,7 +11,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
 #include "base/string16.h"
@@ -303,10 +302,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_1));
   localized_strings.SetString("appspromotext2",
       l10n_util::GetStringUTF16(IDS_APPS_PROMO_TEXT_2));
-
-  localized_strings.SetString("appspromovisible",
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceAppsPromoVisible) ? "true" : "false");
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.

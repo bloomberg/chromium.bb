@@ -745,14 +745,8 @@ bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
 
 bool Extension::LoadIsApp(const DictionaryValue* manifest,
                           std::string* error) {
-  if (manifest->HasKey(keys::kApp)) {
-    if (!apps_enabled_) {
-      *error = errors::kAppsNotEnabled;
-      return false;
-    } else {
-      is_app_ = true;
-    }
-  }
+  if (manifest->HasKey(keys::kApp))
+    is_app_ = true;
 
   return true;
 }
@@ -971,7 +965,6 @@ Extension::Extension(const FilePath& path)
   DCHECK(path.IsAbsolute());
 
   static_data_ = mutable_static_data_;
-  apps_enabled_ = AppsAreEnabled();
   location_ = INVALID;
 
 #if defined(OS_WIN)
@@ -1175,11 +1168,6 @@ void Extension::DecodeIconFromPath(const FilePath& icon_path,
 GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
   return GURL(std::string(chrome::kExtensionScheme) +
               chrome::kStandardSchemeSeparator + extension_id + "/");
-}
-
-// static
-bool Extension::AppsAreEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableApps);
 }
 
 bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,

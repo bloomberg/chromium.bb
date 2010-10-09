@@ -26,6 +26,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_info_map.h"
@@ -168,15 +169,6 @@ bool HasACacheSubdir(const FilePath &dir) {
          file_util::PathExists(GetMediaCachePath(dir));
 }
 
-// Returns true if the default apps should be loaded (so that the app panel is
-// not empty).
-bool IncludeDefaultApps() {
-#if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
-  return true;
-#endif
-  return false;
-}
-
 // Simple task to log the size of the current profile.
 class ProfileSizeTask : public Task {
  public:
@@ -240,6 +232,7 @@ Profile* Profile::CreateProfile(const FilePath& path) {
 // static
 void ProfileImpl::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSavingBrowserHistoryDisabled, false);
+  DefaultApps::RegisterUserPrefs(prefs);
 }
 
 ProfileImpl::ProfileImpl(const FilePath& path)
@@ -375,6 +368,18 @@ void ProfileImpl::InitExtensions() {
       GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName),
       true);
 
+  RegisterComponentExtensions();
+  extensions_service_->Init();
+  InstallDefaultApps();
+
+  // Load any extensions specified with --load-extension.
+  if (command_line->HasSwitch(switches::kLoadExtension)) {
+    FilePath path = command_line->GetSwitchValuePath(switches::kLoadExtension);
+    extensions_service_->LoadExtension(path);
+  }
+}
+
+void ProfileImpl::RegisterComponentExtensions() {
   // Register the component extensions.
   typedef std::list<std::pair<std::string, int> > ComponentExtensionList;
   ComponentExtensionList component_extensions;
@@ -392,22 +397,9 @@ void ProfileImpl::InitExtensions() {
   component_extensions.push_back(
       std::make_pair("web_store", IDR_WEBSTORE_MANIFEST));
 
-  // Some sample apps to make our lives easier while we are developing extension
-  // apps. This way we don't have to constantly install these over and over.
-  if (Extension::AppsAreEnabled() && IncludeDefaultApps()) {
-    component_extensions.push_back(
-        std::make_pair("gmail_app", IDR_GMAIL_APP_MANIFEST));
-    component_extensions.push_back(
-        std::make_pair("calendar_app", IDR_CALENDAR_APP_MANIFEST));
-    component_extensions.push_back(
-        std::make_pair("docs_app", IDR_DOCS_APP_MANIFEST));
-  }
-
 #if defined(OS_CHROMEOS) && defined(GOOGLE_CHROME_BUILD)
-  if (Extension::AppsAreEnabled()) {
-    component_extensions.push_back(
-        std::make_pair("chat_manager", IDR_TALK_APP_MANIFEST));
-  }
+  component_extensions.push_back(
+      std::make_pair("chat_manager", IDR_TALK_APP_MANIFEST));
 #endif
 
   for (ComponentExtensionList::iterator iter = component_extensions.begin();
@@ -425,13 +417,31 @@ void ProfileImpl::InitExtensions() {
     extensions_service_->register_component_extension(
         ExtensionsService::ComponentExtensionInfo(manifest, path));
   }
+}
 
-  extensions_service_->Init();
+void ProfileImpl::InstallDefaultApps() {
+#if !defined(OS_CHROMEOS)
+  // On desktop Chrome, we don't have default apps on by, err, default yet.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDefaultApps)) {
+    return;
+  }
+#endif
 
-  // Load any extensions specified with --load-extension.
-  if (command_line->HasSwitch(switches::kLoadExtension)) {
-    FilePath path = command_line->GetSwitchValuePath(switches::kLoadExtension);
-    extensions_service_->LoadExtension(path);
+  // The web store only supports en-US at the moment, so we don't install
+  // default apps in other locales.
+  if (g_browser_process->GetApplicationLocale() != "en-US")
+    return;
+
+  ExtensionsService* extensions_service = GetExtensionsService();
+  const ExtensionIdSet* app_ids =
+      extensions_service->default_apps()->GetAppsToInstall();
+  if (!app_ids)
+    return;
+
+  for (ExtensionIdSet::const_iterator iter = app_ids->begin();
+       iter != app_ids->end(); ++iter) {
+    extensions_service->AddPendingExtensionFromDefaultAppList(*iter);
   }
 }
 

@@ -151,6 +151,9 @@ class ProfileImpl : public Profile,
     GetSessionService();
   }
 
+  void RegisterComponentExtensions();
+  void InstallDefaultApps();
+
   NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 

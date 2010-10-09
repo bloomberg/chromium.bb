@@ -131,9 +131,6 @@ const char kDisableAltWinstation[]          = "disable-winsta";
 // Disable the ApplicationCache.
 const char kDisableApplicationCache[]       = "disable-application-cache";
 
-// Disable extension apps.
-const char kDisableApps[]                   = "disable-apps";
-
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
@@ -381,10 +378,6 @@ const char kEnableBackgroundMode[] = "enable-background-mode";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
-// This applies only when the process type is "service". Enables the
-// Chromoting Host Process within the service process.
-const char kEnableRemoting[]                = "enable-remoting";
-
 // This flag enables UI for clearing server data.  Temporarily in place
 // until there's a server endpoint deployed.
 const char kEnableClearServerData[]         = "enable-clear-server-data";
@@ -404,6 +397,10 @@ const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 // writing only <link rel=prefetch...> but also eventually
 // Link: headers.
 const char kEnableContentPrefetch[]         = "enable-content-prefetch";
+
+// Whether default apps should be installed in this profile. This flag has no
+// effect on Chrome OS because default apps are always enabled  there.
+const char kEnableDefaultApps[]             = "enable-default-apps";
 
 // Enables device motion events.
 const char kEnableDeviceMotion[]            = "enable-device-motion";
@@ -470,6 +467,10 @@ const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
+
+// This applies only when the process type is "service". Enables the
+// Chromoting Host Process within the service process.
+const char kEnableRemoting[]                = "enable-remoting";
 
 // Enable content settings based on host *and* plug-in.
 const char kEnableResourceContentSettings[] =

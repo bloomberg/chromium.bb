@@ -13,6 +13,8 @@
 namespace prefs {
 
 // Profile prefs
+extern const char kAppsPromoCounter[];
+extern const char kDefaultAppsInstalled[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];
 extern const char kSessionExitedCleanly[];

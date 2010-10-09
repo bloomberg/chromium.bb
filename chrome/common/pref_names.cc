@@ -9,6 +9,13 @@ namespace prefs {
 // *************** PROFILE PREFS ***************
 // These are attached to the user profile
 
+// A counter that controls whether the apps promo is shown in the app launcher
+// or not.
+const char kAppsPromoCounter[] = "apps_promo_counter";
+
+// Whether we have installed default apps yet in this profile.
+const char kDefaultAppsInstalled[] = "default_apps_installed";
+
 // A boolean specifying whether the New Tab page is the home page or not.
 const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 

@@ -20,6 +20,7 @@
 #include "base/time.h"
 #include "base/tuple.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -51,6 +52,7 @@ struct PendingExtensionInfo {
   enum ExpectedCrxType {
     UNKNOWN,  // Sometimes we don't know the type of a pending item.  An
               // update URL from external_extensions.json is one such case.
+    APP,
     THEME,
     EXTENSION
   };
@@ -60,7 +62,8 @@ struct PendingExtensionInfo {
                        bool is_from_sync,
                        bool install_silently,
                        bool enable_on_install,
-                       bool enable_incognito_on_install);
+                       bool enable_incognito_on_install,
+                       Extension::Location install_source);
 
   PendingExtensionInfo();
 
@@ -70,6 +73,7 @@ struct PendingExtensionInfo {
   bool install_silently;
   bool enable_on_install;
   bool enable_incognito_on_install;
+  Extension::Location install_source;
 };
 
 // A PendingExtensionMap is a map from IDs of pending extensions to
@@ -169,6 +173,10 @@ class ExtensionsService
     return !(extensions_.empty() && disabled_extensions_.empty());
   }
 
+  const FilePath& install_directory() const { return install_directory_; }
+
+  DefaultApps* default_apps() { return &default_apps_; }
+
   // Whether this extension can run in an incognito window.
   bool IsIncognitoEnabled(const Extension* extension);
   void SetIsIncognitoEnabled(Extension* extension, bool enabled);
@@ -176,8 +184,6 @@ class ExtensionsService
   // Whether this extension can inject scripts into pages with file URLs.
   bool AllowFileAccess(const Extension* extension);
   void SetAllowFileAccess(Extension* extension, bool allow);
-
-  const FilePath& install_directory() const { return install_directory_; }
 
   // Initialize and start all installed extensions.
   void Init();
@@ -224,6 +230,10 @@ class ExtensionsService
   // to be fetched, installed, and activated.
   void AddPendingExtensionFromExternalUpdateUrl(const std::string& id,
                                                 const GURL& update_url);
+
+  // Like the above. Always installed silently, and defaults update url
+  // from extension id.
+  void AddPendingExtensionFromDefaultAppList(const std::string& id);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
@@ -386,8 +396,11 @@ class ExtensionsService
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Whether there are any apps installed.
-  bool HasApps();
+  // Whether there are any apps installed. Component apps are not included.
+  bool HasApps() const;
+
+  // Gets the set of loaded app ids. Component apps are not included.
+  ExtensionIdSet GetAppIds() const;
 
  private:
   virtual ~ExtensionsService();
@@ -409,7 +422,8 @@ class ExtensionsService
       const std::string& id, const GURL& update_url,
       PendingExtensionInfo::ExpectedCrxType crx_type,
       bool is_from_sync, bool install_silently,
-      bool enable_on_install, bool enable_incognito_on_install);
+      bool enable_on_install, bool enable_incognito_on_install,
+      Extension::Location install_source);
 
   // Handles sending notification that |extension| was loaded.
   void NotifyExtensionLoaded(Extension* extension);
@@ -510,6 +524,10 @@ class ExtensionsService
   // intrinsically protected.
   typedef std::map<GURL, int> ProtectedStorageMap;
   ProtectedStorageMap protected_storage_map_;
+
+  // Manages the installation of default apps and the promotion of them in the
+  // app launcher.
+  DefaultApps default_apps_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);

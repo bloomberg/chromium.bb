@@ -12,9 +12,11 @@
 #include "chrome/browser/app_launched_animation.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -73,6 +75,8 @@ void AppLauncherHandler::RegisterMessages() {
       NewCallback(this, &AppLauncherHandler::HandleSetLaunchType));
   dom_ui_->RegisterMessageCallback("uninstallApp",
       NewCallback(this, &AppLauncherHandler::HandleUninstallApp));
+  dom_ui_->RegisterMessageCallback("hideAppsPromo",
+      NewCallback(this, &AppLauncherHandler::HandleHideAppsPromo));
 }
 
 void AppLauncherHandler::Observe(NotificationType type,
@@ -133,6 +137,14 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
     }
   }
   dictionary->Set("apps", list);
+
+  DefaultApps* default_apps = extensions_service_->default_apps();
+  if (default_apps->ShouldShowPromo(extensions_service_->GetAppIds())) {
+    dictionary->SetBoolean("showPromo", true);
+    default_apps->DidShowPromo();
+  } else {
+    dictionary->SetBoolean("showPromo", false);
+  }
 }
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
@@ -243,6 +255,10 @@ void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
 
   extension_id_prompting_ = extension_id;
   GetExtensionInstallUI()->ConfirmUninstall(this, extension);
+}
+
+void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
+  extensions_service_->default_apps()->SetPromoHidden();
 }
 
 ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {

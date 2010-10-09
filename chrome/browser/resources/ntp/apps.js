@@ -37,6 +37,10 @@ function getAppsCallback(data) {
   addClosedMenuFooter(apps.menu, 'apps', MINIMIZED_APPS, Section.APPS);
 
   apps.loaded = true;
+  if (data.showPromo)
+    document.documentElement.classList.add('apps-promo-visible');
+  else
+    document.documentElement.classList.remove('apps-promo-visible');
   maybeDoneLoading();
 
   if (data.apps.length > 0 && isDoneLoading()) {

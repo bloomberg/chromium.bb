@@ -445,9 +445,6 @@
                   'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
                   'files': [
                     '<(PRODUCT_DIR)/resources/inspector/',
-                    '<(PRODUCT_DIR)/resources/gmail_app/',
-                    '<(PRODUCT_DIR)/resources/calendar_app/',
-                    '<(PRODUCT_DIR)/resources/docs_app/',
                   ],
                   'conditions': [
                     ['mac_breakpad==1', {

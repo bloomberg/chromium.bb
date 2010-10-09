@@ -182,11 +182,7 @@ void ManifestFetchesBuilder::AddPendingExtension(
   scoped_ptr<Version> version(
       Version::GetVersionFromString("0.0.0.0"));
 
-  Extension::Location location =
-      (info.is_from_sync ? Extension::INTERNAL
-                         : Extension::EXTERNAL_PREF_DOWNLOAD);
-
-  AddExtensionData(location, id, *version,
+  AddExtensionData(info.install_source, id, *version,
                    info.expected_crx_type, info.update_url);
 }
 

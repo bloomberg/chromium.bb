@@ -170,9 +170,6 @@ class Extension {
       const URLPatternList& host_patterns);
   std::vector<std::string> GetDistinctHosts();
 
-  bool apps_enabled() const { return apps_enabled_; }
-  void set_apps_enabled(bool val) { apps_enabled_ = val; }
-
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
 
@@ -316,11 +313,7 @@ class Extension {
   // Returns the base extension url for a given |extension_id|.
   static GURL GetBaseURLFromExtensionId(const std::string& extension_id);
 
-  // Returns whether the browser has apps enabled (either as the default or if
-  // it was explicitly turned on via a command line switch).
-  static bool AppsAreEnabled();
-
-  // Returns the launch URL for the extension/apps gallery. Can be set via the
+  // Returns the url prefix for the extension/apps gallery. Can be set via the
   // --apps-gallery-url switch. The URL returned will not contain a trailing
   // slash. Do not use this as a prefix/extent for the store.  Instead see
   // ExtensionsService::GetWebStoreApp or
@@ -647,10 +640,6 @@ class Extension {
   // which override the handling of those URLs.
   URLOverrideMap chrome_url_overrides_;
 
-  // Whether apps-related features can be parsed during InitFromValue().
-  // Defaults to the value from --enable-extension-apps.
-  bool apps_enabled_;
-
   // Whether this extension uses app features.
   bool is_app_;
 
@@ -690,6 +679,7 @@ class Extension {
 };
 
 typedef std::vector<Extension*> ExtensionList;
+typedef std::set<std::string> ExtensionIdSet;
 
 // Handy struct to pass core extension info around.
 struct ExtensionInfo {

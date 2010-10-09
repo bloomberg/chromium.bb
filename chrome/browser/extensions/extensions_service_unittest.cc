@@ -1716,7 +1716,7 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
       good->id(), good->update_url(),
       PendingExtensionInfo::EXTENSION,
       kGoodIsFromSync, kGoodInstallSilently, kGoodInitialState,
-      kGoodInitialIncognitoEnabled);
+      kGoodInitialIncognitoEnabled, Extension::INTERNAL);
   UpdateExtension(good->id(), path, INSTALLED);
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));

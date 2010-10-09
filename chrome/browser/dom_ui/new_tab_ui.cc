@@ -441,13 +441,11 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new MetricsHandler())->Attach(this));
     if (GetProfile()->IsSyncAccessible())
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
-    if (Extension::AppsAreEnabled()) {
-      ExtensionsService* service = GetProfile()->GetExtensionsService();
-      // We might not have an ExtensionsService (on ChromeOS when not logged in
-      // for example).
-      if (service)
-        AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
-    }
+    ExtensionsService* service = GetProfile()->GetExtensionsService();
+    // We might not have an ExtensionsService (on ChromeOS when not logged in
+    // for example).
+    if (service)
+      AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
   }
