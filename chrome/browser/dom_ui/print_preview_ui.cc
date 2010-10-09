@@ -26,7 +26,7 @@ namespace {
 
 void SetLocalizedStrings(DictionaryValue* localized_strings) {
   localized_strings->SetString(std::string("title"),
-      l10n_util::GetStringUTF8(IDS_PRINTPREVIEW_TITLE));
+      l10n_util::GetStringUTF8(IDS_PRINT_PREVIEW_TITLE));
 }
 
 }  // namespace
@@ -52,7 +52,7 @@ void PrintPreviewUIHTMLSource::StartDataRequest(const std::string& path,
 
   static const base::StringPiece print_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_PRINTPREVIEW_HTML));
+          IDR_PRINT_PREVIEW_HTML));
   const std::string full_html = jstemplate_builder::GetI18nTemplateHtml(
       print_html, &localized_strings);
 
