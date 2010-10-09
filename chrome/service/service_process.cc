@@ -113,7 +113,8 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
 
   // After the IPC server has started we signal that the service process is
   // running.
-  SignalServiceProcessRunning();
+  SignalServiceProcessRunning(
+      NewRunnableMethod(this, &ServiceProcess::Shutdown));
 
   // See if we need to stay running.
   ScheduleShutdownCheck();
@@ -121,10 +122,7 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
 }
 
 bool ServiceProcess::Teardown() {
-  if (service_prefs_.get()) {
-    service_prefs_->WritePrefs();
-    service_prefs_.reset();
-  }
+  service_prefs_.reset();
   cloud_print_proxy_.reset();
 
 #if defined(ENABLE_REMOTING)
@@ -234,7 +232,7 @@ bool ServiceProcess::AddServiceProcessToAutoStart() {
     // We need a unique name for the command per user-date-dir. Just use the
     // channel name.
     return win_util::AddCommandToAutoRun(
-        HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessChannelName()),
+        HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessAutoRunKey()),
         cmd_line.command_line_string());
   }
 #endif  // defined(OS_WIN)
@@ -246,7 +244,7 @@ bool ServiceProcess::RemoveServiceProcessFromAutoStart() {
 // chrome/common and implementation for non-Windows platforms needs to be added.
 #if defined(OS_WIN)
   return win_util::RemoveCommandFromAutoRun(
-      HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessChannelName()));
+      HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessAutoRunKey()));
 #endif  // defined(OS_WIN)
   return false;
 }

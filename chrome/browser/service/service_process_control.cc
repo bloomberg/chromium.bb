@@ -27,7 +27,8 @@ class ServiceProcessControl::Launcher
   Launcher(ServiceProcessControl* process, CommandLine* cmd_line)
       : process_(process),
         cmd_line_(cmd_line),
-        launched_(false) {
+        launched_(false),
+        retry_count_(0) {
   }
 
   // Execute the command line to start the process asynchronously.
@@ -44,24 +45,26 @@ class ServiceProcessControl::Launcher
 
  private:
   void DoRun(Task* task) {
-    launched_ = base::LaunchApp(*cmd_line_.get(), false, true, NULL);
-
+    base::LaunchApp(*cmd_line_.get(), false, true, NULL);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &Launcher::DoDetectLaunched, task));
   }
 
   void DoDetectLaunched(Task* task) {
-    if (CheckServiceProcessRunning()) {
+    const uint32 kMaxLaunchDetectRetries = 10;
+
+    launched_ = CheckServiceProcessRunning();
+    if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries)) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &Launcher::Notify, task));
       return;
     }
-
+    retry_count_++;
     // If the service process is not launched yet then check again in 2 seconds.
     const int kDetectLaunchRetry = 2000;
-    BrowserThread::PostDelayedTask(
-        BrowserThread::IO, FROM_HERE,
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         NewRunnableMethod(this, &Launcher::DoDetectLaunched, task),
         kDetectLaunchRetry);
   }
@@ -74,6 +77,7 @@ class ServiceProcessControl::Launcher
   ServiceProcessControl* process_;
   scoped_ptr<CommandLine> cmd_line_;
   bool launched_;
+  uint32 retry_count_;
 };
 
 // ServiceProcessControl implementation.
