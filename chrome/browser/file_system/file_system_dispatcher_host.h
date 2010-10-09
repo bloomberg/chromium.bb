@@ -91,6 +91,12 @@ class FileSystemDispatcherHost
   // and returns false.
   bool CheckQuotaForPath(const FilePath& path, int64 growth, int request_id);
 
+  // Checks if a given |path| does not contain any restricted names/chars
+  // for new files. Returns true if the given |path| is safe.
+  // Otherwise it sends back a security error code to the dispatcher and
+  // returns false.
+  bool CheckIfFilePathIsSafe(const FilePath& path, int request_id);
+
   // The sender to be used for sending out IPC messages.
   IPC::Message::Sender* message_sender_;
 

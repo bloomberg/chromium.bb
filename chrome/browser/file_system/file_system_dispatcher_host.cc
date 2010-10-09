@@ -161,6 +161,7 @@ void FileSystemDispatcherHost::OnMove(
     int request_id, const FilePath& src_path, const FilePath& dest_path) {
   if (!CheckValidFileSystemPath(src_path, request_id) ||
       !CheckValidFileSystemPath(dest_path, request_id) ||
+      !CheckIfFilePathIsSafe(dest_path, request_id) ||
       !CheckQuotaForPath(dest_path, FileSystemQuota::kUnknownSize, request_id))
     return;
 
@@ -171,6 +172,7 @@ void FileSystemDispatcherHost::OnCopy(
     int request_id, const FilePath& src_path, const FilePath& dest_path) {
   if (!CheckValidFileSystemPath(src_path, request_id) ||
       !CheckValidFileSystemPath(dest_path, request_id) ||
+      !CheckIfFilePathIsSafe(dest_path, request_id) ||
       !CheckQuotaForPath(dest_path, FileSystemQuota::kUnknownSize, request_id))
     return;
 
@@ -195,6 +197,7 @@ void FileSystemDispatcherHost::OnCreate(
     int request_id, const FilePath& path, bool exclusive,
     bool is_directory, bool recursive) {
   if (!CheckValidFileSystemPath(path, request_id) ||
+      !CheckIfFilePathIsSafe(path, request_id) ||
       !CheckQuotaForPath(path, 0L, request_id))
     return;
   if (is_directory)
@@ -226,6 +229,7 @@ void FileSystemDispatcherHost::OnWrite(
     const GURL& blob_url,
     int64 offset) {
   if (!CheckValidFileSystemPath(path, request_id) ||
+      !CheckIfFilePathIsSafe(path, request_id) ||
       !CheckQuotaForPath(path, FileSystemQuota::kUnknownSize, request_id))
     return;
   GetNewOperation(request_id)->Write(
@@ -246,7 +250,8 @@ void FileSystemDispatcherHost::OnTouchFile(
     const FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  if (!CheckValidFileSystemPath(path, request_id))
+  if (!CheckValidFileSystemPath(path, request_id) ||
+      !CheckIfFilePathIsSafe(path, request_id))
     return;
   GetNewOperation(request_id)->TouchFile(
       path, last_access_time, last_modified_time);
@@ -302,6 +307,16 @@ bool FileSystemDispatcherHost::CheckQuotaForPath(
   if (!context_->CheckOriginQuota(origin_url, growth)) {
     Send(new ViewMsg_FileSystem_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_NO_SPACE));
+    return false;
+  }
+  return true;
+}
+
+bool FileSystemDispatcherHost::CheckIfFilePathIsSafe(
+    const FilePath& path, int request_id) {
+  if (context_->IsRestrictedFileName(path.BaseName())) {
+    Send(new ViewMsg_FileSystem_DidFail(
+        request_id, base::PLATFORM_FILE_ERROR_SECURITY));
     return false;
   }
   return true;

@@ -30,6 +30,19 @@ const char FileSystemHostContext::kTemporaryName[] = "Temporary";
 
 namespace {
 
+// Restricted names.
+// http://dev.w3.org/2009/dap/file-system/file-dir-sys.html#naming-restrictions
+static const char* const kRestrictedNames[] = {
+  "con", "prn", "aux", "nul",
+  "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9",
+  "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+};
+
+// Restricted chars.
+static const FilePath::CharType kRestrictedChars[] = {
+  '/', '\\', '<', '>', ':', '?', '*', '"', '|',
+};
+
 static inline std::string FilePathStringToASCII(
     const FilePath::StringType& path_string) {
 #if defined(OS_WIN)
@@ -46,9 +59,9 @@ FileSystemHostContext::FileSystemHostContext(
     : base_path_(data_path.Append(kFileSystemDirectory)),
       is_incognito_(is_incognito),
       quota_manager_(new fileapi::FileSystemQuota()) {
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    allow_file_access_from_files_ = command_line.HasSwitch(
-      switches::kAllowFileAccessFromFiles);
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  allow_file_access_from_files_ = command_line.HasSwitch(
+    switches::kAllowFileAccessFromFiles);
 }
 
 bool FileSystemHostContext::GetFileSystemRootPath(
@@ -104,6 +117,7 @@ bool FileSystemHostContext::CheckValidFileSystemPath(
   // must be kPersistent or kTemporary.
   if (!IsStringASCII(components[1]))
     return false;
+
   std::string ascii_type_component = FilePathStringToASCII(components[1]);
   if (ascii_type_component != kPersistentName &&
       ascii_type_component != kTemporaryName)
@@ -147,6 +161,36 @@ bool FileSystemHostContext::IsAllowedScheme(const GURL& url) const {
   // only if --allow-file-access-from-files flag is given.
   return url.SchemeIs("http") || url.SchemeIs("https") ||
          (url.SchemeIsFile() && allow_file_access_from_files_);
+}
+
+bool FileSystemHostContext::IsRestrictedFileName(
+    const FilePath& filename) const {
+  if (filename.value().size() == 0)
+    return false;
+
+  if (IsWhitespace(filename.value()[filename.value().size() - 1]) ||
+      filename.value()[filename.value().size() - 1] == '.')
+    return true;
+
+  std::string filename_lower = StringToLowerASCII(
+      FilePathStringToASCII(filename.value()));
+
+  for (size_t i = 0; i < arraysize(kRestrictedNames); ++i) {
+    // Exact match.
+    if (filename_lower == kRestrictedNames[i])
+      return true;
+    // Starts with "RESTRICTED_NAME.".
+    if (filename_lower.find(std::string(kRestrictedNames[i]) + ".") == 0)
+      return true;
+  }
+
+  for (size_t i = 0; i < arraysize(kRestrictedChars); ++i) {
+    if (filename.value().find(kRestrictedChars[i]) !=
+        FilePath::StringType::npos)
+      return true;
+  }
+
+  return false;
 }
 
 bool FileSystemHostContext::CheckOriginQuota(const GURL& url, int64 growth) {

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_FILE_SYSTEM_FILE_SYSTEM_HOST_CONTEXT_H_
 
 #include "base/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
@@ -33,7 +32,7 @@ class FileSystemHostContext
                              FilePath* root_path,
                              std::string* name) const;
 
-  // Check if the given |path| is in the FileSystem base directory.
+  // Checks if a given |path| is in the FileSystem base directory.
   bool CheckValidFileSystemPath(const FilePath& path) const;
 
   // Retrieves the origin URL for the given |path| and populates
@@ -44,6 +43,9 @@ class FileSystemHostContext
   // Returns true if the given |url|'s scheme is allowed to access
   // filesystem.
   bool IsAllowedScheme(const GURL& url) const;
+
+  // Checks if a given |filename| contains any restricted names/chars in it.
+  bool IsRestrictedFileName(const FilePath& filename) const;
 
   // Quota related methods.
   bool CheckOriginQuota(const GURL& url, int64 growth);
@@ -65,8 +67,6 @@ class FileSystemHostContext
   bool allow_file_access_from_files_;
 
   scoped_ptr<fileapi::FileSystemQuota> quota_manager_;
-
-  FRIEND_TEST_ALL_PREFIXES(FileSystemHostContextTest, GetOriginFromPath);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileSystemHostContext);
 };
