@@ -1365,6 +1365,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN21BrowserMainPartsPosix24PostMainMessageLoopStartEv
+   ...
    fun:_ZN16BrowserMainParts20MainMessageLoopStartEv
    fun:_Z11BrowserMainRK18MainFunctionParams
 }
