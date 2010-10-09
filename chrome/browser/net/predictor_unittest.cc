@@ -62,7 +62,7 @@ class WaitForResolutionHelper {
 class PredictorTest : public testing::Test {
  public:
   PredictorTest()
-      : io_thread_(ChromeThread::IO, &loop_),
+      : io_thread_(BrowserThread::IO, &loop_),
         host_resolver_(new net::MockCachingHostResolver()),
         default_max_queueing_delay_(TimeDelta::FromMilliseconds(
             PredictorInit::kMaxPrefetchQueueingDelayMs)) {
@@ -96,7 +96,7 @@ class PredictorTest : public testing::Test {
   // must not outlive the message loop, otherwise bad things can happen
   // (like posting to a deleted message loop).
   MessageLoop loop_;
-  ChromeThread io_thread_;
+  BrowserThread io_thread_;
 
  protected:
   scoped_ptr<net::MockCachingHostResolver> host_resolver_;

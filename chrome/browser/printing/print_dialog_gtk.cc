@@ -68,8 +68,8 @@ class PdfUnsupportedInfoBarDelegate : public LinkInfoBarDelegate {
 
 // static
 void PrintDialogGtk::CreatePrintDialogForPdf(const FilePath& path) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&PrintDialogGtk::CreateDialogImpl, path));
 }
 

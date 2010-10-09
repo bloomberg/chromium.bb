@@ -139,7 +139,7 @@ void CloudPrintProxyService::OnDialogClosed() {
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ServiceProcessControl* process_control =
       ServiceProcessControlManager::instance()->GetProcessControl(profile_);
   DCHECK(process_control && process_control->is_connected());

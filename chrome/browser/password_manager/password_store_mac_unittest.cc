@@ -36,7 +36,7 @@ ACTION(STLDeleteElements0) {
 }
 
 ACTION(QuitUIMessageLoop) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MessageLoop::current()->Quit();
 }
 
@@ -896,7 +896,7 @@ TEST_F(PasswordStoreMacInternalsTest, TestPasswordGetAll) {
 
 class PasswordStoreMacTest : public testing::Test {
  public:
-  PasswordStoreMacTest() : ui_thread_(ChromeThread::UI, &message_loop_) {}
+  PasswordStoreMacTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
     login_db_ = new LoginDatabase();
@@ -917,7 +917,7 @@ class PasswordStoreMacTest : public testing::Test {
 
  protected:
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 
   MockKeychain* keychain_;  // Owned by store_.
   LoginDatabase* login_db_;  // Owned by store_.

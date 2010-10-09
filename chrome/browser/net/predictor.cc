@@ -99,7 +99,7 @@ Predictor::~Predictor() {
 }
 
 void Predictor::Shutdown() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!shutdown_);
   shutdown_ = true;
 
@@ -111,7 +111,7 @@ void Predictor::Shutdown() {
 // Overloaded Resolve() to take a vector of names.
 void Predictor::ResolveList(const UrlList& urls,
                             UrlInfo::ResolutionMotivation motivation) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (UrlList::const_iterator it = urls.begin(); it < urls.end(); ++it) {
     AppendToResolutionQueue(*it, motivation);
@@ -122,7 +122,7 @@ void Predictor::ResolveList(const UrlList& urls,
 // to the queue.
 void Predictor::Resolve(const GURL& url,
                         UrlInfo::ResolutionMotivation motivation) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!url.has_host())
     return;
   AppendToResolutionQueue(url, motivation);
@@ -130,7 +130,7 @@ void Predictor::Resolve(const GURL& url,
 
 void Predictor::LearnFromNavigation(const GURL& referring_url,
                                     const GURL& target_url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(referring_url == referring_url.GetWithEmptyPath());
   DCHECK(target_url == target_url.GetWithEmptyPath());
   DCHECK(target_url != referring_url);
@@ -205,8 +205,8 @@ void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
   last_omnibox_preresolve_ = now;
 
   // Perform at least DNS pre-resolution.
-  ChromeThread::PostTask(
-      ChromeThread::IO,
+  BrowserThread::PostTask(
+      BrowserThread::IO,
       FROM_HERE,
       NewRunnableMethod(this, &Predictor::Resolve, CanonicalizeUrl(url),
                         motivation));
@@ -225,14 +225,14 @@ void Predictor::PredictFrameSubresources(const GURL& url) {
   DCHECK(url.GetWithEmptyPath() == url);
   // Add one pass through the message loop to allow current navigation to
   // proceed.
-  ChromeThread::PostTask(
-      ChromeThread::IO,
+  BrowserThread::PostTask(
+      BrowserThread::IO,
       FROM_HERE,
       NewRunnableMethod(this, &Predictor::PrepareFrameSubresources, url));
 }
 
 void Predictor::PrepareFrameSubresources(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(url.GetWithEmptyPath() == url);
   Referrers::iterator it = referrers_.find(url);
   if (referrers_.end() == it)
@@ -331,7 +331,7 @@ struct RightToLeftStringSorter {
 };
 
 void Predictor::GetHtmlReferrerLists(std::string* output) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (referrers_.empty())
     return;
 
@@ -382,7 +382,7 @@ void Predictor::GetHtmlReferrerLists(std::string* output) {
 }
 
 void Predictor::GetHtmlInfo(std::string* output) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Local lists for calling UrlInfo
   UrlInfo::UrlInfoTable name_not_found;
   UrlInfo::UrlInfoTable name_preresolved;
@@ -421,7 +421,7 @@ void Predictor::GetHtmlInfo(std::string* output) {
 UrlInfo* Predictor::AppendToResolutionQueue(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(url.has_host());
 
   if (shutdown_)
@@ -446,7 +446,7 @@ UrlInfo* Predictor::AppendToResolutionQueue(
 }
 
 void Predictor::StartSomeQueuedResolutions() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   while (!work_queue_.IsEmpty() &&
          pending_lookups_.size() < max_concurrent_dns_lookups_) {
@@ -478,7 +478,7 @@ void Predictor::StartSomeQueuedResolutions() {
 }
 
 bool Predictor::CongestionControlPerformed(UrlInfo* info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Note: queue_duration is ONLY valid after we go to assigned state.
   if (info->queue_duration() < max_dns_queue_delay_)
     return false;
@@ -497,7 +497,7 @@ bool Predictor::CongestionControlPerformed(UrlInfo* info) {
 
 void Predictor::OnLookupFinished(LookupRequest* request, const GURL& url,
                                  bool found) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   LookupFinished(request, url, found);
   pending_lookups_.erase(request);
@@ -508,7 +508,7 @@ void Predictor::OnLookupFinished(LookupRequest* request, const GURL& url,
 
 void Predictor::LookupFinished(LookupRequest* request, const GURL& url,
                                bool found) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UrlInfo* info = &results_[url];
   DCHECK(info->HasUrl(url));
   if (info->is_marked_to_delete()) {
@@ -522,7 +522,7 @@ void Predictor::LookupFinished(LookupRequest* request, const GURL& url,
 }
 
 void Predictor::DiscardAllResults() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Delete anything listed so far in this session that shows in about:dns.
   referrers_.clear();
 
@@ -561,7 +561,7 @@ void Predictor::DiscardAllResults() {
 }
 
 void Predictor::TrimReferrers() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   std::vector<GURL> urls;
   for (Referrers::const_iterator it = referrers_.begin();
        it != referrers_.end(); ++it)
@@ -572,7 +572,7 @@ void Predictor::TrimReferrers() {
 }
 
 void Predictor::SerializeReferrers(ListValue* referral_list) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   referral_list->Clear();
   referral_list->Append(new FundamentalValue(PREDICTOR_REFERRER_VERSION));
   for (Referrers::const_iterator it = referrers_.begin();
@@ -590,7 +590,7 @@ void Predictor::SerializeReferrers(ListValue* referral_list) {
 }
 
 void Predictor::DeserializeReferrers(const ListValue& referral_list) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int format_version = -1;
   if (referral_list.GetSize() > 0 &&
       referral_list.GetInteger(0, &format_version) &&

@@ -70,8 +70,8 @@ WebSocketExperimentRunner::~WebSocketExperimentRunner() {
 void WebSocketExperimentRunner::Run() {
   DCHECK_EQ(next_state_, STATE_NONE);
   next_state_ = STATE_RUN_WS;
-  ChromeThread::PostDelayedTask(
-      ChromeThread::IO,
+  BrowserThread::PostDelayedTask(
+      BrowserThread::IO,
       FROM_HERE,
       NewRunnableMethod(this, &WebSocketExperimentRunner::DoLoop),
       config_.initial_delay_ms);
@@ -79,8 +79,8 @@ void WebSocketExperimentRunner::Run() {
 
 void WebSocketExperimentRunner::Cancel() {
   next_state_ = STATE_NONE;
-  ChromeThread::PostTask(
-      ChromeThread::IO,
+  BrowserThread::PostTask(
+      BrowserThread::IO,
       FROM_HERE,
       NewRunnableMethod(this, &WebSocketExperimentRunner::DoLoop));
 }
@@ -186,8 +186,8 @@ void WebSocketExperimentRunner::DoLoop() {
     case STATE_IDLE:
       task_.reset();
       next_state_ = STATE_RUN_WS;
-      ChromeThread::PostDelayedTask(
-          ChromeThread::IO,
+      BrowserThread::PostDelayedTask(
+          BrowserThread::IO,
           FROM_HERE,
           NewRunnableMethod(this, &WebSocketExperimentRunner::DoLoop),
           config_.next_delay_ms);

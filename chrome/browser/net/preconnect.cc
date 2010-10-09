@@ -24,8 +24,8 @@ namespace chrome_browser_net {
 void Preconnect::PreconnectOnUIThread(const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
   // Prewarm connection to Search URL.
-  ChromeThread::PostTask(
-      ChromeThread::IO,
+  BrowserThread::PostTask(
+      BrowserThread::IO,
       FROM_HERE,
       NewRunnableFunction(Preconnect::PreconnectOnIOThread, url, motivation));
   return;
@@ -44,7 +44,7 @@ void Preconnect::Connect(const GURL& url) {
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   if (!getter)
     return;
-  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     LOG(DFATAL) << "This must be run only on the IO thread.";
     return;
   }

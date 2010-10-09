@@ -31,7 +31,7 @@ URLRequestJob* BlobURLRequestJobFactory(URLRequest* request,
   }
   return new webkit_blob::BlobURLRequestJob(
       request, data,
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 }
 
 }

@@ -34,7 +34,7 @@ PasswordStoreDefault::~PasswordStoreDefault() {
 }
 
 void PasswordStoreDefault::ReportMetricsImpl() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   login_db_->ReportMetrics();
 }
 
@@ -114,13 +114,13 @@ void PasswordStoreDefault::GetBlacklistLoginsImpl(
 
 bool PasswordStoreDefault::FillAutofillableLogins(
          std::vector<PasswordForm*>* forms) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   return login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
          std::vector<PasswordForm*>* forms) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   return login_db_->GetBlacklistLogins(forms);
 }
 

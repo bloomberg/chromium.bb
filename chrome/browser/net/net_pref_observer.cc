@@ -10,17 +10,17 @@
 #include "chrome/common/pref_names.h"
 
 NetPrefObserver::NetPrefObserver(PrefService* prefs) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   dns_prefetching_enabled_.Init(prefs::kDnsPrefetchingEnabled, prefs, this);
 }
 
 NetPrefObserver::~NetPrefObserver() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void NetPrefObserver::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   chrome_browser_net::EnablePredictor(*dns_prefetching_enabled_);
 }

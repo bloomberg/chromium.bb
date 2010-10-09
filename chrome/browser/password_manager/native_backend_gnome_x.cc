@@ -304,7 +304,7 @@ class GKRMethod {
 };
 
 void GKRMethod::AddLogin(const PasswordForm& form) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   gnome_keyring_store_password(
       &kGnomeSchema,
       NULL,  // Default keyring.
@@ -330,7 +330,7 @@ void GKRMethod::AddLogin(const PasswordForm& form) {
 }
 
 void GKRMethod::UpdateLoginSearch(const PasswordForm& form) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords to update.
   gnome_keyring_find_itemsv(
       GNOME_KEYRING_ITEM_GENERIC_SECRET,
@@ -353,7 +353,7 @@ void GKRMethod::UpdateLoginSearch(const PasswordForm& form) {
 }
 
 void GKRMethod::RemoveLogin(const PasswordForm& form) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We find forms using the same fields as LoginDatabase::RemoveLogin().
   gnome_keyring_delete_password(
       &kGnomeSchema,
@@ -371,7 +371,7 @@ void GKRMethod::RemoveLogin(const PasswordForm& form) {
 }
 
 void GKRMethod::GetLogins(const PasswordForm& form) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords.
   gnome_keyring_find_itemsv(
       GNOME_KEYRING_ITEM_GENERIC_SECRET,
@@ -387,7 +387,7 @@ void GKRMethod::GetLogins(const PasswordForm& form) {
 
 #if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
 void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Search GNOME Keyring for matching passwords.
   gnome_keyring_find_itemsv(
       GNOME_KEYRING_ITEM_GENERIC_SECRET,
@@ -402,7 +402,7 @@ void GKRMethod::GetLoginsList(uint32_t blacklisted_by_user) {
 }
 
 void GKRMethod::GetAllLogins() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // We need to search for something, otherwise we get no results - so
   // we search for the fixed application string.
   gnome_keyring_find_itemsv(
@@ -416,29 +416,29 @@ void GKRMethod::GetAllLogins() {
 }
 #else
 void GKRMethod::GetItemIds() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   gnome_keyring_list_item_ids(NULL, OnOperationGetIds, this, NULL);
 }
 
 void GKRMethod::GetItemAttrs(guint id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   gnome_keyring_item_get_attributes(NULL, id, OnOperationGetAttrs, this, NULL);
 }
 
 void GKRMethod::GetItemInfo(guint id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   gnome_keyring_item_get_info(NULL, id, OnOperationGetInfo, this, NULL);
 }
 #endif
 
 GnomeKeyringResult GKRMethod::WaitResult() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   event_.Wait();
   return result_;
 }
 
 GnomeKeyringResult GKRMethod::WaitResult(PasswordFormList* forms) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   event_.Wait();
   forms->swap(forms_);
   return result_;
@@ -446,21 +446,21 @@ GnomeKeyringResult GKRMethod::WaitResult(PasswordFormList* forms) {
 
 #if defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
 GnomeKeyringResult GKRMethod::WaitResult(std::vector<guint>* item_ids) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   event_.Wait();
   item_ids->swap(item_ids_);
   return result_;
 }
 
 GnomeKeyringResult GKRMethod::WaitResult(PasswordForm** form) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   event_.Wait();
   *form = form_.release();
   return result_;
 }
 
 GnomeKeyringResult GKRMethod::WaitResult(string16* password) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   event_.Wait();
   *password = password_;
   return result_;
@@ -551,12 +551,12 @@ bool NativeBackendGnome::Init() {
 }
 
 bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableMethod(&method,
-                                           &GKRMethod::AddLogin,
-                                           form));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(&method,
+                                            &GKRMethod::AddLogin,
+                                            form));
   GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring save failed: "
@@ -573,9 +573,9 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
   // differ in any of the action, password_value, ssl_valid, or preferred
   // fields, then we add a new login with those fields updated and only delete
   // the original on success.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                          NewRunnableMethod(&method,
                                            &GKRMethod::UpdateLoginSearch,
                                            form));
@@ -608,12 +608,12 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
 }
 
 bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableMethod(&method,
-                                           &GKRMethod::RemoveLogin,
-                                           form));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(&method,
+                                            &GKRMethod::RemoveLogin,
+                                            form));
   GnomeKeyringResult result = method.WaitResult();
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring delete failed: "
@@ -626,7 +626,7 @@ bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
 bool NativeBackendGnome::RemoveLoginsCreatedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   bool ok = true;
   // We could walk the list and delete items as we find them, but it is much
   // easier to build the list and use RemoveLogin() to delete them.
@@ -647,12 +647,12 @@ bool NativeBackendGnome::RemoveLoginsCreatedBetween(
 
 bool NativeBackendGnome::GetLogins(const PasswordForm& form,
                                    PasswordFormList* forms) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableMethod(&method,
-                                           &GKRMethod::GetLogins,
-                                           form));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      NewRunnableMethod(&method, &GKRMethod::GetLogins, form));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -667,7 +667,7 @@ bool NativeBackendGnome::GetLogins(const PasswordForm& form,
 bool NativeBackendGnome::GetLoginsCreatedBetween(const base::Time& get_begin,
                                                  const base::Time& get_end,
                                                  PasswordFormList* forms) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   // We could walk the list and add items as we find them, but it is much
   // easier to build the list and then filter the results.
   PasswordFormList all_forms;
@@ -697,16 +697,16 @@ bool NativeBackendGnome::GetBlacklistLogins(PasswordFormList* forms) {
 
 bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
                                        bool autofillable) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   uint32_t blacklisted_by_user = !autofillable;
 
 #if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
   GKRMethod method;
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableMethod(&method,
-                                           &GKRMethod::GetLoginsList,
-                                           blacklisted_by_user));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(&method,
+                                            &GKRMethod::GetLoginsList,
+                                            blacklisted_by_user));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -734,9 +734,9 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
 bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
   GKRMethod method;
 #if !defined(GNOME_KEYRING_WORK_AROUND_MEMORY_CORRUPTION)
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableMethod(&method,
-                                           &GKRMethod::GetAllLogins));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(&method,
+                                            &GKRMethod::GetAllLogins));
   GnomeKeyringResult result = method.WaitResult(forms);
   if (result == GNOME_KEYRING_RESULT_NO_MATCH)
     return true;
@@ -747,9 +747,9 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
   }
   return true;
 #else
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                         NewRunnableMethod(&method,
-                                           &GKRMethod::GetItemIds));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          NewRunnableMethod(&method,
+                                            &GKRMethod::GetItemIds));
   std::vector<guint> item_ids;
   GnomeKeyringResult result = method.WaitResult(&item_ids);
   if (result != GNOME_KEYRING_RESULT_OK) {
@@ -761,10 +761,10 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
   // We can parallelize getting the item attributes.
   GKRMethod* methods = new GKRMethod[item_ids.size()];
   for (size_t i = 0; i < item_ids.size(); ++i) {
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                           NewRunnableMethod(&methods[i],
-                                             &GKRMethod::GetItemAttrs,
-                                             item_ids[i]));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            NewRunnableMethod(&methods[i],
+                                              &GKRMethod::GetItemAttrs,
+                                              item_ids[i]));
   }
 
   bool success = true;
@@ -783,10 +783,10 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
       success = false;
     }
     if (all_forms[i]) {
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                             NewRunnableMethod(&methods[i],
-                                               &GKRMethod::GetItemInfo,
-                                               item_ids[i]));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              NewRunnableMethod(&methods[i],
+                                                &GKRMethod::GetItemInfo,
+                                                item_ids[i]));
     }
   }
 

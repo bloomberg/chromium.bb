@@ -549,7 +549,7 @@ bool NativeBackendKWallet::CheckError() {
 }
 
 int NativeBackendKWallet::WalletHandle() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   // Open the wallet.
   int handle = kInvalidKWalletHandle;
   dbus_g_proxy_call(proxy_, "open", &error_,

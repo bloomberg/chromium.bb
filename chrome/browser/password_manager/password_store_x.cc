@@ -164,7 +164,7 @@ bool PasswordStoreX::FillBlacklistLogins(vector<PasswordForm*>* forms) {
 }
 
 void PasswordStoreX::CheckMigration() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (migration_checked_ || !backend_.get())
     return;
   migration_checked_ = true;

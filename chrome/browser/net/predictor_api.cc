@@ -101,7 +101,7 @@ void EnablePredictor(bool enable) {
 }
 
 void OnTheRecord(bool enable) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (on_the_record_switch == enable)
     return;
   on_the_record_switch = enable;
@@ -137,23 +137,23 @@ void DnsPrefetchList(const NameList& hostnames) {
     urls.push_back(GURL("http://" + *it + ":80"));
   }
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DnsPrefetchMotivatedList(urls, UrlInfo::PAGE_SCAN_MOTIVATED);
 }
 
 static void DnsPrefetchMotivatedList(
     const UrlList& urls,
     UrlInfo::ResolutionMotivation motivation) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI) ||
-         ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled || NULL == g_predictor)
     return;
 
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     g_predictor->ResolveList(urls, motivation);
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::IO,
+    BrowserThread::PostTask(
+        BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(g_predictor,
                           &Predictor::ResolveList, urls, motivation));
@@ -162,7 +162,7 @@ static void DnsPrefetchMotivatedList(
 
 // This API is used by the autocomplete popup box (where URLs are typed).
 void AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!predictor_enabled || NULL == g_predictor)
     return;
   if (!url.is_valid() || !url.has_host())
@@ -189,21 +189,21 @@ void PreconnectUrlAndSubresources(const GURL& url) {
 //------------------------------------------------------------------------------
 
 void PredictFrameSubresources(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled || NULL == g_predictor)
     return;
   g_predictor->PredictFrameSubresources(url);
 }
 
 void LearnAboutInitialNavigation(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled || NULL == g_initial_observer )
     return;
   g_initial_observer->Append(url);
 }
 
 void LearnFromNavigation(const GURL& referring_url, const GURL& target_url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!predictor_enabled || NULL == g_predictor)
     return;
   g_predictor->LearnFromNavigation(referring_url, target_url);
@@ -217,7 +217,7 @@ typedef std::map<int, UrlInfo> ObservedResolutionMap;
 // Member definitions for InitialObserver class.
 
 void InitialObserver::Append(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!on_the_record_switch || NULL == g_predictor)
     return;
@@ -232,7 +232,7 @@ void InitialObserver::Append(const GURL& url) {
 }
 
 void InitialObserver::GetInitialDnsResolutionList(ListValue* startup_list) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(startup_list);
   startup_list->Clear();
   DCHECK_EQ(0u, startup_list->GetSize());
@@ -246,7 +246,7 @@ void InitialObserver::GetInitialDnsResolutionList(ListValue* startup_list) {
 }
 
 void InitialObserver::GetFirstResolutionsHtml(std::string* output) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   UrlInfo::UrlInfoTable resolution_list;
   {
@@ -322,7 +322,7 @@ class OffTheRecordObserver : public NotificationObserver {
 
 // Provide global support for the about:dns page.
 void PredictorGetHtmlInfo(std::string* output) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   output->append("<html><head><title>About DNS</title>"
                  // We'd like the following no-cache... but it doesn't work.
@@ -353,7 +353,7 @@ void PredictorGetHtmlInfo(std::string* output) {
 static void InitNetworkPredictor(TimeDelta max_dns_queue_delay,
     size_t max_concurrent, PrefService* user_prefs, PrefService* local_state,
     bool preconnect_enabled) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool prefetching_enabled =
       user_prefs->GetBoolean(prefs::kDnsPrefetchingEnabled);
@@ -375,7 +375,7 @@ void FinalizePredictorInitialization(
     Predictor* global_predictor,
     const UrlList& startup_urls,
     ListValue* referral_list) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   g_predictor = global_predictor;
   g_initial_observer = new InitialObserver();
 
@@ -386,7 +386,7 @@ void FinalizePredictorInitialization(
 }
 
 void FreePredictorResources() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   g_predictor = NULL;  // Owned and released by io_thread.cc.
   delete g_initial_observer;
   g_initial_observer = NULL;
@@ -400,7 +400,7 @@ static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
     ListValue* startup_list,
     ListValue* referral_list,
     base::WaitableEvent* completion) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (NULL == g_predictor) {
     completion->Signal();
@@ -421,15 +421,15 @@ static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
 }
 
 void SavePredictorStateForNextStartupAndTrim(PrefService* prefs) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!predictor_enabled || g_predictor == NULL)
     return;
 
   base::WaitableEvent completion(true, false);
 
-  bool posted = ChromeThread::PostTask(
-      ChromeThread::IO,
+  bool posted = BrowserThread::PostTask(
+      BrowserThread::IO,
       FROM_HERE,
       NewRunnableFunction(SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread,
                           prefs->GetMutableList(prefs::kDnsStartupPrefetchList),
@@ -443,7 +443,7 @@ void SavePredictorStateForNextStartupAndTrim(PrefService* prefs) {
 
 static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
                                             PrefService* local_state) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UrlList urls;
   // Recall list of URLs we learned about during last session.
   // This may catch secondary hostnames, pulled in by the homepages.  It will
@@ -503,7 +503,7 @@ static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
 PredictorInit::PredictorInit(PrefService* user_prefs,
                              PrefService* local_state,
                              bool preconnect_enabled) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Set up a field trial to see what disabling DNS pre-resolution does to
   // latency of page loads.
   FieldTrial::Probability kDivisor = 1000;

@@ -51,11 +51,11 @@ namespace {
 // ----------------------------------------------------------------------------
 
 void CheckCurrentlyOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 void CheckCurrentlyOnMainThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 // ----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ net::ProxyConfigService* CreateProxyConfigService(Profile* profile) {
     // Use system settings.
     // TODO(port): the IO and FILE message loops are only used by Linux.  Can
     // that code be moved to chrome/browser instead of being in net, so that it
-    // can use ChromeThread instead of raw MessageLoop pointers? See bug 25354.
+    // can use BrowserThread instead of raw MessageLoop pointers? See bug 25354.
 #if defined(OS_CHROMEOS)
     return new chromeos::ProxyConfigService(
         profile->GetChromeOSProxyConfigServiceImpl());
@@ -145,8 +145,8 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
   virtual void OnCookieChanged(
       const net::CookieMonster::CanonicalCookie& cookie,
       bool removed) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
             &ChromeCookieMonsterDelegate::OnCookieChangedAsyncHelper,
             cookie,
@@ -161,7 +161,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
   // thread.
   class ProfileGetter
       : public base::RefCountedThreadSafe<ProfileGetter,
-                                          ChromeThread::DeleteOnUIThread>,
+                                          BrowserThread::DeleteOnUIThread>,
         public NotificationObserver {
    public:
     explicit ProfileGetter(Profile* profile) : profile_(profile) {
@@ -269,7 +269,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       net::DISK_CACHE, disk_cache_path_, cache_size_,
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver(),
                          context->dnsrr_resolver(),
@@ -480,7 +480,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
   // TODO(hclam): make the maximum size of media cache configurable.
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       net::MEDIA_CACHE, disk_cache_path_, cache_size_,
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
 
   net::HttpCache* main_cache =
       main_context->http_transaction_factory()->GetCache();
@@ -576,7 +576,7 @@ void ChromeURLRequestContextGetter::RegisterUserPrefs(
 
 net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
   // If we are running on the IO thread this is real easy.
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO))
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO))
     return GetURLRequestContext()->cookie_store();
 
   // If we aren't running on the IO thread, we cannot call
@@ -586,8 +586,8 @@ net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
   base::WaitableEvent completion(false, false);
   net::CookieStore* result = NULL;
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
           &ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper,
           &completion,
@@ -600,7 +600,7 @@ net::CookieStore* ChromeURLRequestContextGetter::GetCookieStore() {
 
 scoped_refptr<base::MessageLoopProxy>
 ChromeURLRequestContextGetter::GetIOMessageLoopProxy() {
-  return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 
 // static
@@ -672,8 +672,8 @@ void ChromeURLRequestContextGetter::Observe(
     if (*pref_name_in == prefs::kAcceptLanguages) {
       std::string accept_language =
           prefs->GetString(prefs::kAcceptLanguages);
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ChromeURLRequestContextGetter::OnAcceptLanguageChange,
@@ -681,8 +681,8 @@ void ChromeURLRequestContextGetter::Observe(
     } else if (*pref_name_in == prefs::kDefaultCharset) {
       std::string default_charset =
           prefs->GetString(prefs::kDefaultCharset);
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               this,
               &ChromeURLRequestContextGetter::OnDefaultCharsetChange,

@@ -52,8 +52,8 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
     URLRequestContextGetter* context_getter =
         browser()->profile()->GetRequestContext();
     EXPECT_TRUE(
-        ChromeThread::PostTask(
-            ChromeThread::IO, FROM_HERE,
+        BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
             new GetCookiesTask(url, context_getter, &event, &cookies)));
     EXPECT_TRUE(event.Wait());
     return cookies;

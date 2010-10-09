@@ -117,7 +117,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
   static const int kCommitIntervalMs = 30 * 1000;
   // Commit right away if we have more than 512 outstanding operations.
   static const size_t kCommitAfterBatchSize = 512;
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   // We do a full copy of the cookie here, and hopefully just here.
   scoped_ptr<PendingOperation> po(new PendingOperation(op, cc));
@@ -131,18 +131,19 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
 
   if (num_pending == 1) {
     // We've gotten our first entry for this batch, fire off the timer.
-    ChromeThread::PostDelayedTask(
-        ChromeThread::DB, FROM_HERE,
+    BrowserThread::PostDelayedTask(
+        BrowserThread::DB, FROM_HERE,
         NewRunnableMethod(this, &Backend::Commit), kCommitIntervalMs);
   } else if (num_pending == kCommitAfterBatchSize) {
     // We've reached a big enough batch, fire off a commit now.
-    ChromeThread::PostTask(
-        ChromeThread::DB, FROM_HERE, NewRunnableMethod(this, &Backend::Commit));
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        NewRunnableMethod(this, &Backend::Commit));
   }
 }
 
 void SQLitePersistentCookieStore::Backend::Commit() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   PendingOperationsList ops;
   {
     AutoLock locked(pending_lock_);
@@ -233,15 +234,15 @@ void SQLitePersistentCookieStore::Backend::Commit() {
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
 void SQLitePersistentCookieStore::Backend::Close() {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
   // Must close the backend on the background thread.
-  ChromeThread::PostTask(
-      ChromeThread::DB, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
       NewRunnableMethod(this, &Backend::InternalBackgroundClose));
 }
 
 void SQLitePersistentCookieStore::Backend::InternalBackgroundClose() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   // Commit any pending operations
   Commit();
 

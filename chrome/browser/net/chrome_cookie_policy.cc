@@ -29,7 +29,7 @@ ChromeCookiePolicy::~ChromeCookiePolicy() {
 int ChromeCookiePolicy::CanGetCookies(const GURL& url,
                                       const GURL& first_party,
                                       net::CompletionCallback* callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (host_content_settings_map_->BlockThirdPartyCookies()) {
     net::StaticCookiePolicy policy(
@@ -66,7 +66,7 @@ int ChromeCookiePolicy::CanSetCookie(const GURL& url,
                                      const GURL& first_party,
                                      const std::string& cookie_line,
                                      net::CompletionCallback* callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (host_content_settings_map_->BlockThirdPartyCookies()) {
     net::StaticCookiePolicy policy(

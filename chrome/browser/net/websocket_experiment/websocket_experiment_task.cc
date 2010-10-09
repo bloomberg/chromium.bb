@@ -623,8 +623,8 @@ int WebSocketExperimentTask::DoWebSocketCloseComplete(int result) {
 }
 
 void WebSocketExperimentTask::SetTimeout(int64 deadline_ms) {
-  bool r = ChromeThread::PostDelayedTask(
-      ChromeThread::IO,
+  bool r = BrowserThread::PostDelayedTask(
+      BrowserThread::IO,
       FROM_HERE,
       method_factory_.NewRunnableMethod(&WebSocketExperimentTask::OnTimedOut),
       deadline_ms);

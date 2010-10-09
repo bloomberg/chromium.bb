@@ -55,21 +55,21 @@ class MockNotificationObserver : public NotificationObserver {
 // the DB thread.
 class DBThreadObserverHelper
     : public base::RefCountedThreadSafe<DBThreadObserverHelper,
-                                        ChromeThread::DeleteOnDBThread> {
+                                        BrowserThread::DeleteOnDBThread> {
  public:
   DBThreadObserverHelper() : done_event_(true, false) {}
 
   void Init() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(
-        ChromeThread::DB,
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(
+        BrowserThread::DB,
         FROM_HERE,
         NewRunnableMethod(this, &DBThreadObserverHelper::AddObserverTask));
     done_event_.Wait();
   }
 
   virtual ~DBThreadObserverHelper() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     registrar_.RemoveAll();
   }
 
@@ -81,7 +81,7 @@ class DBThreadObserverHelper
   friend class base::RefCountedThreadSafe<DBThreadObserverHelper>;
 
   void AddObserverTask() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     registrar_.Add(&observer_,
                    NotificationType::LOGINS_CHANGED,
                    NotificationService::AllSources());
@@ -276,8 +276,8 @@ enum BackendType {
 class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
  protected:
   PasswordStoreXTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        db_thread_(ChromeThread::DB) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB) {
   }
 
   virtual void SetUp() {
@@ -312,8 +312,8 @@ class PasswordStoreXTest : public testing::TestWithParam<BackendType> {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread db_thread_;  // PasswordStore, WDS schedule work on this thread.
+  BrowserThread ui_thread_;
+  BrowserThread db_thread_;  // PasswordStore, WDS schedule work on this thread.
 
   scoped_ptr<LoginDatabase> login_db_;
   scoped_ptr<TestingProfile> profile_;
@@ -326,7 +326,7 @@ ACTION(STLDeleteElements0) {
 }
 
 ACTION(QuitUIMessageLoop) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MessageLoop::current()->Quit();
 }
 
@@ -355,7 +355,8 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
   // The WDS schedules tasks to run on the DB thread so we schedule yet another
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   // Initializing the PasswordStore should trigger a migration.
@@ -372,7 +373,8 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
 
   // Again, the WDS schedules tasks to run on the DB thread, so schedule a task
   // to signal us when it is safe to continue.
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   // Let the WDS callbacks proceed so the logins can be migrated.
@@ -416,7 +418,8 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
   wds_->GetAutofillableLogins(&wds_consumer);
 
   // Wait for the WDS methods to execute on the DB thread.
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   // Handle the callback from the WDS.
@@ -429,7 +432,8 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
   wds_->GetBlacklistLogins(&wds_consumer);
 
   // Wait for the WDS methods to execute on the DB thread.
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   // Handle the callback from the WDS.
@@ -468,7 +472,8 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
   // The WDS schedules tasks to run on the DB thread so we schedule yet another
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   // Prentend that the migration has already taken place.
@@ -547,7 +552,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // The PasswordStore schedules tasks to run on the DB thread so we schedule
   // yet another task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   // Change the password.
@@ -568,7 +574,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
   store->UpdateLogin(*form);
 
   // Wait for PasswordStore to send the notification.
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   const PasswordStoreChange expected_delete_changes[] = {
@@ -586,7 +593,8 @@ TEST_P(PasswordStoreXTest, Notifications) {
   store->RemoveLogin(*form);
 
   // Wait for PasswordStore to send the notification.
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 }
 
@@ -608,7 +616,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // Populate the login DB with logins that should be migrated.
   for (VectorOfForms::iterator it = expected_autofillable.begin();
        it != expected_autofillable.end(); ++it) {
-    ChromeThread::PostTask(ChromeThread::DB,
+    BrowserThread::PostTask(BrowserThread::DB,
                            FROM_HERE,
                            NewRunnableMethod(login_db,
                                              &LoginDatabase::AddLogin,
@@ -616,7 +624,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   }
   for (VectorOfForms::iterator it = expected_blacklisted.begin();
        it != expected_blacklisted.end(); ++it) {
-    ChromeThread::PostTask(ChromeThread::DB,
+    BrowserThread::PostTask(BrowserThread::DB,
                            FROM_HERE,
                            NewRunnableMethod(login_db,
                                              &LoginDatabase::AddLogin,
@@ -626,7 +634,8 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // Schedule another task on the DB thread to notify us that it's safe to
   // carry on with the test.
   WaitableEvent done(false, false);
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   // Get the new size of the login DB file. We expect it to be larger.
@@ -685,11 +694,12 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
         .WillOnce(WithArg<0>(STLDeleteElements0()));
   }
 
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       new LoginDatabaseQueryTask(login_db, true, &ld_return));
 
   // Wait for the login DB methods to execute on the DB thread.
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   if (GetParam() == WORKING_BACKEND) {
@@ -704,11 +714,12 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
         .WillOnce(WithArg<0>(STLDeleteElements0()));
   }
 
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
       new LoginDatabaseQueryTask(login_db, false, &ld_return));
 
   // Wait for the login DB methods to execute on the DB thread.
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
+      new SignalingTask(&done));
   done.Wait();
 
   if (GetParam() == WORKING_BACKEND) {

@@ -130,8 +130,8 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
     AutoQuitDelegate() {}
 
     virtual void OnResponseCompleted(URLRequest* request) {
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                             new MessageLoop::QuitTask());
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              new MessageLoop::QuitTask());
     }
   };
 
@@ -179,8 +179,8 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
   void CreateDialogForTest() {
     FilePath path_to_pdf =
         test_data_directory_.AppendASCII("printing/cloud_print_uitest.pdf");
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl, path_to_pdf));
   }
 

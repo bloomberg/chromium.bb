@@ -158,7 +158,7 @@ void CloudPrintDataSender::CancelPrintDataFile() {
 // Once that is done, kick off the next part of the task on the IO
 // thread.
 void CloudPrintDataSender::ReadPrintDataFile(const FilePath& path_to_pdf) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 file_size = 0;
   if (file_util::GetFileSize(path_to_pdf, &file_size) && file_size != 0) {
     std::string file_data;
@@ -174,10 +174,10 @@ void CloudPrintDataSender::ReadPrintDataFile(const FilePath& path_to_pdf) {
       base64_data.insert(0, header);
       scoped_ptr<StringValue> new_data(new StringValue(base64_data));
       print_data_.swap(new_data);
-      ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
-                             NewRunnableMethod(
-                                 this,
-                                 &CloudPrintDataSender::SendPrintDataFile));
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                              NewRunnableMethod(
+                                  this,
+                                  &CloudPrintDataSender::SendPrintDataFile));
     }
   }
 }
@@ -191,7 +191,7 @@ void CloudPrintDataSender::ReadPrintDataFile(const FilePath& path_to_pdf) {
 // JavaScript to that location, and make sure it gets deleted when not
 // needed. - 4/1/2010
 void CloudPrintDataSender::SendPrintDataFile() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   AutoLock lock(lock_);
   if (helper_ && print_data_.get()) {
     StringValue title(print_job_title_);
@@ -209,7 +209,7 @@ void CloudPrintFlowHandler::SetDialogDelegate(
     CloudPrintHtmlDialogDelegate* delegate) {
   // Even if setting a new dom_ui, it means any previous task needs
   // to be cancelled, it's now invalid.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CancelAnyRunningTask();
   dialog_delegate_ = delegate;
 }
@@ -218,7 +218,7 @@ void CloudPrintFlowHandler::SetDialogDelegate(
 // reference to it, so when the task that is calling it finishes and
 // removes it's reference, it goes away.
 void CloudPrintFlowHandler::CancelAnyRunningTask() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (print_data_sender_.get()) {
     print_data_sender_->CancelPrintDataFile();
     print_data_sender_ = NULL;
@@ -302,7 +302,7 @@ CloudPrintFlowHandler::CreateCloudPrintDataSender() {
 }
 
 void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // This will cancel any ReadPrintDataFile() or SendPrintDataFile()
   // requests in flight (this is anticipation of when setting page
   // setup parameters becomes asynchronous and may be set while some
@@ -310,11 +310,11 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
   CancelAnyRunningTask();
   if (dom_ui_) {
     print_data_sender_ = CreateCloudPrintDataSender();
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                           NewRunnableMethod(
-                               print_data_sender_.get(),
-                               &CloudPrintDataSender::ReadPrintDataFile,
-                               path_to_pdf_));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            NewRunnableMethod(
+                                print_data_sender_.get(),
+                                &CloudPrintDataSender::ReadPrintDataFile,
+                                path_to_pdf_));
   }
 }
 
@@ -380,7 +380,7 @@ CloudPrintHtmlDialogDelegate::CloudPrintHtmlDialogDelegate(
 void CloudPrintHtmlDialogDelegate::Init(
     int width, int height, const std::string& json_arguments) {
   // This information is needed to show the dialog HTML content.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string cloud_print_url(chrome::kCloudPrintResourcesURL);
   params_.url = GURL(cloud_print_url);
   params_.height = height;
@@ -393,7 +393,7 @@ void CloudPrintHtmlDialogDelegate::Init(
 CloudPrintHtmlDialogDelegate::~CloudPrintHtmlDialogDelegate() {
   // If the flow_handler_ is about to outlive us because we don't own
   // it anymore, we need to have it remove it's reference to us.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   flow_handler_->SetDialogDelegate(NULL);
   if (owns_flow_handler_) {
     delete flow_handler_;
@@ -450,16 +450,16 @@ void CloudPrintHtmlDialogDelegate::OnCloseContents(TabContents* source,
 // workflow through the printing code changes to allow for dynamically
 // changing page setup parameters while the dialog is active.
 void PrintDialogCloud::CreatePrintDialogForPdf(const FilePath& path_to_pdf) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&PrintDialogCloud::CreateDialogImpl, path_to_pdf));
 }
 
 // static, called from the UI thread.
 void PrintDialogCloud::CreateDialogImpl(const FilePath& path_to_pdf) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   new PrintDialogCloud(path_to_pdf);
 }
 

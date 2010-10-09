@@ -21,18 +21,18 @@ const char* TokenService::kServices[] = {GaiaConstants::kSyncService,
                                          GaiaConstants::kTalkService};
 TokenService::TokenService()
     : token_loading_query_(0) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 TokenService::~TokenService() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ResetCredentialsInMemory();
 }
 
 void TokenService::Initialize(const char* const source,
                               Profile* profile) {
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!source_.empty()) {
     // Already initialized.
     return;
@@ -66,7 +66,7 @@ void TokenService::Initialize(const char* const source,
 }
 
 void TokenService::ResetCredentialsInMemory() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Terminate any running fetchers. Callbacks will not return.
   for (int i = 0; i < kNumServices; i++) {
@@ -85,7 +85,7 @@ void TokenService::ResetCredentialsInMemory() {
 
 void TokenService::UpdateCredentials(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   credentials_ = credentials;
 
   // Cancels any currently running requests.
@@ -95,18 +95,18 @@ void TokenService::UpdateCredentials(
 }
 
 void TokenService::LoadTokensFromDB() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   token_loading_query_ = web_data_service_->GetAllTokens(this);
 }
 
 void TokenService::SaveAuthTokenToDB(const std::string& service,
                                      const std::string& auth_token) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_data_service_->SetTokenForService(service, auth_token);
 }
 
 void TokenService::EraseTokensFromDB() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_data_service_->RemoveAllTokens();
 }
 
@@ -123,7 +123,7 @@ const std::string& TokenService::GetLsid() const {
 }
 
 void TokenService::StartFetchingTokens() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(AreCredentialsValid());
   for (int i = 0; i < kNumServices; i++) {
     fetchers_[i]->StartIssueAuthToken(credentials_.sid,
@@ -183,7 +183,7 @@ void TokenService::IssueAuthTokenForTest(const std::string& service,
 
 void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
                                            const std::string& auth_token) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LOG(INFO) << "Got an authorization token for " << service;
   token_map_[service] = auth_token;
   FireTokenAvailableNotification(service, auth_token);
@@ -192,14 +192,14 @@ void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
 
 void TokenService::OnIssueAuthTokenFailure(const std::string& service,
     const GoogleServiceAuthError& error) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LOG(WARNING) << "Auth token issuing failed for service:" << service;
   FireTokenRequestFailedNotification(service, error);
 }
 
 void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
                                                const WDTypedResult* result) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(token_loading_query_);
   token_loading_query_ = 0;
 

@@ -21,7 +21,7 @@ ChromeNetLog::ChromeNetLog()
     : next_id_(1),
       passive_collector_(new PassiveLogCollector),
       load_timing_observer_(new LoadTimingObserver) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   AddObserver(passive_collector_.get());
   AddObserver(load_timing_observer_.get());
 
@@ -33,7 +33,7 @@ ChromeNetLog::ChromeNetLog()
 }
 
 ChromeNetLog::~ChromeNetLog() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RemoveObserver(passive_collector_.get());
   RemoveObserver(load_timing_observer_.get());
   if (net_log_logger_.get()) {
@@ -49,8 +49,8 @@ void ChromeNetLog::AddEntry(EventType type,
   // This must be invoked when we're on the IO thread, or if the IO thread's
   // message loop isn't valid. The later can happen if this is invoked when the
   // IOThread is shuting down the MessageLoop.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO) ||
-         !ChromeThread::IsMessageLoopValid(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
+         !BrowserThread::IsMessageLoopValid(BrowserThread::IO));
 
   // Notify all of the log observers.
   FOR_EACH_OBSERVER(Observer, observers_,
@@ -58,12 +58,12 @@ void ChromeNetLog::AddEntry(EventType type,
 }
 
 uint32 ChromeNetLog::NextID() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return next_id_++;
 }
 
 net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Look through all the observers and find the finest granularity
   // log level (higher values of the enum imply *lower* log levels).
@@ -77,11 +77,11 @@ net::NetLog::LogLevel ChromeNetLog::GetLogLevel() const {
 }
 
 void ChromeNetLog::AddObserver(Observer* observer) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.AddObserver(observer);
 }
 
 void ChromeNetLog::RemoveObserver(Observer* observer) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   observers_.RemoveObserver(observer);
 }

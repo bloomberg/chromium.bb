@@ -21,7 +21,7 @@ bool PasswordStore::Init() {
 }
 
 void PasswordStore::ScheduleTask(Task* task) {
-  ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, task);
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, task);
 }
 
 void PasswordStore::ReportMetrics() {
@@ -79,7 +79,7 @@ void PasswordStore::NotifyConsumer(GetLoginsRequest* request,
   scoped_ptr<GetLoginsRequest> request_ptr(request);
 
 #if !defined(OS_MACOSX)
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 #endif
   request->message_loop->PostTask(FROM_HERE,
       NewRunnableMethod(this,
@@ -90,7 +90,7 @@ void PasswordStore::NotifyConsumer(GetLoginsRequest* request,
 void PasswordStore::NotifyConsumerImpl(PasswordStoreConsumer* consumer,
                                        int handle,
                                        const vector<PasswordForm*> forms) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Don't notify the consumer if the request was canceled.
   if (pending_requests_.find(handle) == pending_requests_.end()) {
     // |forms| is const so we iterate rather than use STLDeleteElements().
@@ -104,14 +104,14 @@ void PasswordStore::NotifyConsumerImpl(PasswordStoreConsumer* consumer,
 }
 
 int PasswordStore::GetNewRequestHandle() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int handle = handle_++;
   pending_requests_.insert(handle);
   return handle;
 }
 
 void PasswordStore::CancelLoginsQuery(int handle) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pending_requests_.erase(handle);
 }
 

@@ -93,8 +93,8 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(const std::string& args,
       delegate_(delegate) {
   // TODO(hclam): The data source should be added once.
   profile_ = profile;
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(new RemotingResourcesSource())));

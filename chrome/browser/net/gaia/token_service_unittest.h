@@ -63,8 +63,8 @@ class TokenFailedTracker : public TestNotificationTracker {
 class TokenServiceTestHarness : public testing::Test {
  public:
   TokenServiceTestHarness()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        db_thread_(ChromeThread::DB) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        db_thread_(BrowserThread::DB) {
   }
 
   virtual void SetUp() {
@@ -108,8 +108,8 @@ class TokenServiceTestHarness : public testing::Test {
     // to the end of the DB thread, so when we reach this task, all DB
     // operations should be complete.
     WaitableEvent done(false, false);
-    ChromeThread::PostTask(
-        ChromeThread::DB, FROM_HERE, new SignalingTask(&done));
+    BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE, new SignalingTask(&done));
     done.Wait();
 
     // Notifications should be returned from the DB thread onto the UI thread.
@@ -117,8 +117,8 @@ class TokenServiceTestHarness : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;  // Mostly so DCHECKS pass.
-  ChromeThread db_thread_;  // WDS on here
+  BrowserThread ui_thread_;  // Mostly so DCHECKS pass.
+  BrowserThread db_thread_;  // WDS on here
 
   TokenService service_;
   TokenAvailableTracker success_tracker_;
