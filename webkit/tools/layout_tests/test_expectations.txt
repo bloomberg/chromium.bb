@@ -20,4 +20,5 @@ BUGWEBGL MAC : fast/canvas/webgl/gl-object-get-calls.html = TIMEOUT
 BUGWEBGL MAC : fast/canvas/webgl/tex-image-and-uniform-binding-bugs.html = TIMEOUT
 BUGWEBGL MAC : fast/canvas/webgl/uniform-location.html = TIMEOUT
 
-BUG58481 WIN : fast/html/object-image-nested-fallback.html = CRASH
+// Remove these after rolling past r69438.
+BUGAJWONG WIN : svg/W3C-SVG-1.1/pservers-grad-17-b.svg = IMAGE+TEXT
