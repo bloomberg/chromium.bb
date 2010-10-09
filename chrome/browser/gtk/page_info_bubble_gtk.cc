@@ -200,7 +200,7 @@ void PageInfoBubbleGtk::InitContents() {
   links_.push_back(help_link);
   GtkWidget* help_link_hbox = gtk_hbox_new(FALSE, 0);
   // Stick it in an hbox so it doesn't expand to the whole width.
-  gtk_box_pack_start(GTK_BOX(help_link_hbox), help_link, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(help_link_hbox), help_link, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(contents_), help_link_hbox, FALSE, FALSE, 0);
   g_signal_connect(help_link, "clicked",
                    G_CALLBACK(OnHelpLinkClickedThunk), this);
@@ -211,13 +211,12 @@ void PageInfoBubbleGtk::InitContents() {
 
 GtkWidget* PageInfoBubbleGtk::CreateSection(
     const PageInfoModel::SectionInfo& section) {
-  GtkWidget* section_box = gtk_hbox_new(FALSE, 0);
+  GtkWidget* section_box = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
 
   GdkPixbuf* pixbuf = model_.GetIconImage(section.icon_id);
   if (pixbuf) {
     GtkWidget* image = gtk_image_new_from_pixbuf(pixbuf);
-    gtk_box_pack_start(GTK_BOX(section_box), image, FALSE, FALSE,
-                       gtk_util::kControlSpacing);
+    gtk_box_pack_start(GTK_BOX(section_box), image, FALSE, FALSE, 0);
     gtk_misc_set_alignment(GTK_MISC(image), 0, 0);
   }
 
