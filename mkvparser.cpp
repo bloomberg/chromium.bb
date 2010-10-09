@@ -1939,7 +1939,7 @@ bool Cues::Find(
     assert(time_ns >= 0);
     assert(pTrack);
 
-    const_cast<Cues*>(this)->Init();
+    const_cast<Cues*>(this)->LoadCuePoint();
 
     assert(m_cue_points);
     assert(m_count > 0);
