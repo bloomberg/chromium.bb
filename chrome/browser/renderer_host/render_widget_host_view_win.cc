@@ -1561,7 +1561,7 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
     return static_cast<LRESULT>(0L);
   }
 
-  if (!render_widget_host_->renderer_accessible()) {
+  if (render_widget_host_ && !render_widget_host_->renderer_accessible()) {
     // Attempt to detect screen readers by sending an event with our custom id.
     NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
   }
