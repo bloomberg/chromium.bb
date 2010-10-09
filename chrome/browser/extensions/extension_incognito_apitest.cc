@@ -105,8 +105,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Crashes flakily on Linux.  http://crbug.com/58270
-#if defined(OS_LINUX)
+// Crashes flakily on Linux and Mac.  http://crbug.com/53991
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 #define MAYBE_IncognitoSplitMode FLAKY_IncognitoSplitMode
 #else
 #define MAYBE_IncognitoSplitMode IncognitoSplitMode
