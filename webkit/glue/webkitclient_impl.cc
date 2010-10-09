@@ -171,7 +171,7 @@ WebKitClientImpl::~WebKitClientImpl() {
 }
 
 WebThemeEngine* WebKitClientImpl::themeEngine() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
   return &theme_engine_;
 #else
   return NULL;

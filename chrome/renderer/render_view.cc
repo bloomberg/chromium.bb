@@ -176,6 +176,7 @@
 //   * theming
 #include "gfx/native_theme_win.h"
 #elif defined(USE_X11)
+#include "gfx/native_theme_linux.h"
 #include "third_party/WebKit/WebKit/chromium/public/linux/WebRenderTheme.h"
 #elif defined(OS_MACOSX)
 #include "skia/ext/skia_utils_mac.h"
@@ -4425,6 +4426,10 @@ void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
   WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
+  gfx::NativeThemeLinux::instance()->SetScrollbarColors(
+      renderer_prefs.thumb_inactive_color,
+      renderer_prefs.thumb_active_color,
+      renderer_prefs.track_color);
 
   if (webview()) {
     webview()->setScrollbarColors(

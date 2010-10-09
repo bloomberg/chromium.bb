@@ -695,3 +695,27 @@ SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
   opaque_bitmap.setIsOpaque(true);
   return opaque_bitmap;
 }
+
+// static
+SkBitmap SkBitmapOperations::CreateTransposedBtmap(const SkBitmap& image) {
+  DCHECK(image.config() == SkBitmap::kARGB_8888_Config);
+
+  SkAutoLockPixels lock_image(image);
+
+  SkBitmap transposed;
+  transposed.setConfig(
+      SkBitmap::kARGB_8888_Config, image.height(), image.width(), 0);
+  transposed.allocPixels();
+  transposed.eraseARGB(0, 0, 0, 0);
+
+  for (int y = 0; y < image.height(); ++y) {
+    uint32* image_row = image.getAddr32(0, y);
+    for (int x = 0; x < image.width(); ++x) {
+      uint32* dst = transposed.getAddr32(y, x);
+      *dst = image_row[x];
+    }
+  }
+
+  return transposed;
+}
+
