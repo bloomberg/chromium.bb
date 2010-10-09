@@ -24,7 +24,7 @@ void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision)
     major = 1;
     minor = 0;
     build = 0;
-    revision = 2;
+    revision = 3;
 }
 
 
@@ -1910,10 +1910,7 @@ bool Cues::LoadCuePoint()
 
         assert(m_preload_count > 0);
 
-        const size_t idx = m_count;
-        assert(idx < m_size);
-
-        CuePoint* const pCP = m_cue_points[idx];
+        CuePoint* const pCP = m_cue_points[m_count];
         assert(pCP);
 
         pCP->Load(pReader, idpos);
