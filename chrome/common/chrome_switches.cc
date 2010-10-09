@@ -206,6 +206,9 @@ const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 // Manager can be used to terminate the offending process in this case.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
+// Disable the Indexed Database API.
+const char kDisableIndexedDatabase[]         = "disable-indexed-database";
+
 // Disable the internal Flash Player.
 const char kDisableInternalFlash[]          = "disable-internal-flash";
 
@@ -423,9 +426,6 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 
 // Enable the FileSystem API.
 const char kEnableFileSystem[]              = "enable-file-system";
-
-// Enable the Indexed Database API.
-const char kEnableIndexedDatabase[]         = "enable-indexed-database";
 
 // Use the InMemoryURLIndex to back the HistoryURLProvider for autocomplete
 // results.  If not set, defaults to using the InMemoryDatabase.

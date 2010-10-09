@@ -912,7 +912,7 @@ void RenderThread::EnsureWebKitInitialized() {
       !command_line.HasSwitch(switches::kDisableSessionStorage));
 
   WebRuntimeFeatures::enableIndexedDatabase(
-      command_line.HasSwitch(switches::kEnableIndexedDatabase));
+      !command_line.HasSwitch(switches::kDisableIndexedDatabase));
 
   WebRuntimeFeatures::enableGeolocation(
       !command_line.HasSwitch(switches::kDisableGeolocation));
