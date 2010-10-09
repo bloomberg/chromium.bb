@@ -381,7 +381,6 @@
         'websocketstreamhandle_delegate.h',
         'websocketstreamhandle_impl.cc',
         'websocketstreamhandle_impl.h',
-        'webthemeengine_impl_linux.cc',
         'webthemeengine_impl_win.cc',
         'weburlloader_impl.cc',
         'weburlloader_impl.h',

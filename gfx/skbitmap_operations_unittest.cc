@@ -492,26 +492,3 @@ TEST(SkBitmapOperationsTest, UnPreMultiply) {
   EXPECT_EQ(0xFF00CC88, *result.getAddr32(0, 1));
   EXPECT_EQ(0x00000000u, *result.getAddr32(1, 1));  // "Division by zero".
 }
-
-TEST(SkBitmapOperationsTest, CreateTransposedBtmap) {
-  SkBitmap input;
-  input.setConfig(SkBitmap::kARGB_8888_Config, 2, 3);
-  input.allocPixels();
-
-  for (int x = 0; x < input.width(); ++x) {
-    for (int y = 0; y < input.height(); ++y) {
-      *input.getAddr32(x, y) = x * input.width() + y;
-    }
-  }
-
-  SkBitmap result = SkBitmapOperations::CreateTransposedBtmap(input);
-  EXPECT_EQ(3, result.width());
-  EXPECT_EQ(2, result.height());
-
-  SkAutoLockPixels lock(result);
-  for (int x = 0; x < input.width(); ++x) {
-    for (int y = 0; y < input.height(); ++y) {
-      EXPECT_EQ(*input.getAddr32(x, y), *result.getAddr32(y, x));
-    }
-  }
-}

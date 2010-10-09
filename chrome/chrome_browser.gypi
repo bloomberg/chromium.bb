@@ -637,8 +637,6 @@
         'browser/chromeos/low_battery_observer.h',
         'browser/chromeos/native_dialog_window.cc',
         'browser/chromeos/native_dialog_window.h',
-        'browser/chromeos/native_theme_chromeos.cc',
-        'browser/chromeos/native_theme_chromeos.h',
         'browser/chromeos/network_list.cc',
         'browser/chromeos/network_list.h',
         'browser/chromeos/network_state_notifier.cc',

@@ -89,9 +89,6 @@ class SkBitmapOperations {
   // doesn't expect premultiplied colors.
   static SkBitmap UnPreMultiply(const SkBitmap& bitmap);
 
-  // Transpose the pixels in |bitmap| by swapping x and y.
-  static SkBitmap CreateTransposedBtmap(const SkBitmap& bitmap);
-
  private:
   SkBitmapOperations();  // Class for scoping only.
 

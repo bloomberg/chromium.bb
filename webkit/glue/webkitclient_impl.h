@@ -10,10 +10,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #if defined(OS_WIN)
 #include "webkit/glue/webthemeengine_impl_win.h"
-#elif defined(OS_LINUX)
-#include "webkit/glue/webthemeengine_impl_linux.h"
 #endif
-
 
 class MessageLoop;
 
@@ -74,7 +71,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   double shared_timer_fire_time_;
   int shared_timer_suspended_;  // counter
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
   WebThemeEngineImpl theme_engine_;
 #endif
 };

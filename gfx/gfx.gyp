@@ -82,7 +82,6 @@
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
-        'gfx_resources',
       ],
       'sources': [
         'blit.cc',
@@ -168,8 +167,6 @@
             'gtk_native_view_id_manager.h',
             'gtk_util.cc',
             'gtk_util.h',
-            'native_theme_linux.cc',
-            'native_theme_linux.h',
             'native_widget_types_gtk.cc',
           ],
         }],
