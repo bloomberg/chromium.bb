@@ -556,6 +556,8 @@
         'browser/chromeos/login/image_downloader.h',
         'browser/chromeos/login/issue_response_handler.cc',
         'browser/chromeos/login/issue_response_handler.h',
+        'browser/chromeos/login/keyboard_switch_menu.cc',
+        'browser/chromeos/login/keyboard_switch_menu.h',
         'browser/chromeos/login/language_switch_menu.cc',
         'browser/chromeos/login/language_switch_menu.h',
         'browser/chromeos/login/login_html_dialog.cc',
