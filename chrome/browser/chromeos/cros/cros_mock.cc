@@ -249,8 +249,8 @@ void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
       .WillRepeatedly(InvokeWithoutArgs(CreateFallbackInputMethodDescriptors))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, current_ime_properties())
-      .Times(1)
-      .WillOnce((ReturnRef(ime_properties_)))
+      .Times(AnyNumber())
+      .WillRepeatedly((ReturnRef(ime_properties_)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, SetImeConfig(_, _, _))
       .Times(AnyNumber())

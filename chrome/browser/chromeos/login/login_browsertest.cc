@@ -42,8 +42,6 @@ class LoginTestBase : public InProcessBrowserTest {
     EXPECT_CALL(mock_input_method_library_, GetActiveInputMethods())
         .WillRepeatedly(
             InvokeWithoutArgs(CreateFallbackInputMethodDescriptors));
-    EXPECT_CALL(mock_input_method_library_, current_ime_properties())
-        .WillOnce((ReturnRef(ime_properties_)));
 
     testApi_->SetNetworkLibrary(&mock_network_library_, false);
 

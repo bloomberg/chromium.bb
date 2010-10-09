@@ -1064,7 +1064,7 @@
         'browser/chromeos/options/language_config_model_unittest.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/proxy_config_service_impl_unittest.cc',
-        'browser/chromeos/status/language_menu_button_unittest.cc',
+        'browser/chromeos/status/input_method_menu_unittest.cc',
         'browser/chromeos/version_loader_unittest.cc',
         'browser/content_setting_bubble_model_unittest.cc',
         'browser/content_setting_image_model_unittest.cc',
