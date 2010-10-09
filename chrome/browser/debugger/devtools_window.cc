@@ -124,13 +124,19 @@ void DevToolsWindow::InspectedTabClosing() {
 
 void DevToolsWindow::Show(DevToolsToggleAction action) {
   if (docked_) {
-    // Just tell inspected browser to update splitter.
-    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
-    if (inspected_window) {
+    Browser* inspected_browser;
+    int inspected_tab_index;
+    // Tell inspected browser to update splitter and switch to inspected panel.
+    if (FindInspectedBrowserAndTabIndex(&inspected_browser,
+                                        &inspected_tab_index)) {
+      BrowserWindow* inspected_window = inspected_browser->window();
       tab_contents_->set_delegate(this);
       inspected_window->UpdateDevTools();
       SetAttachedWindow();
       tab_contents_->view()->SetInitialFocus();
+      inspected_window->Show();
+      TabStripModel* tabstrip_model = inspected_browser->tabstrip_model();
+      tabstrip_model->SelectTabContentsAt(inspected_tab_index, true);
       ScheduleAction(action);
       return;
     } else {
@@ -228,18 +234,26 @@ void DevToolsWindow::CreateDevToolsBrowser() {
       TabStripModel::ADD_SELECTED);
 }
 
-BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
+bool DevToolsWindow::FindInspectedBrowserAndTabIndex(Browser** browser,
+                                                     int* tab) {
+  const NavigationController& controller = inspected_tab_->controller();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
-    Browser* browser = *it;
-    for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContents* tab_contents = browser->GetTabContentsAt(i);
-      if (tab_contents == inspected_tab_) {
-        return browser->window();
-      }
+    int tab_index = (*it)->GetIndexOfController(&controller);
+    if (tab_index != TabStripModel::kNoTab) {
+      *browser = *it;
+      *tab = tab_index;
+      return true;
     }
   }
-  return NULL;
+  return false;
+}
+
+BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
+  Browser* browser = NULL;
+  int tab;
+  return FindInspectedBrowserAndTabIndex(&browser, &tab) ?
+      browser->window() : NULL;
 }
 
 void DevToolsWindow::SetAttachedWindow() {

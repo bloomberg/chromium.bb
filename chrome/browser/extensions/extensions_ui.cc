@@ -441,9 +441,7 @@ void ExtensionsDOMHandler::HandleInspectMessage(const ListValue* args) {
     return;
   }
 
-  DevToolsManager::GetInstance()->ToggleDevToolsWindow(
-      host,
-      DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
+  DevToolsManager::GetInstance()->OpenDevToolsWindow(host);
 }
 
 void ExtensionsDOMHandler::HandleReloadMessage(const ListValue* args) {

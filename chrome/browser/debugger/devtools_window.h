@@ -54,6 +54,7 @@ class DevToolsWindow
 
  private:
   void CreateDevToolsBrowser();
+  bool FindInspectedBrowserAndTabIndex(Browser**, int* tab);
   BrowserWindow* GetInspectedBrowserWindow();
   void SetAttachedWindow();
 
