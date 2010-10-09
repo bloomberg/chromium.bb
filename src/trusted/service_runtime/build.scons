@@ -92,6 +92,7 @@ ldr_inputs = [
     'nacl_desc_effector_ldr.c',
     'nacl_globals.c',
     'nacl_memory_object.c',
+    'nacl_signal_common.c',
     'nacl_sync_queue.c',
     'nacl_syscall_common.c',
     GENERATED + '/nacl_syscall_handlers.c',
@@ -185,11 +186,10 @@ elif env.Bit('linux'):
     ]
 
 # TODO(mseaborn): Extend nacl_signal.c to cover other cases.
-if (env.Bit('linux') and
-    env['BUILD_ARCHITECTURE'] == 'x86'):
-  ldr_inputs += ['linux/nacl_signal.c']
+if env.Bit('windows'):
+  ldr_inputs += ['win/nacl_signal.c']
 else:
-  ldr_inputs += ['generic/nacl_signal.c']
+  ldr_inputs += ['posix/nacl_signal.c']
 
 # ----------------------------------------------------------
 # SDL hacks
@@ -519,6 +519,22 @@ node = env.CommandTest(
 env.Requires(env_cleanser_test_exe, crt)
 env.AddNodeToTestSuite(node, ['small_tests'])
 
+# Test nacl_signal
+if (not env.get('COVERAGE_ENABLED') and
+    not env['TARGET_ARCHITECTURE'] == 'arm'):
+  nacl_signal_exe = env.ComponentProgram('nacl_signal_unittest',
+                                         'nacl_signal_unittest.c',
+                                         EXTRA_LIBS=['sel',
+                                                     'gio_wrapped_desc',
+                                                     'platform',
+                                                     'gio',
+                                                     ] + DEBUG_LIBS)
+  node = env.CommandTest('nacl_signal_unittest.out',
+                         command=[nacl_signal_exe])
+  env.Requires(nacl_signal_exe, crt)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_signal_test')
+
+
 
 if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
     env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
@@ -801,7 +817,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
   node = env.CommandSelLdrTestNacl(
       'nullptr.out',
       command=[env.File(arch_testdata_dir + '/nullptr.nexe')],
-      exit_status='segfault')
+      exit_status='untrusted_segfault')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
   if SUBARCH == '32':

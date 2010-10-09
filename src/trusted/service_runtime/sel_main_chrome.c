@@ -23,6 +23,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_debug.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
@@ -53,6 +54,9 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
 #endif
 
   NaClAllModulesInit();
+
+  /* Add a handler to catch untrusted errors only */
+  NaClSignalHandlerAdd(NaClSignalHandleUntrusted);
 
   /* to be passed to NaClMain, eventually... */
   av[0] = "NaClMain";

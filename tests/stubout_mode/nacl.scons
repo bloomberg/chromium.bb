@@ -33,16 +33,6 @@ node = env.Command(
 # idea, but apparently true for all other cases so far).
 env.Alias('all_test_programs', node)
 
-if (env.Bit('host_windows') and
-    env['BUILD_ARCHITECTURE'] == 'x86' and
-    env['BUILD_SUBARCH'] == '64'):
-  # 64-bit Windows returns a different exit status for a HLT
-  # instruction than what 32-bit Windows returns.
-  # This is the same as STATUS_PRIVILEGED_INSTRUCTION = 0xC0000096
-  expected_exit_status = '-1073741674'
-else:
-  expected_exit_status = 'sigsegv_or_equivalent'
-
 nodes = []
 
 # Without any debug flags, the executable fails validation.
@@ -61,7 +51,7 @@ nodes.append(env.CommandSelLdrTestNacl(
         'partly_invalid_3.out', command=[env.File('partly_invalid.nexe')],
         stdout_golden=env.File('with_stubout.stdout'),
         sel_ldr_flags=['-s'],
-        exit_status=expected_exit_status))
+        exit_status='untrusted_sigill'))
 
 # Using the standalone ncval_stubout tool to rewrite the executable
 # offline should be equivalent to using sel_ldr's "-s" option.
@@ -69,6 +59,6 @@ nodes.append(env.CommandSelLdrTestNacl(
         'partly_invalid_stubout.out',
         command=[env.File('partly_invalid_stubout.nexe')],
         stdout_golden=env.File('with_stubout.stdout'),
-        exit_status=expected_exit_status))
+        exit_status='untrusted_sigill'))
 
 env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_stubout_mode_test')

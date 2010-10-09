@@ -50,5 +50,5 @@ sigpipe_tool_test_exe = env.ComponentProgram('sigpipe_tool_test',
 node = env.CommandTest(
     'sigpipe_tool_test.out',
     [sigpipe_tool_test_exe],
-    exit_status='-13')
+    exit_status='sigpipe')
 env.AddNodeToTestSuite(node, TEST_SUITES, 'run_tool_tests')

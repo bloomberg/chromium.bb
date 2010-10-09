@@ -13,7 +13,7 @@ env.ComponentProgram('execute_data.nexe', ['execute_data.c'])
 node = env.CommandSelLdrTestNacl(
     'execute_data.out',
     command=[env.File('execute_data.nexe')],
-    exit_status='sigsegv_or_equivalent',
+    exit_status='untrusted_sigsegv_or_equivalent',
     stdout_golden=env.File('execute_data.stdout'))
 
 # This test does not work under qemu-arm because qemu-arm does not

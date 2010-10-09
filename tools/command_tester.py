@@ -101,6 +101,9 @@ def ResetGlobalSettings():
       'exit_status': 0,
       'osenv': '',
 
+      'arch': None,
+      'subarch': None,
+
       'name': None,
       'report': None,
 
@@ -136,24 +139,86 @@ def SuccessMessage():
 # Mac OS X returns SIGBUS in most of the cases where Linux returns
 # SIGSEGV, except for actual x86 segmentation violations.
 status_map = {
+    'sigpipe': {
+        'linux2': -13, # SIGPIPE
+        'darwin': -13, # SIGPIPE
+        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win64':  -1073741819, # -0x3ffffffb or 0xc0000005
+        },
+    'sigill' : {
+        'linux2': -11, # SIGSEGV
+        'darwin': -11, # SIGBUS
+        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win64':  -1073741819, # -0x3ffffffb or 0xc0000005
+        },
     'segfault': {
         'linux2': -11, # SIGSEGV
         'darwin': -10, # SIGBUS
         'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
         'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win64':  -1073741819, # -0x3ffffffb or 0xc0000005
         },
     'sigsegv_or_equivalent': {
         'linux2': -11, # SIGSEGV
         'darwin': -11, # SIGSEGV
         'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
         'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win64':  -1073741819, # -0x3ffffffb or 0xc0000005
+        },
+    'untrusted_sigill' : {
+        'linux2': -11, # SIGSEGV
+        'darwin': -11, # SIGBUS
+        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win64':  -4,
+        },
+    'untrusted_segfault': {
+        'linux2': -11, # SIGSEGV
+        'darwin': -10, # SIGBUS
+        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win64':  -11,
+        },
+    'untrusted_sigsegv_or_equivalent': {
+        'linux2': -11, # SIGSEGV
+        'darwin': -11, # SIGSEGV
+        'cygwin': -1073741819, # -0x3ffffffb or 0xc0000005
+        'win32':  -1073741819, # -0x3ffffffb or 0xc0000005
+        'win64':  -11,
+        },
+    'trusted_sigill' : {
+        'linux2': -11, # SIGSEGV
+        'darwin': -11, # SIGBUS
+        'cygwin': -4, # SIGILL
+        'win32':  -4, # SIGILL
+        'win64':  -4, # SIGILL
+        },
+    'trusted_segfault': {
+        'linux2': -11, # SIGSEGV
+        'darwin': -10, # SIGBUS
+        'cygwin': -11, # SIGSEGV
+        'win32': -11, # SIGSEGV
+        'win64': -11, # SIGSEGV
+        },
+    'trusted_sigsegv_or_equivalent': {
+        'linux2': -11, # SIGSEGV
+        'darwin': -11, # SIGSEGV
+        'cygwin': -11, # SIGSEGV
+        'win32': -11, # SIGSEGV
+        'win64': -11, # SIGSEGV
         },
     }
 
 
 def MassageExitStatus(v):
+  platform = sys.platform
+  if (platform=='win32') and (GlobalSettings['subarch'] == '64'):
+    platform = 'win64'
+
   if v in status_map:
-    return status_map[v][sys.platform]
+    return status_map[v][platform]
   else:
     return int(v)
 
@@ -186,7 +251,7 @@ def ProcessOptions(argv):
 # Thus, we convert the desired val and returned val if negative to postive
 # before comparing.
 def ExitStatusIsOK(expected, actual):
-  if sys.platform == 'linux2':  # convert only for linux
+  if expected < 0:
     expected = (expected + 256) % 256
     actual = (actual + 256) % 256
   return expected == actual
@@ -241,7 +306,8 @@ def main(argv):
     if failed:
       Print('command failed')
     else:
-      Print('command returned unexpected exit status %d' % exit_status)
+      val = MassageExitStatus(GlobalSettings['exit_status'])
+      Print('command returned status %d, expecting %d' % (exit_status, val))
     Banner('Stdout')
     Print(stdout)
     Banner('Stderr')

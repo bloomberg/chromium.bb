@@ -41,7 +41,7 @@
     # build is nice.
     'linux_breakpad%': 0,
     'win32_breakpad%': 0,
-    'win64_breakpad%': 1,
+    'win64_breakpad%': 0,
 
     # Doing this in a sub-dict so that it can be referred to below.
     'variables': {

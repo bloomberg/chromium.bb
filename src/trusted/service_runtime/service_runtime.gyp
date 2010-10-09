@@ -83,6 +83,7 @@
           'nacl_desc_effector_ldr.c',
           'nacl_globals.c',
           'nacl_memory_object.c',
+          'nacl_signal_common.c',
           'nacl_sync_queue.c',
           'nacl_syscall_common.c',
           'nacl_syscall_hook.c',
@@ -186,16 +187,16 @@
                 }],
               ],
             }],
-            ['OS=="linux" and (target_arch=="ia32" or target_arch=="x64")', {
+            ['OS=="linux" or OS=="mac" or OS=="FreeBSD"', {
               'sources': [
-                'linux/nacl_signal.c',
-              ],
-             }, {
+                'posix/nacl_signal.c',
+               ],
+            }],
+            ['OS=="win"', {
               'sources': [
-                'generic/nacl_signal.c',
+                'win/nacl_signal.c',
               ],
-             }
-            ],
+            }],
           ],
         }],
       ],

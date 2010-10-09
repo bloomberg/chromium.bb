@@ -13,6 +13,6 @@ env.ComponentProgram('write_to_rodata.nexe', ['write_to_rodata.c'])
 node = env.CommandSelLdrTestNacl(
     'write_to_rodata.out',
     command=[env.File('write_to_rodata.nexe')],
-    exit_status='segfault',
+    exit_status='untrusted_segfault',
     stdout_golden=env.File('write_to_rodata.stdout'))
 env.AddNodeToTestSuite(node, 'small_tests', 'run_write_to_rodata_test')

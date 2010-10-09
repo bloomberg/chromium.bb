@@ -60,7 +60,7 @@ tests = [
     env.CommandSelLdrTestNacl(
         'write_to_dyncode.out',
         command=[env.File('write_to_dyncode.nexe')],
-        exit_status='segfault',
+        exit_status='untrusted_segfault',
         stdout_golden=env.File('write_to_dyncode.stdout'),
         ),
     env.CommandSelLdrTestNacl(

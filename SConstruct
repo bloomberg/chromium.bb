@@ -887,7 +887,9 @@ def CommandSelLdrTestNacl(env, name, command,
     extra_env  = 'NACLLOG=%s,NACLVERBOSITY=%d' % (logout, log_verbosity)
     extra['osenv'] = AddToStringifiedList(extra.get('osenv'),
                                           extra_env)
-
+  # Add Architechture Info
+  extra['arch'] = env['BUILD_ARCHITECTURE']
+  extra['subarch'] = env['BUILD_SUBARCH']
   return CommandTest(env, name, command, size, **extra)
 
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
@@ -917,7 +919,7 @@ pre_base_env.AddMethod(CommandPosixOverSrpcTestNacl)
 TEST_EXTRA_ARGS = ['stdin', 'logout',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'filter_regex', 'filter_inverse', 'filter_group_only',
-                   'osenv', 'exit_status']
+                   'osenv', 'arch', 'subarch', 'exit_status']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,

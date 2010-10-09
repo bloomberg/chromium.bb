@@ -38,6 +38,6 @@ nexe = env.ComponentProgram('nullptr.nexe',
 
 node = env.CommandSelLdrTestNacl('nullptr.out',
                                  command=[env.File('nullptr.nexe')],
-                                 exit_status='segfault')
+                                 exit_status='untrusted_segfault')
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nullptr_test')
