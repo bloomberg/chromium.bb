@@ -19,6 +19,7 @@
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
+#include "media/base/media_switches.h"
 
 #if defined(OS_LINUX)
 #include "gfx/gtk_native_view_id_manager.h"
@@ -93,6 +94,7 @@ bool GpuProcessHost::Init() {
     switches::kUseGL,
     switches::kDisableGpuVsync,
     switches::kDisableLogging,
+    switches::kEnableAcceleratedDecoding,
     switches::kEnableLogging,
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
