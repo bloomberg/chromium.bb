@@ -17,7 +17,8 @@ namespace chromeos {
 // This interface defines interaction with the ChromeOS syslogs APIs.
 class SyslogsLibrary : public CancelableRequestProvider {
  public:
-  typedef Callback1<LogDictionaryType*>::Type ReadCompleteCallback;
+  typedef Callback2<LogDictionaryType*,
+                    std::string*>::Type ReadCompleteCallback;
 
   SyslogsLibrary() {}
   virtual ~SyslogsLibrary() {}
@@ -27,9 +28,10 @@ class SyslogsLibrary : public CancelableRequestProvider {
   // Logs are owned by callback function (use delete when done with them).
   // Returns the request handle. Call CancelRequest(Handle) to cancel
   // the request before the callback gets called.
-  virtual Handle RequestSyslogs(FilePath* tmpfilename,
-                                CancelableRequestConsumerBase* consumer,
-                                ReadCompleteCallback* callback) = 0;
+  virtual Handle RequestSyslogs(
+      bool compress_logs,
+      CancelableRequestConsumerBase* consumer,
+      ReadCompleteCallback* callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().

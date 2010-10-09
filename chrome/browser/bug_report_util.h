@@ -78,6 +78,8 @@ class BugReportUtil {
 #if defined(OS_CHROMEOS)
       int png_height,
       const std::string& user_email_text,
+      const char* zipped_logs_data,
+      int zipped_logs_length,
       const chromeos::LogDictionaryType* const sys_info);
 #else
       int png_height);
@@ -94,6 +96,10 @@ class BugReportUtil {
   static void AddFeedbackData(
       userfeedback::ExternalExtensionSubmit* feedback_data,
       const std::string& key, const std::string& value);
+
+#if defined(OS_CHROMEOS)
+  static bool ValidFeedbackSize(const std::string& content);
+#endif
 
   static std::string feedback_server_;
 

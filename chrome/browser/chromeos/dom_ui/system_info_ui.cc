@@ -46,7 +46,8 @@ class SystemInfoUIHTMLSource : public ChromeURLDataManager::DataSource {
  private:
   ~SystemInfoUIHTMLSource() {}
 
-  void SyslogsComplete(chromeos::LogDictionaryType* sys_info);
+  void SyslogsComplete(chromeos::LogDictionaryType* sys_info,
+                       std::string* ignored_content);
 
   CancelableRequestConsumer consumer_;
 
@@ -92,16 +93,18 @@ void SystemInfoUIHTMLSource::StartDataRequest(const std::string& path,
   chromeos::SyslogsLibrary* syslogs_lib =
       chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
   if (syslogs_lib) {
-    FilePath* tmpfilename = NULL;  // use default filepath.
     syslogs_lib->RequestSyslogs(
-        tmpfilename,
+        false,
         &consumer_,
         NewCallback(this, &SystemInfoUIHTMLSource::SyslogsComplete));
   }
 }
 
 void SystemInfoUIHTMLSource::SyslogsComplete(
-    chromeos::LogDictionaryType* sys_info) {
+    chromeos::LogDictionaryType* sys_info,
+    std::string* ignored_content) {
+  DCHECK(!ignored_content);
+
   DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TITLE));
   strings.SetString("description",

@@ -1176,6 +1176,9 @@ const char kStubCros[]                      = "stub-cros";
 // URL of the html page for Screen Saver.
 const char kScreenSaverUrl[]                = "screen-saver-url";
 
+// Flag to trigger ChromeOS system log compression during feedback submit.
+const char kCompressSystemFeedback[]        = "compress-sys-feedback";
+
 #ifndef NDEBUG
 extern const char kDOMUIMenuUrl[]           = "domui-menu-url";
 #endif

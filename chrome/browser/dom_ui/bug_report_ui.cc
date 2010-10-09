@@ -207,7 +207,8 @@ class BugReportHandler : public DOMMessageHandler,
   void CloseTab();
   void SendReport();
 #if defined(OS_CHROMEOS)
-  void SyslogsComplete(chromeos::LogDictionaryType* logs);
+  void SyslogsComplete(chromeos::LogDictionaryType* logs,
+                       std::string* zip_content);
 #endif
 
   TabContents* tab_;
@@ -229,6 +230,8 @@ class BugReportHandler : public DOMMessageHandler,
   // NOTE: Extra boolean sent_report_ is required because callback may
   // occur before or after we call SendReport().
   bool sent_report_;
+  // Content of the compressed system logs.
+  std::string* zip_content_;
   // Variables to track SyslogsLibrary::RequestSyslogs callback.
   chromeos::SyslogsLibrary::Handle syslogs_handle_;
   CancelableRequestConsumer syslogs_consumer_;
@@ -380,6 +383,7 @@ BugReportHandler::BugReportHandler(TabContents* tab)
     , sys_info_(NULL)
     , send_sys_info_(false)
     , sent_report_(false)
+    , zip_content_(NULL)
     , syslogs_handle_(0)
 #endif
 {
@@ -394,7 +398,14 @@ BugReportHandler::~BugReportHandler() {
     if (syslogs_lib)
       syslogs_lib->CancelRequest(syslogs_handle_);
   }
-  delete sys_info_;
+  if (sys_info_) {
+    delete sys_info_;
+    sys_info_ = NULL;
+  }
+  if (zip_content_) {
+    delete zip_content_;
+    zip_content_ = NULL;
+  }
 #endif
 }
 
@@ -502,9 +513,8 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   chromeos::SyslogsLibrary* syslogs_lib =
       chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
   if (syslogs_lib) {
-    FilePath* tmpfilename = NULL;  // use default filepath.
     syslogs_handle_ = syslogs_lib->RequestSyslogs(
-        tmpfilename, &syslogs_consumer_,
+        true, &syslogs_consumer_,
         NewCallback(this, &BugReportHandler::SyslogsComplete));
   }
   // 2: user e-mail
@@ -595,7 +605,7 @@ void BugReportHandler::HandleSendReport(const ListValue* list_value) {
   // If we don't require sys_info, or we have it, or we never requested it
   // (because libcros failed to load), then send the report now.
   // Otherwise, the report will get sent when we receive sys_info.
-  if (send_sys_info_ == false || sys_info_ != NULL || syslogs_handle_ == 0) {
+  if (!send_sys_info_ || sys_info_ != NULL || syslogs_handle_ == 0) {
     SendReport();
     // If we scheduled a callback, don't call SendReport() again.
     send_sys_info_ = false;
@@ -620,13 +630,21 @@ void BugReportHandler::SendReport() {
                             , browser::screen_size.height()
 #if defined(OS_CHROMEOS)
                             , user_email_
+                            , zip_content_ ? zip_content_->c_str() : NULL
+                            , zip_content_ ? zip_content_->length() : 0
                             , send_sys_info_ ? sys_info_ : NULL
 #endif
                             );
 
 #if defined(OS_CHROMEOS)
-  delete sys_info_;
-  sys_info_ = NULL;
+  if (sys_info_) {
+    delete sys_info_;
+    sys_info_ = NULL;
+  }
+  if (zip_content_) {
+    delete zip_content_;
+    zip_content_ = NULL;
+  }
   sent_report_ = true;
 #endif
 
@@ -635,11 +653,16 @@ void BugReportHandler::SendReport() {
 
 #if defined(OS_CHROMEOS)
 // Called from the same thread as HandleGetDialogDefaults, i.e. the UI thread.
-void BugReportHandler::SyslogsComplete(chromeos::LogDictionaryType* logs) {
+void BugReportHandler::SyslogsComplete(chromeos::LogDictionaryType* logs,
+                                       std::string* zip_content) {
   if (sent_report_) {
     // We already sent the report, just delete the data.
-    delete logs;
+    if (logs)
+      delete logs;
+    if (zip_content)
+      delete zip_content;
   } else {
+    zip_content_ = zip_content;
     sys_info_ = logs;  // Will get deleted when SendReport() is called.
     if (send_sys_info_) {
       // We already prepared the report, send it now.
