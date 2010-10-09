@@ -2863,3 +2863,14 @@
    fun:_ZN3net13SSLConnectJob12DoSSLConnectEv
    fun:_ZN3net13SSLConnectJob6DoLoopEi
 }
+{
+   bug_58574
+   Memcheck:Addr4
+   ...
+   fun:_ZN11MessageLoop15PostTask_HelperERKN15tracked_objects8LocationEP4Taskxb
+   fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
+   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
+   fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
+   fun:_ZN54_GLOBAL__N_base_worker_pool_linux.cc_00000000_0D71404812WorkerThread10ThreadMainEv
+}
