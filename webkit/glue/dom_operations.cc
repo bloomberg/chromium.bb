@@ -190,6 +190,9 @@ static bool FillFormImpl(FormElements* fe, const FormData& data) {
         (!element.isEnabledFormControl() || element.hasAttribute("readonly"))) {
       continue;  // Don't fill uneditable password fields.
     }
+    if (!element.isValidValue(data_map[it->first]))
+      continue;
+
     element.setValue(data_map[it->first]);
     element.setAutofilled(true);
     element.dispatchFormControlChangeEvent();

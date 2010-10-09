@@ -33,6 +33,10 @@ bool WebInputElementDelegate::IsEditable() const {
   return element_.isEnabledFormControl() && !element_.hasAttribute("readonly");
 }
 
+bool WebInputElementDelegate::IsValidValue(const string16& value) {
+  return element_.isValidValue(value);
+}
+
 void WebInputElementDelegate::SetValue(const string16& value) {
   element_.setValue(value);
 }
@@ -107,14 +111,19 @@ void WebPasswordAutocompleteListenerImpl::didBlurInputElement(
 
   // If enabled, set the password field to match the current username.
   if (data_.basic_data.fields[0].value() == user_input16) {
-    // Preferred username/login is selected.
-    password_delegate_->SetValue(data_.basic_data.fields[1].value());
-    password_delegate_->SetAutofilled(true);
+    if (password_delegate_->IsValidValue(data_.basic_data.fields[1].value())) {
+      // Preferred username/login is selected.
+      password_delegate_->SetValue(data_.basic_data.fields[1].value());
+      password_delegate_->SetAutofilled(true);
+    }
   } else if (data_.additional_logins.find(user_input16) !=
       data_.additional_logins.end()) {
-    // One of the extra username/logins is selected.
-    password_delegate_->SetValue(data_.additional_logins[user_input16]);
-    password_delegate_->SetAutofilled(true);
+    if (password_delegate_->IsValidValue(
+          data_.additional_logins[user_input16])) {
+      // One of the extra username/logins is selected.
+      password_delegate_->SetValue(data_.additional_logins[user_input16]);
+      password_delegate_->SetAutofilled(true);
+    }
   }
 }
 
@@ -183,13 +192,18 @@ bool WebPasswordAutocompleteListenerImpl::TryToMatch(const string16& input,
   if (!StartsWith(username, input, false))
     return false;
 
+  if (!username_delegate_->IsValidValue(username))
+    return false;
+
   // Input matches the username, fill in required values.
   username_delegate_->SetValue(username);
   username_delegate_->SetSelectionRange(input.length(), username.length());
   username_delegate_->SetAutofilled(true);
-  if (password_delegate_->IsEditable())
+  if (password_delegate_->IsEditable() &&
+      password_delegate_->IsValidValue(password)) {
     password_delegate_->SetValue(password);
-  password_delegate_->SetAutofilled(true);
+    password_delegate_->SetAutofilled(true);
+  }
   return true;
 }
 

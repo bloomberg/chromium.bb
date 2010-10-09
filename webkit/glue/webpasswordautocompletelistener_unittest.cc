@@ -28,12 +28,17 @@ class TestWebInputElementDelegate : public WebInputElementDelegate {
         selection_start_(0),
         selection_end_(0),
         is_editable_(true),
+        is_valid_(true),
         is_autofilled_(false) {
   }
 
   // Override those methods we implicitly invoke in the tests.
   virtual bool IsEditable() const {
     return is_editable_;
+  }
+
+  virtual bool IsValidValue(const string16& value) {
+    return is_valid_;
   }
 
   virtual void SetValue(const string16& value) {
@@ -56,6 +61,10 @@ class TestWebInputElementDelegate : public WebInputElementDelegate {
     is_editable_ = editable;
   }
 
+  void set_is_valid(bool valid) {
+    is_valid_ = valid;
+  }
+
   string16 value() const {
     return value_;
   }
@@ -73,6 +82,7 @@ class TestWebInputElementDelegate : public WebInputElementDelegate {
   size_t selection_start_;
   size_t selection_end_;
   bool is_editable_;
+  bool is_valid_;
   bool is_autofilled_;
 };
 
@@ -287,6 +297,47 @@ TEST_F(PasswordManagerAutocompleteTests, TestPasswordClearOnEdit) {
   EXPECT_FALSE(username_delegate_->IsAutofilled());
   EXPECT_FALSE(password_delegate_->IsAutofilled());
   EXPECT_TRUE(password_delegate_->value().empty());
+}
+
+// Tests that filling with invalid value for input element does not fill.
+TEST_F(PasswordManagerAutocompleteTests, TestValidValueConditions) {
+  WebKit::WebPasswordAutocompleteListener* listener = CreateListener(false);
+
+  // User enters a known login that validates ok.
+  username_delegate_->set_is_valid(true);
+  password_delegate_->set_is_valid(true);
+  username_delegate_->SetValue(string16());
+  password_delegate_->SetValue(string16());
+  listener->performInlineAutocomplete(ASCIIToUTF16("alice"), false, false);
+  // We are autofilled.
+  EXPECT_EQ(username1_, username_delegate_->value());
+  EXPECT_TRUE(username_delegate_->IsAutofilled());
+  EXPECT_EQ(password1_, password_delegate_->value());
+  EXPECT_TRUE(password_delegate_->IsAutofilled());
+
+  // User enters a known login that does not validate.
+  username_delegate_->set_is_valid(false);
+  password_delegate_->set_is_valid(true);
+  username_delegate_->SetValue(string16());
+  password_delegate_->SetValue(string16());
+  listener->performInlineAutocomplete(ASCIIToUTF16("alice"), false, false);
+  // We are not autofilled.
+  EXPECT_EQ(string16(), username_delegate_->value());
+  EXPECT_FALSE(username_delegate_->IsAutofilled());
+  EXPECT_EQ(string16(), password_delegate_->value());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
+
+  // User enters a known login that validates ok, but password does not.
+  username_delegate_->set_is_valid(true);
+  password_delegate_->set_is_valid(false);
+  username_delegate_->SetValue(string16());
+  password_delegate_->SetValue(string16());
+  listener->performInlineAutocomplete(ASCIIToUTF16("alice"), false, false);
+  // We are autofilled.
+  EXPECT_EQ(username1_, username_delegate_->value());
+  EXPECT_TRUE(username_delegate_->IsAutofilled());
+  EXPECT_EQ(string16(), password_delegate_->value());
+  EXPECT_FALSE(password_delegate_->IsAutofilled());
 }
 
 }  // namespace

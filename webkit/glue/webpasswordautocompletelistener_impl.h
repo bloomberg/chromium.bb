@@ -29,6 +29,7 @@ class WebInputElementDelegate {
 
   // These are virtual to support unit testing.
   virtual bool IsEditable() const;
+  virtual bool IsValidValue(const string16& value);
   virtual void SetValue(const string16& value);
   virtual bool IsAutofilled() const;
   virtual void SetAutofilled(bool autofilled);
