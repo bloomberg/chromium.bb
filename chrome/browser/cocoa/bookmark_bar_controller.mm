@@ -528,10 +528,14 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // Redirect to our logic shared with BookmarkBarFolderController.
 - (IBAction)openBookmarkFolderFromButton:(id)sender {
-  DCHECK(sender != offTheSideButton_);
-  // Toggle presentation of bar folder menus.
-  showFolderMenus_ = !showFolderMenus_;
-  [folderTarget_ openBookmarkFolderFromButton:sender];
+  if (sender != offTheSideButton_) {
+    // Toggle presentation of bar folder menus.
+    showFolderMenus_ = !showFolderMenus_;
+    [folderTarget_ openBookmarkFolderFromButton:sender];
+  } else {
+    // Off-the-side requires special handling.
+    [self openOffTheSideFolderFromButton:sender];
+  }
 }
 
 // The button that sends this one is special; the "off the side"
