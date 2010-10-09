@@ -17,14 +17,14 @@ namespace {
 class ExtensionInfoMapTest : public testing::Test {
  public:
   ExtensionInfoMapTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        io_thread_(ChromeThread::IO, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
  private:
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
 };
 
 // Returns a barebones test Extension object with the given name.

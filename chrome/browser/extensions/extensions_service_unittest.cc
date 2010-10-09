@@ -248,8 +248,8 @@ class ExtensionTestingProfile : public TestingProfile {
   virtual ChromeAppCacheService* GetAppCacheService() {
     if (!appcache_service_) {
       appcache_service_ = new ChromeAppCacheService;
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(appcache_service_.get(),
                             &ChromeAppCacheService::InitializeOnIOThread,
                             GetPath(), IsOffTheRecord(),
@@ -275,17 +275,17 @@ class ExtensionTestingProfile : public TestingProfile {
 ExtensionsServiceTestBase::ExtensionsServiceTestBase()
     : total_successes_(0),
       loop_(MessageLoop::TYPE_IO),
-      ui_thread_(ChromeThread::UI, &loop_),
-      db_thread_(ChromeThread::DB, &loop_),
-      webkit_thread_(ChromeThread::WEBKIT, &loop_),
-      file_thread_(ChromeThread::FILE, &loop_),
-      io_thread_(ChromeThread::IO, &loop_) {
+      ui_thread_(BrowserThread::UI, &loop_),
+      db_thread_(BrowserThread::DB, &loop_),
+      webkit_thread_(BrowserThread::WEBKIT, &loop_),
+      file_thread_(BrowserThread::FILE, &loop_),
+      io_thread_(BrowserThread::IO, &loop_) {
 }
 
 ExtensionsServiceTestBase::~ExtensionsServiceTestBase() {
   // Drop our reference to ExtensionsService and TestingProfile, so that they
-  // can be destroyed while ChromeThreads and MessageLoop are still around (they
-  // are used in the destruction process).
+  // can be destroyed while BrowserThreads and MessageLoop are still around
+  // (they are used in the destruction process).
   service_ = NULL;
   profile_.reset(NULL);
   MessageLoop::current()->RunAllPending();
@@ -2524,8 +2524,8 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   ExtensionsReadyRecorder recorder;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   MessageLoop loop;
-  ChromeThread ui_thread(ChromeThread::UI, &loop);
-  ChromeThread file_thread(ChromeThread::FILE, &loop);
+  BrowserThread ui_thread(BrowserThread::UI, &loop);
+  BrowserThread file_thread(BrowserThread::FILE, &loop);
   scoped_ptr<CommandLine> command_line;
   scoped_refptr<ExtensionsService> service;
   FilePath install_dir = profile->GetPath()

@@ -44,8 +44,8 @@ class UserScriptMasterTest : public testing::Test,
 
     // UserScriptMaster posts tasks to the file thread so make the current
     // thread look like one.
-    file_thread_.reset(new ChromeThread(
-        ChromeThread::FILE, MessageLoop::current()));
+    file_thread_.reset(new BrowserThread(
+        BrowserThread::FILE, MessageLoop::current()));
   }
 
   virtual void TearDown() {
@@ -70,7 +70,7 @@ class UserScriptMasterTest : public testing::Test,
   // MessageLoop used in tests.
   MessageLoop message_loop_;
 
-  scoped_ptr<ChromeThread> file_thread_;
+  scoped_ptr<BrowserThread> file_thread_;
 
   // Directory containing user scripts.
   FilePath script_dir_;

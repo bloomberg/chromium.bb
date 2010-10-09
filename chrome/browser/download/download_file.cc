@@ -21,24 +21,24 @@ DownloadFile::DownloadFile(const DownloadCreateInfo* info,
       child_id_(info->child_id),
       request_id_(info->request_id),
       download_manager_(download_manager) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
 }
 
 DownloadFile::~DownloadFile() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
 void DownloadFile::DeleteCrDownload() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath crdownload = download_util::GetCrDownloadPath(full_path_);
   file_util::Delete(crdownload, false);
 }
 
 void DownloadFile::CancelDownloadRequest(ResourceDispatcherHost* rdh) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&download_util::CancelDownloadRequest,
                           rdh,
                           child_id_,
@@ -46,6 +46,6 @@ void DownloadFile::CancelDownloadRequest(ResourceDispatcherHost* rdh) {
 }
 
 DownloadManager* DownloadFile::GetDownloadManager() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return download_manager_.get();
 }

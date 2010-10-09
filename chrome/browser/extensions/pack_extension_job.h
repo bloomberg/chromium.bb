@@ -54,7 +54,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   void ReportSuccessOnClientThread();
   void ReportFailureOnClientThread(const std::string& error);
 
-  ChromeThread::ID client_thread_id_;
+  BrowserThread::ID client_thread_id_;
   Client* client_;
   FilePath root_directory_;
   FilePath key_file_;

@@ -60,7 +60,7 @@ struct DownloadSaveInfo;
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManager
     : public base::RefCountedThreadSafe<DownloadManager,
-                                        ChromeThread::DeleteOnUIThread>,
+                                        BrowserThread::DeleteOnUIThread>,
       public DownloadStatusUpdaterDelegate,
       public SelectFileDialog::Listener {
   // For testing.

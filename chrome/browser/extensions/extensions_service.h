@@ -98,7 +98,7 @@ class ExtensionUpdateService {
 // Manages installed and running Chromium extensions.
 class ExtensionsService
     : public base::RefCountedThreadSafe<ExtensionsService,
-                                        ChromeThread::DeleteOnUIThread>,
+                                        BrowserThread::DeleteOnUIThread>,
       public ExtensionUpdateService,
       public NotificationObserver {
  public:

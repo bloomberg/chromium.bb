@@ -23,9 +23,9 @@ class ImageLoadingTrackerTest : public testing::Test,
   ImageLoadingTrackerTest()
       : image_loaded_count_(0),
         quit_in_image_loaded_(false),
-        ui_thread_(ChromeThread::UI, &ui_loop_),
-        file_thread_(ChromeThread::FILE),
-        io_thread_(ChromeThread::IO) {
+        ui_thread_(BrowserThread::UI, &ui_loop_),
+        file_thread_(BrowserThread::FILE),
+        io_thread_(BrowserThread::IO) {
   }
 
   virtual void OnImageLoaded(SkBitmap* image, ExtensionResource resource,
@@ -92,9 +92,9 @@ class ImageLoadingTrackerTest : public testing::Test,
   int image_loaded_count_;
   bool quit_in_image_loaded_;
   MessageLoop ui_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
+  BrowserThread io_thread_;
 };
 
 // Tests asking ImageLoadingTracker to cache pushes the result to the Extension.

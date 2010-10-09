@@ -18,7 +18,7 @@ const char kTestData3[] = "Final line.";
 
 class BaseFileTest : public testing::Test {
  public:
-  BaseFileTest() : file_thread_(ChromeThread::FILE, &message_loop_) {
+  BaseFileTest() : file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -39,7 +39,7 @@ class BaseFileTest : public testing::Test {
       EXPECT_EQ(expected_data_, disk_data);
     }
 
-    // Make sure the mock ChromeThread outlives the BaseFile to satisfy
+    // Make sure the mock BrowserThread outlives the BaseFile to satisfy
     // thread checks inside it.
     base_file_.reset();
   }
@@ -67,7 +67,7 @@ class BaseFileTest : public testing::Test {
 
   // Mock file thread to satisfy debug checks in BaseFile.
   MessageLoop message_loop_;
-  ChromeThread file_thread_;
+  BrowserThread file_thread_;
 };
 
 // Test the most basic scenario: just create the object and do a sanity check

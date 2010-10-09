@@ -390,7 +390,7 @@ TEST_F(ExtensionMenuManagerTest, RemoveAll) {
 
 TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   MessageLoopForUI message_loop;
-  ChromeThread ui_thread(ChromeThread::UI, &message_loop);
+  BrowserThread ui_thread(BrowserThread::UI, &message_loop);
 
   MockTestingProfile profile;
 

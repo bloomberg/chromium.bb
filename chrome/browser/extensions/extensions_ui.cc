@@ -200,8 +200,8 @@ ExtensionsDOMHandler::IconLoader::IconLoader(ExtensionsDOMHandler* handler)
 
 void ExtensionsDOMHandler::IconLoader::LoadIcons(
     std::vector<ExtensionResource>* icons, DictionaryValue* json) {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
           &IconLoader::LoadIconsOnFileThread, icons, json));
 }
@@ -267,8 +267,8 @@ void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
     extension->SetString("icon", icon_url.spec());
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &IconLoader::ReportResultOnUIThread,
                         json_deleter.release()));
 }
@@ -922,8 +922,8 @@ ExtensionsUI::ExtensionsUI(TabContents* contents) : DOMUI(contents) {
   ExtensionsUIHTMLSource* html_source = new ExtensionsUIHTMLSource();
 
   // Set up the chrome://extensions/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

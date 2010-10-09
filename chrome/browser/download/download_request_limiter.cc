@@ -192,9 +192,9 @@ void DownloadRequestLimiter::CanDownloadOnIOThread(int render_process_host_id,
                                                    Callback* callback) {
   // This is invoked on the IO thread. Schedule the task to run on the UI
   // thread so that we can query UI state.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &DownloadRequestLimiter::CanDownload,
                         render_process_host_id, render_view_id, callback));
 }
@@ -233,7 +233,7 @@ DownloadRequestLimiter::TabDownloadState* DownloadRequestLimiter::
 void DownloadRequestLimiter::CanDownload(int render_process_host_id,
                                          int render_view_id,
                                          Callback* callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TabContents* originating_tab =
       tab_util::GetTabContentsByID(render_process_host_id, render_view_id);
@@ -296,14 +296,14 @@ void DownloadRequestLimiter::CanDownloadImpl(
 
 void DownloadRequestLimiter::ScheduleNotification(Callback* callback,
                                                   bool allow) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &DownloadRequestLimiter::NotifyCallback, callback, allow));
 }
 
 void DownloadRequestLimiter::NotifyCallback(Callback* callback, bool allow) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (allow)
     callback->ContinueDownload();
   else

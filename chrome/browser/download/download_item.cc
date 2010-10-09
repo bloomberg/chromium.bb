@@ -28,7 +28,7 @@ namespace {
 const int kUpdateTimeMs = 1000;
 
 void DeleteDownloadedFile(const FilePath& path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Make sure we only delete files.
   if (!file_util::DirectoryExists(path))
@@ -201,8 +201,8 @@ void DownloadItem::OpenDownload() {
     // Mac OS X requires opening downloads on the UI thread.
     platform_util::OpenItem(full_path());
 #else
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableFunction(&platform_util::OpenItem, full_path()));
 #endif
   }
@@ -213,8 +213,8 @@ void DownloadItem::ShowDownloadInShell() {
   // Mac needs to run this operation on the UI thread.
   platform_util::ShowItemInFolder(full_path());
 #else
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&platform_util::ShowItemInFolder,
                           full_path()));
 #endif
@@ -307,8 +307,8 @@ void DownloadItem::Remove(bool delete_on_disk) {
   Cancel(true);
   state_ = REMOVING;
   if (delete_on_disk) {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableFunction(&DeleteDownloadedFile, full_path_));
   }
   download_manager_->RemoveDownload(db_handle_);

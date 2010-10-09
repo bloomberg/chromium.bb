@@ -300,7 +300,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Setup and start the updater.
     MessageLoop message_loop;
-    ChromeThread io_thread(ChromeThread::IO);
+    BrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -352,7 +352,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     // Setup and start the updater.
     MessageLoop message_loop;
-    ChromeThread io_thread(ChromeThread::IO);
+    BrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -471,10 +471,10 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestMultipleManifestDownloading() {
     MessageLoop ui_loop;
-    ChromeThread ui_thread(ChromeThread::UI, &ui_loop);
-    ChromeThread file_thread(ChromeThread::FILE);
+    BrowserThread ui_thread(BrowserThread::UI, &ui_loop);
+    BrowserThread file_thread(BrowserThread::FILE);
     file_thread.Start();
-    ChromeThread io_thread(ChromeThread::IO);
+    BrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -535,10 +535,10 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestSingleExtensionDownloading(bool pending) {
     MessageLoop ui_loop;
-    ChromeThread ui_thread(ChromeThread::UI, &ui_loop);
-    ChromeThread file_thread(ChromeThread::FILE);
+    BrowserThread ui_thread(BrowserThread::UI, &ui_loop);
+    BrowserThread file_thread(BrowserThread::FILE);
     file_thread.Start();
-    ChromeThread io_thread(ChromeThread::IO);
+    BrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -600,8 +600,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestBlacklistDownloading() {
     MessageLoop message_loop;
-    ChromeThread ui_thread(ChromeThread::UI, &message_loop);
-    ChromeThread io_thread(ChromeThread::IO);
+    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    BrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;
@@ -646,9 +646,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
   static void TestMultipleExtensionDownloading() {
     MessageLoopForUI message_loop;
-    ChromeThread ui_thread(ChromeThread::UI, &message_loop);
-    ChromeThread file_thread(ChromeThread::FILE, &message_loop);
-    ChromeThread io_thread(ChromeThread::IO);
+    BrowserThread ui_thread(BrowserThread::UI, &message_loop);
+    BrowserThread file_thread(BrowserThread::FILE, &message_loop);
+    BrowserThread io_thread(BrowserThread::IO);
     io_thread.Start();
 
     TestURLFetcherFactory factory;

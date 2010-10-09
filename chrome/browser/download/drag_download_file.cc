@@ -95,9 +95,9 @@ void DragDownloadFile::Stop() {
 void DragDownloadFile::InitiateDownload() {
 #if defined(OS_WIN)
   // DownloadManager could only be invoked from the UI thread.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &DragDownloadFile::InitiateDownload));
     return;
@@ -193,7 +193,7 @@ void DragDownloadFile::AssertCurrentlyOnDragThread() {
 void DragDownloadFile::AssertCurrentlyOnUIThread() {
   // Only do the check on Windows where two threads are involved.
 #if defined(OS_WIN)
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #endif
 }
 

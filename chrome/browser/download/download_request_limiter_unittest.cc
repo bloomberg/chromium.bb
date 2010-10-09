@@ -13,7 +13,8 @@ class DownloadRequestLimiterTest
     : public RenderViewHostTestHarness,
       public DownloadRequestLimiter::Callback {
  public:
-  DownloadRequestLimiterTest() : io_thread_(ChromeThread::IO, &message_loop_) {}
+  DownloadRequestLimiterTest() : io_thread_(BrowserThread::IO, &message_loop_) {
+  }
 
   virtual void SetUp() {
     RenderViewHostTestHarness::SetUp();
@@ -85,7 +86,7 @@ class DownloadRequestLimiterTest
   // Number of times ShouldAllowDownload was invoked.
   int ask_allow_count_;
 
-  ChromeThread io_thread_;
+  BrowserThread io_thread_;
 };
 
 TEST_F(DownloadRequestLimiterTest, Allow) {

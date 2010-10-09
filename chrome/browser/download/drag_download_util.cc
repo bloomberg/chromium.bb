@@ -92,14 +92,14 @@ void PromiseFileFinalizer::Cleanup() {
 }
 
 void PromiseFileFinalizer::OnDownloadCompleted(const FilePath& file_path) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
 }
 
 void PromiseFileFinalizer::OnDownloadAborted() {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
 }
 

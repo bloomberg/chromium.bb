@@ -118,7 +118,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
 
     // The message loop to call our master back on.
     // Expected to always outlive us.
-    ChromeThread::ID master_thread_id_;
+    BrowserThread::ID master_thread_id_;
 
     DISALLOW_COPY_AND_ASSIGN(ScriptReloader);
   };

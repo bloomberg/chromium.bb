@@ -167,8 +167,8 @@ bool GetCookieFunction::RunImpl() {
   DCHECK(store_context && !store_id_.empty());
   store_context_ = store_context;
 
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &GetCookieFunction::GetCookieOnIOThread));
   DCHECK(rv);
 
@@ -177,19 +177,19 @@ bool GetCookieFunction::RunImpl() {
 }
 
 void GetCookieFunction::GetCookieOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store = store_context_->GetCookieStore();
   cookie_list_ =
       extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
 
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &GetCookieFunction::RespondOnUIThread));
   DCHECK(rv);
 }
 
 void GetCookieFunction::RespondOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   net::CookieMonster::CookieList::iterator it;
   for (it = cookie_list_.begin(); it != cookie_list_.end(); ++it) {
@@ -229,8 +229,8 @@ bool GetAllCookiesFunction::RunImpl() {
   DCHECK(store_context);
   store_context_ = store_context;
 
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &GetAllCookiesFunction::GetAllCookiesOnIOThread));
   DCHECK(rv);
 
@@ -239,19 +239,19 @@ bool GetAllCookiesFunction::RunImpl() {
 }
 
 void GetAllCookiesFunction::GetAllCookiesOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store = store_context_->GetCookieStore();
   cookie_list_ =
       extension_cookies_helpers::GetCookieListFromStore(cookie_store, url_);
 
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &GetAllCookiesFunction::RespondOnUIThread));
   DCHECK(rv);
 }
 
 void GetAllCookiesFunction::RespondOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const Extension* extension = GetExtension();
   if (extension) {
@@ -326,8 +326,8 @@ bool SetCookieFunction::RunImpl() {
   DCHECK(store_context);
   store_context_ = store_context;
 
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &SetCookieFunction::SetCookieOnIOThread));
   DCHECK(rv);
 
@@ -336,21 +336,21 @@ bool SetCookieFunction::RunImpl() {
 }
 
 void SetCookieFunction::SetCookieOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieMonster* cookie_monster =
       store_context_->GetCookieStore()->GetCookieMonster();
   success_ = cookie_monster->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, expiration_time_,
       secure_, http_only_);
 
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &SetCookieFunction::RespondOnUIThread));
   DCHECK(rv);
 }
 
 void SetCookieFunction::RespondOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!success_) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kCookieSetFailedError, name_);
@@ -407,8 +407,8 @@ bool RemoveCookieFunction::RunImpl() {
   // We don't bother to synchronously wait for the result here, because
   // CookieMonster is only ever accessed on the IO thread, so any other accesses
   // should happen after this.
-  bool rv = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  bool rv = BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new RemoveCookieTask(url, name, store_context));
   DCHECK(rv);
 

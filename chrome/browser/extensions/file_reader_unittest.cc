@@ -18,12 +18,12 @@ namespace {
 
 class FileReaderTest : public testing::Test {
  public:
-  FileReaderTest() : file_thread_(ChromeThread::FILE) {
+  FileReaderTest() : file_thread_(BrowserThread::FILE) {
     file_thread_.Start();
   }
  private:
   MessageLoop message_loop_;
-  ChromeThread file_thread_;
+  BrowserThread file_thread_;
 };
 
 class Receiver {

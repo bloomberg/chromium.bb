@@ -10,7 +10,7 @@
 namespace {
 
 static void CheckOnValidThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 }  // namespace

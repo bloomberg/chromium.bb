@@ -35,7 +35,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     // need to wait for any pending I/O to complete before creating a new
     // PrefService.
     MessageLoop file_loop;
-    ChromeThread file_thread(ChromeThread::FILE, &file_loop);
+    BrowserThread file_thread(BrowserThread::FILE, &file_loop);
     pref_service_->SavePersistentPrefs();
     file_loop.RunAllPending();
   }

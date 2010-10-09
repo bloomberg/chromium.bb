@@ -11,12 +11,12 @@
 SaveFile::SaveFile(const SaveFileCreateInfo* info)
     : BaseFile(FilePath(), info->url, GURL(), 0, linked_ptr<net::FileStream>()),
       info_(info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   DCHECK(info);
   DCHECK(info->path.empty());
 }
 
 SaveFile::~SaveFile() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }

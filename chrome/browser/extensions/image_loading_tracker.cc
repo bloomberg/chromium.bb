@@ -26,8 +26,8 @@ class ImageLoadingTracker::ImageLoader
  public:
   explicit ImageLoader(ImageLoadingTracker* tracker)
       : tracker_(tracker) {
-    CHECK(ChromeThread::GetCurrentThreadIdentifier(&callback_thread_id_));
-    DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
   }
 
   // Lets this class know that the tracker is no longer interested in the
@@ -40,9 +40,9 @@ class ImageLoadingTracker::ImageLoader
   void LoadImage(const ExtensionResource& resource,
                  const gfx::Size& max_size,
                  int id) {
-    DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &ImageLoader::LoadOnFileThread, resource,
                           max_size, id));
   }
@@ -50,7 +50,7 @@ class ImageLoadingTracker::ImageLoader
   void LoadOnFileThread(ExtensionResource resource,
                         const gfx::Size& max_size,
                         int id) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
     // Read the file from disk.
     std::string file_contents;
@@ -86,9 +86,9 @@ class ImageLoadingTracker::ImageLoader
 
   void ReportBack(SkBitmap* image, const ExtensionResource& resource,
                   const gfx::Size& original_size, int id) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-    ChromeThread::PostTask(
+    BrowserThread::PostTask(
         callback_thread_id_, FROM_HERE,
         NewRunnableMethod(this, &ImageLoader::ReportOnUIThread,
                           image, resource, original_size, id));
@@ -96,7 +96,7 @@ class ImageLoadingTracker::ImageLoader
 
   void ReportOnUIThread(SkBitmap* image, ExtensionResource resource,
                         const gfx::Size& original_size, int id) {
-    DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
     if (tracker_)
       tracker_->OnImageLoaded(image, resource, original_size, id);
@@ -110,7 +110,7 @@ class ImageLoadingTracker::ImageLoader
   ImageLoadingTracker* tracker_;
 
   // The thread that we need to call back on to report that we are done.
-  ChromeThread::ID callback_thread_id_;
+  BrowserThread::ID callback_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageLoader);
 };

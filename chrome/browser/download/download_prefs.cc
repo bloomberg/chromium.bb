@@ -53,8 +53,8 @@ void DownloadPrefs::RegisterUserPrefs(PrefService* prefs) {
 
 #if defined(OS_CHROMEOS)
   // Ensure that the download directory specified in the preferences exists.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&file_util::CreateDirectory, default_download_path));
 #endif  // defined(OS_CHROMEOS)
 

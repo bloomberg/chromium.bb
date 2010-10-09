@@ -379,8 +379,8 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   // ChromeURLDataManager.
   if (extension->HasHostPermission(GURL(chrome::kChromeUIFavIconURL))) {
     DOMUIFavIconSource* favicon_source = new DOMUIFavIconSource(profile_);
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                           &ChromeURLDataManager::AddDataSource,
                           make_scoped_refptr(favicon_source)));

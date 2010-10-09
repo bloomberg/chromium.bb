@@ -37,7 +37,7 @@ class DownloadManagerTest : public testing::Test {
   DownloadManagerTest()
       : profile_(new TestingProfile()),
         download_manager_(new MockDownloadManager(&download_status_updater_)),
-        ui_thread_(ChromeThread::UI, &message_loop_) {
+        ui_thread_(BrowserThread::UI, &message_loop_) {
     download_manager_->Init(profile_.get());
   }
 
@@ -60,7 +60,7 @@ class DownloadManagerTest : public testing::Test {
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<DownloadFileManager> file_manager_;
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 
   DownloadFileManager* file_manager() {
     if (!file_manager_) {
@@ -213,7 +213,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
   using ::testing::Invoke;
   using ::testing::Return;
 
-  ChromeThread file_thread(ChromeThread::FILE, &message_loop_);
+  BrowserThread file_thread(BrowserThread::FILE, &message_loop_);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDownloadRenameCases); ++i) {
     // |info| will be destroyed in download_manager_.

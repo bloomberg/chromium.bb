@@ -45,7 +45,7 @@ static bool GetDeclarationValue(const base::StringPiece& line,
 
 UserScriptMaster::ScriptReloader::ScriptReloader(UserScriptMaster* master)
     : master_(master) {
-  CHECK(ChromeThread::GetCurrentThreadIdentifier(&master_thread_id_));
+  CHECK(BrowserThread::GetCurrentThreadIdentifier(&master_thread_id_));
 }
 
 // static
@@ -137,8 +137,8 @@ void UserScriptMaster::ScriptReloader::StartScan(
   // Add a reference to ourselves to keep ourselves alive while we're running.
   // Balanced by NotifyMaster().
   AddRef();
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &UserScriptMaster::ScriptReloader::RunScan, script_dir,
           lone_scripts));
@@ -287,7 +287,7 @@ void UserScriptMaster::ScriptReloader::RunScan(
   // Scripts now contains list of up-to-date scripts. Load the content in the
   // shared memory and let the master know it's ready. We need to post the task
   // back even if no scripts ware found to balance the AddRef/Release calls
-  ChromeThread::PostTask(
+  BrowserThread::PostTask(
       master_thread_id_, FROM_HERE,
       NewRunnableMethod(
           this, &ScriptReloader::NotifyMaster, Serialize(scripts)));

@@ -49,7 +49,7 @@ struct WhitelistedInstallData {
 
 // static
 void CrxInstaller::SetWhitelistedInstallId(const std::string& id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Singleton<WhitelistedInstallData>::get()->ids.push_back(id);
 }
 
@@ -92,19 +92,19 @@ CrxInstaller::~CrxInstaller() {
   // destructor might be called on any thread, so we post a task to the file
   // thread to make sure the delete happens there.
   if (!temp_dir_.value().empty()) {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableFunction(&DeleteFileHelper, temp_dir_, true));
   }
 
   if (delete_source_) {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableFunction(&DeleteFileHelper, source_file_, false));
   }
 
   // Make sure the UI is deleted on the ui thread.
-  ChromeThread::DeleteSoon(ChromeThread::UI, FROM_HERE, client_);
+  BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, client_);
   client_ = NULL;
 }
 
@@ -121,8 +121,8 @@ void CrxInstaller::InstallCrx(const FilePath& source_file) {
           g_browser_process->resource_dispatcher_host(),
           this));
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           unpacker.get(), &SandboxedExtensionUnpacker::Start));
 }
@@ -134,8 +134,8 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
   source_file_ = source_file;
   original_url_ = original_url;
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &CrxInstaller::ConvertUserScriptOnFileThread));
 }
 
@@ -227,14 +227,14 @@ bool CrxInstaller::AllowInstall(Extension* extension, std::string* error) {
 }
 
 void CrxInstaller::OnUnpackFailure(const std::string& error_message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   ReportFailureFromFileThread(error_message);
 }
 
 void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
                                    const FilePath& extension_dir,
                                    Extension* extension) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Note: We take ownership of |extension| and |temp_dir|.
   extension_.reset(extension);
@@ -255,13 +255,13 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
                           &install_icon_);
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &CrxInstaller::ConfirmInstall));
 }
 
 void CrxInstaller::ConfirmInstall() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (frontend_->extension_prefs()->IsExtensionBlacklisted(extension_->id())) {
     LOG(INFO) << "This extension: " << extension_->id()
       << " is blacklisted. Install failed.";
@@ -294,16 +294,16 @@ void CrxInstaller::ConfirmInstall() {
     AddRef();  // Balanced in Proceed() and Abort().
     client_->ConfirmInstall(this, extension_.get());
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &CrxInstaller::CompleteInstall));
   }
   return;
 }
 
 void CrxInstaller::InstallUIProceed() {
-  ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &CrxInstaller::CompleteInstall));
 
   Release();  // balanced in ConfirmInstall().
@@ -322,7 +322,7 @@ void CrxInstaller::InstallUIAbort() {
 }
 
 void CrxInstaller::CompleteInstall() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!current_version_.empty()) {
     scoped_ptr<Version> current_version(
@@ -360,14 +360,14 @@ void CrxInstaller::CompleteInstall() {
 }
 
 void CrxInstaller::ReportFailureFromFileThread(const std::string& error) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &CrxInstaller::ReportFailureFromUIThread, error));
 }
 
 void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::EXTENSION_INSTALL_ERROR,
@@ -386,14 +386,14 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
 }
 
 void CrxInstaller::ReportSuccessFromFileThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &CrxInstaller::ReportSuccessFromUIThread));
 }
 
 void CrxInstaller::ReportSuccessFromUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If there is a client, tell the client about installation.
   if (client_)

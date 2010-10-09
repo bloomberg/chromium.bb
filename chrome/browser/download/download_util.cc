@@ -230,7 +230,7 @@ void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name) {
 void OpenChromeExtension(Profile* profile,
                          DownloadManager* download_manager,
                          const DownloadItem& download_item) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download_item.is_extension_install());
 
   // We don't support extensions in OTR mode.
@@ -683,7 +683,7 @@ void DownloadUrl(
     int render_process_host_id,
     int render_view_id,
     URLRequestContextGetter* request_context_getter) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   URLRequestContext* context = request_context_getter->GetURLRequestContext();
   context->set_referrer_charset(referrer_charset);
@@ -700,7 +700,7 @@ void DownloadUrl(
 void CancelDownloadRequest(ResourceDispatcherHost* rdh,
                            int render_process_id,
                            int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   rdh->CancelRequest(render_process_id, request_id, false);
 }
 

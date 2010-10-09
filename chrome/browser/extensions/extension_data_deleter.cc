@@ -28,25 +28,25 @@ ExtensionDataDeleter::~ExtensionDataDeleter() {
 }
 
 void ExtensionDataDeleter::StartDeleting() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &ExtensionDataDeleter::DeleteCookiesOnIOThread));
 
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
       NewRunnableMethod(
           this, &ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread));
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ExtensionDataDeleter::DeleteDatabaseOnFileThread));
 }
 
 void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieMonster* cookie_monster =
       extension_request_context_->GetCookieStore()->GetCookieMonster();
   if (cookie_monster)
@@ -54,13 +54,13 @@ void ExtensionDataDeleter::DeleteCookiesOnIOThread() {
 }
 
 void ExtensionDataDeleter::DeleteDatabaseOnFileThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int rv = database_tracker_->DeleteDataForOrigin(origin_id_, NULL);
   DCHECK(rv == net::OK || rv == net::ERR_IO_PENDING);
 }
 
 void ExtensionDataDeleter::DeleteLocalStorageOnWebkitThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   webkit_context_->dom_storage_context()->DeleteLocalStorageForOrigin(
       origin_id_);
 }

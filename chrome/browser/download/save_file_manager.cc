@@ -41,14 +41,14 @@ SaveFileManager::~SaveFileManager() {
 // Called during the browser shutdown process to clean up any state (open files,
 // timers) that live on the saving thread (file thread).
 void SaveFileManager::Shutdown() {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SaveFileManager::OnShutdown));
 }
 
 // Stop file thread operations.
 void SaveFileManager::OnShutdown() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   STLDeleteValues(&save_file_map_);
 }
 
@@ -64,14 +64,14 @@ SaveFile* SaveFileManager::LookupSaveFile(int save_id) {
 // file a request from the file thread to the IO thread to generate a
 // unique save ID.
 int SaveFileManager::GetNextId() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return next_id_++;
 }
 
 void SaveFileManager::RegisterStartingRequest(const GURL& save_url,
                                               SavePackage* save_package) {
   // Make sure it runs in the UI thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   int tab_id = save_package->tab_id();
 
   // Register this starting request.
@@ -84,7 +84,7 @@ void SaveFileManager::RegisterStartingRequest(const GURL& save_url,
 SavePackage* SaveFileManager::UnregisterStartingRequest(
     const GURL& save_url, int tab_id) {
   // Make sure it runs in UI thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TabToStartingRequestsMap::iterator it = tab_starting_requests_.find(tab_id);
   if (it != tab_starting_requests_.end()) {
@@ -107,7 +107,7 @@ SavePackage* SaveFileManager::UnregisterStartingRequest(
 
 // Look up a SavePackage according to a save id.
 SavePackage* SaveFileManager::LookupPackage(int save_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SavePackageMap::iterator it = packages_.find(save_id);
   if (it != packages_.end())
     return it->second;
@@ -123,15 +123,15 @@ void SaveFileManager::SaveURL(const GURL& url,
                               const FilePath& file_full_path,
                               URLRequestContextGetter* request_context_getter,
                               SavePackage* save_package) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Register a saving job.
   RegisterStartingRequest(url, save_package);
   if (save_source == SaveFileCreateInfo::SAVE_FILE_FROM_NET) {
     DCHECK(url.is_valid());
 
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this,
                           &SaveFileManager::OnSaveURL,
                           url,
@@ -150,8 +150,8 @@ void SaveFileManager::SaveURL(const GURL& url,
 
     // Since the data will come from render process, so we need to start
     // this kind of save job by ourself.
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             this, &SaveFileManager::OnRequireSaveJobFromOtherSource, info));
   }
@@ -166,7 +166,7 @@ void SaveFileManager::SaveURL(const GURL& url,
 void SaveFileManager::RemoveSaveFile(int save_id, const GURL& save_url,
                                      SavePackage* package) {
   DCHECK(package);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // A save page job(SavePackage) can only have one manager,
   // so remove it if it exists.
   if (save_id == -1) {
@@ -196,9 +196,9 @@ SavePackage* SaveFileManager::GetSavePackageFromRenderIds(
 // Utility function for deleting specified file.
 void SaveFileManager::DeleteDirectoryOrFile(const FilePath& full_path,
                                             bool is_dir) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &SaveFileManager::OnDeleteDirectoryOrFile, full_path, is_dir));
 }
@@ -206,8 +206,8 @@ void SaveFileManager::DeleteDirectoryOrFile(const FilePath& full_path,
 void SaveFileManager::SendCancelRequest(int save_id) {
   // Cancel the request which has specific save id.
   DCHECK_GT(save_id, -1);
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SaveFileManager::CancelSave, save_id));
 }
 
@@ -217,7 +217,7 @@ void SaveFileManager::SendCancelRequest(int save_id) {
 // to create a SaveFile which will hold and finally destroy |info|. It will
 // then passes |info| to the UI thread for reporting saving status.
 void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(info);
   SaveFile* save_file = new SaveFile(info);
 
@@ -228,8 +228,8 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
   save_file_map_[info->save_id] = save_file;
   info->path = save_file->full_path();
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &SaveFileManager::OnStartSave, info));
 }
 
@@ -240,12 +240,12 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
 void SaveFileManager::UpdateSaveProgress(int save_id,
                                          net::IOBuffer* data,
                                          int data_len) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFile* save_file = LookupSaveFile(save_id);
   if (save_file) {
     bool write_success = save_file->AppendDataToFile(data->data(), data_len);
-    ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &SaveFileManager::OnUpdateSaveProgress, save_file->save_id(),
             save_file->bytes_so_far(), write_success));
@@ -263,12 +263,12 @@ void SaveFileManager::SaveFinished(int save_id,
                                    GURL save_url,
                                    int render_process_id,
                                    bool is_success) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFileMap::iterator it = save_file_map_.find(save_id);
   if (it != save_file_map_.end()) {
     SaveFile* save_file = it->second;
-    ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &SaveFileManager::OnSaveFinished, save_id,
             save_file->bytes_so_far(), is_success));
@@ -277,8 +277,8 @@ void SaveFileManager::SaveFinished(int save_id,
   } else if (save_id == -1) {
     // Before saving started, we got error. We still call finish process.
     DCHECK(!save_url.is_empty());
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this, &SaveFileManager::OnErrorFinished, save_url,
             render_process_id));
@@ -288,7 +288,7 @@ void SaveFileManager::SaveFinished(int save_id,
 // Notifications sent from the file thread and run on the UI thread.
 
 void SaveFileManager::OnStartSave(const SaveFileCreateInfo* info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SavePackage* save_package =
       GetSavePackageFromRenderIds(info->render_process_id,
                                   info->render_view_id);
@@ -322,7 +322,7 @@ void SaveFileManager::OnStartSave(const SaveFileCreateInfo* info) {
 
 void SaveFileManager::OnUpdateSaveProgress(int save_id, int64 bytes_so_far,
                                            bool write_success) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SavePackage* package = LookupPackage(save_id);
   if (package)
     package->UpdateSaveProgress(save_id, bytes_so_far, write_success);
@@ -333,14 +333,14 @@ void SaveFileManager::OnUpdateSaveProgress(int save_id, int64 bytes_so_far,
 void SaveFileManager::OnSaveFinished(int save_id,
                                      int64 bytes_so_far,
                                      bool is_success) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SavePackage* package = LookupPackage(save_id);
   if (package)
     package->SaveFinished(save_id, bytes_so_far, is_success);
 }
 
 void SaveFileManager::OnErrorFinished(GURL save_url, int tab_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SavePackage* save_package = UnregisterStartingRequest(save_url, tab_id);
   if (save_package)
     save_package->SaveFailed(save_url);
@@ -354,7 +354,7 @@ void SaveFileManager::OnSaveURL(
     int render_process_host_id,
     int render_view_id,
     URLRequestContextGetter* request_context_getter) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   URLRequestContext* context = request_context_getter->GetURLRequestContext();
   resource_dispatcher_host_->BeginSaveFile(url,
                                            referrer,
@@ -365,19 +365,19 @@ void SaveFileManager::OnSaveURL(
 
 void SaveFileManager::OnRequireSaveJobFromOtherSource(
     SaveFileCreateInfo* info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(info->save_id, -1);
   // Generate a unique save id.
   info->save_id = GetNextId();
   // Start real saving action.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SaveFileManager::StartSave, info));
 }
 
 void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,
                                                int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   resource_dispatcher_host_->CancelRequest(render_process_id,
                                            request_id,
                                            false);
@@ -391,7 +391,7 @@ void SaveFileManager::ExecuteCancelSaveRequest(int render_process_id,
 // sent from the UI thread, the saving job may have already completed and
 // won't exist in our map.
 void SaveFileManager::CancelSave(int save_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFileMap::iterator it = save_file_map_.find(save_id);
   if (it != save_file_map_.end()) {
     SaveFile* save_file = it->second;
@@ -400,8 +400,8 @@ void SaveFileManager::CancelSave(int save_id) {
     // message to IO thread. If the data comes from other sources, just
     // ignore the cancel message.
     if (save_file->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_NET) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               this, &SaveFileManager::ExecuteCancelSaveRequest,
               save_file->render_process_id(), save_file->request_id()));
@@ -428,7 +428,7 @@ void SaveFileManager::CancelSave(int save_id) {
 void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
                                     int save_id,
                                     int render_process_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFile* save_file = LookupSaveFile(save_id);
   if (!save_file)
     return;
@@ -458,7 +458,7 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
 
 void SaveFileManager::OnDeleteDirectoryOrFile(const FilePath& full_path,
                                               bool is_dir) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!full_path.empty());
 
   file_util::Delete(full_path, is_dir);
@@ -468,7 +468,7 @@ void SaveFileManager::OnDeleteDirectoryOrFile(const FilePath& full_path,
 // We run on this thread to avoid blocking the UI with slow Shell operations.
 #if !defined(OS_MACOSX)
 void SaveFileManager::OnShowSavedFileInShell(const FilePath full_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   platform_util::ShowItemInFolder(full_path);
 }
 #endif
@@ -479,7 +479,7 @@ void SaveFileManager::RenameAllFiles(
     int render_process_id,
     int render_view_id,
     int save_package_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!resource_dir.empty() && !file_util::PathExists(resource_dir))
     file_util::CreateDirectory(resource_dir);
@@ -496,8 +496,8 @@ void SaveFileManager::RenameAllFiles(
     }
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &SaveFileManager::OnFinishSavePageJob, render_process_id,
           render_view_id, save_package_id));
@@ -506,7 +506,7 @@ void SaveFileManager::RenameAllFiles(
 void SaveFileManager::OnFinishSavePageJob(int render_process_id,
                                           int render_view_id,
                                           int save_package_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   SavePackage* save_package =
       GetSavePackageFromRenderIds(render_process_id, render_view_id);
@@ -517,7 +517,7 @@ void SaveFileManager::OnFinishSavePageJob(int render_process_id,
 
 void SaveFileManager::RemoveSavedFileFromFileMap(
     const SaveIDList& save_ids) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   for (SaveIDList::const_iterator i = save_ids.begin();
       i != save_ids.end(); ++i) {

@@ -145,7 +145,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   FilePath temp_path_;
 
   // Our client's thread. This is the thread we respond on.
-  ChromeThread::ID thread_identifier_;
+  BrowserThread::ID thread_identifier_;
 
   // ResourceDispatcherHost to pass to the utility process.
   ResourceDispatcherHost* rdh_;

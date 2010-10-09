@@ -29,18 +29,18 @@ BaseFile::BaseFile(const FilePath& full_path,
       file_stream_(file_stream),
       bytes_so_far_(received_bytes),
       power_save_blocker_(true) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 }
 
 BaseFile::~BaseFile() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (in_progress())
     Cancel();
   Close();
 }
 
 bool BaseFile::Initialize() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!full_path_.empty() ||
       download_util::CreateTemporaryFileForDownload(&full_path_))
     return Open();
@@ -48,7 +48,7 @@ bool BaseFile::Initialize() {
 }
 
 bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!file_stream_.get())
     return false;
@@ -65,7 +65,7 @@ bool BaseFile::AppendDataToFile(const char* data, size_t data_len) {
 }
 
 bool BaseFile::Rename(const FilePath& new_path, bool is_final_rename) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Save the information whether the download is in progress because
   // it will be overwritten by closing the file.
@@ -129,19 +129,19 @@ bool BaseFile::Rename(const FilePath& new_path, bool is_final_rename) {
 }
 
 void BaseFile::Cancel() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Close();
   if (!full_path_.empty())
     file_util::Delete(full_path_, false);
 }
 
 void BaseFile::Finish() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Close();
 }
 
 void BaseFile::AnnotateWithSourceInformation() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 #if defined(OS_WIN)
   // Sets the Zone to tell Windows that this file comes from the internet.
   // We ignore the return value because a failure is not fatal.
@@ -155,7 +155,7 @@ void BaseFile::AnnotateWithSourceInformation() {
 }
 
 bool BaseFile::Open() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!full_path_.empty());
 
   // Create a new file steram if it is not provided.
@@ -183,7 +183,7 @@ bool BaseFile::Open() {
 }
 
 void BaseFile::Close() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (file_stream_.get()) {
 #if defined(OS_CHROMEOS)
     // Currently we don't really care about the return value, since if it fails

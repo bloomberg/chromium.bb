@@ -24,7 +24,7 @@ class WebKitContext;
 // ExtensionsService::ClearExtensionData() upon uninstalling an extension.
 class ExtensionDataDeleter
   : public base::RefCountedThreadSafe<ExtensionDataDeleter,
-                                      ChromeThread::DeleteOnUIThread> {
+                                      BrowserThread::DeleteOnUIThread> {
  public:
   ExtensionDataDeleter(Profile* profile, const GURL& extension_url);
   ~ExtensionDataDeleter();

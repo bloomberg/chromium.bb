@@ -43,11 +43,11 @@ class ExtensionsServiceTestBase : public testing::Test {
   scoped_refptr<ExtensionsService> service_;
   size_t total_successes_;
   MessageLoop loop_;
-  ChromeThread ui_thread_;
-  ChromeThread db_thread_;
-  ChromeThread webkit_thread_;
-  ChromeThread file_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread db_thread_;
+  BrowserThread webkit_thread_;
+  BrowserThread file_thread_;
+  BrowserThread io_thread_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_UNITTEST_H_

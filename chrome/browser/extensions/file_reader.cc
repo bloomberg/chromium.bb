@@ -17,8 +17,8 @@ FileReader::FileReader(const ExtensionResource& resource, Callback* callback)
 }
 
 void FileReader::Start() {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &FileReader::ReadFileOnBackgroundThread));
 }
 

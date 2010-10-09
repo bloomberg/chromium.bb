@@ -202,13 +202,13 @@ class CreateDownloadDirectoryTask : public Task {
       if (!file_util::DirectoryExists(default_download_dir_))
         file_util::CreateDirectory(default_download_dir_);
 
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(save_package_,
               &SavePackage::ContinueGetSaveInfo,
               default_download_dir_));
     } else {
       // If it does exist, use the default save dir param.
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(save_package_,
               &SavePackage::ContinueGetSaveInfo,
               default_save_file_dir_));
@@ -572,8 +572,8 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
   // If the save source is from file system, inform SaveFileManager to copy
   // corresponding file to the file path which this SaveItem specifies.
   if (info->save_source == SaveFileCreateInfo::SAVE_FILE_FROM_FILE) {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(file_manager_,
                           &SaveFileManager::SaveLocalFile,
                           save_item->url(),
@@ -679,8 +679,8 @@ void SavePackage::Stop() {
       it != saved_failed_items_.end(); ++it)
     save_ids.push_back(it->second->save_id());
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(file_manager_,
                         &SaveFileManager::RemoveSavedFileFromFileMap,
                         save_ids));
@@ -709,8 +709,8 @@ void SavePackage::CheckFinish() {
     final_names.push_back(std::make_pair(it->first,
                                          it->second->full_path()));
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(file_manager_,
                         &SaveFileManager::RenameAllFiles,
                         final_names,
@@ -736,8 +736,8 @@ void SavePackage::Finish() {
        it != saved_failed_items_.end(); ++it)
     save_ids.push_back(it->second->save_id());
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(file_manager_,
                         &SaveFileManager::RemoveSavedFileFromFileMap,
                         save_ids));
@@ -836,8 +836,8 @@ void SavePackage::SaveCanceled(SaveItem* save_item) {
                                 save_item->url(),
                                 this);
   if (save_item->save_id() != -1)
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(file_manager_,
                           &SaveFileManager::CancelSave,
                           save_item->save_id()));
@@ -879,13 +879,13 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
 void SavePackage::ShowDownloadInShell() {
   DCHECK(file_manager_);
   DCHECK(finished_ && !canceled() && !saved_main_file_path_.empty());
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(OS_MACOSX)
   // Mac OS X requires opening downloads on the UI thread.
   platform_util::ShowItemInFolder(saved_main_file_path_);
 #else
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(file_manager_,
                         &SaveFileManager::OnShowSavedFileInShell,
                         saved_main_file_path_));
@@ -1005,8 +1005,8 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
   if (flag == WebPageSerializerClient::AllFramesAreFinished) {
     for (SaveUrlItemMap::iterator it = in_progress_items_.begin();
          it != in_progress_items_.end(); ++it) {
-      ChromeThread::PostTask(
-          ChromeThread::FILE, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
           NewRunnableMethod(file_manager_,
                             &SaveFileManager::SaveFinished,
                             it->second->save_id(),
@@ -1030,8 +1030,8 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
     memcpy(new_data->data(), data.data(), data.size());
 
     // Call write file functionality in file thread.
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(file_manager_,
                           &SaveFileManager::UpdateSaveProgress,
                           save_item->save_id(),
@@ -1041,8 +1041,8 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
 
   // Current frame is completed saving, call finish in file thread.
   if (flag == WebPageSerializerClient::CurrentFrameIsFinished) {
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(file_manager_,
                           &SaveFileManager::SaveFinished,
                           save_item->save_id(),
@@ -1240,8 +1240,8 @@ void SavePackage::GetSaveInfo() {
   FilePath download_save_dir = prefs->GetFilePath(
       prefs::kDownloadDefaultDirectory);
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       new CreateDownloadDirectoryTask(this,
           website_save_dir,
           download_save_dir));
