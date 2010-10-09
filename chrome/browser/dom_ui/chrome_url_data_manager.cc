@@ -283,8 +283,8 @@ ChromeURLDataManager::DataSource::~DataSource() {
 void ChromeURLDataManager::DataSource::SendResponse(
     RequestID request_id,
     RefCountedMemory* bytes) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::DataAvailable,
                         request_id, scoped_refptr<RefCountedMemory>(bytes)));

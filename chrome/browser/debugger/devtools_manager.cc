@@ -147,7 +147,8 @@ void DevToolsManager::ToggleDevToolsWindow(
 void DevToolsManager::RuntimePropertyChanged(RenderViewHost* inspected_rvh,
                                              const std::string& name,
                                              const std::string& value) {
-  RuntimePropertiesMap::iterator it = runtime_properties_map_.find(inspected_rvh);
+  RuntimePropertiesMap::iterator it =
+      runtime_properties_map_.find(inspected_rvh);
   if (it == runtime_properties_map_.end()) {
     std::pair<RenderViewHost*, DevToolsRuntimeProperties> value(
         inspected_rvh,
@@ -371,8 +372,8 @@ void DevToolsManager::BindClientHost(
       client_host_to_inspected_rvh_.end());
 
   if (client_host_to_inspected_rvh_.empty()) {
-    ChromeThread::PostTask(
-        ChromeThread::IO,
+    BrowserThread::PostTask(
+        BrowserThread::IO,
         FROM_HERE,
         NewRunnableFunction(&DevToolsNetLogObserver::Attach,
                             g_browser_process->io_thread()));
@@ -394,8 +395,8 @@ void DevToolsManager::UnbindClientHost(RenderViewHost* inspected_rvh,
   runtime_properties_map_.erase(inspected_rvh);
 
   if (client_host_to_inspected_rvh_.empty()) {
-    ChromeThread::PostTask(
-        ChromeThread::IO,
+    BrowserThread::PostTask(
+        BrowserThread::IO,
         FROM_HERE,
         NewRunnableFunction(&DevToolsNetLogObserver::Detach));
   }

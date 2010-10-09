@@ -95,14 +95,14 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
 }
 
 void DevToolsNetLogObserver::Attach(IOThread* io_thread) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!instance_);
 
   instance_ = new DevToolsNetLogObserver(io_thread->globals()->net_log.get());
 }
 
 void DevToolsNetLogObserver::Detach() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(instance_);
 
   delete instance_;
@@ -110,7 +110,7 @@ void DevToolsNetLogObserver::Detach() {
 }
 
 DevToolsNetLogObserver* DevToolsNetLogObserver::GetInstance() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   return instance_;
 }

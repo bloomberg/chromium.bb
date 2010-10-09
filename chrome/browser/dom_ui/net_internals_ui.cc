@@ -166,7 +166,7 @@ class NetInternalsMessageHandler
 class NetInternalsMessageHandler::IOThreadImpl
     : public base::RefCountedThreadSafe<
           NetInternalsMessageHandler::IOThreadImpl,
-          ChromeThread::DeleteOnUIThread>,
+          BrowserThread::DeleteOnUIThread>,
       public ChromeNetLog::Observer,
       public ConnectionTester::Delegate {
  public:
@@ -270,19 +270,19 @@ class NetInternalsMessageHandler::IOThreadImpl::CallbackHelper
   CallbackHelper(IOThreadImpl* instance, IOThreadImpl::MessageHandler method)
       : instance_(instance),
         method_(method) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   virtual void RunWithParams(const Tuple1<const ListValue*>& params) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // We need to make a copy of the value in order to pass it over to the IO
     // thread. We will delete this in IOThreadImpl::DispatchMessageHandler().
     ListValue* list_copy = static_cast<ListValue*>(
         params.a ? params.a->DeepCopy() : NULL);
 
-    if (!ChromeThread::PostTask(
-            ChromeThread::IO, FROM_HERE,
+    if (!BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE,
             NewRunnableMethod(instance_.get(),
                               &IOThreadImpl::DispatchToMessageHandler,
                               list_copy, method_))) {
@@ -351,13 +351,13 @@ NetInternalsMessageHandler::NetInternalsMessageHandler() {}
 NetInternalsMessageHandler::~NetInternalsMessageHandler() {
   if (proxy_) {
     // Notify the handler on the IO thread that the renderer is gone.
-    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(proxy_.get(), &IOThreadImpl::Detach));
   }
 }
 
 DOMMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   proxy_ = new IOThreadImpl(this->AsWeakPtr(), g_browser_process->io_thread(),
                             dom_ui->GetProfile()->GetRequestContext());
   DOMMessageHandler* result = DOMMessageHandler::Attach(dom_ui);
@@ -365,7 +365,7 @@ DOMMessageHandler* NetInternalsMessageHandler::Attach(DOMUI* dom_ui) {
 }
 
 void NetInternalsMessageHandler::RegisterMessages() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   dom_ui_->RegisterMessageCallback(
       "notifyReady",
@@ -413,7 +413,7 @@ void NetInternalsMessageHandler::RegisterMessages() {
 void NetInternalsMessageHandler::CallJavascriptFunction(
     const std::wstring& function_name,
     const Value* value) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (value) {
     dom_ui_->CallJavascriptFunction(function_name, *value);
   } else {
@@ -436,22 +436,22 @@ NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
       io_thread_(io_thread),
       context_getter_(context_getter),
       is_observing_log_(false) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 NetInternalsMessageHandler::IOThreadImpl::~IOThreadImpl() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 DOMUI::MessageCallback*
 NetInternalsMessageHandler::IOThreadImpl::CreateCallback(
     MessageHandler method) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return new CallbackHelper(this, method);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::Detach() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Unregister with network stack to observe events.
   if (is_observing_log_)
     io_thread_->globals()->net_log->RemoveObserver(this);
@@ -462,7 +462,7 @@ void NetInternalsMessageHandler::IOThreadImpl::Detach() {
 
 void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     const ListValue* list) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!is_observing_log_) << "notifyReady called twice";
 
   // Register with network stack to observe events.
@@ -927,7 +927,7 @@ NetInternalsMessageHandler::IOThreadImpl::OnCompletedConnectionTestSuite() {
 
 void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(
     ListValue* arg, MessageHandler method) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   (this->*method)(arg);
   delete arg;
 }
@@ -935,7 +935,7 @@ void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(
 void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
     const std::wstring& function_name,
     Value* arg) {
-  if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     if (handler_) {
       // We check |handler_| in case it was deleted on the UI thread earlier
       // while we were running on the IO thread.
@@ -948,9 +948,9 @@ void NetInternalsMessageHandler::IOThreadImpl::CallJavascriptFunction(
   // Otherwise if we were called from the IO thread, bridge the request over to
   // the UI thread.
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  if (!ChromeThread::PostTask(
-           ChromeThread::UI, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!BrowserThread::PostTask(
+           BrowserThread::UI, FROM_HERE,
            NewRunnableMethod(
                this,
                &IOThreadImpl::CallJavascriptFunction,
@@ -975,8 +975,8 @@ NetInternalsUI::NetInternalsUI(TabContents* contents) : DOMUI(contents) {
   NetInternalsHTMLSource* html_source = new NetInternalsHTMLSource();
 
   // Set up the chrome://net-internals/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

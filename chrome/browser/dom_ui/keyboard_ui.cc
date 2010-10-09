@@ -20,8 +20,8 @@
 KeyboardUI::KeyboardUI(TabContents* contents)
     : DOMUI(contents) {
   KeyboardHTMLSource* html_source = new KeyboardHTMLSource();
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

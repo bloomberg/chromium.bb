@@ -209,8 +209,8 @@ MediaplayerHandler::~MediaplayerHandler() {
 
 DOMMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -508,9 +508,9 @@ void MediaPlayer::PopupPlaylist(Browser* creator) {
 }
 
 void MediaPlayer::PopupMediaPlayer(Browser* creator) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &MediaPlayer::PopupMediaPlayer,
                           static_cast<Browser*>(NULL)));
     return;
@@ -608,8 +608,8 @@ MediaplayerUI::MediaplayerUI(TabContents* contents) : DOMUI(contents) {
       new MediaplayerUIHTMLSource(is_playlist);
 
   // Set up the chrome://mediaplayer/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

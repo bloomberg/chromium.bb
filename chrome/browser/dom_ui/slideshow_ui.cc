@@ -149,8 +149,8 @@ SlideshowHandler::~SlideshowHandler() {
 
 DOMMessageHandler* SlideshowHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -284,8 +284,8 @@ SlideshowUI::SlideshowUI(TabContents* contents) : DOMUI(contents) {
   SlideshowUIHTMLSource* html_source = new SlideshowUIHTMLSource();
 
   // Set up the chrome://slideshow/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

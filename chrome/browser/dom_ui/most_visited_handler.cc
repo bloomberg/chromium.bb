@@ -73,16 +73,16 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   // Set up our sources for thumbnail and favicon data.
   DOMUIThumbnailSource* thumbnail_src =
       new DOMUIThumbnailSource(dom_ui->GetProfile());
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(thumbnail_src)));
 
   DOMUIFavIconSource* favicon_src =
       new DOMUIFavIconSource(dom_ui->GetProfile());
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(favicon_src)));

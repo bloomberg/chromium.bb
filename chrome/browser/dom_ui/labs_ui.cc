@@ -181,8 +181,8 @@ LabsUI::LabsUI(TabContents* contents) : DOMUI(contents) {
   LabsUIHTMLSource* html_source = new LabsUIHTMLSource();
 
   // Set up the chrome://labs/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(html_source)));

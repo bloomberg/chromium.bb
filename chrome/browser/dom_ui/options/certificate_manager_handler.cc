@@ -158,8 +158,8 @@ CancelableRequestProvider::Handle FileAccessProvider::StartRead(
   AddRequest(request, consumer);
 
   // Send the parameters and the request to the file thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &FileAccessProvider::DoRead, request, path));
 
   // The handle will have been set by AddRequest.
@@ -176,8 +176,8 @@ CancelableRequestProvider::Handle FileAccessProvider::StartWrite(
   AddRequest(request, consumer);
 
   // Send the parameters and the request to the file thWrite.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &FileAccessProvider::DoWrite, request, path, data));
 

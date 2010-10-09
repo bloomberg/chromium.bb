@@ -75,8 +75,8 @@ std::string PrintPreviewUIHTMLSource::GetMimeType(const std::string&) const {
 
 PrintPreviewUI::PrintPreviewUI(TabContents* contents) : DOMUI(contents) {
   // Set up the chrome://print/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

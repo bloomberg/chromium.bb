@@ -66,9 +66,9 @@ void ReadScreenshot(const std::string& filename,
 std::vector<unsigned char> GetSavedScreenshot(std::string filename) {
   base::WaitableEvent read_complete(true, false);
   std::vector<unsigned char> bytes;
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                         NewRunnableFunction(&ReadScreenshot, filename,
-                                             &bytes, &read_complete));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          NewRunnableFunction(&ReadScreenshot, filename,
+                                              &bytes, &read_complete));
   read_complete.Wait();
   return bytes;
 }

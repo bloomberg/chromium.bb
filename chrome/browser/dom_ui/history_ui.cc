@@ -123,8 +123,8 @@ BrowsingHistoryHandler::~BrowsingHistoryHandler() {
 
 DOMMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -383,8 +383,8 @@ HistoryUI::HistoryUI(TabContents* contents) : DOMUI(contents) {
   HistoryUIHTMLSource* html_source = new HistoryUIHTMLSource();
 
   // Set up the chrome://history/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

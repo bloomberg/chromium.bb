@@ -132,8 +132,8 @@ DownloadsUI::DownloadsUI(TabContents* contents) : DOMUI(contents) {
   DownloadsUIHTMLSource* html_source = new DownloadsUIHTMLSource();
 
   // Set up the chrome://downloads/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(html_source)));

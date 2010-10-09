@@ -181,8 +181,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
       new OptionsUIHTMLSource(localized_strings);
 
   // Set up the chrome://settings/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -190,8 +190,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
 
   // Set up chrome://theme/ source.
   DOMUIThemeSource* theme = new DOMUIThemeSource(GetProfile());
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

@@ -49,8 +49,8 @@ DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
       download_manager_(dlm),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Create our fileicon data source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

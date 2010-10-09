@@ -18,7 +18,7 @@ namespace device_orientation {
 
 Provider* Provider::GetInstance() {
   if (!instance_) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const ProviderImpl::DataFetcherFactory default_factories[] = {
 #if defined(OS_MACOSX)
       AccelerometerMac::Create,

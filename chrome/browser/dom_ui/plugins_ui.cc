@@ -251,9 +251,9 @@ void PluginsDOMHandler::Observe(NotificationType type,
 void PluginsDOMHandler::LoadPluginsOnFileThread(ListWrapper* wrapper,
                                                 Task* task) {
   wrapper->list = PluginUpdater::GetPluginUpdater()->GetPluginGroupsData();
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, task);
-  ChromeThread::PostTask(
-      ChromeThread::UI,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       NewRunnableFunction(&PluginsDOMHandler::EnsureListDeleted, wrapper));
 }
@@ -272,8 +272,8 @@ void PluginsDOMHandler::LoadPlugins() {
   Task* task = get_plugins_factory_.NewRunnableMethod(
           &PluginsDOMHandler::PluginsLoaded, wrapper);
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
       FROM_HERE,
       NewRunnableFunction(
           &PluginsDOMHandler::LoadPluginsOnFileThread, wrapper, task));
@@ -300,8 +300,8 @@ PluginsUI::PluginsUI(TabContents* contents) : DOMUI(contents) {
   PluginsUIHTMLSource* html_source = new PluginsUIHTMLSource();
 
   // Set up the chrome://plugins/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(html_source)));

@@ -40,8 +40,8 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
   // DevToolsClientHost interface
   virtual void InspectedTabClosing() {
-    ChromeThread::PostTask(
-        ChromeThread::IO,
+    BrowserThread::PostTask(
+        BrowserThread::IO,
         FROM_HERE,
         NewRunnableMethod(socket_,
                           &HttpListenSocket::Close));
@@ -74,14 +74,14 @@ DevToolsHttpProtocolHandler::~DevToolsHttpProtocolHandler() {
 }
 
 void DevToolsHttpProtocolHandler::Start() {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &DevToolsHttpProtocolHandler::Init));
 }
 
 void DevToolsHttpProtocolHandler::Stop() {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &DevToolsHttpProtocolHandler::Teardown));
 }
 
@@ -90,8 +90,8 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
     const HttpServerRequestInfo& info) {
   if (info.path == "" || info.path == "/") {
     // Pages discovery request.
-    ChromeThread::PostTask(
-        ChromeThread::UI,
+    BrowserThread::PostTask(
+        BrowserThread::UI,
         FROM_HERE,
         NewRunnableMethod(this,
                           &DevToolsHttpProtocolHandler::OnHttpRequestUI,
@@ -117,8 +117,8 @@ void DevToolsHttpProtocolHandler::OnHttpRequest(
 void DevToolsHttpProtocolHandler::OnWebSocketRequest(
     HttpListenSocket* socket,
     const HttpServerRequestInfo& request) {
-  ChromeThread::PostTask(
-      ChromeThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       NewRunnableMethod(
           this,
@@ -129,8 +129,8 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequest(
 
 void DevToolsHttpProtocolHandler::OnWebSocketMessage(HttpListenSocket* socket,
                                                      const std::string& data) {
-  ChromeThread::PostTask(
-      ChromeThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       NewRunnableMethod(
           this,
@@ -154,8 +154,8 @@ void DevToolsHttpProtocolHandler::OnClose(HttpListenSocket* socket) {
     socket_to_requests_io_.erase(socket);
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::UI,
+  BrowserThread::PostTask(
+      BrowserThread::UI,
       FROM_HERE,
       NewRunnableMethod(
           this,
@@ -367,8 +367,8 @@ void DevToolsHttpProtocolHandler::RequestCompleted(URLRequest* request) {
 void DevToolsHttpProtocolHandler::Send200(HttpListenSocket* socket,
                                           const std::string& data,
                                           const std::string& mime_type) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(socket,
                         &HttpListenSocket::Send200,
                         data,
@@ -376,16 +376,16 @@ void DevToolsHttpProtocolHandler::Send200(HttpListenSocket* socket,
 }
 
 void DevToolsHttpProtocolHandler::Send404(HttpListenSocket* socket) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(socket,
                         &HttpListenSocket::Send404));
 }
 
 void DevToolsHttpProtocolHandler::Send500(HttpListenSocket* socket,
                                           const std::string& message) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(socket,
                         &HttpListenSocket::Send500,
                         message));
@@ -394,8 +394,8 @@ void DevToolsHttpProtocolHandler::Send500(HttpListenSocket* socket,
 void DevToolsHttpProtocolHandler::AcceptWebSocket(
     HttpListenSocket* socket,
     const HttpServerRequestInfo& request) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(socket,
                         &HttpListenSocket::AcceptWebSocket,
                         request));

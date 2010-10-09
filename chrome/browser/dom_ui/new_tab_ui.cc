@@ -458,8 +458,8 @@ NewTabUI::NewTabUI(TabContents* contents)
   InitializeCSSCaches();
   NewTabHTMLSource* html_source =
       new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -505,8 +505,8 @@ void NewTabUI::Observe(NotificationType type,
 
 void NewTabUI::InitializeCSSCaches() {
   DOMUIThemeSource* theme = new DOMUIThemeSource(GetProfile());
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -618,7 +618,7 @@ NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
                                                   bool is_off_the_record,
                                                   int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative

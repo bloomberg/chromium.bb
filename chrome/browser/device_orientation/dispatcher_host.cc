@@ -80,7 +80,7 @@ void DispatcherHost::ObserverDelegate::OnOrientationUpdate(
 
 bool DispatcherHost::OnMessageReceived(const IPC::Message& msg,
                                        bool* msg_was_ok) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(DispatcherHost, msg, *msg_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DeviceOrientation_StartUpdating,
@@ -93,7 +93,7 @@ bool DispatcherHost::OnMessageReceived(const IPC::Message& msg,
 }
 
 void DispatcherHost::OnStartUpdating(int render_view_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!provider_)
     provider_ = Provider::GetInstance();
@@ -104,7 +104,7 @@ void DispatcherHost::OnStartUpdating(int render_view_id) {
 }
 
 void DispatcherHost::OnStopUpdating(int render_view_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   observers_map_.erase(render_view_id);
 }

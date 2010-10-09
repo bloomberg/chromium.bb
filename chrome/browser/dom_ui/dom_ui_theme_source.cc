@@ -47,7 +47,7 @@ void DOMUIThemeSource::StartDataRequest(const std::string& path,
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     DCHECK((uncached_path == kNewTabCSSPath && !is_off_the_record) ||
            (uncached_path == kNewIncognitoTabCSSPath && is_off_the_record));
 
@@ -99,14 +99,14 @@ MessageLoop* DOMUIThemeSource::MessageLoopForRequestPath(
 
 void DOMUIThemeSource::SendThemeBitmap(int request_id, int resource_id) {
   if (BrowserThemeProvider::IsThemeableImage(resource_id)) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ThemeProvider* tp = profile_->GetThemeProvider();
     DCHECK(tp);
 
     scoped_refptr<RefCountedMemory> image_data(tp->GetRawData(resource_id));
     SendResponse(request_id, image_data);
   } else {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     SendResponse(request_id, rb.LoadDataResourceBytes(resource_id));
   }

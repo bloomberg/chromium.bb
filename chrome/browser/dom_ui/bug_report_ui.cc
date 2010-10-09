@@ -97,9 +97,9 @@ void GetSavedScreenshots(std::vector<std::string>* saved_screenshots,
 // and saved screenshots.
 void GetScreenshotUrls(std::vector<std::string>* saved_screenshots) {
   base::WaitableEvent done(true, false);
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                         NewRunnableFunction(&GetSavedScreenshots,
-                                             saved_screenshots, &done));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          NewRunnableFunction(&GetSavedScreenshots,
+                                              saved_screenshots, &done));
   done.Wait();
 }
 
@@ -413,8 +413,8 @@ void BugReportHandler::ClobberScreenshotsSource() {
   // Re-create our screenshots data source (this clobbers the last source)
   // setting the screenshot to NULL, effectively disabling the source
   // TODO(rkc): Once there is a method to 'remove' a source, change this code
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -432,8 +432,8 @@ void BugReportHandler::SetupScreenshotsSource() {
         browser::last_screenshot_png);
 
   // Add the source to the data manager.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -707,8 +707,8 @@ BugReportUI::BugReportUI(TabContents* tab) : HtmlDialogUI(tab) {
   BugReportUIHTMLSource* html_source =
       new BugReportUIHTMLSource(handler->Init());
   // Set up the chrome://bugreport/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

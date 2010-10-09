@@ -386,8 +386,8 @@ FilebrowseHandler::~FilebrowseHandler() {
   if (fetch) {
     TaskProxy* task = new TaskProxy(AsWeakPtr(), currentpath_);
     task->AddRef();
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             task, &TaskProxy::DeleteFetcher, fetch));
   }
@@ -395,8 +395,8 @@ FilebrowseHandler::~FilebrowseHandler() {
 
 DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
@@ -416,8 +416,8 @@ void FilebrowseHandler::Init() {
   if (!sent_request) {
     // If we have not sent a request before, we should do one in order to
     // ensure that we have the correct cookies. This is for uploads.
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             task, &TaskProxy::SendPicasawebRequestProxy));
     sent_request = true;
@@ -524,8 +524,8 @@ void FilebrowseHandler::OnURLFetchComplete(const URLFetcher* source,
   LOG(INFO) << "Response code:" << response_code;
   LOG(INFO) << "request url" << url;
   if (StartsWithASCII(url.spec(), kPicasawebUserPrefix, true)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(current_task_, &TaskProxy::FireUploadCompleteProxy));
   }
   fetch_.reset();
@@ -780,8 +780,8 @@ void FilebrowseHandler::UploadToPicasaweb(const ListValue* args) {
   TaskProxy* task = new TaskProxy(AsWeakPtr(), current_path);
   task->AddRef();
   current_task_ = task;
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           task, &TaskProxy::ReadInFileProxy));
 #endif
@@ -916,8 +916,8 @@ void FilebrowseHandler::DeleteFile(const FilePath& path) {
   if (!file_util::Delete(path, true)) {
     LOG(ERROR) << "unable to delete directory";
   }
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(current_task_, &TaskProxy::FireDeleteCompleteProxy));
 }
 
@@ -931,8 +931,8 @@ void FilebrowseHandler::CopyFile(const FilePath& src, const FilePath& dest) {
       LOG(ERROR) << "unable to copy file" << src.value();
     }
   }
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(current_task_, &TaskProxy::FireCopyCompleteProxy));
 }
 
@@ -953,8 +953,8 @@ void FilebrowseHandler::HandleDeleteFile(const ListValue* args) {
   TaskProxy* task = new TaskProxy(AsWeakPtr(), currentpath);
   task->AddRef();
   current_task_ = task;
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           task, &TaskProxy::DeleteFileProxy));
 #endif
@@ -976,8 +976,8 @@ void FilebrowseHandler::HandleCopyFile(const ListValue* value) {
       TaskProxy* task = new TaskProxy(AsWeakPtr(), SrcPath, DestPath);
       task->AddRef();
       current_task_ = task;
-      ChromeThread::PostTask(
-          ChromeThread::FILE, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
           NewRunnableMethod(
               task, &TaskProxy::CopyFileProxy));
     } else {
@@ -1034,8 +1034,8 @@ FileBrowseUI::FileBrowseUI(TabContents* contents) : HtmlDialogUI(contents) {
   FileBrowseUIHTMLSource* html_source = new FileBrowseUIHTMLSource();
 
   // Set up the chrome://filebrowse/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

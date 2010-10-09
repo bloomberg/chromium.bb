@@ -48,8 +48,8 @@ BookmarksUI::BookmarksUI(TabContents* contents) : DOMUI(contents) {
   BookmarksUIHTMLSource* html_source = new BookmarksUIHTMLSource();
 
   // Set up the chrome://bookmarks/ source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

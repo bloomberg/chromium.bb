@@ -142,7 +142,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
 }
 
 RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_off_the_record) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (is_off_the_record) {
     if (!new_tab_incognito_html_.get())
       CreateNewTabIncognitoHTML();
@@ -155,7 +155,7 @@ RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_off_the_record) {
 }
 
 RefCountedBytes* NTPResourceCache::GetNewTabCSS(bool is_off_the_record) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (is_off_the_record) {
     if (!new_tab_incognito_css_.get())
       CreateNewTabIncognitoCSS();

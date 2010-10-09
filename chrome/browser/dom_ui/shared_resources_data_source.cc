@@ -52,8 +52,8 @@ int PathToIDR(const std::string& path) {
 // static
 void SharedResourcesDataSource::Register() {
   SharedResourcesDataSource* source = new SharedResourcesDataSource();
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

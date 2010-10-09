@@ -25,8 +25,8 @@ DevToolsProtocolHandler::~DevToolsProtocolHandler() {
 }
 
 void DevToolsProtocolHandler::Start() {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &DevToolsProtocolHandler::Init));
 }
 
@@ -36,8 +36,8 @@ void DevToolsProtocolHandler::Init() {
 }
 
 void DevToolsProtocolHandler::Stop() {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &DevToolsProtocolHandler::Teardown));
   tool_to_listener_map_.clear();  // Releases all scoped_refptr's to listeners
 }
@@ -72,9 +72,9 @@ void DevToolsProtocolHandler::HandleMessage(
     NOTREACHED();  // an unsupported tool, bail out
     return;
   }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           it->second.get(), &DevToolsRemoteListener::HandleMessage, message));
 }
@@ -86,19 +86,19 @@ void DevToolsProtocolHandler::Send(const DevToolsRemoteMessage& message) {
 }
 
 void DevToolsProtocolHandler::OnAcceptConnection(ListenSocket *connection) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   connection_ = connection;
 }
 
 void DevToolsProtocolHandler::OnConnectionLost() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   connection_ = NULL;
   for (ToolToListenerMap::const_iterator it = tool_to_listener_map_.begin(),
        end = tool_to_listener_map_.end();
        it != end;
        ++it) {
-    ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           it->second.get(), &DevToolsRemoteListener::OnConnectionLost));
   }
