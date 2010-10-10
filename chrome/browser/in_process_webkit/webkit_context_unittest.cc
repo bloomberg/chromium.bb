@@ -16,8 +16,8 @@ class MockDOMStorageContext : public DOMStorageContext {
   }
 
   virtual void PurgeMemory() {
-    EXPECT_FALSE(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+    EXPECT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
     ++purge_count_;
   }
 
@@ -42,7 +42,7 @@ TEST(WebKitContextTest, Basic) {
 TEST(WebKitContextTest, PurgeMemory) {
   // Start up a WebKit thread for the WebKitContext to call the
   // DOMStorageContext on.
-  ChromeThread webkit_thread(ChromeThread::WEBKIT);
+  BrowserThread webkit_thread(BrowserThread::WEBKIT);
   webkit_thread.Start();
 
   // Create the contexts.

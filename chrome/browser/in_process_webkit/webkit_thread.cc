@@ -14,11 +14,11 @@ WebKitThread::WebKitThread() {
 
 // This happens on the UI thread after the IO thread has been shut down.
 WebKitThread::~WebKitThread() {
-  // We can't just check CurrentlyOn(ChromeThread::UI) because in unit tests,
+  // We can't just check CurrentlyOn(BrowserThread::UI) because in unit tests,
   // MessageLoop::Current is sometimes NULL and other times valid and there's
-  // no ChromeThread object.  Can't check that CurrentlyOn is not IO since
-  // some unit tests set that ChromeThread for other checks.
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  // no BrowserThread object.  Can't check that CurrentlyOn is not IO since
+  // some unit tests set that BrowserThread for other checks.
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
 }
 
 void WebKitThread::Initialize() {
@@ -35,7 +35,7 @@ void WebKitThread::Initialize() {
 }
 
 WebKitThread::InternalWebKitThread::InternalWebKitThread()
-    : ChromeThread(ChromeThread::WEBKIT) {
+    : BrowserThread(BrowserThread::WEBKIT) {
 }
 
 WebKitThread::InternalWebKitThread::~InternalWebKitThread() {

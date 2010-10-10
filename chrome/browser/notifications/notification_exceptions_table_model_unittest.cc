@@ -14,7 +14,7 @@
 class NotificationExceptionsTableModelTest : public RenderViewHostTestHarness {
  public:
   NotificationExceptionsTableModelTest()
-     : ui_thread_(ChromeThread::UI, MessageLoop::current()) {
+     : ui_thread_(BrowserThread::UI, MessageLoop::current()) {
   }
 
   virtual ~NotificationExceptionsTableModelTest() {
@@ -47,7 +47,7 @@ class NotificationExceptionsTableModelTest : public RenderViewHostTestHarness {
   }
 
  protected:
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   scoped_ptr<NotificationExceptionsTableModel> model_;
   DesktopNotificationService* service_;
 };

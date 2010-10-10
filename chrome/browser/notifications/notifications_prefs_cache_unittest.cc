@@ -18,7 +18,7 @@ TEST(NotificationsPrefsCacheTest, CanCreate) {
 
   {
     MessageLoop loop;
-    ChromeThread ui_thread(ChromeThread::UI, &loop);
+    BrowserThread ui_thread(BrowserThread::UI, &loop);
 
     cache->SetCacheAllowedOrigins(allowed_origins);
     cache->SetCacheDeniedOrigins(denied_origins);
@@ -29,7 +29,7 @@ TEST(NotificationsPrefsCacheTest, CanCreate) {
 
   {
     MessageLoop loop;
-    ChromeThread io_thread(ChromeThread::IO, &loop);
+    BrowserThread io_thread(BrowserThread::IO, &loop);
 
     cache->CacheAllowedOrigin(GURL("http://allowed2.com"));
     cache->CacheDeniedOrigin(GURL("http://denied2.com"));

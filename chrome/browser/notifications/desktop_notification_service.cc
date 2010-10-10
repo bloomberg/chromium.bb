@@ -102,7 +102,7 @@ class NotificationPermissionCallbackTask : public Task {
   }
 
   virtual void Run() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
     if (host)
       host->Send(new ViewMsg_PermissionRequestDone(route_id_, request_id_));
@@ -139,8 +139,8 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
     if (!action_taken_)
       UMA_HISTOGRAM_COUNTS("NotificationPermissionRequest.Ignored", 1);
 
-    ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new NotificationPermissionCallbackTask(
           process_id_, route_id_, callback_context_));
 
@@ -269,24 +269,24 @@ void DesktopNotificationService::StopObserving() {
 }
 
 void DesktopNotificationService::GrantPermission(const GURL& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PersistPermissionChange(origin, true);
 
   // Schedule a cache update on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           prefs_cache_.get(), &NotificationsPrefsCache::CacheAllowedOrigin,
           origin));
 }
 
 void DesktopNotificationService::DenyPermission(const GURL& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PersistPermissionChange(origin, false);
 
   // Schedule a cache update on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           prefs_cache_.get(), &NotificationsPrefsCache::CacheDeniedOrigin,
           origin));
@@ -307,8 +307,8 @@ void DesktopNotificationService::Observe(NotificationType type,
 
     std::vector<GURL> allowed_origins(GetAllowedOrigins());
     // Schedule a cache update on the IO thread.
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheAllowedOrigins,
@@ -321,8 +321,8 @@ void DesktopNotificationService::Observe(NotificationType type,
 
     std::vector<GURL> denied_origins(GetBlockedOrigins());
     // Schedule a cache update on the IO thread.
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheDeniedOrigins,
@@ -332,8 +332,8 @@ void DesktopNotificationService::Observe(NotificationType type,
         prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
 
     // Schedule a cache update on the IO thread.
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             prefs_cache_.get(),
             &NotificationsPrefsCache::SetCacheDefaultContentSetting,
@@ -417,7 +417,7 @@ ContentSetting DesktopNotificationService::GetDefaultContentSetting() {
 
 void DesktopNotificationService::SetDefaultContentSetting(
     ContentSetting setting) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   profile_->GetPrefs()->SetInteger(
       prefs::kDesktopNotificationDefaultContentSetting,
       setting == CONTENT_SETTING_DEFAULT ?  kDefaultSetting : setting);
@@ -425,7 +425,7 @@ void DesktopNotificationService::SetDefaultContentSetting(
 }
 
 void DesktopNotificationService::ResetToDefaultContentSetting() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PrefService* prefs = profile_->GetPrefs();
   prefs->ClearPref(prefs::kDesktopNotificationDefaultContentSetting);
@@ -501,7 +501,7 @@ void DesktopNotificationService::ResetAllOrigins() {
 
 ContentSetting DesktopNotificationService::GetContentSetting(
     const GURL& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (profile_->IsOffTheRecord())
     return kDefaultSetting;
 
@@ -521,7 +521,7 @@ ContentSetting DesktopNotificationService::GetContentSetting(
 void DesktopNotificationService::RequestPermission(
     const GURL& origin, int process_id, int route_id, int callback_context,
     TabContents* tab) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!tab)
     return;
 
@@ -537,8 +537,8 @@ void DesktopNotificationService::RequestPermission(
                         route_id, callback_context));
   } else {
     // Notify renderer immediately.
-    ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new NotificationPermissionCallbackTask(
           process_id, route_id, callback_context));
   }
@@ -563,7 +563,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
 bool DesktopNotificationService::ShowDesktopNotification(
     const ViewHostMsg_ShowNotification_Params& params,
     int process_id, int route_id, DesktopNotificationSource source) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const GURL& origin = params.origin;
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,

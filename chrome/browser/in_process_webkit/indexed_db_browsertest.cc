@@ -25,7 +25,7 @@ const FilePath kTestIndexedDBFile(
 class TestOnWebKitThread : public ThreadTestHelper {
  public:
   TestOnWebKitThread()
-      : ThreadTestHelper(ChromeThread::WEBKIT) {
+      : ThreadTestHelper(BrowserThread::WEBKIT) {
   }
 
   const std::string& database_name() const { return database_name_; }

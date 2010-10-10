@@ -57,42 +57,42 @@ DOMStorageContext::~DOMStorageContext() {
 }
 
 int64 DOMStorageContext::AllocateStorageAreaId() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   return ++last_storage_area_id_;
 }
 
 int64 DOMStorageContext::AllocateSessionStorageNamespaceId() {
-  if (ChromeThread::CurrentlyOn(ChromeThread::UI))
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI))
     return ++last_session_storage_namespace_id_on_ui_thread_;
   return --last_session_storage_namespace_id_on_io_thread_;
 }
 
 int64 DOMStorageContext::CloneSessionStorage(int64 original_id) {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   int64 clone_id = AllocateSessionStorageNamespaceId();
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE, NewRunnableFunction(
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE, NewRunnableFunction(
           &DOMStorageContext::CompleteCloningSessionStorage,
           this, original_id, clone_id));
   return clone_id;
 }
 
 void DOMStorageContext::RegisterStorageArea(DOMStorageArea* storage_area) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   int64 id = storage_area->id();
   DCHECK(!GetStorageArea(id));
   storage_area_map_[id] = storage_area;
 }
 
 void DOMStorageContext::UnregisterStorageArea(DOMStorageArea* storage_area) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   int64 id = storage_area->id();
   DCHECK(GetStorageArea(id));
   storage_area_map_.erase(id);
 }
 
 DOMStorageArea* DOMStorageContext::GetStorageArea(int64 id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   StorageAreaMap::iterator iter = storage_area_map_.find(id);
   if (iter == storage_area_map_.end())
     return NULL;
@@ -100,7 +100,7 @@ DOMStorageArea* DOMStorageContext::GetStorageArea(int64 id) {
 }
 
 void DOMStorageContext::DeleteSessionStorageNamespace(int64 namespace_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   StorageNamespaceMap::iterator iter =
       storage_namespace_map_.find(namespace_id);
   if (iter == storage_namespace_map_.end())
@@ -112,7 +112,7 @@ void DOMStorageContext::DeleteSessionStorageNamespace(int64 namespace_id) {
 
 DOMStorageNamespace* DOMStorageContext::GetStorageNamespace(
     int64 id, bool allocation_allowed) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   StorageNamespaceMap::iterator iter = storage_namespace_map_.find(id);
   if (iter != storage_namespace_map_.end())
     return iter->second;
@@ -125,7 +125,7 @@ DOMStorageNamespace* DOMStorageContext::GetStorageNamespace(
 
 void DOMStorageContext::RegisterDispatcherHost(
     DOMStorageDispatcherHost* dispatcher_host) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(dispatcher_host_set_.find(dispatcher_host) ==
          dispatcher_host_set_.end());
   dispatcher_host_set_.insert(dispatcher_host);
@@ -133,7 +133,7 @@ void DOMStorageContext::RegisterDispatcherHost(
 
 void DOMStorageContext::UnregisterDispatcherHost(
     DOMStorageDispatcherHost* dispatcher_host) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(dispatcher_host_set_.find(dispatcher_host) !=
          dispatcher_host_set_.end());
   dispatcher_host_set_.erase(dispatcher_host);
@@ -141,7 +141,7 @@ void DOMStorageContext::UnregisterDispatcherHost(
 
 const DOMStorageContext::DispatcherHostSet*
 DOMStorageContext::GetDispatcherHostSet() const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return &dispatcher_host_set_;
 }
 
@@ -189,7 +189,7 @@ void DOMStorageContext::DeleteDataModifiedSince(
 }
 
 void DOMStorageContext::DeleteLocalStorageFile(const FilePath& file_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
 
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
@@ -201,12 +201,12 @@ void DOMStorageContext::DeleteLocalStorageFile(const FilePath& file_path) {
 }
 
 void DOMStorageContext::DeleteLocalStorageForOrigin(const string16& origin_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DeleteLocalStorageFile(GetLocalStorageFilePath(origin_id));
 }
 
 void DOMStorageContext::DeleteAllLocalStorageFiles() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
 
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
@@ -245,7 +245,7 @@ DOMStorageNamespace* DOMStorageContext::CreateSessionStorage(
 
 void DOMStorageContext::RegisterStorageNamespace(
     DOMStorageNamespace* storage_namespace) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   int64 id = storage_namespace->id();
   DCHECK(!GetStorageNamespace(id, false));
   storage_namespace_map_[id] = storage_namespace;
@@ -254,7 +254,7 @@ void DOMStorageContext::RegisterStorageNamespace(
 /* static */
 void DOMStorageContext::CompleteCloningSessionStorage(
     DOMStorageContext* context, int64 existing_id, int64 clone_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DOMStorageNamespace* existing_namespace =
       context->GetStorageNamespace(existing_id, false);
   // If nothing exists, then there's nothing to clone.

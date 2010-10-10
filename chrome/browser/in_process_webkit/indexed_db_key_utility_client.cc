@@ -22,7 +22,7 @@ IndexedDBKeyUtilityClient::~IndexedDBKeyUtilityClient() {
 }
 
 void IndexedDBKeyUtilityClient::StartUtilityProcess() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DCHECK(state_ == STATE_UNINITIALIZED);
 
   GetRDHAndStartUtilityProcess();
@@ -32,7 +32,7 @@ void IndexedDBKeyUtilityClient::StartUtilityProcess() {
 }
 
 void IndexedDBKeyUtilityClient::EndUtilityProcess() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DCHECK(state_ == STATE_INITIALIZED);
 
   EndUtilityProcessInternal();
@@ -45,7 +45,7 @@ void IndexedDBKeyUtilityClient::CreateIDBKeysFromSerializedValuesAndKeyPath(
     const std::vector<SerializedScriptValue>& values,
     const string16& key_path,
     std::vector<IndexedDBKey>* keys) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DCHECK(state_ == STATE_INITIALIZED);
 
   state_ = STATE_CREATING_KEYS;
@@ -61,15 +61,15 @@ void IndexedDBKeyUtilityClient::GetRDHAndStartUtilityProcess() {
   // a pointer to the ResourceDispatcherHost. This can only
   // be done on the UI thread. See the comment at the top of
   // browser_process.h
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(
             this,
             &IndexedDBKeyUtilityClient::GetRDHAndStartUtilityProcess));
     return;
   }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   StartUtilityProcessInternal(g_browser_process->resource_dispatcher_host());
 }
 
@@ -77,31 +77,31 @@ void IndexedDBKeyUtilityClient::StartUtilityProcessInternal(
     ResourceDispatcherHost* rdh) {
   DCHECK(rdh);
   // The ResourceDispatcherHost can only be used on the IO thread.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
             &IndexedDBKeyUtilityClient::StartUtilityProcessInternal,
             rdh));
     return;
   }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(state_ == STATE_UNINITIALIZED);
 
   client_ = new IndexedDBKeyUtilityClient::Client(this);
   utility_process_host_ = new UtilityProcessHost(
-      rdh, client_.get(), ChromeThread::IO);
+      rdh, client_.get(), BrowserThread::IO);
   utility_process_host_->StartBatchMode();
   state_ = STATE_INITIALIZED;
   waitable_event_.Signal();
 }
 
 void IndexedDBKeyUtilityClient::EndUtilityProcessInternal() {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
             &IndexedDBKeyUtilityClient::EndUtilityProcessInternal));
@@ -118,9 +118,9 @@ void IndexedDBKeyUtilityClient::EndUtilityProcessInternal() {
 void IndexedDBKeyUtilityClient::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
     const std::vector<SerializedScriptValue>& values,
     const string16& key_path) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this,
             &IndexedDBKeyUtilityClient::
                 CallStartIDBKeyFromValueAndKeyPathFromIOThread,
@@ -128,13 +128,13 @@ void IndexedDBKeyUtilityClient::CallStartIDBKeyFromValueAndKeyPathFromIOThread(
     return;
   }
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   utility_process_host_->StartIDBKeysFromValuesAndKeyPath(
       0, values, key_path);
 }
 
 void IndexedDBKeyUtilityClient::SetKeys(const std::vector<IndexedDBKey>& keys) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   keys_ = keys;
 }
 

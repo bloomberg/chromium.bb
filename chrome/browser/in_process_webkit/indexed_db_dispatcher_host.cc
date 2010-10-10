@@ -50,7 +50,7 @@ namespace {
 
 template <class T>
 void DeleteOnWebKitThread(T* obj) {
-  if (!ChromeThread::DeleteSoon(ChromeThread::WEBKIT, FROM_HERE, obj))
+  if (!BrowserThread::DeleteSoon(BrowserThread::WEBKIT, FROM_HERE, obj))
     delete obj;
 }
 
@@ -86,7 +86,7 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 
 void IndexedDBDispatcherHost::Init(int process_id,
                                    base::ProcessHandle process_handle) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(sender_);  // Ensure Shutdown() has not been called.
   DCHECK(!process_handle_);  // Make sure Init() has not yet been called.
   DCHECK(process_handle);
@@ -95,17 +95,17 @@ void IndexedDBDispatcherHost::Init(int process_id,
 }
 
 void IndexedDBDispatcherHost::Shutdown() {
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     sender_ = NULL;
 
-    bool success = ChromeThread::PostTask(
-        ChromeThread::WEBKIT, FROM_HERE,
+    bool success = BrowserThread::PostTask(
+        BrowserThread::WEBKIT, FROM_HERE,
         NewRunnableMethod(this, &IndexedDBDispatcherHost::Shutdown));
     if (success)
       return;
   }
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT) ||
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT) ||
          CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
   DCHECK(!sender_);
 
@@ -114,7 +114,7 @@ void IndexedDBDispatcherHost::Shutdown() {
 }
 
 bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(process_handle_);
 
   switch (message.type()) {
@@ -166,21 +166,21 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
       return false;
   }
 
-  bool success = ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
+  bool success = BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE, NewRunnableMethod(
           this, &IndexedDBDispatcherHost::OnMessageReceivedWebKit, message));
   DCHECK(success);
   return true;
 }
 
 void IndexedDBDispatcherHost::Send(IPC::Message* message) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     // TODO(jorlow): Even if we successfully post, I believe it's possible for
     //               the task to never run (if the IO thread is already shutting
     //               down).  We may want to handle this case, though
     //               realistically it probably doesn't matter.
-    if (!ChromeThread::PostTask(
-            ChromeThread::IO, FROM_HERE, NewRunnableMethod(
+    if (!BrowserThread::PostTask(
+            BrowserThread::IO, FROM_HERE, NewRunnableMethod(
                 this, &IndexedDBDispatcherHost::Send, message))) {
       // The IO thread is dead.
       delete message;
@@ -188,7 +188,7 @@ void IndexedDBDispatcherHost::Send(IPC::Message* message) {
     return;
   }
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!sender_)
     delete message;
   else
@@ -197,7 +197,7 @@ void IndexedDBDispatcherHost::Send(IPC::Message* message) {
 
 void IndexedDBDispatcherHost::OnMessageReceivedWebKit(
     const IPC::Message& message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   DCHECK(process_handle_);
 
   bool msg_is_ok = true;
@@ -260,7 +260,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
         IndexedDBContext::kIndexedDBDirectory);
   }
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   GURL host(string16(WebSecurityOrigin::createFromDatabaseIdentifier(
       params.origin_).toString()));
 
@@ -300,7 +300,7 @@ template <typename ObjectType>
 ObjectType* IndexedDBDispatcherHost::GetOrTerminateProcess(
     IDMap<ObjectType, IDMapOwnPointer>* map, int32 return_object_id,
     IPC::Message* reply_msg, uint32 message_type) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   ObjectType* return_object = map->Lookup(return_object_id);
   if (!return_object) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(message_type,
@@ -422,7 +422,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
     const ViewHostMsg_IDBDatabaseCreateObjectStore_Params& params,
     IPC::Message* reply_msg) {
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
       &map_, params.idb_database_id_, NULL,
       ViewHostMsg_IDBDatabaseCreateObjectStore::ID);
@@ -460,7 +460,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRemoveObjectStore(
     const string16& name,
     int32 transaction_id) {
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
       &map_, idb_database_id, NULL,
       ViewHostMsg_IDBDatabaseRemoveObjectStore::ID);
@@ -475,7 +475,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRemoveObjectStore(
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetVersion(
     int32 idb_database_id, int32 response_id, const string16& version) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBDatabase* idb_database = parent_->GetOrTerminateProcess(
       &map_, idb_database_id, NULL,
       ViewHostMsg_IDBDatabaseSetVersion::ID);
@@ -583,7 +583,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnUnique(
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(
     const ViewHostMsg_IDBIndexOpenCursor_Params& params) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
       &map_, params.idb_index_id_, NULL,
       ViewHostMsg_IDBIndexOpenObjectCursor::ID);
@@ -602,7 +602,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(
 
 void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenKeyCursor(
     const ViewHostMsg_IDBIndexOpenCursor_Params& params) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
       &map_, params.idb_index_id_, NULL, ViewHostMsg_IDBIndexOpenKeyCursor::ID);
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
@@ -623,7 +623,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetObject(
     int32 response_id,
     const IndexedDBKey& key,
     int32 transaction_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
       &map_, idb_index_id, NULL, ViewHostMsg_IDBIndexGetObject::ID);
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
@@ -642,7 +642,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetKey(
     int32 response_id,
     const IndexedDBKey& key,
     int32 transaction_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBIndex* idb_index = parent_->GetOrTerminateProcess(
       &map_, idb_index_id, NULL, ViewHostMsg_IDBIndexGetKey::ID);
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
@@ -742,7 +742,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnGet(
     int32 response_id,
     const IndexedDBKey& key,
     int32 transaction_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, idb_object_store_id, NULL, ViewHostMsg_IDBObjectStoreGet::ID);
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
@@ -758,7 +758,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnGet(
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnPut(
     const ViewHostMsg_IDBObjectStorePut_Params& params) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, params.idb_object_store_id_, NULL,
       ViewHostMsg_IDBObjectStorePut::ID);
@@ -779,7 +779,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemove(
     int32 response_id,
     const IndexedDBKey& key,
     int32 transaction_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, idb_object_store_id, NULL, ViewHostMsg_IDBObjectStoreRemove::ID);
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
@@ -796,7 +796,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemove(
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(
    const ViewHostMsg_IDBObjectStoreCreateIndex_Params& params,
    IPC::Message* reply_msg) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, params.idb_object_store_id_, NULL,
       ViewHostMsg_IDBObjectStoreCreateIndex::ID);
@@ -831,7 +831,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemoveIndex(
     int32 idb_object_store_id,
     const string16& name,
     int32 transaction_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &map_, idb_object_store_id, NULL,
       ViewHostMsg_IDBObjectStoreRemoveIndex::ID);
@@ -846,7 +846,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnRemoveIndex(
 
 void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnOpenCursor(
     const ViewHostMsg_IDBObjectStoreOpenCursor_Params& params) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
       &parent_->object_store_dispatcher_host_->map_,
       params.idb_object_store_id_, NULL,
@@ -956,7 +956,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
     int32 cursor_id,
     int32 response_id,
     const SerializedScriptValue& value) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
       &map_, cursor_id, NULL, ViewHostMsg_IDBCursorUpdate::ID);
   if (!idb_cursor)
@@ -969,7 +969,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
     int32 cursor_id,
     int32 response_id,
     const IndexedDBKey& key) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
       &map_, cursor_id, NULL, ViewHostMsg_IDBCursorContinue::ID);
   if (!idb_cursor)
@@ -981,7 +981,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnRemove(
     int32 cursor_id,
     int32 response_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
       &map_, cursor_id, NULL, ViewHostMsg_IDBCursorUpdate::ID);
   if (!idb_cursor)
@@ -1074,7 +1074,7 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnObjectStore(
 
 void IndexedDBDispatcherHost::
     TransactionDispatcherHost::OnDidCompleteTaskEvents(int transaction_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
       &map_, transaction_id, 0,
       ViewHostMsg_IDBTransactionDidCompleteTaskEvents::ID);

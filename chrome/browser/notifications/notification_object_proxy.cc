@@ -65,9 +65,9 @@ std::string NotificationObjectProxy::id() const {
 
 
 void NotificationObjectProxy::DeliverMessage(IPC::Message* message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &NotificationObjectProxy::Send, message));
 }
 
@@ -77,7 +77,7 @@ void NotificationObjectProxy::Send(IPC::Message* message) {
   // Take ownership of the message; ownership will pass to a host if possible.
   scoped_ptr<IPC::Message> owned_message(message);
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
   if (host) {
     // Pass ownership to the host.

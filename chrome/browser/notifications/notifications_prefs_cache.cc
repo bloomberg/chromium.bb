@@ -93,8 +93,8 @@ bool NotificationsPrefsCache::IsOriginDenied(
 
 void NotificationsPrefsCache::CheckThreadAccess() {
   if (is_initialized_) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   } else {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 }

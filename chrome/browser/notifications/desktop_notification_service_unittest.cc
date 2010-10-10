@@ -28,10 +28,10 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
         permission_(0) {
     // The current message loop was already initalized by the test superclass.
     ui_thread_.reset(
-        new ChromeThread(ChromeThread::UI, MessageLoop::current()));
+        new BrowserThread(BrowserThread::UI, MessageLoop::current()));
 
     // Create IO thread, start its message loop.
-    io_thread_.reset(new ChromeThread(ChromeThread::IO));
+    io_thread_.reset(new BrowserThread(BrowserThread::IO));
     io_thread_->Start();
 
     // Calling PauseIOThread() here isn't safe, because the runnable method
@@ -39,25 +39,25 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
   }
 
   int CacheHasPermission(NotificationsPrefsCache* cache, const GURL& url) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &ThreadProxy::CacheHasPermissionIO,
                           cache, url));
     io_event_.Signal();
     ui_event_.Wait();  // Wait for IO thread to be done.
-    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &ThreadProxy::PauseIOThreadIO));
 
     return permission_;
   }
 
   void PauseIOThread() {
-    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &ThreadProxy::PauseIOThreadIO));
   }
 
   void DrainIOThread() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     io_event_.Signal();
     io_thread_->Stop();
   }
@@ -69,20 +69,20 @@ class ThreadProxy : public base::RefCountedThreadSafe<ThreadProxy> {
   }
 
   void PauseIOThreadIO() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     io_event_.Wait();
   }
 
   void CacheHasPermissionIO(NotificationsPrefsCache* cache, const GURL& url) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     permission_ = cache->HasPermission(url);
     ui_event_.Signal();
   }
 
   base::WaitableEvent io_event_;
   base::WaitableEvent ui_event_;
-  scoped_ptr<ChromeThread> ui_thread_;
-  scoped_ptr<ChromeThread> io_thread_;
+  scoped_ptr<BrowserThread> ui_thread_;
+  scoped_ptr<BrowserThread> io_thread_;
 
   int permission_;
 };

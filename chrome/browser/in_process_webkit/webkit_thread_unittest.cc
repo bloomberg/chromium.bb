@@ -5,17 +5,18 @@
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(WebKitThreadTest, DISABLED_ExposedInChromeThread) {
+TEST(WebKitThreadTest, DISABLED_ExposedInBrowserThread) {
   int* null = NULL;  // Help the template system out.
-  EXPECT_FALSE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT, FROM_HERE, null));
+  EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
+                                         FROM_HERE, null));
   {
     WebKitThread thread;
-    EXPECT_FALSE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT,
-                                          FROM_HERE, null));
+    EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
+                                           FROM_HERE, null));
     thread.Initialize();
-    EXPECT_TRUE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT,
-                                         FROM_HERE, null));
+    EXPECT_TRUE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
+                                          FROM_HERE, null));
   }
-  EXPECT_FALSE(ChromeThread::DeleteSoon(ChromeThread::WEBKIT,
-                                        FROM_HERE, null));
+  EXPECT_FALSE(BrowserThread::DeleteSoon(BrowserThread::WEBKIT,
+                                         FROM_HERE, null));
 }

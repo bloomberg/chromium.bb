@@ -25,7 +25,7 @@ class WebKitThread {
 
  private:
   // Must be private so that we can carefully control its lifetime.
-  class InternalWebKitThread : public ChromeThread {
+  class InternalWebKitThread : public BrowserThread {
    public:
     InternalWebKitThread();
     virtual ~InternalWebKitThread();
