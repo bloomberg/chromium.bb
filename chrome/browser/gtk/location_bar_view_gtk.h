@@ -88,6 +88,13 @@ class LocationBarViewGtk : public AutocompleteEditController,
   void SetStarred(bool starred);
 
   // Implement the AutocompleteEditController interface.
+  virtual void OnAutocompleteWillClosePopup() {}
+  virtual void OnAutocompleteLosingFocus(gfx::NativeView view_gaining_focus) {}
+  virtual void OnAutocompleteWillAccept() {}
+  virtual bool OnCommitSuggestedText(const std::wstring& typed_text) {
+    return false;
+  }
+  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) {}
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,
       PageTransition::Type transition,

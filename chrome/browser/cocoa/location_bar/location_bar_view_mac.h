@@ -125,6 +125,12 @@ class LocationBarViewMac : public AutocompleteEditController,
   // visible.
   NSRect GetBlockedPopupRect() const;
 
+  // AutocompleteEditController implementation.
+  virtual void OnAutocompleteWillClosePopup();
+  virtual void OnAutocompleteLosingFocus(gfx::NativeView unused);
+  virtual void OnAutocompleteWillAccept();
+  virtual bool OnCommitSuggestedText(const std::wstring& typed_text);
+  virtual void OnPopupBoundsChanged(const gfx::Rect& bounds);
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,
       PageTransition::Type transition,

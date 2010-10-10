@@ -33,7 +33,6 @@ class Rect;
 // Embedders of an AutocompleteEdit widget must implement this class.
 class AutocompleteEditController {
  public:
-#if defined(TOOLKIT_VIEWS)
   // Sent when the autocomplete popup is about to close.
   virtual void OnAutocompleteWillClosePopup() = 0;
 
@@ -51,9 +50,6 @@ class AutocompleteEditController {
 
   // Invoked when the popup is going to change its bounds to |bounds|.
   virtual void OnPopupBoundsChanged(const gfx::Rect& bounds) = 0;
-#else
-  // TODO: port.
-#endif
 
   // When the user presses enter or selects a line with the mouse, this
   // function will get called synchronously with the url to open and

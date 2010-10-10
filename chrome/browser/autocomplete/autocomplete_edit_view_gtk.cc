@@ -513,10 +513,8 @@ void AutocompleteEditViewGtk::UpdatePopup() {
 }
 
 void AutocompleteEditViewGtk::ClosePopup() {
-#if defined(TOOLKIT_VIEWS)
   if (popup_view_->GetModel()->IsOpen())
     controller_->OnAutocompleteWillClosePopup();
-#endif
 
   popup_view_->GetModel()->StopAutocomplete();
 }
@@ -948,11 +946,9 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusIn(GtkWidget* sender,
 
 gboolean AutocompleteEditViewGtk::HandleViewFocusOut(GtkWidget* sender,
                                                      GdkEventFocus* event) {
-#if defined(TOOLKIT_VIEWS)
   // This must be invoked before ClosePopup.
   // TODO: figure out who is getting focus.
   controller_->OnAutocompleteLosingFocus(NULL);
-#endif
 
   // Close the popup.
   ClosePopup();

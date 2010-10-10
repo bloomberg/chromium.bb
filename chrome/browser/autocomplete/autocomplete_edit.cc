@@ -403,9 +403,8 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
     // search engine, if applicable; see comments in template_url.h.
   }
 
-#if defined(TOOLKIT_VIEWS)
   controller_->OnAutocompleteWillAccept();
-#endif
+
   if (disposition != NEW_BACKGROUND_TAB)
     view_->RevertAll();  // Revert the box to its unedited state
   controller_->OnAutocompleteAccept(url, disposition, transition,
@@ -677,9 +676,7 @@ bool AutocompleteEditModel::OnAfterPossibleChange(const std::wstring& new_text,
 }
 
 void AutocompleteEditModel::PopupBoundsChangedTo(const gfx::Rect& bounds) {
-#if defined(TOOLKIT_VIEWS)
   controller_->OnPopupBoundsChanged(bounds);
-#endif
 }
 
 // Return true if the suggestion type warrants a TCP/IP preconnection.

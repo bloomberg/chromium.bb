@@ -200,6 +200,22 @@ void LocationBarViewMac::Update(const TabContents* contents,
   OnChanged();
 }
 
+void LocationBarViewMac::OnAutocompleteWillClosePopup() {
+}
+
+void LocationBarViewMac::OnAutocompleteLosingFocus(gfx::NativeView unused) {
+}
+
+void LocationBarViewMac::OnAutocompleteWillAccept() {
+}
+
+bool LocationBarViewMac::OnCommitSuggestedText(const std::wstring& typed_text) {
+  return false;
+}
+
+void LocationBarViewMac::OnPopupBoundsChanged(const gfx::Rect& bounds) {
+}
+
 void LocationBarViewMac::OnAutocompleteAccept(const GURL& url,
                                               WindowOpenDisposition disposition,
                                               PageTransition::Type transition,
