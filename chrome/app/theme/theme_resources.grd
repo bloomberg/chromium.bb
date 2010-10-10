@@ -557,6 +557,18 @@
         <include name="IDR_USER_IMAGE_CAPTURE" file="snapshot_wide.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_RECYCLE" file="discard_wide.png" type="BINDATA" />
         <include name="IDR_VOLUMEBUBBLE_ICON" file="volume_icon.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BACKGROUND" file="chromeos_scroll_background.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BACKGROUND_BORDER_UP" file="chromeos_scroll_background_border_up.png" type="BINDATA" />
+        <include name="IDR_SCROLL_BACKGROUND_BORDER_DOWN" file="chromeos_scroll_background_border_down.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_DOWN" file="chromeos_scroll_arrow_down.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_DOWN_H" file="chromeos_scroll_arrow_down_h.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_DOWN_P" file="chromeos_scroll_arrow_down_p.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_UP" file="chromeos_scroll_arrow_up.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_UP_H" file="chromeos_scroll_arrow_up_h.png" type="BINDATA" />
+        <include name="IDR_SCROLL_ARROW_UP_P" file="chromeos_scroll_arrow_up_p.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB" file="chromeos_scroll_thumb.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_H" file="chromeos_scroll_thumb_h.png" type="BINDATA" />
+        <include name="IDR_SCROLL_THUMB_P" file="chromeos_scroll_thumb_p.png" type="BINDATA" />
       </if>
     </includes>
   </release>
