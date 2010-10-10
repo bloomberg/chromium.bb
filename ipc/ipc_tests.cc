@@ -534,7 +534,7 @@ MULTIPROCESS_TEST_MAIN(RunReflector) {
 
 int main(int argc, char** argv) {
 #ifdef PERFORMANCE_TEST
-  int retval = PerfTestSuite(argc, argv).Run();
+  int retval = base::PerfTestSuite(argc, argv).Run();
 #else
   int retval = base::TestSuite(argc, argv).Run();
 #endif
