@@ -36,7 +36,7 @@ ChromePrefsAccessTokenStore::ChromePrefsAccessTokenStore() {
 
 void ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread(
       scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (request->canceled())
     return;
   const DictionaryValue* token_dictionary =
@@ -60,13 +60,13 @@ void ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread(
 
 void ChromePrefsAccessTokenStore::DoLoadAccessTokens(
     scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
       this, &ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread,
       request));
 }
 
 void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DictionaryValue* access_token_dictionary =
       g_browser_process->local_state()->GetMutableDictionary(
           prefs::kGeolocationAccessToken);
@@ -76,7 +76,7 @@ void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
 
 void ChromePrefsAccessTokenStore::SaveAccessToken(
       const GURL& server_url, const string16& access_token) {
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableFunction(
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableFunction(
       &SetAccessTokenOnUIThread, server_url, access_token));
 }
 }  // namespace

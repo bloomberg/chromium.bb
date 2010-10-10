@@ -21,7 +21,7 @@ class TabContents;
 
 class CreateApplicationShortcutsDialogGtk
     : public base::RefCountedThreadSafe<CreateApplicationShortcutsDialogGtk,
-                                        ChromeThread::DeleteOnUIThread> {
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   // Displays the dialog box to create application shortcuts for |tab_contents|.
   static void Show(GtkWindow* parent, TabContents* tab_contents);

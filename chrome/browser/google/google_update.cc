@@ -212,8 +212,8 @@ GoogleUpdate::~GoogleUpdate() {
 void GoogleUpdate::CheckForUpdate(bool install_if_newer, Window* window) {
   // We need to shunt this request over to InitiateGoogleUpdateCheck and have
   // it run in the file thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &GoogleUpdate::InitiateGoogleUpdateCheck, install_if_newer,
           window, MessageLoop::current()));

@@ -49,8 +49,8 @@ class HistoryEnumerator : public HistoryService::URLEnumerator {
     if (!history)
       return;
 
-    ChromeThread::PostTask(
-        ChromeThread::UI,
+    BrowserThread::PostTask(
+        BrowserThread::UI,
         FROM_HERE,
         NewRunnableMethod(history, &HistoryService::IterateURLs, this));
     ui_test_utils::RunMessageLoop();
@@ -61,8 +61,8 @@ class HistoryEnumerator : public HistoryService::URLEnumerator {
   }
 
   virtual void OnComplete(bool success) {
-    ChromeThread::PostTask(
-        ChromeThread::UI,
+    BrowserThread::PostTask(
+        BrowserThread::UI,
         FROM_HERE,
         new MessageLoop::QuitTask());
   }
@@ -104,12 +104,12 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     CancelableRequestConsumerTSimple<int> request_consumer;
     scoped_refptr<HistoryDBTask> task(new WaitForHistoryTask());
     HistoryService* history = GetHistoryService();
-    ChromeThread::PostTask(ChromeThread::UI,
-                           FROM_HERE,
-                           NewRunnableMethod(history,
-                                             &HistoryService::ScheduleDBTask,
-                                             task.get(),
-                                             &request_consumer));
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            NewRunnableMethod(history,
+                                              &HistoryService::ScheduleDBTask,
+                                              task.get(),
+                                              &request_consumer));
     ui_test_utils::RunMessageLoop();
   }
 

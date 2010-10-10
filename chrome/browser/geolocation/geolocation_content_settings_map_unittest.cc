@@ -15,12 +15,12 @@ namespace {
 class GeolocationContentSettingsMapTests : public testing::Test {
  public:
   GeolocationContentSettingsMapTests()
-    : ui_thread_(ChromeThread::UI, &message_loop_) {
+    : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
  protected:
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 };
 
 TEST_F(GeolocationContentSettingsMapTests, DefaultValues) {

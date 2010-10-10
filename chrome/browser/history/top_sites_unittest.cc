@@ -301,7 +301,7 @@ static void AppendMostVisitedURLWithRedirect(
 }
 
 TEST_F(TopSitesTest, GetCanonicalURL) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   // Have two chains:
   //   google.com -> www.google.com
   //   news.google.com (no redirects)
@@ -368,7 +368,7 @@ TEST_F(TopSitesTest, DiffMostVisited) {
 }
 
 TEST_F(TopSitesTest, SetPageThumbnail) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   GURL url1a("http://google.com/");
   GURL url1b("http://www.google.com/");
   GURL url2("http://images.google.com/");
@@ -416,7 +416,7 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
 }
 
 TEST_F(TopSitesTest, GetPageThumbnail) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   MostVisitedURLList url_list;
   MostVisitedURL url1 = {GURL("http://asdf.com")};
   url1.redirects.push_back(url1.url);
@@ -460,7 +460,7 @@ TEST_F(TopSitesTest, GetPageThumbnail) {
 }
 
 TEST_F(TopSitesTest, GetMostVisited) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   GURL news("http://news.google.com/");
   GURL google("http://google.com/");
 
@@ -484,7 +484,7 @@ TEST_F(TopSitesTest, GetMostVisited) {
 }
 
 TEST_F(TopSitesTest, MockDatabase) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   MockTopSitesDatabaseImpl* db = new MockTopSitesDatabaseImpl;
   // |db| is destroyed when the top_sites is destroyed in TearDown.
   top_sites().db_.reset(db);
@@ -639,7 +639,7 @@ TEST_F(TopSitesTest, TopSitesDB) {
 
 // Test TopSites with a real database.
 TEST_F(TopSitesTest, RealDatabase) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   TopSitesDatabaseImpl* db = new TopSitesDatabaseImpl;
 
   ASSERT_TRUE(db->Init(file_name()));
@@ -781,7 +781,7 @@ TEST_F(TopSitesTest, RealDatabase) {
 }
 
 TEST_F(TopSitesTest, DeleteNotifications) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   GURL google1_url("http://google.com");
   GURL google2_url("http://google.com/redirect");
   GURL google3_url("http://www.google.com");
@@ -843,7 +843,7 @@ TEST_F(TopSitesTest, DeleteNotifications) {
 }
 
 TEST_F(TopSitesTest, PinnedURLsDeleted) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   GURL google1_url("http://google.com");
   GURL google2_url("http://google.com/redirect");
   GURL google3_url("http://www.google.com");
@@ -932,7 +932,7 @@ TEST_F(TopSitesTest, GetUpdateDelay) {
 }
 
 TEST_F(TopSitesTest, Migration) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   GURL google1_url("http://google.com");
   string16 google_title(ASCIIToUTF16("Google"));
   GURL news_url("http://news.google.com");
@@ -955,7 +955,7 @@ TEST_F(TopSitesTest, Migration) {
 }
 
 TEST_F(TopSitesTest, QueueingRequestsForTopSites) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   CancelableRequestConsumer c1;
   CancelableRequestConsumer c2;
   CancelableRequestConsumer c3;
@@ -1020,7 +1020,7 @@ TEST_F(TopSitesTest, QueueingRequestsForTopSites) {
 }
 
 TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   CancelableRequestConsumer c1;
   CancelableRequestConsumer c2;
   top_sites().GetMostVisitedURLs(
@@ -1067,7 +1067,7 @@ TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
 }
 
 TEST_F(TopSitesTest, AddTemporaryThumbnail) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   GURL unknown_url("http://news.google.com/");
   GURL invalid_url("chrome://thumb/http://google.com/");
   GURL url1a("http://google.com/");
@@ -1110,7 +1110,7 @@ TEST_F(TopSitesTest, AddTemporaryThumbnail) {
 }
 
 TEST_F(TopSitesTest, Blacklisting) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   MostVisitedURLList pages;
   MostVisitedURL url, url1;
   url.url = GURL("http://bbc.com/");
@@ -1204,7 +1204,7 @@ TEST_F(TopSitesTest, Blacklisting) {
 }
 
 TEST_F(TopSitesTest, PinnedURLs) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   MostVisitedURLList pages;
   MostVisitedURL url, url1;
   url.url = GURL("http://bbc.com/");
@@ -1289,7 +1289,7 @@ TEST_F(TopSitesTest, PinnedURLs) {
 }
 
 TEST_F(TopSitesTest, BlacklistingAndPinnedURLs) {
-  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   MostVisitedURLList pages;
   CancelableRequestConsumer c;
   top_sites().GetMostVisitedURLs(

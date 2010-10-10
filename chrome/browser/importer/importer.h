@@ -315,7 +315,7 @@ class ExternalProcessImporterClient
 
   // Creates a new ProfileImportProcessHost, which launches the import process.
   virtual void StartProcessOnIOThread(ResourceDispatcherHost* rdh,
-                                      ChromeThread::ID thread_id);
+                                      BrowserThread::ID thread_id);
 
   // Called by the ExternalProcessImporterHost on import cancel.
   virtual void Cancel();

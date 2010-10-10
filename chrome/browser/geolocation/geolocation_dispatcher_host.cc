@@ -91,7 +91,7 @@ GeolocationDispatcherHostImpl::~GeolocationDispatcherHostImpl() {
 
 bool GeolocationDispatcherHostImpl::OnMessageReceived(
     const IPC::Message& msg, bool* msg_was_ok) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   *msg_was_ok = true;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(GeolocationDispatcherHostImpl, msg, *msg_was_ok)
@@ -118,7 +118,7 @@ bool GeolocationDispatcherHostImpl::OnMessageReceived(
 
 void GeolocationDispatcherHostImpl::OnLocationUpdate(
     const Geoposition& geoposition) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   for (std::set<int>::iterator it = geolocation_renderer_ids_.begin();
        it != geolocation_renderer_ids_.end(); ++it) {
     IPC::Message* message =
@@ -129,20 +129,20 @@ void GeolocationDispatcherHostImpl::OnLocationUpdate(
 }
 
 void GeolocationDispatcherHostImpl::OnRegisterDispatcher(int render_view_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(0u, geolocation_renderer_ids_.count(render_view_id));
   geolocation_renderer_ids_.insert(render_view_id);
 }
 
 void GeolocationDispatcherHostImpl::OnUnregisterDispatcher(int render_view_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(1u, geolocation_renderer_ids_.count(render_view_id));
   geolocation_renderer_ids_.erase(render_view_id);
 }
 
 void GeolocationDispatcherHostImpl::OnRequestPermission(
     int render_view_id, int bridge_id, const GURL& requesting_frame) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
              << ":" << render_view_id << ":" << bridge_id;
   geolocation_permission_context_->RequestGeolocationPermission(
@@ -152,7 +152,7 @@ void GeolocationDispatcherHostImpl::OnRequestPermission(
 
 void GeolocationDispatcherHostImpl::OnCancelPermissionRequest(
     int render_view_id, int bridge_id, const GURL& requesting_frame) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
              << ":" << render_view_id << ":" << bridge_id;
   geolocation_permission_context_->CancelGeolocationPermissionRequest(
@@ -166,7 +166,7 @@ void GeolocationDispatcherHostImpl::OnStartUpdating(
   // WebKit sends the startupdating request before checking permissions, to
   // optimize the no-location-available case and reduce latency in the success
   // case (location lookup happens in parallel with the permission request).
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
              << ":" << render_view_id << ":" << bridge_id;
   bridge_update_options_[std::make_pair(render_view_id, bridge_id)] =
@@ -179,7 +179,7 @@ void GeolocationDispatcherHostImpl::OnStartUpdating(
 
 void GeolocationDispatcherHostImpl::OnStopUpdating(
     int render_view_id, int bridge_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
              << ":" << render_view_id << ":" << bridge_id;
   if (bridge_update_options_.erase(std::make_pair(render_view_id, bridge_id)))
@@ -190,7 +190,7 @@ void GeolocationDispatcherHostImpl::OnStopUpdating(
 
 void GeolocationDispatcherHostImpl::OnSuspend(
     int render_view_id, int bridge_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
              << ":" << render_view_id << ":" << bridge_id;
   // TODO(bulach): connect this with GeolocationArbitrator.
@@ -198,14 +198,14 @@ void GeolocationDispatcherHostImpl::OnSuspend(
 
 void GeolocationDispatcherHostImpl::OnResume(
     int render_view_id, int bridge_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DLOG(INFO) << __FUNCTION__ << " " << resource_message_filter_process_id_
              << ":" << render_view_id << ":" << bridge_id;
   // TODO(bulach): connect this with GeolocationArbitrator.
 }
 
 void GeolocationDispatcherHostImpl::RefreshGeolocationObserverOptions() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (bridge_update_options_.empty()) {
     if (location_provider_) {
       location_provider_->RemoveObserver(this);

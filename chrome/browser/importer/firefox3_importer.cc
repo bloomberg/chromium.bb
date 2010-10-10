@@ -37,7 +37,7 @@ using webkit_glue::PasswordForm;
 
 Firefox3Importer::Firefox3Importer() {
 #if defined(OS_LINUX)
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   locale_ = g_browser_process->GetApplicationLocale();
 #endif
 }
@@ -49,7 +49,7 @@ void Firefox3Importer::StartImport(importer::ProfileInfo profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
 #if defined(OS_LINUX)
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 #endif
   bridge_ = bridge;
   source_path_ = profile_info.source_path;

@@ -82,7 +82,7 @@ void RepostFormWarningGtk::OnCancel(GtkWidget* widget) {
 
 void RepostFormWarningGtk::OnHierarchyChanged(GtkWidget* root,
                                               GtkWidget* previous_toplevel) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(cancel_))) {
     return;
   }

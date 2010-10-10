@@ -13,7 +13,7 @@ using ::testing::ElementsAre;
 class ContentExceptionsWindowGtkUnittest : public testing::Test {
  public:
   ContentExceptionsWindowGtkUnittest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         host_content_settings_map_(profile_.GetHostContentSettingsMap()),
         window_(NULL) {
   }
@@ -112,7 +112,7 @@ class ContentExceptionsWindowGtkUnittest : public testing::Test {
 
  private:
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 
   TestingProfile profile_;
   HostContentSettingsMap* host_content_settings_map_;

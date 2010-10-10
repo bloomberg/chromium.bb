@@ -67,7 +67,7 @@ class GeolocationGpsProviderLinuxTests : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   LocaionProviderListenerLoopQuitter location_listener_;
   scoped_ptr<GpsLocationProviderLinux> provider_;
 };
@@ -129,7 +129,7 @@ MockLibGps::~MockLibGps() {
 }
 
 GeolocationGpsProviderLinuxTests::GeolocationGpsProviderLinuxTests()
-    : ui_thread_(ChromeThread::IO, &message_loop_),
+    : ui_thread_(BrowserThread::IO, &message_loop_),
       provider_(new GpsLocationProviderLinux(NewMockLibGps)) {
   provider_->RegisterListener(&location_listener_);
 }

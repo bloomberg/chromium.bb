@@ -37,7 +37,7 @@ class CoreLocationDataProviderMac
   ~CoreLocationDataProviderMac();
 
  private:
-  // These must execute in ChromeThread::UI
+  // These must execute in BrowserThread::UI
   void StartUpdatingTask();
   void StopUpdatingTask();
   // This must execute in the origin thread (IO thread)
@@ -47,7 +47,7 @@ class CoreLocationDataProviderMac
   scoped_nsobject<CoreLocationWrapperMac> wrapper_;
   // The LocationProviderBase class that should receive position data
   CoreLocationProviderMac* provider_;
-  ChromeThread::ID origin_thread_id_;
+  BrowserThread::ID origin_thread_id_;
 };
 
 #endif

@@ -50,7 +50,7 @@ typedef std::vector<MostVisitedURL> MostVisitedURLList;
 // the UI thread is busy.
 class TopSites :
       public base::RefCountedThreadSafe<TopSites,
-                                        ChromeThread::DeleteOnUIThread>,
+                                        BrowserThread::DeleteOnUIThread>,
       public NotificationObserver,
       public CancelableRequestProvider {
  public:
@@ -142,7 +142,7 @@ class TopSites :
   void ClearProfile();
 
  private:
-  friend struct ChromeThread::DeleteOnThread<ChromeThread::UI>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class DeleteTask<TopSites>;
   friend class TopSitesTest;
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetMostVisited);

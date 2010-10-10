@@ -44,8 +44,8 @@ class Writer : public Task {
 };
 
 void WriteFileOnFileThread(const FilePath& path, const std::string& data) {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE, new Writer(path, data));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, new Writer(path, data));
 }
 
 std::string WrapAt64(const std::string &str) {

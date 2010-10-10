@@ -79,7 +79,7 @@ class GoogleURLTrackerTest : public testing::Test {
     original_default_request_context_ = Profile::GetDefaultRequestContext();
     Profile::set_default_request_context(NULL);
     message_loop_ = new MessageLoop(MessageLoop::TYPE_IO);
-    io_thread_ = new ChromeThread(ChromeThread::IO, message_loop_);
+    io_thread_ = new BrowserThread(BrowserThread::IO, message_loop_);
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     testing_profile_.reset(new TestingProfile);
     TestingBrowserProcess* testing_browser_process =
@@ -228,7 +228,7 @@ class GoogleURLTrackerTest : public testing::Test {
 
  private:
   MessageLoop* message_loop_;
-  ChromeThread* io_thread_;
+  BrowserThread* io_thread_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<TestingProfile> testing_profile_;
 

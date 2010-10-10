@@ -22,7 +22,7 @@
 
 class CookiesViewTest : public testing::Test {
  public:
-  CookiesViewTest() : io_thread_(ChromeThread::IO, &message_loop_) {
+  CookiesViewTest() : io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
   virtual ~CookiesViewTest() {
@@ -198,7 +198,7 @@ class CookiesViewTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  ChromeThread io_thread_;
+  BrowserThread io_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<MockBrowsingDataDatabaseHelper>

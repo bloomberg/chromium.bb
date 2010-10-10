@@ -20,7 +20,7 @@ const GURL kUrl2("http://www.example2.com");
 class GeolocationExceptionsTableModelTest : public RenderViewHostTestHarness {
  public:
   GeolocationExceptionsTableModelTest()
-      : ui_thread_(ChromeThread::UI, MessageLoop::current()) {}
+      : ui_thread_(BrowserThread::UI, MessageLoop::current()) {}
 
   virtual ~GeolocationExceptionsTableModelTest() {}
 
@@ -50,7 +50,7 @@ class GeolocationExceptionsTableModelTest : public RenderViewHostTestHarness {
   }
 
  protected:
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   scoped_ptr<GeolocationExceptionsTableModel> model_;
 };
 

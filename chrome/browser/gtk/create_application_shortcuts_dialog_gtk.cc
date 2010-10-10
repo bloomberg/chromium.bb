@@ -42,7 +42,7 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
     TabContents* tab_contents)
     : tab_contents_(tab_contents),
       error_dialog_(NULL) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Will be balanced by Release later.
   AddRef();
@@ -148,7 +148,7 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
 }
 
 CreateApplicationShortcutsDialogGtk::~CreateApplicationShortcutsDialogGtk() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   gtk_widget_destroy(create_dialog_);
 
@@ -160,14 +160,14 @@ CreateApplicationShortcutsDialogGtk::~CreateApplicationShortcutsDialogGtk() {
 
 void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
     GtkWidget* widget, int response) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (response == GTK_RESPONSE_ACCEPT) {
     shortcut_info_.create_on_desktop =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_));
     shortcut_info_.create_in_applications_menu =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_));
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
          NewRunnableMethod(this,
              &CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
              shortcut_info_));
@@ -186,7 +186,7 @@ void CreateApplicationShortcutsDialogGtk::OnErrorDialogResponse(
 
 void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
@@ -197,14 +197,14 @@ void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
                                             shortcut_template);
     Release();
   } else {
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this,
             &CreateApplicationShortcutsDialogGtk::ShowErrorDialog));
   }
 }
 
 void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Hide the create dialog so that the user can no longer interact with it.
   gtk_widget_hide(create_dialog_);

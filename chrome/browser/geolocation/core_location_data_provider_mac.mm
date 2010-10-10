@@ -81,7 +81,7 @@ enum {
 // successful call (to avoid |bundle_| being double initialized)
 - (BOOL)locationDataAvailable;
 
-// These should always be called from ChromeThread::UI
+// These should always be called from BrowserThread::UI
 - (void)startLocation;
 - (void)stopLocation;
 
@@ -183,9 +183,9 @@ enum {
 @end
 
 CoreLocationDataProviderMac::CoreLocationDataProviderMac() {
-  if(!ChromeThread::GetCurrentThreadIdentifier(&origin_thread_id_))
+  if(!BrowserThread::GetCurrentThreadIdentifier(&origin_thread_id_))
     NOTREACHED() <<
-         "CoreLocation data provider must be created in a valid ChromeThread.";
+         "CoreLocation data provider must be created in a valid BrowserThread.";
   provider_ = NULL;
   wrapper_.reset([[CoreLocationWrapperMac alloc] initWithDataProvider:this]);
 }
@@ -202,7 +202,7 @@ bool CoreLocationDataProviderMac::
   DCHECK(!provider_) << "StartUpdating called twice";
   if(![wrapper_ locationDataAvailable]) return false;
   provider_ = provider;
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
      NewRunnableMethod(this, &CoreLocationDataProviderMac::StartUpdatingTask));
   return true;
 }
@@ -210,32 +210,32 @@ bool CoreLocationDataProviderMac::
 // Clears provider_ so that any leftover messages from CoreLocation get ignored
 void CoreLocationDataProviderMac::StopUpdating() {
   provider_ = NULL;
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
               NewRunnableMethod(this,
                                &CoreLocationDataProviderMac::StopUpdatingTask));
 }
 
 void CoreLocationDataProviderMac::UpdatePosition(Geoposition *position) {
-  ChromeThread::PostTask(origin_thread_id_, FROM_HERE,
+  BrowserThread::PostTask(origin_thread_id_, FROM_HERE,
               NewRunnableMethod(this,
                                &CoreLocationDataProviderMac::PositionUpdated,
                                *position));
 }
 
-// Runs in ChromeThread::UI
+// Runs in BrowserThread::UI
 void CoreLocationDataProviderMac::StartUpdatingTask() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   [wrapper_ startLocation];
 }
 
-// Runs in ChromeThread::UI
+// Runs in BrowserThread::UI
 void CoreLocationDataProviderMac::StopUpdatingTask() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   [wrapper_ stopLocation];
 }
 
 void CoreLocationDataProviderMac::PositionUpdated(Geoposition position) {
-  DCHECK(ChromeThread::CurrentlyOn(origin_thread_id_));
+  DCHECK(BrowserThread::CurrentlyOn(origin_thread_id_));
   if(provider_)
     provider_->SetPosition(&position);
 }

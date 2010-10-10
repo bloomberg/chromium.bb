@@ -25,8 +25,8 @@ class EmptyTabstripOriginProvider : public TabstripOriginProvider {
 class BookmarkBarGtkUnittest : public ::testing::Test {
  protected:
   BookmarkBarGtkUnittest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -49,8 +49,8 @@ class BookmarkBarGtkUnittest : public ::testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;

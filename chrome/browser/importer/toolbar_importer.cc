@@ -123,11 +123,11 @@ void Toolbar5Importer::Cancel() {
 
   // If we are conducting network operations, post a message to the importer
   // thread for synchronization.
-  if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     EndImport();
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &Toolbar5Importer::Cancel));
   }
 }

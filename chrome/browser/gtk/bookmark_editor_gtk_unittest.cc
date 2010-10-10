@@ -28,8 +28,8 @@ using bookmark_utils::GetTitleFromTreeIter;
 class BookmarkEditorGtkTest : public testing::Test {
  public:
   BookmarkEditorGtkTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_),
         model_(NULL) {
   }
 
@@ -49,8 +49,8 @@ class BookmarkEditorGtkTest : public testing::Test {
 
  protected:
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
   BookmarkModel* model_;
   scoped_ptr<TestingProfile> profile_;
 
