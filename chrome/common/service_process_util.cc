@@ -61,19 +61,6 @@ std::string GetServiceProcessSharedMemName() {
   return GetServiceProcessScopedName("_service_shmem");
 }
 
-// Gets the name of the lock file for service process.
-FilePath GetServiceProcessLockFilePath() {
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  chrome::VersionInfo version_info;
-#if defined(OS_WIN)
-  user_data_dir.Append(ASCIIToWide(version_info.Version()));
-#elif defined(OS_POSIX)
-  user_data_dir.Append(version_info.Version());
-#endif  // defined(OS_WIN)
-  return user_data_dir.Append(FILE_PATH_LITERAL("Service Process Lock"));
-}
-
 enum ServiceProcessRunningState {
   SERVICE_NOT_RUNNING,
   SERVICE_OLDER_VERSION_RUNNING,
@@ -166,7 +153,15 @@ class ServiceProcessShutdownMonitor : public base::ObjectWatcher::Delegate {
   base::ObjectWatcher watcher_;
   scoped_ptr<Task> shutdown_task_;
 };
-
+#else  // defined(OS_WIN)
+// Gets the name of the lock file for service process. Used on non-Windows OSes.
+FilePath GetServiceProcessLockFilePath() {
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  chrome::VersionInfo version_info;
+  std::string lock_file_name = version_info.Version() + "Service Process Lock";
+  return user_data_dir.Append(lock_file_name);
+}
 #endif  // defined(OS_WIN)
 
 struct ServiceProcessGlobalState {
