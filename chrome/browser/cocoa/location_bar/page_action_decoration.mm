@@ -32,7 +32,7 @@ PageActionDecoration::PageActionDecoration(
     LocationBarViewMac* owner,
     Profile* profile,
     ExtensionAction* page_action)
-    : owner_(owner),
+    : owner_(NULL),
       profile_(profile),
       page_action_(page_action),
       tracker_(this),
@@ -59,6 +59,10 @@ PageActionDecoration::PageActionDecoration(
 
   registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
       Source<Profile>(profile_));
+
+  // We set the owner last of all so that we can determine whether we are in
+  // the process of initializing this class or not.
+  owner_ = owner;
 }
 
 PageActionDecoration::~PageActionDecoration() {}
@@ -118,7 +122,11 @@ void PageActionDecoration::OnImageLoaded(
       page_action_icons_[page_action_->default_icon_path()] = *image;
   }
 
-  owner_->UpdatePageActions();
+  // If we have no owner, that means this class is still being constructed and
+  // we should not UpdatePageActions, since it leads to the PageActions being
+  // destroyed again and new ones recreated (causing an infinite loop).
+  if (owner_)
+    owner_->UpdatePageActions();
 }
 
 void PageActionDecoration::UpdateVisibility(TabContents* contents,

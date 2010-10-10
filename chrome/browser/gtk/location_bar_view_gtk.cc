@@ -1240,7 +1240,7 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::InfoBubbleClosing(
 LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
     LocationBarViewGtk* owner, Profile* profile,
     ExtensionAction* page_action)
-    : owner_(owner),
+    : owner_(NULL),
       profile_(profile),
       page_action_(page_action),
       last_icon_pixbuf_(NULL),
@@ -1278,6 +1278,10 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
                                  Extension::kPageActionIconMaxSize),
                        ImageLoadingTracker::DONT_CACHE);
   }
+
+  // We set the owner last of all so that we can determine whether we are in
+  // the process of initializing this class or not.
+  owner_ = owner;
 }
 
 LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
@@ -1377,7 +1381,11 @@ void LocationBarViewGtk::PageActionViewGtk::OnImageLoaded(
       pixbufs_[page_action_->default_icon_path()] = pixbuf;
   }
 
-  owner_->UpdatePageActions();
+  // If we have no owner, that means this class is still being constructed and
+  // we should not UpdatePageActions, since it leads to the PageActions being
+  // destroyed again and new ones recreated (causing an infinite loop).
+  if (owner_)
+    owner_->UpdatePageActions();
 }
 
 void LocationBarViewGtk::PageActionViewGtk::TestActivatePageAction() {
