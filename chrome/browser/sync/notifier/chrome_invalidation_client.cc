@@ -31,8 +31,9 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
 
 void ChromeInvalidationClient::Start(
     const std::string& client_id, Listener* listener,
-    talk_base::Task* base_task) {
+    base::WeakPtr<talk_base::Task> base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(base_task.get());
   Stop();
 
   chrome_system_resources_.StartScheduler();

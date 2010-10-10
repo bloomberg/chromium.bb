@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/invalidation-client.h"
@@ -46,10 +47,11 @@ class ChromeInvalidationClient : public invalidation::InvalidationListener {
   // Calls Stop().
   virtual ~ChromeInvalidationClient();
 
-  // Does not take ownership of |listener| nor |base_task|.
+  // Does not take ownership of |listener|.  |base_task| must still be
+  // non-NULL.
   void Start(
       const std::string& client_id, Listener* listener,
-      talk_base::Task* base_task);
+      base::WeakPtr<talk_base::Task> base_task);
 
   void Stop();
 

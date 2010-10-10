@@ -195,14 +195,14 @@ std::string MakeSid() {
 }  // namespace
 
 CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
-    talk_base::Task* base_task,
+    base::WeakPtr<talk_base::Task> base_task,
     invalidation::InvalidationClient* invalidation_client)
     : scoped_callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       base_task_(base_task),
       invalidation_client_(invalidation_client),
       seq_(0),
       sid_(MakeSid()) {
-  CHECK(base_task_);
+  CHECK(base_task_.get());
   CHECK(invalidation_client_);
   invalidation::NetworkEndpoint* network_endpoint =
       invalidation_client_->network_endpoint();
@@ -213,7 +213,7 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
   // Owned by base_task.
   CacheInvalidationListenTask* listen_task =
       new CacheInvalidationListenTask(
-          base_task, scoped_callback_factory_.NewCallback(
+          base_task_, scoped_callback_factory_.NewCallback(
               &CacheInvalidationPacketHandler::HandleInboundPacket));
   listen_task->Start();
 }
@@ -227,6 +227,9 @@ CacheInvalidationPacketHandler::~CacheInvalidationPacketHandler() {
 
 void CacheInvalidationPacketHandler::HandleOutboundPacket(
     invalidation::NetworkEndpoint* const& network_endpoint) {
+  if (!base_task_.get()) {
+    return;
+  }
   CHECK_EQ(network_endpoint, invalidation_client_->network_endpoint());
   invalidation::string message;
   network_endpoint->TakeOutboundMessage(&message);
@@ -236,7 +239,7 @@ void CacheInvalidationPacketHandler::HandleOutboundPacket(
                << message;
     return;
   }
-  // Owned by base_task.
+  // Owned by base_task_.
   CacheInvalidationSendMessageTask* send_message_task =
       new CacheInvalidationSendMessageTask(base_task_,
                                            buzz::Jid(kBotJid),
