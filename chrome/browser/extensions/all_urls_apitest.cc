@@ -15,6 +15,10 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
+#if !defined(OS_WIN)
+#define WhitelistedExtension FLAKY_WhitelistedExtension
+#endif
+
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   // First load the two extension.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
