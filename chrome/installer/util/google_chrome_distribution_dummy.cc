@@ -14,10 +14,110 @@
 
 #include "base/logging.h"
 
-bool GoogleChromeDistribution::BuildUninstallMetricsString(
-    DictionaryValue* uninstall_metrics_dict, std::wstring* metrics) {
+GoogleChromeDistribution::GoogleChromeDistribution() {
+}
+
+void GoogleChromeDistribution::DoPostUninstallOperations(
+    const installer::Version& version,
+    const std::wstring& local_data_path,
+    const std::wstring& distribution_data) {
+}
+
+std::wstring GoogleChromeDistribution::GetAppGuid() {
   NOTREACHED();
-  return false;
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetApplicationName() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetAlternateApplicationName() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetBrowserAppId() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetInstallSubDir() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetPublisherName() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetAppDescription() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::string GoogleChromeDistribution::GetSafeBrowsingName() {
+  NOTREACHED();
+  return std::string();
+}
+
+std::wstring GoogleChromeDistribution::GetStateKey() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetStateMediumKey() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetStatsServerURL() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetDistributionData(RegKey* key) {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetUninstallLinkName() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetUninstallRegPath() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetVersionKey() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+std::wstring GoogleChromeDistribution::GetEnvVersionKey() {
+  NOTREACHED();
+  return std::wstring();
+}
+
+void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
+      bool incremental_install, installer_util::InstallStatus install_status) {
+  NOTREACHED();
+}
+
+void GoogleChromeDistribution::LaunchUserExperiment(
+    installer_util::InstallStatus status, const installer::Version& version,
+    bool system_install) {
+  NOTREACHED();
+}
+
+void GoogleChromeDistribution::InactiveUserToastExperiment(
+    int flavor,
+    bool system_install) {
+  NOTREACHED();
 }
 
 bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
@@ -32,12 +132,9 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
   return false;
 }
 
-void GoogleChromeDistribution::LaunchUserExperiment(
-    installer_util::InstallStatus status, const installer::Version& version,
-    bool system_install) {
+bool GoogleChromeDistribution::BuildUninstallMetricsString(
+    DictionaryValue* uninstall_metrics_dict, std::wstring* metrics) {
   NOTREACHED();
+  return false;
 }
-void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
-                                                           bool system_install) {
-  NOTREACHED();
-}
+

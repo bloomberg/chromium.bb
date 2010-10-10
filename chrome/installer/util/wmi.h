@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,14 +17,16 @@
 // For more information about WMI programming:
 // http://msdn2.microsoft.com/en-us/library/aa384642(VS.85).aspx
 
-#ifndef BASE_WMI_UTIL_H__
-#define BASE_WMI_UTIL_H__
+#ifndef CHROME_INSTALLER_UTIL_WMI_H_
+#define CHROME_INSTALLER_UTIL_WMI_H_
 #pragma once
 
 #include <string>
 #include <wbemidl.h>
 
-class WMIUtil {
+namespace installer {
+
+class WMI {
  public:
   // Creates an instance of the WMI service connected to the local computer and
   // returns its COM interface. If 'set-blanket' is set to true, the basic COM
@@ -57,7 +59,7 @@ class WMIUtil {
 
 // This class contains functionality of the WMI class 'Win32_Process'
 // more info: http://msdn2.microsoft.com/en-us/library/aa394372(VS.85).aspx
-class WMIProcessUtil {
+class WMIProcess {
  public:
   // Creates a new process from 'command_line'. The advantage over CreateProcess
   // is that it allows you to always break out from a Job object that the caller
@@ -71,4 +73,6 @@ class WMIProcessUtil {
   static bool Launch(const std::wstring& command_line, int* process_id);
 };
 
-#endif  // BASE_WMI_UTIL_H__
+}  // namespace installer
+
+#endif  // CHROME_INSTALLER_UTIL_WMI_H_

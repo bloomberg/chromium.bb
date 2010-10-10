@@ -1,17 +1,21 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/wmi.h"
+
 #include <windows.h>
+
 #include "base/basictypes.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 
 #pragma comment(lib, "wbemuuid.lib")
 
-#include "base/wmi_util.h"
+namespace installer {
 
 namespace {
+
 // Simple class to manage the lifetime of a variant.
 // TODO(tommi): Replace this for a more useful class.
 class VariantHelper : public VARIANT {
@@ -31,8 +35,8 @@ class VariantHelper : public VARIANT {
 
 }  // namespace
 
-bool WMIUtil::CreateLocalConnection(bool set_blanket,
-                                    IWbemServices** wmi_services) {
+bool WMI::CreateLocalConnection(bool set_blanket,
+                                IWbemServices** wmi_services) {
   ScopedComPtr<IWbemLocator> wmi_locator;
   HRESULT hr = wmi_locator.CreateInstance(CLSID_WbemLocator, NULL,
                                           CLSCTX_INPROC_SERVER);
@@ -62,10 +66,10 @@ bool WMIUtil::CreateLocalConnection(bool set_blanket,
   return true;
 }
 
-bool WMIUtil::CreateClassMethodObject(IWbemServices* wmi_services,
-                                      const std::wstring& class_name,
-                                      const std::wstring& method_name,
-                                      IWbemClassObject** class_instance) {
+bool WMI::CreateClassMethodObject(IWbemServices* wmi_services,
+                                  const std::wstring& class_name,
+                                  const std::wstring& method_name,
+                                  IWbemClassObject** class_instance) {
   // We attempt to instantiate a COM object that represents a WMI object plus
   // a method rolled into one entity.
   ScopedBstr b_class_name(class_name.c_str());
@@ -103,16 +107,16 @@ bool SetParameter(IWbemClassObject* class_method,
 // CIM class is documented here:
 // http://msdn2.microsoft.com/en-us/library/aa389388(VS.85).aspx
 
-bool WMIProcessUtil::Launch(const std::wstring& command_line, int* process_id) {
+bool WMIProcess::Launch(const std::wstring& command_line, int* process_id) {
   ScopedComPtr<IWbemServices> wmi_local;
-  if (!WMIUtil::CreateLocalConnection(true, wmi_local.Receive()))
+  if (!WMI::CreateLocalConnection(true, wmi_local.Receive()))
     return false;
 
   const wchar_t class_name[] = L"Win32_Process";
   const wchar_t method_name[] = L"Create";
   ScopedComPtr<IWbemClassObject> process_create;
-  if (!WMIUtil::CreateClassMethodObject(wmi_local, class_name, method_name,
-                                        process_create.Receive()))
+  if (!WMI::CreateClassMethodObject(wmi_local, class_name, method_name,
+                                    process_create.Receive()))
     return false;
 
   VariantHelper b_command_line(VT_BSTR);
@@ -144,3 +148,5 @@ bool WMIProcessUtil::Launch(const std::wstring& command_line, int* process_id) {
 
   return true;
 }
+
+}  // namespace installer

@@ -22,7 +22,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
-#include "base/wmi_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
@@ -33,6 +32,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/util_constants.h"
+#include "chrome/installer/util/wmi.h"
 
 #include "installer_util_strings.h"
 
@@ -373,7 +373,7 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   // process runs inside a Job object controlled by the shell. As long as there
   // are processes running, the shell will not close the uninstall applet. WMI
   // allows us to escape from the Job object so the applet will close.
-  WMIProcessUtil::Launch(command, &pid);
+  installer::WMIProcess::Launch(command, &pid);
 }
 
 std::wstring GoogleChromeDistribution::GetAppGuid() {
