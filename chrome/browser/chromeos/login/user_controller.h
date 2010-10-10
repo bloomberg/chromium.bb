@@ -20,7 +20,6 @@
 #include "views/widget/widget_delegate.h"
 
 namespace views {
-class NativeButton;
 class WidgetGtk;
 }
 
@@ -172,10 +171,6 @@ class UserController : public views::ButtonListener,
 
   // Returns tooltip text for user name.
   std::wstring GetNameTooltip() const;
-
-  // Enable or disable the 'Submit' button based on the contents of
-  // |password_field_|. Enabled if there is text, otherwise disabled.
-  void UpdateSubmitButtonState();
 
   // User index within all the users.
   int user_index_;

@@ -23,8 +23,6 @@ class ExistingUserView : public views::View {
 
   views::Textfield* password_field() { return password_field_; }
 
-  views::NativeButton* submit_button() { return submit_button_; }
-
   void FocusPasswordField();
 
   // Overridden from views::View:
@@ -41,9 +39,6 @@ class ExistingUserView : public views::View {
 
   // For editing the password.
   views::Textfield* password_field_;
-
-  // Button to start login.
-  views::NativeButton* submit_button_;
 
   UserController* user_controller_;
 

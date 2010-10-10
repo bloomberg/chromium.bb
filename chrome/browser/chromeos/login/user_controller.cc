@@ -216,7 +216,6 @@ void UserController::Init(int index,
 void UserController::SetPasswordEnabled(bool enable) {
   DCHECK(!is_new_user_);
   existing_user_view_->password_field()->SetEnabled(enable);
-  existing_user_view_->submit_button()->SetEnabled(enable);
   enable ? user_view_->StopThrobber() : user_view_->StartThrobber();
 }
 
@@ -240,13 +239,6 @@ std::wstring UserController::GetNameTooltip() const {
   return base::StringPrintf(L"%s (%s)",
                             user_.GetDisplayName().c_str(),
                             domain.c_str());
-}
-
-void UserController::UpdateSubmitButtonState() {
-  if (!is_new_user_) {
-    existing_user_view_->submit_button()->SetEnabled(
-        !existing_user_view_->password_field()->text().empty());
-  }
 }
 
 void UserController::ClearAndEnablePassword() {
@@ -284,7 +276,7 @@ void UserController::EnableNameTooltip(bool enable) {
 }
 
 void UserController::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
+	                           const views::Event& event) {
   Login();
 }
 
@@ -307,7 +299,6 @@ bool UserController::HandleKeystroke(
 
 void UserController::ContentsChanged(views::Textfield* sender,
                                      const string16& new_contents) {
-  UpdateSubmitButtonState();
 }
 
 void UserController::Observe(
