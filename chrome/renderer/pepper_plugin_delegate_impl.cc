@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/string_split.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/common/child_thread.h"
@@ -711,7 +712,8 @@ bool PepperPluginDelegateImpl::Delete(
     fileapi::FileSystemCallbackDispatcher* dispatcher) {
   FileSystemDispatcher* file_system_dispatcher =
       ChildThread::current()->file_system_dispatcher();
-  return file_system_dispatcher->Remove(path, false /* recursive */, dispatcher);
+  return file_system_dispatcher->Remove(path, false /* recursive */,
+                                        dispatcher);
 }
 
 bool PepperPluginDelegateImpl::Rename(
@@ -745,4 +747,13 @@ void PepperPluginDelegateImpl::ZoomLimitsChanged(double minimum_factor,
   double minimum_level = WebView::zoomFactorToZoomLevel(minimum_factor);
   double maximum_level = WebView::zoomFactorToZoomLevel(maximum_factor);
   render_view_->webview()->zoomLimitsChanged(minimum_level, maximum_level);
+}
+
+std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {
+  int net_error;
+  std::string proxy_result;
+  IPC::Message* msg =
+      new ViewHostMsg_ResolveProxy(url, &net_error, &proxy_result);
+  RenderThread::current()->Send(msg);
+  return proxy_result;
 }

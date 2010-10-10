@@ -18,6 +18,7 @@
 #include "third_party/ppapi/c/pp_stdint.h"
 
 class AudioMessageFilter;
+class GURL;
 
 namespace base {
 class MessageLoopProxy;
@@ -206,6 +207,10 @@ class PluginDelegate {
   // Sets the mininum and maximium zoom factors.
   virtual void ZoomLimitsChanged(double minimum_factor,
                                  double maximum_factor) = 0;
+
+  // Retrieves the proxy information for the given URL in PAC format. On error,
+  // this will return an empty string.
+  virtual std::string ResolveProxy(const GURL& url) = 0;
 };
 
 }  // namespace pepper

@@ -11,7 +11,7 @@
 #include "third_party/ppapi/c/pp_rect.h"
 #include "third_party/ppapi/c/pp_var.h"
 
-#define PPB_PRIVATE2_INTERFACE "PPB_Private2;1"
+#define PPB_PRIVATE2_INTERFACE "PPB_Private2;2"
 
 struct PP_FontDescription_Dev;
 
@@ -30,6 +30,10 @@ struct PPB_Private2 {
                      uint32_t glyph_count,
                      uint16_t glyph_indices[],
                      PP_Point glyph_advances[]);
+
+  // Retrieves the proxy that will be used for the given URL. The result will
+  // be a string in PAC format, or an undefined var on error.
+  PP_Var (*GetProxyForURL)(PP_Module module, const char* url);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE2_H_
