@@ -238,7 +238,7 @@ void CrosMock::SetKeyboardLibraryStatusAreaExpectations() {
 
 void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_input_method_library_, AddObserver(_))
-      .Times(1)
+      .Times(AnyNumber())
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, GetActiveInputMethods())
       .Times(AnyNumber())
@@ -257,7 +257,7 @@ void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
       .WillRepeatedly((Return(true)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, RemoveObserver(_))
-      .Times(1)
+      .Times(AnyNumber())
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_input_method_library_, SetDeferImeStartup(_))
       .Times(AnyNumber())

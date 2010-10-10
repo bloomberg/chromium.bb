@@ -8612,6 +8612,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LANGUAGE_SELECTION_SELECT" desc="Label for language selection dropdown">
         Select your language:
       </message>
+      <message name="IDS_KEYBOARD_SELECTION_SELECT" desc="Label for keyboard selection dropdown">
+        Select your keyboard:
+      </message>
       <message name="IDS_NETWORK_SELECTION_NONE" desc="Text shown in combobox when no network are selected">
         No selection
       </message>
@@ -9997,7 +10000,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Romanian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_USA" desc="In the language menu button, this shows the input mode.">
-        English (USA)
+        English (United States)
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL" desc="In the language menu button, this shows the input mode.">
         English (USA international)

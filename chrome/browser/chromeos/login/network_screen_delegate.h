@@ -17,6 +17,7 @@ class Size;
 
 namespace chromeos {
 
+class KeyboardSwitchMenu;
 class LanguageSwitchMenu;
 
 // Interface that NetworkScreen exposes to the NetworkSelectionView.
@@ -27,6 +28,7 @@ class NetworkScreenDelegate : public views::ButtonListener,
   virtual void ClearErrors() = 0;
 
   virtual LanguageSwitchMenu* language_switch_menu() = 0;
+  virtual KeyboardSwitchMenu* keyboard_switch_menu() = 0;
 
   virtual gfx::Size size() const = 0;
 

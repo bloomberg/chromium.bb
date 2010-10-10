@@ -100,8 +100,10 @@ class NetworkSelectionView : public views::View,
 
   // Screen controls.
   views::MenuButton* languages_menubutton_;
+  views::MenuButton* keyboards_menubutton_;
   views::Label* welcome_label_;
   views::Label* select_language_label_;
+  views::Label* select_keyboard_label_;
   views::Label* select_network_label_;
   views::Label* connecting_network_label_;
   NetworkDropdownButton* network_dropdown_;

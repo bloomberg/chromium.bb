@@ -12,6 +12,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/keyboard_switch_menu.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -58,7 +59,7 @@ const int kPaddingColumnWidth = 55;
 const int kMediumPaddingColumnWidth = 20;
 const int kControlPaddingRow = 15;
 
-// Fixed size for language/network controls height.
+// Fixed size for language/keyboard/network controls height.
 const int kSelectionBoxHeight = 29;
 
 // Menu button is drawn using our custom icons in resources. See
@@ -147,8 +148,10 @@ class NotifyingMenuButton : public views::MenuButton {
 NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
     : contents_view_(NULL),
       languages_menubutton_(NULL),
+      keyboards_menubutton_(NULL),
       welcome_label_(NULL),
       select_language_label_(NULL),
+      select_keyboard_label_(NULL),
       select_network_label_(NULL),
       connecting_network_label_(NULL),
       network_dropdown_(NULL),
@@ -187,6 +190,13 @@ void NetworkSelectionView::AddControlsToLayout(const gfx::Size& size,
                     kSelectionBoxHeight);
     contents_layout->AddPaddingRow(0, kControlPaddingRow);
     contents_layout->StartRow(0, STANDARD_ROW);
+    contents_layout->AddView(select_keyboard_label_);
+    contents_layout->AddView(keyboards_menubutton_, 1, 1,
+                    GridLayout::FILL, GridLayout::FILL,
+                    keyboards_menubutton_->GetPreferredSize().width(),
+                    kSelectionBoxHeight);
+    contents_layout->AddPaddingRow(0, kControlPaddingRow);
+    contents_layout->StartRow(0, STANDARD_ROW);
     contents_layout->AddView(select_network_label_);
     contents_layout->AddView(network_dropdown_, 1, 1,
                     GridLayout::FILL, GridLayout::FILL,
@@ -209,11 +219,15 @@ void NetworkSelectionView::AddControlsToLayout(const gfx::Size& size,
 void NetworkSelectionView::InitLayout() {
   gfx::Size screen_size = delegate_->size();
   const int widest_label = std::max(
-      select_language_label_->GetPreferredSize().width(),
+      std::max(
+          select_language_label_->GetPreferredSize().width(),
+          select_keyboard_label_->GetPreferredSize().width()),
       select_network_label_->GetPreferredSize().width());
   const int dropdown_width = screen_size.width() - 2 * kBorderSize -
       2 * kPaddingColumnWidth - kMediumPaddingColumnWidth - widest_label;
   delegate_->language_switch_menu()->SetFirstLevelMenuWidth(
+      dropdown_width - kMenuWidthOffset);
+  delegate_->keyboard_switch_menu()->SetMinimumWidth(
       dropdown_width - kMenuWidthOffset);
   network_dropdown_->SetFirstLevelMenuWidth(dropdown_width - kMenuWidthOffset);
 
@@ -297,6 +311,17 @@ void NetworkSelectionView::Init() {
   languages_menubutton_->set_menu_offset(kMenuHorizontalOffset,
                                          kMenuVerticalOffset);
 
+  select_keyboard_label_ = new views::Label();
+  select_keyboard_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+
+  keyboards_menubutton_ = new views::MenuButton(
+      NULL /* listener */, L"", delegate_->keyboard_switch_menu(),
+      true /* show_menu_marker */);
+  keyboards_menubutton_->SetFocusable(true);
+  keyboards_menubutton_->SetNormalHasBorder(true);
+  delegate_->keyboard_switch_menu()->SetMenuOffset(kMenuHorizontalOffset,
+                                                   kMenuVerticalOffset);
+
   select_network_label_ = new views::Label();
   select_network_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
 
@@ -325,10 +350,14 @@ void NetworkSelectionView::Init() {
 void NetworkSelectionView::UpdateLocalizedStrings() {
   languages_menubutton_->SetText(
       delegate_->language_switch_menu()->GetCurrentLocaleName());
+  keyboards_menubutton_->SetText(
+      delegate_->keyboard_switch_menu()->GetCurrentKeyboardName());
   welcome_label_->SetText(l10n_util::GetStringF(IDS_NETWORK_SELECTION_TITLE,
                           l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
   select_language_label_->SetText(
       l10n_util::GetString(IDS_LANGUAGE_SELECTION_SELECT));
+  select_keyboard_label_->SetText(
+      l10n_util::GetString(IDS_KEYBOARD_SELECTION_SELECT));
   select_network_label_->SetText(
       l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
   proxy_settings_link_->SetText(
@@ -375,6 +404,8 @@ void NetworkSelectionView::ShowConnectingStatus(bool connecting,
   UpdateConnectingNetworkLabel();
   select_language_label_->SetVisible(!connecting);
   languages_menubutton_->SetVisible(!connecting);
+  select_keyboard_label_->SetVisible(!connecting);
+  keyboards_menubutton_->SetVisible(!connecting);
   select_network_label_->SetVisible(!connecting);
   network_dropdown_->SetVisible(!connecting);
   continue_button_->SetVisible(!connecting);
