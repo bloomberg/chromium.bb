@@ -79,6 +79,9 @@ const char kWebStoreLogin[] = "extensions.webstore_login";
 // used for apps.
 const char kPrefLaunchType[] = "launchType";
 
+// A preference determining the order of which the apps appear on the NTP.
+const char kPrefAppLaunchIndex[] = "app_launcher_index";
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -538,6 +541,8 @@ void ExtensionPrefs::OnExtensionInstalled(
     UpdateExtensionPref(id, kPrefManifest,
                         extension->manifest_value()->DeepCopy());
   }
+  UpdateExtensionPref(id, kPrefAppLaunchIndex,
+                      Value::CreateIntegerValue(GetNextAppLaunchIndex()));
   SavePrefsAndNotify();
 }
 
@@ -862,6 +867,37 @@ bool ExtensionPrefs::GetWebStoreLogin(std::string* result) {
 void ExtensionPrefs::SetWebStoreLogin(const std::string& login) {
   prefs_->SetString(kWebStoreLogin, login);
   SavePrefsAndNotify();
+}
+
+int ExtensionPrefs::GetAppLaunchIndex(const std::string& extension_id) {
+  int value;
+  if (ReadExtensionPrefInteger(extension_id, kPrefAppLaunchIndex, &value))
+    return value;
+
+  return -1;
+}
+
+void ExtensionPrefs::SetAppLaunchIndex(const std::string& extension_id,
+                                       int index) {
+  DCHECK_GE(index, 0);
+  UpdateExtensionPref(extension_id, kPrefAppLaunchIndex,
+                      Value::CreateIntegerValue(index));
+  SavePrefsAndNotify();
+}
+
+int ExtensionPrefs::GetNextAppLaunchIndex() {
+  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  if (!extensions)
+    return 0;
+
+  int max_value = -1;
+  for (DictionaryValue::key_iterator extension_id = extensions->begin_keys();
+       extension_id != extensions->end_keys(); ++extension_id) {
+    int value = GetAppLaunchIndex(*extension_id);
+    if (value > max_value)
+      max_value = value;
+  }
+  return max_value + 1;
 }
 
 // static

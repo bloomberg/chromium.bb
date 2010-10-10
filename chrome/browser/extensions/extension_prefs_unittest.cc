@@ -334,3 +334,36 @@ class ExtensionPrefsOnExtensionInstalled : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsOnExtensionInstalled,
        ExtensionPrefsOnExtensionInstalled) {}
+
+class ExtensionPrefsAppLaunchIndex : public ExtensionPrefsTest {
+public:
+  virtual void Initialize() {
+    // No extensions yet.
+    EXPECT_EQ(0, prefs()->GetNextAppLaunchIndex());
+
+    extension_.reset(prefs_.AddExtension("on_extension_installed"));
+    EXPECT_EQ(Extension::ENABLED,
+        prefs()->GetExtensionState(extension_->id()));
+    prefs()->OnExtensionInstalled(extension_.get(),
+        Extension::ENABLED, false);
+  }
+
+  virtual void Verify() {
+    int launch_index = prefs()->GetAppLaunchIndex(extension_->id());
+    // Extension should have been assigned a launch index > 0.
+    EXPECT_GT(launch_index, 0);
+    EXPECT_EQ(launch_index + 1, prefs()->GetNextAppLaunchIndex());
+    // Set a new launch index of one higher and verify.
+    prefs()->SetAppLaunchIndex(extension_->id(),
+        prefs()->GetNextAppLaunchIndex());
+    int new_launch_index = prefs()->GetAppLaunchIndex(extension_->id());
+    EXPECT_EQ(launch_index + 1, new_launch_index);
+
+    // This extension doesn't exist, so it should return -1.
+    EXPECT_EQ(-1, prefs()->GetAppLaunchIndex("foo"));
+  }
+
+private:
+  scoped_ptr<Extension> extension_;
+};
+TEST_F(ExtensionPrefsAppLaunchIndex, ExtensionPrefsAppLaunchIndex) {}

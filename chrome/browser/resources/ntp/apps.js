@@ -14,6 +14,10 @@ function getAppsCallback(data) {
     appsSectionContent.removeChild(appsSectionContent.lastChild);
   }
 
+  data.apps.sort(function(a,b) {
+    return a.app_launch_index - b.app_launch_index
+  });
+
   clearClosedMenu(apps.menu);
   if (data.apps.length == 0) {
     appsSection.classList.add('disabled');

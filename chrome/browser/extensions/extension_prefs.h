@@ -174,6 +174,19 @@ class ExtensionPrefs {
   bool GetWebStoreLogin(std::string* result);
   void SetWebStoreLogin(const std::string& login);
 
+  // Get the application launch index for an extension with |extension_id|. This
+  // determines the order of which the applications appear on the New Tab Page.
+  // A value of 0 generally indicates top left. If the extension has no launch
+  // index a -1 value is returned.
+  int GetAppLaunchIndex(const std::string& extension_id);
+
+  // Sets a specific launch index for an extension with |extension_id|.
+  void SetAppLaunchIndex(const std::string& extension_id, int index);
+
+  // Gets the next available application launch index. This is 1 higher than the
+  // highest current application launch index found.
+  int GetNextAppLaunchIndex();
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // The underlying PrefService.

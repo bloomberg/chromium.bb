@@ -121,6 +121,14 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
   value->SetInteger("launch_container", extension->launch_container());
   value->SetInteger("launch_type",
       extension_prefs->GetLaunchType(extension->id()));
+
+  int app_launch_index = extension_prefs->GetAppLaunchIndex(extension->id());
+  if (app_launch_index == -1) {
+    // Make sure every app has a launch index (some predate the launch index).
+    app_launch_index = extension_prefs->GetNextAppLaunchIndex();
+    extension_prefs->SetAppLaunchIndex(extension->id(), app_launch_index);
+  }
+  value->SetInteger("app_launch_index", app_launch_index);
 }
 
 void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
