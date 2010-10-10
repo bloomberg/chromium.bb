@@ -133,8 +133,8 @@ class PrefValueStoreTest : public testing::Test {
     pref_value_store_->RegisterPreferenceType(prefs::kDefaultPref,
                                               Value::TYPE_INTEGER);
 
-    ui_thread_.reset(new ChromeThread(ChromeThread::UI, &loop_));
-    file_thread_.reset(new ChromeThread(ChromeThread::FILE, &loop_));
+    ui_thread_.reset(new BrowserThread(BrowserThread::UI, &loop_));
+    file_thread_.reset(new BrowserThread(BrowserThread::FILE, &loop_));
   }
 
   // Creates a new dictionary and stores some sample user preferences
@@ -250,8 +250,8 @@ class PrefValueStoreTest : public testing::Test {
   DictionaryValue* default_prefs_;
 
  private:
-  scoped_ptr<ChromeThread> ui_thread_;
-  scoped_ptr<ChromeThread> file_thread_;
+  scoped_ptr<BrowserThread> ui_thread_;
+  scoped_ptr<BrowserThread> file_thread_;
 };
 
 TEST_F(PrefValueStoreTest, IsReadOnly) {
@@ -640,8 +640,8 @@ TEST_F(PrefValueStoreTest, TestPolicyRefresh) {
   // recommended stores should change.
   MockPolicyRefreshCallback callback;
   EXPECT_CALL(callback, DoCallback(_)).Times(0);
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           pref_value_store_.get(),
           &PrefValueStore::RefreshPolicyPrefs,
@@ -718,8 +718,8 @@ TEST_F(PrefValueStoreTest, TestRefreshPolicyPrefsCompletion) {
 
 TEST_F(PrefValueStoreTest, TestConcurrentPolicyRefresh) {
   MockPolicyRefreshCallback callback1;
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           pref_value_store_.get(),
           &PrefValueStore::RefreshPolicyPrefs,
@@ -730,8 +730,8 @@ TEST_F(PrefValueStoreTest, TestConcurrentPolicyRefresh) {
   EXPECT_CALL(callback1, DoCallback(_)).Times(0);
 
   MockPolicyRefreshCallback callback2;
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           pref_value_store_.get(),
           &PrefValueStore::RefreshPolicyPrefs,
@@ -742,8 +742,8 @@ TEST_F(PrefValueStoreTest, TestConcurrentPolicyRefresh) {
   EXPECT_CALL(callback2, DoCallback(_)).Times(0);
 
   MockPolicyRefreshCallback callback3;
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           pref_value_store_.get(),
           &PrefValueStore::RefreshPolicyPrefs,

@@ -105,7 +105,7 @@ class ThumbnailLoader : public base::RefCountedThreadSafe<ThumbnailLoader> {
   }
 
   void DidReceiveBitmap(const SkBitmap& bitmap) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ResetPaintingObserver();
     [layer_ setThumbnail:bitmap];
   }
@@ -127,7 +127,7 @@ class ThumbnailLoader : public base::RefCountedThreadSafe<ThumbnailLoader> {
 };
 
 void ThumbnailLoader::LoadThumbnail() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
   if (!generator)  // In unit tests.
     return;

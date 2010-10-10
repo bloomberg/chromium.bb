@@ -66,7 +66,7 @@ std::string IOThreadSearchTermsData::GetApplicationLocale() const {
 // deleted on the correct thread.)
 class GoogleURLChangeNotifier
     : public base::RefCountedThreadSafe<GoogleURLChangeNotifier,
-                                        ChromeThread::DeleteOnIOThread> {
+                                        BrowserThread::DeleteOnIOThread> {
  public:
   explicit GoogleURLChangeNotifier(
       const base::WeakPtr<SearchProviderInstallData>& install_data);
@@ -76,7 +76,7 @@ class GoogleURLChangeNotifier
   void OnChange(const std::string& google_base_url);
 
  private:
-  friend struct ChromeThread::DeleteOnThread<ChromeThread::IO>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class DeleteTask<GoogleURLChangeNotifier>;
 
   ~GoogleURLChangeNotifier() {}

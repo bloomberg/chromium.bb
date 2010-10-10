@@ -527,7 +527,7 @@ void InterstitialPage::Disable() {
 
 void InterstitialPage::TakeActionOnResourceDispatcher(
     ResourceRequestAction action) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI)) <<
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI)) <<
       "TakeActionOnResourceDispatcher should be called on the main thread.";
 
   if (action == CANCEL || action == RESUME) {
@@ -546,8 +546,8 @@ void InterstitialPage::TakeActionOnResourceDispatcher(
   if (!rvh || !g_browser_process->resource_dispatcher_host())
     return;
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       new ResourceRequestTask(original_child_id_, original_rvh_id_, action));
 }
 

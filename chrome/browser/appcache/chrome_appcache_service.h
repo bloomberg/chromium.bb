@@ -26,7 +26,7 @@ class FilePath;
 // the IO thread (unless specifically called out in doc comments).
 class ChromeAppCacheService
     : public base::RefCountedThreadSafe<ChromeAppCacheService,
-                                        ChromeThread::DeleteOnIOThread>,
+                                        BrowserThread::DeleteOnIOThread>,
       public appcache::AppCacheService,
       public appcache::AppCachePolicy,
       public NotificationObserver {

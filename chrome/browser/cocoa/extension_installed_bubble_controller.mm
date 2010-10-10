@@ -203,7 +203,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 - (void)showWindow:(id)sender {
   // Generic extensions get an infobar rather than a bubble.
   DCHECK(type_ != extension_installed_bubble::kGeneric);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Load nib and calculate height based on messages to be shown.
   NSWindow* window = [self initializeWindow];

@@ -45,9 +45,9 @@ PolicyDirLoader::PolicyDirLoader(
 }
 
 void PolicyDirLoader::Stop() {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                           NewRunnableMethod(this, &PolicyDirLoader::Stop));
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            NewRunnableMethod(this, &PolicyDirLoader::Stop));
     return;
   }
 
@@ -58,7 +58,7 @@ void PolicyDirLoader::Stop() {
 }
 
 void PolicyDirLoader::Reload() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Check the directory time in order to see whether a reload is required.
   base::TimeDelta delay;
@@ -103,7 +103,7 @@ DictionaryValue* PolicyDirLoader::GetPolicy() {
 }
 
 void PolicyDirLoader::OnFilePathChanged(const FilePath& path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Reload();
 }
 
@@ -177,13 +177,13 @@ bool PolicyDirLoader::IsSafeToReloadPolicy(const base::Time& now,
 }
 
 void PolicyDirLoader::ScheduleReloadTask(const base::TimeDelta& delay) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (reload_task_)
     reload_task_->Cancel();
 
   reload_task_ = NewRunnableMethod(this, &PolicyDirLoader::ReloadFromTask);
-  ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE, reload_task_,
+  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE, reload_task_,
                                 delay.InMilliseconds());
 }
 
@@ -194,7 +194,7 @@ void PolicyDirLoader::NotifyPolicyChanged() {
 }
 
 void PolicyDirLoader::ReloadFromTask() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Drop the reference to the reload task, since the task might be the only
   // referer that keeps us alive, so we should not Cancel() it.
@@ -209,7 +209,7 @@ void PolicyDirWatcher::Init(PolicyDirLoader* loader) {
   // Initialization can happen early when the file thread is not yet available.
   // So post a task to ourselves on the UI thread which will run after threading
   // is up and schedule watch initialization on the file thread.
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &PolicyDirWatcher::InitWatcher,
                         scoped_refptr<PolicyDirLoader>(loader)));
@@ -217,8 +217,8 @@ void PolicyDirWatcher::Init(PolicyDirLoader* loader) {
 
 void PolicyDirWatcher::InitWatcher(
     const scoped_refptr<PolicyDirLoader>& loader) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &PolicyDirWatcher::InitWatcher, loader));
     return;
   }

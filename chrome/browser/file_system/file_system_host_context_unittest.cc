@@ -129,7 +129,7 @@ const struct IsRestrictedNameTest {
 class FileSystemHostContextTest : public testing::Test {
  public:
   FileSystemHostContextTest()
-      : io_thread_(ChromeThread::IO, &message_loop_),
+      : io_thread_(BrowserThread::IO, &message_loop_),
         data_path_(kTestDataPath) {
   }
 

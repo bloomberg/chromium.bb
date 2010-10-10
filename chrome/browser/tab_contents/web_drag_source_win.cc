@@ -44,9 +44,9 @@ WebDragSource::WebDragSource(gfx::NativeWindow source_wnd,
 
 void WebDragSource::OnDragSourceCancel() {
   // Delegate to the UI thread if we do drag-and-drop in the background thread.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &WebDragSource::OnDragSourceCancel));
     return;
   }
@@ -68,8 +68,8 @@ void WebDragSource::OnDragSourceDrop() {
   // event to happen after the "drop" event. Since  Windows calls these two
   // directly after each other we can just post a task to handle the
   // OnDragSourceDrop after the current task.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &WebDragSource::DelayedOnDragSourceDrop));
 }
 
@@ -87,9 +87,9 @@ void WebDragSource::DelayedOnDragSourceDrop() {
 
 void WebDragSource::OnDragSourceMove() {
   // Delegate to the UI thread if we do drag-and-drop in the background thread.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &WebDragSource::OnDragSourceMove));
     return;
   }

@@ -46,8 +46,8 @@ class MockBalloonCollection : public BalloonCollection {
 class BalloonControllerTest : public RenderViewHostTestHarness {
  public:
   BalloonControllerTest() :
-      ui_thread_(ChromeThread::UI, MessageLoop::current()),
-      io_thread_(ChromeThread::IO, MessageLoop::current()) {
+      ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      io_thread_(BrowserThread::IO, MessageLoop::current()) {
   }
 
   virtual void SetUp() {
@@ -65,8 +65,8 @@ class BalloonControllerTest : public RenderViewHostTestHarness {
   }
 
  protected:
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<BalloonCollection> collection_;

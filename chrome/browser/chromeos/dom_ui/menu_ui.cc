@@ -575,8 +575,8 @@ MenuUI::MenuUI(TabContents* contents, ChromeURLDataManager::DataSource* source)
   MenuHandler* handler = new MenuHandler();
   AddMessageHandler((handler)->Attach(this));
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

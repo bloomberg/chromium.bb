@@ -27,8 +27,8 @@ template<typename BASE>
 class ConfigDirPolicyProviderTestBase : public BASE {
  protected:
   ConfigDirPolicyProviderTestBase()
-      : ui_thread_(ChromeThread::UI, &loop_),
-        file_thread_(ChromeThread::FILE, &loop_) {}
+      : ui_thread_(BrowserThread::UI, &loop_),
+        file_thread_(BrowserThread::FILE, &loop_) {}
 
   virtual void SetUp() {
     // Determine the directory to use for testing.
@@ -61,8 +61,8 @@ class ConfigDirPolicyProviderTestBase : public BASE {
 
   FilePath test_dir_;
   MessageLoop loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 };
 
 // A mock provider that allows us to capture reload notifications.

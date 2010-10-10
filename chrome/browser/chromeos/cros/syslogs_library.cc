@@ -82,7 +82,7 @@ CancelableRequestProvider::Handle SyslogsLibraryImpl::RequestSyslogs(
 void SyslogsLibraryImpl::ReadSyslogs(
     scoped_refptr<CancelableRequest<ReadCompleteCallback> > request,
     bool compress_logs) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (request->canceled())
     return;

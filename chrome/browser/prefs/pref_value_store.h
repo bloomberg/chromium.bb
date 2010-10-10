@@ -217,7 +217,7 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // Called during policy refresh to do the ReadPrefs on the FILE thread.
   // RefreshPolicyPrefsOnFileThread takes ownership of the |callback| object.
   void RefreshPolicyPrefsOnFileThread(
-      ChromeThread::ID calling_thread_id,
+      BrowserThread::ID calling_thread_id,
       PrefStore* new_managed_pref_store,
       PrefStore* new_recommended_pref_store,
       AfterRefreshCallback* callback);

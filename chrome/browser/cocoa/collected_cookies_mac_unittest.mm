@@ -19,7 +19,7 @@ class CollectedCookiesWindowControllerTest : public RenderViewHostTestHarness {
 };
 
 TEST_F(CollectedCookiesWindowControllerTest, Construction) {
-  ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
+  BrowserThread ui_thread(BrowserThread::UI, MessageLoop::current());
   // Create a test tab.  SiteInstance will be deleted when tabContents is
   // deleted.
   SiteInstance* instance =

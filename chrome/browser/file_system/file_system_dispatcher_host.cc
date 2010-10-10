@@ -59,7 +59,7 @@ struct OpenFileSystemCompletionTask {
       dispatcher_host_(dispatcher_host),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
     base::FileUtilProxy::CreateDirectory(
-        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
         root_path_, false, true, callback_factory_.NewCallback(
             &OpenFileSystemCompletionTask::DidFinish));
   }
@@ -89,7 +89,7 @@ FileSystemDispatcherHost::~FileSystemDispatcherHost() {
 }
 
 void FileSystemDispatcherHost::Init(base::ProcessHandle process_handle) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!shutdown_);
   DCHECK(!process_handle_);
   DCHECK(process_handle);
@@ -274,7 +274,7 @@ void FileSystemDispatcherHost::OnCancel(
 }
 
 void FileSystemDispatcherHost::Send(IPC::Message* message) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!shutdown_ && message_sender_)
     message_sender_->Send(message);
   else
@@ -328,7 +328,7 @@ fileapi::FileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
       new BrowserFileSystemCallbackDispatcher(this, request_id);
   fileapi::FileSystemOperation* operation = new fileapi::FileSystemOperation(
       dispatcher,
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   operations_.AddWithID(operation, request_id);
   return operation;
 }

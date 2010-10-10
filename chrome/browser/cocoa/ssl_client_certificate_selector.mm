@@ -99,7 +99,7 @@ void ShowSSLClientCertificateSelector(
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
   // TODO(davidben): Implement a tab-modal dialog.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   SSLClientCertificateSelectorCocoa* selector =
       [[[SSLClientCertificateSelectorCocoa alloc]
           initWithHandler:delegate

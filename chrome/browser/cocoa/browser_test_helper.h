@@ -28,9 +28,9 @@
 class BrowserTestHelper {
  public:
   BrowserTestHelper()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(new ChromeThread(ChromeThread::FILE, &message_loop_)),
-        io_thread_(new ChromeThread(ChromeThread::IO, &message_loop_)) {
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(new BrowserThread(BrowserThread::FILE, &message_loop_)),
+        io_thread_(new BrowserThread(BrowserThread::IO, &message_loop_)) {
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
@@ -84,9 +84,9 @@ class BrowserTestHelper {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  scoped_ptr<ChromeThread> file_thread_;
-  scoped_ptr<ChromeThread> io_thread_;
+  BrowserThread ui_thread_;
+  scoped_ptr<BrowserThread> file_thread_;
+  scoped_ptr<BrowserThread> io_thread_;
 };
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_

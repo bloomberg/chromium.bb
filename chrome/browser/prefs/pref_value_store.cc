@@ -46,7 +46,7 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
 
   JsonPrefStore* user = new JsonPrefStore(
       pref_filename,
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   DefaultPrefStore* default_store = new DefaultPrefStore();
 
   if (!user_only) {
@@ -286,12 +286,12 @@ void PrefValueStore::RefreshPolicyPrefsCompletion(
 }
 
 void PrefValueStore::RefreshPolicyPrefsOnFileThread(
-    ChromeThread::ID calling_thread_id,
+    BrowserThread::ID calling_thread_id,
     PrefStore* new_managed_pref_store,
     PrefStore* new_recommended_pref_store,
     AfterRefreshCallback* callback_pointer) {
   scoped_ptr<AfterRefreshCallback> callback(callback_pointer);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<PrefStore> managed_pref_store(new_managed_pref_store);
   scoped_ptr<PrefStore> recommended_pref_store(new_recommended_pref_store);
 
@@ -309,7 +309,7 @@ void PrefValueStore::RefreshPolicyPrefsOnFileThread(
     return;
   }
 
-  ChromeThread::PostTask(
+  BrowserThread::PostTask(
       calling_thread_id, FROM_HERE,
       NewRunnableMethod(this,
                         &PrefValueStore::RefreshPolicyPrefsCompletion,
@@ -322,10 +322,10 @@ void PrefValueStore::RefreshPolicyPrefs(
     PrefStore* new_managed_pref_store,
     PrefStore* new_recommended_pref_store,
     AfterRefreshCallback* callback) {
-  ChromeThread::ID current_thread_id;
-  CHECK(ChromeThread::GetCurrentThreadIdentifier(&current_thread_id));
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::ID current_thread_id;
+  CHECK(BrowserThread::GetCurrentThreadIdentifier(&current_thread_id));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
                         &PrefValueStore::RefreshPolicyPrefsOnFileThread,
                         current_thread_id,

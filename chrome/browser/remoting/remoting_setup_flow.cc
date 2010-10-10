@@ -52,7 +52,7 @@ class RemotingServiceProcessHelper
   }
 
   void OnProcessLaunched() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // If the flow is detached then show the done page.
     if (!flow_)
       return;
@@ -99,8 +99,8 @@ RemotingSetupFlow::RemotingSetupFlow(const std::string& args, Profile* profile)
       profile_(profile),
       process_control_(NULL) {
   // TODO(hclam): The data source should be added once.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
                         make_scoped_refptr(new RemotingResourcesSource())));

@@ -98,8 +98,8 @@ void HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
   }
 
   // callback_task_ member can only be accessed on IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           current_synchronizer,
           &HistogramSynchronizer::SetCallbackTaskToCallAfterGettingHistograms,
@@ -117,8 +117,8 @@ void HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
   }
 
   // Post a task that would be called after waiting for wait_time.
-  ChromeThread::PostDelayedTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostDelayedTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           current_synchronizer,
           &HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback,
