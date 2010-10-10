@@ -283,12 +283,12 @@ void BrowserProcessImpl::EndSession() {
 #if defined(USE_X11)
   //  Can't run a local loop on linux. Instead create a waitable event.
   base::WaitableEvent done_writing(false, false);
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(Signal, &done_writing));
   done_writing.TimedWait(
       base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds));
 #elif defined(OS_WIN)
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(PostQuit, MessageLoop::current()));
   MessageLoop::current()->Run();
 #else
@@ -549,7 +549,7 @@ void BrowserProcessImpl::CreateIOThread() {
   // The lifetime of the BACKGROUND_X11 thread is a subset of the IO thread so
   // we start it now.
   scoped_ptr<base::Thread> background_x11_thread(
-      new BrowserProcessSubThread(ChromeThread::BACKGROUND_X11));
+      new BrowserProcessSubThread(BrowserThread::BACKGROUND_X11));
   if (!background_x11_thread->Start())
     return;
   background_x11_thread_.swap(background_x11_thread);
@@ -568,7 +568,7 @@ void BrowserProcessImpl::CreateFileThread() {
   created_file_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(ChromeThread::FILE));
+      new BrowserProcessSubThread(BrowserThread::FILE));
   base::Thread::Options options;
 #if defined(OS_WIN)
   // On Windows, the FILE thread needs to be have a UI message loop which pumps
@@ -593,7 +593,7 @@ void BrowserProcessImpl::CreateDBThread() {
   created_db_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(ChromeThread::DB));
+      new BrowserProcessSubThread(BrowserThread::DB));
   if (!thread->Start())
     return;
   db_thread_.swap(thread);
@@ -604,7 +604,7 @@ void BrowserProcessImpl::CreateProcessLauncherThread() {
   created_process_launcher_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(ChromeThread::PROCESS_LAUNCHER));
+      new BrowserProcessSubThread(BrowserThread::PROCESS_LAUNCHER));
   if (!thread->Start())
     return;
   process_launcher_thread_.swap(thread);
@@ -615,7 +615,7 @@ void BrowserProcessImpl::CreateCacheThread() {
   created_cache_thread_ = true;
 
   scoped_ptr<base::Thread> thread(
-      new BrowserProcessSubThread(ChromeThread::CACHE));
+      new BrowserProcessSubThread(BrowserThread::CACHE));
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   if (!thread->StartWithOptions(options))
@@ -736,7 +736,7 @@ void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
 
 // Helper for SetIPCLoggingEnabled.
 void BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses(bool enabled) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   BrowserChildProcessHost::Iterator i;  // default constr references a singleton
   while (!i.Done()) {

@@ -276,7 +276,7 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
   for (WatcherSet::iterator watcher = watchers_[event->wd].begin();
        watcher != watchers_[event->wd].end();
        ++watcher) {
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(*watcher,
                           &FilePathWatcherImpl::OnFilePathChanged,
                           event->wd,
@@ -294,7 +294,7 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
                                             const FilePath::StringType& child,
                                             bool created,
                                             bool is_directory) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Find the entry in |watches_| that corresponds to |fired_watch|.
   WatchVector::const_iterator watch_entry(watches_.begin());
@@ -338,7 +338,7 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
 
 bool FilePathWatcherImpl::Watch(const FilePath& path,
                                 FilePathWatcher::Delegate* delegate) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(target_.empty());
 
   delegate_ = delegate;
@@ -357,8 +357,8 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
 
 void FilePathWatcherImpl::Cancel() {
   // Switch to the file thread if necessary so we can access |watches_|.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &FilePathWatcherImpl::Cancel));
     return;
   }
@@ -376,7 +376,7 @@ void FilePathWatcherImpl::Cancel() {
 bool FilePathWatcherImpl::UpdateWatches() {
   // Ensure this runs on the file thread exclusively in order to avoid
   // concurrency issues.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Walk the list of watches and update them as we go.
   FilePath path(FILE_PATH_LITERAL("/"));

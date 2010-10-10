@@ -230,8 +230,8 @@ class CheckDefaultBrowserTask : public Task {
       return;
 #endif
 
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE, new NotifyNotDefaultBrowserTask());
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, new NotifyNotDefaultBrowserTask());
   }
 
  private:
@@ -921,8 +921,8 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
       FirstRun::IsChromeFirstRun()) {
     return;
   }
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE, new CheckDefaultBrowserTask());
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, new CheckDefaultBrowserTask());
 }
 
 bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,

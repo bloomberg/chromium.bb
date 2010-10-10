@@ -10,8 +10,8 @@
 #include <Objbase.h>
 #endif
 
-BrowserProcessSubThread::BrowserProcessSubThread(ChromeThread::ID identifier)
-      : ChromeThread(identifier) {}
+BrowserProcessSubThread::BrowserProcessSubThread(BrowserThread::ID identifier)
+      : BrowserThread(identifier) {}
 
 BrowserProcessSubThread::~BrowserProcessSubThread() {
   // We cannot rely on our base class to stop the thread since we want our

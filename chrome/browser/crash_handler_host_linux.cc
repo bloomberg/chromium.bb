@@ -69,8 +69,8 @@ CrashHandlerHostLinux::CrashHandlerHostLinux() {
   process_socket_ = fds[0];
   browser_socket_ = fds[1];
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &CrashHandlerHostLinux::Init));
 }
 

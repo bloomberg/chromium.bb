@@ -64,7 +64,7 @@ const wchar_t* kBackgroundModeRegistryKeyName = L"chromium";
 namespace {
 
 FilePath GetAutostartDirectory(base::Environment* environment) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath result =
     base::GetXDGDirectory(environment, kXdgConfigHome, kConfig);
   result = result.Append(kAutostart);
@@ -339,11 +339,11 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
     return;
 #if defined(OS_LINUX)
   if (should_launch)
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                           new EnableLaunchOnStartupTask());
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            new EnableLaunchOnStartupTask());
   else
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                           new DisableLaunchOnStartupTask());
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            new DisableLaunchOnStartupTask());
 #elif defined(OS_MACOSX)
   if (should_launch) {
     // Return if Chrome is already a Login Item (avoid overriding user choice).

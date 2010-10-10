@@ -47,8 +47,8 @@ class StubSettingsObserver : public NotificationObserver {
 
 class CookiesTreeModelTest : public testing::Test {
  public:
-  CookiesTreeModelTest() : ui_thread_(ChromeThread::UI, &message_loop_),
-                           io_thread_(ChromeThread::IO, &message_loop_) {
+  CookiesTreeModelTest() : ui_thread_(BrowserThread::UI, &message_loop_),
+                           io_thread_(BrowserThread::IO, &message_loop_) {
   }
 
   virtual ~CookiesTreeModelTest() {
@@ -238,8 +238,8 @@ class CookiesTreeModelTest : public testing::Test {
   }
  protected:
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread io_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread io_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<MockBrowsingDataDatabaseHelper>

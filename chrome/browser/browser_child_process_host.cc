@@ -127,8 +127,8 @@ void BrowserChildProcessHost::ForceShutdown() {
 }
 
 void BrowserChildProcessHost::Notify(NotificationType type) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
 }
 
 bool BrowserChildProcessHost::DidChildCrash() {
@@ -183,14 +183,14 @@ void BrowserChildProcessHost::ClientHook::OnProcessLaunched() {
 
 BrowserChildProcessHost::Iterator::Iterator()
     : all_(true), type_(UNKNOWN_PROCESS) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
   iterator_ = Singleton<ChildProcessList>::get()->begin();
 }
 
 BrowserChildProcessHost::Iterator::Iterator(ProcessType type)
     : all_(false), type_(type) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
   iterator_ = Singleton<ChildProcessList>::get()->begin();
   if (!Done() && (*iterator_)->type() != type_)

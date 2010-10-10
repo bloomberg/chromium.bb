@@ -134,8 +134,8 @@ void RecordLastRunAppBundlePath() {
                            app_mode::kAppPrefsID);
 
   // Sync after a delay avoid I/O contention on startup; 1500 ms is plenty.
-  ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE,
-                                new PrefsSyncTask(), 1500);
+  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
+                                 new PrefsSyncTask(), 1500);
 }
 
 }  // anonymous namespace

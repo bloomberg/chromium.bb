@@ -27,7 +27,7 @@ class MockWebDataService : public WebDataService {
 class AutocompleteHistoryManagerTest : public testing::Test {
  protected:
   AutocompleteHistoryManagerTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_) {
+      : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -37,7 +37,7 @@ class AutocompleteHistoryManagerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 
   TestingProfile profile_;
   scoped_refptr<MockWebDataService> web_data_service_;

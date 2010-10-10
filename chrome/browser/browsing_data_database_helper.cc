@@ -26,31 +26,31 @@ BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {
 
 void BrowsingDataDatabaseHelper::StartFetching(
     Callback1<const std::vector<DatabaseInfo>& >::Type* callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
   is_fetching_ = true;
   database_info_.clear();
   completion_callback_.reset(callback);
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
       this, &BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread));
 }
 
 void BrowsingDataDatabaseHelper::CancelNotification() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   completion_callback_.reset(NULL);
 }
 
 void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
                                                 const std::string& name) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE, NewRunnableMethod(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, NewRunnableMethod(
       this, &BrowsingDataDatabaseHelper::DeleteDatabaseInFileThread, origin,
       name));
 }
 
 void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<webkit_database::OriginInfo> origins_info;
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
@@ -85,12 +85,12 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
     }
   }
 
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, NewRunnableMethod(
       this, &BrowsingDataDatabaseHelper::NotifyInUIThread));
 }
 
 void BrowsingDataDatabaseHelper::NotifyInUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
   // Note: completion_callback_ mutates only in the UI thread, so it's safe to
   // test it here.
@@ -105,7 +105,7 @@ void BrowsingDataDatabaseHelper::NotifyInUIThread() {
 void BrowsingDataDatabaseHelper::DeleteDatabaseInFileThread(
     const std::string& origin,
     const std::string& name) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!tracker_.get())
     return;
   tracker_->DeleteDatabase(UTF8ToUTF16(origin), UTF8ToUTF16(name), NULL);

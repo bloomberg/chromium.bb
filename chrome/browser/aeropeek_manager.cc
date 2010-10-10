@@ -916,11 +916,11 @@ LRESULT AeroPeekWindow::OnCreate(LPCREATESTRUCT create_struct) {
   // may take some time. (For example, when we create an ITaskbarList3
   // interface for the first time, Windows loads DLLs and we need to wait for
   // some time.)
-  ChromeThread::PostTask(ChromeThread::IO,
-                         FROM_HERE,
-                         new RegisterThumbnailTask(frame_window_,
-                                                   hwnd(),
-                                                   tab_active_));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      new RegisterThumbnailTask(frame_window_, hwnd(), tab_active_));
+
   return 0;
 }
 
@@ -955,13 +955,13 @@ LRESULT AeroPeekWindow::OnDwmSendIconicThumbnail(UINT message,
   delegate_->GetTabThumbnail(tab_id_, &thumbnail);
 
   gfx::Size aeropeek_size(HIWORD(lparam), LOWORD(lparam));
-  ChromeThread::PostTask(ChromeThread::IO,
-                         FROM_HERE,
-                         new SendThumbnailTask(hwnd(),
-                                               GetContentBounds(),
-                                               aeropeek_size,
-                                               thumbnail,
-                                               &ready_to_update_thumbnail_));
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          new SendThumbnailTask(hwnd(),
+                                                GetContentBounds(),
+                                                aeropeek_size,
+                                                thumbnail,
+                                                &ready_to_update_thumbnail_));
   return 0;
 }
 
@@ -979,11 +979,11 @@ LRESULT AeroPeekWindow::OnDwmSendIconicLivePreviewBitmap(UINT message,
   SkBitmap preview;
   delegate_->GetTabPreview(tab_id_, &preview);
 
-  ChromeThread::PostTask(ChromeThread::IO,
-                         FROM_HERE,
-                         new SendLivePreviewTask(hwnd(),
-                                                 GetContentBounds(),
-                                                 preview));
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      new SendLivePreviewTask(hwnd(), GetContentBounds(), preview));
+
   return 0;
 }
 

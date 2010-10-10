@@ -110,8 +110,8 @@ void ShutdownDetector::ThreadMain() {
 
   LOG(INFO) << "Handling shutdown for signal " << signal << ".";
 
-  if (!ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit))) {
     // Without a UI thread to post the exit task to, there aren't many
     // options.  Raise the signal again.  The default handler will pick it up

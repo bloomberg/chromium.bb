@@ -13,10 +13,10 @@ ChromeBlobStorageContext::ChromeBlobStorageContext() {
 }
 
 void ChromeBlobStorageContext::InitializeOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   controller_.reset(new BlobStorageController());
 }
 
 ChromeBlobStorageContext::~ChromeBlobStorageContext() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }

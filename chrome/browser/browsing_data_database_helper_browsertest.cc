@@ -60,7 +60,7 @@ class StopTestOnCallback {
 
   void Callback(const std::vector<BrowsingDataDatabaseHelper::DatabaseInfo>&
                 database_info_list) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ASSERT_EQ(1UL, database_info_list.size());
     EXPECT_EQ(std::string(kTestIdentifier1),
               database_info_list.at(0).origin_identifier);

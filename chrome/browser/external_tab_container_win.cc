@@ -506,7 +506,7 @@ bool ExternalTabContainer::CanDownload(int request_id) {
       // In case the host needs to show UI that needs to take the focus.
       ::AllowSetForegroundWindow(ASFW_ANY);
 
-      ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(automation_resource_message_filter_.get(),
               &AutomationResourceMessageFilter::SendDownloadRequestToHost,
               0, tab_handle_, request_id));

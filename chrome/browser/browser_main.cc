@@ -431,8 +431,8 @@ void BrowserMainParts::InitializeMainThread() {
   main_message_loop().set_thread_name(kThreadName);
 
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(new ChromeThread(ChromeThread::UI,
-                                      MessageLoop::current()));
+  main_thread_.reset(new BrowserThread(BrowserThread::UI,
+                                       MessageLoop::current()));
 }
 
 // -----------------------------------------------------------------------------
@@ -524,7 +524,7 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
 }
 
 // Creates key child threads. We need to do this explicitly since
-// ChromeThread::PostTask silently deletes a posted task if the target message
+// BrowserThread::PostTask silently deletes a posted task if the target message
 // loop isn't created.
 void CreateChildThreads(BrowserProcessImpl* process) {
   process->db_thread();

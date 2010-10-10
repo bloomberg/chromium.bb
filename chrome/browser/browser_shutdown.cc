@@ -100,8 +100,8 @@ FilePath GetShutdownMsPath() {
 
 void Shutdown() {
   // Unload plugins. This needs to happen on the IO thread.
-  ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&ChromePluginLib::UnloadAllPlugins));
 
   // Shutdown all IPC channels to service processes.
@@ -229,7 +229,7 @@ void ReadLastShutdownFile(
     ShutdownType type,
     int num_procs,
     int num_procs_slow) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath shutdown_ms_file = GetShutdownMsPath();
   std::string shutdown_ms_str;
@@ -282,8 +282,8 @@ void ReadLastShutdownInfo() {
   prefs->SetInteger(prefs::kShutdownNumProcessesSlow, 0);
 
   // Read and delete the file on the file thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(
           &ReadLastShutdownFile, type, num_procs, num_procs_slow));
 }

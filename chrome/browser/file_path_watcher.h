@@ -40,7 +40,7 @@ class FilePathWatcher {
   // Register interest in any changes on |path|. OnPathChanged will be called
   // back for each change. Returns true on success.
   bool Watch(const FilePath& path, Delegate* delegate) WARN_UNUSED_RESULT {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     DCHECK(path.IsAbsolute());
     return impl_->Watch(path, delegate);
   }
@@ -48,7 +48,7 @@ class FilePathWatcher {
   // Used internally to encapsulate different members on different platforms.
   class PlatformDelegate
       : public base::RefCountedThreadSafe<PlatformDelegate,
-                                          ChromeThread::DeleteOnFileThread> {
+                                          BrowserThread::DeleteOnFileThread> {
    public:
     virtual ~PlatformDelegate() {}
 

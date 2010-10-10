@@ -16,10 +16,10 @@ class ContentSettingImageModelTest : public RenderViewHostTestHarness {
  public:
   ContentSettingImageModelTest()
       : RenderViewHostTestHarness(),
-        ui_thread_(ChromeThread::UI, &message_loop_) {}
+        ui_thread_(BrowserThread::UI, &message_loop_) {}
 
  private:
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelTest);
 };

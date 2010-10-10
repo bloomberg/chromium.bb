@@ -68,7 +68,7 @@ class StopTestOnCallback {
   void Callback(
       const std::vector<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
       local_storage_info) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // There's no guarantee on the order, ensure these files are there.
     const char* const kTestHosts[] = {"www.chromium.org", "www.google.com"};
     bool test_hosts_found[arraysize(kTestHosts)] = {false, false};
@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   local_storage_helper->DeleteLocalStorageFile(
       GetLocalStoragePathForTestingProfile().Append(FilePath(kTestFile0)));
   scoped_refptr<ThreadTestHelper> wait_for_webkit_thread(
-      new ThreadTestHelper(ChromeThread::WEBKIT));
+      new ThreadTestHelper(BrowserThread::WEBKIT));
   ASSERT_TRUE(wait_for_webkit_thread->Run());
   // Ensure the file has been deleted.
   file_util::FileEnumerator file_enumerator(

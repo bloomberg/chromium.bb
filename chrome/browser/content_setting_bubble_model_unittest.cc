@@ -15,7 +15,7 @@
 class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
  protected:
   ContentSettingBubbleModelTest()
-      : ui_thread_(ChromeThread::UI, MessageLoop::current()) {
+      : ui_thread_(BrowserThread::UI, MessageLoop::current()) {
   }
 
   void CheckGeolocationBubble(size_t expected_domains,
@@ -43,7 +43,7 @@ class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
     EXPECT_EQ(std::string(), bubble_content.load_plugins_link_title);
   }
 
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 };
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {

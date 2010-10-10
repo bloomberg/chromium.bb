@@ -314,30 +314,30 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   AboutDnsHandler(AboutSource* source, int request_id)
       : source_(source),
         request_id_(request_id) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
   // Calls FinishOnUIThread() on completion.
   void StartOnUIThread() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &AboutDnsHandler::StartOnIOThread));
   }
 
   void StartOnIOThread() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
     std::string data;
     chrome_browser_net::PredictorGetHtmlInfo(&data);
 
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &AboutDnsHandler::FinishOnUIThread, data));
   }
 
   void FinishOnUIThread(const std::string& data) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     source_->FinishDataRequest(data, request_id_);
   }
 
@@ -889,8 +889,8 @@ AboutSource::AboutSource()
   about_source = this;
 
   // Add us to the global URL handler on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,

@@ -70,28 +70,28 @@ BrowsingDataIndexedDBHelperImpl::~BrowsingDataIndexedDBHelperImpl() {
 
 void BrowsingDataIndexedDBHelperImpl::StartFetching(
     Callback1<const std::vector<IndexedDBInfo>& >::Type* callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
   is_fetching_ = true;
   completion_callback_.reset(callback);
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
       NewRunnableMethod(
           this,
           &BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread));
 }
 
 void BrowsingDataIndexedDBHelperImpl::CancelNotification() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   completion_callback_.reset(NULL);
 }
 
 void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBFile(
     const FilePath& file_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
        NewRunnableMethod(
            this,
            &BrowsingDataIndexedDBHelperImpl::
@@ -100,7 +100,7 @@ void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBFile(
 }
 
 void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   file_util::FileEnumerator file_enumerator(
       profile_->GetWebKitContext()->data_path().Append(
           IndexedDBContext::kIndexedDBDirectory),
@@ -137,14 +137,14 @@ void BrowsingDataIndexedDBHelperImpl::FetchIndexedDBInfoInWebKitThread() {
     }
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &BrowsingDataIndexedDBHelperImpl::NotifyInUIThread));
 }
 
 void BrowsingDataIndexedDBHelperImpl::NotifyInUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
   // Note: completion_callback_ mutates only in the UI thread, so it's safe to
   // test it here.
@@ -157,7 +157,7 @@ void BrowsingDataIndexedDBHelperImpl::NotifyInUIThread() {
 
 void BrowsingDataIndexedDBHelperImpl::DeleteIndexedDBFileInWebKitThread(
     const FilePath& file_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   // TODO(jochen): implement this once it's possible to delete indexed DBs.
 }
 

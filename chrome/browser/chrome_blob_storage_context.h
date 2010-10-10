@@ -24,7 +24,7 @@ class BlobStorageController;
 // the IO thread (unless specifically called out in doc comments).
 class ChromeBlobStorageContext
     : public base::RefCountedThreadSafe<ChromeBlobStorageContext,
-                                        ChromeThread::DeleteOnIOThread> {
+                                        BrowserThread::DeleteOnIOThread> {
  public:
   ChromeBlobStorageContext();
 

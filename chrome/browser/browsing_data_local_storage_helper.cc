@@ -29,13 +29,13 @@ BrowsingDataLocalStorageHelper::~BrowsingDataLocalStorageHelper() {
 
 void BrowsingDataLocalStorageHelper::StartFetching(
     Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!is_fetching_);
   DCHECK(callback);
   is_fetching_ = true;
   completion_callback_.reset(callback);
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
       NewRunnableMethod(
           this,
           &BrowsingDataLocalStorageHelper::
@@ -43,15 +43,15 @@ void BrowsingDataLocalStorageHelper::StartFetching(
 }
 
 void BrowsingDataLocalStorageHelper::CancelNotification() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   completion_callback_.reset(NULL);
 }
 
 void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
     const FilePath& file_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE,
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
        NewRunnableMethod(
            this,
            &BrowsingDataLocalStorageHelper::
@@ -60,7 +60,7 @@ void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
 }
 
 void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   file_util::FileEnumerator file_enumerator(
       profile_->GetWebKitContext()->data_path().Append(
           DOMStorageContext::kLocalStorageDirectory),
@@ -92,14 +92,14 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
     }
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &BrowsingDataLocalStorageHelper::NotifyInUIThread));
 }
 
 void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(is_fetching_);
   // Note: completion_callback_ mutates only in the UI thread, so it's safe to
   // test it here.
@@ -112,7 +112,7 @@ void BrowsingDataLocalStorageHelper::NotifyInUIThread() {
 
 void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread(
     const FilePath& file_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT));
   profile_->GetWebKitContext()->dom_storage_context()->DeleteLocalStorageFile(
       file_path);
 }

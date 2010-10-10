@@ -20,9 +20,9 @@ class NotificationService;
 // Applications must initialize the COM library before they can call
 // COM library functions other than CoGetMalloc and memory allocation
 // functions, so this class initializes COM for those users.
-class BrowserProcessSubThread : public ChromeThread {
+class BrowserProcessSubThread : public BrowserThread {
  public:
-  explicit BrowserProcessSubThread(ChromeThread::ID identifier);
+  explicit BrowserProcessSubThread(BrowserThread::ID identifier);
   virtual ~BrowserProcessSubThread();
 
  protected:

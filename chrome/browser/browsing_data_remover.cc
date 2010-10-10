@@ -180,8 +180,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     database_tracker_ = profile_->GetDatabaseTracker();
     if (database_tracker_.get()) {
       waiting_for_clear_databases_ = true;
-      ChromeThread::PostTask(
-          ChromeThread::FILE, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
           NewRunnableMethod(
               this,
               &BrowsingDataRemover::ClearDatabasesOnFILEThread,
@@ -189,16 +189,16 @@ void BrowsingDataRemover::Remove(int remove_mask) {
               webkit_db_whitelist));
     }
 
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             profile_->GetTransportSecurityState(),
             &net::TransportSecurityState::DeleteSince,
             delete_begin_));
 
     waiting_for_clear_appcache_ = true;
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
             &BrowsingDataRemover::ClearAppCacheOnIOThread,
@@ -240,8 +240,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     main_context_getter_ = profile_->GetRequestContext();
     media_context_getter_ = profile_->GetRequestContextForMedia();
 
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &BrowsingDataRemover::ClearCacheOnIOThread));
   }
 
@@ -324,7 +324,7 @@ void BrowsingDataRemover::ClearedCache() {
 
 void BrowsingDataRemover::ClearCacheOnIOThread() {
   // This function should be called on the IO thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(STATE_NONE, next_cache_state_);
   DCHECK(main_context_getter_);
   DCHECK(media_context_getter_);
@@ -377,8 +377,8 @@ void BrowsingDataRemover::DoClearCache(int rv) {
         cache_ = NULL;
 
         // Notify the UI thread that we are done.
-        ChromeThread::PostTask(
-            ChromeThread::UI, FROM_HERE,
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
             NewRunnableMethod(this, &BrowsingDataRemover::ClearedCache));
 
         next_cache_state_ = STATE_NONE;
@@ -394,9 +394,9 @@ void BrowsingDataRemover::DoClearCache(int rv) {
 }
 
 void BrowsingDataRemover::OnClearedDatabases(int rv) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    bool result = ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    bool result = BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &BrowsingDataRemover::OnClearedDatabases, rv));
     DCHECK(result);
     return;
@@ -411,7 +411,7 @@ void BrowsingDataRemover::OnClearedDatabases(int rv) {
 void BrowsingDataRemover::ClearDatabasesOnFILEThread(base::Time delete_begin,
     const std::vector<string16>& webkit_db_whitelist) {
   // This function should be called on the FILE thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   int rv = database_tracker_->DeleteDataModifiedSince(
       delete_begin, webkit_db_whitelist, &database_cleared_callback_);
@@ -420,9 +420,9 @@ void BrowsingDataRemover::ClearDatabasesOnFILEThread(base::Time delete_begin,
 }
 
 void BrowsingDataRemover::OnClearedAppCache() {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    bool result = ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    bool result = BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &BrowsingDataRemover::OnClearedAppCache));
     DCHECK(result);
     return;
@@ -434,7 +434,7 @@ void BrowsingDataRemover::OnClearedAppCache() {
 
 void BrowsingDataRemover::ClearAppCacheOnIOThread(base::Time delete_begin,
     const std::vector<GURL>& origin_whitelist) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(waiting_for_clear_appcache_);
 
   appcache_whitelist_ = origin_whitelist;
@@ -482,7 +482,7 @@ void BrowsingDataRemover::OnAppCacheDeleted(int rv) {
 }
 
 ChromeAppCacheService* BrowsingDataRemover::GetAppCacheService() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ChromeURLRequestContext* request_context =
       reinterpret_cast<ChromeURLRequestContext*>(
           request_context_getter_->GetURLRequestContext());

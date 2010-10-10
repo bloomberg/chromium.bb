@@ -737,8 +737,8 @@ CPError STDCALL CPB_SendSyncMessage(CPID id, const void *data, uint32 data_len,
 CPError STDCALL CPB_PluginThreadAsyncCall(CPID id,
                                           void (*func)(void *),
                                           void *user_data) {
-  bool posted = ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  bool posted = BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(func, user_data));
   return posted ? CPERR_SUCCESS : CPERR_FAILURE;
 }
@@ -825,8 +825,8 @@ void CPHandleCommand(int command, CPCommandInterface* data,
   // brain trying to compile the Tuple3 ctor. This cast works.
   int32 context_as_int32 = static_cast<int32>(context);
   // Plugins can only be accessed on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(PluginCommandHandler::HandleCommand,
                           command, data, context_as_int32));
 }
