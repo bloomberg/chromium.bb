@@ -26,6 +26,7 @@
       'dependencies': [
         'app_base',
         'app_resources',
+        '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
