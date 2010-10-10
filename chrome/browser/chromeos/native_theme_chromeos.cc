@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/native_theme_chromeos.h"
 
+#include <limits>
+
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "gfx/insets.h"
