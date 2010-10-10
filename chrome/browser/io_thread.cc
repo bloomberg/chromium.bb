@@ -26,6 +26,10 @@
 #include "net/base/net_util.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
+#if defined(USE_NSS)
+#include "net/ocsp/nss_ocsp.h"
+#endif  // defined(USE_NSS)
+#include "net/proxy/proxy_script_fetcher.h"
 
 namespace {
 
@@ -159,6 +163,12 @@ void IOThread::ChangedToOnTheRecord() {
 void IOThread::Init() {
   BrowserProcessSubThread::Init();
 
+  DCHECK_EQ(MessageLoop::TYPE_IO, message_loop()->type());
+
+#if defined(USE_NSS)
+  net::SetMessageLoopForOCSP();
+#endif // defined(USE_NSS)
+
   DCHECK(!globals_);
   globals_ = new Globals;
 
@@ -205,6 +215,8 @@ void IOThread::CleanUp() {
   if (globals_->host_resolver->GetAsHostResolverImpl()) {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
+
+  net::EnsureNoProxyScriptFetches();
 
   // We will delete the NetLog as part of CleanUpAfterMessageLoopDestruction()
   // in case any of the message loop destruction observers try to access it.

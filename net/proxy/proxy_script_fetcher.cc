@@ -4,11 +4,15 @@
 
 #include "net/proxy/proxy_script_fetcher.h"
 
+#include <set>
+
 #include "base/compiler_specific.h"
 #include "base/i18n/icu_string_conversions.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/io_buffer.h"
@@ -69,7 +73,43 @@ void ConvertResponseToUTF16(const std::string& charset,
                         utf16);
 }
 
+class ProxyScriptFetcherTracker {
+ public:
+  ProxyScriptFetcherTracker();
+  ~ProxyScriptFetcherTracker();
+
+  void AddFetcher(ProxyScriptFetcher* fetcher) {
+    DCHECK(!ContainsKey(fetchers_, fetcher));
+    fetchers_.insert(fetcher);
+  }
+
+  void RemoveFetcher(ProxyScriptFetcher* fetcher) {
+    DCHECK(ContainsKey(fetchers_, fetcher));
+    fetchers_.erase(fetcher);
+  }
+
+  void CancelAllFetches() {
+    for (std::set<ProxyScriptFetcher*>::const_iterator it = fetchers_.begin();
+         it != fetchers_.end(); ++it) {
+      (*it)->Cancel();
+    }
+  }
+
+ private:
+  std::set<ProxyScriptFetcher*> fetchers_;
+};
+
+ProxyScriptFetcherTracker::ProxyScriptFetcherTracker() {}
+ProxyScriptFetcherTracker::~ProxyScriptFetcherTracker() {}
+
+base::LazyInstance<ProxyScriptFetcherTracker>
+    g_fetcher_tracker(base::LINKER_INITIALIZED);
+
 }  // namespace
+
+void EnsureNoProxyScriptFetches() {
+  g_fetcher_tracker.Get().CancelAllFetches();
+}
 
 class ProxyScriptFetcherImpl : public ProxyScriptFetcher,
                                public URLRequest::Delegate {
@@ -160,9 +200,11 @@ ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
       result_code_(OK),
       result_text_(NULL) {
   DCHECK(url_request_context);
+  g_fetcher_tracker.Get().AddFetcher(this);
 }
 
 ProxyScriptFetcherImpl::~ProxyScriptFetcherImpl() {
+  g_fetcher_tracker.Get().RemoveFetcher(this);
   // The URLRequest's destructor will cancel the outstanding request, and
   // ensure that the delegate (this) is not called again.
 }
@@ -365,5 +407,6 @@ size_t ProxyScriptFetcher::SetSizeConstraintForUnittest(size_t size_bytes) {
   max_response_bytes = size_bytes;
   return prev;
 }
+
 
 }  // namespace net
