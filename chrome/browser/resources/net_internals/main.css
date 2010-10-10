@@ -203,6 +203,7 @@ body {
 #dnsTabContent,
 #socketsTabContent,
 #serviceProvidersTabContent,
+#kernelExtensionsTabContent,
 #testTabContent {
   overflow: auto;
   padding: 10px;

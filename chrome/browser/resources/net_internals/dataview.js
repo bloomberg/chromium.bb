@@ -263,6 +263,21 @@ DataView.prototype.onUpdateAllCompleted = function(data) {
     }
   }
 
+  if (g_browser.isPlatformMac()) {
+    text.push('');
+    text.push('----------------------------------------------');
+    text.push(' Kernel extensions');
+    text.push('----------------------------------------------');
+    text.push('');
+
+    var kernelExtensions = data.kernelExtensions;
+    if (!kernelExtensions) {
+      text.push('No data');
+    } else {
+      text.push(kernelExtensions);
+    }
+  }
+
   // Open a new window to display this text.
   this.setText_(text.join('\n'));
 
