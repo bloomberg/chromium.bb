@@ -59,12 +59,14 @@ class DBThreadObserverHelper :
  public:
   DBThreadObserverHelper() : done_event_(true, false) {}
 
-  void Init() {
+  void Init(PasswordStore* password_store) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(
         BrowserThread::DB,
         FROM_HERE,
-        NewRunnableMethod(this, &DBThreadObserverHelper::AddObserverTask));
+        NewRunnableMethod(this,
+                          &DBThreadObserverHelper::AddObserverTask,
+                          password_store));
     done_event_.Wait();
   }
 
@@ -80,11 +82,11 @@ class DBThreadObserverHelper :
  protected:
   friend class base::RefCountedThreadSafe<DBThreadObserverHelper>;
 
-  void AddObserverTask() {
+  void AddObserverTask(PasswordStore* password_store) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     registrar_.Add(&observer_,
                    NotificationType::LOGINS_CHANGED,
-                   NotificationService::AllSources());
+                   Source<PasswordStore>(password_store));
     done_event_.Signal();
   }
 
@@ -448,7 +450,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
   scoped_ptr<PasswordForm> form(CreatePasswordFormFromData(form_data));
 
   scoped_refptr<DBThreadObserverHelper> helper = new DBThreadObserverHelper;
-  helper->Init();
+  helper->Init(store);
 
   const PasswordStoreChange expected_add_changes[] = {
     PasswordStoreChange(PasswordStoreChange::ADD, *form),
@@ -456,7 +458,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 
   EXPECT_CALL(helper->observer(),
               Observe(NotificationType(NotificationType::LOGINS_CHANGED),
-                      NotificationService::AllSources(),
+                      Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_add_changes)))));
@@ -480,7 +482,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 
   EXPECT_CALL(helper->observer(),
               Observe(NotificationType(NotificationType::LOGINS_CHANGED),
-                      NotificationService::AllSources(),
+                      Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_update_changes)))));
@@ -499,7 +501,7 @@ TEST_F(PasswordStoreDefaultTest, Notifications) {
 
   EXPECT_CALL(helper->observer(),
               Observe(NotificationType(NotificationType::LOGINS_CHANGED),
-                      NotificationService::AllSources(),
+                      Source<PasswordStore>(store),
                       Property(&Details<const PasswordStoreChangeList>::ptr,
                                Pointee(ElementsAreArray(
                                    expected_delete_changes)))));

@@ -209,14 +209,14 @@ void PasswordChangeProcessor::StartObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
   notification_registrar_.Add(this,
                               NotificationType::LOGINS_CHANGED,
-                              NotificationService::AllSources());
+                              Source<PasswordStore>(password_store_));
 }
 
 void PasswordChangeProcessor::StopObserving() {
   DCHECK(expected_loop_ == MessageLoop::current());
   notification_registrar_.Remove(this,
                                  NotificationType::LOGINS_CHANGED,
-                                 NotificationService::AllSources());
+                                 Source<PasswordStore>(password_store_));
 }
 
 }  // namespace browser_sync

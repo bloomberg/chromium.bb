@@ -17,9 +17,9 @@ using std::vector;
 using webkit_glue::PasswordForm;
 
 PasswordStoreX::PasswordStoreX(LoginDatabase* login_db,
-                                   Profile* profile,
-                                   WebDataService* web_data_service,
-                                   NativeBackend* backend)
+                               Profile* profile,
+                               WebDataService* web_data_service,
+                               NativeBackend* backend)
     : PasswordStoreDefault(login_db, profile, web_data_service),
       backend_(backend), migration_checked_(!backend), allow_fallback_(false) {
 }
@@ -34,7 +34,7 @@ void PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
     NotificationService::current()->Notify(
         NotificationType::LOGINS_CHANGED,
-        NotificationService::AllSources(),
+        Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
@@ -49,7 +49,7 @@ void PasswordStoreX::UpdateLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     NotificationService::current()->Notify(
         NotificationType::LOGINS_CHANGED,
-        NotificationService::AllSources(),
+        Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
@@ -64,7 +64,7 @@ void PasswordStoreX::RemoveLoginImpl(const PasswordForm& form) {
     changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
     NotificationService::current()->Notify(
         NotificationType::LOGINS_CHANGED,
-        NotificationService::AllSources(),
+        Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
@@ -88,7 +88,7 @@ void PasswordStoreX::RemoveLoginsCreatedBetweenImpl(
     }
     NotificationService::current()->Notify(
         NotificationType::LOGINS_CHANGED,
-        NotificationService::AllSources(),
+        Source<PasswordStore>(this),
         Details<PasswordStoreChangeList>(&changes));
     allow_fallback_ = false;
   } else if (allow_default_store()) {
