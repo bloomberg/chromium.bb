@@ -31,6 +31,33 @@ static int const kSrpcFd = 5;
 
 int verbosity = 0;
 
+#ifdef __GNUC__
+
+/*
+ * GDB's canonical overlay managment routine.
+ * We need its symbol in the symbol table so don't inline it.
+ * Note: _ovly_debug_event has to be an unmangled 'C' style symbol.
+ * TODO(dje): add some explanation for the non-GDB person.
+ */
+static void __attribute__ ((noinline)) _ovly_debug_event (void) {
+  /*
+   * The asm volatile is here as instructed by the GCC docs.
+   * It's not enough to declare a function noinline.
+   * GCC will still look inside the function to see if it's worth calling.
+   */
+  asm volatile ("");
+}
+
+#endif
+
+static void StopForDebuggerInit(const struct NaClApp *state) {
+  /* Put xlate_base in a place where gdb can find it.  */
+  nacl_global_xlate_base = state->mem_start;
+
+#ifdef __GNUC__
+  _ovly_debug_event();
+#endif
+}
 
 int NaClMainForChromium(int handle_count, const NaClHandle *handles,
                         int debug) {
@@ -96,7 +123,7 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   }
 
   /* Give debuggers a well known point at which xlate_base is known.  */
-  NaClGdbHook(&state);
+  StopForDebuggerInit(&state);
 
   /*
    * If export_addr_to is set to a non-negative integer, we create a
@@ -126,11 +153,16 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
     }
   }
 
-  if (NULL != nap->secure_channel && LOAD_OK == errcode) {
+  NaClXMutexLock(&nap->mu);
+  nap->module_load_status = LOAD_OK;
+  NaClXCondVarBroadcast(&nap->cv);
+  NaClXMutexUnlock(&nap->mu);
+
+  if (NULL != nap->secure_channel) {
     /*
      * wait for start_module RPC call on secure channel thread.
      */
-    errcode = NaClWaitForModuleStartStatusCall(nap);
+    NaClWaitForModuleStartStatusCall(nap);
   }
 
   /*

@@ -412,8 +412,6 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "Operating system platform is not supported";
     case LOAD_INTERNAL:
       return "Internal error";
-    case LOAD_OPEN_ERROR:
-      return "Cannot open NaCl module file";
     case LOAD_READ_ERROR:
       return "Cannot read file";
     case LOAD_TOO_MANY_PROG_HDRS:
@@ -669,10 +667,6 @@ void NaClAddHostDescriptor(struct NaClApp *nap,
                            int            nacl_desc) {
   struct NaClDescIoDesc *dp;
 
-  NaClLog(4,
-          "NaClAddHostDescriptor: host %d as nacl desc %d\n",
-          host_os_desc,
-          nacl_desc);
   dp = NaClDescIoDescMake(NaClHostDescPosixMake(host_os_desc, mode));
   NaClSetDesc(nap, nacl_desc, (struct NaClDesc *) dp);
 }
@@ -682,11 +676,6 @@ void NaClAddImcHandle(struct NaClApp  *nap,
                       int             nacl_desc) {
   struct NaClDescImcDesc  *dp;
 
-  NaClLog(4,
-          ("NaClAddImcHandle: importing NaClHandle %"NACL_PRIxPTR
-           " as nacl desc %d\n"),
-          (uintptr_t) h,
-          nacl_desc);
   dp = malloc(sizeof *dp);
   if (NULL == dp) {
     NaClLog(LOG_FATAL, "NaClAddImcHandle: no memory\n");
@@ -849,10 +838,8 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
     errcode = NACL_SRPC_RESULT_NO_MEMORY;
     goto cleanup;
   }
-  NaClXMutexLock(&nap->mu);
   free(nap->aux_info);
   nap->aux_info = aux;
-  NaClXMutexUnlock(&nap->mu);
   NaClLog(4, "Received aux_info: %s\n", nap->aux_info);
 
   switch (NACL_VTBL(NaClDesc, nexe_binary)->typeTag) {
@@ -917,11 +904,10 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
     nap->module_load_status = suberr;
     errcode = NACL_SRPC_RESULT_APP_ERROR;
     NaClXCondVarBroadcast(&nap->cv);
-  }
-  NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
-  if (LOAD_OK != suberr) {
+    NaClXMutexUnlock(&nap->mu);
     goto cleanup;
   }
+  NaClXMutexUnlock(&nap->mu);  /* NaClAppPrepareToLaunch takes mu */
 
   /*
    * Finish setting up the NaCl App.  This includes dup'ing
@@ -976,17 +962,6 @@ static NaClSrpcError NaClInitHandlePassingRpc(
 }
 #endif
 
-NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) {
-  NaClErrorCode status;
-
-  NaClXMutexLock(&nap->mu);
-  while (LOAD_STATUS_UNKNOWN == (status = nap->module_load_status)) {
-    NaClCondVarWait(&nap->cv, &nap->mu);
-  }
-  NaClXMutexUnlock(&nap->mu);
-  return status;
-}
-
 static NaClSrpcError NaClSecureChannelStartModuleRpc(
     struct NaClSrpcChannel *chan,
     struct NaClSrpcArg     **in_args,
@@ -1001,14 +976,13 @@ static NaClSrpcError NaClSecureChannelStartModuleRpc(
   UNREFERENCED_PARAMETER(in_args);
 
   NaClLog(4, "NaClSecureChannelStartModuleRpc started\n");
-
-  status = NaClWaitForLoadModuleStatus(nap);
-
   NaClXMutexLock(&nap->mu);
+  while (LOAD_STATUS_UNKNOWN == (status = nap->module_load_status)) {
+    NaClCondVarWait(&nap->cv, &nap->mu);
+  }
   nap->module_may_start = 1;
   NaClXCondVarBroadcast(&nap->cv);
   NaClXMutexUnlock(&nap->mu);
-
   out_args[0]->u.ival = status;
   NaClLog(4, "NaClSecureChannelStartModuleRpc finished\n");
   return NACL_SRPC_RESULT_OK;
@@ -1029,19 +1003,14 @@ static NaClSrpcError NaClSecureChannelLog(struct NaClSrpcChannel  *chan,
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClErrorCode NaClWaitForModuleStartStatusCall(struct NaClApp *nap) {
-  NaClErrorCode status;
-
+void NaClWaitForModuleStartStatusCall(struct NaClApp *nap) {
   NaClLog(4, "NaClWaitForModuleStartStatusCall started\n");
   NaClXMutexLock(&nap->mu);
   while (!nap->module_may_start) {
     NaClXCondVarWait(&nap->cv, &nap->mu);
   }
-  status = nap->module_load_status;
   NaClXMutexUnlock(&nap->mu);
   NaClLog(4, "NaClWaitForModuleStartStatusCall finished\n");
-
-  return status;
 }
 
 void WINAPI NaClSecureChannelThread(void *state) {
