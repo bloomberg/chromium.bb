@@ -250,6 +250,8 @@ void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
   DCHECK(!configure_ready_task_.get());
   DCHECK(syncapi_initialized_);
 
+  bool deleted_type = false;
+
   {
     AutoLock lock(registrar_lock_);
     for (DataTypeController::TypeMap::const_iterator it =
@@ -260,6 +262,7 @@ void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
       // If a type is not specified, remove it from the routing_info.
       if (types.count(type) == 0) {
         registrar_.routing_info.erase(type);
+        deleted_type = true;
       } else {
         // Add a newly specified data type as GROUP_PASSIVE into the
         // routing_info, if it does not already exist.
@@ -275,22 +278,29 @@ void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
   if (core_->syncapi()->InitialSyncEndedForAllEnabledTypes()) {
     ready_task->Run();
     delete ready_task;
-    return;
+  } else {
+    // Save the task here so we can run it when the syncer finishes
+    // initializing the new data types.  It will be run only when the
+    // set of initially synced data types matches the types requested in
+    // this configure.
+    configure_ready_task_.reset(ready_task);
+    configure_initial_sync_types_ = types;
   }
 
-  // Save the task here so we can run it when the syncer finishes
-  // initializing the new data types.  It will be run only when the
-  // set of initially synced data types matches the types requested in
-  // this configure.
-  configure_ready_task_.reset(ready_task);
-  configure_initial_sync_types_ = types;
-
-  // Nudge the syncer.  On the next sync cycle, the syncer should
+  // Nudge the syncer. This is necessary for both datatype addition/deletion.
+  //
+  // Deletions need a nudge in order to ensure the deletion occurs in a timely
+  // manner (see issue 56416).
+  //
+  // In the case of additions, on the next sync cycle, the syncer should
   // notice that the routing info has changed and start the process of
   // downloading updates for newly added data types.  Once this is
   // complete, the configure_ready_task_ is run via an
   // OnInitializationComplete notification.
-  RequestNudge();
+  if (deleted_type || !core_->syncapi()->InitialSyncEndedForAllEnabledTypes())
+    // We can only nudge when we've either deleted a dataype or added one, else
+    // we break all the profile sync unit tests.
+    RequestNudge();
 }
 
 void SyncBackendHost::RequestNudge() {
