@@ -83,6 +83,8 @@ class AutoFillProfilesView : public views::View,
   void EditClicked();
   // Called when 'Remove' is clicked.
   void DeleteClicked();
+  // Called when 'Edit' dialog is accepted.
+  void EditAccepted(EditableSetInfo* data, bool new_item);
 
   // Updates state of the buttons.
   void UpdateWidgetState();
@@ -170,6 +172,13 @@ class AutoFillProfilesView : public views::View,
         : credit_card(*input_credit_card),
           is_address(false) {
     }
+
+    int unique_id() const {
+      if (is_address)
+        return address.unique_id();
+      else
+        return credit_card.unique_id();
+    }
   };
 
  private:
@@ -195,7 +204,6 @@ class AutoFillProfilesView : public views::View,
   void GetData();
   bool IsDataReady() const;
   void SaveData();
-  void UpdateIdToIndexes();
 
   // Rebuilds the view by deleting and re-creating sub-views
   void RebuildView(const FocusedItem& new_focus_index);
@@ -254,7 +262,7 @@ class AutoFillProfilesView : public views::View,
     EditableSetViewContents(AutoFillProfilesView* observer,
                             AddressComboBoxModel* billing_model,
                             bool new_item,
-                            std::vector<EditableSetInfo>::iterator field_set);
+                            const EditableSetInfo& field_set);
     virtual ~EditableSetViewContents() {}
 
    protected:
@@ -328,7 +336,6 @@ class AutoFillProfilesView : public views::View,
                                   const string16& new_contents);
 
     views::Textfield* text_fields_[MAX_TEXT_FIELD];
-    std::vector<EditableSetInfo>::iterator editable_fields_set_;
     EditableSetInfo temporary_info_;
     bool has_credit_card_number_been_edited_;
     AutoFillProfilesView* observer_;
@@ -460,7 +467,6 @@ class AutoFillProfilesView : public views::View,
   PrefService* preferences_;
   std::vector<EditableSetInfo> profiles_set_;
   std::vector<EditableSetInfo> credit_card_set_;
-  std::map<int, size_t> unique_ids_to_indexes_;
 
   AddressComboBoxModel billing_model_;
 
