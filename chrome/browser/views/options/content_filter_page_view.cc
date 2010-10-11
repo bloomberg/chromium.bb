@@ -94,7 +94,7 @@ void ContentFilterPageView::InitControlLayout() {
     IDS_COOKIES_ASK_EVERY_TIME_RADIO,
     0,
     0,
-    IDS_PLUGIN_LOAD_SANDBOXED_RADIO,
+    IDS_PLUGIN_ASK_RADIO,
     0,
     IDS_GEOLOCATION_ASK_RADIO,
     IDS_NOTIFICATIONS_ASK_RADIO,
@@ -135,12 +135,7 @@ void ContentFilterPageView::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   ContentSetting default_setting;
-  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    default_setting = profile()->GetHostContentSettingsMap()->
-        GetDefaultContentSetting(content_type_);
-    if (profile()->GetHostContentSettingsMap()->GetBlockNonsandboxedPlugins())
-      default_setting = CONTENT_SETTING_ASK;
-  } else if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     default_setting = profile()->GetGeolocationContentSettingsMap()->
         GetDefaultContentSetting();
   } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
@@ -219,17 +214,7 @@ void ContentFilterPageView::ButtonPressed(views::Button* sender,
   ContentSetting default_setting = allow_radio_->checked() ?
       CONTENT_SETTING_ALLOW :
       (block_radio_->checked() ? CONTENT_SETTING_BLOCK : CONTENT_SETTING_ASK);
-  if (content_type_ == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    if (default_setting == CONTENT_SETTING_ASK) {
-      default_setting = CONTENT_SETTING_ALLOW;
-      profile()->GetHostContentSettingsMap()->SetBlockNonsandboxedPlugins(true);
-    } else {
-      profile()->GetHostContentSettingsMap()->
-          SetBlockNonsandboxedPlugins(false);
-    }
-    profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
-        content_type_, default_setting);
-  } else if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+  if (content_type_ == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     profile()->GetGeolocationContentSettingsMap()->SetDefaultContentSetting(
         default_setting);
   } else if (content_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {

@@ -406,13 +406,12 @@ class PrefObserverDisabler {
 
 - (void)setPluginsEnabledIndex:(NSInteger)value {
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  bool blockNonsandboxedPlugins = false;
   switch (value) {
-    case kPluginsAllowSandboxedIndex:
-      blockNonsandboxedPlugins = true;
-      // Fall through to the next case.
     case kPluginsAllowIndex:
       setting = CONTENT_SETTING_ALLOW;
+      break;
+    case kPluginsAskIndex:
+      setting = CONTENT_SETTING_ASK;
       break;
     case kPluginsBlockIndex:
       setting = CONTENT_SETTING_BLOCK;
@@ -424,20 +423,20 @@ class PrefObserverDisabler {
       disabler(observer_.get());
   profile_->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, setting);
-  profile_->GetHostContentSettingsMap()->SetBlockNonsandboxedPlugins(
-      blockNonsandboxedPlugins);
 }
 
 - (NSInteger)pluginsEnabledIndex {
   HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
   ContentSetting setting =
       map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
-  if (setting == CONTENT_SETTING_ALLOW) {
-    if (map->GetBlockNonsandboxedPlugins())
-      return kPluginsAllowSandboxedIndex;
-    return kPluginsAllowIndex;
+  switch (setting) {
+    case CONTENT_SETTING_ALLOW: return kPluginsAllowIndex;
+    case CONTENT_SETTING_ASK:   return kPluginsAskIndex;
+    case CONTENT_SETTING_BLOCK: return kPluginsBlockIndex;
+    default:
+      NOTREACHED();
+      return kPluginsAllowIndex;
   }
-  return kPluginsBlockIndex;
 }
 
 - (void)setPopupsEnabledIndex:(NSInteger)value {

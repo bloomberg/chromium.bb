@@ -225,8 +225,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PLUGIN_TAB_LABEL));
   localized_strings->SetString("plugins_setting",
       l10n_util::GetStringUTF16(IDS_PLUGIN_SETTING_LABEL));
-  localized_strings->SetString("plugins_allow_sandboxed",
-      l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD_SANDBOXED_RADIO));
+  localized_strings->SetString("plugins_ask",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_ASK_RADIO));
   localized_strings->SetString("plugins_allow",
       l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD_RADIO));
   localized_strings->SetString("plugins_block",
@@ -311,12 +311,7 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(
     ContentSettingsType type) {
   ContentSetting default_setting;
-  const HostContentSettingsMap* settings_map = GetContentSettingsMap();
-  if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    default_setting = settings_map->GetDefaultContentSetting(type);
-    if (settings_map->GetBlockNonsandboxedPlugins())
-      default_setting = CONTENT_SETTING_ASK;
-  } else if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     default_setting = dom_ui_->GetProfile()->
         GetGeolocationContentSettingsMap()->GetDefaultContentSetting();
   } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
@@ -456,16 +451,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
 
   ContentSetting default_setting = ContentSettingFromString(setting);
   ContentSettingsType content_type = ContentSettingsTypeFromGroupName(group);
-  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    if (default_setting == CONTENT_SETTING_ASK) {
-      default_setting = CONTENT_SETTING_ALLOW;
-      GetContentSettingsMap()->SetBlockNonsandboxedPlugins(true);
-    } else {
-      GetContentSettingsMap()->SetBlockNonsandboxedPlugins(false);
-    }
-    GetContentSettingsMap()->
-        SetDefaultContentSetting(content_type, default_setting);
-  } else if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+  if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     dom_ui_->GetProfile()->GetGeolocationContentSettingsMap()->
         SetDefaultContentSetting(default_setting);
   } else if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {

@@ -158,15 +158,15 @@ TEST_F(ContentSettingsDialogControllerTest, PluginsSetting) {
   // Change setting, check dialog property.
   settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                          CONTENT_SETTING_ALLOW);
-  settingsMap_->SetBlockNonsandboxedPlugins(false);
   EXPECT_EQ(kPluginsAllowIndex, [controller_ pluginsEnabledIndex]);
-
-  settingsMap_->SetBlockNonsandboxedPlugins(true);
-  EXPECT_EQ(kPluginsAllowSandboxedIndex, [controller_ pluginsEnabledIndex]);
 
   settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                          CONTENT_SETTING_BLOCK);
   EXPECT_EQ(kPluginsBlockIndex, [controller_ pluginsEnabledIndex]);
+
+  settingsMap_->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                         CONTENT_SETTING_ASK);
+  EXPECT_EQ(kPluginsAskIndex, [controller_ pluginsEnabledIndex]);
 
   // Change dialog property, check setting.
   NSInteger setting;
@@ -174,19 +174,16 @@ TEST_F(ContentSettingsDialogControllerTest, PluginsSetting) {
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
   EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
-  EXPECT_FALSE(settingsMap_->GetBlockNonsandboxedPlugins());
-
-  [controller_ setPluginsEnabledIndex:kPluginsAllowSandboxedIndex];
-  setting =
-      settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
-  EXPECT_TRUE(settingsMap_->GetBlockNonsandboxedPlugins());
 
   [controller_ setPluginsEnabledIndex:kPluginsBlockIndex];
   setting =
       settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, setting);
-  EXPECT_FALSE(settingsMap_->GetBlockNonsandboxedPlugins());
+
+  [controller_ setPluginsEnabledIndex:kPluginsAskIndex];
+  setting =
+      settingsMap_->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
+  EXPECT_EQ(CONTENT_SETTING_ASK, setting);
 }
 
 TEST_F(ContentSettingsDialogControllerTest, PopupsSetting) {

@@ -916,12 +916,6 @@ class RenderView : public RenderWidget,
                                         const FilePath& path,
                                         pepper::PluginModule* pepper_module);
 
-  // Create a new placeholder for a blocked plugin.
-  WebKit::WebPlugin* CreateBlockedPluginPlaceholder(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
-      PluginGroup* group);
-
   WebKit::WebPlugin* CreateOutdatedPluginPlaceholder(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,

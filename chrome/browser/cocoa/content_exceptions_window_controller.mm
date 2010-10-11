@@ -126,6 +126,11 @@ NSString* GetWindowTitle(ContentSettingsType settingsType) {
 
 const CGFloat kButtonBarHeight = 35.0;
 
+// The settings shown in the combobox for plug-ins;
+const ContentSetting kPluginSettings[] = { CONTENT_SETTING_ALLOW,
+                                           CONTENT_SETTING_ASK,
+                                           CONTENT_SETTING_BLOCK };
+
 // The settings shown in the combobox if showSession_ is false;
 const ContentSetting kNoSessionSettings[] = { CONTENT_SETTING_ALLOW,
                                               CONTENT_SETTING_BLOCK };
@@ -496,6 +501,8 @@ static ContentExceptionsWindowController*
 }
 
 - (size_t)menuItemCount {
+  if (settingsType_ == CONTENT_SETTINGS_TYPE_PLUGINS)
+    return arraysize(kPluginSettings);
   return showSession_ ? arraysize(kSessionSettings)
                       : arraysize(kNoSessionSettings);
 }
@@ -504,6 +511,8 @@ static ContentExceptionsWindowController*
   switch ([self settingForIndex:index]) {
     case CONTENT_SETTING_ALLOW:
       return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_ALLOW_BUTTON);
+    case CONTENT_SETTING_ASK:
+      return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_ASK_BUTTON);
     case CONTENT_SETTING_BLOCK:
       return l10n_util::GetNSStringWithFixup(IDS_EXCEPTIONS_BLOCK_BUTTON);
     case CONTENT_SETTING_SESSION_ONLY:
@@ -516,6 +525,8 @@ static ContentExceptionsWindowController*
 }
 
 - (ContentSetting)settingForIndex:(size_t)index {
+  if (settingsType_ == CONTENT_SETTINGS_TYPE_PLUGINS)
+    return kPluginSettings[index];
   return showSession_ ? kSessionSettings[index] : kNoSessionSettings[index];
 }
 

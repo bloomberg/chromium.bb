@@ -33,20 +33,19 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              WebFrame* frame,
                              const WebPluginParams& params,
                              const WebPreferences& preferences,
-                             PluginGroup* group)
+                             int template_id,
+                             const string16& message)
     : render_view_(render_view),
       frame_(frame),
       plugin_params_(params) {
-  int resource_id = IDR_BLOCKED_PLUGIN_HTML;
   const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
+      ResourceBundle::GetSharedInstance().GetRawDataResource(template_id));
 
   DCHECK(!template_html.empty()) << "unable to load template. ID: "
-                                 << resource_id;
+                                 << template_id;
 
   DictionaryValue values;
-  values.SetString("loadPlugin", l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD));
-  values.Set("pluginGroup", group->GetDataForUI());
+  values.SetString("message", message);
 
   // "t" is the id of the templates root node.
   std::string html_data = jstemplate_builder::GetTemplatesHtml(

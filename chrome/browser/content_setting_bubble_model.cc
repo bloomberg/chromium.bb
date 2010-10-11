@@ -163,11 +163,16 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
  public:
   ContentSettingSingleRadioGroup(TabContents* tab_contents, Profile* profile,
       ContentSettingsType content_type)
-      : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
+      : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type),
+        block_setting_(CONTENT_SETTING_BLOCK) {
     SetRadioGroup();
   }
 
  private:
+  ContentSetting block_setting_;
+
+  // Initialize the radio group by setting the appropriate labels for the
+  // content type and setting the default value based on the content setting.
   void SetRadioGroup() {
     GURL url = tab_contents()->GetURL();
     std::wstring display_host_wide;
@@ -229,23 +234,31 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     radio_group.radio_items.push_back(radio_allow_label);
     radio_group.radio_items.push_back(radio_block_label);
     HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+    ContentSetting mostRestrictiveSetting;
     if (resources.empty()) {
-      ContentSetting setting = map->GetContentSetting(url, content_type(),
-                                                      std::string());
-      radio_group.default_item = (setting == CONTENT_SETTING_ALLOW) ? 0 : 1;
+      mostRestrictiveSetting =
+          map->GetContentSetting(url, content_type(), std::string());
     } else {
-      // The default item is "block" if at least one of the resources
-      // is blocked.
-      radio_group.default_item = 0;
+      mostRestrictiveSetting = CONTENT_SETTING_ALLOW;
       for (std::set<std::string>::const_iterator it = resources.begin();
            it != resources.end(); ++it) {
-        ContentSetting setting = map->GetContentSetting(
-            url, content_type(), *it);
+        ContentSetting setting = map->GetContentSetting(url,
+                                                        content_type(),
+                                                        *it);
         if (setting == CONTENT_SETTING_BLOCK) {
-          radio_group.default_item = 1;
+          mostRestrictiveSetting = CONTENT_SETTING_BLOCK;
           break;
         }
+        if (setting == CONTENT_SETTING_ASK)
+          mostRestrictiveSetting = CONTENT_SETTING_ASK;
       }
+    }
+    if (mostRestrictiveSetting == CONTENT_SETTING_ALLOW) {
+      radio_group.default_item = 0;
+      // |block_setting_| is already set to |CONTENT_SETTING_BLOCK|.
+    } else {
+      radio_group.default_item = 1;
+      block_setting_ = mostRestrictiveSetting;
     }
     set_radio_group(radio_group);
   }
@@ -259,7 +272,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
 
   virtual void OnRadioClicked(int radio_index) {
     ContentSetting setting =
-        radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+        radio_index == 0 ? CONTENT_SETTING_ALLOW : block_setting_;
     const std::set<std::string>& resources =
         bubble_content().resource_identifiers;
     if (resources.empty()) {

@@ -334,7 +334,7 @@ cr.define('options.contentSettings', function() {
       this.dataModel = new ArrayDataModel([]);
 
       // Whether the exceptions in this list allow an 'Ask every time' option.
-      this.enableAskOption = false;
+      this.enableAskOption = (this.contentType == 'plugins');
     },
 
     /**

@@ -24,7 +24,8 @@ class BlockedPlugin : public CppBoundClass,
                 WebKit::WebFrame* frame,
                 const WebKit::WebPluginParams& params,
                 const WebPreferences& settings,
-                PluginGroup* group);
+                int template_id,
+                const string16& message);
 
   WebViewPlugin* plugin() { return plugin_; }
 

@@ -21,7 +21,7 @@ const NSInteger kCookieDisabledIndex = 1;
 
 // Indices of the various plugin settings in the plugins radio group.
 const NSInteger kPluginsAllowIndex = 0;
-const NSInteger kPluginsAllowSandboxedIndex = 1;
+const NSInteger kPluginsAskIndex = 1;
 const NSInteger kPluginsBlockIndex = 2;
 
 // Indices of the various geolocation settings in the geolocation radio group.

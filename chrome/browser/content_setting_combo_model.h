@@ -14,7 +14,7 @@
 
 class ContentSettingComboModel : public ComboboxModel {
  public:
-  explicit ContentSettingComboModel(bool show_session);
+  explicit ContentSettingComboModel(ContentSettingsType content_type);
   virtual ~ContentSettingComboModel();
 
   virtual int GetItemCount();
@@ -25,7 +25,7 @@ class ContentSettingComboModel : public ComboboxModel {
   int IndexForSetting(ContentSetting);
 
  private:
-  const bool show_session_;
+  const ContentSettingsType content_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingComboModel);
 };

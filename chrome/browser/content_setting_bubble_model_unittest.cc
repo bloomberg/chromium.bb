@@ -4,11 +4,15 @@
 
 #include "chrome/browser/content_setting_bubble_model.h"
 
+#include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,6 +103,62 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   EXPECT_EQ(std::string(), bubble_content.info_link);
   EXPECT_NE(std::string(), bubble_content.title);
   EXPECT_NE(std::string(), bubble_content.load_plugins_link_title);
+}
+
+TEST_F(ContentSettingBubbleModelTest, MultiplePlugins) {
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  AutoReset<CommandLine> auto_reset(cmd, *cmd);
+  cmd->AppendSwitch(switches::kEnableResourceContentSettings);
+
+  HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+  std::string fooPlugin = "foo";
+  std::string barPlugin = "bar";
+  GURL url = contents()->GetURL();
+  map->AddExceptionForURL(url,
+                          CONTENT_SETTINGS_TYPE_PLUGINS,
+                          fooPlugin,
+                          CONTENT_SETTING_ALLOW);
+  map->AddExceptionForURL(url,
+                          CONTENT_SETTINGS_TYPE_PLUGINS,
+                          barPlugin,
+                          CONTENT_SETTING_ASK);
+
+  TabSpecificContentSettings* content_settings =
+      contents()->GetTabSpecificContentSettings();
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     fooPlugin);
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     barPlugin);
+
+  scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+         contents(), profile_.get(), CONTENT_SETTINGS_TYPE_PLUGINS));
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model->bubble_content();
+  EXPECT_EQ(2U, bubble_content.radio_group.radio_items.size());
+  EXPECT_EQ(1, bubble_content.radio_group.default_item);
+
+  content_setting_bubble_model->OnRadioClicked(0);
+  // Both plug-ins should be allowed now.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(url,
+                                   CONTENT_SETTINGS_TYPE_PLUGINS,
+                                   fooPlugin));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            map->GetContentSetting(url,
+                                   CONTENT_SETTINGS_TYPE_PLUGINS,
+                                   barPlugin));
+
+  content_setting_bubble_model->OnRadioClicked(1);
+  // Both plug-ins should be click-to-play now.
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(url,
+                                   CONTENT_SETTINGS_TYPE_PLUGINS,
+                                   fooPlugin));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            map->GetContentSetting(url,
+                                   CONTENT_SETTINGS_TYPE_PLUGINS,
+                                   barPlugin));
 }
 
 TEST_F(ContentSettingBubbleModelTest, Geolocation) {

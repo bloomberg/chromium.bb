@@ -2380,6 +2380,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
 
   if (!found)
     return NULL;
+  DCHECK(setting != CONTENT_SETTING_DEFAULT);
 
   scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
   group->AddPlugin(info, 0);
@@ -2395,28 +2396,41 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return NULL;
   }
 
-  if (info.path.value() != kDefaultPluginLibraryName) {
-    std::string resource;
-    if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
-      resource = group->identifier();
-    if (setting == CONTENT_SETTING_BLOCK) {
-      DCHECK(!cmd->HasSwitch(switches::kDisableClickToPlay));
-      DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
-      return CreateBlockedPluginPlaceholder(frame, params, group.get());
-    }
+  if (info.path.value() == kDefaultPluginLibraryName ||
+      setting == CONTENT_SETTING_ALLOW) {
     scoped_refptr<pepper::PluginModule> pepper_module =
-        PepperPluginRegistry::GetInstance()->GetModule(info.path);
-    if (pepper_module)
-      return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
-    if (setting != CONTENT_SETTING_ALLOW) {
-      // If the host is not whitelisted for this plugin, block it.
-      Send(new ViewHostMsg_NonSandboxedPluginBlocked(routing_id_,
-                                                     resource,
-                                                     group->GetGroupName()));
-      return CreateBlockedPluginPlaceholder(frame, params, group.get());
+    PepperPluginRegistry::GetInstance()->GetModule(info.path);
+    if (pepper_module) {
+      return CreatePepperPlugin(frame,
+                                params,
+                                info.path,
+                                pepper_module.get());
     }
+    return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
   }
-  return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
+  std::string resource;
+  if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
+    resource = group->identifier();
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
+  int resource_id;
+  int message_id;
+  if (setting == CONTENT_SETTING_ASK) {
+    resource_id = IDR_BLOCKED_PLUGIN_HTML;
+    message_id = IDS_PLUGIN_LOAD;
+  } else {
+    resource_id = IDR_OUTDATED_PLUGIN_HTML;
+    message_id = IDS_PLUGIN_BLOCKED;
+  }
+  // |blocked_plugin| will delete itself when the WebViewPlugin
+  // is destroyed.
+  BlockedPlugin* blocked_plugin =
+      new BlockedPlugin(this,
+                        frame,
+                        params,
+                        webkit_preferences_,
+                        resource_id,
+                        l10n_util::GetStringUTF16(message_id));
+  return blocked_plugin->plugin();
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -4056,7 +4070,7 @@ WebPlugin* RenderView::CreateOutdatedPluginPlaceholder(
                                  << resource_id;
 
   DictionaryValue values;
-  values.SetString("pluginOutdated",
+  values.SetString("message",
       l10n_util::GetStringFUTF8(IDS_PLUGIN_OUTDATED, group->GetGroupName()));
   values.Set("pluginGroup", group->GetDataForUI());
 
@@ -4068,16 +4082,6 @@ WebPlugin* RenderView::CreateOutdatedPluginPlaceholder(
                                webkit_preferences_,
                                htmlData,
                                GURL("chrome://outdatedplugin/"));
-}
-
-WebPlugin* RenderView::CreateBlockedPluginPlaceholder(
-    WebFrame* frame,
-    const WebPluginParams& params,
-    PluginGroup* group) {
-  // |blocked_plugin| will delete itself when the WebViewPlugin is destroyed.
-  BlockedPlugin* blocked_plugin =
-      new BlockedPlugin(this, frame, params, webkit_preferences_, group);
-  return blocked_plugin->plugin();
 }
 
 void RenderView::OnZoom(PageZoom::Function function) {

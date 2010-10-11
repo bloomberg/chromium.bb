@@ -74,10 +74,10 @@ void TabSpecificContentSettings::OnContentBlocked(
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   content_accessed_[type] = true;
+  if (!resource_identifier.empty())
+    AddBlockedResource(type, resource_identifier);
   if (!content_blocked_[type]) {
     content_blocked_[type] = true;
-    if (!resource_identifier.empty())
-      AddBlockedResource(type, resource_identifier);
     if (delegate_)
       delegate_->OnContentSettingsAccessed(true);
   }

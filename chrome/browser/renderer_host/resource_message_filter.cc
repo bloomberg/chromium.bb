@@ -804,16 +804,9 @@ void ResourceMessageFilter::OnGotPluginInfo(bool found,
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
     scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
     std::string resource = group->identifier();
-    setting = map->GetNonDefaultContentSetting(
-        policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource);
-    if (setting == CONTENT_SETTING_DEFAULT) {
-      ContentSetting defaultContentSetting =
-          map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS);
-      if (defaultContentSetting == CONTENT_SETTING_BLOCK ||
-          !map->GetBlockNonsandboxedPlugins()) {
-        setting = defaultContentSetting;
-      }
-    }
+    setting = map->GetContentSetting(policy_url,
+                                     CONTENT_SETTINGS_TYPE_PLUGINS,
+                                     resource);
   }
 
   ViewHostMsg_GetPluginInfo::WriteReplyParams(

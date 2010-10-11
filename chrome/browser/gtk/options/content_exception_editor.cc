@@ -26,7 +26,7 @@ ContentExceptionEditor::ContentExceptionEditor(
     bool is_off_the_record)
     : delegate_(delegate),
       model_(model),
-      cb_model_(model->content_type() == CONTENT_SETTINGS_TYPE_COOKIES),
+      cb_model_(model->content_type()),
       index_(index),
       pattern_(pattern),
       setting_(setting) {

@@ -4033,6 +4033,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plug-in.">
         Update plug-in...
       </message>
+      <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for an outdated disabled plug-in.">
+        Plug-in not allowed.
+      </message>
       <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated disabled plug-in.">
         The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in is out of date.
       </message>
@@ -4880,16 +4883,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Plug-ins
       </message>
       <message name="IDS_PLUGIN_SETTING_LABEL" desc="A label on top of Plug-Ins tab on Content Settings dialog">
-        Plug-in Settings:
+        When I encounter plug-ins on a site:
       </message>
       <message name="IDS_PLUGIN_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
-        Allow all sites to run all plug-ins (recommended)
+        Run automatically (recommended)
       </message>
-      <message name="IDS_PLUGIN_LOAD_SANDBOXED_RADIO" desc="A radio button in the Content Settings dialog for allowing sandboxed plug-ins on any site.">
-        Allow all sites to run only secured plug-ins
+      <message name="IDS_PLUGIN_ASK_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
+        Click to play
       </message>
       <message name="IDS_PLUGIN_NOLOAD_RADIO" desc="A radio button in the Content Settings dialog for preventing plug-ins use on any site.">
-        Do not allow any site to run plug-ins
+        Block all
       </message>
       <message name="IDS_PLUGIN_SELECTIVE_DISABLE" desc="Link to selectively disable plug-ins">
         Disable individual plug-ins...
