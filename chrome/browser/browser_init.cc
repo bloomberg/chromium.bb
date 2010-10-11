@@ -638,14 +638,8 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     const std::vector<GURL>& urls_to_open) {
   // If we're starting up in "background mode" (no open browser window) then
   // don't open any browser windows.
-  if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow)) {
-    BrowserList::StartKeepAlive();
-    // Keep the app alive while the system initializes, then allow it to
-    // shutdown if no other module wants to keep it running.
-    MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableFunction(BrowserList::EndKeepAlive));
+  if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow))
     return;
-  }
 
   if (process_startup && ProcessStartupURLs(urls_to_open)) {
     // ProcessStartupURLs processed the urls, nothing else to do.

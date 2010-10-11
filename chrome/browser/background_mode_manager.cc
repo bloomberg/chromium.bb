@@ -132,12 +132,23 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile,
     : profile_(profile),
       background_app_count_(0),
       in_background_mode_(false),
+      keep_alive_for_startup_(false),
       status_tray_(NULL),
       status_icon_(NULL) {
-  // If background mode is disabled, just exit - don't listen for
+  // If background mode or apps are disabled, just exit - don't listen for
   // any notifications.
-  if (!command_line->HasSwitch(switches::kEnableBackgroundMode))
+  if (!command_line->HasSwitch(switches::kEnableBackgroundMode) ||
+      command_line->HasSwitch(switches::kDisableExtensions))
     return;
+
+  // Keep the browser alive until extensions are done loading - this is needed
+  // by the --no-startup-window flag. We want to stay alive until we load
+  // extensions, at which point we should either run in background mode (if
+  // there are background apps) or exit if there are none.
+  if (command_line->HasSwitch(switches::kNoStartupWindow)) {
+    keep_alive_for_startup_ = true;
+    BrowserList::StartKeepAlive();
+  }
 
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
   // in the background until the user explicitly terminates it, by acting as if
@@ -215,9 +226,13 @@ void BackgroundModeManager::Observe(NotificationType type,
                                     const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSIONS_READY:
-    // On a Mac, we use 'login items' mechanism which has user-facing UI so we
-    // don't want to stomp on user choice every time we start and load
-    // registered extensions.
+      // Extensions are loaded, so we don't need to manually keep the browser
+      // process alive any more when running in no-startup-window mode.
+      EndKeepAliveForStartup();
+
+      // On a Mac, we use 'login items' mechanism which has user-facing UI so we
+      // don't want to stomp on user choice every time we start and load
+      // registered extensions.
 #if !defined(OS_MACOSX)
       EnableLaunchOnStartup(IsBackgroundModeEnabled() &&
                             background_app_count_ > 0);
@@ -242,6 +257,9 @@ void BackgroundModeManager::Observe(NotificationType type,
         OnBackgroundAppUninstalled();
       break;
     case NotificationType::APP_TERMINATING:
+      // Make sure we aren't still keeping the app alive (only happens if we
+      // don't receive an EXTENSIONS_READY notification for some reason).
+      EndKeepAliveForStartup();
       // Performing an explicit shutdown, so exit background mode (does nothing
       // if we aren't in background mode currently).
       EndBackgroundMode();
@@ -257,6 +275,17 @@ void BackgroundModeManager::Observe(NotificationType type,
     default:
       NOTREACHED();
       break;
+  }
+}
+
+void BackgroundModeManager::EndKeepAliveForStartup() {
+  if (keep_alive_for_startup_) {
+    keep_alive_for_startup_ = false;
+    // We call this via the message queue to make sure we don't try to end
+    // keep-alive (which can shutdown Chrome) before the message loop has
+    // started.
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableFunction(BrowserList::EndKeepAlive));
   }
 }
 
