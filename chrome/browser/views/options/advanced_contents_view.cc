@@ -1428,6 +1428,8 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
       enable_disable_button_->SetEnabled(false);
       enable_disable_button_->SetLabel(
           l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON));
+      enable_disable_button_->InvalidateLayout();
+      Layout();
       CloudPrintSetupFlow::OpenDialog(profile(), this,
                                       GetWindow()->GetNativeWindow());
     }
@@ -1520,7 +1522,24 @@ void CloudPrintProxySection::NotifyPrefChanged(const std::string* pref_name) {
       enable_disable_button_->InvalidateLayout();
       manage_printer_button_->SetVisible(false);
     }
-    Layout();
+
+    // Find the parent ScrollView, and ask it to re-layout since it's
+    // possible that the section_description_label_ has changed
+    // heights.  And scroll us back to being visible in that case, to
+    // be nice to the user.
+    views::View* view = section_description_label_->GetParent();
+    while (view && view->GetClassName() != views::ScrollView::kViewClassName)
+      view = view->GetParent();
+    if (view) {
+      gfx::Rect visible_bounds = GetVisibleBounds();
+      bool was_all_visible = (visible_bounds.size() == bounds().size());
+      // Our bounds can change across this call, so we have to use the
+      // new bounds if we want to stay completely visible.
+      view->Layout();
+      ScrollRectToVisible(was_all_visible ? bounds() : visible_bounds);
+    } else {
+      Layout();
+    }
   }
 }
 
