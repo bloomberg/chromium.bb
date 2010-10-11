@@ -2758,9 +2758,11 @@ void TabContents::PasswordFormsVisible(
 
 // Checks to see if we should generate a keyword based on the OSDD, and if
 // necessary uses TemplateURLFetcher to download the OSDD and create a keyword.
-void TabContents::PageHasOSDD(RenderViewHost* render_view_host,
-                              int32 page_id, const GURL& url,
-                              bool autodetected) {
+void TabContents::PageHasOSDD(
+    RenderViewHost* render_view_host,
+    int32 page_id,
+    const GURL& url,
+    const ViewHostMsg_PageHasOSDD_Type& msg_provider_type) {
   // Make sure page_id is the current page, and the TemplateURLModel is loaded.
   DCHECK(url.is_valid());
   if (!IsActiveEntry(page_id))
@@ -2777,6 +2779,25 @@ void TabContents::PageHasOSDD(RenderViewHost* render_view_host,
 
   if (profile()->IsOffTheRecord())
     return;
+
+  TemplateURLFetcher::ProviderType provider_type;
+  switch (msg_provider_type.type) {
+    case ViewHostMsg_PageHasOSDD_Type::AUTODETECTED_PROVIDER:
+      provider_type = TemplateURLFetcher::AUTODETECTED_PROVIDER;
+      break;
+
+    case ViewHostMsg_PageHasOSDD_Type::EXPLICIT_DEFAULT_PROVIDER:
+      provider_type = TemplateURLFetcher::EXPLICIT_DEFAULT_PROVIDER;
+      break;
+
+    case ViewHostMsg_PageHasOSDD_Type::EXPLICIT_PROVIDER:
+      provider_type = TemplateURLFetcher::EXPLICIT_PROVIDER;
+      break;
+
+    default:
+      NOTREACHED();
+      return;
+  }
 
   const NavigationEntry* entry = controller_.GetLastCommittedEntry();
   DCHECK(entry);
@@ -2802,6 +2823,9 @@ void TabContents::PageHasOSDD(RenderViewHost* render_view_host,
           base_entry->user_typed_url() : base_entry->url();
   if (!keyword_url.is_valid())
     return;
+
+  bool autodetected =
+      provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER;
   std::wstring keyword = TemplateURLModel::GenerateKeyword(keyword_url,
                                                            autodetected);
 
@@ -2825,7 +2849,7 @@ void TabContents::PageHasOSDD(RenderViewHost* render_view_host,
       url,
       base_entry->favicon().url(),
       this,
-      autodetected);
+      provider_type);
 }
 
 GURL TabContents::GetAlternateErrorPageURL() const {

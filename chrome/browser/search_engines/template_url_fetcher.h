@@ -20,6 +20,12 @@ class TabContents;
 //
 class TemplateURLFetcher {
  public:
+  enum ProviderType {
+    AUTODETECTED_PROVIDER,
+    EXPLICIT_PROVIDER,  // Supplied by Javascript.
+    EXPLICIT_DEFAULT_PROVIDER  // Supplied by Javascript as default provider.
+  };
+
   // Creates a TemplateURLFetcher with the specified Profile.
   explicit TemplateURLFetcher(Profile* profile);
   ~TemplateURLFetcher();
@@ -31,7 +37,10 @@ class TemplateURLFetcher {
                         const GURL& osdd_url,
                         const GURL& favicon_url,
                         TabContents* source,
-                        bool autodetected);
+                        ProviderType provider_type);
+
+  // The current number of outstanding requests.
+  int requests_count() const { return requests_->size(); }
 
  private:
   friend class RequestDelegate;

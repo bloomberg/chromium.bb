@@ -672,6 +672,41 @@ void ParamTraits<ViewMsg_StopFinding_Params>::Log(const param_type& p,
   LogParam(action, l);
 }
 
+void ParamTraits<ViewHostMsg_PageHasOSDD_Type>::Write(Message* m,
+                                                      const param_type& p) {
+  m->WriteInt(p.type);
+}
+
+bool ParamTraits<ViewHostMsg_PageHasOSDD_Type>::Read(const Message* m,
+                                                     void** iter,
+                                                     param_type* p) {
+  int type;
+  if (!m->ReadInt(iter, &type))
+    return false;
+  p->type = static_cast<param_type::Type>(type);
+  return true;
+}
+
+void ParamTraits<ViewHostMsg_PageHasOSDD_Type>::Log(const param_type& p,
+                                                    std::string* l) {
+  std::string type;
+  switch (p.type) {
+    case ViewHostMsg_PageHasOSDD_Type::AUTODETECTED_PROVIDER:
+      type = "ViewHostMsg_PageHasOSDD_Type::AUTODETECTED_PROVIDER";
+      break;
+    case ViewHostMsg_PageHasOSDD_Type::EXPLICIT_PROVIDER:
+      type = "ViewHostMsg_PageHasOSDD_Type::EXPLICIT_PROVIDER";
+      break;
+    case ViewHostMsg_PageHasOSDD_Type::EXPLICIT_DEFAULT_PROVIDER:
+      type = "ViewHostMsg_PageHasOSDD_Type::EXPLICIT_DEFAULT_PROVIDER";
+      break;
+    default:
+      type = "UNKNOWN";
+      break;
+  }
+  LogParam(type, l);
+}
+
 void ParamTraits<ViewHostMsg_GetSearchProviderInstallState_Params>::Write(
     Message* m, const param_type& p) {
   m->WriteInt(p.state);

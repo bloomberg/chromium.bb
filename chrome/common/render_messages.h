@@ -83,6 +83,7 @@ struct ViewMsg_Navigate_Params;
 struct ViewMsg_AudioStreamState_Params;
 struct ViewMsg_StopFinding_Params;
 struct ViewHostMsg_GetSearchProviderInstallState_Params;
+struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_UpdateRect_Params;
 struct ViewMsg_ClosePage_Params;

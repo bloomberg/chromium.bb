@@ -40,6 +40,7 @@ struct ThumbnailScore;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_DomMessage_Params;
+struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewHostMsg_ShowNotification_Params;
 struct ViewMsg_Navigate_Params;
@@ -612,7 +613,9 @@ class RenderViewHost : public RenderWidgetHost {
                           const gfx::Point& image_offset);
   void OnUpdateDragCursor(WebKit::WebDragOperation drag_operation);
   void OnTakeFocus(bool reverse);
-  void OnMsgPageHasOSDD(int32 page_id, const GURL& doc_url, bool autodetected);
+  void OnMsgPageHasOSDD(int32 page_id,
+                        const GURL& doc_url,
+                        const ViewHostMsg_PageHasOSDD_Type& provider_type);
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void DidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
   void OnAddMessageToConsole(const std::wstring& message,

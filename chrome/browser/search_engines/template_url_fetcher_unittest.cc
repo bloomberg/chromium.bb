@@ -65,6 +65,15 @@ class TemplateURLFetcherTest : public testing::Test {
   }
 
  protected:
+  // Schedules the download of the url.
+  void StartDownload(const std::wstring& keyword,
+                     const std::string& osdd_file_name,
+                     TemplateURLFetcher::ProviderType provider_type,
+                     bool check_that_file_exists);
+
+  // Waits for any downloads to finish.
+  void WaitForDownloadToFinish();
+
   TemplateURLModelTestUtil test_util_;
   net::TestServer test_server_;
 
@@ -77,6 +86,33 @@ TemplateURLFetcherTest::TemplateURLFetcherTest()
                    FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
 }
 
+void TemplateURLFetcherTest::StartDownload(
+    const std::wstring& keyword,
+    const std::string& osdd_file_name,
+    TemplateURLFetcher::ProviderType provider_type,
+    bool check_that_file_exists) {
+
+  if (check_that_file_exists) {
+    FilePath osdd_full_path;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &osdd_full_path));
+    osdd_full_path = osdd_full_path.AppendASCII(osdd_file_name);
+    ASSERT_TRUE(file_util::PathExists(osdd_full_path));
+    ASSERT_FALSE(file_util::DirectoryExists(osdd_full_path));
+  }
+
+  // Start the fetch.
+  GURL osdd_url = test_server_.GetURL("files/" + osdd_file_name);
+  GURL favicon_url;
+  test_util_.profile()->GetTemplateURLFetcher()->ScheduleDownload(
+      keyword, osdd_url, favicon_url, NULL, provider_type);
+  ASSERT_EQ(1, test_util_.profile()->GetTemplateURLFetcher()->requests_count());
+}
+
+void TemplateURLFetcherTest::WaitForDownloadToFinish() {
+  QuitOnChangedObserver quit_on_changed_observer(test_util_.model());
+  MessageLoop::current()->Run();
+}
+
 TEST_F(TemplateURLFetcherTest, BasicTest) {
   std::wstring keyword(L"test");
 
@@ -85,24 +121,9 @@ TEST_F(TemplateURLFetcherTest, BasicTest) {
   ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
 
   std::string osdd_file_name("simple_open_search.xml");
-
-  // Verify that the file exists.
-  FilePath osdd_full_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &osdd_full_path));
-  osdd_full_path = osdd_full_path.AppendASCII(osdd_file_name);
-  ASSERT_TRUE(file_util::PathExists(osdd_full_path));
-  ASSERT_FALSE(file_util::DirectoryExists(osdd_full_path));
-
-  // Start the fetch.
-  GURL osdd_url = test_server_.GetURL("files/" + osdd_file_name);
-  GURL favicon_url;
-  test_util_.profile()->GetTemplateURLFetcher()->ScheduleDownload(
-      keyword, osdd_url, favicon_url, NULL, true);
-
-  {  // Wait for the url to be downloaded.
-    QuitOnChangedObserver quit_on_changed_observer(test_util_.model());
-    MessageLoop::current()->Run();
-  }
+  StartDownload(keyword, osdd_file_name,
+                TemplateURLFetcher::AUTODETECTED_PROVIDER, true);
+  WaitForDownloadToFinish();
 
   const TemplateURL* t_url = test_util_.model()->GetTemplateURLForKeyword(
       keyword);
@@ -112,3 +133,41 @@ TEST_F(TemplateURLFetcherTest, BasicTest) {
   EXPECT_EQ(true, t_url->safe_for_autoreplace());
 }
 
+TEST_F(TemplateURLFetcherTest, DuplicateThrownAway) {
+  std::wstring keyword(L"test");
+
+  test_util_.ChangeModelToLoadState();
+  test_util_.ResetObserverCount();
+  ASSERT_FALSE(test_util_.model()->GetTemplateURLForKeyword(keyword));
+
+  std::string osdd_file_name("simple_open_search.xml");
+  StartDownload(keyword, osdd_file_name,
+                TemplateURLFetcher::AUTODETECTED_PROVIDER, true);
+
+  struct {
+    std::string description;
+    std::string osdd_file_name;
+    std::wstring keyword;
+    TemplateURLFetcher::ProviderType provider_type;
+  } test_cases[] = {
+      { "Duplicate keyword and osdd url with autodetected provider.",
+        osdd_file_name, keyword, TemplateURLFetcher::AUTODETECTED_PROVIDER },
+      { "Duplicate keyword and osdd url with explicit provider.",
+        osdd_file_name, keyword, TemplateURLFetcher::EXPLICIT_PROVIDER },
+      { "Duplicate osdd url with explicit provider.",
+        osdd_file_name, keyword + L"1", TemplateURLFetcher::EXPLICIT_PROVIDER },
+      { "Duplicate keyword with explicit provider.",
+        osdd_file_name + "1", keyword, TemplateURLFetcher::EXPLICIT_PROVIDER }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    StartDownload(test_cases[i].keyword, test_cases[i].osdd_file_name,
+                  test_cases[i].provider_type, false);
+    ASSERT_EQ(
+        1,
+        test_util_.profile()->GetTemplateURLFetcher()->requests_count()) <<
+        test_cases[i].description;
+  }
+
+  WaitForDownloadToFinish();
+}

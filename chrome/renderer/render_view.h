@@ -221,7 +221,8 @@ class RenderView : public RenderWidget,
 
   // Called from JavaScript window.external.AddSearchProvider() to add a
   // keyword for a provider described in the given OpenSearch document.
-  void AddSearchProvider(const std::string& url);
+  void AddSearchProvider(const std::string& url,
+                         const ViewHostMsg_PageHasOSDD_Type& provider_type);
 
   // Returns the install state for the given search provider url.
   ViewHostMsg_GetSearchProviderInstallState_Params
@@ -724,7 +725,8 @@ class RenderView : public RenderWidget,
 
   // Adds search provider from the given OpenSearch description URL as a
   // keyword search.
-  void AddGURLSearchProvider(const GURL& osd_url, bool autodetected);
+  void AddGURLSearchProvider(const GURL& osd_url,
+                             const ViewHostMsg_PageHasOSDD_Type& provider_type);
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976

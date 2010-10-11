@@ -144,6 +144,42 @@ struct ViewMsg_StopFinding_Params {
   Action action;
 };
 
+// The type of OSDD that the renderer is giving to the browser.
+struct ViewHostMsg_PageHasOSDD_Type {
+  enum Type {
+    // The Open Search Description URL was detected automatically.
+    AUTODETECTED_PROVIDER,
+
+    // The Open Search Description URL was given by Javascript.
+    EXPLICIT_PROVIDER,
+
+    // The Open Search Description URL was given by Javascript to be the new
+    // default search engine.
+    EXPLICIT_DEFAULT_PROVIDER
+  };
+
+  Type type;
+
+  ViewHostMsg_PageHasOSDD_Type() : type(AUTODETECTED_PROVIDER) {
+  }
+
+  explicit ViewHostMsg_PageHasOSDD_Type(Type t)
+      : type(t) {
+  }
+
+  static ViewHostMsg_PageHasOSDD_Type Autodetected() {
+    return ViewHostMsg_PageHasOSDD_Type(AUTODETECTED_PROVIDER);
+  }
+
+  static ViewHostMsg_PageHasOSDD_Type Explicit() {
+    return ViewHostMsg_PageHasOSDD_Type(EXPLICIT_PROVIDER);
+  }
+
+  static ViewHostMsg_PageHasOSDD_Type ExplicitDefault() {
+    return ViewHostMsg_PageHasOSDD_Type(EXPLICIT_DEFAULT_PROVIDER);
+  }
+};
+
 // The install state of the search provider (not installed, installed, default).
 struct ViewHostMsg_GetSearchProviderInstallState_Params {
   enum State {
@@ -1030,6 +1066,14 @@ struct ParamTraits<ViewMsg_AudioStreamState_Params> {
 template <>
 struct ParamTraits<ViewMsg_StopFinding_Params> {
   typedef ViewMsg_StopFinding_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewHostMsg_PageHasOSDD_Type> {
+  typedef ViewHostMsg_PageHasOSDD_Type param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

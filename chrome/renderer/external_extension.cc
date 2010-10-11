@@ -16,18 +16,23 @@ using WebKit::WebView;
 
 namespace extensions_v8 {
 
-#define SEARCH_PROVIDER_API_V1 \
-  "var external;" \
-  "if (!external)" \
-  "  external = {};" \
-  "external.AddSearchProvider = function(name) {" \
-  "  native function NativeAddSearchProvider();" \
-  "  NativeAddSearchProvider(name);" \
-  "};"
+static const char* const kSearchProviderApiV1 =
+    "var external;"
+    "if (!external)"
+    "  external = {};"
+    "external.AddSearchProvider = function(name) {"
+    "  native function NativeAddSearchProvider();"
+    "  NativeAddSearchProvider(name);"
+    "};";
 
-static const char* const kSearchProviderApiV1 = SEARCH_PROVIDER_API_V1;
 static const char* const kSearchProviderApiV2 =
-    SEARCH_PROVIDER_API_V1
+    "var external;"
+    "if (!external)"
+    "  external = {};"
+    "external.AddSearchProvider = function(name, default_provider) {"
+    "  native function NativeAddSearchProvider();"
+    "  NativeAddSearchProvider(name, default_provider);"
+    "};"
     "external.IsSearchProviderInstalled = function(name) {"
     "  native function NativeIsSearchProviderInstalled();"
     "  return NativeIsSearchProviderInstalled(name);"
@@ -107,10 +112,15 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
   std::string name = std::string(*v8::String::Utf8Value(args[0]));
   if (!name.length()) return v8::Undefined();
 
+  ViewHostMsg_PageHasOSDD_Type provider_type =
+      ((args.Length() < 2) || !args[1]->BooleanValue()) ?
+      ViewHostMsg_PageHasOSDD_Type::Explicit() :
+      ViewHostMsg_PageHasOSDD_Type::ExplicitDefault();
+
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  render_view->AddSearchProvider(name);
+  render_view->AddSearchProvider(name, provider_type);
   return v8::Undefined();
 }
 

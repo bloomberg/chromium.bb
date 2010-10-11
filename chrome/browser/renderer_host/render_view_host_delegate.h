@@ -47,6 +47,7 @@ struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
+struct ViewHostMsg_PageHasOSDD_Type;
 struct ViewHostMsg_RunFileChooser_Params;
 struct WebDropData;
 class WebKeyboardEvent;
@@ -790,7 +791,7 @@ class RenderViewHostDelegate {
   // Notification that the page has an OpenSearch description document.
   virtual void PageHasOSDD(RenderViewHost* render_view_host,
                            int32 page_id, const GURL& doc_url,
-                           bool autodetected) {}
+                           const ViewHostMsg_PageHasOSDD_Type& provider_type) {}
 
   // |url| is assigned to a server that can provide alternate error pages.  If
   // the returned URL is empty, the default error page built into WebKit will

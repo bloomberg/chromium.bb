@@ -1690,7 +1690,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED3(ViewHostMsg_PageHasOSDD,
                       int32 /* page_id */,
                       GURL /* url of OS description document */,
-                      bool /* autodetected */)
+                      ViewHostMsg_PageHasOSDD_Type)
 
   // Find out if the given url's security origin is installed as a search
   // provider.

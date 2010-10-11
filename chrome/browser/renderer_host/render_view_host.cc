@@ -1504,9 +1504,11 @@ void RenderViewHost::OnTakeFocus(bool reverse) {
     view->TakeFocus(reverse);
 }
 
-void RenderViewHost::OnMsgPageHasOSDD(int32 page_id, const GURL& doc_url,
-                                      bool autodetected) {
-  delegate_->PageHasOSDD(this, page_id, doc_url, autodetected);
+void RenderViewHost::OnMsgPageHasOSDD(
+    int32 page_id,
+    const GURL& doc_url,
+    const ViewHostMsg_PageHasOSDD_Type& provider_type) {
+  delegate_->PageHasOSDD(this, page_id, doc_url, provider_type);
 }
 
 void RenderViewHost::OnDidGetPrintedPagesCount(int cookie, int number_pages) {

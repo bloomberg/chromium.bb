@@ -390,6 +390,13 @@ void TemplateURLModel::ResetTemplateURL(const TemplateURL* url,
   NotifyObservers();
 }
 
+bool TemplateURLModel::CanMakeDefault(const TemplateURL* url) {
+  return url != GetDefaultSearchProvider() &&
+      url->url() &&
+      url->url()->SupportsReplacement() &&
+      !is_default_search_managed();
+}
+
 void TemplateURLModel::SetDefaultSearchProvider(const TemplateURL* url) {
   if (is_default_search_managed_) {
     NOTREACHED();

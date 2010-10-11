@@ -1616,10 +1616,12 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
   return Send(message);
 }
 
-void RenderView::AddGURLSearchProvider(const GURL& osd_url, bool autodetected) {
+void RenderView::AddGURLSearchProvider(
+    const GURL& osd_url,
+    const ViewHostMsg_PageHasOSDD_Type& provider_type) {
   if (!osd_url.is_empty())
     Send(new ViewHostMsg_PageHasOSDD(routing_id_, page_id_, osd_url,
-                                     autodetected));
+                                     provider_type));
 }
 
 void RenderView::OnAutoFillSuggestionsReturned(
@@ -1647,9 +1649,15 @@ uint32 RenderView::GetCPBrowsingContext() {
   return context;
 }
 
-void RenderView::AddSearchProvider(const std::string& url) {
-  AddGURLSearchProvider(GURL(url),
-                        false);  // not autodetected
+void RenderView::AddSearchProvider(
+    const std::string& url,
+    const ViewHostMsg_PageHasOSDD_Type& provider_type) {
+  if (provider_type.type ==
+      ViewHostMsg_PageHasOSDD_Type::EXPLICIT_DEFAULT_PROVIDER &&
+      !webview()->mainFrame()->isProcessingUserGesture())
+    return;
+
+  AddGURLSearchProvider(GURL(url), provider_type);
 }
 
 ViewHostMsg_GetSearchProviderInstallState_Params
@@ -1839,7 +1847,7 @@ void RenderView::didStopLoading() {
     Send(new ViewHostMsg_UpdateFavIconURL(routing_id_, page_id_, favicon_url));
 
   AddGURLSearchProvider(webview()->mainFrame()->openSearchDescriptionURL(),
-                        true);  // autodetected
+                        ViewHostMsg_PageHasOSDD_Type::Autodetected());
 
   Send(new ViewHostMsg_DidStopLoading(routing_id_));
 
