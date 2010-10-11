@@ -1914,17 +1914,34 @@ gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,
 
   paint.setShader(NULL);
   paint.setStyle(SkPaint::kStroke_Style);
+  // Smooth out the shadow.
+  paint.setAntiAlias(true);
 
   const int kMaxShading = 100;
   const int kShadingPixels = 5;
+
+  // The goal of all this mathematical trickery is to create a shadow for the
+  // arrow that looks decent. We want a shadow of a set width, and the thickest
+  // direction of that shadow needs to be perpendicular to the sides of the
+  // arrow.
+  double scale_factor = sqrt(static_cast<double>(
+      (arrow_height * arrow_height + kArrowWidth * kArrowWidth))) /
+      kShadingPixels;
+  double x_scale = arrow_height / scale_factor / kShadingPixels;
+  double y_scale = kArrowWidth / scale_factor / kShadingPixels;
   for (int i = 1; i <= kShadingPixels; ++i) {
+    double x_backoff = x_scale * i;
+    double y_backoff = y_scale * i;
     SkPath shadow_path;
     shadow_path.moveTo(0, y - i);
-    shadow_path.rLineTo(x - kArrowWidth + 1, 0);
+    // The +1 below makes sure the shadow hugs the left side of the arrow.
+    shadow_path.rLineTo(x - kArrowWidth - x_backoff + 1, 0);
+    shadow_path.rMoveTo(0, i - y_backoff);
     shadow_path.rLineTo(kArrowWidth, -arrow_height);
-    // This rMoveTo() is necessary to give the path a sharp point at the top.
-    shadow_path.rMoveTo(-1, 0);
+    // The -1.5 below makes sure the shadow hugs the right side of the arrow.
+    shadow_path.rLineTo(2 * x_backoff - 1.5, 0);
     shadow_path.rLineTo(kArrowWidth, arrow_height);
+    shadow_path.rMoveTo(0, y_backoff - i);
     shadow_path.rLineTo(sender->allocation.width, 0);
 
     int shading = (kShadingPixels - i + 1) * kMaxShading / kShadingPixels;
