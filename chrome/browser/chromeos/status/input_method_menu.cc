@@ -380,6 +380,9 @@ void InputMethodMenu::RunMenu(
   // than this one should not call the Gtk+ API since it is a special API only
   // for a menu related to IME/keyboard. See the Gtk+ API reference at:
   // http://library.gnome.org/devel/gtk/stable/GtkMenuShell.html
+/*
+  Temporarily disable due to crash. (http://crosbug.com/7598)
+
   gfx::NativeMenu native_menu = language_menu_.GetNativeMenu();
   if (native_menu) {
     gtk_menu_shell_set_take_focus(GTK_MENU_SHELL(native_menu), FALSE);
@@ -387,6 +390,7 @@ void InputMethodMenu::RunMenu(
     LOG(ERROR)
         << "Can't call gtk_menu_shell_set_take_focus since NativeMenu is NULL";
   }
+*/
 
   language_menu_.UpdateStates();
   if (minimum_language_menu_width_ > 0) {
