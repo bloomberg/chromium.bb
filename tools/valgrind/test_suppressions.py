@@ -42,11 +42,7 @@ def ReadReportsFromFile(filename):
       in_suppression = True
       cur_supp = ["{"]
     elif line.find("Suppression (error hash=#") == 0:
-      last_hash = line[25:33]
-      # Work around an (fixed) bug in memcheck_analyze.py.
-      # TODO(jochen): delete this after a couple of days.
-      if last_hash[0] == '-':
-        last_hash = line[26:34]
+      last_hash = line[25:41]
   # The line at the end of the file is assumed to store the URL of the report.
   return reports,line
 

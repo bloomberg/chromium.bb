@@ -124,9 +124,9 @@ find_blame() {
   fi
 
   HASH="#$3#"
-  if ! echo "$3" | grep -q -e '^[0-9A-F]\{8\}$'
+  if ! echo "$3" | grep -q -e '^[0-9A-F]\{16\}$'
   then
-    echo "The hash '$3' looks strange, it should match ^[0-9A-F]{8}$"
+    echo "The hash '$3' looks strange, it should match ^[0-9A-F]{16}$"
     exit 1
   fi
 
