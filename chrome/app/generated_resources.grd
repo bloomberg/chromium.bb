@@ -5583,6 +5583,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED" desc="Heading in the error page when the proxy server connection failed.">
         Unable to connect to the proxy server.
       </message>
+      <message name="IDS_ERRORPAGES_HEADING_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Heading of the error page when the server has a weak Diffie-Hellman public key. Diffie-Hellman is a technical term and the conjuction of two names so may be best left untranslated. 'key' here is used as the technical name for a large number with certain mathematical properties that allow it to be used to encrypt and decrypt data. 'weak' here means that the number is too small to resist an exhaustive attempt to find certain mathematical structures in it, the secrecy of which is critical.">
+        Server has a weak ephemeral Diffie-Hellman public key
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Heading of the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated.">
+        Cannot make secure connection because of ESET anti-virus
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_NETNANNY_SSL_INTERCEPTION" desc="Heading of the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated.">
+        Cannot make secure connection because of NetNanny
+      </message>
       <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
         Unable to connect to the internet.
       </message>
@@ -5637,6 +5646,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
           and uncheck &quot;Use a proxy server for your LAN.&quot;
         </message>
       </if>
+      <message name="IDS_ERRORPAGES_SUMMARY_WEAK_SERVER_EPHEMERAL_DH_KEY" desc="Summary in the error page when the server has a weak Diffie-Hellman public key">
+        This error can occur when connecting to a secure (HTTPS) server. It
+        means that the server is trying to setup a secure connection but, due to
+        a disastrous misconfiguration, the connection wouldn’t be secure at all!
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph> In this case the
+        server needs to be fixed. Chrome won’t use insecure connections in order
+        to protect your privacy.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
+        an ESET product is intercepting secure connections. This is typically
+        not a security issue as the ESET software is usually running on the same
+        computer. However, due to an intolerance to specific aspects of Chrome's
+        secure connections, ESET products have to be configured to not perform
+        this interception. Click the 'Learn more' link for instructions.
+      </message>
+
+      <message name="IDS_ERRORPAGES_SUMMARY_NETNANNY_SSL_INTERCEPTION" desc="Summary in the error page when we detect that NetNanny is running and intercepting our HTTPS connections. 'NetNanny' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has detected that
+        NetNanny is intercepting secure connections. This is typically
+        not a security issue as the NetNanny software is usually running on the
+        same computer. However, due to an intolerance to specific aspects of
+        Chrome's secure connections, NetNanny has to be configured to not
+        perform this interception. Click the 'Learn more' link for instructions.
+      </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed, before platform dependent instructions.">
         <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
