@@ -4,8 +4,8 @@
 
 #include <string>
 
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"

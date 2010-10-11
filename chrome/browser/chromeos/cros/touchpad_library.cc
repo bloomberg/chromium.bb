@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/cros/touchpad_library.h"
 
 #include "base/message_loop.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
 namespace chromeos {

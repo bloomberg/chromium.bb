@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/image_decoder.h"
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 namespace chromeos {
 

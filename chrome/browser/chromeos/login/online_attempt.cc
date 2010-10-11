@@ -8,7 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state_resolver.h"

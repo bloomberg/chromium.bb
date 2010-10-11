@@ -9,7 +9,7 @@
 #include "base/nss_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/mock_owner_key_utils.h"
 #include "chrome/browser/chromeos/login/mock_ownership_service.h"

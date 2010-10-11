@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/network_state_notifier.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/common/notification_registrar.h"

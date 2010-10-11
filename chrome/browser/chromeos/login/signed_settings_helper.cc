@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 
 namespace chromeos {

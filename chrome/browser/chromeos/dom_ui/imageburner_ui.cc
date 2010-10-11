@@ -14,7 +14,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profile.h"

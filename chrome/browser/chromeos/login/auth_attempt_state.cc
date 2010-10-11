@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "cros/chromeos_cryptohome.h"
 

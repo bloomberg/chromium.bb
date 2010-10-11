@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/ref_counted.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
-#include "chrome/browser/chrome_thread.h"
 
 namespace chromeos {
 class AuthAttemptState;

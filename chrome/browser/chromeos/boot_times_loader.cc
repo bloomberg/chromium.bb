@@ -19,7 +19,7 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/common/chrome_switches.h"

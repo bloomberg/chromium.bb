@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/net/url_fetcher.h"
 

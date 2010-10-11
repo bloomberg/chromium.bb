@@ -18,7 +18,7 @@
 #include "base/histogram.h"
 #include "base/perftimer.h"
 #include "base/time.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
 
 // Steps to add an action.

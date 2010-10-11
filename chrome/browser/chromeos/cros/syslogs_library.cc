@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/chrome_switches.h"
 

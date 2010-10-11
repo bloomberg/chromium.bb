@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/login/auth_attempt_state.h"
 #include "chrome/browser/chromeos/login/online_attempt.h"

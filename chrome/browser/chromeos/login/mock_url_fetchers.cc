@@ -7,7 +7,7 @@
 #include <errno.h>
 
 #include "base/message_loop.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"

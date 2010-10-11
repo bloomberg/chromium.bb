@@ -4,7 +4,7 @@
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"

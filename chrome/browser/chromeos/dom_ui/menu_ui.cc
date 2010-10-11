@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"

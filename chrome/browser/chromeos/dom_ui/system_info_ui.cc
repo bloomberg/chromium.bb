@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"

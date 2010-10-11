@@ -9,7 +9,7 @@
 
 #include "base/ref_counted.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"

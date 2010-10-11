@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"

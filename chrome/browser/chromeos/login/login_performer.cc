@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/profile.h"

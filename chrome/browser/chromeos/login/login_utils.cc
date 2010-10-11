@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
