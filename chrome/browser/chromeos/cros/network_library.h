@@ -46,11 +46,11 @@ class Network {
 
   // Return a string representation of the state code.
   // This not translated and should be only used for debugging purposes.
-  std::string GetStateString();
+  std::string GetStateString() const;
 
   // Return a string representation of the error code.
   // This not translated and should be only used for debugging purposes.
-  std::string GetErrorString();
+  std::string GetErrorString() const;
 
  protected:
   Network()
@@ -69,7 +69,9 @@ class Network {
 
 class EthernetNetwork : public Network {
  public:
-  EthernetNetwork() : Network() {}
+  EthernetNetwork() : Network() {
+    type_ = TYPE_ETHERNET;
+  }
 };
 
 class WirelessNetwork : public Network {
@@ -117,7 +119,7 @@ class WirelessNetwork : public Network {
 
 class CellularNetwork : public WirelessNetwork {
  public:
-  CellularNetwork() : WirelessNetwork() {}
+  CellularNetwork();
   explicit CellularNetwork(const ServiceInfo& service)
       : WirelessNetwork() {
     ConfigureFromService(service);
@@ -128,8 +130,11 @@ class CellularNetwork : public WirelessNetwork {
   bool StartActivation() const;
   const ActivationState activation_state() const { return activation_state_; }
   const NetworkTechnology network_technology() const {
-    return network_technology_; }
+    return network_technology_;
+  }
   const NetworkRoamingState roaming_state() const { return roaming_state_; }
+  bool restricted_pool() const { return restricted_pool_; }
+  const std::string& service_name() const { return service_name_; }
   const std::string& operator_name() const { return operator_name_; }
   const std::string& operator_code() const { return operator_code_; }
   const std::string& payment_url() const { return payment_url_; }
@@ -144,17 +149,26 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& firmware_revision() const { return firmware_revision_; }
   const std::string& hardware_revision() const { return hardware_revision_; }
   const std::string& last_update() const { return last_update_; }
-  const int prl_version() const { return prl_version_; }
+  const unsigned int prl_version() const { return prl_version_; }
+  bool isGsm() const;
 
   // WirelessNetwork overrides.
   virtual void Clear();
   virtual void ConfigureFromService(const ServiceInfo& service);
+
+  // Return a string representation of network technology.
+  std::string GetNetworkTechnologyString() const;
+  // Return a string representation of activation state.
+  std::string GetActivationStateString() const;
+  // Return a string representation of roaming state.
+  std::string GetRoamingStateString() const;
 
  protected:
   ActivationState activation_state_;
   NetworkTechnology network_technology_;
   NetworkRoamingState roaming_state_;
   bool restricted_pool_;
+  std::string service_name_;
   // Carrier Info
   std::string operator_name_;
   std::string operator_code_;
@@ -171,18 +185,13 @@ class CellularNetwork : public WirelessNetwork {
   std::string firmware_revision_;
   std::string hardware_revision_;
   std::string last_update_;
-  int prl_version_;
+  unsigned int prl_version_;
 };
 
 class WifiNetwork : public WirelessNetwork {
  public:
-  WifiNetwork()
-      : WirelessNetwork(),
-        encryption_(SECURITY_NONE) {}
-  explicit WifiNetwork(const ServiceInfo& service)
-      : WirelessNetwork() {
-    ConfigureFromService(service);
-  }
+  WifiNetwork();
+  explicit WifiNetwork(const ServiceInfo& service);
 
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
   ConnectionSecurity encryption() const { return encryption_; }

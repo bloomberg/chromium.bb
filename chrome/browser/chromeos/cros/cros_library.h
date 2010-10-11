@@ -8,8 +8,10 @@
 
 #include <string>
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "chrome/common/chrome_switches.h"
 namespace chromeos {
 
 class BurnLibrary;
@@ -166,6 +168,9 @@ class CrosLibrary {
     L* GetDefaultImpl(bool use_stub_impl) {
       if (!library_) {
         own_ = true;
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kForceStubLibcros))
+          use_stub_impl = true;
         library_ = L::GetImpl(use_stub_impl);
       }
       return library_;

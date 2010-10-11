@@ -1186,6 +1186,10 @@ const char kScreenSaverUrl[]                = "screen-saver-url";
 // Flag to trigger ChromeOS system log compression during feedback submit.
 const char kCompressSystemFeedback[]        = "compress-sys-feedback";
 
+// Forces usage of libcros stub implementation. For testing purposes, this
+// switch separates chrome code from the rest of ChromeOS.
+const char kForceStubLibcros[]        = "force-stub-libcros";
+
 #ifndef NDEBUG
 extern const char kDOMUIMenuUrl[]           = "domui-menu-url";
 #endif

@@ -1060,7 +1060,7 @@ each locale. -->
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_SIGN_OUT" desc="The text label of the Sign Out menu item">
-          Sign Out
+          Sign out
         </message>
         <message name="IDS_EXIT_GUEST_MODE" desc="The text label of the Exit guest mode menu item">
           Exit guest mode
@@ -8676,7 +8676,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Previous password
       </message>
       <message name="IDS_SCREEN_LOCK_ACTIVE_USER">
-        Active user
+        Currently signed in
       </message>
       <message name="IDS_SCREEN_LOCK_SIGN_OUT">
         Sign out
@@ -8706,7 +8706,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Type the characters you see in the picture below.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
-        Date and Time
+        Date and time
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK">
         Wired network
@@ -8736,10 +8736,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Advanced Options
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_MEDIAPLAYER">
-        Mediaplayer
+        Media Player
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADVANCEDFS">
-        Advanced Filesystem
+        Enable Advanced File System, including USB and SD card support
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TALK">
         Talk
@@ -8757,7 +8757,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sensitivity:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_MEDIAPLAYER_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to turn on the mediaplayer">
-        Turn on the Mediaplayer
+        Enable Media Player
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ADVANCEDFS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for the filesystem.">
         Advanced Filesystem including USB/SD card support.
@@ -8769,7 +8769,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Show tabs on the left side.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for accessbility.">
-        Enable Accessibility
+        Enable accessibility features
       </message>
       <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layouti label.">
         Keyboard Layout:
@@ -8787,7 +8787,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Options...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_OTHER_NETWORKS" desc="In the settings tab, the text on the button to display other networks.">
-        Other...
+        Add network...
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
         Allow browse without signing in.
@@ -8796,7 +8796,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Allow anyone to sign in.
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to show user names and pictures on signin screen.">
-        Show user names and pictures on sign-in screen.
+        Show usernames and pictures on sign-in page.
       </message>
       <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT" desc="In the Accounts settings tab, the instruction text on an empty username edit.">
         Enter names or addresses.
@@ -8814,7 +8814,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Require password to wake from sleep
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings internet options, the label for the network id.">
-        Network id:
+        Network SSID:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY" desc="In settings internet options, the user identity for authentication.">
         Identity:
@@ -8838,7 +8838,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Network key format is incorrect.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings internet options, the label for the auto-connect checkbox.">
-        Auto-connect to this network
+        Automatically connect to this network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USAGE" desc="In settings internet options, the tab header for mobile plan usage tab.">
         Usage
@@ -8876,7 +8876,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONFIGURE" desc="In settings internet options, the label for to configure the type of connection.">
         Configure:
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings internet options, the label for address.">
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings internet options, the label for connection status.">
+        Connection Status:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings internet options, the label for IP address.">
         Address:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK" desc="In settings internet options, the label for subnet mask.">
@@ -8886,10 +8889,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Gateway:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings internet options, the label dns server.">
-        DNS Server:
+        DNS server:
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
-        Installed.
+        Installed
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSWORD" desc="In settings internet options, a string telling the user where the network certificate is installed to.">
         Password
@@ -8906,6 +8909,50 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE" desc="In settings internet options, Title of the overlay when the user is not connected and can.">
         Connect to network
       </message>
+
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME" desc="Cellular service name under network details in chrome:settings/internet.">
+        Service name:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY" desc="Cellular network technology label under network details in chrome:settings/internet.">
+        Network technology:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR" desc="Cellular network operator name label under network details in chrome:settings/internet.">
+        Operator:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE" desc="Cellular network operator code label under network details in chrome:settings/internet.">
+        Operator code:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE" desc="Cellular network activation status label under network details in chrome:settings/internet.">
+        Activation:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE" desc="Cellular network roaming status label under network details in chrome:settings/internet.">
+        Roaming:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL" desc="Cellular network restricted network status label under network details in chrome:settings/internet.">
+        Restricted pool:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE" desc="Cellular network error status label under network details in chrome:settings/internet.">
+        Error info:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER" desc="Cellular device manufacturer label under network details in chrome:settings/internet.">
+        Manufacturer:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID" desc="Cellular device model ID label under network details in chrome:settings/internet.">
+        Model:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION" desc="Cellular device firmware revision label under network details in chrome:settings/internet.">
+        Firmware:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION" desc="Cellular device hardware revision label under network details in chrome:settings/internet.">
+        Hardware:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LAST_UPDATE" desc="Cellular device last updated label under network details in chrome:settings/internet.">
+        Last updated:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Cellular device PRL version label under network details in chrome:settings/internet.">
+        PRL version:
+      </message>
+
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE" desc="In settings internet options, Title of the section which houses the enable/disable buttons.">
         General
       </message>
@@ -9468,11 +9515,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT"
                desc="Explanatory message about how to switch input methods">
-        Hit <ph name="HOTKEY_NAME">$1<ex>alt-shift</ex></ph> to switch between input methods.
+        Press <ph name="HOTKEY_NAME">$1<ex>alt-shift</ex></ph> to switch between input methods.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT"
                desc="Explanatory message about how to select the previous input method">
-        Hit <ph name="HOTKEY_NAME">$1<ex>ctrl-space</ex></ph> to select the previous input method.
+        Press <ph name="HOTKEY_NAME">$1<ex>ctrl-space</ex></ph> to select the previous input method.
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
                desc="The label is used for a button that changes the UI
@@ -9635,7 +9682,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Ethernet
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_WIFI" desc="The wifi network device.">
-        Wifi
+        Wi-Fi
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="The cellular network device.">
         Cellular
@@ -9834,75 +9881,152 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Network state strings for ChromeOS -->
       <message name="IDS_CHROMEOS_NETWORK_STATE_UNKNOWN" desc="Network state in about:network: UNKNOWN">
-	Unknown
+        Unknown
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_IDLE" desc="Network state in about:network: IDLE">
-	Idle
+        Idle
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_CARRIER" desc="Network state in about:network: CARRIER">
-	Carrier
+        Carrier
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_ASSOCIATION" desc="Network state in about:network: ASSOCIATION">
-	Association
+        Association
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_CONFIGURATION" desc="Network state in about:network: CONFIGURATION">
-	Configuration
+        Configuration
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_READY" desc="Network state in about:network: READY">
-	Ready
+        Ready
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_DISCONNECT" desc="Network state in about:network: DISCONNECT">
-	Disconnect
+        Disconnect
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_FAILURE" desc="Network state in about:network: FAILURE">
-	Failure
+        Failure
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_ACTIVATION_FAILURE" desc="Network state in about:network: ACTIVATION_FAILURE">
-	Activation Failure
+        Activation failure
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED" desc="Network state in about:network: Unrecognized">
-	Unrecognized State
+        Unrecognized state
       </message>
 
       <!-- Network error strings for ChromeOS -->
       <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error in about:network: UNKNOWN">
-	UNKNOWN
+        Unknown
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_OUT_OF_RANGE" desc="Network error in about:network: OUT_OF_RANGE">
-	Out Of Range
+        Out of range
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_PIN_MISSING" desc="Network error in about:network: PIN_MISSING">
-	Pin Missing
+        PIN missing
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_DHCP_FAILED" desc="Network error in about:network: DHCP_FAILED">
-	DHCP Failed
+        DHCP lookup failed
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_CONNECT_FAILED" desc="Network error in about:network: CONNECT_FAILED">
-	Connect Failed
+        Connect failed
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_PASSPHRASE" desc="Network error in about:network: BAD_PASSPHRASE">
-	Bad Passphrase
+        Bad passphrase
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_BAD_WEPKEY" desc="Network error in about:network: BAD_WEPKEY">
-	Bad WEP key
+        Bad WEP key
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_ACTIVATION_FAILED" desc="Network error in about:network: ACTIVATION_FAILED">
-	Activation Failed
+        Activation failed
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_NEED_EVDO" desc="Network error in about:network: NEED_EVDO">
-	Need EVDO
+        Need EVDO
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_NEED_HOME_NETWORK" desc="Network error in about:network: NEED_HOME_NETWORK">
-	Need Home Network
+        Need home network
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_OTASP_FAILED" desc="Network error in about:network: OTASP_FAILED">
-	OTASP Failed
+        OTASP failed
       </message>
       <message name="IDS_CHROMEOS_NETWORK_ERROR_AAA_FAILED" desc="Network error in about:network: AAA_FAILED">
-	AAA Failed
+        AAA check failed
       </message>
-      <message name="IDS_CHROMEOS_NETWORK_ERRoR_UNRECOGNIZED" desc="Network error in about:network: Unrecognized">
-	Unrecognized Error
+      <message name="IDS_CHROMEOS_NETWORK_ERROR_UNRECOGNIZED" desc="Network error in about:network: Unrecognized">
+        Unrecognized error
+      </message>
+
+      <!-- Cellular network technology description strings for ChromeOS -->
+      <message name="IDS_CHROMEOS_NETWORK_CELLULAR_TECHNOLOGY_UNKNOWN" desc="Description of unknown cellular network technology. Shown under details on chrome:stettings/internet page.">
+        Unknown
+      </message>
+
+      <!-- Cellular network activation state description strings for ChromeOS -->
+      <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATED" desc="Description of state of activated cellular data plan. Shown under details on chrome:stettings/internet page.">
+        Activated
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATING" desc="Description of state of currently activating cellular data plan. Shown under details on chrome:stettings/internet page.">
+        Activating
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_NOT_ACTIVATED" desc="Description of state of unactivated cellular data plan. Shown under details on chrome:stettings/internet page.">
+        Not activated
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_PARTIALLY_ACTIVATED" desc="Description of state of partially activated cellular data plan state. Shown under details on chrome:stettings/internet page.">
+        Partially activated
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_UNKNOWN" desc="Description of cellular data plan with unknown status. Shown under details on chrome:stettings/internet page.">
+        Unknown
+      </message>
+
+      <!-- Cellular network roaming status description strings for ChromeOS -->
+      <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_HOME" desc="Description of cellular roaming status while connected to home network. Shown under details on chrome:stettings/internet page.">
+        Home network, not roaming
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_ROAMING" desc="Description of cellular roaming status while roaming. Shown under details on chrome:stettings/internet page.">
+        Roaming
+      </message>
+      <message name="IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN" desc="Description of unknown cellular roaming status. Shown under details on chrome:stettings/internet page.">
+        Unknown
+      </message>
+
+      <!-- Cellular network details -->
+      <message name="IDS_CHROMEOS_NETWORK_STATE" desc="Label for network state field under in chrome://options/internet">
+        Network status:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR" desc="Label for cellular network operator name under chrome://options/internet">
+        Operator:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE" desc="Label for cellular network operator code under chrome://options/internet">
+        Operator code:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY" desc="Label for cellular network technology type under chrome://options/internet">
+        Technology:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE" desc="Label for cellular network activation status under chrome://options/internet">
+        Activation status:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE" desc="Label for cellular network roaming status under chrome://options/internet">
+        Roaming status:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL" desc="Label for cellular network restricted network access under chrome://options/internet">
+        Restricted IP:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE" desc="Label for cellular network error details under chrome://options/internet">
+        Error details:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER" desc="Label for cellular network modem manufacturer under chrome://options/internet">
+        Device manufacturer:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID" desc="Label for cellular network modem model under chrome://options/internet">
+        Device model:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION" desc="Label for cellular network modem firmware revision under chrome://options/internet">
+        Firmware revision:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION" desc="Label for cellular network modem hardware revision under chrome://options/internet">
+        Hardware revision:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LAST_UPDATE" desc="Label for cellular network modem last update time under chrome://options/internet">
+        Last update:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Label for cellular network modem PRL (Preferred Roaming List) version under chrome://options/internet">
+        PRL version:
       </message>
     </if>
     <if expr="pp_ifdef('chromeos') and lang == 'ja'">

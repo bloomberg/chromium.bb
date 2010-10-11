@@ -62,7 +62,8 @@ std::string ContentSettingToString(ContentSetting setting) {
       return "block";
     case CONTENT_SETTING_SESSION_ONLY:
       return "session";
-
+    case CONTENT_SETTING_DEFAULT:
+      return "default";
     default:
       NOTREACHED();
       return "";

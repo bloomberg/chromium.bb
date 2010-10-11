@@ -71,6 +71,9 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_FORGET));
 
+  localized_strings->SetString("connectionState",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE));
   localized_strings->SetString("inetAddress",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS));
@@ -124,7 +127,51 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CONNECT_TITLE));
 
- localized_strings->SetString("enableWifi",
+  localized_strings->SetString("serviceName",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME));
+  localized_strings->SetString("networkTechnology",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY));
+  localized_strings->SetString("operatorName",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR));
+  localized_strings->SetString("operatorCode",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE));
+  localized_strings->SetString("activationState",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE));
+  localized_strings->SetString("roamingState",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE));
+  localized_strings->SetString("restrictedPool",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL));
+  localized_strings->SetString("errorState",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE));
+  localized_strings->SetString("manufacturer",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER));
+  localized_strings->SetString("modelId",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID));
+  localized_strings->SetString("firmwareRevision",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION));
+  localized_strings->SetString("hardwareRevision",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION));
+  localized_strings->SetString("lastUpdate",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LAST_UPDATE));
+  localized_strings->SetString("prlVersion",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION));
+
+
+  localized_strings->SetString("enableWifi",
       l10n_util::GetStringFUTF16(
           IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)));
@@ -319,20 +366,28 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   chromeos::ConnectionType type = net.type();
   chromeos::NetworkIPConfigVector ipconfigs =
       cros->GetIPConfigs(net.device_path());
+  scoped_ptr<ListValue> ipconfig_list(new ListValue());
   for (chromeos::NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
        it != ipconfigs.end(); ++it) {
+    scoped_ptr<DictionaryValue> ipconfig_dict(new DictionaryValue());
     const chromeos::NetworkIPConfig& ipconfig = *it;
-    dictionary.SetString("address", ipconfig.address);
-    dictionary.SetString("subnetAddress", ipconfig.netmask);
-    dictionary.SetString("gateway", ipconfig.gateway);
-    dictionary.SetString("dns", ipconfig.name_servers);
-    dictionary.SetInteger("type", type);
-    dictionary.SetString("servicePath", net.service_path());
-    dictionary.SetBoolean("connecting", net.connecting());
-    dictionary.SetBoolean("connected", net.connected());
-    if (type == chromeos::TYPE_WIFI) {
-      chromeos::WifiNetwork wireless;
-      cros->FindWifiNetworkByPath(net.service_path(), &wireless);
+    ipconfig_dict->SetString("address", ipconfig.address);
+    ipconfig_dict->SetString("subnetAddress", ipconfig.netmask);
+    ipconfig_dict->SetString("gateway", ipconfig.gateway);
+    ipconfig_dict->SetString("dns", ipconfig.name_servers);
+    ipconfig_list->Append(ipconfig_dict.release());
+  }
+  dictionary.Set("ipconfigs", ipconfig_list.release());
+  dictionary.SetInteger("type", type);
+  dictionary.SetString("servicePath", net.service_path());
+  dictionary.SetBoolean("connecting", net.connecting());
+  dictionary.SetBoolean("connected", net.connected());
+  dictionary.SetString("connectionState", net.GetStateString());
+  if (type == chromeos::TYPE_WIFI) {
+    chromeos::WifiNetwork wireless;
+    if (!cros->FindWifiNetworkByPath(net.service_path(), &wireless)) {
+      LOG(WARNING) << "Cannot find network " << net.service_path();
+    } else {
       dictionary.SetString("ssid", wireless.name());
       dictionary.SetBoolean("autoConnect",wireless.auto_connect());
       if (wireless.encrypted()) {
@@ -356,6 +411,43 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       } else {
         dictionary.SetBoolean("encrypted", false);
       }
+    }
+  } else if (type == chromeos::TYPE_CELLULAR) {
+    chromeos::CellularNetwork cellular;
+    if (!cros->FindCellularNetworkByPath(net.service_path(), &cellular)) {
+      LOG(WARNING) << "Cannot find network " << net.service_path();
+    } else {
+      // Cellular network / connection settings.
+      dictionary.SetString("serviceName", cellular.service_name());
+      dictionary.SetString("networkTechnology",
+                           cellular.GetNetworkTechnologyString());
+      dictionary.SetString("operatorName", cellular.operator_name());
+      dictionary.SetString("operatorCode", cellular.operator_code());
+      dictionary.SetString("activationState",
+                           cellular.GetActivationStateString());
+      dictionary.SetString("roamingState",
+                           cellular.GetRoamingStateString());
+      dictionary.SetString("restrictedPool",
+          cellular.restricted_pool() ?
+            l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL) :
+            l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
+      dictionary.SetString("errorState", cellular.GetErrorString());
+      // Device settings.
+      dictionary.SetString("manufacturer", cellular.manufacturer());
+      dictionary.SetString("modelId", cellular.model_id());
+      dictionary.SetString("firmwareRevision", cellular.firmware_revision());
+      dictionary.SetString("hardwareRevision", cellular.hardware_revision());
+      dictionary.SetString("lastUpdate", cellular.last_update());
+      dictionary.SetString("prlVersion", StringPrintf("%u",
+                                                      cellular.prl_version()));
+      dictionary.SetString("meid", cellular.meid());
+      dictionary.SetString("imei", cellular.imei());
+      dictionary.SetString("mdn", cellular.mdn());
+      dictionary.SetString("imsi", cellular.imsi());
+      dictionary.SetString("esn", cellular.esn());
+      dictionary.SetString("min", cellular.min());
+
+      dictionary.SetBoolean("gsm", cellular.isGsm());
     }
   }
   dom_ui_->CallJavascriptFunction(
@@ -492,16 +584,14 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
       }
     }
   } else if (type == chromeos::TYPE_CELLULAR) {
-    chromeos::CellularNetwork network;
-    if (command == "forget") {
-      cros->ForgetWirelessNetwork(service_path);
-    } else if (cros->FindCellularNetworkByPath(service_path, &network)) {
+    chromeos::CellularNetwork cellular;
+    if (cros->FindCellularNetworkByPath(service_path, &cellular)) {
       if (command == "connect") {
-        cros->ConnectToCellularNetwork(network);
+        cros->ConnectToCellularNetwork(cellular);
       } else if (command == "disconnect") {
-        cros->DisconnectFromWirelessNetwork(network);
+        cros->DisconnectFromWirelessNetwork(cellular);
       } else if (command == "options") {
-        PopulateDictionaryDetails(network, cros);
+        PopulateDictionaryDetails(cellular, cros);
       }
     }
   } else {

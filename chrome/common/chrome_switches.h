@@ -338,6 +338,7 @@ extern const char kBWSI[];
 extern const char kStubCros[];
 extern const char kScreenSaverUrl[];
 extern const char kCompressSystemFeedback[];
+extern const char kForceStubLibcros[];
 #ifndef NDEBUG
 extern const char kDOMUIMenuUrl[];
 #endif

@@ -170,14 +170,29 @@ cr.define('options', function() {
     } else {
       page.removeAttribute('connected');
     }
+    $('connectionState').textContent = data.connectionState;
     var address = $('inetAddress');
-    address.textContent = data.address;
     address.data = data;
-    $('inetSubnetAddress').textContent = data.subnetAddress;
-    $('inetGateway').textContent = data.gateway;
-    $('inetDns').textContent = data.dns;
+    if (data.ipconfigs && data.ipconfigs.length) {
+      // We will be displaying only the first ipconfig info for now until we
+      // start supporting multiple IP addresses per connection.
+      address.textContent = data.ipconfigs[0].address;
+      $('inetSubnetAddress').textContent = data.ipconfigs[0].subnetAddress;
+      $('inetGateway').textContent = data.ipconfigs[0].gateway;
+      $('inetDns').textContent = data.ipconfigs[0].dns;
+    } else {
+      // This is most likely a transient state due to device still connecting.
+      address.textContent = '?';
+      address.data = null;
+      $('inetSubnetAddress').textContent = '?';
+      $('inetGateway').textContent = '?';
+      $('inetDns').textContent = '?';
+    }
     if (data.type == 2) {
+      page.setAttribute('wireless', true);
       page.removeAttribute('ethernet');
+      page.removeAttribute('cellular');
+      page.removeAttribute('gsm');
       $('inetSsid').textContent = data.ssid;
       $('rememberNetwork').checked = data.autoConnect;
       if (data.encrypted) {
@@ -199,10 +214,44 @@ cr.define('options', function() {
       } else {
         page.removeAttribute('cert');
       }
-    } else {
-      page.setAttribute('ethernet', true);
+    } else if(data.type == 5) {
+      page.removeAttribute('ethernet');
+      page.removeAttribute('wireless');
       page.removeAttribute('cert');
       page.removeAttribute('certPkcs');
+      page.setAttribute('cellular', true);
+      $('serviceName').textContent = data.serviceName;
+      $('networkTechnology').textContent = data.networkTechnology;
+      $('activationState').textContent = data.activationState;
+      $('roamingState').textContent = data.roamingState;
+      $('restrictedPool').textContent = data.restrictedPool;
+      $('errorState').textContent = data.errorState;
+      $('manufacturer').textContent = data.manufacturer;
+      $('modelId').textContent = data.modelId;
+      $('firmwareRevision').textContent = data.firmwareRevision;
+      $('hardwareRevision').textContent = data.hardwareRevision;
+      $('lastUpdate').textContent = data.lastUpdate;
+      $('prlVersion').textContent = data.prlVersion;
+      $('meid').textContent = data.meid;
+      $('imei').textContent = data.imei;
+      $('mdn').textContent = data.mdn;
+      $('esn').textContent = data.esn;
+      $('min').textContent = data.min;
+      if (!data.gsm) {
+        page.removeAttribute('gsm');
+      } else {
+        $('operatorName').textContent = data.operatorName;
+        $('operatorCode').textContent = data.operatorCode;
+        $('imsi').textContent = data.imsi;
+        page.setAttribute('gsm', true);
+      }
+    } else {
+      page.setAttribute('ethernet', true);
+      page.removeAttribute('wireless');
+      page.removeAttribute('cert');
+      page.removeAttribute('certPkcs');
+      page.removeAttribute('cellular');
+      page.removeAttribute('gsm');
     }
     OptionsPage.showOverlay('detailsInternetPage');
   };

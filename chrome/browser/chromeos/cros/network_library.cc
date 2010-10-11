@@ -71,7 +71,6 @@ static std::string SafeString(const char* s) {
 // Network
 
 void Network::Clear() {
-  type_ = TYPE_UNKNOWN;
   state_ = STATE_UNKNOWN;
   error_ = ERROR_UNKNOWN;
   service_path_.clear();
@@ -101,7 +100,7 @@ void Network::ConfigureFromService(const ServiceInfo& service) {
 }
 
 // Used by GetHtmlInfo() which is called from the about:network handler.
-std::string Network::GetStateString() {
+std::string Network::GetStateString() const {
   switch (state_) {
     case STATE_UNKNOWN:
       return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNKNOWN);
@@ -129,7 +128,7 @@ std::string Network::GetStateString() {
   return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_STATE_UNRECOGNIZED);
 }
 
-std::string Network::GetErrorString() {
+std::string Network::GetErrorString() const {
   switch (error_) {
     case ERROR_UNKNOWN:
       return l10n_util::GetStringUTF8(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
@@ -185,8 +184,19 @@ void WirelessNetwork::ConfigureFromService(const ServiceInfo& service) {
   favorite_ = service.favorite;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // CellularNetwork
+
+CellularNetwork::CellularNetwork()
+    : WirelessNetwork(),
+      activation_state_(ACTIVATION_STATE_UNKNOWN),
+      network_technology_(NETWORK_TECHNOLOGY_UNKNOWN),
+      roaming_state_(ROAMING_STATE_UNKNOWN),
+      restricted_pool_(false),
+      prl_version_(0) {
+  type_ = TYPE_CELLULAR;
+}
 
 bool CellularNetwork::StartActivation() const {
   // TODO(ers, jglasgow): Kick of device activation process.
@@ -198,6 +208,8 @@ void CellularNetwork::Clear() {
   activation_state_ = ACTIVATION_STATE_UNKNOWN;
   roaming_state_ = ROAMING_STATE_UNKNOWN;
   network_technology_ = NETWORK_TECHNOLOGY_UNKNOWN;
+  restricted_pool_ = false;
+  service_name_.clear();
   operator_name_.clear();
   operator_code_.clear();
   payment_url_.clear();
@@ -217,6 +229,7 @@ void CellularNetwork::Clear() {
 
 void CellularNetwork::ConfigureFromService(const ServiceInfo& service) {
   WirelessNetwork::ConfigureFromService(service);
+  service_name_ = SafeString(service.name);
   activation_state_ = service.activation_state;
   network_technology_ = service.network_technology;
   roaming_state_ = service.roaming_state;
@@ -244,8 +257,105 @@ void CellularNetwork::ConfigureFromService(const ServiceInfo& service) {
   }
 }
 
+bool CellularNetwork::isGsm() const {
+  return network_technology_ != NETWORK_TECHNOLOGY_EVDO &&
+      network_technology_ != NETWORK_TECHNOLOGY_1XRTT &&
+      network_technology_ != NETWORK_TECHNOLOGY_UNKNOWN;
+}
+
+std::string CellularNetwork::GetNetworkTechnologyString() const {
+  // No need to localize these cellular technology abbreviations.
+  switch (network_technology_) {
+    case NETWORK_TECHNOLOGY_1XRTT:
+      return "1xRTT";
+      break;
+    case NETWORK_TECHNOLOGY_EVDO:
+      return "EVDO";
+      break;
+    case NETWORK_TECHNOLOGY_GPRS:
+      return "GPRS";
+      break;
+    case NETWORK_TECHNOLOGY_EDGE:
+      return "EDGE";
+      break;
+    case NETWORK_TECHNOLOGY_UMTS:
+      return "UMTS";
+      break;
+    case NETWORK_TECHNOLOGY_HSPA:
+      return "HSPA";
+      break;
+    case NETWORK_TECHNOLOGY_HSPA_PLUS:
+      return "HSPA Plus";
+      break;
+    case NETWORK_TECHNOLOGY_LTE:
+      return "LTE";
+      break;
+    case NETWORK_TECHNOLOGY_LTE_ADVANCED:
+      return "LTE Advanced";
+      break;
+    default:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_CELLULAR_TECHNOLOGY_UNKNOWN);
+      break;
+  }
+}
+
+std::string CellularNetwork::GetActivationStateString() const {
+  switch (this->activation_state_) {
+    case ACTIVATION_STATE_ACTIVATED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATED);
+      break;
+    case ACTIVATION_STATE_ACTIVATING:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_ACTIVATING);
+      break;
+    case ACTIVATION_STATE_NOT_ACTIVATED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_NOT_ACTIVATED);
+      break;
+    case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_PARTIALLY_ACTIVATED);
+      break;
+    default:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ACTIVATION_STATE_UNKNOWN);
+      break;
+  }
+}
+
+std::string CellularNetwork::GetRoamingStateString() const {
+  switch (this->roaming_state_) {
+    case ROAMING_STATE_HOME:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ROAMING_STATE_HOME);
+      break;
+    case ROAMING_STATE_ROAMING:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ROAMING_STATE_ROAMING);
+      break;
+    default:
+      return l10n_util::GetStringUTF8(
+          IDS_CHROMEOS_NETWORK_ROAMING_STATE_UNKNOWN);
+      break;
+  };
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // WifiNetwork
+
+WifiNetwork::WifiNetwork()
+    : WirelessNetwork(),
+      encryption_(SECURITY_NONE) {
+  type_ = TYPE_WIFI;
+}
+
+WifiNetwork::WifiNetwork(const ServiceInfo& service) : WirelessNetwork() {
+  ConfigureFromService(service);
+  type_ = TYPE_WIFI;
+}
 
 void WifiNetwork::Clear() {
   WirelessNetwork::Clear();
@@ -782,6 +892,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   void InitTestData() {
     ethernet_.Clear();
     ethernet_.set_connected(true);
+    ethernet_.set_service_path("eth1");
 
     wifi_networks_.clear();
     WifiNetwork wifi1 = WifiNetwork();

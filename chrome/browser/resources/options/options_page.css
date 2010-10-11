@@ -310,6 +310,14 @@ list > .heading:hover {
   width: 100%;
 }
 
+.option-name {
+  padding-right: 5px;
+}
+
+html[dir=rtl].option-name {
+  padding-left: 5px;
+}
+
 .favicon-cell {
   background-position: left;
   background-repeat: no-repeat;
