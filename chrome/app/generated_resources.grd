@@ -5551,6 +5551,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_TITLE_PROXY_CONNECTION_FAILED" desc="Title of the error page when we can't connect to the proxy server.">
         Could not connect to the proxy server
       </message>
+      <message name="IDS_ERRORPAGES_TITLE_INTERNET_DISCONNECTED" desc="Title of the error page when the network connection failed.">
+        Could not connect to the internet
+      </message>
       <message name="IDS_ERRORPAGES_HEADING_NOT_AVAILABLE" desc="Heading in the error page when we can't connect to a site.">
         This webpage is not available.
       </message>
@@ -5562,6 +5565,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_HEADING_PROXY_CONNECTION_FAILED" desc="Heading in the error page when the proxy server connection failed.">
         Unable to connect to the proxy server.
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
+        Unable to connect to the internet.
       </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE" desc="Summary in the error page when we can't connect to a site.">
         The webpage at <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph> might be temporarily down or it may have moved permanently to a new web address.
@@ -5615,6 +5621,52 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed, before platform dependent instructions.">
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        can’t display the webpage because your computer isn’t connected to the internet.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        You can try to diagnose the problem by taking the following steps:
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        <ph name="PLATFORM_TEXT">
+          $1<ex>Goto the wrench menu and choose Fix It.</ex>
+        </ph>
+      </message>
+
+      <if expr="os == 'darwin'">
+        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Mac OSX.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Applications &gt; System Preferences &gt; Network &gt; Assist me
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          to test your connection.
+        </message>
+      </if>
+      <!-- TODO(mmenke): Add Linux instructions -->
+      <if expr="os != 'darwin' and os != 'linux2'">
+        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows 7 and later.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (at the bottom) &gt; Internet Connections.
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+        </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_VISTA" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows Vista.">
+          Go to
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
+          Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
+          <ph name="END_BOLD">&lt;/strong&gt;</ph>
+          to test your connection.
+        </message>
+        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_XP" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows XP.">
+          Click
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Start<ph name="END_BOLD">&lt;/strong&gt;</ph>,
+          click
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Run<ph name="END_BOLD">&lt;/strong&gt;</ph>,
+          type
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD">&lt;/strong&gt;</ph>,
+          and then click OK.
+        </message>
+      </if>
+
       <message name="IDS_ERRORPAGES_DETAILS_TEMPLATE" desc="On the bottom of the error page text, there is a box that includes extra information for tech savvy users.">
         Error <ph name="ERROR_NUMBER">$1<ex>5</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_FILE_NOT_FOUND</ex></ph>): <ph name="ERROR_TEXT">$3<ex>The requested file is not found.</ex></ph>
       </message>
@@ -5631,9 +5683,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED" desc="The error message displayed when a dns look up fails.">
         The server could not be found.
       </message>
-      <message name="IDS_ERRORPAGES_DETAILS_DISCONNECTED" desc="The error message displayed when we have no internet access.">
-        The Internet connection has been lost.
-      </message>
       <message name="IDS_ERRORPAGES_DETAILS_FILE_NOT_FOUND" desc="The error message displayed when a local file can not be found.">
         The file or directory could not be found.
       </message>
@@ -5642,6 +5691,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED" desc="The error message displayed when the proxy server connection failed.">
         Proxy server connection failed.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED" desc="The error message displayed when we have no internet access.">
+        The internet connection has been lost.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_UNKNOWN" desc="The default error message displayed if we don't have a more specific error message.">
         Unknown error.

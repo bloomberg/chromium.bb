@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/renderer/extensions/extension_renderer_info.h"
@@ -74,13 +75,6 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
    SUGGEST_RELOAD,
   },
-  {net::ERR_INTERNET_DISCONNECTED,
-   IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
-   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
-   IDS_ERRORPAGES_DETAILS_DISCONNECTED,
-   SUGGEST_RELOAD,
-  },
   {net::ERR_FILE_NOT_FOUND,
    IDS_ERRORPAGES_TITLE_NOT_FOUND,
    IDS_ERRORPAGES_HEADING_NOT_FOUND,
@@ -130,6 +124,25 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED,
    SUGGEST_NONE,
   },
+  // TODO(mmenke): Once Linux-specific instructions are added, remove this
+  // conditional, and the one further down as well.
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  {net::ERR_INTERNET_DISCONNECTED,
+   IDS_ERRORPAGES_TITLE_INTERNET_DISCONNECTED,
+   IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
+   IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED,
+   IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
+   SUGGEST_NONE,
+  },
+#else
+  {net::ERR_INTERNET_DISCONNECTED,
+   IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
+   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+   IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
+   IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
+   SUGGEST_NONE,
+  },
+#endif
 };
 
 const LocalizedErrorMap http_error_options[] = {
@@ -347,6 +360,33 @@ void LocalizedError::GetStrings(const WebKit::WebURLError& error,
             l10n_util::GetStringUTF16(
                 IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED_PLATFORM)));
   }
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  if (error_domain == net::kErrorDomain &&
+      error_code == net::ERR_INTERNET_DISCONNECTED) {
+    int platform_string_id =
+        IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM;
+#if defined(OS_WIN)
+    // Different versions of Windows have different instructions.
+    int32 major_version, minor_version, bugfix_version;
+    base::SysInfo::OperatingSystemVersionNumbers(
+        &major_version, &minor_version, &bugfix_version);
+    if (major_version < 6) {
+      // XP, XP64, and Server 2003.
+      platform_string_id =
+          IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_XP;
+    } else if (major_version == 6 && minor_version == 0) {
+      // Vista
+      platform_string_id =
+          IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_VISTA;
+    }
+#endif  // defined(OS_WIN)
+    // Suffix the platform dependent portion of the summary section.
+    summary->SetString("msg",
+        l10n_util::GetStringFUTF16(options.summary_resource_id,
+            l10n_util::GetStringUTF16(platform_string_id)));
+  }
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 
   if (options.suggestions & SUGGEST_RELOAD) {
     DictionaryValue* suggest_reload = new DictionaryValue;
