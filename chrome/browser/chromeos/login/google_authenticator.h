@@ -85,6 +85,11 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
       const GaiaAuthConsumer::ClientLoginResult& credentials);
   void ResyncEncryptedData(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
+  void RetryAuth(Profile* profile,
+                 const std::string& username,
+                 const std::string& password,
+                 const std::string& login_token,
+                 const std::string& login_captcha);
 
   // Callbacks from GaiaAuthenticator2
   virtual void OnClientLoginFailure(

@@ -76,6 +76,13 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   virtual void ResyncEncryptedData(
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
+  // Attempt to authenticate online again.
+  virtual void RetryAuth(Profile* profile,
+                         const std::string& username,
+                         const std::string& password,
+                         const std::string& login_token,
+                         const std::string& login_captcha) = 0;
+
   // Perform basic canonicalization of |email_address|, taking into account
   // that gmail does not consider '.' or caps inside a username to matter.
   // It also ignores everything after a '+'.

@@ -342,6 +342,14 @@ void GoogleAuthenticator::ResyncEncryptedData(
   }
 }
 
+void GoogleAuthenticator::RetryAuth(Profile* profile,
+                                    const std::string& username,
+                                    const std::string& password,
+                                    const std::string& login_token,
+                                    const std::string& login_captcha) {
+  NOTIMPLEMENTED();
+}
+
 void GoogleAuthenticator::LoadSystemSalt() {
   if (!system_salt_.empty())
     return;

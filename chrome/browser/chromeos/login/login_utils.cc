@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
+#include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/net/gaia/token_service.h"
@@ -251,7 +252,10 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(
     LoginStatusConsumer* consumer) {
-  return new GoogleAuthenticator(consumer);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kParallelAuth))
+    return new ParallelAuthenticator(consumer);
+  else
+    return new GoogleAuthenticator(consumer);
 }
 
 void LoginUtilsImpl::EnableBrowserLaunch(bool enable) {

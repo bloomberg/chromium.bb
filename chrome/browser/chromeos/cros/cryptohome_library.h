@@ -84,6 +84,10 @@ class CryptohomeLibrary {
   // d->OnComplete() will be called with status info on completion.
   virtual bool AsyncMountForBwsi(Delegate* callback) = 0;
 
+  // Asks cryptohomed to unmount the currently mounted cryptohome.
+  // Returns false if the cryptohome could not be unmounted, true otherwise.
+  virtual bool Unmount() = 0;
+
   // Asks cryptohomed to try to find the cryptohome for |user_email| and then
   // nuke it.
   virtual bool Remove(const std::string& user_email) = 0;

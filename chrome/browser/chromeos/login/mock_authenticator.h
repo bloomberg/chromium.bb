@@ -91,6 +91,12 @@ class MockAuthenticator : public Authenticator {
   virtual void ResyncEncryptedData(
       const GaiaAuthConsumer::ClientLoginResult& credentials) {}
 
+  virtual void RetryAuth(Profile* profile,
+                         const std::string& username,
+                         const std::string& password,
+                         const std::string& login_token,
+                         const std::string& login_captcha) {}
+
  private:
   std::string expected_username_;
   std::string expected_password_;

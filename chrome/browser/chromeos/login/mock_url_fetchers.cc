@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 
+#include <errno.h>
+
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
@@ -27,7 +30,6 @@ ExpectCanceledFetcher::~ExpectCanceledFetcher() {
 }
 
 void ExpectCanceledFetcher::Start() {
-  LOG(INFO) << "Delaying fetch completion in mock";
   task_ = NewRunnableFunction(&ExpectCanceledFetcher::CompleteFetch);
   BrowserThread::PostDelayedTask(BrowserThread::UI,
                                  FROM_HERE,
@@ -48,7 +50,6 @@ GotCanceledFetcher::GotCanceledFetcher(bool success,
                                        URLFetcher::Delegate* d)
     : URLFetcher(url, request_type, d),
       url_(url) {
-  LOG(INFO) << url_.spec();
 }
 
 GotCanceledFetcher::~GotCanceledFetcher() {}
@@ -59,7 +60,48 @@ void GotCanceledFetcher::Start() {
   delegate()->OnURLFetchComplete(this,
                                  url_,
                                  status,
-                                 403,
+                                 RC_FORBIDDEN,
+                                 ResponseCookies(),
+                                 std::string());
+}
+
+SuccessFetcher::SuccessFetcher(bool success,
+                               const GURL& url,
+                               const std::string& results,
+                               URLFetcher::RequestType request_type,
+                               URLFetcher::Delegate* d)
+    : URLFetcher(url, request_type, d),
+      url_(url) {
+}
+
+SuccessFetcher::~SuccessFetcher() {}
+
+void SuccessFetcher::Start() {
+  delegate()->OnURLFetchComplete(this,
+                                 url_,
+                                 URLRequestStatus(URLRequestStatus::SUCCESS, 0),
+                                 RC_REQUEST_OK,
+                                 ResponseCookies(),
+                                 std::string());
+}
+
+FailFetcher::FailFetcher(bool success,
+                         const GURL& url,
+                         const std::string& results,
+                         URLFetcher::RequestType request_type,
+                         URLFetcher::Delegate* d)
+    : URLFetcher(url, request_type, d),
+      url_(url) {
+}
+
+FailFetcher::~FailFetcher() {}
+
+void FailFetcher::Start() {
+  URLRequestStatus failed(URLRequestStatus::FAILED, ECONNRESET);
+  delegate()->OnURLFetchComplete(this,
+                                 url_,
+                                 failed,
+                                 RC_REQUEST_OK,
                                  ResponseCookies(),
                                  std::string());
 }

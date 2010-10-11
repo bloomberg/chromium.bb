@@ -85,6 +85,10 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
                          "Couldn't initiate async mount of cryptohome.");
   }
 
+  bool Unmount() {
+    return chromeos::CryptohomeUnmount();
+  }
+
   bool Remove(const std::string& user_email) {
     return chromeos::CryptohomeRemove(user_email.c_str());
   }
@@ -178,17 +182,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return true;
   }
 
-  bool Remove(const std::string& user_email) {
-    return true;
-  }
-
-  bool AsyncRemove(const std::string& user_email, Delegate* callback) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(&DoStubCallback, callback));
-    return true;
-  }
-
   bool Mount(const std::string& user_email,
              const std::string& passhash,
              int* error_code) {
@@ -210,6 +203,21 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
   }
 
   bool AsyncMountForBwsi(Delegate* callback) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(&DoStubCallback, callback));
+    return true;
+  }
+
+  bool Unmount() {
+    return true;
+  }
+
+  bool Remove(const std::string& user_email) {
+    return true;
+  }
+
+  bool AsyncRemove(const std::string& user_email, Delegate* callback) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&DoStubCallback, callback));

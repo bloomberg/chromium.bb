@@ -1160,6 +1160,9 @@ const char kLoginUser[]                     = "login-user";
 // Specifies a password to be used to login (along with login-user).
 const char kLoginPassword[]                 = "login-password";
 
+// Attempts to perform Chrome OS offline and online login in parallel.
+const char kParallelAuth[]                  = "parallel-auth";
+
 // Use the frame layout used in chromeos.
 const char kChromeosFrame[]                 = "chromeos-frame";
 

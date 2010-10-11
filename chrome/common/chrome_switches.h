@@ -330,6 +330,7 @@ extern const char kTestLoadLibcros[];
 extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kLoginPassword[];
+extern const char kParallelAuth[];
 extern const char kChromeosFrame[];
 extern const char kCandidateWindowLang[];
 extern const char kBWSI[];

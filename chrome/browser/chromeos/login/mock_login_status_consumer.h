@@ -25,6 +25,56 @@ class MockConsumer : public LoginStatusConsumer {
   MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
   MOCK_METHOD1(OnPasswordChangeDetected,
       void(const GaiaAuthConsumer::ClientLoginResult& result));
+
+  // The following functions can be used in gmock Invoke() clauses.
+
+  // Compatible with LoginStatusConsumer::OnOffTheRecordLoginSuccess()
+  static void OnGuestSuccessQuit() {
+    MessageLoop::current()->Quit();
+  }
+
+  static void OnGuestSuccessQuitAndFail() {
+    ADD_FAILURE() << "Guest Login should have failed!";
+    MessageLoop::current()->Quit();
+  }
+
+  // Compatible with LoginStatusConsumer::OnLoginSuccess()
+  static void OnSuccessQuit(
+      const std::string& username,
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool pending_requests) {
+    MessageLoop::current()->Quit();
+  }
+
+  static void OnSuccessQuitAndFail(
+      const std::string& username,
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool pending_requests) {
+    ADD_FAILURE() << "Login should NOT have succeeded!";
+    MessageLoop::current()->Quit();
+  }
+
+  // Compatible with LoginStatusConsumer::OnLoginFailure()
+  static void OnFailQuit(const LoginFailure& error) {
+    MessageLoop::current()->Quit();
+  }
+
+  static void OnFailQuitAndFail(const LoginFailure& error) {
+    ADD_FAILURE() << "Login should not have failed!";
+    MessageLoop::current()->Quit();
+  }
+
+  // Compatible with LoginStatusConsumer::OnPasswordChangeDetected()
+  static void OnMigrateQuit(
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {
+    MessageLoop::current()->Quit();
+  }
+
+  static void OnMigrateQuitAndFail(
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {
+    ADD_FAILURE() << "Should not have detected a PW change!";
+    MessageLoop::current()->Quit();
+  }
 };
 
 }  // namespace chromeos

@@ -52,6 +52,40 @@ class GotCanceledFetcher : public URLFetcher {
   DISALLOW_COPY_AND_ASSIGN(GotCanceledFetcher);
 };
 
+class SuccessFetcher : public URLFetcher {
+ public:
+  SuccessFetcher(bool success,
+                 const GURL& url,
+                 const std::string& results,
+                 URLFetcher::RequestType request_type,
+                 URLFetcher::Delegate* d);
+  virtual ~SuccessFetcher();
+
+  void Start();
+
+ private:
+  GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuccessFetcher);
+};
+
+class FailFetcher : public URLFetcher {
+ public:
+  FailFetcher(bool success,
+              const GURL& url,
+              const std::string& results,
+              URLFetcher::RequestType request_type,
+              URLFetcher::Delegate* d);
+  virtual ~FailFetcher();
+
+  void Start();
+
+ private:
+  GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(FailFetcher);
+};
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_URL_FETCHERS_H_
