@@ -6,17 +6,6 @@
 
 #include "base/logging.h"
 
-namespace {
-
-static const char kDot = '.';
-
-static bool IsIntranetHost(const std::string& host) {
-  const size_t dot = host.find(kDot);
-  return dot == std::string::npos || dot == host.length() - 1;
-}
-
-}  // namespace
-
 SSLHostState::SSLHostState() {
 }
 
@@ -31,12 +20,6 @@ void SSLHostState::HostRanInsecureContent(const std::string& host, int pid) {
 bool SSLHostState::DidHostRunInsecureContent(const std::string& host,
                                              int pid) const {
   DCHECK(CalledOnValidThread());
-
-  // CAs issue certificates for intranet hosts to everyone.  Therefore, we
-  // always treat intranet hosts as having run insecure content.
-  if (IsIntranetHost(host))
-    return true;
-
   return !!ran_insecure_content_hosts_.count(BrokenHostEntry(host, pid));
 }
 

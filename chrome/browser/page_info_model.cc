@@ -141,6 +141,12 @@ PageInfoModel::PageInfoModel(Profile* profile,
         IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY));
     icon_id = ssl.security_style() == SECURITY_STYLE_UNAUTHENTICATED ?
         ICON_STATE_WARNING_MAJOR : ICON_STATE_ERROR;
+
+    if (ssl.cert_status() & net::CERT_STATUS_NON_UNIQUE_NAME) {
+      description += ASCIIToUTF16("\n\n");
+      description += l10n_util::GetStringUTF16(
+          IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
+    }
   }
   sections_.push_back(SectionInfo(
       icon_id,

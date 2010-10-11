@@ -5802,6 +5802,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY" desc="The text of the identity section when the page is not secure.">
         The identity of this website has not been verified.
       </message>
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME" desc="The text of the identity section when the host is not unique (such as with Intranet host names).">
+        The identity of the server you are connected to cannot be fully validated. You are connected to a server using a name only valid within your network, which an external certificate authority has no way to validate ownership of. As some certificate authorities will issue certificates for these names regardless, there is no way to ensure you are connected to the intended website and not an attacker.
+      </message>
 
       <message name="IDS_PAGE_INFO_SECURITY_TAB_UNABLE_TO_CHECK_REVOCATION" desc="The text of the identity section when we were unable to check if the certificate has been revoked.">
         Unable to check whether the certificate has been revoked.

@@ -32,6 +32,17 @@
 #include "net/base/ssl_info.h"
 #include "webkit/glue/resource_type.h"
 
+namespace {
+
+static const char kDot = '.';
+
+static bool IsIntranetHost(const std::string& host) {
+  const size_t dot = host.find(kDot);
+  return dot == std::string::npos || dot == host.length() - 1;
+}
+
+}  // namespace
+
 SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
     : backend_(backend) {
   DCHECK(backend_);
@@ -149,6 +160,15 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   if (!entry->ssl().cert_id()) {
     entry->ssl().set_security_style(SECURITY_STYLE_UNAUTHENTICATED);
     return;
+  }
+
+  if (!(entry->ssl().cert_status() & net::CERT_STATUS_COMMON_NAME_INVALID)) {
+    // CAs issue certificates for intranet hosts to everyone.  Therefore, we
+    // mark intranet hosts as being non-unique.
+    if (IsIntranetHost(entry->url().host())) {
+      entry->ssl().set_cert_status(entry->ssl().cert_status() |
+                                   net::CERT_STATUS_NON_UNIQUE_NAME);
+    }
   }
 
   // If CERT_STATUS_UNABLE_TO_CHECK_REVOCATION is the only certificate error,
