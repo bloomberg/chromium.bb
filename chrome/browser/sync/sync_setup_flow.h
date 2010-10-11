@@ -93,8 +93,9 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   void OnUserSubmittedAuth(const std::string& username,
                            const std::string& password,
-                           const std::string& captcha) {
-    service_->OnUserSubmittedAuth(username, password, captcha);
+                           const std::string& captcha,
+                           const std::string& access_code) {
+    service_->OnUserSubmittedAuth(username, password, captcha, access_code);
   }
 
   void OnUserChoseDataTypes(bool sync_everything,

@@ -712,7 +712,7 @@ string16 ProfileSyncService::GetAuthenticatedUsername() const {
 
 void ProfileSyncService::OnUserSubmittedAuth(
     const std::string& username, const std::string& password,
-    const std::string& captcha) {
+    const std::string& captcha, const std::string& access_code) {
   last_attempted_user_email_ = username;
   is_auth_in_progress_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
@@ -726,9 +726,15 @@ void ProfileSyncService::OnUserSubmittedAuth(
     LOG(WARNING) << "No mechanism on ChromeOS yet. See http://crbug.com/50292";
   }
 
+  if (!access_code.empty()) {
+    signin_.ProvideSecondFactorAccessCode(access_code);
+    return;
+  }
+
   if (!signin_.GetUsername().empty()) {
     signin_.SignOut();
   }
+
   signin_.StartSignIn(username,
                       password,
                       last_auth_error_.captcha().token,

@@ -35,6 +35,9 @@ struct GoogleServiceSigninSuccessDetails {
 
 class SigninManager : public GaiaAuthConsumer {
  public:
+  SigninManager();
+  virtual ~SigninManager();
+
   // Call to register our prefs.
   static void RegisterUserPrefs(PrefService* user_prefs);
 
@@ -55,8 +58,13 @@ class SigninManager : public GaiaAuthConsumer {
                    const std::string& password,
                    const std::string& login_token,
                    const std::string& login_captcha);
+
+  // Used when a second factor access code was required to complete a signin
+  // attempt.
+  void ProvideSecondFactorAccessCode(const std::string& access_code);
+
   // Sign a user out, removing the preference, erasing all keys
-  // associated with the user, and cancelling all auth in progress.
+  // associated with the user, and canceling all auth in progress.
   void SignOut();
 
   // GaiaAuthConsumer
@@ -71,6 +79,7 @@ class SigninManager : public GaiaAuthConsumer {
   Profile* profile_;
   std::string username_;
   std::string password_;  // This is kept empty whenever possible.
+  bool had_two_factor_error_;
 
   // Result of the last client login, kept pending the lookup of the
   // canonical email.

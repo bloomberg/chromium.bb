@@ -184,7 +184,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
                                    const std::string& password,
-                                   const std::string& captcha);
+                                   const std::string& captcha,
+                                   const std::string& access_code);
 
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);

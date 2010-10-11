@@ -106,6 +106,19 @@
   #content_table {
    padding: 2px;
   }
+  .access_code_row {
+    display: none;
+  }
+  .access_code_row > td {
+    text-align: center;
+    padding-bottom: 1px;
+  }
+  #access_code_label_row > td {
+    padding-top: 6px;
+  }
+  .centeredtext {
+    text-align: center;
+  }
 </style>
 </head>
 <body bgcolor="#ffffff" vlink="#666666"
@@ -175,9 +188,17 @@
           span.style.display = 'inline';
           setElementDisplay("createaccountdiv", "none");
         }
+
+        f.AccessCode.disabled = true;
       }
       if (1 == args.error) {
-        setElementDisplay("errormsg_1_Password", 'table-row');
+        var access_code = document.getElementById('AccessCode');
+        if (access_code.value && access_code.value != "") {
+          setElementDisplay("errormsg_0_AccessCode", 'block');
+          showAccessCodeRequired();
+        } else {
+          setElementDisplay("errormsg_1_Password", 'table-row');
+        }
         setBlurbError();
       }
       if (3 == args.error) {
@@ -186,6 +207,9 @@
       }
       if (4 == args.error) {
         showCaptcha(args);
+      }
+      if (8 == args.error) {
+        showAccessCodeRequired();
       }
       document.getElementById("signIn").disabled = false;
       document.getElementById("signIn").value = templateData['signin'];
@@ -197,6 +221,7 @@
 
       // The captcha takes up lots of space, so make room.
       setElementDisplay("top_blurb", "none");
+      setElementDisplay("top_blurb_error", "none");
       setElementDisplay("createaccountdiv", "none");
       var gaiaTable = document.getElementById('gaia_table');
       gaiaTable.cellPadding = 0;
@@ -212,6 +237,18 @@
       document.getElementById('CaptchaValue').disabled = false;
       document.getElementById('captcha_wrapper').style.backgroundImage =
           url(args.captchaUrl);
+    }
+
+    function showAccessCodeRequired() {
+      setElementDisplay("password_row", "none");
+      setElementDisplay("email_row", "none");
+      document.getElementById("createaccountcell").style.visibility =
+          "hidden";
+
+      setElementDisplay("access_code_label_row", "table-row");
+      setElementDisplay("access_code_input_row", "table-row");
+      setElementDisplay("access_code_help_row", "table-row");
+      document.getElementById('AccessCode').disabled = false;
     }
 
     function CloseDialog() {
@@ -256,13 +293,15 @@
       document.getElementById('Email').disabled = true;
       document.getElementById('Passwd').disabled = true;
       document.getElementById('CaptchaValue').disabled = true;
+      document.getElementById('AccessCode').disabled = true;
 
       var throbber = document.getElementById('throbber_container');
       throbber.style.display = "inline";
       var f = document.getElementById("gaia_loginform");
       var result = JSON.stringify({"user" : f.Email.value,
                                    "pass" : f.Passwd.value,
-                                   "captcha" : f.CaptchaValue.value});
+                                   "captcha" : f.CaptchaValue.value,
+                                   "access_code" : f.AccessCode.value});
       document.getElementById("signIn").disabled = true;
       chrome.send("SubmitAuth", [result]);
     }
@@ -286,6 +325,7 @@
       setElementDisplay("errormsg_0_Password", 'none');
       setElementDisplay("errormsg_1_Password", 'none');
       setElementDisplay("errormsg_0_Connection", 'none');
+      setElementDisplay("errormsg_0_AccessCode", 'none');
     }
 
     function setErrorVisibility() {
@@ -299,6 +339,11 @@
       if (null == f.Passwd.value || "" == f.Passwd.value) {
         setElementDisplay("errormsg_0_Password", 'table-row');
         setBlurbError();
+        return false;
+      }
+      if (!f.AccessCode.disabled && (null == f.AccessCode.value ||
+          "" == f.AccessCode.value)) {
+        setElementDisplay("errormsg_0_Password", 'table-row');
         return false;
       }
       return true;
@@ -366,7 +411,7 @@
           <tr>
             <td colspan="2" align="center"> </td>
           </tr>
-          <tr>
+          <tr id="email_row">
             <td nowrap="nowrap">
               <div class="endaligned">
                 <span class="gaia le lbl" i18n-content="emaillabel">
@@ -379,6 +424,15 @@
               <span id="email_readonly"></span>
             </td>
           </tr>
+          <tr id="access_code_label_row" class="access_code_row">
+            <td colspan="2">
+                <span class="gaia le lbl" i18n-content="enteraccesscode"></span>
+            </td>
+          </tr>
+          <tr id="access_code_help_row" class="access_code_row">
+            <td colspan="2" class="gaia le fpwd">
+              <a i18n-values="href:getaccesscodeurl" i18n-content="getaccesscodehelp" target="_blank"></a>
+            </td>
           <tr>
             <td></td>
             <td>
@@ -391,13 +445,19 @@
             <td></td>
             <td></td>
           </tr>
-          <tr>
+          <tr id="password_row">
             <td class="endaligned">
               <span class="gaia le lbl" i18n-content="passwordlabel">
               </span>
             </td>
             <td>
               <input type="password" name="Passwd" id="Passwd" size="18"
+                     class="gaia le val"/>
+            </td>
+          </tr>
+          <tr id="access_code_input_row" class="access_code_row">
+            <td colspan="2">
+              <input type="password" name="AccessCode" id="AccessCode" size="18"
                      class="gaia le val"/>
             </td>
           </tr>
@@ -411,6 +471,9 @@
                 </div>
                 <div class="errormsg" id="errormsg_1_Password">
                   <span i18n-content="invalidcredentials"></span>[<a i18n-values="href:invalidpasswordhelpurl" target="_blank">?</a>]
+                </div>
+                <div class="errormsg centeredtext" id="errormsg_0_AccessCode"
+                     i18n-content="invalidaccesscode">
                 </div>
               </div>
             </td>

@@ -14,6 +14,11 @@
 
 const char kGetInfoEmailKey[] = "email";
 
+SigninManager::SigninManager()
+    : profile_(NULL), had_two_factor_error_(false) {}
+
+SigninManager::~SigninManager() {}
+
 // static
 void SigninManager::RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "");
@@ -61,11 +66,28 @@ void SigninManager::StartSignIn(const std::string& username,
                                   GaiaAuthenticator2::HostedAccountsNotAllowed);
 }
 
+void SigninManager::ProvideSecondFactorAccessCode(
+    const std::string& access_code) {
+  DCHECK(!username_.empty() && !password_.empty() &&
+      last_result_.data.empty());
+
+  client_login_.reset(new GaiaAuthenticator2(this,
+                                             GaiaConstants::kChromeSource,
+                                             profile_->GetRequestContext()));
+  client_login_->StartClientLogin(username_,
+                                  access_code,
+                                  "",
+                                  std::string(),
+                                  std::string(),
+                                  GaiaAuthenticator2::HostedAccountsNotAllowed);
+}
+
 void SigninManager::SignOut() {
   client_login_.reset();
   last_result_ = ClientLoginResult();
   username_.clear();
   password_.clear();
+  had_two_factor_error_ = false;
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username_);
   profile_->GetPrefs()->ScheduleSavePersistentPrefs();
   profile_->GetTokenService()->ResetCredentialsInMemory();
@@ -113,10 +135,21 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
 }
 
 void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
-  GoogleServiceAuthError details(error);
   NotificationService::current()->Notify(
       NotificationType::GOOGLE_SIGNIN_FAILED,
       Source<SigninManager>(this),
-      Details<const GoogleServiceAuthError>(&details));
+      Details<const GoogleServiceAuthError>(&error));
+
+  // We don't sign-out if the password was valid and we're just dealing with
+  // a second factor error, and we don't sign out if we're dealing with
+  // an invalid access code (again, because the password was valid).
+  bool invalid_gaia = error.state() ==
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS;
+  if (error.state() == GoogleServiceAuthError::TWO_FACTOR ||
+      (had_two_factor_error_ && invalid_gaia)) {
+    had_two_factor_error_ = true;
+    return;
+  }
+
   SignOut();
 }

@@ -106,6 +106,53 @@ TEST_F(SigninManagerTest, SignInFailure) {
   EXPECT_TRUE(manager_->GetUsername().empty());
 }
 
+TEST_F(SigninManagerTest, ProvideSecondFactorSuccess) {
+  manager_->Initialize(profile_.get());
+  manager_->StartSignIn("username", "password", "", "");
+  GoogleServiceAuthError error(GoogleServiceAuthError::TWO_FACTOR);
+  manager_->OnClientLoginFailure(error);
+
+  EXPECT_EQ(0U, google_login_success_.size());
+  EXPECT_EQ(1U, google_login_failure_.size());
+
+  EXPECT_FALSE(manager_->GetUsername().empty());
+
+  manager_->ProvideSecondFactorAccessCode("access");
+  SimulateValidResponse();
+
+  EXPECT_EQ(1U, google_login_success_.size());
+  EXPECT_EQ(1U, google_login_failure_.size());
+}
+
+TEST_F(SigninManagerTest, ProvideSecondFactorFailure) {
+  manager_->Initialize(profile_.get());
+  manager_->StartSignIn("username", "password", "", "");
+  GoogleServiceAuthError error1(GoogleServiceAuthError::TWO_FACTOR);
+  manager_->OnClientLoginFailure(error1);
+
+  EXPECT_EQ(0U, google_login_success_.size());
+  EXPECT_EQ(1U, google_login_failure_.size());
+
+  EXPECT_FALSE(manager_->GetUsername().empty());
+
+  manager_->ProvideSecondFactorAccessCode("badaccess");
+  GoogleServiceAuthError error2(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  manager_->OnClientLoginFailure(error2);
+
+  EXPECT_EQ(0U, google_login_success_.size());
+  EXPECT_EQ(2U, google_login_failure_.size());
+  EXPECT_FALSE(manager_->GetUsername().empty());
+
+  manager_->ProvideSecondFactorAccessCode("badaccess");
+  GoogleServiceAuthError error3(GoogleServiceAuthError::CONNECTION_FAILED);
+  manager_->OnClientLoginFailure(error3);
+
+  EXPECT_EQ(0U, google_login_success_.size());
+  EXPECT_EQ(3U, google_login_failure_.size());
+  EXPECT_TRUE(manager_->GetUsername().empty());
+}
+
 TEST_F(SigninManagerTest, SignOutMidConnect) {
   manager_->Initialize(profile_.get());
   manager_->StartSignIn("username", "password", "", "");

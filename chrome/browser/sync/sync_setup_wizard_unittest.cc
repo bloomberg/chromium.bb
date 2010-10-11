@@ -42,7 +42,8 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
 
   virtual void OnUserSubmittedAuth(const std::string& username,
                                    const std::string& password,
-                                   const std::string& captcha) {
+                                   const std::string& captcha,
+                                   const std::string& access_code) {
     username_ = username;
     password_ = password;
     captcha_ = captcha;
@@ -217,7 +218,8 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   std::string auth = "{\"user\":\"";
   auth += std::string(kTestUser) + "\",\"pass\":\"";
   auth += std::string(kTestPassword) + "\",\"captcha\":\"";
-  auth += std::string(kTestCaptcha) + "\"}";
+  auth += std::string(kTestCaptcha) + "\",\"access_code\":\"";
+  auth += std::string() + "\"}";
   credentials.Append(new StringValue(auth));
 
   EXPECT_FALSE(wizard_->IsVisible());

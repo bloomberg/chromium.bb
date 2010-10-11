@@ -44,7 +44,10 @@ void FlowHandler::RegisterMessages() {
 }
 
 static bool GetAuthData(const std::string& json,
-    std::string* username, std::string* password, std::string* captcha) {
+                        std::string* username,
+                        std::string* password,
+                        std::string* captcha,
+                        std::string* access_code) {
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
     return false;
@@ -52,7 +55,8 @@ static bool GetAuthData(const std::string& json,
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
   if (!result->GetString("user", username) ||
       !result->GetString("pass", password) ||
-      !result->GetString("captcha", captcha)) {
+      !result->GetString("captcha", captcha) ||
+      !result->GetString("access_code", access_code)) {
       return false;
   }
   return true;
@@ -123,11 +127,11 @@ static bool GetDataTypeChoiceData(const std::string& json,
 
 void FlowHandler::HandleSubmitAuth(const ListValue* args) {
   std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
-  std::string username, password, captcha;
+  std::string username, password, captcha, access_code;
   if (json.empty())
     return;
 
-  if (!GetAuthData(json, &username, &password, &captcha)) {
+  if (!GetAuthData(json, &username, &password, &captcha, &access_code)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
     NOTREACHED();
@@ -135,7 +139,7 @@ void FlowHandler::HandleSubmitAuth(const ListValue* args) {
   }
 
   if (flow_)
-    flow_->OnUserSubmittedAuth(username, password, captcha);
+    flow_->OnUserSubmittedAuth(username, password, captcha, access_code);
 }
 
 void FlowHandler::HandleChooseDataTypes(const ListValue* args) {
