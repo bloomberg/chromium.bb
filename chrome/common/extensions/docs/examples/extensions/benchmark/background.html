@@ -30,12 +30,13 @@ function formatNumber(str) {
 
 // Configuration and results are stored globally.
 window.iterations = 10;
+window.interval = 200;
 window.clearConnections = true;
 window.clearCache = true;
 window.enableSpdy = false;
 window.results = {};
 window.results.data = new Array();
-window.testUrl = "";
+window.testUrl = "http://www.google.com/";
 window.windowId = 0;
 
 // Constant StatCounter Names
@@ -88,7 +89,12 @@ function benchmarkStillRunning() {
 
 function findBenchmark(url) {
   for (var index = 0; index < benchmarks.length; ++index) {
-    if (benchmarks[index].url() == url) {
+    // One common redirection case: if the url ends without a slash and refers
+    // to a directory, it actually would be redirected to the correct one 
+    // (with a slash). In this case, the url returned by the JS and the one
+    // stored locally do not match. 
+    if ((benchmarks[index].url() == url) || 
+        (benchmarks[index].url() + '/' == url)) {
       return benchmarks[index];
     }
   }
@@ -102,17 +108,21 @@ function nextBenchmark() {
 
 function show_options() {
   chrome.tabs.getSelected(null, function(tab) {
-  if (window.testUrl == "") {
-    window.testUrl = tab.url;
-  }
+    if (window.testUrl == "") {
+      window.testUrl = tab.url;
+    }
     var tabs = chrome.extension.getExtensionTabs();
     if (tabs && tabs.length) {
-      tabs[0].setUrl(testUrl);
+      // To avoid "Uncaught TypeError: Object DOMWindow has no method 
+      // 'setUrl' ". Sometimes tabs are not the desired extension tabs.
+      if (tabs[0].$suburl != undefined) {
+        tabs[0].setUrl(testUrl);
+      } 
       var optionsUrl = chrome.extension.getURL("options.html");
       chrome.tabs.getAllInWindow(null, function(all) {
         for (var i = 0; i < all.length; i++) {
           if (all[i].url == optionsUrl) {
-            chrome.tabs.update(all[i].id, {selected: true });
+            chrome.tabs.update(all[i].id, {selected: true});
             return;
           }
         }
@@ -166,7 +176,11 @@ function Benchmark() {
     current_.requests = 0;
     current_.connects = 0;
     current_.spdySessions = 0;
-  }
+    current_.domNum = 0;
+    current_.maxDepth = 0;
+    current_.minDepth = 0;
+    current_.avgDepth = 0;
+    }
 
   // Is the benchmark currently in progress.
   this.isRunning = function() {
@@ -179,9 +193,6 @@ function Benchmark() {
   // Called when the test run completes.
   this.finish = function() {
     removeBenchmark(this);
-
-    // Push the result.
-    window.results.data.push(current_);
 
     // If we're the last benchmark, close the window.
     if (benchmarks.length == 0) {
@@ -205,10 +216,12 @@ function Benchmark() {
     } else {
       chrome.browserAction.setBadgeText({"text": "" + score.toFixed()});
       chrome.browserAction.setBadgeBackgroundColor({"color": [0, 255, 0, 255]});
-      var tabs = chrome.extension.getExtensionTabs();
-      if (tabs && tabs.length) {
-        tabs[0].location.reload(true);
-      }
+    }
+
+    // Reload the page after each run to show immediate results. 
+    var tabs = chrome.extension.getExtensionTabs();
+    if (tabs && tabs.length) {
+      tabs[0].location.reload(true);
     }
   }
 
@@ -224,8 +237,13 @@ function Benchmark() {
   this.openNextPage = function() {
     var benchmark = nextBenchmark();
     benchmark.pageStart();
-    chrome.tabs.create({"url": benchmark.url() },
-                       function(tab) { benchmarkWindow = tab; });
+    chrome.tabs.create({"url": benchmark.url(),"selected": false},
+                       function(tab) {
+                         benchmarkWindow = tab;
+                         // script.js only executes on tested pages
+                         // not the ones opened by the user.
+                         chrome.tabs.executeScript(tab.id, {file: "script.js"});
+                        });
   }
 
   this.prepareToOpenPage = function() {
@@ -249,7 +267,7 @@ function Benchmark() {
     }
 
     // Go back to the browser so that tasks can run.
-    setTimeout(me_.openNextPage, 250);
+    setTimeout(me_.openNextPage, window.interval);
   }
 
   this.closePage = function() {
@@ -261,14 +279,24 @@ function Benchmark() {
   // Run a single page in the benchmark
   this.runPage = function() {
     if (benchmarkWindow) {
-      me_.closePage();
+      // To avoid the error "Error during tabs.remove: No tab with id xx"
+      // while debugging, due to user manually closing the benchmark tab.  
+      chrome.tabs.getAllInWindow(null, function(all) {
+        for (var i = 0; i < all.length; i++) {
+          if (all[i].id == benchmarkWindow.id) {
+            me_.closePage();
+             return;
+          }; 
+        };
+        me_.prepareToOpenPage();
+      });
     } else {
       me_.prepareToOpenPage();
     }
   }
 
   // Called when a page finishes loading.
-  this.pageFinished = function(load_times) {
+  this.pageFinished = function(load_times, domNum, depths) {
     var requested = load_times.requestTime;
     var started = load_times.startLoadTime;
     var startLoadTime =
@@ -314,6 +342,10 @@ function Benchmark() {
       runCount_ = 1;
     }
 
+    // Get the index of current benchmarked page in the result array.
+    var currIndex;
+    currIndex = window.results.data.indexOf(current_, 0);
+    
     // Record the result
     current_.viaSpdy = load_times.wasFetchedViaSpdy;
     current_.iterations++;
@@ -333,6 +365,17 @@ function Benchmark() {
     current_.spdySessions += chrome.benchmarking.counter(kSpdySessionCount) -
                          initialSpdySessionCount_;
     current_.totalTime += totalTime;
+    current_.domNum = domNum;
+    current_.maxDepth = depths[0];
+    current_.minDepth = depths[1];
+    current_.avgDepth = depths[2];
+    
+    // Insert or update the result data after each run.
+    if (currIndex == -1) {
+      window.results.data.push(current_);
+    } else {
+      window.results.data[currIndex]=current_;
+    }
 
     if (--runCount_ == 0) {
       me_.finish();
@@ -349,16 +392,12 @@ function Benchmark() {
 
     // Update the UI
     me_.displayResults();
-
   }
 }
 
 chrome.extension.onConnect.addListener(function(port) {
   port.onMessage.addListener(function(data) {
     if (data.message == "load") {
-      if (data.url == "about:blank") {
-        alert("blank page loaded!");
-      }
       var benchmark = findBenchmark(data.url);
       if (benchmark == undefined && benchmarkStillRunning()) {
         alert("Error: Loaded url(" + data.url + ") is not the same as what " +
@@ -368,7 +407,7 @@ chrome.extension.onConnect.addListener(function(port) {
         benchmarks = [];
       }
       if (benchmark != undefined && benchmark.isRunning()) {
-        benchmark.pageFinished(data.values);
+        benchmark.pageFinished(data.values, data.domNum, data.domDepths);
       }
     }
   });
@@ -388,10 +427,47 @@ function run() {
   benchmarks = [];
   var urls = testUrl.split(",");
   for (var i = 0; i < urls.length; i++) {
-    var benchmark = new Benchmark();
-    benchmark.start(urls[i]);  // XXXMB - move to constructor
+    
+    // Remove extra space at the beginning or end of a url.
+    urls[i] = removeSpace(urls[i]);
+
+    // Alert about and ignore blank page which does not get loaded. 
+    if (urls[i] == "about:blank") {
+      alert("blank page loaded!");
+    } else if (!checkScheme(urls[i])) {
+      // Alert about url that is not in scheme http:// or https://.
+      alert(urls[i] + " does not start with http:// or https://.");
+    } else {  
+      var benchmark = new Benchmark();
+      benchmark.start(urls[i]);  // XXXMB - move to constructor
+    }
   }
   benchmarks[0].runPage();
+}
+
+// Remove extra whitespace in the beginning or end of a url string.
+function removeSpace(url) {
+  var tempUrl = url;
+  while (tempUrl.charAt(tempUrl.length-1) == " ") {
+    tempUrl = tempUrl.substring(0, tempUrl.length-1);
+  };
+  while (tempUrl.charAt(0) == " ") {
+    tempUrl = tempUrl.substring(1, tempUrl.length);
+  };
+  return tempUrl;
+}
+
+// Check whether a Url starts with http:// or https://.
+function checkScheme(url) {
+  var httpStr = "http://";
+  var httpsStr = "https://";
+  var urlSubStr1 = url.substring(0, httpStr.length);
+  var urlSubStr2 = url.substring(0, httpsStr.length);
+  
+  if ( (urlSubStr1 == httpStr) || (urlSubStr2 == httpsStr) ) {
+    return true;
+  } 
+  return false; 
 }
 
 // Run at startup
