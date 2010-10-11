@@ -338,8 +338,8 @@ void BrowserMainParts::SpdyFieldTrial() {
         parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
     net::HttpNetworkLayer::EnableSpdy(spdy_mode);
   } else {
-    const FieldTrial::Probability kSpdyDivisor = 1000;
-    FieldTrial::Probability npnhttp_probability = 10;  // 1% to preclude SPDY.
+    const FieldTrial::Probability kSpdyDivisor = 100;
+    FieldTrial::Probability npnhttp_probability = 10;  // 10% to preclude SPDY.
     scoped_refptr<FieldTrial> trial =
         new FieldTrial("SpdyImpact", kSpdyDivisor);
     // npn with only http support, no spdy.
