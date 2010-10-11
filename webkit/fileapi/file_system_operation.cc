@@ -36,7 +36,7 @@ void FileSystemOperation::CreateFile(const FilePath& path,
   pending_operation_ = kOperationCreateFile;
 #endif
 
-  base::FileUtilProxy::CreateOrOpen(
+  base::FileUtilProxy::Create(
     proxy_, path, base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ,
     callback_factory_.NewCallback(
         exclusive ? &FileSystemOperation::DidCreateFileExclusive
@@ -145,7 +145,7 @@ void FileSystemOperation::Write(
   file_writer_delegate_.reset(new FileWriterDelegate(this, offset));
   blob_request_.reset(new URLRequest(blob_url, file_writer_delegate_.get()));
   blob_request_->set_context(url_request_context);
-  base::FileUtilProxy::CreateOrOpen(
+  base::FileUtilProxy::Create(
       proxy_,
       path,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE |
