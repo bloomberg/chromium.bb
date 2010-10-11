@@ -12,9 +12,9 @@ namespace gfx {
 
 unsigned int NativeThemeLinux::button_length_ = 14;
 unsigned int NativeThemeLinux::scrollbar_width_ = 15;
-unsigned int NativeThemeLinux::thumb_inactive_color_ = 0xf0ebe5;
-unsigned int NativeThemeLinux::thumb_active_color_ = 0xfaf8f5;
-unsigned int NativeThemeLinux::track_color_ = 0xe3ddd8;
+unsigned int NativeThemeLinux::thumb_inactive_color_ = 0xeaeaea;
+unsigned int NativeThemeLinux::thumb_active_color_ = 0xf4f4f4;
+unsigned int NativeThemeLinux::track_color_ = 0xd3d3d3;
 
 #if !defined(OS_CHROMEOS)
 // Chromeos has a different look.
@@ -379,7 +379,7 @@ SkColor NativeThemeLinux::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
   //
   // The following code has been tested to look OK with all of the
   // default GTK themes.
-  SkScalar min_diff = Clamp((hsv1[1] + hsv2[1]) * 1.2, 0.2, 0.5);
+  SkScalar min_diff = Clamp((hsv1[1] + hsv2[1]) * 1.2, 0.28, 0.5);
   SkScalar diff = Clamp(fabs(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5);
 
   if (hsv1[2] + hsv2[2] > 1.0)
