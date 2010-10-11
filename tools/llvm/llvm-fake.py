@@ -446,7 +446,7 @@ def CompileToBC(argv, llvm_binary, temp = False):
       argv[obj_pos] += '.bc'
 
   argv.append('--emit-llvm')
-  argv.append('-fno-expand-va-arg')
+  argv.append('-fuse-llvm-va-arg')
   Run(argv)
 
 def ExtractArch(argv):
