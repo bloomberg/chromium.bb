@@ -10,6 +10,8 @@ Import('env')
 
 # the nacl-gcc toolchain uses gcc's crtbegin.o and crtend.o
 if ARGUMENTS.get('bitcode'):
+  # we have some zero length arrays
+  env.FilterOut(CCFLAGS=['-pedantic'])
   assert env.get('CC_NATIVE')
   # NOTE: we make sure everything in this directory gets compiled
   #       all the way down into native code.

@@ -24,12 +24,14 @@ extern void __pthread_shutdown();
 extern void atexit(void (*funptr)());
 extern void __av_wait();
 
+/*
+ *  __nacl_startup is called from crt1XXX, it ultimately calls main().
+ */
 void __nacl_startup(int argc, char *argv[], char *envp[]) {
   int result;
   /*
    * Install the fini section for use at exit.  The C++ static object
    * destructors are invoked from here.
-   * Invoke __nacl_startup which ultimately calls main.
    */
   atexit(__libc_fini_array);
   /*
@@ -47,6 +49,19 @@ void __nacl_startup(int argc, char *argv[], char *envp[]) {
   /*
    * Execute the init section before starting main.  The C++ static
    * object constructors are invoked from here.
+   * The code can be found in:
+   * newlib/libc/misc/init.c
+   * It calls (in this order):
+   * * all function pointers in[__preinit_array_start,  __preinit_array_end[
+   *   ( the .preinit_array section)
+   * * _init (the .init section beginning)
+   * * all function pointers in [__init_array_start,  __init_array_end[
+   *   ( the .init_array section)
+   *
+   * NOTE: there are three version of registering code to be run before main
+   *       * emit code into .init
+   *       * add a pointer to .init_array/.preinit_array section
+   *       * add a pointer to .ctors section
    */
   __libc_init_array();
   /*

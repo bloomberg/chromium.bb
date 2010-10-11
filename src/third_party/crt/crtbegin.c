@@ -1,62 +1,70 @@
-/* Copied and simplified from gcc's crtstuff.c.
+/*
+ * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
 
-   Specialized bits of code needed to support construction and
-   destruction of file-scope objects in C++ code.
-   Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
-   Contributed by Ron Guilmette (rfg@monkeys.com).
+#include "native_client/src/third_party/crt/crthelper.h"
 
-This file is part of GCC.
 
-GCC is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 2, or (at your option) any later
-version.
+/* NOTE: currently disable as it would pull in parts
+   of libgcc_eh.a which depend on free/malloc
+*/
+#undef HAVE_EH
+#ifdef HAVE_EH
+/* HACK HACK HACK */
+/* The real structure is defined in llvm-gcc-4.2/gcc/unwind-dw2-fde.h
+   this is something that is at least twice as big.
+*/
+struct object {
+  void *p[16];
+};
 
-In addition to the permissions in the GNU General Public License, the
-Free Software Foundation gives you unlimited permission to link the
-compiled version of this file into combinations with other programs,
-and to distribute those combinations without any restriction coming
-from the use of this file.  (The General Public License restrictions
-do apply in other respects; for example, they cover modification of
-the file, and distribution when not linked into a combine
-executable.)
+/* NOTE: __register_frameXXX() are provided by libgcc_eh.a, code can be found
+ * here: llvm-gcc-4.2/gcc/unwind-dw2-fde.c
+ * traditionally gcc uses weak linkage magic to making linking this library
+ * in optional.
+ * To simplify our TC we will always link this in.
+ */
 
-GCC is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING.  If not, write to the Free
-Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301, USA.  */
-
-/* TODO: switch to the implementation in http://llvm.org/PR5323 so
-   that we have more consistent licensing. */
-
-typedef void (*func_ptr) (void);
+/* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */
+extern void __deregister_frame_info (const void *);
+extern void __register_frame_info(void *begin, struct object *ob);
+#endif
 
 /* __dso_handle is zero on the main executable. */
 void *__dso_handle = 0;
 
-static func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__used__, section(".ctors"), aligned(sizeof(func_ptr))))
-  = { (func_ptr) (-1) };
+/* add start markers to the beginnings of .ctors, etc. */
+/* similar stop markers are added in crtend.c */
+ADD_FUN_PTR_TO_SEC(__CTOR_LIST__[1], ".ctors", FUN_PTR_BEGIN_MARKER);
+ADD_FUN_PTR_TO_SEC(__DTOR_LIST__[1], ".dtors", FUN_PTR_BEGIN_MARKER);
+ADD_FUN_PTR_TO_SEC(__EH_FRAME_BEGIN__[0], ".eh_frame",);
 
-static func_ptr __DTOR_LIST__[1]
-  __attribute__((used, section(".dtors"), aligned(sizeof(func_ptr))))
-  = { (func_ptr) (-1) };
 
-static void __attribute__((used))
-__do_global_dtors_aux (void)
-{
-  static func_ptr *p = __DTOR_LIST__ + 1;
-  func_ptr f;
+static void ATTR_USED __do_global_dtors_aux (void) {
+  FUN_PTR *fun;
+  for (fun = __DTOR_LIST__ + 1; FUN_PTR_END_MARKER != *fun; ++fun) {
+    (*fun)();
+  }
 
-  while ((f = *p))
-    {
-      p++;
-      f ();
-    }
+#ifdef HAVE_EH
+  __deregister_frame_info (__EH_FRAME_BEGIN__);
+#endif
 }
+
+ADD_FUN_PTR_TO_SEC(__do_global_dtors_aux_fini_array_entry[1],
+                   ".fini_array", __do_global_dtors_aux);
+
+
+#ifdef HAVE_EH
+static void ATTR_USED frame_dummy (void) {
+  static struct object object;
+  __register_frame_info (__EH_FRAME_BEGIN__, &object);
+}
+
+/* schedule initialization of the exception handling system for c++
+ * before main() is called.
+ */
+ADD_FUN_PTR_TO_SEC(__FRAME_DUMMY__[1], ".init_array", frame_dummy);
+#endif HAVE_EH
