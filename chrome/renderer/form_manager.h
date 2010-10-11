@@ -113,9 +113,12 @@ class FormManager {
 
  private:
   // Stores the WebFormElement and the form control elements for a form.
+  // Original form values are stored so when we clear a form we can reset
+  // "select-one" values to their original state.
   struct FormElement {
     WebKit::WebFormElement form_element;
     std::vector<WebKit::WebFormControlElement> control_elements;
+    std::vector<string16> control_values;
   };
 
   // Type for cache of FormElement objects.

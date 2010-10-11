@@ -67,7 +67,7 @@ class FormField {
 };
 
 // So we can compare FormFields with EXPECT_EQ().
-std::ostream& operator<<(std::ostream& os, const FormField& profile);
+std::ostream& operator<<(std::ostream& os, const FormField& field);
 
 }  // namespace webkit_glue
 

@@ -12,6 +12,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSelectElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
@@ -24,6 +25,7 @@ using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebInputElement;
+using WebKit::WebSelectElement;
 using WebKit::WebNode;
 using WebKit::WebString;
 using WebKit::WebVector;
@@ -2334,6 +2336,83 @@ TEST_F(FormManagerTest, ClearFormWithNode) {
                 ASCIIToUTF16("hidden"),
                 0)));
   EXPECT_TRUE(fields2[5].StrictlyEqualsHack(
+      FormField(string16(),
+                string16(),
+                string16(),
+                ASCIIToUTF16("submit"),
+                0)));
+}
+
+TEST_F(FormManagerTest, ClearFormWithNodeContainingSelectOne) {
+  LoadHTML(
+      "<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
+      "  <INPUT type=\"text\" id=\"firstname\" value=\"Wyatt\"/>"
+      "  <INPUT type=\"text\" id=\"lastname\" value=\"Earp\"/>"
+      "  <SELECT id=\"state\" name=\"state\">"
+      "    <OPTION selected>?</OPTION>"
+      "    <OPTION>AA</OPTION>"
+      "    <OPTION>AE</OPTION>"
+      "    <OPTION>AK</OPTION>"
+      "  </SELECT>"
+      "  <INPUT type=\"submit\" value=\"Send\"/>"
+      "</FORM>");
+
+  WebFrame* web_frame = GetMainFrame();
+  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
+
+  FormManager form_manager;
+  form_manager.ExtractForms(web_frame);
+
+  // Verify that we have the form.
+  std::vector<FormData> forms;
+  form_manager.GetFormsInFrame(web_frame, FormManager::REQUIRE_NONE, &forms);
+  ASSERT_EQ(1U, forms.size());
+
+  // Set the auto-filled attribute on the firstname element.
+  WebInputElement firstname =
+      web_frame->document().getElementById("firstname").to<WebInputElement>();
+  firstname.setAutofilled(true);
+
+  // Set the value of the select-one.
+  WebSelectElement select_element =
+      web_frame->document().getElementById("state").to<WebSelectElement>();
+  select_element.setValue(WebString::fromUTF8("AK"));
+
+  // Clear the form.
+  EXPECT_TRUE(form_manager.ClearFormWithNode(firstname));
+
+  // Verify that the auto-filled attribute has been turned off.
+  EXPECT_FALSE(firstname.isAutofilled());
+
+  // Verify the form is cleared.
+  FormData form2;
+  EXPECT_TRUE(form_manager.FindFormWithFormControlElement(
+      firstname, FormManager::REQUIRE_NONE, &form2));
+  EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
+  EXPECT_EQ(GURL(web_frame->url()), form2.origin);
+  EXPECT_EQ(GURL("http://buh.com"), form2.action);
+
+  const std::vector<FormField>& fields2 = form2.fields;
+  ASSERT_EQ(4U, fields2.size());
+  EXPECT_TRUE(fields2[0].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("firstname"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields2[1].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("lastname"),
+                string16(),
+                ASCIIToUTF16("text"),
+                20)));
+  EXPECT_TRUE(fields2[2].StrictlyEqualsHack(
+      FormField(string16(),
+                ASCIIToUTF16("state"),
+                ASCIIToUTF16("?"),
+                ASCIIToUTF16("select-one"),
+                0)));
+  EXPECT_TRUE(fields2[3].StrictlyEqualsHack(
       FormField(string16(),
                 string16(),
                 string16(),

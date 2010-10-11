@@ -456,6 +456,17 @@ void FormManager::ExtractForms(const WebFrame* frame) {
     for (size_t j = 0; j < control_elements.size(); ++j) {
       WebFormControlElement element = control_elements[j];
       form_elements->control_elements.push_back(element);
+
+      // Save original values of "select-one" inputs so we can restore them
+      // when |ClearFormWithNode()| is invoked.
+      if (element.formControlType() == WebString::fromUTF8("select-one")) {
+        WebFormControlElement& e = const_cast<WebFormControlElement&>(element);
+        WebSelectElement select_element = e.to<WebSelectElement>();
+        string16 value = select_element.value();
+        form_elements->control_values.push_back(value);
+      } else {
+        form_elements->control_values.push_back(string16());
+      }
     }
 
     form_elements_.push_back(form_elements);
@@ -563,17 +574,20 @@ bool FormManager::ClearFormWithNode(const WebNode& node) {
 
   for (size_t i = 0; i < form_element->control_elements.size(); ++i) {
     WebFormControlElement element = form_element->control_elements[i];
-    if (element.formControlType() != WebString::fromUTF8("text"))
-      continue;
+    if (element.formControlType() == WebString::fromUTF8("text")) {
 
-    WebInputElement input_element = element.to<WebInputElement>();
+      WebInputElement input_element = element.to<WebInputElement>();
 
-    // We don't modify the value of disabled fields.
-    if (!input_element.isEnabled())
-      continue;
+      // We don't modify the value of disabled fields.
+      if (!input_element.isEnabled())
+        continue;
 
-    input_element.setValue(string16());
-    input_element.setAutofilled(false);
+      input_element.setValue(string16());
+      input_element.setAutofilled(false);
+    } else if (element.formControlType() == WebString::fromUTF8("select-one")) {
+      WebSelectElement select_element = element.to<WebSelectElement>();
+      select_element.setValue(form_element->control_values[i]);
+    }
   }
 
   return true;
