@@ -105,44 +105,48 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Crashes flakily on Linux and Mac.  http://crbug.com/53991
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_IncognitoSplitMode FLAKY_IncognitoSplitMode
-#else
-#define MAYBE_IncognitoSplitMode IncognitoSplitMode
-#endif
-
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoSplitMode) {
+// TODO(mpcomplete): Crashes flakily. http://crbug.com/53991
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_IncognitoSplitMode) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
-  // We need 2 ResultCatchers because we'll be running the same test in both
-  // regular and incognito mode.
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-  ResultCatcher catcher_incognito;
-  catcher_incognito.RestrictToProfile(
-      browser()->profile()->GetOffTheRecordProfile());
+  {
+    // We need 2 ResultCatchers because we'll be running the same test in both
+    // regular and incognito mode.
+    ResultCatcher catcher;
+    catcher.RestrictToProfile(browser()->profile());
+    ResultCatcher catcher_incognito;
+    catcher_incognito.RestrictToProfile(
+        browser()->profile()->GetOffTheRecordProfile());
 
-  // Open incognito window and navigate to test page.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+    // Open incognito window and navigate to test page.
+    ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
+        GURL("http://www.example.com:1337/files/extensions/test_file.html"));
 
-  ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
-      .AppendASCII("incognito").AppendASCII("split")));
+    LOG(INFO) << "DEBUG: Loading extension";
 
-  // Wait for both extensions to be ready before telling them to proceed.
-  ExtensionTestMessageListener listener("waiting", true);
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-  ExtensionTestMessageListener listener_incognito("waiting", true);
-  EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());
-  listener.Reply("go");
-  listener_incognito.Reply("go");
+    ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_.
+        AppendASCII("incognito").AppendASCII("split")));
 
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
+    LOG(INFO) << "DEBUG: waiting for message";
+
+    // Wait for both extensions to be ready before telling them to proceed.
+    ExtensionTestMessageListener listener("waiting", true);
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+    ExtensionTestMessageListener listener_incognito("waiting", true);
+    EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());
+    listener.Reply("go");
+    listener_incognito.Reply("go");
+
+    LOG(INFO) << "DEBUG: Get result for normal";
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+    LOG(INFO) << "DEBUG: Get result for incognito";
+    EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
+    LOG(INFO) << "DEBUG: Got results";
+  }
+  LOG(INFO) << "DEBUG: ResultCatcher destroyed.";
 }
 
 // Tests that the APIs in an incognito-disabled extension don't see incognito

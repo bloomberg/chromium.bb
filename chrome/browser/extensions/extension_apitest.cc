@@ -43,6 +43,7 @@ bool ExtensionApiTest::ResultCatcher::GetNextResult() {
     return ret;
   }
 
+  LOG(INFO) << "DEBUG: results aren't empty";
   NOTREACHED();
   return false;
 }
@@ -57,7 +58,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
 
   switch (type.value) {
     case NotificationType::EXTENSION_TEST_PASSED:
-      LOG(INFO) << "Got EXTENSION_TEST_PASSED notification.";
+      LOG(INFO) << "Got EXTENSION_TEST_PASSED notification (" << this << ").";
       results_.push_back(true);
       messages_.push_back("");
       if (waiting_)
@@ -65,7 +66,7 @@ void ExtensionApiTest::ResultCatcher::Observe(
       break;
 
     case NotificationType::EXTENSION_TEST_FAILED:
-      LOG(INFO) << "Got EXTENSION_TEST_FAILED notification.";
+      LOG(INFO) << "Got EXTENSION_TEST_FAILED notification (" << this << ").";
       results_.push_back(false);
       messages_.push_back(*(Details<std::string>(details).ptr()));
       if (waiting_)
