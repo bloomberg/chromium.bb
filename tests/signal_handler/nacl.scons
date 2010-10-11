@@ -7,6 +7,8 @@
 Import('env')
 
 trusted_env = env.get('TRUSTED_ENV')
+if trusted_env is None:
+  Return()
 if trusted_env.Bit('mac') or env['BUILD_ARCHITECTURE'] == 'arm':
   Return()
 if trusted_env.Bit('windows') and env['BUILD_SUBARCH'] == '32':
