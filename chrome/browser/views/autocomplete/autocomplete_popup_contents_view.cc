@@ -22,6 +22,7 @@
 #include "gfx/color_utils.h"
 #include "gfx/insets.h"
 #include "gfx/path.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -30,6 +31,7 @@
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget.h"
+#include "views/window/window.h"
 
 #if defined(OS_WIN)
 #include <objidl.h>
@@ -193,7 +195,7 @@ class AutocompletePopupContentsView::InstantOptInView :
     views::TextButton* button =
         new views::TextButton(this, l10n_util::GetString(id));
     button->SetNormalHasBorder(true);
-    button->set_tag(IDS_INSTANT_OPT_IN_NO_THANKS);
+    button->set_tag(id);
     button->SetFont(font);
     button->set_animate_on_state_change(false);
     return button;
@@ -1141,6 +1143,7 @@ gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
 void AutocompletePopupContentsView::UserPressedOptIn(bool opt_in) {
   delete opt_in_view_;
   opt_in_view_ = NULL;
-  browser::UserPickedInstantOptIn(model_->profile(), opt_in);
+  browser::UserPickedInstantOptIn(location_bar_->GetWindow()->GetNativeWindow(),
+                                  model_->profile(), opt_in);
   UpdatePopupAppearance();
 }

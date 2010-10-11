@@ -198,6 +198,12 @@ const char kDnsHostReferralList[] = "HostReferralList";
 // Is the cookie prompt expanded?
 const char kCookiePromptExpanded[] = "cookieprompt.expanded";
 
+// Boolean pref indicating whether the instant confirm dialog has been shown.
+const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
+
+// Boolean pref indicating if instant is enabled.
+const char kInstantEnabled[] = "instant.enabled";
+
 #if defined(USE_NSS)
 // Prefs for SSLConfigServicePref.  Currently, these are only present on
 // and used by NSS-using OSes.

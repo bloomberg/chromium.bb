@@ -25,6 +25,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/labs.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -143,6 +144,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   BackgroundContentsService::RegisterUserPrefs(user_prefs);
   SigninManager::RegisterUserPrefs(user_prefs);
   TemplateURLModel::RegisterUserPrefs(user_prefs);
+  InstantController::RegisterUserPrefs(user_prefs);
 }
 
 }  // namespace browser

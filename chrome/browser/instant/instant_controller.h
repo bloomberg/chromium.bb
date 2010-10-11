@@ -22,6 +22,7 @@
 struct AutocompleteMatch;
 class InstantDelegate;
 class InstantLoaderManager;
+class PrefService;
 class TabContents;
 class TemplateURL;
 
@@ -37,6 +38,9 @@ class InstantController : public InstantLoaderDelegate {
  public:
   explicit InstantController(InstantDelegate* delegate);
   ~InstantController();
+
+  // Registers instant related preferences.
+  static void RegisterUserPrefs(PrefService* prefs);
 
   // Is InstantController enabled?
   static bool IsEnabled();

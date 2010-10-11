@@ -700,6 +700,12 @@
       <message name="IDS_SIMPLE_CONTENT_EXCEPTION_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         16
       </message>
+
+      <!-- The width of the Instant confirm dialog box in characters. -->
+      <message name="IDS_INSTANT_CONFIRM_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        95
+      </message>
+
       <if expr="pp_ifdef('chromeos')">
         <!-- The width and height of the Languages and Input dialog box in -->
         <!-- characters and lines (See above). -->

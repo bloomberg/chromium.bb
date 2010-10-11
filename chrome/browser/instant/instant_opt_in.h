@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_INSTANT_INSTANT_OPT_IN_H_
 #pragma once
 
-#include "base/basictypes.h"
+#include "gfx/native_widget_types.h"
 
 class Profile;
 
@@ -16,7 +16,9 @@ namespace browser {
 bool ShouldShowInstantOptIn(Profile* profile);
 
 // Invoked if the user clicks on the opt-in promo.
-void UserPickedInstantOptIn(Profile* profile, bool opt_in);
+void UserPickedInstantOptIn(gfx::NativeWindow parent,
+                            Profile* profile,
+                            bool opt_in);
 
 }  // namespace browser
 

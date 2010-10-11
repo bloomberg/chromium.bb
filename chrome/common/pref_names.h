@@ -71,6 +71,8 @@ extern const char kDnsPrefetchingEnabled[];
 extern const char kDnsStartupPrefetchList[];
 extern const char kDnsHostReferralList[];
 extern const char kCookiePromptExpanded[];
+extern const char kInstantConfirmDialogShown[];
+extern const char kInstantEnabled[];
 #if defined(USE_NSS)
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSL2Enabled[];

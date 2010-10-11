@@ -9,18 +9,27 @@
 #include "chrome/browser/instant/instant_delegate.h"
 #include "chrome/browser/instant/instant_loader.h"
 #include "chrome/browser/instant/instant_loader_manager.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 
 // Number of ms to delay between loading urls.
 static const int kUpdateDelayMS = 200;
 
 // static
+void InstantController::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false);
+  prefs->RegisterBooleanPref(prefs::kInstantEnabled, false);
+}
+
+// static
 bool InstantController::IsEnabled() {
+  // TODO: convert to kInstantEnabled once pref lands.
   static bool enabled = false;
   static bool checked = false;
   if (!checked) {

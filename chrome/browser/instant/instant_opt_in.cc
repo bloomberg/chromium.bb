@@ -4,6 +4,7 @@
 
 #include "chrome/browser/instant/instant_opt_in.h"
 
+#include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/profile.h"
 
 namespace browser {
@@ -13,8 +14,12 @@ bool ShouldShowInstantOptIn(Profile* profile) {
   return false;
 }
 
-void UserPickedInstantOptIn(Profile* profile, bool opt_in) {
-  // TODO(sky): implement me.
+void UserPickedInstantOptIn(gfx::NativeWindow parent,
+                            Profile* profile,
+                            bool opt_in) {
+  // TODO: set pref so don't show opt-in again.
+  if (opt_in)
+    browser::ShowInstantConfirmDialogIfNecessary(parent, profile);
 }
 
 }  // namespace browser
