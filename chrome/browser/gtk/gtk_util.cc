@@ -1109,9 +1109,8 @@ void InitLabelSizeRequestAndEllipsizeMode(GtkWidget* label) {
 
 void DrawTopDropShadowForRenderView(cairo_t* cr, const gfx::Point& origin,
     const gfx::Rect& paint_rect) {
-  const int kShadowHeight = 6;
   gfx::Rect shadow_rect(paint_rect.x(), origin.y(),
-                        paint_rect.width(), kShadowHeight);
+                        paint_rect.width(), kInfoBarDropShadowHeight);
 
   // Avoid this extra work if we can.
   if (!shadow_rect.Intersects(paint_rect))

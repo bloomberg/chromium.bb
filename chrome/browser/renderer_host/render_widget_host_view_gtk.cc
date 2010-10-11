@@ -876,9 +876,12 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
     if (window) {
+      gfx::Rect drop_shadow_area(0, 0, kMaxWindowWidth,
+                                 gtk_util::kInfoBarDropShadowHeight);
       bool drop_shadow = host_->IsRenderView() &&
           static_cast<RenderViewHost*>(host_)->delegate()->GetViewDelegate()->
-              ShouldDrawDropShadow();
+              ShouldDrawDropShadow() &&
+          drop_shadow_area.Intersects(paint_rect);
 
       if (!visually_deemphasized_ && !drop_shadow) {
         // In the common case, use XCopyArea. We don't draw more than once, so
@@ -896,12 +899,20 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
       } else {
         // If the grey blend is showing, we make two drawing calls. Use double
         // buffering to prevent flicker. Use CairoShowRect because XShowRect
-        // shortcuts GDK's double buffering.
-        GdkRectangle rect = { paint_rect.x(), paint_rect.y(),
-                              paint_rect.width(), paint_rect.height() };
+        // shortcuts GDK's double buffering. We won't be able to draw outside
+        // of |damage_rect|, so invalidate the difference between |paint_rect|
+        // and |damage_rect|.
+        if (paint_rect != damage_rect) {
+          GdkRectangle extra_gdk_rect =
+              paint_rect.Subtract(damage_rect).ToGdkRectangle();
+          gdk_window_invalidate_rect(window, &extra_gdk_rect, false);
+        }
+
+        GdkRectangle rect = { damage_rect.x(), damage_rect.y(),
+                              damage_rect.width(), damage_rect.height() };
         gdk_window_begin_paint_rect(window, &rect);
 
-        backing_store->CairoShowRect(paint_rect, GDK_DRAWABLE(window));
+        backing_store->CairoShowRect(damage_rect, GDK_DRAWABLE(window));
 
         cairo_t* cr = gdk_cairo_create(window);
         if (visually_deemphasized_) {
@@ -911,7 +922,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
         }
         if (drop_shadow) {
           gtk_util::DrawTopDropShadowForRenderView(
-              cr, gfx::Point(), paint_rect);
+              cr, gfx::Point(), damage_rect);
         }
         cairo_destroy(cr);
 
