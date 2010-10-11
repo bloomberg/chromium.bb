@@ -20,7 +20,8 @@ namespace {
 // structures that contains property name / value pairs and subtrees of DirectX
 // diagnostic information.
 void RecurseDiagnosticTree(DxDiagNode* output,
-                           IDxDiagContainer* container) {
+                           IDxDiagContainer* container,
+                           int depth) {
   HRESULT hr;
 
   VARIANT variant;
@@ -61,25 +62,27 @@ void RecurseDiagnosticTree(DxDiagNode* output,
     }
   }
 
-  DWORD child_count;
-  hr = container->GetNumberOfChildContainers(&child_count);
-  if (SUCCEEDED(hr)) {
-    for (DWORD i = 0; i < child_count; i++) {
-      WCHAR child_name16[256];
-      hr = container->EnumChildContainerNames(i,
-                                              child_name16,
-                                              arraysize(child_name16));
-      if (SUCCEEDED(hr)) {
-        std::string child_name8 = WideToUTF8(child_name16);
-        DxDiagNode* output_child =
-            &output->children[child_name8];
-
-        IDxDiagContainer* child_container = NULL;
-        hr = container->GetChildContainer(child_name16, &child_container);
+  if (depth > 0) {
+    DWORD child_count;
+    hr = container->GetNumberOfChildContainers(&child_count);
+    if (SUCCEEDED(hr)) {
+      for (DWORD i = 0; i < child_count; i++) {
+        WCHAR child_name16[256];
+        hr = container->EnumChildContainerNames(i,
+                                                child_name16,
+                                                arraysize(child_name16));
         if (SUCCEEDED(hr)) {
-          RecurseDiagnosticTree(output_child, child_container);
+          std::string child_name8 = WideToUTF8(child_name16);
+          DxDiagNode* output_child =
+              &output->children[child_name8];
 
-          child_container->Release();
+          IDxDiagContainer* child_container = NULL;
+          hr = container->GetChildContainer(child_name16, &child_container);
+          if (SUCCEEDED(hr)) {
+            RecurseDiagnosticTree(output_child, child_container, depth - 1);
+
+            child_container->Release();
+          }
         }
       }
     }
@@ -116,7 +119,7 @@ bool GetDxDiagnostics(DxDiagNode* output) {
         hr = root->GetChildContainer(L"DxDiag_DisplayDevices",
                                      &display_devices);
         if (SUCCEEDED(hr)) {
-          RecurseDiagnosticTree(output, display_devices);
+          RecurseDiagnosticTree(output, display_devices, 1);
           success = true;
           display_devices->Release();
         }

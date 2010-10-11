@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/stats_table.h"
+#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -856,9 +857,9 @@ std::string AboutGpu() {
     html.append("<html><head><title>About GPU</title></head><body>\n");
     html.append("<h2>GPU Information</h2><ul>\n");
     html.append("<li><strong>Vendor ID:</strong> ");
-    html.append(base::IntToString(gpu_info.vendor_id()));
+    html.append(base::StringPrintf("0x%04x", gpu_info.vendor_id()));
     html.append("<li><strong>Device ID:</strong> ");
-    html.append(base::IntToString(gpu_info.device_id()));
+    html.append(base::StringPrintf("0x%04x", gpu_info.device_id()));
     html.append("<li><strong>Driver Version:</strong> ");
     html.append(WideToASCII(gpu_info.driver_version()).c_str());
     html.append("<li><strong>Pixel Shader Version:</strong> ");
