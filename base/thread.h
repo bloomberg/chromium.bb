@@ -108,7 +108,7 @@ class Thread : PlatformThread::Delegate {
 
   // Returns a MessageLoopProxy for this thread.  Use the MessageLoopProxy's
   // PostTask methods to execute code on the thread.  This only returns
-  // non-null after a successful call to Start. After Stop has been called,
+  // non-NULL after a successful call to Start. After Stop has been called,
   // this will return NULL. Callers can hold on to this even after the thread
   // is gone.
   // TODO(sanjeevr): Look into merging MessageLoop and MessageLoopProxy.
