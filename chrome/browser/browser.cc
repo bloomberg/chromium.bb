@@ -1740,24 +1740,8 @@ void Browser::ShowAppMenu() {
 }
 
 void Browser::ShowBookmarkManagerTab() {
-  // The bookmark manager tab does not work in incognito mode. If we are OTR
-  // we try to reuse the last active window and if that fails we open a new
-  // window.
-  Profile* default_profile = profile_->GetOriginalProfile();
-  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"),
-                            default_profile);
-
-  if (!profile_->IsOffTheRecord()) {
-    ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL));
-  } else {
-    Browser* browser = BrowserList::GetLastActiveWithProfile(default_profile);
-    if (browser) {
-      browser->ShowBookmarkManagerTab();
-      browser->window()->Activate();
-    } else {
-      OpenBookmarkManagerWindow(default_profile);
-    }
-  }
+  UserMetrics::RecordAction(UserMetricsAction("ShowBookmarks"), profile_);
+  ShowSingletonTab(GURL(chrome::kChromeUIBookmarksURL));
 }
 
 void Browser::ShowHistoryTab() {

@@ -6,6 +6,7 @@
   "icons": {
     // The favicon is loaded directly from resources.pak.
   },
+  "incognito" : "split",
   "permissions": [
     "bookmarks",
     "experimental",
