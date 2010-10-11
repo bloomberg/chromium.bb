@@ -38,7 +38,7 @@ class SelLdrLocator {
 
   SelLdrLocator() {}
 
-  virtual ~SelLdrLocator() { }
+  virtual ~SelLdrLocator() {}
 
   DISALLOW_COPY_AND_ASSIGN(SelLdrLocator);
 };
@@ -52,50 +52,55 @@ class PluginSelLdrLocator : public SelLdrLocator {
   // We have different implementations for all platforms.
   virtual void GetDirectory(char* buffer, size_t len);
 
-  PluginSelLdrLocator() {
-  }
+  PluginSelLdrLocator() {}
 
   DISALLOW_COPY_AND_ASSIGN(PluginSelLdrLocator);
 };
 
 /*
  * This class encapsulates the process of launching an instance of sel_ldr
- * to communicate over an IMC channel.
+ * to communicate with the NaCl plugin over an IMC channel.
+ *
+ * The sel_ldr process can be forked directly using a command line of args
+ * or by sending a message to the (Chrome) browser process.
  */
 struct SelLdrLauncher {
  public:
   SelLdrLauncher();
 
   explicit SelLdrLauncher(SelLdrLocator* sel_ldr_locator);
+  ~SelLdrLauncher();
+
+  Handle child_process() const { return child_process_; }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Command line start-up:
+  //
+  // The command line must include a file path for the nexe application.
+  /////////////////////////////////////////////////////////////////////////////
 
   // Creates a socket pair.  Maps the first socket into the NaCl
   // subprocess's FD table as dest_fd.  Returns the second socket.
   // Returns kInvalidHandle on failure.
   Handle ExportImcFD(int dest_fd);
 
-  // TODO(robertm): shouldn't some of these args go in the constructor
-  void Init(const nacl::string& application_name,
-            int imc_fd,
-            const std::vector<nacl::string>& sel_ldr_argv,
-            const std::vector<nacl::string>& application_argv);
+  void InitCommandLine(const nacl::string& application_file,
+                       int imc_fd,
+                       const std::vector<nacl::string>& sel_ldr_argv,
+                       const std::vector<nacl::string>& application_argv);
 
-  // If subprocess creation fails, both child_ and channel_ are set to
-  // kInvalidHandle. We have different implementations for unix and win.
-  // NOTE: you must call Init() before Launch()
-  bool Launch();
+  // If subprocess creation fails, both child_process_ and channel_ are set to
+  // kInvalidHandle. We have different implementations for posix and win.
+  // You must call InitCommandLine() before calling this function.
+  bool LaunchFromCommandLine();
 
-  bool Start(const nacl::string& application_name,
-             int imc_fd,
-             const std::vector<nacl::string>& sel_ldr_argv,
-             const std::vector<nacl::string>& app_argv) {
-    Init(application_name, imc_fd, sel_ldr_argv, app_argv);
-    return Launch();
+  bool StartFromCommandLine(const nacl::string& application_file,
+                            int imc_fd,
+                            const std::vector<nacl::string>& sel_ldr_argv,
+                            const std::vector<nacl::string>& app_argv) {
+    InitCommandLine(application_file, imc_fd, sel_ldr_argv, app_argv);
+    return LaunchFromCommandLine();
   }
-
-  // Launch sel_ldr process in Chrome by sending a message
-  // to the browser process.
-  bool StartUnderChromium(const char* url, int socket_count,
-                          Handle* result_sockets);
 
   // OpenSrpcChannels essentially is a pair Ctor for the two
   // NaClSrpcChannel objects; if it returns true (success), both were
@@ -103,45 +108,51 @@ struct SelLdrLauncher {
   // neither needs to be Dtor'd).
   bool OpenSrpcChannels(NaClSrpcChannel* command, NaClSrpcChannel* untrusted);
 
-  ~SelLdrLauncher();
-
-  Handle child() const { return child_; }
+  // Kill the child process.  The channel() remains valid, but nobody
+  // is talking on the other end.  Returns true if successful.
+  bool KillChildProcess();
 
   // User is responsible for invoking channel() and then taking
   // ownership of the handle prior to the Dtor firing.
   Handle channel() const { return channel_; }
 
-  nacl::string GetApplicationName() const { return application_name_; }
+  // Returns the file path of the NaCl module to be run within the sel_ldr.
+  nacl::string get_application_file() const { return application_file_; }
 
   // Returns the socket address used to connect to the sel_ldr.
-  struct NaClDesc* GetSelLdrSocketAddress() const { return sock_addr_; }
+  struct NaClDesc* socket_address() const { return socket_address_; }
 
-  // Kill the child process.  The channel() remains valid, but nobody
-  // is talking on the other end.  Returns true if successful.
-  bool KillChild();
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Browser-based start-up (Chrome only):
+  //
+  // A message is sent to the browser process to launch the sel_ldr process.
+  // No nexe information is passed at this point.
+  /////////////////////////////////////////////////////////////////////////////
+
+  bool StartFromBrowser(const char* url, int socket_count,
+                        Handle* result_sockets);
 
  private:
   void GetPluginDirectory(char* buffer, size_t len);
-
   nacl::string GetSelLdrPathName();
-
   void BuildArgv(std::vector<nacl::string>* argv);
-
   void CloseHandlesAfterLaunch();
 
-  Handle child_;
+  Handle child_process_;
   Handle channel_;
   int channel_number_;
+
   // The following strings and vectors are used by BuildArgv to
   // create a command line, they are initialized by InitBasic().
   nacl::string sel_ldr_;
-  nacl::string application_name_;
+  nacl::string application_file_;
   std::vector<nacl::string> sel_ldr_argv_;
   std::vector<nacl::string> application_argv_;
   std::vector<Handle> close_after_launch_;
 
   // The socket address returned from sel_ldr for connects.
-  struct NaClDesc* sock_addr_;
+  struct NaClDesc* socket_address_;
 
   SelLdrLocator* sel_ldr_locator_;
 };

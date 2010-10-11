@@ -35,11 +35,10 @@ using std::vector;
 
 namespace plugin {
 
-ServiceRuntime::ServiceRuntime(BrowserInterface* browser_interface,
-                               Plugin* plugin)
-    : browser_interface_(browser_interface),
-      default_socket_address_(NULL),
+ServiceRuntime::ServiceRuntime(Plugin* plugin)
+    : default_socket_address_(NULL),
       plugin_(plugin),
+      browser_interface_(plugin->browser_interface()),
       runtime_channel_(NULL),
       subprocess_(NULL),
       async_receive_desc_(NULL),
@@ -141,7 +140,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   return true;
 }
 
-bool ServiceRuntime::Start(const char* nacl_file) {
+bool ServiceRuntime::StartFromCommandLine(const char* nacl_file) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_file='%s')\n", nacl_file));
   // The arguments we want to pass to the service runtime are
   // "-X 5" causes the service runtime to create a bound socket and socket
@@ -164,7 +163,7 @@ bool ServiceRuntime::Start(const char* nacl_file) {
     browser_interface_->AddToConsole(plugin()->instance_id(), error);
     return false;
   }
-  subprocess_->Init(nacl_file, -1, kArgv, kEmpty);
+  subprocess_->InitCommandLine(nacl_file, -1, kArgv, kEmpty);
 
   nacl::Handle receive_handle = subprocess_->ExportImcFD(6);
   if (receive_handle == nacl::kInvalidHandle) {
@@ -190,7 +189,7 @@ bool ServiceRuntime::Start(const char* nacl_file) {
     return false;
   }
 
-  if (!subprocess_->Launch()) {
+  if (!subprocess_->LaunchFromCommandLine()) {
     const char* error = "could not start SelLdrLauncher";
     PLUGIN_PRINTF(("ServiceRuntime::Start (%s)\n", error));
     browser_interface_->AddToConsole(plugin()->instance_id(), error);
@@ -209,16 +208,16 @@ bool ServiceRuntime::Start(const char* nacl_file) {
   return true;
 }
 
-bool ServiceRuntime::StartUnderChromium(const char* url,
-                                        nacl::DescWrapper* shm) {
-  PLUGIN_PRINTF(("ServiceRuntime::StartUnderChromium (url=%s, shm=%p)\n",
+bool ServiceRuntime::StartFromBrowser(const char* url,
+                                      nacl::DescWrapper* shm) {
+  PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (url=%s, shm=%p)\n",
                  url, reinterpret_cast<void*>(shm)));
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
     return false;
   }
   nacl::Handle sockets[3];
-  if (!subprocess_->StartUnderChromium(url, NACL_ARRAY_SIZE(sockets),
+  if (!subprocess_->StartFromBrowser(url, NACL_ARRAY_SIZE(sockets),
                                        sockets)) {
     delete subprocess_;
     subprocess_ = NULL;
@@ -233,12 +232,12 @@ bool ServiceRuntime::StartUnderChromium(const char* url,
     return false;
   }
 
-  PLUGIN_PRINTF(("ServiceRuntime::StartUnderChromium (return 1)\n"));
+  PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (return 1)\n"));
   return true;
 }
 
 bool ServiceRuntime::Kill() {
-  return subprocess_->KillChild();
+  return subprocess_->KillChildProcess();
 }
 
 bool ServiceRuntime::Log(int severity, nacl::string msg) {

@@ -3,6 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
+
 #include <vector>
 
 #include "native_client/src/include/nacl_string.h"
@@ -23,10 +24,10 @@ struct NaClSelLdrLauncher* NaClSelLdrStart(const char* application_name,
   vector<nacl::string> app_vec(app_argv, app_argv + app_argc);
 
   nacl::SelLdrLauncher* launcher = new nacl::SelLdrLauncher();
-  if (launcher->Start(application_name,
-                      imc_fd,
-                      sel_ldr_vec,
-                      app_vec)) {
+  if (launcher->StartFromCommandLine(application_name,
+                                     imc_fd,
+                                     sel_ldr_vec,
+                                     app_vec)) {
     return reinterpret_cast<struct NaClSelLdrLauncher*>(launcher);
   } else {
     delete launcher;
@@ -53,7 +54,7 @@ int NaClSelLdrOpenSrpcChannels(struct NaClSelLdrLauncher* launcher,
 
 
 NaClHandle NaClSelLdrGetChild(struct NaClSelLdrLauncher* launcher) {
-  return ToObject(launcher)->child();
+  return ToObject(launcher)->child_process();
 }
 
 
@@ -63,6 +64,6 @@ NaClHandle NaClSelLdrGetChannel(struct NaClSelLdrLauncher* launcher) {
 
 
 struct NaClDesc* NaClSelLdrGetSockAddr(struct NaClSelLdrLauncher* launcher) {
-  return ToObject(launcher)->GetSelLdrSocketAddress();
+  return ToObject(launcher)->socket_address();
 }
 }  // extern "C"

@@ -22,16 +22,16 @@ using std::vector;
 namespace nacl {
 
 SelLdrLauncher::SelLdrLauncher()
-  : child_(kInvalidHandle),
+  : child_process_(kInvalidHandle),
     channel_(kInvalidHandle),
-    sock_addr_(NULL),
+    socket_address_(NULL),
     sel_ldr_locator_(new PluginSelLdrLocator()) {
 }
 
 SelLdrLauncher::SelLdrLauncher(SelLdrLocator* sel_ldr_locator)
-  : child_(kInvalidHandle),
+  : child_process_(kInvalidHandle),
     channel_(kInvalidHandle),
-    sock_addr_(NULL),
+    socket_address_(NULL),
     sel_ldr_locator_(sel_ldr_locator) {
 }
 
@@ -95,7 +95,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
     goto done;
   }
   // Save the socket address for other uses.
-  sock_addr_ = NaClDescRef(sock_addr->desc());
+  socket_address_ = NaClDescRef(sock_addr->desc());
 
   // The first connection goes to the trusted command channel.
   command_desc = sock_addr->Connect();
@@ -138,19 +138,18 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
 
 
 void SelLdrLauncher::BuildArgv(vector<nacl::string>* command) {
-  // assert that Init() was called
-  assert(sel_ldr_ != "");
+  assert(sel_ldr_ != "");  // Make sure InitCommandLine() was called.
 
   command->push_back(sel_ldr_);
   command->push_back("-f");
-  command->push_back(application_name_);
+  command->push_back(application_file_);
 
   for (size_t i = 0; i < sel_ldr_argv_.size(); ++i) {
     command->push_back(sel_ldr_argv_[i]);
   }
 
   if (application_argv_.size() > 0) {
-    // Separator between sel_universal and app args
+    // Separator between sel_universal and app args.
     command->push_back("--");
 
     for (size_t i = 0; i < application_argv_.size(); ++i) {
@@ -160,10 +159,10 @@ void SelLdrLauncher::BuildArgv(vector<nacl::string>* command) {
 }
 
 
-void SelLdrLauncher::Init(const nacl::string& application_name,
-                          int imc_fd,
-                          const vector<nacl::string>& sel_ldr_argv,
-                          const vector<nacl::string>& app_argv) {
+void SelLdrLauncher::InitCommandLine(const nacl::string& application_file,
+                                     int imc_fd,
+                                     const vector<nacl::string>& sel_ldr_argv,
+                                     const vector<nacl::string>& app_argv) {
   // make sure we don't call this twice
   assert(sel_ldr_ == "");
   char* var = getenv("NACL_SEL_LDR");
@@ -172,14 +171,14 @@ void SelLdrLauncher::Init(const nacl::string& application_name,
   } else {
     sel_ldr_ = GetSelLdrPathName();
   }
-  application_name_ = application_name;
+  application_file_ = application_file;
   copy(sel_ldr_argv.begin(), sel_ldr_argv.end(), back_inserter(sel_ldr_argv_));
   copy(app_argv.begin(), app_argv.end(), back_inserter(application_argv_));
   channel_number_ = imc_fd;
 }
 
 void SelLdrLauncher::CloseHandlesAfterLaunch() {
-  for(size_t i = 0; i < close_after_launch_.size(); i++) {
+  for (size_t i = 0; i < close_after_launch_.size(); i++) {
     Close(close_after_launch_[i]);
   }
   close_after_launch_.clear();

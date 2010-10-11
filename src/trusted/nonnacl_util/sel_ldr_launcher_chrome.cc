@@ -10,8 +10,8 @@
 LaunchNaClProcessFunc launch_nacl_process = NULL;
 
 namespace nacl {
-  bool SelLdrLauncher::StartUnderChromium(const char* url, int socket_count,
-                                          Handle* result_sockets) {
+  bool SelLdrLauncher::StartFromBrowser(const char* url, int socket_count,
+                                        Handle* result_sockets) {
     // send a synchronous message to the browser process
     Handle nacl_proc_handle;
     int nacl_proc_id;
@@ -30,7 +30,7 @@ namespace nacl {
 
     CloseHandlesAfterLaunch();
     // TODO(gregoryd): the handle is currently returned on Windows only.
-    child_ = nacl_proc_handle;
+    child_process_ = nacl_proc_handle;
     return true;
   }
 }

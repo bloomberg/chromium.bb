@@ -124,7 +124,7 @@ int main(int  argc, char *argv[]) {
    * Start sel_ldr with the given application and arguments.
    */
   nacl::SelLdrLauncher launcher;
-  if (!launcher.Start(app_name, 5, sel_ldr_argv, app_argv)) {
+  if (!launcher.StartFromCommandLine(app_name, 5, sel_ldr_argv, app_argv)) {
     NaClLog(LOG_FATAL, "Launch failed\n");
   }
 
@@ -140,7 +140,7 @@ int main(int  argc, char *argv[]) {
   NaClSrpcCommandLoop(channel.client,
                       &channel,
                       Interpreter,
-                      launcher.GetSelLdrSocketAddress());
+                      launcher.socket_address());
 
   /*
    * Close the connections to sel_ldr.

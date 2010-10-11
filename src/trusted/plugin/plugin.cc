@@ -609,7 +609,7 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
   // outlive the Plugin object, they will not be memory safe.
   ShutDownSubprocess();
   service_runtime_ =
-      new(std::nothrow) ServiceRuntime(browser_interface_, this);
+      new(std::nothrow) ServiceRuntime(this);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime=%p)\n",
                  static_cast<void*>(service_runtime_)));
   if (NULL == service_runtime_) {
@@ -620,7 +620,7 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
 
   bool service_runtime_started = false;
   if (NACL_NO_FILE_PATH != local_path) {
-    service_runtime_started = service_runtime_->Start(
+    service_runtime_started = service_runtime_->StartFromCommandLine(
         nacl_module_path_.c_str());
   } else if (NULL != shm_buffer) {
     int32_t size;
@@ -632,7 +632,7 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
     }
     nacl::DescWrapper* wrapped_shm =
         wrapper_factory_->MakeGeneric(NaClDescRef(shm_nacl_desc));
-    service_runtime_started = service_runtime_->StartUnderChromium(
+    service_runtime_started = service_runtime_->StartFromBrowser(
         nacl_module_url_.c_str(), wrapped_shm);
     delete wrapped_shm;
   } else if (posix_file_desc > NACL_NO_FILE_DESC) {

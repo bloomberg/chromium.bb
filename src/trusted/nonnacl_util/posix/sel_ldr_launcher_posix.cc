@@ -30,22 +30,15 @@ namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
   CloseHandlesAfterLaunch();
-  // sock_addr_ is non-NULL only if the Start method successfully completes.
-  if (NULL != sock_addr_) {
-    NaClDescUnref(sock_addr_);
-  }
-  // Similarly, child_ is invalid unless Start successfully completes.
-  if (kInvalidHandle != child_) {
+  NaClDescSafeUnref(socket_address_);
+  if (kInvalidHandle != child_process_) {
     int status;
-    waitpid(child_, &status, 0);
+    waitpid(child_process_, &status, 0);
   }
-  // Similarly, channel_ is invalid unless Start successfully completes.
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }
-  if (NULL != sel_ldr_locator_) {
-    delete sel_ldr_locator_;
-  }
+  delete sel_ldr_locator_;
 }
 
 
@@ -72,7 +65,7 @@ Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
 
 const size_t kMaxExecArgs = 64;
 
-bool SelLdrLauncher::Launch() {
+bool SelLdrLauncher::LaunchFromCommandLine() {
   // Uncomment to turn on the sandbox, or set this in your environment
   // TODO(neha):  Turn this on by default.
   //
@@ -93,12 +86,12 @@ bool SelLdrLauncher::Launch() {
   // TODO(sehr): change this to use a command line parameter rather than env.
   setenv("NACL_LAUNCHED_FROM_BROWSER", "1", 0);
   // Fork the sel_ldr process.
-  child_ = fork();
-  if (child_ == -1) {
+  child_process_ = fork();
+  if (child_process_ == -1) {
     return false;
   }
 
-  if (child_ == 0) {
+  if (child_process_ == 0) {
     // convert vector -> array assuming no more than kMaxArgs
     // NOTE: we also check this above so the assert should never fire
     assert(command.size() < kMaxExecArgs);
@@ -120,9 +113,9 @@ bool SelLdrLauncher::Launch() {
   return true;
 }
 
-bool SelLdrLauncher::KillChild() {
-  return 0 == kill(child_, SIGKILL);
-  // We cannot set child_ to kInvalidHandle since we will want to wait
+bool SelLdrLauncher::KillChildProcess() {
+  return 0 == kill(child_process_, SIGKILL);
+  // We cannot set child_process_ to kInvalidHandle since we will want to wait
   // on its exit status.
 }
 

@@ -9,6 +9,7 @@
 #include <fcntl.h>
 
 #include <iostream>
+#include <string>  // Silence the presubmit checker.
 
 #include "native_client/tests/posix_over_srpc/linux_lib/posix_over_srpc_linux.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -174,7 +175,8 @@ bool PosixOverSrpcLauncher::SpawnNaClModule(
   nacl::SelLdrLauncher* launcher = new nacl::SelLdrLauncher;
   int upcall_imc_handle = launcher->ExportImcFD(kUpChannelDestDesc);
 
-  if (false == launcher->Start(nacl_module, 5, sel_ldr_args_, argv)) {
+  if (false == launcher->StartFromCommandLine(nacl_module, 5, sel_ldr_args_,
+                                              argv)) {
     std::cerr << "Unable to start sel_ldr from " << sel_ldr_dir_ << "\n";
     delete launcher;
     return false;
@@ -193,7 +195,7 @@ bool PosixOverSrpcLauncher::SpawnNaClModule(
   if (0 != pthread_create(&invoke_thread, NULL, InvokeInitUpcallChannel,
                           context)) {
     std::cerr << "Unable to create thread for InvokeInitUpcallChannel\n";
-    launcher->KillChild();
+    launcher->KillChildProcess();
     delete launcher;
     delete context;
     DecreaseNumberOfChildren();

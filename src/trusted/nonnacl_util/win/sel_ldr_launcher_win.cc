@@ -25,18 +25,14 @@ namespace nacl {
 
 SelLdrLauncher::~SelLdrLauncher() {
   CloseHandlesAfterLaunch();
-  if (NULL != sock_addr_) {
-    NaClDescUnref(sock_addr_);
-  }
-  if (kInvalidHandle != child_) {
-    CloseHandle(child_);
+  NaClDescSafeUnref(socket_address_);
+  if (kInvalidHandle != child_process_) {
+    CloseHandle(child_process_);
   }
   if (kInvalidHandle != channel_) {
     Close(channel_);
   }
-  if (NULL != sel_ldr_locator_) {
-    delete sel_ldr_locator_;
-  }
+  delete sel_ldr_locator_;
 }
 
 nacl::string SelLdrLauncher::GetSelLdrPathName() {
@@ -74,11 +70,11 @@ Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
     return kInvalidHandle;
   }
 
-  // Transfer pair[1] to child_ by inheritance.
+  // Transfer pair[1] to child_process_ by inheritance.
   // TODO(mseaborn): We could probably use SetHandleInformation() to
   // set HANDLE_FLAG_INHERIT rather than duplicating the handle and
-  // closing the original.  But for now, we do the same as in Launch()
-  // below.
+  // closing the original.  But for now, we do the same as in
+  // LaunchFromCommandLine() below.
   Handle channel;
   if (!DuplicateHandle(GetCurrentProcess(), pair[1],
                        GetCurrentProcess(), &channel,
@@ -96,7 +92,7 @@ Handle SelLdrLauncher::ExportImcFD(int dest_fd) {
   return pair[0];
 }
 
-bool SelLdrLauncher::Launch() {
+bool SelLdrLauncher::LaunchFromCommandLine() {
   STARTUPINFOA startup_info;
   PROCESS_INFORMATION process_infomation;
 
@@ -130,13 +126,13 @@ bool SelLdrLauncher::Launch() {
 
   CloseHandlesAfterLaunch();
   CloseHandle(process_infomation.hThread);
-  child_ = process_infomation.hProcess;
+  child_process_ = process_infomation.hProcess;
   return true;
 }
 
-bool SelLdrLauncher::KillChild() {
-    return 0 != TerminateProcess(child_, 9);
-    // 9 is the exit code for the child_.  The value is actually not
+bool SelLdrLauncher::KillChildProcess() {
+    return 0 != TerminateProcess(child_process_, 9);
+    // 9 is the exit code for the child_process_.  The value is actually not
     // material, since (currently) the launcher does not collect/report
     // it.
 }

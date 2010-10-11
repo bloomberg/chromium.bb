@@ -35,17 +35,15 @@ class ServiceRuntime {
  public:
   // TODO(sehr): This class should also implement factory methods, using the
   // current contents of the Start methods below.
-  // TODO(polina): This class does not need to take |browser_interface|
-  // because it is accessible through |plugin|.
-  ServiceRuntime(BrowserInterface* browser_interface, Plugin* plugin);
+  explicit ServiceRuntime(Plugin* plugin);
   // The destructor terminates the sel_ldr process.
   ~ServiceRuntime();
 
   //  The constructor is passed the name of the nacl_file (from the
   //  browser cache, typically).  It spawns a sel_ldr instance and establishes
   //  a ConnectedSocket to it.
-  bool Start(const char* nacl_file);
-  bool StartUnderChromium(const char* url, nacl::DescWrapper* shm);
+  bool StartFromCommandLine(const char* nacl_file);
+  bool StartFromBrowser(const char* url, nacl::DescWrapper* shm);
 
   bool Kill();
   bool Log(int severity, nacl::string msg);
@@ -60,9 +58,10 @@ class ServiceRuntime {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
   bool InitCommunication(nacl::Handle bootstrap_socket, nacl::DescWrapper* shm);
-  BrowserInterface* browser_interface_;
+
   ScriptableHandle* default_socket_address_;  // creates, but does not own
   Plugin* plugin_;
+  BrowserInterface* browser_interface_;
   SrtSocket* runtime_channel_;
   nacl::SelLdrLauncher* subprocess_;
 
