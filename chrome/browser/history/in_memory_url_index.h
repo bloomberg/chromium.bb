@@ -74,6 +74,9 @@ class InMemoryURLIndex {
   typedef std::vector<string16> String16Vector;
 
   // Open and index the URL history database.
+  // |languages| gives a list of language encodings with which the history
+  // URLs and omnibox searches are interpreted, i.e. when each is broken
+  // down into words and each word is broken down into characters.
   bool Init(URLDatabase* history_db, const std::string& languages);
 
   // Reset the history index.
