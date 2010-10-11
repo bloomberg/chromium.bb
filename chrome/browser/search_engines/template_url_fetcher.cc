@@ -8,25 +8,21 @@
 
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/net/url_fetcher.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_source.h"
-#include "chrome/common/notification_type.h"
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------
-class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
-                                            public NotificationObserver {
+class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate {
  public:
+  // Takes ownership of |callbacks|.
   RequestDelegate(TemplateURLFetcher* fetcher,
                   const std::wstring& keyword,
                   const GURL& osdd_url,
                   const GURL& favicon_url,
-                  TabContents* source,
+                  TemplateURLFetcherCallbacks* callbacks,
                   ProviderType provider_type)
       : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(osdd_url,
                                                     URLFetcher::GET, this)),
@@ -35,12 +31,9 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
         osdd_url_(osdd_url),
         favicon_url_(favicon_url),
         provider_type_(provider_type),
-        source_(source) {
+        callbacks_(callbacks) {
     url_fetcher_.set_request_context(fetcher->profile()->GetRequestContext());
     url_fetcher_.Start();
-    registrar_.Add(this,
-                   NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(source_));
   }
 
   // URLFetcher::Delegate:
@@ -52,15 +45,6 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
-
-  // NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-    DCHECK(source == Source<TabContents>(source_));
-    source_ = NULL;
-  }
 
   // URL of the OSDD.
   const GURL& url() const { return osdd_url_; }
@@ -81,13 +65,7 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
   const GURL osdd_url_;
   const GURL favicon_url_;
   const ProviderType provider_type_;
-
-  // The TabContents where this request originated. Can be NULL if the
-  // originating tab is closed. If NULL, the engine is not added.
-  TabContents* source_;
-
-  // Handles registering for our notifications.
-  NotificationRegistrar registrar_;
+  scoped_ptr<TemplateURLFetcherCallbacks> callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestDelegate);
 };
@@ -177,23 +155,19 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
       break;
 
     case EXPLICIT_PROVIDER:
-      if (source_ && source_->delegate()) {
-        // Confirm addition and allow user to edit default choices. It's ironic
-        // that only *non*-autodetected additions get confirmed, but the user
-        // expects feedback that his action did something.
-        // The source TabContents' delegate takes care of adding the URL to the
-        // model, which takes ownership, or of deleting it if the add is
-        // cancelled.
-        source_->delegate()->ConfirmAddSearchProvider(template_url_.release(),
-                                                      fetcher_->profile());
-      }
+      // Confirm addition and allow user to edit default choices. It's ironic
+      // that only *non*-autodetected additions get confirmed, but the user
+      // expects feedback that his action did something.
+      // The source TabContents' delegate takes care of adding the URL to the
+      // model, which takes ownership, or of deleting it if the add is
+      // cancelled.
+      callbacks_->ConfirmAddSearchProvider(template_url_.release(),
+                                           fetcher_->profile());
       break;
 
     case EXPLICIT_DEFAULT_PROVIDER:
-      source_->delegate()->ConfirmSetDefaultSearchProvider(
-          source_,
-          template_url_.release(),
-          model);
+      callbacks_->ConfirmSetDefaultSearchProvider(template_url_.release(),
+                                                  model);
       break;
   }
 
@@ -210,12 +184,35 @@ TemplateURLFetcher::TemplateURLFetcher(Profile* profile) : profile_(profile) {
 TemplateURLFetcher::~TemplateURLFetcher() {
 }
 
-void TemplateURLFetcher::ScheduleDownload(const std::wstring& keyword,
-                                          const GURL& osdd_url,
-                                          const GURL& favicon_url,
-                                          TabContents* source,
-                                          ProviderType provider_type) {
-  DCHECK(!keyword.empty() && osdd_url.is_valid());
+void TemplateURLFetcher::ScheduleDownload(
+    const std::wstring& keyword,
+    const GURL& osdd_url,
+    const GURL& favicon_url,
+    TemplateURLFetcherCallbacks* callbacks,
+    ProviderType provider_type) {
+  DCHECK(osdd_url.is_valid());
+  scoped_ptr<TemplateURLFetcherCallbacks> owned_callbacks(callbacks);
+
+  // For JS added OSDD empty keyword is OK because we will generate keyword
+  // later from OSDD content.
+  if (provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER &&
+      keyword.empty())
+    return;
+  TemplateURLModel* url_model = profile()->GetTemplateURLModel();
+  if (!url_model)
+    return;
+  if (!url_model->loaded()) {
+    url_model->Load();
+    return;
+  }
+  const TemplateURL* template_url =
+      url_model->GetTemplateURLForKeyword(keyword);
+  if (template_url && (!template_url->safe_for_autoreplace() ||
+                       template_url->originating_url() == osdd_url)) {
+    // Either there is a user created TemplateURL for this keyword, or the
+    // keyword has the same OSDD url and we've parsed it.
+    return;
+  }
 
   // Make sure we aren't already downloading this request.
   for (std::vector<RequestDelegate*>::iterator i = requests_->begin();
@@ -231,8 +228,8 @@ void TemplateURLFetcher::ScheduleDownload(const std::wstring& keyword,
   }
 
   requests_->push_back(
-      new RequestDelegate(this, keyword, osdd_url, favicon_url, source,
-                          provider_type));
+      new RequestDelegate(this, keyword, osdd_url, favicon_url,
+                          owned_callbacks.release(), provider_type));
 }
 
 void TemplateURLFetcher::RequestCompleted(RequestDelegate* request) {

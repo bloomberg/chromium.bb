@@ -71,6 +71,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
+#include "chrome/browser/search_engines/template_url_fetcher_ui_callbacks.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -2763,20 +2764,12 @@ void TabContents::PageHasOSDD(
     int32 page_id,
     const GURL& url,
     const ViewHostMsg_PageHasOSDD_Type& msg_provider_type) {
-  // Make sure page_id is the current page, and the TemplateURLModel is loaded.
+  // Make sure page_id is the current page and other basic checks.
   DCHECK(url.is_valid());
   if (!IsActiveEntry(page_id))
     return;
-  TemplateURLModel* url_model = profile()->GetTemplateURLModel();
-  if (!url_model)
-    return;
-  if (!url_model->loaded()) {
-    url_model->Load();
-    return;
-  }
   if (!profile()->GetTemplateURLFetcher())
     return;
-
   if (profile()->IsOffTheRecord())
     return;
 
@@ -2824,31 +2817,17 @@ void TabContents::PageHasOSDD(
   if (!keyword_url.is_valid())
     return;
 
-  bool autodetected =
-      provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER;
-  std::wstring keyword = TemplateURLModel::GenerateKeyword(keyword_url,
-                                                           autodetected);
+  std::wstring keyword = TemplateURLModel::GenerateKeyword(
+      keyword_url,
+      provider_type == TemplateURLFetcher::AUTODETECTED_PROVIDER);
 
-  // For JS added OSDD empty keyword is OK because we will generate keyword
-  // later from OSDD content.
-  if (autodetected && keyword.empty())
-    return;
-  const TemplateURL* template_url =
-      url_model->GetTemplateURLForKeyword(keyword);
-  if (template_url && (!template_url->safe_for_autoreplace() ||
-                       template_url->originating_url() == url)) {
-    // Either there is a user created TemplateURL for this keyword, or the
-    // keyword has the same OSDD url and we've parsed it.
-    return;
-  }
-
-  // Download the OpenSearch description document. If this is successful a
+  // Download the OpenSearch description document. If this is successful, a
   // new keyword will be created when done.
   profile()->GetTemplateURLFetcher()->ScheduleDownload(
       keyword,
       url,
       base_entry->favicon().url(),
-      this,
+      new TemplateURLFetcherUICallbacks(this),
       provider_type);
 }
 
