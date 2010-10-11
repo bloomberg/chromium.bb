@@ -48,6 +48,13 @@ int GpuMain(const MainFunctionParams& parameters) {
   InitCrashReporter();
 #endif
 
+#if defined(OS_LINUX)
+  // On Linux we exec ourselves from /proc/self/exe, but that makes the
+  // process name that shows up in "ps" etc. for the GPU process show as
+  // "exe" instead of "chrome" or something reasonable. Try to fix it.
+  CommandLine::SetProcTitle();
+#endif
+
   const CommandLine& command_line = parameters.command_line_;
   if (command_line.HasSwitch(switches::kGpuStartupDialog)) {
     ChildProcess::WaitForDebugger(L"Gpu");
@@ -73,4 +80,3 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   return 0;
 }
-
