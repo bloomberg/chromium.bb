@@ -206,12 +206,6 @@ const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
 // Manager can be used to terminate the offending process in this case.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
-// Disable the use of the HistoryQuickProvider for autocomplete results.
-const char kDisableHistoryQuickProvider[]   = "disable-history-quick-provider";
-
-// Disable the use of the HistoryURLProvider for autocomplete results.
-const char kDisableHistoryURLProvider[]   = "disable-history-url-provider";
-
 // Disable the Indexed Database API.
 const char kDisableIndexedDatabase[]         = "disable-indexed-database";
 
@@ -432,6 +426,10 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 
 // Enable the FileSystem API.
 const char kEnableFileSystem[]              = "enable-file-system";
+
+// Use the InMemoryURLIndex to back the HistoryURLProvider for autocomplete
+// results.  If not set, defaults to using the InMemoryDatabase.
+const char kEnableInMemoryURLIndex[]        = "enable-in-memory-url-index";
 
 // Enable IPv6 support, even if probes suggest that it may not be fully
 // supported.  Some probes may require internet connections, and this flag will

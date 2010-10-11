@@ -150,7 +150,6 @@ class HistoryService : public CancelableRequestProvider,
   // TODO(brettw) this should return the InMemoryHistoryBackend.
   history::URLDatabase* InMemoryDatabase();
 
-  // Return the quick history index.
   history::InMemoryURLIndex* InMemoryIndex();
 
   // Navigation ----------------------------------------------------------------

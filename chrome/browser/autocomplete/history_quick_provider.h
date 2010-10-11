@@ -6,17 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_QUICK_PROVIDER_H_
 #pragma once
 
-#include <string>
-
-#include "chrome/browser/autocomplete/history_provider.h"
-#include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/in_memory_url_index.h"
-
-class Profile;
-
-namespace history {
-class HistoryBackend;
-}  // namespace history
+#include "chrome/browser/autocomplete/autocomplete.h"
 
 // This class is an autocomplete provider (a pseudo-internal component of
 // the history system) which quickly (and synchronously) provides matching
@@ -25,52 +15,26 @@ class HistoryBackend;
 //
 // TODO(mrossetti): Review to see if the following applies since we're not
 // using the database during the autocomplete pass.
-class HistoryQuickProvider : public HistoryProvider {
+//
+// Note: This object can get leaked on shutdown if there are pending
+// requests on the database (which hold a reference to us). Normally, these
+// messages get flushed for each thread. We do a round trip from main, to
+// history, back to main while holding a reference. If the main thread
+// completes before the history thread, the message to delegate back to the
+// main thread will not run and the reference will leak. Therefore, don't do
+// anything on destruction.
+class HistoryQuickProvider : public AutocompleteProvider {
  public:
-  HistoryQuickProvider(ACProviderListener* listener, Profile* profile);
+  HistoryQuickProvider(ACProviderListener* listener, Profile* profile)
+      : AutocompleteProvider(listener, profile, "HistoryQuickProvider") {}
 
-  ~HistoryQuickProvider();
+  // no destructor (see note above)
 
-  // AutocompleteProvider. |minimal_changes| is ignored since there
-  // is no asynch completion performed.
+  // AutocompleteProvider
   void Start(const AutocompleteInput& input, bool minimal_changes);
 
-  // Performs the autocomplete matching and scoring.
-  void DoAutocomplete();
-
  private:
-  friend class HistoryQuickProviderTest;
-
-  AutocompleteMatch QuickMatchToACMatch(
-      const history::ScoredHistoryMatch& history_match,
-      MatchType match_type,
-      size_t match_number);
-
-  // Breaks a string down into individual words and return as a vector with
-  // the individual words in their original order.
-  static history::InMemoryURLIndex::String16Vector WordVectorFromString16(
-      const string16& uni_string);
-
-  // Determines the relevance for some input, given its type and which match it
-  // is.  If |match_type| is NORMAL, |match_number| is a number
-  // [0, kMaxSuggestions) indicating the relevance of the match (higher == more
-  // relevant).  For other values of |match_type|, |match_number| is ignored.
-  static int CalculateRelevance(int raw_score,
-                                AutocompleteInput::Type input_type,
-                                MatchType match_type,
-                                size_t match_number);
-
-  // Returns the index that should be used for history lookups.
-  history::InMemoryURLIndex* GetIndex();
-
-  // Only for use in unittests.  Takes ownership of |index|.
-  void SetIndexForTesting(history::InMemoryURLIndex* index);
-  AutocompleteInput autocomplete_input_;
-  bool trim_http_;
-  std::string languages_;
-
-  // Only used for testing.
-  scoped_ptr<history::InMemoryURLIndex> index_for_testing_;
+  ~HistoryQuickProvider() {}
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_QUICK_PROVIDER_H_

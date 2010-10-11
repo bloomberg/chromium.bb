@@ -6,9 +6,7 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_
 #pragma once
 
-#include <string>
-
-#include "chrome/browser/autocomplete/history_provider.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 
 class MessageLoop;
@@ -85,7 +83,7 @@ class URLRow;
 struct HistoryURLProviderParams {
   HistoryURLProviderParams(const AutocompleteInput& input,
                            bool trim_http,
-                           const std::string& languages);
+                           const std::wstring& languages);
 
   MessageLoop* message_loop;
 
@@ -117,7 +115,7 @@ struct HistoryURLProviderParams {
   ACMatches matches;
 
   // Languages we should pass to gfx::GetCleanStringFromUrl.
-  std::string languages;
+  std::wstring languages;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryURLProviderParams);
@@ -133,15 +131,15 @@ struct HistoryURLProviderParams {
 // completes before the history thread, the message to delegate back to the
 // main thread will not run and the reference will leak. Therefore, don't do
 // anything on destruction.
-class HistoryURLProvider : public HistoryProvider {
+class HistoryURLProvider : public AutocompleteProvider {
  public:
   HistoryURLProvider(ACProviderListener* listener, Profile* profile);
 
 #ifdef UNIT_TEST
   HistoryURLProvider(ACProviderListener* listener,
                      Profile* profile,
-                     const std::string& languages)
-    : HistoryProvider(listener, profile, "History"),
+                     const std::wstring& languages)
+    : AutocompleteProvider(listener, profile, "History"),
       prefixes_(GetPrefixes()),
       params_(NULL),
       languages_(languages) {}
@@ -175,6 +173,31 @@ class HistoryURLProvider : public HistoryProvider {
 
  private:
   ~HistoryURLProvider() {}
+
+
+  enum MatchType {
+    NORMAL,
+    WHAT_YOU_TYPED,
+    INLINE_AUTOCOMPLETE
+  };
+
+  // Fixes up user URL input to make it more possible to match against.  Among
+  // many other things, this takes care of the following:
+  // * Prepending file:// to file URLs
+  // * Converting drive letters in file URLs to uppercase
+  // * Converting case-insensitive parts of URLs (like the scheme and domain)
+  //   to lowercase
+  // * Convert spaces to %20s
+  // Note that we don't do this in AutocompleteInput's constructor, because if
+  // e.g. we convert a Unicode hostname to punycode, other providers will show
+  // output that surprises the user ("Search Google for xn--6ca.com").
+  static std::wstring FixupUserInput(const AutocompleteInput& input);
+
+  // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
+  // number of characters that were trimmed.
+  // NOTE: For a view-source: URL, this will trim from after "view-source:" and
+  // return 0.
+  static size_t TrimHttpPrefix(std::wstring* url);
 
   // Returns the set of prefixes to use for prefixes_.
   static history::Prefixes GetPrefixes();
@@ -297,7 +320,7 @@ class HistoryURLProvider : public HistoryProvider {
 
   // Only used by unittests; if non-empty, overrides accept-languages in the
   // profile's pref system.
-  std::string languages_;
+  std::wstring languages_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_

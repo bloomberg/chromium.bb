@@ -42,12 +42,10 @@
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
@@ -230,7 +228,7 @@ history::InMemoryURLIndex* HistoryService::InMemoryIndex() {
   // for this call.
   LoadBackendIfNecessary();
   if (in_memory_backend_.get())
-    return in_memory_backend_->InMemoryIndex();
+    return in_memory_backend_->index();
   return NULL;
 }
 
@@ -755,13 +753,7 @@ void HistoryService::LoadBackendIfNecessary() {
                          bookmark_service_));
   history_backend_.swap(backend);
 
-  // There may not be a profile when unit testing.
-  std::string languages;
-  if (profile_) {
-    PrefService* prefs = profile_->GetPrefs();
-    languages = prefs->GetString(prefs::kAcceptLanguages);
-  }
-  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init, languages, no_db_);
+  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init, no_db_);
 }
 
 void HistoryService::OnDBLoaded() {

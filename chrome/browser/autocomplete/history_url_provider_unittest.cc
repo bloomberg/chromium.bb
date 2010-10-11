@@ -153,7 +153,7 @@ void HistoryURLProviderTest::SetUpImpl(bool no_db) {
   profile_->CreateHistoryService(true, no_db);
   history_service_ = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
-  autocomplete_ = new HistoryURLProvider(this, profile_.get(), "en-US,en,ko");
+  autocomplete_ = new HistoryURLProvider(this, profile_.get(), L"en-US,en,ko");
 
   FillData();
 }

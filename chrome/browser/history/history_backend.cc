@@ -239,9 +239,9 @@ HistoryBackend::~HistoryBackend() {
   }
 }
 
-void HistoryBackend::Init(const std::string& languages, bool force_fail) {
+void HistoryBackend::Init(bool force_fail) {
   if (!force_fail)
-    InitImpl(languages);
+    InitImpl();
   delegate_->DBLoaded();
 }
 
@@ -509,7 +509,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
   ScheduleCommit();
 }
 
-void HistoryBackend::InitImpl(const std::string& languages) {
+void HistoryBackend::InitImpl() {
   DCHECK(!db_.get()) << "Initializing HistoryBackend twice";
   // In the rare case where the db fails to initialize a dialog may get shown
   // the blocks the caller, yet allows other messages through. For this reason
@@ -548,7 +548,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // Fill the in-memory database and send it back to the history service on the
   // main thread.
   InMemoryHistoryBackend* mem_backend = new InMemoryHistoryBackend;
-  if (mem_backend->Init(history_name, db_.get(), languages))
+  if (mem_backend->Init(history_name, db_.get()))
     delegate_->SetInMemoryBackend(mem_backend);  // Takes ownership of pointer.
   else
     delete mem_backend;  // Error case, run without the in-memory DB.
