@@ -338,8 +338,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   extension_info_map_ = new ExtensionInfoMap();
 
   // Log the profile size after a reasonable startup delay.
-  ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE,
-                                new ProfileSizeTask(path_), 112000);
+  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
+                                 new ProfileSizeTask(path_), 112000);
 }
 
 void ProfileImpl::InitExtensions() {
@@ -583,8 +583,8 @@ Profile* ProfileImpl::GetOriginalProfile() {
 ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
   if (!appcache_service_) {
     appcache_service_ = new ChromeAppCacheService;
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(appcache_service_.get(),
                           &ChromeAppCacheService::InitializeOnIOThread,
                           GetPath(), IsOffTheRecord(),
@@ -765,16 +765,16 @@ void ProfileImpl::RegisterExtensionWithRequestContexts(Extension* extension) {
   // AddRef to ensure the data lives until the other thread gets it. Balanced in
   // OnNewExtensions.
   extension->static_data()->AddRef();
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(extension_info_map_.get(),
                         &ExtensionInfoMap::AddExtension,
                         extension->static_data()));
 }
 
 void ProfileImpl::UnregisterExtensionWithRequestContexts(Extension* extension) {
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(extension_info_map_.get(),
                         &ExtensionInfoMap::RemoveExtension,
                         extension->id()));
@@ -1168,7 +1168,7 @@ WebKitContext* ProfileImpl::GetWebKitContext() {
 }
 
 DesktopNotificationService* ProfileImpl::GetDesktopNotificationService() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!desktop_notification_service_.get()) {
      desktop_notification_service_.reset(new DesktopNotificationService(
          this, g_browser_process->notification_ui_manager()));
@@ -1259,8 +1259,8 @@ void ProfileImpl::InitCloudPrintProxyService() {
 ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {
   if (!blob_storage_context_) {
     blob_storage_context_ = new ChromeBlobStorageContext();
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(blob_storage_context_.get(),
                           &ChromeBlobStorageContext::InitializeOnIOThread));
   }

@@ -35,14 +35,14 @@ void PowerSaveBlocker::Disable() {
 
 
 void PowerSaveBlocker::PostAdjustBlockCount(int delta) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&PowerSaveBlocker::AdjustBlockCount, delta));
 }
 
 // Called only from UI thread.
 void PowerSaveBlocker::AdjustBlockCount(int delta) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bool was_blocking = (blocker_count_ != 0);
 

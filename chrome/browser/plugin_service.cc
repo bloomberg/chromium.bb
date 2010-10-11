@@ -43,7 +43,7 @@
 
 #if defined(OS_MACOSX)
 static void NotifyPluginsOfActivation() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
        !iter.Done(); ++iter) {
@@ -57,14 +57,14 @@ static void NotifyPluginsOfActivation() {
 bool PluginService::enable_chrome_plugins_ = true;
 
 void LoadPluginsFromDiskHook() {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI) &&
-         !ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI) &&
+         !BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
          "Can't load plugins on the IO/UI threads since it's very slow.";
 }
 
 // static
 void PluginService::InitGlobalInstance(Profile* profile) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   NPAPI::PluginList::Singleton()->SetPluginLoadHook(LoadPluginsFromDiskHook);
 
@@ -196,7 +196,7 @@ const std::string& PluginService::GetUILocale() {
 
 PluginProcessHost* PluginService::FindPluginProcess(
     const FilePath& plugin_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (plugin_path.value().empty()) {
     NOTREACHED() << "should only be called if we have a plugin to load";
@@ -215,7 +215,7 @@ PluginProcessHost* PluginService::FindPluginProcess(
 
 PluginProcessHost* PluginService::FindOrStartPluginProcess(
     const FilePath& plugin_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   PluginProcessHost *plugin_host = FindPluginProcess(plugin_path);
   if (plugin_host)
@@ -245,7 +245,7 @@ void PluginService::OpenChannelToPlugin(
     const std::string& mime_type,
     const std::string& locale,
     IPC::Message* reply_msg) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool allow_wildcard = true;
   WebPluginInfo info;
   FilePath plugin_path;
@@ -315,9 +315,9 @@ void PluginService::Observe(NotificationType type,
       bool plugins_changed = false;
       for (size_t i = 0; i < extension->plugins().size(); ++i) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];
-        ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
-                               NewRunnableFunction(&ForceShutdownPlugin,
-                                                   plugin.path));
+        BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                                NewRunnableFunction(&ForceShutdownPlugin,
+                                                    plugin.path));
         NPAPI::PluginList::Singleton()->RefreshPlugins();
         NPAPI::PluginList::Singleton()->RemoveExtraPluginPath(plugin.path);
         plugins_changed = true;
@@ -331,8 +331,8 @@ void PluginService::Observe(NotificationType type,
 
 #if defined(OS_MACOSX)
     case NotificationType::APP_ACTIVATED: {
-      ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
-                             NewRunnableFunction(&NotifyPluginsOfActivation));
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                              NewRunnableFunction(&NotifyPluginsOfActivation));
       break;
     }
 #endif

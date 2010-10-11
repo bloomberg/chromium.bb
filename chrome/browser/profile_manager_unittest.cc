@@ -21,7 +21,7 @@
 
 class ProfileManagerTest : public testing::Test {
  protected:
-  ProfileManagerTest() : ui_thread_(ChromeThread::UI, &message_loop_) {
+  ProfileManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -40,7 +40,7 @@ class ProfileManagerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 
   // the path to temporary directory used to contain the test operations
   FilePath test_dir_;

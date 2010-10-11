@@ -29,7 +29,7 @@ static const std::string kGmailComposeUrl =
 
 // Opens file browser on UI thread.
 void OpenFileBrowserOnUIThread(const FilePath& dir) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile;
   profile = BrowserList::GetLastActive()->profile();
@@ -48,11 +48,11 @@ void ShowItemInFolder(const FilePath& full_path) {
   if (!file_util::DirectoryExists(dir))
     return;
 
-  if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     OpenFileBrowserOnUIThread(dir);
   } else {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(&OpenFileBrowserOnUIThread, dir));
   }
 }
@@ -71,9 +71,9 @@ void OpenItem(const FilePath& full_path) {
     std::string path;
     path = "file://";
     path.append(full_path.value());
-    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-      bool result = ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+      bool result = BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableFunction(&OpenItem, full_path));
       DCHECK(result);
       return;
@@ -97,8 +97,8 @@ void OpenItem(const FilePath& full_path) {
   }
 
   // Unknwon file type. Show an error message to user.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(
           &SimpleErrorBox,
           static_cast<gfx::NativeWindow>(NULL),
@@ -117,8 +117,8 @@ void OpenExternal(const GURL& url) {
   if (url.SchemeIs("mailto")) {
     std::string string_url = kGmailComposeUrl;
     string_url.append(url.spec());
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE, NewRunnableFunction(OpenURL, string_url));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, NewRunnableFunction(OpenURL, string_url));
   }
 }
 

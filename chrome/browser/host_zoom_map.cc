@@ -98,7 +98,7 @@ double HostZoomMap::GetZoomLevel(const GURL& url) const {
 }
 
 void HostZoomMap::SetZoomLevel(const GURL& url, double level) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!profile_)
     return;
 
@@ -151,7 +151,7 @@ double HostZoomMap::GetTemporaryZoomLevel(int render_process_id,
 void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
                                         int render_view_id,
                                         double level) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!profile_)
     return;
 
@@ -185,7 +185,7 @@ void HostZoomMap::SetTemporaryZoomLevel(int render_process_id,
 }
 
 void HostZoomMap::ResetToDefaults() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!profile_)
     return;
 
@@ -213,7 +213,7 @@ void HostZoomMap::Observe(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   switch (type.value) {
     case NotificationType::PROFILE_DESTROYED:

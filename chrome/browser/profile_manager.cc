@@ -199,8 +199,8 @@ void ProfileManager::OnSuspend() {
   DCHECK(CalledOnValidThread());
 
   for (const_iterator i(begin()); i != end(); ++i) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&ProfileManager::SuspendProfile, *i));
   }
 }
@@ -208,8 +208,8 @@ void ProfileManager::OnSuspend() {
 void ProfileManager::OnResume() {
   DCHECK(CalledOnValidThread());
   for (const_iterator i(begin()); i != end(); ++i) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableFunction(&ProfileManager::ResumeProfile, *i));
   }
 }
@@ -238,7 +238,7 @@ void ProfileManager::Observe(
 
 void ProfileManager::SuspendProfile(Profile* profile) {
   DCHECK(profile);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   for (URLRequestJobTracker::JobIterator i = g_url_request_job_tracker.begin();
        i != g_url_request_job_tracker.end(); ++i)
@@ -250,7 +250,7 @@ void ProfileManager::SuspendProfile(Profile* profile) {
 
 void ProfileManager::ResumeProfile(Profile* profile) {
   DCHECK(profile);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   profile->GetRequestContext()->GetURLRequestContext()->
       http_transaction_factory()->Suspend(false);
 }

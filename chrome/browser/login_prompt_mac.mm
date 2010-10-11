@@ -46,7 +46,7 @@ class LoginHandlerMac : public LoginHandler,
   // LoginModelObserver implementation.
   virtual void OnAutofillDataAvailable(const std::wstring& username,
                                        const std::wstring& password) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     [sheet_controller_ autofillLogin:base::SysWideToNSString(username)
                             password:base::SysWideToNSString(password)];
@@ -55,7 +55,7 @@ class LoginHandlerMac : public LoginHandler,
   // LoginHandler:
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
                                            std::wstring explanation) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // Load nib here instead of in constructor.
     sheet_controller_ = [[[LoginHandlerSheet alloc]
@@ -79,7 +79,7 @@ class LoginHandlerMac : public LoginHandler,
 
   // Overridden from ConstrainedWindowMacDelegate:
   virtual void DeleteDelegate() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // The constrained window is going to delete itself; clear our pointer.
     SetDialog(NULL);
@@ -95,13 +95,13 @@ class LoginHandlerMac : public LoginHandler,
 
   void OnLoginPressed(const std::wstring& username,
                       const std::wstring& password) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     SetAuth(username, password);
   }
 
   void OnCancelPressed() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     CancelAuth();
   }

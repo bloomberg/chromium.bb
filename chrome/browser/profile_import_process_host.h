@@ -97,7 +97,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
   // ProfileImportProcessHost spawns tasks on this thread for the client.
   ProfileImportProcessHost(ResourceDispatcherHost* resource_dispatcher,
                            ImportProcessClient* import_process_client,
-                           ChromeThread::ID thread_id);
+                           BrowserThread::ID thread_id);
   virtual ~ProfileImportProcessHost();
 
   // |profile_info|, |items|, and |import_to_bookmark_bar| are all needed by
@@ -136,7 +136,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
   scoped_refptr<ImportProcessClient> import_process_client_;
 
   // The thread where the import_process_client_ lives.
-  ChromeThread::ID thread_id_;
+  BrowserThread::ID thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImportProcessHost);
 };

@@ -132,8 +132,8 @@ void MachBroker::PrepareForFork() {
   if (!listener_thread_started_) {
     listener_thread_started_ = true;
 
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE, new RegisterNotificationTask(this));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, new RegisterNotificationTask(this));
 
     // Intentional leak.  This thread is never joined or reaped.
     PlatformThread::CreateNonJoinable(0, new MachListenerThreadDelegate(this));

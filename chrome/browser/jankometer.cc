@@ -346,8 +346,8 @@ void InstallJankometer(const CommandLine& parsed_command_line) {
           "IO",
           TimeDelta::FromMilliseconds(kMaxIOMessageDelayMs),
           io_watchdog_enabled));
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(io_observer->get(),
                         &IOJankObserver::AttachToCurrentThread));
 }

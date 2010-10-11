@@ -148,9 +148,9 @@ void GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   } else {
     // Need to transfer this message to the UI thread and the
     // GpuProcessHostUIShim for dispatching via its message router.
-    ChromeThread::PostTask(ChromeThread::UI,
-                           FROM_HERE,
-                           new RouteOnUIThreadTask(message));
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            new RouteOnUIThreadTask(message));
   }
 }
 
@@ -232,8 +232,8 @@ void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
   GpuHostMsg_GetViewXID::WriteReplyParams(reply_msg, xid);
 
   // Have to reply from IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&SendDelayedReply, reply_msg));
 }
 
@@ -242,8 +242,8 @@ void GetViewXIDDispatcher(gfx::NativeViewId id, IPC::Message* reply_msg) {
 void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id,
                                   IPC::Message *reply_msg) {
   // Have to request a permanent overlay from UI thread.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableFunction(&GetViewXIDDispatcher, id, reply_msg));
 }
 
@@ -282,8 +282,8 @@ class SetIOSurfaceDispatcher : public Task {
 
 void GpuProcessHost::OnAcceleratedSurfaceSetIOSurface(
     const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       new SetIOSurfaceDispatcher(params));
 }
 
@@ -323,8 +323,8 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     int32 renderer_id,
     int32 render_view_id,
     gfx::PluginWindowHandle window) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       new BuffersSwappedDispatcher(renderer_id, render_view_id, window));
 }
 #endif

@@ -770,8 +770,8 @@ void JumpList::OnFavIconDataAvailable(
   // Finished Loading all fav icons needed by the application JumpList.
   // We create a JumpListUpdateTask that creates icon files, and we post it to
   // the file thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       new JumpListUpdateTask(app_id_.c_str(), icon_dir_, most_visited_pages_,
                              recently_closed_pages_));
 

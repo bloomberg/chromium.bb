@@ -38,18 +38,18 @@
 //
 
 void MemoryDetails::StartFetch() {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // In order to process this request, we need to use the plugin information.
   // However, plugin process information is only available from the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnIOThread));
 }
 
 void MemoryDetails::CollectChildInfoOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   std::vector<ProcessMemoryInformation> child_info;
 
@@ -66,13 +66,13 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
   }
 
   // Now go do expensive memory lookups from the file thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectProcessData, child_info));
 }
 
 void MemoryDetails::CollectChildInfoOnUIThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
 #if defined(OS_LINUX)
   const pid_t zygote_pid = Singleton<ZygoteHost>()->pid();

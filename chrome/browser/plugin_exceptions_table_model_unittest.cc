@@ -53,7 +53,7 @@ class MockTableModelObserver : public TableModelObserver {
 class PluginExceptionsTableModelTest : public testing::Test {
  public:
   PluginExceptionsTableModelTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         command_line_(CommandLine::ForCurrentProcess(),
                       *CommandLine::ForCurrentProcess()) {}
 
@@ -137,7 +137,7 @@ class PluginExceptionsTableModelTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MockPluginExceptionsTableModel> table_model_;

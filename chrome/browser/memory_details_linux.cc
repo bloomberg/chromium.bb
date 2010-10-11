@@ -200,7 +200,7 @@ static void GetAllChildren(const std::vector<Process>& processes,
 
 void MemoryDetails::CollectProcessData(
     std::vector<ProcessMemoryInformation> child_info) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::vector<Process> processes;
   GetProcesses(&processes);
@@ -266,7 +266,7 @@ void MemoryDetails::CollectProcessData(
   }
 
   // Finally return to the browser thread.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnUIThread));
 }

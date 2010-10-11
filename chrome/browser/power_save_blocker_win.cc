@@ -10,7 +10,7 @@
 
 // Runs on UI thread only.
 void PowerSaveBlocker::ApplyBlock(bool blocking) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DWORD flags = ES_CONTINUOUS;
 

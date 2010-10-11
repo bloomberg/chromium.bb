@@ -28,7 +28,7 @@ class HostZoomMapTest : public testing::Test {
  public:
   static const double kZoomLevel;
   HostZoomMapTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         prefs_(profile_.GetPrefs()),
         per_host_zoom_levels_pref_(prefs::kPerHostZoomLevels),
         url_("http://example.com/test"),
@@ -45,7 +45,7 @@ class HostZoomMapTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
   TestingProfile profile_;
   PrefService* prefs_;
   std::string per_host_zoom_levels_pref_;  // For the observe matcher.

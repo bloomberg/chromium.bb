@@ -129,7 +129,7 @@ void MemoryPurger::PurgeBrowser() {
     profile->GetWebKitContext()->PurgeMemory();
   }
 
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(purge_memory_io_helper.get(),
                         &PurgeMemoryIOHelper::PurgeMemoryOnIOThread));
 

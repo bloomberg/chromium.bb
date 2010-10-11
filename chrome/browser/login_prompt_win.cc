@@ -59,7 +59,7 @@ class LoginHandlerWin : public LoginHandler,
   }
 
   virtual void WindowClosing() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     TabContents* tab = GetTabContentsForLogin();
     if (tab)
@@ -72,7 +72,7 @@ class LoginHandlerWin : public LoginHandler,
   }
 
   virtual void DeleteDelegate() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     // The constrained window is going to delete itself; clear our pointer.
     SetDialog(NULL);
@@ -82,14 +82,14 @@ class LoginHandlerWin : public LoginHandler,
   }
 
   virtual bool Cancel() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     CancelAuth();
     return true;
   }
 
   virtual bool Accept() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     SetAuth(login_view_->GetUsername(), login_view_->GetPassword());
     return true;
@@ -103,7 +103,7 @@ class LoginHandlerWin : public LoginHandler,
 
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
                                            std::wstring explanation) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
     TabContents* tab_contents = GetTabContentsForLogin();
     bool should_focus_view = !tab_contents->delegate() ||

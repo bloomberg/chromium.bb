@@ -123,22 +123,22 @@ PluginProcessHost::~PluginProcessHost() {
   for (window_index = plugin_fullscreen_windows_set_.begin();
        window_index != plugin_fullscreen_windows_set_.end();
        window_index++) {
-    if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       mac_util::ReleaseFullScreen(mac_util::kFullScreenModeHideAll);
     } else {
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           NewRunnableFunction(mac_util::ReleaseFullScreen,
                               mac_util::kFullScreenModeHideAll));
     }
   }
   // If the plugin hid the cursor, reset that.
   if (!plugin_cursor_visible_) {
-    if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       mac_util::SetCursorVisibility(true);
     } else {
-      ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableFunction(mac_util::SetCursorVisibility,
                             true));
     }
@@ -254,7 +254,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 }
 
 void PluginProcessHost::ForceShutdown() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   Send(new PluginProcessMsg_NotifyRenderersOfPendingShutdown());
   BrowserChildProcessHost::ForceShutdown();
 }
@@ -464,7 +464,7 @@ void PluginProcessHost::OnGetPluginFinderUrl(std::string* plugin_finder_url) {
 
 void PluginProcessHost::OnPluginMessage(
     const std::vector<uint8>& data) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   ChromePluginLib *chrome_plugin = ChromePluginLib::Find(info_.path);
   if (chrome_plugin) {

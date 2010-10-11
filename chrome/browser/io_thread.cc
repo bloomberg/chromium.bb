@@ -113,7 +113,7 @@ class LoggingNetworkChangeObserver
 DISABLE_RUNNABLE_METHOD_REFCOUNT(IOThread);
 
 IOThread::IOThread()
-    : BrowserProcessSubThread(ChromeThread::IO),
+    : BrowserProcessSubThread(BrowserThread::IO),
       globals_(NULL),
       speculative_interceptor_(NULL),
       predictor_(NULL) {}
@@ -126,7 +126,7 @@ IOThread::~IOThread() {
 }
 
 IOThread::Globals* IOThread::globals() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return globals_;
 }
 
@@ -137,7 +137,7 @@ void IOThread::InitNetworkPredictor(
     const chrome_common_net::UrlList& startup_urls,
     ListValue* referral_list,
     bool preconnect_enabled) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(
@@ -148,7 +148,7 @@ void IOThread::InitNetworkPredictor(
 }
 
 void IOThread::ChangedToOnTheRecord() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(
@@ -276,7 +276,7 @@ void IOThread::InitNetworkPredictorOnIOThread(
     const chrome_common_net::UrlList& startup_urls,
     ListValue* referral_list,
     bool preconnect_enabled) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   CHECK(!predictor_);
 
   chrome_browser_net::EnablePredictor(prefetching_enabled);
@@ -296,7 +296,7 @@ void IOThread::InitNetworkPredictorOnIOThread(
 }
 
 void IOThread::ChangedToOnTheRecordOnIOThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (predictor_) {
     // Destroy all evidence of our OTR session.

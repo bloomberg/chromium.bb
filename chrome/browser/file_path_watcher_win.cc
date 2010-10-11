@@ -78,8 +78,8 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
 
 void FilePathWatcherImpl::Cancel() {
   // Switch to the file thread if necessary so we can stop |watcher_|.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &FilePathWatcherImpl::Cancel));
     return;
   }

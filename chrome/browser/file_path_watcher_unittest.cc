@@ -105,13 +105,13 @@ class FilePathWatcherTest : public testing::Test {
   // Implementation of FilePathWatcher on Mac requires UI loop.
   FilePathWatcherTest()
       : loop_(MessageLoop::TYPE_UI),
-        ui_thread_(ChromeThread::UI, &loop_) {
+        ui_thread_(BrowserThread::UI, &loop_) {
   }
 
  protected:
   virtual void SetUp() {
     // Create a separate file thread in order to test proper thread usage.
-    file_thread_.reset(new ChromeThread(ChromeThread::FILE));
+    file_thread_.reset(new BrowserThread(BrowserThread::FILE));
     file_thread_->Start();
     temp_dir_.reset(new ScopedTempDir);
     ASSERT_TRUE(temp_dir_->CreateUniqueTempDir());
@@ -139,7 +139,7 @@ class FilePathWatcherTest : public testing::Test {
                   FilePathWatcher::Delegate* delegate) {
     base::WaitableEvent completion(false, false);
     bool result;
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
          new SetupWatchTask(target, watcher, delegate, &result, &completion));
     completion.Wait();
     ASSERT_TRUE(result);
@@ -168,8 +168,8 @@ class FilePathWatcherTest : public testing::Test {
   }
 
   MessageLoop loop_;
-  ChromeThread ui_thread_;
-  scoped_ptr<ChromeThread> file_thread_;
+  BrowserThread ui_thread_;
+  scoped_ptr<BrowserThread> file_thread_;
   scoped_ptr<ScopedTempDir> temp_dir_;
 };
 
@@ -281,7 +281,7 @@ TEST_F(FilePathWatcherTest, DestroyWithPendingNotification) {
   FilePathWatcher* watcher = new FilePathWatcher;
   SetupWatch(test_file(), watcher, delegate.get());
   ASSERT_TRUE(WriteFile(test_file(), "content"));
-  ChromeThread::DeleteSoon(ChromeThread::FILE, FROM_HERE, watcher);
+  BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, watcher);
   // Success if there is no crash or DCHECK when running the callback.
   WaitForEvents(delegate.get());
 }

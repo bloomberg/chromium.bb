@@ -83,8 +83,8 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
 
   AddRef();  // matched by LoginHandler::ReleaseSoon().
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &LoginHandler::AddObservers));
 
   if (!ResourceDispatcherHost::RenderViewForRequest(
@@ -106,7 +106,7 @@ void LoginHandler::SetPasswordManager(PasswordManager* password_manager) {
 }
 
 TabContents* LoginHandler::GetTabContentsForLogin() const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   return tab_util::GetTabContentsByID(render_process_host_id_,
                                       tab_contents_id_);
@@ -124,15 +124,15 @@ void LoginHandler::SetAuth(const std::wstring& username,
     password_manager_->ProvisionallySavePassword(password_form_);
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &LoginHandler::CloseContentsDeferred));
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &LoginHandler::NotifyAuthSupplied, username, password));
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &LoginHandler::SetAuthDeferred, username, password));
 }
@@ -141,19 +141,19 @@ void LoginHandler::CancelAuth() {
   if (WasAuthHandled(true))
     return;
 
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &LoginHandler::CloseContentsDeferred));
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &LoginHandler::NotifyAuthCancelled));
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &LoginHandler::CancelAuthDeferred));
 }
 
 void LoginHandler::OnRequestCancelled() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO)) <<
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
       "Why is OnRequestCancelled called from the UI thread?";
 
   // Reference is no longer valid.
@@ -164,7 +164,7 @@ void LoginHandler::OnRequestCancelled() {
 }
 
 void LoginHandler::AddObservers() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   registrar_.Add(this, NotificationType::AUTH_SUPPLIED,
                  NotificationService::AllSources());
@@ -173,7 +173,7 @@ void LoginHandler::AddObservers() {
 }
 
 void LoginHandler::RemoveObservers() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   registrar_.Remove(this, NotificationType::AUTH_SUPPLIED,
                     NotificationService::AllSources());
@@ -186,7 +186,7 @@ void LoginHandler::RemoveObservers() {
 void LoginHandler::Observe(NotificationType type,
                            const NotificationSource& source,
                            const NotificationDetails& details) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(type == NotificationType::AUTH_SUPPLIED ||
          type == NotificationType::AUTH_CANCELLED);
 
@@ -233,7 +233,7 @@ void LoginHandler::SetDialog(ConstrainedWindow* dialog) {
 }
 
 void LoginHandler::NotifyAuthNeeded() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (WasAuthHandled(false))
     return;
 
@@ -251,7 +251,7 @@ void LoginHandler::NotifyAuthNeeded() {
 }
 
 void LoginHandler::NotifyAuthCancelled() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(WasAuthHandled(false));
 
   TabContents* requesting_contents = GetTabContentsForLogin();
@@ -269,7 +269,7 @@ void LoginHandler::NotifyAuthCancelled() {
 
 void LoginHandler::NotifyAuthSupplied(const std::wstring& username,
                                       const std::wstring& password) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(WasAuthHandled(false));
 
   TabContents* requesting_contents = GetTabContentsForLogin();
@@ -287,20 +287,20 @@ void LoginHandler::NotifyAuthSupplied(const std::wstring& username,
 
 void LoginHandler::ReleaseSoon() {
   if (!WasAuthHandled(true)) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &LoginHandler::CancelAuthDeferred));
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &LoginHandler::NotifyAuthCancelled));
   }
 
-  ChromeThread::PostTask(
-    ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+    BrowserThread::UI, FROM_HERE,
     NewRunnableMethod(this, &LoginHandler::RemoveObservers));
 
   // Delete this object once all InvokeLaters have been called.
-  ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, this);
+  BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, this);
 }
 
 // Returns whether authentication had been handled (SetAuth or CancelAuth).
@@ -316,7 +316,7 @@ bool LoginHandler::WasAuthHandled(bool set_handled) {
 // Calls SetAuth from the IO loop.
 void LoginHandler::SetAuthDeferred(const std::wstring& username,
                                    const std::wstring& password) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (request_) {
     request_->SetAuth(WideToUTF16Hack(username), WideToUTF16Hack(password));
@@ -326,7 +326,7 @@ void LoginHandler::SetAuthDeferred(const std::wstring& username,
 
 // Calls CancelAuth from the IO loop.
 void LoginHandler::CancelAuthDeferred() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (request_) {
     request_->CancelAuth();
@@ -338,7 +338,7 @@ void LoginHandler::CancelAuthDeferred() {
 
 // Closes the view_contents from the UI loop.
 void LoginHandler::CloseContentsDeferred() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // The hosting ConstrainedWindow may have been freed.
   if (dialog_)
@@ -440,8 +440,8 @@ class LoginDialogTask : public Task {
 LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
                                 URLRequest* request) {
   LoginHandler* handler = LoginHandler::Create(auth_info, request);
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE, new LoginDialogTask(
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, new LoginDialogTask(
           request->url(), auth_info, handler));
   return handler;
 }

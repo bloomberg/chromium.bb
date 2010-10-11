@@ -31,7 +31,7 @@ class Profile;
 class HostContentSettingsMap
     : public NotificationObserver,
       public base::RefCountedThreadSafe<HostContentSettingsMap,
-                                        ChromeThread::DeleteOnUIThread> {
+                                        BrowserThread::DeleteOnUIThread> {
  public:
   // A hostname pattern. See |IsValid| for a description of possible patterns.
   class Pattern {

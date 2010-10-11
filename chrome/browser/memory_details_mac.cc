@@ -86,7 +86,7 @@ void MemoryDetails::CollectProcessData(
     std::vector<ProcessMemoryInformation> child_info) {
   // This must be run on the file thread to avoid jank (|ProcessInfoSnapshot|
   // runs /bin/ps, which isn't instantaneous).
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Clear old data.
   for (size_t index = 0; index < MAX_BROWSERS; index++)
@@ -183,8 +183,8 @@ void MemoryDetails::CollectProcessData(
   }
 
   // Finally return to the browser thread.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnUIThread));
 }
 

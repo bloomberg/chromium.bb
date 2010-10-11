@@ -64,11 +64,12 @@ class StubSettingsObserver : public NotificationObserver {
 
 class HostContentSettingsMapTest : public testing::Test {
  public:
-  HostContentSettingsMapTest() : ui_thread_(ChromeThread::UI, &message_loop_) {}
+  HostContentSettingsMapTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
+  }
 
  protected:
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 };
 
 TEST_F(HostContentSettingsMapTest, DefaultValues) {

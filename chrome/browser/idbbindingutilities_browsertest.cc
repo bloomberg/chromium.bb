@@ -69,34 +69,34 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
   }
 
   void CreateUtilityProcess(ResourceDispatcherHost* resource_dispatcher_host) {
-    if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(this, &IDBKeyPathHelper::CreateUtilityProcess,
                             resource_dispatcher_host));
       return;
     }
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_process_host_ =
         new UtilityProcessHost(resource_dispatcher_host, this,
-                               ChromeThread::IO);
+                               BrowserThread::IO);
     utility_process_host_->StartBatchMode();
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                           new MessageLoop::QuitTask());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            new MessageLoop::QuitTask());
   }
 
   void DestroyUtilityProcess() {
-    if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(this, &IDBKeyPathHelper::DestroyUtilityProcess));
       return;
     }
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     utility_process_host_->EndBatchMode();
     utility_process_host_ = NULL;
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                           new MessageLoop::QuitTask());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            new MessageLoop::QuitTask());
   }
 
   void SetExpected(int expected_id,
@@ -110,14 +110,14 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
   void CheckValuesForKeyPath(
       int id, const std::vector<SerializedScriptValue>& serialized_values,
       const string16& key_path) {
-    if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+    if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(this, &IDBKeyPathHelper::CheckValuesForKeyPath,
                             id, serialized_values, key_path));
       return;
     }
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     bool ret =
         utility_process_host_->StartIDBKeysFromValuesAndKeyPath(
             id, serialized_values, key_path);
@@ -140,14 +140,14 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
         ASSERT_EQ(expected_values_[pos].number(), i->number());
       }
     }
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                           new MessageLoop::QuitTask());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            new MessageLoop::QuitTask());
   }
 
   virtual void OnIDBKeysFromValuesAndKeyPathFailed(int id) {
     EXPECT_TRUE(value_for_key_path_failed_);
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                           new MessageLoop::QuitTask());
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            new MessageLoop::QuitTask());
   }
 
  private:

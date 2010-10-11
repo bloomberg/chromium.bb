@@ -140,8 +140,8 @@ class OffTheRecordProfileImpl : public Profile,
     CleanupRequestContext(extensions_request_context_);
 
     // Clean up all DB files/directories
-    ChromeThread::PostTask(
-        ChromeThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             db_tracker_.get(),
             &webkit_database::DatabaseTracker::DeleteIncognitoDBDirectory));
@@ -177,8 +177,8 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ChromeAppCacheService* GetAppCacheService() {
     if (!appcache_service_) {
       appcache_service_ = new ChromeAppCacheService;
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(appcache_service_.get(),
                             &ChromeAppCacheService::InitializeOnIOThread,
                             GetPath(), IsOffTheRecord(),
@@ -551,8 +551,8 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ChromeBlobStorageContext* GetBlobStorageContext() {
     if (!blob_storage_context_) {
       blob_storage_context_ = new ChromeBlobStorageContext();
-      ChromeThread::PostTask(
-          ChromeThread::IO, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               blob_storage_context_.get(),
               &ChromeBlobStorageContext::InitializeOnIOThread));
