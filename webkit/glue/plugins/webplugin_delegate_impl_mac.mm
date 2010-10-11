@@ -966,8 +966,13 @@ void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
   if (!windowed_handle() || !layer_)
     return;
 
+  [CATransaction begin];
+  [CATransaction setValue:[NSNumber numberWithInt:0]
+                   forKey:kCATransactionAnimationDuration];
   [layer_ setFrame:CGRectMake(0, 0,
                               window_rect_.width(), window_rect_.height())];
+  [CATransaction commit];
+
   [renderer_ setBounds:[layer_ bounds]];
   surface_->SetSize(window_rect_.size());
 }
