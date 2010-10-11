@@ -1448,6 +1448,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
   if (extensions_enabled() ||
       extension->is_theme() ||
       extension->location() == Extension::LOAD ||
+      extension->location() == Extension::COMPONENT ||
       Extension::IsExternalLocation(extension->location())) {
     Extension* old = GetExtensionByIdInternal(extension->id(), true, true);
     if (old) {

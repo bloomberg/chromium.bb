@@ -2641,6 +2641,9 @@ TEST_F(ExtensionsServiceTest, StorageQuota) {
 TEST_F(ExtensionsServiceTest, ComponentExtensions) {
   InitializeEmptyExtensionsService();
 
+  // Component extensions should work even when extensions are disabled.
+  set_extensions_enabled(false);
+
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
   path = path.AppendASCII("extensions")
