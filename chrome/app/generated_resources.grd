@@ -1179,6 +1179,17 @@ each locale. -->
         <ph name="ENGINE_NAME">$1<ex>Google</ex></ph> (Default)
       </message>
 
+      <message name="IDS_DEFAULT_SEARCH_PROMPT_TITLE" desc="The title of the default search engine dialog. This dialog asks if the user would like a new default search engine.">
+        Change Default Search Engine
+      </message>
+
+      <message name="IDS_DEFAULT_SEARCH_PROMPT_OK" desc="The button which accepts a new default search engine. Displayed in the default search engine message box.">
+        Use <ph name="HOST">$1<ex>www.bing.com</ex></ph> to search
+      </message>
+      <message name="IDS_DEFAULT_SEARCH_PROMPT_CANCEL" desc="The button which rejects a new default search engine. Displayed in the default search engine message box.">
+        Do not change my search engine
+      </message>
+
       <message name="IDS_TIME_SECS_DEFAULT"
                desc="This is necessary for every language. This is the default for all the numbers NOT covered by special cases (singular, dual/two, few, many) some languages need. For CJK, Vietnamese, Turkish and Kannada, this is the only string necessary. For languages with singular-plural distinction, this is the generic plural. For Lithuanian, NUMBER_DEFAULT is 11 .. 19.">
         <ph name="NUMBER_DEFAULT"><ex>37</ex>#</ph> secs

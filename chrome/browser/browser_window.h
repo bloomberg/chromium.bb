@@ -21,6 +21,7 @@ class Profile;
 class StatusBubble;
 class TabContents;
 class TemplateURL;
+class TemplateURLModel;
 #if !defined(OS_MACOSX)
 class ToolbarView;
 #endif
@@ -179,8 +180,17 @@ class BrowserWindow {
   // provided here since the functionality is Windows-specific.
   virtual void DisableInactiveFrame() {}
 
+  // Shows a confirmation dialog box for setting the default search engine
+  // described by |template_url|. Takes ownership of |template_url|.
+  virtual void ConfirmSetDefaultSearchProvider(
+      TabContents* tab_contents,
+      TemplateURL* template_url,
+      TemplateURLModel* template_url_model) {
+    // TODO(levin): Implement this for non-Windows platforms and make it pure.
+  }
+
   // Shows a confirmation dialog box for adding a search engine described by
-  // |template_url|.
+  // |template_url|. Takes ownership of |template_url|.
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) = 0;
 

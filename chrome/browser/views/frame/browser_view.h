@@ -280,8 +280,12 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool IsToolbarVisible() const;
   virtual gfx::Rect GetRootWindowResizerRect() const;
   virtual void DisableInactiveFrame();
+  virtual void ConfirmSetDefaultSearchProvider(
+      TabContents* tab_contents,
+      TemplateURL* template_url,
+      TemplateURLModel* template_url_model);
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
-                                      Profile* profile);
+                                        Profile* profile);
   virtual void ToggleBookmarkBar();
   virtual views::Window* ShowAboutChromeDialog();
   virtual void ShowUpdateChromeDialog();

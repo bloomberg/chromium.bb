@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
+#include "chrome/browser/search_engines/template_url.h"
 #include "gfx/rect.h"
 
 void TabContentsDelegate::DetachContents(TabContents* source) {
@@ -111,9 +112,17 @@ bool TabContentsDelegate::ExecuteContextMenuCommand(int command) {
   return false;
 }
 
+void TabContentsDelegate::ConfirmSetDefaultSearchProvider(
+    TabContents* tab_contents,
+    TemplateURL* template_url,
+    TemplateURLModel* template_url_model) {
+  delete template_url;
+}
+
 void TabContentsDelegate::ConfirmAddSearchProvider(
     const TemplateURL* template_url,
     Profile* profile) {
+  delete template_url;
 }
 
 void TabContentsDelegate::ShowPageInfo(Profile* profile,

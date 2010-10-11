@@ -3033,6 +3033,13 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
   }
 }
 
+void Browser::ConfirmSetDefaultSearchProvider(
+    TabContents* tab_contents,
+    TemplateURL* template_url,
+    TemplateURLModel* template_url_model) {
+  window()->ConfirmSetDefaultSearchProvider(tab_contents, template_url,
+                                            template_url_model);
+}
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,
                                        Profile* profile) {
   window()->ConfirmAddSearchProvider(template_url, profile);

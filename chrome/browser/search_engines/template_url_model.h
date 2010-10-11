@@ -170,6 +170,11 @@ class TemplateURLModel : public WebDataServiceConsumer,
                         const std::wstring& keyword,
                         const std::string& search_url);
 
+  // Return true if the given |url| can be made the default.
+  // TODO(levin): Fill in. This is just a placeholder to make the dialog change
+  // more independent from other changes.
+  bool CanMakeDefault(const TemplateURL* url) const { return true; }
+
   // Set the default search provider.  |url| may be null.
   // This will assert if the default search is managed; the UI should not be
   // invoking this method in that situation.

@@ -36,6 +36,7 @@ class Profile;
 class RenderViewHost;
 class TabContents;
 class TemplateURL;
+class TemplateURLModel;
 struct ContextMenuParams;
 
 // Objects implement this interface to get notified about changes in the
@@ -225,8 +226,15 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Returns true if the context menu command was handled
   virtual bool ExecuteContextMenuCommand(int command);
 
-  // Shows a confirmation UI that the specified |template_url| is to be added as
-  // a search engine.
+  // Shows a confirmation dialog box for setting the default search engine
+  // described by |template_url|. Takes ownership of |template_url|.
+  virtual void ConfirmSetDefaultSearchProvider(
+      TabContents* tab_contents,
+      TemplateURL* template_url,
+      TemplateURLModel* template_url_model);
+
+  // Shows a confirmation dialog box for adding a search engine described by
+  // |template_url|. Takes ownership of |template_url|.
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);
 

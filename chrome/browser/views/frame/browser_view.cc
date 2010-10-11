@@ -42,6 +42,7 @@
 #include "chrome/browser/views/accessible_view_helper.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/browser_dialogs.h"
+#include "chrome/browser/views/default_search_view.h"
 #include "chrome/browser/views/download_shelf_view.h"
 #include "chrome/browser/views/frame/browser_view_layout.h"
 #include "chrome/browser/views/frame/contents_container.h"
@@ -1037,6 +1038,18 @@ void BrowserView::DisableInactiveFrame() {
 #if defined(OS_WIN)
   frame_->GetWindow()->DisableInactiveRendering();
 #endif  // No tricks are needed to get the right behavior on Linux.
+}
+
+void BrowserView::ConfirmSetDefaultSearchProvider(
+    TabContents* tab_contents,
+    TemplateURL* template_url,
+    TemplateURLModel* template_url_model) {
+#if defined(OS_WIN)
+  DefaultSearchView::Show(tab_contents, template_url, template_url_model);
+#else
+  // TODO(levin): Implement for other platforms. Right now this is behind
+  // a command line flag which is off.
+#endif
 }
 
 void BrowserView::ConfirmAddSearchProvider(const TemplateURL* template_url,
