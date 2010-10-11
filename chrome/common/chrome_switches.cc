@@ -492,6 +492,9 @@ const char kEnableSearchProviderApiV2[]     = "enable-search-provider-api-v2";
 // Enables the secure infobars. Non-default until the kinks are worked out.
 const char kEnableSecureInfoBars[]          = "enable-secure-infobars";
 
+// Enables 0-RTT HTTPS handshakes.
+const char kEnableSnapStart[]               = "enable-snap-start";
+
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
