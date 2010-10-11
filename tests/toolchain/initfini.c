@@ -8,23 +8,23 @@
 
 
 typedef void (*FUN_PTR) (void);
-#define ATTR_USED __attribute__((used))
+
 #define ATTR_SEC(sec)\
   __attribute__ ((__used__, section(sec), aligned(sizeof(FUN_PTR))))
-#define ADD_FUN_PTR_TO_SEC(name, sec, ptr)       \
+
+#define ADD_FUN_PTR_TO_SEC(name, sec, ptr) \
   static FUN_PTR name ATTR_SEC(sec)  = { ptr }
 
 
 
 #define MAKE_FUN(name) void name() { printf(#name "\n");}
 
-/*
+
 MAKE_FUN(fun_ctor)
-ADD_FUN_PTR_TO_SEC(array_ctor[1], ".ctor_array", fun_ctor);
+ADD_FUN_PTR_TO_SEC(array_ctor[1], ".ctors", fun_ctor);
 
 MAKE_FUN(fun_dtor)
-ADD_FUN_PTR_TO_SEC(array_dtor[1], ".dtor_array", fun_dtor);
-*/
+ADD_FUN_PTR_TO_SEC(array_dtor[1], ".dtors", fun_dtor);
 
 MAKE_FUN(fun_preinit)
 ADD_FUN_PTR_TO_SEC(array_preinit[1], ".preinit_array", fun_preinit);
@@ -38,5 +38,5 @@ ADD_FUN_PTR_TO_SEC(array_fini[1], ".fini_array", fun_fini);
 /* NOTE: there is NO .prefini_array */
 
 int main() {
-    return 0;
+  return 0;
 }
