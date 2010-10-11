@@ -6,10 +6,13 @@
 <html>
 <head>
 <script>
+console.log('CONTENT SCRIPT background page runs');
+
 chrome.extension.onRequest.addListener(
   function(request, sender, sendResponse) {
     // Let the extension know where the script ran.
     var url = sender.tab ? sender.tab.url : 'about:blank';
+    console.log('CONTENT SCRIPT sends back ' + url);
     chrome.test.sendMessage('content script: ' + url);
   });
 </script>

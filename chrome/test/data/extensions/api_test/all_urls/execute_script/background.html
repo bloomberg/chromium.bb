@@ -6,6 +6,8 @@
 <html>
 <head>
 <script>
+console.log('EXECUTE SCRIPT background page runs');
+
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   chrome.tabs.executeScript(tabId, {file: "execute_script.js"})
 });
@@ -14,6 +16,7 @@ chrome.extension.onRequest.addListener(
   function(request, sender, sendResponse) {
     // Let the extension know where the script ran.
     var url = sender.tab ? sender.tab.url : 'about:blank';
+    console.log('EXECUTE SCRIPT sends back ' + url);
     chrome.test.sendMessage('execute: ' + url);
   });
 </script>
