@@ -9,17 +9,11 @@
 #include "base/logging.h"
 #include "base/port.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
-#include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/common/deprecated/event_sys-inl.h"
-#include "jingle/notifier/listener/talk_mediator.h"
 
 namespace browser_sync {
-
-static const time_t kMinSyncObserveInterval = 10;  // seconds
 
 const char* AllStatus::GetSyncStatusString(SyncStatus icon) {
   const char* strings[] = {"OFFLINE", "OFFLINE_UNSYNCED", "SYNCING", "READY",
@@ -33,23 +27,12 @@ const char* AllStatus::GetSyncStatusString(SyncStatus icon) {
 static const AllStatus::Status init_status =
   { AllStatus::OFFLINE };
 
-static const AllStatusEvent shutdown_event =
-  { AllStatusEvent::SHUTDOWN, init_status };
-
-AllStatus::AllStatus() : status_(init_status),
-                         channel_(new Channel(shutdown_event)) {
+AllStatus::AllStatus() : status_(init_status) {
   status_.initial_sync_ended = true;
   status_.notifications_enabled = false;
 }
 
 AllStatus::~AllStatus() {
-  syncer_thread_hookup_.reset();
-  delete channel_;
-}
-
-void AllStatus::WatchSyncerThread(SyncerThread* syncer_thread) {
-  syncer_thread_hookup_.reset(syncer_thread == NULL ? NULL :
-      syncer_thread->relay_channel()->AddObserver(this));
 }
 
 AllStatus::Status AllStatus::CreateBlankStatus() const {
@@ -66,7 +49,7 @@ AllStatus::Status AllStatus::CreateBlankStatus() const {
   return status;
 }
 
-AllStatus::Status AllStatus::CalcSyncing(const SyncerEvent &event) const {
+AllStatus::Status AllStatus::CalcSyncing(const SyncEngineEvent &event) const {
   Status status = CreateBlankStatus();
   const sessions::SyncSessionSnapshot* snapshot = event.snapshot;
   status.unsynced_count += static_cast<int>(snapshot->unsynced_count);
@@ -93,29 +76,7 @@ AllStatus::Status AllStatus::CalcSyncing(const SyncerEvent &event) const {
   return status;
 }
 
-int AllStatus::CalcStatusChanges(Status* old_status) {
-  int what_changed = 0;
-
-  // Calculate what changed and what the new icon should be.
-  if (status_.syncing != old_status->syncing)
-    what_changed |= AllStatusEvent::SYNCING;
-  if (status_.unsynced_count != old_status->unsynced_count)
-    what_changed |= AllStatusEvent::UNSYNCED_COUNT;
-  if (status_.server_up != old_status->server_up)
-    what_changed |= AllStatusEvent::SERVER_UP;
-  if (status_.server_reachable != old_status->server_reachable)
-    what_changed |= AllStatusEvent::SERVER_REACHABLE;
-  if (status_.notifications_enabled != old_status->notifications_enabled)
-    what_changed |= AllStatusEvent::NOTIFICATIONS_ENABLED;
-  if (status_.notifications_received != old_status->notifications_received)
-    what_changed |= AllStatusEvent::NOTIFICATIONS_RECEIVED;
-  if (status_.notifications_sent != old_status->notifications_sent)
-    what_changed |= AllStatusEvent::NOTIFICATIONS_SENT;
-  if (status_.initial_sync_ended != old_status->initial_sync_ended)
-    what_changed |= AllStatusEvent::INITIAL_SYNC_ENDED;
-  if (status_.authenticated != old_status->authenticated)
-    what_changed |= AllStatusEvent::AUTHENTICATED;
-
+void AllStatus::CalcStatusChanges() {
   const bool unsynced_changes = status_.unsynced_count > 0;
   const bool online = status_.authenticated &&
     status_.server_reachable && status_.server_up && !status_.server_broken;
@@ -133,47 +94,24 @@ int AllStatus::CalcStatusChanges(Status* old_status) {
   } else {
     status_.icon = OFFLINE;
   }
-
-  if (status_.icon != old_status->icon)
-    what_changed |= AllStatusEvent::ICON;
-
-  if (0 == what_changed)
-    return 0;
-  *old_status = status_;
-  return what_changed;
 }
 
-void AllStatus::HandleChannelEvent(const SyncerEvent& event) {
-  ScopedStatusLockWithNotify lock(this);
+void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
+  ScopedStatusLock lock(this);
   switch (event.what_happened) {
-    case SyncerEvent::COMMITS_SUCCEEDED:
-      break;
-    case SyncerEvent::SYNC_CYCLE_ENDED:
-    case SyncerEvent::STATUS_CHANGED:
+    case SyncEngineEvent::SYNC_CYCLE_ENDED:
+    case SyncEngineEvent::STATUS_CHANGED:
       status_ = CalcSyncing(event);
       break;
-    case SyncerEvent::SHUTDOWN_USE_WITH_CARE:
-      // We're safe to use this value here because we don't call into the syncer
-      // or block on any processes.
-      lock.set_notify_plan(DONT_NOTIFY);
-      syncer_thread_hookup_.reset();
-      break;
-    case SyncerEvent::OVER_QUOTA:
-      LOG(WARNING) << "User has gone over quota.";
-      lock.NotifyOverQuota();
-      break;
-    case SyncerEvent::REQUEST_SYNC_NUDGE:
-    case SyncerEvent::PAUSED:
-    case SyncerEvent::RESUMED:
-    case SyncerEvent::WAITING_FOR_CONNECTION:
-    case SyncerEvent::CONNECTED:
-    case SyncerEvent::STOP_SYNCING_PERMANENTLY:
-    case SyncerEvent::SYNCER_THREAD_EXITING:
-       lock.set_notify_plan(DONT_NOTIFY);
+    case SyncEngineEvent::SYNCER_THREAD_PAUSED:
+    case SyncEngineEvent::SYNCER_THREAD_RESUMED:
+    case SyncEngineEvent::SYNCER_THREAD_WAITING_FOR_CONNECTION:
+    case SyncEngineEvent::SYNCER_THREAD_CONNECTED:
+    case SyncEngineEvent::STOP_SYNCING_PERMANENTLY:
+    case SyncEngineEvent::SYNCER_THREAD_EXITING:
        break;
     default:
       LOG(ERROR) << "Unrecognized Syncer Event: " << event.what_happened;
-      lock.set_notify_plan(DONT_NOTIFY);
       break;
   }
 }
@@ -181,7 +119,7 @@ void AllStatus::HandleChannelEvent(const SyncerEvent& event) {
 void AllStatus::HandleServerConnectionEvent(
     const ServerConnectionEvent& event) {
   if (ServerConnectionEvent::STATUS_CHANGED == event.what_happened) {
-    ScopedStatusLockWithNotify lock(this);
+    ScopedStatusLock lock(this);
     status_.server_up = IsGoodReplyFromServer(event.connection_code);
     status_.server_reachable = event.server_reachable;
 
@@ -202,40 +140,28 @@ AllStatus::Status AllStatus::status() const {
 }
 
 void AllStatus::SetNotificationsEnabled(bool notifications_enabled) {
-  ScopedStatusLockWithNotify lock(this);
+  ScopedStatusLock lock(this);
   status_.notifications_enabled = notifications_enabled;
 }
 
 void AllStatus::IncrementNotificationsSent() {
-  ScopedStatusLockWithNotify lock(this);
+  ScopedStatusLock lock(this);
   ++status_.notifications_sent;
 }
 
 void AllStatus::IncrementNotificationsReceived() {
-  ScopedStatusLockWithNotify lock(this);
+  ScopedStatusLock lock(this);
   ++status_.notifications_received;
 }
 
-ScopedStatusLockWithNotify::ScopedStatusLockWithNotify(AllStatus* allstatus)
-  : allstatus_(allstatus), plan_(NOTIFY_IF_STATUS_CHANGED) {
-  event_.what_changed = 0;
+ScopedStatusLock::ScopedStatusLock(AllStatus* allstatus)
+    : allstatus_(allstatus) {
   allstatus->mutex_.Acquire();
-  event_.status = allstatus->status_;
 }
 
-ScopedStatusLockWithNotify::~ScopedStatusLockWithNotify() {
-  if (DONT_NOTIFY == plan_) {
-    allstatus_->mutex_.Release();
-    return;
-  }
-  event_.what_changed |= allstatus_->CalcStatusChanges(&event_.status);
+ScopedStatusLock::~ScopedStatusLock() {
+  allstatus_->CalcStatusChanges();
   allstatus_->mutex_.Release();
-  if (event_.what_changed)
-    allstatus_->channel()->NotifyListeners(event_);
-}
-
-void ScopedStatusLockWithNotify::NotifyOverQuota() {
-  event_.what_changed |= AllStatusEvent::OVER_QUOTA;
 }
 
 }  // namespace browser_sync

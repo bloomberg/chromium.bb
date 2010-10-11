@@ -10,10 +10,11 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/test/sync/engine/proto_extension_validator.h"
 #include "chrome/test/sync/engine/syncer_command_test.h"
+#include "chrome/test/sync/sessions/test_scoped_session_event_listener.h"
 
 namespace browser_sync {
 
-using sessions::ScopedSessionContextSyncerEventChannel;
+using sessions::TestScopedSessionEventListener;
 using syncable::FIRST_REAL_MODEL_TYPE;
 using syncable::MODEL_TYPE_COUNT;
 
@@ -34,7 +35,7 @@ class ClearDataCommandTest : public SyncerCommandTest {
   DISALLOW_COPY_AND_ASSIGN(ClearDataCommandTest);
 };
 
-class ClearEventHandler : public ChannelEventHandler<SyncerEvent> {
+class ClearEventHandler : public SyncEngineEventListener {
  public:
   ClearEventHandler() {
     ResetReceivedEvents();
@@ -46,31 +47,27 @@ class ClearEventHandler : public ChannelEventHandler<SyncerEvent> {
     received_clear_failed_event_ = false;
   }
 
-  void HandleChannelEvent(const SyncerEvent& event);
+  virtual void OnSyncEngineEvent(const SyncEngineEvent& event) {
+    if (event.what_happened == SyncEngineEvent::CLEAR_SERVER_DATA_FAILED) {
+      received_clear_failed_event_ = true;
+    } else if (event.what_happened ==
+      SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED) {
+        received_clear_success_event_ = true;
+    }
+  }
 
  private:
   bool received_clear_success_event_;
   bool received_clear_failed_event_;
 };
 
-void ClearEventHandler::HandleChannelEvent(const SyncerEvent& event) {
-  if (event.what_happened == SyncerEvent::CLEAR_SERVER_DATA_FAILED) {
-      received_clear_failed_event_ = true;
-  } else if (event.what_happened == SyncerEvent::CLEAR_SERVER_DATA_SUCCEEDED) {
-      received_clear_success_event_ = true;
-  }
-}
-
 TEST_F(ClearDataCommandTest, ClearDataCommandExpectFailed) {
   syncable::ScopedDirLookup dir(syncdb()->manager(), syncdb()->name());
   ASSERT_TRUE(dir.good());
 
   ConfigureMockServerConnection();
-  scoped_ptr<SyncerEventChannel> channel(new SyncerEventChannel());
   scoped_ptr<ClearEventHandler> handler(new ClearEventHandler());
-  scoped_ptr<browser_sync::ChannelHookup<SyncerEvent> > hookup(
-      channel.get()->AddObserver(handler.get()));
-  ScopedSessionContextSyncerEventChannel s_channel(context(), channel.get());
+  TestScopedSessionEventListener reg(context(), handler.get());
 
   dir->set_store_birthday(mock_server()->store_birthday());
   mock_server()->SetServerNotReachable();
@@ -105,11 +102,8 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectSuccess) {
   ASSERT_TRUE(dir.good());
 
   ConfigureMockServerConnection();
-  scoped_ptr<SyncerEventChannel> channel(new SyncerEventChannel());
   scoped_ptr<ClearEventHandler> handler(new ClearEventHandler());
-  scoped_ptr<browser_sync::ChannelHookup<SyncerEvent> > hookup(
-      channel.get()->AddObserver(handler.get()));
-  ScopedSessionContextSyncerEventChannel s_channel(context(), channel.get());
+  TestScopedSessionEventListener reg(context(), handler.get());
 
   dir->set_store_birthday(mock_server()->store_birthday());
   mock_server()->SetClearUserDataResponseStatus(
@@ -123,7 +117,7 @@ TEST_F(ClearDataCommandTest, ClearDataCommandExpectSuccess) {
   const sync_pb::ClientToServerMessage& r = mock_server()->last_request();
   EXPECT_TRUE(r.has_clear_user_data());
 
-  EXPECT_TRUE(handler.get()->ReceievedClearSuccessEvent());
+  EXPECT_TRUE(handler->ReceievedClearSuccessEvent());
   EXPECT_TRUE(on_should_stop_syncing_permanently_called_);
 
   EXPECT_FALSE(handler->ReceievedClearFailedEvent());

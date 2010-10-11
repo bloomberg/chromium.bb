@@ -29,16 +29,10 @@ void SyncerCommand::SendNotifications(SyncSession* session) {
   }
 
   if (session->status_controller()->TestAndClearIsDirty()) {
-    SyncerEvent event(SyncerEvent::STATUS_CHANGED);
+    SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
     const sessions::SyncSessionSnapshot& snapshot(session->TakeSnapshot());
     event.snapshot = &snapshot;
-    DCHECK(session->context()->syncer_event_channel());
-    session->context()->syncer_event_channel()->Notify(event);
-    if (session->status_controller()->syncer_status().over_quota) {
-      SyncerEvent quota_event(SyncerEvent::OVER_QUOTA);
-      quota_event.snapshot = &snapshot;
-      session->context()->syncer_event_channel()->Notify(quota_event);
-    }
+    session->context()->NotifyListeners(event);
   }
 }
 

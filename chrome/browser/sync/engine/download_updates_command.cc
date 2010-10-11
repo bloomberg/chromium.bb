@@ -50,9 +50,9 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   }
   syncable::MultiTypeTimeStamp target =
       dir->GetTypesWithOldestLastDownloadTimestamp(enabled_types);
-  LOG(INFO) << "Getting updates from ts " << target.timestamp
-            << " for types " << target.data_types.to_string()
-            << " (of possible " << enabled_types.to_string() << ")";
+  VLOG(1) << "Getting updates from ts " << target.timestamp
+          << " for types " << target.data_types.to_string()
+          << " (of possible " << enabled_types.to_string() << ")";
   DCHECK(target.data_types.any());
   target.data_types.set(syncable::TOP_LEVEL_FOLDER);  // Always fetched.
 
@@ -78,7 +78,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       &update_response,
       session);
 
-  DLOG(INFO) << SyncerProtoUtil::ClientToServerResponseDebugString(
+  VLOG(1) << SyncerProtoUtil::ClientToServerResponseDebugString(
       update_response);
 
   StatusController* status = session->status_controller();
@@ -92,11 +92,11 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   status->mutable_updates_response()->CopyFrom(update_response);
 
-  LOG(INFO) << "GetUpdates from ts " << get_updates->from_timestamp()
-            << " returned " << update_response.get_updates().entries_size()
-            << " updates and indicated "
-            << update_response.get_updates().changes_remaining()
-            << " updates left on server.";
+  VLOG(1) << "GetUpdates from ts " << get_updates->from_timestamp()
+          << " returned " << update_response.get_updates().entries_size()
+          << " updates and indicated "
+          << update_response.get_updates().changes_remaining()
+          << " updates left on server.";
 }
 
 void DownloadUpdatesCommand::SetRequestedTypes(

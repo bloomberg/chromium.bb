@@ -62,16 +62,16 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
     // On failure, subsequent requests to the server will cause it to attempt
     // to resume the clear.  The client will handle disabling of sync in
     // response to a store birthday error from the server.
-    SyncerEvent event(SyncerEvent::CLEAR_SERVER_DATA_FAILED);
-    session->context()->syncer_event_channel()->Notify(event);
+    SyncEngineEvent event(SyncEngineEvent::CLEAR_SERVER_DATA_FAILED);
+    session->context()->NotifyListeners(event);
 
     LOG(ERROR) << "Error posting ClearData.";
 
     return;
   }
 
-  SyncerEvent event(SyncerEvent::CLEAR_SERVER_DATA_SUCCEEDED);
-  session->context()->syncer_event_channel()->Notify(event);
+  SyncEngineEvent event(SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED);
+  session->context()->NotifyListeners(event);
 
   session->delegate()->OnShouldStopSyncingPermanently();
 

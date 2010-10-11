@@ -31,7 +31,7 @@ UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
       progress_(false),
       routing_info_(routes) {
     size_t item_count = end - begin;
-    LOG(INFO) << "UpdateApplicator created for " << item_count << " items.";
+    VLOG(1) << "UpdateApplicator created for " << item_count << " items.";
     successful_ids_.reserve(item_count);
   }
 
@@ -79,8 +79,8 @@ bool UpdateApplicator::AttemptOneApplication(
       NOTREACHED();
       break;
   }
-  LOG(INFO) << "Apply Status for " << entry.Get(syncable::META_HANDLE)
-            << " is " << updateResponse;
+  VLOG(1) << "Apply Status for " << entry.Get(syncable::META_HANDLE)
+          << " is " << updateResponse;
 
   return true;
 }

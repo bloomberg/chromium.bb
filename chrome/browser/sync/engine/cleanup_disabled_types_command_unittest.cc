@@ -16,8 +16,6 @@ using testing::_;
 
 namespace browser_sync {
 
-using sessions::ScopedSessionContextSyncerEventChannel;
-
 class CleanupDisabledTypesCommandTest : public MockDirectorySyncerCommandTest {
  public:
   CleanupDisabledTypesCommandTest() {
@@ -87,9 +85,6 @@ TEST_F(CleanupDisabledTypesCommandTest, TypeDisabled) {
 TEST_F(CleanupDisabledTypesCommandTest,
        SyncerEndCommandSetsPreviousRoutingInfo) {
   SyncerEndCommand command;
-  // Need channel for SyncerEndCommand.
-  scoped_ptr<SyncerEventChannel> c(new SyncerEventChannel());
-  ScopedSessionContextSyncerEventChannel s(session()->context(), c.get());
 
   ModelSafeRoutingInfo info;
   EXPECT_TRUE(info == session()->context()->previous_session_routing_info());

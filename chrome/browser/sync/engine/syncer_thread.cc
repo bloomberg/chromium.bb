@@ -66,18 +66,14 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context)
     : thread_main_started_(false, false),
       thread_("SyncEngine_SyncerThread"),
       vault_field_changed_(&lock_),
-      p2p_authenticated_(false),
-      p2p_subscribed_(false),
       conn_mgr_hookup_(NULL),
       syncer_short_poll_interval_seconds_(kDefaultShortPollIntervalSeconds),
       syncer_long_poll_interval_seconds_(kDefaultLongPollIntervalSeconds),
       syncer_polling_interval_(kDefaultShortPollIntervalSeconds),
       syncer_max_interval_(kDefaultMaxPollIntervalMs),
-      syncer_events_(NULL),
       session_context_(context),
       disable_idle_detection_(false) {
   DCHECK(context);
-  syncer_event_relay_channel_.reset(new SyncerEventChannel());
 
   if (context->connection_manager())
     WatchConnectionManager(context->connection_manager());
@@ -86,10 +82,6 @@ SyncerThread::SyncerThread(sessions::SyncSessionContext* context)
 
 SyncerThread::~SyncerThread() {
   conn_mgr_hookup_.reset();
-  syncer_event_relay_channel_->Notify(SyncerEvent(
-      SyncerEvent::SHUTDOWN_USE_WITH_CARE));
-  syncer_event_relay_channel_.reset();
-  syncer_events_.reset();
   delete vault_.syncer_;
   CHECK(!thread_.IsRunning());
 }
@@ -182,6 +174,10 @@ bool SyncerThread::RequestPause() {
   return true;
 }
 
+void SyncerThread::Notify(SyncEngineEvent::EventCause cause) {
+  session_context_->NotifyListeners(SyncEngineEvent(cause));
+}
+
 bool SyncerThread::RequestResume() {
   AutoLock lock(lock_);
   // Only valid to request a resume when we are already paused or we
@@ -193,8 +189,7 @@ bool SyncerThread::RequestResume() {
     if (vault_.pause_requested_) {
       // If pause was requested we have not yet paused.  In this case,
       // the resume cancels the pause request.
-      SyncerEvent event(SyncerEvent::RESUMED);
-      relay_channel()->Notify(event);
+      Notify(SyncEngineEvent::SYNCER_THREAD_RESUMED);
       LOG(INFO) << "Pending pause canceled by resume.";
     } else {
       // Unpause and notify.
@@ -235,9 +230,7 @@ bool SyncerThread::IsSyncingCurrentlySilenced() {
 
 void SyncerThread::OnShouldStopSyncingPermanently() {
   RequestSyncerExitAndSetThreadStopConditions();
-
-  SyncerEvent event(SyncerEvent::STOP_SYNCING_PERMANENTLY);
-  relay_channel()->Notify(event);
+  Notify(SyncEngineEvent::STOP_SYNCING_PERMANENTLY);
 }
 
 void SyncerThread::ThreadMainLoop() {
@@ -342,8 +335,7 @@ void SyncerThread::ThreadMainLoop() {
 
 void SyncerThread::WaitUntilConnectedOrQuit() {
   LOG(INFO) << "Syncer thread waiting for connection.";
-  SyncerEvent event(SyncerEvent::WAITING_FOR_CONNECTION);
-  relay_channel()->Notify(event);
+  Notify(SyncEngineEvent::SYNCER_THREAD_WAITING_FOR_CONNECTION);
 
   bool is_paused = vault_.paused_;
 
@@ -366,8 +358,7 @@ void SyncerThread::WaitUntilConnectedOrQuit() {
   }
 
   if (!vault_.stop_syncer_thread_) {
-    SyncerEvent event(SyncerEvent::CONNECTED);
-    relay_channel()->Notify(event);
+    Notify(SyncEngineEvent::SYNCER_THREAD_CONNECTED);
     LOG(INFO) << "Syncer thread found connection.";
   }
 }
@@ -396,16 +387,14 @@ void SyncerThread::EnterPausedState() {
   vault_.pause_requested_ = false;
   vault_.paused_ = true;
   vault_field_changed_.Broadcast();
-  SyncerEvent event(SyncerEvent::PAUSED);
-  relay_channel()->Notify(event);
+  Notify(SyncEngineEvent::SYNCER_THREAD_PAUSED);
 }
 
 void SyncerThread::ExitPausedState() {
   lock_.AssertAcquired();
   vault_.paused_ = false;
   vault_field_changed_.Broadcast();
-  SyncerEvent event(SyncerEvent::RESUMED);
-  relay_channel()->Notify(event);
+  Notify(SyncEngineEvent::SYNCER_THREAD_RESUMED);
 }
 
 // We check how long the user's been idle and sync less often if the machine is
@@ -497,8 +486,7 @@ void SyncerThread::ThreadMain() {
   thread_main_started_.Signal();
   ThreadMainLoop();
   LOG(INFO) << "Syncer thread ThreadMain is done.";
-  SyncerEvent event(SyncerEvent::SYNCER_THREAD_EXITING);
-  relay_channel()->Notify(event);
+  Notify(SyncEngineEvent::SYNCER_THREAD_EXITING);
 }
 
 void SyncerThread::SyncMain(Syncer* syncer) {
@@ -575,15 +563,6 @@ void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
   vault_.syncer_->set_updates_source(updates_source);
 }
 
-void SyncerThread::HandleChannelEvent(const SyncerEvent& event) {
-  AutoLock lock(lock_);
-  relay_channel()->Notify(event);
-  if (SyncerEvent::REQUEST_SYNC_NUDGE != event.what_happened) {
-    return;
-  }
-  NudgeSyncImpl(event.nudge_delay_milliseconds, kUnknown);
-}
-
 void SyncerThread::CreateSyncer(const std::string& dirname) {
   AutoLock lock(lock_);
   LOG(INFO) << "Creating syncer up for: " << dirname;
@@ -592,9 +571,6 @@ void SyncerThread::CreateSyncer(const std::string& dirname) {
   CHECK(vault_.syncer_ == NULL);
   session_context_->set_account_name(dirname);
   vault_.syncer_ = new Syncer(session_context_.get());
-
-  syncer_events_.reset(
-      session_context_->syncer_event_channel()->AddObserver(this));
   vault_field_changed_.Broadcast();
 }
 
@@ -641,10 +617,6 @@ void SyncerThread::HandleServerConnectionEvent(
     CheckConnected(&vault_.connected_, event.connection_code,
                    &vault_field_changed_);
   }
-}
-
-SyncerEventChannel* SyncerThread::relay_channel() {
-  return syncer_event_relay_channel_.get();
 }
 
 int SyncerThread::GetRecommendedDelaySeconds(int base_delay_seconds) {

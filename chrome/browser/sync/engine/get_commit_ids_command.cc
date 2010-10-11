@@ -41,7 +41,7 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
       ordered_commit_set_->GetAllCommitIds();
 
   for (size_t i = 0; i < verified_commit_ids.size(); i++)
-    LOG(INFO) << "Debug commit batch result:" << verified_commit_ids[i];
+    VLOG(1) << "Debug commit batch result:" << verified_commit_ids[i];
 
   status->set_commit_set(*ordered_commit_set_.get());
 }

@@ -209,7 +209,6 @@ class StatusController {
   void set_current_download_timestamp(syncable::ModelType model,
                                       int64 current_timestamp);
   void set_num_server_changes_remaining(int64 changes_remaining);
-  void set_over_quota(bool over_quota);
   void set_invalid_store(bool invalid_store);
   void set_syncer_stuck(bool syncer_stuck);
   void set_syncing(bool syncing);

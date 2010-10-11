@@ -38,14 +38,15 @@ class ServerConnectionManager;
 
 namespace sessions {
 class ScopedSessionContextConflictResolver;
-class ScopedSessionContextSyncerEventChannel;
 struct SyncSessionSnapshot;
+class TestScopedSessionEventListener;
 
 class SyncSessionContext {
  public:
   SyncSessionContext(ServerConnectionManager* connection_manager,
                      syncable::DirectoryManager* directory_manager,
-                     ModelSafeWorkerRegistrar* model_safe_worker_registrar);
+                     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
+                     const std::vector<SyncEngineEventListener*>& listeners);
   ~SyncSessionContext();
 
   ConflictResolver* resolver() { return resolver_; }
@@ -54,9 +55,6 @@ class SyncSessionContext {
   }
   syncable::DirectoryManager* directory_manager() {
     return directory_manager_;
-  }
-  SyncerEventChannel* syncer_event_channel() {
-    return syncer_event_channel_;
   }
   ModelSafeWorkerRegistrar* registrar() {
     return registrar_;
@@ -92,16 +90,22 @@ class SyncSessionContext {
 
   void set_last_snapshot(const SyncSessionSnapshot& snapshot);
 
+  void NotifyListeners(const SyncEngineEvent& event) {
+    FOR_EACH_OBSERVER(SyncEngineEventListener, listeners_,
+                      OnSyncEngineEvent(event));
+  }
+
  private:
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
   // once they are allocated. See definitions of these below.
   friend class ScopedSessionContextConflictResolver;
-  friend class ScopedSessionContextSyncerEventChannel;
+  friend class TestScopedSessionEventListener;
 
-  // These are installed by Syncer objects when needed and may be NULL.
+  // This is installed by Syncer objects when needed and may be NULL.
   ConflictResolver* resolver_;
-  SyncerEventChannel* syncer_event_channel_;
+
+  ObserverList<SyncEngineEventListener> listeners_;
 
   ServerConnectionManager* const connection_manager_;
   syncable::DirectoryManager* const directory_manager_;
@@ -151,27 +155,6 @@ class ScopedSessionContextConflictResolver {
   SyncSessionContext* context_;
   ConflictResolver* resolver_;
   DISALLOW_COPY_AND_ASSIGN(ScopedSessionContextConflictResolver);
-};
-
-// Installs a SyncerEventChannel to a given session context for the lifetime of
-// the ScopedSessionContextSyncerEventChannel.  There should never be more than
-// one SyncerEventChannel in the context, so it is an error to use this if the
-// context already has a channel.
-class ScopedSessionContextSyncerEventChannel {
- public:
-  ScopedSessionContextSyncerEventChannel(SyncSessionContext* context,
-                                         SyncerEventChannel* channel)
-      : context_(context), channel_(channel) {
-    DCHECK(NULL == context->syncer_event_channel_);
-    context->syncer_event_channel_ = channel_;
-  }
-  ~ScopedSessionContextSyncerEventChannel() {
-    context_->syncer_event_channel_ = NULL;
-  }
- private:
-  SyncSessionContext* context_;
-  SyncerEventChannel* channel_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedSessionContextSyncerEventChannel);
 };
 
 }  // namespace sessions

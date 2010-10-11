@@ -13,25 +13,20 @@
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/sync/util/channel.h"
-#include "chrome/common/deprecated/event_sys.h"
+#include "chrome/browser/sync/engine/syncer_types.h"
 
 namespace browser_sync {
 
-class ScopedStatusLockWithNotify;
+class ScopedStatusLock;
 class ServerConnectionManager;
 class Syncer;
 class SyncerThread;
-struct AllStatusEvent;
 struct AuthWatcherEvent;
 struct ServerConnectionEvent;
-struct SyncerEvent;
 
-class AllStatus : public ChannelEventHandler<SyncerEvent> {
-  friend class ScopedStatusLockWithNotify;
+class AllStatus : public SyncEngineEventListener {
+  friend class ScopedStatusLock;
  public:
-  typedef EventChannel<AllStatusEvent, Lock> Channel;
-
   // Status of the entire sync process distilled into a single enum.
   enum SyncStatus {
     // Can't connect to server, but there are no pending changes in
@@ -93,14 +88,11 @@ class AllStatus : public ChannelEventHandler<SyncerEvent> {
 
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
 
-  void WatchSyncerThread(SyncerThread* syncer_thread);
-  void HandleChannelEvent(const SyncerEvent& event);
+  virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
 
   // Returns a string description of the SyncStatus (currently just the ascii
   // version of the enum). Will LOG(FATAL) if the status us out of range.
   static const char* GetSyncStatusString(SyncStatus status);
-
-  Channel* channel() const { return channel_; }
 
   Status status() const;
 
@@ -111,72 +103,26 @@ class AllStatus : public ChannelEventHandler<SyncerEvent> {
   void IncrementNotificationsReceived();
 
  protected:
-  typedef std::map<Syncer*, EventListenerHookup*> Syncers;
-
   // Examines syncer to calculate syncing and the unsynced count,
   // and returns a Status with new values.
-  Status CalcSyncing(const SyncerEvent& event) const;
+  Status CalcSyncing(const SyncEngineEvent& event) const;
   Status CreateBlankStatus() const;
 
   // Examines status to see what has changed, updates old_status in place.
-  int CalcStatusChanges(Status* old_status);
+  void CalcStatusChanges();
 
   Status status_;
-  Channel* const channel_;
-  scoped_ptr<ChannelHookup<SyncerEvent> > syncer_thread_hookup_;
-  scoped_ptr<EventListenerHookup> diskfull_hookup_;
-  scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
 
   mutable Lock mutex_;  // Protects all data members.
   DISALLOW_COPY_AND_ASSIGN(AllStatus);
 };
 
-struct AllStatusEvent {
-  enum {  // A bit mask of which members have changed.
-    SHUTDOWN =               0x0000,
-    ICON =                   0x0001,
-    UNSYNCED_COUNT =         0x0002,
-    AUTHENTICATED =          0x0004,
-    SYNCING =                0x0008,
-    SERVER_UP =              0x0010,
-    NOTIFICATIONS_ENABLED =  0x0020,
-    INITIAL_SYNC_ENDED =     0x0080,
-    SERVER_REACHABLE =       0x0100,
-    DISK_FULL =              0x0200,
-    OVER_QUOTA =             0x0400,
-    NOTIFICATIONS_RECEIVED = 0x0800,
-    NOTIFICATIONS_SENT =     0x1000,
-    TRASH_WARNING =          0x40000,
-  };
-  int what_changed;
-  AllStatus::Status status;
-
-  typedef AllStatusEvent EventType;
-  static inline bool IsChannelShutdownEvent(const AllStatusEvent& e) {
-    return SHUTDOWN == e.what_changed;
-  }
-};
-
-enum StatusNotifyPlan {
-  NOTIFY_IF_STATUS_CHANGED,
-  // A small optimization, don't do the big compare when we know
-  // nothing has changed.
-  DONT_NOTIFY,
-};
-
-class ScopedStatusLockWithNotify {
+class ScopedStatusLock {
  public:
-  explicit ScopedStatusLockWithNotify(AllStatus* allstatus);
-  ~ScopedStatusLockWithNotify();
-  // Defaults to true, but can be explicitly reset so we don't have to
-  // do the big compare in the destructor.  Small optimization.
-
-  inline void set_notify_plan(StatusNotifyPlan plan) { plan_ = plan; }
-  void NotifyOverQuota();
+  explicit ScopedStatusLock(AllStatus* allstatus);
+  ~ScopedStatusLock();
  protected:
-  AllStatusEvent event_;
-  AllStatus* const allstatus_;
-  StatusNotifyPlan plan_;
+  AllStatus* allstatus_;
 };
 
 }  // namespace browser_sync

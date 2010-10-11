@@ -4,7 +4,6 @@
 
 #include <list>
 #include <map>
-#include <set>
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/sync/util/channel.h"
 #include "chrome/test/sync/engine/mock_connection_manager.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
+#include "chrome/test/sync/sessions/test_scoped_session_event_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,6 +29,7 @@ using testing::Field;
 
 namespace browser_sync {
 using sessions::ErrorCounters;
+using sessions::TestScopedSessionEventListener;
 using sessions::SyncSessionContext;
 using sessions::SyncSessionSnapshot;
 using sessions::SyncerStatus;
@@ -48,14 +49,14 @@ SyncSessionSnapshot SessionSnapshotForTest(
       syncable::ModelTypeBitSet(), false, false, unsynced_count, 0, false);
 }
 
-class ListenerMock : public ChannelEventHandler<SyncerEvent> {
+class ListenerMock : public SyncEngineEventListener {
  public:
-  MOCK_METHOD1(HandleChannelEvent, void(const SyncerEvent&));
+  MOCK_METHOD1(OnSyncEngineEvent, void(const SyncEngineEvent&));
 };
 
 class SyncerThreadWithSyncerTest : public testing::Test,
                                    public ModelSafeWorkerRegistrar,
-                                   public ChannelEventHandler<SyncerEvent> {
+                                   public SyncEngineEventListener {
  public:
   SyncerThreadWithSyncerTest()
       : max_wait_time_(TimeDelta::FromSeconds(10)),
@@ -65,18 +66,18 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     connection_.reset(new MockConnectionManager(metadb_.manager(),
                                                 metadb_.name()));
     worker_ = new ModelSafeWorker();
-    SyncSessionContext* context = new SyncSessionContext(connection_.get(),
-        metadb_.manager(), this);
-    syncer_thread_ = new SyncerThread(context);
-    syncer_event_hookup_.reset(
-        syncer_thread_->relay_channel()->AddObserver(this));
+    std::vector<SyncEngineEventListener*> listeners;
+    listeners.push_back(this);
+    context_ = new SyncSessionContext(connection_.get(), metadb_.manager(),
+                                      this, listeners);
+    syncer_thread_ = new SyncerThread(context_);
     syncer_thread_->SetConnected(true);
     syncable::ModelTypeBitSet expected_types;
     expected_types[syncable::BOOKMARKS] = true;
     connection_->ExpectGetUpdatesRequestTypes(expected_types);
   }
   virtual void TearDown() {
-    syncer_event_hookup_.reset();
+    context_ = NULL;
     syncer_thread_ = NULL;
     connection_.reset();
     metadb_.TearDown();
@@ -127,8 +128,9 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     WaitableEvent event(false, false);
     {
       AutoLock lock(syncer_thread()->lock_);
-      EXPECT_CALL(*listener, HandleChannelEvent(
-          Field(&SyncerEvent::what_happened, SyncerEvent::PAUSED))).
+      EXPECT_CALL(*listener, OnSyncEngineEvent(
+          Field(&SyncEngineEvent::what_happened,
+          SyncEngineEvent::SYNCER_THREAD_PAUSED))).
           WillOnce(SignalEvent(&event));
     }
     if (!syncer_thread()->RequestPause())
@@ -140,8 +142,9 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     WaitableEvent event(false, false);
     {
       AutoLock lock(syncer_thread()->lock_);
-      EXPECT_CALL(*listener, HandleChannelEvent(
-          Field(&SyncerEvent::what_happened, SyncerEvent::RESUMED))).
+      EXPECT_CALL(*listener, OnSyncEngineEvent(
+          Field(&SyncEngineEvent::what_happened,
+          SyncEngineEvent::SYNCER_THREAD_RESUMED))).
           WillOnce(SignalEvent(&event));
     }
     if (!syncer_thread()->RequestResume())
@@ -156,20 +159,20 @@ class SyncerThreadWithSyncerTest : public testing::Test,
 
  private:
 
-  void HandleChannelEvent(const SyncerEvent& event) {
-    if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED)
+  virtual void OnSyncEngineEvent(const SyncEngineEvent& event) {
+    if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED)
       sync_cycle_ended_event_.Signal();
   }
 
  protected:
   TimeDelta max_wait_time_;
+  SyncSessionContext* context_;
 
  private:
   ManuallyOpenedTestDirectorySetterUpper metadb_;
   scoped_ptr<MockConnectionManager> connection_;
   scoped_refptr<SyncerThread> syncer_thread_;
   scoped_refptr<ModelSafeWorker> worker_;
-  scoped_ptr<ChannelHookup<SyncerEvent> > syncer_event_hookup_;
   base::WaitableEvent sync_cycle_ended_event_;
   DISALLOW_COPY_AND_ASSIGN(SyncerThreadWithSyncerTest);
 };
@@ -217,12 +220,14 @@ class SyncShareIntercept
 };
 
 TEST_F(SyncerThreadTest, Construction) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL,
+      std::vector<SyncEngineEventListener*>());
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
 }
 
 TEST_F(SyncerThreadTest, StartStop) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL,
+      std::vector<SyncEngineEventListener*>());
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   EXPECT_TRUE(syncer_thread->Start());
   EXPECT_TRUE(syncer_thread->Stop(2000));
@@ -247,7 +252,8 @@ TEST(SyncerThread, GetRecommendedDelay) {
 }
 
 TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL,
+      std::vector<SyncEngineEventListener*>());
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   syncer_thread->DisableIdleDetection();
 
@@ -307,7 +313,8 @@ TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
 TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // Set up the environment.
   int user_idle_milliseconds_param = 0;
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL,
+      std::vector<SyncEngineEventListener*>());
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   syncer_thread->DisableIdleDetection();
   // Hold the lock to appease asserts in code.
@@ -731,23 +738,25 @@ TEST_F(SyncerThreadWithSyncerTest, StopSyncPermanently) {
   ListenerMock listener;
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent syncer_thread_exiting_event(false, false);
-  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
-  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
+  TestScopedSessionEventListener reg(context_, &listener);
 
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::STATUS_CHANGED))).
       Times(AnyNumber());
 
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       Times(AnyNumber()).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
 
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened,
-          SyncerEvent::STOP_SYNCING_PERMANENTLY)));
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+          SyncEngineEvent::STOP_SYNCING_PERMANENTLY)));
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_EXITING))).
       WillOnce(SignalEvent(&syncer_thread_exiting_event));
 
   EXPECT_TRUE(syncer_thread()->Start());
@@ -815,19 +824,21 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_Pause) {
   PreventThreadFromPolling();
 
   ListenerMock listener;
-  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
-  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
-
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+  TestScopedSessionEventListener reg(context_, &listener);
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::STATUS_CHANGED))).
       Times(AnyNumber());
 
   // Wait for the initial sync to complete.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_EXITING)));
+
   ASSERT_TRUE(syncer_thread()->Start());
   metadb()->Open();
   syncer_thread()->CreateSyncer(metadb()->name());
@@ -849,8 +860,9 @@ TEST_F(SyncerThreadWithSyncerTest, FLAKY_Pause) {
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
 
   // Resuming will cause the nudge to be processed and a sync cycle to run.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   ASSERT_TRUE(Resume(&listener));
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
@@ -862,15 +874,16 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent event(false, false);
   ListenerMock listener;
-  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
-  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
+  TestScopedSessionEventListener reg(context_, &listener);
   PreventThreadFromPolling();
 
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::STATUS_CHANGED))).
       Times(AnyNumber());
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_EXITING)));
 
   connection()->SetServerNotReachable();
   metadb()->Open();
@@ -878,26 +891,30 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
 
   // Syncer thread will always go through once cycle at the start,
   // then it will wait for a connection.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_WAITING_FOR_CONNECTION))).
       WillOnce(SignalEvent(&event));
   ASSERT_TRUE(syncer_thread()->Start());
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
   ASSERT_TRUE(event.TimedWait(max_wait_time_));
 
   // Connect, will put the syncer thread into its usually poll wait.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_CONNECTED))).
       WillOnce(SignalEvent(&event));
   connection()->SetServerReachable();
   ASSERT_TRUE(event.TimedWait(max_wait_time_));
 
   // Nudge the syncer to complete a cycle.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
@@ -912,21 +929,23 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent event(false, false);
   ListenerMock listener;
-  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
-  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
+  TestScopedSessionEventListener reg(context_, &listener);
   PreventThreadFromPolling();
 
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::STATUS_CHANGED))).
       Times(AnyNumber());
 
   // Put the thread into a "waiting for connection" state.
   connection()->SetServerNotReachable();
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_WAITING_FOR_CONNECTION))).
       WillOnce(SignalEvent(&event));
   metadb()->Open();
   syncer_thread()->CreateSyncer(metadb()->name());
@@ -940,11 +959,13 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
   ASSERT_TRUE(Resume(&listener));
 
   // Make a connection and let the syncer cycle.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_CONNECTED))).
       WillOnce(SignalEvent(&event));
   connection()->SetServerReachable();
   ASSERT_TRUE(event.TimedWait(max_wait_time_));
@@ -952,8 +973,9 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
 
   // Disconnect and get into the waiting for a connection state.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::WAITING_FOR_CONNECTION))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_WAITING_FOR_CONNECTION))).
       WillOnce(SignalEvent(&event));
   connection()->SetServerNotReachable();
   ASSERT_TRUE(event.TimedWait(max_wait_time_));
@@ -962,8 +984,9 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
   ASSERT_TRUE(Pause(&listener));
 
   // Get a connection then resume.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::CONNECTED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_CONNECTED))).
       WillOnce(SignalEvent(&event));
   connection()->SetServerReachable();
   ASSERT_TRUE(event.TimedWait(max_wait_time_));
@@ -971,11 +994,13 @@ TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
   ASSERT_TRUE(Resume(&listener));
 
   // Cycle the syncer to show we are not longer paused.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_EXITING)));
 
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));
@@ -987,12 +1012,12 @@ TEST_F(SyncerThreadWithSyncerTest, PauseResumeWhenNotRunning) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent event(false, false);
   ListenerMock listener;
-  scoped_ptr<ChannelHookup<SyncerEvent> > hookup;
-  hookup.reset(syncer_thread()->relay_channel()->AddObserver(&listener));
+  TestScopedSessionEventListener reg(context_, &listener);
   PreventThreadFromPolling();
 
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::STATUS_CHANGED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::STATUS_CHANGED))).
       Times(AnyNumber());
 
   // Pause and resume the syncer while not running
@@ -1006,11 +1031,13 @@ TEST_F(SyncerThreadWithSyncerTest, PauseResumeWhenNotRunning) {
   ASSERT_TRUE(syncer_thread()->Start());
 
   // Resume and let the syncer cycle.
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNC_CYCLE_ENDED))).
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNC_CYCLE_ENDED))).
       WillOnce(SignalEvent(&sync_cycle_ended_event));
-  EXPECT_CALL(listener, HandleChannelEvent(
-      Field(&SyncerEvent::what_happened, SyncerEvent::SYNCER_THREAD_EXITING)));
+  EXPECT_CALL(listener, OnSyncEngineEvent(
+      Field(&SyncEngineEvent::what_happened,
+      SyncEngineEvent::SYNCER_THREAD_EXITING)));
 
   ASSERT_TRUE(Resume(&listener));
   ASSERT_TRUE(sync_cycle_ended_event.TimedWait(max_wait_time_));

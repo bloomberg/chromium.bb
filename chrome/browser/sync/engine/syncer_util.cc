@@ -519,7 +519,7 @@ void SyncerUtil::UpdateLocalDataFromServerData(
   DCHECK(!entry->Get(IS_UNSYNCED));
   DCHECK(entry->Get(IS_UNAPPLIED_UPDATE));
 
-  LOG(INFO) << "Updating entry : " << *entry;
+  VLOG(1) << "Updating entry : " << *entry;
   // Start by setting the properties that determine the model_type.
   entry->Put(SPECIFICS, entry->Get(SERVER_SPECIFICS));
   entry->Put(IS_DIR, entry->Get(SERVER_IS_DIR));

@@ -23,6 +23,7 @@
 #if defined(OS_LINUX)
 #include "chrome/browser/sync/engine/idle_query_linux.h"
 #endif
+#include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 
@@ -35,12 +36,9 @@ class ServerConnectionManager;
 class Syncer;
 class URLFactory;
 struct ServerConnectionEvent;
-struct SyncerEvent;
-struct SyncerShutdownEvent;
 
 class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
-                     public sessions::SyncSession::Delegate,
-                     public ChannelEventHandler<SyncerEvent> {
+                     public sessions::SyncSession::Delegate {
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculateSyncWaitTime);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadTest, CalculatePollingWaitTime);
   FRIEND_TEST_ALL_PREFIXES(SyncerThreadWithSyncerTest, Polling);
@@ -114,14 +112,14 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
 
   // Request that the thread pauses.  Returns false if the request can
   // not be completed (e.g. the thread is not running).  When the
-  // thread actually pauses, a SyncerEvent::PAUSED event notification
+  // thread actually pauses, a SyncEngineEvent::PAUSED event notification
   // will be sent to the relay channel.
   virtual bool RequestPause();
 
   // Request that the thread resumes from pause.  Returns false if the
   // request can not be completed (e.g. the thread is not running or
   // is not currently paused).  When the thread actually resumes, a
-  // SyncerEvent::RESUMED event notification will be sent to the relay
+  // SyncEngineEvent::RESUMED event notification will be sent to the relay
   // channel.
   virtual bool RequestResume();
 
@@ -130,8 +128,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   virtual void NudgeSyncer(int milliseconds_from_now, NudgeSource source);
 
   void SetNotificationsEnabled(bool notifications_enabled);
-
-  virtual SyncerEventChannel* relay_channel();
 
   // Call this when a directory is opened
   void CreateSyncer(const std::string& dirname);
@@ -219,10 +215,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // Threshold multipler for how long before user should be considered idle.
   static const int kPollBackoffThresholdMultiplier = 10;
 
-  friend void* RunSyncerThread(void* syncer_thread);
-  void* Run();
-  void HandleChannelEvent(const SyncerEvent& event);
-
   // SyncSession::Delegate implementation.
   virtual void OnSilencedUntil(const base::TimeTicks& silenced_until);
   virtual bool IsSyncingCurrentlySilenced();
@@ -287,9 +279,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // time after to fully stop and clean up.
   void RequestSyncerExitAndSetThreadStopConditions();
 
-  // State of the notification framework is tracked by these values.
-  bool p2p_authenticated_;
-  bool p2p_subscribed_;
+  void Notify(SyncEngineEvent::EventCause cause);
 
   scoped_ptr<EventListenerHookup> conn_mgr_hookup_;
 
@@ -312,21 +302,12 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // this is called.
   void NudgeSyncImpl(int milliseconds_from_now, NudgeSource source);
 
-  scoped_ptr<ChannelHookup<SyncerEvent> > syncer_events_;
-
 #if defined(OS_LINUX)
   // On Linux, we need this information in order to query idle time.
   scoped_ptr<IdleQueryLinux> idle_query_;
 #endif
 
   scoped_ptr<sessions::SyncSessionContext> session_context_;
-
-  // Events from the Syncer's syncer_event_channel are first processed by the
-  // SyncerThread and then get relayed onto this channel for consumers.
-  // TODO(timsteele): Wow did this confused me. I had removed the channel from
-  // here thinking there was only one, and then realized this relay was
-  // happening. Is this strict event handling order needed?!
-  scoped_ptr<SyncerEventChannel> syncer_event_relay_channel_;
 
   // Set whenever the server instructs us to stop sending it requests until
   // a specified time, and reset for each call to SyncShare. (Note that the

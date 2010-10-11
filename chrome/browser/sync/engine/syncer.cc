@@ -56,24 +56,17 @@ using sessions::ConflictProgress;
 Syncer::Syncer(sessions::SyncSessionContext* context)
     : early_exit_requested_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
-      syncer_event_channel_(new SyncerEventChannel()),
       resolver_scoper_(context, &resolver_),
-      event_channel_scoper_(context, syncer_event_channel_.get()),
       context_(context),
       updates_source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN),
       pre_conflict_resolution_closure_(NULL) {
-  shutdown_channel_.reset(new ShutdownChannel());
 
   ScopedDirLookup dir(context->directory_manager(), context->account_name());
   // The directory must be good here.
   CHECK(dir.good());
 }
 
-Syncer::~Syncer() {
-  syncer_event_channel_->Notify(
-      SyncerEvent(SyncerEvent::SHUTDOWN_USE_WITH_CARE));
-  shutdown_channel_->Notify(SyncerShutdownEvent(this));
-}
+Syncer::~Syncer() {}
 
 bool Syncer::ExitRequested() {
   AutoLock lock(early_exit_requested_lock_);
@@ -83,12 +76,6 @@ bool Syncer::ExitRequested() {
 void Syncer::RequestEarlyExit() {
   AutoLock lock(early_exit_requested_lock_);
   early_exit_requested_ = true;
-}
-
-void Syncer::RequestNudge(int milliseconds) {
-  SyncerEvent event(SyncerEvent::REQUEST_SYNC_NUDGE);
-  event.nudge_delay_milliseconds = milliseconds;
-  syncer_event_channel_->Notify(event);
 }
 
 bool Syncer::SyncShare(sessions::SyncSession::Delegate* delegate) {
@@ -136,45 +123,45 @@ void Syncer::SyncShare(sessions::SyncSession* session,
   while (!ExitRequested()) {
     switch (current_step) {
       case SYNCER_BEGIN:
-        LOG(INFO) << "Syncer Begin";
+        VLOG(1) << "Syncer Begin";
         next_step = CLEANUP_DISABLED_TYPES;
         break;
       case CLEANUP_DISABLED_TYPES: {
-        LOG(INFO) << "Cleaning up disabled types";
+        VLOG(1) << "Cleaning up disabled types";
         CleanupDisabledTypesCommand cleanup;
         cleanup.Execute(session);
         next_step = DOWNLOAD_UPDATES;
         break;
       }
       case DOWNLOAD_UPDATES: {
-        LOG(INFO) << "Downloading Updates";
+        VLOG(1) << "Downloading Updates";
         DownloadUpdatesCommand download_updates;
         download_updates.Execute(session);
         next_step = PROCESS_CLIENT_COMMAND;
         break;
       }
       case PROCESS_CLIENT_COMMAND: {
-        LOG(INFO) << "Processing Client Command";
+        VLOG(1) << "Processing Client Command";
         ProcessClientCommand(session);
         next_step = VERIFY_UPDATES;
         break;
       }
       case VERIFY_UPDATES: {
-        LOG(INFO) << "Verifying Updates";
+        VLOG(1) << "Verifying Updates";
         VerifyUpdatesCommand verify_updates;
         verify_updates.Execute(session);
         next_step = PROCESS_UPDATES;
         break;
       }
       case PROCESS_UPDATES: {
-        LOG(INFO) << "Processing Updates";
+       VLOG(1) << "Processing Updates";
         ProcessUpdatesCommand process_updates;
         process_updates.Execute(session);
         next_step = STORE_TIMESTAMPS;
         break;
       }
       case STORE_TIMESTAMPS: {
-        LOG(INFO) << "Storing timestamps";
+        VLOG(1) << "Storing timestamps";
         StoreTimestampsCommand store_timestamps;
         store_timestamps.Execute(session);
         // We should download all of the updates before attempting to process
@@ -188,7 +175,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case APPLY_UPDATES: {
-        LOG(INFO) << "Applying Updates";
+        VLOG(1) << "Applying Updates";
         ApplyUpdatesCommand apply_updates;
         apply_updates.Execute(session);
         next_step = BUILD_COMMIT_REQUEST;
@@ -199,7 +186,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       case BUILD_COMMIT_REQUEST: {
         session->status_controller()->set_syncing(true);
 
-        LOG(INFO) << "Processing Commit Request";
+        VLOG(1) << "Processing Commit Request";
         ScopedDirLookup dir(context_->directory_manager(),
                             context_->account_name());
         if (!dir.good()) {
@@ -209,12 +196,12 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
         sessions::ScopedSetSessionWriteTransaction set_trans(session, &trans);
 
-        LOG(INFO) << "Getting the Commit IDs";
+        VLOG(1) << "Getting the Commit IDs";
         GetCommitIdsCommand get_commit_ids_command(max_commit_batch_size_);
         get_commit_ids_command.Execute(session);
 
         if (!session->status_controller()->commit_ids().empty()) {
-          LOG(INFO) << "Building a commit message";
+          VLOG(1) << "Building a commit message";
           BuildCommitCommand build_commit_command;
           build_commit_command.Execute(session);
 
@@ -226,14 +213,14 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case POST_COMMIT_MESSAGE: {
-        LOG(INFO) << "Posting a commit request";
+        VLOG(1) << "Posting a commit request";
         PostCommitMessageCommand post_commit_command;
         post_commit_command.Execute(session);
         next_step = PROCESS_COMMIT_RESPONSE;
         break;
       }
       case PROCESS_COMMIT_RESPONSE: {
-        LOG(INFO) << "Processing the commit response";
+        VLOG(1) << "Processing the commit response";
         session->status_controller()->reset_num_conflicting_commits();
         ProcessCommitResponseCommand process_response_command;
         process_response_command.Execute(session);
@@ -241,7 +228,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case BUILD_AND_PROCESS_CONFLICT_SETS: {
-        LOG(INFO) << "Building and Processing Conflict Sets";
+        VLOG(1) << "Building and Processing Conflict Sets";
         BuildAndProcessConflictSetsCommand build_process_conflict_sets;
         build_process_conflict_sets.Execute(session);
         if (session->status_controller()->conflict_sets_built())
@@ -251,7 +238,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case RESOLVE_CONFLICTS: {
-        LOG(INFO) << "Resolving Conflicts";
+        VLOG(1) << "Resolving Conflicts";
 
         // Trigger the pre_conflict_resolution_closure_, which is a testing
         // hook for the unit tests, if it is non-NULL.
@@ -271,7 +258,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       }
       case APPLY_UPDATES_TO_RESOLVE_CONFLICTS: {
         StatusController* status = session->status_controller();
-        LOG(INFO) << "Applying updates to resolve conflicts";
+        VLOG(1) << "Applying updates to resolve conflicts";
         ApplyUpdatesCommand apply_updates;
         int before_conflicting_updates = status->TotalNumConflictingItems();
         apply_updates.Execute(session);
@@ -285,13 +272,13 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case CLEAR_PRIVATE_DATA: {
-        LOG(INFO) << "Clear Private Data";
+        VLOG(1) << "Clear Private Data";
         ClearDataCommand clear_data_command;
         clear_data_command.Execute(session);
         next_step = SYNCER_END;
       }
       case SYNCER_END: {
-        LOG(INFO) << "Syncer End";
+        VLOG(1) << "Syncer End";
         SyncerEndCommand syncer_end_command;
         // This will set "syncing" to false, and send out a notification.
         syncer_end_command.Execute(session);

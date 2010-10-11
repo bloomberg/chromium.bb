@@ -27,7 +27,8 @@ class SyncSessionTest : public testing::Test,
     GetModelSafeRoutingInfo(&routes_);
   }
   virtual void SetUp() {
-    context_.reset(new SyncSessionContext(NULL, NULL, this));
+    context_.reset(new SyncSessionContext(NULL, NULL, this,
+        std::vector<SyncEngineEventListener*>()));
     session_.reset(new SyncSession(context_.get(), this));
   }
   virtual void TearDown() {
@@ -91,26 +92,20 @@ class SyncSessionTest : public testing::Test,
 
 TEST_F(SyncSessionTest, ScopedContextHelpers) {
   ConflictResolver resolver;
-  SyncerEventChannel* channel = new SyncerEventChannel();
   EXPECT_FALSE(context_->resolver());
-  EXPECT_FALSE(context_->syncer_event_channel());
   {
     ScopedSessionContextConflictResolver s_resolver(context_.get(), &resolver);
-    ScopedSessionContextSyncerEventChannel s_channel(context_.get(), channel);
     EXPECT_EQ(&resolver, context_->resolver());
-    EXPECT_EQ(channel, context_->syncer_event_channel());
   }
   EXPECT_FALSE(context_->resolver());
-  EXPECT_FALSE(context_->syncer_event_channel());
-  channel->Notify(SyncerEvent(SyncerEvent::SHUTDOWN_USE_WITH_CARE));
-  delete channel;
 }
 
 TEST_F(SyncSessionTest, SetWriteTransaction) {
   TestDirectorySetterUpper db;
   db.SetUp();
   session_.reset(NULL);
-  context_.reset(new SyncSessionContext(NULL, db.manager(), this));
+  context_.reset(new SyncSessionContext(NULL, db.manager(), this,
+      std::vector<SyncEngineEventListener*>()));
   session_.reset(new SyncSession(context_.get(), this));
   context_->set_account_name(db.name());
   syncable::ScopedDirLookup dir(context_->directory_manager(),

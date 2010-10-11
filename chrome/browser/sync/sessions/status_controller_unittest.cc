@@ -56,11 +56,6 @@ TEST_F(StatusControllerTest, GetsDirty) {
   status.set_num_server_changes_remaining(30);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
-  status.set_over_quota(true);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.set_over_quota(false);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
   status.set_invalid_store(true);
   EXPECT_TRUE(status.TestAndClearIsDirty());
   status.set_invalid_store(false);
@@ -143,10 +138,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
 
   status.set_num_server_changes_remaining(13);
   EXPECT_EQ(13, status.num_server_changes_remaining());
-
-  EXPECT_FALSE(status.syncer_status().over_quota);
-  status.set_over_quota(true);
-  EXPECT_TRUE(status.syncer_status().over_quota);
 
   EXPECT_FALSE(status.syncer_status().invalid_store);
   status.set_invalid_store(true);

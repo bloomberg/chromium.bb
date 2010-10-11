@@ -61,15 +61,15 @@
 #include "net/base/network_change_notifier.h"
 
 using browser_sync::AllStatus;
-using browser_sync::AllStatusEvent;
 using browser_sync::Cryptographer;
 using browser_sync::KeyParams;
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::ModelSafeWorkerRegistrar;
 using browser_sync::ServerConnectionEvent;
+using browser_sync::SyncEngineEvent;
+using browser_sync::SyncEngineEventListener;
 using browser_sync::Syncer;
-using browser_sync::SyncerEvent;
 using browser_sync::SyncerThread;
 using browser_sync::kNigoriTag;
 using browser_sync::sessions::SyncSessionContext;
@@ -913,7 +913,7 @@ class SyncManager::SyncInternal
       public TalkMediator::Delegate,
       public sync_notifier::StateWriter,
       public browser_sync::ChannelEventHandler<syncable::DirectoryChangeEvent>,
-      public browser_sync::ChannelEventHandler<SyncerEvent>{
+      public SyncEngineEventListener {
   static const int kDefaultNudgeDelayMilliseconds;
   static const int kPreferencesNudgeDelayMilliseconds;
  public:
@@ -928,7 +928,7 @@ class SyncManager::SyncInternal
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
-  ~SyncInternal() {
+  virtual ~SyncInternal() {
     DCHECK(!core_message_loop_);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
@@ -975,9 +975,6 @@ class SyncManager::SyncInternal
       const syncable::DirectoryChangeEvent& event);
   void HandleCalculateChangesChangeEventFromSyncer(
       const syncable::DirectoryChangeEvent& event);
-
-  // This listener is called by the syncer channel for all syncer events.
-  virtual void HandleChannelEvent(const SyncerEvent& event);
 
   // Listens for notifications from the ServerConnectionManager
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
@@ -1066,6 +1063,8 @@ class SyncManager::SyncInternal
     return true;
   }
 
+  // SyncEngineEventListener implementation.
+  virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
  private:
   // Helper to call OnAuthError when no authentication credentials are
   // available.
@@ -1186,9 +1185,6 @@ class SyncManager::SyncInternal
 
   // Event listener hookup for the ServerConnectionManager.
   scoped_ptr<EventListenerHookup> connection_manager_hookup_;
-
-  // The event listener hookup registered for HandleSyncerEvent.
-  scoped_ptr<browser_sync::ChannelHookup<SyncerEvent> > syncer_event_;
 
   // The sync dir_manager to which we belong.
   SyncManager* const sync_manager_;
@@ -1366,15 +1362,17 @@ bool SyncManager::SyncInternal::Init(
   if (!setup_for_test_mode) {
     // Build a SyncSessionContext and store the worker in it.
     LOG(INFO) << "Sync is bringing up SyncSessionContext.";
+    std::vector<SyncEngineEventListener*> listeners;
+    listeners.push_back(&allstatus_);
+    listeners.push_back(this);
     SyncSessionContext* context = new SyncSessionContext(
-        connection_manager_.get(), dir_manager(), model_safe_worker_registrar);
+        connection_manager_.get(),
+        dir_manager(),
+        model_safe_worker_registrar,
+        listeners);
 
     // The SyncerThread takes ownership of |context|.
     syncer_thread_ = new SyncerThread(context);
-    allstatus_.WatchSyncerThread(syncer_thread());
-
-    // Subscribe to the syncer thread's channel.
-    syncer_event_.reset(syncer_thread()->relay_channel()->AddObserver(this));
   }
 
   return SignIn(credentials);
@@ -1572,7 +1570,6 @@ void SyncManager::SyncInternal::Shutdown() {
     if (!syncer_thread()->Stop(kThreadExitTimeoutMsec)) {
       LOG(FATAL) << "Unable to stop the syncer, it won't be happy...";
     }
-    syncer_event_.reset();
     syncer_thread_ = NULL;
   }
 
@@ -1586,7 +1583,7 @@ void SyncManager::SyncInternal::Shutdown() {
   }
 
   // Pump any messages the auth watcher, syncer thread, or talk
-  // mediator posted before they shut down. (See HandleSyncerEvent(),
+  // mediator posted before they shut down. (See OnSyncEngineEvent(),
   // and HandleTalkMediatorEvent() for the
   // events that may be posted.)
   {
@@ -1855,7 +1852,8 @@ SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
   return return_status;
 }
 
-void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
+void SyncManager::SyncInternal::OnSyncEngineEvent(
+    const SyncEngineEvent& event) {
   if (!observer_)
     return;
 
@@ -1866,7 +1864,7 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
   //
   // Notifications are sent at the end of every sync cycle, regardless of
   // whether we should sync again.
-  if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED) {
+  if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
     ModelSafeRoutingInfo enabled_types;
     registrar_->GetModelSafeRoutingInfo(&enabled_types);
     if (enabled_types.count(syncable::PASSWORDS) > 0) {
@@ -1915,32 +1913,32 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
     }
   }
 
-  if (event.what_happened == SyncerEvent::PAUSED) {
+  if (event.what_happened == SyncEngineEvent::SYNCER_THREAD_PAUSED) {
     observer_->OnPaused();
     return;
   }
 
-  if (event.what_happened == SyncerEvent::RESUMED) {
+  if (event.what_happened == SyncEngineEvent::SYNCER_THREAD_RESUMED) {
     observer_->OnResumed();
     return;
   }
 
-  if (event.what_happened == SyncerEvent::STOP_SYNCING_PERMANENTLY) {
+  if (event.what_happened == SyncEngineEvent::STOP_SYNCING_PERMANENTLY) {
     observer_->OnStopSyncingPermanently();
     return;
   }
 
-  if (event.what_happened == SyncerEvent::CLEAR_SERVER_DATA_SUCCEEDED) {
+  if (event.what_happened == SyncEngineEvent::CLEAR_SERVER_DATA_SUCCEEDED) {
     observer_->OnClearServerDataSucceeded();
     return;
   }
 
-  if (event.what_happened == SyncerEvent::CLEAR_SERVER_DATA_FAILED) {
+  if (event.what_happened == SyncEngineEvent::CLEAR_SERVER_DATA_FAILED) {
     observer_->OnClearServerDataFailed();
     return;
   }
 
-  if (event.what_happened == SyncerEvent::UPDATED_TOKEN) {
+  if (event.what_happened == SyncEngineEvent::UPDATED_TOKEN) {
     observer_->OnUpdatedToken(event.updated_token);
     return;
   }

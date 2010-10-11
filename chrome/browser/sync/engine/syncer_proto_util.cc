@@ -144,9 +144,9 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
     std::string new_token =
         http_response.update_client_auth_header;
     if (!new_token.empty()) {
-      SyncerEvent event(SyncerEvent::UPDATED_TOKEN);
+      SyncEngineEvent event(SyncEngineEvent::UPDATED_TOKEN);
       event.updated_token = new_token;
-      session->context()->syncer_event_channel()->Notify(event);
+      session->context()->NotifyListeners(event);
     }
 
     if (response->ParseFromString(rx)) {

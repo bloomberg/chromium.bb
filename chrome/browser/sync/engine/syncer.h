@@ -103,14 +103,6 @@ class Syncer {
   // Limit the batch size of commit operations to a specified number of items.
   void set_max_commit_batch_size(int x) { max_commit_batch_size_ = x; }
 
-  ShutdownChannel* shutdown_channel() const { return shutdown_channel_.get(); }
-
-  // Syncer will take ownership of this channel and it will be destroyed along
-  // with the Syncer instance.
-  void set_shutdown_channel(ShutdownChannel* channel) {
-    shutdown_channel_.reset(channel);
-  }
-
   // Volatile reader for the source member of the syncer session object.  The
   // value is set to the SYNC_CYCLE_CONTINUATION value to signal that it has
   // been read.
@@ -147,12 +139,8 @@ class Syncer {
   int32 max_commit_batch_size_;
 
   ConflictResolver resolver_;
-  scoped_ptr<SyncerEventChannel> syncer_event_channel_;
   sessions::ScopedSessionContextConflictResolver resolver_scoper_;
-  sessions::ScopedSessionContextSyncerEventChannel event_channel_scoper_;
   sessions::SyncSessionContext* context_;
-
-  scoped_ptr<ShutdownChannel> shutdown_channel_;
 
   // The source of the last nudge.
   sync_pb::GetUpdatesCallerInfo::GetUpdatesSource updates_source_;

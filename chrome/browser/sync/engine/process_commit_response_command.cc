@@ -131,7 +131,6 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   int conflicting_commits = 0;
   int error_commits = 0;
   int successes = 0;
-  bool over_quota = false;
   set<syncable::Id> conflicting_new_folder_ids;
   set<syncable::Id> deleted_folders;
   ConflictProgress* conflict_progress = status->mutable_conflict_progress();
@@ -163,7 +162,6 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
           status->increment_num_successful_commits();
           break;
         case CommitResponse::OVER_QUOTA:
-          over_quota = true;
           // We handle over quota like a retry, which is same as transient.
         case CommitResponse::RETRY:
         case CommitResponse::TRANSIENT_ERROR:
@@ -195,7 +193,6 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
     ResetErrorCounters(status);
   }
   SyncerUtil::MarkDeletedChildrenSynced(dir, &deleted_folders);
-  status->set_over_quota(over_quota);
 
   return;
 }
@@ -253,7 +250,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     return response;
   }
   if (CommitResponse::OVER_QUOTA == response) {
-    LOG(INFO) << "Hit Quota Committing: " << local_entry;
+    LOG(WARNING) << "Hit deprecated OVER_QUOTA Committing: " << local_entry;
     return response;
   }
   if (!server_entry.has_id_string()) {

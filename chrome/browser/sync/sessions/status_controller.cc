@@ -101,11 +101,6 @@ void StatusController::set_num_server_changes_remaining(
     *(shared_.num_server_changes_remaining.mutate()) = changes_remaining;
 }
 
-void StatusController::set_over_quota(bool over_quota) {
-  if (shared_.syncer_status.value().over_quota != over_quota)
-    shared_.syncer_status.mutate()->over_quota = over_quota;
-}
-
 void StatusController::set_invalid_store(bool invalid_store) {
   if (shared_.syncer_status.value().invalid_store != invalid_store)
     shared_.syncer_status.mutate()->invalid_store = invalid_store;

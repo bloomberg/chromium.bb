@@ -94,7 +94,8 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
 
   void ResetContext() {
     context_.reset(new sessions::SyncSessionContext(
-        mock_server_.get(), syncdb_->manager(), registrar()));
+        mock_server_.get(), syncdb_->manager(), registrar(),
+        std::vector<SyncEngineEventListener*>()));
     context_->set_account_name(syncdb_->name());
     ClearSession();
   }
