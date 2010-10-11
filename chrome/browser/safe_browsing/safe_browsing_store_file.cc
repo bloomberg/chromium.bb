@@ -171,6 +171,11 @@ bool FileHeaderSanityCheck(const FilePath& filename,
 
 }  // namespace
 
+// static
+void SafeBrowsingStoreFile::RecordFormatEvent(FormatEventType event_type) {
+  UMA_HISTOGRAM_ENUMERATION("SB2.FormatEvent", event_type, FORMAT_EVENT_MAX);
+}
+
 SafeBrowsingStoreFile::SafeBrowsingStoreFile()
     : chunks_written_(0),
       file_(NULL),
@@ -251,11 +256,24 @@ bool SafeBrowsingStoreFile::WriteSubHash(int32 chunk_id, int32 add_chunk_id,
 }
 
 bool SafeBrowsingStoreFile::OnCorruptDatabase() {
+  if (!corruption_seen_)
+    RecordFormatEvent(FORMAT_EVENT_FILE_CORRUPT);
+  corruption_seen_ = true;
+
   if (corruption_callback_.get())
     corruption_callback_->Run();
 
   // Return false as a convenience to callers.
   return false;
+}
+
+void SafeBrowsingStoreFile::HandleCorruptDatabase() {
+  if (!corruption_seen_)
+    RecordFormatEvent(FORMAT_EVENT_SQLITE_CORRUPT);
+  corruption_seen_ = true;
+
+  if (corruption_callback_.get())
+    corruption_callback_->Run();
 }
 
 bool SafeBrowsingStoreFile::Close() {
@@ -282,6 +300,8 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   DCHECK(sub_hashes_.empty());
   DCHECK_EQ(chunks_written_, 0);
 
+  corruption_seen_ = false;
+
   const FilePath new_filename = TemporaryFileForFilename(filename_);
   file_util::ScopedFILE new_file(file_util::OpenFile(new_filename, "wb+"));
   if (new_file.get() == NULL)
@@ -304,6 +324,12 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
       return OnCorruptDatabase();
 
   if (header.magic != kFileMagic || header.version != kFileVersion) {
+    if (!strcmp(reinterpret_cast<char*>(&header.magic), "SQLite format 3")) {
+      RecordFormatEvent(FORMAT_EVENT_FOUND_SQLITE);
+    } else {
+      RecordFormatEvent(FORMAT_EVENT_FOUND_UNKNOWN);
+    }
+
     // Something about having the file open causes a problem with
     // SQLite opening it.  Perhaps PRAGMA locking_mode = EXCLUSIVE?
     file.reset();
@@ -571,8 +597,11 @@ bool SafeBrowsingStoreFile::DoUpdate(
   if (old_store_.get()) {
     const bool deleted = old_store_->Delete();
     old_store_.reset();
-    if (!deleted)
+    if (!deleted) {
+      RecordFormatEvent(FORMAT_EVENT_SQLITE_DELETE_FAILED);
       return false;
+    }
+    RecordFormatEvent(FORMAT_EVENT_SQLITE_DELETED);
   } else {
     if (!file_util::Delete(filename_, false) &&
         file_util::PathExists(filename_))

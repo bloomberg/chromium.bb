@@ -160,6 +160,34 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   }
 
  private:
+  // Enumerate different format-change events for histogramming
+  // purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
+  // TODO(shess): Remove this once the format change is complete.
+  enum FormatEventType {
+    // Corruption detected, broken down by file format.
+    FORMAT_EVENT_FILE_CORRUPT,
+    FORMAT_EVENT_SQLITE_CORRUPT,
+
+    // The type of format found in the file.  The expected case (new
+    // file format) is intentionally not covered.
+    FORMAT_EVENT_FOUND_SQLITE,
+    FORMAT_EVENT_FOUND_UNKNOWN,
+
+    // The number of SQLite-format files deleted should be the same as
+    // FORMAT_EVENT_FOUND_SQLITE.  It can differ if the delete fails,
+    // or if a failure prevents the update from succeeding.
+    FORMAT_EVENT_SQLITE_DELETED,
+    FORMAT_EVENT_SQLITE_DELETE_FAILED,
+
+    // Histogram space is determined by the max.  If this is exceeded,
+    // simply start a new histogram.
+    FORMAT_EVENT_MAX = 50
+  };
+
+  // Helper to record an event related to format conversion from
+  // SQLite to file.
+  static void RecordFormatEvent(FormatEventType event_type);
+
   // Close all files and clear all buffers.
   bool Close();
 
@@ -169,9 +197,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
 
   // Helper for creating a corruption callback for |old_store_|.
   // TODO(shess): Remove after migration.
-  void HandleCorruptDatabase() {
-    OnCorruptDatabase();
-  }
+  void HandleCorruptDatabase();
 
   // Clear temporary buffers used to accumulate chunk data.
   bool ClearChunkBuffers() {
@@ -234,6 +260,11 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   base::hash_set<int32> sub_del_cache_;
 
   scoped_ptr<Callback0::Type> corruption_callback_;
+
+  // Tracks whether corruption has already been seen in the current
+  // update, so that only one instance is recorded in the stats.
+  // TODO(shess): Remove with format-migration support.
+  bool corruption_seen_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingStoreFile);
 };
