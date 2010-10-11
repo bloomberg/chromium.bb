@@ -1829,8 +1829,6 @@ void BrowserWindowGtk::SetInfoBarShowing(
     else
       infobar_animation_.Reset(1.0);
   } else {
-    infobar_colors_ = std::pair<SkColor, SkColor>();
-
     if (animate)
       infobar_animation_.Hide();
     else
@@ -1850,6 +1848,12 @@ void BrowserWindowGtk::InvalidateInfoBarBits() {
   gtk_widget_queue_draw(toolbar_->widget());
   if (bookmark_bar_.get())
     gtk_widget_queue_draw(bookmark_bar_->widget());
+
+  // Redraw the top bit of the render view area.
+  int width = contents_container_->widget()->allocation.width;
+  int height = gtk_util::kInfoBarDropShadowHeight;
+  gtk_widget_queue_draw_area(contents_container_->widget(),
+                             0, 0, width, height);
 }
 
 gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,

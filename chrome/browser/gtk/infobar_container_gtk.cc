@@ -167,8 +167,19 @@ void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
                           delegate);
   }
 
-  if (tab_contents_->GetInfoBarDelegateAt(0) == delegate)
-    UpdateToolbarInfoBarState(NULL, animate);
+  if (tab_contents_->GetInfoBarDelegateAt(0) == delegate) {
+    InfoBar* bar = NULL;
+    // Get the next infobar, if it exists, so we can change the color of the
+    // arrow to it.
+    GList* children = gtk_container_get_children(GTK_CONTAINER(widget()));
+    if (children->next) {
+      bar = reinterpret_cast<InfoBar*>(
+          g_object_get_data(G_OBJECT(children->next->data), "info-bar"));
+    }
+    g_list_free(children);
+
+    UpdateToolbarInfoBarState(bar, animate);
+  }
 }
 
 void InfoBarContainerGtk::UpdateToolbarInfoBarState(
