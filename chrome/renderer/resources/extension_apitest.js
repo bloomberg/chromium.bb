@@ -173,6 +173,8 @@ var chrome = chrome || {};
         chrome.test.assertNoLastError();
       } else {
         chrome.test.assertEq(typeof(expectedError), 'string');
+        chrome.test.assertTrue(chrome.extension.lastError != undefined,
+            "No lastError, but expected " + expectedError);
         chrome.test.assertEq(expectedError, chrome.extension.lastError.message);
       }
 
@@ -214,8 +216,8 @@ var chrome = chrome || {};
     return chrome.test.callback(func);
   };
 
-  chrome.test.callbackFail = function(expectedError) {
-    return chrome.test.callback(null, expectedError);
+  chrome.test.callbackFail = function(expectedError, func) {
+    return chrome.test.callback(func, expectedError);
   };
 
   chrome.test.runTests = function(tests) {

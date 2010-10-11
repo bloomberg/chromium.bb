@@ -222,7 +222,7 @@ chrome.test.runTests([
       node3.parentId = results.parentId;
       node3.index = 1;
       node2.index = 2;
-      
+
       // update expected to match
       expected[0].children[0].children.pop();
       expected[0].children[0].children.pop();
@@ -283,11 +283,33 @@ chrome.test.runTests([
       chrome.test.assertEq(title, results.title);
     }));
 
-    var url = "http://example.com/hello"
+    var url = "http://example.com/hello";
     chrome.bookmarks.update(node1.id, {"url": url}, pass(function(results) {
       // Make sure that leaving out the title does not set the title to empty.
       chrome.test.assertEq(title, results.title);
       chrome.test.assertEq(url, results.url);
+
+      // Empty or invalid URLs should not change the URL.
+      var bad_url = "";
+      chrome.bookmarks.update(node1.id, {"url": bad_url},
+        pass(function(results) {
+          chrome.bookmarks.get(node1.id, pass(function(results) {
+            chrome.test.assertEq(url, results[0].url);
+            chrome.test.log("URL UNCHANGED");
+          }));
+        })
+      );
+
+      // Invalid URLs also generate an error.
+      bad_url = "I am not an URL";
+      chrome.bookmarks.update(node1.id, {"url": bad_url}, fail("Invalid URL.",
+        function(results) {
+          chrome.bookmarks.get(node1.id, pass(function(results) {
+            chrome.test.assertEq(url, results[0].url);
+            chrome.test.log("URL UNCHANGED");
+          }));
+        })
+      );
     }));
   },
 

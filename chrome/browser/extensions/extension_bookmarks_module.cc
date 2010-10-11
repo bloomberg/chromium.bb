@@ -545,20 +545,17 @@ bool UpdateBookmarkFunction::RunImpl() {
   DictionaryValue* updates;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &updates));
 
-  string16 title;
-  std::string url_string;
-
   // Optional but we need to distinguish non present from an empty title.
+  string16 title;
   const bool has_title = updates->GetString(keys::kTitleKey, &title);
-  updates->GetString(keys::kUrlKey, &url_string);  // Optional.
 
-  GURL url;
-  if (!url_string.empty()) {
-    url = GURL(url_string);
-
-    // If URL is present then it needs to be a non empty valid URL.
-    EXTENSION_FUNCTION_VALIDATE(!url.is_empty());
-    EXTENSION_FUNCTION_VALIDATE(url.is_valid());
+  // Optional.
+  std::string url_string;
+  updates->GetString(keys::kUrlKey, &url_string);
+  GURL url(url_string);
+  if (!url_string.empty() && !url.is_valid()) {
+    error_ = keys::kInvalidUrlError;
+    return false;
   }
 
   BookmarkModel* model = profile()->GetBookmarkModel();
