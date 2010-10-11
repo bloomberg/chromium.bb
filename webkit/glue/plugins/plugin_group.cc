@@ -13,6 +13,9 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
+const char* PluginGroup::kAdobeReader8GroupName = "Adobe Reader 8";
+const char* PluginGroup::kAdobeReader9GroupName = "Adobe Reader 9";
+
 #if defined(OS_MACOSX)
 // Plugin Groups for Mac.
 // Plugins are listed here as soon as vulnerabilities and solutions
@@ -43,10 +46,10 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     "http://www.apple.com/quicktime/download/" },
   { "java-runtime-environment", "Java 6", "Java", "", "6", "6.0.200",
     "http://www.java.com/" },
-  { "adobe-reader", "Adobe Reader 9", "Adobe Acrobat", "9", "10", "9.4.0",
-    "http://get.adobe.com/reader/" },
-  { "adobe-reader-8", "Adobe Reader 8", "Adobe Acrobat", "0", "9", "8.2.5",
-    "http://get.adobe.com/reader/" },
+  { "adobe-reader", PluginGroup::kAdobeReader9GroupName, "Adobe Acrobat", "9",
+    "10", "9.4.0", "http://get.adobe.com/reader/" },
+  { "adobe-reader-8", PluginGroup::kAdobeReader8GroupName, "Adobe Acrobat", "0",
+    "9", "8.2.5", "http://get.adobe.com/reader/" },
   { "adobe-flash-player", "Flash", "Shockwave Flash", "", "", "10.1.85",
     "http://get.adobe.com/flashplayer/" },
   { "silverlight-3", "Silverlight 3", "Silverlight", "0", "4", "3.0.50106.0",

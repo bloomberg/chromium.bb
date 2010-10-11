@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -25,6 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -210,27 +212,39 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
   std::string is_group_str;
   if (!args->GetString(1, &enable_str) || !args->GetString(2, &is_group_str))
     return;
+  bool enable = enable_str == "true";
 
+  PluginUpdater* plugin_updater = PluginUpdater::GetPluginUpdater();
   if (is_group_str == "true") {
     string16 group_name;
     if (!args->GetString(0, &group_name))
       return;
 
-    PluginUpdater::GetPluginUpdater()->EnablePluginGroup(
-        enable_str == "true", group_name);
+    plugin_updater->EnablePluginGroup(enable, group_name);
+    if (enable) {
+      // See http://crbug.com/50105 for background.
+      string16 reader8 = ASCIIToUTF16(PluginGroup::kAdobeReader8GroupName);
+      string16 reader9 = ASCIIToUTF16(PluginGroup::kAdobeReader9GroupName);
+      string16 internalpdf = ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName);
+      if (group_name == reader8 || group_name == reader9) {
+        plugin_updater->EnablePluginGroup(false, internalpdf);
+      } else if (group_name == internalpdf) {
+        plugin_updater->EnablePluginGroup(false, reader8);
+        plugin_updater->EnablePluginGroup(false, reader9);
+      }
+    }
   } else {
     FilePath::StringType file_path;
     if (!args->GetString(0, &file_path))
       return;
 
-    PluginUpdater::GetPluginUpdater()->EnablePluginFile(
-        enable_str == "true", file_path);
+    plugin_updater->EnablePluginFile(enable, file_path);
   }
 
   // TODO(viettrungluu): We might also want to ensure that the plugins
   // list is always written to prefs even when the user hasn't disabled a
   // plugin. <http://crbug.com/39101>
-  PluginUpdater::GetPluginUpdater()->UpdatePreferences(dom_ui_->GetProfile());
+  plugin_updater->UpdatePreferences(dom_ui_->GetProfile());
 }
 
 void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const ListValue* args) {

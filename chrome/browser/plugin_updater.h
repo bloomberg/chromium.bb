@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/singleton.h"
 #include "chrome/common/notification_observer.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 class DictionaryValue;
 class ListValue;
@@ -48,11 +49,23 @@ class PluginUpdater : public NotificationObserver {
   PluginUpdater();
   virtual ~PluginUpdater() {}
 
-  // Note: if you change this to false from true, you must update
-  // kPluginsEnabledInternalPDF to be a new name (i.e. add 2, 3, 4...) at end.
-  bool enable_internal_pdf_;
+  // Called on the file thread to get the data necessary to update the saved
+  // preferences.  The profile pointer is only to be passed to the UI thread.
+  static void GetPreferencesDataOnFileThread(void* profile);
 
-  DictionaryValue* CreatePluginFileSummary(const WebPluginInfo& plugin);
+  // Called on the UI thread with the plugin data to save the preferences.
+  static void OnUpdatePreferences(Profile* profile,
+                                  const std::vector<WebPluginInfo>& plugins,
+                                  const NPAPI::PluginList::PluginMap& groups);
+
+  // Queues sending the notification that plugin data has changed.  This is done
+  // so that if a bunch of changes happen, we only send one notification.
+  void NotifyPluginStatusChanged();
+
+  // Used for the post task to notify that plugin enabled status changed.
+  static void OnNotifyPluginStatusChanged();
+
+  static DictionaryValue* CreatePluginFileSummary(const WebPluginInfo& plugin);
 
   // Force plugins to be disabled due to policy. |plugins| contains
   // the list of StringValues of the names of the policy-disabled plugins.
@@ -60,6 +73,12 @@ class PluginUpdater : public NotificationObserver {
 
   // Needed to allow singleton instantiation using private constructor.
   friend struct DefaultSingletonTraits<PluginUpdater>;
+
+  // Note: if you change this to false from true, you must update
+  // kPluginsEnabledInternalPDF to be a new name (i.e. add 2, 3, 4...) at end.
+  bool enable_internal_pdf_;
+
+  bool notify_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginUpdater);
 };

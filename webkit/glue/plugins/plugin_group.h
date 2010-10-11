@@ -46,6 +46,11 @@ struct PluginGroupDefinition {
 
 class PluginGroup {
  public:
+  // Used by about:plugins to disable Reader plugin when internal PDF viewer is
+  // enabled.
+  static const char* kAdobeReader8GroupName;
+  static const char* kAdobeReader9GroupName;
+
   typedef std::map<std::string, linked_ptr<PluginGroup> > PluginMap;
 
   // Creates a PluginGroup from a PluginGroupDefinition.
