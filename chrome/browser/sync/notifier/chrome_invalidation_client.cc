@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/sync/notifier/cache_invalidation_packet_handler.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
@@ -19,7 +20,9 @@ namespace sync_notifier {
 ChromeInvalidationClient::Listener::~Listener() {}
 
 ChromeInvalidationClient::ChromeInvalidationClient()
-    : listener_(NULL) {
+    : chrome_system_resources_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      listener_(NULL),
+      state_writer_(NULL) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
 }
 
@@ -27,10 +30,12 @@ ChromeInvalidationClient::~ChromeInvalidationClient() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   Stop();
   DCHECK(!listener_);
+  DCHECK(!state_writer_);
 }
 
 void ChromeInvalidationClient::Start(
-    const std::string& client_id, Listener* listener,
+    const std::string& client_id, const std::string& state,
+    Listener* listener, StateWriter* state_writer,
     base::WeakPtr<talk_base::Task> base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   DCHECK(base_task.get());
@@ -39,7 +44,11 @@ void ChromeInvalidationClient::Start(
   chrome_system_resources_.StartScheduler();
 
   DCHECK(!listener_);
+  DCHECK(listener);
   listener_ = listener;
+  DCHECK(!state_writer_);
+  DCHECK(state_writer);
+  state_writer_ = state_writer;
 
   invalidation::ClientType client_type;
   client_type.set_type(invalidation::ClientType::CHROME_SYNC);
@@ -50,12 +59,10 @@ void ChromeInvalidationClient::Start(
   // replies we get.
   client_config.max_registrations_per_message = 20;
   client_config.max_ops_per_message = 40;
-  // TODO(akalin): Grab |persisted_state| from persistent storage.
-  std::string persisted_state;
   invalidation_client_.reset(
       new invalidation::InvalidationClientImpl(
           &chrome_system_resources_, client_type, client_id,
-          persisted_state, client_config, this));
+          state, client_config, this));
   cache_invalidation_packet_handler_.reset(
       new CacheInvalidationPacketHandler(base_task,
                                          invalidation_client_.get()));
@@ -76,6 +83,7 @@ void ChromeInvalidationClient::Stop() {
   registration_manager_.reset();
   cache_invalidation_packet_handler_.reset();
   invalidation_client_.reset();
+  state_writer_ = NULL;
   listener_ = NULL;
 }
 
@@ -142,6 +150,10 @@ void ChromeInvalidationClient::RegistrationLost(
     LOG(WARNING) << "Could not get object id model type; ignoring";
   }
   RunAndDeleteClosure(callback);
+}
+
+void ChromeInvalidationClient::WriteState(const std::string& state) {
+  state_writer_->WriteState(state);
 }
 
 }  // namespace sync_notifier

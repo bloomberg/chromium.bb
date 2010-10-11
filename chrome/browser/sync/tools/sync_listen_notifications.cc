@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -157,7 +158,8 @@ class ChromeInvalidationListener
 
 // Delegate for server-side notifications.
 class CacheInvalidationNotifierDelegate
-    : public XmppNotificationClient::Observer {
+    : public XmppNotificationClient::Observer,
+      public sync_notifier::StateWriter {
  public:
   CacheInvalidationNotifierDelegate() {}
 
@@ -168,14 +170,21 @@ class CacheInvalidationNotifierDelegate
 
     // TODO(akalin): app_name should be per-client unique.
     const std::string kAppName = "cc_sync_listen_notifications";
-    chrome_invalidation_client_.Start(kAppName,
+    std::string state = "";
+    chrome_invalidation_client_.Start(kAppName, state,
                                       &chrome_invalidation_listener_,
-                                      base_task);
+                                      this, base_task);
     chrome_invalidation_client_.RegisterTypes();
   }
 
   virtual void OnError() {
     chrome_invalidation_client_.Stop();
+  }
+
+  virtual void WriteState(const std::string& state) {
+    std::string base64_state;
+    CHECK(base::Base64Encode(state, &base64_state));
+    LOG(INFO) << "Writing state: " << base64_state;
   }
 
  private:

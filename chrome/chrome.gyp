@@ -1085,6 +1085,7 @@
         'browser/sync/notifier/registration_manager.h',
         'browser/sync/notifier/server_notifier_thread.cc',
         'browser/sync/notifier/server_notifier_thread.h',
+        'browser/sync/notifier/state_writer.h',
       ],
       'include_dirs': [
         '..',

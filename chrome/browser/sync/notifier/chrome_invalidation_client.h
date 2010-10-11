@@ -16,6 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/sync/notifier/chrome_system_resources.h"
+#include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 
@@ -31,7 +32,9 @@ class RegistrationManager;
 // TODO(akalin): Hook this up to a NetworkChangeNotifier so we can
 // properly notify invalidation_client_.
 
-class ChromeInvalidationClient : public invalidation::InvalidationListener {
+class ChromeInvalidationClient
+    : public invalidation::InvalidationListener,
+      public StateWriter {
  public:
   class Listener {
    public:
@@ -47,10 +50,11 @@ class ChromeInvalidationClient : public invalidation::InvalidationListener {
   // Calls Stop().
   virtual ~ChromeInvalidationClient();
 
-  // Does not take ownership of |listener|.  |base_task| must still be
-  // non-NULL.
+  // Does not take ownership of |listener| or |state_writer|.
+  // |base_task| must still be non-NULL.
   void Start(
-      const std::string& client_id, Listener* listener,
+      const std::string& client_id, const std::string& state,
+      Listener* listener, StateWriter* state_writer,
       base::WeakPtr<talk_base::Task> base_task);
 
   void Stop();
@@ -74,10 +78,14 @@ class ChromeInvalidationClient : public invalidation::InvalidationListener {
   virtual void RegistrationLost(const invalidation::ObjectId& object_id,
                                 invalidation::Closure* callback);
 
+  // StateWriter implementation.
+  virtual void WriteState(const std::string& state);
+
  private:
   NonThreadSafe non_thread_safe_;
   ChromeSystemResources chrome_system_resources_;
   Listener* listener_;
+  StateWriter* state_writer_;
   scoped_ptr<invalidation::InvalidationClient> invalidation_client_;
   scoped_ptr<CacheInvalidationPacketHandler>
       cache_invalidation_packet_handler_;

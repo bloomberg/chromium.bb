@@ -16,13 +16,14 @@
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/sync/notifier/state_writer.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 
 namespace sync_notifier {
 
 class ChromeSystemResources : public invalidation::SystemResources {
  public:
-  ChromeSystemResources();
+  explicit ChromeSystemResources(StateWriter* state_writer);
 
   ~ChromeSystemResources();
 
@@ -55,6 +56,7 @@ class ChromeSystemResources : public invalidation::SystemResources {
       scoped_runnable_method_factory_;
   // Holds all posted tasks that have not yet been run.
   std::set<invalidation::Closure*> posted_tasks_;
+  StateWriter* state_writer_;
 
   // If the scheduler has been started, inserts |task| into
   // |posted_tasks_| and returns a Task* to post.  Otherwise,

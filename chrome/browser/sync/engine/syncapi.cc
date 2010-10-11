@@ -34,6 +34,7 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/notifier/server_notifier_thread.h"
+#include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
@@ -910,6 +911,7 @@ class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
 class SyncManager::SyncInternal
     : public net::NetworkChangeNotifier::Observer,
       public TalkMediator::Delegate,
+      public sync_notifier::StateWriter,
       public browser_sync::ChannelEventHandler<syncable::DirectoryChangeEvent>,
       public browser_sync::ChannelEventHandler<SyncerEvent>{
   static const int kDefaultNudgeDelayMilliseconds;
@@ -995,6 +997,9 @@ class SyncManager::SyncInternal
       const IncomingNotificationData& notification_data);
 
   virtual void OnOutgoingNotification();
+
+  // sync_notifier::StateWriter implementation.
+  virtual void WriteState(const std::string& state);
 
   // Accessors for the private members.
   DirectoryManager* dir_manager() { return share_.dir_manager.get(); }
@@ -1328,22 +1333,30 @@ bool SyncManager::SyncInternal::Init(
   core_message_loop_->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(&SyncInternal::CheckServerReachable));
 
-  // NOTIFICATION_SERVER uses a substantially different notification method, so
-  // it has its own MediatorThread implementation.  Everything else just uses
-  // MediatorThreadImpl.
-  notifier::MediatorThread* mediator_thread =
-      (notifier_options_.notification_method == notifier::NOTIFICATION_SERVER) ?
-      new sync_notifier::ServerNotifierThread(notifier_options) :
-      new notifier::MediatorThreadImpl(notifier_options);
-  talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, false));
-  if (notifier_options_.notification_method != notifier::NOTIFICATION_LEGACY &&
-      notifier_options_.notification_method != notifier::NOTIFICATION_SERVER) {
-    if (notifier_options_.notification_method ==
-        notifier::NOTIFICATION_TRANSITIONAL) {
-      talk_mediator_->AddSubscribedServiceUrl(
-          browser_sync::kSyncLegacyServiceUrl);
+  if (notifier_options_.notification_method ==
+      notifier::NOTIFICATION_SERVER) {
+    // TODO(akalin): Grab persisted state from storage and then
+    // immediately erase it (This simplifies things for
+    // ChromeSystemResources).
+    std::string state;
+    sync_notifier::ServerNotifierThread* server_notifier_thread =
+        new sync_notifier::ServerNotifierThread(
+            notifier_options, state, this);
+    talk_mediator_.reset(
+        new TalkMediatorImpl(server_notifier_thread, false));
+  } else {
+    notifier::MediatorThread* mediator_thread =
+        new notifier::MediatorThreadImpl(notifier_options);
+    talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, false));
+    if (notifier_options_.notification_method !=
+        notifier::NOTIFICATION_LEGACY) {
+      if (notifier_options_.notification_method ==
+          notifier::NOTIFICATION_TRANSITIONAL) {
+        talk_mediator_->AddSubscribedServiceUrl(
+            browser_sync::kSyncLegacyServiceUrl);
+      }
+      talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
     }
-    talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
   }
 
   // Listen to TalkMediator events ourselves
@@ -2006,6 +2019,11 @@ void SyncManager::SyncInternal::OnOutgoingNotification() {
   DCHECK_NE(notifier_options_.notification_method,
             notifier::NOTIFICATION_SERVER);
   allstatus_.IncrementNotificationsSent();
+}
+
+void SyncManager::SyncInternal::WriteState(const std::string& state) {
+  // TODO(akalin): Write state to persistent storage.
+  NOTIMPLEMENTED();
 }
 
 SyncManager::Status::Summary SyncManager::GetStatusSummary() const {

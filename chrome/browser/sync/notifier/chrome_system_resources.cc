@@ -16,8 +16,10 @@
 
 namespace sync_notifier {
 
-ChromeSystemResources::ChromeSystemResources() {
+ChromeSystemResources::ChromeSystemResources(StateWriter* state_writer)
+    : state_writer_(state_writer) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(state_writer_);
 }
 
 ChromeSystemResources::~ChromeSystemResources() {
@@ -111,8 +113,12 @@ void ChromeSystemResources::Log(
 void ChromeSystemResources::WriteState(
     const invalidation::string& state,
     invalidation::StorageCallback* callback) {
-  // TODO(akalin): Write the given state to persistent storage.
-  callback->Run(false);
+  CHECK(state_writer_);
+  state_writer_->WriteState(state);
+  // According to the cache invalidation API folks, we can do this as
+  // long as we make sure to clear the persistent state that we start
+  // up the cache invalidation client with.
+  callback->Run(true);
   delete callback;
 }
 

@@ -16,10 +16,13 @@
 namespace sync_notifier {
 
 ServerNotifierThread::ServerNotifierThread(
-    const notifier::NotifierOptions& notifier_options)
-    : notifier::MediatorThreadImpl(notifier_options) {
+    const notifier::NotifierOptions& notifier_options,
+    const std::string& state, StateWriter* state_writer)
+    : notifier::MediatorThreadImpl(notifier_options),
+      state_(state), state_writer_(state_writer) {
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
             notifier_options.notification_method);
+  DCHECK(state_writer_);
 }
 
 ServerNotifierThread::~ServerNotifierThread() {}
@@ -43,6 +46,7 @@ void ServerNotifierThread::SubscribeForUpdates(
 
 void ServerNotifierThread::Logout() {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  state_writer_ = NULL;
   worker_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
@@ -85,6 +89,16 @@ void ServerNotifierThread::OnInvalidateAll() {
           &ServerNotifierThread::SignalIncomingNotification));
 }
 
+void ServerNotifierThread::WriteState(const std::string& state) {
+  DCHECK_EQ(MessageLoop::current(), worker_message_loop());
+  VLOG(1) << "WriteState";
+  parent_message_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &ServerNotifierThread::SignalWriteState, state));
+}
+
 void ServerNotifierThread::OnDisconnect() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   StopInvalidationListener();
@@ -105,7 +119,9 @@ void ServerNotifierThread::StartInvalidationListener() {
   // make it so that we won't receive any notifications that were
   // generated from our own changes.
   const std::string kClientId = "server_notifier_thread";
-  chrome_invalidation_client_->Start(kClientId, this, base_task_);
+  chrome_invalidation_client_->Start(
+      kClientId, state_, this, this, base_task_);
+  state_.clear();
 }
 
 void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
@@ -136,6 +152,13 @@ void ServerNotifierThread::SignalIncomingNotification() {
     // TODO(akalin): Fill this in with something meaningful.
     IncomingNotificationData notification_data;
     delegate_->OnIncomingNotification(notification_data);
+  }
+}
+
+void ServerNotifierThread::SignalWriteState(const std::string& state) {
+  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  if (state_writer_) {
+    state_writer_->WriteState(state);
   }
 }
 

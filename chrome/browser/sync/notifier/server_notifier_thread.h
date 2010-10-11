@@ -18,6 +18,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
+#include "chrome/browser/sync/notifier/state_writer.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"
 
@@ -29,10 +30,14 @@ namespace sync_notifier {
 
 class ServerNotifierThread
     : public notifier::MediatorThreadImpl,
-      public ChromeInvalidationClient::Listener {
+      public ChromeInvalidationClient::Listener,
+      public StateWriter {
  public:
+  // Does not take ownership of |state_writer| (which may not
+  // be NULL).
   explicit ServerNotifierThread(
-      const notifier::NotifierOptions& notifier_options);
+      const notifier::NotifierOptions& notifier_options,
+      const std::string& state, StateWriter* state_writer);
 
   virtual ~ServerNotifierThread();
 
@@ -52,10 +57,11 @@ class ServerNotifierThread
   virtual void SendNotification(const OutgoingNotificationData& data);
 
   // ChromeInvalidationClient::Listener implementation.
-
   virtual void OnInvalidate(syncable::ModelType model_type);
-
   virtual void OnInvalidateAll();
+
+  // StateWriter implementation.
+  virtual void WriteState(const std::string& state);
 
  protected:
   virtual void OnDisconnect();
@@ -73,10 +79,16 @@ class ServerNotifierThread
   // Signal to the delegate that we have an incoming notification.
   void SignalIncomingNotification();
 
+  // Signal to the delegate to write the state.
+  void SignalWriteState(const std::string& state);
+
   // Called by StartInvalidationListener() and posted to the worker
   // thread by Stop().
   void StopInvalidationListener();
 
+  std::string state_;
+  // May be NULL.
+  StateWriter* state_writer_;
   scoped_ptr<ChromeInvalidationClient> chrome_invalidation_client_;
 };
 
