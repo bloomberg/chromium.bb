@@ -1850,6 +1850,7 @@
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/browser_browsertest.cc',
         'browser/browser_init_browsertest.cc',
+        'browser/browser_navigator_browsertest.cc',
         'browser/browsing_data_database_helper_browsertest.cc',
         'browser/browsing_data_local_storage_helper_browsertest.cc',
         'browser/child_process_security_policy_browsertest.cc',

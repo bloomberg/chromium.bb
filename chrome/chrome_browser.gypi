@@ -308,6 +308,8 @@
         'browser/browser_main_posix.h',
         'browser/browser_main_win.cc',
         'browser/browser_main_win.h',
+        'browser/browser_navigator.cc',
+        'browser/browser_navigator.h',
         'browser/browser_process.cc',
         'browser/browser_process.h',
         'browser/browser_process_impl.cc',
