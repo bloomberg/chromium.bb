@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/profile.h"

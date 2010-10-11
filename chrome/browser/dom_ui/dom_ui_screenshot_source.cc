@@ -11,7 +11,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/jpeg_codec.h"

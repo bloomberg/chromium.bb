@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_util.h"
 
 #if defined(OS_WIN)

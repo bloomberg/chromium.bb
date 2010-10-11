@@ -8,7 +8,7 @@
 #include "app/theme_provider.h"
 #include "base/message_loop.h"
 #include "base/ref_counted_memory.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/resources_util.h"

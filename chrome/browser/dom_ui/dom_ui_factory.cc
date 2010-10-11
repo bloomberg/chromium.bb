@@ -5,7 +5,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/bookmarks_ui.h"
 #include "chrome/browser/dom_ui/bug_report_ui.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"

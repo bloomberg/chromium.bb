@@ -5,7 +5,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/base_file.h"
 #include "net/base/file_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -11,9 +11,9 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_thread.h"  // for FileAccessProvider
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/chrome_thread.h"  // for FileAccessProvider
 #include "chrome/browser/gtk/certificate_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"

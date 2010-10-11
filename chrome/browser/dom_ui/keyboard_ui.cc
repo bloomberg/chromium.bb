@@ -8,7 +8,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/url_constants.h"

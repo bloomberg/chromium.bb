@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/save_file.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/platform_util.h"

@@ -18,7 +18,7 @@
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/foreign_session_handler.h"

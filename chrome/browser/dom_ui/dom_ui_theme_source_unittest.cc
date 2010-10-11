@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ref_counted_memory.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
