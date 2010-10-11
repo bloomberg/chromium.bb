@@ -5585,18 +5585,28 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
         swap_buffers_callback_->Run();
       }
       return error::kNoError;
-    } else if (parent_) {
-      // Copy the target frame buffer to the saved offscreen texture.
+    } else {
       ScopedFrameBufferBinder binder(this,
                                      offscreen_target_frame_buffer_->id());
-      offscreen_saved_color_texture_->Copy(
-          offscreen_saved_color_texture_->size());
 
-      // Ensure the side effects of the copy are visible to the parent context.
-      // There is no need to do this for ANGLE because it uses a single D3D
-      // device for all contexts.
-      if (!IsAngle())
-        glFlush();
+      if (parent_) {
+        // Copy the target frame buffer to the saved offscreen texture.
+        offscreen_saved_color_texture_->Copy(
+            offscreen_saved_color_texture_->size());
+
+        // Ensure the side effects of the copy are visible to the parent context.
+        // There is no need to do this for ANGLE because it uses a single D3D
+        // device for all contexts.
+        if (!IsAngle())
+          glFlush();
+      }
+
+      // Run the callback with |binder| in scope, so that the callback can call
+      // ReadPixels or CopyTexImage2D.
+      if (swap_buffers_callback_.get()) {
+        swap_buffers_callback_->Run();
+      }
+      return error::kNoError;
     }
   } else {
     if (!context_->SwapBuffers()) {
