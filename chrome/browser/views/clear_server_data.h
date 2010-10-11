@@ -81,6 +81,9 @@ class ClearServerDataView : public views::View,
   // have a delete operation in progress or not.
   void UpdateControlEnabledState();
 
+  // Enables/disables the clear button as appropriate
+  void UpdateClearButtonEnabledState(bool delete_in_progress);
+
   // Starts the process of deleting the browsing data depending on what the
   // user selected.
   void OnDelete();
@@ -94,6 +97,7 @@ class ClearServerDataView : public views::View,
 
   ClearDataView* clear_data_parent_window_;
   Profile* profile_;
+  ProfileSyncService* sync_service_;
   bool allow_clear_;
 
   views::Label* flash_title_label_;

@@ -52,8 +52,16 @@ ClearServerDataView::ClearServerDataView(Profile* profile,
   DCHECK(profile);
   DCHECK(clear_data_view);
 
-  profile_->GetProfileSyncService()->ResetClearServerDataState();
-  profile_->GetProfileSyncService()->AddObserver(this);
+  // Always show preferences for the original profile. Most state when off
+  // the record comes from the original profile, but we explicitly use
+  // the original profile to avoid potential problems.
+  profile_ = profile->GetOriginalProfile();
+  sync_service_ = profile_->GetProfileSyncService();
+
+  if (NULL != sync_service_) {
+    sync_service_->ResetClearServerDataState();
+    sync_service_->AddObserver(this);
+  }
 
   Init();
   InitControlLayout();
@@ -61,7 +69,9 @@ ClearServerDataView::ClearServerDataView(Profile* profile,
 }
 
 ClearServerDataView::~ClearServerDataView(void) {
-  profile_->GetProfileSyncService()->RemoveObserver(this);
+  if (NULL != sync_service_) {
+    sync_service_->RemoveObserver(this);
+  }
 }
 
 void ClearServerDataView::Init() {
@@ -161,19 +171,19 @@ void ClearServerDataView::InitControlVisibility() {
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClearServerData);
 
-  bool sync_enabled = allow_clear_server_data_ui &&
-      profile_->GetProfileSyncService()->HasSyncSetupCompleted();
-
   // Hide progress indicators
   throbber_->SetVisible(false);
   status_label_->SetVisible(false);
 
-  // Only show the sync portion if sync is enabled
-  chrome_sync_title_label_->SetVisible(sync_enabled);
-  chrome_sync_description_label_->SetVisible(sync_enabled);
-  clear_server_data_button_->SetVisible(sync_enabled);
-  dashboard_label_->SetVisible(sync_enabled);
-  dashboard_link_->SetVisible(sync_enabled);
+  // Only show the sync portion if not behind the flag
+  chrome_sync_title_label_->SetVisible(allow_clear_server_data_ui);
+  chrome_sync_description_label_->SetVisible(allow_clear_server_data_ui);
+  clear_server_data_button_->SetVisible(allow_clear_server_data_ui);
+  dashboard_label_->SetVisible(allow_clear_server_data_ui);
+  dashboard_link_->SetVisible(allow_clear_server_data_ui);
+
+  // Enable our clear button, set false for delete_in_progress
+  UpdateClearButtonEnabledState(false);
 }
 
 void ClearServerDataView::SetAllowClear(bool allow) {
@@ -220,7 +230,7 @@ void ClearServerDataView::ButtonPressed(
     // message, and the syncer syncs and resets itself before the
     // user tries pressing the Clear button in this dialog again.
     // TODO(raz) Confirm whether we have an issue here
-    if (profile_->GetProfileSyncService()->HasSyncSetupCompleted()) {
+    if (sync_service_->HasSyncSetupCompleted()) {
       ConfirmMessageBoxDialog::Run(
           GetWindow()->GetNativeWindow(),
           this,
@@ -251,7 +261,7 @@ void ClearServerDataView::LinkActivated(views::Link* source,
 
 void ClearServerDataView::OnConfirmMessageAccept() {
   clear_data_parent_window_->StartClearingServerData();
-  profile_->GetProfileSyncService()->ClearServerData();
+  sync_service_->ClearServerData();
   UpdateControlEnabledState();
 }
 
@@ -280,8 +290,13 @@ void ClearServerDataView::UpdateControlEnabledState() {
   // time the view is refreshed.  As such, on success/failure handle that state
   // and immediately reset things back to CLEAR_NOT_STARTED.
   ProfileSyncService::ClearServerDataState clear_state =
-      profile_->GetProfileSyncService()->GetClearServerDataState();
-  profile_->GetProfileSyncService()->ResetClearServerDataState();
+      (sync_service_ == NULL) ?
+      ProfileSyncService::CLEAR_NOT_STARTED :
+      sync_service_->GetClearServerDataState();
+
+  if (NULL != sync_service_) {
+    sync_service_->ResetClearServerDataState();
+  }
 
   switch (clear_state) {
     case ProfileSyncService::CLEAR_NOT_STARTED:
@@ -313,14 +328,20 @@ void ClearServerDataView::UpdateControlEnabledState() {
   // allow_clear can be false when a local browsing data clear is happening
   // from the neighboring tab.  delete_in_progress means that a clear is
   // pending in the current tab.
-  this->clear_server_data_button_->SetEnabled(
-      profile_->GetProfileSyncService()->HasSyncSetupCompleted() &&
-      !delete_in_progress && allow_clear_);
+  UpdateClearButtonEnabledState(delete_in_progress);
 
   throbber_->SetVisible(delete_in_progress);
   if (delete_in_progress)
     throbber_->Start();
   else
     throbber_->Stop();
+}
+
+void ClearServerDataView::UpdateClearButtonEnabledState(
+    bool delete_in_progress) {
+  this->clear_server_data_button_->SetEnabled(
+      sync_service_ != NULL &&
+      sync_service_->HasSyncSetupCompleted() &&
+      !delete_in_progress && allow_clear_);
 }
 
