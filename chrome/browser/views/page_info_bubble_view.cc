@@ -30,7 +30,8 @@ const int kHGapImageToDescription = 6;
 const int kTextPaddingRight = 10;
 const int kPaddingBelowSeparator = 4;
 const int kPaddingAboveSeparator = 13;
-const int kIconOffset = 28;
+const int kIconHorizontalOffset = 27;
+const int kIconVerticalOffset = -7;
 
 // A section contains an image that shows a status (good or bad), a title, an
 // optional head-line (in bold) and a description.
@@ -107,6 +108,17 @@ void PageInfoBubbleView::LayoutSections() {
                      views::GridLayout::USE_PREF,  // Size type.
                      0,   // Ignored for USE_PREF.
                      0);  // Minimum size.
+  // Add a column set for aligning the text when it has no icons (such as the
+  // help center link).
+  columns = layout->AddColumnSet(1);
+  columns->AddPaddingColumn(
+      0, kHGapToBorder + kIconHorizontalOffset + kHGapImageToDescription);
+  columns->AddColumn(views::GridLayout::LEADING,  // Horizontal resize.
+                     views::GridLayout::FILL,     // Vertical resize.
+                     1,   // Resize weight.
+                     views::GridLayout::USE_PREF,  // Size type.
+                     0,   // Ignored for USE_PREF.
+                     0);  // Minimum size.
 
   int count = model_.GetSectionCount();
   for (int i = 0; i < count; ++i) {
@@ -125,7 +137,7 @@ void PageInfoBubbleView::LayoutSections() {
   }
 
   // Then add the help center link at the bottom.
-  layout->StartRow(0, 0);
+  layout->StartRow(0, 1);
   help_center_link_ =
       new views::Link(l10n_util::GetString(IDS_PAGE_INFO_HELP_CENTER_LINK));
   help_center_link_->SetController(this);
@@ -286,13 +298,14 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   gfx::Point point;
   if (base::i18n::IsRTL()) {
     int width = browser_view->toolbar()->location_bar()->width();
-    point = gfx::Point(width - kIconOffset, 0);
+    point = gfx::Point(width - kIconHorizontalOffset, 0);
   }
+  point.Offset(0, kIconVerticalOffset);
   views::View::ConvertPointToScreen(browser_view->toolbar()->location_bar(),
                                     &point);
   gfx::Rect bounds = browser_view->toolbar()->location_bar()->bounds();
   bounds.set_origin(point);
-  bounds.set_width(kIconOffset);
+  bounds.set_width(kIconHorizontalOffset);
 
   // Show the bubble.
   PageInfoBubbleView* page_info_bubble =
