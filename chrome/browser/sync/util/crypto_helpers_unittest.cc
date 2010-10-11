@@ -15,3 +15,13 @@ TEST(ChecksumTest, MD5ChecksumTest) {
   std::string checksum("e2c865db4162bed963bfaa9ef6ac18f0");
   ASSERT_EQ(checksum, md5.GetHexDigest());
 }
+
+TEST(CryptoHelpers, GetRandomBytes) {
+  for (int i = 1; i < 25; ++i) {
+    std::string random_bytes(i+1, ' ');
+    do {
+      GetRandomBytes(&random_bytes[0], i);
+      ASSERT_EQ(random_bytes[i], ' ');
+    } while (random_bytes[i - 1] == ' ');
+  }
+}
