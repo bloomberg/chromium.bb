@@ -363,8 +363,8 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 // delta for the next offset.
 - (CGFloat)addHelpButtonToSubviews:(NSMutableArray*)subviews
                           atOffset:(CGFloat)offset {
-  scoped_nsobject<NSButton> button(
-      [[NSButton alloc] initWithFrame:NSMakeRect(0, offset, 100, 10)]);
+  NSRect frame = NSMakeRect(kFramePadding, offset, 100, 10);
+  scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:frame]);
   NSString* string =
       l10n_util::GetNSStringWithFixup(IDS_PAGE_INFO_HELP_CENTER_LINK);
   scoped_nsobject<HyperlinkButtonCell> cell(
@@ -377,14 +377,9 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   [button setAction:@selector(showHelpPage:)];
   [subviews addObject:button.get()];
 
-  // Call size-to-fit to fixup for the localized string, then center the button
-  // in the window.
+  // Call size-to-fit to fixup for the localized string.
   [GTMUILocalizerAndLayoutTweaker sizeToFitView:button.get()];
-  NSRect frame = [button frame];
-  frame.origin.x = (kWindowWidth / 2) - (NSWidth(frame) / 2);
-  [button setFrame:frame];
-
-  return NSHeight(frame);
+  return NSHeight([button frame]);
 }
 
 // Adds a 1px separator between sections. Returns the y position delta for the
@@ -395,6 +390,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
       [[NSBox alloc] initWithFrame:NSMakeRect(0, offset, kWindowWidth, 1)]);
   [spacer setBoxType:NSBoxSeparator];
   [spacer setBorderType:NSLineBorder];
+  [spacer setAlphaValue:0.2];
   [subviews addObject:spacer.get()];
   return kVerticalSpacing;
 }
