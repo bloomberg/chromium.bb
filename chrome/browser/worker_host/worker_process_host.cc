@@ -70,10 +70,7 @@ WorkerProcessHost::WorkerProcessHost(
           new BlobDispatcherHost(
               this->id(), request_context->blob_storage_context()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
-          new FileSystemDispatcherHost(this,
-              request_context->file_system_host_context(),
-              request_context->host_content_settings_map(),
-              NULL /* TODO(ericu)*/))) {
+          new FileSystemDispatcherHost(this, request_context))) {
   next_route_id_callback_.reset(NewCallbackWithReturnValue(
       WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   db_dispatcher_host_ = new DatabaseDispatcherHost(

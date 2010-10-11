@@ -12,6 +12,8 @@
 #include "chrome/browser/file_system/browser_file_system_callback_dispatcher.h"
 #include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/render_messages.h"
@@ -72,16 +74,24 @@ struct OpenFileSystemCompletionTask {
 };
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
-    IPC::Message::Sender* sender,
-    FileSystemHostContext* file_system_host_context,
-    HostContentSettingsMap* host_content_settings_map,
-    URLRequestContextGetter* request_context_getter)
+    IPC::Message::Sender* sender, Profile* profile)
     : message_sender_(sender),
       process_handle_(0),
       shutdown_(false),
-      context_(file_system_host_context),
-      host_content_settings_map_(host_content_settings_map),
-      request_context_getter_(request_context_getter) {
+      context_(profile->GetFileSystemHostContext()),
+      host_content_settings_map_(profile->GetHostContentSettingsMap()),
+      request_context_getter_(profile->GetRequestContext()) {
+  DCHECK(message_sender_);
+}
+
+FileSystemDispatcherHost::FileSystemDispatcherHost(
+    IPC::Message::Sender* sender, ChromeURLRequestContext* context)
+    : message_sender_(sender),
+      process_handle_(0),
+      shutdown_(false),
+      context_(context->file_system_host_context()),
+      host_content_settings_map_(context->host_content_settings_map()),
+      request_context_(context) {
   DCHECK(message_sender_);
 }
 
@@ -94,9 +104,11 @@ void FileSystemDispatcherHost::Init(base::ProcessHandle process_handle) {
   DCHECK(!process_handle_);
   DCHECK(process_handle);
   process_handle_ = process_handle;
-  DCHECK(!request_context_.get());
-  if (request_context_getter_.get())
+  if (request_context_getter_.get()) {
+    DCHECK(!request_context_.get());
     request_context_ = request_context_getter_->GetURLRequestContext();
+  }
+  DCHECK(request_context_.get());
 }
 
 void FileSystemDispatcherHost::Shutdown() {

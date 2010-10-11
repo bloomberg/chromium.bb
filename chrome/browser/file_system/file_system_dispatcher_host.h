@@ -21,9 +21,11 @@ namespace base {
 class Time;
 }
 
+class ChromeURLRequestContext;
 class FileSystemHostContext;
 class GURL;
 class HostContentSettingsMap;
+class Profile;
 class Receiver;
 class ResourceMessageFilter;
 class URLRequestContextGetter;
@@ -31,12 +33,12 @@ class URLRequestContextGetter;
 class FileSystemDispatcherHost
     : public base::RefCountedThreadSafe<FileSystemDispatcherHost> {
  public:
-  // TODO(ericu): Split this into two constructors when adding worker FileWriter
-  // support.
+  // Used by the renderer.
   FileSystemDispatcherHost(IPC::Message::Sender* sender,
-                           FileSystemHostContext* file_system_host_context,
-                           HostContentSettingsMap* host_content_settings_map,
-                           URLRequestContextGetter* url_request_context_getter);
+                           Profile* profile);
+  // Used by the worker, since it has the context handy already.
+  FileSystemDispatcherHost(IPC::Message::Sender* sender,
+                           ChromeURLRequestContext* context);
   ~FileSystemDispatcherHost();
   void Init(base::ProcessHandle process_handle);
   void Shutdown();

@@ -255,10 +255,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(device_orientation_dispatcher_host_(
           new device_orientation::DispatcherHost(this->id()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
-          new FileSystemDispatcherHost(this,
-              profile->GetFileSystemHostContext(),
-              profile->GetHostContentSettingsMap(),
-              profile->GetRequestContext()))),
+          new FileSystemDispatcherHost(this, profile))),
       ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
           new BlobDispatcherHost(
               this->id(), profile->GetBlobStorageContext()))) {
