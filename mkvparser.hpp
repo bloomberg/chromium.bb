@@ -334,18 +334,19 @@ private:
     char* m_pTitleAsUTF8;
 };
 
-
+class Cues;
 class CuePoint
 {
+    friend class Cues;
+
+    CuePoint(size_t, long long);
+    ~CuePoint();
+
     CuePoint(const CuePoint&);
     CuePoint& operator=(const CuePoint&);
 
 public:
-    explicit CuePoint(long long);
-    ~CuePoint();
-
-    //void Parse(IMkvReader*, long long start, long long size);
-    void Load(IMkvReader*, long long);
+    void Load(IMkvReader*);
 
     long long GetTimeCode() const;      //absolute but unscaled
     long long GetTime(Segment*) const;  //absolute and scaled (ns units)
@@ -365,7 +366,7 @@ public:
     const TrackPosition* Find(const Track*) const;
 
 private:
-    //long long m_pos;
+    const size_t m_index;
     long long m_timecode;
     TrackPosition* m_track_positions;
     size_t m_track_positions_count;
@@ -375,6 +376,11 @@ private:
 
 class Cues
 {
+    friend class Segment;
+
+    Cues(Segment*, long long start, long long size);
+    ~Cues();
+
     Cues(const Cues&);
     Cues& operator=(const Cues&);
 
@@ -382,9 +388,6 @@ public:
     Segment* const m_pSegment;
     const long long m_start;
     const long long m_size;
-
-    Cues(Segment*, long long start, long long size);
-    ~Cues();
 
     bool Find(  //lower bound of time_ns
         long long time_ns,
@@ -399,6 +402,12 @@ public:
         const CuePoint*&,
         const CuePoint::TrackPosition*&) const;
 #endif
+
+    bool GetNext(
+        const CuePoint*,
+        const Track*,
+        const CuePoint*&,
+        const CuePoint::TrackPosition*&) const;
 
 private:
     void Init() const;
@@ -514,7 +523,7 @@ public:
         Cluster*&,
         const BlockEntry*&);
 
-    Cues* GetCues() const;
+    const Cues* GetCues() const;
 
 private:
 

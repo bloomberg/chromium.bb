@@ -1830,7 +1830,7 @@ void Cues::PreloadCuePoint(
         cue_points_size = n;
     }
 
-    CuePoint* const pCP = new CuePoint(pos);
+    CuePoint* const pCP = new CuePoint(m_preload_count, pos);
     m_cue_points[m_preload_count++] = pCP;
 }
 
@@ -1880,8 +1880,9 @@ bool Cues::LoadCuePoint() const
 
         CuePoint* const pCP = m_cue_points[m_count];
         assert(pCP);
+        assert((pCP->GetTimeCode() >= 0) || (-pCP->GetTimeCode() == idpos));
 
-        pCP->Load(pReader, idpos);
+        pCP->Load(pReader);
         ++m_count;
         --m_preload_count;
 
@@ -1939,7 +1940,7 @@ bool Cues::Find(
         CuePoint* const pCP = *k;
         assert(pCP);
 
-        pCP->Load(pReader, 0);
+        pCP->Load(pReader);
 
         const long long t = pCP->GetTime(m_pSegment);
 
@@ -2032,7 +2033,50 @@ bool Cues::FindNext(
 #endif
 
 
-CuePoint::CuePoint(long long pos) :
+bool Cues::GetNext(
+    const CuePoint* pCurrCP,
+    const Track* pTrack,
+    const CuePoint*& pNextCP,
+    const CuePoint::TrackPosition*& pNextTP) const
+{
+    assert(pCurrCP);
+    assert(pCurrCP->GetTimeCode() >= 0);
+    assert(pTrack);
+    assert(m_cue_points);
+    assert(m_count >= 1);
+
+    const size_t count = m_count + m_preload_count;
+
+    size_t index = pCurrCP->m_index;
+    assert(index < count);
+
+    CuePoint* const* pp = m_cue_points;
+    assert(pp);
+    assert(pp[index] == pCurrCP);
+
+    ++index;
+
+    if (index >= count)
+        return false;
+
+    CuePoint* const p = pp[index];
+    assert(p);
+
+    p->Load(m_pSegment->m_pReader);
+
+    pNextCP = p;
+
+    pNextTP = pNextCP->Find(pTrack);
+    assert(pNextTP);  //TODO
+
+    return true;
+}
+
+
+
+
+CuePoint::CuePoint(size_t idx, long long pos) :
+    m_index(idx),
     m_timecode(-1 * pos),
     m_track_positions(NULL),
     m_track_positions_count(0)
@@ -2047,7 +2091,7 @@ CuePoint::~CuePoint()
 }
 
 
-void CuePoint::Load(IMkvReader* pReader, long long idpos)
+void CuePoint::Load(IMkvReader* pReader)
 {
     //odbgstream os;
     //os << "CuePoint::Load(begin): timecode=" << m_timecode << endl;
@@ -2058,8 +2102,7 @@ void CuePoint::Load(IMkvReader* pReader, long long idpos)
     assert(m_track_positions == NULL);
     assert(m_track_positions_count == 0);
 
-    long long pos_ = -1 * m_timecode;
-    assert((idpos <= 0) || (idpos == pos_));
+    long long pos_ = -m_timecode;
 
     long long stop;
 
@@ -2534,7 +2577,7 @@ void Segment::GetCluster(
     {
         pCluster = *i;
         assert(pCluster);
-        assert(pCluster->m_index == 0);
+        assert(pCluster->m_index == 0);  //m_clusterCount > 0
         assert(pCluster->m_pSegment == this);
 
         if (time_ns <= pCluster->GetTime())
@@ -2731,9 +2774,7 @@ bool Segment::SearchCues(
         else
         {
             pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
-            assert(pBlockEntry);
-
-            return true;
+            return pBlockEntry ? true : false;
         }
     }
 
@@ -2748,9 +2789,7 @@ bool Segment::SearchCues(
     assert(m_clusters[idx] == pCluster);
 
     pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
-    assert(pBlockEntry);
-
-    return true;
+    return pBlockEntry ? true : false;
 }
 
 
@@ -2766,7 +2805,7 @@ const SegmentInfo* Segment::GetInfo() const
 }
 
 
-Cues* Segment::GetCues() const
+const Cues* Segment::GetCues() const
 {
     return m_pCues;
 }
@@ -3986,23 +4025,85 @@ Cluster::GetEntry(
     const CuePoint::TrackPosition& tp)
 {
     assert(m_pSegment);
-    assert(tp.m_block > 0);
 
     LoadBlockEntries();
-    assert(m_entries);  //TODO: handle empty cluster
-    assert(m_entriesCount > 0);
-    assert(tp.m_block <= (long long)m_entriesCount);  //blocks are 1-based
 
-    const size_t block = static_cast<size_t>(tp.m_block);
-    const size_t index = block - 1;
+    if (m_entries == NULL)
+        return NULL;
 
-    const BlockEntry* const pEntry = m_entries[index];
-    assert(pEntry);
-    assert(!pEntry->EOS());
-    assert(pEntry->GetBlock()->GetTrackNumber() == tp.m_track);
-    assert(pEntry->GetBlock()->GetTimeCode(this) == cp.GetTimeCode());
+    const long long count = m_entriesCount;
 
-    return pEntry;
+    if (count <= 0)
+        return NULL;
+
+    const long long tc = cp.GetTimeCode();
+
+    if ((tp.m_block > 0) && (tp.m_block <= count))
+    {
+        const size_t block = static_cast<size_t>(tp.m_block);
+        const size_t index = block - 1;
+
+        const BlockEntry* const pEntry = m_entries[index];
+        assert(pEntry);
+        assert(!pEntry->EOS());
+
+        const Block* const pBlock = pEntry->GetBlock();
+        assert(pBlock);
+
+        if ((pBlock->GetTrackNumber() == tp.m_track) &&
+            (pBlock->GetTimeCode(this) == tc))
+        {
+            return pEntry;
+        }
+    }
+
+    const BlockEntry* const* i = m_entries;
+    const BlockEntry* const* const j = i + count;
+
+    while (i != j)
+    {
+        const BlockEntry* const pEntry = *i++;
+        assert(pEntry);
+        assert(!pEntry->EOS());
+
+        const Block* const pBlock = pEntry->GetBlock();
+        assert(pBlock);
+
+        if (pBlock->GetTrackNumber() != tp.m_track)
+            continue;
+
+        const long long tc_ = pBlock->GetTimeCode(this);
+
+        if (tc_ < tc)
+            continue;
+
+        if (tc_ > tc)
+            return NULL;
+
+        const Tracks* const pTracks = m_pSegment->GetTracks();
+        assert(pTracks);
+
+        const long tn = static_cast<long>(tp.m_track);
+        const Track* const pTrack = pTracks->GetTrackByNumber(tn);
+
+        if (pTrack == NULL)
+            return NULL;
+
+        const long long type = pTrack->GetType();
+
+        if (type == 2)  //audio
+            return pEntry;
+
+        if (type != 1)  //not video
+            return NULL;
+
+        if (!pBlock->IsKey())
+            return NULL;
+
+        return pEntry;
+    }
+
+    return NULL;
 }
 
 
