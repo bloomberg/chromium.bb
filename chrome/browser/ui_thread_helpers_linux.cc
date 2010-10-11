@@ -12,7 +12,7 @@ namespace ui_thread_helpers {
 bool PostTaskWhileRunningMenu(const tracked_objects::Location& from_here,
                               Task* task) {
   // TODO(rsesek): Implementing Linux behavior may fix http://crbug.com/48240
-  return ChromeThread::PostTask(ChromeThread::UI, from_here, task);
+  return BrowserThread::PostTask(BrowserThread::UI, from_here, task);
 }
 
 }  // namespace ui_thread_helpers

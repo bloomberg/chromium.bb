@@ -21,7 +21,7 @@ class UserStyleSheetLoader;
 // whenever the file changes.
 class UserStyleSheetWatcher
     : public base::RefCountedThreadSafe<UserStyleSheetWatcher,
-                                        ChromeThread::DeleteOnUIThread>,
+                                        BrowserThread::DeleteOnUIThread>,
       public NotificationObserver {
  public:
   explicit UserStyleSheetWatcher(const FilePath& profile_path);

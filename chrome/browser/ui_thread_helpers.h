@@ -14,7 +14,7 @@ class Location;
 
 namespace ui_thread_helpers {
 
-// This can be used in place of ChromeThread::PostTask(ChromeThread::UI, ...).
+// This can be used in place of BrowserThread::PostTask(BrowserThread::UI, ...).
 // The purpose of this function is to be able to execute Chrome work alongside
 // native work when a message loop is running nested or, in the case of Mac,
 // in a different mode.  Currently this is used for updating the HostZoomMap

@@ -252,9 +252,9 @@ CFUrlRequestUnittestRunner::CFUrlRequestUnittestRunner(int argc, char** argv)
     : NetTestSuite(argc, argv),
       chrome_frame_html_("/chrome_frame", kChromeFrameHtml) {
   // Register the main thread by instantiating it, but don't call any methods.
-  main_thread_.reset(new ChromeThread(ChromeThread::UI,
-                                      MessageLoop::current()));
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  main_thread_.reset(new BrowserThread(BrowserThread::UI,
+                                       MessageLoop::current()));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   fake_chrome_.Initialize();
   pss_subclass_.reset(new ProcessSingletonSubclass(this));
   EXPECT_TRUE(pss_subclass_->Subclass(fake_chrome_.user_data()));

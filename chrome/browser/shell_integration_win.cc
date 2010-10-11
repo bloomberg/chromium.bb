@@ -96,7 +96,7 @@ class MigrateChromiumShortcutsTask : public Task {
 
 void MigrateChromiumShortcutsTask::Run() {
   // This should run on the file thread.
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   MigrateWin7Shortcuts();
 }
@@ -410,6 +410,6 @@ void ShellIntegration::MigrateChromiumShortcuts() {
   if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
     return;
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE, new MigrateChromiumShortcutsTask());
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE, new MigrateChromiumShortcutsTask());
 }

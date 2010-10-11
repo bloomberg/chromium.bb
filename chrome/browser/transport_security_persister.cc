@@ -22,7 +22,7 @@ TransportSecurityPersister::~TransportSecurityPersister() {
 
 void TransportSecurityPersister::Initialize(
     net::TransportSecurityState* state, const FilePath& profile_path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   transport_security_state_ = state;
   state_file_ =
       profile_path.Append(FILE_PATH_LITERAL("TransportSecurity"));
@@ -30,24 +30,24 @@ void TransportSecurityPersister::Initialize(
 
   Task* task = NewRunnableMethod(this,
       &TransportSecurityPersister::Load);
-  ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE, task, 1000);
+  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE, task, 1000);
 }
 
 void TransportSecurityPersister::Load() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string state;
   if (!file_util::ReadFileToString(state_file_, &state))
     return;
 
-  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
                         &TransportSecurityPersister::CompleteLoad,
                         state));
 }
 
 void TransportSecurityPersister::CompleteLoad(const std::string& state) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   bool dirty = false;
   if (!transport_security_state_->Deserialise(state, &dirty)) {
@@ -60,7 +60,7 @@ void TransportSecurityPersister::CompleteLoad(const std::string& state) {
 
 void TransportSecurityPersister::StateIsDirty(
     net::TransportSecurityState* state) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(state == transport_security_state_);
 
   if (!save_coalescer_.empty())
@@ -72,20 +72,20 @@ void TransportSecurityPersister::StateIsDirty(
 }
 
 void TransportSecurityPersister::Save() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   std::string state;
   if (!transport_security_state_->Serialise(&state))
     return;
 
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
                         &TransportSecurityPersister::CompleteSave,
                         state));
 }
 
 void TransportSecurityPersister::CompleteSave(const std::string& state) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   file_util::WriteFile(state_file_, state.data(), state.size());
 }

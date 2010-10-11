@@ -308,8 +308,8 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   }
   pool.Recycle();
 
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(chrome_browser_net::SetUrlRequestMocksEnabled, true));
 
   browser_ = CreateBrowser(profile);

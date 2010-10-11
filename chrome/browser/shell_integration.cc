@@ -75,16 +75,16 @@ ShellIntegration::DefaultBrowserWorker::DefaultBrowserWorker(
 
 void ShellIntegration::DefaultBrowserWorker::StartCheckDefaultBrowser() {
   observer_->SetDefaultBrowserUIState(STATE_PROCESSING);
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &DefaultBrowserWorker::ExecuteCheckDefaultBrowser));
 }
 
 void ShellIntegration::DefaultBrowserWorker::StartSetAsDefaultBrowser() {
   observer_->SetDefaultBrowserUIState(STATE_PROCESSING);
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &DefaultBrowserWorker::ExecuteSetAsDefaultBrowser));
 }
@@ -99,31 +99,31 @@ void ShellIntegration::DefaultBrowserWorker::ObserverDestroyed() {
 // DefaultBrowserWorker, private:
 
 void ShellIntegration::DefaultBrowserWorker::ExecuteCheckDefaultBrowser() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DefaultBrowserState state = ShellIntegration::IsDefaultBrowser();
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &DefaultBrowserWorker::CompleteCheckDefaultBrowser, state));
 }
 
 void ShellIntegration::DefaultBrowserWorker::CompleteCheckDefaultBrowser(
     DefaultBrowserState state) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   UpdateUI(state);
 }
 
 void ShellIntegration::DefaultBrowserWorker::ExecuteSetAsDefaultBrowser() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   ShellIntegration::SetAsDefaultBrowser();
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &DefaultBrowserWorker::CompleteSetAsDefaultBrowser));
 }
 
 void ShellIntegration::DefaultBrowserWorker::CompleteSetAsDefaultBrowser() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (observer_) {
     // Set as default completed, check again to make sure it stuck...
     StartCheckDefaultBrowser();

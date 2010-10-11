@@ -18,7 +18,7 @@
 
 UtilityProcessHost::UtilityProcessHost(ResourceDispatcherHost* rdh,
                                        Client* client,
-                                       ChromeThread::ID client_thread_id)
+                                       BrowserThread::ID client_thread_id)
     : BrowserChildProcessHost(UTILITY_PROCESS, rdh),
       client_(client),
       client_thread_id_(client_thread_id),
@@ -154,13 +154,13 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
 }
 
 void UtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
-  ChromeThread::PostTask(
+  BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
       NewRunnableMethod(client_.get(), &Client::OnMessageReceived, message));
 }
 
 void UtilityProcessHost::OnProcessCrashed() {
-  ChromeThread::PostTask(
+  BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
       NewRunnableMethod(client_.get(), &Client::OnProcessCrashed));
 }

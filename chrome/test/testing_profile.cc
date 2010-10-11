@@ -112,7 +112,7 @@ class BookmarkLoadObserver : public BookmarkModelObserver {
 
 // Used to return a dummy context (normally the context is on the IO thread).
 // The one here can be run on the main test thread. Note that this can lead to
-// a leak if your test does not have a ChromeThread::IO in it because
+// a leak if your test does not have a BrowserThread::IO in it because
 // URLRequestContextGetter is defined as a ReferenceCounted object with a
 // special trait that deletes it on the IO thread.
 class TestURLRequestContextGetter : public URLRequestContextGetter {
@@ -123,7 +123,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
     return context_.get();
   }
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
-    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
 
  private:
@@ -148,7 +148,7 @@ class TestExtensionURLRequestContextGetter : public URLRequestContextGetter {
     return context_.get();
   }
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() {
-    return ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
 
  private:
@@ -466,7 +466,7 @@ NTPResourceCache* TestingProfile::GetNTPResourceCache() {
 }
 
 DesktopNotificationService* TestingProfile::GetDesktopNotificationService() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!desktop_notification_service_.get()) {
     desktop_notification_service_.reset(new DesktopNotificationService(
         this, NULL));

@@ -17,7 +17,7 @@
 #include "chrome/test/testing_profile.h"
 
 BrowserWithTestWindowTest::BrowserWithTestWindowTest()
-    : ui_thread_(ChromeThread::UI, message_loop()),
+    : ui_thread_(BrowserThread::UI, message_loop()),
       rph_factory_(),
       rvh_factory_(&rph_factory_) {
 #if defined(OS_WIN)

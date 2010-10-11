@@ -22,7 +22,7 @@
 //   // TestURLFetcher requires a MessageLoop:
 //   MessageLoopForUI message_loop;
 //   // And io_thread to release URLRequestContextGetter in URLFetcher::Core.
-//   ChromeThread io_thread(ChromeThread::IO, &message_loop);
+//   BrowserThread io_thread(BrowserThread::IO, &message_loop);
 //   // Create and register factory.
 //   TestURLFetcherFactory factory;
 //   URLFetcher::set_factory(&factory);

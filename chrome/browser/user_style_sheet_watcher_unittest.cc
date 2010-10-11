@@ -26,8 +26,8 @@ TEST(UserStyleSheetWatcherTest, StyleLoad) {
   scoped_refptr<UserStyleSheetWatcher> style_sheet_watcher =
       new UserStyleSheetWatcher(dir.path());
   MessageLoop loop;
-  ChromeThread ui_thread(ChromeThread::UI, &loop);
-  ChromeThread file_thread(ChromeThread::FILE, &loop);
+  BrowserThread ui_thread(BrowserThread::UI, &loop);
+  BrowserThread file_thread(BrowserThread::FILE, &loop);
   style_sheet_watcher->Init();
 
   loop.RunAllPending();

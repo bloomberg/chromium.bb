@@ -54,9 +54,9 @@ class GetAllAutofillEntries
         done_event_(false, false) {}
 
   void Init() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    ChromeThread::PostTask(
-        ChromeThread::DB,
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    BrowserThread::PostTask(
+        BrowserThread::DB,
         FROM_HERE,
         NewRunnableMethod(this, &GetAllAutofillEntries::Run));
     done_event_.Wait();
@@ -70,7 +70,7 @@ class GetAllAutofillEntries
   friend class base::RefCountedThreadSafe<GetAllAutofillEntries>;
 
   void Run() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     web_data_service_->GetDatabase()->GetAllAutofillEntries(&entries_);
     done_event_.Signal();
   }

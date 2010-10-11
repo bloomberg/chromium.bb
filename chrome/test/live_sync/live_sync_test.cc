@@ -385,8 +385,8 @@ void LiveSyncTest::DisableNetwork(Profile* profile) {
 void LiveSyncTest::SetProxyConfig(URLRequestContextGetter* context_getter,
                                   const net::ProxyConfig& proxy_config) {
   base::WaitableEvent done(false, false);
-  ChromeThread::PostTask(
-      ChromeThread::IO,
+  BrowserThread::PostTask(
+      BrowserThread::IO,
       FROM_HERE,
       new SetProxyConfigTask(&done,
                              context_getter,

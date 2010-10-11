@@ -63,11 +63,11 @@ const int kNotifyUserAfterMs = 0;
 // because we don't want to block the UI thread while launching a background
 // process and reading its output; on the Mac, checking for an upgrade
 // requires reading a file.
-const ChromeThread::ID kDetectUpgradeTaskID =
+const BrowserThread::ID kDetectUpgradeTaskID =
 #if defined(OS_POSIX)
-    ChromeThread::FILE;
+    BrowserThread::FILE;
 #else
-    ChromeThread::UI;
+    BrowserThread::UI;
 #endif
 
 // This task checks the currently running version of Chrome against the
@@ -82,13 +82,13 @@ class DetectUpgradeTask : public Task {
   virtual ~DetectUpgradeTask() {
     if (upgrade_detected_task_) {
       // This has to get deleted on the same thread it was created.
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                             new DeleteTask<Task>(upgrade_detected_task_));
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              new DeleteTask<Task>(upgrade_detected_task_));
     }
   }
 
   virtual void Run() {
-    DCHECK(ChromeThread::CurrentlyOn(kDetectUpgradeTaskID));
+    DCHECK(BrowserThread::CurrentlyOn(kDetectUpgradeTaskID));
 
     using installer::Version;
     scoped_ptr<Version> installed_version;
@@ -137,8 +137,8 @@ class DetectUpgradeTask : public Task {
     // restart in this case as well. See http://crbug.com/46547
     if (!installed_version.get() ||
         installed_version->IsHigherThan(running_version.get())) {
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-                             upgrade_detected_task_);
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                              upgrade_detected_task_);
       upgrade_detected_task_ = NULL;
     }
   }
@@ -179,12 +179,12 @@ void UpgradeDetector::CheckForUpgrade() {
   method_factory_.RevokeAll();
   Task* callback_task =
       method_factory_.NewRunnableMethod(&UpgradeDetector::UpgradeDetected);
-  ChromeThread::PostTask(kDetectUpgradeTaskID, FROM_HERE,
-                         new DetectUpgradeTask(callback_task));
+  BrowserThread::PostTask(kDetectUpgradeTaskID, FROM_HERE,
+                          new DetectUpgradeTask(callback_task));
 }
 
 void UpgradeDetector::UpgradeDetected() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Stop the recurring timer (that is checking for changes).
   detect_upgrade_timer_.Stop();

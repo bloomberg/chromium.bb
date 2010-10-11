@@ -17,7 +17,7 @@
 // executed.
 class ThreadTestHelper : public base::RefCountedThreadSafe<ThreadTestHelper> {
  public:
-  explicit ThreadTestHelper(ChromeThread::ID thread_id)
+  explicit ThreadTestHelper(BrowserThread::ID thread_id)
     : test_result_(false),
       thread_id_(thread_id),
       done_event_(false, false) {
@@ -25,7 +25,7 @@ class ThreadTestHelper : public base::RefCountedThreadSafe<ThreadTestHelper> {
 
   // True if RunTest() was successfully executed on the target thread.
   bool Run() WARN_UNUSED_RESULT {
-    if (!ChromeThread::PostTask(thread_id_, FROM_HERE, NewRunnableMethod(
+    if (!BrowserThread::PostTask(thread_id_, FROM_HERE, NewRunnableMethod(
         this, &ThreadTestHelper::RunInThread))) {
       return false;
     }
@@ -50,7 +50,7 @@ class ThreadTestHelper : public base::RefCountedThreadSafe<ThreadTestHelper> {
   }
 
   bool test_result_;
-  ChromeThread::ID thread_id_;
+  BrowserThread::ID thread_id_;
   base::WaitableEvent done_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadTestHelper);

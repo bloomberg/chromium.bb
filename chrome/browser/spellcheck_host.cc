@@ -53,7 +53,7 @@ SpellCheckHost::SpellCheckHost(SpellCheckHostObserver* observer,
       use_platform_spellchecker_(false),
       request_context_getter_(request_context_getter) {
   DCHECK(observer_);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FilePath personal_file_directory;
   PathService::Get(chrome::DIR_USER_DATA, &personal_file_directory);
@@ -79,12 +79,12 @@ void SpellCheckHost::Initialize() {
     return;
   }
 
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SpellCheckHost::InitializeDictionaryLocation));
 }
 
 void SpellCheckHost::UnsetObserver() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   observer_ = NULL;
   request_context_getter_ = NULL;
@@ -92,10 +92,10 @@ void SpellCheckHost::UnsetObserver() {
 }
 
 void SpellCheckHost::AddWord(const std::string& word) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   custom_words_.push_back(word);
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
           &SpellCheckHost::WriteWordToCustomDictionary, word));
   NotificationService::current()->Notify(
@@ -146,7 +146,7 @@ int SpellCheckHost::GetSpellCheckLanguages(
 }
 
 void SpellCheckHost::InitializeDictionaryLocation() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
 #if defined(OS_WIN)
   // Check if the dictionary exists in the fallback location. If so, use it
@@ -162,7 +162,7 @@ void SpellCheckHost::InitializeDictionaryLocation() {
 }
 
 void SpellCheckHost::InitializeInternal() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!observer_)
     return;
@@ -177,7 +177,7 @@ void SpellCheckHost::InitializeInternal() {
       request_context_getter_) {
     // We download from the ui thread because we need to know that
     // |request_context_getter_| is still valid before initiating the download.
-    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &SpellCheckHost::DownloadDictionary));
     return;
   }
@@ -194,27 +194,27 @@ void SpellCheckHost::InitializeInternal() {
       custom_words_.push_back(list_of_words[i]);
   }
 
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
           &SpellCheckHost::InformObserverOfInitialization));
 }
 
 void SpellCheckHost::InitializeOnFileThread() {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SpellCheckHost::Initialize));
 }
 
 void SpellCheckHost::InformObserverOfInitialization() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (observer_)
     observer_->SpellCheckHostInitialized();
 }
 
 void SpellCheckHost::DownloadDictionary() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!request_context_getter_) {
     InitializeOnFileThread();
@@ -235,7 +235,7 @@ void SpellCheckHost::DownloadDictionary() {
 }
 
 void SpellCheckHost::WriteWordToCustomDictionary(const std::string& word) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Stored in UTF-8.
   std::string word_to_add(word + "\n");
@@ -252,7 +252,7 @@ void SpellCheckHost::OnURLFetchComplete(const URLFetcher* source,
                                         const ResponseCookies& cookies,
                                         const std::string& data) {
   DCHECK(source);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   fetcher_.reset();
 
   if ((response_code / 100) != 2) {
@@ -273,12 +273,12 @@ void SpellCheckHost::OnURLFetchComplete(const URLFetcher* source,
   }
 
   data_ = data;
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SpellCheckHost::SaveDictionaryData));
 }
 
 void SpellCheckHost::SaveDictionaryData() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   size_t bytes_written =
       file_util::WriteFile(bdict_file_path_, data_.data(), data_.length());
@@ -299,7 +299,7 @@ void SpellCheckHost::SaveDictionaryData() {
       file_util::Delete(bdict_file_path_, false);
       // To avoid trying to load a partially saved dictionary, shortcut the
       // Initialize() call.
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this,
               &SpellCheckHost::InformObserverOfInitialization));
       return;

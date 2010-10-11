@@ -90,7 +90,7 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   MessageLoopForUI ui_loop_;
-  ChromeThread ui_thread_;
+  BrowserThread ui_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<TestBrowserWindow> window_;

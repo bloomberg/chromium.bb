@@ -86,7 +86,7 @@ void UserStyleSheetLoader::OnFilePathChanged(const FilePath& path) {
 }
 
 void UserStyleSheetLoader::LoadStyleSheet(const FilePath& style_sheet_file) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // We keep the user style sheet in a subdir so we can watch for changes
   // to the file.
   FilePath style_sheet_dir = style_sheet_file.DirName();
@@ -110,13 +110,13 @@ void UserStyleSheetLoader::LoadStyleSheet(const FilePath& style_sheet_file) {
       style_sheet_url = GURL(kDataUrlPrefix + css_base64);
     }
   }
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &UserStyleSheetLoader::SetStyleSheet,
                         style_sheet_url));
 }
 
 void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   has_loaded_ = true;
   user_style_sheet_ = url;
@@ -138,8 +138,8 @@ UserStyleSheetWatcher::~UserStyleSheetWatcher() {
 
 void UserStyleSheetWatcher::Init() {
   // Make sure we run on the file thread.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &UserStyleSheetWatcher::Init));
     return;
   }

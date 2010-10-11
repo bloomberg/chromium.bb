@@ -213,7 +213,7 @@ bool ShellIntegration::SetAsDefaultBrowser() {
 
 // static
 ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
@@ -249,7 +249,7 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
 // static
 bool ShellIntegration::GetDesktopShortcutTemplate(
     base::Environment* env, std::string* output) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::vector<FilePath> search_paths;
 
@@ -370,7 +370,7 @@ void ShellIntegration::CreateDesktopShortcut(
     const ShortcutInfo& shortcut_info, const std::string& shortcut_template) {
   // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
 
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   FilePath shortcut_filename = GetDesktopShortcutFilename(shortcut_info.url);
   if (shortcut_filename.empty())

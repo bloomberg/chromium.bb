@@ -74,8 +74,8 @@ class TrackingVisitedLinkEventListener : public VisitedLinkMaster::Listener {
 class VisitedLinkTest : public testing::Test {
  protected:
   VisitedLinkTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_) {}
   // Initialize the history system. This should be called before InitVisited().
   bool InitHistory() {
     history_service_ = new HistoryService;
@@ -177,8 +177,8 @@ class VisitedLinkTest : public testing::Test {
   ScopedTempDir temp_dir_;
 
   MessageLoop message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   // Filenames for the services;
   FilePath history_dir_;
@@ -582,7 +582,7 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
  public:
   VisitedLinkEventsTest()
       : RenderViewHostTestHarness(),
-        file_thread_(ChromeThread::FILE, &message_loop_) {}
+        file_thread_(BrowserThread::FILE, &message_loop_) {}
   ~VisitedLinkEventsTest() {
     // This ends up using the file thread to schedule the delete.
     profile_.reset();
@@ -613,7 +613,7 @@ class VisitedLinkEventsTest : public RenderViewHostTestHarness {
 
  private:
   scoped_ptr<VisitedLinkEventListener> event_listener_;
-  ChromeThread file_thread_;
+  BrowserThread file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventsTest);
 };

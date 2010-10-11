@@ -21,7 +21,7 @@ class SpellCheckHostObserver;
 class URLRequestContextGetter;
 
 class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
-                           ChromeThread::DeleteOnFileThread>,
+                           BrowserThread::DeleteOnFileThread>,
                        public URLFetcher::Delegate {
  public:
   SpellCheckHost(SpellCheckHostObserver* observer,

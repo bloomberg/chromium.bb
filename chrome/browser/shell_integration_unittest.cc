@@ -77,7 +77,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
   const char kTestData2[] = "a different testing string";
 
   MessageLoop message_loop;
-  ChromeThread file_thread(ChromeThread::FILE, &message_loop);
+  BrowserThread file_thread(BrowserThread::FILE, &message_loop);
 
   {
     ScopedTempDir temp_dir;
