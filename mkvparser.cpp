@@ -1740,7 +1740,7 @@ Cues::~Cues()
 }
 
 
-void Cues::Init()
+void Cues::Init() const
 {
     if (m_cue_points)
         return;
@@ -1780,14 +1780,12 @@ void Cues::Init()
         pos += size;  //consume payload
         assert(pos <= stop);
     }
-
-    LoadCuePoint();
 }
 
 
 void Cues::PreloadCuePoint(
     size_t& cue_points_size,
-    long long pos)
+    long long pos) const
 {
     assert(m_count == 0);
 
@@ -1837,37 +1835,7 @@ void Cues::PreloadCuePoint(
 }
 
 
-#if 0
-const CuePoint* Cues::GetFirst() const
-{
-    if (m_count < 1)
-        return NULL;
-
-    CuePoint* const pCP = m_cue_points[0];
-    assert(pCP);
-    assert(pCP->GetTimeCode() >= 0);
-
-    return pCP;
-}
-
-
-const CuePoint* Cues::GetLast() const
-{
-    if (m_count < 1)
-        return NULL;
-
-    const size_t idx = m_count - 1;
-
-    CuePoint* const pCP = m_cue_points[idx];
-    assert(pCP);
-    assert(pCP->GetTimeCode() >= 0);
-
-    return pCP;
-}
-#endif
-
-
-bool Cues::LoadCuePoint()
+bool Cues::LoadCuePoint() const
 {
     //odbgstream os;
     //os << "Cues::LoadCuePoint" << endl;
@@ -1936,7 +1904,7 @@ bool Cues::Find(
     assert(time_ns >= 0);
     assert(pTrack);
 
-    const_cast<Cues*>(this)->LoadCuePoint();
+    LoadCuePoint();
 
     assert(m_cue_points);
     assert(m_count > 0);
@@ -2060,92 +2028,6 @@ bool Cues::FindNext(
 
     pTP = pCP->Find(pTrack);
     return (pTP != NULL);
-}
-#endif
-
-
-#if 0
-const CuePoint* Cues::LoadCuePoint(
-    long long time_ns,
-    const Track* pTrack,
-    const CuePoint::TrackPosition*& pTP) const
-{
-    assert(time_ns >= 0);
-    assert(pTrack);
-
-    //odbgstream os;
-    //os << "Cues::LoadCuePoint: time[sec]="
-    //   << (double(time_ns) / 1000000000)
-    //   << " count=" << m_count
-    //   << " preload_count=" << m_preload_count
-    //   << endl;
-
-    if (m_count > 0)
-    {
-        const CuePoint* pCP = GetLast();
-        assert(pCP);
-
-        const long long ns = pCP->GetTime(m_pSegment);
-
-        if ((ns >= time_ns) || (m_preload_count == 0))
-        {
-            const bool bFound = Find(time_ns, pTrack, pCP, pTP);
-            assert(bFound);  //TODO
-            assert(pCP);
-            assert(pTP);
-
-            return pCP;
-        }
-    }
-
-    assert(m_preload_count > 0);
-    assert(m_cue_points);
-
-    IMkvReader* const pReader = m_pSegment->m_pReader;
-
-    CuePoint** const ii = m_cue_points + m_count;
-    CuePoint** i = ii;
-
-    CuePoint** const jj = ii + m_preload_count;
-    CuePoint** j = jj;
-
-    while (i < j)
-    {
-        //INVARIANT:
-        //[ii, i) <= time_ns
-        //[i, j)  ?
-        //[j, jj) > time_ns
-
-        CuePoint** const k = i + (j - i) / 2;
-        assert(k < jj);
-
-        CuePoint* const pCP = *k;
-        assert(pCP);
-
-        pCP->Load(pReader, 0);
-
-        const long long t = pCP->GetTime(m_pSegment);
-
-        if (t <= time_ns)
-            i = k + 1;
-        else
-            j = k;
-
-        assert(i <= j);
-    }
-
-    assert(i == j);
-    assert(i <= jj);
-    assert(i > m_cue_points);
-
-    const CuePoint* const pCP = *--i;
-    assert(pCP);
-    assert(pCP->GetTime(m_pSegment) <= time_ns);
-
-    pTP = pCP->Find(pTrack);
-    assert(pTP);  //TODO
-
-    return pCP;
 }
 #endif
 

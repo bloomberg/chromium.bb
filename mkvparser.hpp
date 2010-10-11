@@ -400,29 +400,15 @@ public:
         const CuePoint::TrackPosition*&) const;
 #endif
 
-#if 0
-    const CuePoint* GetFirst() const;
-    const CuePoint* GetLast() const;
-#endif
-
-    bool LoadCuePoint();
-
-#if 0
-    const CuePoint* LoadCuePoint(
-        long long time_ns,
-        const Track*,
-        const CuePoint::TrackPosition*&) const;
-#endif
-
 private:
-    void Init();
-    void PreloadCuePoint(size_t&, long long);
+    void Init() const;
+    bool LoadCuePoint() const;
+    void PreloadCuePoint(size_t&, long long) const;
 
-    CuePoint** m_cue_points;
-    //size_t m_cue_points_size;
-    size_t m_count;
-    size_t m_preload_count;
-    long long m_pos;
+    mutable CuePoint** m_cue_points;
+    mutable size_t m_count;
+    mutable size_t m_preload_count;
+    mutable long long m_pos;
 
 };
 
