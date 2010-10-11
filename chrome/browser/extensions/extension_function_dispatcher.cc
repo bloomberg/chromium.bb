@@ -278,10 +278,11 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<UninstallFunction>();
 
   // WebstorePrivate.
-  RegisterFunction<GetSyncLoginFunction>();
+  RegisterFunction<GetBrowserLoginFunction>();
   RegisterFunction<GetStoreLoginFunction>();
   RegisterFunction<InstallFunction>();
   RegisterFunction<SetStoreLoginFunction>();
+  RegisterFunction<PromptBrowserLoginFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

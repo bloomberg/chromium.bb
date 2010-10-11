@@ -1963,6 +1963,7 @@
         'browser/extensions/extension_webnavigation_apitest.cc',
         'browser/extensions/extension_webrequest_apitest.cc',
         'browser/extensions/extension_websocket_apitest.cc',
+        'browser/extensions/extension_webstore_private_browsertest.cc',
         'browser/extensions/fragment_navigation_apitest.cc',
         'browser/extensions/isolated_world_apitest.cc',
         'browser/extensions/notifications_apitest.cc',
@@ -2095,6 +2096,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:nss',
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],

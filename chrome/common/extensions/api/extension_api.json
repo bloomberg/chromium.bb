@@ -4119,7 +4119,7 @@
         ]
       },
       {
-        "name": "getSyncLogin",
+        "name": "getBrowserLogin",
         "description": "Returns the logged-in sync user login if there is one, or the empty string otherwise.",
         "parameters": [
           {
@@ -4127,7 +4127,8 @@
             "type": "function",
             "optional": "false",
             "parameters": [
-              { "name": "login", "type": "string" }
+              { "name": "login", "type": "string" },
+              { "name": "token", "type": "string", "optional": true }
             ]
           }
         ]
@@ -4152,6 +4153,32 @@
         "parameters": [
           { "name": "login", "type": "string" },
           { "name": "callback", "type": "function", "optional": "true" }
+        ]
+      },
+      {
+        "name": "promptBrowserLogin",
+        "description": "Causes the browser to bring up the browser login UI.",
+        "parameters": [
+          {
+            "name": "preferred_email",
+            "type": "string",
+            "description": "The email address to use to pre-populate the login dialog (can be an empty string)."
+          },
+          { 
+            "name": "callback", 
+            "type": "function", 
+            "optional": "true",
+            "parameters": [
+              {
+                "name": "info",
+                "type": "object",
+                "properties": {
+                  "login": { "type": "string", "optional": true },
+                  "token": { "type": "string", "optional": true }
+                }
+              }
+            ]
+          }
         ]
       }
     ]

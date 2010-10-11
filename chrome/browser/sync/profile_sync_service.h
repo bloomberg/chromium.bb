@@ -214,11 +214,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // progress, the sync system is already authenticated, or some error
   // occurred preventing the action. We make it the duty of ProfileSyncService
   // to open the dialog to easily ensure only one is ever showing.
-  bool SetupInProgress() const;
+  virtual bool SetupInProgress() const;
   bool WizardIsVisible() const {
     return wizard_.IsVisible();
   }
-  void ShowLoginDialog(gfx::NativeWindow parent_window);
+  virtual void ShowLoginDialog(gfx::NativeWindow parent_window);
 
   void ShowChooseDataTypes(gfx::NativeWindow parent_window);
 

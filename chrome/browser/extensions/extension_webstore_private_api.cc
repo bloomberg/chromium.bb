@@ -18,6 +18,9 @@
 namespace {
 
 const char* install_base_url = extension_urls::kGalleryUpdateHttpsUrl;
+const char kAlreadyLoggedInError[] = "User already logged in";
+const char kLoginKey[] = "login";
+ProfileSyncService* test_sync_service = NULL;
 
 bool IsWebStoreURL(Profile* profile, const GURL& url) {
   ExtensionsService* service = profile->GetExtensionsService();
@@ -26,7 +29,7 @@ bool IsWebStoreURL(Profile* profile, const GURL& url) {
   return (service->GetExtensionByWebExtent(url) == store);
 }
 
-}
+}  // namespace
 
 // static
 void InstallFunction::SetTestingInstallBaseUrl(
@@ -67,12 +70,15 @@ bool InstallFunction::RunImpl() {
   return true;
 }
 
-bool GetSyncLoginFunction::RunImpl() {
+bool GetBrowserLoginFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
   ProfileSyncService* sync_service = profile_->GetProfileSyncService();
   string16 username = sync_service->GetAuthenticatedUsername();
-  result_.reset(Value::CreateStringValue(username));
+  ListValue* list = new ListValue();
+  // TODO(asargent) - send the browser login token here too if available.
+  list->Append(Value::CreateStringValue(username));
+  result_.reset(list);
   return true;
 }
 
@@ -99,4 +105,68 @@ bool SetStoreLoginFunction::RunImpl() {
   ExtensionPrefs* prefs = service->extension_prefs();
   prefs->SetWebStoreLogin(login);
   return true;
+}
+
+// static
+void PromptBrowserLoginFunction::SetTestingProfileSyncService(
+    ProfileSyncService* service) {
+  test_sync_service = service;
+}
+
+ProfileSyncService* PromptBrowserLoginFunction::profile_sync_service() {
+  if (test_sync_service)
+    return test_sync_service;
+  else
+    return profile_->GetProfileSyncService();
+}
+
+PromptBrowserLoginFunction::~PromptBrowserLoginFunction() {
+  if (observing_sync_state_)
+    profile_sync_service()->RemoveObserver(this);
+}
+
+bool PromptBrowserLoginFunction::RunImpl() {
+  if (!IsWebStoreURL(profile_, source_url()))
+    return false;
+
+  std::string preferred_email;
+  ProfileSyncService* sync_service = profile_sync_service();
+  if (args_->GetSize() > 0) {
+    EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &preferred_email));
+    if (!sync_service->GetAuthenticatedUsername().empty()) {
+      error_ = kAlreadyLoggedInError;
+      return false;
+    }
+  }
+
+  // We return the result asynchronously, so we addref to keep ourself alive.
+  // Matched with a Release in OnStateChanged().
+  AddRef();
+
+  observing_sync_state_ = true;
+  sync_service->AddObserver(this);
+  // TODO(mirandac/estade) - make use of |preferred_email| to pre-populate the
+  // browser login dialog if it was set to non-empty above.
+  sync_service->ShowLoginDialog(NULL);
+
+  // The response will be sent asynchronously in OnStateChanged().
+  return true;
+}
+
+void PromptBrowserLoginFunction::OnStateChanged() {
+  ProfileSyncService* sync_service = profile_sync_service();
+  // If the setup is finished, we'll report back what happened.
+  if (!sync_service->SetupInProgress()) {
+    DictionaryValue* dictionary = new DictionaryValue();
+
+    // TODO(asargent) - send the browser login token here too if available.
+    string16 username = sync_service->GetAuthenticatedUsername();
+    dictionary->SetString(kLoginKey, username);
+
+    result_.reset(dictionary);
+    SendResponse(true);
+
+    // Matches the AddRef in RunImpl().
+    Release();
+  }
 }
