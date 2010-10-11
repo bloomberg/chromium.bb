@@ -8936,6 +8936,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EULA_TPM_BUSY" desc="Message bubble text">
         TPM is not ready yet, try later.
       </message>
+      <message name="IDS_EULA_TPM_DISABLED" desc="Tooltip text describing why 'System security setting' link is disabled.">
+        Trusted Platform Module (TPM) chip is disabled or absent.
+      </message>
       <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by centrally-administered policy">
 	This option is controlled by an enterprise policy. Please contact your administrator for more information.
       </message>
