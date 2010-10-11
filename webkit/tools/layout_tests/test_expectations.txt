@@ -7,18 +7,3 @@
 BUG_AJWONG WIN : fast/dom/Window/window-screen-properties.html = TEXT
 BUG_AJWONG WIN : fast/media/color-does-not-include-alpha.html = TEXT
 BUG_AJWONG MAC : fast/css/transformed-mask.html = IMAGE
-
-// Remove these when rolling past r69383.
-BUG10479 DEBUG MAC : svg/hixie/perf/001.xml = FAIL
-BUG10479 DEBUG MAC : svg/hixie/perf/002.xml = FAIL
-
-// Remove these when rolling past r69412
-BUGWEBGL MAC : fast/canvas/webgl/gl-uniform-arrays.html = TEXT
-BUGWEBGL MAC : fast/canvas/webgl/object-deletion-behaviour.html = TEXT
-BUGWEBGL MAC : fast/canvas/webgl/point-size.html = TEXT
-BUGWEBGL MAC : fast/canvas/webgl/gl-object-get-calls.html = TIMEOUT
-BUGWEBGL MAC : fast/canvas/webgl/tex-image-and-uniform-binding-bugs.html = TIMEOUT
-BUGWEBGL MAC : fast/canvas/webgl/uniform-location.html = TIMEOUT
-
-// Remove these after rolling past r69438.
-BUGAJWONG WIN : svg/W3C-SVG-1.1/pservers-grad-17-b.svg = IMAGE+TEXT
