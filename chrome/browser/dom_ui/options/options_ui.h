@@ -83,6 +83,7 @@ class OptionsUI : public DOMUI {
   virtual ~OptionsUI();
 
   static RefCountedMemory* GetFaviconResourceBytes();
+  void RenderViewCreated(RenderViewHost* render_view_host);
 
   void InitializeHandlers();
 

@@ -8,6 +8,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/dom_ui/options/search_engine_manager_handler.h"
 #include "chrome/browser/dom_ui/options/sync_options_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -206,6 +208,21 @@ OptionsUI::~OptionsUI() {
        ++iter) {
     static_cast<OptionsPageUIHandler*>(*iter)->Uninitialize();
   }
+}
+
+// Override.
+void OptionsUI::RenderViewCreated(RenderViewHost* render_view_host) {
+  std::string command_line_string;
+
+#if defined(OS_WIN)
+  std::wstring wstr = CommandLine::ForCurrentProcess()->command_line_string();
+  command_line_string = WideToASCII(wstr);
+#else
+  command_line_string = CommandLine::ForCurrentProcess()->command_line_string();
+#endif
+
+  render_view_host->SetDOMUIProperty("commandLineString", command_line_string);
+  DOMUI::RenderViewCreated(render_view_host);
 }
 
 // static
