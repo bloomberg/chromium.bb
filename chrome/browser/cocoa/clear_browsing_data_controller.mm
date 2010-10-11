@@ -121,10 +121,19 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer,
                         pathForResource:@"ClearBrowsingData"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    profile_ = profile;
     observer_.reset(new ClearBrowsingObserver(self));
-    profile_->GetProfileSyncService()->ResetClearServerDataState();
-    profile_->GetProfileSyncService()->AddObserver(observer_.get());
+
+    // Always show preferences for the original profile. Most state when off
+    // the record comes from the original profile, but we explicitly use
+    // the original profile to avoid potential problems.
+    profile_ = profile->GetOriginalProfile();
+    sync_service_ = profile_->GetProfileSyncService();
+
+    if (sync_service_) {
+      sync_service_->ResetClearServerDataState();
+      sync_service_->AddObserver(observer_.get());
+    }
+
     [self initFromPrefs];
   }
   return self;
@@ -137,7 +146,8 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer,
     // while clearing is in progress as the dialog is modal and not closeable).
     remover_->RemoveObserver(observer_.get());
   }
-  profile_->GetProfileSyncService()->RemoveObserver(observer_.get());
+  if (sync_service_)
+    sync_service_->RemoveObserver(observer_.get());
   [self setClearingStatus:nil];
 
   [super dealloc];
@@ -341,13 +351,13 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer,
   // the syncer syncs and resets itself before the user tries pressing the Clear
   // button in this dialog again. TODO(raz) Confirm whether we have an issue
   // here
-  if (profile_->GetProfileSyncService()->HasSyncSetupCompleted()) {
+  if (sync_service_->HasSyncSetupCompleted()) {
     bool clear = platform_util::SimpleYesNoBox(
         nil,
         l10n_util::GetStringUTF16(IDS_CONFIRM_CLEAR_TITLE),
         l10n_util::GetStringUTF16(IDS_CONFIRM_CLEAR_DESCRIPTION));
     if (clear) {
-      profile_->GetProfileSyncService()->ClearServerData();
+      sync_service_->ClearServerData();
       [self syncStateChanged];
     }
   }
@@ -357,8 +367,8 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer,
   bool deleteInProgress = false;
 
   ProfileSyncService::ClearServerDataState clearState =
-      profile_->GetProfileSyncService()->GetClearServerDataState();
-  profile_->GetProfileSyncService()->ResetClearServerDataState();
+      sync_service_->GetClearServerDataState();
+  sync_service_->ResetClearServerDataState();
 
   switch (clearState) {
     case ProfileSyncService::CLEAR_NOT_STARTED:
@@ -387,13 +397,13 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer,
   [self setIsClearing:deleteInProgress];
 }
 
-- (BOOL)isSyncEnabled {
-  BOOL allowClearServerDataUI =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClearServerData);
+- (BOOL)isSyncVisible {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClearServerData);
+}
 
-  return allowClearServerDataUI &&
-      profile_->GetProfileSyncService()->HasSyncSetupCompleted();
+- (BOOL)isSyncEnabled {
+  return sync_service_ && sync_service_->HasSyncSetupCompleted();
 }
 
 - (NSFont*)labelFont {

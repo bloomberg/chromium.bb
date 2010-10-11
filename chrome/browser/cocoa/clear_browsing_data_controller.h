@@ -13,6 +13,7 @@
 class BrowsingDataRemover;
 class ClearBrowsingObserver;
 class Profile;
+class ProfileSyncService;
 @class ThrobberView;
 
 // Name of notification that is called when data is cleared.
@@ -32,6 +33,7 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
   // automated tests. The remove deletes itself when it's done, so this is a
   // weak reference.
   BrowsingDataRemover* remover_;
+  ProfileSyncService* sync_service_;
   scoped_ptr<ClearBrowsingObserver> observer_;
   BOOL isClearing_;  // YES while clearing data is ongoing.
   NSString* clearingStatus_;
@@ -80,6 +82,7 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
 @property (nonatomic) NSInteger timePeriod;
 @property (nonatomic) BOOL isClearing;
 @property (nonatomic, copy) NSString* clearingStatus;
+@property (readonly, nonatomic) BOOL isSyncVisible;
 @property (readonly, nonatomic) BOOL isSyncEnabled;
 
 @property (readonly) NSFont* labelFont;
