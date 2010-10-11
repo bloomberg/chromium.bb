@@ -478,6 +478,42 @@
    fun:SEC_ASN1DecoderUpdate_Util
    fun:SEC_PKCS12DecoderUpdate
 }
+{
+   bug_58730_strcmp_addr8
+   Memcheck:Addr8
+   fun:__strcmp_ssse3
+}
+{
+   bug_58730_strcmp_cond
+   Memcheck:Cond
+   fun:__strcmp_ssse3
+}
+{
+   bug_58730_strcmp_value8
+   Memcheck:Value8
+   fun:__strcmp_ssse3
+}
+{
+   bug_58730_strncmp_value8
+   Memcheck:Value8
+   fun:__strncmp_ssse3
+}
+{
+   bug_58730_libc.so_addr8
+   Memcheck:Addr8
+   obj:/lib/libc-2.*.so
+}
+{
+   bug_58730_libc.so_cond
+   Memcheck:Cond
+   obj:/lib/libc-2.*.so
+}
+{
+   bug_58730_libc.so_value8
+   Memcheck:Value8
+   obj:/lib/libc-2.11.1.so
+}
+
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
