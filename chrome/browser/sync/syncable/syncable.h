@@ -672,6 +672,8 @@ class Directory {
     std::string store_birthday;
     // The next local ID that has not been used with this cache-GUID.
     int64 next_id;
+    // The persisted notification state.
+    std::string notification_state;
   };
 
   // What the Directory needs on initialization to create itself and its Kernel.
@@ -760,6 +762,9 @@ class Directory {
   // in case we switch to a binary birthday later.
   std::string store_birthday() const;
   void set_store_birthday(std::string store_birthday);
+
+  std::string GetAndClearNotificationState();
+  void SetNotificationState(const std::string& notification_state);
 
   // Unique to each account / client pair.
   std::string cache_guid() const;
@@ -913,6 +918,7 @@ class Directory {
   // a ScopedKernelLock.
   void set_initial_sync_ended_for_type_unsafe(ModelType type, bool x);
   void set_last_download_timestamp_unsafe(ModelType model_type, int64 x);
+  void SetNotificationStateUnsafe(const std::string& notification_state);
 
   Directory& operator = (const Directory&);
 

@@ -1004,6 +1004,7 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
   dir_->set_last_download_timestamp(BOOKMARKS, 1000);
   dir_->set_initial_sync_ended_for_type(AUTOFILL, true);
   dir_->set_store_birthday("Jan 31st");
+  dir_->SetNotificationState("notification_state");
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
     EXPECT_EQ(100, dir_->last_download_timestamp(AUTOFILL));
@@ -1011,9 +1012,12 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("Jan 31st", dir_->store_birthday());
+    EXPECT_EQ("notification_state", dir_->GetAndClearNotificationState());
+    EXPECT_EQ("", dir_->GetAndClearNotificationState());
   }
   dir_->set_last_download_timestamp(AUTOFILL, 200);
   dir_->set_store_birthday("April 10th");
+  dir_->SetNotificationState("notification_state2");
   dir_->SaveChanges();
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
@@ -1022,7 +1026,10 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
+    EXPECT_EQ("notification_state2", dir_->GetAndClearNotificationState());
+    EXPECT_EQ("", dir_->GetAndClearNotificationState());
   }
+  dir_->SetNotificationState("notification_state2");
   // Restore the directory from disk.  Make sure that nothing's changed.
   SaveAndReloadDir();
   {
@@ -1032,6 +1039,8 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
     EXPECT_TRUE(dir_->initial_sync_ended_for_type(AUTOFILL));
     EXPECT_FALSE(dir_->initial_sync_ended_for_type(BOOKMARKS));
     EXPECT_EQ("April 10th", dir_->store_birthday());
+    EXPECT_EQ("notification_state2", dir_->GetAndClearNotificationState());
+    EXPECT_EQ("", dir_->GetAndClearNotificationState());
   }
 }
 

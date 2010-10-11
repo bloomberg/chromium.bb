@@ -44,7 +44,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
 extern const int32 kCurrentDBVersion;  // Global visibility for our unittest.
-const int32 kCurrentDBVersion = 72;
+const int32 kCurrentDBVersion = 73;
 
 namespace {
 
@@ -378,9 +378,12 @@ bool DirectoryBackingStore::SaveChanges(
     SQLStatement update;
     update.prepare(dbhandle, "UPDATE share_info "
                    "SET store_birthday = ?, "
-                   "next_id = ?");
+                   "next_id = ?, "
+                   "notification_state = ?");
     update.bind_string(0, info.store_birthday);
     update.bind_int64(1, info.next_id);
+    update.bind_blob(2, info.notification_state.data(),
+                     info.notification_state.size());
 
     if (!(SQLITE_DONE == update.step() &&
           SQLITE_OK == update.reset() &&
@@ -445,6 +448,12 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 71) {
     if (MigrateVersion71To72())
       version_on_disk = 72;
+  }
+
+  // Version 73 added a field for notification state.
+  if (version_on_disk == 72) {
+    if (MigrateVersion72To73())
+      version_on_disk = 73;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -546,13 +555,14 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
     SQLStatement query;
     query.prepare(load_dbhandle_,
-                  "SELECT store_birthday, next_id, cache_guid "
-                  "FROM share_info");
+                  "SELECT store_birthday, next_id, cache_guid, "
+                  "notification_state FROM share_info");
     if (SQLITE_ROW != query.step())
       return false;
     info->kernel_info.store_birthday = query.column_string(0);
     info->kernel_info.next_id = query.column_int64(1);
     info->cache_guid = query.column_string(2);
+    query.column_blob_as_string(3, &info->kernel_info.notification_state);
   }
   {
     SQLStatement query;
@@ -879,7 +889,9 @@ bool DirectoryBackingStore::MigrateVersion70To71() {
 
   // Drop the columns from the old share_info table via a temp table.
   const bool kCreateAsTempShareInfo = true;
-  int result = CreateShareInfoTable(kCreateAsTempShareInfo);
+  const bool kWithNotificationState = false;
+  int result =
+      CreateShareInfoTable(kCreateAsTempShareInfo, kWithNotificationState);
   if (result != SQLITE_DONE)
     return false;
   ExecQuery(load_dbhandle_,
@@ -904,6 +916,16 @@ bool DirectoryBackingStore::MigrateVersion71To72() {
   return true;
 }
 
+bool DirectoryBackingStore::MigrateVersion72To73() {
+  int result =
+      ExecQuery(load_dbhandle_,
+                "ALTER TABLE share_info ADD COLUMN notification_state BLOB");
+  if (result != SQLITE_DONE)
+    return false;
+  SetVersion(73);
+  return true;
+}
+
 int DirectoryBackingStore::CreateTables() {
   LOG(INFO) << "First run, creating tables";
   // Create two little tables share_version and share_info
@@ -922,7 +944,10 @@ int DirectoryBackingStore::CreateTables() {
   if (result != SQLITE_DONE)
     return result;
 
-  result = CreateShareInfoTable(false);
+  const bool kCreateAsTempShareInfo = false;
+  const bool kWithNotificationState = true;
+  result =
+      CreateShareInfoTable(kCreateAsTempShareInfo, kWithNotificationState);
   if (result != SQLITE_DONE)
     return result;
   {
@@ -934,13 +959,15 @@ int DirectoryBackingStore::CreateTables() {
                                       "?, "   // db_create_version
                                       "?, "   // db_create_time
                                       "-2, "  // next_id
-                                      "?)");   // cache_guid);
+                                      "?, "   // cache_guid
+                                      "?);");  // notification_state
     statement.bind_string(0, dir_name_);                   // id
     statement.bind_string(1, dir_name_);                   // name
     statement.bind_string(2, "");                          // store_birthday
     statement.bind_string(3, SYNC_ENGINE_VERSION_STRING);  // db_create_version
     statement.bind_int(4, static_cast<int32>(time(0)));    // db_create_time
     statement.bind_string(5, GenerateCacheGUID());         // cache_guid
+    statement.bind_blob(6, NULL, 0);                      // notification_state
     result = statement.step();
   }
   if (result != SQLITE_DONE)
@@ -998,7 +1025,8 @@ int DirectoryBackingStore::CreateModelsTable() {
       "initial_sync_ended BOOLEAN default 0)");
 }
 
-int DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {
+int DirectoryBackingStore::CreateShareInfoTable(
+    bool is_temporary, bool with_notification_state) {
   const char* name = is_temporary ? "temp_share_info" : "share_info";
   string query = "CREATE TABLE ";
   query.append(name);
@@ -1012,7 +1040,11 @@ int DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {
       "db_create_version TEXT, "
       "db_create_time INT, "
       "next_id INT default -2, "
-      "cache_guid TEXT)");
+      "cache_guid TEXT");
+  if (with_notification_state) {
+    query.append(", notification_state BLOB");
+  }
+  query.append(")");
   return ExecQuery(load_dbhandle_, query.c_str());
 }
 

@@ -739,6 +739,14 @@ void Directory::set_last_download_timestamp_unsafe(ModelType model_type,
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
 }
 
+void Directory::SetNotificationStateUnsafe(
+    const std::string& notification_state) {
+  if (notification_state == kernel_->persisted_info.notification_state)
+    return;
+  kernel_->persisted_info.notification_state = notification_state;
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+}
+
 string Directory::store_birthday() const {
   ScopedKernelLock lock(this);
   return kernel_->persisted_info.store_birthday;
@@ -750,6 +758,18 @@ void Directory::set_store_birthday(string store_birthday) {
     return;
   kernel_->persisted_info.store_birthday = store_birthday;
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+}
+
+std::string Directory::GetAndClearNotificationState() {
+  ScopedKernelLock lock(this);
+  std::string notification_state = kernel_->persisted_info.notification_state;
+  SetNotificationStateUnsafe(std::string());
+  return notification_state;
+}
+
+void Directory::SetNotificationState(const std::string& notification_state) {
+  ScopedKernelLock lock(this);
+  SetNotificationStateUnsafe(notification_state);
 }
 
 string Directory::cache_guid() const {
