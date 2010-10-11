@@ -15,7 +15,7 @@ class TabContents;
 
 // Callbacks which display UI for the TemplateURLFetcher.
 class TemplateURLFetcherUICallbacks : public TemplateURLFetcherCallbacks,
-    public NotificationObserver  {
+                                      public NotificationObserver {
  public:
   explicit TemplateURLFetcherUICallbacks(TabContents* source);
   virtual ~TemplateURLFetcherUICallbacks();

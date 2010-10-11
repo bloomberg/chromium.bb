@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,16 +6,23 @@
 
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_fetcher_callbacks.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_parser.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "net/url_request/url_request_status.h"
 
 // RequestDelegate ------------------------------------------------------------
-class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate {
+class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate,
+                                            public NotificationObserver {
  public:
   // Takes ownership of |callbacks|.
   RequestDelegate(TemplateURLFetcher* fetcher,
@@ -23,18 +30,12 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate {
                   const GURL& osdd_url,
                   const GURL& favicon_url,
                   TemplateURLFetcherCallbacks* callbacks,
-                  ProviderType provider_type)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(osdd_url,
-                                                    URLFetcher::GET, this)),
-        fetcher_(fetcher),
-        keyword_(keyword),
-        osdd_url_(osdd_url),
-        favicon_url_(favicon_url),
-        provider_type_(provider_type),
-        callbacks_(callbacks) {
-    url_fetcher_.set_request_context(fetcher->profile()->GetRequestContext());
-    url_fetcher_.Start();
-  }
+                  ProviderType provider_type);
+
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // URLFetcher::Delegate:
   // If data contains a valid OSDD, a TemplateURL is created and added to
@@ -67,9 +68,53 @@ class TemplateURLFetcher::RequestDelegate : public URLFetcher::Delegate {
   const ProviderType provider_type_;
   scoped_ptr<TemplateURLFetcherCallbacks> callbacks_;
 
+  // Handles registering for our notifications.
+  NotificationRegistrar registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(RequestDelegate);
 };
 
+TemplateURLFetcher::RequestDelegate::RequestDelegate(
+    TemplateURLFetcher* fetcher,
+    const std::wstring& keyword,
+    const GURL& osdd_url,
+    const GURL& favicon_url,
+    TemplateURLFetcherCallbacks* callbacks,
+    ProviderType provider_type)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(osdd_url,
+                                                  URLFetcher::GET, this)),
+      fetcher_(fetcher),
+      keyword_(keyword),
+      osdd_url_(osdd_url),
+      favicon_url_(favicon_url),
+      provider_type_(provider_type),
+      callbacks_(callbacks) {
+  TemplateURLModel* model = fetcher_->profile()->GetTemplateURLModel();
+  DCHECK(model);  // TemplateURLFetcher::ScheduleDownload verifies this.
+
+  if (!model->loaded()) {
+    // Start the model load and set-up waiting for it.
+    registrar_.Add(this,
+                   NotificationType::TEMPLATE_URL_MODEL_LOADED,
+                   Source<TemplateURLModel>(model));
+    model->Load();
+  }
+
+  url_fetcher_.set_request_context(fetcher->profile()->GetRequestContext());
+  url_fetcher_.Start();
+}
+
+void TemplateURLFetcher::RequestDelegate::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(type == NotificationType::TEMPLATE_URL_MODEL_LOADED);
+
+  if (!template_url_.get())
+    return;
+  AddSearchProvider();
+  // WARNING: AddSearchProvider deletes us.
+}
 
 void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     const URLFetcher* source,
@@ -98,6 +143,11 @@ void TemplateURLFetcher::RequestDelegate::OnURLFetchComplete(
     // WARNING: RequestCompleted deletes us.
     return;
   }
+
+  // Wait for the model to be loaded before adding the provider.
+  TemplateURLModel* model = fetcher_->profile()->GetTemplateURLModel();
+  if (!model->loaded())
+    return;
   AddSearchProvider();
   // WARNING: AddSearchProvider deletes us.
 }
@@ -126,13 +176,46 @@ void TemplateURLFetcher::RequestDelegate::AddSearchProvider() {
       // WARNING: RequestCompleted deletes us.
       return;
     }
-    // If we're coming from JS (neither autodetected nor failure to load the
-    // template URL model) and this URL already exists in the model, we bring
-    // up the EditKeywordController to edit it.  This is helpful feedback in
-    // the case of clicking a button twice, and annoying in the case of a
-    // page that calls AddSearchProvider() in JS without a user action.
-    keyword_.clear();
+
     existing_url = NULL;
+
+    // Try to generate a keyword automatically when we are setting the default
+    // provider. The keyword isn't as important in this case.
+    if (provider_type_ == EXPLICIT_DEFAULT_PROVIDER) {
+      // The loop numbers are arbitrary and are simply a strong effort.
+      std::wstring new_keyword;
+      for (int i = 0; i < 100; ++i) {
+        // Concatenate a number at end of the keyword and try that.
+        new_keyword = keyword_;
+        // Try the keyword alone the first time
+        if (i > 0)
+          new_keyword.append(UTF16ToWide(base::IntToString16(i)));
+        if (!model->GetTemplateURLForKeyword(new_keyword) ||
+            model->CanReplaceKeyword(new_keyword,
+                                     GURL(template_url_->url()->url()),
+                                     &existing_url)) {
+          break;
+        }
+        new_keyword.clear();
+        existing_url = NULL;
+      }
+
+      if (new_keyword.empty()) {
+        // A keyword could not be found. This user must have a lot of numerical
+        // keywords built up.
+        fetcher_->RequestCompleted(this);
+        // WARNING: RequestCompleted deletes us.
+        return;
+      }
+      keyword_ = new_keyword;
+    } else {
+      // If we're coming from JS (neither autodetected nor failure to load the
+      // template URL model) and this URL already exists in the model, we bring
+      // up the EditKeywordController to edit it.  This is helpful feedback in
+      // the case of clicking a button twice, and annoying in the case of a
+      // page that calls AddSearchProvider() in JS without a user action.
+      keyword_.clear();
+    }
   }
 
   if (existing_url)
@@ -201,17 +284,22 @@ void TemplateURLFetcher::ScheduleDownload(
   TemplateURLModel* url_model = profile()->GetTemplateURLModel();
   if (!url_model)
     return;
-  if (!url_model->loaded()) {
-    url_model->Load();
-    return;
-  }
-  const TemplateURL* template_url =
-      url_model->GetTemplateURLForKeyword(keyword);
-  if (template_url && (!template_url->safe_for_autoreplace() ||
-                       template_url->originating_url() == osdd_url)) {
-    // Either there is a user created TemplateURL for this keyword, or the
-    // keyword has the same OSDD url and we've parsed it.
-    return;
+
+  // Avoid certain checks for the default provider because we'll do the load
+  // and try to brute force a unique keyword for it.
+  if (provider_type != TemplateURLFetcher::EXPLICIT_DEFAULT_PROVIDER) {
+    if (!url_model->loaded()) {
+      url_model->Load();
+      return;
+    }
+    const TemplateURL* template_url =
+        url_model->GetTemplateURLForKeyword(keyword);
+    if (template_url && (!template_url->safe_for_autoreplace() ||
+                         template_url->originating_url() == osdd_url)) {
+      // Either there is a user created TemplateURL for this keyword, or the
+      // keyword has the same OSDD url and we've parsed it.
+      return;
+    }
   }
 
   // Make sure we aren't already downloading this request.
