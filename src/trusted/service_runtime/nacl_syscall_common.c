@@ -1731,6 +1731,12 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
      */
     if (0 != (flags & NACL_DONT_WAIT) && NaClWouldBlock()) {
       retval = -NACL_ABI_EAGAIN;
+    } else if (-NACL_ABI_EMSGSIZE == ssize_retval) {
+      /*
+       * Allow the caller to handle the case when imc_sendmsg fails because
+       * the message is too large for the system to send in one piece.
+       */
+      retval = -NACL_ABI_EMSGSIZE;
     } else {
       /*
        * TODO(bsy): the else case is some mysterious internal error.

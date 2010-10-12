@@ -202,7 +202,7 @@ static ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
 #if NACL_WINDOWS
     return -NaClXlateSystemError(GetLastError());
 #elif NACL_LINUX || NACL_OSX
-    return -errno;
+    return -NaClXlateErrno(errno);
 #else
 # error "Unknown target platform: cannot translate error code(s) from SendMsg"
 #endif
@@ -255,7 +255,7 @@ NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
 #if NACL_WINDOWS
     return -NaClXlateSystemError(GetLastError());
 #elif NACL_LINUX || NACL_OSX
-    return -errno;
+    return -NaClXlateErrno(errno);
 #else
 # error "Unknown target platform: cannot translate error code(s) from SendMsg"
 #endif

@@ -358,6 +358,12 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
      */
     if (0 != (flags & NACL_DONT_WAIT) && NaClWouldBlock()) {
       retval = -NACL_ABI_EAGAIN;
+    } else if (-NACL_ABI_EMSGSIZE == retval) {
+      /*
+       * Allow the above layer to process when imc_sendmsg calls fail due
+       * to the OS not supporting a large enough buffer.
+       */
+      retval = -NACL_ABI_EMSGSIZE;
     } else {
       /*
        * TODO(bsy): the else case is some mysterious internal error.
