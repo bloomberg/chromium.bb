@@ -1901,11 +1901,15 @@ build-sandboxed-translators() {
   llvm-tools-sb x8632
   echo ""
 
-  StepBanner "64-bit X86" "Sandboxing"
-  StepBanner "----------" "----------"
-  binutils-sb x8664
-  llvm-tools-sb x8664
-  echo ""
+  if can-build-64-bit ; then
+    StepBanner "64-bit X86" "Sandboxing"
+    StepBanner "----------" "----------"
+    binutils-sb x8664
+    llvm-tools-sb x8664
+    echo ""
+  else
+    echo "32-bit machine: Skipping 64-bit translator build"
+  fi
 }
 
 # TODO(abetul): Missing arm translator work.
@@ -1916,32 +1920,40 @@ install-translators() {
 
   assert-dir "${PNACL_SB_X8632}" \
         "Run this script with build-sandboxed-translators"
-  assert-dir "${PNACL_SB_X8664}" \
-        "Run this script with build-sandboxed-translators"
 
   scons-build-sel_ldr x86-32
   cp "./scons-out/opt-linux-x86-32/staging/sel_ldr" \
         "${PNACL_SB_X8632}/bin"
 
-  scons-build-sel_ldr x86-64
-  cp "./scons-out/opt-linux-x86-64/staging/sel_ldr" \
-        "${PNACL_SB_X8664}/bin"
-
   mkdir -p ${PNACL_SB_X8632}/script
-  mkdir -p ${PNACL_SB_X8664}/script
 
   assert-file "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
         "Install NaCl toolchain."
   cp "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
         "${PNACL_SB_X8632}/script/ld_script"
 
-  assert-file "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
+  cp tools/llvm/dummy_translator_x8632.sh "${PNACL_SB_X8632}/translator"
+
+  if can-build-64-bit ; then
+    assert-dir "${PNACL_SB_X8664}" \
+        "Run this script with build-sandboxed-translators"
+
+    scons-build-sel_ldr x86-64
+    cp "./scons-out/opt-linux-x86-64/staging/sel_ldr" \
+        "${PNACL_SB_X8664}/bin"
+
+    mkdir -p ${PNACL_SB_X8664}/script
+
+    assert-file "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
         "Install NaCl toolchain."
-  cp "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
+
+    cp "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
         "${PNACL_SB_X8664}/script/ld_script"
 
-  cp tools/llvm/dummy_translator_x8632.sh "${PNACL_SB_X8632}/translator"
-  cp tools/llvm/dummy_translator_x8664.sh "${PNACL_SB_X8664}/translator"
+    cp tools/llvm/dummy_translator_x8664.sh "${PNACL_SB_X8664}/translator"
+  else
+    echo "32-bit machine: Skipping 64-bit translator install"
+  fi
 
   echo "Done"
 }
@@ -2865,6 +2877,11 @@ show-config() {
   env | grep UTMAN
 }
 
+can-build-64-bit() {
+  $(uname -a | grep -q "x86_84")
+  return $?
+}
+
 #@ help                  - Usage information.
 help() {
   Usage
@@ -2945,7 +2962,6 @@ RepeatStr() {
 SkipBanner() {
     StepBanner "$1" "Skipping $2, already up to date."
 }
-
 
 
 SubBanner() {
