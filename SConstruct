@@ -932,7 +932,9 @@ TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/command_tester.py'
 
 # Valgrind handles SIGSEGV in a way our testing tools do not expect.
 UNSUPPORTED_VALGRIND_EXIT_STATUS = ['segfault',
-                                   'sigsegv_or_equivalent']
+                                    'sigsegv_or_equivalent',
+                                    'untrusted_sigill',
+                                    'untrusted_segfault']
 
 # (To avoid breakage in the native_client/supplement tree, which
 # resides on a different Subversion server.)
