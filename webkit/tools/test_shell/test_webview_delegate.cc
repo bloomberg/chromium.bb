@@ -702,12 +702,8 @@ WebPlugin* TestWebViewDelegate::createPlugin(
   std::string actual_mime_type;
   if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
           params.url, params.mimeType.utf8(), allow_wildcard, &info,
-          &actual_mime_type) || !info.enabled) {
+          &actual_mime_type) || !info.enabled)
     return NULL;
-  }
-
-  if (actual_mime_type.empty())
-    actual_mime_type = params.mimeType.utf8();
 
   return new webkit_glue::WebPluginImpl(
       frame, params, info.path, actual_mime_type, AsWeakPtr());

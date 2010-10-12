@@ -307,65 +307,6 @@ void PluginList::LoadPlugin(const FilePath& path,
   plugins->push_back(plugin_info);
 }
 
-bool PluginList::FindPlugin(const std::string& mime_type,
-                            bool allow_wildcard,
-                            WebPluginInfo* info) {
-  DCHECK(mime_type == StringToLowerASCII(mime_type));
-
-  LoadPlugins(false);
-  AutoLock lock(lock_);
-  for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (plugins_[i].enabled &&
-        SupportsType(plugins_[i], mime_type, allow_wildcard)) {
-      *info = plugins_[i];
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool PluginList::FindDisabledPlugin(const std::string& mime_type,
-                                    bool allow_wildcard,
-                                    WebPluginInfo* info) {
-  DCHECK(mime_type == StringToLowerASCII(mime_type));
-
-  LoadPlugins(false);
-  AutoLock lock(lock_);
-  for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (!plugins_[i].enabled &&
-        SupportsType(plugins_[i], mime_type, allow_wildcard)) {
-      *info = plugins_[i];
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool PluginList::FindPlugin(const GURL &url,
-                            std::string* actual_mime_type,
-                            WebPluginInfo* info) {
-  LoadPlugins(false);
-  AutoLock lock(lock_);
-  std::string path = url.path();
-  std::string::size_type last_dot = path.rfind('.');
-  if (last_dot == std::string::npos)
-    return false;
-
-  std::string extension = StringToLowerASCII(std::string(path, last_dot+1));
-
-  for (size_t i = 0; i < plugins_.size(); ++i) {
-    if (plugins_[i].enabled &&
-        SupportsExtension(plugins_[i], extension, actual_mime_type)) {
-      *info = plugins_[i];
-      return true;
-    }
-  }
-
-  return false;
-}
-
 bool PluginList::SupportsType(const WebPluginInfo& info,
                               const std::string &mime_type,
                               bool allow_wildcard) {
@@ -424,20 +365,109 @@ void PluginList::GetEnabledPlugins(bool refresh,
   }
 }
 
+void PluginList::GetPluginInfoArray(const GURL& url,
+                                    const std::string& mime_type,
+                                    bool allow_wildcard,
+                                    std::vector<WebPluginInfo>* info,
+                                    std::vector<std::string>* actual_mime_types) {
+  DCHECK(mime_type == StringToLowerASCII(mime_type));
+  DCHECK(info);
+
+  LoadPlugins(false);
+  AutoLock lock(lock_);
+  info->clear();
+  if (actual_mime_types)
+    actual_mime_types->clear();
+
+  std::set<FilePath> visited_plugins;
+
+  // Add in enabled plugins by mime type.
+  WebPluginInfo default_plugin;
+  for (size_t i = 0; i < plugins_.size(); ++i) {
+    if (plugins_[i].enabled &&
+        SupportsType(plugins_[i], mime_type, allow_wildcard)) {
+      FilePath path = plugins_[i].path;
+      if (path.value() != kDefaultPluginLibraryName &&
+          visited_plugins.insert(path).second) {
+        info->push_back(plugins_[i]);
+        if (actual_mime_types)
+          actual_mime_types->push_back(mime_type);
+      }
+    }
+  }
+
+  // Add in enabled plugins by url.
+  std::string path = url.path();
+  std::string::size_type last_dot = path.rfind('.');
+  if (last_dot != std::string::npos) {
+    std::string extension = StringToLowerASCII(std::string(path, last_dot+1));
+    std::string actual_mime_type;
+    for (size_t i = 0; i < plugins_.size(); ++i) {
+      if (plugins_[i].enabled &&
+          SupportsExtension(plugins_[i], extension, &actual_mime_type)) {
+        FilePath path = plugins_[i].path;
+        if (path.value() != kDefaultPluginLibraryName &&
+            visited_plugins.insert(path).second) {
+          info->push_back(plugins_[i]);
+          if (actual_mime_types)
+            actual_mime_types->push_back(actual_mime_type);
+        }
+      }
+    }
+  }
+
+  // Add in disabled plugins by mime type.
+  for (size_t i = 0; i < plugins_.size(); ++i) {
+    if (!plugins_[i].enabled &&
+        SupportsType(plugins_[i], mime_type, allow_wildcard)) {
+      FilePath path = plugins_[i].path;
+      if (path.value() != kDefaultPluginLibraryName &&
+          visited_plugins.insert(path).second) {
+        info->push_back(plugins_[i]);
+        if (actual_mime_types)
+          actual_mime_types->push_back(mime_type);
+      }
+    }
+  }
+
+  // Add the default plugin at the end if it supports the mime type given.
+  if (!plugins_.empty()) {
+    const WebPluginInfo& default_info = plugins_.back();
+    DCHECK(default_info.path.value() == kDefaultPluginLibraryName);
+    if (SupportsType(default_info, mime_type, allow_wildcard)) {
+      info->push_back(default_info);
+      if (actual_mime_types)
+        actual_mime_types->push_back(mime_type);
+    }
+  }
+}
+
 bool PluginList::GetPluginInfo(const GURL& url,
                                const std::string& mime_type,
                                bool allow_wildcard,
                                WebPluginInfo* info,
                                std::string* actual_mime_type) {
-  bool found = FindPlugin(mime_type, allow_wildcard, info);
-  if (!found || (info->path.value() == kDefaultPluginLibraryName)) {
-    if (FindPlugin(url, actual_mime_type, info) ||
-        FindDisabledPlugin(mime_type, allow_wildcard, info)) {
-      found = true;
+  DCHECK(info);
+  std::vector<WebPluginInfo> info_list;
+
+  // GetPluginInfoArray has slightly less work to do if we can pass
+  // NULL for the mime type list...
+  if (actual_mime_type) {
+    std::vector<std::string> mime_type_list;
+    GetPluginInfoArray(url, mime_type, allow_wildcard, &info_list, &mime_type_list);
+    if (!info_list.empty()) {
+      *info = info_list[0];
+      *actual_mime_type = mime_type_list[0];
+      return true;
+    }
+  } else {
+    GetPluginInfoArray(url, mime_type, allow_wildcard, &info_list, NULL);
+    if (!info_list.empty()) {
+      *info = info_list[0];
+      return true;
     }
   }
-
-  return found;
+  return false;
 }
 
 bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,

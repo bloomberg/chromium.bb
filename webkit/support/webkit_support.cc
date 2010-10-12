@@ -256,9 +256,6 @@ WebPlugin* CreateWebPlugin(WebFrame* frame,
     return NULL;
   }
 
-  if (actual_mime_type.empty())
-    actual_mime_type = params.mimeType.utf8();
-
   return new WebPluginImplWithPageDelegate(
       frame, params, info.path, actual_mime_type);
 }

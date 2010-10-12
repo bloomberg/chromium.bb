@@ -406,8 +406,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPluginInfo,
-                                      OnGetPluginInfo)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPluginInfoArray,
+                                      OnGetPluginInfoArray)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
                                   OnReceiveContextMenuMsg(msg))
@@ -759,10 +759,10 @@ void ResourceMessageFilter::OnGetPluginsOnFileThread(
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
-void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
-                                            const GURL& policy_url,
-                                            const std::string& mime_type,
-                                            IPC::Message* reply_msg) {
+void ResourceMessageFilter::OnGetPluginInfoArray(const GURL& url,
+                                                 const GURL& policy_url,
+                                                 const std::string& mime_type,
+                                                 IPC::Message* reply_msg) {
   // The PluginList::GetPluginInfo may need to load the plugins.  Don't do it
   // on the IO thread.
   BrowserThread::PostTask(
@@ -777,37 +777,41 @@ void ResourceMessageFilter::OnGetPluginInfoOnFileThread(
     const GURL& policy_url,
     const std::string& mime_type,
     IPC::Message* reply_msg) {
-  WebPluginInfo info;
-  std::string actual_mime_type;
+  std::vector<WebPluginInfo> info;
+  std::vector<std::string> actual_mime_types;
   bool allow_wildcard = true;
-  bool found = NPAPI::PluginList::Singleton()->GetPluginInfo(
-      url, mime_type, allow_wildcard, &info, &actual_mime_type);
+  NPAPI::PluginList::Singleton()->GetPluginInfoArray(
+      url, mime_type, allow_wildcard, &info, &actual_mime_types);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGotPluginInfo,
-          found, info, actual_mime_type, policy_url, reply_msg));
+          info, actual_mime_types, policy_url, reply_msg));
 }
 
-void ResourceMessageFilter::OnGotPluginInfo(bool found,
-                                            WebPluginInfo info,
-                                            const std::string& actual_mime_type,
-                                            const GURL& policy_url,
-                                            IPC::Message* reply_msg) {
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  if (found) {
-    info.enabled = info.enabled &&
-        plugin_service_->PrivatePluginAllowedForURL(info.path, policy_url);
+void ResourceMessageFilter::OnGotPluginInfo(
+    std::vector<WebPluginInfo> info,
+    const std::vector<std::string>& actual_mime_types,
+    const GURL& policy_url,
+    IPC::Message* reply_msg) {
+  std::vector<ContentSetting> settings;
+  for (std::vector<WebPluginInfo>::iterator iter = info.begin();
+       iter != info.end(); ++iter) {
+    ContentSetting setting = CONTENT_SETTING_DEFAULT;
+    WebPluginInfo& item(*iter);
+    item.enabled = item.enabled &&
+        plugin_service_->PrivatePluginAllowedForURL(item.path, policy_url);
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-    scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
+    scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(item));
     std::string resource = group->identifier();
     setting = map->GetContentSetting(policy_url,
                                      CONTENT_SETTINGS_TYPE_PLUGINS,
                                      resource);
+    settings.push_back(setting);
   }
 
-  ViewHostMsg_GetPluginInfo::WriteReplyParams(
-      reply_msg, found, info, setting, actual_mime_type);
+  ViewHostMsg_GetPluginInfoArray::WriteReplyParams(
+      reply_msg, info, settings, actual_mime_types);
   Send(reply_msg);
 }
 

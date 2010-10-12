@@ -565,21 +565,22 @@ void RenderView::PluginCrashed(const FilePath& plugin_path) {
 
 WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
-  WebPluginInfo info;
-  bool found;
-  ContentSetting setting;
-  std::string mime_type;
-  Send(new ViewHostMsg_GetPluginInfo(
-      params.url, frame->top()->url(), params.mimeType.utf8(), &found,
-      &info, &setting, &mime_type));
-  if (!found || !info.enabled)
+  std::vector<WebPluginInfo> info;
+  std::vector<ContentSetting> settings;
+  std::vector<std::string> mime_types;
+  Send(new ViewHostMsg_GetPluginInfoArray(
+      params.url, frame->top()->url(), params.mimeType.utf8(),
+      &info, &settings, &mime_types));
+
+  // Select the first plugin returned, but only if it's enabled.
+  if (info.empty() || !info[0].enabled)
     return NULL;
   scoped_refptr<pepper::PluginModule> pepper_module =
-      PepperPluginRegistry::GetInstance()->GetModule(info.path);
+      PepperPluginRegistry::GetInstance()->GetModule(info[0].path);
   if (pepper_module)
-    return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
+    return CreatePepperPlugin(frame, params, info[0].path, pepper_module.get());
   else
-    return CreateNPAPIPlugin(frame, params, info.path, mime_type);
+    return CreateNPAPIPlugin(frame, params, info[0].path, mime_types[0]);
 }
 
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
@@ -2372,28 +2373,27 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
-  bool found = false;
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  std::vector<ContentSetting> settings;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  WebPluginInfo info;
+  std::vector<WebPluginInfo> info;
   GURL url(params.url);
-  std::string actual_mime_type;
-  Send(new ViewHostMsg_GetPluginInfo(url,
-                                     frame->top()->url(),
-                                     params.mimeType.utf8(),
-                                     &found,
-                                     &info,
-                                     &setting,
-                                     &actual_mime_type));
+  std::vector<std::string> actual_mime_types;
+  Send(new ViewHostMsg_GetPluginInfoArray(url,
+                                          frame->top()->url(),
+                                          params.mimeType.utf8(),
+                                          &info,
+                                          &settings,
+                                          &actual_mime_types));
 
-  if (!found)
+  if (info.empty())
     return NULL;
-  DCHECK(setting != CONTENT_SETTING_DEFAULT);
 
-  scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
-  group->AddPlugin(info, 0);
+  DCHECK(settings[0] != CONTENT_SETTING_DEFAULT);
 
-  if (!info.enabled) {
+  scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info[0]));
+  group->AddPlugin(info[0], 0);
+
+  if (!info[0].enabled) {
     if (cmd->HasSwitch(switches::kDisableOutdatedPlugins) &&
         group->IsVulnerable()) {
       Send(new ViewHostMsg_DisabledOutdatedPlugin(routing_id_,
@@ -2404,17 +2404,17 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return NULL;
   }
 
-  if (info.path.value() == kDefaultPluginLibraryName ||
-      setting == CONTENT_SETTING_ALLOW) {
+  if (info[0].path.value() == kDefaultPluginLibraryName ||
+      settings[0] == CONTENT_SETTING_ALLOW) {
     scoped_refptr<pepper::PluginModule> pepper_module =
-    PepperPluginRegistry::GetInstance()->GetModule(info.path);
+        PepperPluginRegistry::GetInstance()->GetModule(info[0].path);
     if (pepper_module) {
       return CreatePepperPlugin(frame,
                                 params,
-                                info.path,
+                                info[0].path,
                                 pepper_module.get());
     }
-    return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
+    return CreateNPAPIPlugin(frame, params, info[0].path, actual_mime_types[0]);
   }
   std::string resource;
   if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
@@ -2422,13 +2422,14 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
   int resource_id;
   int message_id;
-  if (setting == CONTENT_SETTING_ASK) {
+  if (settings[0] == CONTENT_SETTING_ASK) {
     resource_id = IDR_BLOCKED_PLUGIN_HTML;
     message_id = IDS_PLUGIN_LOAD;
   } else {
     resource_id = IDR_OUTDATED_PLUGIN_HTML;
     message_id = IDS_PLUGIN_BLOCKED;
   }
+
   // |blocked_plugin| will delete itself when the WebViewPlugin
   // is destroyed.
   BlockedPlugin* blocked_plugin =
@@ -4058,12 +4059,8 @@ WebPlugin* RenderView::CreateNPAPIPlugin(WebFrame* frame,
                                          const WebPluginParams& params,
                                          const FilePath& path,
                                          const std::string& mime_type) {
-  std::string actual_mime_type(mime_type);
-  if (actual_mime_type.empty())
-    actual_mime_type = params.mimeType.utf8();
-
-  return new webkit_glue::WebPluginImpl(frame, params, path,
-                                        actual_mime_type, AsWeakPtr());
+  return new webkit_glue::WebPluginImpl(
+      frame, params, path, mime_type, AsWeakPtr());
 }
 
 WebPlugin* RenderView::CreateOutdatedPluginPlaceholder(

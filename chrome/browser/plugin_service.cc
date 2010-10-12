@@ -246,13 +246,15 @@ void PluginService::OpenChannelToPlugin(
     const std::string& locale,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
   bool allow_wildcard = true;
   WebPluginInfo info;
   FilePath plugin_path;
   if (NPAPI::PluginList::Singleton()->GetPluginInfo(
-      url, mime_type, allow_wildcard, &info, NULL) && info.enabled) {
+          url, mime_type, allow_wildcard, &info, NULL) && info.enabled) {
     plugin_path = info.path;
   }
+
   PluginProcessHost* plugin_host = FindOrStartPluginProcess(plugin_path);
   if (plugin_host) {
     plugin_host->OpenChannelToPlugin(renderer_msg_filter, mime_type, reply_msg);

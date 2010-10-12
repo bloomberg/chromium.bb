@@ -1365,27 +1365,32 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               bool /* refresh*/,
                               std::vector<WebPluginInfo> /* plugins */)
 
-  // Return information about a plugin for the given URL and MIME type. If there
-  // is no matching plugin, |found| is set to false.
-  // If |enabled| in the WebPluginInfo struct is false, the plug-in is basically
-  // treated as if it was not installed at all.
-  // If |setting| is set to CONTENT_SETTING_BLOCK, the plug-in is blocked by the
-  // content settings for |policy_url|. It still appears in navigator.plugins in
-  // Javascript though, and can be loaded via click-to-play.
-  // If |setting| is set to CONTENT_SETTING_ALLOW, the domain is explicitly
-  // white-listed for the plug-in, or the user has chosen not to block
-  // nonsandboxed plugins.
-  // If |setting| is set to CONTENT_SETTING_DEFAULT, the plug-in is neither
-  // blocked nor white-listed, which means that it's allowed by default and
-  // can still be blocked if it's non-sandboxed.
-  IPC_SYNC_MESSAGE_CONTROL3_4(ViewHostMsg_GetPluginInfo,
+  // Return information about a plugin for the given URL and MIME
+  // type. If there is no matching plugin, |info| is an empty vector.
+  // If |enabled| in the WebPluginInfo struct is false, the plug-in is
+  // basically treated as if it was not installed at all.
+  // |settings| has an entry for each item in |info|.
+  // If the corresponding |settings| array element is set to
+  // CONTENT_SETTING_BLOCK, the plug-in is blocked by the content
+  // settings for |policy_url|. It still appears in navigator.plugins
+  // in Javascript though, and can be loaded via click-to-play.
+  // If the corresponding |settings| array element is set to
+  // CONTENT_SETTING_ALLOW, the domain is explicitly white-listed for
+  // the plug-in, or the user has chosen not to block nonsandboxed
+  // plugins.
+  // If the corresponding |settings| array element is set to
+  // CONTENT_SETTING_DEFAULT, the plug-in is neither blocked nor
+  // white-listed, which means that it's allowed by default and can
+  // still be blocked if it's non-sandboxed.
+  // |actual_mime_types| is a list of actual mime types supported by
+  // each plugin found that match the URL given (one for each item in |info|).
+  IPC_SYNC_MESSAGE_CONTROL3_3(ViewHostMsg_GetPluginInfoArray,
                               GURL /* url */,
                               GURL /* policy_url */,
                               std::string /* mime_type */,
-                              bool /* found */,
-                              WebPluginInfo /* plugin info */,
-                              ContentSetting /* setting */,
-                              std::string /* actual_mime_type */)
+                              std::vector<WebPluginInfo> /* plugin info */,
+                              std::vector<ContentSetting> /* settings */,
+                              std::vector<std::string> /* actual_mime_types */)
 
   // Requests spellcheck for a word.
   IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_SpellCheck,

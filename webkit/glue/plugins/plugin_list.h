@@ -133,12 +133,24 @@ class PluginList {
   // Get all the enabled plugins.
   void GetEnabledPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
 
-  // Returns true if a plugin is found for the given url and mime type
-  // (including disabled plugins, for which |info->enabled| is false).
-  // The mime type which corresponds to the URL is optionally returned
-  // back.
-  // The allow_wildcard parameter controls whether this function returns
-  // plugins which support wildcard mime types (* as the mime type).
+  // Returns a list in |info| containing plugins that are found for
+  // the given url and mime type (including disabled plugins, for
+  // which |info->enabled| is false).  The mime type which corresponds
+  // to the URL is optionally returned back in |actual_mime_types| (if
+  // it is non-NULL), one for each of the plugin info objects found.
+  // The |allow_wildcard| parameter controls whether this function
+  // returns plugins which support wildcard mime types (* as the mime
+  // type).  The |info| parameter is required to be non-NULL.  The
+  // list is in order of "most desirable" to "least desirable",
+  // meaning that the default plugin is at the end of the list.
+  void GetPluginInfoArray(const GURL& url,
+                          const std::string& mime_type,
+                          bool allow_wildcard,
+                          std::vector<WebPluginInfo>* info,
+                          std::vector<std::string>* actual_mime_types);
+
+  // Returns the first item from the list returned in GetPluginInfo in |info|.
+  // Returns true if it found a match.  |actual_mime_type| may be NULL.
   bool GetPluginInfo(const GURL& url,
                      const std::string& mime_type,
                      bool allow_wildcard,
@@ -216,24 +228,6 @@ class PluginList {
   // is blacklisted by a policy. In the latter case, add the plugin group to the
   // list of disabled groups as well.
   bool ShouldDisableGroup(const string16& group_name);
-
-  // Find a plugin by mime type; only searches enabled plugins.
-  // The allow_wildcard parameter controls whether this function returns
-  // plugins which support wildcard mime types (* as the mime type)
-  bool FindPlugin(const std::string &mime_type,
-                  bool allow_wildcard,
-                  WebPluginInfo* info);
-
-  // Just like |FindPlugin| but it only looks at the disabled plug-ins.
-  bool FindDisabledPlugin(const std::string &mime_type,
-                          bool allow_wildcard,
-                          WebPluginInfo* info);
-
-  // Find a plugin by extension; only searches enabled plugins. Returns the
-  // corresponding mime type.
-  bool FindPlugin(const GURL &url,
-                  std::string* actual_mime_type,
-                  WebPluginInfo* info);
 
   // Like GetPluginGroups above, but works on a given vector of plugins.
   static void GetPluginGroups(const std::vector<WebPluginInfo>* plugins,
