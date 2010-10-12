@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
 }
 
 // See http://crbug.com/57378 for flakiness details.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, FLAKY_ExternalUrlUpdate) {
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
   // We don't want autoupdate blacklist checks.
