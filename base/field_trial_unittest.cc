@@ -88,6 +88,30 @@ TEST_F(FieldTrialTest, RemainingProbability) {
   EXPECT_EQ(winner, trial->group_name());
 }
 
+TEST_F(FieldTrialTest, FiftyFiftyProbability) {
+  // Check that even with small divisors, we have the proper probabilities, and
+  // all outcomes are possible.  Since this is a 50-50 test, it should get both
+  // outcomes in a few tries, but we'll try no more than 100 times (and be flaky
+  // with probability around 1 in 2^99).
+  bool first_winner = false;
+  bool second_winner = false;
+  int counter = 0;
+  do {
+    std::string name = base::StringPrintf("FiftyFifty%d", ++counter);
+    scoped_refptr<FieldTrial> trial = new FieldTrial(name, 2);
+    trial->AppendGroup("first", 1);  // 50% chance of being chosen.
+    if (trial->group() != FieldTrial::kNotParticipating) {
+      first_winner = true;
+      continue;
+    }
+    trial->AppendGroup("second", 1);  // Always chosen at this point.
+    EXPECT_NE(FieldTrial::kNotParticipating, trial->group());
+    second_winner = true;
+  } while ((!second_winner || !first_winner) && counter < 100);
+  EXPECT_TRUE(second_winner);
+  EXPECT_TRUE(first_winner);
+}
+
 TEST_F(FieldTrialTest, MiddleProbabilities) {
   char name[] = " same name";
   bool false_event_seen = false;
