@@ -780,10 +780,11 @@ AutocompleteController::AutocompleteController(Profile* profile)
       have_committed_during_this_query_(false),
       done_(true) {
   providers_.push_back(new SearchProvider(this, profile));
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInMemoryURLIndex))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHistoryQuickProvider))
     providers_.push_back(new HistoryQuickProvider(this, profile));
-  else
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHistoryURLProvider))
     providers_.push_back(new HistoryURLProvider(this, profile));
   providers_.push_back(new KeywordProvider(this, profile));
   history_contents_provider_ = new HistoryContentsProvider(this, profile);

@@ -136,7 +136,7 @@ class HistoryBackendTest : public testing::Test {
     backend_ = new HistoryBackend(test_dir_,
                                   new HistoryBackendTestDelegate(this),
                                   &bookmark_model_);
-    backend_->Init(false);
+    backend_->Init(std::string(), false);
   }
   virtual void TearDown() {
     backend_->Closing();
@@ -810,7 +810,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   backend_ = new HistoryBackend(new_history_path,
                                 new HistoryBackendTestDelegate(this),
                                 &bookmark_model_);
-  backend_->Init(false);
+  backend_->Init(std::string(), false);
 
   // Now the database should already be migrated.
   // Check version first.

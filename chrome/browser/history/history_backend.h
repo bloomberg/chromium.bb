@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_BACKEND_H_
 #pragma once
 
+#include <string>
 #include <utility>
 
 #include "base/file_path.h"
@@ -103,8 +104,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // fails, all other functions will fail as well. (Since this runs on another
   // thread, we don't bother returning failure.)
   //
+  // |languages| gives a list of language encodings with which the history
+  // URLs and omnibox searches are interpreted.
   // |force_fail| can be set during unittests to unconditionally fail to init.
-  void Init(bool force_fail);
+  void Init(const std::string& languages, bool force_fail);
 
   // Notification that the history system is shutting down. This will break
   // the refs owned by the delegate and any pending transaction so it will
@@ -337,7 +340,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   friend class URLQuerier;
 
   // Does the work of Init.
-  void InitImpl();
+  void InitImpl(const std::string& languages);
 
   // Adds a single visit to the database, updating the URL information such
   // as visit and typed count. The visit ID of the added visit and the URL ID

@@ -33,20 +33,18 @@ InMemoryHistoryBackend::~InMemoryHistoryBackend() {
 }
 
 bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
-                                  URLDatabase* db) {
+                                  URLDatabase* db,
+                                  const std::string& languages) {
   db_.reset(new InMemoryDatabase);
   bool success = db_->InitFromDisk(history_filename);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInMemoryURLIndex)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHistoryQuickProvider)) {
     index_.reset(new InMemoryURLIndex());
     base::TimeTicks beginning_time = base::TimeTicks::Now();
-    // TODO(mrossetti): Provide languages when profile is available.
-    index_->Init(db, std::string());
+    index_->Init(db, languages);
     UMA_HISTOGRAM_TIMES("Autocomplete.HistoryDatabaseIndexingTime",
                         base::TimeTicks::Now() - beginning_time);
   }
-
   return success;
 }
 

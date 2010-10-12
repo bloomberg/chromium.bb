@@ -438,14 +438,23 @@ int InMemoryURLIndex::RawScoreForURL(const URLRow& row,
       (static_cast<float>(std::min(row.visit_count(),
        kMaxSignificantVisits))) / static_cast<float>(kMaxSignificantVisits) *
       kVisitCountMaxValue;
+
+  const float kTypedCountMaxValue = 20.0;
+  const int kMaxSignificantTyped = 10;
+  float typed_count_value =
+      (static_cast<float>(std::min(row.typed_count(),
+       kMaxSignificantTyped))) / static_cast<float>(kMaxSignificantTyped) *
+      kTypedCountMaxValue;
+
   float raw_score = order_value + start_value + complete_value +
-      last_visit_value + visit_count_value;
+      last_visit_value + visit_count_value + typed_count_value;
 
   // Normalize the score.
   const float kMaxNormalizedRawScore = 1000.0;
   raw_score =
       (raw_score / (kOrderMaxValue + kStartMaxValue + kCompleteMaxValue +
-                    kLastVisitMaxValue + kVisitCountMaxValue)) *
+                    kLastVisitMaxValue + kVisitCountMaxValue +
+                    kTypedCountMaxValue)) *
       kMaxNormalizedRawScore;
   return static_cast<int>(raw_score);
 }
