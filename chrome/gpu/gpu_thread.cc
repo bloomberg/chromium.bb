@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_info_collector.h"
@@ -106,6 +107,7 @@ void GpuThread::OnEstablishChannel(int renderer_id) {
   if (gfx::GLContext::InitializeOneOff()) {
     // Fail to establish channel if GPU stats cannot be retreived.
     if (gpu_info_collector::CollectGraphicsInfo(&gpu_info)) {
+      child_process_logging::SetGpuInfo(gpu_info);
       GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
       if (iter == gpu_channels_.end()) {
         channel = new GpuChannel(renderer_id);
