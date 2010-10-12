@@ -99,6 +99,7 @@ enum ServiceProcessRunningState {
   SERVICE_NEWER_VERSION_RUNNING,
 };
 
+#if defined(OS_WIN)
 ServiceProcessRunningState GetServiceProcessRunningState(
     std::string* service_version_out) {
   std::string version;
@@ -142,6 +143,7 @@ ServiceProcessRunningState GetServiceProcessRunningState(
   }
   return SERVICE_SAME_VERSION_RUNNING;
 }
+#endif  // defined(OS_WIN)
 
 #if defined(OS_WIN)
 string16 GetServiceProcessReadyEventName() {
