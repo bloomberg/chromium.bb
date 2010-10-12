@@ -34,8 +34,7 @@ std::wstring DefaultSearchView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
     case MessageBoxFlags::DIALOGBUTTON_OK:
-      return l10n_util::GetStringF(IDS_DEFAULT_SEARCH_PROMPT_OK,
-                                   DefaultHostName());
+      return l10n_util::GetString(IDS_DEFAULT_SEARCH_PROMPT_OK);
 
     case MessageBoxFlags::DIALOGBUTTON_CANCEL:
       return l10n_util::GetString(IDS_DEFAULT_SEARCH_PROMPT_CANCEL);

@@ -1184,10 +1184,10 @@ each locale. -->
       </message>
 
       <message name="IDS_DEFAULT_SEARCH_PROMPT_OK" desc="The button which accepts a new default search engine. Displayed in the default search engine message box.">
-        Use <ph name="HOST">$1<ex>www.bing.com</ex></ph> to search
+        Change it
       </message>
       <message name="IDS_DEFAULT_SEARCH_PROMPT_CANCEL" desc="The button which rejects a new default search engine. Displayed in the default search engine message box.">
-        Do not change my search engine
+        No, thanks
       </message>
 
       <message name="IDS_TIME_SECS_DEFAULT"
