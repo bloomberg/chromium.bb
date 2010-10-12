@@ -2646,8 +2646,8 @@ each locale. -->
         certificate that is verified for encrypting email">
         Email Encryption Certificate
       </message>
-      <message name="IDS_CERT_USAGE_OBJECT_SIGNER" desc="The description of a certificate that is verified for signing objects">
-        Object Signer
+      <message name="IDS_CERT_USAGE_OBJECT_SIGNER" desc="The description of a certificate that is verified for signing executable code">
+        Code Signer
       </message>
       <message name="IDS_CERT_USAGE_SSL_CA" desc="The description of a certificate that is verified for use by an SSL certification authority">
         SSL Certification Authority
@@ -2845,8 +2845,8 @@ each locale. -->
       <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL" desc="description of a certificate type for email">
         Email Certificate
       </message>
-      <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL_CA" desc="description of a certificate type for email certificate authority">
-        Email Certificate Authority
+      <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL_CA" desc="description of a certificate type for email certification authority">
+        Email Certification Authority
       </message>
       <message name="IDS_CERT_EXT_NS_CERT_BASE_URL" desc="description of extension Netscape Certificate Base URL">
         Netscape Certificate Base URL
@@ -2854,14 +2854,14 @@ each locale. -->
       <message name="IDS_CERT_EXT_NS_CERT_REVOCATION_URL" desc="description of extension Netscape Certificate Revocation URL">
         Netscape Certificate Revocation URL
       </message>
-      <message name="IDS_CERT_EXT_NS_CA_REVOCATION_URL" desc="description of extension Netscape Certificate Authority Revocation URL">
-        Netscape Certificate Authority Revocation URL
+      <message name="IDS_CERT_EXT_NS_CA_REVOCATION_URL" desc="description of extension Netscape Certification Authority Revocation URL">
+        Netscape Certification Authority Revocation URL
       </message>
       <message name="IDS_CERT_EXT_NS_CERT_RENEWAL_URL" desc="description of extension Netscape Certificate Renewal URL">
         Netscape Certificate Renewal URL
       </message>
-      <message name="IDS_CERT_EXT_NS_CA_POLICY_URL" desc="description of extension Netscape Certificate Authority Policy URL">
-        Netscape Certificate Authority Policy URL
+      <message name="IDS_CERT_EXT_NS_CA_POLICY_URL" desc="description of extension Netscape Certification Authority Policy URL">
+        Netscape Certification Authority Policy URL
       </message>
       <message name="IDS_CERT_EXT_NS_SSL_SERVER_NAME" desc="description of extension Netscape Certificate SSL Server Name">
         Netscape Certificate SSL Server Name
@@ -2917,8 +2917,8 @@ each locale. -->
       <message name="IDS_CERT_X509_POLICY_CONSTRAINTS" desc="description of extension Certificate Policy Constraints">
         Certificate Policy Constraints
       </message>
-      <message name="IDS_CERT_X509_AUTH_KEYID" desc="description of extension Certificate Authority Key Identifier">
-        Certificate Authority Key ID
+      <message name="IDS_CERT_X509_AUTH_KEYID" desc="description of extension Certification Authority Key Identifier">
+        Certification Authority Key ID
       </message>
       <message name="IDS_CERT_X509_EXT_KEY_USAGE" desc="description of extension Extended Key Usage">
         Extended Key Usage
@@ -2950,11 +2950,11 @@ each locale. -->
       <message name="IDS_CERT_X509_KEY_USAGE_ENCIPHER_ONLY" desc="description of certificate usage Encipher Only">
         Encipher Only
       </message>
-      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_CA" desc="description of certificate constraint Is a Certificate Authority">
-        Is a Certificate Authority
+      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_CA" desc="description of certificate constraint Is a Certification Authority">
+        Is a Certification Authority
       </message>
-      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_NOT_CA" desc="description of certificate constraint Is not a Certificate Authority">
-        Is not a Certificate Authority
+      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_NOT_CA" desc="description of certificate constraint Is not a Certification Authority">
+        Is not a Certification Authority
       </message>
       <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN" desc="description of certificate constraint Maximum number of intermediate CAs: %S">
         Maximum number of intermediate CAs: <ph name="NUM_INTERMEDIATE_CA">$1<ex>5</ex></ph>
@@ -2962,7 +2962,7 @@ each locale. -->
       <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN_UNLIMITED" desc="value NUM_INTERMEDIATE_CA when there is no limit">
         unlimited
       </message>
-      <message name="IDS_CERT_PKIX_CPS_POINTER_QUALIFIER" desc="description of pointer (URI) to Certification Practice Statement published by Certificate Authority">
+      <message name="IDS_CERT_PKIX_CPS_POINTER_QUALIFIER" desc="description of pointer (URI) to Certification Practice Statement published by Certification Authority">
         Certification Practice Statement Pointer
       </message>
       <message name="IDS_CERT_PKIX_USER_NOTICE_QUALIFIER" desc="description of User Notice certificate policy qualifier">
@@ -3192,11 +3192,11 @@ each locale. -->
       <message name="IDS_CERT_MANAGER_DELETE_SERVER_DESCRIPTION" desc="Description of impact of deleting a server certificate">
         If you delete a server certificate, you restore the usual security checks for that server and require it uses a valid certificate.
       </message>
-      <message name="IDS_CERT_MANAGER_DELETE_CA_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate authority certificate">
+      <message name="IDS_CERT_MANAGER_DELETE_CA_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certification authority certificate">
         Delete CA certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>"?
       </message>
-      <message name="IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION" desc="Description of impact of deleting a certificate authority certificate">
-        If you delete a Certificate Authority (CA) certificate, your browser will no longer trust any certificates issued by that CA.
+      <message name="IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION" desc="Description of impact of deleting a certification authority certificate">
+        If you delete a Certification Authority (CA) certificate, your browser will no longer trust any certificates issued by that CA.
       </message>
       <message name="IDS_CERT_MANAGER_DELETE_UNKNOWN_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate of other type">
         Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph>"?
@@ -3234,8 +3234,14 @@ each locale. -->
       <message name="IDS_CERT_MANAGER_BAD_PASSWORD" desc="The text in the error dialog for entering an incorrect password when importing an encrypted certificate file.">
         Incorrect password.
       </message>
+      <message name="IDS_CERT_MANAGER_CERT_PARSE_ERROR" desc="The message in the certificate manager error dialog for importing invalid certificate files.">
+        Unable to parse file.
+      </message>
       <message name="IDS_CERT_MANAGER_UNKNOWN_ERROR" desc="The text in the error dialog when an unknown error occurs during an operation on the certificate database.">
         Unknown error.
+      </message>
+      <message name="IDS_CERT_MANAGER_ERROR_NOT_CA" desc="The error message when trying to import certificate authorities and a certificate is not a certification authority">
+        Not a Certification Authority.
       </message>
       <message name="IDS_CERT_MANAGER_DELETE_CERT_ERROR_TITLE" desc="The title in the error dialog for certificate delete errors.">
         Certificate Deletion Error
@@ -3243,20 +3249,65 @@ each locale. -->
       <message name="IDS_CERT_MANAGER_EDIT_TRUST_LABEL" desc="Line displayed in certificate manager edit trust dialog before the checkboxes for setting certificate trust flags">
         Edit trust settings:
       </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_DESCRIPTION_FORMAT" desc="Description in dialog for editing Certificate Authority trust flags">
-        The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certificate Authority.
+      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_DESCRIPTION_FORMAT" desc="Description in dialog for editing Certification Authority trust flags">
+        The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certification Authority.
       </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_SSL_LABEL" desc="Description in Certificate Authority trust dialog for the SSL trust checkbox.">
-        Trust this CA for identifying web sites.
+      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_SSL_LABEL" desc="Description in Certification Authority trust dialog for the SSL trust checkbox.">
+        Trust this certificate for identifying web sites.
       </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_EMAIL_LABEL" desc="Description in Certificate Authority trust dialog for the Email trust checkbox.">
-        Trust this CA for identifying email users.
+      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_EMAIL_LABEL" desc="Description in Certification Authority trust dialog for the Email trust checkbox.">
+        Trust this certificate for identifying email users.
       </message>
-      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_OBJSIGN_LABEL" desc="Description in Certificate Authority trust dialog for the Object Signing trust checkbox.">
-        Trust this CA for identifying software makers.
+      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_OBJSIGN_LABEL" desc="Description in Certification Authority trust dialog for the Code Signing trust checkbox.">
+        Trust this certificate for identifying software makers.
       </message>
       <message name="IDS_CERT_MANAGER_SET_TRUST_ERROR_TITLE" desc="The title in the error dialog for certificate trust editing errors.">
         Error Setting Certificate Trust
+      </message>
+      <message name="IDS_CERT_MANAGER_IMPORT_CA_DESCRIPTION_FORMAT" desc="Description in dialog for importing a Certification Authority and setting its trust flags">
+        Do you want to trust "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" as a Certification Authority?
+      </message>
+      <message name="IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
+        Certification Authority Import Error
+      </message>
+      <message name="IDS_CERT_MANAGER_IMPORT_ERROR_FORMAT" desc="The format of per-certificate error messages in import failure dialog">
+        <ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>: <ph name="ERROR">$2<ex>Not a Certification Authority</ex></ph>
+      </message>
+      <message name="IDS_CERT_MANAGER_IMPORT_SINGLE_NOT_IMPORTED" desc="The header in certificate manager error dialog for single certificates that could not be imported.">
+        The file contained one certificate, which was not imported:
+      </message>
+      <message name="IDS_CERT_MANAGER_IMPORT_ALL_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, when none were successfully imported.">
+        The file contained multiple certificates, none of which were imported:
+      </message>
+      <message name="IDS_CERT_MANAGER_IMPORT_SOME_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, even though others were.">
+        The file contained multiple certificates, some of which were not imported:
+      </message>
+      <message name="IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
+        Server Certificate Import Error
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_DESCRIPTION_FORMAT" desc="Description in dialog for editing server certificate trust flags.  The following line will contain information about the issuer.">
+        The certificate "<ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>" was issued by:
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_UNKNOWN_CA" desc="Message displayed in dialog for editing server certificate trust flags, when the server certificate is issued by a certification authority that is not known.">
+        Because you do not know the Certification Authority that issued this certificate, you do not trust the authenticity of this certificate unless otherwise indicated here.
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_UNTRUSTED_CA" desc="Message displayed in dialog for editing server certificate trust flags, when the server certificate is issued by a certification authority that is known, but not trusted.">
+        Because you do not trust the Certification Authority that issued this certificate, you do not trust the authenticity of this certificate unless otherwise indicated here.
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_TRUSTED_CA" desc="Message displayed in dialog for editing server certificate trust flags, when the server certificate is issued by a certification authority that is known and trusted.">
+        Because you trust the Certification Authority that issued this certificate, you implicitly trust the authenticity of this certificate.
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_SELF_SIGNED" desc="Message displayed in dialog for editing server certificate trust flags, when the certificate is self-signed">
+        This certificate is self-signed, you will not trust its authenticity unless indicated here.
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_YES" desc="Description of option to trust the certificate, in the dialog for editing server certificate trust flags.">
+        Trust the authenticity of this certificate.
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_SERVER_TRUST_NO" desc="Description of option to not trust the certificate, in the dialog for editing server certificate trust flags.">
+        Do not trust the authenticity of this certificate.
+      </message>
+      <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_BUTTON" desc="Label of button in the dialog for editing server certificate trust flags, which allows you to open the dialog for editing the trust of the issuing Certification Authority.">
+        Edit Issuer Trust...
       </message>
 
       <!-- Add Client Certificate Dialog -->
