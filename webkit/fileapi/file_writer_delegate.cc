@@ -151,13 +151,14 @@ void FileWriterDelegate::OnProgress(int bytes_read, bool done) {
   if (done || last_progress_event_time_.is_null() ||
       (currentTime - last_progress_event_time_).InMilliseconds() >
           kMinProgressDelayMS) {
-    file_system_operation_->DidWrite(base::PLATFORM_FILE_OK,
-                                     bytes_read + bytes_read_backlog_, done);
+    bytes_read += bytes_read_backlog_;
     last_progress_event_time_ = currentTime;
     bytes_read_backlog_ = 0;
-  } else {
-    bytes_read_backlog_ += bytes_read;
+    file_system_operation_->DidWrite(
+        base::PLATFORM_FILE_OK, bytes_read, done);
+    return;
   }
+  bytes_read_backlog_ += bytes_read;
 }
 
 }  // namespace fileapi
