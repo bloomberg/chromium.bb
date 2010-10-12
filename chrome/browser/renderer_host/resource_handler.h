@@ -87,7 +87,7 @@ class ResourceHandler
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) {}
 
  protected:
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<ResourceHandler>;
 
   virtual ~ResourceHandler() {}

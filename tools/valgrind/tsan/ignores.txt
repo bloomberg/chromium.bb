@@ -100,4 +100,4 @@ fun_r:threadLockingTest
 # Ignore accesses below GetCurrentThreadIdentifier.
 # There is a benign race which is hard to suppress properly,
 # see http://crbug.com/44580
-fun_r:*ChromeThread*GetCurrentThreadIdentifier*
+fun_r:*BrowserThread*GetCurrentThreadIdentifier*

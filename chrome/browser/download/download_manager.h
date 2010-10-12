@@ -225,7 +225,7 @@ class DownloadManager
     DownloadManager* observed_download_manager_;
   };
 
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<DownloadManager>;
   friend class OtherDownloadManagerObserver;
 

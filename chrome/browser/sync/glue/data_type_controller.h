@@ -95,7 +95,7 @@ class DataTypeController
 
  protected:
   friend class base::RefCountedThreadSafe<DataTypeController>;
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<DataTypeController>;
   friend class ShutdownTask;
 };

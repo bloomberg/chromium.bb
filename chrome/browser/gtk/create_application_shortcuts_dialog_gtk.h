@@ -27,7 +27,7 @@ class CreateApplicationShortcutsDialogGtk
   static void Show(GtkWindow* parent, TabContents* tab_contents);
 
  private:
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<CreateApplicationShortcutsDialogGtk>;
 
   CreateApplicationShortcutsDialogGtk(GtkWindow* parent,

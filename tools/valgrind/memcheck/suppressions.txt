@@ -667,10 +667,10 @@
    fun:_ZN7WebCore8SVGNames4initEv
 }
 {
-   intentional_ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
+   intentional_BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN58ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
+   fun:_ZN58BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
 }
 {
    # This is an on demand initialization which is done and then intentionally

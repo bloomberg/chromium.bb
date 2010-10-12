@@ -57,7 +57,7 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
 
  private:
   // These two classes can destruct us.
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<SpellCheckHost>;
 
   virtual ~SpellCheckHost();

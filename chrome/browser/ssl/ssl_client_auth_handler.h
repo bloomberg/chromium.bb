@@ -45,7 +45,7 @@ class SSLClientAuthHandler
   net::SSLCertRequestInfo* cert_request_info() { return cert_request_info_; }
 
  private:
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<SSLClientAuthHandler>;
 
   virtual ~SSLClientAuthHandler();

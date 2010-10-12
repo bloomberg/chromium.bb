@@ -111,9 +111,9 @@
    fun:ToolsSanityTest_MemoryLeak_Test::TestBody
 }
 {
-   Intentional leak in ChromeThreadTest.NotReleasedIfTargetThreadNonExistent
+   Intentional leak in BrowserThreadTest.NotReleasedIfTargetThreadNonExistent
    Heapcheck:Leak
-   fun:ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+   fun:BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
    fun:testing::Test::Run
 }
 #-----------------------------------------------------------------------

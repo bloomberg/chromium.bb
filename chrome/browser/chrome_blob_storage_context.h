@@ -35,7 +35,7 @@ class ChromeBlobStorageContext
   }
 
  private:
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<ChromeBlobStorageContext>;
 
   virtual ~ChromeBlobStorageContext();

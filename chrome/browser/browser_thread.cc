@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 
 // Friendly names for the well-known threads.
-static const char* chrome_thread_names[ChromeThread::ID_COUNT] = {
+static const char* browser_thread_names[BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
   "Chrome_DBThread",  // DB
   "Chrome_WebKitThread",  // WEBKIT
@@ -22,119 +22,119 @@ static const char* chrome_thread_names[ChromeThread::ID_COUNT] = {
 };
 
 // An implementation of MessageLoopProxy to be used in conjunction
-// with ChromeThread.
-class ChromeThreadMessageLoopProxy : public base::MessageLoopProxy {
+// with BrowserThread.
+class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
  public:
-  explicit ChromeThreadMessageLoopProxy(ChromeThread::ID identifier)
+  explicit BrowserThreadMessageLoopProxy(BrowserThread::ID identifier)
       : id_(identifier) {
   }
 
   // MessageLoopProxy implementation.
   virtual bool PostTask(const tracked_objects::Location& from_here,
                         Task* task) {
-    return ChromeThread::PostTask(id_, from_here, task);
+    return BrowserThread::PostTask(id_, from_here, task);
   }
 
   virtual bool PostDelayedTask(const tracked_objects::Location& from_here,
                                Task* task, int64 delay_ms) {
-    return ChromeThread::PostDelayedTask(id_, from_here, task, delay_ms);
+    return BrowserThread::PostDelayedTask(id_, from_here, task, delay_ms);
   }
 
   virtual bool PostNonNestableTask(const tracked_objects::Location& from_here,
                                    Task* task) {
-    return ChromeThread::PostNonNestableTask(id_, from_here, task);
+    return BrowserThread::PostNonNestableTask(id_, from_here, task);
   }
 
   virtual bool PostNonNestableDelayedTask(
       const tracked_objects::Location& from_here,
       Task* task,
       int64 delay_ms) {
-    return ChromeThread::PostNonNestableDelayedTask(id_, from_here, task,
+    return BrowserThread::PostNonNestableDelayedTask(id_, from_here, task,
                                                     delay_ms);
   }
   virtual bool BelongsToCurrentThread() {
-    return ChromeThread::CurrentlyOn(id_);
+    return BrowserThread::CurrentlyOn(id_);
   }
 
  private:
-  ChromeThread::ID id_;
-  DISALLOW_COPY_AND_ASSIGN(ChromeThreadMessageLoopProxy);
+  BrowserThread::ID id_;
+  DISALLOW_COPY_AND_ASSIGN(BrowserThreadMessageLoopProxy);
 };
 
 
-Lock ChromeThread::lock_;
+Lock BrowserThread::lock_;
 
-ChromeThread* ChromeThread::chrome_threads_[ID_COUNT];
+BrowserThread* BrowserThread::browser_threads_[ID_COUNT];
 
-ChromeThread::ChromeThread(ChromeThread::ID identifier)
-    : Thread(chrome_thread_names[identifier]),
+BrowserThread::BrowserThread(BrowserThread::ID identifier)
+    : Thread(browser_thread_names[identifier]),
       identifier_(identifier) {
   Initialize();
 }
 
-ChromeThread::ChromeThread(ID identifier, MessageLoop* message_loop)
+BrowserThread::BrowserThread(ID identifier, MessageLoop* message_loop)
     : Thread(message_loop->thread_name().c_str()),
       identifier_(identifier) {
   set_message_loop(message_loop);
   Initialize();
 }
 
-void ChromeThread::Initialize() {
+void BrowserThread::Initialize() {
   AutoLock lock(lock_);
   DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
-  DCHECK(chrome_threads_[identifier_] == NULL);
-  chrome_threads_[identifier_] = this;
+  DCHECK(browser_threads_[identifier_] == NULL);
+  browser_threads_[identifier_] = this;
 }
 
-ChromeThread::~ChromeThread() {
+BrowserThread::~BrowserThread() {
   // Stop the thread here, instead of the parent's class destructor.  This is so
   // that if there are pending tasks that run, code that checks that it's on the
-  // correct ChromeThread succeeds.
+  // correct BrowserThread succeeds.
   Stop();
 
   AutoLock lock(lock_);
-  chrome_threads_[identifier_] = NULL;
+  browser_threads_[identifier_] = NULL;
 #ifndef NDEBUG
   // Double check that the threads are ordererd correctly in the enumeration.
   for (int i = identifier_ + 1; i < ID_COUNT; ++i) {
-    DCHECK(!chrome_threads_[i]) <<
+    DCHECK(!browser_threads_[i]) <<
         "Threads must be listed in the reverse order that they die";
   }
 #endif
 }
 
 // static
-bool ChromeThread::IsWellKnownThread(ID identifier) {
+bool BrowserThread::IsWellKnownThread(ID identifier) {
   AutoLock lock(lock_);
   return (identifier >= 0 && identifier < ID_COUNT &&
-          chrome_threads_[identifier]);
+          browser_threads_[identifier]);
 }
 
 // static
-bool ChromeThread::CurrentlyOn(ID identifier) {
+bool BrowserThread::CurrentlyOn(ID identifier) {
   AutoLock lock(lock_);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  return chrome_threads_[identifier] &&
-         chrome_threads_[identifier]->message_loop() == MessageLoop::current();
+  return browser_threads_[identifier] &&
+         browser_threads_[identifier]->message_loop() == MessageLoop::current();
 }
 
 // static
-bool ChromeThread::IsMessageLoopValid(ID identifier) {
+bool BrowserThread::IsMessageLoopValid(ID identifier) {
   AutoLock lock(lock_);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  return chrome_threads_[identifier] &&
-         chrome_threads_[identifier]->message_loop();
+  return browser_threads_[identifier] &&
+         browser_threads_[identifier]->message_loop();
 }
 
 // static
-bool ChromeThread::PostTask(ID identifier,
+bool BrowserThread::PostTask(ID identifier,
                             const tracked_objects::Location& from_here,
                             Task* task) {
   return PostTaskHelper(identifier, from_here, task, 0, true);
 }
 
 // static
-bool ChromeThread::PostDelayedTask(ID identifier,
+bool BrowserThread::PostDelayedTask(ID identifier,
                                    const tracked_objects::Location& from_here,
                                    Task* task,
                                    int64 delay_ms) {
@@ -142,7 +142,7 @@ bool ChromeThread::PostDelayedTask(ID identifier,
 }
 
 // static
-bool ChromeThread::PostNonNestableTask(
+bool BrowserThread::PostNonNestableTask(
     ID identifier,
     const tracked_objects::Location& from_here,
     Task* task) {
@@ -150,7 +150,7 @@ bool ChromeThread::PostNonNestableTask(
 }
 
 // static
-bool ChromeThread::PostNonNestableDelayedTask(
+bool BrowserThread::PostNonNestableDelayedTask(
     ID identifier,
     const tracked_objects::Location& from_here,
     Task* task,
@@ -159,12 +159,12 @@ bool ChromeThread::PostNonNestableDelayedTask(
 }
 
 // static
-bool ChromeThread::GetCurrentThreadIdentifier(ID* identifier) {
+bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
   MessageLoop* cur_message_loop = MessageLoop::current();
   for (int i = 0; i < ID_COUNT; ++i) {
-    if (chrome_threads_[i] &&
-        chrome_threads_[i]->message_loop() == cur_message_loop) {
-      *identifier = chrome_threads_[i]->identifier_;
+    if (browser_threads_[i] &&
+        browser_threads_[i]->message_loop() == cur_message_loop) {
+      *identifier = browser_threads_[i]->identifier_;
       return true;
     }
   }
@@ -174,15 +174,15 @@ bool ChromeThread::GetCurrentThreadIdentifier(ID* identifier) {
 
 // static
 scoped_refptr<base::MessageLoopProxy>
-ChromeThread::GetMessageLoopProxyForThread(
+BrowserThread::GetMessageLoopProxyForThread(
     ID identifier) {
   scoped_refptr<base::MessageLoopProxy> proxy =
-      new ChromeThreadMessageLoopProxy(identifier);
+      new BrowserThreadMessageLoopProxy(identifier);
   return proxy;
 }
 
 // static
-bool ChromeThread::PostTaskHelper(
+bool BrowserThread::PostTaskHelper(
     ID identifier,
     const tracked_objects::Location& from_here,
     Task* task,
@@ -203,8 +203,8 @@ bool ChromeThread::PostTaskHelper(
   if (!guaranteed_to_outlive_target_thread)
     lock_.Acquire();
 
-  MessageLoop* message_loop = chrome_threads_[identifier] ?
-      chrome_threads_[identifier]->message_loop() : NULL;
+  MessageLoop* message_loop = browser_threads_[identifier] ?
+      browser_threads_[identifier]->message_loop() : NULL;
   if (message_loop) {
     if (nestable) {
       message_loop->PostDelayedTask(from_here, task, delay_ms);

@@ -215,11 +215,11 @@
 {
    # Same leak exists in src/tools/valgrind/memcheck/suppressions.txt
    # with a mangled stack signature.
-   intentional_ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
+   intentional_BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
    Memcheck:Leak
    ...
    fun:operator new
-   fun:ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+   fun:BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
    fun:testing::Test::Run
 }
 # From src/tools/valgrind/memcheck/suppressions.txt

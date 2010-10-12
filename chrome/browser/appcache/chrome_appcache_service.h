@@ -45,7 +45,7 @@ class ChromeAppCacheService
   static void ClearLocalState(const FilePath& profile_path);
 
  private:
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<ChromeAppCacheService>;
 
   virtual ~ChromeAppCacheService();

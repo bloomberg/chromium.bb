@@ -148,7 +148,7 @@ class AudioRendererHost : public base::RefCountedThreadSafe<
 
  private:
   friend class AudioRendererHostTest;
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<AudioRendererHost>;
   friend class MockAudioRendererHost;
   FRIEND_TEST_ALL_PREFIXES(AudioRendererHostTest, CreateMockStream);

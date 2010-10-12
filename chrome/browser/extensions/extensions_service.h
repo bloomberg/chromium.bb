@@ -404,7 +404,7 @@ class ExtensionsService
 
  private:
   virtual ~ExtensionsService();
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<ExtensionsService>;
 
   // Clear all persistent data that may have been stored by the extension.

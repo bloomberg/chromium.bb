@@ -9,17 +9,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-class ChromeThreadTest : public testing::Test {
+class BrowserThreadTest : public testing::Test {
  public:
   void Release() {
-    CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
   }
 
  protected:
   virtual void SetUp() {
-    ui_thread_.reset(new ChromeThread(ChromeThread::UI));
-    file_thread_.reset(new ChromeThread(ChromeThread::FILE));
+    ui_thread_.reset(new BrowserThread(BrowserThread::UI));
+    file_thread_.reset(new BrowserThread(BrowserThread::FILE));
     ui_thread_->Start();
     file_thread_->Start();
   }
@@ -30,7 +30,7 @@ class ChromeThreadTest : public testing::Test {
   }
 
   static void BasicFunction(MessageLoop* message_loop) {
-    CHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+    CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     message_loop->PostTask(FROM_HERE, new MessageLoop::QuitTask);
   }
 
@@ -51,13 +51,13 @@ class ChromeThreadTest : public testing::Test {
 
   class DeletedOnFile
       : public base::RefCountedThreadSafe<
-            DeletedOnFile, ChromeThread::DeleteOnFileThread> {
+            DeletedOnFile, BrowserThread::DeleteOnFileThread> {
    public:
     explicit DeletedOnFile(MessageLoop* message_loop)
         : message_loop_(message_loop) { }
 
     ~DeletedOnFile() {
-      CHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+      CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
       message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
     }
 
@@ -67,7 +67,7 @@ class ChromeThreadTest : public testing::Test {
 
   class NeverDeleted
       : public base::RefCountedThreadSafe<
-            NeverDeleted, ChromeThread::DeleteOnWebKitThread> {
+            NeverDeleted, BrowserThread::DeleteOnWebKitThread> {
    public:
     ~NeverDeleted() {
       CHECK(false);
@@ -75,32 +75,32 @@ class ChromeThreadTest : public testing::Test {
   };
 
  private:
-  scoped_ptr<ChromeThread> ui_thread_;
-  scoped_ptr<ChromeThread> file_thread_;
+  scoped_ptr<BrowserThread> ui_thread_;
+  scoped_ptr<BrowserThread> file_thread_;
   MessageLoop loop_;
 };
 
-TEST_F(ChromeThreadTest, PostTask) {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
+TEST_F(BrowserThreadTest, PostTask) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
       NewRunnableFunction(&BasicFunction, MessageLoop::current()));
   MessageLoop::current()->Run();
 }
 
-TEST_F(ChromeThreadTest, Release) {
-  ChromeThread::ReleaseSoon(ChromeThread::UI, FROM_HERE, this);
+TEST_F(BrowserThreadTest, Release) {
+  BrowserThread::ReleaseSoon(BrowserThread::UI, FROM_HERE, this);
   MessageLoop::current()->Run();
 }
 
-TEST_F(ChromeThreadTest, TaskToNonExistentThreadIsDeleted) {
+TEST_F(BrowserThreadTest, TaskToNonExistentThreadIsDeleted) {
   bool deleted = false;
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::WEBKIT, FROM_HERE,
       new DummyTask(&deleted));
   EXPECT_TRUE(deleted);
 }
 
-TEST_F(ChromeThreadTest, ReleasedOnCorrectThread) {
+TEST_F(BrowserThreadTest, ReleasedOnCorrectThread) {
   {
     scoped_refptr<DeletedOnFile> test(
         new DeletedOnFile(MessageLoop::current()));
@@ -108,55 +108,55 @@ TEST_F(ChromeThreadTest, ReleasedOnCorrectThread) {
   MessageLoop::current()->Run();
 }
 
-TEST_F(ChromeThreadTest, NotReleasedIfTargetThreadNonExistent) {
+TEST_F(BrowserThreadTest, NotReleasedIfTargetThreadNonExistent) {
   scoped_refptr<NeverDeleted> test(new NeverDeleted());
 }
 
-TEST_F(ChromeThreadTest, PostTaskViaMessageLoopProxy) {
+TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxy) {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE);
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
   message_loop_proxy->PostTask(FROM_HERE,
                                NewRunnableFunction(&BasicFunction,
                                                    MessageLoop::current()));
   MessageLoop::current()->Run();
 }
 
-TEST_F(ChromeThreadTest, ReleaseViaMessageLoopProxy) {
+TEST_F(BrowserThreadTest, ReleaseViaMessageLoopProxy) {
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::UI);
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
   message_loop_proxy->ReleaseSoon(FROM_HERE, this);
   MessageLoop::current()->Run();
 }
 
-TEST_F(ChromeThreadTest, TaskToNonExistentThreadIsDeletedViaMessageLoopProxy) {
+TEST_F(BrowserThreadTest, TaskToNonExistentThreadIsDeletedViaMessageLoopProxy) {
   bool deleted = false;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::WEBKIT);
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::WEBKIT);
   message_loop_proxy->PostTask(FROM_HERE, new DummyTask(&deleted));
   EXPECT_TRUE(deleted);
 }
 
-TEST_F(ChromeThreadTest, PostTaskViaMessageLoopProxyAfterThreadExits) {
-  scoped_ptr<ChromeThread> io_thread(new ChromeThread(ChromeThread::IO));
+TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxyAfterThreadExits) {
+  scoped_ptr<BrowserThread> io_thread(new BrowserThread(BrowserThread::IO));
   io_thread->Start();
   io_thread->Stop();
 
   bool deleted = false;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   bool ret = message_loop_proxy->PostTask(FROM_HERE, new DummyTask(&deleted));
   EXPECT_FALSE(ret);
   EXPECT_TRUE(deleted);
 }
 
-TEST_F(ChromeThreadTest, PostTaskViaMessageLoopProxyAfterThreadIsDeleted) {
+TEST_F(BrowserThreadTest, PostTaskViaMessageLoopProxyAfterThreadIsDeleted) {
   {
-    scoped_ptr<ChromeThread> io_thread(new ChromeThread(ChromeThread::IO));
+    scoped_ptr<BrowserThread> io_thread(new BrowserThread(BrowserThread::IO));
     io_thread->Start();
   }
   bool deleted = false;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::IO);
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   bool ret = message_loop_proxy->PostTask(FROM_HERE, new DummyTask(&deleted));
   EXPECT_FALSE(ret);
   EXPECT_TRUE(deleted);

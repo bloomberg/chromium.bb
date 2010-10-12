@@ -218,8 +218,8 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
 }
 
 void PluginUpdater::UpdatePreferences(Profile* profile) {
-  ChromeThread::PostTask(
-    ChromeThread::FILE,
+  BrowserThread::PostTask(
+    BrowserThread::FILE,
     FROM_HERE,
     NewRunnableFunction(
         &PluginUpdater::GetPreferencesDataOnFileThread, profile));
@@ -232,8 +232,8 @@ void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
   NPAPI::PluginList::PluginMap groups;
   NPAPI::PluginList::Singleton()->GetPluginGroups(false, &groups);
 
-  ChromeThread::PostTask(
-    ChromeThread::UI,
+  BrowserThread::PostTask(
+    BrowserThread::UI,
     FROM_HERE,
     NewRunnableFunction(
         &PluginUpdater::OnUpdatePreferences,

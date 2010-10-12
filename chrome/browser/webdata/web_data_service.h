@@ -494,7 +494,7 @@ class WebDataService
   //////////////////////////////////////////////////////////////////////////////
  private:
   friend class base::RefCountedThreadSafe<WebDataService>;
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<WebDataService>;
   friend class ShutdownTask;
 

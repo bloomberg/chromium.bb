@@ -11,7 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/tracked_objects.h"
 
-class ChromeThread;
+class BrowserThread;
 class CommandLine;
 class HighResolutionTimerManager;
 struct MainFunctionParams;
@@ -147,7 +147,7 @@ class BrowserMainParts {
   scoped_ptr<SystemMonitor> system_monitor_;
   scoped_ptr<HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  scoped_ptr<ChromeThread> main_thread_;
+  scoped_ptr<BrowserThread> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainParts);
 };

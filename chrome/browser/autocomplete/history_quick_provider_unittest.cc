@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -67,8 +67,8 @@ class HistoryQuickProviderTest : public testing::Test,
                                  public ACProviderListener {
  public:
   HistoryQuickProviderTest()
-      : ui_thread_(ChromeThread::UI, &message_loop_),
-        file_thread_(ChromeThread::FILE, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        file_thread_(BrowserThread::FILE, &message_loop_) {}
 
   // ACProviderListener
   virtual void OnProviderUpdate(bool updated_matches);
@@ -100,8 +100,8 @@ class HistoryQuickProviderTest : public testing::Test,
                std::string expected_top_result);
 
   MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;

@@ -189,7 +189,7 @@ class ChromeCookieMonsterDelegate : public net::CookieMonster::Delegate {
     }
 
    private:
-    friend class ::ChromeThread;
+    friend class ::BrowserThread;
     friend class DeleteTask<ProfileGetter>;
 
     virtual ~ProfileGetter() {}

@@ -128,7 +128,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   ChromeURLRequestContext* GetRequestContextForURL(const GURL& url);
 
  private:
-  friend class ChromeThread;
+  friend class BrowserThread;
   friend class DeleteTask<ResourceMessageFilter>;
   typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
                                     const base::PlatformFileInfo& file_info);
