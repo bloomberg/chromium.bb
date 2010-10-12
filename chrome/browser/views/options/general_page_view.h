@@ -13,6 +13,7 @@
 #include "chrome/browser/views/url_picker.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/button/button.h"
+#include "views/controls/link.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/view.h"
 
@@ -39,7 +40,8 @@ class GeneralPageView : public OptionsPageView,
                         public views::Textfield::Controller,
                         public UrlPickerDelegate,
                         public views::TableViewObserver,
-                        public ShellIntegration::DefaultBrowserObserver {
+                        public ShellIntegration::DefaultBrowserObserver,
+                        public views::LinkController {
  public:
   explicit GeneralPageView(Profile* profile);
   virtual ~GeneralPageView();
@@ -63,6 +65,9 @@ class GeneralPageView : public OptionsPageView,
   virtual void InitControlLayout();
   virtual void NotifyPrefChanged(const std::string* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);
+
+  // LinkController implementation:
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
  private:
   // ShellIntegration::DefaultBrowserObserver implementation:
@@ -143,11 +148,13 @@ class GeneralPageView : public OptionsPageView,
   StringPrefMember homepage_;
   BooleanPrefMember show_home_button_;
 
-  // Controls for the Default Search group
+  // Controls for the Search group
   OptionsGroupView* default_search_group_;
   views::Combobox* default_search_engine_combobox_;
   views::NativeButton* default_search_manage_engines_button_;
   scoped_ptr<SearchEngineListModel> default_search_engines_model_;
+  views::Checkbox* instant_checkbox_;
+  views::Link* instant_link_;
 
   // Controls for the Default Browser group
   OptionsGroupView* default_browser_group_;

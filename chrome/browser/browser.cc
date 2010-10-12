@@ -235,6 +235,7 @@ Browser::Browser(Type type, Profile* profile)
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
   use_vertical_tabs_.Init(prefs::kUseVerticalTabs, profile_->GetPrefs(), this);
+  instant_enabled_.Init(prefs::kInstantEnabled, profile_->GetPrefs(), this);
   if (!TabMenuModel::AreVerticalTabsEnabled()) {
     // If vertical tabs aren't enabled, explicitly turn them off. Otherwise we
     // might show vertical tabs but not show an option to turn them off.
@@ -251,10 +252,7 @@ Browser::Browser(Type type, Profile* profile)
   if (profile_->GetProfileSyncService())
     profile_->GetProfileSyncService()->AddObserver(this);
 
-  if (type == TYPE_NORMAL && InstantController::IsEnabled() &&
-      !profile->IsOffTheRecord()) {
-    instant_.reset(new InstantController(this));
-  }
+  CreateInstantIfNecessary();
 
   PrefService *local_state = g_browser_process->local_state();
   if (local_state) {
@@ -3276,6 +3274,15 @@ void Browser::Observe(NotificationType type,
       } else if (pref_name == prefs::kPrintingEnabled) {
         command_updater_.UpdateCommandEnabled(IDC_PRINT,
                                               printing_enabled_.GetValue());
+      } else if (pref_name == prefs::kInstantEnabled) {
+        if (!InstantController::IsEnabled(profile())) {
+          if (instant()) {
+            instant()->DestroyPreviewContents();
+            instant_.reset(NULL);
+          }
+        } else {
+          CreateInstantIfNecessary();
+        }
       } else {
         NOTREACHED();
       }
@@ -4177,4 +4184,11 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
   // support for the new disposition.
   NOTREACHED();
   return false;
+}
+
+void Browser::CreateInstantIfNecessary() {
+  if (type() == TYPE_NORMAL && InstantController::IsEnabled(profile()) &&
+      !profile()->IsOffTheRecord()) {
+    instant_.reset(new InstantController(this));
+  }
 }

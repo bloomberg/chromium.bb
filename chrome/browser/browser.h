@@ -975,6 +975,9 @@ class Browser : public TabHandlerDelegate,
   // for use from OpenCurrentURL.
   bool OpenInstant(WindowOpenDisposition disposition);
 
+  // If this browser should have instant one is created, otherwise does nothing.
+  void CreateInstantIfNecessary();
+
   // Data members /////////////////////////////////////////////////////////////
 
   NotificationRegistrar registrar_;
@@ -1071,6 +1074,9 @@ class Browser : public TabHandlerDelegate,
 
   // Keep track of the printing enabled pref.
   BooleanPrefMember printing_enabled_;
+
+  // Keep track of when instant enabled changes.
+  BooleanPrefMember instant_enabled_;
 
   // Indicates if command execution is blocked.
   bool block_command_execution_;

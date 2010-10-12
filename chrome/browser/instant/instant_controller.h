@@ -23,6 +23,7 @@ struct AutocompleteMatch;
 class InstantDelegate;
 class InstantLoaderManager;
 class PrefService;
+class Profile;
 class TabContents;
 class TemplateURL;
 
@@ -43,7 +44,7 @@ class InstantController : public InstantLoaderDelegate {
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Is InstantController enabled?
-  static bool IsEnabled();
+  static bool IsEnabled(Profile* profile);
 
   // Invoked as the user types in the omnibox with the url to navigate to.  If
   // the url is empty and there is a preview TabContents it is destroyed. If url

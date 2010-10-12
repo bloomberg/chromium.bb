@@ -86,11 +86,7 @@ v8::Handle<v8::Value> SearchExtensionWrapper::SetSuggestResult(
 }
 
 v8::Extension* SearchExtension::Get() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableMatchPreview)) {
-    return new SearchExtensionWrapper();
-  }
-  return NULL;
+  return new SearchExtensionWrapper();
 }
 
 }  // namespace extensions_v8
