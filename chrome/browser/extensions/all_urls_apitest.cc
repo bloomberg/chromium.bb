@@ -15,8 +15,11 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-// Sometimes hangs: http://crbug.com/57694
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FLAKY_WhitelistedExtension) {
+// Note: This test is flaky, but is actively being worked on.
+// Finnur is adding traces to figure out where the problem lies and
+// needs to check in these traces because the problem doesn't repro
+// locally (or on the try bots).
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   Extension::emit_traces_for_whitelist_extension_test_ = true;
 
   // First load the two extension.
@@ -27,11 +30,11 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FLAKY_WhitelistedExtension) {
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
-  std::cout << "***** LoadExtension1 called \n" << std::flush;
+  printf("***** LoadExtension1 called \n");
   ASSERT_TRUE(LoadExtension(extension_dir1));
-  std::cout << "***** LoadExtension2 called \n" << std::flush;
+  printf("***** LoadExtension2 called \n");
   ASSERT_TRUE(LoadExtension(extension_dir2));
-  std::cout << "***** LoadExtensions done \n" << std::flush;
+  printf("***** LoadExtensions done \n");
   EXPECT_EQ(size_before + 2, service->extensions()->size());
   Extension* extensionA = service->extensions()->at(size_before);
   Extension* extensionB = service->extensions()->at(size_before + 1);
@@ -45,72 +48,72 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FLAKY_WhitelistedExtension) {
   // Ideally, we'd set the whitelist first and then load the extensions.
   // However, we can't reliably know the ids of the extensions until we load
   // them so we reload them so that the whitelist is in effect from the start.
-  std::cout << "***** ReloadExtension1 called \n" << std::flush;
+  printf("***** ReloadExtension1 called \n");
   ReloadExtension(extensionA->id());
-  std::cout << "***** ReloadExtension2 called \n" << std::flush;
+  printf("***** ReloadExtension2 called \n");
   ReloadExtension(extensionB->id());
-  std::cout << "***** ReloadExtensions done \n" << std::flush;
+  printf("***** ReloadExtensions done \n");
 
   std::string url;
 
   // Now verify we run content scripts on chrome://newtab/.
   url = "chrome://newtab/";
-  std::cout << "***** " << url.c_str() << "\n" << std::flush;
+  printf("***** %s\n", url.c_str());
   ExtensionTestMessageListener listener1a("content script: " + url, false);
   ExtensionTestMessageListener listener1b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  std::cout << "***** Wait 1a\n" << std::flush;
+  printf("***** Wait 1a\n");
   ASSERT_TRUE(listener1a.WaitUntilSatisfied());
-  std::cout << "***** Wait 1b\n" << std::flush;
+  printf("***** Wait 1b\n");
   ASSERT_TRUE(listener1b.WaitUntilSatisfied());
 
   // Now verify data: urls.
   url = "data:text/html;charset=utf-8,<html>asdf</html>";
-  std::cout << "***** " << url.c_str() << "\n" << std::flush;
+  printf("***** %s\n", url.c_str());
   ExtensionTestMessageListener listener2a("content script: " + url, false);
   ExtensionTestMessageListener listener2b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  std::cout << "***** Wait 2a\n" << std::flush;
+  printf("***** Wait 2a\n");
   ASSERT_TRUE(listener2a.WaitUntilSatisfied());
-  std::cout << "***** Wait 2b\n" << std::flush;
+  printf("***** Wait 2b\n");
   ASSERT_TRUE(listener2b.WaitUntilSatisfied());
 
   // Now verify about:version.
   url = "about:version";
-  std::cout << "***** " << url.c_str() << "\n" << std::flush;
+  printf("***** %s\n", url.c_str());
   ExtensionTestMessageListener listener3a("content script: " + url, false);
   ExtensionTestMessageListener listener3b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  std::cout << "***** Wait 3a\n" << std::flush;
+  printf("***** Wait 3a\n");
   ASSERT_TRUE(listener3a.WaitUntilSatisfied());
-  std::cout << "***** Wait 3b\n" << std::flush;
+  printf("***** Wait 3b\n");
   ASSERT_TRUE(listener3b.WaitUntilSatisfied());
 
   // Now verify about:blank.
   url = "about:blank";
-  std::cout << "***** " << url.c_str() << "\n" << std::flush;
+  printf("***** %s\n", url.c_str());
   ExtensionTestMessageListener listener4a("content script: " + url, false);
   ExtensionTestMessageListener listener4b("execute: " + url, false);
   ui_test_utils::NavigateToURL(browser(), GURL(url));
-  std::cout << "***** Wait 4a\n" << std::flush;
+  printf("***** Wait 4a\n");
   ASSERT_TRUE(listener4a.WaitUntilSatisfied());
-  std::cout << "***** Wait 4b\n" << std::flush;
+  printf("***** Wait 4b\n");
   ASSERT_TRUE(listener4b.WaitUntilSatisfied());
 
   // Now verify we can script a regular http page.
   ASSERT_TRUE(test_server()->Start());
   GURL page_url = test_server()->GetURL(kAllUrlsTarget);
-  std::cout << "***** " << page_url.spec().c_str() << "\n" << std::flush;
+  printf("***** %s\n", page_url.spec().c_str());
   ExtensionTestMessageListener listener5a("content script: " + page_url.spec(),
                                           false);
   ExtensionTestMessageListener listener5b("execute: " + page_url.spec(), false);
   ui_test_utils::NavigateToURL(browser(), page_url);
-  std::cout << "***** Wait 5a\n" << std::flush;
+  printf("***** Wait 5a\n");
   ASSERT_TRUE(listener5a.WaitUntilSatisfied());
-  std::cout << "***** Wait 5b\n" << std::flush;
+  printf("***** Wait 5b\n");
   ASSERT_TRUE(listener5b.WaitUntilSatisfied());
 
-  std::cout << "***** DONE!\n" << std::flush;
+  printf("***** DONE!\n");
 }
 
 // Test that an extension NOT whitelisted for scripting can ask for <all_urls>

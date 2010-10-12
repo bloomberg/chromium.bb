@@ -77,9 +77,6 @@ using WebKit::WebCache;
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
-// TODO(finnur): Remove after capturing debug info.
-#include <iostream>
-
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
 class RendererMainThread : public base::Thread {
@@ -709,8 +706,11 @@ void BrowserRenderProcessHost::SendExtensionInfo() {
     info.host_permissions = extension->host_permissions();
 
     // TODO(finnur): Remove after capturing debug info.
-    if (Extension::emit_traces_for_whitelist_extension_test_)
-      std::cout << "*-*-* Sending down: " << info.allowed_to_execute_script_everywhere << " for CanExecuteEverywhere \n" << std::flush;
+    if (Extension::emit_traces_for_whitelist_extension_test_) {
+      printf("*-*-* Sending down: %d for %s\n",
+             info.allowed_to_execute_script_everywhere,
+             info.name.c_str());
+    }
 
     // The icon in the page is 96px.  We'd rather not scale up, so use 128.
     info.icon_url = extension->GetIconURL(Extension::EXTENSION_ICON_LARGE,

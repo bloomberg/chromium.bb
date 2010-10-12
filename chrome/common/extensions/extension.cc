@@ -40,7 +40,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
-// TODO(finur): Remove once I have one failed run of the Whitelist extension test.
+// TODO(finur): Remove once I have one failed run of the Whitelist extension
+// test.
 #include <iostream>
 
 namespace keys = extension_manifest_keys;
@@ -1912,12 +1913,12 @@ static std::string SizeToString(const gfx::Size& max_size) {
 // static
 void Extension::SetScriptingWhitelist(
     const std::vector<std::string>& whitelist) {
- ScriptingWhitelist* current_whitelist =
-     ExtensionConfig::GetSingleton()->whitelist();
- current_whitelist->clear();
- for (ScriptingWhitelist::const_iterator it = whitelist.begin();
-      it != whitelist.end(); ++it) {
-   current_whitelist->push_back(*it);
+  ScriptingWhitelist* current_whitelist =
+      ExtensionConfig::GetSingleton()->whitelist();
+  current_whitelist->clear();
+  for (ScriptingWhitelist::const_iterator it = whitelist.begin();
+       it != whitelist.end(); ++it) {
+    current_whitelist->push_back(*it);
   }
 }
 
@@ -2078,6 +2079,8 @@ bool Extension::CanExecuteScriptOnPage(
           switches::kAllowScriptingGallery)) {
     if (error)
       *error = errors::kCannotScriptGallery;
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** CANNOT SCRIPT GALLERY!! \n");
     return false;
   }
 
@@ -2086,10 +2089,14 @@ bool Extension::CanExecuteScriptOnPage(
       if ((*host_permissions)[i].MatchesUrl(page_url))
         return true;
     }
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** HAS NO HOST PERMISSIONS!! \n");
   }
   if (script) {
     if (script->MatchesUrl(page_url))
       return true;
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** HAS NO SCRIPT PERMISSIONS!! \n");
   }
 
   if (error) {
@@ -2148,28 +2155,29 @@ bool Extension::IsAPIPermission(const std::string& str) {
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {
-  if (location() == Extension::COMPONENT)
+  if (location() == Extension::COMPONENT) {
+    if (emit_traces_for_whitelist_extension_test_)
+      printf("***** CAN execute (is component)\n");
     return true;
+  }
 
   ScriptingWhitelist* whitelist =
       ExtensionConfig::GetSingleton()->whitelist();
 
   if (emit_traces_for_whitelist_extension_test_)
-    std::cout << "***** CanExecuteScriptEverywhere() called \n" << std::flush;
+    printf("***** CanExecuteScriptEverywhere() called \n");
 
   for (ScriptingWhitelist::const_iterator it = whitelist->begin();
        it != whitelist->end(); ++it) {
-    if (emit_traces_for_whitelist_extension_test_)
-      std::cout << "***** " << id() << " == " << *it << "\n" << std::flush;
     if (id() == *it) {
       if (emit_traces_for_whitelist_extension_test_)
-        std::cout << "***** CAN execute\n" << std::flush;
+        printf("***** CAN execute\n");
       return true;
     }
   }
 
   if (emit_traces_for_whitelist_extension_test_)
-    std::cout << "***** Can NOT execute \n" << std::flush;
+    printf("***** Can NOT execute \n");
   return false;
 }
 
