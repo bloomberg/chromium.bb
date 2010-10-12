@@ -4,8 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#include <cstring>
-#include <string>
+#include <string.h>
 #include <vector>
 
 #include "native_client/src/include/portability.h"
@@ -33,11 +32,11 @@ Host* host = NULL;
 
 const void* FakeGetInterface(const char* interface_name) {
   DebugPrintf("Getting interface for name '%s'\n", interface_name);
-  if (std::strcmp(interface_name, PPB_CORE_INTERFACE) == 0) {
+  if (strcmp(interface_name, PPB_CORE_INTERFACE) == 0) {
     return host->core_interface();
-  } else if (std::strcmp(interface_name, PPB_INSTANCE_INTERFACE) == 0) {
+  } else if (strcmp(interface_name, PPB_INSTANCE_INTERFACE) == 0) {
     return host->instance_interface();
-  } else if (std::strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
+  } else if (strcmp(interface_name, PPB_VAR_DEPRECATED_INTERFACE) == 0) {
     return host->var_interface();
   }
   return NULL;
@@ -67,17 +66,17 @@ bool ParseArgs(const char* str,
   std::vector<std::string> argn_vector;
   std::vector<std::string> argv_vector;
   *argc = 0;
-  char* embed_arg = std::strtok(strdup(str), ";");
+  char* embed_arg = strtok(strdup(str), ";");
   while (embed_arg != NULL) {
-    char* equal_loc = std::strchr(embed_arg, '=');
+    char* equal_loc = strchr(embed_arg, '=');
     if (equal_loc == NULL) {
       return false;
     }
     size_t name_length = static_cast<size_t>(equal_loc - embed_arg);
-    argn_vector.push_back(std::string(embed_arg, name_length));
+    argn_vector.push_back(strndup(embed_arg, name_length));
     argv_vector.push_back(equal_loc + 1);
     ++*argc;
-    embed_arg = std::strtok(NULL, ";");
+    embed_arg = strtok(NULL, ";");
   }
 
   *argn = reinterpret_cast<const char**>(malloc(*argc * sizeof(*argn)));
@@ -85,7 +84,7 @@ bool ParseArgs(const char* str,
   for (uint32_t i = 0; i < *argc; ++i) {
     (*argn)[i] = strdup(argn_vector[i].c_str());
     (*argv)[i] = strdup(argv_vector[i].c_str());
-    printf("ParseArgs(): arg[%u]: '%s' = '%s'\n", i, (*argn)[i], (*argv)[i]);
+    printf("arg[%u]: '%s' = '%s'\n", i, (*argn)[i], (*argv)[i]);
   }
   return true;
 }
@@ -97,7 +96,7 @@ void TestInstance(PP_Module browser_module_id,
                   uint32_t argc,
                   const char** argn,
                   const char** argv) {
-  printf("TestInstance(): page url %s\n", page_url);
+  printf("page url %s\n", page_url);
   // Create a fake window object.
   FakeWindow window(browser_module_id, host, page_url);
   // Create an instance and the corresponding id.
@@ -159,9 +158,7 @@ int main(int argc, char** argv) {
 
   // Temporary support for reading files from disk rather than HTML.
   const char* root_path = argv[4];
-  std::string local_origin_env("NACL_PPAPI_LOCAL_ORIGIN=");
-  local_origin_env += root_path;
-  putenv(const_cast<char*>(local_origin_env.c_str()));
+  setenv("NACL_PPAPI_LOCAL_ORIGIN", root_path, 1);
 
   // Test an instance.
   TestInstance(BrowserModuleId(),

@@ -8,7 +8,6 @@
 
 #include <string.h>
 
-#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
@@ -30,7 +29,7 @@ namespace {
 const bool kBoolValue = true;
 const int32_t kInt32Value = 144000;
 const double kDoubleValue = 3.1415;
-const char* const kStringValue = "hello, world";
+const char kStringValue[] = "hello, world";
 
 // Some global state.
 const PPB_Var_Deprecated* g_var_interface;
@@ -46,49 +45,25 @@ PP_Var MakeString(const char* str) {
                                       static_cast<uint32_t>(strlen(str)));
 }
 
-// PP_Var of string type that names the property that corresponds to the
-// specified type.
+// PP_Var of string type that names a property of the specified type.
 PP_Var PropertyName(PP_VarType type) {
   switch (type) {
     case PP_VARTYPE_UNDEFINED:
-      return MakeString("propUndefined");
+      return MakeString("identVoid");
     case PP_VARTYPE_NULL:
-      return MakeString("propNull");
+      return MakeString("identNull");
     case PP_VARTYPE_BOOL:
-      return MakeString("propBool");
+      return MakeString("identBool");
     case PP_VARTYPE_INT32:
-      return MakeString("propInt32");
+      return MakeString("identInt32");
     case PP_VARTYPE_DOUBLE:
-      return MakeString("propDouble");
+      return MakeString("identDouble");
     case PP_VARTYPE_STRING:
-      return MakeString("propString");
+      return MakeString("identString");
     case PP_VARTYPE_OBJECT:
-      return MakeString("propObject");
+      return MakeString("identObject");
   }
-  NACL_NOTREACHED();
-  return PP_MakeUndefined();
-}
-
-// PP_Var of string type that names a method that corresponds to the
-// specified type.  These methods all expect two args of |type|.
-PP_Var MethodNameWith2Args(PP_VarType type) {
-  switch (type) {
-    case PP_VARTYPE_UNDEFINED:
-      return MakeString("methodUndefinedWith2Args");
-    case PP_VARTYPE_NULL:
-      return MakeString("methodNullWith2Args");
-    case PP_VARTYPE_BOOL:
-      return MakeString("methodBoolWith2Args");
-    case PP_VARTYPE_INT32:
-      return MakeString("methodInt32With2Args");
-    case PP_VARTYPE_DOUBLE:
-      return MakeString("methodDoubleWith2Args");
-    case PP_VARTYPE_STRING:
-      return MakeString("methodStringWith2Args");
-    case PP_VARTYPE_OBJECT:
-      return MakeString("methodObjectWith2Args");
-  }
-  NACL_NOTREACHED();
+  CHECK(0);
   return PP_MakeUndefined();
 }
 
@@ -110,7 +85,7 @@ PP_Var PropertyValue(PP_VarType type) {
     case PP_VARTYPE_OBJECT:
       return g_instance_interface->GetWindowObject(g_instance_id);
   }
-  NACL_NOTREACHED();
+  CHECK(0);
   return PP_MakeUndefined();
 }
 
@@ -150,7 +125,7 @@ bool PropertyIsValidValue(PP_VarType type, PP_Var value) {
   return false;
 }
 
-// Test that the "prop<Type>" property is present on object.
+// Test that the "ident<Type>" property is present on object.
 void CheckPresentProperty(PP_VarType type, PP_Var object) {
   PP_Var exception = PP_MakeUndefined();
   // PropertyName always returns a string PP_Var that names a valid property.
@@ -188,7 +163,7 @@ void TestHasProperty(PP_Var object) {
   CheckPresentProperty(PP_VARTYPE_OBJECT, object);
 }
 
-// Test setting the "prop<Property_type>" method on object, passing a value of
+// Test setting the "ident<Property_type>" method on object, passing a value of
 // "value_type".
 void CheckSetProperty(PP_VarType property_type,
                       PP_VarType value_type,
@@ -207,7 +182,7 @@ void CheckSetProperty(PP_VarType property_type,
   }
 }
 
-// Test setting one the "prop<Property_type>" property of object with all
+// Test setting one the "ident<Property_type>" property of object with all
 // argument types.
 void TestSetPropertyForType(PP_VarType property_type, PP_Var object) {
   CheckSetProperty(property_type, PP_VARTYPE_UNDEFINED, object);
@@ -254,7 +229,7 @@ void TestGetProperty(PP_Var object) {
   TestGetPropertyForType(PP_VARTYPE_OBJECT, object);
 }
 
-// Invoke the "method2<Type>" method of object with values of types arg1_type
+// Invoke the "ident<Type>" method of object with values of types arg1_type
 // and arg2_type as parameters.
 void CheckCallWithArgPair(PP_VarType type,
                           PP_VarType arg1_type,
@@ -264,7 +239,7 @@ void CheckCallWithArgPair(PP_VarType type,
   uint32_t argc = static_cast<uint32_t>(sizeof argv / sizeof argv[0]);
   PP_Var exception = PP_MakeUndefined();
   PP_Var retval = g_var_interface->Call(object,
-                                        MethodNameWith2Args(type),
+                                        PropertyName(type),
                                         argc,
                                         argv,
                                         &exception);
@@ -278,7 +253,7 @@ void CheckCallWithArgPair(PP_VarType type,
   }
 }
 
-// Invoke the "method<Type>" method of object with first argument type arg1_type
+// Invoke the "ident<Type>" method of object with first argument type arg1_type
 // and all possibilities of second argument type.
 void TestCallForTypeWithArg1Type(PP_VarType type,
                                  PP_VarType arg1_type,
@@ -292,20 +267,20 @@ void TestCallForTypeWithArg1Type(PP_VarType type,
   CheckCallWithArgPair(type, arg1_type, PP_VARTYPE_OBJECT, object);
 }
 
-// Invoke the "method<Type>" method of object with one parameter of type "type".
+// Invoke the "ident<Type>" method of object with one parameter of type "type".
 void CallWithTooFewParameters(PP_VarType type, PP_Var object) {
   PP_Var argv[] = { PropertyValue(type) };
   uint32_t argc = static_cast<uint32_t>(sizeof argv / sizeof argv[0]);
   PP_Var exception = PP_MakeUndefined();
   (void) g_var_interface->Call(object,
-                               MethodNameWith2Args(type),
+                               PropertyName(type),
                                argc,
                                argv,
                                &exception);
   CHECK(exception.type != PP_VARTYPE_UNDEFINED);
 }
 
-// Invoke the "method<Type>" method of object with three parameters of type
+// Invoke the "ident<Type>" method of object with three parameters of type
 // "type".
 void CallWithTooManyParameters(PP_VarType type, PP_Var object) {
   PP_Var argv[] = {
@@ -316,14 +291,14 @@ void CallWithTooManyParameters(PP_VarType type, PP_Var object) {
   uint32_t argc = static_cast<uint32_t>(sizeof argv / sizeof argv[0]);
   PP_Var exception = PP_MakeUndefined();
   (void) g_var_interface->Call(object,
-                               MethodNameWith2Args(type),
+                               PropertyName(type),
                                argc,
                                argv,
                                &exception);
   CHECK(exception.type != PP_VARTYPE_UNDEFINED);
 }
 
-// Invoke the "method<Type>" method of object with all combinations of types for
+// Invoke the "ident<Type>" method of object with all combinations of types for
 // the first and second arguments.
 void TestCallForType(PP_VarType method_type, PP_Var object) {
   CallWithTooFewParameters(method_type, object);
@@ -355,7 +330,7 @@ void TestWindowScripting(PP_Var object) {
   PP_Var argv = PropertyValue(PP_VARTYPE_OBJECT);
   PP_Var exception = PP_MakeUndefined();
   PP_Var retval = g_var_interface->Call(object,
-                                        MakeString("windowLocation"),
+                                        MakeString("identWindow"),
                                         1,
                                         &argv,
                                         &exception);
@@ -367,11 +342,11 @@ void TestWindowScripting(PP_Var object) {
 
 // Called from the fake browser.  The object needs to have certain
 // attributes.  For each PP_VARTYPE variant,
-// 1) There is a property, of PP_VARTYPE_<TYPE>, named "prop<Type>".
-// 2) SetProperty("prop<Type>", value) only succeeds when value.type == type.
-// 3) GetProperty("prop<Type>") only succeeds when value.type == type,
+// 1) There is a property, of PP_VARTYPE_<TYPE>, named "ident<Type>".
+// 2) SetProperty("ident<Type>", value) only succeeds when value.type == type.
+// 3) GetProperty("ident<Type>") only succeeds when value.type == type,
 //    and returns the value set by the corresponding call to SetProperty.
-// 4) Call("prop<Type>", { arg1, arg2 }) only succeeds when arg1.type == type,
+// 4) Call("ident<Type>", { arg1, arg2 }) only succeeds when arg1.type == type,
 //    arg2.type == type.  It returns arg1.type.
 void TestScriptableObject(PP_Var object,
                           const PPB_Instance* browser_instance_interface,
