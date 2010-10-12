@@ -135,6 +135,14 @@ void ServiceProcessControl::Launch(Task* task) {
     return;
   }
 
+  // Prevent quick calls to Launch in succession from causing a crash.
+  // TODO(scottbyer) - ServiceProcessControl launch task callback code needs to
+  // be enhanced to deal with this properly.  See
+  // http://code.google.com/p/chromium/issues/detail?id=58802
+  if (launcher_) {
+    return;
+  }
+
   // A service process should have a different mechanism for starting, but now
   // we start it as if it is a child process.
   FilePath exe_path = ChildProcessHost::GetChildPath(true);
