@@ -14,11 +14,9 @@ class Point;
 class Size;
 }  // namespace gfx
 
-namespace views {
-class Widget;
-}  // namespace views
-
 namespace chromeos {
+
+class DOMUIMenuWidget;
 
 // MenuLocator class contorls where the menu will be placed and
 // which corners are rounded.
@@ -37,10 +35,10 @@ class MenuLocator {
   virtual SubmenuDirection GetSubmenuDirection() const = 0;
 
   // Move the widget to the right position.
-  virtual void Move(views::Widget* widget) = 0;
+  virtual void Move(DOMUIMenuWidget* widget) = 0;
 
   // Resize and move the widget to the right position.
-  virtual void SetBounds(views::Widget* widget,
+  virtual void SetBounds(DOMUIMenuWidget* widget,
                          const gfx::Size& size) = 0;
 
   // Returns the 8 length array of SkScalar that represents 4 corner
@@ -69,7 +67,7 @@ class MenuLocator {
   // direction given by |parent_direction|. 3 corners are
   // rounded except for the corner that is attached to the widget.
   static MenuLocator* CreateSubMenuLocator(
-      const views::Widget* widget,
+      const DOMUIMenuWidget* widget,
       MenuLocator::SubmenuDirection parent_direction,
       int y);
 };

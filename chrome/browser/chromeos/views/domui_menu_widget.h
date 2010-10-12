@@ -48,6 +48,9 @@ class DOMUIMenuWidget : public views::WidgetGtk {
     return did_pointer_grab_;
   }
 
+  // Enables/Disables menu scroll.
+  void EnableScroll(bool enabled);
+
   // Tell the gtk to send all input events (mouse, keyboard) to this
   // Widget. If |selectItem| is true, it highlights the selected item
   // (or select 1st selectable item if none is selected).

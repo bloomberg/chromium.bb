@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/views/menu_locator.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/insets.h"
@@ -13,7 +14,7 @@
 
 namespace {
 
-using views::Widget;
+using chromeos::DOMUIMenuWidget;
 
 // Menu's corner radious.
 const int kMenuCornerRadius = 3;
@@ -42,30 +43,33 @@ class DropDownMenuLocator : public chromeos::MenuLocator {
     return DEFAULT;
   }
 
-  virtual void Move(Widget* widget) {
+  virtual void Move(DOMUIMenuWidget* widget) {
     gfx::Rect bounds;
     widget->GetBounds(&bounds, false);
     widget->SetBounds(ComputeBounds(bounds.size()));
   }
 
-  virtual void SetBounds(Widget* widget, const gfx::Size& size) {
+  virtual void SetBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Size new_size(size);
     new_size.Enlarge(0, kMenuCornerRadius);
     widget->SetBounds(ComputeBounds(new_size));
   }
 
   gfx::Rect ComputeBounds(const gfx::Size& size) {
+    gfx::Rect screen_rect = GetScreenRectAt(origin_.x(), origin_.y());
+    int width = std::min(screen_rect.width(), size.width());
+    // TODO(oshima):
     // Menu has to be shown above the button, which is not currently
     // possible with Menu2. I'll update Menu2 and this code
     // once this change is landed.
-    gfx::Rect screen_rect = GetScreenRectAt(origin_.x(), origin_.y());
-    int x = origin_.x() - size.width();
+    // This needs to tell menu to show scroll button when necessary.
+    int x = origin_.x() - width;
     int y = origin_.y();
-    if (x + size.width() > screen_rect.right())
-      x = screen_rect.right() - size.width();
+    if (x + width > screen_rect.right())
+      x = screen_rect.right() - width;
     if (y + size.height() > screen_rect.bottom())
       y = screen_rect.bottom() - size.height();
-    return gfx::Rect(x, y, size.width(), size.height());
+    return gfx::Rect(x, y, width, size.height());
   }
 
   virtual void GetInsets(gfx::Insets* insets) const {
@@ -99,31 +103,42 @@ class ContextMenuLocator : public chromeos::MenuLocator {
     return DEFAULT;
   }
 
-  virtual void Move(Widget* widget) {
+  virtual void Move(DOMUIMenuWidget* widget) {
     gfx::Rect bounds;
     widget->GetBounds(&bounds, false);
-    widget->SetBounds(ComputeBounds(bounds.size()));
+    UpdateBounds(widget, bounds.size());
   }
 
-  virtual void SetBounds(Widget* widget, const gfx::Size& size) {
+  virtual void SetBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Size new_size(size);
     new_size.Enlarge(0, kMenuCornerRadius * 2);
-    widget->SetBounds(ComputeBounds(new_size));
+    UpdateBounds(widget, new_size);
   }
 
-  gfx::Rect ComputeBounds(const gfx::Size& size) {
+  void UpdateBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Rect screen_rect = GetScreenRectAt(origin_.x(), origin_.y());
+    int width = std::min(screen_rect.width(), size.width());
     int height = size.height();
-    if (height > screen_rect.height())
+    // TODO(oshima): Locator needs a preferred size so that
+    // 1) we can tell height == screen_rect is the result of
+    //    locator resizing it, or preferred size happens to be
+    //    same hight of the screen (which is rare).
+    // 2) when the menu is moved to place where it has more space, it can
+    //    hide the scrollbar again. (which won't happen on chromeos now)
+    if (height >= screen_rect.height()) {
       height = screen_rect.height();
+      widget->EnableScroll(true);
+    } else {
+      widget->EnableScroll(false);
+    }
 
     int x = origin_.x();
     int y = origin_.y();
-    if (x + size.width() > screen_rect.right())
-      x = screen_rect.right() - size.width();
+    if (x + width > screen_rect.right())
+      x = screen_rect.right() - width;
     if (y + height > screen_rect.bottom())
       y = screen_rect.bottom() - height;
-    return gfx::Rect(x, y, size.width(), height);
+    widget->SetBounds(gfx::Rect(x, y, width, height));
   }
 
   virtual const SkScalar* GetCorners() const {
@@ -148,7 +163,7 @@ class ContextMenuLocator : public chromeos::MenuLocator {
 // MenuLocator for submenu.
 class SubMenuLocator : public chromeos::MenuLocator {
  public:
-  SubMenuLocator(const views::Widget* parent,
+  SubMenuLocator(const DOMUIMenuWidget* parent,
                  MenuLocator::SubmenuDirection parent_direction,
                  int y)
       : parent_rect_(GetBoundsOf(parent)),
@@ -163,16 +178,16 @@ class SubMenuLocator : public chromeos::MenuLocator {
     return direction_;
   }
 
-  virtual void Move(Widget* widget) {
+  virtual void Move(DOMUIMenuWidget* widget) {
     gfx::Rect bounds;
     widget->GetBounds(&bounds, false);
-    widget->SetBounds(ComputeBounds(bounds.size()));
+    UpdateBounds(widget, bounds.size());
   }
 
-  virtual void SetBounds(Widget* widget, const gfx::Size& size) {
+  virtual void SetBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Size new_size(size);
     new_size.Enlarge(0, kMenuCornerRadius * 2);
-    widget->SetBounds(ComputeBounds(new_size));
+    UpdateBounds(widget, new_size);
   }
 
   virtual const SkScalar* GetCorners() const {
@@ -187,11 +202,16 @@ class SubMenuLocator : public chromeos::MenuLocator {
   static const SkScalar kRightCorners[];
   static const SkScalar kLeftCorners[];
 
-  gfx::Rect ComputeBounds(const gfx::Size& size) {
+  void UpdateBounds(DOMUIMenuWidget* widget, const gfx::Size& size) {
     gfx::Rect screen_rect = GetScreenRectAt(parent_rect_.x(), root_y_);
+    int width = std::min(screen_rect.width(), size.width());
     int height = size.height();
-    if (height > screen_rect.height())
+    if (height >= screen_rect.height()) {
       height = screen_rect.height();
+      widget->EnableScroll(true);
+    } else {
+      widget->EnableScroll(false);
+    }
 
     SubmenuDirection direction = parent_direction_;
     if (direction == DEFAULT)
@@ -200,34 +220,47 @@ class SubMenuLocator : public chromeos::MenuLocator {
     int y = root_y_;
     if (root_y_ + height > screen_rect.bottom())
       y = screen_rect.bottom() - height;
-    // Decide the attachment.
+    // Determine the attachment.
+    // TODO(oshima):
+    // Come up with better placement when menu is wide,
+    // probably limit max width and let each menu scroll
+    // horizontally when selected.
     int x = direction == RIGHT ?
-        ComputeXToRight(screen_rect, size) :
-        ComputeXToLeft(screen_rect, size);
-    return gfx::Rect(x, y, size.width(), height);
+        ComputeXToRight(screen_rect, width) :
+        ComputeXToLeft(screen_rect, width);
+    corners_ = direction_ == RIGHT ? kRightCorners : kLeftCorners;
+    widget->SetBounds(gfx::Rect(x, y, width, height));
   }
 
-  int ComputeXToRight(const gfx::Rect& screen_rect, const gfx::Size& size) {
-    if (parent_rect_.right() + size.width() > screen_rect.right()) {
-      corners_ = kLeftCorners;
+  int ComputeXToRight(const gfx::Rect& screen_rect, int width) {
+    if (parent_rect_.right() + width > screen_rect.right()) {
+      if (parent_rect_.x() - width < screen_rect.x()) {
+        // Place on the right to fit to the screen if no space on left
+        direction_ = RIGHT;
+        return screen_rect.right() - width;
+      }
       direction_ = LEFT;
-      return parent_rect_.x() - size.width() + kSubmenuOverlapPx;
+      return parent_rect_.x() - width + kSubmenuOverlapPx;
     } else {
-      corners_ = kRightCorners;
       direction_ = RIGHT;
       return parent_rect_.right() - kSubmenuOverlapPx;
     }
   }
 
-  int ComputeXToLeft(const gfx::Rect& screen_rect, const gfx::Size& size) {
-    if (parent_rect_.x() - size.width() < screen_rect.x()) {
+  int ComputeXToLeft(const gfx::Rect& screen_rect, int width) {
+    if (parent_rect_.x() - width < screen_rect.x()) {
+      if (parent_rect_.right() + width > screen_rect.right()) {
+        // no space on right
+        direction_ = LEFT;
+        return parent_rect_.x();
+      }
       corners_ = kRightCorners;
       direction_ = RIGHT;
       return parent_rect_.right() - kSubmenuOverlapPx;
     } else {
       corners_ = kLeftCorners;
       direction_ = LEFT;
-      return parent_rect_.x() - size.width() + kSubmenuOverlapPx;
+      return parent_rect_.x() - width + kSubmenuOverlapPx;
     }
   }
 
@@ -278,7 +311,7 @@ MenuLocator* MenuLocator::CreateContextMenuLocator(const gfx::Point& p) {
 }
 
 MenuLocator* MenuLocator::CreateSubMenuLocator(
-    const views::Widget* parent,
+    const DOMUIMenuWidget* parent,
     MenuLocator::SubmenuDirection parent_direction,
     int y) {
   return new SubMenuLocator(parent, parent_direction, y);

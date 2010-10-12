@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 
+#include "base/stringprintf.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -175,7 +176,7 @@ void DOMUIMenuWidget::OnSizeAllocate(GtkWidget* widget,
   gfx::Rect bounds;
   GetBounds(&bounds, false);
   // Don't move until the menu gets contents.
-  if (bounds.height() >= 2)
+  if (bounds.height() > 1)
     menu_locator_->Move(this);
 }
 
@@ -187,6 +188,11 @@ gboolean MapToFocus(GtkWidget* widget, GdkEvent* event, gpointer data) {
     menu_widget->EnableInput(select_item);
   }
   return true;
+}
+
+void DOMUIMenuWidget::EnableScroll(bool enable) {
+  ExecuteJavascript(StringPrintf(
+      L"enableScroll(%ls)", enable ? L"true" : L"false" ));
 }
 
 void DOMUIMenuWidget::EnableInput(bool select_item) {

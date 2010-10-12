@@ -222,6 +222,12 @@ Menu.prototype = {
   buttonHeight_ : 0,
 
   /**
+   * True to enable scroll button.
+   * @type {boolean}
+   */
+  scrollEnabled_ : false,
+
+  /**
    * Decorates the menu element.
    */
   decorate: function() {
@@ -400,6 +406,21 @@ Menu.prototype = {
   },
 
   /**
+   * Enable/disable menu scroll.
+   * @param {boolean} enabled True to enable scroll, or false otherwise.
+   */
+  set scrollEnabled(enabled) {
+    this.scrollEnabled_ = enabled;
+  },
+
+  /**
+   * Tells if the menu scroll is enabled.
+   */
+  get scrollEnabled() {
+    return this.scrollEnabled_;
+  },
+
+  /**
    * Handle keyboard navigation and activation.
    * @private
    */
@@ -474,7 +495,10 @@ Menu.prototype = {
       down.classList.add('hidden');
       return;
     }
-    if (this.scrollHeight > window.innerHeight) {
+    // Do not use screen width to determin if we need scroll buttons
+    // as the max renderer hight can be shorter than actual screen size.
+    // TODO(oshima): Fix this when we implement transparent renderer.
+    if (this.scrollHeight > window.innerHeight && this.scrollEnabled_) {
       this.style.height = (window.innerHeight - this.buttonHeight_) + 'px';
       up.classList.remove('hidden');
       down.classList.remove('hidden');
@@ -623,4 +647,8 @@ function updateModel(model) {
 
 function modelUpdated() {
   chrome.send('model_updated', []);
+}
+
+function enableScroll(enabled) {
+  document.getElementById('viewport').scrollEnabled = enabled;
 }
