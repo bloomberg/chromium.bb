@@ -660,9 +660,9 @@ ResourceDispatcherHost::CreateRequestInfoForBrowserRequest(
                                                ResourceType::SUB_RESOURCE,
                                                0,  // upload_size
                                                download,  // is_download
-                                               download, // allow_download
-                                               -1, // Host renderer id
-                                               -1); // Host render view id
+                                               download,  // allow_download
+                                               -1,  // Host renderer id
+                                               -1);  // Host render view id
 }
 
 void ResourceDispatcherHost::OnClosePageACK(
