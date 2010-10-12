@@ -124,6 +124,13 @@ const Experiment kExperiments[] = {
 #endif
     switches::kEnableCloudPrintProxy
   },
+  {
+    "match-preview",  // Do not change; see above.
+    IDS_LABS_INSTANT_NAME,
+    IDS_LABS_INSTANT_DESCRIPTION,
+    kOsMac,
+    switches::kEnableMatchPreview
+  },
   // FIXME(scheib): Add Labs entry for accelerated Compositing, 
   // or pull it and the strings in generated_resources.grd by Dec 2010
   //{
