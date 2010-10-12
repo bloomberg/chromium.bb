@@ -55,7 +55,7 @@ deps = {
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@39",
 
   "src/tools/gyp":
-    (Var("googlecode_url") % "gyp") + "/trunk@840",
+    (Var("googlecode_url") % "gyp") + "/trunk@849",
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@5580",
