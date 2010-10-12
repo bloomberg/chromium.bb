@@ -248,11 +248,12 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     else:
       os.kill(pid, signal.SIGTERM)
 
-  def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[]):
+  def WaitUntil(self, function, timeout=-1, retry_sleep=0.25, args=[],
+                expect_retval=None):
     """Poll on a condition until timeout.
 
-    Waits until the |function| evalues to True or until |timeout| secs,
-    whichever occurs earlier.
+    Waits until the |function| evalues to |expect_retval| or until |timeout|
+    secs, whichever occurs earlier.
 
     This is better than using a sleep, since it waits (almost) only as much
     as needed.
@@ -277,18 +278,26 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       retry_sleep: the sleep interval (in secs) before retrying |function|.
                    Defaults to 0.25 secs.
       args: the args to pass to |function|
+      expect_retval: the expected return value for |function|. This forms the
+                     exit criteria. In case this is None (the default),
+                     |function|'s return value is checked for truth,
+                     so 'non-empty-string' should match with True
 
     Returns:
       True, if returning when |function| evaluated to True
       False, when returning due to timeout
     """
     if timeout == -1:  # Default
-      timeout = self.action_max_timeout_ms()/1000.0
+      timeout = self.action_max_timeout_ms() / 1000.0
     assert callable(function), "function should be a callable"
     begin = time.time()
     while timeout is None or time.time() - begin <= timeout:
-      if function(*args):
+      retval = function(*args)
+      if (expect_retval is None and retval) or expect_retval == retval:
         return True
+      logging.debug('WaitUntil(%s) still waiting. '
+                    'Expecting %s. Last returned %s.' % (
+                    function, expect_retval, retval))
       time.sleep(retry_sleep)
     return False
 
@@ -713,17 +722,18 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
-    cmd_dict = {
-      'command': 'WaitForInfobarCount',
-      'count': count,
-      'tab_index': tab_index,
-    }
     # TODO(phajdan.jr): We need a solid automation infrastructure to handle
     # these cases. See crbug.com/53647.
-    return self.WaitUntil(
-        lambda(count): len(self.GetBrowserInfo()\
-            ['windows'][windex]['tabs'][tab_index]['infobars']) == count,
-        args=[count])
+    def _InfobarCount():
+      windows = self.GetBrowserInfo()['windows']
+      if windex >= len(windows):  # not enough windows
+        return -1
+      tabs = windows[windex]['tabs']
+      if tab_index >= len(tabs):  # not enough tabs
+        return -1
+      return len(tabs[tab_index]['infobars'])
+
+    return self.WaitUntil(_InfobarCount, expect_retval=count)
 
   def PerformActionOnInfobar(
       self, action, infobar_index, windex=0, tab_index=0):
