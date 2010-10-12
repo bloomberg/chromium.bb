@@ -27,6 +27,7 @@
 }
 
 @property (nonatomic, readonly) NSWindow* parentWindow;
+@property (nonatomic, assign) NSPoint anchorPoint;
 @property (nonatomic, readonly) InfoBubbleView* bubble;
 
 // Creates a bubble. |nibPath| is just the basename, e.g. @"FirstRunBubble".

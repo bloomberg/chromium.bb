@@ -41,6 +41,8 @@
                           atOffset:(CGFloat)offset;
 - (CGFloat)addSeparatorToSubviews:(NSMutableArray*)subviews
                          atOffset:(CGFloat)offset;
+- (NSPoint)anchorPointForWindowWithHeight:(CGFloat)bubbleHeight
+                             parentWindow:(NSWindow*)parent;
 @end
 
 namespace {
@@ -73,22 +75,6 @@ const CGFloat kTextXPosition = kTextXPositionNoImage + kImageSize +
 const CGFloat kTextWidth = kWindowWidth - (kImageSize + kImageSpacing +
     kFramePadding * 2);
 
-// Takes in the bubble's height and the parent window, which should be a
-// BrowserWindow, and gets the proper anchor point for the bubble. The point is
-// in screen coordinates.
-NSPoint AnchorPointFromParentWindow(NSWindow* parent, CGFloat bubbleHeight) {
-  BrowserWindowController* controller = [parent windowController];
-  NSPoint origin = NSZeroPoint;
-  if ([controller isKindOfClass:[BrowserWindowController class]]) {
-    LocationBarViewMac* location_bar = [controller locationBarBridge];
-    if (location_bar) {
-      NSPoint arrowTip = location_bar->GetPageInfoBubblePoint();
-      origin = [parent convertBaseToScreen:arrowTip];
-      origin.y -= bubbleHeight;
-    }
-  }
-  return origin;
-}
 
 // Bridge that listens for change notifications from the model.
 class PageInfoModelBubbleBridge : public PageInfoModel::PageInfoModelObserver {
@@ -97,7 +83,12 @@ class PageInfoModelBubbleBridge : public PageInfoModel::PageInfoModelObserver {
 
   // PageInfoModelObserver implementation.
   virtual void ModelChanged() {
-    [controller_ performLayout];
+    // Delay performing layout by a second so that all the animations from
+    // InfoBubbleWindow and origin updates from BaseBubbleController finish, so
+    // that we don't all race trying to change the frame's origin.
+    [controller_ performSelector:@selector(performLayout)
+                      withObject:nil
+                      afterDelay:1.0];
   }
 
   // Sets the controller.
@@ -140,7 +131,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
               modelObserver:(PageInfoModel::PageInfoModelObserver*)bridge
                parentWindow:(NSWindow*)parentWindow {
   // Use an arbitrary height because it will be changed by the bridge.
-  NSRect contentRect = NSMakeRect(0, 0, kWindowWidth, 50);
+  NSRect contentRect = NSMakeRect(0, 0, kWindowWidth, 0);
   // Create an empty window into which content is placed.
   scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc] initWithContentRect:contentRect
@@ -148,10 +139,9 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
                                             backing:NSBackingStoreBuffered
                                               defer:NO]);
 
-  NSPoint anchorPoint = AnchorPointFromParentWindow(parentWindow, 0);
   if ((self = [super initWithWindow:window.get()
                        parentWindow:parentWindow
-                         anchoredAt:anchorPoint])) {
+                         anchoredAt:NSZeroPoint])) {
     model_.reset(model);
     bridge_.reset(bridge);
     [[self bubble] setArrowLocation:info_bubble::kTopLeft];
@@ -235,21 +225,25 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
   offset += kFramePadding;
 
-  // TODO(rsesek): Remove constant value to account for http://crbug.com/57306.
-  NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, 50);
+  NSRect windowFrame = NSMakeRect(0, 0, kWindowWidth, 0);
   windowFrame.size.height += offset;
   windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
                                                        toView:nil];
-  // Just setting |size| will cause the window to grow upwards. Shift the
-  // origin up by grow amount, which causes the window to grow downwards.
-  windowFrame.origin = AnchorPointFromParentWindow([self parentWindow],
-                                                   NSHeight(windowFrame));
+  // Adjust the origin by the difference in height.
+  windowFrame.origin = [[self window] frame].origin;
+  windowFrame.origin.y -= NSHeight(windowFrame) -
+      NSHeight([[self window] frame]);
 
   // Resize the window. Only animate if the window is visible, otherwise it
   // could be "growing" while it's opening, looking awkward.
   [[self window] setFrame:windowFrame
                   display:YES
                   animate:[[self window] isVisible]];
+
+  NSPoint anchorPoint =
+      [self anchorPointForWindowWithHeight:NSHeight(windowFrame)
+                              parentWindow:[self parentWindow]];
+  [self setAnchorPoint:anchorPoint];
 }
 
 // Creates the button with a given |frame| that, when clicked, will show the
@@ -393,6 +387,23 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
   [spacer setAlphaValue:0.2];
   [subviews addObject:spacer.get()];
   return kVerticalSpacing;
+}
+
+// Takes in the bubble's height and the parent window, which should be a
+// BrowserWindow, and gets the proper anchor point for the bubble. The returned
+// point is in screen coordinates.
+- (NSPoint)anchorPointForWindowWithHeight:(CGFloat)bubbleHeight
+                             parentWindow:(NSWindow*)parent {
+  BrowserWindowController* controller = [parent windowController];
+  NSPoint origin = NSZeroPoint;
+  if ([controller isKindOfClass:[BrowserWindowController class]]) {
+    LocationBarViewMac* locationBar = [controller locationBarBridge];
+    if (locationBar) {
+      NSPoint bubblePoint = locationBar->GetPageInfoBubblePoint();
+      origin = [parent convertBaseToScreen:bubblePoint];
+    }
+  }
+  return origin;
 }
 
 @end

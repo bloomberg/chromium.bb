@@ -12,9 +12,14 @@
 #import "chrome/browser/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
 
+@interface BaseBubbleController (Private)
+- (void)updateOriginFromAnchor;
+@end
+
 @implementation BaseBubbleController
 
 @synthesize parentWindow = parentWindow_;
+@synthesize anchorPoint = anchor_;
 @synthesize bubble = bubble_;
 
 - (id)initWithWindowNibPath:(NSString*)nibPath
@@ -92,6 +97,11 @@
   [super dealloc];
 }
 
+- (void)setAnchorPoint:(NSPoint)anchor {
+  anchor_ = anchor;
+  [self updateOriginFromAnchor];
+}
+
 - (void)parentWindowWillClose:(NSNotification*)notification {
   [self close];
 }
@@ -110,16 +120,7 @@
 // showWindow:. Thus, we have our own version.
 - (void)showWindow:(id)sender {
   NSWindow* window = [self window];  // completes nib load
-
-  NSPoint origin = anchor_;
-  NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
-                              info_bubble::kBubbleArrowWidth / 2.0, 0);
-  offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
-  origin.x += offsets.width;
-  if ([bubble_ arrowLocation] == info_bubble::kTopRight)
-    origin.x -= NSWidth([window frame]);
-  origin.y -= NSHeight([window frame]);
-  [window setFrameOrigin:origin];
+  [self updateOriginFromAnchor];
   [parentWindow_ addChildWindow:window ordered:NSWindowAbove];
   [window makeKeyAndOrderFront:self];
 }
@@ -148,4 +149,21 @@
   // undone. That's ok.
   [self close];
 }
+
+// Takes the |anchor_| point and adjusts the window's origin accordingly.
+- (void)updateOriginFromAnchor {
+  NSWindow* window = [self window];
+  NSPoint origin = anchor_;
+  NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
+                              info_bubble::kBubbleArrowWidth / 2.0, 0);
+  offsets = [[parentWindow_ contentView] convertSize:offsets toView:nil];
+  if ([bubble_ arrowLocation] == info_bubble::kTopRight) {
+    origin.x -= NSWidth([window frame]) + offsets.width;
+  } else {
+    origin.x -= offsets.width;
+  }
+  origin.y -= NSHeight([window frame]);
+  [window setFrameOrigin:origin];
+}
+
 @end  // BaseBubbleController
