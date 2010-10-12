@@ -15,9 +15,14 @@ var MNEMONIC_REGEXP = /([^&]*)&(.)(.*)/;
 
 /**
  * Sends 'activate' DOMUI message.
+ * @param {number} index The index of menu item to activate in menu model.
+ * @param {string} mode The activation mode, one of 'close_and_activate', or
+ *    'activate_no_close'.
+ * TODO(oshima): change these string to enum numbers once it becomes possible
+ * to pass number to C++.
  */
-function sendActivate(index) {
-  chrome.send('activate', [String(index), 'close_and_activate']);
+function sendActivate(index, mode) {
+  chrome.send('activate', [String(index), mode]);
 }
 
 /**
@@ -42,9 +47,11 @@ MenuItem.prototype = {
    * @param {Object} attrs JSON object that represents this menu items
    *    properties.  This is created from menu model in C code.  See
    *    chromeos/views/native_menu_domui.cc.
-   * @param {number} leftIconWidth The left icon's width. 0 if no icon.
+   * @param {Object} model The model object.
    */
-  init: function(menu, attrs, leftIconWidth) {
+  init: function(menu, attrs, model) {
+    // The left icon's width. 0 if no icon.
+    var leftIconWidth = model.maxIconWidth;
     this.menu_ = menu;
     this.attrs = attrs;
     var attrs = this.attrs;
@@ -54,24 +61,27 @@ MenuItem.prototype = {
                attrs.type == 'submenu' ||
                attrs.type == 'check' ||
                attrs.type == 'radio') {
-      this.initMenuItem_(leftIconWidth);
+      this.initMenuItem_();
+      this.initPadding_(leftIconWidth);
     } else {
+      // This should not happend.
       this.classList.add('disabled');
       this.textContent = 'unknown';
     }
-    this.classList.add(leftIconWidth ? 'has-icon' : 'no-icon');
 
-    if (attrs.visible) {
-      menu.appendChild(this);
+    menu.appendChild(this);
+    if (!attrs.visible) {
+      this.classList.add('hidden');
     }
   },
 
   /**
    * Changes the selection state of the menu item.
-   * @param {boolean} b True to set the selection, or false otherwise.
+   * @param {boolean} selected True to set the selection, or false
+   *     otherwise.
    */
-  set selected(b) {
-    if (b) {
+  set selected(selected) {
+    if (selected) {
       this.classList.add('selected');
       this.menu_.selectedItem = this;
     } else {
@@ -87,7 +97,8 @@ MenuItem.prototype = {
       this.menu_.openSubmenu(this);
     } else if (this.attrs.type != 'separator' &&
                this.className.indexOf('selected') >= 0) {
-      sendActivate(this.menu_.getMenuItemIndexOf(this));
+      sendActivate(this.menu_.getMenuItemIndexOf(this),
+                   'close_and_activate');
     }
   },
 
@@ -104,55 +115,29 @@ MenuItem.prototype = {
    * Internal method to initiailze the MenuItem.
    * @private
    */
-  initMenuItem_: function(leftIconWidth) {
+  initMenuItem_: function() {
     var attrs = this.attrs;
     this.className = 'menu-item ' + attrs.type;
-    this.menu_.addHandlers(this);
-    var mnemonic = MNEMONIC_REGEXP.exec(attrs.label);
-    if (mnemonic) {
-       var c = mnemonic[2];
-       this.menu_.registerMnemonicKey(c, this);
-    }
-    if (leftIconWidth > 0) {
-      this.classList.add('left-icon');
-
-      var url;
-      if (attrs.type == 'radio') {
-        url = attrs.checked ?
-            this.menu_.config_.radioOnUrl :
-            this.menu_.config_.radioOffUrl;
-      } else if (attrs.icon) {
-        url = attrs.icon;
-      } else if (attrs.type == 'check' && attrs.checked) {
-        url = this.menu_.config_.checkUrl;
-      }
-      if (url) {
-        this.style.backgroundImage = 'url(' + url + ')';
-      }
-      // TODO(oshima): figure out how to update left padding in rule.
-      // 4 is the padding on left side of icon.
-      var padding =
-          4 + leftIconWidth + this.menu_.config_.icon_to_label_padding;
-      this.style.paddingLeft = padding + 'px';
-    }
+    this.menu_.addHandlers(this, this);
     var label = document.createElement('div');
 
     label.className = 'menu-label';
-
-    if (!mnemonic) {
-      label.textContent = attrs.label;
-    } else {
-      label.appendChild(document.createTextNode(mnemonic[1]));
-      label.appendChild(document.createElement('span'));
-      label.appendChild(document.createTextNode(mnemonic[3]));
-      label.childNodes[1].className = 'mnemonic';
-      label.childNodes[1].textContent = mnemonic[2];
-    }
+    this.menu_.addLabelTo(this, attrs.label, label,
+                          true /* enable mnemonic */);
 
     if (attrs.font) {
       label.style.font = attrs.font;
     }
     this.appendChild(label);
+
+
+    if (attrs.accel) {
+      var accel = document.createElement('div');
+      accel.className = 'accelerator';
+      accel.textContent = attrs.accel;
+      accel.style.font = attrs.font;
+      this.appendChild(accel);
+    }
 
     if (attrs.type == 'submenu') {
       // This overrides left-icon's position, but it's OK as submenu
@@ -160,6 +145,34 @@ MenuItem.prototype = {
       this.classList.add('right-icon');
       this.style.backgroundImage = 'url(' + this.menu_.config_.arrowUrl + ')';
     }
+  },
+
+  initPadding_: function(leftIconWidth) {
+    if (leftIconWidth <= 0) {
+      this.classList.add('no-icon');
+      return;
+    }
+    this.classList.add('left-icon');
+
+    var url;
+    var attrs = this.attrs;
+    if (attrs.type == 'radio') {
+      url = attrs.checked ?
+          this.menu_.config_.radioOnUrl :
+          this.menu_.config_.radioOffUrl;
+    } else if (attrs.icon) {
+      url = attrs.icon;
+    } else if (attrs.type == 'check' && attrs.checked) {
+      url = this.menu_.config_.checkUrl;
+    }
+    if (url) {
+      this.style.backgroundImage = 'url(' + url + ')';
+    }
+    // TODO(oshima): figure out how to update left padding in rule.
+    // 4 is the padding on left side of icon.
+    var padding =
+        4 + leftIconWidth + this.menu_.config_.icon_to_label_padding;
+    this.style.WebkitPaddingStart = padding + 'px';
   },
 };
 
@@ -274,6 +287,37 @@ Menu.prototype = {
   },
 
   /**
+   * Adds a label to {@code targetDiv}. A label may contain
+   * mnemonic key, preceded by '&'.
+   * @param {MenuItem} item The menu item to be activated by mnemonic
+   *    key.
+   * @param {string} label The label string to be added to
+   *    {@code targetDiv}.
+   * @param {HTMLElement} div The div element the label is added to.
+   * @param {boolean} enableMnemonic True to enable mnemonic, or false
+   *    to not to interprete mnemonic key. The function removes '&'
+   *    from the label in both cases.
+   */
+  addLabelTo: function(item, label, targetDiv, enableMnemonic) {
+    var mnemonic = MNEMONIC_REGEXP.exec(label);
+    if (mnemonic && enableMnemonic) {
+      var c = mnemonic[2].toLowerCase();
+      this.mnemonics_[c] = item;
+    }
+    if (!mnemonic) {
+      targetDiv.textContent = label;
+    } else if (enableMnemonic) {
+      targetDiv.appendChild(document.createTextNode(mnemonic[1]));
+      targetDiv.appendChild(document.createElement('span'));
+      targetDiv.appendChild(document.createTextNode(mnemonic[3]));
+      targetDiv.childNodes[1].className = 'mnemonic';
+      targetDiv.childNodes[1].textContent = mnemonic[2];
+    } else {
+      targetDiv.textContent = mnemonic.splice(1, 3).join('');
+    }
+  },
+
+  /**
    * Returns the index of the {@code item}.
    */
   getMenuItemIndexOf: function(item) {
@@ -281,10 +325,12 @@ Menu.prototype = {
   },
 
   /**
-   * A template method to create MenuItem object.
-   * Subclass class can override to return custom menu item.
+   * A template method to create an item object. It can be a subclass
+   * of MenuItem, or any HTMLElement that implements {@code init},
+   * {@code activate} methods as well as {@code selected} attribute.
+   * @param {Object} attrs The menu item's properties passed from C++.
    */
-  createMenuItem: function() {
+  createMenuItem: function(attrs) {
     return new MenuItem();
   },
 
@@ -301,7 +347,7 @@ Menu.prototype = {
     for (var i = 0; i < model.items.length; i++) {
       var attrs = model.items[i];
       var item = this.createMenuItem(attrs);
-      item.init(this, attrs, model.maxIconWidth);
+      item.init(this, attrs, model);
       this.items_.push(item);
     }
     this.onResize_();
@@ -320,28 +366,19 @@ Menu.prototype = {
   },
 
   /**
-   * Registers mnemonic key.
-   * @param {string} c A mnemonic key to activate item.
-   * @param {MenuItem} item An item to be activated when {@code c} is pressed.
-   */
-  registerMnemonicKey: function(c, item) {
-    this.mnemonics_[c.toLowerCase()] = item;
-  },
-
-  /**
    * Add event handlers for the item.
    */
-  addHandlers: function(item) {
+  addHandlers: function(item, target) {
     var menu = this;
-    item.addEventListener('mouseover', function(event) {
+    target.addEventListener('mouseover', function(event) {
       menu.onMouseover_(event, item);
     });
     if (item.attrs.enabled) {
-      item.addEventListener('mouseup', function(event) {
+      target.addEventListener('mouseup', function(event) {
         menu.onClick_(event, item);
       });
     } else {
-      item.classList.add('disabled');
+      target.classList.add('disabled');
     }
   },
 
@@ -395,7 +432,7 @@ Menu.prototype = {
   /**
    * Open submenu {@code item}. It does nothing if the submenu is
    * already opened.
-   * @param {MenuItem} item the submenu item to open.
+   * @param {MenuItem} item The submenu item to open.
    */
   openSubmenu: function(item) {
     this.cancelSubmenuTimer_();
@@ -462,8 +499,10 @@ Menu.prototype = {
     // Handles mnemonic.
     var c = String.fromCharCode(event.keyCode);
     var item = this.mnemonics_[c.toLowerCase()];
-    if (item)
+    if (item) {
+      item.selected = true;
       item.activate();
+    }
   },
 
   // Mouse Event handlers
@@ -556,7 +595,7 @@ Menu.prototype = {
    * Find a next selectable item. If nothing is selected, the 1st
    * selectable item will be chosen. Returns null if nothing is
    * selectable.
-   * @param {number} incr specifies the direction to search, 1 to
+   * @param {number} incr Specifies the direction to search, 1 to
    * downwards and -1 for upwards.
    * @private
    */
@@ -571,7 +610,8 @@ Menu.prototype = {
     for (var i = 0; i < len; i++) {
       index = (index + incr + len) % len;
       var item = this.items_[index];
-      if (item.attrs.enabled && item.attrs.type != 'separator')
+      if (item.attrs.enabled && item.attrs.type != 'separator' &&
+          !item.classList.contains('hidden'))
         return item;
     }
     return null;
@@ -582,32 +622,26 @@ Menu.prototype = {
    * @private
    */
   cancelSubmenuTimer_: function() {
-    if (this.openSubmenuTimer_) {
-      clearTimeout(this.openSubmenuTimer_);
-      this.openSubmenuTimer_ = 0;
-    }
-    if (this.closeSubmenuTimer_) {
-      clearTimeout(this.closeSubmenuTimer_);
-      this.closeSubmenuTimer_ = 0;
-    }
+    clearTimeout(this.openSubmenuTimer_);
+    this.openSubmenuTimer_ = 0;
+    clearTimeout(this.closeSubmenuTimer_);
+    this.closeSubmenuTimer_ = 0;
   },
 
   /**
    * Starts auto scroll.
-   * @param {number} tick the number of pixels to scroll.
+   * @param {number} tick The number of pixels to scroll.
    * @private
    */
   autoScroll_: function(tick) {
     var previous = this.scrollTop;
     this.scrollTop += tick;
-    if (this.scrollTop != previous) {
-      var menu = this;
-      this.scrollTimer_ = setTimeout(
-          function() {
-            menu.autoScroll_(tick);
-          },
-          SCROLL_INTERVAL_MS);
-    }
+    var menu = this;
+    this.scrollTimer_ = setTimeout(
+        function() {
+          menu.autoScroll_(tick);
+        },
+        SCROLL_INTERVAL_MS);
   },
 
   /**
@@ -615,10 +649,8 @@ Menu.prototype = {
    * @private
    */
   stopScroll_: function () {
-    if (this.scrollTimer_) {
-      clearTimeout(this.scrollTimer_);
-      this.scrollTimer_ = 0;
-    }
+    clearTimeout(this.scrollTimer_);
+    this.scrollTimer_ = 0;
   },
 
   /**

@@ -76,6 +76,7 @@ without changes to the corresponding grd file. eter -->
         <include name="IDR_TALK_APP_MANIFEST" file="resources\chat_manager\manifest.json" type="BINDATA" />
         <include name="IDR_MENU_HTML" file="resources\menu.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_WRENCH_MENU_JS" file="resources\wrench_menu.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_WRENCH_MENU_CSS" file="resources\wrench_menu.css" flattenhtml="true" type="BINDATA" />
       </if>
     </includes>
   </release>

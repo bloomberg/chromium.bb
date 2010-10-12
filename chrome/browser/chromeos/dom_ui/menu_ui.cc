@@ -32,6 +32,7 @@
 #include "gfx/font.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
+#include "views/accelerator.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/radio_button_image_gtk.h"
 #include "views/widget/widget_gtk.h"
@@ -39,7 +40,7 @@
 namespace {
 
 // a fake resource id for not loading extra resource.
-const int kNoExtraSource = -1;
+const int kNoExtraResource = -1;
 
 // A utility function that generates css font property from gfx::Font.
 std::wstring GetFontShorthand(const gfx::Font* font) {
@@ -119,12 +120,16 @@ const std::string& GetImageDataUrlForRadio(bool on) {
  * Generates a html file that uses |menu_class| as a menu implementation.
  * |menu_source_id| specifies the source that contains the definition of the
  * |menu_class|, or empty string to use plain "Menu".
+ *
+ * TODO(oshima): make this template to avoid repeatedly loading the
+ * same source/css files.
  */
 std::string GetMenuUIHTMLSourceFromString(
     const chromeos::MenuUI& menu_ui,
     const base::StringPiece& menu_template,
     const std::string& menu_class,
-    int menu_source_id) {
+    int menu_source_id,
+    int menu_css_id) {
 #define SET_INTEGER_PROPERTY(prop) \
   value_config.SetInteger(#prop, menu_config.prop)
 
@@ -177,12 +182,19 @@ std::string GetMenuUIHTMLSourceFromString(
       menu_class + ".decorate(document.getElementById('viewport'));" +
       " init(" + json_config + ");");
 
-  if (menu_source_id == kNoExtraSource) {
+  if (menu_source_id == kNoExtraResource) {
     strings.SetString("menu_source", "");
   } else {
     base::StringPiece menu_source(
         ResourceBundle::GetSharedInstance().GetRawDataResource(menu_source_id));
     strings.SetString("menu_source", menu_source.as_string());
+  }
+  if (menu_css_id == kNoExtraResource) {
+    strings.SetString("menu_css", "");
+  } else {
+    base::StringPiece menu_css(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(menu_css_id));
+    strings.SetString("menu_css", menu_css.as_string());
   }
 
   return jstemplate_builder::GetI18nTemplateHtml(menu_template, &strings);
@@ -194,7 +206,8 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
   MenuUIHTMLSource(const chromeos::MenuUI& menu_ui,
                    const std::string& source_name,
                    const std::string& menu_class,
-                   int menu_source_id);
+                   int menu_source_id,
+                   int menu_css_id);
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -222,8 +235,12 @@ class MenuUIHTMLSource : public ChromeURLDataManager::DataSource,
   // The name of JS Menu class to use.
   const std::string menu_class_;
 
-  // The resource id of the file of the menu subclass.
+  // The resource id of the JS file of the menu subclass.
   int menu_source_id_;
+
+  // The resource id of the CSS file of the menu subclass.
+  int menu_css_id_;
+
 #ifndef NDEBUG
   int request_id_;
 #endif
@@ -301,11 +318,13 @@ class MenuHandler : public chromeos::MenuHandlerBase,
 MenuUIHTMLSource::MenuUIHTMLSource(const chromeos::MenuUI& menu_ui,
                                    const std::string& source_name,
                                    const std::string& menu_class,
-                                   int menu_source_id)
+                                   int menu_source_id,
+                                   int menu_css_id)
     : DataSource(source_name, MessageLoop::current()),
       menu_ui_(menu_ui),
       menu_class_(menu_class),
-      menu_source_id_(menu_source_id)
+      menu_source_id_(menu_source_id),
+      menu_css_id_(menu_css_id)
 #ifndef NDEBUG
     , request_id_(-1)
 #endif
@@ -334,7 +353,7 @@ void MenuUIHTMLSource::StartDataRequest(const std::string& path,
   // The resource string should be pure code and should not contain
   // i18n string.
   const std::string menu_html = GetMenuUIHTMLSourceFromString(
-      menu_ui_, menu_template, menu_class_, menu_source_id_);
+      menu_ui_, menu_template, menu_class_, menu_source_id_, menu_css_id_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -354,7 +373,7 @@ void MenuUIHTMLSource::OnURLFetchComplete(const URLFetcher* source,
 #ifndef NDEBUG
   // This should not be called in release build.
   const std::string menu_html = GetMenuUIHTMLSourceFromString(
-      menu_ui_, data, menu_class_, menu_source_id_);
+      menu_ui_, data, menu_class_, menu_source_id_, menu_css_id_);
 
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
 
@@ -588,27 +607,33 @@ void MenuUI::ModelUpdated(const menus::MenuModel* model) {
   ListValue* items = new ListValue();
   json_model.Set("items", items);
   int max_icon_width = 0;
+  bool has_accelerator = false;
   for (int index = 0; index < model->GetItemCount(); ++index) {
     menus::MenuModel::ItemType type = model->GetTypeAt(index);
     DictionaryValue* item;
     switch (type) {
       case menus::MenuModel::TYPE_SEPARATOR:
-        item = CreateMenuItem(model, index, "separator", &max_icon_width);
+        item = CreateMenuItem(model, index, "separator",
+                              &max_icon_width, &has_accelerator);
         break;
       case menus::MenuModel::TYPE_RADIO:
         max_icon_width = std::max(max_icon_width, 12);
-        item = CreateMenuItem(model, index, "radio", &max_icon_width);
+        item = CreateMenuItem(model, index, "radio",
+                              &max_icon_width, &has_accelerator);
         break;
       case menus::MenuModel::TYPE_SUBMENU:
-        item = CreateMenuItem(model, index, "submenu", &max_icon_width);
+        item = CreateMenuItem(model, index, "submenu",
+                              &max_icon_width, &has_accelerator);
         break;
       case menus::MenuModel::TYPE_COMMAND:
-        item = CreateMenuItem(model, index, "command", &max_icon_width);
+        item = CreateMenuItem(model, index, "command",
+                              &max_icon_width, &has_accelerator);
         break;
       case menus::MenuModel::TYPE_CHECK:
         // Add space even when unchecked.
         max_icon_width = std::max(max_icon_width, 12);
-        item = CreateMenuItem(model, index, "check", &max_icon_width);
+        item = CreateMenuItem(model, index, "check",
+                              &max_icon_width, &has_accelerator);
         break;
       default:
         // TODO(oshima): We don't support BUTTOM_ITEM for now.
@@ -626,13 +651,15 @@ void MenuUI::ModelUpdated(const menus::MenuModel* model) {
   DCHECK(widget);
   json_model.SetInteger("maxIconWidth", max_icon_width);
   json_model.SetBoolean("isRoot", widget->is_root());
+  json_model.SetBoolean("hasAccelerator", has_accelerator);
   CallJavascriptFunction(L"updateModel", json_model);
 }
 
 DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
                                         int index,
                                         const char* type,
-                                        int* max_icon_width) const {
+                                        int* max_icon_width,
+                                        bool* has_accel) const {
   // Note: DOM UI uses '&' as mnemonic.
   string16 label16 = model->GetLabelAt(index);
   DictionaryValue* item = new DictionaryValue();
@@ -650,6 +677,11 @@ DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
     item->SetString("icon", dom_ui_util::GetImageDataUrl(icon));
     *max_icon_width = std::max(*max_icon_width, icon.width());
   }
+  views::Accelerator menu_accelerator;
+  if (model->GetAcceleratorAt(index, &menu_accelerator)) {
+    item->SetString("accel", WideToUTF16(menu_accelerator.GetShortcutText()));
+    *has_accel = true;
+  }
   return item;
 }
 
@@ -657,15 +689,21 @@ ChromeURLDataManager::DataSource* MenuUI::CreateDataSource() {
   return CreateMenuUIHTMLSource(*this,
                                 chrome::kChromeUIMenu,
                                 "Menu" /* class name */,
-                                kNoExtraSource);
+                                kNoExtraResource,
+                                kNoExtraResource);
 }
 
 ChromeURLDataManager::DataSource* MenuUI::CreateMenuUIHTMLSource(
     const MenuUI& menu_ui,
     const std::string& source_name,
     const std::string& menu_class,
-    int menu_source_id) {
-  return new MenuUIHTMLSource(menu_ui, source_name, menu_class, menu_source_id);
+    int menu_source_id,
+    int menu_css_id) {
+  return new MenuUIHTMLSource(menu_ui,
+                              source_name,
+                              menu_class,
+                              menu_source_id,
+                              menu_css_id);
 }
 
 }  // namespace chromeos

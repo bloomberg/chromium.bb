@@ -22,7 +22,12 @@
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/views/wrench_menu.h"
+#else
+#include "views/controls/menu/menu_2.h"
+#include "chrome/browser/chromeos/dom_ui/wrench_menu_ui.h"
+#endif
 #include "chrome/browser/wrench_menu_model.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -257,18 +262,32 @@ bool ToolbarView::GetAcceleratorInfo(int id, menus::Accelerator* accel) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::MenuDelegate implementation:
 
-void ToolbarView::RunMenu(views::View* source, const gfx::Point& /*pt*/) {
+void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
   DCHECK_EQ(VIEW_ID_APP_MENU, source->GetID());
 
   bool destroyed_flag = false;
   destroyed_flag_ = &destroyed_flag;
+#if defined(OS_CHROMEOS)
+  wrench_menu_.reset(
+      chromeos::WrenchMenuUI::CreateMenu2(wrench_menu_model_.get()));
+#else
   wrench_menu_ = new WrenchMenu(browser_);
   wrench_menu_->Init(wrench_menu_model_.get());
+#endif
 
   for (size_t i = 0; i < menu_listeners_.size(); ++i)
     menu_listeners_[i]->OnMenuOpened();
 
+#if defined(OS_CHROMEOS)
+  gfx::Point screen_loc;
+  views::View::ConvertPointToScreen(app_menu_, &screen_loc);
+  gfx::Rect bounds(screen_loc, app_menu_->size());
+  // TODO(oshima): Support RTL.
+  wrench_menu_->RunMenuAt(gfx::Point(bounds.right(), bounds.bottom()),
+                          views::Menu2::ALIGN_TOPRIGHT);
+#else
   wrench_menu_->RunMenu(app_menu_);
+#endif
 
   if (destroyed_flag)
     return;

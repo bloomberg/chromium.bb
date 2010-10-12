@@ -27,7 +27,13 @@
 class BrowserActionsContainer;
 class Browser;
 class Profile;
+#if defined(OS_CHROMEOS)
+namespace views {
+class Menu2;
+}  // namespace views
+#else
 class WrenchMenu;
+#endif
 
 // The Browser Window's toolbar.
 class ToolbarView : public AccessibleToolbarView,
@@ -193,7 +199,11 @@ class ToolbarView : public AccessibleToolbarView,
   scoped_ptr<menus::SimpleMenuModel> wrench_menu_model_;
 
   // Wrench menu.
+#if defined(OS_CHROMEOS)
+  scoped_ptr<views::Menu2> wrench_menu_;
+#else
   scoped_refptr<WrenchMenu> wrench_menu_;
+#endif
 
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;

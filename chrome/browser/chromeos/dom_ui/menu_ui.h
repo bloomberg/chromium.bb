@@ -33,13 +33,14 @@ class MenuUI : public DOMUI {
   virtual DictionaryValue* CreateMenuItem(const menus::MenuModel* model,
                                           int index,
                                           const char* type,
-                                          int* max_icon_width) const;
+                                          int* max_icon_width,
+                                          bool* has_accel) const;
 
   // Subclass can add extra parameters or replaces default configuration.
   virtual void AddCustomConfigValues(DictionaryValue* config) const {};
 
   // A utility function which creates a concrete html file from
-  // template file |menu_resource_id| for given |menu_class|.
+  // template file |menu_resource_id| and |menu_css_id| for given |menu_class|.
   // The resource_name is the host part of DOMUI's url.
   // Caution: This calls MenuUI::GetProfile() when creating the data source,
   // thus, it has to be initialized.
@@ -47,7 +48,8 @@ class MenuUI : public DOMUI {
       const MenuUI& menu_ui,
       const std::string& source_name,
       const std::string& menu_class,
-      int menu_source_res_id);
+      int menu_source_res_id,
+      int menu_css_res_id);
 
  protected:
   // A constructor for subclass to initialize the MenuUI with

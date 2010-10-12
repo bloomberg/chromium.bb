@@ -10,10 +10,13 @@ body {
 .menu-item {
   white-space: nowrap;
   margin: 0;
-  padding-top: 0;
-  padding-bottom: 0;
+  padding-top: 1px;
+  padding-bottom: 1px;
   background-repeat: no-repeat;
   -webkit-padding-end: 19px;
+  display: -webkit-box;
+  -webkit-box-orient: horizontal;
+  overflow: hidden;
 }
 
 .disabled {
@@ -25,8 +28,13 @@ body {
 }
 
 .menu-label {
-  display: inline-block;
+  -webkit-box-flex: 1;
   vertical-align: middle;
+}
+
+.accelerator { 
+  opacity: 0.3;
+  -webkit-margin-start: 15px;
 }
 
 .left-icon {

@@ -7,6 +7,12 @@
 #pragma once
 
 #include "chrome/browser/chromeos/dom_ui/menu_ui.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_type.h"
+
+class NotificationSource;
+class NotificationDetails;
 
 namespace views {
 class Menu2;
@@ -18,17 +24,29 @@ class MenuModel;
 
 namespace chromeos {
 
-class WrenchMenuUI : public MenuUI {
+class WrenchMenuUI : public MenuUI,
+                     public NotificationObserver {
  public:
   explicit WrenchMenuUI(TabContents* contents);
 
   // MenuUI overrides:
+  virtual void ModelUpdated(const menus::MenuModel* new_model);
   virtual void AddCustomConfigValues(DictionaryValue* config) const;
+
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // Updates zoom controls to reflect the current zooming state.
+  void UpdateZoomControls();
 
   // A convenient factory method to create Menu2 for wrench menu.
   static views::Menu2* CreateMenu2(menus::MenuModel* model);
 
  private:
+  NotificationRegistrar registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuUI);
 };
 
