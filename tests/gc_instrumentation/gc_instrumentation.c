@@ -54,7 +54,7 @@ unsigned int num_errors = 0;
 #define CHECK_SYSCALL_PRE()                              \
   do {                                                   \
     local_pre_call_count = nacl_pre_calls;               \
-    local_post_call_count = nacl_pre_calls;              \
+    local_post_call_count = nacl_post_calls;             \
   } while (0)
 
 #define CHECK_SYSCALL_WRAPPED()                          \
