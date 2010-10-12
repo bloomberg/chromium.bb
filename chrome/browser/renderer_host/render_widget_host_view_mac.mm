@@ -6,7 +6,6 @@
 
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
-#include "chrome/browser/chrome_thread.h"
 #include "app/app_switches.h"
 #include "app/surface/io_surface_support_mac.h"
 #import "base/chrome_application_mac.h"
@@ -17,6 +16,7 @@
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/cocoa/rwhvm_editcommand_helper.h"
 #import "chrome/browser/cocoa/view_id_util.h"

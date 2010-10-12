@@ -7,7 +7,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/sync_socket.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"

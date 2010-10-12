@@ -4,7 +4,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/dummy_pref_store.h"
 #include "chrome/browser/prefs/pref_value_store.h"

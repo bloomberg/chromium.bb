@@ -76,7 +76,7 @@
 #include "base/timer.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/process_singleton_dialog.h"
 #endif

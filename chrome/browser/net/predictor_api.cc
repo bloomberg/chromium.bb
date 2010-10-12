@@ -16,7 +16,7 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/preconnect.h"
 #include "chrome/browser/net/referrer.h"

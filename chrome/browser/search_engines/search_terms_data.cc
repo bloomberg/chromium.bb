@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "googleurl/src/gurl.h"
 

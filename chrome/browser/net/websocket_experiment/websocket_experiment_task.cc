@@ -6,7 +6,7 @@
 
 #include "base/hash_tables.h"
 #include "base/histogram.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/host_resolver.h"

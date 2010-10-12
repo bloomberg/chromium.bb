@@ -8,7 +8,7 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/search_provider_install_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"

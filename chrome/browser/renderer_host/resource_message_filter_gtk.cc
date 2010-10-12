@@ -12,7 +12,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/printing/print_dialog_gtk.h"
 #else

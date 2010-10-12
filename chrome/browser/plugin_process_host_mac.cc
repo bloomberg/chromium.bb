@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/mac_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/common/plugin_messages.h"
 #include "gfx/rect.h"

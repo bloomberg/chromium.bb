@@ -7,7 +7,7 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/thread.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"

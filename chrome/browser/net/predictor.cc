@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/preconnect.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"

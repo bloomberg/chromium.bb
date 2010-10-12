@@ -4,9 +4,9 @@
 
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"

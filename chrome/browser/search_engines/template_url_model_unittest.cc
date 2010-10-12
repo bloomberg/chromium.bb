@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "base/ref_counted.h"
 #include "base/thread.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"

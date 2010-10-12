@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/password_store_change.h"
 #include "chrome/common/notification_service.h"
 

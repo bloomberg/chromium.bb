@@ -12,7 +12,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/json_value_serializer.h"
 
 namespace policy {

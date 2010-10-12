@@ -6,7 +6,7 @@
 
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/service/service_process_control.h"
 

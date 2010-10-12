@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_status.h"

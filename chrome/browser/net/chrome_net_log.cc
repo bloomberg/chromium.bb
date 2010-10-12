@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/net/net_log_logger.h"
 #include "chrome/browser/net/passive_log_collector.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "gfx/rect.h"

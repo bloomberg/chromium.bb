@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_network_session.h"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 #include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"

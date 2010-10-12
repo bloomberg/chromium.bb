@@ -13,7 +13,7 @@
 #include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

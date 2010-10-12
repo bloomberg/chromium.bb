@@ -15,7 +15,7 @@
 
 #include <string>
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 namespace net {
 class IOBuffer;

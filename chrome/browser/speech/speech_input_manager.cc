@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
 #include "chrome/browser/speech/speech_recognizer.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"

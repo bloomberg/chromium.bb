@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 
 class TemplateURLModel;

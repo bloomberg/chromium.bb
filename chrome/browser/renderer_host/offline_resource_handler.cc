@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/network_state_notifier.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/chromeos/offline/offline_load_service.h"

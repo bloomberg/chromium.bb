@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/string_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_errors.h"

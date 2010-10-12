@@ -9,9 +9,9 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/browser/chrome_thread.h"
 
 std::string ShellIntegration::GetCommandLineArgumentsCommon(const GURL& url,
     const string16& extension_app_id) {

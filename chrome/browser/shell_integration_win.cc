@@ -19,7 +19,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

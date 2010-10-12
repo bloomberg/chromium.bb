@@ -13,7 +13,7 @@
 #include "base/stl_util-inl.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/password_form_data.h"
 #include "chrome/browser/password_manager/password_store_win.h"
 #include "chrome/browser/password_manager/ie7_password.h"

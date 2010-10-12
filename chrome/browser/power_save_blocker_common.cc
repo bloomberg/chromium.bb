@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/power_save_blocker.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 // Accessed only from the UI thread.
 int PowerSaveBlocker::blocker_count_ = 0;

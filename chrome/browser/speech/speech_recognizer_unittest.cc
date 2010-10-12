@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/speech/speech_recognizer.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "media/audio/test_audio_input_controller_factory.h"

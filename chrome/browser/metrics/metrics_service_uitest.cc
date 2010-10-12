@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_constants.h"

@@ -16,7 +16,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/thread.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
 using base::Time;

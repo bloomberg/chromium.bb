@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/format_macros.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "net/url_request/url_request_netlog_params.h"
 
 namespace {
