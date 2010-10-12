@@ -4,6 +4,10 @@
  * be found in the LICENSE file.
  */
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 /*
  * nacl_cpuid_test.c
  * test main and subroutines for nacl_cpuid

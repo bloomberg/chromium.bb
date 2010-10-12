@@ -19,6 +19,10 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_READ_SEGMENT_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_READ_SEGMENT_H_
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include <stdio.h>
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"

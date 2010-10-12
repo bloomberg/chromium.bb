@@ -15,7 +15,6 @@
 #include "native_client/src/trusted/validator_x86/nc_memory_protect.h"
 #include "native_client/src/trusted/validator_x86/nc_protect_base.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
-#include "native_client/src/trusted/validator_x86/ncval_driver.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 

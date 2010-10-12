@@ -8,6 +8,12 @@
  * ncdis.c - disassemble using NaCl decoder.
  * Mostly for testing.
  */
+
+
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>

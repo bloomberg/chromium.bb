@@ -11,6 +11,10 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_DRIVER_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCVAL_DRIVER_H__
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/trusted/validator_x86/types_memory_model.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_kind.h"

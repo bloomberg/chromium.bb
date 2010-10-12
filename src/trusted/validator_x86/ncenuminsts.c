@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#ifndef NACL_TRUSTED_TEST_ENV
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
 #error("This file is not meant for use in the TCB")
 #endif
 

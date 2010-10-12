@@ -14,6 +14,10 @@
  * in table A-1 cited above.
  */
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_st.h"

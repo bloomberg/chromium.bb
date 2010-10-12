@@ -19,6 +19,12 @@
  * (2) "Intel 80386 Reference Programmer's Manual" (document
  * http://pdos.csail.mit.edu/6.828/2004/readings/i386/toc.htm).
  */
+
+
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include <stdlib.h>

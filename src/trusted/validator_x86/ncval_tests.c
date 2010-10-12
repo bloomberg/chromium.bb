@@ -7,6 +7,11 @@
 /*
  * ncval_tests.c - simple unit tests for NaCl validator
  */
+
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include "native_client/src/include/portability.h"
 #include <assert.h>
 #include <stdarg.h>

@@ -53,7 +53,6 @@
           'nc_inst_state.c',
           'nc_inst_trans.c',
           'ncop_exps.c',
-          'nc_read_segment.c',
           'ncvalidate.c',
           'nccopycode.c',
           'nccopycode_stores.S',
@@ -103,7 +102,6 @@
                      'nc_memory_protect.c',
                      'ncvalidate_utils.c',
                      'nc_jumps.c',
-                     'ncval_driver.c'
          ],
         'cflags!': [
           '-Wextra',
@@ -209,6 +207,7 @@
         '-Wswitch-enum',
         '-Wsign-compare',
       ],
+      'defines': [ 'NACL_TRUSTED_BUT_NOT_TCB' ],
       'xcode_settings': {
         'WARNING_CFLAGS!': [
           '-Wextra',
@@ -395,6 +394,7 @@
         '-Wswitch-enum',
         '-Wsign-compare'
       ],
+      'defines': [ 'NACL_TRUSTED_BUT_NOT_TCB' ],
       'xcode_settings': {
         'WARNING_CFLAGS!': [
           '-Wextra',
@@ -466,6 +466,7 @@
       'dependencies': ['ncvalidate_gen' ],
       'sources': [ 'ncdis_util.c', 
                    'ncdis_segments.c',
+		   'nc_read_segment.c',
 		   'ncenuminsts.c'
                  ],
       'cflags!': [
@@ -473,7 +474,7 @@
         '-Wswitch-enum',
         '-Wsign-compare'
       ],
-      'defines': [ 'NACL_TRUSTED_TEST_ENV' ],
+      'defines': [ 'NACL_TRUSTED_BUT_NOT_TCB' ],
       'xcode_settings': {
         'WARNING_CFLAGS!': [
           '-Wextra',
@@ -490,6 +491,7 @@
         'ncdis.c',
         'force_cpp.cc'
       ],
+      'defines': [ 'NACL_TRUSTED_BUT_NOT_TCB' ],
       'dependencies': [
         'ncdis_util',
         'nchelper',

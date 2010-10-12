@@ -46,11 +46,11 @@ env.ComponentLibrary('nchelper', ['ncfileutil.c'])
 if env['TARGET_ARCHITECTURE'] != 'x86':
   Return()
 
-# Create environment for testing, rather than part of the TCB. Then
-# define compile-time flag that communicates that we are compiling
-# in the test environment (rather than for the TCB).
+# Create environment for command-line tools and testing, rather than
+# part of the TCB. Then define compile-time flag that communicates
+# that we are compiling in the test environment (rather than for the TCB).
 test_env = env.Clone();
-test_env.Append(CCFLAGS=['-DNACL_TRUSTED_TEST_ENV'])
+test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB'])
 
 # Define where generated code should be put.
 ncv_gen_basedir = '${TARGET_ROOT}'
@@ -103,7 +103,7 @@ if env.AllBits('windows', 'debug'):
     crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
 
 # Isolate the environment for ncdecode_table to prevent a cycle.
-env_decode_table = env.Clone()
+env_decode_table = test_env.Clone()
 # TODO: This should be handled more cleanly, by just building
 #   Testing type programs for coverage. But for the moment, we need sel_ldr
 #   and others to have coverage, so it's easier to gate it off here.
@@ -147,7 +147,6 @@ NCVALIDATE_SOURCES = ['nacl_cpuid.c',
                                     'nc_inst_state.c',
                                     'nc_inst_trans.c',
                                     'ncop_exps.c',
-                                    'nc_read_segment.c',
                                     'ncvalidate.c',
                                     'nccopycode.c',
                                     'nccopycode_stores.S'
@@ -167,12 +166,12 @@ env.ComponentLibrary('ncvalidate_sfi',
                       'nc_protect_base.c',
                       'nc_memory_protect.c',
                       'ncvalidate_utils.c',
-                      'nc_jumps.c',
-                      'ncval_driver.c'])
+                      'nc_jumps.c'])
 
 test_env.ComponentLibrary('ncdis_util',
                           ['ncdis_util.c',
                            'ncdis_segments.c',
+                           'nc_read_segment.c',
                            'ncenuminsts.c'])
 
 #------------------------------------------------------------------
@@ -365,6 +364,7 @@ test_env.AddNodeToTestSuite(ncdis_internal_test,
 ncval = test_env.ComponentProgram(
   'ncval', [
     'ncval.c',
+    'ncval_driver.c',
     force_cpp,
   ],
   EXTRA_LIBS=[

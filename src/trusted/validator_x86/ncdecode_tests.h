@@ -4,6 +4,9 @@
  * be found in the LICENSE file.
  */
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
 
 char test1[] = {0x55,
 		0x89, 0xe5,

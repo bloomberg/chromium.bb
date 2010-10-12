@@ -7,6 +7,11 @@
 /*
  * ncdecode_tests.c - simple unit tests for NaCl decoder
  */
+
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include <stdio.h>
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 

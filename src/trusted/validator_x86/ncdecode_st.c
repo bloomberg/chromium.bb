@@ -9,6 +9,10 @@
  * Note: We use linear lists
  */
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>

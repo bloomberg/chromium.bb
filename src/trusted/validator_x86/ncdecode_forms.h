@@ -11,6 +11,10 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_FORMS_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_FORMS_H__
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include "native_client/src/trusted/validator_x86/ncopcode_desc.h"
 
 struct NaClSymbolTable;

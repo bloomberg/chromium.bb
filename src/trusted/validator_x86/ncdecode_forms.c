@@ -8,6 +8,10 @@
  * a more concise way of specifying opcodes.
  */
 
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB")
+#endif
+
 #include <assert.h>
 #include <ctype.h>
 
