@@ -27,8 +27,12 @@
 
 - (void)showPreview:(TabContents*)preview {
   DCHECK(preview);
-  previewContents_ = preview;
 
+  // Remove any old preview contents before showing the new one.
+  if (previewContents_)
+    [previewContents_->GetNativeView() removeFromSuperview];
+
+  previewContents_ = preview;
   NSView* previewView = previewContents_->GetNativeView();
   [previewView setFrame:[[self view] bounds]];
 

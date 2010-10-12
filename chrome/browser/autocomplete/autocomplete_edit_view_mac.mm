@@ -429,6 +429,9 @@ void AutocompleteEditViewMac::UpdatePopup() {
 }
 
 void AutocompleteEditViewMac::ClosePopup() {
+  if (popup_view_->GetModel()->IsOpen())
+    controller_->OnAutocompleteWillClosePopup();
+
   popup_view_->GetModel()->StopAutocomplete();
 }
 
@@ -762,6 +765,7 @@ void AutocompleteEditViewMac::OnSetFocus(bool control_down) {
 
 void AutocompleteEditViewMac::OnKillFocus() {
   // Tell the model to reset itself.
+  controller_->OnAutocompleteLosingFocus(NULL);
   model_->OnKillFocus();
   controller_->OnKillFocus();
 }

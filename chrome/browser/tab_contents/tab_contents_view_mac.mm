@@ -80,6 +80,7 @@ TabContentsViewMac::~TabContentsViewMac() {
 void TabContentsViewMac::CreateView(const gfx::Size& initial_size) {
   TabContentsViewCocoa* view =
       [[TabContentsViewCocoa alloc] initWithTabContentsViewMac:this];
+  [view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
   cocoa_view_.reset(view);
 }
 

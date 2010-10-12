@@ -261,6 +261,10 @@ class TabContents;
 // browser.
 - (void)toggleTabStripDisplayMode;
 
+// Shows or hides the Instant preview contents.
+- (void)showInstant:(TabContents*)previewContents;
+- (void)hideInstant;
+
 // Called when the Add Search Engine dialog is closed.
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)code

@@ -450,7 +450,9 @@ willPositionSheet:(NSWindow*)sheet
 - (BOOL)shouldShowDetachedBookmarkBar {
   DCHECK(browser_.get());
   TabContents* contents = browser_->GetSelectedTabContents();
-  return (contents && contents->ShouldShowBookmarkBar()) ? YES : NO;
+  return (contents &&
+          contents->ShouldShowBookmarkBar() &&
+          ![previewableContentsController_ isShowingPreview]);
 }
 
 - (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression {

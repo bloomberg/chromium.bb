@@ -15,6 +15,7 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
+#import "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/content_setting_bubble_cocoa.h"
 #include "chrome/browser/cocoa/event_utils.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/location_bar_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -82,6 +84,7 @@ LocationBarViewMac::LocationBarViewMac(
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
+      update_instant_(true),
       transition_(PageTransition::TYPED),
       first_run_bubble_(this) {
   for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
@@ -125,8 +128,7 @@ std::wstring LocationBarViewMac::GetInputString() const {
 }
 
 void LocationBarViewMac::SetSuggestedText(const string16& text) {
-  // TODO: implement me.
-  NOTIMPLEMENTED();
+  // TODO(rohitrao): implement me.  http://crbug.com/56385
 }
 
 WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
@@ -201,12 +203,35 @@ void LocationBarViewMac::Update(const TabContents* contents,
 }
 
 void LocationBarViewMac::OnAutocompleteWillClosePopup() {
+  if (!update_instant_)
+    return;
+
+  InstantController* controller = browser_->instant();
+  if (controller && !controller->commit_on_mouse_up())
+    controller->DestroyPreviewContents();
 }
 
 void LocationBarViewMac::OnAutocompleteLosingFocus(gfx::NativeView unused) {
+  InstantController* instant = browser_->instant();
+  if (!instant)
+    return;
+
+  if (!instant->is_active() || !instant->GetPreviewContents())
+    return;
+
+  // If |IsMouseDownFromActivate()| returns false, the RenderWidgetHostView did
+  // not receive a mouseDown event.  Therefore, we should destroy the preview.
+  // Otherwise, the RWHV was clicked, so we commit the preview.
+  if (!instant->IsMouseDownFromActivate())
+    instant->DestroyPreviewContents();
+  else if (instant->IsShowingInstant())
+    instant->SetCommitOnMouseUp();
+  else
+    instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
 }
 
 void LocationBarViewMac::OnAutocompleteWillAccept() {
+  update_instant_ = false;
 }
 
 bool LocationBarViewMac::OnCommitSuggestedText(const std::wstring& typed_text) {
@@ -220,35 +245,39 @@ void LocationBarViewMac::OnAutocompleteAccept(const GURL& url,
                                               WindowOpenDisposition disposition,
                                               PageTransition::Type transition,
                                               const GURL& alternate_nav_url) {
-  if (!url.is_valid())
-    return;
+  // WARNING: don't add an early return here. The calls after the if must
+  // happen.
+  if (url.is_valid()) {
+    location_input_ = UTF8ToWide(url.spec());
+    disposition_ = disposition;
+    transition_ = transition;
 
-  location_input_ = UTF8ToWide(url.spec());
-  disposition_ = disposition;
-  transition_ = transition;
-
-  if (!command_updater_)
-    return;
-
-  if (!alternate_nav_url.is_valid()) {
-    command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-    return;
+    if (command_updater_) {
+      if (!alternate_nav_url.is_valid()) {
+        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+      } else {
+        AlternateNavURLFetcher* fetcher =
+            new AlternateNavURLFetcher(alternate_nav_url);
+        // The AlternateNavURLFetcher will listen for the pending navigation
+        // notification that will be issued as a result of the "open URL." It
+        // will automatically install itself into that navigation controller.
+        command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
+        if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
+          // I'm not sure this should be reachable, but I'm not also sure enough
+          // that it shouldn't to stick in a NOTREACHED().  In any case, this is
+          // harmless.
+          delete fetcher;
+        } else {
+          // The navigation controller will delete the fetcher.
+        }
+      }
+    }
   }
 
-  AlternateNavURLFetcher* fetcher =
-      new AlternateNavURLFetcher(alternate_nav_url);
-  // The AlternateNavURLFetcher will listen for the pending navigation
-  // notification that will be issued as a result of the "open URL." It
-  // will automatically install itself into that navigation controller.
-  command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
-  if (fetcher->state() == AlternateNavURLFetcher::NOT_STARTED) {
-    // I'm not sure this should be reachable, but I'm not also sure enough
-    // that it shouldn't to stick in a NOTREACHED().  In any case, this is
-    // harmless.
-    delete fetcher;
-  } else {
-    // The navigation controller will delete the fetcher.
-  }
+  if (browser_->instant())
+    browser_->instant()->DestroyPreviewContents();
+
+  update_instant_ = true;
 }
 
 void LocationBarViewMac::OnChanged() {
@@ -258,6 +287,21 @@ void LocationBarViewMac::OnChanged() {
   location_icon_decoration_->SetImage(image);
   ev_bubble_decoration_->SetImage(image);
   Layout();
+
+  InstantController* instant = browser_->instant();
+  string16 suggested_text;
+  if (update_instant_ && instant && GetTabContents()) {
+    if (edit_view_->model()->user_input_in_progress() &&
+        edit_view_->model()->popup_model()->IsOpen()) {
+      instant->Update(GetTabContents(),
+                      edit_view_->model()->CurrentMatch(),
+                      WideToUTF16(edit_view_->GetText()),
+                      &suggested_text);
+    } else {
+      if (instant->is_active())
+        instant->DestroyPreviewContents();
+    }
+  }
 }
 
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {

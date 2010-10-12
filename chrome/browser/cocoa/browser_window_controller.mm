@@ -1372,6 +1372,11 @@
 }
 
 - (void)onReplaceTabWithContents:(TabContents*)contents {
+  // This is only called when instant results are committed.  Simply remove the
+  // preview view; the tab strip controller will reinstall the view as the
+  // active view.
+  [previewableContentsController_ hidePreview];
+  [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
 - (void)onSelectedTabChange:(TabStripModelObserver::TabChangeType)change {
@@ -1716,6 +1721,21 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 - (BOOL)useVerticalTabs {
   return browser_->tabstrip_model()->delegate()->UseVerticalTabs();
+}
+
+- (void)showInstant:(TabContents*)previewContents {
+  [previewableContentsController_ showPreview:previewContents];
+  [self updateBookmarkBarVisibilityWithAnimation:NO];
+}
+
+- (void)hideInstant {
+  // TODO(rohitrao): Revisit whether or not this method should be called when
+  // instant isn't showing.
+  if (![previewableContentsController_ isShowingPreview])
+    return;
+
+  [previewableContentsController_ hidePreview];
+  [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
 - (void)sheetDidEnd:(NSWindow*)sheet

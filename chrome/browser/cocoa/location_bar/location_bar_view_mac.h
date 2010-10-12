@@ -214,6 +214,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   ToolbarModel* toolbar_model_;  // Weak, owned by Browser.
 
+  // Whether or not to update the instant preview.
+  bool update_instant_;
+
   // The transition type to use for the navigation.
   PageTransition::Type transition_;
 
