@@ -15,11 +15,8 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-// Note: This test is flaky, but is actively being worked on.
-// Finnur is adding traces to figure out where the problem lies and
-// needs to check in these traces because the problem doesn't repro
-// locally (or on the try bots).
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
+// Flaky. See http://crbug.com/57694.
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FLAKY_WhitelistedExtension) {
   Extension::emit_traces_for_whitelist_extension_test_ = true;
 
   // First load the two extension.
