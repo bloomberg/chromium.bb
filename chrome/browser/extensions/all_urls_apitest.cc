@@ -15,7 +15,8 @@ const std::string kAllUrlsTarget =
 
 typedef ExtensionApiTest AllUrlsApiTest;
 
-IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
+// Sometimes hangs: http://crbug.com/57694
+IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, FLAKY_WhitelistedExtension) {
   Extension::emit_traces_for_whitelist_extension_test_ = true;
 
   // First load the two extension.
