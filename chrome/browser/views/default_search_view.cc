@@ -60,6 +60,12 @@ views::View* DefaultSearchView::GetContentsView() {
   return message_box_view_;
 }
 
+int DefaultSearchView::GetDefaultDialogButton() const {
+  // To less the likelihood of an accidental default search engine change, make
+  // the cancel button the default dialog button.
+  return MessageBoxFlags::DIALOGBUTTON_CANCEL;
+}
+
 bool DefaultSearchView::Accept() {
   // Check this again in case the default became managed while this dialog was
   // displayed.

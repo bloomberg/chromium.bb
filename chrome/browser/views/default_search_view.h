@@ -40,6 +40,7 @@ class DefaultSearchView : public ConstrainedDialogDelegate {
   virtual std::wstring GetWindowTitle() const;
   virtual void DeleteDelegate();
   virtual views::View* GetContentsView();
+  virtual int GetDefaultDialogButton() const;
   virtual bool Accept();
 
  private:
