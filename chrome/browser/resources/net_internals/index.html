@@ -25,6 +25,7 @@ found in the LICENSE file.
     <script src="proxyview.js"></script>
     <script src="socketpoolwrapper.js"></script>
     <script src="socketsview.js"></script>
+    <script src="spdyview.js"></script>
     <script src="serviceprovidersview.js"></script>
   </head>
   <body onload="onLoaded()">
@@ -36,6 +37,7 @@ found in the LICENSE file.
         <li><a href="#events" id=eventsTab>Events</a></li>
         <li><a href="#dns" id=dnsTab>DNS</a></li>
         <li><a href="#sockets" id=socketsTab>Sockets</a></li>
+        <li><a href="#spdy" id=spdyTab>SPDY</a></li>
         <li><a href="#httpCache" id=httpCacheTab>HTTP Cache</a></li>
         <!-- Tab is only shown on Windows -->
         <li><a href="#serviceProviders" id=serviceProvidersTab style="display: none;">SPIs</a></li>
@@ -128,6 +130,18 @@ found in the LICENSE file.
       </p>
       <p>
         <div id=socketPoolGroupsDiv>
+        </div>
+      </p>
+    </div>
+    <div id=spdyTabContent>
+      <h4>SPDY sessions</h4>
+        <!-- Only one of these two are shown -->
+        <span id=spdySessionNoneSpan>None</span>
+        <span id=spdySessionLinkSpan style="display: none;">
+          <a href='#events&q=type:SPDY_SESSION%20is:active'>View live SPDY sessions</a>
+        </span>
+      <p>
+        <div id=spdySessionDiv>
         </div>
       </p>
     </div>

@@ -89,6 +89,11 @@ function onLoaded() {
                                     "socketPoolDiv",
                                     "socketPoolGroupsDiv");
 
+  var spdyView = new SpdyView("spdyTabContent",
+                              "spdySessionNoneSpan",
+                              "spdySessionLinkSpan",
+                              "spdySessionDiv");
+
 
   var serviceView;
   if (g_browser.isPlatformWindows()) {
@@ -107,6 +112,7 @@ function onLoaded() {
   categoryTabSwitcher.addTab('proxyTab', proxyView, false);
   categoryTabSwitcher.addTab('dnsTab', dnsView, false);
   categoryTabSwitcher.addTab('socketsTab', socketsView, false);
+  categoryTabSwitcher.addTab('spdyTab', spdyView, false);
   categoryTabSwitcher.addTab('httpCacheTab', httpCacheView, false);
   categoryTabSwitcher.addTab('dataTab', dataView, false);
   if (g_browser.isPlatformWindows())
@@ -167,6 +173,9 @@ function BrowserBridge() {
   this.pollableDataHelpers_.socketPoolInfo =
       new PollableDataHelper('onSocketPoolInfoChanged',
                              this.sendGetSocketPoolInfo.bind(this));
+  this.pollableDataHelpers_.spdySessionInfo =
+      new PollableDataHelper('onSpdySessionInfoChanged',
+                             this.sendGetSpdySessionInfo.bind(this));
   if (this.isPlatformWindows()) {
     this.pollableDataHelpers_.serviceProviders =
         new PollableDataHelper('onServiceProvidersChanged',
@@ -275,6 +284,10 @@ BrowserBridge.prototype.sendGetSocketPoolInfo = function() {
   chrome.send('getSocketPoolInfo');
 };
 
+BrowserBridge.prototype.sendGetSpdySessionInfo = function() {
+  chrome.send('getSpdySessionInfo');
+};
+
 BrowserBridge.prototype.sendGetServiceProviders = function() {
   chrome.send('getServiceProviders');
 };
@@ -352,6 +365,10 @@ function(hostResolverInfo) {
 
 BrowserBridge.prototype.receivedSocketPoolInfo = function(socketPoolInfo) {
   this.pollableDataHelpers_.socketPoolInfo.update(socketPoolInfo);
+};
+
+BrowserBridge.prototype.receivedSpdySessionInfo = function(spdySessionInfo) {
+  this.pollableDataHelpers_.spdySessionInfo.update(spdySessionInfo);
 };
 
 BrowserBridge.prototype.receivedServiceProviders = function(serviceProviders) {
@@ -472,6 +489,16 @@ BrowserBridge.prototype.addHostResolverInfoObserver = function(observer) {
  */
 BrowserBridge.prototype.addSocketPoolInfoObserver = function(observer) {
   this.pollableDataHelpers_.socketPoolInfo.addObserver(observer);
+};
+
+/**
+ * Adds a listener of the SPDY info. |observer| will be called back
+ * when data is received, through:
+ *
+ *   observer.onSpdySessionInfoChanged(spdySessionInfo)
+ */
+BrowserBridge.prototype.addSpdySessionInfoObserver = function(observer) {
+  this.pollableDataHelpers_.spdySessionInfo.addObserver(observer);
 };
 
 /**

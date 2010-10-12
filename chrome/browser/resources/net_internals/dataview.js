@@ -222,6 +222,20 @@ DataView.prototype.onUpdateAllCompleted = function(data) {
 
   this.appendSocketPoolsAsText_(text, data.socketPoolInfo);
 
+  text.push('');
+  text.push('----------------------------------------------');
+  text.push(' SPDY Sessions');
+  text.push('----------------------------------------------');
+  text.push('');
+
+  if (data.spdySessionInfo == null || data.spdySessionInfo.length == 0) {
+    text.push('None');
+  } else {
+    var spdyTablePrinter =
+      SpdyView.createSessionTablePrinter(data.spdySessionInfo);
+    text.push(spdyTablePrinter.toText(2));
+  }
+
   if (g_browser.isPlatformWindows()) {
     text.push('');
     text.push('----------------------------------------------');
