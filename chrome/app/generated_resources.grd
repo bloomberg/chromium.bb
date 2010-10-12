@@ -4073,6 +4073,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LABS_CLOUD_PRINT_PROXY_DESCRIPTION" desc="Description of the Cloud Print Proxy lab">
         Enables a background service that connects the <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> service to any printers installed on this computer. Once this lab is enabled, you can turn <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> on by logging in with your Google account in the Options/Preferences in the Under the Hood section.
       </message>
+      <message name="IDS_LABS_ACCELERATED_COMPOSITING_NAME" desc="Name of the 'GPU Accelerated Compositing' lab.">
+        GPU Accelerated Compositing
+      </message>
+      <message name="IDS_LABS_ACCELERATED_COMPOSITING_DESCRIPTION" desc="Description of the 'GPU Accelerated Compositing' lab.">
+        Enables 3D CSS and higher performance compositing of web pages using Graphics Processor Unit (GPU) hardware.
+      </message>
+      <message name="IDS_LABS_ACCELERATED_CANVAS_2D_NAME" desc="Name of the 'GPU Accelerated Canvas 2D' lab.">
+        GPU Accelerated Canvas 2D
+      </message>
+      <message name="IDS_LABS_ACCELERATED_CANVAS_2D_DESCRIPTION" desc="Description of the 'GPU Accelerated Canvas 2D' lab.">
+        Enables higher performance of canvas tags with a 2D context by rendering using Graphics Processor Unit (GPU) hardware.
+      </message>
+      <message name="IDS_LABS_WEBGL_NAME" desc="Name of the 'WebGL' lab.">
+        WebGL
+      </message>
+      <message name="IDS_LABS_WEBGL_DESCRIPTION" desc="Description of the 'WebGL' lab.">
+        Enables canvas elements to use 3D graphics via the WebGL API.
+      </message>
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">

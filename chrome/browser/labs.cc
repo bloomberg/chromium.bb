@@ -130,7 +130,32 @@ const Experiment kExperiments[] = {
     kOsWin,
 #endif
     switches::kEnableCloudPrintProxy
+  },
+  // FIXME(scheib): Add Labs entry for accelerated Compositing, 
+  // or pull it and the strings in generated_resources.grd by Dec 2010
+  //{
+  //  "gpu-compositing", // Do not change; see above
+  //  IDS_LABS_ACCELERATED_COMPOSITING_NAME,
+  //  IDS_LABS_ACCELERATED_COMPOSITING_DESCRIPTION,
+  //  kOsAll,
+  //  switches::kDisableAcceleratedCompositing
+  //},
+  {
+    "gpu-canvas-2d", // Do not change; see above
+    IDS_LABS_ACCELERATED_CANVAS_2D_NAME,
+    IDS_LABS_ACCELERATED_CANVAS_2D_DESCRIPTION,
+    kOsWin | kOsLinux,
+    switches::kEnableAccelerated2dCanvas
   }
+  // FIXME(scheib): Add Labs entry for WebGL,
+  // or pull it and the strings in generated_resources.grd by Dec 2010
+  //{
+  //  "webgl", // Do not change; see above
+  //  IDS_LABS_WEBGL_NAME,
+  //  IDS_LABS_WEBGL_DESCRIPTION,
+  //  kOsAll,
+  //  switches::kDisableExperimentalWebGL
+  //}
 };
 
 // Extracts the list of enabled lab experiments from preferences and stores them
