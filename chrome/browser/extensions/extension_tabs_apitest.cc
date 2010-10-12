@@ -9,19 +9,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-#if defined(OS_MACOSX)
-// Tabs appears to timeout, or maybe crash on mac.
-// http://crbug.com/53779
-#define MAYBE_Tabs FAILS_Tabs
-#elif defined(OS_WIN)
-// It's flaky on win.
-// http://crbug.com/58269
-#define MAYBE_Tabs FLAKY_Tabs
-#else
-#define MAYBE_Tabs Tabs
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   ASSERT_TRUE(test_server()->Start());
 
   // The test creates a tab and checks that the URL of the new tab
