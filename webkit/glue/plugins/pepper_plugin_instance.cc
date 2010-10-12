@@ -26,6 +26,7 @@
 #include "third_party/ppapi/c/dev/ppb_fullscreen_dev.h"
 #include "third_party/ppapi/c/dev/ppb_zoom_dev.h"
 #include "third_party/ppapi/c/dev/ppp_find_dev.h"
+#include "third_party/ppapi/c/dev/ppp_selection_dev.h"
 #include "third_party/ppapi/c/dev/ppp_zoom_dev.h"
 #include "third_party/ppapi/c/pp_input_event.h"
 #include "third_party/ppapi/c/pp_instance.h"
@@ -274,8 +275,9 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       has_content_area_focus_(false),
       find_identifier_(-1),
       plugin_find_interface_(NULL),
-      plugin_zoom_interface_(NULL),
       plugin_private_interface_(NULL),
+      plugin_selection_interface_(NULL),
+      plugin_zoom_interface_(NULL),
 #if defined (OS_LINUX)
       num_pages_(0),
       pdf_output_done_(false),
@@ -577,7 +579,10 @@ bool PluginInstance::GetBitmapForOptimizedPluginPaint(
 }
 
 string16 PluginInstance::GetSelectedText(bool html) {
-  PP_Var rv = instance_interface_->GetSelectedText(pp_instance(), html);
+  if (!LoadSelectionInterface())
+    return string16();
+
+  PP_Var rv = plugin_selection_interface_->GetSelectedText(pp_instance(), html);
   scoped_refptr<StringVar> string(StringVar::FromPPVar(rv));
   Var::PluginReleasePPVar(rv);  // Release the ref the plugin transfered to us.
   if (!string)
@@ -640,16 +645,6 @@ bool PluginInstance::LoadFindInterface() {
   return !!plugin_find_interface_;
 }
 
-bool PluginInstance::LoadZoomInterface() {
-  if (!plugin_zoom_interface_) {
-    plugin_zoom_interface_ =
-        reinterpret_cast<const PPP_Zoom_Dev*>(module_->GetPluginInterface(
-            PPP_ZOOM_DEV_INTERFACE));
-  }
-
-  return !!plugin_zoom_interface_;
-}
-
 bool PluginInstance::LoadPrivateInterface() {
   if (!plugin_private_interface_) {
     plugin_private_interface_ =
@@ -658,6 +653,26 @@ bool PluginInstance::LoadPrivateInterface() {
   }
 
   return !!plugin_private_interface_;
+}
+
+bool PluginInstance::LoadSelectionInterface() {
+  if (!plugin_selection_interface_) {
+    plugin_selection_interface_ =
+        reinterpret_cast<const PPP_Selection_Dev*>(module_->GetPluginInterface(
+            PPP_SELECTION_DEV_INTERFACE));
+  }
+
+  return !!plugin_selection_interface_;
+}
+
+bool PluginInstance::LoadZoomInterface() {
+  if (!plugin_zoom_interface_) {
+    plugin_zoom_interface_ =
+        reinterpret_cast<const PPP_Zoom_Dev*>(module_->GetPluginInterface(
+            PPP_ZOOM_DEV_INTERFACE));
+  }
+
+  return !!plugin_zoom_interface_;
 }
 
 bool PluginInstance::PluginHasFocus() const {

@@ -29,6 +29,7 @@ struct PPB_Zoom_Dev;
 struct PPP_Find_Dev;
 struct PPP_Instance;
 struct PPP_Private;
+struct PPP_Selection_Dev;
 struct PPP_Zoom_Dev;
 
 class SkBitmap;
@@ -161,8 +162,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
  private:
   bool LoadFindInterface();
-  bool LoadZoomInterface();
   bool LoadPrivateInterface();
+  bool LoadSelectionInterface();
+  bool LoadZoomInterface();
 
   // Determines if we think the plugin has focus, both content area and webkit
   // (see has_webkit_focus_ below).
@@ -221,10 +223,11 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
 
-  // The plugin find and zoom interfaces.
+  // The plugin-provided interfaces.
   const PPP_Find_Dev* plugin_find_interface_;
-  const PPP_Zoom_Dev* plugin_zoom_interface_;
   const PPP_Private* plugin_private_interface_;
+  const PPP_Selection_Dev* plugin_selection_interface_;
+  const PPP_Zoom_Dev* plugin_zoom_interface_;
 
   // This is only valid between a successful PrintBegin call and a PrintEnd
   // call.
