@@ -363,6 +363,8 @@ NaClSrpcError NPModule::Device2DInitialize(NPP npp,
     }
     NPError retval = device2d_->initializeContext(npp, NULL, context2d_);
     if (NPERR_NO_ERROR != retval) {
+      delete context2d_;
+      context2d_ = NULL;
       return NACL_SRPC_RESULT_APP_ERROR;
     }
   }
@@ -375,6 +377,9 @@ NaClSrpcError NPModule::Device2DInitialize(NPP npp,
                              &dib_int);
   DescWrapper* wrapper = factory.ImportPepper2DSharedMemory(dib_int);
   if (NULL == wrapper) {
+    device2d_->destroyContext(npp, context2d_);
+    delete context2d_;
+    context2d_ = NULL;
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   // Increase reference count for SRPC return value, since deleting wrapper
@@ -416,14 +421,15 @@ NaClSrpcError NPModule::Device2DFlush(NPP npp,
 
 NaClSrpcError NPModule::Device2DDestroy(NPP npp) {
   if (NULL == extensions_) {
+    // This implies that device2d_ is also NULL.
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   NPError retval = device2d_->destroyContext(npp, context2d_);
+  delete context2d_;
+  context2d_ = NULL;
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  delete context2d_;
-  context2d_ = NULL;
 
   return NACL_SRPC_RESULT_OK;
 }
@@ -511,6 +517,8 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
     NPError retval =
         device3d_->initializeContext(npp, &config, context3d_);
     if (NPERR_NO_ERROR != retval) {
+      delete context3d_;
+      context3d_ = NULL;
       return NACL_SRPC_RESULT_APP_ERROR;
     }
   }
@@ -523,6 +531,9 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
   DescWrapper* wrapper =
       factory.ImportPepperSharedMemory(shm_int, static_cast<size_t>(shm_size));
   if (NULL == wrapper) {
+    device3d_->destroyContext(npp, context3d_);
+    delete context3d_;
+    context3d_ = NULL;
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   // Increase reference count for SRPC return value, since deleting wrapper
@@ -561,14 +572,15 @@ NaClSrpcError NPModule::Device3DFlush(NPP npp,
 
 NaClSrpcError NPModule::Device3DDestroy(NPP npp) {
   if (NULL == extensions_) {
+    // This implies that device3d_ is also NULL.
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   NPError retval = device3d_->destroyContext(npp, context3d_);
+  delete context3d_;
+  context3d_ = NULL;
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  delete context3d_;
-  context3d_ = NULL;
 
   return NACL_SRPC_RESULT_OK;
 }
@@ -781,6 +793,8 @@ NaClSrpcError NPModule::AudioInitialize(NPP npp,
     config.callback = AudioCallback;
     AudioCallbackInfo* info = new(std::nothrow) AudioCallbackInfo;
     if (NULL == info) {
+      delete context_audio_;
+      context_audio_ = NULL;
       return NACL_SRPC_RESULT_APP_ERROR;
     }
     info->npp_ = npp;
@@ -792,6 +806,8 @@ NaClSrpcError NPModule::AudioInitialize(NPP npp,
     NPError retval =
         device_audio_->initializeContext(npp, &config, context_audio_);
     if (NPERR_NO_ERROR != retval) {
+      delete context_audio_;
+      context_audio_ = NULL;
       return NACL_SRPC_RESULT_APP_ERROR;
     }
   }
@@ -805,11 +821,11 @@ NaClSrpcError NPModule::AudioDestroy(NPP npp) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   NPError retval = device_audio_->destroyContext(npp, context_audio_);
+  delete context_audio_;
+  context_audio_ = NULL;
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  delete context_audio_;
-  context_audio_ = NULL;
 
   return NACL_SRPC_RESULT_OK;
 }
