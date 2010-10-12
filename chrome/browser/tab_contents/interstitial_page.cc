@@ -697,3 +697,12 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::OnFindReply(
 int InterstitialPage::GetBrowserWindowID() const {
   return tab_->GetBrowserWindowID();
 }
+
+void InterstitialPage::UpdateInspectorSetting(const std::string& key,
+                                         const std::string& value) {
+  RenderViewHostDelegateHelper::UpdateInspectorSetting(tab_->profile(), key, value);
+}
+
+void InterstitialPage::ClearInspectorSettings() {
+  RenderViewHostDelegateHelper::ClearInspectorSettings(tab_->profile());
+}

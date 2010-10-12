@@ -124,6 +124,10 @@ class BackgroundContents : public RenderViewHostDelegate,
   virtual TabContents* AsTabContents() { return NULL; }
   virtual ExtensionHost* AsExtensionHost() { return NULL; }
 
+  virtual void UpdateInspectorSetting(const std::string& key,
+                                      const std::string& value);
+  virtual void ClearInspectorSettings();
+
  protected:
   // Exposed for testing.
   BackgroundContents();

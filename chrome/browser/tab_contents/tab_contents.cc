@@ -2553,18 +2553,11 @@ void TabContents::UpdateThumbnail(const GURL& url,
 
 void TabContents::UpdateInspectorSetting(const std::string& key,
                                          const std::string& value) {
-  DictionaryValue* inspector_settings =
-      profile()->GetPrefs()->GetMutableDictionary(
-          prefs::kWebKitInspectorSettings);
-  inspector_settings->SetWithoutPathExpansion(key,
-                                              Value::CreateStringValue(value));
+  RenderViewHostDelegateHelper::UpdateInspectorSetting(profile(), key, value);
 }
 
 void TabContents::ClearInspectorSettings() {
-  DictionaryValue* inspector_settings =
-      profile()->GetPrefs()->GetMutableDictionary(
-          prefs::kWebKitInspectorSettings);
-  inspector_settings->Clear();
+  RenderViewHostDelegateHelper::ClearInspectorSettings(profile());
 }
 
 void TabContents::Close(RenderViewHost* rvh) {

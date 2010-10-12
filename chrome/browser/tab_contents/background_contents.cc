@@ -135,6 +135,17 @@ gfx::NativeWindow BackgroundContents::GetMessageBoxRootWindow() {
   return NULL;
 }
 
+void BackgroundContents::UpdateInspectorSetting(const std::string& key,
+                                         const std::string& value) {
+  Profile* profile = render_view_host_->process()->profile();
+  RenderViewHostDelegateHelper::UpdateInspectorSetting(profile, key, value);
+}
+
+void BackgroundContents::ClearInspectorSettings() {
+  Profile* profile = render_view_host_->process()->profile();
+  RenderViewHostDelegateHelper::ClearInspectorSettings(profile);
+}
+
 void BackgroundContents::Close(RenderViewHost* render_view_host) {
   Profile* profile = render_view_host->process()->profile();
   NotificationService::current()->Notify(

@@ -121,6 +121,10 @@ class BalloonHost : public RenderViewHostDelegate,
   // Enable DOM UI. This has to be called before renderer is created.
   void EnableDOMUI();
 
+  virtual void UpdateInspectorSetting(const std::string& key,
+                                      const std::string& value);
+  virtual void ClearInspectorSettings();
+
  protected:
   virtual ~BalloonHost() {}
   // Must override in platform specific implementations.

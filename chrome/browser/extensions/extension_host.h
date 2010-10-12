@@ -174,6 +174,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void HandleMouseUp();
   virtual void HandleMouseActivate();
   virtual void UpdatePreferredSize(const gfx::Size& new_size);
+  virtual void UpdateInspectorSetting(const std::string& key,
+                                      const std::string& value);
+  virtual void ClearInspectorSettings();
 
   // NotificationObserver
   virtual void Observe(NotificationType type,

@@ -323,3 +323,19 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
 
   return web_prefs;
 }
+
+void RenderViewHostDelegateHelper::UpdateInspectorSetting(
+    Profile* profile, const std::string& key, const std::string& value) {
+  DictionaryValue* inspector_settings =
+      profile->GetPrefs()->GetMutableDictionary(
+          prefs::kWebKitInspectorSettings);
+  inspector_settings->SetWithoutPathExpansion(key,
+                                              Value::CreateStringValue(value));
+}
+
+void RenderViewHostDelegateHelper::ClearInspectorSettings(Profile* profile) {
+  DictionaryValue* inspector_settings =
+      profile->GetPrefs()->GetMutableDictionary(
+          prefs::kWebKitInspectorSettings);
+  inspector_settings->Clear();
+}

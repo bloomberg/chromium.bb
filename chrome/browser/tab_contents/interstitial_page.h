@@ -111,6 +111,10 @@ class InterstitialPage : public NotificationObserver,
   }
   bool reload_on_dont_proceed() const { return reload_on_dont_proceed_; }
 
+  virtual void UpdateInspectorSetting(const std::string& key,
+                                      const std::string& value);
+  virtual void ClearInspectorSettings();
+
  protected:
   // NotificationObserver method:
   virtual void Observe(NotificationType type,

@@ -166,6 +166,16 @@ void BalloonHost::EnableDOMUI() {
   enable_dom_ui_ = true;
 }
 
+void BalloonHost::UpdateInspectorSetting(const std::string& key,
+                                         const std::string& value) {
+  RenderViewHostDelegateHelper::UpdateInspectorSetting(
+      GetProfile(), key, value);
+}
+
+void BalloonHost::ClearInspectorSettings() {
+  RenderViewHostDelegateHelper::ClearInspectorSettings(GetProfile());
+}
+
 void BalloonHost::NotifyDisconnect() {
   if (!should_notify_on_disconnect_)
     return;
