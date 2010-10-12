@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
 #include "chrome/browser/profile_manager.h"
@@ -25,6 +26,26 @@ bool MenuTypeCanExecute(menus::MenuModel::ItemType type) {
   return type == menus::MenuModel::TYPE_COMMAND ||
       type == menus::MenuModel::TYPE_CHECK ||
       type == menus::MenuModel::TYPE_RADIO;
+}
+
+gboolean Destroy(GtkWidget* widget, gpointer data) {
+  chromeos::NativeMenuDOMUI* domui_menu =
+      static_cast<chromeos::NativeMenuDOMUI*>(data);
+  domui_menu->Hide();
+  return true;
+}
+
+// Returns the active toplevel window.
+gfx::NativeWindow FindActiveToplevelWindow() {
+  GList* toplevels = gtk_window_list_toplevels();
+  while (toplevels) {
+    gfx::NativeWindow window = static_cast<gfx::NativeWindow>(toplevels->data);
+    if (gtk_window_is_active(window)) {
+      return window;
+    }
+    toplevels = g_list_next(toplevels);
+  }
+  return NULL;
 }
 
 // Currently opened menu. See RunMenuAt for reason why we need this.
@@ -102,6 +123,20 @@ void NativeMenuDOMUI::RunMenuAt(const gfx::Point& point, int alignment) {
   DCHECK(!menu_shown_);
   menu_shown_ = true;
 
+  // TODO(oshima): A menu must be deleted when parent window is
+  // closed. Menu2 doesn't know about the parent window, however, so
+  // we're using toplevel gtkwindow. This is probably sufficient, but
+  // I will update Menu2 to pass host view (which is necessary anyway
+  // to get the right position) and get a parent widnow through
+  // it. http://crosbug/7642
+  gfx::NativeWindow parent = FindActiveToplevelWindow();
+  gulong handle = 0;
+  if (parent) {
+    handle = g_signal_connect(G_OBJECT(parent), "destroy",
+                              G_CALLBACK(&Destroy),
+                              this);
+  }
+
   // We need to turn on nestable tasks as a renderer uses tasks internally.
   // Without this, renderer cannnot finish loading page.
   bool nestable = MessageLoopForUI::current()->NestableTasksAllowed();
@@ -114,6 +149,9 @@ void NativeMenuDOMUI::RunMenuAt(const gfx::Point& point, int alignment) {
     NOTREACHED();
     menu_shown_ = false;
   }
+  if (handle)
+    g_signal_handler_disconnect(G_OBJECT(parent), handle);
+
   menu_widget_->Hide();
   // Close All submenus.
   submenu_.reset();
