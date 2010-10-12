@@ -48,6 +48,10 @@ using WebKit::WebVector;
 
 namespace {
 
+// FIXME: Replace this magic constant once we have a more sophisticated quota
+// system.
+static const uint64 kDatabaseQuota = 5 * 1024 * 1024;
+
 template <class T>
 void DeleteOnWebKitThread(T* obj) {
   if (!BrowserThread::DeleteSoon(BrowserThread::WEBKIT, FROM_HERE, obj))
@@ -285,11 +289,12 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     return;
   }
 
+  DCHECK(kDatabaseQuota == params.maximum_size_);
   Context()->GetIDBFactory()->open(
       params.name_, params.description_,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL,
-      webkit_glue::FilePathToWebString(indexed_db_path));
+      webkit_glue::FilePathToWebString(indexed_db_path), kDatabaseQuota);
 }
 
 //////////////////////////////////////////////////////////////////////

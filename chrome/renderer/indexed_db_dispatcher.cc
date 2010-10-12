@@ -101,9 +101,12 @@ void IndexedDBDispatcher::RequestIDBCursorRemove(
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryOpen(
-    const string16& name, const string16& description,
-    WebIDBCallbacks* callbacks_ptr, const string16& origin,
-    WebFrame* web_frame) {
+    const string16& name,
+    const string16& description,
+    WebIDBCallbacks* callbacks_ptr,
+    const string16& origin,
+    WebFrame* web_frame,
+    uint64 maximum_size) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   if (!web_frame)
@@ -118,6 +121,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   params.origin_ = origin;
   params.name_ = name;
   params.description_ = description;
+  params.maximum_size_ = maximum_size;
   RenderThread::current()->Send(new ViewHostMsg_IDBFactoryOpen(params));
 }
 

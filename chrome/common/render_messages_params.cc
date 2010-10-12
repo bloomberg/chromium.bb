@@ -175,7 +175,8 @@ ViewMsg_DOMStorageEvent_Params::~ViewMsg_DOMStorageEvent_Params() {
 
 ViewHostMsg_IDBFactoryOpen_Params::ViewHostMsg_IDBFactoryOpen_Params()
     : routing_id_(0),
-      response_id_(0) {
+      response_id_(0),
+      maximum_size_(0) {
 }
 
 ViewHostMsg_IDBFactoryOpen_Params::~ViewHostMsg_IDBFactoryOpen_Params() {
@@ -1250,6 +1251,7 @@ void ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Write(
   WriteParam(m, p.origin_);
   WriteParam(m, p.name_);
   WriteParam(m, p.description_);
+  WriteParam(m, p.maximum_size_);
 }
 
 bool ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Read(const Message* m,
@@ -1260,7 +1262,8 @@ bool ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Read(const Message* m,
       ReadParam(m, iter, &p->response_id_) &&
       ReadParam(m, iter, &p->origin_) &&
       ReadParam(m, iter, &p->name_) &&
-      ReadParam(m, iter, &p->description_);
+      ReadParam(m, iter, &p->description_) &&
+      ReadParam(m, iter, &p->maximum_size_);
 }
 
 void ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Log(const param_type& p,
@@ -1275,6 +1278,8 @@ void ParamTraits<ViewHostMsg_IDBFactoryOpen_Params>::Log(const param_type& p,
   LogParam(p.name_, l);
   l->append(", ");
   LogParam(p.description_, l);
+  l->append(", ");
+  LogParam(p.maximum_size_, l);
   l->append(")");
 }
 

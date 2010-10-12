@@ -33,9 +33,12 @@ class IndexedDBDispatcher {
   bool OnMessageReceived(const IPC::Message& msg);
 
   void RequestIDBFactoryOpen(
-      const string16& name, const string16& description,
-      WebKit::WebIDBCallbacks* callbacks, const string16& origin,
-      WebKit::WebFrame* web_frame);
+      const string16& name,
+      const string16& description,
+      WebKit::WebIDBCallbacks* callbacks,
+      const string16& origin,
+      WebKit::WebFrame* web_frame,
+      uint64 maximum_size);
 
   void RequestIDBCursorUpdate(
       const SerializedScriptValue& value,

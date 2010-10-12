@@ -669,6 +669,9 @@ struct ViewHostMsg_IDBFactoryOpen_Params {
 
   // The description of the database.
   string16 description_;
+
+  // The maximum size of the database.
+  uint64 maximum_size_;
 };
 
 // Used to create an object store.
