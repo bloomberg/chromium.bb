@@ -682,9 +682,7 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
         cert_dict->SetString(kNameId, certificate_manager_model_->GetColumnText(
             *cert, CertificateManagerModel::COL_SUBJECT_NAME));
         // TODO(mattm): Other columns.
-        // TODO(mattm): Get a real icon (or figure out how to make the domui
-        // tree not use icons at all).
-        cert_dict->SetString(kIconId, "chrome://theme/IDR_COOKIE_ICON");
+        cert_dict->SetString(kIconId, "none");
         subnodes->Append(cert_dict);
       }
       std::sort(subnodes->begin(), subnodes->end(), comparator);
