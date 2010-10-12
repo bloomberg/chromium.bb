@@ -39,7 +39,7 @@ void FFmpegVideoDecodeEngine::Initialize(
     const VideoCodecConfig& config) {
   allocator_.reset(new FFmpegVideoAllocator());
 
-  // Always try to use three threads for video decoding.  There is little reason
+  // Always try to use two threads for video decoding.  There is little reason
   // not to since current day CPUs tend to be multi-core and we measured
   // performance benefits on older machines such as P4s with hyperthreading.
   //
@@ -71,9 +71,7 @@ void FFmpegVideoDecodeEngine::Initialize(
   }
 
   // TODO(fbarchard): Improve thread logic based on size / codec.
-  // TODO(fbarchard): Fix bug affecting video-cookie.html
-  int decode_threads = (codec_context_->codec_id == CODEC_ID_THEORA) ?
-    1 : kDecodeThreads;
+  int decode_threads = kDecodeThreads;
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
