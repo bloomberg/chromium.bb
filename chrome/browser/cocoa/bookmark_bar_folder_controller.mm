@@ -1266,7 +1266,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     [buttons_ removeLastObject];
   }
 
-  if (buttonIndex == -1)
+  if (buttonIndex == -1 || buttonIndex > (NSInteger)[buttons_ count])
     buttonIndex = [buttons_ count];
 
   // Offset upward by one button height all buttons above insertion location.

@@ -2452,7 +2452,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     }
     --displayedButtonCount_;
     [self reconfigureBookmarkBar];
-  } else if (folderController_) {
+  } else if (folderController_ &&
+             [folderController_ parentButton] == offTheSideButton_) {
     // The button being removed is in the OTS (off-the-side) and the OTS
     // menu is showing so we need to remove the button.
     NSInteger index = buttonIndex - displayedButtonCount_;

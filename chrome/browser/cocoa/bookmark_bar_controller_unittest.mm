@@ -1901,6 +1901,63 @@ TEST_F(BookmarkBarControllerDragDropTest, DragMoveBarBookmarkToOffTheSide) {
   EXPECT_EQ(newOTSCount, newChildCount - newDisplayedButtons);
 }
 
+TEST_F(BookmarkBarControllerDragDropTest, DragOffTheSideToOther) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::string model_string("1bWithLongName 2bWithLongName "
+      "3bWithLongName 4bWithLongName 5bWithLongName 6bWithLongName "
+      "7bWithLongName 8bWithLongName 9bWithLongName 10bWithLongName "
+      "11bWithLongName 12bWithLongName 13bWithLongName 14bWithLongName "
+      "15bWithLongName 16bWithLongName 17bWithLongName 18bWithLongName "
+      "19bWithLongName 20bWithLongName ");
+  model_test_utils::AddNodesFromModelString(model, root, model_string);
+
+  const BookmarkNode* other = model.other_node();
+  const std::string other_string("1other 2other 3other ");
+  model_test_utils::AddNodesFromModelString(model, other, other_string);
+
+  // Validate initial model.
+  std::string actualModelString = model_test_utils::ModelStringFromNode(root);
+  EXPECT_EQ(model_string, actualModelString);
+  std::string actualOtherString = model_test_utils::ModelStringFromNode(other);
+  EXPECT_EQ(other_string, actualOtherString);
+
+  // Insure that the off-the-side is showing.
+  ASSERT_FALSE([bar_ offTheSideButtonIsHidden]);
+
+  // Remember how many buttons are showing and are available.
+  int oldDisplayedButtons = [bar_ displayedButtonCount];
+  int oldRootCount = root->GetChildCount();
+  int oldOtherCount = other->GetChildCount();
+
+  // Pop up the off-the-side menu.
+  BookmarkButton* otsButton = (BookmarkButton*)[bar_ offTheSideButton];
+  ASSERT_TRUE(otsButton);
+  [[otsButton target] performSelector:@selector(openOffTheSideFolderFromButton:)
+                           withObject:otsButton];
+  BookmarkBarFolderController* otsController = [bar_ folderController];
+  EXPECT_TRUE(otsController);
+  int oldOTSCount = (int)[[otsController buttons] count];
+  EXPECT_EQ(oldOTSCount, oldRootCount - oldDisplayedButtons);
+
+  // Pick an off-the-side button and drag it to the other bookmarks.
+  BookmarkButton* draggedButton =
+      [otsController buttonWithTitleEqualTo:@"20bWithLongName"];
+  ASSERT_TRUE(draggedButton);
+  BookmarkButton* targetButton = [bar_ otherBookmarksButton];
+  ASSERT_TRUE(targetButton);
+  [bar_ dragButton:draggedButton to:[targetButton center] copy:NO];
+
+  // There should one less button in the bar, one less in off-the-side,
+  // and one more in other bookmarks.
+  int newRootCount = root->GetChildCount();
+  int newOTSCount = (int)[[otsController buttons] count];
+  int newOtherCount = other->GetChildCount();
+  EXPECT_EQ(oldRootCount - 1, newRootCount);
+  EXPECT_EQ(oldOTSCount - 1, newOTSCount);
+  EXPECT_EQ(oldOtherCount + 1, newOtherCount);
+}
+
 TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkData) {
   BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
   const BookmarkNode* root = model.GetBookmarkBarNode();
