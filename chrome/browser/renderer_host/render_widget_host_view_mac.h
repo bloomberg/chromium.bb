@@ -45,6 +45,7 @@ class RWHVMEditCommandHelper;
  @private
   scoped_ptr<RenderWidgetHostViewMac> renderWidgetHostView_;
   BOOL canBeKeyView_;
+  BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
   BOOL rendererAccessible_;
   BOOL accessibilityRequested_;
@@ -128,6 +129,7 @@ class RWHVMEditCommandHelper;
 @property(assign, nonatomic) NSRect caretRect;
 
 - (void)setCanBeKeyView:(BOOL)can;
+- (void)setTakesFocusOnlyOnMouseDown:(BOOL)b;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setToolTipAtMousePoint:(NSString *)string;
 // Set frame, then notify the RenderWidgetHost that the frame has been changed,
@@ -204,6 +206,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SelectionChanged(const std::string& text);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
   virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag);
   virtual void ShowPopupWithItems(gfx::Rect bounds,
                                   int item_height,
                                   double item_font_size,

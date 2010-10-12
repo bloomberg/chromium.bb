@@ -638,6 +638,10 @@ TabContents* InstantLoader::ReleasePreviewContents(InstantCommitType type) {
     if (preview_contents_->GetRenderWidgetHostView()) {
       preview_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->
           set_paint_observer(NULL);
+#if defined(OS_MACOSX)
+      preview_contents_->GetRenderWidgetHostView()->
+          SetTakesFocusOnlyOnMouseDown(false);
+#endif
     }
     preview_contents_->set_delegate(NULL);
     preview_tab_contents_delegate_->Reset();
@@ -700,6 +704,12 @@ void InstantLoader::PreviewPainted() {
 void InstantLoader::ShowPreview() {
   if (!ready_) {
     ready_ = true;
+#if defined(OS_MACOSX)
+    if (preview_contents_->GetRenderWidgetHostView()) {
+      preview_contents_->GetRenderWidgetHostView()->
+          SetTakesFocusOnlyOnMouseDown(true);
+    }
+#endif
     delegate_->ShowInstantLoader(this);
   }
 }

@@ -177,6 +177,12 @@ class RenderWidgetHostView {
   virtual VideoLayer* AllocVideoLayer(const gfx::Size& size) = 0;
 
 #if defined(OS_MACOSX)
+  // Tells the view whether or not to accept first responder status.  If |flag|
+  // is true, the view does not accept first responder status and instead
+  // manually becomes first responder when it receives a mouse down event.  If
+  // |flag| is false, the view participates in the key-view chain as normal.
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) = 0;
+
   // Display a native control popup menu for WebKit.
   virtual void ShowPopupWithItems(gfx::Rect bounds,
                                   int item_height,

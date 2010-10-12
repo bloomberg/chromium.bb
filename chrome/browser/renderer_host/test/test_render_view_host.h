@@ -89,6 +89,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
   virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
 #if defined(OS_MACOSX)
+  virtual void SetTakesFocusOnlyOnMouseDown(bool flag) {}
   virtual void ShowPopupWithItems(gfx::Rect bounds,
                                   int item_height,
                                   double item_font_size,

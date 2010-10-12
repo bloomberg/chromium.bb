@@ -805,6 +805,11 @@ VideoLayer* RenderWidgetHostViewMac::AllocVideoLayer(
   return NULL;
 }
 
+// Sets whether or not to accept first responder status.
+void RenderWidgetHostViewMac::SetTakesFocusOnlyOnMouseDown(bool flag) {
+  [cocoa_view_ setTakesFocusOnlyOnMouseDown:flag];
+}
+
 // Display a popup menu for WebKit using Cocoa widgets.
 void RenderWidgetHostViewMac::ShowPopupWithItems(
     gfx::Rect bounds,
@@ -1179,6 +1184,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
     renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
+    takesFocusOnlyOnMouseDown_ = NO;
     closeOnDeactivate_ = NO;
 
     rendererAccessible_ =
@@ -1194,11 +1200,25 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   canBeKeyView_ = can;
 }
 
+- (void)setTakesFocusOnlyOnMouseDown:(BOOL)b {
+  takesFocusOnlyOnMouseDown_ = b;
+}
+
 - (void)setCloseOnDeactivate:(BOOL)b {
   closeOnDeactivate_ = b;
 }
 
 - (void)mouseEvent:(NSEvent*)theEvent {
+  // TODO(rohitrao): Probably need to handle other mouse down events here.
+  if ([theEvent type] == NSLeftMouseDown && takesFocusOnlyOnMouseDown_) {
+    if (renderWidgetHostView_->render_widget_host_)
+      renderWidgetHostView_->render_widget_host_->OnMouseActivate();
+
+    // Manually take focus after the click but before forwarding it to the
+    // renderer.
+    [[self window] makeFirstResponder:self];
+  }
+
   // Don't cancel child popups; killing them on a mouse click would prevent the
   // user from positioning the insertion point in the text field spawning the
   // popup. A click outside the text field would cause the text field to drop
@@ -1680,7 +1700,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (!renderWidgetHostView_->render_widget_host_)
     return NO;
 
-  return canBeKeyView_;
+  return canBeKeyView_ && !takesFocusOnlyOnMouseDown_;
 }
 
 - (BOOL)becomeFirstResponder {
