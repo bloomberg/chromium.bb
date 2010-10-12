@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/geolocation/win7_location_provider_win.h"
 #include "chrome/browser/geolocation/win7_location_api_win.h"
 #include "testing/gmock/include/gmock/gmock.h"

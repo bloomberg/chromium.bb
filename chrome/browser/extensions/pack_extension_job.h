@@ -10,7 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 
 // Manages packing an extension on the file thread and reporting the result

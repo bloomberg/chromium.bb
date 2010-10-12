@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"

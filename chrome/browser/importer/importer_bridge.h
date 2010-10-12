@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/importer/importer_data_types.h"
 // TODO: remove this, see friend declaration in ImporterBridge.
 #include "chrome/browser/importer/toolbar_importer.h"

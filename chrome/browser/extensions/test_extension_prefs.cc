@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_value_store.h"

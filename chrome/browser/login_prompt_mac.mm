@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/cocoa/constrained_window_mac.h"
 #include "chrome/browser/login_model.h"
 #include "chrome/browser/password_manager/password_manager.h"

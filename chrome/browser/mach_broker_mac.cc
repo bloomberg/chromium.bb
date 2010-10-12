@@ -10,7 +10,7 @@
 #include "base/platform_thread.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/child_process_info.h"

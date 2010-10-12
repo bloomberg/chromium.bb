@@ -9,7 +9,7 @@
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/shell_integration.h"
 #include "googleurl/src/gurl.h"
 

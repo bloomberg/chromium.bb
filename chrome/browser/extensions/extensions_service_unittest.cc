@@ -22,7 +22,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"

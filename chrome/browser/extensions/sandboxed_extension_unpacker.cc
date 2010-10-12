@@ -13,7 +13,7 @@
 #include "base/scoped_handle.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/chrome_switches.h"

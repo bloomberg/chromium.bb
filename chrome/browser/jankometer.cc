@@ -18,7 +18,7 @@
 #include "base/watchdog.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
 
 #if defined(TOOLKIT_USES_GTK)

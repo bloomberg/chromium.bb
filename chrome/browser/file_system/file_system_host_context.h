@@ -8,7 +8,7 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota.h"

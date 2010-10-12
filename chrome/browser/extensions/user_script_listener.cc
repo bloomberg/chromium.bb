@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/user_script_listener.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/global_request_id.h"

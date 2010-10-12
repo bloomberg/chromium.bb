@@ -4,7 +4,7 @@
 
 #include "chrome/browser/geolocation/gps_location_provider_linux.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/geolocation/libgps_wrapper_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

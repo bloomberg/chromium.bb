@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/image_loading_tracker.h"
 
 #include "base/file_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"

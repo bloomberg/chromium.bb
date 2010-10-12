@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"

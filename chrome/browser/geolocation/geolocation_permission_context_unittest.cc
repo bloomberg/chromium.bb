@@ -5,7 +5,7 @@
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 
 #include "base/scoped_vector.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"

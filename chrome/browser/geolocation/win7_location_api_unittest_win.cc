@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/win_util.h"
 #include "chrome/common/geoposition.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/geolocation/win7_location_api_win.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

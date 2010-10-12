@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/most_visited_handler.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/page_usage_data.h"

@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/lock.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"

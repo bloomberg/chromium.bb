@@ -5,7 +5,7 @@
 #include "chrome/browser/in_process_webkit/dom_storage_area.h"
 
 #include "base/task.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"

@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gtk/bookmark_editor_gtk.h"
 #include "chrome/browser/gtk/bookmark_tree_model.h"
 #include "chrome/browser/prefs/pref_service.h"

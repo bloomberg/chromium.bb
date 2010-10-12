@@ -12,7 +12,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_nsobject.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/geoposition.h"
 
 #import <Foundation/Foundation.h>

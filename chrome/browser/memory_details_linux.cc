@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/zygote_host_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"

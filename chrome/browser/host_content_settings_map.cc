@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"

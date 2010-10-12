@@ -13,7 +13,7 @@
 #include "base/stringprintf.h"
 #include "base/thread.h"
 #include "base/version.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"

@@ -4,7 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"

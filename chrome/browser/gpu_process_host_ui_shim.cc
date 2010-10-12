@@ -4,7 +4,7 @@
 
 #include "chrome/browser/gpu_process_host_ui_shim.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/common/gpu_messages.h"
 

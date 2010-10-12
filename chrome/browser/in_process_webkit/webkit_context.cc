@@ -5,7 +5,7 @@
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
 

@@ -11,7 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

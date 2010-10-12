@@ -14,7 +14,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/win_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/favicon_service.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"

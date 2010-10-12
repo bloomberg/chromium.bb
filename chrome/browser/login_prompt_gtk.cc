@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/gtk_signal.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/login_model.h"

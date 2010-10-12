@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "grit/generated_resources.h"
 

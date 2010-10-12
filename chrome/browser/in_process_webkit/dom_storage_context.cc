@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/in_process_webkit/dom_storage_area.h"
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
