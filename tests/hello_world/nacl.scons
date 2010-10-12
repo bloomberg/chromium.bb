@@ -4,6 +4,7 @@
 # be found in the LICENSE file.
 
 Import('env')
+import os
 
 env.ComponentProgram('hello_world.nexe', 'hello_world.c')
 node = env.CommandSelLdrTestNacl(
@@ -14,6 +15,22 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_hello_world_test')
+
+
+def CheckFileSize(target, source, env):
+  expected_max = 10000
+  actual_size = os.stat(source[0].abspath).st_size
+  if actual_size > expected_max:
+    raise Exception("File %s larger than expected: expected upto %i but got %i"
+                    % (source[0].abspath, expected_size, actual_max))
+
+if env.Bit('nacl_glibc'):
+  # Check the (unstripped) executable size.  The main purpose of this
+  # is to check that we have not acquired any 64k-page-size padding,
+  # which would bump the size above 64k.
+  node = env.Command('hello_world_size_check.out', env.File('hello_world.nexe'),
+                     CheckFileSize)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_world_size_test')
 
 
 env.ComponentProgram('at_exit.nexe', 'at_exit.c')
