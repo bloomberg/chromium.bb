@@ -434,7 +434,6 @@ void PluginList::GetPluginInfoArray(const GURL& url,
   // and the default plugin is enabled.
   if (!plugins_.empty() && webkit_glue::IsDefaultPluginEnabled()) {
     const WebPluginInfo& default_info = plugins_.back();
-    DCHECK(default_info.path.value() == kDefaultPluginLibraryName);
     if (SupportsType(default_info, mime_type, allow_wildcard)) {
       info->push_back(default_info);
       if (actual_mime_types)
