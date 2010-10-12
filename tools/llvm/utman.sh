@@ -48,7 +48,7 @@ readonly REAL_CROSS_TARGET=pnacl
 
 readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
 readonly ARM_ARCH=armv7-a
-readonly ARM_FPU=vfp3
+readonly ARM_FPU=vfp
 readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
 readonly GCC_VER="4.2.1"
 
@@ -2623,13 +2623,13 @@ bitcode-to-native-arm() {
   local destfile="$2"
   local sfile="${objfile}.arm.s"
 
-  ${INSTALL_DIR}/bin/llc -march=arm -mcpu=cortex-a8 -mattr=-neon -mattr=+vfp3 \
+  ${INSTALL_DIR}/bin/llc -march=arm -mcpu=cortex-a8 -mattr=-neon -mattr=+vfp2 \
                          -arm-reserve-r9 -sfi-cp-fudge \
                          -sfi-cp-fudge-percent=75 -sfi-store -sfi-stack \
                          -sfi-branch -sfi-data -no-inline-jumptables \
                          "${objfile}" -o "${sfile}"
 
-  ${INSTALL_DIR}/bin/arm-none-linux-gnueabi-as -mfpu=vfp3 -march=armv7-a \
+  ${INSTALL_DIR}/bin/arm-none-linux-gnueabi-as -mfpu=vfp2 -march=armv7-a \
                          "${sfile}" -o "${destfile}"
 
   rm "${sfile}"

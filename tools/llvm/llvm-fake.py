@@ -94,7 +94,7 @@ PNACL_BITCODE_ROOT = BASE + '/libs-bitcode'
 ######################################################################
 # FLAGS (can be overwritten by
 ######################################################################
-arm_flags = ['-mfpu=vfp3',
+arm_flags = ['-mfpu=vfp',
              '-march=armv7-a']
 cpp_flags = ['-D__native_client__=1']
 
@@ -155,7 +155,7 @@ global_config_flags = {
       # c.f. lib/Target/ARM/ARMGenSubtarget.inc
       '-mcpu=cortex-a8',
       '-mattr=-neon',
-      '-mattr=+vfp3',
+      '-mattr=+vfp2',
       '-arm-reserve-r9',
       # The following options might come in hand and are left
       # here as comments:
