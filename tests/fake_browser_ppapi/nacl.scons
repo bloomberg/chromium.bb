@@ -38,10 +38,6 @@ if trusted_env.Bit('windows'):
     )
     trusted_env.Tool('atlmfc_vc80')
 
-# TODO(sehr,polina): when the plugin is built on Win/Mac, enable this test.
-if not trusted_env.Bit('linux'):
-  Return()
-
 
 trusted_env.Append(LIBS=['ppapi_browser', 'ppapi_plugin', 'platform', 'gio'])
 
@@ -67,7 +63,7 @@ log_file = env.File('fake_browser_ppapi.out').abspath
 node = env.CommandTest('fake_browser_ppapi.out',
                        [fake_browser[0],
                         plugin,
-                        'http://localhost:5103/srpc_hw.html',
+                        'http://localhost:5103/basic_object.html',
                         '"id=nacl_module;src=ppapi_basic_object.nexe"',
                         '${STAGING_DIR}'
                        ],

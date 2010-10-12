@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
@@ -32,7 +33,9 @@ PP_Var* NewStringVar(PP_Module browser_module, const char* str) {
   }
 
   PP_Var* var = reinterpret_cast<PP_Var*>(malloc(sizeof(*var)));
-  *var = ppb_var->VarFromUtf8(browser_module, str, strlen(str));
+  *var = ppb_var->VarFromUtf8(browser_module,
+                              str,
+                              nacl::assert_cast<uint32_t>(strlen(str)));
   return var;
 }
 
