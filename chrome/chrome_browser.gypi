@@ -1543,8 +1543,7 @@
         'browser/extensions/extension_test_api.h',
         'browser/extensions/extension_tts_api.cc',
         'browser/extensions/extension_tts_api.h',
-        'browser/extensions/extension_tts_api_chromeos.cc',
-        'browser/extensions/extension_tts_api_linux.cc',
+        'browser/extensions/extension_tts_api_gtk.cc',
         'browser/extensions/extension_tts_api_mac.mm',
         'browser/extensions/extension_tts_api_util.cc',
         'browser/extensions/extension_tts_api_util.h',
@@ -3295,7 +3294,7 @@
             ['exclude', 'browser/dom_ui/filebrowse_ui.cc'],
             ['exclude', 'browser/dom_ui/mediaplayer_ui.cc'],
             ['exclude', 'browser/dom_ui/slideshow_ui.cc'],
-            ['exclude', 'browser/extensions/extension_tts_api_chromeos.cc'],
+            ['exclude', 'browser/extensions/extension_tts_api.cc'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.cc'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.h'],
           ],
@@ -3961,11 +3960,13 @@
             # non-ChromeOS views Linux builds.
             ['OS=="linux" and toolkit_views==1 and chromeos==0', {
               'sources/': [
+                ['exclude', '^browser/extensions/extension_tts_api.cc'],
                 ['include', '^browser/gtk/dialogs_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.h'],
                 ['include', '^browser/views/notifications/balloon_view.cc'],
                 ['include', '^browser/views/notifications/balloon_view.h'],
+
                 ['exclude', '^browser/views/select_file_dialog.cc'],
               ],
             }],
@@ -3982,7 +3983,7 @@
             }],
             ['OS=="linux" and chromeos==1',{
               'sources/': [
-                ['exclude', '^browser/extensions/extension_tts_api_linux.cc'],
+                ['exclude', '^browser/extensions/extension_tts_api_gtk.cc'],
                 ['exclude', '^browser/notifications/balloon_collection.cc'],
                 ['exclude', '^browser/notifications/balloon_collection_impl.h'],
                 ['exclude', '^browser/notifications/balloon_collection_linux.cc'],
