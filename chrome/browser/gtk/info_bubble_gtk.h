@@ -15,6 +15,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <vector>
 
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
@@ -144,7 +145,7 @@ class InfoBubbleGtk : public NotificationObserver {
   // sure that we have the input focus.
   void GrabPointerAndKeyboard();
 
-  CHROMEG_CALLBACK_3(InfoBubbleGtk, gboolean, OnEscape, GtkAccelGroup*,
+  CHROMEG_CALLBACK_3(InfoBubbleGtk, gboolean, OnGtkAccelerator, GtkAccelGroup*,
                      GObject*, guint, GdkModifierType);
 
   CHROMEGTK_CALLBACK_1(InfoBubbleGtk, gboolean, OnExpose, GdkEventExpose*);

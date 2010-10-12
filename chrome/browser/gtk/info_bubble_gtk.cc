@@ -5,12 +5,13 @@
 #include "chrome/browser/gtk/info_bubble_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/gtk/info_bubble_accelerators_gtk.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
 #include "gfx/path.h"
@@ -111,10 +112,22 @@ void InfoBubbleGtk::Init(GtkWidget* anchor_widget,
   // Resizing is handled by the program, not user.
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
 
-  // Attach our accelerator group to the window with an escape accelerator.
-  gtk_accel_group_connect(accel_group_, GDK_Escape,
-      static_cast<GdkModifierType>(0), static_cast<GtkAccelFlags>(0),
-      g_cclosure_new(G_CALLBACK(&OnEscapeThunk), this, NULL));
+  // Attach all of the accelerators to the bubble.
+  InfoBubbleAcceleratorGtkList acceleratorList =
+      InfoBubbleAcceleratorsGtk::GetList();
+  for (InfoBubbleAcceleratorGtkList::const_iterator iter =
+           acceleratorList.begin();
+       iter != acceleratorList.end();
+       ++iter) {
+    gtk_accel_group_connect(accel_group_,
+                            iter->keyval,
+                            iter->modifier_type,
+                            GtkAccelFlags(0),
+                            g_cclosure_new(G_CALLBACK(&OnGtkAcceleratorThunk),
+                                           this,
+                                           NULL));
+  }
+
   gtk_window_add_accel_group(GTK_WINDOW(window_), accel_group_);
 
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -380,10 +393,60 @@ void InfoBubbleGtk::GrabPointerAndKeyboard() {
   }
 }
 
-gboolean InfoBubbleGtk::OnEscape(GtkAccelGroup* group, GObject* acceleratable,
-                                 guint keyval, GdkModifierType modifier) {
-  closed_by_escape_ = true;
-  Close();
+gboolean InfoBubbleGtk::OnGtkAccelerator(GtkAccelGroup* group,
+                                         GObject* acceleratable,
+                                         guint keyval,
+                                         GdkModifierType modifier) {
+  GdkEventKey msg;
+  GdkKeymapKey* keys;
+  gint n_keys;
+
+  switch (keyval) {
+    case GDK_Escape:
+      // Close on Esc and trap the accelerator
+      closed_by_escape_ = true;
+      Close();
+      return TRUE;
+    case GDK_w:
+      // Close on C-w and forward the accelerator
+      if (modifier & GDK_CONTROL_MASK) {
+        Close();
+      }
+      break;
+    default:
+      return FALSE;
+  }
+
+  gdk_keymap_get_entries_for_keyval(NULL,
+                                    keyval,
+                                    &keys,
+                                    &n_keys);
+  if (n_keys) {
+    // Forward the accelerator to root window the bubble is anchored
+    // to for further processing
+    msg.type = GDK_KEY_PRESS;
+    msg.window = GTK_WIDGET(toplevel_window_)->window;
+    msg.send_event = TRUE;
+    msg.time = GDK_CURRENT_TIME;
+    msg.state = modifier | GDK_MOD2_MASK;
+    msg.keyval = keyval;
+    // length and string are deprecated and thus zeroed out
+    msg.length = 0;
+    msg.string = NULL;
+    msg.hardware_keycode = keys[0].keycode;
+    msg.group = keys[0].group;
+    msg.is_modifier = 0;
+
+    g_free(keys);
+
+    gtk_main_do_event(reinterpret_cast<GdkEvent*>(&msg));
+  } else {
+    // This means that there isn't a h/w code for the keyval in the
+    // current keymap, which is weird but possible if the keymap just
+    // changed. This isn't a critical error, but might be indicative
+    // of something off if it happens regularly.
+    DLOG(WARNING) << "Found no keys for value " << keyval;
+  }
   return TRUE;
 }
 

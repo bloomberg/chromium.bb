@@ -1820,6 +1820,8 @@
         'browser/gtk/import_progress_dialog_gtk.h',
         'browser/gtk/info_bubble_gtk.cc',
         'browser/gtk/info_bubble_gtk.h',
+        'browser/gtk/info_bubble_accelerators_gtk.cc',
+        'browser/gtk/info_bubble_accelerators_gtk.h',
         'browser/gtk/infobar_container_gtk.cc',
         'browser/gtk/infobar_container_gtk.h',
         'browser/gtk/infobar_gtk.cc',
