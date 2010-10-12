@@ -175,7 +175,7 @@ void ClearServerDataView::InitControlVisibility() {
   throbber_->SetVisible(false);
   status_label_->SetVisible(false);
 
-  // Only show the sync portion if not behind the flag
+  // Only show the sync portion if behind the flag
   chrome_sync_title_label_->SetVisible(allow_clear_server_data_ui);
   chrome_sync_description_label_->SetVisible(allow_clear_server_data_ui);
   clear_server_data_button_->SetVisible(allow_clear_server_data_ui);
@@ -284,20 +284,18 @@ void ClearServerDataView::OnStateChanged() {
 // ClearServerDataView, private:
 
 void ClearServerDataView::UpdateControlEnabledState() {
-  bool delete_in_progress = false;
-
   // Succeeded/FailedClearingServerData should only be called once, not every
   // time the view is refreshed.  As such, on success/failure handle that state
   // and immediately reset things back to CLEAR_NOT_STARTED.
   ProfileSyncService::ClearServerDataState clear_state =
-      (sync_service_ == NULL) ?
-      ProfileSyncService::CLEAR_NOT_STARTED :
-      sync_service_->GetClearServerDataState();
+      sync_service_ ?
+      sync_service_->GetClearServerDataState() :
+      ProfileSyncService::CLEAR_NOT_STARTED;
 
-  if (NULL != sync_service_) {
+  if (sync_service_)
     sync_service_->ResetClearServerDataState();
-  }
 
+  bool delete_in_progress = false;
   switch (clear_state) {
     case ProfileSyncService::CLEAR_NOT_STARTED:
       // This can occur on a first start and after a failed clear (which does
