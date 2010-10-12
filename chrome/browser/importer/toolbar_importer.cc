@@ -206,7 +206,8 @@ void Toolbar5Importer::EndImport() {
       data_fetcher_ = NULL;
     }
 
-    bridge_->NotifyEnded();
+    if (bridge_)
+      bridge_->NotifyEnded();
   }
 }
 
