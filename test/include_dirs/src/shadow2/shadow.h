@@ -1,1 +1,1 @@
-#define SHADOW_STRING "subdir2/shadow.h"
+#define SHADOW_STRING "shadow2/shadow.h"
