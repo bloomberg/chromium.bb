@@ -2898,3 +2898,17 @@
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
    fun:_ZN54_GLOBAL__N_base_worker_pool_linux.cc_00000000_0D71404812WorkerThread10ThreadMainEv
 }
+{
+   bug_58863
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos25ParallelAuthenticatorTest18CreateAttemptStateEv
+   fun:_ZN8chromeos54ParallelAuthenticatorTest_ResolvePossiblePwChange_Test8TestBodyEv
+}
+{
+   bug_58863_2
+   Memcheck:Addr4
+   ...
+   fun:_ZN8chromeos25ParallelAuthenticatorTest12CheckResolveEPNS_16TestAttemptStateEPNS_21ParallelAuthenticatorENS3_9AuthStateE   
+   fun:_Z18DispatchToFunctionIPFvPN8chromeos16TestAttemptStateEPNS0_21ParallelAuthenticatorENS3_9AuthStateEES2_S4_S5_EvT_RK6Tuple3IT0_T1_T2_E
+}
