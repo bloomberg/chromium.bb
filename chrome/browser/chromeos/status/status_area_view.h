@@ -14,7 +14,7 @@ namespace chromeos {
 
 class ClockMenuButton;
 class FeedbackMenuButton;
-class LanguageMenuButton;
+class InputMethodMenuButton;
 class NetworkMenuButton;
 class PowerMenuButton;
 class StatusAreaHost;
@@ -35,7 +35,7 @@ class StatusAreaView : public AccessibleToolbarView {
 
   ClockMenuButton* clock_view() { return clock_view_; }
   FeedbackMenuButton* feedback_view() { return feedback_view_; }
-  LanguageMenuButton* language_view() { return language_view_; }
+  InputMethodMenuButton* input_method_view() { return input_method_view_; }
   NetworkMenuButton* network_view() { return network_view_; }
   PowerMenuButton* power_view() { return power_view_; }
 
@@ -44,7 +44,7 @@ class StatusAreaView : public AccessibleToolbarView {
 
   ClockMenuButton* clock_view_;
   FeedbackMenuButton* feedback_view_;
-  LanguageMenuButton* language_view_;
+  InputMethodMenuButton* input_method_view_;
   NetworkMenuButton* network_view_;
   PowerMenuButton* power_view_;
 

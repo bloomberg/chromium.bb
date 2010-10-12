@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/feedback_menu_button.h"
-#include "chrome/browser/chromeos/status/language_menu_button.h"
+#include "chrome/browser/chromeos/status/input_method_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
@@ -23,15 +23,15 @@ StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
       clock_view_(NULL),
       feedback_view_(NULL),
-      language_view_(NULL),
+      input_method_view_(NULL),
       network_view_(NULL),
       power_view_(NULL) {
 }
 
 void StatusAreaView::Init() {
-  // Language.
-  language_view_ = new LanguageMenuButton(host_);
-  AddChildView(language_view_);
+  // InputMethod.
+  input_method_view_ = new InputMethodMenuButton(host_);
+  AddChildView(input_method_view_);
 
   // Feedback.
   feedback_view_ = new FeedbackMenuButton(host_);

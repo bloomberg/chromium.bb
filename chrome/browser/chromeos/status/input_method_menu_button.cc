@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/status/language_menu_button.h"
+#include "chrome/browser/chromeos/status/input_method_menu_button.h"
 
 #include <string>
 
@@ -30,9 +30,9 @@ PrefService* GetPrefService(chromeos::StatusAreaHost* host) {
 namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
-// LanguageMenuButton
+// InputMethodMenuButton
 
-LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
+InputMethodMenuButton::InputMethodMenuButton(StatusAreaHost* host)
     : StatusAreaButton(this),
       InputMethodMenu(GetPrefService(host),
                       host->IsBrowserMode(),
@@ -51,13 +51,13 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   // |pref_service| is not available (for example, unit tests) or |pref_service|
   // is available, but Chrome preferences are not available (for example,
   // initial OS boot).
-  LanguageMenuButton::UpdateUI(L"US", L"");
+  InputMethodMenuButton::UpdateUI(L"US", L"");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // views::View implementation:
 
-void LanguageMenuButton::OnLocaleChanged() {
+void InputMethodMenuButton::OnLocaleChanged() {
   input_method::OnLocaleChanged();
   const InputMethodDescriptor& input_method =
       CrosLibrary::Get()->GetInputMethodLibrary()->current_input_method();
@@ -69,7 +69,7 @@ void LanguageMenuButton::OnLocaleChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodMenu::InputMethodMenuHost implementation:
 
-void LanguageMenuButton::UpdateUI(
+void InputMethodMenuButton::UpdateUI(
     const std::wstring& name, const std::wstring& tooltip) {
   // Hide the button only if there is only one input method, and the input
   // method is a XKB keyboard layout. We don't hide the button for other
@@ -92,11 +92,11 @@ void LanguageMenuButton::UpdateUI(
   SchedulePaint();
 }
 
-void LanguageMenuButton::OpenConfigUI() {
+void InputMethodMenuButton::OpenConfigUI() {
   host_->OpenButtonOptions(this);  // ask browser to open the DOMUI page.
 }
 
-bool LanguageMenuButton::ShouldSupportConfigUI() {
+bool InputMethodMenuButton::ShouldSupportConfigUI() {
   return host_->ShouldOpenButtonOptions(this);
 }
 

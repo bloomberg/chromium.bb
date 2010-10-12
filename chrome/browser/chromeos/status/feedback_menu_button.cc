@@ -17,7 +17,7 @@
 namespace chromeos {
 
 ////////////////////////////////////////////////////////////////////////////////
-// LanguageMenuButton
+// FeedbackMenuButton
 
 FeedbackMenuButton::FeedbackMenuButton(StatusAreaHost* host)
     : StatusAreaButton(this),
