@@ -223,6 +223,7 @@ void DOMUIMenuWidget::EnableInput(bool select_item) {
   if (select_item) {
     ExecuteJavascript(L"selectItem()");
   }
+  domui_menu_->InputIsReady();
 }
 
 void DOMUIMenuWidget::ExecuteJavascript(const std::wstring& script) {

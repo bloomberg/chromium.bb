@@ -76,7 +76,8 @@ NativeMenuDOMUI::NativeMenuDOMUI(menus::MenuModel* menu_model, bool root)
       activated_menu_(NULL),
       activated_index_(-1),
       menu_action_(MENU_ACTION_NONE),
-      menu_url_(StringPrintf("chrome://%s", chrome::kChromeUIMenu)) {
+      menu_url_(StringPrintf("chrome://%s", chrome::kChromeUIMenu)),
+      on_menu_opened_called_(false) {
   menu_widget_ = new DOMUIMenuWidget(this, root);
   // Set the initial location off the screen not to show small
   // window with dropshadow.
@@ -119,9 +120,9 @@ void NativeMenuDOMUI::RunMenuAt(const gfx::Point& point, int alignment) {
       MenuLocator::CreateContextMenuLocator(point) :
       MenuLocator::CreateDropDownMenuLocator(point);
   ShowAt(locator);
-  FOR_EACH_OBSERVER(views::MenuListener, listeners_, OnMenuOpened());
   DCHECK(!menu_shown_);
   menu_shown_ = true;
+  on_menu_opened_called_ = false;
 
   // TODO(oshima): A menu must be deleted when parent window is
   // closed. Menu2 doesn't know about the parent window, however, so
@@ -324,6 +325,13 @@ Profile* NativeMenuDOMUI::GetProfile() {
   if (!browser)
     return ProfileManager::GetDefaultProfile();
   return browser->GetProfile();
+}
+
+void NativeMenuDOMUI::InputIsReady() {
+  if (!on_menu_opened_called_) {
+    on_menu_opened_called_ = true;
+    FOR_EACH_OBSERVER(views::MenuListener, listeners_, OnMenuOpened());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

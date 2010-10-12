@@ -198,16 +198,19 @@ class ToolbarView : public AccessibleToolbarView,
   // The contents of the wrench menu.
   scoped_ptr<menus::SimpleMenuModel> wrench_menu_model_;
 
-  // Wrench menu.
 #if defined(OS_CHROMEOS)
+  // Wrench menu.
   scoped_ptr<views::Menu2> wrench_menu_;
+
+  // MenuLister is managed by Menu2 on chromeos.
+
 #else
+  // Wrench menu.
   scoped_refptr<WrenchMenu> wrench_menu_;
-#endif
 
   // Vector of listeners to receive callbacks when the menu opens.
   std::vector<views::MenuListener*> menu_listeners_;
-
+#endif
   // The animation that makes the update reminder pulse.
   scoped_ptr<SlideAnimation> update_reminder_animation_;
 

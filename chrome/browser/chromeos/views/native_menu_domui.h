@@ -78,6 +78,10 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   // Returns the profile to create DOMView.
   Profile* GetProfile();
 
+  // Called when the menu is ready to accept input.
+  // Used in interactive_ui_test to wait for menu opened.
+  void InputIsReady();
+
   // Sets/Gets the url for the domui menu.
   void set_menu_url(const GURL& url) { menu_url_ = url; }
   const GURL& menu_url() const { return menu_url_; }
@@ -132,6 +136,9 @@ class NativeMenuDOMUI : public views::MenuWrapper,
   // custom menu can use different url using SetMenuURL method
   // (e.g. chrome://wrench-menu for wrench menu).
   GURL menu_url_;
+
+  // A guard flag to avoid calling MenuListener::OnMenuOpened twice.
+  bool on_menu_opened_called_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuDOMUI);
 };

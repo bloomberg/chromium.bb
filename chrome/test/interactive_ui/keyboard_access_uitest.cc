@@ -105,20 +105,11 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
   ASSERT_EQ(1, tab_index);
 }
 
-#if defined(OS_CHROMEOS)
-// crosbug.com/7642.
-#define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
-#define MAYBE_TestAltMenuKeyboardAccess DISABLED_TestAltMenuKeyboardAccess
-#else
-#define MAYBE_TestMenuKeyboardAccess TestMenuKeyboardAccess
-#define MAYBE_TestAltMenuKeyboardAccess TestAltMenuKeyboardAccess
-#endif
-
-TEST_F(KeyboardAccessTest, MAYBE_TestMenuKeyboardAccess) {
+TEST_F(KeyboardAccessTest, TestMenuKeyboardAccess) {
   TestMenuKeyboardAccess(false, 0);
 }
 
-TEST_F(KeyboardAccessTest, MAYBE_TestAltMenuKeyboardAccess) {
+TEST_F(KeyboardAccessTest, TestAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, 0);
 }
 
