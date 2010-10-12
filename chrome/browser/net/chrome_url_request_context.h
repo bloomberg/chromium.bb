@@ -211,7 +211,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   bool is_off_the_record_;
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContext);
 };
 
