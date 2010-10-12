@@ -71,8 +71,6 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   }
 };
 
-}  // namespace
-
 // This test verifies that when a navigation occurs within a tab, the tab count
 // of the Browser remains the same and the current tab bears the loaded URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
@@ -381,3 +379,4 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
   EXPECT_EQ(2, browser()->tab_count());
 }
 
+}  // namespace
