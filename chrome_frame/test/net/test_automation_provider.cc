@@ -38,7 +38,8 @@ TestAutomationProvider::TestAutomationProvider(
                                       TestAutomationProvider::Factory);
   URLRequest::RegisterProtocolFactory("https",
                                       TestAutomationProvider::Factory);
-  filter_ = new TestAutomationResourceMessageFilter(this);
+  automation_resource_message_filter_ =
+      new TestAutomationResourceMessageFilter(this);
   g_provider_instance_ = this;
 }
 
@@ -47,7 +48,7 @@ TestAutomationProvider::~TestAutomationProvider() {
 }
 
 void TestAutomationProvider::OnMessageReceived(const IPC::Message& msg) {
-  if (filter_->OnMessageReceived(msg))
+  if (automation_resource_message_filter_->OnMessageReceived(msg))
     return;  // Message handled by the filter.
 
   __super::OnMessageReceived(msg);
@@ -89,7 +90,7 @@ URLRequestJob* TestAutomationProvider::Factory(URLRequest* request,
       static int new_id = 0x00100000;
       URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
           g_provider_instance_->tab_handle_, new_id++,
-          g_provider_instance_->filter_, false);
+          g_provider_instance_->automation_resource_message_filter_, false);
       return job;
     }
   }

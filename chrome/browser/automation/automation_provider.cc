@@ -152,7 +152,10 @@ AutomationProvider::~AutomationProvider() {
 void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
   TRACE_EVENT_BEGIN("AutomationProvider::ConnectToChannel", 0, "");
 
-  automation_resource_message_filter_ = new AutomationResourceMessageFilter;
+  if (!automation_resource_message_filter_.get()) {
+    automation_resource_message_filter_ = new AutomationResourceMessageFilter;
+  }
+
   channel_.reset(
       new IPC::SyncChannel(channel_id, IPC::Channel::MODE_CLIENT, this,
                            automation_resource_message_filter_,

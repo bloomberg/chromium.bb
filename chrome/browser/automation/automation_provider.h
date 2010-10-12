@@ -209,6 +209,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       bool find_next,
       IPC::Message* reply_message);
 
+  scoped_refptr<AutomationResourceMessageFilter>
+      automation_resource_message_filter_;
+
  private:
   void OnUnhandledMessage();
 
@@ -397,8 +400,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       extension_test_result_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
   PortContainerMap port_containers_;
-  scoped_refptr<AutomationResourceMessageFilter>
-      automation_resource_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };

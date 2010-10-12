@@ -47,7 +47,6 @@ class TestAutomationProvider
       TestAutomationProviderDelegate* delegate);
 
  protected:
-  scoped_refptr<TestAutomationResourceMessageFilter> filter_;
   int tab_handle_;
   TestAutomationProviderDelegate* delegate_;
 
