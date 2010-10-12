@@ -17,6 +17,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/cert_database.h"
+#include "net/base/cert_status_flags.h"
+#include "net/base/cert_verify_result.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
@@ -426,5 +428,74 @@ TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
   EXPECT_EQ("Test CA", cert_list[0]->subject().common_name);
 }
 
+TEST_F(CertDatabaseNSSTest, ImportServerCert) {
+  // Need to import intermediate cert for the verify of google cert, otherwise
+  // it will try to fetch it automatically with cert_pi_useAIACertFetch, which
+  // will cause OCSPCreateSession on the main thread, which is not allowed.
+  std::string cert_data = ReadTestFile("google.chain.pem");
+  CertificateList certs =
+      X509Certificate::CreateCertificateListFromBytes(
+          cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(2U, certs.size());
+
+  CertDatabase::ImportCertFailureList failed;
+  EXPECT_EQ(true, cert_db_.ImportServerCert(certs, &failed));
+
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(2U, cert_list.size());
+  scoped_refptr<X509Certificate> goog_cert(cert_list[0]);
+  scoped_refptr<X509Certificate> thawte_cert(cert_list[1]);
+  EXPECT_EQ("www.google.com", goog_cert->subject().common_name);
+  EXPECT_EQ("Thawte SGC CA", thawte_cert->subject().common_name);
+
+  EXPECT_EQ(CertDatabase::UNTRUSTED,
+            cert_db_.GetCertTrust(goog_cert.get(), SERVER_CERT));
+  psm::nsNSSCertTrust goog_trust(goog_cert->os_cert_handle()->trust);
+  EXPECT_TRUE(goog_trust.HasPeer(PR_TRUE, PR_TRUE, PR_TRUE));
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = goog_cert->Verify("www.google.com", flags, &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0, verify_result.cert_status);
+}
+
+TEST_F(CertDatabaseNSSTest, ImportServerCert_SelfSigned) {
+  CertificateList certs;
+  ASSERT_TRUE(ReadCertIntoList("punycodetest.der", &certs));
+
+  CertDatabase::ImportCertFailureList failed;
+  EXPECT_EQ(true, cert_db_.ImportServerCert(certs, &failed));
+
+  EXPECT_EQ(0U, failed.size());
+
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(1U, cert_list.size());
+  scoped_refptr<X509Certificate> puny_cert(cert_list[0]);
+
+  EXPECT_EQ(CertDatabase::UNTRUSTED,
+            cert_db_.GetCertTrust(puny_cert.get(), SERVER_CERT));
+  psm::nsNSSCertTrust puny_trust(puny_cert->os_cert_handle()->trust);
+  EXPECT_TRUE(puny_trust.HasPeer(PR_TRUE, PR_TRUE, PR_TRUE));
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = puny_cert->Verify("xn--wgv71a119e.com", flags, &verify_result);
+  EXPECT_EQ(ERR_CERT_AUTHORITY_INVALID, error);
+  EXPECT_EQ(CERT_STATUS_AUTHORITY_INVALID, verify_result.cert_status);
+
+  // TODO(mattm): this should be SERVER_CERT, not CA_CERT, but that does not
+  // work due to NSS bug: https://bugzilla.mozilla.org/show_bug.cgi?id=531160
+  EXPECT_TRUE(cert_db_.SetCertTrust(
+      puny_cert.get(), CA_CERT,
+      CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL));
+
+  verify_result.Reset();
+  error = puny_cert->Verify("xn--wgv71a119e.com", flags, &verify_result);
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(0, verify_result.cert_status);
+}
 
 }  // namespace net
