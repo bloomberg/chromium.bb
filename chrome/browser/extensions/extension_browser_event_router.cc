@@ -388,7 +388,14 @@ void ExtensionBrowserEventRouter::TabUpdated(TabContents* contents,
     std::string json_args;
     base::JSONWriter::Write(&args, false, &json_args);
 
+    // TODO(finnur): Remove once I have one failed run of this test.
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** not SENDING TabUpdated\n");
+
     DispatchEvent(contents->profile(), events::kOnTabUpdated, json_args);
+  } else {
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** NOT SENDING TabUpdated\n");
   }
 }
 
@@ -398,6 +405,8 @@ void ExtensionBrowserEventRouter::Observe(NotificationType type,
   if (type == NotificationType::NAV_ENTRY_COMMITTED) {
     NavigationController* source_controller =
         Source<NavigationController>(source).ptr();
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** Observe, preparing TabUpdated\n");
     TabUpdated(source_controller->tab_contents(), true);
   } else if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
     // Tab was destroyed after being detached (without being re-attached).
@@ -421,6 +430,8 @@ void ExtensionBrowserEventRouter::Observe(NotificationType type,
 void ExtensionBrowserEventRouter::TabChangedAt(TabContents* contents,
                                                int index,
                                                TabChangeType change_type) {
+  if (Extension::emit_traces_for_whitelist_extension_test_)
+    printf("***** TabChangedAt, preparing TabUpdated\n");
   TabUpdated(contents, false);
 }
 

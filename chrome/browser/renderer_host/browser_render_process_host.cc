@@ -705,13 +705,6 @@ void BrowserRenderProcessHost::SendExtensionInfo() {
         extension->CanExecuteScriptEverywhere();
     info.host_permissions = extension->host_permissions();
 
-    // TODO(finnur): Remove after capturing debug info.
-    if (Extension::emit_traces_for_whitelist_extension_test_) {
-      printf("*-*-* Sending down: %d for %s\n",
-             info.allowed_to_execute_script_everywhere,
-             info.name.c_str());
-    }
-
     // The icon in the page is 96px.  We'd rather not scale up, so use 128.
     info.icon_url = extension->GetIconURL(Extension::EXTENSION_ICON_LARGE,
                                           ExtensionIconSet::MATCH_EXACTLY);

@@ -40,10 +40,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
-// TODO(finur): Remove once I have one failed run of the Whitelist extension
-// test.
-#include <iostream>
-
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
@@ -2155,29 +2151,21 @@ bool Extension::IsAPIPermission(const std::string& str) {
 }
 
 bool Extension::CanExecuteScriptEverywhere() const {
-  if (location() == Extension::COMPONENT) {
-    if (emit_traces_for_whitelist_extension_test_)
-      printf("***** CAN execute (is component)\n");
+  if (location() == Extension::COMPONENT)
     return true;
-  }
 
   ScriptingWhitelist* whitelist =
       ExtensionConfig::GetSingleton()->whitelist();
 
-  if (emit_traces_for_whitelist_extension_test_)
-    printf("***** CanExecuteScriptEverywhere() called \n");
-
   for (ScriptingWhitelist::const_iterator it = whitelist->begin();
        it != whitelist->end(); ++it) {
     if (id() == *it) {
-      if (emit_traces_for_whitelist_extension_test_)
-        printf("***** CAN execute\n");
       return true;
     }
   }
 
   if (emit_traces_for_whitelist_extension_test_)
-    printf("***** Can NOT execute \n");
+    printf("***** CanExecuteScriptEverywhere returns FALSE \n");
   return false;
 }
 
