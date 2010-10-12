@@ -22,5 +22,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tts) {
   crosMock.InitMockSpeechSynthesisLibrary();
   crosMock.SetSpeechSynthesisLibraryExpectations();
 
-  ASSERT_TRUE(RunExtensionTest("tts")) << message_;
+  ASSERT_TRUE(RunExtensionTest("tts/chromeos")) << message_;
 }
