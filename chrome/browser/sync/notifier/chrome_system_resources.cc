@@ -110,6 +110,12 @@ void ChromeSystemResources::Log(
   }
 }
 
+void ChromeSystemResources::RunAndDeleteStorageCallback(
+    invalidation::StorageCallback* callback) {
+  callback->Run(true);
+  delete callback;
+}
+
 void ChromeSystemResources::WriteState(
     const invalidation::string& state,
     invalidation::StorageCallback* callback) {
@@ -117,9 +123,13 @@ void ChromeSystemResources::WriteState(
   state_writer_->WriteState(state);
   // According to the cache invalidation API folks, we can do this as
   // long as we make sure to clear the persistent state that we start
-  // up the cache invalidation client with.
-  callback->Run(true);
-  delete callback;
+  // up the cache invalidation client with.  However, we musn't do it
+  // right away, as we may be called under a lock that the callback
+  // uses.
+  ScheduleImmediately(
+      invalidation::NewPermanentCallback(
+          this, &ChromeSystemResources::RunAndDeleteStorageCallback,
+          callback));
 }
 
 Task* ChromeSystemResources::MakeTaskToPost(

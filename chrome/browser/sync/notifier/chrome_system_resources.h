@@ -65,6 +65,10 @@ class ChromeSystemResources : public invalidation::SystemResources {
 
   // Runs the task, deletes it, and removes it from |posted_tasks_|.
   void RunPostedTask(invalidation::Closure* task);
+
+  // Runs the given storage callback with "true" and deletes it.
+  void RunAndDeleteStorageCallback(
+      invalidation::StorageCallback* callback);
 };
 
 }  // namespace sync_notifier
