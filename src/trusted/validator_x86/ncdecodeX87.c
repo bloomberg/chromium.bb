@@ -6,568 +6,224 @@
 /*
  * ncdecodex87.c - Handles x87 instructions.
  *
+ * Note: These instructions are derived from tabler A-10 in Appendx
+ * section A.2.7 - x87 Encodings in AMD document 24594-Rev.3.14-September
+ * 2007, "AMD64 Architecture Programmer's manual Volume 3: General-Purpose
+ * and System Instructions".
+ *
  * Note: This modeling code doesn't handle several aspects of floating point
  * operations. This includes:
  *
  * 1) Doesn't model condition flags.
  * 2) Doesn't model floating point stack adjustments.
- * 3) Doesn't model differences in size of pointed to memory.
+ * 3) Doesn't model all differences in size of pointed to memory ($M is used
+ *    in such cases).
+ *
+ * Note: %st0 and %st1 have been inserted and made explicit, when necessary
+ * to match the disassembler xed.
  */
 
 #ifndef NACL_TRUSTED_BUT_NOT_TCB
 #error("This file is not meant for use in the TCB")
 #endif
 
+#include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
-/* Define an x87 instruction with no operands. */
-static void NaClDefX87NoOperands(const NaClInstPrefix prefix,
-                                 const uint8_t opcode,
-                                 const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 instruction that uses AX. */
-static void NaClDefX87Ax(const NaClInstPrefix  prefix,
-                         const uint8_t opcode,
-                         const NaClMnemonic mnemonic,
-                         const NaClOpFlags ax_flags) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegAX, ax_flags);
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 instruction with no operands, but is extended using
- * the modrm byte.
- */
-#if (0 == 1)
-/* TODO(kschimpf): Delete this function if unneeded. */
-static void NaClDefX87MrmNoOperands(const NaClInstPrefix prefix,
-                                    const uint8_t opcode,
-                                    const NaClOpKind opcode_in_modrm,
-                                    const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeInModRm), mnemonic);
-  NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClResetToDefaultInstPrefix();
-}
-#endif
-
-/* Define an x87 instruction that uses a single argument st0 */
-static void NaClDefX87St0(const NaClInstPrefix prefix,
-                          const uint8_t opcode,
-                          const NaClOpKind opcode_in_modrm,
-                          NaClMnemonic mnemonic,
-                          const NaClOpFlags st0_flags) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST0, st0_flags);
-  NaClResetToDefaultInstPrefix();
-}
-
-#if (0 == 1)
-/* TODO(kschimpf): Delete this function if unneeded. */
-static void BrokenOldDefineX87St0(const NaClInstPrefix prefix,
-                                  const uint8_t opcode,
-                                  const NaClOpKind opcode_in_modrm,
-                                  NaClMnemonic mnemonic,
-                                  const NaClOpFlags st0_flags) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeInModRm), mnemonic);
-  NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, st0_flags);
-  NaClResetToDefaultInstPrefix();
-}
-#endif
-
-/* Define an x87 instruction that uses a single memory pointer. */
-static void NaClDefX87LtC0Mem(const NaClInstPrefix prefix,
-                              const uint8_t opcode,
-                              const NaClOpKind opcode_in_modrm,
-                              const NaClMnemonic mnemonic,
-                              const NaClOpFlags mfp_flags) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
-  NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(M_Operand, mfp_flags);
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 instruction that has two operands, a memory pointer
- * and st0, and the memory pointer is defined by the value of st0.
- */
-static void NaClDefX87LtC0MoveMemSt0(const NaClInstPrefix prefix,
-                                     const uint8_t opcode,
-                                     const NaClOpKind opcode_in_modrm,
-                                     const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
-  NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(M_Operand, NACL_OPFLAG(OpSet));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 instruciton that assigns St0 to the value in a
- * memory pointer. */
-static void NaClDefX87LtC0MoveSt0Mem(const NaClInstPrefix prefix,
-                                     const uint8_t opcode,
-                                     const NaClOpKind opcode_in_modrm,
-                                     const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
-  NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet));
-  NaClDefOp(M_Operand, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-
-/* Define an x87 binary instruction that has St0 as its first
- * argument, and a memory pointer as its second argument.
- */
-static void NaClDefX87LtC0BinopSt0Mem(const NaClInstPrefix prefix,
-                                      const uint8_t opcode,
-                                      const NaClOpKind opcode_in_modrm,
-                                      const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
-  NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(M_Operand, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 instruciton that moves the value of st1 into st0.
- */
-static void NaClDefX87MoveSt0St1(const NaClInstPrefix prefix,
-                                 const uint8_t opcode,
-                                 const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet));
-  NaClDefOp(RegST1, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 instruction that assigns sti (for base offset) to
- * st0.
- */
-static void NaClDefX87MoveSt0Sti(const NaClInstPrefix prefix,
-                                 const uint8_t opcode,
-                                 const int base_offset,
-                                 const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode + base_offset, NACLi_X87,
-               NACL_IFLAG(OpcodePlusR), mnemonic);
-  NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet));
-  NaClDefOp(St_Operand, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define the grouip of x87 instructions that assigns all sti (for all i,
- * 0<=i<=8) to st0.
- */
-static void NaClDefX87MoveSt0StiGroup(const NaClInstPrefix prefix,
-                                       const uint8_t opcode,
-                                       const NaClMnemonic mnemonic) {
-  int i;
-  for (i = 0; i < 8; ++i) {
-    NaClDefX87MoveSt0Sti(prefix, opcode, i, mnemonic);
-  }
-}
-
-/* Define an x87 binary instruction that has St0 as its first
- * argument, and sti as its second argument.
- */
-static void NaClDefX87BinopSt0Sti(const NaClInstPrefix prefix,
-                                  const uint8_t opcode,
-                                  const int base_offset,
-                                  const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode + base_offset, NACLi_X87,
-               NACL_IFLAG(OpcodePlusR), mnemonic);
-  NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(St_Operand, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-
-/* Define the group of x87 binary instructions that have st0 as its first
- * argument, and sti (for all i, 1<=i<=8) as the second.
- */
-static void NaClDefX87BinopSt0StiGroup(const NaClInstPrefix prefix,
-                                       const uint8_t opcode,
-                                       const NaClMnemonic mnemonic) {
-  int i;
-  for (i = 0; i < 8; ++i) {
-    NaClDefX87BinopSt0Sti(prefix, opcode, i, mnemonic);
-  }
-}
-
-/* Define an x87 compare instruction that has st0 and its first
- * argument, and sti as its second argument.
- */
-static void NaClDefX87CompareSt0Sti(const NaClInstPrefix prefix,
-                                    const uint8_t opcode,
-                                    const int base_offset,
-                                    const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode + base_offset, NACLi_X87,
-               NACL_IFLAG(OpcodePlusR), mnemonic);
-  NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
-  NaClDefOp(St_Operand, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define the group of x87 compare instructions that have st0 as its
- * first argument, and sti (for all i, 1<=i<=8) as the second.
- */
-static void NaClDefX87CompareSt0StiGroup(const NaClInstPrefix prefix,
-                                         const uint8_t opcode,
-                                         const NaClMnemonic mnemonic) {
-  int i;
-  for (i = 0; i < 8; ++i) {
-    NaClDefX87CompareSt0Sti(prefix, opcode, i, mnemonic);
-  }
-}
-
-/* Define an x87 compare instruction that has st0 as its first
- * argument, and a Memory pointer as its second.
- */
-static void NaClDefX87LtC0CompareSt0Mem(const NaClInstPrefix prefix,
-                                        const uint8_t opcode,
-                                        const NaClOpKind opcode_in_modrm,
-                                        const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_IFLAG(OpcodeLtC0InModRm), mnemonic);
-  NaClDefOp(opcode_in_modrm, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
-  NaClDefOp(M_Operand, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 exchange instruction that has st0 as its first
- * argument, and sti as its second argument.
- */
-static void NaClDefX87ExchangeSt0Sti(const NaClInstPrefix prefix,
-                                     const uint8_t opcode,
-                                     const int base_offset,
-                                     const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode + base_offset, NACLi_X87,
-               NACL_IFLAG(OpcodePlusR), mnemonic);
-  NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(St_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define a group of x87 exchange instructions that have st0 as thier first
- * argument, and sti (for all i, 1<=i<=8) for the second argument.
- */
-static void NaClDefX87ExchangeSt0StiGroup(const NaClInstPrefix prefix,
-                                          const uint8_t opcode,
-                                          const NaClMnemonic mnemonic) {
-  int i;
-  for (i = 0; i < 8; ++i) {
-    NaClDefX87ExchangeSt0Sti(prefix, opcode, i, mnemonic);
-  }
-}
-
-/* Define an x87 instruction that has two operands, sti and st0,
- * and the value of sti is defined by the value of st0.
- */
-static void NaClDefX87MoveStiSt0(const NaClInstPrefix prefix,
-                                 const uint8_t opcode,
-                                 const int base_offset,
-                                 const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode + base_offset, NACLi_X87, NACL_IFLAG(OpcodePlusR),
-              mnemonic);
-  NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(St_Operand, NACL_OPFLAG(OpSet));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define a group of x87 instructions that have two operands, sti and st0,
- * and the value of sti (for all i, 1<=i<=8) is defined by the value of st0.
- */
-static void NaClDefX87MoveStiSt0Group(const NaClInstPrefix prefix,
-                                      const uint8_t opcode,
-                                      const NaClMnemonic mnemonic) {
-  int i;
-  for (i = 0; i < 8; ++i) {
-    NaClDefX87MoveStiSt0(prefix, opcode, i, mnemonic);
-  }
-}
-
-/* Define an x87 binary instruction that has sti as its first argument,
- * and st0 as its second argument.
- */
-static void NaClDefX87BinopStiSt0(const NaClInstPrefix prefix,
-                                  const uint8_t opcode,
-                                  const int base_offset,
-                                  const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode + base_offset, NACLi_X87, NACL_IFLAG(OpcodePlusR),
-              mnemonic);
-  NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(St_Operand, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define a group of x87 binary instructions that have sti as the
- * first argument (for all i, 1<=i<=8), and st0 as the second argument.
- */
-static void NaClDefX87BinopStiSt0Group(const NaClInstPrefix prefix,
-                                       const uint8_t opcode,
-                                       const NaClMnemonic mnemonic) {
-  int i;
-  for (i = 0; i < 8; ++i) {
-    NaClDefX87BinopStiSt0(prefix, opcode, i, mnemonic);
-  }
-}
-
-/* Define an x87 binary instruction that has st0 as the first argument,
- * and st1 as the second argument.
- */
-static void NaClDefX87BinopSt0St1(const NaClInstPrefix prefix,
-                                  const uint8_t opcode,
-                                  const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefOp(RegST1, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 comparison instruction that has st0 as the first
- * argument, and st1 as the second argument.
- */
-static void NaClDefX87CompareSt0St1(const NaClInstPrefix prefix,
-                                    const uint8_t opcode,
-                                    const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST0, NACL_OPFLAG(OpUse));
-  NaClDefOp(RegST1, NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 instruction that updates st0, based on its previous
- * value.
- */
-static void NaClDefX87ModifySt0(const NaClInstPrefix prefix,
-                                const uint8_t opcode,
-                                const NaClMnemonic mnemonic) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode, NACLi_X87, NACL_EMPTY_IFLAGS, mnemonic);
-  NaClDefOp(RegST0, NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define an x87 instruction that updates sti, based on its previous value. */
-static void NaClDefX87Sti(const NaClInstPrefix prefix,
-                          const uint8_t opcode,
-                          const int base_offset,
-                          const NaClMnemonic mnemonic,
-                          const NaClOpFlags sti_flags) {
-  NaClDefInstPrefix(prefix);
-  NaClDefInst(opcode + base_offset, NACLi_X87, NACL_IFLAG(OpcodePlusR),
-              mnemonic);
-  NaClDefOp(OpcodeBaseMinus0 + base_offset, NACL_OPFLAG(OperandExtendsOpcode));
-  NaClDefOp(St_Operand, sti_flags);
-  NaClResetToDefaultInstPrefix();
-}
-
-/* Define a group of x87 instructions that updates sti (for all i, 1<=i<=8)
- * based on its previous value.
- */
-static void NaClDefX87StiGroup(const NaClInstPrefix prefix,
-                               const uint8_t opcode,
-                               const NaClMnemonic mnemonic,
-                               const NaClOpFlags sti_flags) {
-  int i;
-  for (i = 0; i < 8; ++i) {
-    NaClDefX87Sti(prefix, opcode, i, mnemonic, sti_flags);
-  }
-}
-
-void NaClDefX87Insts() {
+void NaClDefX87Insts(struct NaClSymbolTable* st) {
+  /* See Table A-10 in AMD manual for source of definitions.
+   * Note: Added register ST0 when used in instructions, but
+   * not explicitly listed in table A-10. This information
+   * was derived from xed tests.
+   */
   NaClDefDefaultInstPrefix(NoPrefix);
 
   /* Define D8 x87 instructions. */
 
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode0, InstFadd);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode1, InstFmul);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode2, InstFcom);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode3, InstFcomp);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode4, InstFsub);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode5, InstFsubr);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode6, InstFdiv);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xd8, Opcode7, InstFdivr);
-  NaClDefX87BinopSt0StiGroup(PrefixD8, 0xc0, InstFadd);
-  NaClDefX87BinopSt0StiGroup(PrefixD8, 0xc8, InstFmul);
-  NaClDefX87BinopSt0StiGroup(PrefixD8, 0xd0, InstFcom);
-  NaClDefX87BinopSt0StiGroup(PrefixD8, 0xd8, InstFcomp);
-  NaClDefX87BinopSt0StiGroup(PrefixD8, 0xe0, InstFsub);
-  NaClDefX87BinopSt0StiGroup(PrefixD8, 0xe8,  InstFsubr);
-  NaClDefX87BinopSt0StiGroup(PrefixD8, 0xf0, InstFdiv);
-  NaClDefX87BinopSt0StiGroup(PrefixD8, 0xf8, InstFdivr);
+  NaClDefine("d8/0: Fadd %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("d8/1: Fmul %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("d8/2: Fcom %st0, $Md", NACLi_X87, st, Compare);
+  NaClDefine("d8/3: Fcomp %st0, $Md", NACLi_X87, st, Compare);
+  NaClDefine("d8/4: Fsub %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("d8/5: Fsubr %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("d8/6: Fdiv %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("d8/7: Fdivr %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefIter("d8C0+@i: Fadd %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("d8C8+@i: Fmul %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("d8d0+@i: Fcom %st0, %st@i", 0, 7, NACLi_X87, st, Compare);
+  NaClDefIter("d8d8+@i: Fcomp %st0, %st@i", 0, 7, NACLi_X87, st, Compare);
+  NaClDefIter("d8e0+@i: Fsub %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("d8e8+@i: Fsubr %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("d8f0+@i: Fdiv %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("d8f8+@i: Fdivr %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
 
   /* Define D9 x87 instructions. */
 
-  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xd9, Opcode0, InstFld);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xd9, Opcode2, InstFst);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xd9, Opcode3, InstFstp);
-  NaClDefX87LtC0Mem(NoPrefix, 0xd9, Opcode4, InstFldenv, NACL_OPFLAG(OpUse));
-  NaClDefX87LtC0Mem(NoPrefix, 0xd9, Opcode5, InstFldcw, NACL_OPFLAG(OpUse));
-  NaClDefX87LtC0Mem(NoPrefix, 0xd9, Opcode6, InstFnstenv,
-                    NACL_OPFLAG(OpSet));
-  NaClDefX87LtC0Mem(NoPrefix, 0xd9, Opcode7, InstFnstcw, NACL_OPFLAG(OpSet));
-
-  NaClDefX87MoveSt0StiGroup(PrefixD9, 0xc0, InstFld);
-  NaClDefX87ExchangeSt0StiGroup(PrefixD9, 0xc8, InstFxch);
-  NaClDefX87NoOperands(PrefixD9, 0xd0, InstFnop);
-  NaClDefX87St0(PrefixD9, 0xe0, Opcode0, InstFchs,
-                NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  NaClDefX87St0(PrefixD9, 0xe1, Opcode1, InstFabs,
-                NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse));
-  /* 0xe2 and 0xe3 are not defined */
-  NaClDefX87St0(PrefixD9, 0xe4, Opcode4, InstFtst, NACL_OPFLAG(OpUse));
-  NaClDefX87St0(PrefixD9, 0xe5, Opcode5, InstFxam, NACL_OPFLAG(OpUse));
-  /* 0xe6 and 0xe7 are not defined */
-  NaClDefX87ModifySt0(PrefixD9, 0xe8, InstFld1);
-  NaClDefX87ModifySt0(PrefixD9, 0xe9, InstFldl2t);
-  NaClDefX87ModifySt0(PrefixD9, 0xea, InstFldl2e);
-  NaClDefX87ModifySt0(PrefixD9, 0xeb, InstFldpi);
-  NaClDefX87ModifySt0(PrefixD9, 0xec, InstFldlg2);
-  NaClDefX87ModifySt0(PrefixD9, 0xed, InstFldln2);
-  NaClDefX87ModifySt0(PrefixD9, 0xee, InstFldz);
-  /* 0xef is not defined */
-  NaClDefX87ModifySt0(PrefixD9, 0xf0, InstF2xm1);
-  NaClDefX87BinopSt0St1(PrefixD9, 0xf1, InstFyl2x);
-  NaClDefX87MoveSt0St1(PrefixD9, 0xf2, InstFptan);
-  NaClDefX87BinopSt0St1(PrefixD9, 0xf3, InstFpatan);
-  NaClDefX87MoveSt0St1(PrefixD9, 0xf4, InstFxtract);
-  NaClDefX87BinopSt0St1(PrefixD9, 0xf5, InstFprem1);
-  NaClDefX87NoOperands(PrefixD9, 0xf6, InstFdecstp);
-  NaClDefX87NoOperands(PrefixD9, 0xf7, InstFincstp);
-  NaClDefX87BinopSt0St1(PrefixD9, 0xf8, InstFprem);
-  NaClDefX87BinopSt0St1(PrefixD9, 0xf9, InstFyl2xp1);
-  NaClDefX87ModifySt0(PrefixD9, 0xfa, InstFsqrt);
-  NaClDefX87MoveSt0St1(PrefixD9, 0xfb, InstFsincos);
-  NaClDefX87ModifySt0(PrefixD9, 0xfc, InstFrndint);
-  NaClDefX87BinopSt0St1(PrefixD9, 0xfd, InstFscale);
-  NaClDefX87ModifySt0(PrefixD9, 0xfe, InstFsin);
-  NaClDefX87ModifySt0(PrefixD9, 0xff, InstFcos);
+  NaClDefine("d9/0: Fld %st0, $Md", NACLi_X87, st, Move);
+  NaClDefine("d9/1: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("d9/2: Fst $Md, %st0", NACLi_X87, st, Move);
+  NaClDefine("d9/3: Fstp $Md, %st0", NACLi_X87, st, Move);
+  NaClDefine("d9/4: Fldenv $M", NACLi_X87, st, Uses);
+  NaClDefine("d9/5: Fldcw $Mw", NACLi_X87, st, Uses);
+  NaClDefine("d9/6: Fnstenv $M", NACLi_X87, st, UnarySet);
+  NaClDefine("d9/7: Fnstcw $Mw", NACLi_X87, st, UnarySet);
+  NaClDefIter("d9c0+@i: Fld %st0, %st@i", 0, 7, NACLi_X87, st, Move);
+  NaClDefIter("d9c8+@i: Fxch %st0, %st@i", 0, 7, NACLi_X87, st, Exchange);
+  NaClDefine("d9d0: Fnop", NACLi_X87, st, Other);
+  NaClDefIter("d9d0+@i: Invalid", 1, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("d9d8+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+  NaClDefine("d9e0: Fchs %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9e1: Fabs %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefIter("d9e0+@i: Invalid", 2, 3, NACLi_INVALID, st, Other);
+  NaClDefine("d9e4: Ftst %st0", NACLi_X87, st, Uses);
+  NaClDefine("d9e5: Fxam %st0", NACLi_X87, st, Uses);
+  NaClDefIter("d9e0+@i: Invalid", 6, 7, NACLi_INVALID, st, Other);
+  NaClDefine("d9e8: Fld1 %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9e9: Fldl2t %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9ea: Fldl2e %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9eb: Fldpi %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9ec: Fldlg2 %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9ed: Fldln2 %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9ee: Fldz %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9ef: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("d9f0: F2xm1 %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9f1: Fyl2x %st0 %st1", NACLi_X87, st, Binary);
+  NaClDefine("d9f2: Fptan %st0 %st1", NACLi_X87, st, Move);
+  NaClDefine("d9f3: Fpatan %st0, %st1", NACLi_X87, st, Binary);
+  NaClDefine("d9f4: Fxtract %st0, %st1", NACLi_X87, st, Move);
+  NaClDefine("d9f5: Fprem1 %st0, %st1", NACLi_X87, st, Binary);
+  NaClDefine("d9f6: Fdecstp", NACLi_X87, st, Other);
+  NaClDefine("d9f7: Fincstp", NACLi_X87, st, Other);
+  NaClDefine("d9f8: Fprem %st0, %st1", NACLi_X87, st, Binary);
+  NaClDefine("d9f9: Fyl2xp1 %st0, %st1", NACLi_X87, st, Binary);
+  NaClDefine("d9fa: Fsqrt %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9fb: Fsincos %st0, %st1", NACLi_X87, st, Move);
+  NaClDefine("d9fc: Frndint %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9fd: Fscale %st0, %st1", NACLi_X87, st, Binary);
+  NaClDefine("d9fe: Fsin %st0", NACLi_X87, st, UnaryUpdate);
+  NaClDefine("d9ff: Fcos %st0", NACLi_X87, st, UnaryUpdate);
 
   /* Define DA x87 instructions. */
 
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode0, InstFiadd);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode1, InstFimul);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode2, InstFicom);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode3, InstFicomp);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode4, InstFisub);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode5, InstFisubr);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode6, InstFidiv);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xda, Opcode7, InstFidivr);
-  NaClDefX87BinopSt0StiGroup(PrefixDA, 0xc0, InstFcmovb);
-  NaClDefX87BinopSt0StiGroup(PrefixDA, 0xc8, InstFcmove);
-  NaClDefX87BinopSt0StiGroup(PrefixDA, 0xd0, InstFcmovbe);
-  NaClDefX87BinopSt0StiGroup(PrefixDA, 0xd8, InstFcmovu);
-  NaClDefX87CompareSt0St1(PrefixDA, 0xe9, InstFucompp);
+  NaClDefine("da/0: Fiadd %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("da/1: Fimul %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("da/2: Ficom %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("da/3: Ficomp %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("da/4: Fisub %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("da/5: Fisubr %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("da/6: Fidiv %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefine("da/7: Fidivr %st0, $Md", NACLi_X87, st, Binary);
+  NaClDefIter("dac0+@i: Fcmovb %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dac8+@i: Fcmove %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dad0+@i: Fcmovbe %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dad8+@i: Fcmovu %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dae0+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+  NaClDefine("dae8: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("dae9: Fucompp %st0, %st1", NACLi_X87, st, Compare);
+  NaClDefIter("dae8+@i: Invalid", 2, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("daf0+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("daf8+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
 
   /* Define DB x87 instructions. */
 
-  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdb, Opcode0, InstFild);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode1, InstFisttp);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode2, InstFist);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode3, InstFistp);
-  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdb, Opcode5, InstFld);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdb, Opcode7, InstFstp);
-  NaClDefX87BinopSt0StiGroup(PrefixDB, 0xc0, InstFcmovnb);
-  NaClDefX87BinopSt0StiGroup(PrefixDB, 0xc8, InstFcmovne);
-  NaClDefX87BinopSt0StiGroup(PrefixDB, 0xd0, InstFcmovnbe);
-  NaClDefX87BinopSt0StiGroup(PrefixDB, 0xd8, InstFcmovnu);
-  NaClDefX87NoOperands(PrefixDB, 0xe2, InstFnclex);
-  NaClDefX87NoOperands(PrefixDB, 0xe3, InstFninit);
-  NaClDefX87CompareSt0StiGroup(PrefixDB, 0xe8, InstFucomi);
-  NaClDefX87CompareSt0StiGroup(PrefixDB, 0xf0, InstFcomi);
+  NaClDefine("db/0: Fild %st0, $Md", NACLi_X87, st, Move);
+  NaClDefine("db/1: Fisttp $Md, %st0", NACLi_X87, st, Move);
+  NaClDefine("db/2: Fist $Md, %st0", NACLi_X87, st, Move);
+  NaClDefine("db/3: Fistp $Md, %st0", NACLi_X87, st, Move);
+  NaClDefine("db/4: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("db/5: Fld %st0, $M", NACLi_X87, st, Move);
+  NaClDefine("db/6: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("db/7: Fstp $M, %st0", NACLi_X87, st, Move);
+  NaClDefIter("dbc0+@i: Fcmovnb %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dbc8+@i: Fcmovne %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dbd0+@i: Fcmovnbe %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dbd8+@i: Fcmovnu %st0, %st@i", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dbe0+@i: Invalid", 0, 1, NACLi_INVALID, st, Other);
+  NaClDefine("dbe2: Fnclex", NACLi_X87, st, Other);
+  NaClDefine("dbe3: Fninit", NACLi_X87, st, Other);
+  NaClDefIter("dbe0+@i: Invalid", 4, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("dbe8+@i: Fucomi %st0, %st@i", 0, 7, NACLi_X87, st, Compare);
+  NaClDefIter("dbf0+@i: Fcomi %st0, %st@i", 0, 7, NACLi_X87, st, Compare);
+  NaClDefIter("dbf8+@i: Invalid", NACLi_INVALID, 0, 7, st, Other);
 
   /* Define DC x87 instructions. */
 
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode0, InstFadd);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode1, InstFmul);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode2, InstFcom);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode3, InstFcomp);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode4, InstFsub);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode5, InstFsubr);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode6, InstFdiv);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xdc, Opcode7, InstFdivr);
-  NaClDefX87BinopStiSt0Group(PrefixDC, 0xc0, InstFadd);
-  NaClDefX87BinopStiSt0Group(PrefixDC, 0xc8, InstFmul);
-  NaClDefX87BinopStiSt0Group(PrefixDC, 0xe0, InstFsubr);
-  NaClDefX87BinopStiSt0Group(PrefixDC, 0xe8, InstFsub);
-  NaClDefX87BinopStiSt0Group(PrefixDC, 0xf0, InstFdivr);
-  NaClDefX87BinopStiSt0Group(PrefixDC, 0xf8, InstFdiv);
+  NaClDefine("dc/0: Fadd %st0, $Mq", NACLi_X87, st, Binary);
+  NaClDefine("dc/1: Fmul %st0, $Mq", NACLi_X87, st , Binary);
+  NaClDefine("dc/2: Fcom %st0, $Mq", NACLi_X87, st, Compare);
+  NaClDefine("dc/3: Fcomp %st0, $Mq", NACLi_X87, st, Compare);
+  NaClDefine("dc/4: Fsub %st0, $Mq", NACLi_X87, st, Binary);
+  NaClDefine("dc/5: Fsubr %st0, $Mq", NACLi_X87, st, Binary);
+  NaClDefine("dc/6: Fdiv %st0, $Mq", NACLi_X87, st, Binary);
+  NaClDefine("dc/7: Fdivr %st0, $Mq", NACLi_X87, st, Binary);
+  NaClDefIter("dcc0+@i: Fadd %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dcc8+@i: Fmul %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dcd0+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("dcd8+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("dce0+@i: Fsubr %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dce8+@i: Fsub %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dcf0+@i: Fdivr %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dcf8+@i: Fdiv %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
 
   /* Define DD x87 instructions. */
 
-  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdd, Opcode0, InstFld);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode1, InstFisttp);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode2, InstFst);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdd, Opcode3, InstFstp);
-  NaClDefX87LtC0Mem(NoPrefix, 0xdd, Opcode4, InstFrstor, NACL_OPFLAG(OpUse));
-  NaClDefX87LtC0Mem(NoPrefix, 0xdd, Opcode6, InstFnsave, NACL_OPFLAG(OpSet));
-  NaClDefX87LtC0Mem(NoPrefix, 0xdd, Opcode7, InstFnstsw, NACL_OPFLAG(OpSet));
-  NaClDefX87StiGroup(PrefixDD, 0xc0, InstFfree, NACL_EMPTY_IFLAGS);
-  NaClDefX87MoveStiSt0Group(PrefixDD, 0xd0, InstFst);
-  NaClDefX87MoveStiSt0Group(PrefixDD, 0xd8, InstFstp);
-  NaClDefX87CompareSt0StiGroup(PrefixDD, 0xe0, InstFucom);
-  NaClDefX87CompareSt0StiGroup(PrefixDD, 0xe8, InstFucomp);
+  NaClDefine("dd/0: Fld %st0, $Mq", NACLi_X87, st, Move);
+  NaClDefine("dd/1: Fisttp $Mq, %st0", NACLi_X87, st, Move);
+  NaClDefine("dd/2: Fst $Mq, %st0", NACLi_X87, st, Move);
+  NaClDefine("dd/3: Fstp $Mq, %st0", NACLi_X87, st, Move);
+  NaClDefine("dd/4: Frstor $M", NACLi_X87, st, Uses);
+  NaClDefine("dd/5: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("dd/6: Fnsave $M", NACLi_X87, st, UnarySet);
+  NaClDefine("dd/7: Fnstsw $Mw", NACLi_X87, st, UnarySet);
+  NaClDefIter("ddc0+@i: Ffree %st@i", 0, 7, NACLi_X87, st, Other);
+  NaClDefIter("ddc8+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("ddd0+@i: Fst %st@i, %st0", 0, 7, NACLi_X87, st, Move);
+  NaClDefIter("ddd8+@i: Fstp %st@i %st0", 0, 7, NACLi_X87, st, Move);
+  NaClDefIter("dde0+@i: Fucom %st0, %st@i", 0, 7, NACLi_X87, st , Compare);
+  NaClDefIter("dde8+@i: Fucomp %st0, %st@i", 0, 7, NACLi_X87, st, Compare);
+  NaClDefIter("ddf0+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("ddf8+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+
 
   /* Define DE x87 instructions. */
 
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode0, InstFiadd);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode1, InstFimul);
-  NaClDefX87LtC0CompareSt0Mem(NoPrefix, 0xde, Opcode2, InstFicom);
-  NaClDefX87LtC0CompareSt0Mem(NoPrefix, 0xde, Opcode3, InstFicomp);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode4, InstFisub);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode5, InstFisubr);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode6, InstFidiv);
-  NaClDefX87LtC0BinopSt0Mem(NoPrefix, 0xde, Opcode7, InstFidivr);
-  NaClDefX87BinopStiSt0Group(PrefixDE, 0xc0, InstFaddp);
-  NaClDefX87BinopStiSt0Group(PrefixDE, 0xc8, InstFmulp);
-  NaClDefX87CompareSt0St1(PrefixDE, 0xd9, InstFcompp);
-  NaClDefX87BinopStiSt0Group(PrefixDE, 0xe0, InstFsubrp);
-  NaClDefX87BinopStiSt0Group(PrefixDE, 0xe8, InstFsubp);
-  NaClDefX87BinopStiSt0Group(PrefixDE, 0xf0, InstFdivrp);
-  NaClDefX87BinopStiSt0Group(PrefixDE, 0xf8, InstFdivp);
+  NaClDefine("de/0: Fiadd %st0, $Mw", NACLi_X87, st, Binary);
+  NaClDefine("de/1: Fimul %st0, $Mw", NACLi_X87, st, Binary);
+  NaClDefine("de/2: Ficom %st0, $Mw", NACLi_X87, st, Compare);
+  NaClDefine("de/3: Ficomp %st0, $Mw", NACLi_X87, st, Compare);
+  NaClDefine("de/4: Fisub %st0, $Mw", NACLi_X87, st, Binary);
+  NaClDefine("de/5: Fisubr %st0, $Mw", NACLi_X87, st, Binary);
+  NaClDefine("de/6: Fidiv %st0, $Mw", NACLi_X87, st, Binary);
+  NaClDefine("de/7: Fidivr %st0, $Mw", NACLi_X87, st, Binary);
+  NaClDefIter("dec0+@i: Faddp %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dec8+@i: Fmulp %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("ded0+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
+  NaClDefine("ded8: Invalid", NACLi_INVALID, st, Other);
+  NaClDefine("ded9: Fcompp %st0, %st1", NACLi_X87, st, Compare);
+  NaClDefIter("ded8+@i: Invalid", 2, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("dee0+@i: Fsubrp %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("dee8+@i: Fsubp %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("def0+@i: Fdivrp %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
+  NaClDefIter("def8+@i: Fdivp %st@i, %st0", 0, 7, NACLi_X87, st, Binary);
 
   /* Define DF x87 instructions. */
-
-  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdf, Opcode0, InstFild);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode1, InstFisttp);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode2, InstFist);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode3, InstFistp);
-  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdf, Opcode4, InstFbld);
-  NaClDefX87LtC0MoveSt0Mem(NoPrefix, 0xdf, Opcode5, InstFild);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode6, InstFbstp);
-  NaClDefX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode7, InstFistp);
-
-  NaClDefX87Ax(PrefixDF, 0xe0, InstFnstsw, NACL_OPFLAG(OpSet));
-  NaClDefX87BinopSt0StiGroup(PrefixDF, 0xe8, InstFucomip);
-  NaClDefX87BinopSt0StiGroup(PrefixDF, 0xf0, InstFcomip);
+  NaClDefine("df/0: Fild %st0, $Mw", NACLi_X87, st , Move);
+  NaClDefine("df/1: Fisttp $Mw, %st0", NACLi_X87, st, Move);
+  NaClDefine("df/2: Fist $Mw, %st0", NACLi_X87, st, Move);
+  NaClDefine("df/3: Fistp $Mw, %st0", NACLi_X87, st, Move);
+  NaClDefine("df/4: Fbld %st0, $M", NACLi_X87, st, Move);
+  NaClDefine("df/5: Fild %st0, $M", NACLi_X87, st, Move);
+  NaClDefine("df/6: Fbstp $M, %st0", NACLi_X87, st , Move);
+  NaClDefine("df/7: Fistp $M, %st0", NACLi_X87, st, Move);
+  NaClDefIter("dfc0+@i: Invalid", 0, 7, NACLi_X87, st, Other);
+  NaClDefIter("dfc8+@i: Invalid", 0, 7, NACLi_X87, st, Other);
+  NaClDefIter("dfd0+@i: Invalid", 0, 7, NACLi_X87, st, Other);
+  NaClDefIter("dfd8+@i: Invalid", 0, 7, NACLi_X87, st, Other);
+  NaClDefine("dfe0: Fnstsw %ax", NACLi_X87, st, UnarySet);
+  NaClDefIter("dfe0+@i: Invalid", 1, 7, NACLi_INVALID, st, Other);
+  NaClDefIter("dfe8+@i: Fucomip %st0, %st@i", 0, 7, NACLi_X87, st, Compare);
+  NaClDefIter("dff0+@i: Fcomip %st0, %st@i", 0, 7, NACLi_X87, st, Compare);
+  NaClDefIter("dff8+@i: Invalid", 0, 7, NACLi_INVALID, st, Other);
 
   /* todo(karl) What about "9b db e2 Fclex" ? */
   /* todo(karl) What about "9b db e3 finit" ? */

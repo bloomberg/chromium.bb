@@ -89,9 +89,8 @@ typedef struct NaClInst {
   /* The number of opcode bytes in the instruction. */
   uint8_t num_opcode_bytes;
   /* The actual opcode bytes. */
-  uint8_t opcode[NACL_MAX_OPCODE_BYTES];
   /* The (last) byte value representing the (opcode) instruction. */
-  /* uint8_t opcode; */
+  uint8_t opcode[NACL_MAX_OPCODE_BYTES];
   /* Defines the origin of this instruction. */
   NaClInstType insttype;
   /* Flags defining additional facts about the instruction. */

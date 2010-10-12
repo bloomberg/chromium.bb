@@ -620,6 +620,7 @@ DECLARE_BINARY_OINST(Vdq, I__);
  *   sd - A scalar dobule-precision floating point operand (scalar double).
  *   si - A scalar doubleword (32-bit) integer operand (scalar integer).
  *   ss - A scalar single-precision floating-point operand (scalar single).
+ *   w - A word, irrespective of the effective operand size.
  *   v - A word, doubleword, or quadword, depending on the effective operand
  *       size.
  *   vw - A word only when the effective operand size matches.
@@ -749,5 +750,40 @@ void NaClDef_32(const char* desc, NaClInstType insttype,
  */
 void NaClDef_64(const char* desc, NaClInstType insttype,
                 struct NaClSymbolTable* st, NaClInstCat cat);
+
+
+/* Defines a set of instructions, for all values of min <= i <= max (bound
+ * in a local symbol table), using calls to NaClDefine on the remaining
+ * arguments. In addition, opcodes of the form "xx+@i:", within the description
+ * string are automatically added to generate the opcode value xx+i.
+ * In addition, the value of min and max must be between 0 and 7.
+ * Parameters are:
+ *   desc - the opcode description string.
+ *   min - The starting value to iterate i on.
+ *   max - The ending value to iterate i on.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ *   icat - The set/use categorization for the instruction being defined.
+ */
+void NaClDefIter(const char* desc, int min, int max,
+                 NaClInstType insttype, struct NaClSymbolTable* st,
+                 NaClInstCat cat);
+
+/* Defines a set of instructions, for all values of min <= reg <= max (bound
+ * in a local symbol), using calls to NaClDefine on the remaining arguments.
+ * In addition, the value of min and max must be between 0 and 7. Typically
+ * used to generate register values that are part of the opcode.
+ * Parameters are:
+ *   desc - the opcode description string.
+ *   min - The starting value to iterate reg on.
+ *   max - The ending value to iterate reg on.
+ *   insttype - The category of the instruction (defines the effects of CPUID).
+ *   st - The symbol table to use while defining the instruction.
+ *   icat - The set/use categorization for the instruction being defined.
+ */
+void NaClDefReg(const char* desc, int min, int max,
+                NaClInstType insttype, struct NaClSymbolTable* st,
+                NaClInstCat cat);
+
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_FORMS_H__ */

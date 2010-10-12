@@ -204,6 +204,6 @@ void NaClDefDCInsts();
 void NaClDefSseInsts();
 
 /* Define x87 instructions. */
-void NaClDefX87Insts();
+void NaClDefX87Insts(struct NaClSymbolTable* context_st);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCDECODE_TABLEGEN_H__ */

@@ -1453,245 +1453,249 @@ Target: x86-64 bit mode
       E_Operand               OpUse OpSet
       RegCL                   OpUse
   --- d8 ---
-  d8 / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fadd %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  d8 / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fmul %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  d8 / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fcom %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  d8 / 3                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fcomp %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  d8 / 4                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fsub %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  d8 / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fsubr %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  d8 / 6                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fdiv %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  d8 / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fdivr %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
+  d8 / 0                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fadd %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  d8 / 1                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fmul %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  d8 / 2                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fcom %st0, $Md
+      RegST0                  OpUse
+      Mv_Operand              OpUse
+  d8 / 3                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fcomp %st0, $Md
+      RegST0                  OpUse
+      Mv_Operand              OpUse
+  d8 / 4                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fsub %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  d8 / 5                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fsubr %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  d8 / 6                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fdiv %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  d8 / 7                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fdivr %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
   --- d9 ---
-  d9 / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fld %ST0, $M
-      RegST0                  OpSet
-      M_Operand               OpUse
-  d9 / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fst $M, %ST0
-      M_Operand               OpSet
+  d9 / 0                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fld %st0, $Md
+      RegST0                  OpSet OpDest
+      Mv_Operand              OpUse
+  d9 / 1                      INVALID OpcodeInModRm NaClIllegal
+  d9 / 2                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fst $Md, %st0
+      Mv_Operand              OpSet OpDest
       RegST0                  OpUse
-  d9 / 3                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fstp $M, %ST0
-      M_Operand               OpSet
+  d9 / 3                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fstp $Md, %st0
+      Mv_Operand              OpSet OpDest
       RegST0                  OpUse
-  d9 / 4                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
+  d9 / 4                      X87 OpcodeInModRm ModRmModIsnt0x3
     Fldenv $M
       M_Operand               OpUse
-  d9 / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fldcw $M
-      M_Operand               OpUse
-  d9 / 6                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
+  d9 / 5                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fldcw $Mw
+      Mw_Operand              OpUse
+  d9 / 6                      X87 OpcodeInModRm ModRmModIsnt0x3
     Fnstenv $M
-      M_Operand               OpSet
-  d9 / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fnstcw $M
-      M_Operand               OpSet
+      M_Operand               OpUse OpSet OpDest
+  d9 / 7                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fnstcw $Mw
+      Mw_Operand              OpUse OpSet OpDest
   --- da ---
-  da / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fiadd %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  da / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fimul %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  da / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Ficom %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  da / 3                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Ficomp %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  da / 4                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fisub %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  da / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fisubr %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  da / 6                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fidiv %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  da / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fidivr %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
+  da / 0                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fiadd %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  da / 1                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fimul %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  da / 2                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Ficom %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  da / 3                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Ficomp %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  da / 4                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fisub %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  da / 5                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fisubr %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  da / 6                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fidiv %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
+  da / 7                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fidivr %st0, $Md
+      RegST0                  OpUse OpSet OpDest
+      Mv_Operand              OpUse
   --- db ---
-  db / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fild %ST0, $M
-      RegST0                  OpSet
+  db / 0                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fild %st0, $Md
+      RegST0                  OpSet OpDest
+      Mv_Operand              OpUse
+  db / 1                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fisttp $Md, %st0
+      Mv_Operand              OpSet OpDest
+      RegST0                  OpUse
+  db / 2                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fist $Md, %st0
+      Mv_Operand              OpSet OpDest
+      RegST0                  OpUse
+  db / 3                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fistp $Md, %st0
+      Mv_Operand              OpSet OpDest
+      RegST0                  OpUse
+  db / 4                      INVALID OpcodeInModRm NaClIllegal
+  db / 5                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fld %st0, $M
+      RegST0                  OpSet OpDest
       M_Operand               OpUse
-  db / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fisttp $M, %ST0
-      M_Operand               OpSet
-      RegST0                  OpUse
-  db / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fist $M, %ST0
-      M_Operand               OpSet
-      RegST0                  OpUse
-  db / 3                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fistp $M, %ST0
-      M_Operand               OpSet
-      RegST0                  OpUse
-  db / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fld %ST0, $M
-      RegST0                  OpSet
-      M_Operand               OpUse
-  db / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fstp $M, %ST0
-      M_Operand               OpSet
+  db / 6                      INVALID OpcodeInModRm NaClIllegal
+  db / 7                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fstp $M, %st0
+      M_Operand               OpSet OpDest
       RegST0                  OpUse
   --- dc ---
-  dc / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fadd %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  dc / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fmul %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  dc / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fcom %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  dc / 3                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fcomp %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  dc / 4                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fsub %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  dc / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fsubr %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  dc / 6                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fdiv %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  dc / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fdivr %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
+  dc / 0                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fadd %st0, $Mq
+      RegST0                  OpUse OpSet OpDest
+      Mo_Operand              OpUse
+  dc / 1                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fmul %st0, $Mq
+      RegST0                  OpUse OpSet OpDest
+      Mo_Operand              OpUse
+  dc / 2                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fcom %st0, $Mq
+      RegST0                  OpUse
+      Mo_Operand              OpUse
+  dc / 3                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fcomp %st0, $Mq
+      RegST0                  OpUse
+      Mo_Operand              OpUse
+  dc / 4                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fsub %st0, $Mq
+      RegST0                  OpUse OpSet OpDest
+      Mo_Operand              OpUse
+  dc / 5                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fsubr %st0, $Mq
+      RegST0                  OpUse OpSet OpDest
+      Mo_Operand              OpUse
+  dc / 6                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fdiv %st0, $Mq
+      RegST0                  OpUse OpSet OpDest
+      Mo_Operand              OpUse
+  dc / 7                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fdivr %st0, $Mq
+      RegST0                  OpUse OpSet OpDest
+      Mo_Operand              OpUse
   --- dd ---
-  dd / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fld %ST0, $M
-      RegST0                  OpSet
-      M_Operand               OpUse
-  dd / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fisttp $M, %ST0
-      M_Operand               OpSet
+  dd / 0                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fld %st0, $Mq
+      RegST0                  OpSet OpDest
+      Mo_Operand              OpUse
+  dd / 1                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fisttp $Mq, %st0
+      Mo_Operand              OpSet OpDest
       RegST0                  OpUse
-  dd / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fst $M, %ST0
-      M_Operand               OpSet
+  dd / 2                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fst $Mq, %st0
+      Mo_Operand              OpSet OpDest
       RegST0                  OpUse
-  dd / 3                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fstp $M, %ST0
-      M_Operand               OpSet
+  dd / 3                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fstp $Mq, %st0
+      Mo_Operand              OpSet OpDest
       RegST0                  OpUse
-  dd / 4                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
+  dd / 4                      X87 OpcodeInModRm ModRmModIsnt0x3
     Frstor $M
       M_Operand               OpUse
-  dd / 6                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
+  dd / 5                      INVALID OpcodeInModRm NaClIllegal
+  dd / 6                      X87 OpcodeInModRm ModRmModIsnt0x3
     Fnsave $M
-      M_Operand               OpSet
-  dd / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fnstsw $M
-      M_Operand               OpSet
+      M_Operand               OpUse OpSet OpDest
+  dd / 7                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fnstsw $Mw
+      Mw_Operand              OpUse OpSet OpDest
   --- de ---
-  de / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fiadd %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  de / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fimul %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  de / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Ficom %ST0, $M
+  de / 0                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fiadd %st0, $Mw
+      RegST0                  OpUse OpSet OpDest
+      Mw_Operand              OpUse
+  de / 1                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fimul %st0, $Mw
+      RegST0                  OpUse OpSet OpDest
+      Mw_Operand              OpUse
+  de / 2                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Ficom %st0, $Mw
       RegST0                  OpUse
-      M_Operand               OpUse
-  de / 3                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Ficomp %ST0, $M
+      Mw_Operand              OpUse
+  de / 3                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Ficomp %st0, $Mw
       RegST0                  OpUse
-      M_Operand               OpUse
-  de / 4                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fisub %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  de / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fisubr %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  de / 6                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fidiv %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
-  de / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fidivr %ST0, $M
-      RegST0                  OpUse OpSet
-      M_Operand               OpUse
+      Mw_Operand              OpUse
+  de / 4                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fisub %st0, $Mw
+      RegST0                  OpUse OpSet OpDest
+      Mw_Operand              OpUse
+  de / 5                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fisubr %st0, $Mw
+      RegST0                  OpUse OpSet OpDest
+      Mw_Operand              OpUse
+  de / 6                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fidiv %st0, $Mw
+      RegST0                  OpUse OpSet OpDest
+      Mw_Operand              OpUse
+  de / 7                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fidivr %st0, $Mw
+      RegST0                  OpUse OpSet OpDest
+      Mw_Operand              OpUse
   --- df ---
-  df / 0                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fild %ST0, $M
-      RegST0                  OpSet
+  df / 0                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fild %st0, $Mw
+      RegST0                  OpSet OpDest
+      Mw_Operand              OpUse
+  df / 1                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fisttp $Mw, %st0
+      Mw_Operand              OpSet OpDest
+      RegST0                  OpUse
+  df / 2                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fist $Mw, %st0
+      Mw_Operand              OpSet OpDest
+      RegST0                  OpUse
+  df / 3                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fistp $Mw, %st0
+      Mw_Operand              OpSet OpDest
+      RegST0                  OpUse
+  df / 4                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fbld %st0, $M
+      RegST0                  OpSet OpDest
       M_Operand               OpUse
-  df / 1                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fisttp $M, %ST0
-      M_Operand               OpSet
-      RegST0                  OpUse
-  df / 2                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fist $M, %ST0
-      M_Operand               OpSet
-      RegST0                  OpUse
-  df / 3                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fistp $M, %ST0
-      M_Operand               OpSet
-      RegST0                  OpUse
-  df / 4                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fbld %ST0, $M
-      RegST0                  OpSet
+  df / 5                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fild %st0, $M
+      RegST0                  OpSet OpDest
       M_Operand               OpUse
-  df / 5                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fild %ST0, $M
-      RegST0                  OpSet
-      M_Operand               OpUse
-  df / 6                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fbstp $M, %ST0
-      M_Operand               OpSet
+  df / 6                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fbstp $M, %st0
+      M_Operand               OpSet OpDest
       RegST0                  OpUse
-  df / 7                      X87 OpcodeInModRm OpcodeLtC0InModRm ModRmModIsnt0x3
-    Fistp $M, %ST0
-      M_Operand               OpSet
+  df / 7                      X87 OpcodeInModRm ModRmModIsnt0x3
+    Fistp $M, %st0
+      M_Operand               OpSet OpDest
       RegST0                  OpUse
   --- e0 ---
   e0                          JMP8 OpcodeHasImmed OperandSize_b
@@ -4655,483 +4659,523 @@ Target: x86-64 bit mode
 *** PrefixD8 ***
 
   --- c0 ---
-  d8 c0 - r0                  X87 OpcodePlusR
-    Fadd %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c0                       X87 
+    Fadd %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- c1 ---
-  d8 c1 - r1                  X87 OpcodePlusR
-    Fadd %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c1                       X87 
+    Fadd %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- c2 ---
-  d8 c2 - r2                  X87 OpcodePlusR
-    Fadd %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c2                       X87 
+    Fadd %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- c3 ---
-  d8 c3 - r3                  X87 OpcodePlusR
-    Fadd %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c3                       X87 
+    Fadd %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- c4 ---
-  d8 c4 - r4                  X87 OpcodePlusR
-    Fadd %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c4                       X87 
+    Fadd %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- c5 ---
-  d8 c5 - r5                  X87 OpcodePlusR
-    Fadd %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c5                       X87 
+    Fadd %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- c6 ---
-  d8 c6 - r6                  X87 OpcodePlusR
-    Fadd %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c6                       X87 
+    Fadd %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- c7 ---
-  d8 c7 - r7                  X87 OpcodePlusR
-    Fadd %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c7                       X87 
+    Fadd %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- c8 ---
-  d8 c8 - r0                  X87 OpcodePlusR
-    Fmul %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c8                       X87 
+    Fmul %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- c9 ---
-  d8 c9 - r1                  X87 OpcodePlusR
-    Fmul %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 c9                       X87 
+    Fmul %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- ca ---
-  d8 ca - r2                  X87 OpcodePlusR
-    Fmul %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 ca                       X87 
+    Fmul %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- cb ---
-  d8 cb - r3                  X87 OpcodePlusR
-    Fmul %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 cb                       X87 
+    Fmul %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- cc ---
-  d8 cc - r4                  X87 OpcodePlusR
-    Fmul %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 cc                       X87 
+    Fmul %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- cd ---
-  d8 cd - r5                  X87 OpcodePlusR
-    Fmul %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 cd                       X87 
+    Fmul %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- ce ---
-  d8 ce - r6                  X87 OpcodePlusR
-    Fmul %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 ce                       X87 
+    Fmul %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- cf ---
-  d8 cf - r7                  X87 OpcodePlusR
-    Fmul %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 cf                       X87 
+    Fmul %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- d0 ---
-  d8 d0 - r0                  X87 OpcodePlusR
-    Fcom %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d0                       X87 
+    Fcom %st0, %st0
+      RegST0                  OpUse
+      RegST0                  OpUse
   --- d1 ---
-  d8 d1 - r1                  X87 OpcodePlusR
-    Fcom %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d1                       X87 
+    Fcom %st0, %st1
+      RegST0                  OpUse
+      RegST1                  OpUse
   --- d2 ---
-  d8 d2 - r2                  X87 OpcodePlusR
-    Fcom %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d2                       X87 
+    Fcom %st0, %st2
+      RegST0                  OpUse
+      RegST2                  OpUse
   --- d3 ---
-  d8 d3 - r3                  X87 OpcodePlusR
-    Fcom %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d3                       X87 
+    Fcom %st0, %st3
+      RegST0                  OpUse
+      RegST3                  OpUse
   --- d4 ---
-  d8 d4 - r4                  X87 OpcodePlusR
-    Fcom %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d4                       X87 
+    Fcom %st0, %st4
+      RegST0                  OpUse
+      RegST4                  OpUse
   --- d5 ---
-  d8 d5 - r5                  X87 OpcodePlusR
-    Fcom %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d5                       X87 
+    Fcom %st0, %st5
+      RegST0                  OpUse
+      RegST5                  OpUse
   --- d6 ---
-  d8 d6 - r6                  X87 OpcodePlusR
-    Fcom %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d6                       X87 
+    Fcom %st0, %st6
+      RegST0                  OpUse
+      RegST6                  OpUse
   --- d7 ---
-  d8 d7 - r7                  X87 OpcodePlusR
-    Fcom %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d7                       X87 
+    Fcom %st0, %st7
+      RegST0                  OpUse
+      RegST7                  OpUse
   --- d8 ---
-  d8 d8 - r0                  X87 OpcodePlusR
-    Fcomp %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d8                       X87 
+    Fcomp %st0, %st0
+      RegST0                  OpUse
+      RegST0                  OpUse
   --- d9 ---
-  d8 d9 - r1                  X87 OpcodePlusR
-    Fcomp %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 d9                       X87 
+    Fcomp %st0, %st1
+      RegST0                  OpUse
+      RegST1                  OpUse
   --- da ---
-  d8 da - r2                  X87 OpcodePlusR
-    Fcomp %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 da                       X87 
+    Fcomp %st0, %st2
+      RegST0                  OpUse
+      RegST2                  OpUse
   --- db ---
-  d8 db - r3                  X87 OpcodePlusR
-    Fcomp %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 db                       X87 
+    Fcomp %st0, %st3
+      RegST0                  OpUse
+      RegST3                  OpUse
   --- dc ---
-  d8 dc - r4                  X87 OpcodePlusR
-    Fcomp %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 dc                       X87 
+    Fcomp %st0, %st4
+      RegST0                  OpUse
+      RegST4                  OpUse
   --- dd ---
-  d8 dd - r5                  X87 OpcodePlusR
-    Fcomp %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 dd                       X87 
+    Fcomp %st0, %st5
+      RegST0                  OpUse
+      RegST5                  OpUse
   --- de ---
-  d8 de - r6                  X87 OpcodePlusR
-    Fcomp %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 de                       X87 
+    Fcomp %st0, %st6
+      RegST0                  OpUse
+      RegST6                  OpUse
   --- df ---
-  d8 df - r7                  X87 OpcodePlusR
-    Fcomp %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 df                       X87 
+    Fcomp %st0, %st7
+      RegST0                  OpUse
+      RegST7                  OpUse
   --- e0 ---
-  d8 e0 - r0                  X87 OpcodePlusR
-    Fsub %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e0                       X87 
+    Fsub %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- e1 ---
-  d8 e1 - r1                  X87 OpcodePlusR
-    Fsub %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e1                       X87 
+    Fsub %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- e2 ---
-  d8 e2 - r2                  X87 OpcodePlusR
-    Fsub %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e2                       X87 
+    Fsub %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- e3 ---
-  d8 e3 - r3                  X87 OpcodePlusR
-    Fsub %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e3                       X87 
+    Fsub %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- e4 ---
-  d8 e4 - r4                  X87 OpcodePlusR
-    Fsub %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e4                       X87 
+    Fsub %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- e5 ---
-  d8 e5 - r5                  X87 OpcodePlusR
-    Fsub %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e5                       X87 
+    Fsub %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- e6 ---
-  d8 e6 - r6                  X87 OpcodePlusR
-    Fsub %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e6                       X87 
+    Fsub %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- e7 ---
-  d8 e7 - r7                  X87 OpcodePlusR
-    Fsub %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e7                       X87 
+    Fsub %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- e8 ---
-  d8 e8 - r0                  X87 OpcodePlusR
-    Fsubr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e8                       X87 
+    Fsubr %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- e9 ---
-  d8 e9 - r1                  X87 OpcodePlusR
-    Fsubr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 e9                       X87 
+    Fsubr %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- ea ---
-  d8 ea - r2                  X87 OpcodePlusR
-    Fsubr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 ea                       X87 
+    Fsubr %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- eb ---
-  d8 eb - r3                  X87 OpcodePlusR
-    Fsubr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 eb                       X87 
+    Fsubr %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- ec ---
-  d8 ec - r4                  X87 OpcodePlusR
-    Fsubr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 ec                       X87 
+    Fsubr %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- ed ---
-  d8 ed - r5                  X87 OpcodePlusR
-    Fsubr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 ed                       X87 
+    Fsubr %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- ee ---
-  d8 ee - r6                  X87 OpcodePlusR
-    Fsubr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 ee                       X87 
+    Fsubr %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- ef ---
-  d8 ef - r7                  X87 OpcodePlusR
-    Fsubr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 ef                       X87 
+    Fsubr %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- f0 ---
-  d8 f0 - r0                  X87 OpcodePlusR
-    Fdiv %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f0                       X87 
+    Fdiv %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- f1 ---
-  d8 f1 - r1                  X87 OpcodePlusR
-    Fdiv %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f1                       X87 
+    Fdiv %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- f2 ---
-  d8 f2 - r2                  X87 OpcodePlusR
-    Fdiv %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f2                       X87 
+    Fdiv %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- f3 ---
-  d8 f3 - r3                  X87 OpcodePlusR
-    Fdiv %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f3                       X87 
+    Fdiv %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- f4 ---
-  d8 f4 - r4                  X87 OpcodePlusR
-    Fdiv %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f4                       X87 
+    Fdiv %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- f5 ---
-  d8 f5 - r5                  X87 OpcodePlusR
-    Fdiv %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f5                       X87 
+    Fdiv %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- f6 ---
-  d8 f6 - r6                  X87 OpcodePlusR
-    Fdiv %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f6                       X87 
+    Fdiv %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- f7 ---
-  d8 f7 - r7                  X87 OpcodePlusR
-    Fdiv %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f7                       X87 
+    Fdiv %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- f8 ---
-  d8 f8 - r0                  X87 OpcodePlusR
-    Fdivr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f8                       X87 
+    Fdivr %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- f9 ---
-  d8 f9 - r1                  X87 OpcodePlusR
-    Fdivr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 f9                       X87 
+    Fdivr %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- fa ---
-  d8 fa - r2                  X87 OpcodePlusR
-    Fdivr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 fa                       X87 
+    Fdivr %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- fb ---
-  d8 fb - r3                  X87 OpcodePlusR
-    Fdivr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 fb                       X87 
+    Fdivr %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- fc ---
-  d8 fc - r4                  X87 OpcodePlusR
-    Fdivr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 fc                       X87 
+    Fdivr %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- fd ---
-  d8 fd - r5                  X87 OpcodePlusR
-    Fdivr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 fd                       X87 
+    Fdivr %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- fe ---
-  d8 fe - r6                  X87 OpcodePlusR
-    Fdivr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 fe                       X87 
+    Fdivr %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- ff ---
-  d8 ff - r7                  X87 OpcodePlusR
-    Fdivr %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  d8 ff                       X87 
+    Fdivr %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
 
 *** PrefixD9 ***
 
   --- c0 ---
-  d9 c0 - r0                  X87 OpcodePlusR
-    Fld %ST0, %st
-      RegST0                  OpSet
-      St_Operand              OpUse
+  d9 c0                       X87 
+    Fld %st0, %st0
+      RegST0                  OpSet OpDest
+      RegST0                  OpUse
   --- c1 ---
-  d9 c1 - r1                  X87 OpcodePlusR
-    Fld %ST0, %st
-      RegST0                  OpSet
-      St_Operand              OpUse
+  d9 c1                       X87 
+    Fld %st0, %st1
+      RegST0                  OpSet OpDest
+      RegST1                  OpUse
   --- c2 ---
-  d9 c2 - r2                  X87 OpcodePlusR
-    Fld %ST0, %st
-      RegST0                  OpSet
-      St_Operand              OpUse
+  d9 c2                       X87 
+    Fld %st0, %st2
+      RegST0                  OpSet OpDest
+      RegST2                  OpUse
   --- c3 ---
-  d9 c3 - r3                  X87 OpcodePlusR
-    Fld %ST0, %st
-      RegST0                  OpSet
-      St_Operand              OpUse
+  d9 c3                       X87 
+    Fld %st0, %st3
+      RegST0                  OpSet OpDest
+      RegST3                  OpUse
   --- c4 ---
-  d9 c4 - r4                  X87 OpcodePlusR
-    Fld %ST0, %st
-      RegST0                  OpSet
-      St_Operand              OpUse
+  d9 c4                       X87 
+    Fld %st0, %st4
+      RegST0                  OpSet OpDest
+      RegST4                  OpUse
   --- c5 ---
-  d9 c5 - r5                  X87 OpcodePlusR
-    Fld %ST0, %st
-      RegST0                  OpSet
-      St_Operand              OpUse
+  d9 c5                       X87 
+    Fld %st0, %st5
+      RegST0                  OpSet OpDest
+      RegST5                  OpUse
   --- c6 ---
-  d9 c6 - r6                  X87 OpcodePlusR
-    Fld %ST0, %st
-      RegST0                  OpSet
-      St_Operand              OpUse
+  d9 c6                       X87 
+    Fld %st0, %st6
+      RegST0                  OpSet OpDest
+      RegST6                  OpUse
   --- c7 ---
-  d9 c7 - r7                  X87 OpcodePlusR
-    Fld %ST0, %st
-      RegST0                  OpSet
-      St_Operand              OpUse
+  d9 c7                       X87 
+    Fld %st0, %st7
+      RegST0                  OpSet OpDest
+      RegST7                  OpUse
   --- c8 ---
-  d9 c8 - r0                  X87 OpcodePlusR
-    Fxch %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse OpSet
+  d9 c8                       X87 
+    Fxch %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse OpSet OpDest
   --- c9 ---
-  d9 c9 - r1                  X87 OpcodePlusR
-    Fxch %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse OpSet
+  d9 c9                       X87 
+    Fxch %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse OpSet OpDest
   --- ca ---
-  d9 ca - r2                  X87 OpcodePlusR
-    Fxch %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse OpSet
+  d9 ca                       X87 
+    Fxch %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse OpSet OpDest
   --- cb ---
-  d9 cb - r3                  X87 OpcodePlusR
-    Fxch %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse OpSet
+  d9 cb                       X87 
+    Fxch %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse OpSet OpDest
   --- cc ---
-  d9 cc - r4                  X87 OpcodePlusR
-    Fxch %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse OpSet
+  d9 cc                       X87 
+    Fxch %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse OpSet OpDest
   --- cd ---
-  d9 cd - r5                  X87 OpcodePlusR
-    Fxch %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse OpSet
+  d9 cd                       X87 
+    Fxch %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse OpSet OpDest
   --- ce ---
-  d9 ce - r6                  X87 OpcodePlusR
-    Fxch %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse OpSet
+  d9 ce                       X87 
+    Fxch %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse OpSet OpDest
   --- cf ---
-  d9 cf - r7                  X87 OpcodePlusR
-    Fxch %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse OpSet
+  d9 cf                       X87 
+    Fxch %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse OpSet OpDest
   --- d0 ---
   d9 d0                       X87 
     Fnop
+  --- d1 ---
+  d9 d1                       INVALID NaClIllegal
+  --- d2 ---
+  d9 d2                       INVALID NaClIllegal
+  --- d3 ---
+  d9 d3                       INVALID NaClIllegal
+  --- d4 ---
+  d9 d4                       INVALID NaClIllegal
+  --- d5 ---
+  d9 d5                       INVALID NaClIllegal
+  --- d6 ---
+  d9 d6                       INVALID NaClIllegal
+  --- d7 ---
+  d9 d7                       INVALID NaClIllegal
+  --- d8 ---
+  d9 d8                       INVALID NaClIllegal
+  --- d9 ---
+  d9 d9                       INVALID NaClIllegal
+  --- da ---
+  d9 da                       INVALID NaClIllegal
+  --- db ---
+  d9 db                       INVALID NaClIllegal
+  --- dc ---
+  d9 dc                       INVALID NaClIllegal
+  --- dd ---
+  d9 dd                       INVALID NaClIllegal
+  --- de ---
+  d9 de                       INVALID NaClIllegal
+  --- df ---
+  d9 df                       INVALID NaClIllegal
   --- e0 ---
   d9 e0                       X87 
-    Fchs %ST0
-      RegST0                  OpUse OpSet
+    Fchs %st0
+      RegST0                  OpUse OpSet OpDest
   --- e1 ---
   d9 e1                       X87 
-    Fabs %ST0
-      RegST0                  OpUse OpSet
+    Fabs %st0
+      RegST0                  OpUse OpSet OpDest
+  --- e2 ---
+  d9 e2                       INVALID NaClIllegal
+  --- e3 ---
+  d9 e3                       INVALID NaClIllegal
   --- e4 ---
   d9 e4                       X87 
-    Ftst %ST0
+    Ftst %st0
       RegST0                  OpUse
   --- e5 ---
   d9 e5                       X87 
-    Fxam %ST0
+    Fxam %st0
       RegST0                  OpUse
+  --- e6 ---
+  d9 e6                       INVALID NaClIllegal
+  --- e7 ---
+  d9 e7                       INVALID NaClIllegal
   --- e8 ---
   d9 e8                       X87 
-    Fld1 %ST0
-      RegST0                  OpUse OpSet
+    Fld1 %st0
+      RegST0                  OpUse OpSet OpDest
   --- e9 ---
   d9 e9                       X87 
-    Fldl2t %ST0
-      RegST0                  OpUse OpSet
+    Fldl2t %st0
+      RegST0                  OpUse OpSet OpDest
   --- ea ---
   d9 ea                       X87 
-    Fldl2e %ST0
-      RegST0                  OpUse OpSet
+    Fldl2e %st0
+      RegST0                  OpUse OpSet OpDest
   --- eb ---
   d9 eb                       X87 
-    Fldpi %ST0
-      RegST0                  OpUse OpSet
+    Fldpi %st0
+      RegST0                  OpUse OpSet OpDest
   --- ec ---
   d9 ec                       X87 
-    Fldlg2 %ST0
-      RegST0                  OpUse OpSet
+    Fldlg2 %st0
+      RegST0                  OpUse OpSet OpDest
   --- ed ---
   d9 ed                       X87 
-    Fldln2 %ST0
-      RegST0                  OpUse OpSet
+    Fldln2 %st0
+      RegST0                  OpUse OpSet OpDest
   --- ee ---
   d9 ee                       X87 
-    Fldz %ST0
-      RegST0                  OpUse OpSet
+    Fldz %st0
+      RegST0                  OpUse OpSet OpDest
+  --- ef ---
+  d9 ef                       INVALID NaClIllegal
   --- f0 ---
   d9 f0                       X87 
-    F2xm1 %ST0
-      RegST0                  OpUse OpSet
+    F2xm1 %st0
+      RegST0                  OpUse OpSet OpDest
   --- f1 ---
   d9 f1                       X87 
-    Fyl2x %ST0, %ST1
-      RegST0                  OpUse OpSet
+    Fyl2x %st0, %st1
+      RegST0                  OpUse OpSet OpDest
       RegST1                  OpUse
   --- f2 ---
   d9 f2                       X87 
-    Fptan %ST0, %ST1
-      RegST0                  OpSet
+    Fptan %st0, %st1
+      RegST0                  OpSet OpDest
       RegST1                  OpUse
   --- f3 ---
   d9 f3                       X87 
-    Fpatan %ST0, %ST1
-      RegST0                  OpUse OpSet
+    Fpatan %st0, %st1
+      RegST0                  OpUse OpSet OpDest
       RegST1                  OpUse
   --- f4 ---
   d9 f4                       X87 
-    Fxtract %ST0, %ST1
-      RegST0                  OpSet
+    Fxtract %st0, %st1
+      RegST0                  OpSet OpDest
       RegST1                  OpUse
   --- f5 ---
   d9 f5                       X87 
-    Fprem1 %ST0, %ST1
-      RegST0                  OpUse OpSet
+    Fprem1 %st0, %st1
+      RegST0                  OpUse OpSet OpDest
       RegST1                  OpUse
   --- f6 ---
   d9 f6                       X87 
@@ -5141,1228 +5185,1538 @@ Target: x86-64 bit mode
     Fincstp
   --- f8 ---
   d9 f8                       X87 
-    Fprem %ST0, %ST1
-      RegST0                  OpUse OpSet
+    Fprem %st0, %st1
+      RegST0                  OpUse OpSet OpDest
       RegST1                  OpUse
   --- f9 ---
   d9 f9                       X87 
-    Fyl2xp1 %ST0, %ST1
-      RegST0                  OpUse OpSet
+    Fyl2xp1 %st0, %st1
+      RegST0                  OpUse OpSet OpDest
       RegST1                  OpUse
   --- fa ---
   d9 fa                       X87 
-    Fsqrt %ST0
-      RegST0                  OpUse OpSet
+    Fsqrt %st0
+      RegST0                  OpUse OpSet OpDest
   --- fb ---
   d9 fb                       X87 
-    Fsincos %ST0, %ST1
-      RegST0                  OpSet
+    Fsincos %st0, %st1
+      RegST0                  OpSet OpDest
       RegST1                  OpUse
   --- fc ---
   d9 fc                       X87 
-    Frndint %ST0
-      RegST0                  OpUse OpSet
+    Frndint %st0
+      RegST0                  OpUse OpSet OpDest
   --- fd ---
   d9 fd                       X87 
-    Fscale %ST0, %ST1
-      RegST0                  OpUse OpSet
+    Fscale %st0, %st1
+      RegST0                  OpUse OpSet OpDest
       RegST1                  OpUse
   --- fe ---
   d9 fe                       X87 
-    Fsin %ST0
-      RegST0                  OpUse OpSet
+    Fsin %st0
+      RegST0                  OpUse OpSet OpDest
   --- ff ---
   d9 ff                       X87 
-    Fcos %ST0
-      RegST0                  OpUse OpSet
+    Fcos %st0
+      RegST0                  OpUse OpSet OpDest
 
 *** PrefixDA ***
 
   --- c0 ---
-  da c0 - r0                  X87 OpcodePlusR
-    Fcmovb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c0                       X87 
+    Fcmovb %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- c1 ---
-  da c1 - r1                  X87 OpcodePlusR
-    Fcmovb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c1                       X87 
+    Fcmovb %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- c2 ---
-  da c2 - r2                  X87 OpcodePlusR
-    Fcmovb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c2                       X87 
+    Fcmovb %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- c3 ---
-  da c3 - r3                  X87 OpcodePlusR
-    Fcmovb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c3                       X87 
+    Fcmovb %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- c4 ---
-  da c4 - r4                  X87 OpcodePlusR
-    Fcmovb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c4                       X87 
+    Fcmovb %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- c5 ---
-  da c5 - r5                  X87 OpcodePlusR
-    Fcmovb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c5                       X87 
+    Fcmovb %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- c6 ---
-  da c6 - r6                  X87 OpcodePlusR
-    Fcmovb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c6                       X87 
+    Fcmovb %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- c7 ---
-  da c7 - r7                  X87 OpcodePlusR
-    Fcmovb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c7                       X87 
+    Fcmovb %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- c8 ---
-  da c8 - r0                  X87 OpcodePlusR
-    Fcmove %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c8                       X87 
+    Fcmove %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- c9 ---
-  da c9 - r1                  X87 OpcodePlusR
-    Fcmove %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da c9                       X87 
+    Fcmove %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- ca ---
-  da ca - r2                  X87 OpcodePlusR
-    Fcmove %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da ca                       X87 
+    Fcmove %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- cb ---
-  da cb - r3                  X87 OpcodePlusR
-    Fcmove %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da cb                       X87 
+    Fcmove %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- cc ---
-  da cc - r4                  X87 OpcodePlusR
-    Fcmove %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da cc                       X87 
+    Fcmove %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- cd ---
-  da cd - r5                  X87 OpcodePlusR
-    Fcmove %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da cd                       X87 
+    Fcmove %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- ce ---
-  da ce - r6                  X87 OpcodePlusR
-    Fcmove %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da ce                       X87 
+    Fcmove %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- cf ---
-  da cf - r7                  X87 OpcodePlusR
-    Fcmove %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da cf                       X87 
+    Fcmove %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- d0 ---
-  da d0 - r0                  X87 OpcodePlusR
-    Fcmovbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d0                       X87 
+    Fcmovbe %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- d1 ---
-  da d1 - r1                  X87 OpcodePlusR
-    Fcmovbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d1                       X87 
+    Fcmovbe %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- d2 ---
-  da d2 - r2                  X87 OpcodePlusR
-    Fcmovbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d2                       X87 
+    Fcmovbe %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- d3 ---
-  da d3 - r3                  X87 OpcodePlusR
-    Fcmovbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d3                       X87 
+    Fcmovbe %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- d4 ---
-  da d4 - r4                  X87 OpcodePlusR
-    Fcmovbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d4                       X87 
+    Fcmovbe %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- d5 ---
-  da d5 - r5                  X87 OpcodePlusR
-    Fcmovbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d5                       X87 
+    Fcmovbe %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- d6 ---
-  da d6 - r6                  X87 OpcodePlusR
-    Fcmovbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d6                       X87 
+    Fcmovbe %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- d7 ---
-  da d7 - r7                  X87 OpcodePlusR
-    Fcmovbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d7                       X87 
+    Fcmovbe %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- d8 ---
-  da d8 - r0                  X87 OpcodePlusR
-    Fcmovu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d8                       X87 
+    Fcmovu %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- d9 ---
-  da d9 - r1                  X87 OpcodePlusR
-    Fcmovu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da d9                       X87 
+    Fcmovu %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- da ---
-  da da - r2                  X87 OpcodePlusR
-    Fcmovu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da da                       X87 
+    Fcmovu %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- db ---
-  da db - r3                  X87 OpcodePlusR
-    Fcmovu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da db                       X87 
+    Fcmovu %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- dc ---
-  da dc - r4                  X87 OpcodePlusR
-    Fcmovu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da dc                       X87 
+    Fcmovu %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- dd ---
-  da dd - r5                  X87 OpcodePlusR
-    Fcmovu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da dd                       X87 
+    Fcmovu %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- de ---
-  da de - r6                  X87 OpcodePlusR
-    Fcmovu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da de                       X87 
+    Fcmovu %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- df ---
-  da df - r7                  X87 OpcodePlusR
-    Fcmovu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  da df                       X87 
+    Fcmovu %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
+  --- e0 ---
+  da e0                       INVALID NaClIllegal
+  --- e1 ---
+  da e1                       INVALID NaClIllegal
+  --- e2 ---
+  da e2                       INVALID NaClIllegal
+  --- e3 ---
+  da e3                       INVALID NaClIllegal
+  --- e4 ---
+  da e4                       INVALID NaClIllegal
+  --- e5 ---
+  da e5                       INVALID NaClIllegal
+  --- e6 ---
+  da e6                       INVALID NaClIllegal
+  --- e7 ---
+  da e7                       INVALID NaClIllegal
+  --- e8 ---
+  da e8                       INVALID NaClIllegal
   --- e9 ---
   da e9                       X87 
-    Fucompp %ST0, %ST1
+    Fucompp %st0, %st1
       RegST0                  OpUse
       RegST1                  OpUse
+  --- ea ---
+  da ea                       INVALID NaClIllegal
+  --- eb ---
+  da eb                       INVALID NaClIllegal
+  --- ec ---
+  da ec                       INVALID NaClIllegal
+  --- ed ---
+  da ed                       INVALID NaClIllegal
+  --- ee ---
+  da ee                       INVALID NaClIllegal
+  --- ef ---
+  da ef                       INVALID NaClIllegal
+  --- f0 ---
+  da f0                       INVALID NaClIllegal
+  --- f1 ---
+  da f1                       INVALID NaClIllegal
+  --- f2 ---
+  da f2                       INVALID NaClIllegal
+  --- f3 ---
+  da f3                       INVALID NaClIllegal
+  --- f4 ---
+  da f4                       INVALID NaClIllegal
+  --- f5 ---
+  da f5                       INVALID NaClIllegal
+  --- f6 ---
+  da f6                       INVALID NaClIllegal
+  --- f7 ---
+  da f7                       INVALID NaClIllegal
+  --- f8 ---
+  da f8                       INVALID NaClIllegal
+  --- f9 ---
+  da f9                       INVALID NaClIllegal
+  --- fa ---
+  da fa                       INVALID NaClIllegal
+  --- fb ---
+  da fb                       INVALID NaClIllegal
+  --- fc ---
+  da fc                       INVALID NaClIllegal
+  --- fd ---
+  da fd                       INVALID NaClIllegal
+  --- fe ---
+  da fe                       INVALID NaClIllegal
+  --- ff ---
+  da ff                       INVALID NaClIllegal
 
 *** PrefixDB ***
 
   --- c0 ---
-  db c0 - r0                  X87 OpcodePlusR
-    Fcmovnb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c0                       X87 
+    Fcmovnb %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- c1 ---
-  db c1 - r1                  X87 OpcodePlusR
-    Fcmovnb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c1                       X87 
+    Fcmovnb %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- c2 ---
-  db c2 - r2                  X87 OpcodePlusR
-    Fcmovnb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c2                       X87 
+    Fcmovnb %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- c3 ---
-  db c3 - r3                  X87 OpcodePlusR
-    Fcmovnb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c3                       X87 
+    Fcmovnb %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- c4 ---
-  db c4 - r4                  X87 OpcodePlusR
-    Fcmovnb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c4                       X87 
+    Fcmovnb %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- c5 ---
-  db c5 - r5                  X87 OpcodePlusR
-    Fcmovnb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c5                       X87 
+    Fcmovnb %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- c6 ---
-  db c6 - r6                  X87 OpcodePlusR
-    Fcmovnb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c6                       X87 
+    Fcmovnb %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- c7 ---
-  db c7 - r7                  X87 OpcodePlusR
-    Fcmovnb %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c7                       X87 
+    Fcmovnb %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- c8 ---
-  db c8 - r0                  X87 OpcodePlusR
-    Fcmovne %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c8                       X87 
+    Fcmovne %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- c9 ---
-  db c9 - r1                  X87 OpcodePlusR
-    Fcmovne %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db c9                       X87 
+    Fcmovne %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- ca ---
-  db ca - r2                  X87 OpcodePlusR
-    Fcmovne %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db ca                       X87 
+    Fcmovne %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- cb ---
-  db cb - r3                  X87 OpcodePlusR
-    Fcmovne %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db cb                       X87 
+    Fcmovne %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- cc ---
-  db cc - r4                  X87 OpcodePlusR
-    Fcmovne %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db cc                       X87 
+    Fcmovne %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- cd ---
-  db cd - r5                  X87 OpcodePlusR
-    Fcmovne %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db cd                       X87 
+    Fcmovne %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- ce ---
-  db ce - r6                  X87 OpcodePlusR
-    Fcmovne %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db ce                       X87 
+    Fcmovne %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- cf ---
-  db cf - r7                  X87 OpcodePlusR
-    Fcmovne %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db cf                       X87 
+    Fcmovne %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- d0 ---
-  db d0 - r0                  X87 OpcodePlusR
-    Fcmovnbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d0                       X87 
+    Fcmovnbe %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- d1 ---
-  db d1 - r1                  X87 OpcodePlusR
-    Fcmovnbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d1                       X87 
+    Fcmovnbe %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- d2 ---
-  db d2 - r2                  X87 OpcodePlusR
-    Fcmovnbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d2                       X87 
+    Fcmovnbe %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- d3 ---
-  db d3 - r3                  X87 OpcodePlusR
-    Fcmovnbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d3                       X87 
+    Fcmovnbe %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- d4 ---
-  db d4 - r4                  X87 OpcodePlusR
-    Fcmovnbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d4                       X87 
+    Fcmovnbe %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- d5 ---
-  db d5 - r5                  X87 OpcodePlusR
-    Fcmovnbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d5                       X87 
+    Fcmovnbe %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- d6 ---
-  db d6 - r6                  X87 OpcodePlusR
-    Fcmovnbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d6                       X87 
+    Fcmovnbe %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- d7 ---
-  db d7 - r7                  X87 OpcodePlusR
-    Fcmovnbe %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d7                       X87 
+    Fcmovnbe %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
   --- d8 ---
-  db d8 - r0                  X87 OpcodePlusR
-    Fcmovnu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d8                       X87 
+    Fcmovnu %st0, %st0
+      RegST0                  OpUse OpSet OpDest
+      RegST0                  OpUse
   --- d9 ---
-  db d9 - r1                  X87 OpcodePlusR
-    Fcmovnu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db d9                       X87 
+    Fcmovnu %st0, %st1
+      RegST0                  OpUse OpSet OpDest
+      RegST1                  OpUse
   --- da ---
-  db da - r2                  X87 OpcodePlusR
-    Fcmovnu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db da                       X87 
+    Fcmovnu %st0, %st2
+      RegST0                  OpUse OpSet OpDest
+      RegST2                  OpUse
   --- db ---
-  db db - r3                  X87 OpcodePlusR
-    Fcmovnu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db db                       X87 
+    Fcmovnu %st0, %st3
+      RegST0                  OpUse OpSet OpDest
+      RegST3                  OpUse
   --- dc ---
-  db dc - r4                  X87 OpcodePlusR
-    Fcmovnu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db dc                       X87 
+    Fcmovnu %st0, %st4
+      RegST0                  OpUse OpSet OpDest
+      RegST4                  OpUse
   --- dd ---
-  db dd - r5                  X87 OpcodePlusR
-    Fcmovnu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db dd                       X87 
+    Fcmovnu %st0, %st5
+      RegST0                  OpUse OpSet OpDest
+      RegST5                  OpUse
   --- de ---
-  db de - r6                  X87 OpcodePlusR
-    Fcmovnu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db de                       X87 
+    Fcmovnu %st0, %st6
+      RegST0                  OpUse OpSet OpDest
+      RegST6                  OpUse
   --- df ---
-  db df - r7                  X87 OpcodePlusR
-    Fcmovnu %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  db df                       X87 
+    Fcmovnu %st0, %st7
+      RegST0                  OpUse OpSet OpDest
+      RegST7                  OpUse
+  --- e0 ---
+  db e0                       INVALID NaClIllegal
+  --- e1 ---
+  db e1                       INVALID NaClIllegal
   --- e2 ---
   db e2                       X87 
     Fnclex
   --- e3 ---
   db e3                       X87 
     Fninit
+  --- e4 ---
+  db e4                       INVALID NaClIllegal
+  --- e5 ---
+  db e5                       INVALID NaClIllegal
+  --- e6 ---
+  db e6                       INVALID NaClIllegal
+  --- e7 ---
+  db e7                       INVALID NaClIllegal
   --- e8 ---
-  db e8 - r0                  X87 OpcodePlusR
-    Fucomi %ST0, %st
+  db e8                       X87 
+    Fucomi %st0, %st0
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST0                  OpUse
   --- e9 ---
-  db e9 - r1                  X87 OpcodePlusR
-    Fucomi %ST0, %st
+  db e9                       X87 
+    Fucomi %st0, %st1
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST1                  OpUse
   --- ea ---
-  db ea - r2                  X87 OpcodePlusR
-    Fucomi %ST0, %st
+  db ea                       X87 
+    Fucomi %st0, %st2
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST2                  OpUse
   --- eb ---
-  db eb - r3                  X87 OpcodePlusR
-    Fucomi %ST0, %st
+  db eb                       X87 
+    Fucomi %st0, %st3
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST3                  OpUse
   --- ec ---
-  db ec - r4                  X87 OpcodePlusR
-    Fucomi %ST0, %st
+  db ec                       X87 
+    Fucomi %st0, %st4
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST4                  OpUse
   --- ed ---
-  db ed - r5                  X87 OpcodePlusR
-    Fucomi %ST0, %st
+  db ed                       X87 
+    Fucomi %st0, %st5
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST5                  OpUse
   --- ee ---
-  db ee - r6                  X87 OpcodePlusR
-    Fucomi %ST0, %st
+  db ee                       X87 
+    Fucomi %st0, %st6
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST6                  OpUse
   --- ef ---
-  db ef - r7                  X87 OpcodePlusR
-    Fucomi %ST0, %st
+  db ef                       X87 
+    Fucomi %st0, %st7
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST7                  OpUse
   --- f0 ---
-  db f0 - r0                  X87 OpcodePlusR
-    Fcomi %ST0, %st
+  db f0                       X87 
+    Fcomi %st0, %st0
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST0                  OpUse
   --- f1 ---
-  db f1 - r1                  X87 OpcodePlusR
-    Fcomi %ST0, %st
+  db f1                       X87 
+    Fcomi %st0, %st1
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST1                  OpUse
   --- f2 ---
-  db f2 - r2                  X87 OpcodePlusR
-    Fcomi %ST0, %st
+  db f2                       X87 
+    Fcomi %st0, %st2
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST2                  OpUse
   --- f3 ---
-  db f3 - r3                  X87 OpcodePlusR
-    Fcomi %ST0, %st
+  db f3                       X87 
+    Fcomi %st0, %st3
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST3                  OpUse
   --- f4 ---
-  db f4 - r4                  X87 OpcodePlusR
-    Fcomi %ST0, %st
+  db f4                       X87 
+    Fcomi %st0, %st4
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST4                  OpUse
   --- f5 ---
-  db f5 - r5                  X87 OpcodePlusR
-    Fcomi %ST0, %st
+  db f5                       X87 
+    Fcomi %st0, %st5
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST5                  OpUse
   --- f6 ---
-  db f6 - r6                  X87 OpcodePlusR
-    Fcomi %ST0, %st
+  db f6                       X87 
+    Fcomi %st0, %st6
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST6                  OpUse
   --- f7 ---
-  db f7 - r7                  X87 OpcodePlusR
-    Fcomi %ST0, %st
+  db f7                       X87 
+    Fcomi %st0, %st7
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST7                  OpUse
 
 *** PrefixDC ***
 
   --- c0 ---
-  dc c0 - r0                  X87 OpcodePlusR
-    Fadd %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c0                       X87 
+    Fadd %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c1 ---
-  dc c1 - r1                  X87 OpcodePlusR
-    Fadd %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c1                       X87 
+    Fadd %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c2 ---
-  dc c2 - r2                  X87 OpcodePlusR
-    Fadd %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c2                       X87 
+    Fadd %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c3 ---
-  dc c3 - r3                  X87 OpcodePlusR
-    Fadd %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c3                       X87 
+    Fadd %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c4 ---
-  dc c4 - r4                  X87 OpcodePlusR
-    Fadd %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c4                       X87 
+    Fadd %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c5 ---
-  dc c5 - r5                  X87 OpcodePlusR
-    Fadd %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c5                       X87 
+    Fadd %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c6 ---
-  dc c6 - r6                  X87 OpcodePlusR
-    Fadd %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c6                       X87 
+    Fadd %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c7 ---
-  dc c7 - r7                  X87 OpcodePlusR
-    Fadd %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c7                       X87 
+    Fadd %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c8 ---
-  dc c8 - r0                  X87 OpcodePlusR
-    Fmul %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c8                       X87 
+    Fmul %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c9 ---
-  dc c9 - r1                  X87 OpcodePlusR
-    Fmul %st, %ST0
-      St_Operand              OpUse OpSet
+  dc c9                       X87 
+    Fmul %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ca ---
-  dc ca - r2                  X87 OpcodePlusR
-    Fmul %st, %ST0
-      St_Operand              OpUse OpSet
+  dc ca                       X87 
+    Fmul %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- cb ---
-  dc cb - r3                  X87 OpcodePlusR
-    Fmul %st, %ST0
-      St_Operand              OpUse OpSet
+  dc cb                       X87 
+    Fmul %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- cc ---
-  dc cc - r4                  X87 OpcodePlusR
-    Fmul %st, %ST0
-      St_Operand              OpUse OpSet
+  dc cc                       X87 
+    Fmul %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- cd ---
-  dc cd - r5                  X87 OpcodePlusR
-    Fmul %st, %ST0
-      St_Operand              OpUse OpSet
+  dc cd                       X87 
+    Fmul %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ce ---
-  dc ce - r6                  X87 OpcodePlusR
-    Fmul %st, %ST0
-      St_Operand              OpUse OpSet
+  dc ce                       X87 
+    Fmul %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- cf ---
-  dc cf - r7                  X87 OpcodePlusR
-    Fmul %st, %ST0
-      St_Operand              OpUse OpSet
+  dc cf                       X87 
+    Fmul %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
+  --- d0 ---
+  dc d0                       INVALID NaClIllegal
+  --- d1 ---
+  dc d1                       INVALID NaClIllegal
+  --- d2 ---
+  dc d2                       INVALID NaClIllegal
+  --- d3 ---
+  dc d3                       INVALID NaClIllegal
+  --- d4 ---
+  dc d4                       INVALID NaClIllegal
+  --- d5 ---
+  dc d5                       INVALID NaClIllegal
+  --- d6 ---
+  dc d6                       INVALID NaClIllegal
+  --- d7 ---
+  dc d7                       INVALID NaClIllegal
+  --- d8 ---
+  dc d8                       INVALID NaClIllegal
+  --- d9 ---
+  dc d9                       INVALID NaClIllegal
+  --- da ---
+  dc da                       INVALID NaClIllegal
+  --- db ---
+  dc db                       INVALID NaClIllegal
+  --- dc ---
+  dc dc                       INVALID NaClIllegal
+  --- dd ---
+  dc dd                       INVALID NaClIllegal
+  --- de ---
+  dc de                       INVALID NaClIllegal
+  --- df ---
+  dc df                       INVALID NaClIllegal
   --- e0 ---
-  dc e0 - r0                  X87 OpcodePlusR
-    Fsubr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e0                       X87 
+    Fsubr %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e1 ---
-  dc e1 - r1                  X87 OpcodePlusR
-    Fsubr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e1                       X87 
+    Fsubr %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e2 ---
-  dc e2 - r2                  X87 OpcodePlusR
-    Fsubr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e2                       X87 
+    Fsubr %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e3 ---
-  dc e3 - r3                  X87 OpcodePlusR
-    Fsubr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e3                       X87 
+    Fsubr %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e4 ---
-  dc e4 - r4                  X87 OpcodePlusR
-    Fsubr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e4                       X87 
+    Fsubr %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e5 ---
-  dc e5 - r5                  X87 OpcodePlusR
-    Fsubr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e5                       X87 
+    Fsubr %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e6 ---
-  dc e6 - r6                  X87 OpcodePlusR
-    Fsubr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e6                       X87 
+    Fsubr %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e7 ---
-  dc e7 - r7                  X87 OpcodePlusR
-    Fsubr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e7                       X87 
+    Fsubr %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e8 ---
-  dc e8 - r0                  X87 OpcodePlusR
-    Fsub %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e8                       X87 
+    Fsub %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e9 ---
-  dc e9 - r1                  X87 OpcodePlusR
-    Fsub %st, %ST0
-      St_Operand              OpUse OpSet
+  dc e9                       X87 
+    Fsub %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ea ---
-  dc ea - r2                  X87 OpcodePlusR
-    Fsub %st, %ST0
-      St_Operand              OpUse OpSet
+  dc ea                       X87 
+    Fsub %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- eb ---
-  dc eb - r3                  X87 OpcodePlusR
-    Fsub %st, %ST0
-      St_Operand              OpUse OpSet
+  dc eb                       X87 
+    Fsub %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ec ---
-  dc ec - r4                  X87 OpcodePlusR
-    Fsub %st, %ST0
-      St_Operand              OpUse OpSet
+  dc ec                       X87 
+    Fsub %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ed ---
-  dc ed - r5                  X87 OpcodePlusR
-    Fsub %st, %ST0
-      St_Operand              OpUse OpSet
+  dc ed                       X87 
+    Fsub %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ee ---
-  dc ee - r6                  X87 OpcodePlusR
-    Fsub %st, %ST0
-      St_Operand              OpUse OpSet
+  dc ee                       X87 
+    Fsub %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ef ---
-  dc ef - r7                  X87 OpcodePlusR
-    Fsub %st, %ST0
-      St_Operand              OpUse OpSet
+  dc ef                       X87 
+    Fsub %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f0 ---
-  dc f0 - r0                  X87 OpcodePlusR
-    Fdivr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f0                       X87 
+    Fdivr %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f1 ---
-  dc f1 - r1                  X87 OpcodePlusR
-    Fdivr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f1                       X87 
+    Fdivr %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f2 ---
-  dc f2 - r2                  X87 OpcodePlusR
-    Fdivr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f2                       X87 
+    Fdivr %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f3 ---
-  dc f3 - r3                  X87 OpcodePlusR
-    Fdivr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f3                       X87 
+    Fdivr %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f4 ---
-  dc f4 - r4                  X87 OpcodePlusR
-    Fdivr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f4                       X87 
+    Fdivr %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f5 ---
-  dc f5 - r5                  X87 OpcodePlusR
-    Fdivr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f5                       X87 
+    Fdivr %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f6 ---
-  dc f6 - r6                  X87 OpcodePlusR
-    Fdivr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f6                       X87 
+    Fdivr %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f7 ---
-  dc f7 - r7                  X87 OpcodePlusR
-    Fdivr %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f7                       X87 
+    Fdivr %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f8 ---
-  dc f8 - r0                  X87 OpcodePlusR
-    Fdiv %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f8                       X87 
+    Fdiv %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f9 ---
-  dc f9 - r1                  X87 OpcodePlusR
-    Fdiv %st, %ST0
-      St_Operand              OpUse OpSet
+  dc f9                       X87 
+    Fdiv %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fa ---
-  dc fa - r2                  X87 OpcodePlusR
-    Fdiv %st, %ST0
-      St_Operand              OpUse OpSet
+  dc fa                       X87 
+    Fdiv %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fb ---
-  dc fb - r3                  X87 OpcodePlusR
-    Fdiv %st, %ST0
-      St_Operand              OpUse OpSet
+  dc fb                       X87 
+    Fdiv %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fc ---
-  dc fc - r4                  X87 OpcodePlusR
-    Fdiv %st, %ST0
-      St_Operand              OpUse OpSet
+  dc fc                       X87 
+    Fdiv %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fd ---
-  dc fd - r5                  X87 OpcodePlusR
-    Fdiv %st, %ST0
-      St_Operand              OpUse OpSet
+  dc fd                       X87 
+    Fdiv %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fe ---
-  dc fe - r6                  X87 OpcodePlusR
-    Fdiv %st, %ST0
-      St_Operand              OpUse OpSet
+  dc fe                       X87 
+    Fdiv %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ff ---
-  dc ff - r7                  X87 OpcodePlusR
-    Fdiv %st, %ST0
-      St_Operand              OpUse OpSet
+  dc ff                       X87 
+    Fdiv %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
 
 *** PrefixDD ***
 
   --- c0 ---
-  dd c0 - r0                  X87 OpcodePlusR
-    Ffree %st
-      St_Operand
+  dd c0                       X87 
+    Ffree %st0
+      RegST0
   --- c1 ---
-  dd c1 - r1                  X87 OpcodePlusR
-    Ffree %st
-      St_Operand
+  dd c1                       X87 
+    Ffree %st1
+      RegST1
   --- c2 ---
-  dd c2 - r2                  X87 OpcodePlusR
-    Ffree %st
-      St_Operand
+  dd c2                       X87 
+    Ffree %st2
+      RegST2
   --- c3 ---
-  dd c3 - r3                  X87 OpcodePlusR
-    Ffree %st
-      St_Operand
+  dd c3                       X87 
+    Ffree %st3
+      RegST3
   --- c4 ---
-  dd c4 - r4                  X87 OpcodePlusR
-    Ffree %st
-      St_Operand
+  dd c4                       X87 
+    Ffree %st4
+      RegST4
   --- c5 ---
-  dd c5 - r5                  X87 OpcodePlusR
-    Ffree %st
-      St_Operand
+  dd c5                       X87 
+    Ffree %st5
+      RegST5
   --- c6 ---
-  dd c6 - r6                  X87 OpcodePlusR
-    Ffree %st
-      St_Operand
+  dd c6                       X87 
+    Ffree %st6
+      RegST6
   --- c7 ---
-  dd c7 - r7                  X87 OpcodePlusR
-    Ffree %st
-      St_Operand
+  dd c7                       X87 
+    Ffree %st7
+      RegST7
+  --- c8 ---
+  dd c8                       INVALID NaClIllegal
+  --- c9 ---
+  dd c9                       INVALID NaClIllegal
+  --- ca ---
+  dd ca                       INVALID NaClIllegal
+  --- cb ---
+  dd cb                       INVALID NaClIllegal
+  --- cc ---
+  dd cc                       INVALID NaClIllegal
+  --- cd ---
+  dd cd                       INVALID NaClIllegal
+  --- ce ---
+  dd ce                       INVALID NaClIllegal
+  --- cf ---
+  dd cf                       INVALID NaClIllegal
   --- d0 ---
-  dd d0 - r0                  X87 OpcodePlusR
-    Fst %st, %ST0
-      St_Operand              OpSet
+  dd d0                       X87 
+    Fst %st0, %st0
+      RegST0                  OpSet OpDest
       RegST0                  OpUse
   --- d1 ---
-  dd d1 - r1                  X87 OpcodePlusR
-    Fst %st, %ST0
-      St_Operand              OpSet
+  dd d1                       X87 
+    Fst %st1, %st0
+      RegST1                  OpSet OpDest
       RegST0                  OpUse
   --- d2 ---
-  dd d2 - r2                  X87 OpcodePlusR
-    Fst %st, %ST0
-      St_Operand              OpSet
+  dd d2                       X87 
+    Fst %st2, %st0
+      RegST2                  OpSet OpDest
       RegST0                  OpUse
   --- d3 ---
-  dd d3 - r3                  X87 OpcodePlusR
-    Fst %st, %ST0
-      St_Operand              OpSet
+  dd d3                       X87 
+    Fst %st3, %st0
+      RegST3                  OpSet OpDest
       RegST0                  OpUse
   --- d4 ---
-  dd d4 - r4                  X87 OpcodePlusR
-    Fst %st, %ST0
-      St_Operand              OpSet
+  dd d4                       X87 
+    Fst %st4, %st0
+      RegST4                  OpSet OpDest
       RegST0                  OpUse
   --- d5 ---
-  dd d5 - r5                  X87 OpcodePlusR
-    Fst %st, %ST0
-      St_Operand              OpSet
+  dd d5                       X87 
+    Fst %st5, %st0
+      RegST5                  OpSet OpDest
       RegST0                  OpUse
   --- d6 ---
-  dd d6 - r6                  X87 OpcodePlusR
-    Fst %st, %ST0
-      St_Operand              OpSet
+  dd d6                       X87 
+    Fst %st6, %st0
+      RegST6                  OpSet OpDest
       RegST0                  OpUse
   --- d7 ---
-  dd d7 - r7                  X87 OpcodePlusR
-    Fst %st, %ST0
-      St_Operand              OpSet
+  dd d7                       X87 
+    Fst %st7, %st0
+      RegST7                  OpSet OpDest
       RegST0                  OpUse
   --- d8 ---
-  dd d8 - r0                  X87 OpcodePlusR
-    Fstp %st, %ST0
-      St_Operand              OpSet
+  dd d8                       X87 
+    Fstp %st0, %st0
+      RegST0                  OpSet OpDest
       RegST0                  OpUse
   --- d9 ---
-  dd d9 - r1                  X87 OpcodePlusR
-    Fstp %st, %ST0
-      St_Operand              OpSet
+  dd d9                       X87 
+    Fstp %st1, %st0
+      RegST1                  OpSet OpDest
       RegST0                  OpUse
   --- da ---
-  dd da - r2                  X87 OpcodePlusR
-    Fstp %st, %ST0
-      St_Operand              OpSet
+  dd da                       X87 
+    Fstp %st2, %st0
+      RegST2                  OpSet OpDest
       RegST0                  OpUse
   --- db ---
-  dd db - r3                  X87 OpcodePlusR
-    Fstp %st, %ST0
-      St_Operand              OpSet
+  dd db                       X87 
+    Fstp %st3, %st0
+      RegST3                  OpSet OpDest
       RegST0                  OpUse
   --- dc ---
-  dd dc - r4                  X87 OpcodePlusR
-    Fstp %st, %ST0
-      St_Operand              OpSet
+  dd dc                       X87 
+    Fstp %st4, %st0
+      RegST4                  OpSet OpDest
       RegST0                  OpUse
   --- dd ---
-  dd dd - r5                  X87 OpcodePlusR
-    Fstp %st, %ST0
-      St_Operand              OpSet
+  dd dd                       X87 
+    Fstp %st5, %st0
+      RegST5                  OpSet OpDest
       RegST0                  OpUse
   --- de ---
-  dd de - r6                  X87 OpcodePlusR
-    Fstp %st, %ST0
-      St_Operand              OpSet
+  dd de                       X87 
+    Fstp %st6, %st0
+      RegST6                  OpSet OpDest
       RegST0                  OpUse
   --- df ---
-  dd df - r7                  X87 OpcodePlusR
-    Fstp %st, %ST0
-      St_Operand              OpSet
+  dd df                       X87 
+    Fstp %st7, %st0
+      RegST7                  OpSet OpDest
       RegST0                  OpUse
   --- e0 ---
-  dd e0 - r0                  X87 OpcodePlusR
-    Fucom %ST0, %st
+  dd e0                       X87 
+    Fucom %st0, %st0
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST0                  OpUse
   --- e1 ---
-  dd e1 - r1                  X87 OpcodePlusR
-    Fucom %ST0, %st
+  dd e1                       X87 
+    Fucom %st0, %st1
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST1                  OpUse
   --- e2 ---
-  dd e2 - r2                  X87 OpcodePlusR
-    Fucom %ST0, %st
+  dd e2                       X87 
+    Fucom %st0, %st2
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST2                  OpUse
   --- e3 ---
-  dd e3 - r3                  X87 OpcodePlusR
-    Fucom %ST0, %st
+  dd e3                       X87 
+    Fucom %st0, %st3
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST3                  OpUse
   --- e4 ---
-  dd e4 - r4                  X87 OpcodePlusR
-    Fucom %ST0, %st
+  dd e4                       X87 
+    Fucom %st0, %st4
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST4                  OpUse
   --- e5 ---
-  dd e5 - r5                  X87 OpcodePlusR
-    Fucom %ST0, %st
+  dd e5                       X87 
+    Fucom %st0, %st5
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST5                  OpUse
   --- e6 ---
-  dd e6 - r6                  X87 OpcodePlusR
-    Fucom %ST0, %st
+  dd e6                       X87 
+    Fucom %st0, %st6
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST6                  OpUse
   --- e7 ---
-  dd e7 - r7                  X87 OpcodePlusR
-    Fucom %ST0, %st
+  dd e7                       X87 
+    Fucom %st0, %st7
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST7                  OpUse
   --- e8 ---
-  dd e8 - r0                  X87 OpcodePlusR
-    Fucomp %ST0, %st
+  dd e8                       X87 
+    Fucomp %st0, %st0
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST0                  OpUse
   --- e9 ---
-  dd e9 - r1                  X87 OpcodePlusR
-    Fucomp %ST0, %st
+  dd e9                       X87 
+    Fucomp %st0, %st1
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST1                  OpUse
   --- ea ---
-  dd ea - r2                  X87 OpcodePlusR
-    Fucomp %ST0, %st
+  dd ea                       X87 
+    Fucomp %st0, %st2
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST2                  OpUse
   --- eb ---
-  dd eb - r3                  X87 OpcodePlusR
-    Fucomp %ST0, %st
+  dd eb                       X87 
+    Fucomp %st0, %st3
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST3                  OpUse
   --- ec ---
-  dd ec - r4                  X87 OpcodePlusR
-    Fucomp %ST0, %st
+  dd ec                       X87 
+    Fucomp %st0, %st4
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST4                  OpUse
   --- ed ---
-  dd ed - r5                  X87 OpcodePlusR
-    Fucomp %ST0, %st
+  dd ed                       X87 
+    Fucomp %st0, %st5
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST5                  OpUse
   --- ee ---
-  dd ee - r6                  X87 OpcodePlusR
-    Fucomp %ST0, %st
+  dd ee                       X87 
+    Fucomp %st0, %st6
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST6                  OpUse
   --- ef ---
-  dd ef - r7                  X87 OpcodePlusR
-    Fucomp %ST0, %st
+  dd ef                       X87 
+    Fucomp %st0, %st7
       RegST0                  OpUse
-      St_Operand              OpUse
+      RegST7                  OpUse
+  --- f0 ---
+  dd f0                       INVALID NaClIllegal
+  --- f1 ---
+  dd f1                       INVALID NaClIllegal
+  --- f2 ---
+  dd f2                       INVALID NaClIllegal
+  --- f3 ---
+  dd f3                       INVALID NaClIllegal
+  --- f4 ---
+  dd f4                       INVALID NaClIllegal
+  --- f5 ---
+  dd f5                       INVALID NaClIllegal
+  --- f6 ---
+  dd f6                       INVALID NaClIllegal
+  --- f7 ---
+  dd f7                       INVALID NaClIllegal
+  --- f8 ---
+  dd f8                       INVALID NaClIllegal
+  --- f9 ---
+  dd f9                       INVALID NaClIllegal
+  --- fa ---
+  dd fa                       INVALID NaClIllegal
+  --- fb ---
+  dd fb                       INVALID NaClIllegal
+  --- fc ---
+  dd fc                       INVALID NaClIllegal
+  --- fd ---
+  dd fd                       INVALID NaClIllegal
+  --- fe ---
+  dd fe                       INVALID NaClIllegal
+  --- ff ---
+  dd ff                       INVALID NaClIllegal
 
 *** PrefixDE ***
 
   --- c0 ---
-  de c0 - r0                  X87 OpcodePlusR
-    Faddp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c0                       X87 
+    Faddp %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c1 ---
-  de c1 - r1                  X87 OpcodePlusR
-    Faddp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c1                       X87 
+    Faddp %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c2 ---
-  de c2 - r2                  X87 OpcodePlusR
-    Faddp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c2                       X87 
+    Faddp %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c3 ---
-  de c3 - r3                  X87 OpcodePlusR
-    Faddp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c3                       X87 
+    Faddp %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c4 ---
-  de c4 - r4                  X87 OpcodePlusR
-    Faddp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c4                       X87 
+    Faddp %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c5 ---
-  de c5 - r5                  X87 OpcodePlusR
-    Faddp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c5                       X87 
+    Faddp %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c6 ---
-  de c6 - r6                  X87 OpcodePlusR
-    Faddp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c6                       X87 
+    Faddp %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c7 ---
-  de c7 - r7                  X87 OpcodePlusR
-    Faddp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c7                       X87 
+    Faddp %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c8 ---
-  de c8 - r0                  X87 OpcodePlusR
-    Fmulp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c8                       X87 
+    Fmulp %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- c9 ---
-  de c9 - r1                  X87 OpcodePlusR
-    Fmulp %st, %ST0
-      St_Operand              OpUse OpSet
+  de c9                       X87 
+    Fmulp %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ca ---
-  de ca - r2                  X87 OpcodePlusR
-    Fmulp %st, %ST0
-      St_Operand              OpUse OpSet
+  de ca                       X87 
+    Fmulp %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- cb ---
-  de cb - r3                  X87 OpcodePlusR
-    Fmulp %st, %ST0
-      St_Operand              OpUse OpSet
+  de cb                       X87 
+    Fmulp %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- cc ---
-  de cc - r4                  X87 OpcodePlusR
-    Fmulp %st, %ST0
-      St_Operand              OpUse OpSet
+  de cc                       X87 
+    Fmulp %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- cd ---
-  de cd - r5                  X87 OpcodePlusR
-    Fmulp %st, %ST0
-      St_Operand              OpUse OpSet
+  de cd                       X87 
+    Fmulp %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ce ---
-  de ce - r6                  X87 OpcodePlusR
-    Fmulp %st, %ST0
-      St_Operand              OpUse OpSet
+  de ce                       X87 
+    Fmulp %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- cf ---
-  de cf - r7                  X87 OpcodePlusR
-    Fmulp %st, %ST0
-      St_Operand              OpUse OpSet
+  de cf                       X87 
+    Fmulp %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
+  --- d0 ---
+  de d0                       INVALID NaClIllegal
+  --- d1 ---
+  de d1                       INVALID NaClIllegal
+  --- d2 ---
+  de d2                       INVALID NaClIllegal
+  --- d3 ---
+  de d3                       INVALID NaClIllegal
+  --- d4 ---
+  de d4                       INVALID NaClIllegal
+  --- d5 ---
+  de d5                       INVALID NaClIllegal
+  --- d6 ---
+  de d6                       INVALID NaClIllegal
+  --- d7 ---
+  de d7                       INVALID NaClIllegal
+  --- d8 ---
+  de d8                       INVALID NaClIllegal
   --- d9 ---
   de d9                       X87 
-    Fcompp %ST0, %ST1
+    Fcompp %st0, %st1
       RegST0                  OpUse
       RegST1                  OpUse
+  --- da ---
+  de da                       INVALID NaClIllegal
+  --- db ---
+  de db                       INVALID NaClIllegal
+  --- dc ---
+  de dc                       INVALID NaClIllegal
+  --- dd ---
+  de dd                       INVALID NaClIllegal
+  --- de ---
+  de de                       INVALID NaClIllegal
+  --- df ---
+  de df                       INVALID NaClIllegal
   --- e0 ---
-  de e0 - r0                  X87 OpcodePlusR
-    Fsubrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e0                       X87 
+    Fsubrp %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e1 ---
-  de e1 - r1                  X87 OpcodePlusR
-    Fsubrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e1                       X87 
+    Fsubrp %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e2 ---
-  de e2 - r2                  X87 OpcodePlusR
-    Fsubrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e2                       X87 
+    Fsubrp %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e3 ---
-  de e3 - r3                  X87 OpcodePlusR
-    Fsubrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e3                       X87 
+    Fsubrp %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e4 ---
-  de e4 - r4                  X87 OpcodePlusR
-    Fsubrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e4                       X87 
+    Fsubrp %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e5 ---
-  de e5 - r5                  X87 OpcodePlusR
-    Fsubrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e5                       X87 
+    Fsubrp %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e6 ---
-  de e6 - r6                  X87 OpcodePlusR
-    Fsubrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e6                       X87 
+    Fsubrp %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e7 ---
-  de e7 - r7                  X87 OpcodePlusR
-    Fsubrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e7                       X87 
+    Fsubrp %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e8 ---
-  de e8 - r0                  X87 OpcodePlusR
-    Fsubp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e8                       X87 
+    Fsubp %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- e9 ---
-  de e9 - r1                  X87 OpcodePlusR
-    Fsubp %st, %ST0
-      St_Operand              OpUse OpSet
+  de e9                       X87 
+    Fsubp %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ea ---
-  de ea - r2                  X87 OpcodePlusR
-    Fsubp %st, %ST0
-      St_Operand              OpUse OpSet
+  de ea                       X87 
+    Fsubp %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- eb ---
-  de eb - r3                  X87 OpcodePlusR
-    Fsubp %st, %ST0
-      St_Operand              OpUse OpSet
+  de eb                       X87 
+    Fsubp %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ec ---
-  de ec - r4                  X87 OpcodePlusR
-    Fsubp %st, %ST0
-      St_Operand              OpUse OpSet
+  de ec                       X87 
+    Fsubp %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ed ---
-  de ed - r5                  X87 OpcodePlusR
-    Fsubp %st, %ST0
-      St_Operand              OpUse OpSet
+  de ed                       X87 
+    Fsubp %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ee ---
-  de ee - r6                  X87 OpcodePlusR
-    Fsubp %st, %ST0
-      St_Operand              OpUse OpSet
+  de ee                       X87 
+    Fsubp %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ef ---
-  de ef - r7                  X87 OpcodePlusR
-    Fsubp %st, %ST0
-      St_Operand              OpUse OpSet
+  de ef                       X87 
+    Fsubp %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f0 ---
-  de f0 - r0                  X87 OpcodePlusR
-    Fdivrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f0                       X87 
+    Fdivrp %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f1 ---
-  de f1 - r1                  X87 OpcodePlusR
-    Fdivrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f1                       X87 
+    Fdivrp %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f2 ---
-  de f2 - r2                  X87 OpcodePlusR
-    Fdivrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f2                       X87 
+    Fdivrp %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f3 ---
-  de f3 - r3                  X87 OpcodePlusR
-    Fdivrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f3                       X87 
+    Fdivrp %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f4 ---
-  de f4 - r4                  X87 OpcodePlusR
-    Fdivrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f4                       X87 
+    Fdivrp %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f5 ---
-  de f5 - r5                  X87 OpcodePlusR
-    Fdivrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f5                       X87 
+    Fdivrp %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f6 ---
-  de f6 - r6                  X87 OpcodePlusR
-    Fdivrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f6                       X87 
+    Fdivrp %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f7 ---
-  de f7 - r7                  X87 OpcodePlusR
-    Fdivrp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f7                       X87 
+    Fdivrp %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f8 ---
-  de f8 - r0                  X87 OpcodePlusR
-    Fdivp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f8                       X87 
+    Fdivp %st0, %st0
+      RegST0                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- f9 ---
-  de f9 - r1                  X87 OpcodePlusR
-    Fdivp %st, %ST0
-      St_Operand              OpUse OpSet
+  de f9                       X87 
+    Fdivp %st1, %st0
+      RegST1                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fa ---
-  de fa - r2                  X87 OpcodePlusR
-    Fdivp %st, %ST0
-      St_Operand              OpUse OpSet
+  de fa                       X87 
+    Fdivp %st2, %st0
+      RegST2                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fb ---
-  de fb - r3                  X87 OpcodePlusR
-    Fdivp %st, %ST0
-      St_Operand              OpUse OpSet
+  de fb                       X87 
+    Fdivp %st3, %st0
+      RegST3                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fc ---
-  de fc - r4                  X87 OpcodePlusR
-    Fdivp %st, %ST0
-      St_Operand              OpUse OpSet
+  de fc                       X87 
+    Fdivp %st4, %st0
+      RegST4                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fd ---
-  de fd - r5                  X87 OpcodePlusR
-    Fdivp %st, %ST0
-      St_Operand              OpUse OpSet
+  de fd                       X87 
+    Fdivp %st5, %st0
+      RegST5                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- fe ---
-  de fe - r6                  X87 OpcodePlusR
-    Fdivp %st, %ST0
-      St_Operand              OpUse OpSet
+  de fe                       X87 
+    Fdivp %st6, %st0
+      RegST6                  OpUse OpSet OpDest
       RegST0                  OpUse
   --- ff ---
-  de ff - r7                  X87 OpcodePlusR
-    Fdivp %st, %ST0
-      St_Operand              OpUse OpSet
+  de ff                       X87 
+    Fdivp %st7, %st0
+      RegST7                  OpUse OpSet OpDest
       RegST0                  OpUse
 
 *** PrefixDF ***
 
+  --- c0 ---
+  df c0                       X87 
+    Invalid
+  --- c1 ---
+  df c1                       X87 
+    Invalid
+  --- c2 ---
+  df c2                       X87 
+    Invalid
+  --- c3 ---
+  df c3                       X87 
+    Invalid
+  --- c4 ---
+  df c4                       X87 
+    Invalid
+  --- c5 ---
+  df c5                       X87 
+    Invalid
+  --- c6 ---
+  df c6                       X87 
+    Invalid
+  --- c7 ---
+  df c7                       X87 
+    Invalid
+  --- c8 ---
+  df c8                       X87 
+    Invalid
+  --- c9 ---
+  df c9                       X87 
+    Invalid
+  --- ca ---
+  df ca                       X87 
+    Invalid
+  --- cb ---
+  df cb                       X87 
+    Invalid
+  --- cc ---
+  df cc                       X87 
+    Invalid
+  --- cd ---
+  df cd                       X87 
+    Invalid
+  --- ce ---
+  df ce                       X87 
+    Invalid
+  --- cf ---
+  df cf                       X87 
+    Invalid
+  --- d0 ---
+  df d0                       X87 
+    Invalid
+  --- d1 ---
+  df d1                       X87 
+    Invalid
+  --- d2 ---
+  df d2                       X87 
+    Invalid
+  --- d3 ---
+  df d3                       X87 
+    Invalid
+  --- d4 ---
+  df d4                       X87 
+    Invalid
+  --- d5 ---
+  df d5                       X87 
+    Invalid
+  --- d6 ---
+  df d6                       X87 
+    Invalid
+  --- d7 ---
+  df d7                       X87 
+    Invalid
+  --- d8 ---
+  df d8                       X87 
+    Invalid
+  --- d9 ---
+  df d9                       X87 
+    Invalid
+  --- da ---
+  df da                       X87 
+    Invalid
+  --- db ---
+  df db                       X87 
+    Invalid
+  --- dc ---
+  df dc                       X87 
+    Invalid
+  --- dd ---
+  df dd                       X87 
+    Invalid
+  --- de ---
+  df de                       X87 
+    Invalid
+  --- df ---
+  df df                       X87 
+    Invalid
   --- e0 ---
   df e0                       X87 
-    Fnstsw %AX
-      RegAX                   OpSet
+    Fnstsw %ax
+      RegAX                   OpUse OpSet OpDest
+  --- e1 ---
+  df e1                       INVALID NaClIllegal
+  --- e2 ---
+  df e2                       INVALID NaClIllegal
+  --- e3 ---
+  df e3                       INVALID NaClIllegal
+  --- e4 ---
+  df e4                       INVALID NaClIllegal
+  --- e5 ---
+  df e5                       INVALID NaClIllegal
+  --- e6 ---
+  df e6                       INVALID NaClIllegal
+  --- e7 ---
+  df e7                       INVALID NaClIllegal
   --- e8 ---
-  df e8 - r0                  X87 OpcodePlusR
-    Fucomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df e8                       X87 
+    Fucomip %st0, %st0
+      RegST0                  OpUse
+      RegST0                  OpUse
   --- e9 ---
-  df e9 - r1                  X87 OpcodePlusR
-    Fucomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df e9                       X87 
+    Fucomip %st0, %st1
+      RegST0                  OpUse
+      RegST1                  OpUse
   --- ea ---
-  df ea - r2                  X87 OpcodePlusR
-    Fucomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df ea                       X87 
+    Fucomip %st0, %st2
+      RegST0                  OpUse
+      RegST2                  OpUse
   --- eb ---
-  df eb - r3                  X87 OpcodePlusR
-    Fucomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df eb                       X87 
+    Fucomip %st0, %st3
+      RegST0                  OpUse
+      RegST3                  OpUse
   --- ec ---
-  df ec - r4                  X87 OpcodePlusR
-    Fucomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df ec                       X87 
+    Fucomip %st0, %st4
+      RegST0                  OpUse
+      RegST4                  OpUse
   --- ed ---
-  df ed - r5                  X87 OpcodePlusR
-    Fucomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df ed                       X87 
+    Fucomip %st0, %st5
+      RegST0                  OpUse
+      RegST5                  OpUse
   --- ee ---
-  df ee - r6                  X87 OpcodePlusR
-    Fucomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df ee                       X87 
+    Fucomip %st0, %st6
+      RegST0                  OpUse
+      RegST6                  OpUse
   --- ef ---
-  df ef - r7                  X87 OpcodePlusR
-    Fucomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df ef                       X87 
+    Fucomip %st0, %st7
+      RegST0                  OpUse
+      RegST7                  OpUse
   --- f0 ---
-  df f0 - r0                  X87 OpcodePlusR
-    Fcomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df f0                       X87 
+    Fcomip %st0, %st0
+      RegST0                  OpUse
+      RegST0                  OpUse
   --- f1 ---
-  df f1 - r1                  X87 OpcodePlusR
-    Fcomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df f1                       X87 
+    Fcomip %st0, %st1
+      RegST0                  OpUse
+      RegST1                  OpUse
   --- f2 ---
-  df f2 - r2                  X87 OpcodePlusR
-    Fcomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df f2                       X87 
+    Fcomip %st0, %st2
+      RegST0                  OpUse
+      RegST2                  OpUse
   --- f3 ---
-  df f3 - r3                  X87 OpcodePlusR
-    Fcomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df f3                       X87 
+    Fcomip %st0, %st3
+      RegST0                  OpUse
+      RegST3                  OpUse
   --- f4 ---
-  df f4 - r4                  X87 OpcodePlusR
-    Fcomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df f4                       X87 
+    Fcomip %st0, %st4
+      RegST0                  OpUse
+      RegST4                  OpUse
   --- f5 ---
-  df f5 - r5                  X87 OpcodePlusR
-    Fcomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df f5                       X87 
+    Fcomip %st0, %st5
+      RegST0                  OpUse
+      RegST5                  OpUse
   --- f6 ---
-  df f6 - r6                  X87 OpcodePlusR
-    Fcomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df f6                       X87 
+    Fcomip %st0, %st6
+      RegST0                  OpUse
+      RegST6                  OpUse
   --- f7 ---
-  df f7 - r7                  X87 OpcodePlusR
-    Fcomip %ST0, %st
-      RegST0                  OpUse OpSet
-      St_Operand              OpUse
+  df f7                       X87 
+    Fcomip %st0, %st7
+      RegST0                  OpUse
+      RegST7                  OpUse
+  --- f8 ---
+  df f8                       INVALID NaClIllegal
+  --- f9 ---
+  df f9                       INVALID NaClIllegal
+  --- fa ---
+  df fa                       INVALID NaClIllegal
+  --- fb ---
+  df fb                       INVALID NaClIllegal
+  --- fc ---
+  df fc                       INVALID NaClIllegal
+  --- fd ---
+  df fd                       INVALID NaClIllegal
+  --- fe ---
+  df fe                       INVALID NaClIllegal
+  --- ff ---
+  df ff                       INVALID NaClIllegal
 

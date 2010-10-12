@@ -1742,7 +1742,7 @@ static void NaClBuildInstTables() {
   NaClDefOneByteInsts(st);
   NaClDef0FInsts(st);
   NaClDefSseInsts();
-  NaClDefX87Insts();
+  NaClDefX87Insts(st);
   NaClDefNops();
 
   NaClSymbolTableDestroy(st);
