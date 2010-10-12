@@ -46,6 +46,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -428,25 +429,6 @@ void TestingAutomationProvider::OnChannelError() {
   if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
     BrowserList::CloseAllBrowsersAndExit();
   AutomationProvider::OnChannelError();
-}
-
-ListValue* TestingAutomationProvider::ExtractSearchEngineInfo(
-    TemplateURLModel* url_model) {
-  ListValue* search_engines = new ListValue;
-  std::vector<const TemplateURL*> template_urls = url_model->GetTemplateURLs();
-  for (std::vector<const TemplateURL*>::const_iterator it =
-      template_urls.begin();
-      it != template_urls.end(); ++it) {
-    DictionaryValue* search_engine = new DictionaryValue;
-    search_engine->SetString("short_name", WideToUTF8((*it)->short_name()));
-    search_engine->SetString("description", WideToUTF8((*it)->description()));
-    search_engine->SetString("keyword", WideToUTF8((*it)->keyword()));
-    search_engine->SetBoolean("in_default_list", (*it)->ShowInDefaultList());
-    search_engine->SetBoolean("is_default",
-        (*it) == url_model->GetDefaultSearchProvider());
-    search_engines->Append(search_engine);
-  }
-  return search_engines;
 }
 
 void TestingAutomationProvider::CloseBrowser(int browser_handle,
@@ -2048,8 +2030,14 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["OmniboxMovePopupSelection"] =
       &TestingAutomationProvider::OmniboxMovePopupSelection;
 
+  handler_map["LoadSearchEngineInfo"] =
+      &TestingAutomationProvider::LoadSearchEngineInfo;
   handler_map["GetSearchEngineInfo"] =
       &TestingAutomationProvider::GetSearchEngineInfo;
+  handler_map["AddOrEditSearchEngine"] =
+      &TestingAutomationProvider::AddOrEditSearchEngine;
+  handler_map["PerformActionOnSearchEngine"] =
+      &TestingAutomationProvider::PerformActionOnSearchEngine;
 
   handler_map["GetPrefsInfo"] = &TestingAutomationProvider::GetPrefsInfo;
   handler_map["SetPrefs"] = &TestingAutomationProvider::SetPrefs;
@@ -2675,19 +2663,127 @@ void TestingAutomationProvider::PerformActionOnDownload(
   }
 }
 
-void TestingAutomationProvider::GetSearchEngineInfo(
+// Sample JSON input { "command": "LoadSearchEngineInfo" }
+void TestingAutomationProvider::LoadSearchEngineInfo(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
   TemplateURLModel* url_model(profile_->GetTemplateURLModel());
   if (url_model->loaded()) {
-    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-    return_value->Set("search_engines", ExtractSearchEngineInfo(url_model));
-    AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+    return;
+  }
+  url_model->AddObserver(new AutomationProviderSearchEngineObserver(
+      this, reply_message));
+  url_model->Load();
+}
+
+// Sample JSON input { "command": "GetSearchEngineInfo" }
+// Refer to pyauto.py for sample output.
+void TestingAutomationProvider::GetSearchEngineInfo(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  TemplateURLModel* url_model(profile_->GetTemplateURLModel());
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  ListValue* search_engines = new ListValue;
+  std::vector<const TemplateURL*> template_urls = url_model->GetTemplateURLs();
+  for (std::vector<const TemplateURL*>::const_iterator it =
+       template_urls.begin(); it != template_urls.end(); ++it) {
+    DictionaryValue* search_engine = new DictionaryValue;
+    search_engine->SetString("short_name", WideToUTF8((*it)->short_name()));
+    search_engine->SetString("description", WideToUTF8((*it)->description()));
+    search_engine->SetString("keyword", WideToUTF8((*it)->keyword()));
+    search_engine->SetBoolean("in_default_list", (*it)->ShowInDefaultList());
+    search_engine->SetBoolean("is_default",
+        (*it) == url_model->GetDefaultSearchProvider());
+    search_engine->SetBoolean("is_valid", (*it)->url()->IsValid());
+    search_engine->SetBoolean("supports_replacement",
+                              (*it)->url()->SupportsReplacement());
+    search_engine->SetString("url", (*it)->url()->url());
+    search_engine->SetString("host", (*it)->url()->GetHost());
+    search_engine->SetString("path", (*it)->url()->GetPath());
+    search_engine->SetString("display_url",
+                             WideToUTF8((*it)->url()->DisplayURL()));
+    search_engines->Append(search_engine);
+  }
+  return_value->Set("search_engines", search_engines);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+}
+
+// Refer to pyauto.py for sample JSON input.
+void TestingAutomationProvider::AddOrEditSearchEngine(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  TemplateURLModel* url_model(profile_->GetTemplateURLModel());
+  const TemplateURL* template_url;
+  string16 new_title;
+  string16 new_keyword;
+  std::string new_url;
+  std::string keyword;
+  if (!args->GetString("new_title", &new_title) ||
+      !args->GetString("new_keyword", &new_keyword) ||
+      !args->GetString("new_url", &new_url)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "One or more inputs invalid");
+    return;
+  }
+  std::string new_ref_url = TemplateURLRef::DisplayURLToURLRef(
+      UTF8ToWide(new_url));
+  scoped_ptr<KeywordEditorController> controller(
+      new KeywordEditorController(profile_));
+  if (args->GetString("keyword", &keyword)) {
+    template_url = url_model->GetTemplateURLForKeyword(UTF8ToWide(keyword));
+    if (template_url == NULL) {
+      AutomationJSONReply(this, reply_message).SendError(
+          StringPrintf("No match for keyword: %s", keyword.c_str()));
+      return;
+    }
+    url_model->AddObserver(new AutomationProviderSearchEngineObserver(
+        this, reply_message));
+    controller->ModifyTemplateURL(template_url, new_title, new_keyword,
+                                  new_ref_url);
   } else {
     url_model->AddObserver(new AutomationProviderSearchEngineObserver(
+        this, reply_message));
+    controller->AddTemplateURL(new_title, new_keyword, new_ref_url);
+  }
+}
+
+// Sample json input: { "command": "PerformActionOnSearchEngine",
+//                      "keyword": keyword, "action": action }
+void TestingAutomationProvider::PerformActionOnSearchEngine(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  TemplateURLModel* url_model(profile_->GetTemplateURLModel());
+  std::string keyword;
+  std::string action;
+  if (!args->GetString("keyword", &keyword) ||
+      !args->GetString("action", &action)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "One or more inputs invalid");
+    return;
+  }
+  const TemplateURL* template_url(
+      url_model->GetTemplateURLForKeyword(UTF8ToWide(keyword)));
+  if (template_url == NULL) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("No match for keyword: %s", keyword.c_str()));
+    return;
+  }
+  if (action == "delete") {
+    url_model->AddObserver(new AutomationProviderSearchEngineObserver(
       this, reply_message));
-    url_model->Load();
+    url_model->Remove(template_url);
+  } else if (action == "default") {
+    url_model->AddObserver(new AutomationProviderSearchEngineObserver(
+      this, reply_message));
+    url_model->SetDefaultSearchProvider(template_url);
+  } else {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Invalid action: %s", action.c_str()));
   }
 }
 

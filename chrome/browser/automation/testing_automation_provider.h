@@ -32,11 +32,6 @@ class TestingAutomationProvider : public AutomationProvider,
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
-  // Helper to extract search engine info.
-  // Caller owns returned DictionaryValue.
-  // This will only yield data if url model has loaded.
-  ListValue* ExtractSearchEngineInfo(TemplateURLModel* url_model);
-
  private:
   class PopupMenuWaiter;
 
@@ -426,11 +421,32 @@ class TestingAutomationProvider : public AutomationProvider,
                       DictionaryValue* args,
                       IPC::Message* reply_message);
 
+  // Invoke loading of template url model.
+  // Uses the JSON interface for input/output.
+  void LoadSearchEngineInfo(Browser* browser,
+                            DictionaryValue* args,
+                            IPC::Message* reply_message);
+
   // Get search engines list.
+  // Assumes that the profile's template url model is loaded.
   // Uses the JSON interface for input/output.
   void GetSearchEngineInfo(Browser* browser,
                            DictionaryValue* args,
                            IPC::Message* reply_message);
+
+  // Add or edit search engine.
+  // Assumes that the profile's template url model is loaded.
+  // Uses the JSON interface for input/output.
+  void AddOrEditSearchEngine(Browser* browser,
+                             DictionaryValue* args,
+                             IPC::Message* reply_message);
+
+  // Perform a given action on an existing search engine.
+  // Assumes that the profile's template url model is loaded.
+  // Uses the JSON interface for input/output.
+  void PerformActionOnSearchEngine(Browser* browser,
+                                   DictionaryValue* args,
+                                   IPC::Message* reply_message);
 
   // Get info about preferences.
   // Uses the JSON interface for input/output.

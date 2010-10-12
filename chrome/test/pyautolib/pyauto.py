@@ -398,6 +398,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       windex: the index of the browser window to work on.
               Default: 0 (first window)
     """
+    # Ensure that keyword data is loaded from the profile.
+    # This would normally be triggered by the user inputting this text.
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
     cmd_dict = {
         'command': 'SetOmniboxText',
         'text': text,
@@ -454,24 +457,92 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       An ordered list of dictionaries describing info about each search engine.
 
       Example:
-       [ { u'description': u'',
-          u'in_default_list': True,
-          u'is_default': True,
-          u'keyword': u'google.com',
-          u'short_name': u'Google'},
-        { u'description': u'',
-          u'in_default_list': True,
-          u'is_default': False,
-          u'keyword': u'yahoo.com',
-          u'short_name': u'Yahoo!'},
-        { u'description': u'',
-          u'in_default_list': True,
-          u'is_default': False,
-          u'keyword': u'bing.com',
-          u'short_name': u'Bing'}]
+        [ { u'description': u'',
+            u'display_url': u'{google:baseURL}search?q=%s',
+            u'host': u'www.google.com',
+            u'in_default_list': True,
+            u'is_default': True,
+            u'is_valid': True,
+            u'keyword': u'google.com',
+            u'path': u'/search',
+            u'short_name': u'Google',
+            u'supports_replacement': True,
+            u'url': u'{google:baseURL}search?q={searchTerms}'},
+          { u'description': u'',
+            u'display_url': u'http://search.yahoo.com/search?p=%s',
+            u'host': u'search.yahoo.com',
+            u'in_default_list': True,
+            u'is_default': False,
+            u'is_valid': True,
+            u'keyword': u'yahoo.com',
+            u'path': u'/search',
+            u'short_name': u'Yahoo!',
+            u'supports_replacement': True,
+            u'url': u'http://search.yahoo.com/search?p={searchTerms}'},
     """
+    # Ensure that the search engine profile is loaded into data model.
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
     cmd_dict = {'command': 'GetSearchEngineInfo'}
     return self._GetResultFromJSONRequest(cmd_dict)['search_engines']
+
+  def AddSearchEngine(self, title, keyword, url):
+    """Add a search engine, as done through the search engines UI.
+
+    Args:
+      title: name for search engine.
+      keyword: keyword, used to initiate a custom search from omnibox.
+      url: url template for this search engine's query.
+           '%s' is replaced by search query string when used to search.
+    """
+    # Ensure that the search engine profile is loaded into data model.
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    cmd_dict = {'command': 'AddOrEditSearchEngine',
+                'new_title': title,
+                'new_keyword': keyword,
+                'new_url': url}
+    self._GetResultFromJSONRequest(cmd_dict)
+
+  def EditSearchEngine(self, keyword, new_title, new_keyword, new_url):
+    """Edit info for existing search engine.
+
+    Args:
+      keyword: existing search engine keyword.
+      new_title: new name for this search engine.
+      new_keyword: new keyword for this search engine.
+      new_url: new url for this search engine.
+    """
+    # Ensure that the search engine profile is loaded into data model.
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    cmd_dict = {'command': 'AddOrEditSearchEngine',
+                'keyword': keyword,
+                'new_title': new_title,
+                'new_keyword': new_keyword,
+                'new_url': new_url}
+    self._GetResultFromJSONRequest(cmd_dict)
+
+  def DeleteSearchEngine(self, keyword):
+    """Delete search engine with given keyword.
+
+    Args:
+      keyword: the keyword string of the search engine to delete.
+    """
+    # Ensure that the search engine profile is loaded into data model.
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    cmd_dict = {'command': 'PerformActionOnSearchEngine', 'keyword': keyword,
+                'action': 'delete'}
+    self._GetResultFromJSONRequest(cmd_dict)
+
+  def MakeSearchEngineDefault(self, keyword):
+    """Make search engine with given keyword the default search.
+
+    Args:
+      keyword: the keyword string of the search engine to make default.
+    """
+    # Ensure that the search engine profile is loaded into data model.
+    self._GetResultFromJSONRequest({'command': 'LoadSearchEngineInfo'})
+    cmd_dict = {'command': 'PerformActionOnSearchEngine', 'keyword': keyword,
+                'action': 'default'}
+    self._GetResultFromJSONRequest(cmd_dict)
 
   def GetPrefsInfo(self):
     """Return info about preferences.

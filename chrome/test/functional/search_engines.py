@@ -13,6 +13,21 @@ import pyauto
 class SearchEnginesTest(pyauto.PyUITest):
   """TestCase for Search Engines."""
 
+  def _GetSearchEngineWithKeyword(self, keyword):
+    """Get search engine info and return an element that matches keyword.
+
+    Args:
+      keyword: Search engine keyword field.
+
+    Returns:
+      A search engine info dict or None.
+    """
+    match_list = ([x for x in self.GetSearchEngineInfo()
+                   if x['keyword'] == keyword])
+    if match_list:
+      return match_list[0]
+    return None
+
   def Debug(self):
     """Test method for experimentation.
 
@@ -47,20 +62,59 @@ class SearchEnginesTest(pyauto.PyUITest):
     self.assertFalse(youtube['in_default_list'])
     self.assertFalse(youtube['is_default'])
 
-  def _GetSearchEngineWithKeyword(self, keyword):
-    """Get search engine info and return an element that matches keyword.
+  def testAddSearchEngine(self):
+    """Test searching using keyword of user-added search engine."""
+    self.AddSearchEngine(title='foo',
+                         keyword='foo.com',
+                         url='http://foo/?q=%s')
+    self.SetOmniboxText('foo.com foobar')
+    self.OmniboxAcceptInput()
+    self.assertEqual('http://foo/?q=foobar', self.GetActiveTabURL().spec())
 
-    Args:
-      keyword: Search engine keyword field.
+  def testEditSearchEngine(self):
+    """Test editing a search engine's properties."""
+    self.AddSearchEngine(title='foo',
+                         keyword='foo.com',
+                         url='http://foo/?q=%s')
+    self.EditSearchEngine(keyword='foo.com',
+                          new_title='bar',
+                          new_keyword='bar.com',
+                          new_url='http://foo/?bar=true&q=%s')
+    self.assertTrue(self._GetSearchEngineWithKeyword('bar.com'))
+    self.assertFalse(self._GetSearchEngineWithKeyword('foo.com'))
+    self.SetOmniboxText('bar.com foobar')
+    self.OmniboxAcceptInput()
+    self.assertEqual('http://foo/?bar=true&q=foobar',
+                     self.GetActiveTabURL().spec())
 
-    Returns:
-      A search engine info dict or None.
-    """
-    match_list = ([x for x in self.GetSearchEngineInfo()
-                   if x['keyword'] == 'youtube.com'])
-    if match_list:
-      return match_list[0]
-    return None
+  def testDeleteSearchEngine(self):
+    """Test adding then deleting a search engine."""
+    self.AddSearchEngine(title='foo',
+                         keyword='foo.com',
+                         url='http://foo/?q=%s')
+    foo = self._GetSearchEngineWithKeyword('foo.com')
+    self.assertTrue(foo)
+    self.DeleteSearchEngine('foo.com')
+    foo = self._GetSearchEngineWithKeyword('foo.com')
+    self.assertFalse(foo)
+
+  def testMakeSearchEngineDefault(self):
+    """Test adding then making a search engine default."""
+    self.AddSearchEngine(
+        title='foo',
+        keyword='foo.com',
+        url='http://foo/?q=%s')
+    foo = self._GetSearchEngineWithKeyword('foo.com')
+    self.assertTrue(foo)
+    self.assertFalse(foo['is_default'])
+    self.MakeSearchEngineDefault('foo.com')
+    foo = self._GetSearchEngineWithKeyword('foo.com')
+    self.assertTrue(foo)
+    self.assertTrue(foo['is_default'])
+    self.SetOmniboxText('foobar')
+    self.OmniboxAcceptInput()
+    self.assertEqual('http://foo/?q=foobar',
+                     self.GetActiveTabURL().spec())
 
 
 if __name__ == '__main__':

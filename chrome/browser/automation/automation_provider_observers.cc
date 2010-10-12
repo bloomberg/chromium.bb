@@ -1192,13 +1192,8 @@ void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
 
 void AutomationProviderSearchEngineObserver::OnTemplateURLModelChanged() {
   TemplateURLModel* url_model = provider_->profile()->GetTemplateURLModel();
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->Set("search_engines",
-                    provider_->ExtractSearchEngineInfo(url_model));
-
   url_model->RemoveObserver(this);
-  AutomationJSONReply(provider_, reply_message_).SendSuccess(
-      return_value.get());
+  AutomationJSONReply(provider_, reply_message_).SendSuccess(NULL);
   delete this;
 }
 

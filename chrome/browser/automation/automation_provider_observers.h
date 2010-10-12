@@ -10,7 +10,6 @@
 #include <map>
 #include <set>
 
-#include "chrome/browser/automation/testing_automation_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/download/download_item.h"
@@ -740,7 +739,7 @@ class AutomationProviderSearchEngineObserver
     : public TemplateURLModelObserver {
  public:
   AutomationProviderSearchEngineObserver(
-      TestingAutomationProvider* provider,
+      AutomationProvider* provider,
       IPC::Message* reply_message)
     : provider_(provider),
       reply_message_(reply_message) {}
@@ -748,7 +747,7 @@ class AutomationProviderSearchEngineObserver
   void OnTemplateURLModelChanged();
 
  private:
-  TestingAutomationProvider* provider_;
+  AutomationProvider* provider_;
   IPC::Message* reply_message_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderSearchEngineObserver);
