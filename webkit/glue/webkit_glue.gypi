@@ -433,7 +433,7 @@
             ],
           },
         }],
-        ['enable_gpu==1 and inside_chromium_build==1', {
+        ['enable_gpu==1', {
           'sources': [
             'plugins/pepper_graphics_3d_gl.cc',
             'plugins/pepper_graphics_3d.cc',
