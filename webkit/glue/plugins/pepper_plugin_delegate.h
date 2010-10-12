@@ -215,6 +215,9 @@ class PluginDelegate {
   // Tell the browser when resource loading starts/ends.
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
+
+  // Disables the given UI command item (i.e. print/copy).
+  virtual void DisableCommand(int command_id) = 0;
 };
 
 }  // namespace pepper

@@ -735,6 +735,9 @@ ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
+  if (source_tab_contents_->IsCommandDisabled(id))
+    return false;
+
   // Allow Spell Check language items on sub menu for text area context menu.
   if ((id >= IDC_SPELLCHECK_LANGUAGES_FIRST) &&
       (id < IDC_SPELLCHECK_LANGUAGES_LAST)) {

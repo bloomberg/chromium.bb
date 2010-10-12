@@ -765,3 +765,8 @@ void PepperPluginDelegateImpl::DidStartLoading() {
 void PepperPluginDelegateImpl::DidStopLoading() {
   render_view_->DidStopLoadingForPlugin();
 }
+
+void PepperPluginDelegateImpl::DisableCommand(int command_id) {
+  render_view_->Send(
+      new ViewHostMsg_DisableCommand(render_view_->routing_id(), command_id));
+}

@@ -241,6 +241,13 @@ void DidStopLoading(PP_Instance instance_id) {
   instance->delegate()->DidStopLoading();
 }
 
+void DisableCommand(PP_Instance instance_id, int command_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+  instance->delegate()->DisableCommand(command_id);
+}
+
 const PPB_Private ppb_private = {
   &GetLocalizedString,
   &GetResourceImage,
@@ -248,7 +255,8 @@ const PPB_Private ppb_private = {
   &GetFontTableForPrivateFontFile,
   &SearchString,
   &DidStartLoading,
-  &DidStopLoading
+  &DidStopLoading,
+  &DisableCommand
 };
 
 }  // namespace

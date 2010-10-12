@@ -117,6 +117,9 @@ struct PPB_Private {
   // Take this out once WebFrame knows about requests by pepper plugins.
   void (*DidStartLoading)(PP_Instance instance);
   void (*DidStopLoading)(PP_Instance instance);
+
+  // Disables the given command (i.e. print/copy).
+  void (*DisableCommand)(PP_Instance instance, int command_id);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_

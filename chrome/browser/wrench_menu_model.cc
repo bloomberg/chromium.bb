@@ -246,6 +246,10 @@ bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
+  TabContents* selected_tab = browser_->GetSelectedTabContents();
+  if (selected_tab && selected_tab->IsCommandDisabled(command_id))
+    return false;
+
 #if defined(OS_CHROMEOS)
   // Special case because IDC_NEW_WINDOW item should be disabled in BWSI mode,
   // but accelerator should work.

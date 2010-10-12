@@ -847,6 +847,9 @@ class RenderViewHostDelegate {
                                 int maximum_percent,
                                 bool remember) {}
 
+  // Disables a command (i.e. print/copy).
+  virtual void DisableCommand(int command_id) {}
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };

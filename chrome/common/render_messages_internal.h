@@ -2959,4 +2959,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int  /* id */,
                       bool  /* result */)
 
+  // Disables a UI command (i.e. print/copy).
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DisableCommand,
+                      int /* command_id */)
+
 IPC_END_MESSAGES(ViewHost)

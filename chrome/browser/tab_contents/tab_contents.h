@@ -708,6 +708,9 @@ class TabContents : public PageNavigator,
   int minimum_zoom_percent() const { return minimum_zoom_percent_; }
   int maximum_zoom_percent() const { return maximum_zoom_percent_; }
 
+  // Returns true if the given command is disabled.
+  bool IsCommandDisabled(int command_id) const;
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -990,6 +993,7 @@ class TabContents : public PageNavigator,
   virtual void UpdateZoomLimits(int minimum_percent,
                                 int maximum_percent,
                                 bool remember);
+  virtual void DisableCommand(int command_id);
 
   // RenderViewHostManager::Delegate -------------------------------------------
 
@@ -1284,6 +1288,9 @@ class TabContents : public PageNavigator,
   // case we don't want saved settings to apply to it and we don't want to
   // remember it.
   bool temporary_zoom_settings_;
+
+  // Disabled commands.  Only expect a few, so vector is fine.
+  std::vector<int> disabled_commands_;
 
   // ---------------------------------------------------------------------------
 

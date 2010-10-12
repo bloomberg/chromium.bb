@@ -107,6 +107,7 @@ class PepperPluginDelegateImpl
   virtual std::string ResolveProxy(const GURL& url);
   virtual void DidStartLoading();
   virtual void DidStopLoading();
+  virtual void DisableCommand(int command_id);
 
  private:
   // Pointer to the RenderView that owns us.
