@@ -100,7 +100,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,   // Cancelled before submitting
                                             // username and password.
     CANCEL_DURING_SIGNON = 11,              // Cancelled after auth.
-    CANCEL_FROM_CHOOSE_DATA_TYPES = 12,     // Cancelled before choosing data
+    CANCEL_DURING_CONFIGURE = 12,           // Cancelled before choosing data
                                             // types and clicking OK.
     // Events resulting in the stoppage of sync service.
     STOP_FROM_OPTIONS = 20,  // Sync was stopped from Wrench->Options.
@@ -220,7 +220,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return wizard_.IsVisible();
   }
   virtual void ShowLoginDialog(gfx::NativeWindow parent_window);
-
   void ShowChooseDataTypes(gfx::NativeWindow parent_window);
 
   // Pretty-printed strings for a given StatusSummary.
@@ -267,7 +266,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   }
 
   // The profile we are syncing for.
-  Profile* profile() { return profile_; }
+  Profile* profile() const { return profile_; }
 
   // Adds/removes an observer. ProfileSyncService does not take ownership of
   // the observer.
@@ -328,6 +327,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Checks whether the Cryptographer is ready to encrypt and decrypt updates
   // for sensitive data types.
   virtual bool IsCryptographerReady() const;
+
+  // Returns true if a secondary passphrase is being used.
+  virtual bool IsUsingSecondaryPassphrase() const;
+
+  // Sets the secondary passphrase.
+  virtual void SetSecondaryPassphrase(const std::string& passphrase);
 
   // Sets the Cryptographer's passphrase, or caches it until that is possible.
   // This will check asynchronously whether the passphrase is valid and notify

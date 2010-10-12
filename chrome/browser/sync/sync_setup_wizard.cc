@@ -23,6 +23,17 @@
 #include "grit/chromium_strings.h"
 #include "grit/locale_settings.h"
 
+namespace {
+
+// Utility method to keep dictionary population code streamlined.
+void AddString(DictionaryValue* dictionary,
+               const std::string& key,
+               int resource_id) {
+  dictionary->SetString(key, l10n_util::GetStringUTF16(resource_id));
+}
+
+}
+
 class SyncResourcesSource : public ChromeURLDataManager::DataSource {
  public:
   SyncResourcesSource()
@@ -61,136 +72,126 @@ const char* SyncResourcesSource::kCreateNewAccountUrl =
 
 void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     bool is_off_the_record, int request_id) {
-  const char kSyncGaiaLoginPath[] = "gaialogin";
-  const char kSyncChooseDataTypesPath[] = "choosedatatypes";
+  using l10n_util::GetStringUTF16;
+  using l10n_util::GetStringFUTF16;
+
   const char kSyncSetupFlowPath[] = "setup";
+  const char kSyncGaiaLoginPath[] = "gaialogin";
+  const char kSyncConfigurePath[] = "configure";
+  const char kSyncPassphrasePath[] = "passphrase";
+  const char kSyncSettingUpPath[] = "settingup";
   const char kSyncSetupDonePath[] = "setupdone";
 
   std::string response;
+  DictionaryValue strings;
+  DictionaryValue* dict = &strings;
+  int html_resource_id = 0;
   if (path_raw == kSyncGaiaLoginPath) {
-    DictionaryValue localized_strings;
+    html_resource_id = IDR_GAIA_LOGIN_HTML;
 
     // Start by setting the per-locale URLs we show on the setup wizard.
-    localized_strings.SetString("invalidpasswordhelpurl",
-        GetLocalizedUrl(kInvalidPasswordHelpUrl));
-    localized_strings.SetString("cannotaccessaccounturl",
-        GetLocalizedUrl(kCanNotAccessAccountUrl));
-    localized_strings.SetString("createnewaccounturl",
-        GetLocalizedUrl(kCreateNewAccountUrl));
+    dict->SetString("invalidpasswordhelpurl",
+                    GetLocalizedUrl(kInvalidPasswordHelpUrl));
+    dict->SetString("cannotaccessaccounturl",
+                    GetLocalizedUrl(kCanNotAccessAccountUrl));
+    dict->SetString("createnewaccounturl",
+                    GetLocalizedUrl(kCreateNewAccountUrl));
+    AddString(dict, "settingupsync", IDS_SYNC_LOGIN_SETTING_UP_SYNC);
+    dict->SetString("introduction",
+        GetStringFUTF16(IDS_SYNC_LOGIN_INTRODUCTION,
+                        GetStringUTF16(IDS_PRODUCT_NAME)));
+    AddString(dict, "signinprefix", IDS_SYNC_LOGIN_SIGNIN_PREFIX);
+    AddString(dict, "signinsuffix", IDS_SYNC_LOGIN_SIGNIN_SUFFIX);
+    AddString(dict, "cannotbeblank", IDS_SYNC_CANNOT_BE_BLANK);
+    AddString(dict, "emaillabel", IDS_SYNC_LOGIN_EMAIL);
+    AddString(dict, "passwordlabel", IDS_SYNC_LOGIN_PASSWORD);
+    AddString(dict, "invalidcredentials", IDS_SYNC_INVALID_USER_CREDENTIALS);
+    AddString(dict, "signin", IDS_SYNC_SIGNIN);
+    AddString(dict, "couldnotconnect", IDS_SYNC_LOGIN_COULD_NOT_CONNECT);
+    AddString(dict, "cannotaccessaccount", IDS_SYNC_CANNOT_ACCESS_ACCOUNT);
+    AddString(dict, "createaccount", IDS_SYNC_CREATE_ACCOUNT);
+    AddString(dict, "cancel", IDS_CANCEL);
+    AddString(dict, "settingup", IDS_SYNC_LOGIN_SETTING_UP);
+    AddString(dict, "success", IDS_SYNC_SUCCESS);
+    AddString(dict, "errorsigningin", IDS_SYNC_ERROR_SIGNING_IN);
+    AddString(dict, "captchainstructions", IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS);
 
-    localized_strings.SetString("settingupsync",
-        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SETTING_UP_SYNC));
-    localized_strings.SetString("introduction",
-        l10n_util::GetStringFUTF16(IDS_SYNC_LOGIN_INTRODUCTION,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-    localized_strings.SetString("signinprefix",
-        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SIGNIN_PREFIX));
-    localized_strings.SetString("signinsuffix",
-        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SIGNIN_SUFFIX));
-    localized_strings.SetString("cannotbeblank",
-        l10n_util::GetStringUTF16(IDS_SYNC_CANNOT_BE_BLANK));
-    localized_strings.SetString("emaillabel",
-        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_EMAIL));
-    localized_strings.SetString("passwordlabel",
-        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_PASSWORD));
-    localized_strings.SetString("invalidcredentials",
-        l10n_util::GetStringUTF16(IDS_SYNC_INVALID_USER_CREDENTIALS));
-    localized_strings.SetString("signin",
-        l10n_util::GetStringUTF16(IDS_SYNC_SIGNIN));
-    localized_strings.SetString("couldnotconnect",
-        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_COULD_NOT_CONNECT));
-    localized_strings.SetString("cannotaccessaccount",
-        l10n_util::GetStringUTF16(IDS_SYNC_CANNOT_ACCESS_ACCOUNT));
-    localized_strings.SetString("createaccount",
-        l10n_util::GetStringUTF16(IDS_SYNC_CREATE_ACCOUNT));
-    localized_strings.SetString("cancel",
-        l10n_util::GetStringUTF16(IDS_CANCEL));
-    localized_strings.SetString("settingup",
-        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SETTING_UP));
-    localized_strings.SetString("success",
-        l10n_util::GetStringUTF16(IDS_SYNC_SUCCESS));
-    localized_strings.SetString("errorsigningin",
-        l10n_util::GetStringUTF16(IDS_SYNC_ERROR_SIGNING_IN));
-    localized_strings.SetString("captchainstructions",
-        l10n_util::GetStringUTF16(IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS));
+    AddString(dict, "invalidaccesscode", IDS_SYNC_INVALID_ACCESS_CODE_LABEL);
+    AddString(dict, "enteraccesscode", IDS_SYNC_ENTER_ACCESS_CODE_LABEL);
+    AddString(dict, "getaccesscodehelp", IDS_SYNC_ACCESS_CODE_HELP_LABEL);
+    AddString(dict, "getaccesscodeurl", IDS_SYNC_GET_ACCESS_CODE_URL);
+  } else if (path_raw == kSyncConfigurePath) {
+    html_resource_id = IDR_SYNC_CONFIGURE_HTML;
 
-    localized_strings.SetString("invalidaccesscode",
-        l10n_util::GetStringUTF16(IDS_SYNC_INVALID_ACCESS_CODE_LABEL));
-    localized_strings.SetString("enteraccesscode",
-        l10n_util::GetStringUTF16(IDS_SYNC_ENTER_ACCESS_CODE_LABEL));
-    localized_strings.SetString("getaccesscodehelp",
-        l10n_util::GetStringUTF16(IDS_SYNC_ACCESS_CODE_HELP_LABEL));
-    localized_strings.SetString("getaccesscodeurl",
-        l10n_util::GetStringUTF16(IDS_SYNC_GET_ACCESS_CODE_URL));
+    AddString(dict, "dataTypes", IDS_SYNC_DATA_TYPES_TAB_NAME);
+    AddString(dict, "encryption", IDS_SYNC_ENCRYPTION_TAB_NAME);
 
-    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
-    SetFontAndTextDirection(&localized_strings);
-    response = jstemplate_builder::GetI18nTemplateHtml(
-        html, &localized_strings);
-  } else if (path_raw == kSyncChooseDataTypesPath) {
-    DictionaryValue localized_strings;
-    localized_strings.SetString("choosedatatypesheader",
-        l10n_util::GetStringUTF16(IDS_SYNC_CHOOSE_DATATYPES_HEADER));
-    localized_strings.SetString("choosedatatypesinstructions",
-        l10n_util::GetStringFUTF16(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-    localized_strings.SetString("keepeverythingsynced",
-        l10n_util::GetStringUTF16(IDS_SYNC_EVERYTHING));
-    localized_strings.SetString("choosedatatypes",
-        l10n_util::GetStringUTF16(IDS_SYNC_CHOOSE_DATATYPES));
-    localized_strings.SetString("bookmarks",
-        l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_BOOKMARKS));
-    localized_strings.SetString("preferences",
-        l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_PREFERENCES));
-    localized_strings.SetString("autofill",
-        l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_AUTOFILL));
-    localized_strings.SetString("themes",
-        l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_THEMES));
-    localized_strings.SetString("passwords",
-        l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_PASSWORDS));
-    localized_strings.SetString("extensions",
-        l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_EXTENSIONS));
-    localized_strings.SetString("typedurls",
-        l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_TYPED_URLS));
-    localized_strings.SetString("apps",
-        l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_APPS));
-    localized_strings.SetString("synczerodatatypeserror",
-        l10n_util::GetStringUTF16(IDS_SYNC_ZERO_DATA_TYPES_ERROR));
-    localized_strings.SetString("setupabortederror",
-        l10n_util::GetStringUTF16(IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR));
-    localized_strings.SetString("ok",
-        l10n_util::GetStringUTF16(IDS_OK));
-    localized_strings.SetString("cancel",
-        l10n_util::GetStringUTF16(IDS_CANCEL));
-    localized_strings.SetString("settingup",
-        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SETTING_UP));
-    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_SYNC_CHOOSE_DATATYPES_HTML));
-    SetFontAndTextDirection(&localized_strings);
-    response = jstemplate_builder::GetI18nTemplateHtml(
-      html, &localized_strings);
+    // Stuff for the choose data types localized.
+    AddString(dict, "choosedatatypesheader", IDS_SYNC_CHOOSE_DATATYPES_HEADER);
+    dict->SetString("choosedatatypesinstructions",
+        GetStringFUTF16(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS,
+                        GetStringUTF16(IDS_PRODUCT_NAME)));
+    AddString(dict, "keepeverythingsynced", IDS_SYNC_EVERYTHING);
+    AddString(dict, "choosedatatypes", IDS_SYNC_CHOOSE_DATATYPES);
+    AddString(dict, "bookmarks", IDS_SYNC_DATATYPE_BOOKMARKS);
+    AddString(dict, "preferences", IDS_SYNC_DATATYPE_PREFERENCES);
+    AddString(dict, "autofill", IDS_SYNC_DATATYPE_AUTOFILL);
+    AddString(dict, "themes", IDS_SYNC_DATATYPE_THEMES);
+    AddString(dict, "passwords", IDS_SYNC_DATATYPE_PASSWORDS);
+    AddString(dict, "extensions", IDS_SYNC_DATATYPE_EXTENSIONS);
+    AddString(dict, "typedurls", IDS_SYNC_DATATYPE_TYPED_URLS);
+    AddString(dict, "apps", IDS_SYNC_DATATYPE_APPS);
+    AddString(dict, "synczerodatatypeserror", IDS_SYNC_ZERO_DATA_TYPES_ERROR);
+    AddString(dict, "abortederror", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR);
+
+    // Stuff for the encryption tab.
+    dict->SetString("encryptionInstructions",
+        GetStringFUTF16(IDS_SYNC_ENCRYPTION_INSTRUCTIONS,
+                        GetStringUTF16(IDS_PRODUCT_NAME)));
+    AddString(dict, "encryptAllLabel", IDS_SYNC_ENCRYPT_ALL_LABEL);
+    AddString(dict, "usePassphraseLabel", IDS_SYNC_PASSPHRASE_CHECKBOX_LABEL);
+    AddString(dict, "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING);
+
+    // Stuff for the footer.
+    AddString(dict, "ok", IDS_OK);
+    AddString(dict, "cancel", IDS_CANCEL);
+  } else if (path_raw == kSyncPassphrasePath) {
+    html_resource_id = IDR_SYNC_PASSPHRASE_HTML;
+    AddString(dict, "newPassphraseTitle", IDS_SYNC_NEW_PASSPHRASE_TITLE);
+    AddString(dict, "newPassphraseBody", IDS_SYNC_NEW_PASSPHRASE_BODY);
+    AddString(dict, "enterPassphraseTitle", IDS_SYNC_ENTER_PASSPHRASE_TITLE);
+    AddString(dict, "enterPassphraseBody", IDS_SYNC_ENTER_PASSPHRASE_BODY);
+    AddString(dict, "gaiaPassphraseTitle", IDS_SYNC_GAIA_PASSPHRASE_TITLE);
+    AddString(dict, "gaiaPassphraseBody", IDS_SYNC_GAIA_PASSPHRASE_BODY);
+    AddString(dict, "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL);
+    AddString(dict, "ok", IDS_OK);
+    AddString(dict, "cancel", IDS_CANCEL);
+  } else if (path_raw == kSyncSettingUpPath) {
+    html_resource_id = IDR_SYNC_SETTING_UP_HTML;
+
+    AddString(dict, "settingup", IDS_SYNC_LOGIN_SETTING_UP);
+    AddString(dict, "cancel", IDS_CANCEL);
   } else if (path_raw == kSyncSetupDonePath) {
-    DictionaryValue localized_strings;
-    localized_strings.SetString("success",
-        l10n_util::GetStringUTF16(IDS_SYNC_SUCCESS));
-    localized_strings.SetString("setupsummary",
-        l10n_util::GetStringFUTF16(IDS_SYNC_SETUP_ALL_DONE,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-    localized_strings.SetString("firsttimesetupsummary",
-        l10n_util::GetStringUTF16(IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE));
-    localized_strings.SetString("okay",
-        l10n_util::GetStringUTF16(IDS_SYNC_SETUP_OK_BUTTON_LABEL));
-    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_SYNC_SETUP_DONE_HTML));
-    SetFontAndTextDirection(&localized_strings);
-    response = jstemplate_builder::GetI18nTemplateHtml(
-        html, &localized_strings);
+    html_resource_id = IDR_SYNC_SETUP_DONE_HTML;
+
+    AddString(dict, "success", IDS_SYNC_SUCCESS);
+    dict->SetString("setupsummary",
+                    GetStringFUTF16(IDS_SYNC_SETUP_ALL_DONE,
+                                    GetStringUTF16(IDS_PRODUCT_NAME)));
+    AddString(dict, "firsttimesummary", IDS_SYNC_SETUP_FIRST_TIME_ALL_DONE);
+    AddString(dict, "okay", IDS_SYNC_SETUP_OK_BUTTON_LABEL);
   } else if (path_raw == kSyncSetupFlowPath) {
-    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
-        .GetRawDataResource(IDR_SYNC_SETUP_FLOW_HTML));
-    response = html.as_string();
+    html_resource_id = IDR_SYNC_SETUP_FLOW_HTML;
   }
+
+  if (html_resource_id > 0) {
+    const base::StringPiece html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            html_resource_id));
+    SetFontAndTextDirection(dict);
+    response = jstemplate_builder::GetI18nTemplateHtml(html, dict);
+  }
+
   // Send the response.
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(response.size());
@@ -278,7 +279,7 @@ SyncSetupWizard::State SyncSetupWizard::GetEndStateForDiscreteRun(
   State result = FATAL_ERROR;
   if (start_state == GAIA_LOGIN) {
     result = GAIA_SUCCESS;
-  } else if (start_state == CHOOSE_DATA_TYPES) {
+  } else if (start_state == CONFIGURE) {
     result = DONE;
   }
   DCHECK_NE(FATAL_ERROR, result) <<

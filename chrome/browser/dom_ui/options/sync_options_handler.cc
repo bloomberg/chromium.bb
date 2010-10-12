@@ -62,7 +62,7 @@ void SyncOptionsHandler::Initialize() {
   DCHECK(service);
 
   DictionaryValue args;
-  SyncSetupFlow::GetArgsForChooseDataTypes(service, &args);
+  SyncSetupFlow::GetArgsForConfigure(service, &args);
 
   dom_ui_->CallJavascriptFunction(L"SyncOptions.setRegisteredDataTypes", args);
 }

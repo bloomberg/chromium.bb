@@ -1,0 +1,131 @@
+<html i18n-values="dir:textdirection;">
+<head>
+<title></title>
+<style type="text/css">
+body {
+   line-height: 1.5em;
+   background: #FFFFFF;
+   font-size: 11pt;
+}
+html[os='mac'] body {
+  line-height: 1.5em;
+  background: #FFFFFF;
+}
+form {
+  -webkit-user-select: none;
+}
+.sync-header {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.sync-instructions {
+  margin-top: 10px;
+}
+.sync-footer {
+  position: fixed;
+  right: 0px;
+  bottom: 0px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+html[dir='rtl'] .sync-footer {
+  text-align: left;
+  left: 0px;
+  bottom: 0px;
+  margin-left: 20px;
+}
+input[type='button'],
+input[type='submit'] {
+  min-width: 87px;
+  min-height: 26px;
+}
+html[os='mac'] input[type='button'],
+html[os='mac'] input[type='submit'] {
+  font-size: 12pt;
+}
+
+#new-passphrase,
+#enter-passphrase {
+  display: none;
+}
+
+</style>
+<script src="chrome://resources/js/cr.js"></script>
+<script>
+  var currentTab;
+
+  // Called once, when this html/js is loaded.
+  function setupPassphraseDialog(args) {
+    // Allow platform specific rules
+    if (cr.isMac) {
+      document.documentElement.setAttribute('os', 'mac');
+    } else if (!cr.isWindows) {
+      document.documentElement.setAttribute('os', 'linux');
+    }
+
+    if (args) {
+      currentMode = args['mode'];
+      switchToMode(currentMode);
+    }
+  }
+
+  function switchToMode(mode) {
+    if (mode == "new") {
+      document.getElementById("enter-passphrase").style.display = "none";
+      document.getElementById("gaia-passphrase").style.display = "none";
+      document.getElementById("new-passphrase").style.display = "block";
+    } else if (mode =="enter") {
+      document.getElementById("enter-passphrase").style.display = "block";
+      document.getElementById("gaia-passphrase").style.display = "none";
+      document.getElementById("new-passphrase").style.display = "none";
+    } 
+  }
+
+  function sendPassphraseAndClose() {
+    var f = document.getElementById("passphraseForm");
+    var result = JSON.stringify({"passphrase": f.passphrase.value});
+    chrome.send("Passphrase", [result]);
+  }
+</script>
+</head>
+<body i18n-values=".style.fontFamily:fontfamily"
+      onload="setupPassphraseDialog();">
+<form id="passphraseForm" 
+      onSubmit="sendPassphraseAndClose(); return false;">
+  <div id="new-passphrase">
+    <div class="sync-header" id="newTitle"
+         i18n-content="newPassphraseTitle"></div>
+    <div class="sync-instructions" id="newInstructions"
+         i18n-content="newPassphraseBody"></div>
+  </div>
+
+  <div id="enter-passphrase">
+    <div class="sync-header" id="enterTitle"
+         i18n-content="enterPassphraseTitle"></div>
+    <div class="sync-instructions" id="enterInstructions"
+         i18n-content="enterPassphraseBody"></div>
+  </div>
+
+  <div id="gaia-passphrase">
+    <div class="sync-header" id="gaiaTitle"
+         i18n-content="gaiaPassphraseTitle"></div>
+    <div class="sync-instructions" id="gaiaInstructions"
+         i18n-content="gaiaPassphraseBody"></div>
+  </div>
+
+  <div id="passphrase-input">
+    <label id="passphraseLabel" name="passphraseLabel"
+           for="passphrase" i18n-content="passphraseLabel">
+    </label>
+    <input id="passphrase" name="passphrase" type="password" />
+  </div> 
+
+  <div class="sync-footer">
+    <input id="okButton" type="submit" i18n-values="value:ok" />
+    <input id="cancelButton" type="button" i18n-values="value:cancel"
+           onclick='chrome.send("DialogClose", [""])' />
+  </div>
+</form>
+</body>
+</html>

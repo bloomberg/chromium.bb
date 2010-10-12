@@ -21,23 +21,26 @@ class SyncSetupWizard {
     // A login attempt succeeded.  This will wait for an explicit transition
     // (via Step) to the next state.
     GAIA_SUCCESS,
-    // Show the screen that lets you click either "Keep everything synced" or
-    // "Choose which data types to sync", and checkboxes for each data type.
-    CHOOSE_DATA_TYPES,
-    // Show the screen that lets you create a passphrase (if you've never set
-    // one up before).
+    // Show the screen that lets you configure sync.
+    // There are two tabs:
+    //  Data Types --
+    //   Choose either "Keep everything synced" or
+    //   "Choose which data types to sync", and checkboxes for each data type.
+    //  Encryption --
+    //   Choose what to encrypt and whether to use a passphrase.
+    CONFIGURE,
+    // Show the screen that lets you enter a new passphrase
     CREATE_PASSPHRASE,
-    // Show the screen that lets you enter the passphrase (if you've set one up
-    // on another machine).
+    // Show the screen that prompts for your passphrase
     ENTER_PASSPHRASE,
-    // Show the screen that lets you reset your passphrase (if you forgot it).
-    RESET_PASSPHRASE,
     // The panic switch.  Something went terribly wrong during setup and we
     // can't recover.
     FATAL_ERROR,
     // The client can't set up sync at the moment due to a concurrent operation
     // to clear cloud data being in progress on the server.
     SETUP_ABORTED_BY_PENDING_CLEAR,
+    // Loading screen with spinny throbber.
+    SETTING_UP,
     // A final state for when setup completes and it is possible it is the
     // user's first time (globally speaking) as the cloud doesn't have any
     // bookmarks.  We show additional info in this case to explain setting up

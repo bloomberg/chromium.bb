@@ -23,7 +23,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
@@ -33,14 +32,18 @@
 // XPath expression for finding specific iframes.
 static const wchar_t* kLoginIFrameXPath = L"//iframe[@id='login']";
 static const wchar_t* kChooseDataTypesIFrameXPath =
-    L"//iframe[@id='choose_data_types']";
+    L"//iframe[@id='configure']";
+static const wchar_t* kPassphraseIFrameXPath =
+    L"//iframe[@id='passphrase']";
 static const wchar_t* kDoneIframeXPath = L"//iframe[@id='done']";
 
 void FlowHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("SubmitAuth",
       NewCallback(this, &FlowHandler::HandleSubmitAuth));
-  dom_ui_->RegisterMessageCallback("ChooseDataTypes",
-      NewCallback(this, &FlowHandler::HandleChooseDataTypes));
+  dom_ui_->RegisterMessageCallback("Configure",
+      NewCallback(this, &FlowHandler::HandleConfigure));
+  dom_ui_->RegisterMessageCallback("Passphrase",
+      NewCallback(this, &FlowHandler::HandlePassphraseEntry));
 }
 
 static bool GetAuthData(const std::string& json,
@@ -62,14 +65,23 @@ static bool GetAuthData(const std::string& json,
   return true;
 }
 
-static bool GetDataTypeChoiceData(const std::string& json,
-    bool* sync_everything, syncable::ModelTypeSet* data_types) {
+static bool GetPassphrase(const std::string& json, std::string* passphrase) {
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
     return false;
 
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  if (!result->GetBoolean("keepEverythingSynced", sync_everything))
+  return result->GetString("passphrase", passphrase);
+}
+
+static bool GetConfiguration(const std::string& json,
+                             SyncConfiguration* config) {
+  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
+  if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
+    return false;
+
+  DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
+  if (!result->GetBoolean("keepEverythingSynced", &config->sync_everything))
     return false;
 
   // These values need to be kept in sync with where they are written in
@@ -78,49 +90,53 @@ static bool GetDataTypeChoiceData(const std::string& json,
   if (!result->GetBoolean("syncBookmarks", &sync_bookmarks))
     return false;
   if (sync_bookmarks)
-    data_types->insert(syncable::BOOKMARKS);
+    config->data_types.insert(syncable::BOOKMARKS);
 
   bool sync_preferences;
   if (!result->GetBoolean("syncPreferences", &sync_preferences))
     return false;
   if (sync_preferences)
-    data_types->insert(syncable::PREFERENCES);
+    config->data_types.insert(syncable::PREFERENCES);
 
   bool sync_themes;
   if (!result->GetBoolean("syncThemes", &sync_themes))
     return false;
   if (sync_themes)
-    data_types->insert(syncable::THEMES);
+    config->data_types.insert(syncable::THEMES);
 
   bool sync_passwords;
   if (!result->GetBoolean("syncPasswords", &sync_passwords))
     return false;
   if (sync_passwords)
-    data_types->insert(syncable::PASSWORDS);
+    config->data_types.insert(syncable::PASSWORDS);
 
   bool sync_autofill;
   if (!result->GetBoolean("syncAutofill", &sync_autofill))
     return false;
   if (sync_autofill)
-    data_types->insert(syncable::AUTOFILL);
+    config->data_types.insert(syncable::AUTOFILL);
 
   bool sync_extensions;
   if (!result->GetBoolean("syncExtensions", &sync_extensions))
     return false;
   if (sync_extensions)
-    data_types->insert(syncable::EXTENSIONS);
+    config->data_types.insert(syncable::EXTENSIONS);
 
   bool sync_typed_urls;
   if (!result->GetBoolean("syncTypedUrls", &sync_typed_urls))
     return false;
   if (sync_typed_urls)
-    data_types->insert(syncable::TYPED_URLS);
+    config->data_types.insert(syncable::TYPED_URLS);
 
   bool sync_apps;
   if (!result->GetBoolean("syncApps", &sync_apps))
     return false;
   if (sync_apps)
-    data_types->insert(syncable::APPS);
+    config->data_types.insert(syncable::APPS);
+
+  // Encyption settings.
+  if (!result->GetBoolean("usePassphrase", &config->use_secondary_passphrase))
+    return false;
 
   return true;
 }
@@ -142,14 +158,14 @@ void FlowHandler::HandleSubmitAuth(const ListValue* args) {
     flow_->OnUserSubmittedAuth(username, password, captcha, access_code);
 }
 
-void FlowHandler::HandleChooseDataTypes(const ListValue* args) {
+void FlowHandler::HandleConfigure(const ListValue* args) {
   std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
-  bool sync_everything;
-  syncable::ModelTypeSet chosen_types;
+  SyncConfiguration configuration;
+
   if (json.empty())
     return;
 
-  if (!GetDataTypeChoiceData(json, &sync_everything, &chosen_types)) {
+  if (!GetConfiguration(json, &configuration)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
     NOTREACHED();
@@ -157,9 +173,26 @@ void FlowHandler::HandleChooseDataTypes(const ListValue* args) {
   }
 
   DCHECK(flow_);
-  flow_->OnUserChoseDataTypes(sync_everything, chosen_types);
+  flow_->OnUserConfigured(configuration);
 
   return;
+}
+
+void FlowHandler::HandlePassphraseEntry(const ListValue* args) {
+  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+
+  if (json.empty())
+    return;
+
+  std::string passphrase;
+  if (!GetPassphrase(json, &passphrase)) {
+    // Couldn't understand what the page sent.  Indicates a programming error.
+    NOTREACHED();
+    return;
+  }
+
+  DCHECK(flow_);
+  flow_->OnPassphraseEntry(passphrase);
 }
 
 // Called by SyncSetupFlow::Advance.
@@ -191,18 +224,34 @@ void FlowHandler::ShowGaiaSuccessAndSettingUp() {
 }
 
 // Called by SyncSetupFlow::Advance.
-void FlowHandler::ShowChooseDataTypes(const DictionaryValue& args) {
-  // If you're starting the wizard at the Choose Data Types screen (i.e. from
+void FlowHandler::ShowConfigure(const DictionaryValue& args) {
+  // If you're starting the wizard at the configure screen (i.e. from
   // "Customize Sync"), this will be redundant.  However, if you're coming from
   // another wizard state, this will make sure Choose Data Types is on top.
   if (dom_ui_)
-    dom_ui_->CallJavascriptFunction(L"showChooseDataTypes");
+    dom_ui_->CallJavascriptFunction(L"showConfigure");
 
   std::string json;
   base::JSONWriter::Write(&args, false, &json);
-  std::wstring javascript = std::wstring(L"setCheckboxesAndErrors") +
+  std::wstring javascript = std::wstring(L"initializeConfigureDialog") +
       L"(" + UTF8ToWide(json) + L");";
   ExecuteJavascriptInIFrame(kChooseDataTypesIFrameXPath, javascript);
+}
+
+void FlowHandler::ShowPassphraseEntry(const DictionaryValue& args) {
+  if (dom_ui_)
+    dom_ui_->CallJavascriptFunction(L"showPassphrase");
+
+  std::string json;
+  base::JSONWriter::Write(&args, false, &json);
+  std::wstring script = std::wstring(L"setupPassphraseDialog") +
+      L"(" + UTF8ToWide(json) + L");";
+  ExecuteJavascriptInIFrame(kPassphraseIFrameXPath, script);
+}
+
+void FlowHandler::ShowSettingUp() {
+  if (dom_ui_)
+    dom_ui_->CallJavascriptFunction(L"showSettingUp");
 }
 
 void FlowHandler::ShowSetupDone(const std::wstring& user) {
@@ -248,6 +297,7 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
       login_start_time_(base::TimeTicks::Now()),
       flow_handler_(new FlowHandler()),
       owns_flow_handler_(true),
+      configuration_pending_(false),
       service_(service),
       html_dialog_window_(NULL) {
   flow_handler_->set_flow(this);
@@ -305,9 +355,11 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
       ProfileSyncService::SyncEvent(
           ProfileSyncService::CANCEL_DURING_SIGNON);
       break;
-    case SyncSetupWizard::CHOOSE_DATA_TYPES:
+    case SyncSetupWizard::CONFIGURE:
+    case SyncSetupWizard::ENTER_PASSPHRASE:
+    case SyncSetupWizard::SETTING_UP:
       ProfileSyncService::SyncEvent(
-          ProfileSyncService::CANCEL_FROM_CHOOSE_DATA_TYPES);
+          ProfileSyncService::CANCEL_DURING_CONFIGURE);
       break;
     case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
@@ -344,9 +396,13 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 }
 
 // static
-void SyncSetupFlow::GetArgsForChooseDataTypes(ProfileSyncService* service,
-                                              DictionaryValue* args) {
-  args->SetString("iframeToShow", "choose_data_types");
+void SyncSetupFlow::GetArgsForConfigure(ProfileSyncService* service,
+                                        DictionaryValue* args) {
+  args->SetString("iframeToShow", "configure");
+
+  // By default start on the data types tab.
+  args->SetString("initialTab", "data-type");
+
   args->SetBoolean("keepEverythingSynced",
       service->profile()->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced));
 
@@ -384,6 +440,9 @@ void SyncSetupFlow::GetArgsForChooseDataTypes(ProfileSyncService* service,
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncTypedUrls));
   args->SetBoolean("syncApps",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncApps));
+
+  // Load the parameters for the encryption tab.
+  args->SetBoolean("usePassphrase", service->IsUsingSecondaryPassphrase());
 }
 
 void SyncSetupFlow::GetDOMMessageHandlers(
@@ -394,6 +453,7 @@ void SyncSetupFlow::GetDOMMessageHandlers(
   owns_flow_handler_ = false;
 }
 
+// Returns true if the flow should advance to |state| based on |current_state_|.
 bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
   switch (state) {
     case SyncSetupWizard::GAIA_LOGIN:
@@ -401,15 +461,20 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
              current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::GAIA_SUCCESS:
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
-    case SyncSetupWizard::CHOOSE_DATA_TYPES:
+    case SyncSetupWizard::CONFIGURE:
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
+    case SyncSetupWizard::CREATE_PASSPHRASE:
+      return current_state_ == SyncSetupWizard::CONFIGURE;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
-      return current_state_ == SyncSetupWizard::CHOOSE_DATA_TYPES;
+      return current_state_ == SyncSetupWizard::CONFIGURE;
+    case SyncSetupWizard::SETTING_UP:
+      return current_state_ == SyncSetupWizard::CONFIGURE ||
+             current_state_ == SyncSetupWizard::CREATE_PASSPHRASE;
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
-      return current_state_ == SyncSetupWizard::CHOOSE_DATA_TYPES;
+      return current_state_ == SyncSetupWizard::SETTING_UP;
     default:
       NOTREACHED() << "Unhandled State: " << state;
       return false;
@@ -417,8 +482,11 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
 }
 
 void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
-  if (!ShouldAdvance(advance_state))
+  if (!ShouldAdvance(advance_state)) {
+    LOG(WARNING) << "Invalid state change from "
+                 << current_state_ << " to " << advance_state;
     return;
+  }
 
   switch (advance_state) {
     case SyncSetupWizard::GAIA_LOGIN: {
@@ -432,19 +500,39 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
         flow_handler_->ShowGaiaSuccessAndClose();
         break;
       }
-      advance_state = SyncSetupWizard::CHOOSE_DATA_TYPES;
+      advance_state = SyncSetupWizard::CONFIGURE;
       //  Fall through.
-    case SyncSetupWizard::CHOOSE_DATA_TYPES: {
+    case SyncSetupWizard::CONFIGURE: {
       DictionaryValue args;
-      SyncSetupFlow::GetArgsForChooseDataTypes(service_, &args);
-      flow_handler_->ShowChooseDataTypes(args);
+      SyncSetupFlow::GetArgsForConfigure(service_, &args);
+      args.SetString("initialTab", "data-type");
+      flow_handler_->ShowConfigure(args);
+      break;
+    }
+    case SyncSetupWizard::CREATE_PASSPHRASE: {
+      DictionaryValue args;
+      args.SetString("mode", "new");
+      flow_handler_->ShowPassphraseEntry(args);
+      break;
+    }
+    case SyncSetupWizard::ENTER_PASSPHRASE: {
+      DictionaryValue args;
+      if (service_->IsUsingSecondaryPassphrase())
+        args.SetString("mode", "enter");
+      else
+        args.SetString("mode", "gaia");
+      flow_handler_->ShowPassphraseEntry(args);
       break;
     }
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR: {
       DictionaryValue args;
-      SyncSetupFlow::GetArgsForChooseDataTypes(service_, &args);
+      SyncSetupFlow::GetArgsForConfigure(service_, &args);
       args.SetBoolean("was_aborted", true);
-      flow_handler_->ShowChooseDataTypes(args);
+      flow_handler_->ShowConfigure(args);
+      break;
+    }
+    case SyncSetupWizard::SETTING_UP: {
+      flow_handler_->ShowSettingUp();
       break;
     }
     case SyncSetupWizard::FATAL_ERROR: {
@@ -492,8 +580,8 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   DictionaryValue args;
   if (start == SyncSetupWizard::GAIA_LOGIN)
     SyncSetupFlow::GetArgsForGaiaLogin(service, &args);
-  else if (start == SyncSetupWizard::CHOOSE_DATA_TYPES)
-    SyncSetupFlow::GetArgsForChooseDataTypes(service, &args);
+  else if (start == SyncSetupWizard::CONFIGURE)
+    SyncSetupFlow::GetArgsForConfigure(service, &args);
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
@@ -518,4 +606,56 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   }
 #endif  // defined(OS_MACOSX)
   return flow;
+}
+
+void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
+                                        const std::string& password,
+                                        const std::string& captcha,
+                                        const std::string& access_code) {
+  service_->OnUserSubmittedAuth(username, password, captcha, access_code);
+}
+
+void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
+  // Store the configuration in case we need more information.
+  configuration_ = configuration;
+  configuration_pending_ = true;
+
+  // If the user is activating secondary passphrase for the first time,
+  // we need to prompt them to enter one.
+  if (configuration.use_secondary_passphrase &&
+      !service_->IsUsingSecondaryPassphrase()) {
+    Advance(SyncSetupWizard::CREATE_PASSPHRASE);
+    return;
+  }
+
+  OnConfigurationComplete();
+}
+
+void SyncSetupFlow::OnConfigurationComplete() {
+  if (!configuration_pending_)
+    return;
+
+  // Go to the "loading..." screen."
+  Advance(SyncSetupWizard::SETTING_UP);
+
+  // If we are activating the passphrase, we need to have one supplied.
+  DCHECK(service_->IsUsingSecondaryPassphrase() ||
+         !configuration_.use_secondary_passphrase ||
+         configuration_.secondary_passphrase.length() > 0);
+
+  if (configuration_.use_secondary_passphrase &&
+      !service_->IsUsingSecondaryPassphrase())
+    service_->SetSecondaryPassphrase(configuration_.secondary_passphrase);
+
+  service_->OnUserChoseDatatypes(configuration_.sync_everything,
+                                 configuration_.data_types);
+
+  configuration_pending_ = false;
+}
+
+void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
+  if (configuration_pending_) {
+    configuration_.secondary_passphrase = passphrase;
+    OnConfigurationComplete();
+  }
 }

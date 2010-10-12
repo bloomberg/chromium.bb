@@ -2,34 +2,30 @@
 <head>
 <title></title>
 <script type="text/javascript">
+  function hideAllPages() {
+    var pages = ['login', 'configure', 'passphrase', 'settingup', 'done'];
+    for (var i = 0; i < pages.length; ++i) {
+      document.getElementById(pages[i]).style.display = 'none';
+      document.getElementById(pages[i]).tabIndex = -1;
+    }
+  }
+
+  function showPage(page) {
+    hideAllPages();
+    document.getElementById(page).style.display = 'block';
+    document.getElementById(page).tabIndex = 0;
+  }
+
+  function showGaiaLoginIframe() { showPage('login'); }
+  function showConfigure() { showPage('configure'); }
+  function showPassphrase() { showPage('passphrase'); }
+  function showSettingUp() { showPage('settingup'); }
+  function showSetupDone() { showPage('done'); }
 
   // Called once, when this html/js is loaded.
   function showTheRightIframe() {
-    hideAllPages();
     var args = JSON.parse(chrome.dialogArguments);
-    document.getElementById(args.iframeToShow).style.display = 'block';
-    document.getElementById(args.iframeToShow).tabIndex = 0;
-  }
-
-  function hideAllPages() {
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('login').tabIndex = -1;
-    document.getElementById('choose_data_types').style.display = 'none';
-    document.getElementById('choose_data_types').tabIndex = -1;
-    document.getElementById('done').style.display = 'none'; 
-    document.getElementById('done').tabIndex = -1;
- }
-
-  function showChooseDataTypes() {
-    hideAllPages();
-    document.getElementById('choose_data_types').style.display = 'block';
-    document.getElementById('choose_data_types').tabIndex = 0;
-  }
-
-  function showSetupDone() {
-    hideAllPages();
-    document.getElementById('done').style.display = 'block';
-    document.getElementById('done').tabIndex = 0;
+    showPage(args.iframeToShow);
   }
 </script>
 </head>
@@ -37,8 +33,14 @@
   <iframe id="login" frameborder="0" width="100%" scrolling="no" height="100%"
           src="chrome://syncresources/gaialogin" style="display:none"
           tabindex="-1"></iframe>
-  <iframe id="choose_data_types" frameborder="0" width="100%" scrolling="no"
-          height="100%" src="chrome://syncresources/choosedatatypes"
+  <iframe id="configure" frameborder="0" width="100%" scrolling="no"
+          height="100%" src="chrome://syncresources/configure"
+          style="display:none" tabindex="-1"></iframe>
+  <iframe id="passphrase" frameborder="0" width="100%" scrolling="no"
+          height="100%" src="chrome://syncresources/passphrase"
+          style="display:none" tabindex="-1"></iframe>
+  <iframe id="settingup" frameborder="0" width="100%" scrolling="no"
+          height="100%" src="chrome://syncresources/settingup"
           style="display:none" tabindex="-1"></iframe>
   <iframe id="done" frameborder="0" width="100%" scrolling="no" height="100%"
           src="chrome://syncresources/setupdone" style="display:none"

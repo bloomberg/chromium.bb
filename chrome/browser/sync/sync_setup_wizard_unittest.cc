@@ -285,12 +285,13 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   // In a non-discrete run, GAIA_SUCCESS immediately transitions you to
-  // CHOOSE_DATA_TYPES.
-  EXPECT_EQ(SyncSetupWizard::CHOOSE_DATA_TYPES,
+  // CONFIGURE.
+  EXPECT_EQ(SyncSetupWizard::CONFIGURE,
             test_window_->flow()->current_state_);
 
   // That's all we're testing here, just move on to DONE.  We'll test the
   // "choose data types" scenarios elsewhere.
+  wizard_->Step(SyncSetupWizard::SETTING_UP);  // No merge and sync.
   wizard_->Step(SyncSetupWizard::DONE);  // No merge and sync.
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
@@ -300,7 +301,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
 TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
-  wizard_->Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
+  wizard_->Step(SyncSetupWizard::CONFIGURE);
 
   ListValue data_type_choices_value;
   std::string data_type_choices = "{\"keepEverythingSynced\":false,";
@@ -308,12 +309,12 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   data_type_choices += "\"syncThemes\":false,\"syncPasswords\":false,";
   data_type_choices += "\"syncAutofill\":false,\"syncExtensions\":false,";
   data_type_choices += "\"syncTypedUrls\":true,\"syncApps\":true,";
-  data_type_choices += "\"syncSessions\":false}";
+  data_type_choices += "\"syncSessions\":false,\"usePassphrase\":false}";
   data_type_choices_value.Append(new StringValue(data_type_choices));
 
   // Simulate the user choosing data types; bookmarks, prefs, typed
   // URLS, and apps are on, the rest are off.
-  test_window_->flow()->flow_handler_->HandleChooseDataTypes(
+  test_window_->flow()->flow_handler_->HandleConfigure(
       &data_type_choices_value);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
@@ -379,7 +380,7 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
             test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
-  EXPECT_EQ(SyncSetupWizard::CHOOSE_DATA_TYPES,
+  EXPECT_EQ(SyncSetupWizard::CONFIGURE,
             test_window_->flow()->current_state_);
 
   wizard_->Step(SyncSetupWizard::FATAL_ERROR);
@@ -390,6 +391,7 @@ TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::SETTING_UP);
   wizard_->Step(SyncSetupWizard::DONE);
   test_window_->CloseDialog();
   EXPECT_FALSE(wizard_->IsVisible());
@@ -401,6 +403,7 @@ TEST_F(SyncSetupWizardTest, FirstFullSuccessfulRunSetsPref) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::SETTING_UP);
   wizard_->Step(SyncSetupWizard::DONE_FIRST_TIME);
   test_window_->CloseDialog();
   EXPECT_FALSE(wizard_->IsVisible());
@@ -428,7 +431,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypes) {
   test_window_->CloseDialog();
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
-  wizard_->Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
+  wizard_->Step(SyncSetupWizard::CONFIGURE);
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
 
@@ -446,7 +449,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRunChooseDataTypesAbortedByPendingClear) {
   test_window_->CloseDialog();
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
 
-  wizard_->Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
+  wizard_->Step(SyncSetupWizard::CONFIGURE);
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   EXPECT_EQ(SyncSetupWizard::DONE, test_window_->flow()->end_state_);
    wizard_->Step(SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR);
@@ -463,6 +466,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
   // For a discrete run, we need to have ran through setup once.
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::SETTING_UP);
   wizard_->Step(SyncSetupWizard::DONE);
   test_window_->CloseDialog();
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());

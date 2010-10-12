@@ -15,11 +15,22 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 
 class FlowHandler;
 class SyncSetupFlowContainer;
+
+// A structure which contains all the configuration information for sync.
+// This can be stored or passed around when the configuration is managed
+// by multiple stages of the wizard.
+struct SyncConfiguration {
+  bool sync_everything;
+  syncable::ModelTypeSet data_types;
+  bool use_secondary_passphrase;
+  std::string secondary_passphrase;
+};
 
 // The state machine used by SyncSetupWizard, exposed in its own header
 // to facilitate testing of SyncSetupWizard.  This class is used to open and
@@ -42,8 +53,8 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
       const ProfileSyncService* service,
       DictionaryValue* args);
 
-  // Fills |args| with "user" and "error" arguments by querying |service|.
-  static void GetArgsForChooseDataTypes(
+  // Fills |args| for the configure screen (Choose Data Types/Encryption)
+  static void GetArgsForConfigure(
       ProfileSyncService* service,
       DictionaryValue* args);
 
@@ -94,14 +105,13 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   void OnUserSubmittedAuth(const std::string& username,
                            const std::string& password,
                            const std::string& captcha,
-                           const std::string& access_code) {
-    service_->OnUserSubmittedAuth(username, password, captcha, access_code);
-  }
+                           const std::string& access_code);
 
-  void OnUserChoseDataTypes(bool sync_everything,
-      syncable::ModelTypeSet& chosen_types) {
-    service_->OnUserChoseDatatypes(sync_everything, chosen_types);
-  }
+  void OnUserConfigured(const SyncConfiguration& configuration);
+
+  void OnPassphraseEntry(const std::string& passphrase);
+
+  void OnConfigurationComplete();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
@@ -138,6 +148,11 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // The handler needed for the entire flow.
   FlowHandler* flow_handler_;
   mutable bool owns_flow_handler_;
+
+  // The current configuration, held pending until all the information has
+  // been populated (possibly using multiple dialog states).
+  SyncConfiguration configuration_;
+  bool configuration_pending_;
 
   // We need this to write the sentinel "setup completed" pref.
   ProfileSyncService* service_;
@@ -181,13 +196,16 @@ class FlowHandler : public DOMMessageHandler {
 
   // Callbacks from the page.
   void HandleSubmitAuth(const ListValue* args);
-  void HandleChooseDataTypes(const ListValue* args);
+  void HandleConfigure(const ListValue* args);
+  void HandlePassphraseEntry(const ListValue* args);
 
   // These functions control which part of the HTML is visible.
   void ShowGaiaLogin(const DictionaryValue& args);
   void ShowGaiaSuccessAndClose();
   void ShowGaiaSuccessAndSettingUp();
-  void ShowChooseDataTypes(const DictionaryValue& args);
+  void ShowConfigure(const DictionaryValue& args);
+  void ShowPassphraseEntry(const DictionaryValue& args);
+  void ShowSettingUp();
   void ShowSetupDone(const std::wstring& user);
   void ShowFirstTimeDone(const std::wstring& user);
 

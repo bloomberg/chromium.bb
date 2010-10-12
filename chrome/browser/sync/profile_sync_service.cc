@@ -646,7 +646,7 @@ void ProfileSyncService::ShowChooseDataTypes(gfx::NativeWindow parent_window) {
     return;
   }
   wizard_.SetParent(parent_window);
-  wizard_.Step(SyncSetupWizard::CHOOSE_DATA_TYPES);
+  wizard_.Step(SyncSetupWizard::CONFIGURE);
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
@@ -836,6 +836,15 @@ void ProfileSyncService::GetRegisteredDataTypes(
   }
 }
 
+bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kSyncUsingSecondaryPassphrase);
+}
+
+void ProfileSyncService::SetSecondaryPassphrase(const std::string& passphrase) {
+  SetPassphrase(passphrase);
+  profile_->GetPrefs()->SetBoolean(prefs::kSyncUsingSecondaryPassphrase, true);
+}
+
 bool ProfileSyncService::IsCryptographerReady() const {
   return backend_.get() && backend_->IsCryptographerReady();
 }
@@ -931,9 +940,12 @@ void ProfileSyncService::Observe(NotificationType type,
         break;
       }
 
-      // TODO(sync): Show the passphrase UI here.
-      UpdateAuthErrorState(GoogleServiceAuthError(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+      if (SetupInProgress()) {
+        wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
+      } else {
+        UpdateAuthErrorState(GoogleServiceAuthError(
+            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+      }
       break;
     }
     case NotificationType::SYNC_DATA_TYPES_UPDATED: {

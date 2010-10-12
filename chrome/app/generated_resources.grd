@@ -7937,7 +7937,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Synced to <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>
       </message>
 
-      <!-- Customize Sync (data type choice) dialog strings -->
+      <!-- Customize Sync dialog, tab labels -->
+      <message name="IDS_SYNC_DATA_TYPES_TAB_NAME" desc="The title of the Data Types tab in the customize sync dialog.">
+        Data Types
+      </message>
+      <message name="IDS_SYNC_ENCRYPTION_TAB_NAME" desc="The title of the Encryption tab in the customize sync dialog.">
+        Encryption
+      </message>
+
+      <!-- Choose data types dialog strings -->
       <message name="IDS_CUSTOMIZE_SYNC_WINDOW_TITLE" desc="The title of the Customize Sync dialog box.">
         Customize Sync
       </message>
@@ -7982,6 +7990,43 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_SYNC_DATATYPE_APPS" desc="Apps, one of the data types that we allow syncing.">
         Apps
+      </message>
+
+      <!-- Encryption tab of the configure sync dialog -->
+      <message name="IDS_SYNC_ENCRYPTION_INSTRUCTIONS" desc="Instructions for the encryption settings tab.">
+	<ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> always encrypts your data when it's tramsmitted to Google.  Additionally, passwords are stored encrypted on Google servers.
+      </message>
+      <message name="IDS_SYNC_ENCRYPT_ALL_LABEL" desc="Label for the checkbox that enables encryption of everything.">
+	Encrypt all my data
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_CHECKBOX_LABEL" desc="Label for the checkbox that enables a passphrase for sync.">
+	Use a sync passphrase to encrypt my data
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
+	Once you start using a passphrase, you cannot remove the passphrase without clearing your sync data. The passphrase does not leave this computer, and if you lose this passphrase, you may not be able to sync this data on other computers.
+      </message>
+      
+      <!-- Passphrase dialog strings -->
+      <message name="IDS_SYNC_NEW_PASSPHRASE_TITLE" desc="Title for the dialog where the user creates a new passphrase.">
+	Create a passphrase
+      </message>
+      <message name="IDS_SYNC_NEW_PASSPHRASE_BODY" desc="Instructions for the dialog where the user creates a new passphrase.">
+	Choose a passphrase to encrypt your sync data.  This passphrase will not leave this computer, and if you lose it you may not be able to sync your data.
+      </message>
+      <message name="IDS_SYNC_ENTER_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters the passphrase.">
+	Enter your passphrase
+      </message>
+      <message name="IDS_SYNC_ENTER_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters the passphrase.">
+	Your sync data has been encrypted using a passphrase.  Please enter your passphrase to decrypt the data.
+      </message>
+      <message name="IDS_SYNC_GAIA_PASSPHRASE_TITLE" desc="Title for the dialog where the user enters their password as passphrase.">
+	Enter your Google account password
+      </message>
+      <message name="IDS_SYNC_GAIA_PASSPHRASE_BODY" desc="Instructions for the dialog where the user enters their password as passphrase.">
+      	Your sync data has been encrypted.  Please re-enter your password to decrypt the data.
+      </message>
+      <message name="IDS_SYNC_PASSPHRASE_LABEL" desc="Label for the passphrase field.">
+	Passphrase
       </message>
 
 
