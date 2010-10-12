@@ -11,7 +11,7 @@
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "net/base/completion_callback.h"
-#include "net/base/ssl_non_sensitive_host_info.h"
+#include "net/base/ssl_host_info.h"
 #include "net/disk_cache/disk_cache.h"
 
 namespace net {
@@ -22,12 +22,12 @@ class HttpCache;
 // DiskCacheBasedSSLHostInfo fetches information about an SSL host from our
 // standard disk cache. Since the information is defined to be non-sensitive,
 // it's ok for us to keep it on disk.
-class DiskCacheBasedSSLHostInfo : public SSLNonSensitiveHostInfo,
+class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
                                   public NonThreadSafe {
  public:
   DiskCacheBasedSSLHostInfo(const std::string& hostname, HttpCache* http_cache);
 
-  // Implementation of SSLNonSensitiveHostInfo
+  // Implementation of SSLHostInfo
   virtual void Start();
   virtual int WaitForDataReady(CompletionCallback* callback);
   virtual const std::string& data() const { return data_; }

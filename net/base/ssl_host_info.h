@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_SSL_NON_SENSITIVE_HOST_INFO_H
-#define NET_BASE_SSL_NON_SENSITIVE_HOST_INFO_H
+#ifndef NET_BASE_SSL_HOST_INFO_H
+#define NET_BASE_SSL_HOST_INFO_H
 
 #include <string>
 #include "base/ref_counted.h"
@@ -11,12 +11,12 @@
 
 namespace net {
 
-// SSLNonSensitiveHostInfo is an interface for fetching information about an
-// SSL server. This information may be stored on disk so does not include keys
-// or session information etc. Primarily it's intended for caching the server's
+// SSLHostInfo is an interface for fetching information about an SSL server.
+// This information may be stored on disk so does not include keys or session
+// information etc. Primarily it's intended for caching the server's
 // certificates.
-class SSLNonSensitiveHostInfo :
-    public base::RefCountedThreadSafe<SSLNonSensitiveHostInfo> {
+class SSLHostInfo :
+    public base::RefCountedThreadSafe<SSLHostInfo> {
  public:
   // Start will commence the lookup. This must be called before any other
   // methods. By opportunistically calling this early, it may be possible to
@@ -47,10 +47,10 @@ class SSLNonSensitiveHostInfo :
   virtual void Set(const std::string& new_data) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<SSLNonSensitiveHostInfo>;
-  virtual ~SSLNonSensitiveHostInfo() { }
+  friend class base::RefCountedThreadSafe<SSLHostInfo>;
+  virtual ~SSLHostInfo() { }
 };
 
 }  // namespace net
 
-#endif  // NET_BASE_SSL_NON_SENSITIVE_HOST_INFO_H
+#endif  // NET_BASE_SSL_HOST_INFO_H
