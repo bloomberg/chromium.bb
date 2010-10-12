@@ -769,6 +769,11 @@ untrusted_sdk() {
   clean
   everything
   prune
+
+  # build and install client-side translators
+  build-sandboxed-translators
+  install-translators
+
   tarball $1
 }
 
@@ -2823,10 +2828,6 @@ test-bot-base() {
 #@   and measure benchmark stats as well (measurements emitted to stdout).
 timed-test-spec-all() {
   official_specdir=$(readlink -f $1)
-
-  # Make sure the translators are there...
-  build-sandboxed-translators
-  install-translators
 
   spushd tests/spec2k
   ./run_all.sh CleanBenchmarks
