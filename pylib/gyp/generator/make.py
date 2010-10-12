@@ -291,11 +291,6 @@ endef
 .PHONY: all
 all:
 
-# make looks for ways to re-generate included makefiles, but in our case, we
-# don't have a direct way. Explicitly telling make that it has nothing to do
-# for them makes it go faster.
-%.d: ;
-
 # Use FORCE_DO_CMD to force a target to run.  Should be coupled with
 # do_cmd.
 .PHONY: FORCE_DO_CMD
@@ -444,7 +439,18 @@ all_deps := $(wildcard $(sort $(all_deps)))
 # Of those, only consider the ones with .d (dependency) info:
 d_files := $(wildcard $(foreach f,$(all_deps),$(depsdir)/$(f).d))
 ifneq ($(d_files),)
-  include $(d_files)
+  # Rather than include each individual .d file, concatenate them into a
+  # single file which make is able to load faster.  We split this into
+  # commands that take 1000 files at a time to avoid overflowing the
+  # command line.
+  $(shell cat $(wordlist 1,1000,$(d_files)) > $(depsdir)/all.deps)
+%(generate_all_deps)s
+  # make looks for ways to re-generate included makefiles, but in our case, we
+  # don't have a direct way. Explicitly telling make that it has nothing to do
+  # for them makes it go faster.
+  $(depsdir)/all.deps: ;
+
+  include $(depsdir)/all.deps
 endif
 """
 
@@ -526,6 +532,15 @@ class MakefileWriter:
 
   Its only real entry point is Write(), and is mostly used for namespacing.
   """
+
+  def __init__(self):
+    # Keep track of the total number of outputs for this makefile.
+    self._num_outputs = 0
+
+
+  def NumOutputs(self):
+    return self._num_outputs
+
 
   def Write(self, qualified_target, base_path, output_filename, spec, configs,
             part_of_all):
@@ -772,6 +787,7 @@ class MakefileWriter:
         self.WriteMakeRule(outputs[:1], ['builddir := $(abs_builddir)'])
         self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
         self.WriteLn('all_deps += %s' % ' '.join(outputs))
+        self._num_outputs += len(outputs)
 
         action = [self.ExpandInputRoot(ac, rule_source_root)
                   for ac in rule['action']]
@@ -877,6 +893,7 @@ class MakefileWriter:
     self.WriteLn('# Add to the list of files we specially track '
                  'dependencies for.')
     self.WriteLn('all_deps += $(OBJS)')
+    self._num_outputs += len(objs)
     self.WriteLn()
 
     # Make sure our dependencies are built first.
@@ -1096,6 +1113,7 @@ class MakefileWriter:
                        force = True)
     # Add our outputs to the list of targets we read depfiles from.
     self.WriteLn('all_deps += %s' % ' '.join(outputs))
+    self._num_outputs += len(outputs)
 
 
   def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
@@ -1253,6 +1271,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     for target in gyp.common.AllTargets(target_list, target_dicts, build_file):
       needed_targets.add(target)
 
+  num_outputs = 0
   build_files = set()
   include_list = set()
   for qualified_target in target_list:
@@ -1285,6 +1304,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     writer = MakefileWriter()
     writer.Write(qualified_target, base_path, output_file, spec, configs,
                  part_of_all=qualified_target in needed_targets)
+    num_outputs += writer.NumOutputs()
 
     # Our root_makefile lives at the source root.  Compute the relative path
     # from there to the output_file for including.
@@ -1335,6 +1355,22 @@ def GenerateOutput(target_list, target_dicts, data, params):
             gyp.RegenerateFlags(options) +
             build_files_args)))
 
-  root_makefile.write(SHARED_FOOTER)
+  # Write the rule to load dependencies.  We batch 1000 files at a time to
+  # avoid overflowing the command line.
+  all_deps = ""
+  for i in range(1001, num_outputs, 1000):
+    all_deps += ("""
+  ifneq ($(word %(start)d,$(d_files)),)
+    $(shell cat $(wordlist %(start)d,%(end)d,$(d_files)) >> $(depsdir)/all.deps)
+  endif""" % { 'start': i, 'end': i + 999 })
+
+  # Add a check to make sure we tried to process all the .d files.
+  all_deps += """
+  ifneq ($(word %(last)d,$(d_files)),)
+    $(error Found unprocessed dependency files (gyp didn't generate enough rules!))
+  endif
+""" % { 'last': ((num_outputs / 1000) + 1) * 1000 + 1 }
+
+  root_makefile.write(SHARED_FOOTER % { 'generate_all_deps': all_deps })
 
   root_makefile.close()
