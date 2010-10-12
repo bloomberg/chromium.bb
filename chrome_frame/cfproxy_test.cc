@@ -247,6 +247,47 @@ TEST(ChromeProxy, LaunchChrome) {
   factory.ReleaseProxy(&delegate, params.profile);
 }
 
+// Test that a channel error results in Completed_XYZ(false, ) called if
+// the synchronious XYZ message has been sent.
+TEST(ChromeProxy, ChannelError) {
+  base::WaitableEvent connected(false, false);
+  StrictMock<MockCFProxyTraits> api;
+  StrictMock<MockChromeProxyDelegate> delegate;
+  StrictMock<MockFactory> factory;
+  CFProxy* proxy = new CFProxy(&api);
+
+  ProxyParams params;
+  params.profile = "Adam N. Epilinter";
+  params.timeout = base::TimeDelta::FromMilliseconds(300);
+
+  testing::InSequence s;
+
+  EXPECT_CALL(factory, CreateProxy()).WillOnce(Return(proxy));
+  EXPECT_CALL(api, DoCreateChannel(_, proxy)).WillOnce(Return(&api.sender));
+  EXPECT_CALL(api, LaunchApp(_)).WillOnce(DoAll(
+      API_FIRE_CONNECT(api, base::TimeDelta::FromMilliseconds(10)),
+      Return(true)));
+  EXPECT_CALL(delegate, Connected(proxy))
+      .WillOnce(DoAll(
+          InvokeWithoutArgs(CreateFunctor(proxy, &ChromeProxy::ConnectTab,
+                                          &delegate, HWND(6), 512)),
+          InvokeWithoutArgs(&connected, &base::WaitableEvent::Signal)));
+
+  EXPECT_CALL(api.sender, Send(_));
+  EXPECT_CALL(delegate, Completed_ConnectToTab(false, _, _, _));
+  EXPECT_CALL(api, CloseChannel(&api.sender));
+  EXPECT_CALL(delegate, PeerLost(_, ChromeProxyDelegate::CHANNEL_ERROR));
+
+  factory.GetProxy(&delegate, params);
+  EXPECT_TRUE(connected.TimedWait(base::TimeDelta::FromSeconds(15)));
+  // Simulate a channel error.
+  api.FireError(base::TimeDelta::FromMilliseconds(0));
+
+  // Expectations when the Proxy is destroyed.
+  EXPECT_CALL(delegate, tab_handle()).WillOnce(Return(0));
+  EXPECT_CALL(delegate, Disconnected());
+  factory.ReleaseProxy(&delegate, params.profile);
+}
 ///////////////////////////////////////////////////////////////////////////////
 namespace {
 template <typename M, typename A>
