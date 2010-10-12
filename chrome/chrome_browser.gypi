@@ -463,6 +463,8 @@
         'browser/chromeos/dom_ui/language_pinyin_options_handler.h',
         'browser/chromeos/dom_ui/mobile_setup_ui.cc',
         'browser/chromeos/dom_ui/mobile_setup_ui.h',
+        'browser/chromeos/dom_ui/network_menu_ui.cc',
+        'browser/chromeos/dom_ui/network_menu_ui.h',
         'browser/chromeos/dom_ui/proxy_handler.cc',
         'browser/chromeos/dom_ui/proxy_handler.h',
         'browser/chromeos/dom_ui/register_page_ui.cc',

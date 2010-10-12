@@ -130,6 +130,7 @@ const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIMenu[] = "menu";
 const char kChromeUIWrenchMenu[] = "wrench-menu";
+const char kChromeUINetworkMenu[] = "network-menu";
 #endif
 
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";

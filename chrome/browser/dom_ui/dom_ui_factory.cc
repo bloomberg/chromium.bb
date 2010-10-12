@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/dom_ui/register_page_ui.h"
 #include "chrome/browser/chromeos/dom_ui/system_info_ui.h"
 #include "chrome/browser/chromeos/dom_ui/wrench_menu_ui.h"
+#include "chrome/browser/chromeos/dom_ui/network_menu_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #endif
@@ -169,6 +170,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<chromeos::MenuUI>;
   if (url.host() == chrome::kChromeUIWrenchMenu)
     return &NewDOMUI<chromeos::WrenchMenuUI>;
+  if (url.host() == chrome::kChromeUINetworkMenu)
+    return &NewDOMUI<chromeos::NetworkMenuUI>;
 #else
   if (url.host() == chrome::kChromeUISettingsHost) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(

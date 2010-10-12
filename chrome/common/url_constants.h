@@ -124,6 +124,7 @@ extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISystemInfoHost[];
 extern const char kChromeUIMenu[];
 extern const char kChromeUIWrenchMenu[];
+extern const char kChromeUINetworkMenu[];
 #endif
 
 // AppCache related URL.

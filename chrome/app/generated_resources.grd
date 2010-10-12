@@ -10140,7 +10140,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Configuration
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_READY" desc="Network state in about:network: READY">
-        Ready
+        Connected
       </message>
       <message name="IDS_CHROMEOS_NETWORK_STATE_DISCONNECT" desc="Network state in about:network: DISCONNECT">
         Disconnect

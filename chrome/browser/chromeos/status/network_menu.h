@@ -9,14 +9,18 @@
 #include <string>
 #include <vector>
 
+#include "app/menus/menu_model.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "gfx/native_widget_types.h"
-#include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gfx {
 class Canvas;
+}
+
+namespace views {
+class Menu2;
 }
 
 namespace chromeos {
@@ -47,8 +51,28 @@ namespace chromeos {
 class NetworkMenu : public views::ViewMenuDelegate,
                     public menus::MenuModel {
  public:
+  struct NetworkInfo {
+    NetworkInfo() : need_passphrase(false), remembered(true) {}
+    // "ethernet" | "wifi" | "cellular" | "other".
+    std::string network_type;
+    // "connected" | "connecting" | "disconnected" | "error".
+    std::string status;
+    // status message or error message, empty if unknown status.
+    std::string message;
+    // IP address (if network is active, empty otherwise)
+    std::string ip_address;
+    // true if the network requires a passphrase.
+    bool need_passphrase;
+    // true if the network is currently remembered.
+    bool remembered;
+  };
+
   NetworkMenu();
   virtual ~NetworkMenu();
+
+  // Retrieves network info for the DOMUI NetworkMenu (NetworkMenuUI).
+  // |index| is the index in menu_items_, set when the menu is built.
+  bool GetNetworkAt(int index, NetworkInfo* info) const;
 
   // menus::MenuModel implementation.
   virtual bool HasIcons() const  { return true; }
@@ -150,7 +174,7 @@ class NetworkMenu : public views::ViewMenuDelegate,
   MenuItemVector menu_items_;
 
   // The network menu.
-  views::Menu2 network_menu_;
+  scoped_ptr<views::Menu2> network_menu_;
 
   // Holds minimum width or -1 if it wasn't set up.
   int min_width_;

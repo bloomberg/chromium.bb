@@ -12,6 +12,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/dom_ui/network_menu_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/views/window.h"
@@ -20,7 +21,21 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/window/window.h"
+
+namespace {
+// Constants passed to Javascript:
+static const char* kNetworkTypeEthernet = "ethernet";
+static const char* kNetworkTypeWifi = "wifi";
+static const char* kNetworkTypeCellular = "cellular";
+static const char* kNetworkTypeOther = "other";
+
+static const char* kNetworkStatusConnected = "connected";
+static const char* kNetworkStatusConnecting = "connecting";
+static const char* kNetworkStatusDisconnected = "disconnected";
+static const char* kNetworkStatusError = "error";
+}
 
 namespace chromeos {
 
@@ -31,11 +46,98 @@ namespace chromeos {
 const int NetworkMenu::kNumWifiImages = 9;
 
 NetworkMenu::NetworkMenu()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
-      min_width_(-1) {
+    : min_width_(-1) {
+  network_menu_.reset(NetworkMenuUI::CreateMenu2(this));
 }
 
 NetworkMenu::~NetworkMenu() {
+}
+
+bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
+  DCHECK(info);
+  bool res = true;  // True unless a network doesn't exist.
+  int flags = menu_items_[index].flags;
+  NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
+  if (flags & FLAG_ETHERNET) {
+    info->network_type = kNetworkTypeEthernet;
+    if (cros->ethernet_connected()) {
+      info->status = kNetworkStatusConnected;
+      info->ip_address = cros->ethernet_network().ip_address();
+    }
+    info->need_passphrase = false;
+    info->remembered = true;
+  } else if (flags & FLAG_WIFI) {
+    WifiNetwork wifi;
+    bool found = cros->FindWifiNetworkByPath(
+        menu_items_[index].wireless_path, &wifi);
+    if (found) {
+      info->network_type = kNetworkTypeWifi;
+      if (wifi.name() == cros->wifi_name()) {
+        if (cros->wifi_connected()) {
+          info->status = kNetworkStatusConnected;
+          info->message = l10n_util::GetStringUTF8(
+              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED);
+        } else if (cros->wifi_connecting()) {
+          info->status = kNetworkStatusConnecting;
+          // TODO(stevenjb): Eliminate status message, or localize properly.
+          info->message = l10n_util::GetStringUTF8(
+              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING)
+              + ": " + wifi.GetStateString();
+        } else if (wifi.state() == STATE_FAILURE) {
+          info->status = kNetworkStatusError;
+          info->message = wifi.GetErrorString();
+        } else {
+          info->status = kNetworkStatusDisconnected;
+          info->message = l10n_util::GetStringUTF8(
+              IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
+        }
+      }
+      info->ip_address = wifi.ip_address();
+      info->need_passphrase = wifi.encrypted();
+      info->remembered = wifi.favorite();
+    } else {
+      res = false;  // Network not found, hide entry.
+    }
+  } else if (flags & FLAG_CELLULAR) {
+    CellularNetwork cellular;
+    bool found = cros->FindCellularNetworkByPath(
+        menu_items_[index].wireless_path, &cellular);
+    if (found) {
+      info->network_type = kNetworkTypeCellular;
+      if (cellular.name() == cros->cellular_name()) {
+        if (cros->cellular_connected()) {
+          info->status = kNetworkStatusConnected;
+          info->message = l10n_util::GetStringUTF8(
+              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED);
+        } else if (cros->cellular_connecting()) {
+          // TODO(stevenjb): Eliminate status message, or localize properly.
+          info->status = kNetworkStatusConnecting;
+          info->message = l10n_util::GetStringUTF8(
+              IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING)
+              + ": " + cellular.GetStateString();
+        } else if (cellular.state() == STATE_FAILURE) {
+          info->status = kNetworkStatusError;
+          info->message = cellular.GetErrorString();
+        } else {
+          info->status = kNetworkStatusDisconnected;
+          info->message = l10n_util::GetStringUTF8(
+              IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
+        }
+      }
+      info->ip_address = cellular.ip_address();
+      info->need_passphrase = false;
+      info->remembered = true;
+    } else {
+      res = false;  // Network not found, hide entry.
+    }
+  } else if (flags & FLAG_OTHER_NETWORK) {
+    info->network_type = kNetworkTypeOther;
+    info->need_passphrase = true;
+    info->remembered = true;
+  } else {
+    // Not a network, e.g options, separator.
+  }
+  return res;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -205,11 +307,11 @@ void NetworkMenu::ActivatedAt(int index) {
 void NetworkMenu::SetFirstLevelMenuWidth(int width) {
   min_width_ = width;
   // This actually has no effect since menu is rebuilt before showing.
-  network_menu_.SetMinimumWidth(width);
+  network_menu_->SetMinimumWidth(width);
 }
 
 void NetworkMenu::CancelMenu() {
-  network_menu_.CancelMenu();
+  network_menu_->CancelMenu();
 }
 
 // static
@@ -275,15 +377,15 @@ void NetworkMenu::RunMenu(views::View* source, const gfx::Point& pt) {
   cros->RequestWifiScan();
   cros->UpdateSystemInfo();
   InitMenuItems();
-  network_menu_.Rebuild();
-  network_menu_.UpdateStates();
+  network_menu_->Rebuild();
+  network_menu_->UpdateStates();
   // Restore menu width, if it was set up.
   // NOTE: width isn't checked for correctness here since all width-related
   // logic implemented inside |network_menu_|.
   if (min_width_ != -1)
-    network_menu_.SetMinimumWidth(min_width_);
+    network_menu_->SetMinimumWidth(min_width_);
   refreshing_menu_ = false;
-  network_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+  network_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
 void NetworkMenu::InitMenuItems() {
@@ -382,13 +484,6 @@ void NetworkMenu::InitMenuItems() {
   if (cros->Connected() || ShouldOpenButtonOptions()) {
     // Separator.
     menu_items_.push_back(MenuItem());
-
-    // IP address
-    if (cros->Connected()) {
-      menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND,
-          ASCIIToUTF16(cros->IPAddress()), SkBitmap(),
-          std::string(), FLAG_DISABLED));
-    }
 
     // Network settings.
     if (ShouldOpenButtonOptions()) {

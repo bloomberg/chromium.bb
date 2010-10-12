@@ -30,6 +30,7 @@ class Network {
   bool connecting_or_connected() const { return connecting() || connected(); }
   bool failed() const { return state_ == STATE_FAILURE; }
   ConnectionError error() const { return error_; }
+  ConnectionState state() const { return state_; }
 
   void set_service_path(const std::string& service_path) {
       service_path_ = service_path; }
@@ -45,11 +46,9 @@ class Network {
   virtual void ConfigureFromService(const ServiceInfo& service);
 
   // Return a string representation of the state code.
-  // This not translated and should be only used for debugging purposes.
   std::string GetStateString() const;
 
   // Return a string representation of the error code.
-  // This not translated and should be only used for debugging purposes.
   std::string GetErrorString() const;
 
  protected:
