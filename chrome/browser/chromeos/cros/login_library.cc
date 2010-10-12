@@ -132,22 +132,24 @@ class LoginLibraryImpl : public LoginLibrary {
   }
 
   void CompleteSetOwnerKey(bool result) {
-    CHECK(set_owner_key_callback_) << "CompleteSetOwnerKey() called without "
-                                      "a registered callback!";
-    set_owner_key_callback_->OnComplete(result);
-    set_owner_key_callback_ = NULL;
+    if (set_owner_key_callback_) {
+      set_owner_key_callback_->OnComplete(result);
+      set_owner_key_callback_ = NULL;
+    }
   }
 
   void CompleteWhitelistOp(bool result) {
-    CHECK(whitelist_op_callback_);
-    whitelist_op_callback_->OnComplete(result);
-    whitelist_op_callback_ = NULL;
+    if (whitelist_op_callback_) {
+      whitelist_op_callback_->OnComplete(result);
+      whitelist_op_callback_ = NULL;
+    }
   }
 
   void CompletePropertyOp(bool result) {
-    CHECK(property_op_callback_);
-    property_op_callback_->OnComplete(result);
-    property_op_callback_ = NULL;
+    if (property_op_callback_) {
+      property_op_callback_->OnComplete(result);
+      property_op_callback_ = NULL;
+    }
   }
 
   chromeos::SessionConnection session_connection_;
