@@ -47,6 +47,8 @@ class ServiceProcessControlBrowserTest
 
   void WaitForShutdown() {
     // We will keep trying every second till we hit the terminate timeout.
+    // TODO(sanjeevr): Use GetServiceProcessPid() to wait for termination.
+    // Will do this in a separate CL.
     int retries_left = TestTimeouts::wait_for_terminate_timeout_ms()/1000;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -58,7 +60,7 @@ class ServiceProcessControlBrowserTest
   }
 
   void DoDetectShutdown(int retries_left) {
-    bool service_is_running = CheckServiceProcessRunning();
+    bool service_is_running = CheckServiceProcessReady();
     if (!retries_left)
       EXPECT_FALSE(service_is_running);
     if (retries_left && service_is_running) {
@@ -146,6 +148,13 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, ForceShutdown) {
   chrome::VersionInfo version_info;
   ForceServiceProcessShutdown(version_info.Version());
   WaitForShutdown();
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, CheckPid) {
+  EXPECT_EQ(0, GetServiceProcessPid());
+  // Launch the service process.
+  LaunchServiceProcessControl();
+  EXPECT_NE(static_cast<base::ProcessId>(0), GetServiceProcessPid());
 }
 
 #endif

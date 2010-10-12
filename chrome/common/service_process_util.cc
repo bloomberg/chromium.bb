@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -27,6 +28,12 @@ namespace {
 // This should be more than enough to hold a version string assuming each part
 // of the version string is an int64.
 const uint32 kMaxVersionStringLength = 256;
+
+// The structure that gets written to shared memory.
+struct ServiceProcessSharedData {
+  char service_process_version[kMaxVersionStringLength];
+  base::ProcessId service_process_pid;
+};
 
 // Return a name that is scoped to this instance of the service process. We
 // use the user-data-dir as a scoping prefix.
@@ -61,6 +68,29 @@ std::string GetServiceProcessSharedMemName() {
   return GetServiceProcessScopedName("_service_shmem");
 }
 
+// Reads the named shared memory to get the shared data. Returns false if no
+// matching shared memory was found.
+bool GetServiceProcessSharedData(std::string* version, base::ProcessId* pid) {
+  scoped_ptr<base::SharedMemory> shared_mem_service_data;
+  shared_mem_service_data.reset(new base::SharedMemory());
+  ServiceProcessSharedData* service_data = NULL;
+  if (shared_mem_service_data.get() &&
+      shared_mem_service_data->Open(GetServiceProcessSharedMemName(), true) &&
+      shared_mem_service_data->Map(sizeof(ServiceProcessSharedData))) {
+    service_data = reinterpret_cast<ServiceProcessSharedData*>(
+        shared_mem_service_data->memory());
+    // Make sure the version in shared memory is null-terminated. If it is not,
+    // treat it as invalid.
+    if (version && memchr(service_data->service_process_version, '\0',
+                          sizeof(service_data->service_process_version)))
+      *version = service_data->service_process_version;
+    if (pid)
+      *pid = service_data->service_process_pid;
+    return true;
+  }
+  return false;
+}
+
 enum ServiceProcessRunningState {
   SERVICE_NOT_RUNNING,
   SERVICE_OLDER_VERSION_RUNNING,
@@ -71,17 +101,10 @@ enum ServiceProcessRunningState {
 ServiceProcessRunningState GetServiceProcessRunningState(
     std::string* service_version_out) {
   std::string version;
-  scoped_ptr<base::SharedMemory> shared_mem_version;
-  shared_mem_version.reset(new base::SharedMemory());
-  if (shared_mem_version.get() &&
-      shared_mem_version->Open(GetServiceProcessSharedMemName(), true) &&
-      shared_mem_version->Map(kMaxVersionStringLength) &&
-      memchr(shared_mem_version->memory(), '\0', kMaxVersionStringLength)) {
-    version =
-        static_cast<const char *>(shared_mem_version->memory());
-  } else {
+  GetServiceProcessSharedData(&version, NULL);
+  if (version.empty())
     return SERVICE_NOT_RUNNING;
-  }
+
   // At this time we have a version string. Set the out param if it exists.
   if (service_version_out)
     *service_version_out = version;
@@ -120,9 +143,9 @@ ServiceProcessRunningState GetServiceProcessRunningState(
 }
 
 #if defined(OS_WIN)
-string16 GetServiceProcessEventName() {
+string16 GetServiceProcessReadyEventName() {
   return UTF8ToWide(
-      GetServiceProcessScopedVersionedName("Service Process Lock"));
+      GetServiceProcessScopedVersionedName("_service_ready"));
 }
 
 string16 GetServiceProcessShutdownEventName() {
@@ -165,10 +188,10 @@ FilePath GetServiceProcessLockFilePath() {
 #endif  // defined(OS_WIN)
 
 struct ServiceProcessGlobalState {
-  scoped_ptr<base::SharedMemory> shared_mem_version;
+  scoped_ptr<base::SharedMemory> shared_mem_service_data;
 #if defined(OS_WIN)
-  // An event that is signaled when a service process is running.
-  ScopedHandle running_event;
+  // An event that is signaled when a service process is ready.
+  ScopedHandle ready_event;
   scoped_ptr<ServiceProcessShutdownMonitor> shutdown_monitor;
 #endif  // defined(OS_WIN)
 };
@@ -210,10 +233,10 @@ bool TakeServiceProcessSingletonLock() {
   // mechanism. For that the shared mem class needs to return whether it created
   // new instance or opened an existing one.
 #if defined(OS_WIN)
-  string16 event_name = GetServiceProcessEventName();
+  string16 event_name = GetServiceProcessReadyEventName();
   CHECK(event_name.length() <= MAX_PATH);
-  ScopedHandle service_process_running_event;
-  service_process_running_event.Set(
+  ScopedHandle service_process_ready_event;
+  service_process_ready_event.Set(
       CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));
   DWORD error = GetLastError();
   if ((error == ERROR_ALREADY_EXISTS) || (error == ERROR_ACCESS_DENIED)) {
@@ -221,8 +244,8 @@ bool TakeServiceProcessSingletonLock() {
     g_service_globals = NULL;
     return false;
   }
-  DCHECK(service_process_running_event.IsValid());
-  g_service_globals->running_event.Set(service_process_running_event.Take());
+  DCHECK(service_process_ready_event.IsValid());
+  g_service_globals->ready_event.Set(service_process_ready_event.Take());
 #else
   // TODO(sanjeevr): Implement singleton mechanism for other platforms.
   NOTIMPLEMENTED();
@@ -241,31 +264,36 @@ bool TakeServiceProcessSingletonLock() {
     return false;
   }
 
-  scoped_ptr<base::SharedMemory> shared_mem_version;
-  shared_mem_version.reset(new base::SharedMemory());
-  if (!shared_mem_version.get())
+  scoped_ptr<base::SharedMemory> shared_mem_service_data;
+  shared_mem_service_data.reset(new base::SharedMemory());
+  if (!shared_mem_service_data.get())
     return false;
 
-  uint32 alloc_size = kMaxVersionStringLength;
-  if (!shared_mem_version->Create(GetServiceProcessSharedMemName(), false,
-                                  true, alloc_size))
+  uint32 alloc_size = sizeof(ServiceProcessSharedData);
+  if (!shared_mem_service_data->Create(GetServiceProcessSharedMemName(), false,
+                                       true, alloc_size))
     return false;
 
-  if (!shared_mem_version->Map(alloc_size))
+  if (!shared_mem_service_data->Map(alloc_size))
     return false;
 
-  memset(shared_mem_version->memory(), 0, alloc_size);
-  memcpy(shared_mem_version->memory(), version_info.Version().c_str(),
+  memset(shared_mem_service_data->memory(), 0, alloc_size);
+  ServiceProcessSharedData* shared_data =
+      reinterpret_cast<ServiceProcessSharedData*>(
+          shared_mem_service_data->memory());
+  memcpy(shared_data->service_process_version, version_info.Version().c_str(),
          version_info.Version().length());
-  g_service_globals->shared_mem_version.reset(shared_mem_version.release());
+  shared_data->service_process_pid = base::GetCurrentProcId();
+  g_service_globals->shared_mem_service_data.reset(
+      shared_mem_service_data.release());
   return true;
 }
 
-void SignalServiceProcessRunning(Task* shutdown_task) {
+void SignalServiceProcessReady(Task* shutdown_task) {
 #if defined(OS_WIN)
   DCHECK(g_service_globals != NULL);
-  DCHECK(g_service_globals->running_event.IsValid());
-  SetEvent(g_service_globals->running_event.Get());
+  DCHECK(g_service_globals->ready_event.IsValid());
+  SetEvent(g_service_globals->ready_event.Get());
   g_service_globals->shutdown_monitor.reset(
       new ServiceProcessShutdownMonitor(shutdown_task));
   g_service_globals->shutdown_monitor->Start();
@@ -311,9 +339,9 @@ bool ForceServiceProcessShutdown(const std::string& version) {
 #endif    // defined(OS_WIN)
 }
 
-bool CheckServiceProcessRunning() {
+bool CheckServiceProcessReady() {
 #if defined(OS_WIN)
-  string16 event_name = GetServiceProcessEventName();
+  string16 event_name = GetServiceProcessReadyEventName();
   ScopedHandle event(
       OpenEvent(SYNCHRONIZE | READ_CONTROL, false, event_name.c_str()));
   if (!event.IsValid())
@@ -325,5 +353,11 @@ bool CheckServiceProcessRunning() {
   const FilePath path = GetServiceProcessLockFilePath();
   return file_util::PathExists(path);
 #endif
+}
+
+base::ProcessId GetServiceProcessPid() {
+  base::ProcessId pid = 0;
+  GetServiceProcessSharedData(NULL, &pid);
+  return pid;
 }
 

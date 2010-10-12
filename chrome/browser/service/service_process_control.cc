@@ -54,7 +54,7 @@ class ServiceProcessControl::Launcher
   void DoDetectLaunched(Task* task) {
     const uint32 kMaxLaunchDetectRetries = 10;
 
-    launched_ = CheckServiceProcessRunning();
+    launched_ = CheckServiceProcessReady();
     if (launched_ || (retry_count_ >= kMaxLaunchDetectRetries)) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &Launcher::Notify, task));
@@ -130,7 +130,7 @@ void ServiceProcessControl::Launch(Task* task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If the service process is already running then connects to it.
-  if (CheckServiceProcessRunning()) {
+  if (CheckServiceProcessReady()) {
     ConnectInternal(task);
     return;
   }

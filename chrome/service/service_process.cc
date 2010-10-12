@@ -112,8 +112,8 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
   ipc_server_->Init();
 
   // After the IPC server has started we signal that the service process is
-  // running.
-  SignalServiceProcessRunning(
+  // ready.
+  SignalServiceProcessReady(
       NewRunnableMethod(this, &ServiceProcess::Shutdown));
 
   // See if we need to stay running.
