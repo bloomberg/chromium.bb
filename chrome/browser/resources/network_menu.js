@@ -18,34 +18,12 @@ NetworkMenuItem.prototype = {
    * Internal method to initiailze the MenuItem.
    * @private
    */
-  initMenuItem_: function(leftIconWidth) {
+  initMenuItem_: function() {
     // *TODO: eliminate code duplication with menu.js
-    // MenuItem.prototype.initMenuItem_(leftIconWidth);
+    // MenuItem.prototype.initMenuItem_();
     var attrs = this.attrs;
     this.className = 'menu-item ' + attrs.type;
-    this.menu_.addHandlers(this);
-    if (leftIconWidth > 0) {
-      this.classList.add('left-icon');
-
-      var url;
-      if (attrs.type == 'radio') {
-        url = attrs.checked ?
-            this.menu_.config_.radioOnUrl :
-            this.menu_.config_.radioOffUrl;
-      } else if (attrs.icon) {
-        url = attrs.icon;
-      } else if (attrs.type == 'check' && attrs.checked) {
-        url = this.menu_.config_.checkUrl;
-      }
-      if (url) {
-        this.style.backgroundImage = 'url(' + url + ')';
-      }
-      // TODO(oshima): figure out how to update left padding in rule.
-      // 4 is the padding on left side of icon.
-      var padding =
-          4 + leftIconWidth + this.menu_.config_.icon_to_label_padding;
-      this.style.paddingLeft = padding + 'px';
-    }
+    this.menu_.addHandlers(this, this);
     var label = document.createElement('div');
 
     label.className = 'menu-label';
