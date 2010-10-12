@@ -2912,3 +2912,12 @@
    fun:_ZN8chromeos25ParallelAuthenticatorTest12CheckResolveEPNS_16TestAttemptStateEPNS_21ParallelAuthenticatorENS3_9AuthStateE   
    fun:_Z18DispatchToFunctionIPFvPN8chromeos16TestAttemptStateEPNS0_21ParallelAuthenticatorENS3_9AuthStateEES2_S4_S5_EvT_RK6Tuple3IT0_T1_T2_E
 }
+{
+   bug_58874
+   Memcheck:Addr4
+   fun:PL_HashTableLookupConst
+   fun:SECOID_FindOID_Util
+   fun:SECOID_FindOIDTag_Util
+   fun:SECOID_FindOIDTag
+   fun:_ZN3net61_GLOBAL__N_net_base_x509_certificate_nss.cc_00000000_98C1B34716GetCertChainInfoEP15CERTCertListStrPNS_16CertVerifyResultE
+}
