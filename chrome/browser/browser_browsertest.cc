@@ -567,7 +567,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 #define MAYBE_CloseWithAppMenuOpen DISABLED_CloseWithAppMenuOpen
 #else
 #define MAYBE_CloseWithAppMenuOpen CloseWithAppMenuOpen
-#eidnf
+#endif
 
 // This test verifies we don't crash when closing the last window and the app
 // menu is showing.

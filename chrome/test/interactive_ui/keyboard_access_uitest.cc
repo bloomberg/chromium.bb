@@ -112,7 +112,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
 #else
 #define MAYBE_TestMenuKeyboardAccess TestMenuKeyboardAccess
 #define MAYBE_TestAltMenuKeyboardAccess TestAltMenuKeyboardAccess
-#eidnf
+#endif
 
 TEST_F(KeyboardAccessTest, MAYBE_TestMenuKeyboardAccess) {
   TestMenuKeyboardAccess(false, 0);
