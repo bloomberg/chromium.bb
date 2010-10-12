@@ -7976,6 +7976,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Invalid access code.
       </message>
 
+      <!-- Web Store login dialog strings -->
+      <message name="IDS_WEB_STORE_LOGIN_INTRODUCTION_1" desc="The first message to display in the Web Store login dialog.">
+        To use the Chrome Web Store, you must sign in with a Google Account.
+      </message>
+      <message name="IDS_WEB_STORE_LOGIN_INTRODUCTION_2" desc="The second message to display in the Web Store login dialog.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will sync any apps you install, so you will be able to access them from any <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browser you sign in to.
+      </message>
+
       <!-- Sync app menu item strings -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_SYNC_MENU_SYNCED_LABEL" desc="The text for the sync app menu item when bookmark sync has been enabled">
