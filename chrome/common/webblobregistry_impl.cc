@@ -12,7 +12,6 @@
 #include "webkit/blob/blob_data.h"
 
 using WebKit::WebBlobData;
-using WebKit::WebBlobStorageData;
 using WebKit::WebString;
 using WebKit::WebURL;
 

@@ -13,7 +13,6 @@
 #include "webkit/blob/blob_storage_controller.h"
 
 using WebKit::WebBlobData;
-using WebKit::WebBlobStorageData;
 using WebKit::WebString;
 using WebKit::WebURL;
 
