@@ -136,11 +136,6 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
     startup_info.lpDesktop = desktop_name.get();
   }
 
-  // Hook up stdout/stderr.
-  startup_info.dwFlags = STARTF_USESTDHANDLES;
-  startup_info.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-  startup_info.hStdError = GetStdHandle(STD_ERROR_HANDLE);
-
   PROCESS_INFORMATION process_info = {0};
 
   if (!::CreateProcessAsUserW(lockdown_token_,

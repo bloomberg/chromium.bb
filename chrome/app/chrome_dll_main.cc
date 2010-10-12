@@ -13,11 +13,8 @@
 #include <algorithm>
 #include <atlbase.h>
 #include <atlapp.h>
-#include <fcntl.h>
-#include <io.h>
 #include <malloc.h>
 #include <new.h>
-#include <process.h>
 #elif defined(OS_POSIX)
 #include <locale.h>
 #include <signal.h>
@@ -322,19 +319,6 @@ void RegisterInvalidParamHandler() {
 #endif
 }
 
-#if defined(OS_WIN)
-void SetupStdHandle(DWORD name, int target_fd, FILE* target_fp) {
-  HANDLE handle = GetStdHandle(name);
-  if (handle && handle != INVALID_HANDLE_VALUE) {
-    int fd = _open_osfhandle(reinterpret_cast<intptr_t>(handle), _O_TEXT);
-    if (fd != -1) {
-      _dup2(fd, target_fd);
-      target_fp->_file = target_fd;
-    }
-  }
-}
-#endif
-
 void SetupCRT(const CommandLine& parsed_command_line) {
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC
@@ -357,12 +341,6 @@ void SetupCRT(const CommandLine& parsed_command_line) {
     HeapSetInformation(crt_heap, HeapCompatibilityInformation,
                        &enable_lfh, sizeof(enable_lfh));
   }
-
-  // Attach to an existing console if one exists, and connect up the CRT
-  // handles for stdout/stderr.
-  AttachConsole(ATTACH_PARENT_PROCESS);
-  SetupStdHandle(STD_OUTPUT_HANDLE, 1, stdout);
-  SetupStdHandle(STD_ERROR_HANDLE, 2, stderr);
 #endif
 }
 
