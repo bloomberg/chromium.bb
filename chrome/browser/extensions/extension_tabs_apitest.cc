@@ -9,7 +9,15 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
+#if defined(OS_WIN)
+// This test times out on win.
+// http://crbug.com/58269
+#define MAYBE_Tabs FAILS_Tabs
+#else
+#define MAYBE_Tabs Tabs
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(test_server()->Start());
 
   // The test creates a tab and checks that the URL of the new tab
