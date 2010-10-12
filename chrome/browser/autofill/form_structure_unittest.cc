@@ -1118,4 +1118,53 @@ TEST(FormStructureTest, MatchSpecificInputTypes) {
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(9)->heuristic_type());
 }
 
+TEST(FormStructureTest, HeuristicsInfernoCC) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Name on Card"),
+                                               ASCIIToUTF16("name_on_card"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Address"),
+                                               ASCIIToUTF16("billing_address"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Card Number"),
+                                               ASCIIToUTF16("card_number"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Expiration Date"),
+                                               ASCIIToUTF16("expiration_month"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form.fields.push_back(webkit_glue::FormField(ASCIIToUTF16("Expiration Year"),
+                                               ASCIIToUTF16("expiration_year"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0));
+  form_structure.reset(new FormStructure(form));
+  EXPECT_TRUE(form_structure->IsAutoFillable());
+
+  // Expect the correct number of fields.
+  ASSERT_EQ(5U, form_structure->field_count());
+  ASSERT_EQ(5U, form_structure->autofill_count());
+
+  // Name on Card.
+  EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
+  // Address.
+  EXPECT_EQ(ADDRESS_BILLING_LINE1, form_structure->field(1)->heuristic_type());
+  // Card Number.
+  EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure->field(2)->heuristic_type());
+  // Expiration Date.
+  EXPECT_EQ(CREDIT_CARD_EXP_MONTH, form_structure->field(3)->heuristic_type());
+  // Expiration Year.
+  EXPECT_EQ(CREDIT_CARD_EXP_4_DIGIT_YEAR,
+            form_structure->field(4)->heuristic_type());
+}
+
 }  // namespace

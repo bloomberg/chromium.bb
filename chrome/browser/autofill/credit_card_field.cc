@@ -70,9 +70,8 @@ CreditCardField* CreditCardField::Parse(
         }
       }
 
-      if (ParseText(&q, name_pattern, &credit_card_field->cardholder_)) {
+      if (ParseText(&q, name_pattern, &credit_card_field->cardholder_))
         continue;
-      }
 
       // As a hard-coded hack for Expedia's billing pages (expedia_checkout.html
       // and ExpediaBilling.html in our test suite), recognize separate fields
@@ -143,6 +142,14 @@ CreditCardField* CreditCardField::Parse(
       continue;
 
     break;
+  }
+
+  // Some pages have a billing address field after the cardholder name field.
+  // For that case, allow only just the cardholder name field.  The remaining
+  // CC fields will be picked up in a following CreditCardField.
+  if (credit_card_field->cardholder_) {
+    *iter = q;
+    return credit_card_field.release();
   }
 
   // On some pages, the user selects a card type using radio buttons
