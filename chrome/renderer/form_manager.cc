@@ -618,6 +618,14 @@ bool FormManager::ClearPreviewedFormWithNode(const WebNode& node) {
 
     input_element.setSuggestedValue(string16());
     input_element.setAutofilled(false);
+
+    // Clearing the suggested value in the focused node (above) can cause
+    // selection to be lost. We force selection range to restore the text
+    // cursor.
+    if (node == input_element) {
+      input_element.setSelectionRange(input_element.value().length(),
+                                      input_element.value().length());
+    }
   }
 
   return true;
