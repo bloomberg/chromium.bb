@@ -52,7 +52,9 @@ cr.define('options', function() {
      */
     handleVisibleChange_: function(e) {
       if (this.visible) {
-        $('userList').redraw();
+        // fetchUserPictures calls back AccountsOptions.setUserPictures and
+        // triggers redraw.
+        chrome.send('fetchUserPictures', []);
       }
     },
 
@@ -72,6 +74,13 @@ cr.define('options', function() {
   AccountsOptions.currentUserIsOwner = function() {
     return localStrings.getString('current_user_is_owner') == 'true';
   };
+
+  /**
+   * Updates user picture cache in UserList.
+   */
+  AccountsOptions.setUserPictures = function(cache) {
+    $('userList').setUserPictures(cache);
+  }
 
   // Export
   return {

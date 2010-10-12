@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {
@@ -28,6 +29,8 @@ void AccountsOptionsHandler::RegisterMessages() {
       NewCallback(this, &AccountsOptionsHandler::WhitelistUser));
   dom_ui_->RegisterMessageCallback("unwhitelistUser",
       NewCallback(this, &AccountsOptionsHandler::UnwhitelistUser));
+  dom_ui_->RegisterMessageCallback("fetchUserPictures",
+      NewCallback(this, &AccountsOptionsHandler::FetchUserPictures));
 }
 
 void AccountsOptionsHandler::GetLocalizedValues(
@@ -74,6 +77,24 @@ void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
   }
 
   users_settings()->UnwhitelistUser(email);
+}
+
+void AccountsOptionsHandler::FetchUserPictures(const ListValue* args) {
+  DictionaryValue user_pictures;
+
+  std::vector<UserManager::User> users = UserManager::Get()->GetUsers();
+  for (std::vector<UserManager::User>::const_iterator it = users.begin();
+       it < users.end(); ++it) {
+    if (!it->image().isNull()) {
+      StringValue* picture = new StringValue(
+          dom_ui_util::GetImageDataUrl(it->image()));
+      // SetWithoutPathExpansion because email has "." in it.
+      user_pictures.SetWithoutPathExpansion(it->email(), picture);
+    }
+  }
+
+  dom_ui_->CallJavascriptFunction(L"AccountsOptions.setUserPictures",
+      user_pictures);
 }
 
 }  // namespace chromeos

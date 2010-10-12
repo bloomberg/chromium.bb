@@ -39,7 +39,14 @@ cr.define('options.accounts', function() {
     },
 
     createItem: function(user) {
+      user.picture = this.user_pictures_[user.email];
       return new UserListItem(user);
+    },
+
+    user_pictures_: {},
+    setUserPictures: function(cache) {
+      this.user_pictures_ = cache;
+      this.redraw();
     },
 
     /**
@@ -150,8 +157,11 @@ cr.define('options.accounts', function() {
 
       var icon = this.ownerDocument.createElement('img');
       icon.className = 'user-icon';
-      // TODO(xiyuan): Replace this with real user picture when ready.
-      icon.src = 'chrome://theme/IDR_LOGIN_DEFAULT_USER';
+      if (this.user.picture) {
+        icon.src = this.user.picture;
+      } else {
+        icon.src = 'chrome://theme/IDR_LOGIN_DEFAULT_USER';
+      }
 
       var labelEmail = this.ownerDocument.createElement('span');
       labelEmail.className = 'user-email-label';

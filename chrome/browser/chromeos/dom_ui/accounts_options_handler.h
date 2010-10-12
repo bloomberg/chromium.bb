@@ -31,6 +31,9 @@ class AccountsOptionsHandler : public CrosOptionsPageUIHandler {
   void WhitelistUser(const ListValue* args);
   void UnwhitelistUser(const ListValue* args);
 
+  // Javascript callback to fetch known user pictures.
+  void FetchUserPictures(const ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(AccountsOptionsHandler);
 };
 
