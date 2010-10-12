@@ -39,6 +39,7 @@ var OptionsPage = options.OptionsPage;
         OptionsPage.showOverlay('clearBrowserDataOverlay');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
+
       // 'metricsReportingEnabled' element is only present on Chrome branded
       // builds.
       if ($('metricsReportingEnabled')) {
@@ -47,6 +48,7 @@ var OptionsPage = options.OptionsPage;
               [String(event.target.checked)]);
         };
       }
+
       $('autoOpenFileTypesResetToDefault').onclick = function(event) {
         chrome.send('autoOpenFileTypesAction');
       };
@@ -54,6 +56,14 @@ var OptionsPage = options.OptionsPage;
         OptionsPage.showPageByName('fontSettings');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
+      $('optionsReset').onclick = function(event) {
+        AlertOverlay.show(undefined,
+            localStrings.getString('optionsResetMessage'),
+            localStrings.getString('optionsResetOkLabel'),
+            localStrings.getString('optionsResetCancelLabel'),
+            function() { chrome.send('resetToDefaults'); });
+      }
+
       if (cr.isWindows || cr.isMac) {
         $('certificatesManageButton').onclick = function(event) {
           chrome.send('showManageSSLCertificates');
@@ -66,14 +76,8 @@ var OptionsPage = options.OptionsPage;
                       ['Options_ManageSSLCertificates']);
         };
       }
+
       if (!cr.isChromeOS) {
-        $('optionsReset').onclick = function(event) {
-          AlertOverlay.show(undefined,
-              localStrings.getString('optionsResetMessage'),
-              localStrings.getString('optionsResetOkLabel'),
-              localStrings.getString('optionsResetCancelLabel'),
-              function() { chrome.send('resetToDefaults'); });
-        }
         $('proxiesConfigureButton').onclick = function(event) {
           chrome.send('showNetworkProxySettings');
         };
