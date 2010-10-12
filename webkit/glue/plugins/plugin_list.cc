@@ -430,8 +430,9 @@ void PluginList::GetPluginInfoArray(const GURL& url,
     }
   }
 
-  // Add the default plugin at the end if it supports the mime type given.
-  if (!plugins_.empty()) {
+  // Add the default plugin at the end if it supports the mime type given,
+  // and the default plugin is enabled.
+  if (!plugins_.empty() && webkit_glue::IsDefaultPluginEnabled()) {
     const WebPluginInfo& default_info = plugins_.back();
     DCHECK(default_info.path.value() == kDefaultPluginLibraryName);
     if (SupportsType(default_info, mime_type, allow_wildcard)) {
