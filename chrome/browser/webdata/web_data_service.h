@@ -13,7 +13,7 @@
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "webkit/glue/form_field.h"
 

@@ -6,7 +6,7 @@
 #include "base/logging.h"
 #include "base/task.h"
 #include "base/time.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"

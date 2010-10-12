@@ -8,7 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 // This is a wrapper for running Chrome Task objects from within a native run
 // loop.  A typical use case is when Chrome work needs to get done but the main

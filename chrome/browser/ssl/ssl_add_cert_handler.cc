@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"

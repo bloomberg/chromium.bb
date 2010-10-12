@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/appcache/appcache_dispatcher_host.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"

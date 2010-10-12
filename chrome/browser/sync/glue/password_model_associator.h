@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/lock.h"
 #include "base/task.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"

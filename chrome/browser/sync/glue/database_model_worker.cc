@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/database_model_worker.h"
 
 #include "base/waitable_event.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 using base::WaitableEvent;
 

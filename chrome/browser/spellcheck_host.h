@@ -13,7 +13,7 @@
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/url_fetcher.h"
 
 class Profile;

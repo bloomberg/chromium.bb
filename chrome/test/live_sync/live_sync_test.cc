@@ -14,7 +14,7 @@
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"

@@ -7,7 +7,7 @@
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "base/timer.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/glue/database_model_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

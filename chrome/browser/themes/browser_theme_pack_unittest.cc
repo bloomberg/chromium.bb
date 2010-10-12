@@ -10,7 +10,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"

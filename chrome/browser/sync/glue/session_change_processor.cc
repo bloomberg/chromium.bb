@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/common/notification_details.h"

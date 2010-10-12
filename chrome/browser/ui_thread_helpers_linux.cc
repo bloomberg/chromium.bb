@@ -5,7 +5,7 @@
 #include "chrome/browser/ui_thread_helpers.h"
 
 #include "base/task.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 namespace ui_thread_helpers {
 

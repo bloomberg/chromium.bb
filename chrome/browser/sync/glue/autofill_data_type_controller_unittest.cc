@@ -10,7 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/change_processor_mock.h"

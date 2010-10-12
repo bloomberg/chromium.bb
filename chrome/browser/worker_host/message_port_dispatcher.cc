@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/singleton.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/notification_service.h"

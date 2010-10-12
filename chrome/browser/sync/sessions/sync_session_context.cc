@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 

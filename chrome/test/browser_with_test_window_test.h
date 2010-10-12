@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/test/test_browser_window.h"
 #include "testing/gtest/include/gtest/gtest.h"

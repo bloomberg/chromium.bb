@@ -20,7 +20,7 @@
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "gfx/font.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"

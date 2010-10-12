@@ -12,7 +12,7 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/browser/visitedlink_event_listener.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"

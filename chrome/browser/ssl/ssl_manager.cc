@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/prefs/pref_service.h"

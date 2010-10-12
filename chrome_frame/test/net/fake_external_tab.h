@@ -12,7 +12,7 @@
 
 #include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/browser_process_impl.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test/net/test_automation_provider.h"
 #include "chrome_frame/test/net/process_singleton_subclass.h"
