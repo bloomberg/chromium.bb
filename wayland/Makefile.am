@@ -45,6 +45,3 @@ BUILT_SOURCES =					\
 	wayland-protocol.c
 
 CLEANFILES = $(BUILT_SOURCES)
-
-foo :
-	echo $(top_builddir)
