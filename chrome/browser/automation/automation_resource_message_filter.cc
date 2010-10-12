@@ -144,6 +144,12 @@ bool AutomationResourceMessageFilter::OnMessageReceived(
         job->OnMessage(message);
         return true;
       }
+    } else {
+      // This could occur if the request was stopped from Chrome which would
+      // delete it from the request map. If we receive data for this request
+      // from the host we should ignore it.
+      LOG(ERROR) << "Failed to find request id:" << request_id;
+      return true;
     }
   }
 
