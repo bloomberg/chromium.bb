@@ -26,6 +26,7 @@
 #include "net/base/net_util.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/proxy/proxy_script_fetcher.h"
 
 namespace {
 
@@ -205,6 +206,8 @@ void IOThread::CleanUp() {
   if (globals_->host_resolver->GetAsHostResolverImpl()) {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
+
+  net::EnsureNoProxyScriptFetches();
 
   // We will delete the NetLog as part of CleanUpAfterMessageLoopDestruction()
   // in case any of the message loop destruction observers try to access it.
