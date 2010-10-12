@@ -868,3 +868,15 @@
    fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
    fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
 }
+{
+   bug_58860
+   Memcheck:Addr1
+   fun:memcpy
+   ...
+   fun:FSFindFolder
+   fun:_ZN12_GLOBAL__N_124GetPluginCommonDirectoryEPSt6vectorI8FilePathSaIS1_EEb
+   fun:_ZN5NPAPI10PluginList20GetPluginDirectoriesEPSt6vectorI8FilePathSaIS2_EE
+   fun:_ZN5NPAPI10PluginList11LoadPluginsEb
+   fun:_ZN5NPAPI10PluginList10GetPluginsEbPSt6vectorI13WebPluginInfoSaIS2_EE
+   fun:_ZN13PluginUpdater30GetPreferencesDataOnFileThreadEPv
+}
