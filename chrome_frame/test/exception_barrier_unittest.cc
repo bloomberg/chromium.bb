@@ -168,7 +168,7 @@ TEST_F(ExceptionBarrierTest, RegisterUnregister) {
   EXCEPTION_REGISTRATION registration;
   ::RegisterExceptionRecord(&registration, ExceptionBarrierHandler);
   EXPECT_EQ(GetTopRegistration(), &registration);
-  EXPECT_EQ(ExceptionBarrierHandler, registration.handler);
+  EXPECT_EQ(&ExceptionBarrierHandler, registration.handler);
   EXPECT_EQ(top, registration.prev);
 
   // test the whole chain for good measure
