@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/process_watcher.h"

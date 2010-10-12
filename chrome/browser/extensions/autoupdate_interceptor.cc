@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 
 #include "base/file_util.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/ref_counted.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/appcache/appcache_policy.h"

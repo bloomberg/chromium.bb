@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/task.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/device_orientation/orientation.h"
 #include "chrome/browser/device_orientation/provider_impl.h"
 

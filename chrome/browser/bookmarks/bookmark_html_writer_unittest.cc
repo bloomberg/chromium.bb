@@ -15,7 +15,7 @@
 #include "base/i18n/time_formatting.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/test/testing_profile.h"
 #include "gfx/codec/png_codec.h"

@@ -5,7 +5,7 @@
 #include "chrome/browser/device_orientation/dispatcher_host.h"
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/device_orientation/orientation.h"
 #include "chrome/browser/device_orientation/provider.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

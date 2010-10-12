@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_info_map.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/common/url_constants.h"
 
 namespace {

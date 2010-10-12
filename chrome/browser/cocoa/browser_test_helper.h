@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/browser.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/test/testing_profile.h"
 

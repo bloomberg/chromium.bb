@@ -5,7 +5,7 @@
 #include "chrome/browser/device_orientation/provider.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/device_orientation/accelerometer_mac.h"

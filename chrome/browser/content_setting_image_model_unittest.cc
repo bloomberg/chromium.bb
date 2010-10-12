@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_setting_image_model.h"
 
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"

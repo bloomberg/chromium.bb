@@ -14,7 +14,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/app/breakpad_mac.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
