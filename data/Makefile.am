@@ -1,6 +1,6 @@
-include ../config.mk
+waylanddatadir = $(datadir)/wayland
 
-cursor_images =					\
+dist_waylanddata_DATA =				\
 	bottom_left_corner.png			\
 	bottom_right_corner.png			\
 	bottom_side.png				\
@@ -19,11 +19,3 @@ cursor_images =					\
 	top_right_corner.png			\
 	top_side.png				\
 	xterm.png
-
-all :
-
-clean :
-
-install :
-	install -d $(datadir)/wayland
-	install $(cursor_images) $(datadir)/wayland

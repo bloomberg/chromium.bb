@@ -1,5 +1,9 @@
 AC_INIT(wayland, 0.1)
+AM_INIT_AUTOMAKE([foreign dist-bzip2])
 AC_PROG_CC
+AC_PROG_LIBTOOL
+AC_CONFIG_MACRO_DIR([m4])
+AM_SILENT_RULES([yes])
 
 PKG_PROG_PKG_CONFIG()
 PKG_CHECK_MODULES(FFI, [libffi])
@@ -25,5 +29,11 @@ AC_CHECK_LIB(expat, XML_ParserCreate, [EXPAT_LIBS="-lexpat"],
 	     [AC_MSG_ERROR([Can't find expat library. Please install expat.])])
 AC_SUBST(EXPAT_LIBS)
 
-AC_CONFIG_FILES([config.mk wayland/wayland-server.pc wayland/wayland-client.pc])
+AC_CONFIG_FILES([wayland/wayland-server.pc
+		 wayland/wayland-client.pc
+		 Makefile
+		 wayland/Makefile
+		 compositor/Makefile
+		 clients/Makefile
+		 data/Makefile])
 AC_OUTPUT
