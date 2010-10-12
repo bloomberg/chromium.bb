@@ -104,7 +104,6 @@ UITestBase::UITestBase()
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
       shutdown_type_(UITestBase::WINDOW_CLOSE),
-      test_start_time_(Time::NowFromSystemTime()),
       temp_profile_dir_(new ScopedTempDir()) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
@@ -124,8 +123,7 @@ UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
       include_testing_id_(true),
       enable_file_cookies_(true),
       profile_type_(UITestBase::DEFAULT_THEME),
-      shutdown_type_(UITestBase::WINDOW_CLOSE),
-      test_start_time_(Time::NowFromSystemTime()) {
+      shutdown_type_(UITestBase::WINDOW_CLOSE) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
@@ -139,6 +137,7 @@ void UITestBase::SetUp() {
 
   JavaScriptExecutionController::set_timeout(
       TestTimeouts::action_max_timeout_ms());
+  test_start_time_ = Time::NowFromSystemTime();
   LaunchBrowserAndServer();
 }
 
