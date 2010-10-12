@@ -380,6 +380,10 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_GEOLOCATION));
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setExceptions", type_string, exceptions);
+
+  // The default may also have changed (we won't get a separate notification).
+  // If it hasn't changed, this call will be harmless.
+  UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
 void ContentSettingsHandler::UpdateNotificationExceptionsView() {
