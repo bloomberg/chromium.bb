@@ -259,6 +259,7 @@ bool UpdateServer(
 // new version.
 void TryUpdateClient(
     const ExtensionTypeSet& allowed_extension_types,
+    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
     ExtensionsService* extensions_service,
     ExtensionData* extension_data) {
   DCHECK(!extension_data->NeedsUpdate(ExtensionData::SERVER));
@@ -294,7 +295,7 @@ void TryUpdateClient(
     // permissions.
     extensions_service->AddPendingExtensionFromSync(
         id, update_url,
-        PendingExtensionInfo::EXTENSION,
+        expected_crx_type,
         true,  // install_silently
         specifics.enabled(),
         specifics.incognito_enabled());
@@ -350,6 +351,7 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
     DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
     if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
       TryUpdateClient(traits.allowed_extension_types,
+                      traits.expected_crx_type,
                       extensions_service, &extension_data);
       if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
         should_nudge_extension_updater = true;
@@ -464,6 +466,7 @@ void UpdateClient(const ExtensionSyncTraits& traits,
   DCHECK(!extension_data.NeedsUpdate(ExtensionData::SERVER));
   if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
     TryUpdateClient(traits.allowed_extension_types,
+                    traits.expected_crx_type,
                     extensions_service, &extension_data);
     if (extension_data.NeedsUpdate(ExtensionData::CLIENT)) {
       NudgeExtensionUpdater(extensions_service);

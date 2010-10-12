@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_GLUE_EXTENSION_SYNC_TRAITS_H_
 #pragma once
 
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/glue/extension_util.h"
 
@@ -40,6 +41,7 @@ typedef bool (*ExtensionSpecificsEntityGetter)(
 struct ExtensionSyncTraits {
   ExtensionSyncTraits(
       syncable::ModelType model_type,
+      PendingExtensionInfo::ExpectedCrxType expected_crx_type,
       const char* root_node_tag,
       const ExtensionTypeSet& allowed_extension_types,
       ExtensionSpecificsGetter extension_specifics_getter,
@@ -48,6 +50,8 @@ struct ExtensionSyncTraits {
 
   // The sync type for the data type.
   const syncable::ModelType model_type;
+  // The ExpectedCrxType to use for the data type.
+  PendingExtensionInfo::ExpectedCrxType expected_crx_type;
   // The tag with which the top-level data type node is marked.
   const char* const root_node_tag;
   // The set of allowed ExtensionTypes (not just a single one since

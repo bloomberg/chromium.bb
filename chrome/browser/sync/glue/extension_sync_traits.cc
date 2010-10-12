@@ -14,12 +14,14 @@ namespace browser_sync {
 
 ExtensionSyncTraits::ExtensionSyncTraits(
     syncable::ModelType model_type,
+    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
     const char* root_node_tag,
     const ExtensionTypeSet& allowed_extension_types,
     ExtensionSpecificsGetter extension_specifics_getter,
     ExtensionSpecificsSetter extension_specifics_setter,
     ExtensionSpecificsEntityGetter extension_specifics_entity_getter)
     : model_type(model_type),
+      expected_crx_type(expected_crx_type),
       root_node_tag(root_node_tag),
       allowed_extension_types(allowed_extension_types),
       extension_specifics_getter(extension_specifics_getter),
@@ -57,6 +59,7 @@ ExtensionSyncTraits GetExtensionSyncTraits() {
   allowed_extension_types.insert(EXTENSION);
   allowed_extension_types.insert(UPDATEABLE_USER_SCRIPT);
   return ExtensionSyncTraits(syncable::EXTENSIONS,
+                             PendingExtensionInfo::EXTENSION,
                              "google_chrome_extensions",
                              allowed_extension_types,
                              &GetExtensionSpecifics,
@@ -97,6 +100,7 @@ ExtensionSyncTraits GetAppSyncTraits() {
   ExtensionTypeSet allowed_extension_types;
   allowed_extension_types.insert(APP);
   return ExtensionSyncTraits(syncable::APPS,
+                             PendingExtensionInfo::APP,
                              "google_chrome_apps",
                              allowed_extension_types,
                              &GetExtensionSpecificsOfApp,
