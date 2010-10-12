@@ -238,9 +238,28 @@ bool TestServer::SetPythonPath() {
     LOG(ERROR) << "Failed to get DIR_EXE";
     return false;
   }
-  generated_code_dir = generated_code_dir.Append(FILE_PATH_LITERAL("pyproto"));
-  AppendToPythonPath(generated_code_dir);
-  AppendToPythonPath(generated_code_dir.Append(FILE_PATH_LITERAL("sync_pb")));
+
+  static const FilePath kPyProto(FILE_PATH_LITERAL("pyproto"));
+
+#if defined(OS_MACOSX)
+  // On Mac, DIR_EXE might be pointing deep into the Release/ (or Debug/)
+  // directory and we can't depend on how far down it goes. So we walk upwards
+  // from DIR_EXE until we find a likely looking spot.
+  while (!file_util::DirectoryExists(generated_code_dir.Append(kPyProto))) {
+    FilePath parent = generated_code_dir.DirName();
+    if (parent == generated_code_dir) {
+      // We hit the root directory. Maybe we didn't build any targets which
+      // produced Python protocol buffers.
+      PathService::Get(base::DIR_EXE, &generated_code_dir);
+      break;
+    }
+    generated_code_dir = parent;
+  }
+#endif
+
+  AppendToPythonPath(generated_code_dir.Append(kPyProto));
+  AppendToPythonPath(generated_code_dir.Append(kPyProto).
+                     Append(FILE_PATH_LITERAL("sync_pb")));
 
   return true;
 }
