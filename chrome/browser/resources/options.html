@@ -86,11 +86,13 @@
   <script src="options/certificate_restore_overlay.js"></script>
   <script src="options/certificate_backup_overlay.js"></script>
   <script src="options/certificate_edit_ca_trust_overlay.js"></script>
+  <script src="options/certificate_import_error_overlay.js"></script>
   <script>
     var CertificateManager = options.CertificateManager;
     var CertificateRestoreOverlay = options.CertificateRestoreOverlay;
     var CertificateBackupOverlay = options.CertificateBackupOverlay;
     var CertificateEditCaTrustOverlay = options.CertificateEditCaTrustOverlay;
+    var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
   </script>
 </if>
 <script src="options/add_startup_page_overlay.js"></script>
@@ -173,6 +175,7 @@ function load() {
     OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance());
     OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance());
     OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance());
+    OptionsPage.registerOverlay(CertificateImportErrorOverlay.getInstance());
   }
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
@@ -283,6 +286,7 @@ window.onpopstate = function(e) {
     <include src="options/certificate_restore_overlay.html">
     <include src="options/certificate_backup_overlay.html">
     <include src="options/certificate_edit_ca_trust_overlay.html">
+    <include src="options/certificate_import_error_overlay.html">
   </if>
 </div>
 <div id="main-content">

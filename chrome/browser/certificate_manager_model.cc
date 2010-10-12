@@ -88,15 +88,14 @@ int CertificateManagerModel::ImportFromPKCS12(const std::string& data,
   return result;
 }
 
-int CertificateManagerModel::ExportToPKCS12(const net::CertificateList& certs,
-                                            const string16& password,
-                                            std::string* output) const {
-  return cert_db_.ExportToPKCS12(certs, password, output);
-}
-
-unsigned int CertificateManagerModel::GetCertTrust(
-    const net::X509Certificate* cert, net::CertType type) const {
-  return cert_db_.GetCertTrust(cert, type);
+bool CertificateManagerModel::ImportCACerts(
+    const net::CertificateList& certificates,
+    unsigned int trust_bits,
+    net::CertDatabase::ImportCertFailureList* not_imported) {
+  bool result = cert_db_.ImportCACerts(certificates, trust_bits, not_imported);
+  if (result && not_imported->size() != certificates.size())
+    Refresh();
+  return result;
 }
 
 bool CertificateManagerModel::SetCertTrust(const net::X509Certificate* cert,

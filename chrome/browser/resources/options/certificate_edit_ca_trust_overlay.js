@@ -7,7 +7,7 @@ cr.define('options', function() {
 
   /**
    * CertificateEditCaTrustOverlay class
-   * Encapsulated handling of the 'enter Edit password' overlay page.
+   * Encapsulated handling of the 'edit ca trust' and 'import ca' overlay pages.
    * @class
    */
   function CertificateEditCaTrustOverlay() {
@@ -20,21 +20,6 @@ cr.define('options', function() {
 
   CertificateEditCaTrustOverlay.prototype = {
     __proto__: OptionsPage.prototype,
-
-    /**
-     * Initializes the page.
-     */
-    initializePage: function() {
-      OptionsPage.prototype.initializePage.call(this);
-
-      var self = this;
-      $('certificateEditCaTrustCancelButton').onclick = function(event) {
-        self.cancelEdit_();
-      }
-      $('certificateEditCaTrustOkButton').onclick = function(event) {
-        self.finishEdit_();
-      }
-    },
 
     /**
      * Dismisses the overlay.
@@ -55,7 +40,6 @@ cr.define('options', function() {
       $('certificateEditCaTrustCancelButton').disabled =
       $('certificateEditCaTrustOkButton').disabled = !enabled;
     },
-
 
     /**
      * Attempt the Edit operation.
@@ -79,6 +63,31 @@ cr.define('options', function() {
      * @private
      */
     cancelEdit_: function() {
+      this.dismissOverlay_();
+    },
+
+    /**
+     * Attempt the Import operation.
+     * The overlay will be left up with inputs disabled until the backend
+     * finishes and dismisses it.
+     * @private
+     */
+    finishImport_: function() {
+      // TODO(mattm): Send checked values as booleans.  For now send them as
+      // strings, since DOMUIBindings::send does not support any other types :(
+      chrome.send('importCaCertificateTrustSelected',
+                  [$('certificateCaTrustSSLCheckbox').checked.toString(),
+                   $('certificateCaTrustEmailCheckbox').checked.toString(),
+                   $('certificateCaTrustObjSignCheckbox').checked.toString()]);
+      this.enableInputs_(false);
+    },
+
+    /**
+     * Cancel the Import operation.
+     * @private
+     */
+    cancelImport_: function() {
+      chrome.send('cancelImportExportCertificate');
       this.dismissOverlay_();
     },
   };
@@ -105,13 +114,43 @@ cr.define('options', function() {
    * checkbox.
    */
   CertificateEditCaTrustOverlay.show = function(certId, certName) {
-    CertificateEditCaTrustOverlay.getInstance().certId = certId;
+    var self = CertificateEditCaTrustOverlay.getInstance();
+    self.certId = certId;
+    $('certificateEditCaTrustCancelButton').onclick = function(event) {
+      self.cancelEdit_();
+    }
+    $('certificateEditCaTrustOkButton').onclick = function(event) {
+      self.finishEdit_();
+    }
     $('certificateEditCaTrustDescription').textContent =
         localStrings.getStringF('certificateEditCaTrustDescriptionFormat',
                                 certName);
-    CertificateEditCaTrustOverlay.getInstance().enableInputs_(false);
+    self.enableInputs_(false);
     OptionsPage.showOverlay('certificateEditCaTrustOverlay');
     chrome.send('getCaCertificateTrust', [certId]);
+  }
+
+  /**
+   * Show the Import CA overlay.
+   * @param {string} certId The id of the certificate to be passed to the
+   * certificate manager model.
+   * @param {string} certName The display name of the certificate.
+   * checkbox.
+   */
+  CertificateEditCaTrustOverlay.showImport = function(certName) {
+    var self = CertificateEditCaTrustOverlay.getInstance();
+    // TODO(mattm): do we want a view certificate button here like firefox has?
+    $('certificateEditCaTrustCancelButton').onclick = function(event) {
+      self.cancelImport_();
+    }
+    $('certificateEditCaTrustOkButton').onclick = function(event) {
+      self.finishImport_();
+    }
+    $('certificateEditCaTrustDescription').textContent =
+        localStrings.getStringF('certificateImportCaDescriptionFormat',
+                                certName);
+    CertificateEditCaTrustOverlay.populateTrust(false, false, false);
+    OptionsPage.showOverlay('certificateEditCaTrustOverlay');
   }
 
   CertificateEditCaTrustOverlay.dismiss = function() {

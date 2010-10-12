@@ -100,31 +100,11 @@ Exporter::Exporter(gfx::NativeWindow parent,
   if (!cert_title.empty())
     suggested_path = FilePath(cert_title);
 
-  SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions.resize(5);
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pem"));
-  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("crt"));
-  file_type_info.extension_description_overrides.push_back(
-      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_BASE64));
-  file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("pem"));
-  file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("crt"));
-  file_type_info.extension_description_overrides.push_back(
-      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_BASE64_CHAIN));
-  file_type_info.extensions[2].push_back(FILE_PATH_LITERAL("der"));
-  file_type_info.extension_description_overrides.push_back(
-      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_DER));
-  file_type_info.extensions[3].push_back(FILE_PATH_LITERAL("p7c"));
-  file_type_info.extension_description_overrides.push_back(
-      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_PKCS7));
-  file_type_info.extensions[4].push_back(FILE_PATH_LITERAL("p7c"));
-  file_type_info.extension_description_overrides.push_back(
-      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_PKCS7_CHAIN));
-  file_type_info.include_all_files = true;
-  select_file_dialog_->SelectFile(
-      SelectFileDialog::SELECT_SAVEAS_FILE, string16(),
-      suggested_path, &file_type_info, 1,
-      FILE_PATH_LITERAL("crt"), parent,
-      NULL);
+  ShowCertSelectFileDialog(select_file_dialog_.get(),
+                           SelectFileDialog::SELECT_SAVEAS_FILE,
+                           suggested_path,
+                           parent,
+                           NULL);
 }
 
 Exporter::~Exporter() {
@@ -165,6 +145,38 @@ void Exporter::FileSelectionCanceled(void* params) {
 }
 
 } // namespace
+
+void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
+                              SelectFileDialog::Type type,
+                              const FilePath& suggested_path,
+                              gfx::NativeWindow parent,
+                              void* params) {
+  SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions.resize(5);
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pem"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("crt"));
+  file_type_info.extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_BASE64));
+  file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("pem"));
+  file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("crt"));
+  file_type_info.extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_BASE64_CHAIN));
+  file_type_info.extensions[2].push_back(FILE_PATH_LITERAL("der"));
+  file_type_info.extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_DER));
+  file_type_info.extensions[3].push_back(FILE_PATH_LITERAL("p7c"));
+  file_type_info.extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_PKCS7));
+  file_type_info.extensions[4].push_back(FILE_PATH_LITERAL("p7c"));
+  file_type_info.extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_CERT_EXPORT_TYPE_PKCS7_CHAIN));
+  file_type_info.include_all_files = true;
+  select_file_dialog->SelectFile(
+      type, string16(),
+      suggested_path, &file_type_info, 1,
+      FILE_PATH_LITERAL("crt"), parent,
+      params);
+}
 
 void ShowCertExportDialog(gfx::NativeWindow parent,
                           net::X509Certificate::OSCertHandle cert) {

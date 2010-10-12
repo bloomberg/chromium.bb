@@ -41,6 +41,9 @@ class CertificateManagerModel {
   explicit CertificateManagerModel(Observer* observer);
   ~CertificateManagerModel();
 
+  // Accessor for read-only access to the underlying CertDatabase.
+  const net::CertDatabase& cert_db() const { return cert_db_; }
+
   // Refresh the list of certs.  Following this call, the observer
   // CertificatesRefreshed method will be called so the view can call
   // FilterAndBuildOrgGroupingMap as necessary to refresh its tree views.
@@ -57,17 +60,18 @@ class CertificateManagerModel {
   // |password|.  Returns a net error code on failure.
   int ImportFromPKCS12(const std::string& data, const string16& password);
 
-  // Export certificates as PKCS #12 encoded |output|, using the given
-  // |password|.  Returns number of certs exported.
-  int ExportToPKCS12(const net::CertificateList& certs,
-                     const string16& password,
-                     std::string* output) const;
-
-  // Get trust bits for certificate.
-  // Return value will be a bit field of TRUST_* values from CertDatabase, or
+  // Import CA certificates.
+  // Tries to import all the certificates given.  The root will be trusted
+  // according to |trust_bits|.  Any certificates that could not be imported
+  // will be listed in |not_imported|.
+  // |trust_bits| should be a bit field of TRUST_* values from CertDatabase, or
   // UNTRUSTED.
-  unsigned int GetCertTrust(const net::X509Certificate* cert,
-                            net::CertType type) const;
+  // Returns false if there is an internal error, otherwise true is returned and
+  // |not_imported| should be checked for any certificates that were not
+  // imported.
+  bool ImportCACerts(const net::CertificateList& certificates,
+                     unsigned int trust_bits,
+                     net::CertDatabase::ImportCertFailureList* not_imported);
 
   // Set trust values for certificate.
   // |trust_bits| should be a bit field of TRUST_* values from CertDatabase, or

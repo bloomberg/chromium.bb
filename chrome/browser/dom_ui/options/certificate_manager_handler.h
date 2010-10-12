@@ -85,7 +85,18 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   void ImportPersonalPasswordSelected(const ListValue* args);
   void ImportPersonalFileRead(int read_errno, std::string data);
 
+  // Import Certificate Authorities from file.  Sequence goes like:
+  //  1. user clicks on import button -> ImportCA -> launches file selector
+  //  2. user selects file -> ImportCAFileSelected -> starts async read
+  //  3. read completes -> ImportCAFileRead -> parse certs ->
+  //  CertificateEditCaTrustOverlay.showImport
+  //  4. user clicks ok -> ImportCATrustSelected -> attempt import
+  //  5a. if import succeeds -> ImportExportCleanup
+  //  5b. if import fails -> show error, ImportExportCleanup
   void ImportCA(const ListValue* args);
+  void ImportCAFileSelected(const FilePath& path);
+  void ImportCAFileRead(int read_errno, std::string data);
+  void ImportCATrustSelected(const ListValue* args);
 
   // Export a certificate.
   void Export(const ListValue* args);
@@ -101,6 +112,13 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
 
   // Display a domui error message box.
   void ShowError(const std::string& title, const std::string& error) const;
+
+  // Display a domui error message box for import failures.
+  // Depends on |selected_cert_list_| being set to the imports that we
+  // attempted to import.
+  void ShowImportErrors(
+      const std::string& title,
+      const net::CertDatabase::ImportCertFailureList& not_imported) const;
 
   gfx::NativeWindow GetParentWindow() const;
 

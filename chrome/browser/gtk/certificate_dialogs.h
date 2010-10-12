@@ -9,6 +9,12 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "net/base/x509_certificate.h"
 
+void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
+                              SelectFileDialog::Type type,
+                              const FilePath& suggested_path,
+                              gfx::NativeWindow parent,
+                              void* params);
+
 void ShowCertExportDialog(gfx::NativeWindow parent,
                           net::X509Certificate::OSCertHandle cert);
 

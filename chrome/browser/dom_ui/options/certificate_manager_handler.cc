@@ -27,11 +27,14 @@ static const char kSubNodesId[] = "subnodes";
 static const char kNameId[] = "name";
 static const char kIconId[] = "icon";
 static const char kSecurityDeviceId[] = "device";
+static const char kErrorId[] = "error";
 
-// Enumeration of different callers of SelectFile.
+// Enumeration of different callers of SelectFile.  (Start counting at 1 so
+// if SelectFile is accidentally called with params=NULL it won't match any.)
 enum {
-  EXPORT_PERSONAL_FILE_SELECTED,
+  EXPORT_PERSONAL_FILE_SELECTED = 1,
   IMPORT_PERSONAL_FILE_SELECTED,
+  IMPORT_CA_FILE_SELECTED,
 };
 
 // TODO(mattm): These are duplicated from cookies_view_handler.cc
@@ -111,6 +114,16 @@ struct DictionaryIdComparator {
 
   icu::Collator* collator_;
 };
+
+std::string NetErrorToString(int net_error) {
+  switch (net_error) {
+    // TODO(mattm): handle more cases.
+    case net::ERR_IMPORT_CA_CERT_NOT_CA:
+      return l10n_util::GetStringUTF8(IDS_CERT_MANAGER_ERROR_NOT_CA);
+    default:
+      return l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR);
+  }
+}
 
 }  // namespace
 
@@ -320,18 +333,23 @@ void CertificateManagerHandler::GetLocalizedValues(
   localized_strings->SetString("certificateConfirmPasswordLabel",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_CONFIRM_PASSWORD_LABEL));
 
-  // Edit CA Trust overlay strings.
+  // Edit CA Trust & Import CA overlay strings.
   localized_strings->SetString("certificateEditTrustLabel",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_TRUST_LABEL));
   localized_strings->SetString("certificateEditCaTrustDescriptionFormat",
       l10n_util::GetStringUTF16(
           IDS_CERT_MANAGER_EDIT_CA_TRUST_DESCRIPTION_FORMAT));
+  localized_strings->SetString("certificateImportCaDescriptionFormat",
+      l10n_util::GetStringUTF16(
+          IDS_CERT_MANAGER_IMPORT_CA_DESCRIPTION_FORMAT));
   localized_strings->SetString("certificateCaTrustSSLLabel",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_CA_TRUST_SSL_LABEL));
   localized_strings->SetString("certificateCaTrustEmailLabel",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_CA_TRUST_EMAIL_LABEL));
   localized_strings->SetString("certificateCaTrustObjSignLabel",
       l10n_util::GetStringUTF16(IDS_CERT_MANAGER_EDIT_CA_TRUST_OBJSIGN_LABEL));
+  localized_strings->SetString("certificateImportErrorFormat",
+      l10n_util::GetStringUTF16(IDS_CERT_MANAGER_IMPORT_ERROR_FORMAT));
 }
 
 void CertificateManagerHandler::RegisterMessages() {
@@ -365,6 +383,8 @@ void CertificateManagerHandler::RegisterMessages() {
 
   dom_ui_->RegisterMessageCallback("importCaCertificate",
       NewCallback(this, &CertificateManagerHandler::ImportCA));
+  dom_ui_->RegisterMessageCallback("importCaCertificateTrustSelected",
+      NewCallback(this, &CertificateManagerHandler::ImportCATrustSelected));
 
   dom_ui_->RegisterMessageCallback("exportCertificate",
       NewCallback(this, &CertificateManagerHandler::Export));
@@ -394,6 +414,9 @@ void CertificateManagerHandler::FileSelected(const FilePath& path, int index,
     case IMPORT_PERSONAL_FILE_SELECTED:
       ImportPersonalFileSelected(path);
       break;
+    case IMPORT_CA_FILE_SELECTED:
+      ImportCAFileSelected(path);
+      break;
     default:
       NOTREACHED();
   }
@@ -403,6 +426,7 @@ void CertificateManagerHandler::FileSelectionCanceled(void* params) {
   switch (reinterpret_cast<intptr_t>(params)) {
     case EXPORT_PERSONAL_FILE_SELECTED:
     case IMPORT_PERSONAL_FILE_SELECTED:
+    case IMPORT_CA_FILE_SELECTED:
       ImportExportCleanup();
       break;
     default:
@@ -424,7 +448,8 @@ void CertificateManagerHandler::GetCATrust(const ListValue* args) {
     return;
   }
 
-  int trust = certificate_manager_model_->GetCertTrust(cert, net::CA_CERT);
+  int trust = certificate_manager_model_->cert_db().GetCertTrust(
+      cert, net::CA_CERT);
   FundamentalValue ssl_value(bool(trust & net::CertDatabase::TRUSTED_SSL));
   FundamentalValue email_value(bool(trust & net::CertDatabase::TRUSTED_EMAIL));
   FundamentalValue obj_sign_value(
@@ -508,7 +533,7 @@ void CertificateManagerHandler::ExportPersonalPasswordSelected(
     return;
   }
   std::string output;
-  int num_exported = certificate_manager_model_->ExportToPKCS12(
+  int num_exported = certificate_manager_model_->cert_db().ExportToPKCS12(
       selected_cert_list_,
       password_,
       &output);
@@ -619,7 +644,86 @@ void CertificateManagerHandler::ImportExportCleanup() {
 }
 
 void CertificateManagerHandler::ImportCA(const ListValue* args) {
-  NOTIMPLEMENTED();
+  select_file_dialog_ = SelectFileDialog::Create(this);
+  ShowCertSelectFileDialog(select_file_dialog_.get(),
+                           SelectFileDialog::SELECT_OPEN_FILE,
+                           FilePath(),
+                           GetParentWindow(),
+                           reinterpret_cast<void*>(IMPORT_CA_FILE_SELECTED));
+}
+
+void CertificateManagerHandler::ImportCAFileSelected(const FilePath& path) {
+  file_path_ = path;
+  file_access_provider_->StartRead(
+      file_path_,
+      &consumer_,
+      NewCallback(this, &CertificateManagerHandler::ImportCAFileRead));
+}
+
+void CertificateManagerHandler::ImportCAFileRead(int read_errno,
+                                                 std::string data) {
+  if (read_errno) {
+    ImportExportCleanup();
+    ShowError(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
+                                  UTF8ToUTF16(safe_strerror(read_errno))));
+    return;
+  }
+
+  selected_cert_list_ = net::X509Certificate::CreateCertificateListFromBytes(
+          data.data(), data.size(), net::X509Certificate::FORMAT_AUTO);
+  if (selected_cert_list_.empty()) {
+    ImportExportCleanup();
+    ShowError(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CERT_PARSE_ERROR));
+    return;
+  }
+
+  scoped_refptr<net::X509Certificate> root_cert =
+      certificate_manager_model_->cert_db().FindRootInList(selected_cert_list_);
+
+  // TODO(mattm): check here if root_cert is not a CA cert and show error.
+
+  StringValue cert_name(root_cert->subject().GetDisplayName());
+  dom_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.showImport",
+                                  cert_name);
+}
+
+void CertificateManagerHandler::ImportCATrustSelected(const ListValue* args) {
+  bool fail = false;
+  bool trust_ssl;
+  bool trust_email;
+  bool trust_obj_sign;
+  fail |= !CallbackArgsToBool(args, 0, &trust_ssl);
+  fail |= !CallbackArgsToBool(args, 1, &trust_email);
+  fail |= !CallbackArgsToBool(args, 2, &trust_obj_sign);
+  if (fail) {
+    LOG(ERROR) << "ImportCATrustSelected args fail";
+    ImportExportCleanup();
+    dom_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+    return;
+  }
+
+  net::CertDatabase::ImportCertFailureList not_imported;
+  bool result = certificate_manager_model_->ImportCACerts(
+      selected_cert_list_,
+      trust_ssl * net::CertDatabase::TRUSTED_SSL +
+          trust_email * net::CertDatabase::TRUSTED_EMAIL +
+          trust_obj_sign * net::CertDatabase::TRUSTED_OBJ_SIGN,
+      &not_imported);
+  dom_ui_->CallJavascriptFunction(L"CertificateEditCaTrustOverlay.dismiss");
+  if (!result) {
+    ShowError(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+  } else if (!not_imported.empty()) {
+    ShowImportErrors(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CA_IMPORT_ERROR_TITLE),
+        not_imported);
+  }
+  ImportExportCleanup();
 }
 
 void CertificateManagerHandler::Export(const ListValue* args) {
@@ -709,6 +813,35 @@ void CertificateManagerHandler::ShowError(const std::string& title,
   args.push_back(Value::CreateNullValue());  // okCallback
   args.push_back(Value::CreateNullValue());  // cancelCallback
   dom_ui_->CallJavascriptFunction(L"AlertOverlay.show", args);
+}
+
+void CertificateManagerHandler::ShowImportErrors(
+    const std::string& title,
+    const net::CertDatabase::ImportCertFailureList& not_imported) const {
+  std::string error;
+  if (selected_cert_list_.size() == 1)
+    error = l10n_util::GetStringUTF8(
+        IDS_CERT_MANAGER_IMPORT_SINGLE_NOT_IMPORTED);
+  else if (not_imported.size() == selected_cert_list_.size())
+    error = l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_ALL_NOT_IMPORTED);
+  else
+    error = l10n_util::GetStringUTF8(IDS_CERT_MANAGER_IMPORT_SOME_NOT_IMPORTED);
+
+  ListValue cert_error_list;
+  for (size_t i = 0; i < not_imported.size(); ++i) {
+    const net::CertDatabase::ImportCertFailure& failure = not_imported[i];
+    DictionaryValue* dict = new DictionaryValue;
+    dict->SetString(kNameId, failure.certificate->subject().GetDisplayName());
+    dict->SetString(kErrorId, NetErrorToString(failure.net_error));
+    cert_error_list.Append(dict);
+  }
+
+  StringValue title_value(title);
+  StringValue error_value(error);
+  dom_ui_->CallJavascriptFunction(L"CertificateImportErrorOverlay.show",
+                                  title_value,
+                                  error_value,
+                                  cert_error_list);
 }
 
 gfx::NativeWindow CertificateManagerHandler::GetParentWindow() const {
