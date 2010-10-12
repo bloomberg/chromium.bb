@@ -521,7 +521,9 @@ public:
         long long time_nanoseconds,
         Track*,
         Cluster*&,
-        const BlockEntry*&);
+        const BlockEntry*&,
+        const CuePoint*&,
+        const CuePoint::TrackPosition*&);
 
     const Cues* GetCues() const;
 
@@ -547,7 +549,9 @@ private:
         long long time_ns,
         Track*,
         Cluster*&,
-        const BlockEntry*&);
+        const BlockEntry*&,
+        const CuePoint*&,
+        const CuePoint::TrackPosition*&);
 
 };
 

@@ -2556,12 +2556,17 @@ void Segment::GetCluster(
     long long time_ns,
     Track* pTrack,
     Cluster*& pCluster,
-    const BlockEntry*& pBlockEntry)
+    const BlockEntry*& pBlockEntry,
+    const CuePoint*& pCP,
+    const CuePoint::TrackPosition*& pTP)
 {
     assert(pTrack);
 
-    if (SearchCues(time_ns, pTrack, pCluster, pBlockEntry))
+    if (SearchCues(time_ns, pTrack, pCluster, pBlockEntry, pCP, pTP))
         return;
+
+    pCP = NULL;
+    pTP = NULL;
 
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
     {
@@ -2719,16 +2724,15 @@ bool Segment::SearchCues(
     long long time_ns,
     Track* pTrack,
     Cluster*& pCluster,
-    const BlockEntry*& pBlockEntry)
+    const BlockEntry*& pBlockEntry,
+    const CuePoint*& pCP,
+    const CuePoint::TrackPosition*& pTP)
 {
     if (pTrack->GetType() != 1)  //not video
         return false;  //TODO: for now, just handle video stream
 
     if (m_pCues == NULL)
         return false;
-
-    const CuePoint* pCP;
-    const CuePoint::TrackPosition* pTP;
 
     if (!m_pCues->Find(time_ns, pTrack, pCP, pTP))
         return false;  //weird
