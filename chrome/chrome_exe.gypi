@@ -47,6 +47,19 @@
             'include_dirs': [
               '<(SHARED_INTERMEDIATE_DIR)/chrome',
             ],
+            # TODO(scottbyer): This is a temporary workaround.  The right fix
+            # is to change the output file to be in $(IntDir) for this project
+            # and the .dll project and use the hardlink script to link it back
+            # to $(OutDir).
+            'configurations': {
+              'Debug_Base': {
+                'msvs_settings': {
+                  'VCLinkerTool': {
+                    'LinkIncremental': '1',
+                  },
+                },
+              },
+            },
             'msvs_settings': {
               'VCLinkerTool': {
                 'DelayLoadDLLs': [
