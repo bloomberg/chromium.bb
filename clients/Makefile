@@ -1,6 +1,6 @@
 include ../config.mk
 
-CFLAGS += -I.. $(CLIENT_CFLAGS)
+CFLAGS += -I../wayland $(CLIENT_CFLAGS)
 LDLIBS += -L../wayland -lwayland-client $(CLIENT_LIBS) -lrt -lm
 
 egl_clients = gears
