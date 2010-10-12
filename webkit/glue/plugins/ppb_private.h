@@ -6,6 +6,7 @@
 #define WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_
 
 #include "third_party/ppapi/c/dev/ppb_font_dev.h"
+#include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_var.h"
 
@@ -110,6 +111,12 @@ struct PPB_Private {
      bool case_sensitive,
      PP_PrivateFindResult** results,
      int* count);
+
+  // Since WebFrame doesn't know about Pepper requests, it'll think the page has
+  // finished loading even if there are outstanding requests by the plugin.
+  // Take this out once WebFrame knows about requests by pepper plugins.
+  void (*DidStartLoading)(PP_Instance instance);
+  void (*DidStopLoading)(PP_Instance instance);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_

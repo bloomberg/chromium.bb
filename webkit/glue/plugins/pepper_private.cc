@@ -11,10 +11,13 @@
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/icu/public/i18n/unicode/usearch.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/pepper_image_data.h"
+#include "webkit/glue/plugins/pepper_plugin_delegate.h"
+#include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/pepper_var.h"
 #include "webkit/glue/plugins/ppb_private.h"
@@ -224,12 +227,28 @@ void SearchString(PP_Module module,
   usearch_close(searcher);
 }
 
+void DidStartLoading(PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+  instance->delegate()->DidStartLoading();
+}
+
+void DidStopLoading(PP_Instance instance_id) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
+    return;
+  instance->delegate()->DidStopLoading();
+}
+
 const PPB_Private ppb_private = {
   &GetLocalizedString,
   &GetResourceImage,
   &GetFontFileWithFallback,
   &GetFontTableForPrivateFontFile,
-  &SearchString
+  &SearchString,
+  &DidStartLoading,
+  &DidStopLoading
 };
 
 }  // namespace

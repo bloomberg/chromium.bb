@@ -105,6 +105,8 @@ class PepperPluginDelegateImpl
   virtual std::string GetDefaultEncoding();
   virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor);
   virtual std::string ResolveProxy(const GURL& url);
+  virtual void DidStartLoading();
+  virtual void DidStopLoading();
 
  private:
   // Pointer to the RenderView that owns us.

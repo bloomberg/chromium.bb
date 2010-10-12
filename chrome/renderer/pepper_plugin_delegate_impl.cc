@@ -757,3 +757,11 @@ std::string PepperPluginDelegateImpl::ResolveProxy(const GURL& url) {
   RenderThread::current()->Send(msg);
   return proxy_result;
 }
+
+void PepperPluginDelegateImpl::DidStartLoading() {
+  render_view_->DidStartLoadingForPlugin();
+}
+
+void PepperPluginDelegateImpl::DidStopLoading() {
+  render_view_->DidStopLoadingForPlugin();
+}
