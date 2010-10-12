@@ -159,7 +159,45 @@ can have the following properties:</p>
     <br><br>
     Defaults to <code>false</code>, meaning that only the top frame is matched.</td>
   </tr>
+  <tr>
+    <td><code>include_globs</code></td>
+    <td>array of string</td>
+    <td><em>Optional.</em>
+    Applied after <code>matches</code> to control the pages that this content script will be injected into. Intended to emulate the <a href="http://wiki.greasespot.net/Metadata_Block#.40include"><code>@include</code></a> Greasemonkey keyword. See <a href="#include-exclude-globs">Include and exclude globs</a> below for more details.</td>
+  </tr>
+  <tr>
+    <td><code>exclude_globs</code></td>
+    <td>array of string</td>
+    <td><em>Optional.</em>
+    Applied after <code>matches</code> to control the pages that this content script will be injected into. Intended to emulate the <a href="http://wiki.greasespot.net/Metadata_Block#.40include"><code>@exclude</code></a> Greasemonkey keyword. See <a href="#include-exclude-globs">Include and exclude globs</a> below for more details.</td>
+  </tr>
 </table>
+
+<h3 id="include-exclude-globs">Include and exclude globs</h2>
+
+<p>
+The content script will be injected into a page if its URL matches any <code>matches</code> pattern and any <code>include_globs</code> pattern, as long as the URL doesn't also match an <code>exclude_globs</code> pattern. Because the <code>matches</code> property is required, <code>include_globs</code> and <code>exclude_globs</code> can only be used to limit which pages will be affected.
+</p>
+
+</p>
+However, these glob properties follow a different syntax than <code>matches</code>, which is much more flexible.  Acceptable strings are URLs that may contain "wildcard" asterisks and question marks. The asterisk (*) is used to match any string of any length (including the empty string); the question mark (?) is used to match any single character.
+</p>
+
+<p>
+For example, the glob "http://???.example.com/foo/*" matches any of the following:
+</p>
+<ul>
+  <li>"http://www.example.com/foo/bar"</li>
+  <li>"http://the.example.com/foo/"</li>
+</ul>
+<p>
+However, it does <em>not</em> match the following:
+</p>
+<ul>
+  <li>"http://my.example.com/foo/bar"</li>
+  <li>"http://example.com/foo/"</li>
+  <li>"http://www.example.com/foo"</li>
+</ul>
 
 <h2 id="pi">Programmatic injection</h2>
 
