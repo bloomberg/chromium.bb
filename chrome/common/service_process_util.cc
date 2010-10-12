@@ -46,6 +46,7 @@ std::string GetServiceProcessScopedName(const std::string& append_str) {
   std::string scoped_name = user_data_dir.value();
 #endif  // defined(OS_WIN)
   std::replace(scoped_name.begin(), scoped_name.end(), '\\', '!');
+  std::replace(scoped_name.begin(), scoped_name.end(), '/', '!');
   scoped_name.append(append_str);
   return scoped_name;
 }
@@ -214,6 +215,11 @@ std::string GetServiceProcessAutoRunKey() {
 
 bool TakeServiceProcessSingletonLock() {
   DCHECK(g_service_globals == NULL);
+  // On Linux shared menory is implemented using file. In case of incorrect
+  // shutdown or process kill memshared file stay on the disk and prevents
+  // next instance of service from starting. So, on Linux we have to disable
+  // check for another running instance of the service.
+#if defined(OS_WIN)
   std::string running_version;
   ServiceProcessRunningState state =
       GetServiceProcessRunningState(&running_version);
@@ -228,6 +234,7 @@ bool TakeServiceProcessSingletonLock() {
     case SERVICE_NOT_RUNNING:
       break;
   }
+#endif
   g_service_globals = new ServiceProcessGlobalState;
   // TODO(sanjeevr): We can probably use the shared mem as the sole singleton
   // mechanism. For that the shared mem class needs to return whether it created
