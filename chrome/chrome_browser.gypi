@@ -156,6 +156,8 @@
         'browser/autofill/autofill_download.h',
         'browser/autofill/autofill_field.cc',
         'browser/autofill/autofill_field.h',
+        'browser/autofill/autofill_ie_toolbar_import_win.cc',
+        'browser/autofill/autofill_ie_toolbar_import_win.h',
         'browser/autofill/autofill_manager.cc',
         'browser/autofill/autofill_manager.h',
         'browser/autofill/autofill_profile.cc',

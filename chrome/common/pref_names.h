@@ -206,6 +206,7 @@ extern const char kAutoFillAuxiliaryProfilesEnabled[];
 extern const char kAutoFillDialogPlacement[];
 extern const char kAutoFillPositiveUploadRate[];
 extern const char kAutoFillNegativeUploadRate[];
+extern const char kAutoFillPersonalDataManagerFirstRun[];
 
 extern const char kUseVerticalTabs[];
 extern const char kEnableTranslate[];

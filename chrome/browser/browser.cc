@@ -25,6 +25,9 @@
 #include "gfx/point.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#if defined(OS_WIN)
+#include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
+#endif  // defined(OS_WIN)
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
@@ -412,6 +415,16 @@ void Browser::CreateBrowserWindow() {
     // Reset the preference so we don't show the bubble for subsequent windows.
     local_state->ClearPref(prefs::kShouldShowFirstRunBubble);
     window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
+  }
+  if (local_state->FindPreference(
+      prefs::kAutoFillPersonalDataManagerFirstRun) &&
+      local_state->GetBoolean(prefs::kAutoFillPersonalDataManagerFirstRun)) {
+    // Notify PDM that this is a first run.
+#if defined(OS_WIN)
+    ImportAutofillDataWin(profile_->GetPersonalDataManager());
+#endif  // defined(OS_WIN)
+    // Reset the preference so we don't call it again for subsequent windows.
+    local_state->ClearPref(prefs::kAutoFillPersonalDataManagerFirstRun);
   }
 }
 

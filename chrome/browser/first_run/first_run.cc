@@ -358,6 +358,20 @@ bool FirstRun::SetShowWelcomePagePref() {
 }
 
 // static
+bool FirstRun::SetPersonalDataManagerFirstRunPref() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return false;
+  if (!local_state->FindPreference(
+          prefs::kAutoFillPersonalDataManagerFirstRun)) {
+    local_state->RegisterBooleanPref(
+        prefs::kAutoFillPersonalDataManagerFirstRun, false);
+    local_state->SetBoolean(prefs::kAutoFillPersonalDataManagerFirstRun, true);
+  }
+  return true;
+}
+
+// static
 bool FirstRun::SetOEMFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
@@ -565,6 +579,7 @@ void FirstRun::AutoImport(
   // Set the first run bubble to minimal.
   FirstRun::SetMinimalFirstRunBubblePref();
   FirstRun::SetShowWelcomePagePref();
+  FirstRun::SetPersonalDataManagerFirstRunPref();
 
   process_singleton->Unlock();
   FirstRun::CreateSentinel();

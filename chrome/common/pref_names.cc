@@ -554,6 +554,9 @@ const char kAutoFillPositiveUploadRate[] = "autofill.positive_upload_rate";
 // Double that indicates negative (for not matched forms) upload rate.
 const char kAutoFillNegativeUploadRate[] = "autofill.negative_upload_rate";
 
+// Boolean option set to true on the first run. Non-persistent.
+const char kAutoFillPersonalDataManagerFirstRun[] = "autofill.pdm.first_run";
+
 // Boolean that is true when the tabstrip is to be laid out vertically down the
 // side of the browser window.
 const char kUseVerticalTabs[] = "tabs.use_vertical_tabs";

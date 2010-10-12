@@ -146,6 +146,11 @@ class FirstRun {
   // if the pref could not be set.
   static bool SetShowWelcomePagePref();
 
+  // Sets the kAutoFillPersonalDataManagerFirstRun local state pref so that the
+  // browser loads PersonalDataManager once the main message loop gets going.
+  // Returns false if the pref could not be set.
+  static bool SetPersonalDataManagerFirstRunPref();
+
  private:
   friend class FirstRunTest;
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
