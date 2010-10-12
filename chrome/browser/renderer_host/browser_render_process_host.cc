@@ -31,7 +31,6 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
-#include "chrome/browser/file_system/file_system_host_context.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
@@ -67,6 +66,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
+#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/glue/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
@@ -233,7 +233,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
   // requests them.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
       id(), profile->GetPath().Append(
-          FileSystemHostContext::kFileSystemDirectory),
+          fileapi::FileSystemPathManager::kFileSystemDirectory),
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_CREATE |
       base::PLATFORM_FILE_OPEN_ALWAYS |

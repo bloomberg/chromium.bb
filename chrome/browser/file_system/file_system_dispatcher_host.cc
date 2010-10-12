@@ -20,6 +20,7 @@
 #include "chrome/common/render_messages_params.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota.h"
 
 using fileapi::FileSystemQuota;
@@ -158,7 +159,8 @@ void FileSystemDispatcherHost::OnOpenFileSystem(
 
   FilePath root_path;
   std::string name;
-  if (!context_->GetFileSystemRootPath(origin_url, type, &root_path, &name)) {
+  if (!context_->path_manager()->GetFileSystemRootPath(
+      origin_url, type, &root_path, &name)) {
     Send(new ViewMsg_OpenFileSystemRequest_Complete(
         request_id, false, std::string(), FilePath()));
     return;
@@ -297,7 +299,7 @@ bool FileSystemDispatcherHost::CheckValidFileSystemPath(
     const FilePath& path, int request_id) {
   // We may want do more checks, but for now it just checks if the given
   // |path| is under the valid FileSystem root path for this host context.
-  if (!context_->CheckValidFileSystemPath(path)) {
+  if (!context_->path_manager()->CheckValidFileSystemPath(path)) {
     Send(new ViewMsg_FileSystem_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_SECURITY));
     return false;
@@ -308,7 +310,7 @@ bool FileSystemDispatcherHost::CheckValidFileSystemPath(
 bool FileSystemDispatcherHost::CheckQuotaForPath(
     const FilePath& path, int64 growth, int request_id) {
   GURL origin_url;
-  if (!context_->GetOriginFromPath(path, &origin_url)) {
+  if (!context_->path_manager()->GetOriginFromPath(path, &origin_url)) {
     // Appears to be an ill-formed path or for an unallowed scheme.
     Send(new ViewMsg_FileSystem_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_SECURITY));
@@ -326,7 +328,7 @@ bool FileSystemDispatcherHost::CheckQuotaForPath(
 
 bool FileSystemDispatcherHost::CheckIfFilePathIsSafe(
     const FilePath& path, int request_id) {
-  if (context_->IsRestrictedFileName(path.BaseName())) {
+  if (context_->path_manager()->IsRestrictedFileName(path.BaseName())) {
     Send(new ViewMsg_FileSystem_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_SECURITY));
     return false;

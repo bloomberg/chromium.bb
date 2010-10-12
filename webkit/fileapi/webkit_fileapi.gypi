@@ -17,6 +17,8 @@
         'file_system_callback_dispatcher.h',
         'file_system_operation.cc',
         'file_system_operation.h',
+        'file_system_path_manager.cc',
+        'file_system_path_manager.h',
         'file_system_quota.cc',
         'file_system_quota.h',
         'file_system_types.h',

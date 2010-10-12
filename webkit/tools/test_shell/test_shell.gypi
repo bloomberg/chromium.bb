@@ -376,6 +376,7 @@
         '../../database/database_util_unittest.cc',
         '../../database/quota_table_unittest.cc',
         '../../fileapi/file_system_operation_unittest.cc',
+        '../../fileapi/file_system_path_manager_unittest.cc',
         '../../fileapi/file_system_quota_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
         '../../glue/context_menu_unittest.cc',

@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/fileapi/file_system_path_manager.h"
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/file_system/file_system_host_context.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using fileapi::FileSystemPathManager;
 
 namespace {
 
@@ -126,41 +129,33 @@ const struct IsRestrictedNameTest {
 
 }  // namespace
 
-class FileSystemHostContextTest : public testing::Test {
+class FileSystemPathManagerTest : public testing::Test {
  public:
-  FileSystemHostContextTest()
-      : io_thread_(BrowserThread::IO, &message_loop_),
-        data_path_(kTestDataPath) {
+  FileSystemPathManagerTest()
+      : data_path_(kTestDataPath) {
   }
 
-  void TearDown() {
-    message_loop_.RunAllPending();
-  }
-
-  ~FileSystemHostContextTest() {
-    message_loop_.RunAllPending();
-  }
-
-  scoped_refptr<FileSystemHostContext> GetHostContext(bool incognite) {
-    return new FileSystemHostContext(data_path_, incognite);
+  FileSystemPathManager* GetNewPathManager(bool incognito) {
+    path_manager_.reset(new FileSystemPathManager(
+        data_path_, incognito, false /* allow_file_access */));
+    return path_manager_.get();
   }
 
  private:
-  MessageLoopForIO message_loop_;
-  BrowserThread io_thread_;
   FilePath data_path_;
+  scoped_ptr<FileSystemPathManager> path_manager_;
 };
 
-TEST_F(FileSystemHostContextTest, GetRootPath) {
+TEST_F(FileSystemPathManagerTest, GetRootPath) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kRootPathTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "RootPath #" << i << " "
                  << kRootPathTestCases[i].expected_path);
 
-    scoped_refptr<FileSystemHostContext> context = GetHostContext(
+    FileSystemPathManager* manager = GetNewPathManager(
         kRootPathTestCases[i].off_the_record);
 
     FilePath root_path;
-    bool result = context->GetFileSystemRootPath(
+    bool result = manager->GetFileSystemRootPath(
             GURL(kRootPathTestCases[i].origin_url),
             kRootPathTestCases[i].type,
             &root_path, NULL);
@@ -173,21 +168,21 @@ TEST_F(FileSystemHostContextTest, GetRootPath) {
   }
 }
 
-TEST_F(FileSystemHostContextTest, CheckValidPath) {
-  scoped_refptr<FileSystemHostContext> context = GetHostContext(false);
+TEST_F(FileSystemPathManagerTest, CheckValidPath) {
+  FileSystemPathManager* manager = GetNewPathManager(false);
   FilePath root_path;
-  EXPECT_TRUE(context->GetFileSystemRootPath(
+  EXPECT_TRUE(manager->GetFileSystemRootPath(
       GURL("http://foo.com/"), fileapi::kFileSystemTypePersistent,
       &root_path, NULL));
 
   // The root path must be valid, but upper directories or directories
   // that are not in our temporary or persistent directory must be
   // evaluated invalid.
-  EXPECT_TRUE(context->CheckValidFileSystemPath(root_path));
-  EXPECT_FALSE(context->CheckValidFileSystemPath(root_path.DirName()));
-  EXPECT_FALSE(context->CheckValidFileSystemPath(
+  EXPECT_TRUE(manager->CheckValidFileSystemPath(root_path));
+  EXPECT_FALSE(manager->CheckValidFileSystemPath(root_path.DirName()));
+  EXPECT_FALSE(manager->CheckValidFileSystemPath(
       root_path.DirName().DirName()));
-  EXPECT_FALSE(context->CheckValidFileSystemPath(
+  EXPECT_FALSE(manager->CheckValidFileSystemPath(
       root_path.DirName().AppendASCII("ArbitraryName")));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kCheckValidPathTestCases); ++i) {
@@ -197,17 +192,17 @@ TEST_F(FileSystemHostContextTest, CheckValidPath) {
     if (!path.IsAbsolute())
       path = root_path.Append(path);
     EXPECT_EQ(kCheckValidPathTestCases[i].expected_valid,
-              context->CheckValidFileSystemPath(path));
+              manager->CheckValidFileSystemPath(path));
   }
 }
 
-TEST_F(FileSystemHostContextTest, IsRestrictedName) {
-  scoped_refptr<FileSystemHostContext> context = GetHostContext(false);
+TEST_F(FileSystemPathManagerTest, IsRestrictedName) {
+  FileSystemPathManager* manager = GetNewPathManager(false);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kIsRestrictedNameTestCases); ++i) {
     SCOPED_TRACE(testing::Message() << "IsRestrictedName #" << i << " "
                  << kIsRestrictedNameTestCases[i].name);
     FilePath name(kIsRestrictedNameTestCases[i].name);
     EXPECT_EQ(kIsRestrictedNameTestCases[i].expected_dangerous,
-              context->IsRestrictedFileName(name));
+              manager->IsRestrictedFileName(name));
   }
 }

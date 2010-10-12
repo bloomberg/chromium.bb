@@ -1267,7 +1267,6 @@
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',
         'browser/file_path_watcher_unittest.cc',
-        'browser/file_system/file_system_host_context_unittest.cc',
         'browser/find_backend_unittest.cc',
         'browser/first_run/first_run_unittest.cc',
         'browser/geolocation/fake_access_token_store.h',
