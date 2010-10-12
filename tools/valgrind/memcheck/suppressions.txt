@@ -2914,3 +2914,18 @@
    fun:SECOID_FindOIDTag
    fun:_ZN3net61_GLOBAL__N_net_base_x509_certificate_nss.cc_00000000_98C1B34716GetCertChainInfoEP15CERTCertListStrPNS_16CertVerifyResultE
 }
+{
+   bug_58973
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7history14HistoryBackend8InitImplERKSs
+   fun:_ZN7history14HistoryBackend4InitERKSsb
+   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvRKSsbESsbEvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvRKSsbE6Tuple2ISsbEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
