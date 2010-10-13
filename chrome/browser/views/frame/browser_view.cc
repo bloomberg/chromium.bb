@@ -1773,23 +1773,21 @@ std::string BrowserView::GetClassName() const {
 void BrowserView::Layout() {
   if (ignore_layout_)
     return;
-  if (GetLayoutManager()) {
-    GetLayoutManager()->Layout(this);
-    SchedulePaint();
+  views::View::Layout();
+
 #if defined(OS_WIN)
-    // Send the margins of the "user-perceived content area" of this
-    // browser window so AeroPeekManager can render a background-tab image in
-    // the area.
-    // TODO(pkasting) correct content inset??
-    if (aeropeek_manager_.get()) {
-      gfx::Insets insets(GetFindBarBoundingBox().y() + 1,
-                         0,
-                         0,
-                         0);
-      aeropeek_manager_->SetContentInsets(insets);
-    }
-#endif
+  // Send the margins of the "user-perceived content area" of this
+  // browser window so AeroPeekManager can render a background-tab image in
+  // the area.
+  // TODO(pkasting) correct content inset??
+  if (aeropeek_manager_.get()) {
+    gfx::Insets insets(GetFindBarBoundingBox().y() + 1,
+                       0,
+                       0,
+                       0);
+    aeropeek_manager_->SetContentInsets(insets);
   }
+#endif
 }
 
 void BrowserView::ViewHierarchyChanged(bool is_add,
