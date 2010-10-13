@@ -67,6 +67,8 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kWebKitPluginsEnabled,
     prefs::kWebKitSansSerifFontFamily,
     prefs::kWebKitSerifFontFamily,
+    prefs::kWebKitMinimumFontSize,
+    prefs::kWebKitMinimumLogicalFontSize,
     prefs::kWebkitTabsToLinks,
   };
   profile->GetDownloadManager()->download_prefs()->ResetToDefaults();

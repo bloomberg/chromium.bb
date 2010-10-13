@@ -88,6 +88,17 @@ cr.define('options', function() {
     chrome.send('setObjectPref', arguments);
   };
 
+  /**
+   * Clears value of a JSON preference.
+   * @param {string} name Preference name.
+   * @param {string} metric User metrics identifier.
+   */
+  Preferences.clearPref = function(name, metric) {
+    var arguments = [name];
+    if (metric != undefined) arguments.push(metric);
+    chrome.send('clearPref', arguments);
+  };
+
   Preferences.prototype = {
     __proto__: cr.EventTarget.prototype,
 

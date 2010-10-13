@@ -6137,6 +6137,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_SELECTOR_LABEL" desc="Dialog label for font size selection">
         Size:
       </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Section title for minimum font size selection">
+        Minimum Font Size
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_NO_MINIMUM_FONT_SIZE_LABEL" desc="Label for the 'None' minimum font size selection">
+        None
+      </message>
 
       <!-- HTTP POST Warning -->
       <message name="IDS_HTTP_POST_WARNING_TITLE" desc="Title for dialog that warns users about a navigation that results in a repost">

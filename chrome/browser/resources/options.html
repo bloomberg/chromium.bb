@@ -112,6 +112,7 @@
 <script src="options/cookies_view.js"></script>
 <script src="options/edit_search_engine_overlay.js"></script>
 <script src="options/font_settings.js"></script>
+<script src="options/font_settings_ui.js"></script>
 <script src="options/import_data_overlay.js"></script>
 <script src="options/passwords_exceptions.js"></script>
 <script src="options/passwords_exceptions_list.js"></script>
@@ -345,6 +346,8 @@ cr.ui.decorate('input[pref][type=text]', options.PrefTextField);
 cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
 cr.ui.decorate('#contentSettingsPage input[type=radio]',
     options.ContentSettingsRadio);
+cr.ui.decorate('#fontSettingsMinimumSizeSelector',
+    options.MinimumFontSizeSelect);
 console.log('in bottom script');
 </script>
 </body>

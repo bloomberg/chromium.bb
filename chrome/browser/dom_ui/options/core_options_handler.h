@@ -46,6 +46,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
                        const std::string& value_string,
                        const std::string& metric);
 
+  // Clears pref value for given |pref_name|.
+  void ClearPref(const std::string& pref_name, const std::string& metric);
+
   // Stops observing given preference identified by |path|.
   virtual void StopObservingPref(const std::string& path);
 
@@ -63,9 +66,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void HandleInitialize(const ListValue* args);
 
   // Callback for the "fetchPrefs" message. This message accepts the list of
-  // preference names passed as |value| parameter (ListValue). It passes results
-  // dictionary of preference values by calling prefsFetched() JS method on the
-  // page.
+  // preference names passed as the |args| parameter (ListValue). It passes
+  // results dictionary of preference values by calling prefsFetched() JS method
+  // on the page.
   void HandleFetchPrefs(const ListValue* args);
 
   // Callback for the "observePrefs" message. This message initiates
@@ -73,8 +76,10 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void HandleObservePrefs(const ListValue* args);
 
   // Callbacks for the "set<type>Pref" message. This message saves the new
-  // preference value. The input value is an array of strings representing
-  // name-value preference pair.
+  // preference value. |args| is an array of parameters as follows:
+  //  item 0 - name of the preference.
+  //  item 1 - the value of the preference in string form.
+  //  item 2 - name of the metric identifier (optional).
   void HandleSetBooleanPref(const ListValue* args);
   void HandleSetIntegerPref(const ListValue* args);
   void HandleSetStringPref(const ListValue* args);
@@ -82,8 +87,15 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
   void HandleSetPref(const ListValue* args, Value::ValueType type);
 
+  // Callback for the "clearPref" message.  This message clears a preference
+  // value. |args| is an array of parameters as follows:
+  //  item 0 - name of the preference.
+  //  item 1 - name of the metric identifier (optional).
+  void HandleClearPref(const ListValue* args);
+
   // Callback for the "coreOptionsUserMetricsAction" message.  This records
-  // an action that should be tracked if metrics recording is enabled.
+  // an action that should be tracked if metrics recording is enabled. |args|
+  // is an array that contains a single item, the name of the metric identifier.
   void HandleUserMetricsAction(const ListValue* args);
 
   void NotifyPrefChanged(const std::string* pref_name);

@@ -177,6 +177,8 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitFixedFontFamily,
   prefs::kWebKitDefaultFontSize,
   prefs::kWebKitDefaultFixedFontSize,
+  prefs::kWebKitMinimumFontSize,
+  prefs::kWebKitMinimumLogicalFontSize,
   prefs::kWebkitTabsToLinks,
   prefs::kDefaultCharset
   // kWebKitStandardFontIsSerif needs to be added

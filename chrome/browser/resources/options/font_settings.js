@@ -43,6 +43,8 @@ cr.define('options', function() {
           templateData.fontSettingsFontList)
       $('fontSettingsFixedWidthSizeSelector').initializeValues(
           templateData.fontSettingsFontSizeList)
+      $('fontSettingsMinimumSizeSelector').initializeValues(
+          templateData.fontSettingsMinimumFontSizeList)
       $('fontSettingsEncodingSelector').initializeValues(
           templateData.fontSettingsEncodingList)
     }

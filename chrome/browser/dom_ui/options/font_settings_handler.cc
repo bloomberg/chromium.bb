@@ -46,6 +46,11 @@ void FontSettingsHandler::GetLocalizedValues(
   localized_strings->SetString("fontSettingsSizeLabel",
       l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_SELECTOR_LABEL));
+
+  localized_strings->SetString("fontSettingsMinimumSizeTitle",
+      l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE));
+
   localized_strings->SetString("fontSettingsEncodingTitle",
       l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE));
@@ -69,6 +74,27 @@ void FontSettingsHandler::GetLocalizedValues(
     font_size_list->Append(option);
   }
   localized_strings->Set("fontSettingsFontSizeList", font_size_list);
+
+  // Miniumum font size
+  int minimum_font_sizes[] = { 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22,
+                               24 };
+  count = arraysize(minimum_font_sizes);
+  ListValue* minimum_font_size_list = new ListValue;
+  ListValue* default_option = new ListValue();
+  default_option->Append(Value::CreateIntegerValue(0));
+  default_option->Append(Value::CreateStringValue(
+      l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_NO_MINIMUM_FONT_SIZE_LABEL)));
+  minimum_font_size_list->Append(default_option);
+  for (int i = 0; i < count; i++) {
+    ListValue* option = new ListValue();
+    option->Append(Value::CreateIntegerValue(minimum_font_sizes[i]));
+    option->Append(
+        Value::CreateStringValue(base::IntToString(minimum_font_sizes[i])));
+    minimum_font_size_list->Append(option);
+  }
+  localized_strings->Set("fontSettingsMinimumFontSizeList",
+                         minimum_font_size_list);
 
   // Encodings
   count = CharacterEncoding::GetSupportCanonicalEncodingCount();
