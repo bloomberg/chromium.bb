@@ -243,6 +243,9 @@ class Extension {
   // Checks to see if the extension has a valid ID.
   static bool IdIsValid(const std::string& id);
 
+  // Generate an ID for an extension in the given path.
+  static std::string GenerateIdForPath(const FilePath& file_name);
+
   // Returns true if the specified file is an extension.
   static bool IsExtension(const FilePath& file_name);
 
@@ -504,6 +507,10 @@ class Extension {
   // scale it (or the empty string if the image is at its original size).
   typedef std::pair<FilePath, std::string> ImageCacheKey;
   typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
+
+  // Normalize the path for use by the extension. On Windows, this will make
+  // sure the drive letter is uppercase.
+  static FilePath MaybeNormalizePath(const FilePath& path);
 
   // Helper function for implementing HasCachedImage/GetCachedImage. A return
   // value of NULL means there is no matching image cached (we allow caching an

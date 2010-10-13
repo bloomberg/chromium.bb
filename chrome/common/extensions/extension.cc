@@ -359,6 +359,22 @@ string16 Extension::GetHostPermissionMessage() {
   return string16();
 }
 
+FilePath Extension::MaybeNormalizePath(const FilePath& path) {
+#if defined(OS_WIN)
+  // Normalize any drive letter to upper-case. We do this for consistency with
+  // net_utils::FilePathToFileURL(), which does the same thing, to make string
+  // comparisons simpler.
+  std::wstring path_str = path.value();
+  if (path_str.size() >= 2 && path_str[0] >= L'a' && path_str[0] <= L'z' &&
+      path_str[1] == ':')
+    path_str[0] += ('A' - 'a');
+
+  return FilePath(path_str);
+#else
+  return path;
+#endif
+}
+
 // static
 bool Extension::IsHostedAppPermission(const std::string& str) {
   for (size_t i = 0; i < Extension::kNumHostedAppPermissions; ++i) {
@@ -395,6 +411,15 @@ bool Extension::IdIsValid(const std::string& id) {
       return false;
 
   return true;
+}
+
+// static
+std::string Extension::GenerateIdForPath(const FilePath& path) {
+  FilePath new_path = Extension::MaybeNormalizePath(path);
+  std::string id;
+  if (!GenerateId(WideToUTF8(new_path.ToWStringHack()),&id))
+    return "";
+  return id;
 }
 
 Extension::HistogramType Extension::GetHistogramType() {
@@ -970,19 +995,7 @@ Extension::Extension(const FilePath& path)
   static_data_ = mutable_static_data_;
   location_ = INVALID;
 
-#if defined(OS_WIN)
-  // Normalize any drive letter to upper-case. We do this for consistency with
-  // net_utils::FilePathToFileURL(), which does the same thing, to make string
-  // comparisons simpler.
-  std::wstring path_str = path.value();
-  if (path_str.size() >= 2 && path_str[0] >= L'a' && path_str[0] <= L'z' &&
-      path_str[1] == ':')
-    path_str[0] += ('A' - 'a');
-
-  mutable_static_data_->path = FilePath(path_str);
-#else
-  mutable_static_data_->path = path;
-#endif
+  mutable_static_data_->path = MaybeNormalizePath(path);
 }
 
 ExtensionResource Extension::GetResource(const std::string& relative_path) {
@@ -1194,8 +1207,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     // If there is a path, we generate the ID from it. This is useful for
     // development mode, because it keeps the ID stable across restarts and
     // reloading the extension.
-    if (!GenerateId(WideToUTF8(path().ToWStringHack()),
-                    &mutable_static_data_->id)) {
+    mutable_static_data_->id = Extension::GenerateIdForPath(path());
+    if (mutable_static_data_->id.empty()) {
       NOTREACHED() << "Could not create ID from path.";
       return false;
     }

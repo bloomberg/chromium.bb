@@ -23,12 +23,19 @@ typedef ExtensionApiTest AllUrlsApiTest;
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   Extension::emit_traces_for_whitelist_extension_test_ = true;
 
-  // First load the two extension.
+  // First setup the two extensions.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");
   FilePath extension_dir2 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("execute_script");
 
+  // Then add the two extensions to the whitelist.
+  Extension::ScriptingWhitelist whitelist;
+  whitelist.push_back(Extension::GenerateIdForPath(extension_dir1));
+  whitelist.push_back(Extension::GenerateIdForPath(extension_dir2));
+  Extension::SetScriptingWhitelist(whitelist);
+
+  // Then load extensions.
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
   printf("***** LoadExtension1 called \n");
@@ -37,23 +44,6 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
   ASSERT_TRUE(LoadExtension(extension_dir2));
   printf("***** LoadExtensions done \n");
   EXPECT_EQ(size_before + 2, service->extensions()->size());
-  Extension* extensionA = service->extensions()->at(size_before);
-  Extension* extensionB = service->extensions()->at(size_before + 1);
-
-  // Then add the two extensions to the whitelist.
-  Extension::ScriptingWhitelist whitelist;
-  whitelist.push_back(extensionA->id().c_str());
-  whitelist.push_back(extensionB->id().c_str());
-  Extension::SetScriptingWhitelist(whitelist);
-
-  // Ideally, we'd set the whitelist first and then load the extensions.
-  // However, we can't reliably know the ids of the extensions until we load
-  // them so we reload them so that the whitelist is in effect from the start.
-  printf("***** ReloadExtension1 called \n");
-  ReloadExtension(extensionA->id());
-  printf("***** ReloadExtension2 called \n");
-  ReloadExtension(extensionB->id());
-  printf("***** ReloadExtensions done \n");
 
   std::string url;
 
