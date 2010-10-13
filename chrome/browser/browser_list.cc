@@ -177,14 +177,14 @@ void BrowserList::RemoveBrowser(Browser* browser) {
       NotificationType::BROWSER_CLOSED,
       Source<Browser>(browser), Details<bool>(&closing_last_browser));
 
-  // Send out notifications before anything changes. Do some basic checking to
-  // try to catch evil observers that change the list from under us.
+  RemoveBrowserFrom(browser, &browsers_);
+
+  // Do some basic checking to try to catch evil observers
+  // that change the list from under us.
   size_t original_count = observers_.size();
-  FOR_EACH_OBSERVER(Observer, observers_, OnBrowserRemoving(browser));
+  FOR_EACH_OBSERVER(Observer, observers_, OnBrowserRemoved(browser));
   DCHECK_EQ(original_count, observers_.size())
       << "observer list modified during notification";
-
-  RemoveBrowserFrom(browser, &browsers_);
 
   // If the last Browser object was destroyed, make sure we try to close any
   // remaining dependent windows too.

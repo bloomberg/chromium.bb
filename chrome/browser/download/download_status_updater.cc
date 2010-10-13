@@ -17,11 +17,13 @@ DownloadStatusUpdater::~DownloadStatusUpdater() {
 void DownloadStatusUpdater::AddDelegate(
     DownloadStatusUpdaterDelegate* delegate) {
   delegates_.insert(delegate);
+  Update();
 }
 
 void DownloadStatusUpdater::RemoveDelegate(
     DownloadStatusUpdaterDelegate* delegate) {
   delegates_.erase(delegate);
+  Update();
 }
 
 void DownloadStatusUpdater::Update() {

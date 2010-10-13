@@ -4011,11 +4011,11 @@ void TestingAutomationProvider::OnRedirectQueryComplete(
 void TestingAutomationProvider::OnBrowserAdded(const Browser* browser) {
 }
 
-void TestingAutomationProvider::OnBrowserRemoving(const Browser* browser) {
+void TestingAutomationProvider::OnBrowserRemoved(const Browser* browser) {
   // For backwards compatibility with the testing automation interface, we
   // want the automation provider (and hence the process) to go away when the
   // last browser goes away.
-  if (BrowserList::size() == 1 && !CommandLine::ForCurrentProcess()->HasSwitch(
+  if (BrowserList::empty() && !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kKeepAliveForTest)) {
     // If you change this, update Observer for NotificationType::SESSION_END
     // below.
@@ -4028,9 +4028,9 @@ void TestingAutomationProvider::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   DCHECK(type == NotificationType::SESSION_END);
-  // OnBrowserRemoving does a ReleaseLater. When session end is received we exit
+  // OnBrowserRemoved does a ReleaseLater. When session end is received we exit
   // before the task runs resulting in this object not being deleted. This
-  // Release balance out the Release scheduled by OnBrowserRemoving.
+  // Release balance out the Release scheduled by OnBrowserRemoved.
   Release();
 }
 

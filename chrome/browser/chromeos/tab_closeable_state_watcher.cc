@@ -118,7 +118,7 @@ void TabCloseableStateWatcher::OnBrowserAdded(const Browser* browser) {
   // TabInsertedAt notification to check for change in state.
 }
 
-void TabCloseableStateWatcher::OnBrowserRemoving(const Browser* browser) {
+void TabCloseableStateWatcher::OnBrowserRemoved(const Browser* browser) {
   // Only normal browsers may affect closeable state.
   if (browser->type() != Browser::TYPE_NORMAL)
     return;

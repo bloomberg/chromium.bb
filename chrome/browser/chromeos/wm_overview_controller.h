@@ -67,11 +67,8 @@ class WmOverviewController : public BrowserList::Observer,
   static WmOverviewController* instance();
 
   // BrowserList::Observer methods
-  // This is called immediately after a browser is added to the list.
   void OnBrowserAdded(const Browser* browser) {}
-
-  // This is called immediately before a browser is removed from the list.
-  void OnBrowserRemoving(const Browser* browser);
+  void OnBrowserRemoved(const Browser* browser);
   // End BrowserList::Observer methods
 
   // WmMessageListener::Observer methods

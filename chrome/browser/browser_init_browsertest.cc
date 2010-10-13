@@ -26,7 +26,7 @@ class OpenURLsPopupObserver : public BrowserList::Observer {
     added_browser_ = browser;
   }
 
-  virtual void OnBrowserRemoving(const Browser* browser) { }
+  virtual void OnBrowserRemoved(const Browser* browser) { }
 
   const Browser* added_browser_;
 };

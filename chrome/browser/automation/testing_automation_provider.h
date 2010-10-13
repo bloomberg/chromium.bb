@@ -23,10 +23,8 @@ class TestingAutomationProvider : public AutomationProvider,
   explicit TestingAutomationProvider(Profile* profile);
 
   // BrowserList::Observer implementation
-  // Called immediately after a browser is added to the list
   virtual void OnBrowserAdded(const Browser* browser);
-  // Called immediately before a browser is removed from the list
-  virtual void OnBrowserRemoving(const Browser* browser);
+  virtual void OnBrowserRemoved(const Browser* browser);
 
   // IPC implementations
   virtual void OnMessageReceived(const IPC::Message& msg);

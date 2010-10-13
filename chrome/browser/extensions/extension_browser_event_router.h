@@ -44,7 +44,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
 
   // BrowserList::Observer
   virtual void OnBrowserAdded(const Browser* browser);
-  virtual void OnBrowserRemoving(const Browser* browser);
+  virtual void OnBrowserRemoved(const Browser* browser);
   virtual void OnBrowserSetLastActive(const Browser* browser);
 
 #if defined(TOOLKIT_VIEWS)

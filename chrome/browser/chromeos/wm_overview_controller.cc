@@ -508,8 +508,7 @@ void WmOverviewController::SnapshotImageChanged(RenderWidgetHost* renderer) {
   }
 }
 
-// Called immediately before a browser is removed from the list.
-void WmOverviewController::OnBrowserRemoving(const Browser* browser) {
+void WmOverviewController::OnBrowserRemoved(const Browser* browser) {
   for (BrowserListenerVector::iterator i = listeners_.begin();
        i != listeners_.end(); ++i) {
     if ((*i)->browser() == browser) {

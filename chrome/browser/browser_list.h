@@ -26,8 +26,8 @@ class BrowserList {
     // Called immediately after a browser is added to the list
     virtual void OnBrowserAdded(const Browser* browser) = 0;
 
-    // Called immediately before a browser is removed from the list
-    virtual void OnBrowserRemoving(const Browser* browser) = 0;
+    // Called immediately after a browser is removed from the list
+    virtual void OnBrowserRemoved(const Browser* browser) = 0;
 
     // Called immediately after a browser is set active (SetLastActive)
     virtual void OnBrowserSetLastActive(const Browser* browser) {}
@@ -130,6 +130,7 @@ class BrowserList {
   static const_iterator begin() { return browsers_.begin(); }
   static const_iterator end() { return browsers_.end(); }
 
+  static bool empty() { return browsers_.empty(); }
   static size_t size() { return browsers_.size(); }
 
   // Returns iterated access to list of open browsers ordered by when

@@ -60,7 +60,7 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
 
   // BrowserList::Observer implementation:
   virtual void OnBrowserAdded(const Browser* browser);
-  virtual void OnBrowserRemoving(const Browser* browser);
+  virtual void OnBrowserRemoved(const Browser* browser);
 
   // NotificationObserver implementation:
   virtual void Observe(NotificationType type, const NotificationSource& source,

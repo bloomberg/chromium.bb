@@ -193,7 +193,7 @@ void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
   DispatchEvent(browser->profile(), events::kOnWindowCreated, json_args);
 }
 
-void ExtensionBrowserEventRouter::OnBrowserRemoving(const Browser* browser) {
+void ExtensionBrowserEventRouter::OnBrowserRemoved(const Browser* browser) {
   // Stop listening to TabStripModel events for this browser.
   browser->tabstrip_model()->RemoveObserver(this);
 
