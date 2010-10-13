@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Packaging - Google Chrome Extensions - Google Code</title></head>
+  <title>CRX Package Format - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -228,38 +228,40 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Packaging</h1>
+        <h1 class="page_title">CRX Package Format</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#H2-0">Creating a package</a>
+              <a href="#H2-0">Package header</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#update">Updating a package</a>
+              <a href="#H2-1">Extension contents</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#H2-2">Packaging at the command line</a>
+              <a href="#H2-2">Example</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#H2-3">Package format and scripts</a>
+              <a href="#scripts">Packaging scripts</a>
               <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
+                <li>
+                  <a href="#ruby">Ruby</a>
+                </li><li>
+                  <a href="#H3-5">Bash</a>
                 </li>
               </ol>
             </li>
@@ -310,165 +312,153 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Packaging</div>
+        <div id="static"><div id="pageData-name" class="pageData">CRX Package Format</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-This page describes how to package your extension.
-As the <a href="overview.html">Overview</a> explains,
-extensions are packaged as signed ZIP files
-with the file extension "crx" —
-for example, <code>myextension.crx</code>.
+CRX files are ZIP files with a special header and the <code>.crx</code> file
+extension.
 </p>
 
+<a name="H2-0"></a><h2>Package header</h2>
+
 <p>
-<b>Note:</b>
-You might not need to package your extension.
-If you publish your extension using the
-<a href="https://chrome.google.com/extensions">gallery</a>,
-then the only reason to create your own <code>.crx</code> file
-would be to distribute a non-public version —
-for example, to alpha testers.
+The header contains the author's public key and the extension's signature. 
+The signature is generated from the ZIP file using SHA-1 with the
+author's private key. The header requires a little-endian byte ordering with 
+4-byte alignment. The following table describes the fields of
+the <code>.crx</code> header in order:
 </p>
 
-<!-- [PENDING: Refer to instructions on submitting an extension for inclusion in the gallery.] -->
+<table>
+  <tbody><tr>
+    <th>Field</th><th>Type</th><th>Length</th><th>Value</th><th>Description</th>
+  </tr>
+  <tr>
+    <td><em>magic number</em></td><td>char[]</td><td>32 bits</td><td>Cr24</td>
+    <td>
+      Chrome requires this constant at the beginning of every <code>.crx</code>
+      package.
+    </td>
+  </tr>
+  <tr>
+    <td><em>version</em></td><td>unsigned&nbsp;int</td><td>32 bits</td><td>2</td>
+    <td>The version of the <code>*.crx</code> file format used (currently 2).</td> 
+  </tr>
+  <tr>
+    <td><em>public key length</em></td><td>unsigned&nbsp;int</td><td>32 bits</td>
+    <td><i>pubkey.length</i></td>
+    <td>
+      The length of the RSA public key in <em>bytes</em>.
+    </td>
+  </tr>
+  <tr>
+    <td><em>signature length</em></td><td>unsigned&nbsp;int</td><td>32 bits</td>
+    <td><i>sig.length</i></td>
+    <td>
+      The length of the signature in <em>bytes</em>.
+    </td>
+  </tr>
+  <tr>
+    <td><em>public key</em></td><td>byte[]</td><td><i>pubkey.length</i></td>
+    <td><i>pubkey.contents</i></td>
+    <td>
+      The contents of the author's RSA public key, formatted as an X509 
+      SubjectPublicKeyInfo block.
+    </td>
+  </tr>
+  <tr>
+    <td><em>signature</em></td><td>byte[]</td><td><i>sig.length</i></td>
+    <td><i>sig.contents</i></td>
+    <td>
+      The signature of the ZIP content using the author's private key. The
+      signature is created using the RSA algorithm with the SHA-1 hash function.
+    </td>
+  </tr>
+</tbody></table>
+
+<a name="H2-1"></a><h2>Extension contents</h2>
 
 <p>
-When you package an extension,
-the extension is assigned a unique key pair.
-The public key is used as the identifier for the extension.
-The private key is kept private
-and used to sign each version of the extension.
+The extension's ZIP file is appended to the <code>*.crx</code> package after the
+header. This should be the same ZIP file that the signature in the header
+was generated from.
 </p>
 
-
-<a name="H2-0"></a><h2>Creating a package</h2>
-
-<p>To package an extension:</p>
-<ol>
-  <li>
-    Bring up the Extensions management page
-    by going to this URL:
-    <blockquote>
-    <b>chrome://extensions</b>
-    </blockquote>
-  </li>
-
-  <li>
-    If <b>Developer mode</b> has a + by it,
-    click the +.
-  </li>
-
-  <li>
-    Click the <b>Pack extension</b> button.
-    A dialog appears.
-  </li>
-
-  <li>
-    In the <b>Extension root directory</b> field,
-    specify the path to the extension's folder —
-    for example, <code>c:\myext</code>.
-    (Ignore the other field;
-    you don't specify a private key file
-    the first time you package a particular extension.)
-  </li>
-
-  <li>
-    Click <b>OK</b>.
-    The packager creates two files:
-    a <code>.crx</code> file,
-    which is the actual extension that can be installed,
-    and a <code>.pem</code> file,
-    which contains the private key.
-  </li>
-</ol>
-
+<a name="H2-2"></a><h2>Example</h2>
 
 <p>
-<b>Do not lose the private key!</b>
-Keep the <code>.pem</code> file secret and in a safe place.
-You'll need it later if you want to do any of the following:
-</p>
-<ul>
-<li><a href="#update">Update</a> the extension</li>
-<li>Upload the extension to the
-<a href="https://chrome.google.com/extensions">Extensions Gallery</a> </li>
-</ul>
-
-<p>
-If the extension is successfully packaged, you'll see a dialog like this
-that tells you where to find
-the <code>.crx</code> and <code>.pem</code> files:</p>
-<p></p>
-
-<img src="images/package-success.gif" width="554" height="208">
-
-
-<h2 id="update">Updating a package</h2>
-
-<p>To create an updated version of your extension:</p>
-<ol>
-  <li>
-    Increase the version number in <code>manifest.json</code>.
-  </li>
-
-  <li>
-    Bring up the Extensions management page
-    by going to this URL: <b>chrome://extensions</b>
-  </li>
-
-  <li>
-    Click the <b>Pack extension</b> button.
-    A dialog appears.
-  </li>
-
-  <li>
-    In the <b>Extension root directory</b> field,
-    specify the path to the extension's folder —
-    for example, <code>c:\myext</code>.
-  </li>
-
-  <li>
-    In the <b>Private key file</b> field,
-    specify the location of the
-    already generated <code>.pem</code> file for this extension —
-    for example, <code>c:\myext.pem</code>.
-  </li>
-
-  <li>
-    Click <b>OK</b>.
-  </li>
-</ol>
-
-<p>If the updated extension is successfully packaged, you'll see a dialog like this:</p>
-
-<img src="images/update-success.gif" width="298" height="160">
-
-<a name="H2-2"></a><h2>Packaging at the command line</h2>
-
-<p>
-Another way to package extensions
-is by invoking <code>chrome.exe</code> at the command line.
-Use the <code>--pack-extension</code> flag
-to specify the location of the extension's folder.
-Use <code>--pack-extension-key</code>
-to specify the location of the extension's private key file.
-For example:
+The following is an example hex dump from the beginning of a <code>.crx</code> 
+file.
 </p>
 
-<pre>chrome.exe --pack-extension=c:\myext --pack-extension-key=c:\myext.pem
+<pre>43 72 32 34   # "Cr24" -- the magic number
+02 00 00 00   # 2 -- the crx format version number
+A2 00 00 00   # 162 -- length of public key in bytes
+80 00 00 00   # 128 -- length of signature in bytes
+...........   # the contents of the public key
+...........   # the contents of the signature
+...........   # the contents of the zip file
+
 </pre>
 
+<h2 id="scripts">Packaging scripts</h2>
 <p>
-To suppress the dialog,
-add <code>--no-message-box</code> to the command.
+Members of the community have written the following scripts to package 
+<code>.crx</code> files.
 </p>
 
-<a name="H2-3"></a><h2>Package format and scripts</h2>
-<p>
-For more information on the format, as well as pointers to scripts you can use
-to create <code>.crx</code> files, see <a href="crx.html">CRX package format</a>.
-</p></div>
+<h3 id="ruby">Ruby</h3>
+<blockquote>
+<a href="http://github.com/Constellation/crxmake">github: crxmake</a>
+</blockquote>
+
+<a name="H3-5"></a><h3>Bash</h3>
+<pre>#!/bin/bash -e
+#
+# Purpose: Pack a Chromium extension directory into crx format
+
+if test $# -ne 2; then
+  echo "Usage: crxmake.sh &lt;extension dir&gt; &lt;pem path&gt;"
+  exit 1
+fi
+
+dir=$1
+key=$2
+name=$(basename "$dir")
+crx="$name.crx"
+pub="$name.pub"
+sig="$name.sig"
+zip="$name.zip"
+trap 'rm -f "$pub" "$sig" "$zip"' EXIT
+
+# zip up the crx dir
+cwd=$(pwd -P)
+(cd "$dir" &amp;&amp; zip -qr -9 -X "$cwd/$zip" .)
+
+# signature
+openssl sha1 -sha1 -binary -sign "$key" &lt; "$zip" &gt; "$sig"
+
+# public key
+openssl rsa -pubout -outform DER &lt; "$key" &gt; "$pub" 2&gt;/dev/null
+
+byte_swap () {
+  # Take "abcdefgh" and return it as "ghefcdab"
+  echo "${1:6:2}${1:4:2}${1:2:2}${1:0:2}"
+}
+
+crmagic_hex="4372 3234" # Cr24
+version_hex="0200 0000" # 2
+pub_len_hex=$(byte_swap $(printf '%08x\n' $(ls -l "$pub" | awk '{print $5}')))
+sig_len_hex=$(byte_swap $(printf '%08x\n' $(ls -l "$sig" | awk '{print $5}')))
+(
+  echo "$crmagic_hex $version_hex $pub_len_hex $sig_len_hex" | xxd -r -p
+  cat "$pub" "$sig" "$zip"
+) &gt; "$crx"
+echo "Wrote $crx"
+</pre>
+
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage" style="display: none; ">
