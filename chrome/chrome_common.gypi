@@ -289,6 +289,8 @@
         'common/service_process_type.h',
         'common/service_process_util.cc',
         'common/service_process_util.h',
+        'common/service_process_util_posix.cc',
+        'common/service_process_util_win.cc',
         'common/socket_stream_dispatcher.cc',
         'common/socket_stream_dispatcher.h',
         'common/spellcheck_common.cc',

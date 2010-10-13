@@ -128,9 +128,6 @@ class ServiceProcess : public RemotingDirectoryService::Client,
   // disabled in this process (note that shutdown != disabled).
   void OnServiceDisabled();
 
-  bool AddServiceProcessToAutoStart();
-  bool RemoveServiceProcessFromAutoStart();
-
 #if defined(ENABLE_REMOTING)
   FRIEND_TEST_ALL_PREFIXES(ServiceProcessTest, RunChromoting);
   FRIEND_TEST_ALL_PREFIXES(ServiceProcessTest, RunChromotingUntilShutdown);

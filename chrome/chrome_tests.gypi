@@ -1546,6 +1546,7 @@
         'common/sandbox_mac_unittest_helper.h',
         'common/sandbox_mac_unittest_helper.mm',
         'common/sandbox_mac_system_access_unittest.mm',
+        'common/service_process_util_unittest.cc',
         'common/switch_utils_unittest.cc',
         'common/thumbnail_score_unittest.cc',
         'common/time_format_unittest.cc',

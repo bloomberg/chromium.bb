@@ -5,6 +5,7 @@
 #include "base/debug_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/singleton.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
@@ -16,7 +17,7 @@
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const MainFunctionParams& parameters) {
   // If there is already a service process running, quit now.
-  if (!TakeServiceProcessSingletonLock())
+  if (!Singleton<ServiceProcessState>::get()->Initialize())
     return 0;
 
   MessageLoopForUI main_message_loop;

@@ -8,12 +8,10 @@
 
 #include "base/command_line.h"
 #include "base/path_service.h"
+#include "base/singleton.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#if defined(OS_WIN)
-#include "base/win_util.h"
-#endif  // defined(OS_WIN)
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -113,7 +111,7 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
 
   // After the IPC server has started we signal that the service process is
   // ready.
-  SignalServiceProcessReady(
+  Singleton<ServiceProcessState>::get()->SignalReady(
       NewRunnableMethod(this, &ServiceProcess::Shutdown));
 
   // See if we need to stay running.
@@ -139,8 +137,7 @@ bool ServiceProcess::Teardown() {
   // might use it have been shut down.
   network_change_notifier_.reset();
 
-  // Delete the service process lock file when it shuts down.
-  SignalServiceProcessStopped();
+  Singleton<ServiceProcessState>::get()->SignalStopped();
   return true;
 }
 
@@ -185,7 +182,7 @@ void ServiceProcess::OnCloudPrintProxyDisabled() {
 void ServiceProcess::OnServiceEnabled() {
   enabled_services_++;
   if (1 == enabled_services_) {
-    AddServiceProcessToAutoStart();
+    Singleton<ServiceProcessState>::get()->AddToAutoRun();
   }
 }
 
@@ -193,7 +190,7 @@ void ServiceProcess::OnServiceDisabled() {
   DCHECK_NE(enabled_services_, 0);
   enabled_services_--;
   if (0 == enabled_services_) {
-    RemoveServiceProcessFromAutoStart();
+    Singleton<ServiceProcessState>::get()->RemoveFromAutoRun();
     // We will wait for some time to respond to IPCs before shutting down.
     ScheduleShutdownCheck();
   }
@@ -219,36 +216,6 @@ void ServiceProcess::ShutdownIfNeeded() {
     }
   }
 }
-
-bool ServiceProcess::AddServiceProcessToAutoStart() {
-// TODO(sanjeevr): This needs to move to some common place like base or
-// chrome/common and implementation for non-Windows platforms needs to be added.
-#if defined(OS_WIN)
-  FilePath chrome_path;
-  if (PathService::Get(base::FILE_EXE, &chrome_path)) {
-    CommandLine cmd_line(chrome_path);
-    cmd_line.AppendSwitchASCII(switches::kProcessType,
-                               switches::kServiceProcess);
-    // We need a unique name for the command per user-date-dir. Just use the
-    // channel name.
-    return win_util::AddCommandToAutoRun(
-        HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessAutoRunKey()),
-        cmd_line.command_line_string());
-  }
-#endif  // defined(OS_WIN)
-  return false;
-}
-
-bool ServiceProcess::RemoveServiceProcessFromAutoStart() {
-// TODO(sanjeevr): This needs to move to some common place like base or
-// chrome/common and implementation for non-Windows platforms needs to be added.
-#if defined(OS_WIN)
-  return win_util::RemoveCommandFromAutoRun(
-      HKEY_CURRENT_USER, UTF8ToWide(GetServiceProcessAutoRunKey()));
-#endif  // defined(OS_WIN)
-  return false;
-}
-
 
 #if defined(ENABLE_REMOTING)
 bool ServiceProcess::EnableChromotingHostWithTokens(
