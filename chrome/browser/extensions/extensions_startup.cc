@@ -20,7 +20,7 @@ namespace extensions_startup {
 
 class PackExtensionLogger : public PackExtensionJob::Client {
  public:
-  PackExtensionLogger() {}
+  PackExtensionLogger() : process_startup_(false) {}
   virtual void OnPackSuccess(const FilePath& crx_path,
                              const FilePath& output_private_key_path);
   virtual void OnPackFailure(const std::string& error_message);

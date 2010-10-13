@@ -122,8 +122,8 @@ class EnergyEndpointer {
   // RMS which must be exceeded to conclude frame is speech.
   float decision_threshold_;
 
-  // Flag to indicate that audio should be used to estmiate enviroment, prior to
-  // receiving user input.
+  // Flag to indicate that audio should be used to estimate environment, prior
+  // to receiving user input.
   bool estimating_environment_;
 
   // Estimate of the background noise level. Used externally for UI feedback.

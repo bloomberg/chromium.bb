@@ -11,7 +11,9 @@
 #include "chrome/plugin/webplugin_proxy.h"
 
 WebPluginAcceleratedSurfaceProxy::WebPluginAcceleratedSurfaceProxy(
-    WebPluginProxy* plugin_proxy) : plugin_proxy_(plugin_proxy) {
+    WebPluginProxy* plugin_proxy)
+        : plugin_proxy_(plugin_proxy),
+          window_handle_(NULL) {
   surface_ = new AcceleratedSurface;
   surface_->Initialize(NULL, true);
 

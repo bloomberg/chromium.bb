@@ -26,6 +26,9 @@
 WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl()
     : context_(NULL),
       web_view_(NULL),
+#if defined(OS_MACOSX)
+      plugin_handle_(NULL),
+#endif  // defined(OS_MACOSX)
       cached_width_(0),
       cached_height_(0),
       bound_fbo_(0) {

@@ -42,7 +42,9 @@ class ScorerLoader {
                Scorer::CreationCallback* creation_callback)
       : file_thread_proxy_(file_thread_proxy),
         model_file_(model_file),
-        creation_callback_(creation_callback) {}
+        creation_callback_(creation_callback) {
+    memset(buffer_, 0, sizeof(buffer_));
+  }
 
   ~ScorerLoader() {}
 

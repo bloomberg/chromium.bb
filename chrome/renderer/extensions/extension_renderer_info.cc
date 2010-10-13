@@ -12,7 +12,8 @@
 std::vector<ExtensionRendererInfo>* ExtensionRendererInfo::extensions_ = NULL;
 
 ExtensionRendererInfo::ExtensionRendererInfo()
-    : allowed_to_execute_script_everywhere_(false) {
+    : location_(Extension::INVALID),
+      allowed_to_execute_script_everywhere_(false) {
 }
 
 ExtensionRendererInfo::ExtensionRendererInfo(

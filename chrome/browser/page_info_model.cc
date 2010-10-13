@@ -352,7 +352,7 @@ void PageInfoModel::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kPageInfoWindowPlacement);
 }
 
-PageInfoModel::PageInfoModel() {
+PageInfoModel::PageInfoModel() : observer_(NULL) {
   Init();
 }
 
