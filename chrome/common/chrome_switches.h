@@ -225,6 +225,7 @@ extern const char kNoDefaultBrowserCheck[];
 extern const char kNoEvents[];
 extern const char kNoFirstRun[];
 extern const char kNoJsRandomness[];
+extern const char kNoLabs[];
 extern const char kNoProxyServer[];
 extern const char kNoReferrers[];
 extern const char kNoPings[];

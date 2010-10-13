@@ -778,8 +778,11 @@ const char kNoFirstRun[]                    = "no-first-run";
 // Pages may still be able to generate inconsistent data from plugins.
 const char kNoJsRandomness[]                = "no-js-randomness";
 
-// Don't send HTTP-Referer headers.
-const char kNoReferrers[]                   = "no-referrers";
+// Disables all labs. Does not disable about:labs. Useful if a lab makes chrome
+// crash at startup: One can start chrome with --no-labs, disable the
+// problematic lab at about:labs and then restart chrome without this switch
+// again.
+const char kNoLabs[]                        = "no-labs";
 
 // Don't send hyperlink auditing pings
 const char kNoPings[]                       = "no-pings";
@@ -787,6 +790,9 @@ const char kNoPings[]                       = "no-pings";
 // Don't use a proxy server, always make direct connections. Overrides any
 // other proxy server flags that are passed.
 const char kNoProxyServer[]                 = "no-proxy-server";
+
+// Don't send HTTP-Referer headers.
+const char kNoReferrers[]                   = "no-referrers";
 
 // Runs the renderer outside the sandbox.
 const char kNoSandbox[]                     = "no-sandbox";

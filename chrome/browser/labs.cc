@@ -247,6 +247,9 @@ void ConvertLabsToSwitches(PrefService* prefs, CommandLine* command_line) {
   if (!IsEnabled())
     return;
 
+  if (command_line->HasSwitch(switches::kNoLabs))
+    return;
+
   std::set<std::string> enabled_experiments;
   GetSanitizedEnabledLabs(prefs, &enabled_experiments);
 
