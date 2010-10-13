@@ -73,6 +73,8 @@ static void CreateBackgroundHosts(
 
 }  // namespace
 
+extern bool g_log_bug53991;
+
 //
 // ExtensionProcessManager
 //
@@ -103,6 +105,7 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
+  LOG_IF(INFO, g_log_bug53991) << "~ExtensionProcessManager: " << this;
   CloseBackgroundHosts();
   DCHECK(background_hosts_.empty());
 }
@@ -347,6 +350,7 @@ void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
 }
 
 void ExtensionProcessManager::CloseBackgroundHosts() {
+  LOG_IF(INFO, g_log_bug53991) << "CloseBackgroundHosts: " << this;
   for (ExtensionHostSet::iterator iter = background_hosts_.begin();
        iter != background_hosts_.end(); ) {
     ExtensionHostSet::iterator current = iter++;

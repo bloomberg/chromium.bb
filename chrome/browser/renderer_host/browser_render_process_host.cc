@@ -77,6 +77,10 @@ using WebKit::WebCache;
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
+// TODO(mpcomplete): Remove this after fixing
+// http://code.google.com/p/chromium/issues/detail?id=53991
+bool g_log_bug53991 = false;
+
 // This class creates the IO thread for the renderer when running in
 // single-process mode.  It's not used in multi-process mode.
 class RendererMainThread : public base::Thread {
@@ -250,6 +254,8 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 }
 
 BrowserRenderProcessHost::~BrowserRenderProcessHost() {
+  LOG_IF(INFO, g_log_bug53991) << "~BrowserRenderProcessHost: " << this;
+
   WebCacheManager::GetInstance()->Remove(id());
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());
 
@@ -836,6 +842,10 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
 }
 
 void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
+  LOG_IF(INFO, g_log_bug53991) <<
+      "OnMessageReceived: " << this <<
+      "; type=" << msg.type() <<
+      "; routing=" << msg.routing_id();
   mark_child_process_activity_time();
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Dispatch control messages.

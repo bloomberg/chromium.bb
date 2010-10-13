@@ -187,6 +187,8 @@ bool CompareURLsIgnoreRef(const GURL& url, const GURL& other) {
 
 }  // namespace
 
+extern bool g_log_bug53991;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Constructors, Creation, Showing:
 
@@ -265,6 +267,10 @@ Browser::Browser(Type type, Profile* profile)
 }
 
 Browser::~Browser() {
+  LOG_IF(INFO, g_log_bug53991) <<
+      "~Browser: " << profile_->IsOffTheRecord() <<
+      "; stillActive=" << BrowserList::IsOffTheRecordSessionActive();
+
   if (profile_->GetProfileSyncService())
     profile_->GetProfileSyncService()->RemoveObserver(this);
 
