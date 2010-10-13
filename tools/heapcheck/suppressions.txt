@@ -207,9 +207,10 @@
    fun:URLRequestTest_CancelTest_DuringCookiePolicy_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
-   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestInfo::Run
    fun:testing::TestCase::Run
    fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::UnitTest::Run
    fun:TestSuite::Run
    fun:main
@@ -309,9 +310,10 @@
   fun:UserScriptSlaveTest::Serialize
   ...
   fun:testing::Test::Run
-  fun:testing::internal::TestInfoImpl::Run
+  fun:testing::TestInfo::Run
   fun:testing::TestCase::Run
   fun:testing::internal::UnitTestImpl::RunAllTests
+  fun:testing::HandleExceptionsInMethodIfSupported
   fun:testing::UnitTest::Run
   fun:TestSuite::Run
 }
@@ -474,9 +476,10 @@
    fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
-   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestInfo::Run
    fun:testing::TestCase::Run
    fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::UnitTest::Run
    fun:main
    fun:__libc_start_main
@@ -518,9 +521,10 @@
    fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
-   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestInfo::Run
    fun:testing::TestCase::Run
    fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::UnitTest::Run
    fun:main
    fun:__libc_start_main
@@ -1095,9 +1099,10 @@
    fun:FileSystemHostContextTest_CheckValidPath_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
-   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestInfo::Run
    fun:testing::TestCase::Run
    fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::UnitTest::Run
    fun:base::TestSuite::Run
    fun:main
@@ -1110,9 +1115,10 @@
    fun:FileSystemHostContextTest_GetRootPath_Test::TestBody
    fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
-   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestInfo::Run
    fun:testing::TestCase::Run
    fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::UnitTest::Run
    fun:base::TestSuite::Run
    fun:main
