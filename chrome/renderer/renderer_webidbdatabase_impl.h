@@ -31,15 +31,19 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
       const WebKit::WebString& name,
       const WebKit::WebString& key_path,
       bool auto_increment,
-      const WebKit::WebIDBTransaction& transaction);
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode& ec);
   virtual void removeObjectStore(
       const WebKit::WebString& name,
-      const WebKit::WebIDBTransaction& transaction);
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode& ec);
   virtual void setVersion(
-      const WebKit::WebString& version, WebKit::WebIDBCallbacks* callbacks);
+      const WebKit::WebString& version, WebKit::WebIDBCallbacks* callbacks,
+      WebKit::WebExceptionCode& ec);
   virtual WebKit::WebIDBTransaction* transaction(
       const WebKit::WebDOMStringList& names,
-      unsigned short mode, unsigned long timeout);
+      unsigned short mode, unsigned long timeout,
+      WebKit::WebExceptionCode& ec);
 
  private:
   int32 idb_database_id_;

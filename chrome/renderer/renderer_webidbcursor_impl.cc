@@ -10,6 +10,7 @@
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/render_thread.h"
 
+using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
 using WebKit::WebSerializedScriptValue;
@@ -52,23 +53,26 @@ void RendererWebIDBCursorImpl::value(
 }
 
 void RendererWebIDBCursorImpl::update(const WebSerializedScriptValue& value,
-                                      WebIDBCallbacks* callbacks) {
+                                      WebIDBCallbacks* callbacks,
+                                      WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBCursorUpdate(
-      SerializedScriptValue(value), callbacks, idb_cursor_id_);
+  dispatcher->RequestIDBCursorUpdate(SerializedScriptValue(value), callbacks,
+                                     idb_cursor_id_, &ec);
 }
 
 void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
-                                                WebIDBCallbacks* callbacks) {
+                                                WebIDBCallbacks* callbacks,
+                                                WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBCursorContinue(
-      IndexedDBKey(key), callbacks, idb_cursor_id_);
+  dispatcher->RequestIDBCursorContinue(IndexedDBKey(key), callbacks,
+                                       idb_cursor_id_, &ec);
 }
 
-void RendererWebIDBCursorImpl::remove(WebIDBCallbacks* callbacks) {
+void RendererWebIDBCursorImpl::remove(WebIDBCallbacks* callbacks,
+                                      WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBCursorRemove(callbacks, idb_cursor_id_);
+  dispatcher->RequestIDBCursorRemove(callbacks, idb_cursor_id_, &ec);
 }

@@ -10,6 +10,7 @@
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/renderer_webidbtransaction_impl.h"
 
+using WebKit::WebExceptionCode;
 using WebKit::WebDOMStringList;
 using WebKit::WebString;
 using WebKit::WebVector;
@@ -57,40 +58,44 @@ void RendererWebIDBIndexImpl::openObjectCursor(
     const WebKit::WebIDBKeyRange& range,
     unsigned short direction,
     WebKit::WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebKit::WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexOpenObjectCursor(
-      range, direction, callbacks,  idb_index_id_, transaction);
+      range, direction, callbacks,  idb_index_id_, transaction, &ec);
 }
 
 void RendererWebIDBIndexImpl::openKeyCursor(
     const WebKit::WebIDBKeyRange& range,
     unsigned short direction,
     WebKit::WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebKit::WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBIndexOpenCursor(
-      range, direction, callbacks,  idb_index_id_, transaction);
+  dispatcher->RequestIDBIndexOpenKeyCursor(
+      range, direction, callbacks,  idb_index_id_, transaction, &ec);
 }
 
 void RendererWebIDBIndexImpl::getObject(
     const WebKit::WebIDBKey& key,
     WebKit::WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebKit::WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBIndexGetObject(
-      IndexedDBKey(key), callbacks, idb_index_id_, transaction);
+      IndexedDBKey(key), callbacks, idb_index_id_, transaction, &ec);
 }
 
 void RendererWebIDBIndexImpl::getKey(
     const WebKit::WebIDBKey& key,
     WebKit::WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebKit::WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
-  dispatcher->RequestIDBIndexGet(
-      IndexedDBKey(key), callbacks,  idb_index_id_, transaction);
+  dispatcher->RequestIDBIndexGetKey(
+      IndexedDBKey(key), callbacks, idb_index_id_, transaction, &ec);
 }

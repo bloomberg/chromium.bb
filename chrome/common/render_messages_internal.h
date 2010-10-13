@@ -25,6 +25,7 @@
 #include "chrome/common/window_container_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_buffers_state.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebExceptionCode.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -2377,21 +2378,24 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               IndexedDBKey /* key */)
 
   // WebIDBCursor::update() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBCursorUpdate,
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBCursorUpdate,
                        int32, /* idb_cursor_id */
                        int32, /* response_id */
-                       SerializedScriptValue /* value */)
+                       SerializedScriptValue, /* value */
+                       WebKit::WebExceptionCode /* ec */)
 
   // WebIDBCursor::continue() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBCursorContinue,
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBCursorContinue,
                        int32, /* idb_cursor_id */
                        int32, /* response_id */
-                       IndexedDBKey /* key */)
+                       IndexedDBKey, /* key */
+                       WebKit::WebExceptionCode /* ec */)
 
   // WebIDBCursor::remove() message.
-  IPC_MESSAGE_CONTROL2(ViewHostMsg_IDBCursorRemove,
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_IDBCursorRemove,
                        int32, /* idb_cursor_id */
-                       int32 /* response_id */)
+                       int32, /* response_id */
+                       WebKit::WebExceptionCode /* ec */)
 
   // WebIDBFactory::open() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBFactoryOpen,
@@ -2418,41 +2422,37 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::vector<string16> /* objectStores */)
 
   // WebIDBDatabase::createObjectStore() message.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseCreateObjectStore,
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_IDBDatabaseCreateObjectStore,
                               ViewHostMsg_IDBDatabaseCreateObjectStore_Params,
-                              int32 /* object_store_id */)
-
-  // WebIDBDatabase::objectStore() message.
-  IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_IDBDatabaseObjectStore,
-                              int32, /* idb_database_id */
-                              string16, /* name */
-                              int32, /* mode */
-                              bool, /* success */
-                              int32 /* idb_object_store_id */)
+                              int32, /* object_store_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBDatabase::removeObjectStore() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBDatabaseRemoveObjectStore,
-                       int32, /* idb_database_id */
-                       string16, /* name */
-                       int32 /* transaction_id */)
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBDatabaseRemoveObjectStore,
+                              int32, /* idb_database_id */
+                              string16, /* name */
+                              int32, /* transaction_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBDatabase::setVersion() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBDatabaseSetVersion,
-                       int32, /* idb_database_id */
-                       int32, /* response_id */
-                       string16 /* version */)
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBDatabaseSetVersion,
+                              int32, /* idb_database_id */
+                              int32, /* response_id */
+                              string16, /* version */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBDatabase::transaction() message.
   // TODO: make this message async. Have the renderer create a
   // temporary ID and keep a map in the browser process of real
   // IDs to temporary IDs. We can then update the transaction
   // to its real ID asynchronously.
-  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_IDBDatabaseTransaction,
+  IPC_SYNC_MESSAGE_CONTROL4_2(ViewHostMsg_IDBDatabaseTransaction,
                               int32, /* idb_database_id */
                               std::vector<string16>, /* object_stores */
                               int32, /* mode */
                               int32, /* timeout */
-                              int32 /* idb_transaction_id */)
+                              int32, /* idb_transaction_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBDatabase::~WebIDBDatabase() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseDestroyed,
@@ -2479,26 +2479,30 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               bool /* unique */)
 
   // WebIDBIndex::openObjectCursor() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexOpenObjectCursor,
-                       ViewHostMsg_IDBIndexOpenCursor_Params)
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexOpenObjectCursor,
+                              ViewHostMsg_IDBIndexOpenCursor_Params,
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBIndex::openKeyCursor() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexOpenKeyCursor,
-                       ViewHostMsg_IDBIndexOpenCursor_Params)
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBIndexOpenKeyCursor,
+                              ViewHostMsg_IDBIndexOpenCursor_Params,
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBIndex::getObject() message.
-  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBIndexGetObject,
-                       int32, /* idb_index_id */
-                       int32, /* response_id */
-                       IndexedDBKey, /* key */
-                       int32 /* transaction_id */)
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_IDBIndexGetObject,
+                              int32, /* idb_index_id */
+                              int32, /* response_id */
+                              IndexedDBKey, /* key */
+                              int32, /* transaction_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBIndex::getKey() message.
-  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBIndexGetKey,
-                       int32, /* idb_index_id */
-                       int32, /* response_id */
-                       IndexedDBKey, /* key */
-                       int32 /* transaction_id */)
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_IDBIndexGetKey,
+                              int32, /* idb_index_id */
+                              int32, /* response_id */
+                              IndexedDBKey, /* key */
+                              int32, /* transaction_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBIndex::~WebIDBIndex() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBIndexDestroyed,
@@ -2520,43 +2524,50 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::vector<string16> /* index_names */)
 
   // WebIDBObjectStore::get() message.
-  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBObjectStoreGet,
-                       int32, /* idb_object_store_id */
-                       int32, /* response_id */
-                       IndexedDBKey, /* key */
-                       int32 /* transaction_id */)
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_IDBObjectStoreGet,
+                              int32, /* idb_object_store_id */
+                              int32, /* response_id */
+                              IndexedDBKey, /* key */
+                              int32, /* transaction_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBObjectStore::put() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStorePut,
-                       ViewHostMsg_IDBObjectStorePut_Params)
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStorePut,
+                              ViewHostMsg_IDBObjectStorePut_Params,
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBObjectStore::remove() message.
-  IPC_MESSAGE_CONTROL4(ViewHostMsg_IDBObjectStoreRemove,
-                       int32, /* idb_object_store_id */
-                       int32, /* response_id */
-                       IndexedDBKey, /* key */
-                       int32 /* transaction_id */)
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_IDBObjectStoreRemove,
+                              int32, /* idb_object_store_id */
+                              int32, /* response_id */
+                              IndexedDBKey, /* key */
+                              int32, /* transaction_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBObjectStore::createIndex() message.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreCreateIndex,
+  IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_IDBObjectStoreCreateIndex,
                               ViewHostMsg_IDBObjectStoreCreateIndex_Params,
-                              int32 /* index_id */)
+                              int32, /* index_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBObjectStore::index() message.
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_IDBObjectStoreIndex,
+  IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_IDBObjectStoreIndex,
                               int32, /* idb_object_store_id */
                               string16, /* name */
-                              int32 /* idb_index_id */)
+                              int32, /* idb_index_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBObjectStore::removeIndex() message.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_IDBObjectStoreRemoveIndex,
-                       int32, /* idb_object_store_id */
-                       string16, /* name */
-                       int32 /* transaction_id */)
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_IDBObjectStoreRemoveIndex,
+                              int32, /* idb_object_store_id */
+                              string16, /* name */
+                              int32, /* transaction_id */
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBObjectStore::openCursor() message.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreOpenCursor,
-                       ViewHostMsg_IDBObjectStoreOpenCursor_Params)
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBObjectStoreOpenCursor,
+                              ViewHostMsg_IDBObjectStoreOpenCursor_Params,
+                              WebKit::WebExceptionCode /* ec */)
 
   // WebIDBObjectStore::~WebIDBObjectStore() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreDestroyed,

@@ -22,6 +22,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
+using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKeyRange;
@@ -71,33 +72,42 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
 void IndexedDBDispatcher::RequestIDBCursorUpdate(
     const SerializedScriptValue& value,
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_cursor_id) {
+    int32 idb_cursor_id,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBCursorUpdate(
-          idb_cursor_id, pending_callbacks_.Add(callbacks.release()), value));
+      new ViewHostMsg_IDBCursorUpdate(idb_cursor_id, response_id, value, ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBCursorContinue(
     const IndexedDBKey& key,
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_cursor_id) {
+    int32 idb_cursor_id,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBCursorContinue(
-          idb_cursor_id, pending_callbacks_.Add(callbacks.release()), key));
+      new ViewHostMsg_IDBCursorContinue(idb_cursor_id, response_id, key, ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBCursorRemove(
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_cursor_id) {
+    int32 idb_cursor_id,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBCursorRemove(
-          idb_cursor_id, pending_callbacks_.Add(callbacks.release())));
+      new ViewHostMsg_IDBCursorRemove(idb_cursor_id, response_id, ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryOpen(
@@ -128,13 +138,16 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
 void IndexedDBDispatcher::RequestIDBDatabaseSetVersion(
     const string16& version,
     WebIDBCallbacks* callbacks_ptr,
-    int32 idb_database_id) {
+    int32 idb_database_id,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBDatabaseSetVersion(
-          idb_database_id, pending_callbacks_.Add(callbacks.release()),
-                                                  version));
+      new ViewHostMsg_IDBDatabaseSetVersion(idb_database_id, response_id,
+                                            version, ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
@@ -142,7 +155,8 @@ void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
     unsigned short direction,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_index_id,
-    const WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBIndexOpenCursor_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
@@ -153,15 +167,18 @@ void IndexedDBDispatcher::RequestIDBIndexOpenObjectCursor(
   params.idb_index_id_ = idb_index_id;
   params.transaction_id_ = TransactionId(transaction);
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBIndexOpenObjectCursor(params));
+      new ViewHostMsg_IDBIndexOpenObjectCursor(params, ec));
+  if (*ec)
+    pending_callbacks_.Remove(params.response_id_);
 }
 
-void IndexedDBDispatcher::RequestIDBIndexOpenCursor(
+void IndexedDBDispatcher::RequestIDBIndexOpenKeyCursor(
     const WebIDBKeyRange& idb_key_range,
     unsigned short direction,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_index_id,
-    const WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBIndexOpenCursor_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
@@ -174,46 +191,58 @@ void IndexedDBDispatcher::RequestIDBIndexOpenCursor(
   params.idb_index_id_ = idb_index_id;
   params.transaction_id_ = TransactionId(transaction);
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBIndexOpenKeyCursor(params));
+      new ViewHostMsg_IDBIndexOpenKeyCursor(params, ec));
+  if (*ec)
+    pending_callbacks_.Remove(params.response_id_);
 }
 
 void IndexedDBDispatcher::RequestIDBIndexGetObject(
     const IndexedDBKey& key,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_index_id,
-    const WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexGetObject(
-          idb_index_id, pending_callbacks_.Add(callbacks.release()), key,
-          TransactionId(transaction)));
+          idb_index_id, response_id, key,
+          TransactionId(transaction), ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
 }
 
-void IndexedDBDispatcher::RequestIDBIndexGet(
+void IndexedDBDispatcher::RequestIDBIndexGetKey(
     const IndexedDBKey& key,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_index_id,
-    const WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
       new ViewHostMsg_IDBIndexGetKey(
-          idb_index_id, pending_callbacks_.Add(callbacks.release()), key,
-          TransactionId(transaction)));
+          idb_index_id, response_id, key,
+          TransactionId(transaction), ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreGet(
     const IndexedDBKey& key,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_object_store_id,
-    const WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
       new ViewHostMsg_IDBObjectStoreGet(
-          idb_object_store_id, pending_callbacks_.Add(callbacks.release()),
-          key, TransactionId(transaction)));
+          idb_object_store_id, response_id,
+          key, TransactionId(transaction), ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStorePut(
@@ -222,7 +251,8 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
     bool add_only,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_object_store_id,
-    const WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBObjectStorePut_Params params;
   params.idb_object_store_id_ = idb_object_store_id;
@@ -231,20 +261,26 @@ void IndexedDBDispatcher::RequestIDBObjectStorePut(
   params.key_ = key;
   params.add_only_ = add_only;
   params.transaction_id_ = TransactionId(transaction);
-  RenderThread::current()->Send(new ViewHostMsg_IDBObjectStorePut(params));
+  RenderThread::current()->Send(new ViewHostMsg_IDBObjectStorePut(params, ec));
+  if (*ec)
+    pending_callbacks_.Remove(params.response_id_);
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreRemove(
     const IndexedDBKey& key,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_object_store_id,
-    const WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
+  int32 response_id = pending_callbacks_.Add(callbacks.release());
   RenderThread::current()->Send(
       new ViewHostMsg_IDBObjectStoreRemove(
-          idb_object_store_id, pending_callbacks_.Add(callbacks.release()),
-          key, TransactionId(transaction)));
+          idb_object_store_id, response_id,
+          key, TransactionId(transaction), ec));
+  if (*ec)
+    pending_callbacks_.Remove(response_id);
 }
 
 void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
@@ -252,7 +288,8 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
     unsigned short direction,
     WebIDBCallbacks* callbacks_ptr,
     int32 idb_object_store_id,
-    const WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode* ec) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ViewHostMsg_IDBObjectStoreOpenCursor_Params params;
   params.response_id_ = pending_callbacks_.Add(callbacks.release());
@@ -263,7 +300,9 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
   params.idb_object_store_id_ = idb_object_store_id;
   params.transaction_id_ = TransactionId(transaction);
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBObjectStoreOpenCursor(params));
+      new ViewHostMsg_IDBObjectStoreOpenCursor(params, ec));
+  if (*ec)
+    pending_callbacks_.Remove(params.response_id_);
 }
 
 void IndexedDBDispatcher::RegisterWebIDBTransactionCallbacks(
@@ -330,7 +369,7 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
 void IndexedDBDispatcher::OnSuccessOpenCursor(int32 repsonse_id,
                                               int32 object_id) {
   WebIDBCallbacks* callbacks =
-        pending_callbacks_.Lookup(repsonse_id);
+      pending_callbacks_.Lookup(repsonse_id);
   callbacks->onSuccess(new RendererWebIDBCursorImpl(object_id));
   pending_callbacks_.Remove(repsonse_id);
 }

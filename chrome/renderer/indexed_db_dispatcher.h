@@ -9,6 +9,7 @@
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
@@ -43,69 +44,82 @@ class IndexedDBDispatcher {
   void RequestIDBCursorUpdate(
       const SerializedScriptValue& value,
       WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 idb_cursor_id);
+      int32 idb_cursor_id,
+      WebKit::WebExceptionCode* ec);
 
   void RequestIDBCursorContinue(
       const IndexedDBKey& key,
       WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 idb_cursor_id);
+      int32 idb_cursor_id,
+      WebKit::WebExceptionCode* ec);
 
   void RequestIDBCursorRemove(
       WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 idb_cursor_id);
+      int32 idb_cursor_id,
+      WebKit::WebExceptionCode* ec);
 
   void RequestIDBDatabaseSetVersion(
       const string16& version,
       WebKit::WebIDBCallbacks* callbacks,
-      int32 idb_database_id);
+      int32 idb_database_id,
+      WebKit::WebExceptionCode* ec);
 
   void RequestIDBIndexOpenObjectCursor(
       const WebKit::WebIDBKeyRange& idb_key_range,
       unsigned short direction,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_index_id,
-      const WebKit::WebIDBTransaction& transaction);
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
 
-  void RequestIDBIndexOpenCursor(const WebKit::WebIDBKeyRange& idb_key_range,
-                                 unsigned short direction,
-                                 WebKit::WebIDBCallbacks* callbacks,
-                                 int32 idb_index_id,
-                                 const WebKit::WebIDBTransaction& transaction);
+  void RequestIDBIndexOpenKeyCursor(
+      const WebKit::WebIDBKeyRange& idb_key_range,
+      unsigned short direction,
+      WebKit::WebIDBCallbacks* callbacks,
+      int32 idb_index_id,
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
 
   void RequestIDBIndexGetObject(const IndexedDBKey& key,
                                 WebKit::WebIDBCallbacks* callbacks,
                                 int32 idb_index_id,
-                                const WebKit::WebIDBTransaction& transaction);
+                                const WebKit::WebIDBTransaction& transaction,
+                                 WebKit::WebExceptionCode* ec);
 
-  void RequestIDBIndexGet(const IndexedDBKey& key,
-                          WebKit::WebIDBCallbacks* callbacks,
-                          int32 idb_index_id,
-                          const WebKit::WebIDBTransaction& transaction);
+  void RequestIDBIndexGetKey(const IndexedDBKey& key,
+                             WebKit::WebIDBCallbacks* callbacks,
+                             int32 idb_index_id,
+                             const WebKit::WebIDBTransaction& transaction,
+                             WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreGet(const IndexedDBKey& key,
                                 WebKit::WebIDBCallbacks* callbacks,
                                 int32 idb_object_store_id,
-                                const WebKit::WebIDBTransaction& transaction);
+                                const WebKit::WebIDBTransaction& transaction,
+                                WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStorePut(const SerializedScriptValue& value,
                                 const IndexedDBKey& key,
                                 bool add_only,
                                 WebKit::WebIDBCallbacks* callbacks,
                                 int32 idb_object_store_id,
-                                const WebKit::WebIDBTransaction& transaction);
+                                const WebKit::WebIDBTransaction& transaction,
+                                WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreRemove(
       const IndexedDBKey& key,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,
-      const WebKit::WebIDBTransaction& transaction);
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
 
   void RequestIDBObjectStoreOpenCursor(
       const WebKit::WebIDBKeyRange& idb_key_range,
       unsigned short direction,
       WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id,
-      const WebKit::WebIDBTransaction& transaction);
+      const WebKit::WebIDBTransaction& transaction,
+      WebKit::WebExceptionCode* ec);
 
   void RegisterWebIDBTransactionCallbacks(
       WebKit::WebIDBTransactionCallbacks* callbacks,

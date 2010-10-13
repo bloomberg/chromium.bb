@@ -20,6 +20,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebDOMStringList;
+using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKeyRange;
@@ -68,11 +69,12 @@ WebDOMStringList RendererWebIDBObjectStoreImpl::indexNames() const {
 void RendererWebIDBObjectStoreImpl::get(
     const WebIDBKey& key,
     WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStoreGet(
-      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction);
+      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
 }
 
 void RendererWebIDBObjectStoreImpl::put(
@@ -80,29 +82,32 @@ void RendererWebIDBObjectStoreImpl::put(
     const WebIDBKey& key,
     bool add_only,
     WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStorePut(
       SerializedScriptValue(value), IndexedDBKey(key), add_only, callbacks,
-      idb_object_store_id_, transaction);
+      idb_object_store_id_, transaction, &ec);
 }
 
 void RendererWebIDBObjectStoreImpl::remove(
     const WebIDBKey& key,
     WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStoreRemove(
-      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction);
+      IndexedDBKey(key), callbacks, idb_object_store_id_, transaction, &ec);
 }
 
-WebKit::WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
-    const WebKit::WebString& name,
-    const WebKit::WebString& key_path,
+WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
+    const WebString& name,
+    const WebString& key_path,
     bool unique,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   ViewHostMsg_IDBObjectStoreCreateIndex_Params params;
   params.name_ = name;
   params.key_path_ = key_path;
@@ -112,17 +117,19 @@ WebKit::WebIDBIndex* RendererWebIDBObjectStoreImpl::createIndex(
 
   int32 index_id;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBObjectStoreCreateIndex(params, &index_id));
+      new ViewHostMsg_IDBObjectStoreCreateIndex(params, &index_id, &ec));
   if (!index_id)
     return NULL;
   return new RendererWebIDBIndexImpl(index_id);
 }
 
-WebIDBIndex* RendererWebIDBObjectStoreImpl::index(const WebString& name) {
+WebIDBIndex* RendererWebIDBObjectStoreImpl::index(
+    const WebString& name,
+    WebExceptionCode& ec) {
   int32 idb_index_id;
   RenderThread::current()->Send(
       new ViewHostMsg_IDBObjectStoreIndex(idb_object_store_id_, name,
-                                          &idb_index_id));
+                                          &idb_index_id, &ec));
   if (!idb_index_id)
       return NULL;
   return new RendererWebIDBIndexImpl(idb_index_id);
@@ -130,20 +137,22 @@ WebIDBIndex* RendererWebIDBObjectStoreImpl::index(const WebString& name) {
 
 void RendererWebIDBObjectStoreImpl::removeIndex(
     const WebString& name,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   RenderThread::current()->Send(
       new ViewHostMsg_IDBObjectStoreRemoveIndex(
           idb_object_store_id_, name,
-          IndexedDBDispatcher::TransactionId(transaction)));
+          IndexedDBDispatcher::TransactionId(transaction), &ec));
 }
 
 void RendererWebIDBObjectStoreImpl::openCursor(
     const WebIDBKeyRange& idb_key_range,
     unsigned short direction, WebIDBCallbacks* callbacks,
-    const WebKit::WebIDBTransaction& transaction) {
+    const WebIDBTransaction& transaction,
+    WebExceptionCode& ec) {
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStoreOpenCursor(
       idb_key_range, direction, callbacks,  idb_object_store_id_,
-      transaction);
+      transaction, &ec);
 }
