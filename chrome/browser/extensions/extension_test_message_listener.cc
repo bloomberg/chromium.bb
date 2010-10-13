@@ -10,7 +10,6 @@
 #include "chrome/test/ui_test_utils.h"
 
 // TODO(finnur): Remove after capturing debug info.
-#include <iostream>
 #include "chrome/common/extensions/extension.h"
 
 ExtensionTestMessageListener::ExtensionTestMessageListener(
@@ -50,8 +49,8 @@ void ExtensionTestMessageListener::Observe(
   function_ = Source<ExtensionTestSendMessageFunction>(source).ptr();
   // TODO(finnur): Remove after capturing debug info.
   if (Extension::emit_traces_for_whitelist_extension_test_) {
-    std::cout << "-*-*- Got     : " << content.c_str() << "\n" << std::flush;
-    std::cout << "-*-*- Expected: " << expected_message_.c_str() << "\n" << std::flush;
+    printf("-*-*- Got     : %s\n", content.c_str());
+    printf("-*-*- Expected: %s\n", expected_message_.c_str());
   }
 
   if (!satisfied_ && content == expected_message_) {

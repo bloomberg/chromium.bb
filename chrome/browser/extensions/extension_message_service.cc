@@ -393,26 +393,42 @@ void ExtensionMessageService::PostMessageFromRenderer(
 void ExtensionMessageService::DispatchEventToRenderers(
     const std::string& event_name, const std::string& event_args,
     Profile* restrict_to_profile, const GURL& event_url) {
-  if (!profile_)
+  if (Extension::emit_traces_for_whitelist_extension_test_) {
+    printf("***** DispatchEventToRenderers: %s(%s) for url '%s'\n",
+       event_name.c_str(), event_args.c_str(), event_url.spec().c_str());
+  }
+
+  if (!profile_) {
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** ERROR: No profile, aborting\n");
     return;
+  }
 
   // We don't expect to get events from a completely different profile.
   DCHECK(!restrict_to_profile || profile_->IsSameProfile(restrict_to_profile));
 
   ListenerMap::iterator it = listeners_.find(event_name);
-  if (it == listeners_.end())
+  if (it == listeners_.end()) {
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** WARNING: no listeners, aborting\n");
     return;
+  }
 
   std::set<int>& pids = it->second;
 
   // Send the event only to renderers that are listening for it.
   for (std::set<int>::iterator pid = pids.begin(); pid != pids.end(); ++pid) {
     RenderProcessHost* renderer = RenderProcessHost::FromID(*pid);
-    if (!renderer)
+    if (!renderer) {
+      if (Extension::emit_traces_for_whitelist_extension_test_)
+        printf("***** ERROR: !renderer, trying next one\n");
       continue;
+    }
     if (!ChildProcessSecurityPolicy::GetInstance()->
             HasExtensionBindings(*pid)) {
       // Don't send browser-level events to unprivileged processes.
+      if (Extension::emit_traces_for_whitelist_extension_test_)
+        printf("***** ERROR: unprivileged pid, try next\n");
       continue;
     }
 
@@ -420,6 +436,8 @@ void ExtensionMessageService::DispatchEventToRenderers(
     // incognito tab event sent to a normal process, or vice versa).
     bool cross_incognito =
         restrict_to_profile && renderer->profile() != restrict_to_profile;
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** --- Dispatching event! ---\n");
     DispatchEvent(renderer, event_name, event_args, cross_incognito, event_url);
   }
 }

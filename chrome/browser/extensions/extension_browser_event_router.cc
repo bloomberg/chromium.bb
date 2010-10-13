@@ -70,6 +70,9 @@ static void DispatchEvent(Profile* profile,
   if (profile->GetExtensionMessageService()) {
     profile->GetExtensionMessageService()->DispatchEventToRenderers(
         event_name, json_args, profile, GURL());
+  } else {
+    if (Extension::emit_traces_for_whitelist_extension_test_)
+      printf("***** ERROR: no profile->GetExtensionMessageService()\n");
   }
 }
 
@@ -390,7 +393,7 @@ void ExtensionBrowserEventRouter::TabUpdated(TabContents* contents,
 
     // TODO(finnur): Remove once I have one failed run of this test.
     if (Extension::emit_traces_for_whitelist_extension_test_)
-      printf("***** not SENDING TabUpdated\n");
+      printf("***** Sending TabUpdated\n");
 
     DispatchEvent(contents->profile(), events::kOnTabUpdated, json_args);
   } else {
