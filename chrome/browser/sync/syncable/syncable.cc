@@ -157,7 +157,9 @@ bool LessPathNames::operator() (const string& a, const string& b) const {
 ///////////////////////////////////////////////////////////////////////////
 // EntryKernel
 
-EntryKernel::EntryKernel() : dirty_(false) {}
+EntryKernel::EntryKernel() : dirty_(false) {
+  memset(int64_fields, 0, sizeof(int64_fields));
+}
 
 EntryKernel::~EntryKernel() {}
 

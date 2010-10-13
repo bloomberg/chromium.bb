@@ -97,7 +97,10 @@ class Graphics2DDeviceContext {
 class AudioDeviceContext : public AudioMessageFilter::Delegate,
                            public base::DelegateSimpleThread::Delegate {
  public:
-  explicit AudioDeviceContext() : stream_id_(0) {
+  explicit AudioDeviceContext()
+      : context_(NULL),
+        stream_id_(0),
+        shared_memory_size_(0) {
   }
   virtual ~AudioDeviceContext();
 

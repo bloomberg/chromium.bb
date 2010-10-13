@@ -19,7 +19,9 @@
 // and, once again, the Launch Services system. We have no need to manage this
 // ourselves.
 
-ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir) {
+ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
+    : locked_(false),
+      foreground_window_(NULL) {
   // This space intentionally left blank.
 }
 

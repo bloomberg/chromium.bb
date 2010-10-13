@@ -34,7 +34,9 @@ AudioRendererImpl::AudioRendererImpl(AudioMessageFilter* filter)
       shared_memory_size_(0),
       io_loop_(filter->message_loop()),
       stopped_(false),
-      pending_request_(false) {
+      pending_request_(false),
+      prerolling_(false),
+      preroll_bytes_(0) {
   DCHECK(io_loop_);
 }
 

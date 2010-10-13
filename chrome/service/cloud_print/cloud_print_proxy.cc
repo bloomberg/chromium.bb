@@ -37,7 +37,9 @@ static void ShowTokenExpiredNotificationInBrowser() {
   base::LaunchApp(cmd_line, false, false, NULL);
 }
 
-CloudPrintProxy::CloudPrintProxy() {
+CloudPrintProxy::CloudPrintProxy()
+    : service_prefs_(NULL),
+      client_(NULL) {
 }
 
 CloudPrintProxy::~CloudPrintProxy() {

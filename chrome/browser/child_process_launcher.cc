@@ -42,7 +42,9 @@ class ChildProcessLauncher::Context
     : public base::RefCountedThreadSafe<ChildProcessLauncher::Context> {
  public:
   Context()
-      : starting_(true)
+      : client_(NULL),
+        client_thread_id_(BrowserThread::UI),
+        starting_(true)
 #if defined(OS_LINUX)
         , zygote_(false)
 #endif

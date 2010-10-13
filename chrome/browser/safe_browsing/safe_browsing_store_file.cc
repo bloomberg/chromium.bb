@@ -179,8 +179,10 @@ void SafeBrowsingStoreFile::RecordFormatEvent(FormatEventType event_type) {
 SafeBrowsingStoreFile::SafeBrowsingStoreFile()
     : chunks_written_(0),
       file_(NULL),
-      empty_(false) {
+      empty_(false),
+      corruption_seen_(false) {
 }
+
 SafeBrowsingStoreFile::~SafeBrowsingStoreFile() {
   Close();
 }

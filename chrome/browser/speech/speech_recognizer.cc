@@ -70,6 +70,8 @@ class SpeexEncoder {
 };
 
 SpeexEncoder::SpeexEncoder() {
+  // speex_bits_init() does not initialize all of the |bits_| struct.
+  memset(&bits_, 0, sizeof(bits_));
   speex_bits_init(&bits_);
   encoder_state_ = speex_encoder_init(&speex_wb_mode);
   DCHECK(encoder_state_);
@@ -79,6 +81,7 @@ SpeexEncoder::SpeexEncoder() {
   speex_encoder_ctl(encoder_state_, SPEEX_SET_QUALITY, &quality);
   int vbr = 1;
   speex_encoder_ctl(encoder_state_, SPEEX_SET_VBR, &vbr);
+  memset(encoded_frame_data_, 0, sizeof(encoded_frame_data_));
 }
 
 SpeexEncoder::~SpeexEncoder() {

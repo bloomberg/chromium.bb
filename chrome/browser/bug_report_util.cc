@@ -127,7 +127,7 @@ class BugReportUtil::PostCleanup : public URLFetcher::Delegate {
   BugReportUtil::PostCleanup::PostCleanup(Profile* profile)
       : profile_(profile) {
 #else
-  BugReportUtil::PostCleanup::PostCleanup() {
+  BugReportUtil::PostCleanup::PostCleanup() : profile_(NULL) {
 #endif
 }
 
