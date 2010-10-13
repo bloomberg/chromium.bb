@@ -297,6 +297,13 @@ void ContentSettingsHandler::Initialize() {
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setBlockThirdPartyCookies", *block_3rd_party.get());
 
+  notification_registrar_.Add(
+      this, NotificationType::OTR_PROFILE_CREATED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(
+      this, NotificationType::PROFILE_DESTROYED,
+      NotificationService::AllSources());
+
   UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
       this, NotificationType::CONTENT_SETTINGS_CHANGED,
@@ -319,6 +326,18 @@ void ContentSettingsHandler::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   switch (type.value) {
+    case NotificationType::PROFILE_DESTROYED: {
+      Profile* profile = static_cast<Source<Profile> >(source).ptr();
+      if (profile->IsOffTheRecord())
+        dom_ui_->CallJavascriptFunction(L"ContentSettings.OTRProfileDestroyed");
+      break;
+    }
+
+    case NotificationType::OTR_PROFILE_CREATED: {
+      UpdateAllOTRExceptionsViewsFromModel();
+      break;
+    }
+
     case NotificationType::CONTENT_SETTINGS_CHANGED: {
       const ContentSettingsDetails* settings_details =
           static_cast<Details<const ContentSettingsDetails> >(details).ptr();
@@ -330,22 +349,27 @@ void ContentSettingsHandler::Observe(NotificationType type,
         UpdateExceptionsViewFromModel(settings_details->type());
       break;
     }
+
     case NotificationType::GEOLOCATION_DEFAULT_CHANGED: {
       UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
       break;
     }
+
     case NotificationType::GEOLOCATION_SETTINGS_CHANGED: {
       UpdateGeolocationExceptionsView();
       break;
     }
+
     case NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED: {
       UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       break;
     }
+
     case NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED: {
       UpdateNotificationExceptionsView();
       break;
     }
+
     default:
       OptionsPageUIHandler::Observe(type, source, details);
   }
@@ -381,6 +405,19 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
   for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
        type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
     UpdateExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
+  }
+}
+
+void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
+  for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
+       type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
+    if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
+        type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+      continue;
+    }
+
+    UpdateExceptionsViewFromOTRHostContentSettingsMap(
+        static_cast<ContentSettingsType>(type));
   }
 }
 
@@ -479,24 +516,31 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setExceptions", type_string, exceptions);
 
+  UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
+
   // The default may also have changed (we won't get a separate notification).
   // If it hasn't changed, this call will be harmless.
   UpdateSettingDefaultFromModel(type);
+}
 
+void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
+    ContentSettingsType type) {
   const HostContentSettingsMap* otr_settings_map = GetOTRContentSettingsMap();
-  if (otr_settings_map) {
-    HostContentSettingsMap::SettingsForOneType otr_entries;
-    otr_settings_map->GetSettingsForOneType(type, "", &otr_entries);
+  if (!otr_settings_map)
+    return;
 
-    ListValue otr_exceptions;
-    for (size_t i = 0; i < otr_entries.size(); ++i) {
-      otr_exceptions.Append(GetExceptionForPage(entries[i].first,
-                                                entries[i].second));
-    }
+  HostContentSettingsMap::SettingsForOneType otr_entries;
+  otr_settings_map->GetSettingsForOneType(type, "", &otr_entries);
 
-    dom_ui_->CallJavascriptFunction(
-        L"ContentSettings.setOTRExceptions", type_string, otr_exceptions);
+  ListValue otr_exceptions;
+  for (size_t i = 0; i < otr_entries.size(); ++i) {
+    otr_exceptions.Append(GetExceptionForPage(otr_entries[i].first,
+                                              otr_entries[i].second));
   }
+
+  StringValue type_string(ContentSettingsTypeToGroupName(type));
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.setOTRExceptions", type_string, otr_exceptions);
 }
 
 void ContentSettingsHandler::RegisterMessages() {

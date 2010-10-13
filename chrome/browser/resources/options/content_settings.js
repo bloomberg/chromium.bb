@@ -121,6 +121,30 @@ cr.define('options', function() {
     for (var i = 0; i < list.length; i++) {
       exceptionsList.addException(list[i]);
     }
+
+    // If an OTR table is added while the normal exceptions area is already
+    // showing (because the exceptions area is already expanded), then show
+    // the new OTR table.
+    var parentExceptionsArea =
+        document.querySelector('div[contentType=' + type + '][mode=normal]');
+    if (!parentExceptionsArea.classList.contains('hidden')) {
+      exceptionsArea.classList.remove('hidden');
+      exceptionsArea.querySelector('list').redraw();
+    }
+  };
+
+  /**
+   * Clears and hides the incognito exceptions lists.
+   */
+  ContentSettings.OTRProfileDestroyed = function() {
+    var exceptionsAreas =
+        document.querySelectorAll('div[contentType][mode=otr]');
+
+    for (var i = 0; i < exceptionsAreas.length; i++) {
+      exceptionsAreas[i].otrProfileExists = false;
+      exceptionsAreas[i].classList.add('hidden');
+      exceptionsAreas[i].querySelector('list').clear();
+    }
   };
 
   /**

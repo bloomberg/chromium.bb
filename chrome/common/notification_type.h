@@ -641,6 +641,10 @@ class NotificationType {
     // browser window should notify the user of this error.
     PROFILE_ERROR,
 
+    // Sent after an incognito profile has been created. The details are none
+    // and the source is the new profile.
+    OTR_PROFILE_CREATED,
+
     // Sent before a Profile is destroyed. The details are
     // none and the source is a Profile*.
     PROFILE_DESTROYED,

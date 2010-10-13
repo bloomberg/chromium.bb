@@ -564,6 +564,11 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
   if (!off_the_record_profile_.get()) {
     scoped_ptr<Profile> p(CreateOffTheRecordProfile());
     off_the_record_profile_.swap(p);
+
+    NotificationService::current()->Notify(
+        NotificationType::OTR_PROFILE_CREATED,
+        Source<Profile>(off_the_record_profile_.get()),
+        NotificationService::NoDetails());
   }
   return off_the_record_profile_.get();
 }
