@@ -283,6 +283,9 @@ nacl_glibc_skiplist = [
     # an interface, like mmap() or brk(), for reserving space in the
     # dynamic code area.
     'run_dynamic_load_test',
+    # This uses a canned binary that is compiled w/ newlib.  A
+    # glibc version might be useful.
+    'run_fuzz_nullptr_test',
     # These tests use sel_universal but that does not support the
     # options we need (-s and -a).
     'run_srpc_bad_service_test',
