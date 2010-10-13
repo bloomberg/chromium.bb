@@ -944,8 +944,9 @@ void TaskManager::OpenAboutMemory() {
             g_browser_process->profile_manager()->end())
       return;
     browser = Browser::Create(*g_browser_process->profile_manager()->begin());
-    browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_WINDOW,
+    browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
                      PageTransition::LINK);
+    browser->window()->Show();
   } else {
     browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
                      PageTransition::LINK);

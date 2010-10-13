@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
+#include "chrome/browser/show_options_url.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "views/grid_layout.h"
@@ -45,10 +45,5 @@ void PluginFilterPageView::InitControlLayout() {
 
 void PluginFilterPageView::LinkActivated(views::Link* source,
                                          int event_flags) {
-  // We open a new browser window so the Options dialog doesn't get lost
-  // behind other windows.
-  Browser* browser = Browser::Create(profile());
-  browser->OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
-                   NEW_FOREGROUND_TAB, PageTransition::LINK);
-  browser->window()->Show();
+  browser::ShowOptionsURL(profile(), GURL(chrome::kChromeUIPluginsURL));
 }

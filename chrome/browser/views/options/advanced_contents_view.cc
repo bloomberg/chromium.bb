@@ -39,6 +39,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/show_options_url.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/clear_data_view.h"
 #include "chrome/browser/views/list_background.h"
@@ -542,13 +543,10 @@ void PrivacySection::ButtonPressed(
 }
 
 void PrivacySection::LinkActivated(views::Link* source, int event_flags) {
-  if (source == learn_more_link_) {
-    // We open a new browser window so the Options dialog doesn't get lost
-    // behind other windows.
-    Browser* browser = Browser::Create(profile());
-    browser->OpenURL(GURL(l10n_util::GetString(IDS_LEARN_MORE_PRIVACY_URL)),
-                     GURL(), NEW_WINDOW, PageTransition::LINK);
-  }
+  DCHECK(source == learn_more_link_);
+  browser::ShowOptionsURL(
+      profile(),
+      GURL(l10n_util::GetString(IDS_LEARN_MORE_PRIVACY_URL)));
 }
 
 void PrivacySection::InitControlLayout() {
@@ -1330,9 +1328,9 @@ void ChromeAppsSection::ButtonPressed(
 
 void ChromeAppsSection::LinkActivated(views::Link* source, int event_flags) {
   DCHECK(source == learn_more_link_);
-  Browser::Create(profile())->OpenURL(
-      GURL(l10n_util::GetString(IDS_LEARN_MORE_BACKGROUND_MODE_URL)), GURL(),
-      NEW_WINDOW, PageTransition::LINK);
+  browser::ShowOptionsURL(
+      profile(),
+      GURL(l10n_util::GetString(IDS_LEARN_MORE_BACKGROUND_MODE_URL)));
 }
 
 void ChromeAppsSection::InitControlLayout() {
@@ -1436,11 +1434,9 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
   } else if (sender == manage_printer_button_) {
     UserMetricsRecordAction(
         UserMetricsAction("Options_ManageCloudPrinters"), NULL);
-    // Open a new browser window for the management tab.  The browser
-    // will go away when the user closes that tab.
-    Browser* browser = Browser::Create(profile());
-    browser->OpenURL(CloudPrintURL(profile()).GetCloudPrintServiceManageURL(),
-                     GURL(), NEW_WINDOW, PageTransition::LINK);
+    browser::ShowOptionsURL(
+        profile(),
+        CloudPrintURL(profile()).GetCloudPrintServiceManageURL());
   }
 }
 

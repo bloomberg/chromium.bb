@@ -45,6 +45,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/show_options_url.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -1488,17 +1489,15 @@ const int kDisabledIndex = 1;
 - (IBAction)privacyLearnMore:(id)sender {
   // We open a new browser window so the Options dialog doesn't get lost
   // behind other windows.
-  Browser* browser = Browser::Create(profile_);
-  browser->OpenURL(GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_PRIVACY_URL)),
-                   GURL(), NEW_WINDOW, PageTransition::LINK);
+  browser::ShowOptionsURL(
+      profile_,
+      GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_PRIVACY_URL)));
 }
 
 - (IBAction)backgroundModeLearnMore:(id)sender {
-  // We open a new browser window so the Options dialog doesn't get lost
-  // behind other windows.
-  Browser::Create(profile_)->OpenURL(
-      GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_BACKGROUND_MODE_URL)),
-      GURL(), NEW_WINDOW, PageTransition::LINK);
+  browser::ShowOptionsURL(
+      profile_,
+      GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_BACKGROUND_MODE_URL)));
 }
 
 - (IBAction)resetAutoOpenFiles:(id)sender {

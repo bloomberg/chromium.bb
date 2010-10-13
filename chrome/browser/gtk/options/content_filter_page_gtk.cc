@@ -19,6 +19,7 @@
 #include "chrome/browser/gtk/options/simple_content_exceptions_window.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
+#include "chrome/browser/show_options_url.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -226,10 +227,5 @@ void ContentFilterPageGtk::OnExceptionsClicked(GtkWidget* button) {
 }
 
 void ContentFilterPageGtk::OnPluginsPageLinkClicked(GtkWidget* button) {
-  // We open a new browser window so the Options dialog doesn't get lost
-  // behind other windows.
-  Browser* browser = Browser::Create(profile());
-  browser->OpenURL(GURL(chrome::kChromeUIPluginsURL),
-                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-  browser->window()->Show();
+  browser::ShowOptionsURL(profile(), GURL(chrome::kChromeUIPluginsURL));
 }

@@ -5,10 +5,9 @@
 #include "chrome/browser/views/options/cookie_filter_page_view.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/show_options_url.h"
 #include "chrome/browser/views/options/cookies_view.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -112,10 +111,6 @@ void CookieFilterPageView::ButtonPressed(views::Button* sender,
 // CookieFilterPageView, views::LinkController implementation:
 
 void CookieFilterPageView::LinkActivated(views::Link* source, int event_flags) {
-  // We open a new browser window so the Options dialog doesn't get lost
-  // behind other windows.
-  Browser* browser = Browser::Create(profile());
-  browser->OpenURL(GURL(l10n_util::GetString(IDS_FLASH_STORAGE_URL)), GURL(),
-                   NEW_FOREGROUND_TAB, PageTransition::LINK);
-  browser->window()->Show();
+  browser::ShowOptionsURL(profile(),
+                          GURL(l10n_util::GetString(IDS_FLASH_STORAGE_URL)));
 }

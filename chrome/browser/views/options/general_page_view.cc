@@ -23,6 +23,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
+#include "chrome/browser/show_options_url.h"
 #include "chrome/browser/views/keyword_editor_view.h"
 #include "chrome/browser/views/options/managed_prefs_banner_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
@@ -451,12 +452,8 @@ void GeneralPageView::HighlightGroup(OptionsGroup highlight_group) {
 
 void GeneralPageView::LinkActivated(views::Link* source, int event_flags) {
   DCHECK(source == instant_link_);
-  // We open a new browser window so the Options dialog doesn't get lost behind
-  // other windows.
-  Browser* browser = Browser::Create(profile());
-  browser->OpenURL(GURL(browser::kInstantLearnMoreURL),
-                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-  browser->window()->Show();
+  browser::ShowOptionsURL(profile(),
+                          GURL(browser::kInstantLearnMoreURL));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

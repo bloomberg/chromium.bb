@@ -2618,6 +2618,8 @@
         'browser/shell_integration_mac.mm',
         'browser/shell_integration_linux.cc',
         'browser/shell_integration_win.cc',
+        'browser/show_options_url.cc',
+        'browser/show_options_url.h',
         'browser/sidebar/sidebar_container.cc',
         'browser/sidebar/sidebar_container.h',
         'browser/sidebar/sidebar_manager.cc',

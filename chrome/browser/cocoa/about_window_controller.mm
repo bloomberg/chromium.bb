@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/platform_util.h"
 #import "chrome/browser/cocoa/background_tile_view.h"
 #import "chrome/browser/cocoa/keystone_glue.h"
@@ -620,10 +621,9 @@ static BOOL recentShownUserActionFailedStatus = NO;
   // We always create a new window, so there's no need to try to re-use
   // an existing one just to pass in the NEW_WINDOW disposition.
   Browser* browser = Browser::Create(profile_);
-  if (browser) {
-    browser->OpenURL(GURL([link UTF8String]), GURL(), NEW_WINDOW,
-                     PageTransition::LINK);
-  }
+  browser->OpenURL(GURL([link UTF8String]), GURL(), NEW_FOREGROUND_TAB,
+                   PageTransition::LINK);
+  browser->window()->Show();
   return YES;
 }
 

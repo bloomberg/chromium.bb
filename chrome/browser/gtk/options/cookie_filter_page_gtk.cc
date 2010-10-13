@@ -15,6 +15,7 @@
 #include "chrome/browser/gtk/options/cookies_view.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/show_options_url.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -200,10 +201,6 @@ void CookieFilterPageGtk::OnShowCookiesClicked(GtkWidget* button) {
 }
 
 void CookieFilterPageGtk::OnFlashLinkClicked(GtkWidget* button) {
-  // We open a new browser window so the Options dialog doesn't get lost
-  // behind other windows.
-  Browser* browser = Browser::Create(profile());
-  browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
-                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-  browser->window()->Show();
+  browser::ShowOptionsURL(
+      profile(), GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)));
 }
