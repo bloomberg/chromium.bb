@@ -93,7 +93,7 @@ void ChromeSystemResources::Log(
     case WARNING_LEVEL:
       log_severity = logging::LOG_WARNING;
       break;
-    case ERROR_LEVEL:
+    case SEVERE_LEVEL:
       log_severity = logging::LOG_ERROR;
       break;
   }

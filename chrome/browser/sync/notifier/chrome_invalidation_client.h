@@ -73,6 +73,11 @@ class ChromeInvalidationClient
 
   virtual void InvalidateAll(invalidation::Closure* callback);
 
+  virtual void RegistrationStateChanged(
+      const invalidation::ObjectId& object_id,
+      invalidation::RegistrationState new_state,
+      const invalidation::UnknownHint& unknown_hint);
+
   virtual void AllRegistrationsLost(invalidation::Closure* callback);
 
   virtual void RegistrationLost(const invalidation::ObjectId& object_id,

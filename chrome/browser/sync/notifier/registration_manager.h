@@ -14,12 +14,7 @@
 #include "base/basictypes.h"
 #include "base/non_thread_safe.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-
-namespace invalidation {
-class InvalidationClient;
-class ObjectId;
-class RegistrationUpdateResult;
-}  // namespace
+#include "google/cacheinvalidation/invalidation-client.h"
 
 namespace sync_notifier {
 
@@ -31,13 +26,10 @@ class RegistrationManager {
 
   ~RegistrationManager();
 
-  // If |model_type| is valid, starts the process to register it and
-  // returns true.  Otherwise, returns false.
-  bool RegisterType(syncable::ModelType model_type);
+  // Registers the given |model_type|, which must be valid.
+  void RegisterType(syncable::ModelType model_type);
 
-  // Returns true iff |model_type| has been successfully registered.
-  // Note that IsRegistered(model_type) may not immediately (or ever)
-  // return true after calling RegisterType(model_type).
+  // Returns true iff |model_type| is currently registered.
   //
   // Currently only used by unit tests.
   bool IsRegistered(syncable::ModelType model_type) const;
@@ -52,16 +44,7 @@ class RegistrationManager {
   void MarkAllRegistrationsLost();
 
  private:
-  enum RegistrationStatus {
-    // Registration request has not yet been sent.
-    UNREGISTERED,
-    // Registration request has been sent; waiting on confirmation.
-    PENDING,
-    // Registration has been confirmed.
-    REGISTERED,
-  };
-
-  typedef std::map<syncable::ModelType, RegistrationStatus>
+  typedef std::map<syncable::ModelType, invalidation::RegistrationState>
       RegistrationStatusMap;
 
   // Calls invalidation_client_->Register() on |object_id|.  sets

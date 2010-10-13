@@ -139,6 +139,46 @@ class TwoArgCallbackRunner : public CallbackRunner<Tuple0> {
   typename internal::remove_reference<Arg2>::type arg2_;
 };
 
+template <class T, typename Arg1, typename Arg2>
+class TwoArgOnePartialCallbackRunner : public CallbackRunner<Tuple1<Arg2> > {
+ public:
+  TwoArgOnePartialCallbackRunner(T* obj, void (T::*meth)(Arg1, Arg2),
+                                 Arg1 arg1)
+      : obj_(obj), meth_(meth), arg1_(arg1) {}
+
+  virtual ~TwoArgOnePartialCallbackRunner() {}
+
+  virtual void RunWithParams(const Tuple1<Arg2>& params) {
+    (obj_->*meth_)(arg1_, params.a);
+  }
+
+ private:
+  T* obj_;
+  void (T::*meth_)(Arg1, Arg2);
+  typename internal::remove_reference<Arg1>::type arg1_;
+};
+
+template <class T, typename Arg1, typename Arg2, typename Arg3>
+class ThreeArgCallbackRunner : public CallbackRunner<Tuple0> {
+ public:
+  ThreeArgCallbackRunner(T* obj, void (T::*meth)(Arg1, Arg2, Arg3),
+                         Arg1 arg1, Arg2 arg2, Arg3 arg3)
+      : obj_(obj), meth_(meth), arg1_(arg1), arg2_(arg2), arg3_(arg3) {}
+
+  virtual ~ThreeArgCallbackRunner() {}
+
+  virtual void RunWithParams(const Tuple0& params) {
+    (obj_->*meth_)(arg1_, arg2_, arg3_);
+  }
+
+ private:
+  T* obj_;
+  void (T::*meth_)(Arg1, Arg2, Arg3);
+  typename internal::remove_reference<Arg1>::type arg1_;
+  typename internal::remove_reference<Arg2>::type arg2_;
+  typename internal::remove_reference<Arg3>::type arg3_;
+};
+
 // Then route the appropriate overloads of NewPermanentCallback() to
 // use the above.
 
@@ -175,6 +215,26 @@ typename Callback0::Type* NewPermanentCallback(
     typename internal::Identity<Arg1>::type arg1,
     typename internal::Identity<Arg2>::type arg2) {
   return new TwoArgCallbackRunner<T1, Arg1, Arg2>(object, method, arg1, arg2);
+}
+
+template <class T1, class T2, typename Arg1, typename Arg2>
+typename Callback1<Arg2>::Type* NewPermanentCallback(
+    T1* object,
+    void (T2::*method)(Arg1, Arg2),
+    typename internal::Identity<Arg1>::type arg1) {
+  return new TwoArgOnePartialCallbackRunner<T1, Arg1, Arg2>(
+      object, method, arg1);
+}
+
+template <class T1, class T2, typename Arg1, typename Arg2, typename Arg3>
+typename Callback0::Type* NewPermanentCallback(
+    T1* object,
+    void (T2::*method)(Arg1, Arg2, Arg3),
+    typename internal::Identity<Arg1>::type arg1,
+    typename internal::Identity<Arg2>::type arg2,
+    typename internal::Identity<Arg3>::type arg3) {
+  return new ThreeArgCallbackRunner<T1, Arg1, Arg2, Arg3>
+      (object, method, arg1, arg2, arg3);
 }
 
 }  // namespace invalidation

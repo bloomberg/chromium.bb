@@ -24,6 +24,7 @@
       'target_name': 'cacheinvalidation_proto',
       'type': 'none',
       'sources': [
+        '<(proto_dir_root)/google/cacheinvalidation/ticl_persistence.proto',
         '<(proto_dir_root)/google/cacheinvalidation/types.proto',
       ],
       # TODO(akalin): This block was copied from the sync_proto target
@@ -63,14 +64,20 @@
       'target_name': 'cacheinvalidation',
       'type': '<(library)',
       'sources': [
+        '<(protoc_out_dir)/<(proto_dir_relpath)/ticl_persistence.pb.h',
+        '<(protoc_out_dir)/<(proto_dir_relpath)/ticl_persistence.pb.cc',
         '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.h',
         '<(protoc_out_dir)/<(proto_dir_relpath)/types.pb.cc',
         'overrides/google/cacheinvalidation/callback.h',
         'overrides/google/cacheinvalidation/compiler-specific.h',
+        'overrides/google/cacheinvalidation/gmock.h',
         'overrides/google/cacheinvalidation/googletest.h',
+        'overrides/google/cacheinvalidation/hash_map.h',
         'overrides/google/cacheinvalidation/logging.h',
+        'overrides/google/cacheinvalidation/md5.h',
         'overrides/google/cacheinvalidation/mutex.h',
         'overrides/google/cacheinvalidation/random.h',
+        'overrides/google/cacheinvalidation/scoped_ptr.h',
         'overrides/google/cacheinvalidation/stl-namespace.h'
         'overrides/google/cacheinvalidation/string_util.h'
         'overrides/google/cacheinvalidation/time.h',
@@ -81,6 +88,10 @@
         'files/src/google/cacheinvalidation/log-macro.h',
         'files/src/google/cacheinvalidation/network-manager.cc',
         'files/src/google/cacheinvalidation/network-manager.h',
+        'files/src/google/cacheinvalidation/persistence-manager.cc',
+        'files/src/google/cacheinvalidation/persistence-manager.h',
+        'files/src/google/cacheinvalidation/persistence-utils.cc',
+        'files/src/google/cacheinvalidation/persistence-utils.h',
         'files/src/google/cacheinvalidation/registration-update-manager.cc',
         'files/src/google/cacheinvalidation/registration-update-manager.h',
         'files/src/google/cacheinvalidation/session-manager.cc',
@@ -123,11 +134,13 @@
         '../../base/test/run_all_unittests.cc',
         'files/src/google/cacheinvalidation/system-resources-for-test.h',
         'files/src/google/cacheinvalidation/invalidation-client-impl_test.cc',
+        'files/src/google/cacheinvalidation/persistence-utils_test.cc',
         'files/src/google/cacheinvalidation/throttle_test.cc',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
+        '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         'cacheinvalidation',
       ],

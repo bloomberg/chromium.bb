@@ -21,38 +21,15 @@ namespace {
 // Register().
 class FakeInvalidationClient : public invalidation::InvalidationClient {
  public:
-  struct Args {
-    Args() : callback(NULL) {}
-
-    Args(const invalidation::ObjectId& oid,
-         invalidation::RegistrationCallback* callback)
-        : oid(oid), callback(callback) {}
-
-    invalidation::ObjectId oid;
-    invalidation::RegistrationCallback* callback;
-  };
-
   FakeInvalidationClient() {}
 
-  virtual ~FakeInvalidationClient() {
-    for (std::deque<Args>::iterator it = register_calls.begin();
-         it != register_calls.end(); ++it) {
-      delete it->callback;
-    }
+  virtual ~FakeInvalidationClient() {}
+
+  virtual void Register(const invalidation::ObjectId& oid) {
+    registered_oids.push_back(oid);
   }
 
-  virtual void Register(const invalidation::ObjectId& oid,
-                        invalidation::RegistrationCallback* callback) {
-    register_calls.push_back(Args(oid, callback));
-  }
-
-  virtual void Unregister(const invalidation::ObjectId& oid,
-                          invalidation::RegistrationCallback* callback) {
-    ADD_FAILURE();
-    delete callback;
-  }
-
-  virtual void PermanentShutdown() {
+  virtual void Unregister(const invalidation::ObjectId& oid) {
     ADD_FAILURE();
   }
 
@@ -61,7 +38,7 @@ class FakeInvalidationClient : public invalidation::InvalidationClient {
     return NULL;
   }
 
-  std::deque<Args> register_calls;
+  std::deque<invalidation::ObjectId> registered_oids;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeInvalidationClient);
@@ -124,48 +101,18 @@ TEST_F(RegistrationManagerTest, RegisterType) {
   }
 
   ASSERT_EQ(kModelTypeCount,
-            fake_invalidation_client_.register_calls.size());
+            fake_invalidation_client_.registered_oids.size());
 
-  // Nothing should be registered yet.
+  // Everything should be registered.
   for (size_t i = 0; i < kModelTypeCount; ++i) {
-    EXPECT_FALSE(registration_manager_.IsRegistered(kModelTypes[i]));
+    EXPECT_TRUE(registration_manager_.IsRegistered(kModelTypes[i]));
   }
 
   // Check object IDs.
   for (size_t i = 0; i < kModelTypeCount; ++i) {
     EXPECT_EQ(kModelTypes[i],
               ObjectIdToModelType(
-                  fake_invalidation_client_.register_calls[i].oid));
-  }
-
-  // Prepare results.
-  std::vector<invalidation::RegistrationUpdateResult> results(
-      kModelTypeCount);
-  for (size_t i = 0; i < kModelTypeCount; ++i) {
-    results[i] = MakeRegistrationUpdateResult(kModelTypes[i]);
-  }
-
-  // Generate a variety of error conditions in all but the first
-  // result.
-  results[1].mutable_operation()->set_type(
-      invalidation::RegistrationUpdate::UNREGISTER);
-  results[2].mutable_operation()->mutable_object_id()->
-      mutable_name()->set_string_value("garbage");
-  results[3].mutable_status()->
-      set_code(invalidation::Status::PERMANENT_FAILURE);
-  *results[4].mutable_operation()->mutable_object_id() =
-      ModelTypeToObjectId(syncable::TYPED_URLS);
-
-
-  // Send the registration results back.
-  for (size_t i = 0; i < kModelTypeCount; ++i) {
-    fake_invalidation_client_.register_calls[i].callback->Run(results[i]);
-  }
-
-  // Only the first one should be registered.
-  EXPECT_TRUE(registration_manager_.IsRegistered(kModelTypes[0]));
-  for (size_t i = 1; i < kModelTypeCount; ++i) {
-    EXPECT_FALSE(registration_manager_.IsRegistered(kModelTypes[i]));
+                  fake_invalidation_client_.registered_oids[i]));
   }
 }
 
@@ -185,13 +132,7 @@ TEST_F(RegistrationManagerTest, MarkRegistrationLost) {
   }
 
   ASSERT_EQ(kModelTypeCount,
-            fake_invalidation_client_.register_calls.size());
-
-  // Send the registration results back.
-  for (size_t i = 0; i < kModelTypeCount; ++i) {
-    fake_invalidation_client_.register_calls[i].callback->Run(
-        MakeRegistrationUpdateResult(kModelTypes[i]));
-  }
+            fake_invalidation_client_.registered_oids.size());
 
   // All should be registered.
   for (size_t i = 0; i < kModelTypeCount; ++i) {
@@ -204,22 +145,9 @@ TEST_F(RegistrationManagerTest, MarkRegistrationLost) {
   }
 
   ASSERT_EQ(2 * kModelTypeCount - 1,
-            fake_invalidation_client_.register_calls.size());
+            fake_invalidation_client_.registered_oids.size());
 
-  // Only the first one should be registered.
-  EXPECT_TRUE(registration_manager_.IsRegistered(kModelTypes[0]));
-  for (size_t i = 1; i < kModelTypeCount; ++i) {
-    EXPECT_FALSE(registration_manager_.IsRegistered(kModelTypes[i]));
-  }
-
-  // Send more registration results back.
-  for (size_t i = 1; i < kModelTypeCount; ++i) {
-    fake_invalidation_client_.register_calls[kModelTypeCount + i - 1].
-        callback->Run(
-            MakeRegistrationUpdateResult(kModelTypes[i]));
-  }
-
-  // All should be registered.
+  // All should still be registered.
   for (size_t i = 0; i < kModelTypeCount; ++i) {
     EXPECT_TRUE(registration_manager_.IsRegistered(kModelTypes[i]));
   }
@@ -241,13 +169,7 @@ TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
   }
 
   ASSERT_EQ(kModelTypeCount,
-            fake_invalidation_client_.register_calls.size());
-
-  // Send the registration results back.
-  for (size_t i = 0; i < kModelTypeCount; ++i) {
-    fake_invalidation_client_.register_calls[i].callback->Run(
-        MakeRegistrationUpdateResult(kModelTypes[i]));
-  }
+            fake_invalidation_client_.registered_oids.size());
 
   // All should be registered.
   for (size_t i = 0; i < kModelTypeCount; ++i) {
@@ -262,21 +184,9 @@ TEST_F(RegistrationManagerTest, MarkAllRegistrationsLost) {
   registration_manager_.MarkAllRegistrationsLost();
 
   ASSERT_EQ(3 * kModelTypeCount - 1,
-            fake_invalidation_client_.register_calls.size());
+            fake_invalidation_client_.registered_oids.size());
 
-  // None should be registered.
-  for (size_t i = 0; i < kModelTypeCount; ++i) {
-    EXPECT_FALSE(registration_manager_.IsRegistered(kModelTypes[i]));
-  }
-
-  // Send more registration results back.
-  for (size_t i = 0; i < kModelTypeCount; ++i) {
-    fake_invalidation_client_.register_calls[2 * kModelTypeCount + i - 1].
-        callback->Run(
-            MakeRegistrationUpdateResult(kModelTypes[i]));
-  }
-
-  // All should be registered.
+  // All should still be registered.
   for (size_t i = 0; i < kModelTypeCount; ++i) {
     EXPECT_TRUE(registration_manager_.IsRegistered(kModelTypes[i]));
   }
