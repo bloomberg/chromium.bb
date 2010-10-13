@@ -118,7 +118,7 @@ void DOMUI::CallJavascriptFunction(
 }
 
 ThemeProvider* DOMUI::GetThemeProvider() const {
-  return GetProfile()->GetThemeProvider();
+  return tab_contents_->profile()->GetThemeProvider();
 }
 
 void DOMUI::RegisterMessageCallback(const std::string &message,
@@ -127,7 +127,6 @@ void DOMUI::RegisterMessageCallback(const std::string &message,
 }
 
 Profile* DOMUI::GetProfile() const {
-  DCHECK(tab_contents());
   return tab_contents()->profile();
 }
 
@@ -137,15 +136,11 @@ void DOMUI::AddMessageHandler(DOMMessageHandler* handler) {
   handlers_.push_back(handler);
 }
 
-RenderViewHost* DOMUI::GetRenderViewHost() const {
-  DCHECK(tab_contents());
-  return tab_contents()->render_view_host();
-}
-
 // DOMUI, private: ------------------------------------------------------------
 
 void DOMUI::ExecuteJavascript(const std::wstring& javascript) {
-  GetRenderViewHost()->ExecuteJavascriptInWebFrame(std::wstring(), javascript);
+  tab_contents()->render_view_host()->ExecuteJavascriptInWebFrame(
+      std::wstring(), javascript);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

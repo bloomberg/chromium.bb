@@ -116,13 +116,9 @@ class DOMUI {
 
   ThemeProvider* GetThemeProvider() const;
 
-  // May be overridden by DOMUI's which do not have a tab contents.
-  virtual Profile* GetProfile() const;
-
-  // May be overridden by DOMUI's which do not have a tab contents.
-  virtual RenderViewHost* GetRenderViewHost() const;
-
   TabContents* tab_contents() const { return tab_contents_; }
+
+  Profile* GetProfile() const;
 
  protected:
   void AddMessageHandler(DOMMessageHandler* handler);
