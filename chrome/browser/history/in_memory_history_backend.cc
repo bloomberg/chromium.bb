@@ -37,6 +37,9 @@ bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
                                   const std::string& languages) {
   db_.reset(new InMemoryDatabase);
   bool success = db_->InitFromDisk(history_filename);
+#if 0
+  // TODO(mrossetti): Temporary removal to help determine if the
+  // InMemoryURLIndex is contributing to a startup slowdown.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableHistoryQuickProvider)) {
     index_.reset(new InMemoryURLIndex());
@@ -45,6 +48,7 @@ bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
     UMA_HISTOGRAM_TIMES("Autocomplete.HistoryDatabaseIndexingTime",
                         base::TimeTicks::Now() - beginning_time);
   }
+#endif
   return success;
 }
 
