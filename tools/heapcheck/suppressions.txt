@@ -114,6 +114,7 @@
    Intentional leak in BrowserThreadTest.NotReleasedIfTargetThreadNonExistent
    Heapcheck:Leak
    fun:BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
 }
 #-----------------------------------------------------------------------
@@ -204,6 +205,7 @@
    fun:URLRequestJobManager::CreateJob
    fun:URLRequest::Start
    fun:URLRequestTest_CancelTest_DuringCookiePolicy_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
    fun:testing::internal::TestInfoImpl::Run
    fun:testing::TestCase::Run
@@ -470,6 +472,7 @@
    fun:TestShell::LoadURLForFrame
    fun:TestShell::LoadURL
    fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
    fun:testing::internal::TestInfoImpl::Run
    fun:testing::TestCase::Run
@@ -513,6 +516,7 @@
    fun:TestShell::LoadURLForFrame
    fun:TestShell::LoadURL
    fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
    fun:testing::internal::TestInfoImpl::Run
    fun:testing::TestCase::Run
@@ -699,6 +703,7 @@
    bug_46678_c
    Heapcheck:Leak
    fun:remoting::DifferTest_*_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
 }
 # '*ChromotingPlugin' stands for 'ChromotingPlugin' and
@@ -1088,6 +1093,7 @@
    Heapcheck:Leak
    ...
    fun:FileSystemHostContextTest_CheckValidPath_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
    fun:testing::internal::TestInfoImpl::Run
    fun:testing::TestCase::Run
@@ -1102,6 +1108,7 @@
    Heapcheck:Leak
    ...
    fun:FileSystemHostContextTest_GetRootPath_Test::TestBody
+   fun:testing::HandleExceptionsInMethodIfSupported
    fun:testing::Test::Run
    fun:testing::internal::TestInfoImpl::Run
    fun:testing::TestCase::Run
