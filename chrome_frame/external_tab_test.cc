@@ -88,8 +88,5 @@ struct MockProxy : public ChromeProxy {
   MOCK_METHOD1(RemoveDelegate, int(ChromeProxyDelegate* delegate));
 };
 
-TEST(ExternalTabProxy, Simple1) {
-  MockUIDelegate ui;
-  MockProxy proxy;
-  ExternalTabProxy tab;
+TEST(ExternalTabProxy, Simple) {
 }
