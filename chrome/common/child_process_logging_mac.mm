@@ -19,11 +19,12 @@ const int kMaxNumCrashURLChunks = 8;
 const int kMaxNumURLChunkValueLength = 255;
 const char *kUrlChunkFormatStr = "url-chunk-%d";
 const char *kGuidParamName = "guid";
-const char *kGPUVendorIdParamName = "vendid";
-const char *kGPUDeviceIdParamName = "devid";
-const char *kGPUDriverVersionParamName = "driver";
-const char *kGPUPixelShaderVersionParamName = "psver";
-const char *kGPUVertexShaderVersionParamName = "vsver";
+const char *kGPUVendorIdParamName = "gpu-vendid";
+const char *kGPUDeviceIdParamName = "gpu-devid";
+const char *kGPUDriverVersionParamName = "gpu-driver";
+const char *kGPUPixelShaderVersionParamName = "gpu-psver";
+const char *kGPUVertexShaderVersionParamName = "gpu-vsver";
+const char *kGPUGLVersionParamName = "gpu-glver";
 const char *kNumberOfViews = "num-views";
 
 static SetCrashKeyValueFuncPtr g_set_key_func;
@@ -137,6 +138,9 @@ void SetGpuInfoImpl(const GPUInfo& gpu_info,
                  set_key_func);
   SetGpuKeyValue(kGPUVertexShaderVersionParamName,
                  base::UintToString(gpu_info.vertex_shader_version()),
+                 set_key_func);
+  SetGpuKeyValue(kGPUGLVersionParamName,
+                 base::UintToString(gpu_info.gl_version()),
                  set_key_func);
 }
 
