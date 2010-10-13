@@ -670,7 +670,7 @@
    intentional_BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test_leak
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN58BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
+   fun:_ZN59BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test8TestBodyEv
 }
 {
    # This is an on demand initialization which is done and then intentionally
