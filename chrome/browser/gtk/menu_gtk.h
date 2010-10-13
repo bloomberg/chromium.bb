@@ -50,6 +50,8 @@ class MenuGtk {
 
     // Returns an icon for the menu item, if available.
     virtual GtkWidget* GetImageForCommandId(int command_id) const;
+
+    static GtkWidget* GetDefaultImageForCommandId(int command_id);
   };
 
   MenuGtk(MenuGtk::Delegate* delegate, menus::MenuModel* model);
@@ -129,7 +131,7 @@ class MenuGtk {
                                     const SkBitmap& icon);
 
   GtkWidget* BuildMenuItemWithImage(const std::string& label,
-                                    GtkWidget *image);
+                                    GtkWidget* image);
 
   GtkWidget* BuildMenuItemWithLabel(const std::string& label,
                                     int command_id);

@@ -74,7 +74,7 @@ void BackForwardButtonGtk::StoppedShowing() {
   button_->UnsetPaintOverride();
 }
 
-bool BackForwardButtonGtk::AlwaysShowImages() const {
+bool BackForwardButtonGtk::AlwaysShowIconForCmd(int command_id) const {
   return true;
 }
 

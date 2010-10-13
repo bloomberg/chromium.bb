@@ -48,6 +48,6 @@ void RenderViewContextMenuGtk::StoppedShowing() {
 }
 
 bool RenderViewContextMenuGtk::AlwaysShowIconForCmd(int command_id) const {
-  return (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-      command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST);
+  return command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST;
 }

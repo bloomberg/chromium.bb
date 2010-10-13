@@ -656,7 +656,7 @@ void BrowserTitlebar::ShowFaviconMenu(GdkEventButton* event) {
     favicon_menu_model_.reset(
         new PopupPageMenuModel(this, browser_window_->browser()));
 
-    favicon_menu_.reset(new MenuGtk(this, favicon_menu_model_.get()));
+    favicon_menu_.reset(new MenuGtk(NULL, favicon_menu_model_.get()));
   }
 
   favicon_menu_->Popup(app_mode_favicon_, reinterpret_cast<GdkEvent*>(event));
@@ -749,7 +749,7 @@ gboolean BrowserTitlebar::OnButtonPressed(GtkWidget* widget,
 void BrowserTitlebar::ShowContextMenu() {
   if (!context_menu_.get()) {
     context_menu_model_.reset(new ContextMenuModel(this));
-    context_menu_.reset(new MenuGtk(this, context_menu_model_.get()));
+    context_menu_.reset(new MenuGtk(NULL, context_menu_model_.get()));
   }
 
   context_menu_->PopupAsContext(gtk_get_current_event_time());

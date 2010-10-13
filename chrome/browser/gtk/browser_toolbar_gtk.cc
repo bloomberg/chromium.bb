@@ -339,7 +339,7 @@ GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
 // Always show images because we desire that the upgrade icon always show when
 // an upgrade is available regardless of the system setting.
 bool BrowserToolbarGtk::AlwaysShowIconForCmd(int command_id) const {
-  return (command_id == IDC_UPGRADE_DIALOG);
+  return command_id == IDC_UPGRADE_DIALOG;
 }
 
 // menus::AcceleratorProvider

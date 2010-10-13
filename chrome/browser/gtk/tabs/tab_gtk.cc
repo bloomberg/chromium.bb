@@ -125,11 +125,10 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
       case TabStripModel::CommandTogglePinned:
       case TabStripModel::CommandBookmarkAllTabs:
       case TabStripModel::CommandUseVerticalTabs:
-      default:
         return NULL;
     }
 
-    return MenuGtk::Delegate::GetImageForCommandId(browser_cmd_id);
+    return MenuGtk::Delegate::GetDefaultImageForCommandId(browser_cmd_id);
   }
 
   // The context menu.

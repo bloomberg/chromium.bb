@@ -117,10 +117,14 @@ int CalculateMenuYPosition(const GdkRectangle* screen_rect,
 
 }  // namespace
 
-GtkWidget* MenuGtk::Delegate::GetImageForCommandId(int command_id) const {
-  const char *stock;
+GtkWidget* MenuGtk::Delegate::GetDefaultImageForCommandId(int command_id) {
+  const char* stock;
   switch (command_id) {
     case IDC_NEW_TAB:
+    case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENLINKNEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
+    case IDC_CONTENT_CONTEXT_OPENFRAMENEWTAB:
       stock = GTK_STOCK_NEW;
       break;
 
@@ -249,6 +253,10 @@ GtkWidget* MenuGtk::Delegate::GetImageForCommandId(int command_id) const {
   return stock ? gtk_image_new_from_stock(stock, GTK_ICON_SIZE_MENU) : NULL;
 }
 
+GtkWidget* MenuGtk::Delegate::GetImageForCommandId(int command_id) const {
+  return GetDefaultImageForCommandId(command_id);
+}
+
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
                  menus::MenuModel* model)
     : delegate_(delegate),
@@ -310,7 +318,8 @@ GtkWidget* MenuGtk::AppendSeparator() {
 }
 
 GtkWidget* MenuGtk::AppendMenuItem(int command_id, GtkWidget* menu_item) {
-  if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id))
+  if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id) &&
+      GTK_IS_IMAGE_MENU_ITEM(menu_item))
     gtk_util::SetAlwaysShowImage(menu_item);
 
   return AppendMenuItemToMenu(command_id, NULL, menu_item, menu_, true);
@@ -388,7 +397,7 @@ void MenuGtk::UpdateMenu() {
 }
 
 GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
-                                  GtkWidget *image) {
+                                  GtkWidget* image) {
   GtkWidget* menu_item =
       gtk_image_menu_item_new_with_mnemonic(label.c_str());
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item), image);
@@ -398,18 +407,19 @@ GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
 GtkWidget* MenuGtk::BuildMenuItemWithImage(const std::string& label,
                                            const SkBitmap& icon) {
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
-  GtkWidget *menu_item = BuildMenuItemWithImage(label,
-                                gtk_image_new_from_pixbuf(pixbuf));
+  GtkWidget* menu_item = BuildMenuItemWithImage(label,
+      gtk_image_new_from_pixbuf(pixbuf));
   g_object_unref(pixbuf);
   return menu_item;
 }
 
 GtkWidget* MenuGtk::BuildMenuItemWithLabel(const std::string& label,
                                            int command_id) {
-  GtkWidget *img =
-    delegate_ ? delegate_->GetImageForCommandId(command_id) : NULL;
+  GtkWidget* img =
+      delegate_ ? delegate_->GetImageForCommandId(command_id) :
+                  MenuGtk::Delegate::GetDefaultImageForCommandId(command_id);
   return img ? BuildMenuItemWithImage(label, img) :
-    gtk_menu_item_new_with_mnemonic(label.c_str());
+               gtk_menu_item_new_with_mnemonic(label.c_str());
 }
 
 void MenuGtk::BuildMenuFromModel() {
@@ -462,8 +472,9 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
           menu_item = BuildMenuItemWithImage(label, icon);
         else
           menu_item = BuildMenuItemWithLabel(label, command_id);
-        if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id))
-            gtk_util::SetAlwaysShowImage(menu_item);
+        if (delegate_ && delegate_->AlwaysShowIconForCmd(command_id) &&
+            GTK_IS_IMAGE_MENU_ITEM(menu_item))
+          gtk_util::SetAlwaysShowImage(menu_item);
         break;
       }
 

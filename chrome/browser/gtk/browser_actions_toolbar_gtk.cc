@@ -672,6 +672,10 @@ void BrowserActionsToolbarGtk::StoppedShowing() {
   overflow_button_->UnsetPaintOverride();
 }
 
+bool BrowserActionsToolbarGtk::AlwaysShowIconForCmd(int command_id) const {
+  return true;
+}
+
 void BrowserActionsToolbarGtk::DragStarted(BrowserActionButton* button,
                                            GdkDragContext* drag_context) {
   // No representation of the widget following the cursor.

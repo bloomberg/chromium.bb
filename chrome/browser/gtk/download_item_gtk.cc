@@ -113,6 +113,26 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
     gtk_widget_queue_draw(download_item_->menu_button_);
   }
 
+  virtual GtkWidget* GetImageForCommandId(int command_id) const {
+    const char* stock;
+    switch (command_id) {
+      case SHOW_IN_FOLDER:
+      case OPEN_WHEN_COMPLETE:
+        stock = GTK_STOCK_OPEN;
+        break;
+
+      case CANCEL:
+        stock = GTK_STOCK_CANCEL;
+        break;
+
+      case ALWAYS_OPEN_TYPE:
+      case TOGGLE_PAUSE:
+        stock = NULL;
+    }
+
+    return stock ? gtk_image_new_from_stock(stock, GTK_ICON_SIZE_MENU) : NULL;
+  }
+
  private:
   // The menu we show on Popup(). We keep a pointer to it for a couple reasons:
   //  * we don't want to have to recreate the menu every time it's popped up.

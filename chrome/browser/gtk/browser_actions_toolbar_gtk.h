@@ -127,6 +127,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   // MenuGtk::Delegate implementation.
   virtual void StoppedShowing();
+  virtual bool AlwaysShowIconForCmd(int command_id) const;
 
   // Called by the BrowserActionButton in response to drag-begin.
   void DragStarted(BrowserActionButton* button, GdkDragContext* drag_context);
