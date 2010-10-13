@@ -41,8 +41,6 @@ const GdkColor kHoveredBackgroundColor = GDK_COLOR_RGB(0xef, 0xf2, 0xfa);
 
 const GdkColor kContentTextColor = GDK_COLOR_RGB(0x00, 0x00, 0x00);
 const GdkColor kURLTextColor = GDK_COLOR_RGB(0x00, 0x88, 0x00);
-const GdkColor kDescriptionTextColor = GDK_COLOR_RGB(0x80, 0x80, 0x80);
-const GdkColor kDescriptionSelectedTextColor = GDK_COLOR_RGB(0x78, 0x82, 0xb1);
 
 // We have a 1 pixel border around the entire results popup.
 const int kBorderThickness = 1;
@@ -115,6 +113,7 @@ void SetupLayoutForMatch(PangoLayout* layout,
     const std::wstring& text,
     AutocompleteMatch::ACMatchClassifications classifications,
     const GdkColor* base_color,
+    const GdkColor* dim_color,
     const GdkColor* url_color,
     const std::string& prefix_text) {
   // In RTL, mark text with left-to-right embedding mark if there is no strong
@@ -174,6 +173,9 @@ void SetupLayoutForMatch(PangoLayout* layout,
         additional_offset += lre.size();
       }
     }
+
+    if (i->style & ACMatchClassification::DIM)
+      color = dim_color;
 
     PangoAttribute* fg_attr = pango_attr_foreground_new(
         color->red, color->green, color->blue);
@@ -389,8 +391,6 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
     url_text_color_ = NormalURLColor(content_text_color_);
     url_selected_text_color_ = SelectedURLColor(selected_content_text_color_,
                                                 selected_background_color_);
-    description_text_color_ = content_text_color_;
-    description_selected_text_color_ = selected_content_text_color_;
   } else {
     border_color_ = kBorderColor;
     background_color_ = kBackgroundColor;
@@ -401,9 +401,15 @@ void AutocompletePopupViewGtk::Observe(NotificationType type,
     selected_content_text_color_ = kContentTextColor;
     url_text_color_ = kURLTextColor;
     url_selected_text_color_ = kURLTextColor;
-    description_text_color_ = kDescriptionTextColor;
-    description_selected_text_color_ = kDescriptionSelectedTextColor;
   }
+
+  // Calculate dimmed colors.
+  content_dim_text_color_ =
+      gtk_util::AverageColors(content_text_color_,
+                              background_color_);
+  selected_content_dim_text_color_ =
+      gtk_util::AverageColors(selected_content_text_color_,
+                              selected_background_color_);
 
   // Set the background color, so we don't need to paint it manually.
   gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, &background_color_);
@@ -600,7 +606,9 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
     // Note: We force to URL to LTR for all text directions.
     SetupLayoutForMatch(layout_, match.contents, match.contents_class,
                         is_selected ? &selected_content_text_color_ :
-                        &content_text_color_,
+                            &content_text_color_,
+                        is_selected ? &selected_content_dim_text_color_ :
+                            &content_dim_text_color_,
                         is_selected ? &url_selected_text_color_ :
                             &url_text_color_,
                         std::string());
@@ -624,9 +632,15 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
     if (has_description) {
       pango_layout_set_width(layout_,
           (text_width - actual_content_width) * PANGO_SCALE);
+
+      // In Windows, a boolean "force_dim" is passed as true for the
+      // description.  Here, we pass the dim text color for both normal and dim,
+      // to accomplish the same thing.
       SetupLayoutForMatch(layout_, match.description, match.description_class,
-                          is_selected ? &description_selected_text_color_ :
-                              &description_text_color_,
+                          is_selected ? &selected_content_dim_text_color_ :
+                              &content_dim_text_color_,
+                          is_selected ? &selected_content_dim_text_color_ :
+                              &content_dim_text_color_,
                           is_selected ? &url_selected_text_color_ :
                               &url_text_color_,
                           std::string(" - "));

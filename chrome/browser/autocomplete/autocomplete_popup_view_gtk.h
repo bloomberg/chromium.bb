@@ -118,10 +118,10 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   GdkColor hovered_background_color_;
   GdkColor content_text_color_;
   GdkColor selected_content_text_color_;
+  GdkColor content_dim_text_color_;
+  GdkColor selected_content_dim_text_color_;
   GdkColor url_text_color_;
   GdkColor url_selected_text_color_;
-  GdkColor description_text_color_;
-  GdkColor description_selected_text_color_;
 
   // If the user cancels a dragging action (i.e. by pressing ESC), we don't have
   // a convenient way to release mouse capture. Instead we use this flag to
