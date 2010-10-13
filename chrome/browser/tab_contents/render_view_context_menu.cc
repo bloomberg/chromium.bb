@@ -42,6 +42,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_restriction.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/favicon_size.h"
@@ -735,8 +736,11 @@ ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
-  if (source_tab_contents_->IsCommandDisabled(id))
+  if (id == IDC_PRINT &&
+      (source_tab_contents_->content_restrictions() &
+          CONTENT_RESTRICTION_PRINT)) {
     return false;
+  }
 
   // Allow Spell Check language items on sub menu for text area context menu.
   if ((id >= IDC_SPELLCHECK_LANGUAGES_FIRST) &&

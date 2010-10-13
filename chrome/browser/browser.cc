@@ -91,6 +91,7 @@
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/content_restriction.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
@@ -231,6 +232,10 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, NotificationType::EXTENSION_READY_FOR_INSTALL,
                  NotificationService::AllSources());
 
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state)
+    printing_enabled_.Init(prefs::kPrintingEnabled, local_state, this);
+
   InitCommandState();
   BrowserList::AddBrowser(this);
 
@@ -255,15 +260,6 @@ Browser::Browser(Type type, Profile* profile)
     profile_->GetProfileSyncService()->AddObserver(this);
 
   CreateInstantIfNecessary();
-
-  PrefService *local_state = g_browser_process->local_state();
-  if (local_state) {
-    printing_enabled_.Init(prefs::kPrintingEnabled, local_state, this);
-    command_updater_.UpdateCommandEnabled(IDC_PRINT,
-                                          printing_enabled_.GetValue());
-  } else {
-    command_updater_.UpdateCommandEnabled(IDC_PRINT, true);
-  }
 }
 
 Browser::~Browser() {
@@ -3138,6 +3134,10 @@ void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
   pending_web_app_action_ = NONE;
 }
 
+void Browser::ContentRestrictionsChanged(TabContents* source) {
+  UpdateCommandsForContentRestrictionState();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SelectFileDialog::Listener implementation:
 
@@ -3283,8 +3283,7 @@ void Browser::Observe(NotificationType type,
       if (pref_name == prefs::kUseVerticalTabs) {
         UseVerticalTabsChanged();
       } else if (pref_name == prefs::kPrintingEnabled) {
-        command_updater_.UpdateCommandEnabled(IDC_PRINT,
-                                              printing_enabled_.GetValue());
+        UpdatePrintingState(0);
       } else if (pref_name == prefs::kInstantEnabled) {
         if (!InstantController::IsEnabled(profile())) {
           if (instant()) {
@@ -3417,11 +3416,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_WINDOWS1255, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_WINDOWS1258, true);
 
-  // Clipboard commands
-  command_updater_.UpdateCommandEnabled(IDC_CUT, true);
-  command_updater_.UpdateCommandEnabled(IDC_COPY, true);
-  command_updater_.UpdateCommandEnabled(IDC_PASTE, true);
-
   // Zoom
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MENU, true);
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS, true);
@@ -3507,6 +3501,8 @@ void Browser::InitCommandState() {
 
   // Initialize other commands whose state changes based on fullscreen mode.
   UpdateCommandsForFullscreenMode(false);
+
+  UpdateCommandsForContentRestrictionState();
 }
 
 void Browser::UpdateCommandsForTabState() {
@@ -3563,6 +3559,33 @@ void Browser::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
       web_app::IsValidUrl(current_tab->GetURL()));
 #endif
+
+  UpdateCommandsForContentRestrictionState();
+}
+
+void Browser::UpdateCommandsForContentRestrictionState() {
+  int restrictions = 0;
+  TabContents* current_tab = GetSelectedTabContents();
+  if (current_tab)
+    restrictions = current_tab->content_restrictions();
+
+  command_updater_.UpdateCommandEnabled(
+      IDC_COPY, !(restrictions & CONTENT_RESTRICTION_COPY));
+  command_updater_.UpdateCommandEnabled(
+      IDC_CUT, !(restrictions & CONTENT_RESTRICTION_CUT));
+  command_updater_.UpdateCommandEnabled(
+      IDC_PASTE, !(restrictions & CONTENT_RESTRICTION_PASTE));
+  UpdatePrintingState(restrictions);
+}
+
+void Browser::UpdatePrintingState(int content_restrictions) {
+  bool enabled = true;
+  if (content_restrictions & CONTENT_RESTRICTION_PRINT) {
+    enabled = false;
+  } else if (g_browser_process->local_state()) {
+    enabled = printing_enabled_.GetValue();
+  }
+  command_updater_.UpdateCommandEnabled(IDC_PRINT, enabled);
 }
 
 void Browser::UpdateReloadStopState(bool is_loading, bool force) {

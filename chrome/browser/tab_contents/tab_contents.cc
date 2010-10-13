@@ -373,7 +373,8 @@ TabContents::TabContents(Profile* profile,
           static_cast<int>(WebKit::WebView::minTextSizeMultiplier * 100)),
       maximum_zoom_percent_(
           static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
-      temporary_zoom_settings_(false) {
+      temporary_zoom_settings_(false),
+      content_restrictions_(0) {
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
 
@@ -1462,14 +1463,6 @@ int TabContents::GetZoomPercent(bool* enable_increment,
   *enable_decrement = percent > minimum_zoom_percent_;
   *enable_increment = percent < maximum_zoom_percent_;
   return percent;
-}
-
-bool TabContents::IsCommandDisabled(int command_id) const {
-  for (size_t i = 0; i < disabled_commands_.size(); ++i) {
-    if (disabled_commands_[i] == command_id)
-      return true;
-  }
-  return false;
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
@@ -2605,7 +2598,10 @@ void TabContents::RequestMove(const gfx::Rect& new_bounds) {
 
 void TabContents::DidStartLoading() {
   SetIsLoading(true, NULL);
-  disabled_commands_.clear();
+  if (content_restrictions_) {
+    content_restrictions_= 0;
+    delegate()->ContentRestrictionsChanged(this);
+  }
 }
 
 void TabContents::DidStopLoading() {
@@ -2973,8 +2969,9 @@ void TabContents::UpdateZoomLimits(int minimum_percent,
   temporary_zoom_settings_ = !remember;
 }
 
-void TabContents::DisableCommand(int command_id) {
-  disabled_commands_.push_back(command_id);
+void TabContents::UpdateContentRestrictions(int restrictions) {
+  content_restrictions_ = restrictions;
+  delegate()->ContentRestrictionsChanged(this);
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(

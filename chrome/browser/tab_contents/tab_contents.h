@@ -708,8 +708,7 @@ class TabContents : public PageNavigator,
   int minimum_zoom_percent() const { return minimum_zoom_percent_; }
   int maximum_zoom_percent() const { return maximum_zoom_percent_; }
 
-  // Returns true if the given command is disabled.
-  bool IsCommandDisabled(int command_id) const;
+  int content_restrictions() const { return content_restrictions_; }
 
  private:
   friend class NavigationController;
@@ -993,7 +992,7 @@ class TabContents : public PageNavigator,
   virtual void UpdateZoomLimits(int minimum_percent,
                                 int maximum_percent,
                                 bool remember);
-  virtual void DisableCommand(int command_id);
+  virtual void UpdateContentRestrictions(int restrictions);
 
   // RenderViewHostManager::Delegate -------------------------------------------
 
@@ -1289,8 +1288,9 @@ class TabContents : public PageNavigator,
   // remember it.
   bool temporary_zoom_settings_;
 
-  // Disabled commands.  Only expect a few, so vector is fine.
-  std::vector<int> disabled_commands_;
+  // Content restrictions, used to disable print/copy etc based on content's
+  // (full-page plugins for now only) permissions.
+  int content_restrictions_;
 
   // ---------------------------------------------------------------------------
 

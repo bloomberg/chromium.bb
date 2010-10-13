@@ -307,6 +307,10 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Notifies the delegate that the page has a suggest result.
   virtual void OnSetSuggestResult(int32 page_id, const std::string& result);
 
+  // Notifies the delegate that the content restrictions for this tab has
+  // changed.
+  virtual void ContentRestrictionsChanged(TabContents* source);
+
  protected:
   virtual ~TabContentsDelegate();
 };

@@ -195,5 +195,8 @@ void TabContentsDelegate::OnSetSuggestResult(int32 page_id,
                                              const std::string& result) {
 }
 
+void TabContentsDelegate::ContentRestrictionsChanged(TabContents* source) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
 }

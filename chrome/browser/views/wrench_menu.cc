@@ -600,10 +600,6 @@ bool WrenchMenu::IsCommandEnabled(int id) const {
   if (id == 0)
     return false;  // The root item.
 
-  TabContents* selected_tab = browser_->GetSelectedTabContents();
-  if (selected_tab && selected_tab->IsCommandDisabled(id))
-    return false;
-
   const Entry& entry = id_to_entry_.find(id)->second;
   int command_id = entry.first->GetCommandIdAt(entry.second);
   // The items representing the cut (cut/copy/paste) and zoom menu

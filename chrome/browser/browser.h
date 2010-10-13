@@ -778,6 +778,7 @@ class Browser : public TabHandlerDelegate,
       NavigationType::Type navigation_type);
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id);
+  virtual void ContentRestrictionsChanged(TabContents* source);
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);
@@ -804,6 +805,12 @@ class Browser : public TabHandlerDelegate,
 
   // Update commands whose state depends on the tab's state.
   void UpdateCommandsForTabState();
+
+  // Updates commands when the content's restrictions change.
+  void UpdateCommandsForContentRestrictionState();
+
+  // Updates the printing command state.
+  void UpdatePrintingState(int content_restrictions);
 
   // Ask the Reload/Stop button to change its icon, and update the Stop command
   // state.  |is_loading| is true if the current TabContents is loading.

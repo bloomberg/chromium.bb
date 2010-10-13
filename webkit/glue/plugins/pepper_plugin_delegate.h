@@ -216,8 +216,8 @@ class PluginDelegate {
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
 
-  // Disables the given UI command item (i.e. print/copy).
-  virtual void DisableCommand(int command_id) = 0;
+  // Sets restrictions on how the content can be used (i.e. no print/copy).
+  virtual void SetContentRestriction(int restrictions) = 0;
 };
 
 }  // namespace pepper

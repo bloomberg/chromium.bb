@@ -118,8 +118,9 @@ struct PPB_Private {
   void (*DidStartLoading)(PP_Instance instance);
   void (*DidStopLoading)(PP_Instance instance);
 
-  // Disables the given command (i.e. print/copy).
-  void (*DisableCommand)(PP_Instance instance, int command_id);
+  // Sets content restriction for a full-page plugin (i.e. can't copy/print).
+  // The value is a bitfield of ContentRestriction enums.
+  void (*SetContentRestriction)(PP_Instance instance, int restrictions);
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_PPB_PRIVATE_H_

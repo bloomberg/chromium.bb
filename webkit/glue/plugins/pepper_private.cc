@@ -241,11 +241,11 @@ void DidStopLoading(PP_Instance instance_id) {
   instance->delegate()->DidStopLoading();
 }
 
-void DisableCommand(PP_Instance instance_id, int command_id) {
+void SetContentRestriction(PP_Instance instance_id, int restrictions) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return;
-  instance->delegate()->DisableCommand(command_id);
+  instance->delegate()->SetContentRestriction(restrictions);
 }
 
 const PPB_Private ppb_private = {
@@ -256,7 +256,7 @@ const PPB_Private ppb_private = {
   &SearchString,
   &DidStartLoading,
   &DidStopLoading,
-  &DisableCommand
+  &SetContentRestriction
 };
 
 }  // namespace
