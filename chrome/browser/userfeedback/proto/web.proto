@@ -5,6 +5,8 @@ syntax = "proto2";
 
 package userfeedback;
 
+option optimize_for = LITE_RUNTIME;
+
 // Data present in Web related feedbacks
 
 import "annotations.proto";

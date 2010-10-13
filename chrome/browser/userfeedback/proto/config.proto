@@ -6,6 +6,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package userfeedback;
 
 // Product for which feedback can be sent: GMail, Writely etc.

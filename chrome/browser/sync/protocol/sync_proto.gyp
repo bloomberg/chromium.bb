@@ -46,7 +46,7 @@
             '--cpp_out=<(SHARED_INTERMEDIATE_DIR)/protoc_out/chrome/browser/sync/protocol',
             '--python_out=<(PRODUCT_DIR)/pyproto/sync_pb',
           ],
-          'message': 'Generating C++ and Python code from <(RULE_INPUT_PATH)',
+          # 'message': 'Generating C++ and Python code from <(RULE_INPUT_PATH)',
         },
       ],
       'dependencies': [
@@ -57,15 +57,11 @@
       'target_name': 'sync_proto_cpp',
       'type': 'none',
       'export_dependent_settings': [
-        # TODO(akalin): Change back to protobuf_lite once it supports
-        # preserving unknown fields.
-        '../../../../third_party/protobuf/protobuf.gyp:protobuf',
+        '../../../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'sync_proto',
       ],
       'dependencies': [
-        # TODO(akalin): Change back to protobuf_lite once it supports
-        # preserving unknown fields.
-        '../../../../third_party/protobuf/protobuf.gyp:protobuf',
+        '../../../../third_party/protobuf/protobuf.gyp:protobuf_lite',
         'sync_proto',
       ],
       'direct_dependent_settings': {

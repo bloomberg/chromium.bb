@@ -6,11 +6,8 @@
 
 syntax = "proto2";
 
-// TODO(agl): In the future we hope that the lite runtime will be able to
-// handle unknown fields in messages. Until then, we use the full runtime.
-
-// option optimize_for = LITE_RUNTIME;
-// option retain_unknown_fields = true;
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
 
 package sync_pb;
 

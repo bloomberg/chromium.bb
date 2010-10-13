@@ -5,6 +5,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package userfeedback;
 
 // 2D Dimensions.

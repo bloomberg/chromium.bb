@@ -3995,7 +3995,6 @@
               ],
               'dependencies': [
                 '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-                #'../third_party/protobuf/protobuf.gyp:protobuf',
                 '../third_party/protobuf/protobuf.gyp:protoc#host',
               ],
               'conditions': [
@@ -4131,7 +4130,7 @@
         },
       ],
       'dependencies': [
-        '../third_party/protobuf/protobuf.gyp:protobuf',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/protobuf/protobuf.gyp:protoc#host',
       ],
       'direct_dependent_settings': {
@@ -4140,7 +4139,7 @@
         ]
       },
       'export_dependent_settings': [
-        '../third_party/protobuf/protobuf.gyp:protobuf',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
       ],
     },
   ],

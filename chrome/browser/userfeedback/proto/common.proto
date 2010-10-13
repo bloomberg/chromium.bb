@@ -6,6 +6,8 @@
 
 syntax = "proto2";
 
+option optimize_for = LITE_RUNTIME;
+
 package userfeedback;
 
 // Data present in all kinds of feedbacks, regardless of source (Web, Android,

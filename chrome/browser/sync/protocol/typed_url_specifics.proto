@@ -6,10 +6,8 @@
 
 syntax = "proto2";
 
-// TODO(akalin): Re-enable this once LITE_RUNTIME supports preserving
-// unknown fields.
-
-// option optimize_for = LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
 
 package sync_pb;
 
