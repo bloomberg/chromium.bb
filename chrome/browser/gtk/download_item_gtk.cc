@@ -114,7 +114,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   }
 
   virtual GtkWidget* GetImageForCommandId(int command_id) const {
-    const char* stock;
+    const char* stock = NULL;
     switch (command_id) {
       case SHOW_IN_FOLDER:
       case OPEN_WHEN_COMPLETE:

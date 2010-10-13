@@ -101,7 +101,7 @@ class TabGtk::ContextMenuController : public menus::SimpleMenuModel::Delegate,
   }
 
   GtkWidget* GetImageForCommandId(int command_id) const {
-    int browser_cmd_id;
+    int browser_cmd_id = 0;
     switch (command_id) {
       case TabStripModel::CommandNewTab:
         browser_cmd_id = IDC_NEW_TAB;
@@ -366,7 +366,6 @@ void TabGtk::SetBounds(const gfx::Rect& bounds) {
 
 void TabGtk::ShowContextMenu() {
   menu_controller_.reset(new ContextMenuController(this));
-
   menu_controller_->RunMenu();
 }
 
