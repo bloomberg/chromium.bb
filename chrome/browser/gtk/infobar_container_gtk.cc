@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,13 +21,15 @@
 
 namespace {
 
+static const char* kInfoBar = "info-bar";
+
 // If |infobar_widget| matches |info_bar_delegate|, then close the infobar.
 void AnimateClosingForDelegate(GtkWidget* infobar_widget,
                                gpointer info_bar_delegate) {
   InfoBarDelegate* delegate =
       static_cast<InfoBarDelegate*>(info_bar_delegate);
   InfoBar* infobar = reinterpret_cast<InfoBar*>(
-      g_object_get_data(G_OBJECT(infobar_widget), "info-bar"));
+      g_object_get_data(G_OBJECT(infobar_widget), kInfoBar));
 
   if (!infobar) {
     NOTREACHED();
@@ -44,7 +46,7 @@ void ClosingForDelegate(GtkWidget* infobar_widget, gpointer info_bar_delegate) {
   InfoBarDelegate* delegate =
       static_cast<InfoBarDelegate*>(info_bar_delegate);
   InfoBar* infobar = reinterpret_cast<InfoBar*>(
-      g_object_get_data(G_OBJECT(infobar_widget), "info-bar"));
+      g_object_get_data(G_OBJECT(infobar_widget), kInfoBar));
 
   if (!infobar) {
     NOTREACHED();
@@ -60,7 +62,7 @@ void ClosingForDelegate(GtkWidget* infobar_widget, gpointer info_bar_delegate) {
 void SumAnimatingBarHeight(GtkWidget* widget, gpointer userdata) {
   int* height_sum = static_cast<int*>(userdata);
   InfoBar* infobar = reinterpret_cast<InfoBar*>(
-      g_object_get_data(G_OBJECT(widget), "info-bar"));
+      g_object_get_data(G_OBJECT(widget), kInfoBar));
   if (infobar->IsAnimating())
     *height_sum += widget->allocation.height;
 }
@@ -172,11 +174,13 @@ void InfoBarContainerGtk::RemoveInfoBar(InfoBarDelegate* delegate,
     // Get the next infobar, if it exists, so we can change the color of the
     // arrow to it.
     GList* children = gtk_container_get_children(GTK_CONTAINER(widget()));
-    if (children->next) {
-      bar = reinterpret_cast<InfoBar*>(
-          g_object_get_data(G_OBJECT(children->next->data), "info-bar"));
+    if (children) {
+      if (children->next) {
+        bar = reinterpret_cast<InfoBar*>(
+            g_object_get_data(G_OBJECT(children->next->data), kInfoBar));
+      }
+      g_list_free(children);
     }
-    g_list_free(children);
 
     UpdateToolbarInfoBarState(bar, animate);
   }
