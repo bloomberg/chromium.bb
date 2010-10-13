@@ -67,7 +67,7 @@ bool Tokenize(char *line,
 }
 
 void StringToVector(const string &str, vector<char> &vec) {
-  vec.reserve(str.length() + 1);
+  vec.resize(str.length() + 1);
   std::copy(str.begin(), str.end(),
 	    vec.begin());
   vec[str.length()] = '\0';
