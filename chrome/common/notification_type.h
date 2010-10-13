@@ -1018,10 +1018,18 @@ class NotificationType {
     // TabSpecificContentSettings object, there are no details.
     COLLECTED_COOKIES_SHOWN,
 
+    // Sent when the default geolocation setting has changed. The source is the
+    // GeolocationContentSettingsMap, the details are None.
+    GEOLOCATION_DEFAULT_CHANGED,
+
     // Sent when a non-default setting in the the geolocation content settings
     // map has changed. The source is the GeolocationContentSettingsMap, the
     // details are None.
     GEOLOCATION_SETTINGS_CHANGED,
+
+    // Sent when the default setting for desktop notifications has changed.
+    // The source is the DesktopNotificationService, the details are None.
+    DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
 
     // Sent when a non-default setting in the the notification content settings
     // map has changed. The source is the DesktopNotificationService, the

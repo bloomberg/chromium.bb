@@ -117,6 +117,11 @@ void GeolocationContentSettingsMap::SetDefaultContentSetting(
   profile_->GetPrefs()->SetInteger(prefs::kGeolocationDefaultContentSetting,
                                    setting == CONTENT_SETTING_DEFAULT ?
                                        kDefaultSetting : setting);
+
+  NotificationService::current()->Notify(
+      NotificationType::GEOLOCATION_DEFAULT_CHANGED,
+      Source<GeolocationContentSettingsMap>(this),
+      NotificationService::NoDetails());
 }
 
 void GeolocationContentSettingsMap::SetContentSetting(

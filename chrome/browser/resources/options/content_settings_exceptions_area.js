@@ -106,6 +106,11 @@ cr.define('options.contentSettings', function() {
 
       var listItem = this;
       this.ondblclick = function(event) {
+        // Editing notifications and geolocation is disabled for now.
+        if (listItem.contentType == 'notifications' ||
+            listItem.contentType == 'location')
+          return;
+
         listItem.editing = true;
       };
 
@@ -401,7 +406,8 @@ cr.define('options.contentSettings', function() {
           args.push(selectedItems[i]['origin']);
           args.push(selectedItems[i]['embeddingOrigin']);
         } else if (this.contentType == 'notifications') {
-          // TODO(estade): fill this in.
+          args.push(selectedItems[i]['origin']);
+          args.push(selectedItems[i]['setting']);
         } else {
           args.push(this.mode);
           args.push(selectedItems[i]['displayPattern']);

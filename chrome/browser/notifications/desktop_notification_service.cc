@@ -328,6 +328,11 @@ void DesktopNotificationService::Observe(NotificationType type,
             &NotificationsPrefsCache::SetCacheDeniedOrigins,
             denied_origins));
   } else if (name == prefs::kDesktopNotificationDefaultContentSetting) {
+    NotificationService::current()->Notify(
+        NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
+        Source<DesktopNotificationService>(this),
+        NotificationService::NoDetails());
+
     const ContentSetting default_content_setting = IntToContentSetting(
         prefs->GetInteger(prefs::kDesktopNotificationDefaultContentSetting));
 

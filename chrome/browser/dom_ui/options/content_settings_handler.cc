@@ -48,7 +48,7 @@ ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
   if (name == "notifications")
     return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
 
-  NOTREACHED();
+  NOTREACHED() << name << " is not a recognized content settings type.";
   return CONTENT_SETTINGS_TYPE_DEFAULT;
 }
 
@@ -64,10 +64,11 @@ std::string ContentSettingToString(ContentSetting setting) {
       return "session";
     case CONTENT_SETTING_DEFAULT:
       return "default";
-    default:
+    case CONTENT_SETTING_NUM_SETTINGS:
       NOTREACHED();
-      return "";
   }
+
+  return "";
 }
 
 ContentSetting ContentSettingFromString(const std::string& name) {
@@ -80,7 +81,7 @@ ContentSetting ContentSettingFromString(const std::string& name) {
   if (name == "session")
     return CONTENT_SETTING_SESSION_ONLY;
 
-  NOTREACHED();
+  NOTREACHED() << name << " is not a recognized content setting.";
   return CONTENT_SETTING_DEFAULT;
 }
 
@@ -141,6 +142,25 @@ DictionaryValue* GetGeolocationExceptionForPage(const GURL& origin,
   exception->Set(
       kEmbeddingOrigin,
       new StringValue(embedding_origin.spec()));
+  return exception;
+}
+
+// Create a DictionaryValue* that will act as a data source for a single row
+// in the desktop notifications exceptions table. Ownership of the pointer is
+// passed to the caller.
+DictionaryValue* GetNotificationExceptionForPage(
+    const GURL& url,
+    ContentSetting setting) {
+  DictionaryValue* exception = new DictionaryValue();
+  exception->Set(
+      kDisplayPattern,
+      new StringValue(content_settings_helper::OriginToString(url)));
+  exception->Set(
+      kSetting,
+      new StringValue(ContentSettingToString(setting)));
+  exception->Set(
+      kOrigin,
+      new StringValue(url.spec()));
   return exception;
 }
 
@@ -281,22 +301,54 @@ void ContentSettingsHandler::Initialize() {
   notification_registrar_.Add(
       this, NotificationType::CONTENT_SETTINGS_CHANGED,
       Source<const HostContentSettingsMap>(settings_map));
+  notification_registrar_.Add(
+      this, NotificationType::GEOLOCATION_DEFAULT_CHANGED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(
+      this, NotificationType::GEOLOCATION_SETTINGS_CHANGED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(
+      this, NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(
+      this, NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
+      NotificationService::AllSources());
 }
 
 void ContentSettingsHandler::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
-  if (type != NotificationType::CONTENT_SETTINGS_CHANGED)
-    return OptionsPageUIHandler::Observe(type, source, details);
+  switch (type.value) {
+    case NotificationType::CONTENT_SETTINGS_CHANGED: {
+      const ContentSettingsDetails* settings_details =
+          static_cast<Details<const ContentSettingsDetails> >(details).ptr();
 
-  const ContentSettingsDetails* settings_details =
-      static_cast<Details<const ContentSettingsDetails> >(details).ptr();
-
-  // TODO(estade): we pretend update_all() is always true.
-  if (settings_details->update_all_types())
-    UpdateAllExceptionsViewsFromModel();
-  else
-    UpdateExceptionsViewFromModel(settings_details->type());
+      // TODO(estade): we pretend update_all() is always true.
+      if (settings_details->update_all_types())
+        UpdateAllExceptionsViewsFromModel();
+      else
+        UpdateExceptionsViewFromModel(settings_details->type());
+      break;
+    }
+    case NotificationType::GEOLOCATION_DEFAULT_CHANGED: {
+      UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+      break;
+    }
+    case NotificationType::GEOLOCATION_SETTINGS_CHANGED: {
+      UpdateGeolocationExceptionsView();
+      break;
+    }
+    case NotificationType::DESKTOP_NOTIFICATION_DEFAULT_CHANGED: {
+      UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+      break;
+    }
+    case NotificationType::DESKTOP_NOTIFICATION_SETTINGS_CHANGED: {
+      UpdateNotificationExceptionsView();
+      break;
+    }
+    default:
+      OptionsPageUIHandler::Observe(type, source, details);
+  }
 }
 
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
@@ -381,13 +433,36 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setExceptions", type_string, exceptions);
 
-  // The default may also have changed (we won't get a separate notification).
-  // If it hasn't changed, this call will be harmless.
+  // This is mainly here to keep this function ideologically parallel to
+  // UpdateExceptionsViewFromHostContentSettingsMap().
   UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
 void ContentSettingsHandler::UpdateNotificationExceptionsView() {
-  NOTIMPLEMENTED();
+  DesktopNotificationService* service =
+      dom_ui_->GetProfile()->GetDesktopNotificationService();
+
+  std::vector<GURL> allowed(service->GetAllowedOrigins());
+  std::vector<GURL> blocked(service->GetBlockedOrigins());
+
+  ListValue exceptions;
+  for (size_t i = 0; i < allowed.size(); ++i) {
+    exceptions.Append(
+        GetNotificationExceptionForPage(allowed[i], CONTENT_SETTING_ALLOW));
+  }
+  for (size_t i = 0; i < blocked.size(); ++i) {
+    exceptions.Append(
+        GetNotificationExceptionForPage(blocked[i], CONTENT_SETTING_BLOCK));
+  }
+
+  StringValue type_string(
+      ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.setExceptions", type_string, exceptions);
+
+  // This is mainly here to keep this function ideologically parallel to
+  // UpdateExceptionsViewFromHostContentSettingsMap().
+  UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
 }
 
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
