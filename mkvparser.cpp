@@ -2033,45 +2033,102 @@ bool Cues::FindNext(
 #endif
 
 
-bool Cues::GetNext(
-    const CuePoint* pCurrCP,
-    const Track* pTrack,
-    const CuePoint*& pNextCP,
-    const CuePoint::TrackPosition*& pNextTP) const
+const CuePoint* Cues::GetNext(const CuePoint* pCurr) const
 {
-    assert(pCurrCP);
-    assert(pCurrCP->GetTimeCode() >= 0);
-    assert(pTrack);
+    if (pCurr == NULL)
+        return NULL;
+
+    assert(pCurr->GetTimeCode() >= 0);
     assert(m_cue_points);
     assert(m_count >= 1);
 
     const size_t count = m_count + m_preload_count;
 
-    size_t index = pCurrCP->m_index;
+    size_t index = pCurr->m_index;
     assert(index < count);
 
-    CuePoint* const* pp = m_cue_points;
+    CuePoint* const* const pp = m_cue_points;
     assert(pp);
-    assert(pp[index] == pCurrCP);
+    assert(pp[index] == pCurr);
 
     ++index;
 
     if (index >= count)
-        return false;
+        return NULL;
 
-    CuePoint* const p = pp[index];
-    assert(p);
+    CuePoint* const pNext = pp[index];
+    assert(pNext);
 
-    p->Load(m_pSegment->m_pReader);
+    pNext->Load(m_pSegment->m_pReader);
 
-    pNextCP = p;
-
-    pNextTP = pNextCP->Find(pTrack);
-    assert(pNextTP);  //TODO
-
-    return true;
+    return pNext;
 }
 
+
+const BlockEntry* Cues::GetBlock(
+    const CuePoint* pCP,
+    const CuePoint::TrackPosition* pTP) const
+{
+    if (pCP == NULL)
+        return NULL;
+
+    if (pTP == NULL)
+        return NULL;
+
+    return m_pSegment->GetBlock(*pCP, *pTP);
+}
+
+
+const BlockEntry* Segment::GetBlock(
+    const CuePoint& cp,
+    const CuePoint::TrackPosition& tp)
+{
+    Cluster** const ii = m_clusters;
+    Cluster** i = ii;
+
+    const long count = m_clusterCount + m_clusterPreloadCount;
+
+    Cluster** const jj = ii + count;
+    Cluster** j = jj;
+
+    while (i < j)
+    {
+        //INVARIANT:
+        //[ii, i) < pTP->m_pos
+        //[i, j) ?
+        //[j, jj)  > pTP->m_pos
+
+        Cluster** const k = i + (j - i) / 2;
+        assert(k < jj);
+
+        Cluster* const pCluster = *k;
+        assert(pCluster);
+
+        const long long pos_ = pCluster->m_pos;
+        assert(pos_);
+
+        const long long pos = pos_ * ((pos_ < 0) ? -1 : 1);
+
+        if (pos < tp.m_pos)
+            i = k + 1;
+        else if (pos > tp.m_pos)
+            j = k;
+        else
+            return pCluster->GetEntry(cp, tp);
+    }
+
+    assert(i == j);
+
+    Cluster* const pCluster = Cluster::Parse(this, -1, tp.m_pos);
+    const ptrdiff_t idx = i - m_clusters;
+
+    PreloadCluster(pCluster, idx);
+    assert(m_clusters);
+    assert(m_clusterPreloadCount > 0);
+    assert(m_clusters[idx] == pCluster);
+
+    return pCluster->GetEntry(cp, tp);
+}
 
 
 
@@ -2246,9 +2303,9 @@ void CuePoint::TrackPosition::Parse(
         assert(pos <= stop);
     }
 
-    assert(m_track > 0);
     assert(m_pos >= 0);
-    assert(m_block > 0);
+    //assert(m_track > 0);
+    //assert(m_block > 0);
 }
 
 
@@ -2494,7 +2551,7 @@ Cluster* Segment::GetNext(const Cluster* pCurr)
 }
 
 
-Cluster* Segment::GetCluster(long long time_ns)
+Cluster* Segment::FindCluster(long long time_ns)
 {
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
         return &m_eos;
@@ -2552,44 +2609,26 @@ Cluster* Segment::GetCluster(long long time_ns)
 }
 
 
-void Segment::GetCluster(
+const BlockEntry* Segment::Seek(
     long long time_ns,
-    Track* pTrack,
-    Cluster*& pCluster,
-    const BlockEntry*& pBlockEntry,
-    const CuePoint*& pCP,
-    const CuePoint::TrackPosition*& pTP)
+    const Track* pTrack)
 {
     assert(pTrack);
 
-    if (SearchCues(time_ns, pTrack, pCluster, pBlockEntry, pCP, pTP))
-        return;
-
-    pCP = NULL;
-    pTP = NULL;
-
     if ((m_clusters == NULL) || (m_clusterCount <= 0))
-    {
-        pCluster = &m_eos;
-        pBlockEntry = pTrack->GetEOS();
-
-        return;
-    }
+        return pTrack->GetEOS();
 
     Cluster** const i = m_clusters;
     assert(i);
 
     {
-        pCluster = *i;
+        Cluster* const pCluster = *i;
         assert(pCluster);
         assert(pCluster->m_index == 0);  //m_clusterCount > 0
         assert(pCluster->m_pSegment == this);
 
         if (time_ns <= pCluster->GetTime())
-        {
-            pBlockEntry = pCluster->GetEntry(pTrack);
-            return;
-        }
+            return pCluster->GetEntry(pTrack);
     }
 
     Cluster** const j = i + m_clusterCount;
@@ -2633,12 +2672,11 @@ void Segment::GetCluster(
         assert(lo > i);
         assert(lo <= j);
 
-        pCluster = *--lo;
+        Cluster* const pCluster = *--lo;
         assert(pCluster);
         assert(pCluster->GetTime() <= time_ns);
 
-        pBlockEntry = pCluster->GetEntry(pTrack);
-        return;
+        return pCluster->GetEntry(pTrack);
     }
 
     assert(pTrack->GetType() == 1);  //video
@@ -2673,12 +2711,12 @@ void Segment::GetCluster(
     assert(lo > i);
     assert(lo <= j);
 
-    pCluster = *--lo;
+    Cluster* pCluster = *--lo;
     assert(pCluster);
     assert(pCluster->GetTime() <= time_ns);
 
     {
-        pBlockEntry = pCluster->GetEntry(pTrack);
+        const BlockEntry* const pBlockEntry = pCluster->GetEntry(pTrack);
         assert(pBlockEntry);
 
         if (!pBlockEntry->EOS())  //found a keyframe
@@ -2693,11 +2731,11 @@ void Segment::GetCluster(
             //simply return the first keyframe we find.
 
             if (pBlock->GetTime(pCluster) <= time_ns)
-                return;
+                return pBlockEntry;
         }
     }
 
-    const VideoTrack* const pVideo = static_cast<VideoTrack*>(pTrack);
+    const VideoTrack* const pVideo = static_cast<const VideoTrack*>(pTrack);
 
     while (lo != i)
     {
@@ -2705,21 +2743,21 @@ void Segment::GetCluster(
         assert(pCluster);
         assert(pCluster->GetTime() <= time_ns);
 
-        pBlockEntry = pCluster->GetMaxKey(pVideo);
+        const BlockEntry* const pBlockEntry = pCluster->GetMaxKey(pVideo);
         assert(pBlockEntry);
 
         if (!pBlockEntry->EOS())
-            return;
+            return pBlockEntry;
     }
 
     //weird: we're on the first cluster, but no keyframe found
     //should never happen but we must return something anyway
 
-    pCluster = &m_eos;
-    pBlockEntry = pTrack->GetEOS();
+    return pTrack->GetEOS();
 }
 
 
+#if 0
 bool Segment::SearchCues(
     long long time_ns,
     Track* pTrack,
@@ -2745,56 +2783,9 @@ bool Segment::SearchCues(
     //so we now need to search for the cluster having
     //the indicated position.
 
-    Cluster** const ii = m_clusters;
-    Cluster** i = ii;
-
-    const long count = m_clusterCount + m_clusterPreloadCount;
-
-    Cluster** const jj = ii + count;
-    Cluster** j = jj;
-
-    while (i < j)
-    {
-        //INVARIANT:
-        //[ii, i) < pTP->m_pos
-        //[i, j) ?
-        //[j, jj)  > pTP->m_pos
-
-        Cluster** const k = i + (j - i) / 2;
-        assert(k < jj);
-
-        pCluster = *k;
-        assert(pCluster);
-
-        const long long pos_ = pCluster->m_pos;
-        assert(pos_);
-
-        const long long pos = pos_ * ((pos_ < 0) ? -1 : 1);
-
-        if (pos < pTP->m_pos)
-            i = k + 1;
-        else if (pos > pTP->m_pos)
-            j = k;
-        else
-        {
-            pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
-            return pBlockEntry ? true : false;
-        }
-    }
-
-    assert(i == j);
-
-    pCluster = Cluster::Parse(this, -1, pTP->m_pos);
-    const ptrdiff_t idx = i - m_clusters;
-
-    PreloadCluster(pCluster, idx);
-    assert(m_clusters);
-    assert(m_clusterPreloadCount > 0);
-    assert(m_clusters[idx] == pCluster);
-
-    pBlockEntry = pCluster->GetEntry(*pCP, *pTP);
-    return pBlockEntry ? true : false;
+    return GetCluster(pCP, pTP, pCluster, pBlockEntry);
 }
+#endif
 
 
 Tracks* Segment::GetTracks() const

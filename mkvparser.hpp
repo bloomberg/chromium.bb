@@ -403,11 +403,11 @@ public:
         const CuePoint::TrackPosition*&) const;
 #endif
 
-    bool GetNext(
-        const CuePoint*,
-        const Track*,
-        const CuePoint*&,
-        const CuePoint::TrackPosition*&) const;
+    const CuePoint* GetNext(const CuePoint*) const;
+
+    const BlockEntry* GetBlock(
+                        const CuePoint*,
+                        const CuePoint::TrackPosition*) const;
 
 private:
     void Init() const;
@@ -474,6 +474,8 @@ private:
 
 class Segment
 {
+    friend class Cues;
+
     Segment(const Segment&);
     Segment& operator=(const Segment&);
 
@@ -505,27 +507,17 @@ public:
 
     Tracks* GetTracks() const;
     const SegmentInfo* GetInfo() const;
+    const Cues* GetCues() const;
+
     long long GetDuration() const;
 
-    //NOTE: this turned out to be too inefficient.
-    //long long Load(long long time_nanoseconds);
-
+    unsigned long GetCount() const;
     Cluster* GetFirst();
     Cluster* GetLast();
-    unsigned long GetCount() const;
-
     Cluster* GetNext(const Cluster*);
-    Cluster* GetCluster(long long time_nanoseconds);
 
-    void GetCluster(
-        long long time_nanoseconds,
-        Track*,
-        Cluster*&,
-        const BlockEntry*&,
-        const CuePoint*&,
-        const CuePoint::TrackPosition*&);
-
-    const Cues* GetCues() const;
+    Cluster* FindCluster(long long time_nanoseconds);
+    const BlockEntry* Seek(long long time_nanoseconds, const Track*);
 
 private:
 
@@ -545,13 +537,9 @@ private:
     void ParseSeekEntry(long long pos, long long size);
     void ParseCues(long long);
 
-    bool SearchCues(
-        long long time_ns,
-        Track*,
-        Cluster*&,
-        const BlockEntry*&,
-        const CuePoint*&,
-        const CuePoint::TrackPosition*&);
+    const BlockEntry* GetBlock(
+        const CuePoint&,
+        const CuePoint::TrackPosition&);
 
 };
 
