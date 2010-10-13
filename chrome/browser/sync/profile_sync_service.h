@@ -275,6 +275,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
 
+  // Returns true if |observer| has already been added as an observer.
+  bool HasObserver(Observer* observer) const;
+
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
 
@@ -283,7 +286,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // command-line switches).
   static bool IsSyncEnabled();
 
-  // Retuns whether sync is managed, i.e. controlled by configuration
+  // Returns whether sync is managed, i.e. controlled by configuration
   // management. If so, the user is not allowed to configure sync.
   bool IsManaged();
 

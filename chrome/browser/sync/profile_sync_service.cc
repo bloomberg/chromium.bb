@@ -1060,6 +1060,10 @@ void ProfileSyncService::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool ProfileSyncService::HasObserver(Observer* observer) const {
+  return observers_.HasObserver(observer);
+}
+
 void ProfileSyncService::SyncEvent(SyncEventCodes code) {
   UMA_HISTOGRAM_ENUMERATION("Sync.EventCodes", code, MAX_SYNC_EVENT_CODE);
 }

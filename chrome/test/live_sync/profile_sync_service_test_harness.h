@@ -27,9 +27,14 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
                                 const std::string& password, int id);
 
   // Creates a ProfileSyncService for the profile passed at construction and
-  // enables sync.  Returns true only after sync has been fully initialized and
-  // authenticated, and we are ready to process changes.
+  // enables sync for all available datatypes. Returns true only after sync has
+  // been fully initialized and authenticated, and we are ready to process
+  // changes.
   bool SetupSync();
+
+  // Same as the above method, but enables sync only for the datatypes contained
+  // in |synced_datatypes|.
+  bool SetupSync(const syncable::ModelTypeSet& synced_datatypes);
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged();
@@ -84,6 +89,9 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // Enables sync for all sync datatypes.
   void EnableSyncForAllDatatypes();
 
+  // Disables sync for all sync datatypes.
+  void DisableSyncForAllDatatypes();
+
  private:
   friend class StateChangeTimeoutEvent;
 
@@ -105,6 +113,10 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
 
     // The sync client is fully synced and there are no pending updates.
     FULLY_SYNCED,
+
+    // Syncing is disabled for the client.
+    SYNC_DISABLED,
+
     NUMBER_OF_STATES,
   };
 
@@ -119,9 +131,6 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // Returns true if a status change took place, false on timeout.
   virtual bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
                                             const std::string& reason);
-
-  // Returns true if the service initialized correctly.
-  bool WaitForServiceInit();
 
   // Returns true if the sync client has no unsynced items.
   bool IsSynced();
