@@ -120,8 +120,8 @@ readonly PNACL_SB_X8632="${PNACL_SB_ROOT}/x8632"
 readonly PNACL_SB_X8664="${PNACL_SB_ROOT}/x8664"
 
 # Current milestones in each repo
-readonly LLVM_REV=95617b029565
-readonly LLVM_GCC_REV=e9e78b462c84
+readonly LLVM_REV=a5e666428d91
+readonly LLVM_GCC_REV=da0c7872d39e
 readonly NEWLIB_REV=03ddd92d699d
 readonly BINUTILS_REV=a5b54c0cc733
 
