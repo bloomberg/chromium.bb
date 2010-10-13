@@ -131,7 +131,7 @@ const Experiment kExperiments[] = {
     kOsMac,
     switches::kEnableMatchPreview
   },
-  // FIXME(scheib): Add Labs entry for accelerated Compositing, 
+  // FIXME(scheib): Add Labs entry for accelerated Compositing,
   // or pull it and the strings in generated_resources.grd by Dec 2010
   //{
   //  "gpu-compositing", // Do not change; see above
@@ -146,7 +146,7 @@ const Experiment kExperiments[] = {
     IDS_LABS_ACCELERATED_CANVAS_2D_DESCRIPTION,
     kOsWin | kOsLinux,
     switches::kEnableAccelerated2dCanvas
-  }
+  },
   // FIXME(scheib): Add Labs entry for WebGL,
   // or pull it and the strings in generated_resources.grd by Dec 2010
   //{
@@ -156,6 +156,13 @@ const Experiment kExperiments[] = {
   //  kOsAll,
   //  switches::kDisableExperimentalWebGL
   //}
+  {
+    "print-preview",  // Do not change; see above
+    IDS_LABS_PRINT_PREVIEW_NAME,
+    IDS_LABS_PRINT_PREVIEW_DESCRIPTION,
+    kOsAll,
+    switches::kEnablePrintPreview
+  }
 };
 
 // Extracts the list of enabled lab experiments from preferences and stores them
