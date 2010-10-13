@@ -231,6 +231,26 @@ int TCPClientSocketPool::RequestSocket(
                              callback, net_log);
 }
 
+void TCPClientSocketPool::RequestSockets(
+    const std::string& group_name,
+    const void* params,
+    int num_sockets,
+    const BoundNetLog& net_log) {
+  const scoped_refptr<TCPSocketParams>* casted_params =
+      static_cast<const scoped_refptr<TCPSocketParams>*>(params);
+
+  if (net_log.IsLoggingAll()) {
+    // TODO(eroman): Split out the host and port parameters.
+    net_log.AddEvent(
+        NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,
+        new NetLogStringParameter(
+            "host_and_port",
+            casted_params->get()->destination().host_port_pair().ToString()));
+  }
+
+  base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);
+}
+
 void TCPClientSocketPool::CancelRequest(
     const std::string& group_name,
     ClientSocketHandle* handle) {
