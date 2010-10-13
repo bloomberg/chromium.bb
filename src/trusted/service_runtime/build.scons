@@ -29,11 +29,6 @@ if env.Bit('windows'):
 #  env.FilterOut(CCFLAGS=['-pedantic'])
 #  env.FilterOut(CCFLAGS=['-Wall'])
 
-# The Mac (on OS X 10.6) needs -D_XOPEN_SOURCE in order to build with
-# /usr/include/ucontext.h.  The Mac distro claims that the stuff un uncontext.h
-# has been deprecated, but doesn't offer a replacement.
-if env.Bit('mac'):
-  env.Append(CPPDEFINES=['_XOPEN_SOURCE'])
 
 if env['TARGET_ARCHITECTURE'] == 'x86':
   env.Append(LIBS=['ncvalidate'])
