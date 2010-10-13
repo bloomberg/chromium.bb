@@ -2,6 +2,10 @@
  * TODO(xiyuan): Remove the section overrides when options_page.css uses the
  * new style.
  */
+#inetTitle {
+  border: none;
+}
+
 #internetPage > section {
   display: block;
 }
@@ -109,30 +113,37 @@
 }
 
 #detailsInternetPage {
-  min-width: 350px;
+  min-width: 400px;
+  min-height: 360px;
+}
+
+.details-button {
+  float: right;
+}
+
+html[dir='rtl'] .details-button {
+  float: left;
 }
 
 #detailsInternetPage:not([connected]) > #advancedSection,
 #detailsInternetPage[connecting] > * > #detailsInternetLogin,
 #detailsInternetPage[connected] > * > #detailsInternetLogin,
-#detailsInternetPage[ethernet] > #wirelessOptions,
-#detailsInternetPage[ethernet] > #certNetwork,
-#detailsInternetPage[ethernet] > #certNetworkPkcs,
-#detailsInternetPage[ethernet] > #passwordNetwork,
-#detailsInternetPage[ethernet] > #cellularNetworkOptions,
-#detailsInternetPage[ethernet] > #cellularDeviceOptions,
-#detailsInternetPage:not([password]) > #passwordNetwork,
-#detailsInternetPage[cellular] > #wirelessOptions,
-#detailsInternetPage[cellular] > #certNetwork,
-#detailsInternetPage[cellular] > #certNetworkPkcs,
-#detailsInternetPage:not([gsm]) > #gsmDetails,
-#detailsInternetPage[wireless] > #cellularNetworkOptions,
-#detailsInternetPage[wireless] > #cellularDeviceOptions,
-#detailsInternetPage[cert] > #passwordNetwork,
-#detailsInternetPage:not([cert]) > #certNetwork,
-#detailsInternetPage:not([cert]) > #certNetworkPkcs,
-#detailsInternetPage:not([certPkcs]) > #certNetworkPkcs,
-#detailsInternetPage[certPkcs] > #certNetwork {
+#detailsInternetPage[ethernet] .wifi-details,
+#detailsInternetPage[ethernet] .cellular-details,
+#detailsInternetPage[cellular] .wifi-details,
+#detailsInternetPage[wireless] .cellular-details,
+#detailsInternetPage[cellplanloading] .no-plan-info,
+#detailsInternetPage[cellplanloading] .plan-details-info,
+#detailsInternetPage[hascellplan] .plan-loading-info,
+#detailsInternetPage[hascellplan] .no-plan-info,
+#detailsInternetPage[nocellplan] .plan-loading-info,
+#detailsInternetPage[nocellplan] .plan-details-info,
+#detailsInternetPage:not([gsm]) .gsm-only,
+#detailsInternetPage:not([password]) .password-details,
+#detailsInternetPage[cert] .password-details,
+#detailsInternetPage[certPkcs] .password-details,
+#detailsInternetPage:not([cert]) .cert-details,
+#detailsInternetPage:not([certPkcs]) .cert-pkcs-details {
   display: none;
 }
 

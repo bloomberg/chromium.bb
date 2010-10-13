@@ -58,10 +58,16 @@ cr.define('options', function() {
          chrome.send('disableWifi', []);
       };
       $('enableCellular').onclick = function(event) {
-         chrome.send('disableCellular', []);
+         chrome.send('enableCellular', []);
       };
       $('disableCellular').onclick = function(event) {
          chrome.send('disableCellular', []);
+      };
+      $('purchaseMore').onclick = function(event) {
+        chrome.send('buyDataPlan', []);
+      };
+      $('moreInfo').onclick = function(event) {
+        chrome.send('showMorePlanInfo', []);
       };
 
       this.showNetworkDetails_();
@@ -148,6 +154,23 @@ cr.define('options', function() {
     $('rememberedSection').hidden = (data.rememberedList.length == 0);
   };
 
+  InternetOptions.updateCellularPlans = function (data) {
+    var page = $('detailsInternetPage');
+    if (!data.plans || !data.plans.length || !data.plans[0].plan_type) {
+      // No cellular data plan.
+      page.setAttribute('nocellplan', true);
+      page.removeAttribute('hascellplan');
+    } else {
+      page.removeAttribute('nocellplan');
+      page.setAttribute('hascellplan', true);
+      var plan = data.plans[0];
+      $('planSummary').textContent = plan.planSummary;
+      $('dataRemaining').textContent = plan.dataRemaining;
+      $('planExpires').textContent = plan.planExpires;
+    }
+    page.removeAttribute('cellplanloading');
+  };
+
   InternetOptions.showPasswordEntry = function (data) {
     var element = $(data.servicePath);
     element.showPassword();
@@ -189,6 +212,7 @@ cr.define('options', function() {
       $('inetDns').textContent = '?';
     }
     if (data.type == 2) {
+      OptionsPage.showTab($('wifiNetworkNavTab'));
       page.setAttribute('wireless', true);
       page.removeAttribute('ethernet');
       page.removeAttribute('cellular');
@@ -215,6 +239,7 @@ cr.define('options', function() {
         page.removeAttribute('cert');
       }
     } else if(data.type == 5) {
+      OptionsPage.showTab($('cellularPlanNavTab'));
       page.removeAttribute('ethernet');
       page.removeAttribute('wireless');
       page.removeAttribute('cert');
@@ -245,7 +270,12 @@ cr.define('options', function() {
         $('imsi').textContent = data.imsi;
         page.setAttribute('gsm', true);
       }
+      page.removeAttribute('hascellplan');
+      page.removeAttribute('nocellplan');
+      page.setAttribute('cellplanloading', true);
+      chrome.send('refreshCellularPlan', [data.servicePath])
     } else {
+      OptionsPage.showTab($('internetNavTab'));
       page.setAttribute('ethernet', true);
       page.removeAttribute('wireless');
       page.removeAttribute('cert');

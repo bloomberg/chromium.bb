@@ -9063,6 +9063,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
         Require password to wake from sleep
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI" desc="In settings internet options, the title for buy cellular data plan button.">
+        Wi-Fi
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN" desc="In settings internet options, the title for buy cellular data plan button.">
+        Plan
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION" desc="In settings internet options, the title for buy cellular data plan button.">
+        Connection
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE" desc="In settings internet options, the title for buy cellular data plan button.">
+        Device
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK" desc="In settings internet options, the title for buy cellular data plan button.">
+        Network
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings internet options, the label for the network id.">
         Network SSID:
       </message>
@@ -9093,8 +9108,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_USAGE" desc="In settings internet options, the tab header for mobile plan usage tab.">
         Usage
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings internet options, the title for purchase more button.">
-        Purchase more...
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE" desc="In settings internet options, the title for buy cellular data plan button.">
+        Buy data plan...
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_MORE_INFO" desc="In settings internet options, the title for button for getting more information about the current cellular data plan.">
+        More info...
+      </message>
+        <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN" desc="In settings internet options, the message displayed while cellular data plan information is being loaded.">
+        Loading cellular data plan information, please wait...
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING" desc="In settings internet options, the label for mobile plan remaining data info.">
         Data remaining:
@@ -9115,7 +9136,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You purchased <ph name="DATA_AMOUNT">$1<ex>3GB</ex></ph> of data on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA" desc="In settings internet options, the label that shows user has purchased an unliminted mobile data plan.">
-        You purchased unlimited data on <ph name="DATE">$2<ex>January 1, 2011</ex></ph>
+        You purchased unlimited data on <ph name="DATE">$1<ex>January 1, 2011</ex></ph>
       </message>
       <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT" desc="In settings internet options, the text for customer support hyper link.">
         Customer support

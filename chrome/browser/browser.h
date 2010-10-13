@@ -567,6 +567,7 @@ class Browser : public TabHandlerDelegate,
   void OpenInternetOptionsDialog();
   void OpenLanguageOptionsDialog();
   void OpenSystemTabAndActivate();
+  void OpenMobilePlanTabAndActivate();
 #endif
   void OpenPluginsTabAndActivate();
 

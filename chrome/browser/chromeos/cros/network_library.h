@@ -149,12 +149,19 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& hardware_revision() const { return hardware_revision_; }
   const std::string& last_update() const { return last_update_; }
   const unsigned int prl_version() const { return prl_version_; }
-  bool isGsm() const;
+  bool is_gsm() const;
 
   // WirelessNetwork overrides.
   virtual void Clear();
   virtual void ConfigureFromService(const ServiceInfo& service);
 
+  const CellularDataPlanList& GetDataPlans() const {
+    return data_plans_;
+  }
+
+  void SetDataPlans(CellularDataPlanList& data_plans) {
+    data_plans_ = data_plans;
+  }
   // Return a string representation of network technology.
   std::string GetNetworkTechnologyString() const;
   // Return a string representation of activation state.
@@ -185,6 +192,7 @@ class CellularNetwork : public WirelessNetwork {
   std::string hardware_revision_;
   std::string last_update_;
   unsigned int prl_version_;
+  CellularDataPlanList data_plans_;
 };
 
 class WifiNetwork : public WirelessNetwork {
@@ -293,7 +301,7 @@ class NetworkLibrary {
     virtual void NetworkChanged(NetworkLibrary* obj) = 0;
     // Called when the cellular data plan has changed.
     virtual void CellularDataPlanChanged(const std::string& service_path,
-                                         const CellularDataPlan& plan) {}
+                                         const CellularDataPlanList& plans) {}
   };
 
   virtual ~NetworkLibrary() {}
@@ -374,6 +382,11 @@ class NetworkLibrary {
 
   // Connect to the specified cellular network.
   virtual void ConnectToCellularNetwork(CellularNetwork network) = 0;
+
+  // Initiates cellular data plan refresh. Plan data will be passed through
+  // Network::Observer::CellularDataPlanChanged callback.
+  virtual void RefreshCellularDataPlans(
+      const CellularNetwork& network) = 0;
 
   // Disconnect from the specified wireless (either cellular or wifi) network.
   virtual void DisconnectFromWirelessNetwork(

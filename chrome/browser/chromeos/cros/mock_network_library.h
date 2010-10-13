@@ -61,6 +61,8 @@ class MockNetworkLibrary : public NetworkLibrary {
                                           const std::string&,
                                           bool));
   MOCK_METHOD1(ConnectToCellularNetwork, void(CellularNetwork));
+  MOCK_METHOD1(RefreshCellularDataPlans, void(const CellularNetwork& network));
+
   MOCK_METHOD1(DisconnectFromWirelessNetwork, void(const WirelessNetwork&));
   MOCK_METHOD1(SaveCellularNetwork, void(const CellularNetwork&));
   MOCK_METHOD1(SaveWifiNetwork, void(const WifiNetwork&));

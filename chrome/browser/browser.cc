@@ -1961,6 +1961,11 @@ void Browser::OpenSystemTabAndActivate() {
   window_->Activate();
 }
 
+void Browser::OpenMobilePlanTabAndActivate() {
+  OpenURL(GURL(chrome::kChromeUIMobileSetupURL), GURL(),
+          NEW_FOREGROUND_TAB, PageTransition::LINK);
+  window_->Activate();
+}
 #endif
 
 void Browser::OpenPluginsTabAndActivate() {

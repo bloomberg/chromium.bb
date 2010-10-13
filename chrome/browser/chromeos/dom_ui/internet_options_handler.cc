@@ -12,24 +12,29 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/i18n/time_formatting.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
+#include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
+#include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/time_format.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/window/window.h"
 
 static const char kOtherNetworksFakePath[] = "?";
 
@@ -70,6 +75,22 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("forget_button",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_FORGET));
+
+  localized_strings->SetString("wifiNetworkTabLabel",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIFI));
+  localized_strings->SetString("cellularPlanTabLabel",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_TAB_PLAN));
+  localized_strings->SetString("cellularConnTabLabel",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION));
+  localized_strings->SetString("cellularDeviceTabLabel",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE));
+  localized_strings->SetString("networkTabLabel",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK));
 
   localized_strings->SetString("connectionState",
       l10n_util::GetStringUTF16(
@@ -170,6 +191,30 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION));
 
+  localized_strings->SetString("planLoading",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_LOADING_PLAN));
+  localized_strings->SetString("purchaseMore",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_MORE));
+  localized_strings->SetString("moreInfo",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_MORE_INFO));
+  localized_strings->SetString("dataRemaining",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DATA_REMAINING));
+  localized_strings->SetString("planExpires",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EXPIRES));
+  localized_strings->SetString("showPlanNotifications",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHOW_MOBILE_NOTIFICATION));
+  localized_strings->SetString("autoconnectCellular",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
+  localized_strings->SetString("customerSupport",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CUSTOMER_SUPPORT));
 
   localized_strings->SetString("enableWifi",
       l10n_util::GetStringFUTF16(
@@ -210,6 +255,8 @@ void InternetOptionsHandler::RegisterMessages() {
   DCHECK(dom_ui_);
   dom_ui_->RegisterMessageCallback("buttonClickCallback",
       NewCallback(this, &InternetOptionsHandler::ButtonClickCallback));
+  dom_ui_->RegisterMessageCallback("refreshCellularPlan",
+      NewCallback(this, &InternetOptionsHandler::RefreshCellularPlanCallback));
   dom_ui_->RegisterMessageCallback("loginToNetwork",
       NewCallback(this, &InternetOptionsHandler::LoginCallback));
   dom_ui_->RegisterMessageCallback("loginToCertNetwork",
@@ -226,6 +273,10 @@ void InternetOptionsHandler::RegisterMessages() {
       NewCallback(this, &InternetOptionsHandler::EnableCellularCallback));
   dom_ui_->RegisterMessageCallback("disablCellular",
       NewCallback(this, &InternetOptionsHandler::DisableCellularCallback));
+  dom_ui_->RegisterMessageCallback("buyDataPlan",
+      NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
+  dom_ui_->RegisterMessageCallback("showMorePlanInfo",
+      NewCallback(this, &InternetOptionsHandler::BuyDataPlanCallback));
 }
 
 void InternetOptionsHandler::EnableWifiCallback(const ListValue* args) {
@@ -252,19 +303,136 @@ void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
   cros->EnableCellularNetworkDevice(false);
 }
 
+void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser)
+    browser->OpenMobilePlanTabAndActivate();
+}
+
 void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
-  if (dom_ui_) {
-    DictionaryValue dictionary;
-    dictionary.Set("wiredList", GetWiredList());
-    dictionary.Set("wirelessList", GetWirelessList());
-    dictionary.Set("rememberedList", GetRememberedList());
-    chromeos::NetworkLibrary* cros =
-        chromeos::CrosLibrary::Get()->GetNetworkLibrary();
-    dictionary.SetBoolean("cellularAvailable", cros->cellular_available());
-    dictionary.SetBoolean("cellularEnabled", cros->cellular_enabled());
-    dom_ui_->CallJavascriptFunction(
-        L"options.InternetOptions.refreshNetworkData", dictionary);
+  if (!dom_ui_)
+    return;
+
+  DictionaryValue dictionary;
+  dictionary.Set("wiredList", GetWiredList());
+  dictionary.Set("wirelessList", GetWirelessList());
+  dictionary.Set("rememberedList", GetRememberedList());
+  dictionary.SetBoolean("cellularAvailable", cros->cellular_available());
+  dictionary.SetBoolean("cellularEnabled", cros->cellular_enabled());
+  dom_ui_->CallJavascriptFunction(
+      L"options.InternetOptions.refreshNetworkData", dictionary);
+}
+
+void InternetOptionsHandler::CellularDataPlanChanged(
+    const std::string& service_path,
+    const chromeos::CellularDataPlanList& plans) {
+  if (!dom_ui_)
+    return;
+  DictionaryValue connection_plans;
+  ListValue* plan_list = new ListValue();
+  for (chromeos::CellularDataPlanList::const_iterator iter = plans.begin();
+       iter != plans.end();
+       ++iter) {
+    plan_list->Append(CellularDataPlanToDictionary(*iter));
   }
+  connection_plans.SetString("servicePath", service_path);
+  connection_plans.Set("plans", plan_list);
+  dom_ui_->CallJavascriptFunction(
+      L"options.InternetOptions.updateCellularPlans", connection_plans);
+}
+
+DictionaryValue* InternetOptionsHandler::CellularDataPlanToDictionary(
+    const chromeos::CellularDataPlan& plan) {
+
+  DictionaryValue* plan_dict = new DictionaryValue();
+  plan_dict->SetInteger("plan_type", plan.plan_type);
+  // Format plan details into readable text.
+  string16 description;
+  string16 remaining;
+  switch (plan.plan_type) {
+    case chromeos::CELLULAR_DATA_PLAN_UNKNOWN: {
+      return NULL;
+      break;
+    }
+    case chromeos::CELLULAR_DATA_PLAN_UNLIMITED: {
+      description = l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA,
+          WideToUTF16(base::TimeFormatFriendlyDate(
+              base::Time::FromInternalValue(plan.plan_start_time *
+                  base::Time::kMicrosecondsPerSecond))));
+      remaining = l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_UNLIMITED);
+      break;
+    }
+    case chromeos::CELLULAR_DATA_PLAN_METERED_PAID: {
+      description = l10n_util::GetStringFUTF16(
+                IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_DATA,
+                FormatBytes(plan.plan_data_bytes,
+                            GetByteDisplayUnits(plan.plan_data_bytes),
+                            true),
+                WideToUTF16(base::TimeFormatFriendlyDate(
+                    base::Time::FromInternalValue(plan.plan_start_time *
+                        base::Time::kMicrosecondsPerSecond))));
+      remaining = FormatBytes(plan.plan_data_bytes - plan.data_bytes_used,
+          GetByteDisplayUnits(plan.plan_data_bytes - plan.data_bytes_used),
+          true);
+      break;
+    }
+    case chromeos::CELLULAR_DATA_PLAN_METERED_BASE: {
+      description = l10n_util::GetStringFUTF16(
+                IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_RECEIVED_FREE_DATA,
+                FormatBytes(plan.plan_data_bytes,
+                            GetByteDisplayUnits(plan.plan_data_bytes),
+                            true),
+                WideToUTF16(base::TimeFormatFriendlyDate(
+                    base::Time::FromInternalValue(plan.plan_start_time *
+                        base::Time::kMicrosecondsPerSecond))));
+      remaining = FormatBytes(plan.plan_data_bytes - plan.data_bytes_used,
+          GetByteDisplayUnits(plan.plan_data_bytes - plan.data_bytes_used),
+          true);
+      break;
+    }
+  }
+  string16 expiration = TimeFormat::TimeRemaining(
+      base::TimeDelta::FromSeconds(
+          plan.plan_end_time - (base::Time::Now().ToInternalValue() /
+                                      base::Time::kMicrosecondsPerSecond)));
+
+  plan_dict->SetString("name", plan.plan_name);
+  plan_dict->SetString("planSummary", description);
+  plan_dict->SetString("dataRemaining", remaining);
+  plan_dict->SetString("planExpires", expiration);
+  plan_dict->SetString("warning", GetPlanWarning(plan));
+  return plan_dict;
+}
+
+string16 InternetOptionsHandler::GetPlanWarning(
+    const chromeos::CellularDataPlan& plan) {
+  if (plan.plan_type == chromeos::CELLULAR_DATA_PLAN_UNLIMITED) {
+    // Time based plan. Show nearing expiration and data expiration.
+    int64 time_left = plan.plan_end_time - plan.update_time;
+    if (time_left <= 0) {
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0"));
+    } else if (time_left <= chromeos::kDataNearingExpirationSecs) {
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
+          UTF8ToUTF16(base::Int64ToString(time_left/60)));
+    }
+  } else if (plan.plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_PAID ||
+             plan.plan_type == chromeos::CELLULAR_DATA_PLAN_METERED_BASE) {
+    // Metered plan. Show low data and out of data.
+    int64 bytes_remaining = plan.plan_data_bytes - plan.data_bytes_used;
+    if (bytes_remaining <= 0) {
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_DATA_REMAINING_MESSAGE, ASCIIToUTF16("0"));
+    } else if (bytes_remaining <= chromeos::kDataLowDataBytes) {
+      return l10n_util::GetStringFUTF16(
+          IDS_NETWORK_DATA_REMAINING_MESSAGE,
+          UTF8ToUTF16(base::Int64ToString(bytes_remaining/1024)));
+    }
+  }
+  return string16();
 }
 
 void InternetOptionsHandler::SetDetailsCallback(const ListValue* args) {
@@ -447,7 +615,7 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       dictionary.SetString("esn", cellular.esn());
       dictionary.SetString("min", cellular.min());
 
-      dictionary.SetBoolean("gsm", cellular.isGsm());
+      dictionary.SetBoolean("gsm", cellular.is_gsm());
     }
   }
   dom_ui_->CallJavascriptFunction(
@@ -594,6 +762,24 @@ void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
         PopulateDictionaryDetails(cellular, cros);
       }
     }
+  } else {
+    NOTREACHED();
+  }
+}
+
+void InternetOptionsHandler::RefreshCellularPlanCallback(
+    const ListValue* args) {
+  std::string service_path;
+  if (args->GetSize() != 1 ||
+      !args->GetString(0, &service_path)) {
+    NOTREACHED();
+    return;
+  }
+  chromeos::NetworkLibrary* cros =
+      chromeos::CrosLibrary::Get()->GetNetworkLibrary();
+  chromeos::CellularNetwork cellular;
+  if (cros->FindCellularNetworkByPath(service_path, &cellular)) {
+    cros->RefreshCellularDataPlans(cellular);
   } else {
     NOTREACHED();
   }
