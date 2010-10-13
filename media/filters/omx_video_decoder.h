@@ -10,6 +10,7 @@
 #include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/base/media_format.h"
+#include "media/video/video_decode_context.h"
 #include "media/video/video_decode_engine.h"
 
 class MessageLoop;
@@ -23,10 +24,11 @@ class VideoFrame;
 class OmxVideoDecoder : public VideoDecoder,
                         public VideoDecodeEngine::EventHandler {
  public:
-  static FilterFactory* CreateFactory();
+  static FilterFactory* CreateFactory(VideoDecodeContext* decode_context);
   static bool IsMediaFormatSupported(const MediaFormat& media_format);
 
-  OmxVideoDecoder(VideoDecodeEngine* engine);
+  OmxVideoDecoder(VideoDecodeEngine* decode_engine,
+                  VideoDecodeContext* decode_context);
   virtual ~OmxVideoDecoder();
 
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback);
@@ -54,7 +56,8 @@ class OmxVideoDecoder : public VideoDecoder,
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
-  scoped_ptr<VideoDecodeEngine> omx_engine_;
+  scoped_ptr<VideoDecodeEngine> decode_engine_;
+  scoped_ptr<VideoDecodeContext> decode_context_;
   MediaFormat media_format_;
   size_t width_;
   size_t height_;

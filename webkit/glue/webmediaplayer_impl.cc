@@ -244,7 +244,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
   // Add in the default filter factories.
   filter_factory_->AddFactory(media::FFmpegDemuxer::CreateFilterFactory());
   filter_factory_->AddFactory(media::FFmpegAudioDecoder::CreateFactory());
-  filter_factory_->AddFactory(media::FFmpegVideoDecoder::CreateFactory());
+  filter_factory_->AddFactory(media::FFmpegVideoDecoder::CreateFactory(NULL));
   filter_factory_->AddFactory(media::NullAudioRenderer::CreateFilterFactory());
   filter_factory_->AddFactory(video_renderer_factory->CreateFactory(proxy_));
 }

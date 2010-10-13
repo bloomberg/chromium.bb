@@ -24,6 +24,14 @@
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/omx_video_decoder.h"
 
+// TODO(jiesun): implement different video decode contexts according to
+// these flags. e.g.
+//     1.  system memory video decode context for x11
+//     2.  gl texture video decode context for OpenGL.
+//     3.  gles texture video decode context for OpenGLES.
+// TODO(jiesun): add an uniform video renderer which take the video
+//       decode context object and delegate renderer request to these
+//       objects. i.e. Seperate "painter" and "pts scheduler".
 #if defined(RENDERER_GL)
 #include "media/tools/player_x11/gl_video_renderer.h"
 typedef GlVideoRenderer Renderer;
@@ -96,9 +104,10 @@ bool InitPipeline(MessageLoop* message_loop,
   factories->AddFactory(media::FFmpegDemuxer::CreateFilterFactory());
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableOpenMax)) {
-    factories->AddFactory(media::OmxVideoDecoder::CreateFactory());
+    factories->AddFactory(media::OmxVideoDecoder::CreateFactory(NULL));
+  } else {
+    factories->AddFactory(media::FFmpegVideoDecoder::CreateFactory(NULL));
   }
-  factories->AddFactory(media::FFmpegVideoDecoder::CreateFactory());
   factories->AddFactory(Renderer::CreateFactory(g_display, g_window,
                                                 paint_message_loop));
 

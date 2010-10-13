@@ -59,7 +59,7 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
   factories->AddFactory(FileDataSource::CreateFactory());
   factories->AddFactory(FFmpegAudioDecoder::CreateFactory());
   factories->AddFactory(FFmpegDemuxer::CreateFilterFactory());
-  factories->AddFactory(FFmpegVideoDecoder::CreateFactory());
+  factories->AddFactory(FFmpegVideoDecoder::CreateFactory(NULL));
 
   if (enable_audio_) {
     factories->AddFactory(AudioRendererImpl::CreateFilterFactory());

@@ -16,9 +16,12 @@
 namespace media {
 
 // static
-FilterFactory* OmxVideoDecoder::CreateFactory() {
-  return new FilterFactoryImpl1<OmxVideoDecoder, VideoDecodeEngine*>(
-      new OmxVideoDecodeEngine());
+FilterFactory* OmxVideoDecoder::CreateFactory(
+    VideoDecodeContext* decode_context) {
+  return new FilterFactoryImpl2<OmxVideoDecoder,
+                                VideoDecodeEngine*,
+                                VideoDecodeContext*>(
+      new OmxVideoDecodeEngine(), decode_context);
 }
 
 // static
@@ -40,9 +43,13 @@ bool OmxVideoDecoder::IsMediaFormatSupported(const MediaFormat& format) {
   return false;
 }
 
-OmxVideoDecoder::OmxVideoDecoder(VideoDecodeEngine* engine)
-    : omx_engine_(engine), width_(0), height_(0) {
-  DCHECK(omx_engine_.get());
+OmxVideoDecoder::OmxVideoDecoder(
+    VideoDecodeEngine* engine,
+    VideoDecodeContext* context)
+    : decode_engine_(engine),
+      decode_context_(context),
+      width_(0), height_(0) {
+  DCHECK(decode_engine_.get());
   memset(&info_, 0, sizeof(info_));
 }
 
@@ -110,7 +117,7 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   config.opaque_context = NULL;
   config.width = width_;
   config.height = height_;
-  omx_engine_->Initialize(message_loop(), this, NULL, config);
+  decode_engine_->Initialize(message_loop(), this, NULL, config);
 }
 
 void OmxVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
@@ -149,7 +156,7 @@ void OmxVideoDecoder::Stop(FilterCallback* callback) {
   DCHECK(!uninitialize_callback_.get());
 
   uninitialize_callback_.reset(callback);
-  omx_engine_->Uninitialize();
+  decode_engine_->Uninitialize();
 }
 
 void OmxVideoDecoder::OnUninitializeComplete() {
@@ -157,6 +164,8 @@ void OmxVideoDecoder::OnUninitializeComplete() {
   DCHECK(uninitialize_callback_.get());
 
   AutoCallbackRunner done_runner(uninitialize_callback_.release());
+
+  // TODO(jiesun): Destroy the decoder context.
 }
 
 void OmxVideoDecoder::Flush(FilterCallback* callback) {
@@ -173,7 +182,7 @@ void OmxVideoDecoder::Flush(FilterCallback* callback) {
 
   flush_callback_.reset(callback);
 
-  omx_engine_->Flush();
+  decode_engine_->Flush();
 }
 
 
@@ -198,7 +207,7 @@ void OmxVideoDecoder::Seek(base::TimeDelta time,
   DCHECK(!seek_callback_.get());
 
   seek_callback_.reset(callback);
-  omx_engine_->Seek();
+  decode_engine_->Seek();
 }
 
 void OmxVideoDecoder::OnSeekComplete() {
@@ -228,10 +237,10 @@ void OmxVideoDecoder::ConsumeVideoFrame(scoped_refptr<VideoFrame> frame) {
 }
 
 void OmxVideoDecoder::ProduceVideoFrame(scoped_refptr<VideoFrame> frame) {
-  DCHECK(omx_engine_.get());
+  DCHECK(decode_engine_.get());
   message_loop()->PostTask(
      FROM_HERE,
-     NewRunnableMethod(omx_engine_.get(),
+     NewRunnableMethod(decode_engine_.get(),
                        &VideoDecodeEngine::ProduceVideoFrame, frame));
 }
 
@@ -243,10 +252,10 @@ bool OmxVideoDecoder::ProvidesBuffer() {
 void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
   // We simply delicate the buffer to the right message loop.
   scoped_refptr<Buffer> ref_buffer = buffer;
-  DCHECK(omx_engine_.get());
+  DCHECK(decode_engine_.get());
   message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(omx_engine_.get(),
+      NewRunnableMethod(decode_engine_.get(),
                         &VideoDecodeEngine::ConsumeVideoSample, ref_buffer));
 }
 
