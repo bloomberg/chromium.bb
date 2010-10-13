@@ -132,9 +132,8 @@
     },
     'domui_options' : {
       'filepath': 'chrome/browser/resources/options/.*|'\
-        'chrome/browser/resources/options.html|'\
-        'chrome/browser/dom_ui/options_ui.cc|'\
-        'chrome/browser/dom_ui/core_options_handler.cc',
+                  'chrome/browser/resources/options.html|'\
+                  'chrome/browser/dom_ui/options/.*',
     },
     'cookie_monster': {
       'filepath': 'net/base/cookie_.*|'\
@@ -215,7 +214,6 @@
     'remoting': ['ajwong@chromium.org', 'sergeyu@chromium.org',
                  'hclam@chromium.org', 'dmaclach@chromium.org',
                  'garykac@chromium.org'],
-    'domui_options': ['dhg@chromium.org'],
     'cookie_monster': ['rdsmith@chromium.org'],
     'autofill': ['dhollowa@chromium.org', 'jhawkins@chromium.org'],
     'webdata': ['dhollowa@chromium.org'],
