@@ -2,39 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H
-#define CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H
+#ifndef CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H_
+#define CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
 
 #import "base/scoped_nsobject.h"
+#include "chrome/browser/accessibility/browser_accessibility_mac.h"
 #import "chrome/browser/cocoa/browser_accessibility_delegate.h"
-#include "webkit/glue/webaccessibility.h"
 
-using webkit_glue::WebAccessibility;
-
-// BrowserAccessibility is a cocoa wrapper around the WebAccessibility
+// BrowserAccessibilityCocoa is a cocoa wrapper around the BrowserAccessibility
 // object. The renderer converts webkit's accessibility tree into a
 // WebAccessibility tree and passes it to the browser process over IPC.
 // This class converts it into a format Cocoa can query.
-@interface BrowserAccessibility : NSObject {
+@interface BrowserAccessibilityCocoa : NSObject {
  @private
-  WebAccessibility webAccessibility_;
-  id<BrowserAccessibilityDelegate> delegate_;
+  BrowserAccessibility* browserAccessibility_;
+  id<BrowserAccessibilityDelegateCocoa> delegate_;
   scoped_nsobject<NSMutableArray> children_;
   // The parent of the accessibility object.  This can be another
-  // BrowserAccessibility or a RenderWidgetHostViewCocoa.
+  // BrowserAccessibilityCocoa or a RenderWidgetHostViewCocoa.
   id parent_;  // weak
 }
 
 // This creates a cocoa browser accessibility object around
-// the webkit glue WebAccessibility object.  The delegate is
+// the cross platform BrowserAccessibility object.  The delegate is
 // used to communicate with the host renderer.  None of these
 // parameters can be null.
-- (id)initWithObject:(const WebAccessibility&)accessibility
-            delegate:(id<BrowserAccessibilityDelegate>)delegate
+- (id)initWithObject:(BrowserAccessibility*)accessibility
+            delegate:(id<BrowserAccessibilityDelegateCocoa>)delegate
               parent:(id)parent;
+
+// Updates children from backing BrowserAccessibility.
+- (NSArray*)updateChildren;
+// Updates all descendants from the backing BrowserAccessibility.
+- (void)updateDescendants;
+
+@property(nonatomic, readonly) BrowserAccessibility* browserAccessibility;
 
 // Children is an array of BrowserAccessibility objects, representing
 // the accessibility children of this object.
@@ -54,4 +59,4 @@ using webkit_glue::WebAccessibility;
 
 @end
 
-#endif // CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H
+#endif // CHROME_BROWSER_COCOA_BROWSER_ACCESSIBILITY_H_

@@ -6,14 +6,16 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/accessibility/browser_accessibility_mac.h"
 #include "chrome/browser/cocoa/browser_accessibility.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
-@interface MockAccessibilityDelegate : NSObject<BrowserAccessibilityDelegate>
+@interface MockAccessibilityDelegate :
+    NSObject<BrowserAccessibilityDelegateCocoa>
 
-- (NSPoint)accessibilityPointInScreen:(BrowserAccessibility*)accessibility;
+- (NSPoint)accessibilityPointInScreen:(BrowserAccessibilityCocoa*)accessibility;
 - (void)doDefaultAction:(int32)accessibilityObjectId;
 - (void)setAccessibilityFocus:(BOOL)focus
               accessibilityId:(int32)accessibilityObjectId;
@@ -23,7 +25,8 @@
 
 @implementation MockAccessibilityDelegate
 
-- (NSPoint)accessibilityPointInScreen:(BrowserAccessibility*)accessibility {
+- (NSPoint)accessibilityPointInScreen:
+    (BrowserAccessibilityCocoa*)accessibility {
   return NSZeroPoint;
 }
 - (void)doDefaultAction:(int32)accessibilityObjectId {
@@ -62,24 +65,50 @@ class BrowserAccessibilityTest : public CocoaTest {
     child2.location.width = 250;
     child2.location.height = 100;
 
-    root.children.push_back(child1);
-    root.children.push_back(child2);
+    // TODO(dtseng): use BrowserAccessibilityManagerMac once it manages
+    // these objects.
+    BrowserAccessibility* rootBrowserAccessibility =
+        BrowserAccessibility::Create();
+    BrowserAccessibility* child1BrowserAccessibility =
+        BrowserAccessibility::Create();
+    BrowserAccessibility* child2BrowserAccessibility =
+        BrowserAccessibility::Create();
+
+    rootBrowserAccessibility->Initialize(NULL,
+                                         NULL,
+                                         0,
+                                         0,
+                                         root);
+    child1BrowserAccessibility->Initialize(NULL,
+                                           NULL,
+                                           0,
+                                           0,
+                                           child1);
+    child2BrowserAccessibility->Initialize(NULL,
+                                           NULL,
+                                           0,
+                                           0,
+                                           child2);
+
+    rootBrowserAccessibility->AddChild(child1BrowserAccessibility);
+    rootBrowserAccessibility->AddChild(child2BrowserAccessibility);
 
     delegate_.reset([[MockAccessibilityDelegate alloc] init]);
     accessibility_.reset(
-        [[BrowserAccessibility alloc] initWithObject:root
-                                            delegate:delegate_
-                                              parent:delegate_]);
+        [[BrowserAccessibilityCocoa alloc]
+            initWithObject:rootBrowserAccessibility
+            delegate:delegate_
+            parent:delegate_]);
   }
 
  protected:
   scoped_nsobject<MockAccessibilityDelegate> delegate_;
-  scoped_nsobject<BrowserAccessibility> accessibility_;
+  scoped_nsobject<BrowserAccessibilityCocoa> accessibility_;
 };
 
 // Standard hit test.
 TEST_F(BrowserAccessibilityTest, HitTestTest) {
-  BrowserAccessibility* firstChild =
+  BrowserAccessibilityCocoa* firstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
   EXPECT_NSEQ(@"Child1",
       [firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
@@ -87,7 +116,7 @@ TEST_F(BrowserAccessibilityTest, HitTestTest) {
 
 // Test doing a hit test on the edge of a child.
 TEST_F(BrowserAccessibilityTest, EdgeHitTest) {
-  BrowserAccessibility* firstChild =
+  BrowserAccessibilityCocoa* firstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(0, 0)];
   EXPECT_NSEQ(@"Child1",
       [firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
@@ -97,7 +126,7 @@ TEST_F(BrowserAccessibilityTest, EdgeHitTest) {
 // the hit test has been narrowed down to this object or one of its children
 // so it should return itself since it has no better hit result.
 TEST_F(BrowserAccessibilityTest, InvalidHitTestCoordsTest) {
-  BrowserAccessibility* hitTestResult =
+  BrowserAccessibilityCocoa* hitTestResult =
       [accessibility_ accessibilityHitTest:NSMakePoint(-50, 50)];
   EXPECT_NSEQ(accessibility_, hitTestResult);
 }

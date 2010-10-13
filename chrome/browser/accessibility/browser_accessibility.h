@@ -15,7 +15,9 @@
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityManager;
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+class BrowserAccessibilityMac;
+#elif defined(OS_WIN)
 class BrowserAccessibilityWin;
 #endif
 
@@ -97,7 +99,9 @@ class BrowserAccessibility {
   int32 index_in_parent() const { return index_in_parent_; }
   WebKit::WebRect location() const { return location_; }
 
-#if defined(OS_WIN)
+#if defined(OS_MACOSX)
+  BrowserAccessibilityMac* toBrowserAccessibilityMac();
+#elif defined(OS_WIN)
   BrowserAccessibilityWin* toBrowserAccessibilityWin();
 #endif
 

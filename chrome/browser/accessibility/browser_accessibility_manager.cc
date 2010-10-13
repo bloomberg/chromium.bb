@@ -140,6 +140,13 @@ void BrowserAccessibilityManager::OnAccessibilityObjectFocusChange(
   focus_ = new_browser_acc;
   if (delegate_ && delegate_->HasFocus())
     GotFocus();
+  // Mac currently does not have a BrowserAccessibilityDelegate.
+  else if (!delegate_) {
+    NotifyAccessibilityEvent(
+        ViewHostMsg_AccessibilityNotification_Params::
+            NOTIFICATION_TYPE_FOCUS_CHANGED,
+        focus_);
+  }
 }
 
 void BrowserAccessibilityManager::OnAccessibilityObjectLoadComplete(

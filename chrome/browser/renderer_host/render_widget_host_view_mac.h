@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/cocoa/base_view.h"
 #include "chrome/browser/cocoa/browser_accessibility.h"
 #include "chrome/browser/cocoa/browser_accessibility_delegate.h"
@@ -41,16 +42,15 @@ class RWHVMEditCommandHelper;
     : BaseView <RenderWidgetHostViewMacOwner,
                 NSTextInput,
                 NSChangeSpelling,
-                BrowserAccessibilityDelegate> {
+                BrowserAccessibilityDelegateCocoa> {
  @private
   scoped_ptr<RenderWidgetHostViewMac> renderWidgetHostView_;
   BOOL canBeKeyView_;
   BOOL takesFocusOnlyOnMouseDown_;
   BOOL closeOnDeactivate_;
-  BOOL rendererAccessible_;
-  BOOL accessibilityRequested_;
-  BOOL accessibilityReceived_;
   scoped_ptr<RWHVMEditCommandHelper> editCommand_helper_;
+
+  // TODO(dtseng): refactor to BrowserAccessibilityManagerMac.
   scoped_nsobject<NSArray> accessibilityChildren_;
 
   // These are part of the magic tooltip code from WebKit's WebHTMLView:
@@ -142,7 +142,7 @@ class RWHVMEditCommandHelper;
 // Cancel ongoing composition (abandon the marked text).
 - (void)cancelComposition;
 // Set the new accessibility tree.
-- (void)setAccessibilityTree:(const webkit_glue::WebAccessibility&) tree;
+- (void)setAccessibilityTreeRoot:(BrowserAccessibility*) treeRoot;
 // Confirm ongoing composition.
 - (void)confirmComposition;
 
@@ -220,8 +220,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void WindowFrameChanged();
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-  virtual void UpdateAccessibilityTree(
-      const webkit_glue::WebAccessibility& tree);
+
+  virtual void OnAccessibilityNotifications(
+      const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
+
   // Methods associated with GPU-accelerated plug-in instances and the
   // accelerated compositor.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
@@ -273,6 +275,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // This is true when we are currently painting and thus should handle extra
   // paint requests by expanding the invalid rect rather than actually painting.
   bool about_to_validate_and_paint_;
+
+  scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   // This is true when we have already scheduled a call to
   // |-callSetNeedsDisplayInRect:| but it has not been fulfilled yet.  Used to
@@ -343,9 +347,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Used for positioning a popup menu.
   NSView* parent_view_;
-
-  // Whether or not web accessibility is enabled.
-  bool renderer_accessible_;
 
   // selected text on the renderer.
   std::string selected_text_;

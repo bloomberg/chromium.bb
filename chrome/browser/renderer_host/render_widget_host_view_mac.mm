@@ -444,10 +444,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
                   initWithRenderWidgetHostViewMac:this] autorelease];
   render_widget_host_->set_view(this);
 
-  // Turn on accessibility only if one or both of these flags is true.
-  renderer_accessible_ = IsVoiceOverRunning() ||
-                             CommandLine::ForCurrentProcess()->HasSwitch(
-                                 switches::kForceRendererAccessibility);
+  // Turn on accessibility only if VoiceOver is running.
+  if (IsVoiceOverRunning())
+    render_widget_host_->EnableRendererAccessibility();
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
@@ -1151,11 +1150,20 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
   return false;
 }
 
-void RenderWidgetHostViewMac::UpdateAccessibilityTree(
-    const webkit_glue::WebAccessibility& tree) {
-  if (renderer_accessible_) {
-    [cocoa_view_ setAccessibilityTree:tree];
+void RenderWidgetHostViewMac::OnAccessibilityNotifications(
+    const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params) {
+  if (!browser_accessibility_manager_.get()) {
+    // Use empty document to process notifications
+    webkit_glue::WebAccessibility empty_document;
+    empty_document.role = WebAccessibility::ROLE_WEB_AREA;
+    empty_document.state = 0;
+    browser_accessibility_manager_.reset(
+        BrowserAccessibilityManager::Create(cocoa_view_, empty_document, NULL));
+    // TODO(dtseng): refactor to BrowserAccessibilityManagerMac.
+    [cocoa_view_
+        setAccessibilityTreeRoot:browser_accessibility_manager_->GetRoot()];
   }
+  browser_accessibility_manager_->OnAccessibilityNotifications(params);
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
@@ -1186,12 +1194,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     canBeKeyView_ = YES;
     takesFocusOnlyOnMouseDown_ = NO;
     closeOnDeactivate_ = NO;
-
-    rendererAccessible_ =
-          !CommandLine::ForCurrentProcess()->HasSwitch(
-                    switches::kDisableRendererAccessibility);
-    accessibilityRequested_ = NO;
-    accessibilityReceived_ = NO;
   }
   return self;
 }
@@ -1771,14 +1773,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 // Create the BrowserAccessibility tree from the WebAccessibility tree passed
 // from the renderer.
-- (void)setAccessibilityTree:(const webkit_glue::WebAccessibility&) tree {
-  BrowserAccessibility* root =
-      [[BrowserAccessibility alloc] initWithObject:tree
-                                          delegate:self
-                                            parent:self];
+// TODO(dtseng): refactor to BrowserAccessibilityManagerMac.
+- (void)setAccessibilityTreeRoot:(BrowserAccessibility*) treeRoot {
+  BrowserAccessibilityCocoa* root =
+      [[BrowserAccessibilityCocoa alloc] initWithObject:treeRoot
+                                                        delegate:self
+                                                        parent:self];
   [root autorelease];
   accessibilityChildren_.reset([[NSArray alloc] initWithObjects:root, nil]);
-  accessibilityReceived_ = YES;
+  [root updateDescendants];
 }
 
 - (NSArray *)accessibilityArrayAttributeValues:(NSString *)attribute
@@ -1798,36 +1801,23 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 }
 
 - (id)accessibilityAttributeValue:(NSString *)attribute {
-  if (!accessibilityRequested_) {
-    renderWidgetHostView_->render_widget_host_->EnableRendererAccessibility();
-    accessibilityRequested_ = YES;
-  }
-  if (accessibilityReceived_) {
-    if (rendererAccessible_ &&
-        [attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
+    if ([attribute isEqualToString:NSAccessibilityChildrenAttribute]) {
+      // TODO(dtseng): refactor to BrowserAccessibilityManagerMac.
       return accessibilityChildren_.get();
     } else if ([attribute isEqualToString:NSAccessibilityRoleAttribute]) {
       return NSAccessibilityScrollAreaRole;
     }
-  }
   id ret = [super accessibilityAttributeValue:attribute];
   return ret;
 }
 
 - (id)accessibilityHitTest:(NSPoint)point {
-  if (!accessibilityRequested_) {
-    renderWidgetHostView_->render_widget_host_->EnableRendererAccessibility();
-    accessibilityRequested_ = YES;
-  }
-  if (!accessibilityReceived_) {
-    return self;
-  }
   NSPoint pointInWindow = [[self window] convertScreenToBase:point];
   NSPoint localPoint = [self convertPoint:pointInWindow fromView:nil];
   localPoint.y = NSHeight([self bounds]) - localPoint.y;
   if ([accessibilityChildren_ count] == 0)
     return self;
-  BrowserAccessibility* root = [accessibilityChildren_ objectAtIndex:0];
+  BrowserAccessibilityCocoa* root = [accessibilityChildren_ objectAtIndex:0];
   id obj = [root accessibilityHitTest:localPoint];
   return obj;
 }
@@ -1840,6 +1830,23 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   return [accessibilityChildren_ indexOfObject:child];
 }
 
+- (id)accessibilityFocusedUIElement {
+  BrowserAccessibilityManager* manager =
+      renderWidgetHostView_->browser_accessibility_manager_.get();
+  if (manager) {
+    BrowserAccessibility* focused_item = manager->GetFocus(NULL);
+    DCHECK(focused_item);
+    if (focused_item) {
+      BrowserAccessibilityCocoa* focused_item_cocoa =
+          focused_item->toBrowserAccessibilityMac()->native_view();
+      DCHECK(focused_item_cocoa);
+      if (focused_item_cocoa)
+        return focused_item_cocoa;
+    }
+  }
+  return [super accessibilityFocusedUIElement];
+}
+
 - (void)doDefaultAction:(int32)accessibilityObjectId {
   renderWidgetHostView_->render_widget_host_->
       AccessibilityDoDefaultAction(accessibilityObjectId);
@@ -1847,7 +1854,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
 // Convert a web accessibility's location in web coordinates into a cocoa
 // screen coordinate.
-- (NSPoint)accessibilityPointInScreen:(BrowserAccessibility*)accessibility {
+- (NSPoint)accessibilityPointInScreen:
+    (BrowserAccessibilityCocoa*)accessibility {
   NSPoint origin = [accessibility origin];
   NSSize size = [accessibility size];
   origin.y = NSHeight([self bounds]) - origin.y;
