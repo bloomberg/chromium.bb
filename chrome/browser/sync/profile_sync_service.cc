@@ -179,6 +179,12 @@ void ProfileSyncService::Initialize() {
     // be done by the wizard.
     StartUp();
   } else {
+    if (!cros_user_.empty()) {
+      // We don't attempt migration on cros, as we should just get new
+      // credentials from the login manager on startup.
+      return;
+    }
+
     // Try to migrate the tokens (if that hasn't already succeeded).
     if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncCredentialsMigrated)) {
       token_migrator_.reset(new TokenMigrator(this, profile_->GetPath()));
