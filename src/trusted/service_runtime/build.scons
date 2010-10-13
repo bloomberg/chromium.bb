@@ -691,6 +691,16 @@ if not env.Bit('mac'):
                          command=[nacl_tls_unittest])
   env.AddNodeToTestSuite(node, TEST_SUITES, 'run_nacl_tls_unittest')
 
+# ----------------------------------------------------------
+# Small tests with canned binaries
+# ----------------------------------------------------------
+
+node = env.CommandSelLdrTestNacl(
+    'fuzz_nullptr_test.out',
+    sel_ldr_flags=['-F'],
+    command = [env.File(arch_testdata_dir + '/nullptr.nexe')],
+    exit_status = '0')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_fuzz_nullptr_test')
 
 # ----------------------------------------------------------
 # Integration Tests

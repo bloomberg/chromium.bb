@@ -48,8 +48,6 @@
 #include <SDL.h>
 #endif
 
-int verbosity = 0;
-
 static void VmentryPrinter(void           *state,
                     struct NaClVmmapEntry *vmep) {
   UNREFERENCED_PARAMETER(state);
@@ -120,8 +118,8 @@ static void PrintUsage() {
   fprintf(stderr,
           "Usage: sel_ldr [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
-          "\n"
-          "               [-X d] [-dmMv] -- [nacl_file] [args]\n"
+          "               [-l log_file]\n"
+          "               [-X d] [-acdFgImMsQv] -- [nacl_file] [args]\n"
           "\n");
   fprintf(stderr,
           " -h\n"
@@ -151,11 +149,13 @@ static void PrintUsage() {
           " (testing flags)\n"
           " -a allow file access! dangerous!\n"
           " -c ignore validator! dangerous!\n"
-          " -s safely stub out non-validating instructions\n"
-          " -Q disable platform qualification (dangerous!)\n"
+          " -F fuzz testing; quit after loading NaCl app\n"
+          " -g enable gdb debug stub.\n"
           " -I disable ELF ABI version number check (safe)\n"
           " -l <file>  write log output to the given file\n"
-          " -g enable gdb debug stub.\n");
+          " -s safely stub out non-validating instructions\n"
+          " -Q disable platform qualification (dangerous!)\n"
+          );  /* easier to add new flags/lines */
 }
 
 /*
@@ -192,6 +192,7 @@ int main(int  ac,
   NaClErrorCode                 errcode;
   struct GioMemoryFileSnapshot  gf;
 
+
   int                           ret_code;
   /* NOTE: because of windows dll issue this cannot be moved to the top level */
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
@@ -200,6 +201,8 @@ int main(int  ac,
   char                          *log_file = NULL;
   struct GioFile                *log_gio;
   int                           log_desc;
+  int                           verbosity = 0;
+  int                           fuzzing_quit_after_load = 0;
   int                           debug_mode_bypass_acl_checks = 0;
   int                           debug_mode_ignore_validator = 0;
   int                           stub_out_mode = 0;
@@ -256,7 +259,7 @@ int main(int  ac,
     exit(1);
   }
 
-  while ((opt = getopt(ac, av, "abcf:gh:i:Il:mMQr:svw:X:")) != -1) {
+  while ((opt = getopt(ac, av, "abcf:Fgh:i:Il:mMQr:svw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -268,6 +271,12 @@ int main(int  ac,
         break;
       case 'b':
         start_broken = 1;
+        break;
+      case 'f':
+        nacl_file = optarg;
+        break;
+      case 'F':
+        fuzzing_quit_after_load = 1;
         break;
       case 'g':
         NaClDebugSetAllow(1);
@@ -314,9 +323,6 @@ int main(int  ac,
         break;
       case 'M':
         main_thread_only = 0;
-        break;
-      case 'f':
-        nacl_file = optarg;
         break;
       case 'v':
         ++verbosity;
@@ -456,6 +462,10 @@ int main(int  ac,
                " on an x86-64 or vice versa)\n"
                "or a corrupt nexe file may be responsible for this error.\n"));
       exit(1);
+    }
+
+    if (fuzzing_quit_after_load) {
+      exit(0);
     }
   }
 
