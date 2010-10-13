@@ -127,23 +127,14 @@ bool DownloadPathIsDangerous(const FilePath& download_path) {
 void GenerateExtension(const FilePath& file_name,
                        const std::string& mime_type,
                        FilePath::StringType* generated_extension) {
-  // We're worried about three things here:
+  // We're worried about two things here:
   //
-  // 1) Security.  Many sites let users upload content, such as buddy icons, to
-  //    their web sites.  We want to mitigate the case where an attacker
-  //    supplies a malicious executable with an executable file extension but an
-  //    honest site serves the content with a benign content type, such as
-  //    image/jpeg.
-  //
-  // 2) Usability.  If the site fails to provide a file extension, we want to
+  // 1) Usability.  If the site fails to provide a file extension, we want to
   //    guess a reasonable file extension based on the content type.
   //
-  // 3) Shell integration.  Some file extensions automatically integrate with
+  // 2) Shell integration.  Some file extensions automatically integrate with
   //    the shell.  We block these extensions to prevent a malicious web site
   //    from integrating with the user's shell.
-
-  static const FilePath::CharType default_extension[] =
-      FILE_PATH_LITERAL("download");
 
   // See if our file name already contains an extension.
   FilePath::StringType extension = file_name.Extension();
@@ -151,21 +142,13 @@ void GenerateExtension(const FilePath& file_name,
     extension.erase(extension.begin());  // Erase preceding '.'.
 
 #if defined(OS_WIN)
+  static const FilePath::CharType default_extension[] =
+      FILE_PATH_LITERAL("download");
+
   // Rename shell-integrated extensions.
   if (win_util::IsShellIntegratedExtension(extension))
     extension.assign(default_extension);
 #endif
-
-  if (IsExecutableExtension(extension) && !IsExecutableMimeType(mime_type)) {
-    // We want to be careful about executable extensions.  The worry here is
-    // that a trusted web site could be tricked into dropping an executable file
-    // on the user's filesystem.
-    if (!net::GetPreferredExtensionForMimeType(mime_type, &extension)) {
-      // We couldn't find a good extension for this content type.  Use a dummy
-      // extension instead.
-      extension.assign(default_extension);
-    }
-  }
 
   if (extension.empty())
     net::GetPreferredExtensionForMimeType(mime_type, &extension);

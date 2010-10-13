@@ -100,32 +100,22 @@ const struct {
   {"filename=evil.exe",
    "http://www.goodguy.com/evil.exe",
    "image/jpeg",
-   L"evil.jpg"},
+   L"evil.exe"},
 
   {"filename=ok.exe",
    "http://www.goodguy.com/ok.exe",
    "binary/octet-stream",
    L"ok.exe"},
 
-  {"filename=evil.exe.exe",
-   "http://www.goodguy.com/evil.exe.exe",
+  {"filename=evil.dll",
+   "http://www.goodguy.com/evil.dll",
    "dance/party",
-   L"evil.exe.download"},
+   L"evil.dll"},
 
-  {"filename=evil.exe",
-   "http://www.goodguy.com/evil.exe",
-   "application/xml",
-   L"evil.xml"},
-
-  {"filename=evil.exe",
-   "http://www.goodguy.com/evil.exe",
-   "application/html+xml",
-   L"evil.download"},
-
-  {"filename=evil.exe",
+  {"filename=evil",
    "http://www.goodguy.com/evil.exe",
    "application/rss+xml",
-   L"evil.download"},
+   L"evil"},
 
   // Test truncation of trailing dots and spaces
   {"filename=evil.exe ",
@@ -512,7 +502,7 @@ const struct {
 
   { FILE_PATH_LITERAL("C:\\bar.html"),
     "image/png",
-    FILE_PATH_LITERAL("C:\\bar.png") },
+    FILE_PATH_LITERAL("C:\\bar.html") },
   { FILE_PATH_LITERAL("C:\\bar"),
     "image/png",
     FILE_PATH_LITERAL("C:\\bar.png") },
@@ -522,7 +512,7 @@ const struct {
     FILE_PATH_LITERAL("C:\\foo\\bar.exe") },
   { FILE_PATH_LITERAL("C:\\foo\\bar.exe"),
     "image/gif",
-    FILE_PATH_LITERAL("C:\\foo\\bar.gif") },
+    FILE_PATH_LITERAL("C:\\foo\\bar.exe") },
 
   { FILE_PATH_LITERAL("C:\\foo\\google.com"),
     "text/html",
@@ -554,11 +544,7 @@ const struct {
 
   { FILE_PATH_LITERAL("/foo/bar.exe"),
     "image/gif",
-#if defined(OS_MACOSX)
     FILE_PATH_LITERAL("/foo/bar.exe") },
-#else
-    FILE_PATH_LITERAL("/foo/bar.gif") },
-#endif
 
   { FILE_PATH_LITERAL("/foo/google.com"),
     "text/html",
