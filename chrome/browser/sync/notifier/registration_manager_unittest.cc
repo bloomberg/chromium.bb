@@ -58,13 +58,6 @@ class RegistrationManagerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RegistrationManagerTest);
 };
 
-invalidation::ObjectId ModelTypeToObjectId(
-    syncable::ModelType model_type) {
-  invalidation::ObjectId object_id;
-  EXPECT_TRUE(RealModelTypeToObjectId(model_type, &object_id));
-  return object_id;
-}
-
 syncable::ModelType ObjectIdToModelType(
     const invalidation::ObjectId& object_id) {
   syncable::ModelType model_type = syncable::UNSPECIFIED;
