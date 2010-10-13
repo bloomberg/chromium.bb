@@ -1,0 +1,42 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+ppapi_geturl_nexe = env.ComponentProgram('ppapi_geturl.nexe',
+                                         ['module.cc',
+                                          'ppapi_geturl.cc',
+                                          'scriptable_object.cc',
+                                          'url_load_request.cc',
+                                          ],
+                                         EXTRA_LIBS=['ppruntime',
+                                                     'pthread',
+                                                     'srpc'])
+
+# Note that the html is required to run this program.
+env.Publish('ppapi_geturl.nexe', 'run',
+            ['ppapi_geturl.html',
+             'ppapi_geturl_success.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+
+
+# TODO(robertm): this may work already but needs to be tested
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
+# Run the example tests under Selenium.
+BROWSER_TESTS = ['browser_tests']
+node = env.BrowserTester(
+    'ppapi_geturl_browser_test.out',
+     url='ppapi_geturl.html',
+     files=[ppapi_geturl_nexe,
+            env.File('ppapi_geturl.html'),
+            env.File('ppapi_geturl_success.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_ppapi_geturl_browser_test')
