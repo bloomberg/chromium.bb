@@ -72,17 +72,6 @@ syncable::ModelType ObjectIdToModelType(
   return model_type;
 }
 
-invalidation::RegistrationUpdateResult MakeRegistrationUpdateResult(
-    syncable::ModelType model_type) {
-  invalidation::RegistrationUpdateResult result;
-  result.mutable_operation()->
-      set_type(invalidation::RegistrationUpdate::REGISTER);
-  *result.mutable_operation()->mutable_object_id() =
-      ModelTypeToObjectId(model_type);
-  result.mutable_status()->set_code(invalidation::Status::SUCCESS);
-  return result;
-}
-
 TEST_F(RegistrationManagerTest, RegisterType) {
   const syncable::ModelType kModelTypes[] = {
     syncable::BOOKMARKS,
