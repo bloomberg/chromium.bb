@@ -1580,19 +1580,6 @@
    fun:_ZN6WebKit20createWebMediaPlayerEPNS_20WebMediaPlayerClientEPN7WebCore5FrameE
    fun:_ZN6WebKit24WebMediaPlayerClientImpl4load*
    fun:_ZN7WebCore11MediaPlayer4load*
-   fun:_ZN7WebCore16HTMLMediaElement12loadResourceERKNS_4KURLERNS_11ContentTypeE
-   fun:_ZN7WebCore16HTMLMediaElement19selectMediaResourceEv
-   fun:_ZN7WebCore16HTMLMediaElement12loadInternalEv
-   fun:_ZN7WebCore16HTMLMediaElement14loadTimerFiredEPNS_5TimerIS0_EE
-   fun:_ZN7WebCore5TimerINS_16HTMLMediaElementEE5firedEv
-   fun:_ZN7WebCore12ThreadTimers24sharedTimerFiredInternalEv
-   fun:_ZN7WebCore12ThreadTimers16sharedTimerFiredEv
-   fun:_ZN11webkit_glue16WebKitClientImpl9DoTimeoutEv
-   fun:_Z16DispatchToMethodIN11webkit_glue16WebKitClientImplEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN4base9BaseTimerIN11webkit_glue16WebKitClientImplELb0EE9TimerTask3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
 }
 {
    bug_32360
