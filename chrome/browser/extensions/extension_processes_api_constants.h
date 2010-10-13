@@ -10,8 +10,21 @@
 
 namespace extension_processes_api_constants {
 
-// Keys used in serializing tab data & events.
+// Keys used in serializing process data & events.
+extern const char kCpuKey[];
 extern const char kIdKey[];
+extern const char kNetworkKey[];
+extern const char kPrivateMemoryKey[];
+extern const char kProcessesKey[];
+extern const char kSharedMemoryKey[];
+extern const char kTypeKey[];
+
+extern const char kProcessTypeBrowser[];
+extern const char kProcessTypeExtension[];
+extern const char kProcessTypePlugin[];
+extern const char kProcessTypeRenderer[];
+
+extern const char kOnUpdated[];
 
 };  // namespace extension_processes_api_constants
 

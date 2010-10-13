@@ -1,0 +1,13 @@
+{
+  "name": "Process Monitor",
+  "version": "1.0",
+  "description": "Adds a browser action that monitors resource usage of all browser processes.",
+  "permissions": [
+    "experimental", "tabs"
+  ],
+  "browser_action": {
+      "default_title": "Process Monitor",
+      "default_icon": "icon.png",
+      "popup": "popup.html"
+  }
+}
