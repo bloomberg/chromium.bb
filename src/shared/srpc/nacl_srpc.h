@@ -238,9 +238,11 @@ struct NaClSrpcArg {
     /** A handle used to pass descriptors */
     NaClSrpcImcDescType         hval;
     /** An object value that can be exported to the browser as is */
-    /* NOTE(gregoryd) - this usually points to an object scriptable by
-     * the browser, i.e. NPObject or IDispatch. Declaring it as void* to avoid
-     * including browser specific stuff here.
+    /** This field is only used with predeclared methods, never for
+     *  communicating with nexes. TODO(polina): where can one assert for this?
+     *  This usually points to an object scriptable by
+     *  the browser, i.e. NPAPI's NPObject or PPAPI's ScriptableObject.
+     *  Declaring it as void* to avoid including browser specific stuff here.
      */
     void                        *oval;
     /** An array of variant type values. @see NaClSrpcArg */
