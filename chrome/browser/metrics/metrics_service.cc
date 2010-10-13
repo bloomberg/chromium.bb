@@ -158,15 +158,11 @@
 
 #include "chrome/browser/metrics/metrics_service.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#include <objbase.h>
-#endif
-
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/md5.h"
+#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
@@ -191,10 +187,6 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 #include "libxml/xmlwriter.h"
-
-#if !defined(OS_WIN)
-#include "base/rand_util.h"
-#endif
 
 // TODO(port): port browser_distribution.h.
 #if !defined(OS_POSIX)
@@ -816,37 +808,8 @@ void MetricsService::OnInitTaskComplete(
 }
 
 std::string MetricsService::GenerateClientID() {
-#if defined(OS_WIN)
-  const int kGUIDSize = 39;
-
-  GUID guid;
-  HRESULT guid_result = CoCreateGuid(&guid);
-  DCHECK(SUCCEEDED(guid_result));
-
-  std::wstring guid_string;
-  int result = StringFromGUID2(guid,
-                               WriteInto(&guid_string, kGUIDSize), kGUIDSize);
-  DCHECK(result == kGUIDSize);
-
-  return WideToUTF8(guid_string.substr(1, guid_string.length() - 2));
-#else
-  uint64 sixteen_bytes[2] = { base::RandUint64(), base::RandUint64() };
-  return RandomBytesToGUIDString(sixteen_bytes);
-#endif
+  return base::GenerateGUID();
 }
-
-#if defined(OS_POSIX)
-// TODO(cmasone): Once we're comfortable this works, migrate Windows code to
-// use this as well.
-std::string MetricsService::RandomBytesToGUIDString(const uint64 bytes[2]) {
-  return StringPrintf("%08X-%04X-%04X-%04X-%012llX",
-                      static_cast<unsigned int>(bytes[0] >> 32),
-                      static_cast<unsigned int>((bytes[0] >> 16) & 0x0000ffff),
-                      static_cast<unsigned int>(bytes[0] & 0x0000ffff),
-                      static_cast<unsigned int>(bytes[1] >> 48),
-                      bytes[1] & 0x0000ffffffffffffULL);
-}
-#endif
 
 //------------------------------------------------------------------------------
 // State save methods

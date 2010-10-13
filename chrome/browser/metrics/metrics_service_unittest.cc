@@ -13,18 +13,12 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_POSIX) && defined(LINUX2)
-TEST(MetricsServiceTest, ClientIdGeneratesAllZeroes) {
-  uint64 bytes[] = { 0, 0 };
-  std::string clientid = MetricsService::RandomBytesToGUIDString(bytes);
-  EXPECT_EQ("00000000-0000-0000-0000-000000000000", clientid);
-}
-TEST(MetricsServiceTest, ClientIdGeneratesCorrectly) {
-  uint64 bytes[] = { 0x0123456789ABCDEFULL, 0xFEDCBA9876543210ULL };
-  std::string clientid = MetricsService::RandomBytesToGUIDString(bytes);
-  EXPECT_EQ("01234567-89AB-CDEF-FEDC-BA9876543210", clientid);
-}
+class MetricsServiceTest : public ::testing::Test {
+};
 
+static const size_t kMaxLocalListSize = 3;
+
+// Ensure the ClientId is formatted as expected.
 TEST(MetricsServiceTest, ClientIdCorrectlyFormatted) {
   std::string clientid = MetricsService::GenerateClientID();
   EXPECT_EQ(36U, clientid.length());
@@ -38,12 +32,6 @@ TEST(MetricsServiceTest, ClientIdCorrectlyFormatted) {
     }
   }
 }
-#endif
-
-class MetricsServiceTest : public ::testing::Test {
-};
-
-static const size_t kMaxLocalListSize = 3;
 
 // Store and retrieve empty list.
 TEST(MetricsServiceTest, EmptyLogList) {
