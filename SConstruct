@@ -1602,7 +1602,7 @@ nacl_env.Append(
     'tests/noop/nacl.scons',
     'tests/npapi_bridge/nacl.scons',
     'tests/npapi_geturl/nacl.scons',
-    'tests/ppapi_geturl/nacl.scons',
+    # 'tests/ppapi_geturl/nacl.scons',
     'tests/npapi_hw/nacl.scons',
     'tests/npapi_pi/nacl.scons',
     'tests/npapi_runtime/nacl.scons',
