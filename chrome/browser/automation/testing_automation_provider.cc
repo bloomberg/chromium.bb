@@ -2069,6 +2069,11 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["ClearBrowsingData"] =
       &TestingAutomationProvider::ClearBrowsingData;
 
+  handler_map["GetBlockedPopupsInfo"] =
+      &TestingAutomationProvider::GetBlockedPopupsInfo;
+  handler_map["UnblockAndLaunchBlockedPopup"] =
+      &TestingAutomationProvider::UnblockAndLaunchBlockedPopup;
+
   // SetTheme() implemented using InstallExtension().
   handler_map["GetThemeInfo"] = &TestingAutomationProvider::GetThemeInfo;
 
@@ -3575,6 +3580,72 @@ void TestingAutomationProvider::SelectTranslateOption(
   } else {
     reply.SendError("Invalid string found for option.");
   }
+}
+
+// Sample json input: { "command": "GetBlockedPopupsInfo",
+//                      "tab_index": 1 }
+// Refer GetBlockedPopupsInfo() in pyauto.py for sample output.
+void TestingAutomationProvider::GetBlockedPopupsInfo(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string error_message;
+  TabContents* tab_contents = GetTabContentsFromDict(
+      browser, args, &error_message);
+  if (!tab_contents) {
+    reply.SendError(error_message);
+    return;
+  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  BlockedPopupContainer* popup_container =
+      tab_contents->blocked_popup_container();
+  ListValue* blocked_popups_list = new ListValue;
+  if (popup_container) {
+    BlockedPopupContainer::BlockedContents blocked_contents;
+    popup_container->GetBlockedContents(&blocked_contents);
+    for (BlockedPopupContainer::BlockedContents::const_iterator it =
+             blocked_contents.begin(); it != blocked_contents.end(); ++it) {
+      DictionaryValue* item = new DictionaryValue;
+      item->SetString("url", (*it)->GetURL().spec());
+      item->SetString("title", (*it)->GetTitle());
+      blocked_popups_list->Append(item);
+    }
+  }
+  return_value->Set("blocked_popups", blocked_popups_list);
+  reply.SendSuccess(return_value.get());
+}
+
+// Refer UnblockAndLaunchBlockedPopup() in pyauto.py for sample input.
+void TestingAutomationProvider::UnblockAndLaunchBlockedPopup(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string error_message;
+  TabContents* tab_contents = GetTabContentsFromDict(
+      browser, args, &error_message);
+  if (!tab_contents) {
+    reply.SendError(error_message);
+    return;
+  }
+  int popup_index;
+  if (!args->GetInteger("popup_index", &popup_index)) {
+    reply.SendError("Need popup_index arg");
+    return;
+  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  BlockedPopupContainer* popup_container =
+      tab_contents->blocked_popup_container();
+  if (!popup_container ||
+      popup_index >= (int)popup_container->GetBlockedPopupCount()) {
+    reply.SendError(StringPrintf("No popup at index %d", popup_index));
+    return;
+  }
+  BlockedPopupContainer::BlockedContents blocked_contents;
+  popup_container->GetBlockedContents(&blocked_contents);
+  popup_container->LaunchPopupForContents(blocked_contents[popup_index]);
+  reply.SendSuccess(NULL);
 }
 
 // Sample json input: { "command": "GetThemeInfo" }
