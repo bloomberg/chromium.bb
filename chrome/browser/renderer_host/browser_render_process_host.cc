@@ -842,10 +842,11 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
 }
 
 void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
-  LOG_IF(INFO, g_log_bug53991) <<
-      "OnMessageReceived: " << this <<
-      "; type=" << msg.type() <<
-      "; routing=" << msg.routing_id();
+  // If we're about to be deleted, we can no longer trust that our profile is
+  // valid, so we ignore incoming messages.
+  if (deleting_soon_)
+    return;
+
   mark_child_process_activity_time();
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Dispatch control messages.

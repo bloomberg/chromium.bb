@@ -277,6 +277,9 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // True if fast shutdown has been performed on this RPH.
   bool fast_shutdown_started_;
 
+  // True if we've posted a DeleteTask and will be deleted soon.
+  bool deleting_soon_;
+
  private:
   // The globally-unique identifier for this RPH.
   int id_;

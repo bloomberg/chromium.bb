@@ -161,12 +161,6 @@ void ExtensionMessageService::DestroyingProfile() {
 
 void ExtensionMessageService::AddEventListener(const std::string& event_name,
                                                int render_process_id) {
-  // It is possible that this RenderProcessHost is being destroyed. If that is
-  // the case, we'll have already removed his listeners, so do nothing here.
-  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
-  if (!rph || rph->ListenersIterator().IsAtEnd())
-    return;
-
   DCHECK_EQ(listeners_[event_name].count(render_process_id), 0u) << event_name;
   listeners_[event_name].insert(render_process_id);
 
@@ -178,11 +172,6 @@ void ExtensionMessageService::AddEventListener(const std::string& event_name,
 
 void ExtensionMessageService::RemoveEventListener(const std::string& event_name,
                                                   int render_process_id) {
-  // The RenderProcessHost may be destroyed. See AddEventListener.
-  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
-  if (!rph || rph->ListenersIterator().IsAtEnd())
-    return;
-
   DCHECK_EQ(listeners_[event_name].count(render_process_id), 1u)
       << " PID=" << render_process_id << " event=" << event_name;
   listeners_[event_name].erase(render_process_id);

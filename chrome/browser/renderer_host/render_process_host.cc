@@ -92,6 +92,7 @@ void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
 RenderProcessHost::RenderProcessHost(Profile* profile)
     : max_page_id_(-1),
       fast_shutdown_started_(false),
+      deleting_soon_(false),
       id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
       profile_(profile),
       sudden_termination_allowed_(true),
@@ -130,6 +131,7 @@ void RenderProcessHost::Release(int listener_id) {
         NotificationType::RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    deleting_soon_ = true;
 
     // Remove ourself from the list of renderer processes so that we can't be
     // reused in between now and when the Delete task runs.

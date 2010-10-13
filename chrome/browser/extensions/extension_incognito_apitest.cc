@@ -107,10 +107,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
-// TODO(mpcomplete): Crashes flakily. http://crbug.com/53991
-extern bool g_log_bug53991;
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_IncognitoSplitMode) {
-  g_log_bug53991 = true;
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoSplitMode) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
