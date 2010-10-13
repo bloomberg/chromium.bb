@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "base/timer.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
@@ -179,6 +180,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   virtual void OnAuthError();
   virtual void OnStopSyncingPermanently();
   virtual void OnClearServerDataFailed();
+  virtual void OnClearServerDataTimeout();
   virtual void OnClearServerDataSucceeded();
 
   // Called when a user enters credentials through UI.
@@ -497,6 +499,13 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Keep track of where we are in a server clear operation
   ClearServerDataState clear_server_data_state_;
+
+  // Timeout for the clear data command.  This timeout is a temporary hack
+  // and is necessary becaue the nudge sync framework can drop nudges for
+  // a wide variety of sync-related conditions (throttling, connections issues,
+  // syncer paused, etc.).  It can only be removed correctly when the framework
+  // is reworked to allow one-shot commands like clearing server data.
+  base::OneShotTimer<ProfileSyncService> clear_server_data_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

@@ -56,6 +56,8 @@ const char* ProfileSyncService::kSyncServerUrl =
 const char* ProfileSyncService::kDevServerUrl =
     "https://clients4.google.com/chrome-sync/dev";
 
+static const int kSyncClearDataTimeoutInSeconds = 60;  // 1 minute.
+
 ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        Profile* profile,
                                        const std::string& cros_user)
@@ -445,6 +447,9 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
 
 void ProfileSyncService::ClearServerData() {
   clear_server_data_state_ = CLEAR_CLEARING;
+  clear_server_data_timer_.Start(
+      base::TimeDelta::FromSeconds(kSyncClearDataTimeoutInSeconds), this,
+      &ProfileSyncService::OnClearServerDataTimeout);
   backend_->RequestClearServerData();
 }
 
@@ -606,14 +611,36 @@ void ProfileSyncService::OnStopSyncingPermanently() {
   DisableForUser();
 }
 
+void ProfileSyncService::OnClearServerDataTimeout() {
+  if (clear_server_data_state_ != CLEAR_SUCCEEDED &&
+      clear_server_data_state_ != CLEAR_FAILED) {
+    clear_server_data_state_ = CLEAR_FAILED;
+    FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  }
+}
+
 void ProfileSyncService::OnClearServerDataFailed() {
-  clear_server_data_state_ = CLEAR_FAILED;
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  clear_server_data_timer_.Stop();
+
+  // Only once clear has succeeded there is no longer a need to transition to
+  // a failed state as sync is disabled locally.  Also, no need to fire off
+  // the observers if the state didn't change (i.e. it was FAILED before).
+  if (clear_server_data_state_ != CLEAR_SUCCEEDED &&
+      clear_server_data_state_ != CLEAR_FAILED) {
+    clear_server_data_state_ = CLEAR_FAILED;
+    FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  }
 }
 
 void ProfileSyncService::OnClearServerDataSucceeded() {
-  clear_server_data_state_ = CLEAR_SUCCEEDED;
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  clear_server_data_timer_.Stop();
+
+  // Even if the timout fired, we still transition to the succeeded state as
+  // we want UI to update itself and no longer allow the user to press "clear"
+  if (clear_server_data_state_ != CLEAR_SUCCEEDED) {
+    clear_server_data_state_ = CLEAR_SUCCEEDED;
+    FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  }
 }
 
 void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {

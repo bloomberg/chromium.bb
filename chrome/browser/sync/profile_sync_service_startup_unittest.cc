@@ -170,6 +170,71 @@ TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(SwitchManaged)) {
   profile_.GetPrefs()->ClearPref(prefs::kSyncManaged);
 }
 
+TEST_F(ProfileSyncServiceStartupTest, ClearServerData) {
+  DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
+  EXPECT_CALL(*data_type_manager, Configure(_)).Times(1);
+  EXPECT_CALL(observer_, OnStateChanged()).Times(3);
+
+  profile_.GetTokenService()->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "sync_token");
+  service_->Initialize();
+  Mock::VerifyAndClearExpectations(data_type_manager);
+
+  // Success can overwrite failure, failure cannot overwrite success.  We want
+  // this behavior because once clear has succeeded, sync gets disabled, and
+  // we don't care about any subsequent failures (e.g. timeouts)
+  service_->ResetClearServerDataState();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_NOT_STARTED ==
+      service_->GetClearServerDataState());
+
+  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  service_->OnClearServerDataFailed();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_FAILED ==
+      service_->GetClearServerDataState());
+
+  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  service_->OnClearServerDataSucceeded();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_SUCCEEDED ==
+      service_->GetClearServerDataState());
+
+  service_->OnClearServerDataFailed();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_SUCCEEDED ==
+      service_->GetClearServerDataState());
+
+  // Now test the timeout states
+  service_->ResetClearServerDataState();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_NOT_STARTED ==
+      service_->GetClearServerDataState());
+
+  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  service_->OnClearServerDataTimeout();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_FAILED ==
+      service_->GetClearServerDataState());
+
+  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  service_->OnClearServerDataSucceeded();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_SUCCEEDED ==
+      service_->GetClearServerDataState());
+
+  service_->OnClearServerDataFailed();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_SUCCEEDED ==
+      service_->GetClearServerDataState());
+
+  // Test the pending state, doesn't matter what state
+  // the back end syncmgr returns
+  EXPECT_CALL(*data_type_manager, state()).
+    WillOnce(Return(DataTypeManager::STOPPED));
+  service_->ResetClearServerDataState();
+  service_->ClearServerData();
+  EXPECT_TRUE(ProfileSyncService::CLEAR_CLEARING ==
+      service_->GetClearServerDataState());
+
+  // Stop the timer and reset the state
+  EXPECT_CALL(observer_, OnStateChanged()).Times(1);
+  service_->OnClearServerDataSucceeded();
+  service_->ResetClearServerDataState();
+}
+
 TEST_F(ProfileSyncServiceStartupTest, SKIP_MACOSX(StartFailure)) {
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureResult result =
