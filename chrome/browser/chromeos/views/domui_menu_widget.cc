@@ -5,6 +5,9 @@
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 
 #include "base/stringprintf.h"
+#include "base/singleton.h"
+#include "base/task.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -12,6 +15,8 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/dom_view.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "cros/chromeos_wm_ipc_enums.h"
 #include "gfx/canvas_skia.h"
 #include "googleurl/src/gurl.h"
@@ -98,6 +103,123 @@ class InsetsLayout : public views::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(InsetsLayout);
 };
 
+const int kDOMViewWarmUpDelayMs = 1000 * 5;
+
+// A delayed task to initialize a cache. This is
+// create when a profile is switched.
+// (incognito, oobe/login has different profile).
+class WarmUpTask : public Task {
+ public:
+  WarmUpTask() {}
+  virtual ~WarmUpTask() {}
+
+  virtual void Run();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WarmUpTask);
+};
+
+// DOMViewCache holds single cache instance of DOMView.
+class DOMViewCache : NotificationObserver {
+ public:
+  DOMViewCache()
+      : current_profile_(NULL),
+        cache_(NULL) {
+    registrar_.Add(this, NotificationType::APP_TERMINATING,
+                   NotificationService::AllSources());
+  }
+  virtual ~DOMViewCache() {}
+
+  // Returns a DOMView for given profile. If there is
+  // matching cache,
+  DOMView* Get(Profile* profile) {
+    if (cache_ &&
+        cache_->tab_contents()->profile() == profile) {
+      DOMView* c = cache_;
+      cache_ = NULL;
+      CheckClassInvariant();
+      return c;
+    }
+    DOMView* dom_view = new DOMView();
+    dom_view->Init(profile, NULL);
+    CheckClassInvariant();
+    return dom_view;
+  }
+
+  // Release a dom_view. A dom view is reused if its profile matches
+  // the current profile, or gets deleted otherwise.
+  void Release(DOMView* dom_view) {
+    if (cache_ == NULL &&
+        current_profile_ == dom_view->tab_contents()->profile()) {
+      cache_ = dom_view;
+    } else {
+      delete dom_view;
+    }
+    CheckClassInvariant();
+  }
+
+  // (Re)Initiailzes the cache with profile.
+  // If the current profile does not match the new profile,
+  // it delets the existing cache (if any) and creates new one.
+  void Init(Profile* profile) {
+    if (current_profile_ != profile) {
+      delete cache_;
+      cache_ = NULL;
+      current_profile_ = profile;
+      BrowserThread::PostDelayedTask(BrowserThread::UI,
+                                     FROM_HERE,
+                                     new WarmUpTask(),
+                                     kDOMViewWarmUpDelayMs);
+    }
+    CheckClassInvariant();
+  }
+
+  // Create a cache if one does not exist yet.
+  void WarmUp() {
+    if (cache_) {// domui is created in delay.
+      CheckClassInvariant();
+      return;
+    }
+    cache_ = new DOMView();
+    cache_->Init(current_profile_, NULL);
+    cache_->LoadURL(
+        GURL(StringPrintf("chrome://%s", chrome::kChromeUIMenu)));
+    CheckClassInvariant();
+  }
+
+  // Deletes cached DOMView instance if any.
+  void Shutdown() {
+    delete cache_;
+    cache_ = NULL;
+    // Reset current_profile_ as well so that a domview that
+    // is currently in use will be deleted in Release as well.
+    current_profile_ = NULL;
+  }
+
+ private:
+  // NotificationObserver impelmentation:
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    DCHECK_EQ(NotificationType::APP_TERMINATING, type.value);
+    Shutdown();
+  }
+
+  // Tests the class invariant condition.
+  void CheckClassInvariant() {
+    DCHECK(!cache_ ||
+           cache_->tab_contents()->profile() == current_profile_);
+  }
+
+  Profile* current_profile_;
+  DOMView* cache_;
+  NotificationRegistrar registrar_;
+};
+
+void WarmUpTask::Run() {
+  Singleton<DOMViewCache>::get()->WarmUp();
+}
+
 // A gtk widget key used to test if a given WidgetGtk instance is
 // DOMUIMenuWidgetKey.
 const char* kDOMUIMenuWidgetKey = "__DOMUI_MENU_WIDGET__";
@@ -130,6 +252,8 @@ DOMUIMenuWidget::DOMUIMenuWidget(chromeos::NativeMenuDOMUI* domui_menu,
   // TODO(oshima): Disabling transparent until we migrate bookmark
   // menus to DOMUI.  See crosbug.com/7718.
   // MakeTransparent();
+
+  Singleton<DOMViewCache>::get()->Init(domui_menu->GetProfile());
 }
 
 DOMUIMenuWidget::~DOMUIMenuWidget() {
@@ -149,6 +273,12 @@ void DOMUIMenuWidget::Hide() {
 }
 
 void DOMUIMenuWidget::Close() {
+  if (dom_view_ != NULL) {
+    dom_view_->GetParent()->RemoveChildView(dom_view_);
+    Singleton<DOMViewCache>::get()->Release(dom_view_);
+    dom_view_ = NULL;
+  }
+
   // Detach the domui_menu_ which is being deleted.
   domui_menu_ = NULL;
   views::WidgetGtk::Close();
@@ -198,7 +328,8 @@ void DOMUIMenuWidget::EnableScroll(bool enable) {
 }
 
 void DOMUIMenuWidget::EnableInput(bool select_item) {
-  DCHECK(dom_view_);
+  if (!dom_view_)
+    return;
   DCHECK(dom_view_->tab_contents()->render_view_host());
   DCHECK(dom_view_->tab_contents()->render_view_host()->view());
   GtkWidget* target =
@@ -232,7 +363,7 @@ void DOMUIMenuWidget::ExecuteJavascript(const std::wstring& script) {
   // Don't exeute there is no DOMView associated. This is fine because
   // 1) selectItem make sense only when DOMView is associated.
   // 2) updateModel will be called again when a DOMView is created/assigned.
-  if (dom_view_ == NULL)
+  if (!dom_view_)
     return;
 
   DCHECK(dom_view_->tab_contents()->render_view_host());
@@ -244,7 +375,7 @@ void DOMUIMenuWidget::ShowAt(chromeos::MenuLocator* locator) {
   DCHECK(domui_menu_);
   menu_locator_.reset(locator);
   if (!dom_view_) {
-    dom_view_ = new DOMView();
+    dom_view_ = Singleton<DOMViewCache>::get()->Get(domui_menu_->GetProfile());
     dom_view_->Init(domui_menu_->GetProfile(), NULL);
     // TODO(oshima): remove extra view to draw rounded corner.
     views::View* container = new views::View();
