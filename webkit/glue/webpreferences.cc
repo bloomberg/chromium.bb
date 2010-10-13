@@ -20,6 +20,55 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebView;
 
+WebPreferences::WebPreferences()
+    : standard_font_family(L"Times New Roman"),
+      fixed_font_family(L"Courier New"),
+      serif_font_family(L"Times New Roman"),
+      sans_serif_font_family(L"Arial"),
+      cursive_font_family(L"Script"),
+      fantasy_font_family(),  // Not sure what to use on Windows.
+      default_font_size(16),
+      default_fixed_font_size(13),
+      minimum_font_size(1),
+      minimum_logical_font_size(6),
+      default_encoding("ISO-8859-1"),
+      javascript_enabled(true),
+      web_security_enabled(true),
+      javascript_can_open_windows_automatically(true),
+      loads_images_automatically(true),
+      plugins_enabled(true),
+      dom_paste_enabled(false),  // enables execCommand("paste")
+      developer_extras_enabled(false),  // Requires extra work by embedder
+      site_specific_quirks_enabled(false),
+      shrinks_standalone_images_to_fit(true),
+      uses_universal_detector(false),  // Disabled: page cycler regression
+      text_areas_are_resizable(true),
+      java_enabled(true),
+      allow_scripts_to_close_windows(false),
+      uses_page_cache(false),
+      remote_fonts_enabled(true),
+      javascript_can_access_clipboard(false),
+      xss_auditor_enabled(false),
+      local_storage_enabled(false),
+      databases_enabled(false),
+      application_cache_enabled(false),
+      tabs_to_links(true),
+      caret_browsing_enabled(false),
+      hyperlink_auditing_enabled(true),
+      user_style_sheet_enabled(false),
+      author_and_user_styles_enabled(true),
+      allow_universal_access_from_file_urls(false),
+      allow_file_access_from_file_urls(false),
+      experimental_webgl_enabled(false),
+      show_composited_layer_borders(false),
+      accelerated_compositing_enabled(false),
+      accelerated_2d_canvas_enabled(false),
+      memory_info_enabled(false) {
+}
+
+WebPreferences::~WebPreferences() {
+}
+
 void WebPreferences::Apply(WebView* web_view) const {
   WebSettings* settings = web_view->settings();
   settings->setStandardFontFamily(WideToUTF16Hack(standard_font_family));
