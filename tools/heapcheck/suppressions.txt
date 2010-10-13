@@ -240,6 +240,7 @@
   Heapcheck:Leak
   ...
   fun:::RenderThreadTest::SetUp
+  fun:testing::HandleExceptionsInMethodIfSupported
   fun:testing::Test::Run
 }
 # TODO(glider): sometimes the stacks differ between the bot and the local run,
