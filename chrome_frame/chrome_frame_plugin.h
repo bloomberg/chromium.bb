@@ -156,7 +156,10 @@ END_MSG_MAP()
   LRESULT OnSetFocus(UINT message, WPARAM wparam, LPARAM lparam,
                      BOOL& handled) {  // NO_LINT
     if (!ignore_setfocus_ && IsValid()) {
-      GiveFocusToChrome(true);
+      // Pass false to |restore_focus_view|, because we do not want Chrome
+      // to focus the first focusable element in the current view, only the
+      // view itself.
+      GiveFocusToChrome(false);
     }
     return 0;
   }
