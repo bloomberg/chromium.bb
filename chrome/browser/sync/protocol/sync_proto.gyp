@@ -46,7 +46,7 @@
             '--cpp_out=<(SHARED_INTERMEDIATE_DIR)/protoc_out/chrome/browser/sync/protocol',
             '--python_out=<(PRODUCT_DIR)/pyproto/sync_pb',
           ],
-          # 'message': 'Generating C++ and Python code from <(RULE_INPUT_PATH)',
+          'message': 'Generating C++ and Python code from <(RULE_INPUT_PATH)',
         },
       ],
       'dependencies': [
