@@ -407,6 +407,28 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                                    arraysize(kStandardGetHeaders));
 }
 
+// Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
+spdy::SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
+                                      int extra_header_count,
+                                      int stream_id) {
+  const char* const kConnectHeaders[] = {
+    "method", "CONNECT",
+    "url", "www.google.com:443",
+    "host", "www.google.com",
+    "version", "HTTP/1.1",
+    "proxy-connection", "keep-alive",
+  };
+  return ConstructSpdyControlFrame(extra_headers,
+                                   extra_header_count,
+                                   /*compressed*/ false,
+                                   stream_id,
+                                   LOWEST,
+                                   spdy::SYN_STREAM,
+                                   spdy::CONTROL_FLAG_NONE,
+                                   kConnectHeaders,
+                                   arraysize(kConnectHeaders));
+}
+
 // Constructs a standard SPDY push SYN packet.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -524,6 +546,36 @@ spdy::SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id) {
                                    arraysize(kStandardGetHeaders));
 }
 
+// Constructs a standard SPDY SYN_REPLY packet with an Internal Server
+// Error status code.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdySynReplyError(int stream_id) {
+  return ConstructSpdySynReplyError("500 Internal Server Error", 1);
+}
+
+// Constructs a standard SPDY SYN_REPLY packet with the specified status code.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdySynReplyError(const char* const status,
+                                            int stream_id) {
+  static const char* const kStandardGetHeaders[] = {
+    "hello",
+    "bye",
+    "status",
+    status,
+    "version",
+    "HTTP/1.1"
+  };
+  return ConstructSpdyControlFrame(NULL,
+                                   0,
+                                   false,
+                                   stream_id,
+                                   LOWEST,
+                                   spdy::SYN_REPLY,
+                                   spdy::CONTROL_FLAG_NONE,
+                                   kStandardGetHeaders,
+                                   arraysize(kStandardGetHeaders));
+}
+
 // Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -627,6 +679,15 @@ spdy::SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
   spdy::SpdyFramer framer;
   return framer.CreateDataFrame(
       stream_id, data, len, fin ? spdy::DATA_FLAG_FIN : spdy::DATA_FLAG_NONE);
+}
+
+// Wraps |frame| in the payload of a data frame in stream |stream_id|.
+spdy::SpdyFrame* ConstructWrappedSpdyFrame(
+    const scoped_ptr<spdy::SpdyFrame>& frame,
+    int stream_id) {
+  return ConstructSpdyBodyFrame(stream_id, frame->data(),
+                                frame->length() + spdy::SpdyFrame::size(),
+                                false);
 }
 
 // Construct an expected SPDY reply string.

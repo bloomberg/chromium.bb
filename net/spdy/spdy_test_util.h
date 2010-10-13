@@ -212,6 +212,11 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                                   RequestPriority request_priority,
                                   bool direct);
 
+// Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
+spdy::SpdyFrame* ConstructSpdyConnect(const char* const extra_headers[],
+                                      int extra_header_count,
+                                      int stream_id);
+
 // Constructs a standard SPDY push SYN packet.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -248,6 +253,15 @@ spdy::SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
 // Returns a SpdyFrame.
 spdy::SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id);
 
+// Constructs a standard SPDY SYN_REPLY packet with an Internal Server
+// Error status code.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdySynReplyError(int stream_id);
+
+// Constructs a standard SPDY SYN_REPLY packet with the specified status code.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdySynReplyError(const char* const status,
+                                            int stream_id);
 // Constructs a standard SPDY POST SYN packet.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -270,6 +284,10 @@ spdy::SpdyFrame* ConstructSpdyBodyFrame(int stream_id,
 // Constructs a single SPDY data frame with the given content.
 spdy::SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
                                         uint32 len, bool fin);
+
+// Wraps |frame| in the payload of a data frame in stream |stream_id|.
+spdy::SpdyFrame* ConstructWrappedSpdyFrame(
+    const scoped_ptr<spdy::SpdyFrame>& frame, int stream_id);
 
 // Create an async MockWrite from the given SpdyFrame.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req);
