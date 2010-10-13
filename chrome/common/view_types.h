@@ -21,6 +21,7 @@ class ViewType {
     DEV_TOOLS_UI,
     INTERSTITIAL_PAGE,
     NOTIFICATION,
+    HTML_DIALOG_UI,
   };
 
   // Constant strings corresponding to the Type enumeration values.  Used

@@ -1997,6 +1997,7 @@
         'browser/ssl/ssl_browser_tests.cc',
         'browser/task_manager/task_manager_browsertest.cc',
         'browser/views/browser_actions_container_browsertest.cc',
+        'browser/views/constrained_html_dialog_browsertest.cc',
         'browser/views/dom_view_browsertest.cc',
         'browser/views/html_dialog_view_browsertest.cc',
         'renderer/form_autocomplete_browsertest.cc',
