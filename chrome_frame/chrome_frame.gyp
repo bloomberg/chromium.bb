@@ -243,6 +243,7 @@
       'sources': [
         '../base/test_suite.h',
         'cfproxy_test.cc',
+        'external_tab_test.cc',
         'test/automation_client_mock.cc',
         'test/automation_client_mock.h',
         'test/chrome_frame_test_utils.cc',

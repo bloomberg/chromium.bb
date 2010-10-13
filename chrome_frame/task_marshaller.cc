@@ -14,34 +14,54 @@ TaskMarshallerThroughMessageQueue::~TaskMarshallerThroughMessageQueue() {
 }
 
 void TaskMarshallerThroughMessageQueue::PostTask(
-  const tracked_objects::Location& from_here, Task* task) {
-    task->SetBirthPlace(from_here);
-    lock_.Acquire();
-    bool has_work = !pending_tasks_.empty();
-    pending_tasks_.push(task);
-    lock_.Release();
+    const tracked_objects::Location& from_here, Task* task) {
+  DCHECK(wnd_ != NULL);
+  task->SetBirthPlace(from_here);
+  lock_.Acquire();
+  bool has_work = !pending_tasks_.empty();
+  pending_tasks_.push(task);
+  lock_.Release();
 
-    // Don't post message if there is already one.
-    if (has_work)
-      return;
+  // Don't post message if there is already one.
+  if (has_work)
+    return;
 
-    if (!::PostMessage(wnd_, msg_, 0, 0)) {
-      DLOG(INFO) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
-      DeleteAll();
-    }
+  if (!::PostMessage(wnd_, msg_, 0, 0)) {
+    DLOG(INFO) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
+    DeleteAll();
+  }
 }
 
 void TaskMarshallerThroughMessageQueue::PostDelayedTask(
-  const tracked_objects::Location& source, Task* task,
-  base::TimeDelta& delay) {
-    AutoLock lock(lock_);
-    DelayedTask delayed_task(task, base::Time::Now() + delay);
-    delayed_tasks_.push(delayed_task);
-    // If we become the 'top' task - reschedule the timer.
-    if (delayed_tasks_.top().task == task) {
-      ::SetTimer(wnd_, reinterpret_cast<UINT_PTR>(this),
-        static_cast<DWORD>(delay.InMilliseconds()), NULL);
-    }
+    const tracked_objects::Location& source, Task* task,
+    base::TimeDelta& delay) {
+  DCHECK(wnd_ != NULL);
+  AutoLock lock(lock_);
+  DelayedTask delayed_task(task, base::Time::Now() + delay);
+  delayed_tasks_.push(delayed_task);
+  // If we become the 'top' task - reschedule the timer.
+  if (delayed_tasks_.top().task == task) {
+    ::SetTimer(wnd_, reinterpret_cast<UINT_PTR>(this),
+      static_cast<DWORD>(delay.InMilliseconds()), NULL);
+  }
+}
+
+BOOL TaskMarshallerThroughMessageQueue::ProcessWindowMessage(HWND hWnd,
+    UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& lResult,
+    DWORD dwMsgMapID) {
+  if (hWnd == wnd_ && uMsg == msg_) {
+    ExecuteQueuedTasks();
+    lResult = 0;
+    return TRUE;
+  }
+
+  if (hWnd == wnd_ && uMsg == WM_TIMER) {
+    ExecuteDelayedTasks();
+    lResult = 0;
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 Task* TaskMarshallerThroughMessageQueue::PopTask() {

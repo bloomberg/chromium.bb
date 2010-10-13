@@ -36,6 +36,9 @@ class TaskMarshallerThroughMessageQueue : public NonThreadSafe {
   virtual void PostDelayedTask(const tracked_objects::Location& source,
                                Task* task,
                                base::TimeDelta& delay);
+  // Called by the owner of the HWND.
+  BOOL ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
+                            LRESULT& lResult, DWORD dwMsgMapID = 0);
  private:
   void DeleteAll();
   inline Task* PopTask();

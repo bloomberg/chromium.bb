@@ -41,24 +41,26 @@ class UIDelegate {
   virtual void OnUpdateTargetUrl(const std::wstring& new_target_url) = 0;
   virtual void OnExtensionInstalled(const FilePath& path, void* user_data,
       AutomationMsg_ExtensionResponseValues response) = 0;
-  virtual void OnAcceleratorPressed(const MSG& accel_message) = 0;
   virtual void OnLoad(const GURL& url) = 0;
   virtual void OnMessageFromChromeFrame(const std::string& message,
       const std::string& origin, const std::string& target) = 0;
   virtual void OnHandleContextMenu(HANDLE menu_handle, int align_flags,
       const IPC::ContextMenuParams& params) = 0;
+  virtual void OnHandleAccelerator(const MSG& accel_message) = 0;
+  virtual void OnTabbedOut(bool reverse) = 0;
+  virtual void OnGoToHistoryOffset(int offset) = 0;
+  virtual void OnOpenURL(const GURL& url_to_open, const GURL& referrer,
+                       int open_disposition) = 0;
  protected:
   ~UIDelegate() {}
 };
 
 struct CreateTabParams {
-  std::string profile;
-  std::string extra_arguments;
+  struct ProxyParams proxy_params;
   bool is_incognito;
   bool is_widget_mode;
   GURL url;
   GURL referrer;
-  base::TimeDelta launch_timeout;
 };
 
 /////////////////////////////////////////////////////////////////////////
@@ -91,12 +93,10 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
                          UIDelegate* delegate);
   virtual void Navigate(const std::string& url, const std::string& referrer,
                         bool is_privileged);
-  virtual bool NavigateToIndex(int index);
+  virtual void NavigateToIndex(int index);
   virtual void ForwardMessageFromExternalHost(const std::string& message,
-      const std::string& origin, const std::string& target) {
-    proxy_->Tab_PostMessage(tab_, message, origin, target);
-  }
-  virtual void OnChromeFrameHostMoved();
+      const std::string& origin, const std::string& target);
+  virtual void ChromeFrameHostMoved();
 
   virtual void SetEnableExtensionAutomation(
       const std::vector<std::string>& functions_enabled);
@@ -105,14 +105,16 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   virtual void GetEnabledExtensions(void* user_data);
 
   // Attaches an existing external tab to this automation client instance.
-  virtual void AttachExternalTab(uint64 external_tab_cookie);
+  virtual void ConnectToExternalTab(uint64 external_tab_cookie);
   virtual void BlockExternalTab(uint64 cookie);
 
-  void SetZoomLevel(PageZoom::Function zoom_level) {
-    proxy_->Tab_Zoom(tab_, zoom_level);
-  }
+  void SetZoomLevel(PageZoom::Function zoom_level);
 
  private:
+  BEGIN_MSG_MAP(ExternalTabProxy)
+    CHAIN_MSG_MAP_MEMBER(ui_);
+  END_MSG_MAP()
+
   //////////////////////////////////////////////////////////////////////////
   // ChromeProxyDelegate implementation
   virtual int tab_handle() {
@@ -125,9 +127,9 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
 
   // Sync message responses.
   virtual void Completed_CreateTab(bool success, HWND chrome_wnd,
-      HWND tab_window, int tab_handle) = 0;  // TODO(stoyan): Error_code
+      HWND tab_window, int tab_handle);  // TODO(stoyan): Error_code
   virtual void Completed_ConnectToTab(bool success, HWND chrome_window,
-      HWND tab_window, int tab_handle) = 0;
+      HWND tab_window, int tab_handle);
   virtual void Completed_Navigate(bool success,
       enum AutomationMsg_NavigationResponseValues res);
   virtual void Completed_InstallExtension(bool success,
@@ -162,6 +164,8 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
 
   // Misc. UI.
   virtual void HandleAccelerator(const MSG& accel_message);
+  virtual void HandleContextMenu(HANDLE menu_handle, int align_flags,
+                                 const IPC::ContextMenuParams& params);
   virtual void TabbedOut(bool reverse);
 
   // Other
@@ -170,7 +174,7 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
 
   // end of ChromeProxyDelegate methods
   //////////////////////////////////////////////////////////////////////////
-
+  void Init();
   void Destroy();
 
   // The UiXXXX are the ChromeProxyDelegate methods but on UI thread.
@@ -191,7 +195,11 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   } state_;
   int tab_;
   ChromeProxyFactory* proxy_factory_;
+  // Accessed only in the UI thread for simplicity.
   ChromeProxy* proxy_;
+  // Accessed from ipc thread as well. It's safe if the object goes away
+  // because this should be preceded by destruction of the window and
+  // therefore all queued tasks should be destroyed.
   UIDelegate* ui_delegate_;
   TaskMarshallerThroughMessageQueue ui_;
 
