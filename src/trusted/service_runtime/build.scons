@@ -526,7 +526,8 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 
 # Test nacl_signal
 if (not env.get('COVERAGE_ENABLED') and
-    not env['TARGET_ARCHITECTURE'] == 'arm'):
+    not env['TARGET_ARCHITECTURE'] == 'arm' and
+    not env.IsRunningUnderValgrind()):
   nacl_signal_exe = env.ComponentProgram('nacl_signal_unittest',
                                          'nacl_signal_unittest.c',
                                          EXTRA_LIBS=['sel',
