@@ -212,6 +212,7 @@ void ChromotingClient::InitClient(const InitClientMessage& init_client,
 //  TODO(ajwong): What to do here?  Does the decoder actually need to request
 //  the right frame size?  This is mainly an optimization right?
 //  rectangle_decoder_->SetOutputFrameSize(width, height);
+  view_->SetViewport(0, 0, width, height);
 
   // Schedule the input handler to process the event queue.
   input_handler_->Initialize();
