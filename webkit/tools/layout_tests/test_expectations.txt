@@ -7,3 +7,6 @@
 BUG_AJWONG WIN : fast/dom/Window/window-screen-properties.html = TEXT   
 BUG_AJWONG WIN : fast/media/color-does-not-include-alpha.html = TEXT
 BUG_AJWONG MAC : fast/css/transformed-mask.html = IMAGE
+
+// Remove when rolling Webkit past r69652.
+BUG53073 DEBUG : storage/change-version.html = CRASH PASS
