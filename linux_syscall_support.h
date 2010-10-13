@@ -87,7 +87,7 @@
  */
 #if (defined(__i386__) || defined(__x86_64__) || defined(__ARM_ARCH_3__) ||   \
      defined(__mips__) || defined(__PPC__) || defined(__ARM_EABI__)) \
-  && defined(__linux)
+  && (defined(__linux) || defined(__ANDROID__))
 
 #ifndef SYS_CPLUSPLUS
 #ifdef __cplusplus
@@ -99,6 +99,7 @@ extern "C" {
 #endif
 
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -107,7 +108,7 @@ extern "C" {
 #include <sys/resource.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <syscall.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #include <linux/unistd.h>
 #include <endian.h>
@@ -2138,7 +2139,9 @@ struct kernel_statfs {
                               *   return -EINVAL;
                               */
                              "cmp   %2,#0\n"
+                             "it    ne\n"
                              "cmpne %3,#0\n"
+                             "it    eq\n"
                              "moveq %0,%1\n"
                              "beq   1f\n"
 
@@ -3012,9 +3015,13 @@ struct kernel_statfs {
     #define __NR__sigprocmask __NR_sigprocmask
     #define __NR__sigsuspend  __NR_sigsuspend
     #define __NR__socketcall  __NR_socketcall
+#if ! defined(__ANDROID__)
+    /* The Android NDK #defines stat64 stat, so avoid multiple-definition */
     LSS_INLINE _syscall2(int, fstat64,             int, f,
                          struct kernel_stat64 *, b)
-    LSS_INLINE _syscall5(int, _llseek,     uint, fd, ulong, hi, ulong, lo,
+#endif
+    LSS_INLINE _syscall5(int, _llseek,     uint, fd,
+                         unsigned long, hi, unsigned long, lo,
                          loff_t *, res, uint, wh)
 #if !defined(__ARM_EABI__)
     LSS_INLINE _syscall1(void*, mmap,              void*, a)
@@ -3022,7 +3029,7 @@ struct kernel_statfs {
     LSS_INLINE _syscall6(void*, mmap2,             void*, s,
                          size_t,                   l, int,               p,
                          int,                      f, int,               d,
-                         __off64_t,                o)
+                         off_t,                o)
     LSS_INLINE _syscall3(int,   _sigaction,        int,   s,
                          const struct kernel_old_sigaction*,  a,
                          struct kernel_old_sigaction*,        o)
@@ -3037,8 +3044,11 @@ struct kernel_statfs {
                          int,                      b,
                          unsigned long,            s)
     #endif
+#if ! defined(__ANDROID__)
+    /* The Android NDK #defines stat64 stat, so avoid multiple-definition */
     LSS_INLINE _syscall2(int, stat64,              const char *, p,
                          struct kernel_stat64 *, b)
+#endif
 
     LSS_INLINE int LSS_NAME(sigaction)(int signum,
                                        const struct kernel_sigaction *act,
