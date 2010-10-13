@@ -2929,3 +2929,11 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+   bug_59019
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12invalidation20NewPermanentCallbackIN13sync_notifier93_GLOBAL__N_chrome_browser_sync_notifier_chrome_system_resources_unittest.cc_00000000_B83B3F7125ChromeSystemResourcesTestEbEEPN9Callback1IT0_E4TypeEPT_MS9_FvS5_E
+   fun:_ZN13sync_notifier93_GLOBAL__N_chrome_browser_sync_notifier_chrome_system_resources_unittest.cc_00000000_B83B3F7141ChromeSystemResourcesTest_WriteState_Test8TestBodyEv
+}
+
