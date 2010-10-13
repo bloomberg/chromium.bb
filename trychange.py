@@ -436,8 +436,8 @@ def GuessVCS(options, path):
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
   try:
-    gclient_utils.CheckCall(["git", "rev-parse", "--is-inside-work-tree"],
-                            real_path)
+    gclient_utils.CheckCall(['git', 'rev-parse', '--is-inside-work-tree'],
+                            cwd=real_path)
     return GIT(options, path)
   except gclient_utils.CheckCallError, e:
     if e.returncode != errno.ENOENT and e.returncode != 128:

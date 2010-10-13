@@ -888,9 +888,12 @@ def CMDrecurse(parser, args):
     if scm_set and scm not in scm_set:
       continue
     cwd = os.path.normpath(os.path.join(root, path))
-    env['GCLIENT_SCM'] = scm
-    env['GCLIENT_URL'] = url
-    subprocess.Popen(args, cwd=cwd, env=env).communicate()
+    if scm:
+      env['GCLIENT_SCM'] = scm
+    if url:
+      env['GCLIENT_URL'] = url
+    gclient_utils.Popen(args, cwd=cwd, env=env).communicate()
+  return 0
 
 
 @attr('usage', '[url] [safesync url]')

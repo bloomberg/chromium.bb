@@ -84,7 +84,7 @@ def Popen(args, **kwargs):
     raise
 
 
-def CheckCall(command, cwd=None, print_error=True):
+def CheckCall(command, print_error=True, **kwargs):
   """Similar subprocess.check_call() but redirects stdout and
   returns (stdout, stderr).
 
@@ -94,12 +94,13 @@ def CheckCall(command, cwd=None, print_error=True):
     stderr = None
     if not print_error:
       stderr = subprocess.PIPE
-    process = Popen(command, cwd=cwd, stdout=subprocess.PIPE, stderr=stderr)
+    process = Popen(command, stdout=subprocess.PIPE, stderr=stderr, **kwargs)
     std_out, std_err = process.communicate()
   except OSError, e:
-    raise CheckCallError(command, cwd, e.errno, None)
+    raise CheckCallError(command, kwargs.get('cwd', None), e.errno, None)
   if process.returncode:
-    raise CheckCallError(command, cwd, process.returncode, std_out, std_err)
+    raise CheckCallError(command, kwargs.get('cwd', None), process.returncode,
+        std_out, std_err)
   return std_out, std_err
 
 

@@ -43,19 +43,19 @@ class CheckCallTestCase(GclientUtilBase):
     process = self.mox.CreateMockAnything()
     process.returncode = 0
     gclient_utils.Popen(
-        args, cwd=None,
+        args, cwd='bar',
         stderr=None,
         stdout=gclient_utils.subprocess.PIPE).AndReturn(process)
     process.communicate().AndReturn(['bleh', 'foo'])
     self.mox.ReplayAll()
-    gclient_utils.CheckCall(args)
+    gclient_utils.CheckCall(args, cwd='bar')
 
   def testCheckCallFailure(self):
     args = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
     process.returncode = 42
     gclient_utils.Popen(
-        args, cwd=None,
+        args,
         stderr=None,
         stdout=gclient_utils.subprocess.PIPE).AndReturn(process)
     process.communicate().AndReturn(['bleh', 'foo'])
