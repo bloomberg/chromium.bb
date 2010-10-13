@@ -6,19 +6,6 @@
 
 namespace extension_processes_api_constants {
 
-const char kCpuKey[] = "cpu";
 const char kIdKey[] = "id";
-const char kNetworkKey[] = "network";
-const char kPrivateMemoryKey[] = "privateMemory";
-const char kProcessesKey[] = "processes";
-const char kSharedMemoryKey[] = "sharedMemory";
-const char kTypeKey[] = "type";
-
-const char kProcessTypeBrowser[] = "browser";
-const char kProcessTypeExtension[] = "extension";
-const char kProcessTypePlugin[] = "plugin";
-const char kProcessTypeRenderer[] = "renderer";
-
-const char kOnUpdated[] = "experimental.processes.onUpdated";
 
 }  // namespace extension_processes_api_constants

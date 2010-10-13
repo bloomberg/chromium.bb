@@ -486,12 +486,6 @@ void TaskManagerGtk::Init() {
   SetInitialDialogSize();
   gtk_util::ShowDialog(dialog_);
 
-  // If the model already has resources, we need to add them before we start
-  // observing events.
-  if (model_->ResourceCount() > 0) {
-    OnItemsAdded(0, model_->ResourceCount());
-  }
-
   model_->AddObserver(this);
 }
 

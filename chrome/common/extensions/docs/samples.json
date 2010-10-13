@@ -15,6 +15,7 @@
     "chrome.pageAction.setTitle": "pageAction.html#method-setTitle", 
     "chrome.bookmarks.onImportBegan": "bookmarks.html#event-onImportBegan", 
     "chrome.experimental.omnibox.styleDim": "experimental.omnibox.html#method-styleDim", 
+    "chrome.experimental.processes.getProcessForTab": "experimental.processes.html#method-getProcessForTab", 
     "chrome.bookmarks.getTree": "bookmarks.html#method-getTree", 
     "chrome.experimental.infobars.show": "experimental.infobars.html#method-show", 
     "chrome.windows.get": "windows.html#method-get", 
@@ -27,7 +28,7 @@
     "chrome.extension.onConnect": "extension.html#event-onConnect", 
     "chrome.bookmarks.removeTree": "bookmarks.html#method-removeTree", 
     "chrome.bookmarks.get": "bookmarks.html#method-get", 
-    "chrome.experimental.processes.onUpdated": "experimental.processes.html#event-onUpdated", 
+    "chrome.experimental.sidebar.hide": "experimental.sidebar.html#method-hide", 
     "chrome.bookmarks.getRecent": "bookmarks.html#method-getRecent", 
     "chrome.history.onVisitRemoved": "history.html#event-onVisitRemoved", 
     "chrome.experimental.sidebar.navigate": "experimental.sidebar.html#method-navigate", 
@@ -35,7 +36,6 @@
     "chrome.bookmarks.onChanged": "bookmarks.html#event-onChanged", 
     "chrome.tabs.detectLanguage": "tabs.html#method-detectLanguage", 
     "chrome.windows.onRemoved": "windows.html#event-onRemoved", 
-    "chrome.experimental.sidebar.hide": "experimental.sidebar.html#method-hide", 
     "chrome.management.uninstall": "management.html#method-uninstall", 
     "chrome.experimental.clipboard.executePaste": "experimental.clipboard.html#method-executePaste", 
     "chrome.experimental.webNavigation.onCompleted": "experimental.webNavigation.html#event-onCompleted", 
@@ -139,7 +139,6 @@
     "chrome.tabs.move": "tabs.html#method-move", 
     "chrome.windows.onFocusChanged": "windows.html#event-onFocusChanged", 
     "chrome.pageAction.setPopup": "pageAction.html#method-setPopup", 
-    "chrome.experimental.processes.getProcessIdForTab": "experimental.processes.html#method-getProcessIdForTab", 
     "chrome.history.addUrl": "history.html#method-addUrl"
   }, 
   "samples": [
@@ -1186,29 +1185,6 @@
     }, 
     {
       "features": [
-        "browser_action", 
-        "experimental", 
-        "popup", 
-        "tabs"
-      ], 
-      "icon": null, 
-      "description": "Adds a browser action that monitors resource usage of all browser processes.", 
-      "search_string": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.EXPERIMENTAL.PROCESSES.ONUPDATED", 
-      "source_files": [
-        "manifest.json", 
-        "popup.html"
-      ], 
-      "zip_path": "examples/api/processes/process_monitor.zip", 
-      "path": "examples/api/processes/process_monitor/", 
-      "api_calls": [
-        "chrome.experimental.processes.onUpdated"
-      ], 
-      "id": "beff6ecd9677dea0a7c648c5042165b48bb66f09", 
-      "protocols": [], 
-      "name": "Process Monitor"
-    }, 
-    {
-      "features": [
         "background_page", 
         "browser_action", 
         "tabs"
@@ -1280,7 +1256,7 @@
       ], 
       "icon": null, 
       "description": "Adds a browser action showing which tabs share the current tab's process.", 
-      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.EXPERIMENTAL.PROCESSES.GETPROCESSIDFORTAB CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE", 
+      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.EXPERIMENTAL.PROCESSES.GETPROCESSFORTAB CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE", 
       "source_files": [
         "manifest.json", 
         "popup.html"
@@ -1288,7 +1264,7 @@
       "zip_path": "examples/api/processes/show_tabs.zip", 
       "path": "examples/api/processes/show_tabs/", 
       "api_calls": [
-        "chrome.experimental.processes.getProcessIdForTab", 
+        "chrome.experimental.processes.getProcessForTab", 
         "chrome.tabs.get", 
         "chrome.tabs.getSelected", 
         "chrome.tabs.update", 

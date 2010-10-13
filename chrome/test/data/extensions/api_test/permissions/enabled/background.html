@@ -11,8 +11,8 @@ chrome.test.runTests([
     // experimental, this test needs to be updated.
     chrome.tabs.getSelected(null, function(tab) {
       try {
-        chrome.experimental.processes.getProcessIdForTab(
-          tab.id, pass(function(pid) {}));
+        chrome.experimental.processes.getProcessForTab(
+          tab.id, pass(function(process) {}));
       } catch (e) {
         chrome.test.fail();
       }

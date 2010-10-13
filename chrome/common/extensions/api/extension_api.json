@@ -2575,37 +2575,16 @@
         "properties": {
           "id": {
             "type": "integer",
-            "description": "The ID of the process, as provided by the OS."
-          },
-          "type": {
-            "type": "string",
-            "enum": ["browser", "renderer", "plugin", "extension"],
-            "description": "The type of process."
-          },
-          "cpu": {
-            "type": "number",
-            "description": "The most recent measurement of the process's CPU usage, between 0 and 100%."
-          },
-          "network": {
-            "type": "number",
-            "description": "The most recent measurement of the process's network usage, in kB/s."
-          },
-          "privateMemory": {
-            "type": "number",
-            "description": "The most recent measurement of the process's private memory usage, in bytes."
-          },
-          "sharedMemory": {
-            "type": "number",
-            "description": "The most recent measurement of the process's shared memory usage, in bytes."
+            "description": "The internal ID of the process."
           }
         }
       }
     ],
     "functions": [
       {
-        "name": "getProcessIdForTab",
+        "name": "getProcessForTab",
         "type": "function",
-        "description": "Returns the ID of the renderer process for the specified tab.",
+        "description": "Returns details about the current renderer process of the specified tab.",
         "parameters": [
           {
             "name": "tabId",
@@ -2617,30 +2596,16 @@
             "name": "callback",
             "parameters": [
               {
-                "name": "processId",
-                "type": "integer",
-                "description": "Process ID of the tab's renderer process."
+                "name": "process",
+                "$ref": "Process",
+                "description": "Details about the tab's process."
               }
             ]
           }
         ]
       }
     ],
-    "events": [
-      {
-        "name": "onUpdated",
-        "type": "function",
-        "description": "Fires each time the Task Manager updates its process statistics, providing the dictionary of updated Process objects, indexed by process ID.",
-        "parameters": [
-          {
-            "name": "processes",
-            "type": "object",
-            "properties": {},
-            "additionalProperties": { "type": "any" }
-          }
-        ]
-      }
-    ]
+    "events": []
   },
   {
     "namespace": "contextMenus",

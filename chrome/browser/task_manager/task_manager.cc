@@ -70,8 +70,7 @@ string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
 ////////////////////////////////////////////////////////////////////////////////
 
 TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
-    : update_requests_(0),
-      update_state_(IDLE),
+    : update_state_(IDLE),
       goat_salt_(rand()) {
 
   TaskManagerBrowserProcessResourceProvider* browser_provider =
@@ -120,13 +119,9 @@ string16 TaskManagerModel::GetResourceTitle(int index) const {
   return WideToUTF16Hack(resources_[index]->GetTitle());
 }
 
-int64 TaskManagerModel::GetNetworkUsage(int index) const {
-  DCHECK(index < ResourceCount());
-  return GetNetworkUsage(resources_[index]);
-}
-
 string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
-  int64 net_usage = GetNetworkUsage(index);
+  DCHECK(index < ResourceCount());
+  int64 net_usage = GetNetworkUsage(resources_[index]);
   if (net_usage == -1)
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   if (net_usage == 0)
@@ -135,11 +130,6 @@ string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
                                   true);
   // Force number string to have LTR directionality.
   return base::i18n::GetDisplayStringInLTRDirectionality(net_byte);
-}
-
-double TaskManagerModel::GetCPUUsage(int index) const {
-  DCHECK(index < ResourceCount());
-  return GetCPUUsage(resources_[index]);
 }
 
 string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
@@ -175,13 +165,9 @@ string16 TaskManagerModel::GetResourcePhysicalMemory(int index) const {
   return GetMemCellText(phys_mem);
 }
 
-int TaskManagerModel::GetProcessId(int index) const {
-  DCHECK(index < ResourceCount());
-  return base::GetProcId(resources_[index]->GetProcess());
-}
-
 string16 TaskManagerModel::GetResourceProcessId(int index) const {
-  return base::IntToString16(GetProcessId(index));
+  DCHECK(index < ResourceCount());
+  return base::IntToString16(base::GetProcId(resources_[index]->GetProcess()));
 }
 
 string16 TaskManagerModel::GetResourceGoatsTeleported(int index) const {
@@ -496,12 +482,6 @@ string16 TaskManagerModel::GetMemCellText(int64 number) const {
 }
 
 void TaskManagerModel::StartUpdating() {
-  // Multiple StartUpdating requests may come in, and we only need to take
-  // action the first time.
-  update_requests_++;
-  if (update_requests_ > 1)
-    return;
-  DCHECK_EQ(1, update_requests_);
   DCHECK_NE(TASK_PENDING, update_state_);
 
   // If update_state_ is STOPPING, it means a task is still pending.  Setting
@@ -528,12 +508,6 @@ void TaskManagerModel::StartUpdating() {
 }
 
 void TaskManagerModel::StopUpdating() {
-  // Don't actually stop updating until we have heard as many calls as those
-  // to StartUpdating.
-  update_requests_--;
-  if (update_requests_ > 0)
-    return;
-  DCHECK_EQ(0, update_requests_);
   DCHECK_EQ(TASK_PENDING, update_state_);
   update_state_ = STOPPING;
 
@@ -548,9 +522,6 @@ void TaskManagerModel::StopUpdating() {
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &TaskManagerModel::UnregisterForJobDoneNotifications));
-
-  // Must clear the resources before the next attempt to start updating.
-  Clear();
 }
 
 void TaskManagerModel::AddResourceProvider(
@@ -954,6 +925,7 @@ void TaskManager::RemoveResource(Resource* resource) {
 
 void TaskManager::OnWindowClosed() {
   model_->StopUpdating();
+  model_->Clear();
 }
 
 // static
