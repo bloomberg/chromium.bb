@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,15 +6,10 @@
 
 #include <string>
 
+#include "base/float_util.h"
 #include "base/values.h"
-#include "base/string_number_conversions.h"
-
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/speech_synthesis_library.h"
 
 namespace util = extension_tts_api_util;
-
-using base::DoubleToString;
 
 namespace {
   const char kCrosLibraryNotLoadedError[] =
@@ -23,68 +18,57 @@ namespace {
 
 bool ExtensionTtsSpeakFunction::RunImpl() {
   std::string utterance;
-  std::string options = "";
+  std::string language;
+  std::string gender;
+  double rate = -1.0;
+  double pitch = -1.0;
+  double volume = -1.0;
+
   DictionaryValue* speak_options = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &utterance));
+
   if (args_->GetDictionary(1, &speak_options)) {
-    std::string str_value;
-    double real_value;
-    if (speak_options->HasKey(util::kLanguageNameKey) &&
-      speak_options->GetString(util::kLanguageNameKey, &str_value)) {
-        util::AppendSpeakOption(
-            std::string(util::kNameKey), str_value, &options);
+    if (speak_options->HasKey(util::kLanguageNameKey)) {
+      speak_options->GetString(util::kLanguageNameKey, &language);
     }
-    if (speak_options->HasKey(util::kGenderKey) &&
-      speak_options->GetString(util::kGenderKey, &str_value)) {
-        util::AppendSpeakOption(
-            std::string(util::kGenderKey), str_value, &options);
+
+    if (speak_options->HasKey(util::kGenderKey)) {
+      speak_options->GetString(util::kGenderKey, &gender);
     }
-    if (util::ReadNumberByKey(speak_options, util::kRateKey, &real_value)) {
-      // The TTS service allows a range of 0 to 5 for speech rate.
-      util::AppendSpeakOption(std::string(util::kRateKey),
-          DoubleToString(real_value * 5), &options);
+
+    if (util::ReadNumberByKey(speak_options, util::kRateKey, &rate)) {
+      if (!base::IsFinite(rate) || rate < 0.0 || rate > 1.0) {
+        rate = -1.0;
+      }
     }
-    if (util::ReadNumberByKey(speak_options, util::kPitchKey, &real_value)) {
-      // The TTS service allows a range of 0 to 2 for speech pitch.
-      util::AppendSpeakOption(std::string(util::kPitchKey),
-          DoubleToString(real_value * 2), &options);
+
+    if (util::ReadNumberByKey(speak_options, util::kPitchKey, &pitch)) {
+      if (!base::IsFinite(pitch) || pitch < 0.0 || pitch > 1.0) {
+        pitch = -1.0;
+      }
     }
-    if (util::ReadNumberByKey(speak_options, util::kVolumeKey, &real_value)) {
-      // The TTS service allows a range of 0 to 5 for speech volume.
-      util::AppendSpeakOption(std::string(util::kVolumeKey),
-          DoubleToString(real_value * 5), &options);
+
+    if (util::ReadNumberByKey(speak_options, util::kVolumeKey, &volume)) {
+      if (!base::IsFinite(volume) || volume < 0.0 || volume > 1.0) {
+        volume = -1.0;
+      }
     }
   }
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    if (!options.empty()) {
-      chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-          SetSpeakProperties(options.c_str());
-    }
-    bool ret = chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-        Speak(utterance.c_str());
-    result_.reset();
-    return ret;
-  }
-  error_ = kCrosLibraryNotLoadedError;
-  return false;
+
+  ExtensionTtsPlatformImpl* impl = ExtensionTtsPlatformImpl::GetInstance();
+  impl->clear_error();
+  return impl->Speak(utterance, language, gender, rate, pitch, volume);
 }
 
 bool ExtensionTtsStopSpeakingFunction::RunImpl() {
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    return chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-        StopSpeaking();
-  }
-  error_ = kCrosLibraryNotLoadedError;
-  return false;
+  ExtensionTtsPlatformImpl* impl = ExtensionTtsPlatformImpl::GetInstance();
+  impl->clear_error();
+  return impl->StopSpeaking();
 }
 
 bool ExtensionTtsIsSpeakingFunction::RunImpl() {
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    result_.reset(Value::CreateBooleanValue(
-        chromeos::CrosLibrary::Get()->GetSpeechSynthesisLibrary()->
-        IsSpeaking()));
-    return true;
-  }
-  error_ = kCrosLibraryNotLoadedError;
-  return false;
+  ExtensionTtsPlatformImpl* impl = ExtensionTtsPlatformImpl::GetInstance();
+  impl->clear_error();
+  result_.reset(Value::CreateBooleanValue(impl->IsSpeaking()));
+  return true;
 }
