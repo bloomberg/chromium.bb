@@ -127,7 +127,9 @@ DOMUIMenuWidget::DOMUIMenuWidget(chromeos::NativeMenuDOMUI* domui_menu,
       did_pointer_grab_(false),
       is_root_(root) {
   DCHECK(domui_menu_);
-  MakeTransparent();
+  // TODO(oshima): Disabling transparent until we migrate bookmark
+  // menus to DOMUI.  See crosbug.com/7718.
+  // MakeTransparent();
 }
 
 DOMUIMenuWidget::~DOMUIMenuWidget() {

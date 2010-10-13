@@ -284,8 +284,8 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(app_menu_, &screen_loc);
   gfx::Rect bounds(screen_loc, app_menu_->size());
-
-  // TODO(oshima): Support RTL.
+  if (base::i18n::IsRTL())
+    bounds.set_x(bounds.x() - app_menu_->size().width());
   wrench_menu_->RunMenuAt(gfx::Point(bounds.right(), bounds.bottom()),
                           views::Menu2::ALIGN_TOPRIGHT);
 
