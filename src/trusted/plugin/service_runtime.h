@@ -59,6 +59,10 @@ class ServiceRuntime {
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
   bool InitCommunication(nacl::Handle bootstrap_socket, nacl::DescWrapper* shm);
 
+  // Logs the error, deletes subprocess_ and returns false, so the call
+  // to this function can be used as a return value.
+  bool Failure(const nacl::string& error);
+
   ScriptableHandle* default_socket_address_;  // creates, but does not own
   Plugin* plugin_;
   BrowserInterface* browser_interface_;

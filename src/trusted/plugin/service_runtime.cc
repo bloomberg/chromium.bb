@@ -64,10 +64,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
                  static_cast<void*>(default_socket_address_)));
 
   if (NULL == default_socket_address_) {
-    const char* error = "service runtime: no valid socket address";
-    PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
-    browser_interface_->AddToConsole(plugin()->instance_id(), error);
-    return false;
+    return Failure("service runtime: no valid socket address");
   }
   // The first connect on the socket address returns the service
   // runtime command channel.  This channel is created before the NaCl
@@ -79,10 +76,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (raw_channel=%p)\n",
                  static_cast<void*>(raw_channel)));
   if (NULL == raw_channel) {
-    const char* error = "service runtime connect failed";
-    PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
-    browser_interface_->AddToConsole(plugin()->instance_id(), error);
-    return false;
+    return Failure("service runtime: connect failed");
   }
   runtime_channel_ = new(std::nothrow) SrtSocket(raw_channel,
                                                  browser_interface_);
@@ -90,7 +84,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
                  static_cast<void*>(runtime_channel_)));
   if (NULL == runtime_channel_) {
     raw_channel->Unref();
-    return false;
+    return Failure("service runtime: runtime channel creation failed");
   }
 
   if (shm != NULL) {
@@ -99,22 +93,14 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     // We now have an open communication channel to the sel_ldr process,
     // so we can send the nexe bits over
     if (!runtime_channel_->LoadModule(shm->desc())) {
-      const char* error = "failed to send nexe";
-      PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
-      browser_interface_->AddToConsole(plugin()->instance_id(), error);
       // TODO(gregoryd): close communication channels
-      delete subprocess_;
-      subprocess_ = NULL;
-      return false;
+      return Failure("service runtime: failed to send nexe");
     }
-    /* LoadModule succeeded, proceed normally */
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     // Establish the communication for handle passing protocol
     struct NaClDesc* desc = NaClHandlePassBrowserGetSocketAddress();
     if (!runtime_channel_->InitHandlePassing(desc, subprocess_->child())) {
-      delete subprocess_;
-      subprocess_ = NULL;
-      return false;
+      return Failure("service runtime: failed handle passing protocol");
     }
 #endif
   }
@@ -124,24 +110,33 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   // in libsrpc.
   int load_status;
   if (!runtime_channel_->StartModule(&load_status)) {
-    const char* error = "could not start nacl module";
-    PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
-    browser_interface_->AddToConsole(plugin()->instance_id(), error);
-    return false;
+    return Failure("service runtime: could not start nacl module");
   }
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (load_status=%d)\n",
                  load_status));
   if (LOAD_OK != load_status) {
     nacl::string error = "loading of module failed with status " + load_status;
-    PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error.c_str()));
-    browser_interface_->AddToConsole(plugin()->instance_id(), error.c_str());
-    return false;
+    return Failure(error);
   }
   return true;
 }
 
+bool ServiceRuntime::Failure(const nacl::string& error) {
+  PLUGIN_PRINTF(("ServiceRuntime::Failure (error='%s')\n", error.c_str()));
+  browser_interface_->AddToConsole(plugin()->instance_id(), error);
+  delete subprocess_;
+  subprocess_ = NULL;
+  return false;
+}
+
 bool ServiceRuntime::StartFromCommandLine(const char* nacl_file) {
   PLUGIN_PRINTF(("ServiceRuntime::Start (nacl_file='%s')\n", nacl_file));
+
+  subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
+  if (NULL == subprocess_) {
+    return Failure("Failed to create sel_ldr launcher");
+  }
+
   // The arguments we want to pass to the service runtime are
   // "-X 5" causes the service runtime to create a bound socket and socket
   //      address at descriptors 3 and 4.  The socket address is transferred as
@@ -152,56 +147,32 @@ bool ServiceRuntime::StartFromCommandLine(const char* nacl_file) {
   const int kSelLdrArgLength = NACL_ARRAY_SIZE(kSelLdrArgs);
   vector<nacl::string> kArgv(kSelLdrArgs, kSelLdrArgs + kSelLdrArgLength);
   vector<nacl::string> kEmpty;
-
-  PLUGIN_PRINTF(("ServiceRuntime::Start (this=%p, plugin=%p)\n",
-                 static_cast<void*>(this), static_cast<void*>(plugin())));
-
-  subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
-  if (NULL == subprocess_) {
-    const char* error = "could not create SelLdrLauncher";
-    PLUGIN_PRINTF(("ServiceRuntime::Start (%s)\n", error));
-    browser_interface_->AddToConsole(plugin()->instance_id(), error);
-    return false;
-  }
   subprocess_->InitCommandLine(nacl_file, -1, kArgv, kEmpty);
 
   nacl::Handle receive_handle = subprocess_->ExportImcFD(6);
   if (receive_handle == nacl::kInvalidHandle) {
-    browser_interface_->AddToConsole(plugin()->instance_id(),
-                                     "Failed to create async receive handle");
-    return false;
+    return Failure("Failed to create async receive handle");
   }
   async_receive_desc_ =
       plugin()->wrapper_factory()->MakeImcSock(receive_handle);
 
   nacl::Handle send_handle = subprocess_->ExportImcFD(7);
   if (send_handle == nacl::kInvalidHandle) {
-    browser_interface_->AddToConsole(plugin()->instance_id(),
-                                     "Failed to create async send handle");
-    return false;
+    return Failure("Failed to create async send handle");
   }
   async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(send_handle);
 
   nacl::Handle bootstrap_socket = subprocess_->ExportImcFD(5);
   if (bootstrap_socket == nacl::kInvalidHandle) {
-    browser_interface_->AddToConsole(plugin()->instance_id(),
-                                     "Failed to create socket handle");
-    return false;
+    return Failure("Failed to create socket handle");
   }
 
   if (!subprocess_->LaunchFromCommandLine()) {
-    const char* error = "could not start SelLdrLauncher";
-    PLUGIN_PRINTF(("ServiceRuntime::Start (%s)\n", error));
-    browser_interface_->AddToConsole(plugin()->instance_id(), error);
-    delete subprocess_;
-    subprocess_ = NULL;
-    return false;
+    return Failure("Failed to launch sel_ldr");
   }
 
-  // TODO(gregoryd) - this should deal with buffer and size correctly
-  // - do we need to send the load command from here?
   if (!InitCommunication(bootstrap_socket, NULL)) {
-    return false;
+    return Failure("Failed to initialize sel_ldr communication");
   }
 
   PLUGIN_PRINTF(("ServiceRuntime::Start (return 1)\n"));
@@ -214,14 +185,12 @@ bool ServiceRuntime::StartFromBrowser(const char* url,
                  url, reinterpret_cast<void*>(shm)));
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
-    return false;
+    return Failure("Failed to create sel_ldr launcher");
   }
   nacl::Handle sockets[3];
   if (!subprocess_->StartFromBrowser(url, NACL_ARRAY_SIZE(sockets),
-                                       sockets)) {
-    delete subprocess_;
-    subprocess_ = NULL;
-    return false;
+                                     sockets)) {
+    return Failure("Failed to start sel_ldr");
   }
 
   nacl::Handle bootstrap_socket = sockets[0];
@@ -229,7 +198,7 @@ bool ServiceRuntime::StartFromBrowser(const char* url,
   async_send_desc_ = plugin()->wrapper_factory()->MakeImcSock(sockets[2]);
 
   if (!InitCommunication(bootstrap_socket, shm)) {
-    return false;
+    return Failure("Failed to initialize sel_ldr communication");
   }
 
   PLUGIN_PRINTF(("ServiceRuntime::StartFromBrowser (return 1)\n"));
