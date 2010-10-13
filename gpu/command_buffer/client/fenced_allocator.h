@@ -33,11 +33,7 @@ class FencedAllocator {
   // Creates a FencedAllocator. Note that the size of the buffer is passed, but
   // not its base address: everything is handled as offsets into the buffer.
   FencedAllocator(unsigned int size,
-                  CommandBufferHelper *helper)
-      : helper_(helper) {
-    Block block = { FREE, 0, size, kUnusedToken };
-    blocks_.push_back(block);
-  }
+                  CommandBufferHelper *helper);
 
   ~FencedAllocator();
 

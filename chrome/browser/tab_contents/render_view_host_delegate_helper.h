@@ -30,8 +30,8 @@ class TabContents;
 // RenderViewHostDelegate::View methods.
 class RenderViewHostDelegateViewHelper {
  public:
-  RenderViewHostDelegateViewHelper() {}
-  virtual ~RenderViewHostDelegateViewHelper() {}
+  RenderViewHostDelegateViewHelper();
+  virtual ~RenderViewHostDelegateViewHelper();
 
   // Creates a new renderer for window.open. This will either be a
   // BackgroundContents (if the window_container_type ==

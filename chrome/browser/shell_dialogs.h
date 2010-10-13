@@ -92,6 +92,9 @@ class SelectFileDialog
   // |include_all_files| specifies whether there will be a filter added for all
   //   files (i.e. *.*).
   struct FileTypeInfo {
+    FileTypeInfo();
+    ~FileTypeInfo();
+
     std::vector<std::vector<FilePath::StringType> > extensions;
     std::vector<string16> extension_description_overrides;
     bool include_all_files;
@@ -134,8 +137,8 @@ class SelectFileDialog
 
  protected:
   friend class base::RefCountedThreadSafe<SelectFileDialog>;
-
-  virtual ~SelectFileDialog() {}
+  SelectFileDialog();
+  virtual ~SelectFileDialog();
 };
 
 // Shows a dialog box for selecting a font.
@@ -191,8 +194,8 @@ class SelectFontDialog
 
  protected:
   friend class base::RefCountedThreadSafe<SelectFontDialog>;
-
-  virtual ~SelectFontDialog() {}
+  SelectFontDialog();
+  virtual ~SelectFontDialog();
 };
 
 #endif  // CHROME_BROWSER_SHELL_DIALOGS_H_

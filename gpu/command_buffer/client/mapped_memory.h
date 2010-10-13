@@ -101,9 +101,7 @@ class MemoryChunk {
 // Manages MemoryChucks.
 class MappedMemoryManager {
  public:
-  explicit MappedMemoryManager(CommandBufferHelper* helper)
-      : helper_(helper) {
-  }
+  explicit MappedMemoryManager(CommandBufferHelper* helper);
 
   ~MappedMemoryManager();
 

@@ -8,6 +8,8 @@
 namespace gpu {
 namespace gles2 {
 
+ShaderManager::ShaderManager() {}
+
 ShaderManager::~ShaderManager() {
   DCHECK(shader_infos_.empty());
 }

@@ -16,6 +16,8 @@ TabContentsView::TabContentsView(TabContents* tab_contents)
     : tab_contents_(tab_contents) {
 }
 
+TabContentsView::~TabContentsView() {}
+
 void TabContentsView::RenderWidgetHostDestroyed(RenderWidgetHost* host) {
   if (host->view())
     host->view()->WillDestroyRenderWidget(host);
@@ -102,6 +104,20 @@ void TabContentsView::UpdatePreferredSize(const gfx::Size& pref_size) {
   if (tab_contents_->delegate())
     tab_contents_->delegate()->UpdatePreferredSize(pref_size);
 }
+
+bool TabContentsView::IsDoingDrag() const {
+  return false;
+}
+
+bool TabContentsView::IsEventTracking() const {
+  return false;
+}
+
+bool TabContentsView::ShouldDrawDropShadow() {
+  return false;
+}
+
+TabContentsView::TabContentsView() {}
 
 void TabContentsView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (tab_contents_->delegate())

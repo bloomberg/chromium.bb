@@ -56,6 +56,9 @@ class WebMessagePortChannelImpl
   void OnMessagedQueued();
 
   struct Message {
+    Message();
+    ~Message();
+
     string16 message;
     std::vector<WebMessagePortChannelImpl*> ports;
   };

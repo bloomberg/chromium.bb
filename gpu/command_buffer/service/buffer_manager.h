@@ -27,12 +27,7 @@ class BufferManager {
    public:
     typedef scoped_refptr<BufferInfo> Ref;
 
-    explicit BufferInfo(GLuint service_id)
-        : service_id_(service_id),
-          target_(0),
-          size_(0),
-          shadowed_(false) {
-    }
+    explicit BufferInfo(GLuint service_id);
 
     GLuint service_id() const {
       return service_id_;
@@ -91,7 +86,7 @@ class BufferManager {
       GLenum type_;
     };
 
-    ~BufferInfo() { }
+    ~BufferInfo();
 
     GLenum target() const {
       return target_;
@@ -140,9 +135,7 @@ class BufferManager {
     RangeToMaxValueMap range_set_;
   };
 
-  BufferManager()
-      : allow_buffers_on_multiple_targets_(false) {
-  }
+  BufferManager();
   ~BufferManager();
 
   // Must call before destruction.

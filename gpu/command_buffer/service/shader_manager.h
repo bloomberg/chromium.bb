@@ -91,7 +91,7 @@ class ShaderManager {
     std::string log_info_;
   };
 
-  ShaderManager() { }
+  ShaderManager();
   ~ShaderManager();
 
   // Must call before destruction.

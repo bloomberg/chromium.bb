@@ -10,6 +10,10 @@
 namespace gpu {
 namespace gles2 {
 
+BufferManager::BufferManager()
+    : allow_buffers_on_multiple_targets_(false) {
+}
+
 BufferManager::~BufferManager() {
   DCHECK(buffer_infos_.empty());
 }
@@ -49,6 +53,15 @@ void BufferManager::RemoveBufferInfo(GLuint client_id) {
     buffer_infos_.erase(it);
   }
 }
+
+BufferManager::BufferInfo::BufferInfo(GLuint service_id)
+    : service_id_(service_id),
+      target_(0),
+      size_(0),
+      shadowed_(false) {
+}
+
+BufferManager::BufferInfo::~BufferInfo() { }
 
 void BufferManager::BufferInfo::SetSize(GLsizeiptr size, bool shadow) {
   DCHECK(!IsDeleted());

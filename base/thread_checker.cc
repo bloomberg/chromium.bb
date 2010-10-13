@@ -11,6 +11,8 @@ ThreadChecker::ThreadChecker() {
   EnsureThreadIdAssigned();
 }
 
+ThreadChecker::~ThreadChecker() {}
+
 bool ThreadChecker::CalledOnValidThread() const {
   EnsureThreadIdAssigned();
   return *valid_thread_id_ == PlatformThread::CurrentId();

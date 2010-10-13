@@ -7,6 +7,10 @@
 
 namespace gpu {
 
+CommonDecoder::Bucket::Bucket() : size_(0) {}
+
+CommonDecoder::Bucket::~Bucket() {}
+
 void* CommonDecoder::Bucket::GetData(size_t offset, size_t size) const {
   if (OffsetSizeValid(offset, size)) {
     return data_.get() + offset;
@@ -46,6 +50,10 @@ bool CommonDecoder::Bucket::GetAsString(std::string* str) {
   str->assign(GetDataAs<const char*>(0, size_ - 1), size_ - 1);
   return true;
 }
+
+CommonDecoder::CommonDecoder() : engine_(NULL) {}
+
+CommonDecoder::~CommonDecoder() {}
 
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int offset,

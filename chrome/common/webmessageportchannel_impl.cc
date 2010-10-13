@@ -235,3 +235,7 @@ void WebMessagePortChannelImpl::OnMessagedQueued() {
   Release();
   ChildProcess::current()->ReleaseProcess();
 }
+
+WebMessagePortChannelImpl::Message::Message() {}
+
+WebMessagePortChannelImpl::Message::~Message() {}

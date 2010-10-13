@@ -20,6 +20,8 @@ VideoRendererImpl::VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy,
   proxy_->SetVideoRenderer(this);
 }
 
+VideoRendererImpl::~VideoRendererImpl() {}
+
 // static
 media::FilterFactory* VideoRendererImpl::CreateFactory(
     WebMediaPlayerImpl::Proxy* proxy,

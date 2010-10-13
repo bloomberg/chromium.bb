@@ -27,10 +27,28 @@ static int ShaderTypeToIndex(GLenum shader_type) {
   }
 }
 
+
+ProgramManager::ProgramInfo::UniformInfo::UniformInfo(GLsizei _size,
+                                                      GLenum _type,
+                                                      const std::string& _name)
+    : size(_size),
+      type(_type),
+      name(_name) {
+}
+
+ProgramManager::ProgramInfo::UniformInfo::~UniformInfo() {}
+
 bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
   static const char kInvalidPrefix[] = { 'g', 'l', '_' };
   return (length >= sizeof(kInvalidPrefix) &&
       memcmp(name, kInvalidPrefix, sizeof(kInvalidPrefix)) == 0);
+}
+
+ProgramManager::ProgramInfo::ProgramInfo(GLuint service_id)
+    : max_attrib_name_length_(0),
+      max_uniform_name_length_(0),
+      service_id_(service_id),
+      valid_(false) {
 }
 
 void ProgramManager::ProgramInfo::Reset() {
@@ -319,6 +337,10 @@ bool ProgramManager::ProgramInfo::CanLink() const {
   }
   return true;
 }
+
+ProgramManager::ProgramInfo::~ProgramInfo() {}
+
+ProgramManager::ProgramManager() {}
 
 ProgramManager::~ProgramManager() {
   DCHECK(program_infos_.empty());

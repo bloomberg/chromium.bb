@@ -79,4 +79,12 @@ MediaFilter::~MediaFilter() {}
 
 DemuxerStream::~DemuxerStream() {}
 
+VideoDecoder::VideoDecoder() {}
+
+VideoDecoder::~VideoDecoder() {}
+
+AudioDecoder::AudioDecoder() {}
+
+AudioDecoder::~AudioDecoder() {}
+
 }  // namespace media

@@ -26,6 +26,10 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
+RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {}
+
+RenderViewHostDelegateViewHelper::~RenderViewHostDelegateViewHelper() {}
+
 BackgroundContents*
 RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     int route_id,

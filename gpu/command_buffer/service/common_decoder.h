@@ -48,8 +48,8 @@ class CommonDecoder : public AsyncAPIInterface {
   // be passed across shared memory.
   class Bucket {
    public:
-    Bucket() : size_(0) {
-    }
+    Bucket();
+    ~Bucket();
 
     size_t size() const {
       return size_;
@@ -92,10 +92,8 @@ class CommonDecoder : public AsyncAPIInterface {
     DISALLOW_COPY_AND_ASSIGN(Bucket);
   };
 
-  CommonDecoder() : engine_(NULL) {
-  }
-  virtual ~CommonDecoder() {
-  }
+  CommonDecoder();
+  virtual ~CommonDecoder();
 
   // Sets the engine, to get shared memory buffers from, and to set the token
   // to.

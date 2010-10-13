@@ -28,7 +28,7 @@ class InProcessImporterBridge;
 class ProfileImportThread : public ChildThread {
  public:
   ProfileImportThread();
-  virtual ~ProfileImportThread() {}
+  virtual ~ProfileImportThread();
 
   // Returns the one profile import thread.
   static ProfileImportThread* current() {

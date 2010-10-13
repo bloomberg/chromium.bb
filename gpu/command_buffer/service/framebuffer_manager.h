@@ -24,9 +24,7 @@ class FramebufferManager {
    public:
     typedef scoped_refptr<FramebufferInfo> Ref;
 
-    explicit FramebufferInfo(GLuint service_id)
-        : service_id_(service_id) {
-    }
+    explicit FramebufferInfo(GLuint service_id);
 
     GLuint service_id() const {
       return service_id_;
@@ -49,7 +47,7 @@ class FramebufferManager {
     friend class FramebufferManager;
     friend class base::RefCounted<FramebufferInfo>;
 
-    ~FramebufferInfo() { }
+    ~FramebufferInfo();
 
     void MarkAsDeleted() {
       service_id_ = 0;
@@ -65,7 +63,7 @@ class FramebufferManager {
     AttachmentToRenderbufferMap renderbuffers_;
   };
 
-  FramebufferManager() { }
+  FramebufferManager();
   ~FramebufferManager();
 
   // Must call before destruction.

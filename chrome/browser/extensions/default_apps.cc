@@ -25,6 +25,8 @@ DefaultApps::DefaultApps(PrefService* prefs)
   ids_.insert("apdfllckaahabafndbhieahigkjlhalf");
 }
 
+DefaultApps::~DefaultApps() {}
+
 const ExtensionIdSet* DefaultApps::GetAppsToInstall() const {
   if (GetDefaultAppsInstalled())
     return NULL;

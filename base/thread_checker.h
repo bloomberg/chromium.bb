@@ -35,6 +35,7 @@
 class ThreadChecker {
  public:
   ThreadChecker();
+  ~ThreadChecker();
 
   bool CalledOnValidThread() const;
 

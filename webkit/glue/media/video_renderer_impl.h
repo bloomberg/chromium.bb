@@ -73,7 +73,7 @@ class VideoRendererImpl : public WebVideoRenderer {
                                          WebMediaPlayerImpl::Proxy*,
                                          bool>;
   VideoRendererImpl(WebMediaPlayerImpl::Proxy* proxy, bool pts_logging);
-  virtual ~VideoRendererImpl() {}
+  virtual ~VideoRendererImpl();
 
   // Determine the conditions to perform fast paint. Returns true if we can do
   // fast paint otherwise false.

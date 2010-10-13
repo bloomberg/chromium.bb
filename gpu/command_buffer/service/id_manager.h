@@ -18,7 +18,8 @@ namespace gles2 {
 // need to be shared by multiple GLES2Decoders.
 class IdManager {
  public:
-  IdManager() { }
+  IdManager();
+  ~IdManager();
 
   // Maps a client_id to a service_id. Return false if the client_id or
   // service_id are already mapped to something else.

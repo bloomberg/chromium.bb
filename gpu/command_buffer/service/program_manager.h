@@ -32,11 +32,9 @@ class ProgramManager {
     static const int kMaxAttachedShaders = 2;
 
     struct UniformInfo {
-      UniformInfo(GLsizei _size, GLenum _type, const std::string& _name)
-          : size(_size),
-            type(_type),
-            name(_name) {
-      }
+      UniformInfo(GLsizei _size, GLenum _type, const std::string& _name);
+      ~UniformInfo();
+
       bool IsSampler() const {
         return type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE;
       }
@@ -66,12 +64,7 @@ class ProgramManager {
     typedef std::vector<VertexAttribInfo> AttribInfoVector;
     typedef std::vector<int> SamplerIndices;
 
-    explicit ProgramInfo(GLuint service_id)
-        : max_attrib_name_length_(0),
-          max_uniform_name_length_(0),
-          service_id_(service_id),
-          valid_(false) {
-    }
+    explicit ProgramInfo(GLuint service_id);
 
     GLuint service_id() const {
       return service_id_;
@@ -154,7 +147,7 @@ class ProgramManager {
     friend class base::RefCounted<ProgramInfo>;
     friend class ProgramManager;
 
-    ~ProgramInfo() { }
+    ~ProgramInfo();
 
     void MarkAsDeleted() {
       service_id_ = 0;
@@ -195,7 +188,7 @@ class ProgramManager {
     std::string log_info_;
   };
 
-  ProgramManager() { }
+  ProgramManager();
   ~ProgramManager();
 
   // Must call before destruction.

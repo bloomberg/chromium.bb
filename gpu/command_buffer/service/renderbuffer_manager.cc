@@ -10,6 +10,8 @@
 namespace gpu {
 namespace gles2 {
 
+RenderbufferManager::RenderbufferManager() {}
+
 RenderbufferManager::~RenderbufferManager() {
   DCHECK(renderbuffer_infos_.empty());
 }

@@ -32,6 +32,8 @@ ProfileImportThread::ProfileImportThread()
   ChildProcess::current()->AddRefProcess();  // Balanced in Cleanup().
 }
 
+ProfileImportThread::~ProfileImportThread() {}
+
 void ProfileImportThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(ProfileImportThread, msg)
     IPC_MESSAGE_HANDLER(ProfileImportProcessMsg_StartImport,

@@ -9,6 +9,8 @@
 namespace gpu {
 namespace gles2 {
 
+FramebufferManager::FramebufferManager() {}
+
 FramebufferManager::~FramebufferManager() {
   DCHECK(framebuffer_infos_.empty());
 }
@@ -36,6 +38,12 @@ void FramebufferManager::CreateFramebufferInfo(
               FramebufferInfo::Ref(new FramebufferInfo(service_id))));
   DCHECK(result.second);
 }
+
+FramebufferManager::FramebufferInfo::FramebufferInfo(GLuint service_id)
+    : service_id_(service_id) {
+}
+
+FramebufferManager::FramebufferInfo::~FramebufferInfo() {}
 
 bool FramebufferManager::FramebufferInfo::HasUnclearedAttachment(
     GLenum attachment) const {

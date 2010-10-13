@@ -22,33 +22,23 @@ static const ResourceId kInvalidResource = 0u;
 class IdAllocator {
  public:
   IdAllocator();
+  ~IdAllocator();
 
   // Allocates a new resource ID.
-  ResourceId AllocateID() {
-    ResourceId id = FindFirstFree();
-    MarkAsUsed(id);
-    return id;
-  }
+  ResourceId AllocateID();
 
   // Allocates an Id starting at or above desired_id.
   // Note: may wrap if it starts near limit.
   ResourceId AllocateIDAtOrAbove(ResourceId desired_id);
 
   // Marks an id as used. Returns false if id was already used.
-  bool MarkAsUsed(ResourceId id) {
-    std::pair<ResourceIdSet::iterator, bool> result = used_ids_.insert(id);
-    return result.second;
-  }
+  bool MarkAsUsed(ResourceId id);
 
   // Frees a resource ID.
-  void FreeID(ResourceId id) {
-    used_ids_.erase(id);
-  }
+  void FreeID(ResourceId id);
 
   // Checks whether or not a resource ID is in use.
-  bool InUse(ResourceId id) const {
-    return id == kInvalidResource || used_ids_.find(id) != used_ids_.end();
-  }
+  bool InUse(ResourceId id) const;
 
  private:
   // TODO(gman): This would work much better with ranges or a hash table.

@@ -31,7 +31,7 @@ class TabContents;
 class TabContentsView : public RenderViewHostDelegate::View {
  public:
   explicit TabContentsView(TabContents* tab_contents);
-  virtual ~TabContentsView() {}
+  virtual ~TabContentsView();
 
   // Creates the appropriate type of TabContentsView for the current system.
   // The return value is a new heap allocated view with ownership passing to
@@ -142,9 +142,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
   // If we try to close the tab while a drag is in progress, we crash.  These
   // methods allow the tab contents to determine if a drag is in progress and
   // postpone the tab closing.
-  virtual bool IsDoingDrag() const {
-    return false;
-  }
+  virtual bool IsDoingDrag() const;
   virtual void CancelDragAndCloseTab() {}
 
   // If we close the tab while a UI control is in an event-tracking
@@ -152,17 +150,13 @@ class TabContentsView : public RenderViewHostDelegate::View {
   // TabContents::Close() calls IsEventTracking(), and if it returns
   // true CloseTabAfterEventTracking() is called and the close is not
   // completed.
-  virtual bool IsEventTracking() const {
-    return false;
-  }
+  virtual bool IsEventTracking() const;
   virtual void CloseTabAfterEventTracking() {}
 
-  virtual bool ShouldDrawDropShadow() {
-    return false;
-  }
+  virtual bool ShouldDrawDropShadow();
 
  protected:
-  TabContentsView() {}  // Abstract interface.
+  TabContentsView();  // Abstract interface.
 
   // Internal functions used to support the CreateNewWidget() method. If a
   // platform requires plugging into widget creation at a lower level then a

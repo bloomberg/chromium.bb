@@ -8,6 +8,10 @@
 namespace gpu {
 namespace gles2 {
 
+IdManager::IdManager() {}
+
+IdManager::~IdManager() {}
+
 bool IdManager::AddMapping(GLuint client_id, GLuint service_id) {
   std::pair<MapType::iterator, bool> result = id_map_.insert(
       std::make_pair(client_id, service_id));

@@ -37,6 +37,7 @@ class DefaultApps {
   static void RegisterUserPrefs(PrefService* prefs);
 
   explicit DefaultApps(PrefService* prefs);
+  ~DefaultApps();
 
   // Gets the list of default apps that should be installed. Can return NULL if
   // no apps need to be installed.

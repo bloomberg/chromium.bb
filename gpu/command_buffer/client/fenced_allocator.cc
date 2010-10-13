@@ -14,6 +14,13 @@ namespace gpu {
 const FencedAllocator::Offset FencedAllocator::kInvalidOffset;
 #endif
 
+FencedAllocator::FencedAllocator(unsigned int size,
+                                 CommandBufferHelper *helper)
+    : helper_(helper) {
+  Block block = { FREE, 0, size, kUnusedToken };
+  blocks_.push_back(block);
+}
+
 FencedAllocator::~FencedAllocator() {
   // Free blocks pending tokens.
   for (unsigned int i = 0; i < blocks_.size(); ++i) {

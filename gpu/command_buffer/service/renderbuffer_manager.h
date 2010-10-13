@@ -74,7 +74,7 @@ class RenderbufferManager {
     GLenum internal_format_;
   };
 
-  RenderbufferManager() { }
+  RenderbufferManager();
   ~RenderbufferManager();
 
   // Must call before destruction.

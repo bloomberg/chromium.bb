@@ -270,6 +270,9 @@ class VideoDecoder : public MediaFilter {
     consume_video_frame_callback_->Run(frame);
   }
 
+  VideoDecoder();
+  virtual ~VideoDecoder();
+
  private:
   scoped_ptr<ConsumeVideoFrameCallback> consume_video_frame_callback_;
 };
@@ -308,6 +311,10 @@ class AudioDecoder : public MediaFilter {
   // will be recycled to renderer by fill_buffer_done_callback_;
   // We could also pass empty pointer here to let decoder provide buffers pool.
   virtual void ProduceAudioSamples(scoped_refptr<Buffer> buffer) = 0;
+
+ protected:
+  AudioDecoder();
+  ~AudioDecoder();
 
  private:
   scoped_ptr<ConsumeAudioSamplesCallback> consume_audio_samples_callback_;

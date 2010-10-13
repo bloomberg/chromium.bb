@@ -22,6 +22,10 @@ MemoryChunk::MemoryChunk(
       allocator_(shm.size, helper, shm.ptr) {
 }
 
+MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper)
+    : helper_(helper) {
+}
+
 MappedMemoryManager::~MappedMemoryManager() {
   std::for_each(chunks_.begin(),
                 chunks_.end(),

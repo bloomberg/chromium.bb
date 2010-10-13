@@ -2613,6 +2613,7 @@
         'browser/sessions/session_types.h',
         'browser/sessions/tab_restore_service.cc',
         'browser/sessions/tab_restore_service.h',
+        'browser/shell_dialogs.cc',
         'browser/shell_dialogs.h',
         'browser/shell_integration.cc',
         'browser/shell_integration.h',
