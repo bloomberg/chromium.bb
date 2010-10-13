@@ -66,6 +66,10 @@ cr.define('options', function() {
         this.importButton.onclick = function(e) {
           chrome.send('importPersonalCertificate', []);
         }
+      } else if (id == 'serverCertsTab') {
+        this.importButton.onclick = function(e) {
+          chrome.send('importServerCertificate', []);
+        }
       } else if (id == 'caCertsTab') {
         this.importButton.onclick = function(e) {
           chrome.send('importCaCertificate', []);

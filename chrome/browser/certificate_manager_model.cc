@@ -98,6 +98,15 @@ bool CertificateManagerModel::ImportCACerts(
   return result;
 }
 
+bool CertificateManagerModel::ImportServerCert(
+    const net::CertificateList& certificates,
+    net::CertDatabase::ImportCertFailureList* not_imported) {
+  bool result = cert_db_.ImportServerCert(certificates, not_imported);
+  if (result && not_imported->size() != certificates.size())
+    Refresh();
+  return result;
+}
+
 bool CertificateManagerModel::SetCertTrust(const net::X509Certificate* cert,
                                            net::CertType type,
                                            unsigned int trust_bits) {

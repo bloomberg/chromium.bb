@@ -85,6 +85,16 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   void ImportPersonalPasswordSelected(const ListValue* args);
   void ImportPersonalFileRead(int read_errno, std::string data);
 
+  // Import Server certificates from file.  Sequence goes like:
+  //  1. user clicks on import button -> ImportServer -> launches file selector
+  //  2. user selects file -> ImportServerFileSelected -> starts async read
+  //  3. read completes -> ImportServerFileRead -> parse certs -> attempt import
+  //  4a. if import succeeds -> ImportExportCleanup
+  //  4b. if import fails -> show error, ImportExportCleanup
+  void ImportServer(const ListValue* args);
+  void ImportServerFileSelected(const FilePath& path);
+  void ImportServerFileRead(int read_errno, std::string data);
+
   // Import Certificate Authorities from file.  Sequence goes like:
   //  1. user clicks on import button -> ImportCA -> launches file selector
   //  2. user selects file -> ImportCAFileSelected -> starts async read

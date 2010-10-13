@@ -34,6 +34,7 @@ static const char kErrorId[] = "error";
 enum {
   EXPORT_PERSONAL_FILE_SELECTED = 1,
   IMPORT_PERSONAL_FILE_SELECTED,
+  IMPORT_SERVER_FILE_SELECTED,
   IMPORT_CA_FILE_SELECTED,
 };
 
@@ -386,6 +387,9 @@ void CertificateManagerHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("importCaCertificateTrustSelected",
       NewCallback(this, &CertificateManagerHandler::ImportCATrustSelected));
 
+  dom_ui_->RegisterMessageCallback("importServerCertificate",
+      NewCallback(this, &CertificateManagerHandler::ImportServer));
+
   dom_ui_->RegisterMessageCallback("exportCertificate",
       NewCallback(this, &CertificateManagerHandler::Export));
 
@@ -414,6 +418,9 @@ void CertificateManagerHandler::FileSelected(const FilePath& path, int index,
     case IMPORT_PERSONAL_FILE_SELECTED:
       ImportPersonalFileSelected(path);
       break;
+    case IMPORT_SERVER_FILE_SELECTED:
+      ImportServerFileSelected(path);
+      break;
     case IMPORT_CA_FILE_SELECTED:
       ImportCAFileSelected(path);
       break;
@@ -426,6 +433,7 @@ void CertificateManagerHandler::FileSelectionCanceled(void* params) {
   switch (reinterpret_cast<intptr_t>(params)) {
     case EXPORT_PERSONAL_FILE_SELECTED:
     case IMPORT_PERSONAL_FILE_SELECTED:
+    case IMPORT_SERVER_FILE_SELECTED:
     case IMPORT_CA_FILE_SELECTED:
       ImportExportCleanup();
       break;
@@ -641,6 +649,61 @@ void CertificateManagerHandler::ImportExportCleanup() {
   password_.clear();
   selected_cert_list_.clear();
   select_file_dialog_ = NULL;
+}
+
+void CertificateManagerHandler::ImportServer(const ListValue* args) {
+  select_file_dialog_ = SelectFileDialog::Create(this);
+  ShowCertSelectFileDialog(
+      select_file_dialog_.get(),
+      SelectFileDialog::SELECT_OPEN_FILE,
+      FilePath(),
+      GetParentWindow(),
+      reinterpret_cast<void*>(IMPORT_SERVER_FILE_SELECTED));
+}
+
+void CertificateManagerHandler::ImportServerFileSelected(const FilePath& path) {
+  file_path_ = path;
+  file_access_provider_->StartRead(
+      file_path_,
+      &consumer_,
+      NewCallback(this, &CertificateManagerHandler::ImportServerFileRead));
+}
+
+void CertificateManagerHandler::ImportServerFileRead(int read_errno,
+                                                     std::string data) {
+  if (read_errno) {
+    ImportExportCleanup();
+    ShowError(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringFUTF8(IDS_CERT_MANAGER_READ_ERROR_FORMAT,
+                                  UTF8ToUTF16(safe_strerror(read_errno))));
+    return;
+  }
+
+  selected_cert_list_ = net::X509Certificate::CreateCertificateListFromBytes(
+          data.data(), data.size(), net::X509Certificate::FORMAT_AUTO);
+  if (selected_cert_list_.empty()) {
+    ImportExportCleanup();
+    ShowError(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_CERT_PARSE_ERROR));
+    return;
+  }
+
+  net::CertDatabase::ImportCertFailureList not_imported;
+  bool result = certificate_manager_model_->ImportServerCert(
+      selected_cert_list_,
+      &not_imported);
+  if (!result) {
+    ShowError(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_UNKNOWN_ERROR));
+  } else if (!not_imported.empty()) {
+    ShowImportErrors(
+        l10n_util::GetStringUTF8(IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE),
+        not_imported);
+  }
+  ImportExportCleanup();
 }
 
 void CertificateManagerHandler::ImportCA(const ListValue* args) {
