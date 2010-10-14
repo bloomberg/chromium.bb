@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(OS_WIN)
+
 #include "chrome/test/ui/ui_test.h"
 
 #include "base/file_path.h"
 #include "base/message_loop.h"
-#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/constrained_html_dialog.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#if defined(OS_WIN)
 #include "chrome/browser/views/constrained_html_dialog_win.h"
-#endif
 #include "chrome/browser/views/html_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -64,8 +64,6 @@ class TestHtmlDialogUIDelegate : public HtmlDialogUIDelegate {
 };
 
 }  // namespace
-
-#if defined(OS_WIN)
 
 class ConstrainedHtmlDialogBrowserTest : public InProcessBrowserTest {
  public:
