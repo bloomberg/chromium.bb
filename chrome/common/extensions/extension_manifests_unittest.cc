@@ -332,3 +332,9 @@ TEST_F(ExtensionManifestTest, NormalizeIconPaths) {
   EXPECT_EQ("48.png",
             extension->icons().Get(48, ExtensionIconSet::MATCH_EXACTLY));
 }
+
+TEST_F(ExtensionManifestTest, DisallowMultipleUISurfaces) {
+  LoadAndExpectError("multiple_ui_surfaces_1.json", errors::kOneUISurfaceOnly);
+  LoadAndExpectError("multiple_ui_surfaces_2.json", errors::kOneUISurfaceOnly);
+  LoadAndExpectError("multiple_ui_surfaces_3.json", errors::kOneUISurfaceOnly);
+}

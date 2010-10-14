@@ -266,18 +266,6 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_STREQ(errors::kInvalidPageActionsListSize, error.c_str());
 
-  // Test invalid UI surface count (both page action and browser action).
-  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
-  action = new DictionaryValue;
-  action->SetString(keys::kPageActionId, "MyExtensionActionId");
-  action->SetString(keys::kName, "MyExtensionActionName");
-  action_list = new ListValue;
-  action_list->Append(action->DeepCopy());
-  input_value->Set(keys::kPageActions, action_list);
-  input_value->Set(keys::kBrowserAction, action);
-  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_STREQ(errors::kOneUISurfaceOnly, error.c_str());
-
   // Test invalid options page url.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   input_value->Set(keys::kOptionsPage, Value::CreateNullValue());

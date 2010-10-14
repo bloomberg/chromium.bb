@@ -264,7 +264,7 @@ const char* kOmniboxExperimental =
     "You must request the 'experimental' permission in order to use the"
     " omnibox API.";
 const char* kOneUISurfaceOnly =
-    "An extension cannot have both a page action and a browser action.";
+    "Only one of 'browser_action', 'page_action', and 'app' can be specified.";
 const char* kReservedMessageFound =
     "Reserved key * found in message catalog.";
 const char* kThemesCannotContainExtensions =

@@ -552,6 +552,10 @@ class Extension {
   // script petterns.
   void InitEffectiveHostPermissions();
 
+  // Returns true if the extension has more than one "UI surface". For example,
+  // an extension that has a browser action and a page action.
+  bool HasMultipleUISurfaces() const;
+
   // Figures out if a source contains keys not associated with themes - we
   // don't want to allow scripts and such to be bundled with themes.
   bool ContainsNonThemeKeys(const DictionaryValue& source);
