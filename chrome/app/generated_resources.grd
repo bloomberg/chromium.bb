@@ -3638,7 +3638,7 @@ each locale. -->
       </message>
       <message name="IDS_EXTENSION_PROMPT2_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
         Manage themes, extensions, and apps
-      </message>      
+      </message>
 
       <!-- Extension error messages -->
       <message name="IDS_EXTENSION_DIRECTORY_NO_EXISTS" desc="Warning displayed in pack dialog when the extension directory does not exist.">
@@ -6574,16 +6574,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Options
         </message>
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options menu entry and button.">
+        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options button.">
           Autofill options
+        </message>
+        <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
+          Chrome Autofill options
         </message>
       </if>
       <if expr="os == 'darwin'">
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Preferences
         </message>
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options menu entry and button.">
+        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options button.">
           Autofill preferences
+        </message>
+        <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
+          Chrome Autofill preferences
         </message>
       </if>
       <message name="IDS_AUTOFILL_LOADING" desc="The indicator that Autofill data is being loaded.">
@@ -8017,7 +8023,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
 	Once you start using a passphrase, you cannot remove the passphrase without clearing your sync data. The passphrase does not leave this computer, and if you lose this passphrase, you may not be able to sync this data on other computers.
       </message>
-      
+
       <!-- Passphrase dialog strings -->
       <message name="IDS_SYNC_NEW_PASSPHRASE_TITLE" desc="Title for the dialog where the user creates a new passphrase.">
 	Create a passphrase

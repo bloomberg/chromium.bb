@@ -115,7 +115,7 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
   }
   if (show_options) {
     // Append the 'AutoFill Options...' menu item.
-    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
+    v.push_back(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP));
     l.push_back(string16());
     i.push_back(string16());
     ids.push_back(0);
