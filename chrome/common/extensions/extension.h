@@ -132,9 +132,11 @@ class Extension {
     // Defines the set of URLs in the extension's web content.
     ExtensionExtent extent;
 
-    // The set of hosts that the extension effectively has access to. This is
-    // used in the permissions UI and is a combination of the hosts accessible
-    // through content scripts and the hosts accessible through XHR.
+    // The set of host permissions that the extension effectively has access to,
+    // which is a merge of host_permissions_ and all of the match patterns in
+    // any content scripts the extension has. This is used to determine which
+    // URLs have the ability to load an extension's resources via embedded
+    // chrome-extension: URLs (see extension_protocols.cc).
     ExtensionExtent effective_host_permissions;
 
     // The set of module-level APIs this extension can use.
