@@ -1644,6 +1644,8 @@
         'browser/geolocation/empty_device_data_provider.h',
         'browser/geolocation/gateway_data_provider_common.cc',
         'browser/geolocation/gateway_data_provider_common.h',
+        'browser/geolocation/gateway_data_provider_linux.cc',
+        'browser/geolocation/gateway_data_provider_linux.h',
         'browser/geolocation/gateway_data_provider_win.cc',
         'browser/geolocation/gateway_data_provider_win.h',
         'browser/geolocation/geolocation_content_settings_map.cc',

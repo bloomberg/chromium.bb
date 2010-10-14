@@ -567,7 +567,7 @@ const char kEnableXSSAuditor[]              = "enable-xss-auditor";
 // Enables experimental features for the geolocation API.
 // Current features:
 // - CoreLocation support for Mac OS X 10.6
-// - Gateway location for Windows
+// - Gateway location for Linux and Windows
 // - Location platform support for Windows 7
 const char kExperimentalLocationFeatures[]  = "experimental-location-features";
 
