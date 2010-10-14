@@ -72,15 +72,17 @@ const size_t kMaxLineCount       = 10;
 const size_t kMaxSystemLogLength = 1024;
 #endif
 
-} // namespace
+}  // namespace
 
 
 #if defined(OS_CHROMEOS)
 class FeedbackNotification {
  public:
-  // Previous notification cleanup is handled by scoped_ptr.
   // Note: notification will show only on one profile at a time.
   void Show(Profile* profile, const string16& message, bool urgent) {
+    if (notification_.get()) {
+        notification_->Hide();
+    }
     notification_.reset(
         new chromeos::SystemNotification(profile, kNotificationId,
                                IDR_STATUSBAR_FEEDBACK,
