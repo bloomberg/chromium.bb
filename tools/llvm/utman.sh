@@ -2450,12 +2450,12 @@ verify-object-llvm() {
 verify-object-arm() {
   arch_info=$(readelf -A $1)
   #TODO(robertm): some refactoring and cleanup needed
-  if ! grep -q "Tag_VFP_arch: VFPv3" <<< ${arch_info} ; then
-    echo "WARNING $1 - bad Tag_VFP_arch\n"
+  if ! grep -q "Tag_VFP_arch: VFPv2" <<< ${arch_info} ; then
+    echo "ERROR $1 - bad Tag_VFP_arch\n"
     #TODO(robertm): figure out what the right thing to do is here, c.f.
     # http://code.google.com/p/nativeclient/issues/detail?id=966
     readelf -A $1 | grep  Tag_VFP_arch
-    #exit -1
+    exit -1
   fi
 
   if ! grep -q "Tag_CPU_arch: v7" <<< ${arch_info} ; then
