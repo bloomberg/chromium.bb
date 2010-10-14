@@ -1749,6 +1749,7 @@
         'browser/gtk/clear_browsing_data_dialog_gtk.h',
         'browser/gtk/collected_cookies_gtk.cc',
         'browser/gtk/collected_cookies_gtk.h',
+        'browser/gtk/constrained_html_dialog_gtk.cc',
         'browser/gtk/constrained_window_gtk.cc',
         'browser/gtk/constrained_window_gtk.h',
         'browser/gtk/content_setting_bubble_gtk.cc',

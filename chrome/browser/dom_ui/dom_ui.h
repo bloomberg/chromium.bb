@@ -141,12 +141,12 @@ class DOMUI {
   // The DOMMessageHandlers we own.
   std::vector<DOMMessageHandler*> handlers_;
 
+  // Non-owning pointer to the TabContents this DOMUI is associated with.
+  TabContents* tab_contents_;
+
  private:
   // Execute a string of raw Javascript on the page.
   void ExecuteJavascript(const std::wstring& javascript);
-
-  // Non-owning pointer to the TabContents this DOMUI is associated with.
-  TabContents* tab_contents_;
 
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback*> MessageCallbackMap;
