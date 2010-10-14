@@ -53,25 +53,6 @@ class MockProviderFactory : public GeolocationArbitrator::ProviderFactory {
   MockLocationProvider* gps_;
 };
 
-void SetPositionFix(Geoposition* position,
-                    double latitude,
-                    double longitude,
-                    double accuracy,
-                    const base::Time& timestamp) {
-  ASSERT_TRUE(position);
-  position->error_code = Geoposition::ERROR_CODE_NONE;
-  position->latitude = latitude;
-  position->longitude = longitude;
-  position->accuracy = accuracy;
-  position->timestamp = timestamp;
-  ASSERT_TRUE(position->IsInitialized());
-  ASSERT_TRUE(position->IsValidFix());
-}
-
-void SetReferencePosition(Geoposition* position) {
-  SetPositionFix(position, 51.0, -0.1, 400, base::Time::FromDoubleT(54321.0));
-}
-
 double g_fake_time_now_secs = 1;
 
 base::Time GetTimeNow() {
@@ -80,6 +61,25 @@ base::Time GetTimeNow() {
 
 void AdvanceTimeNow(const base::TimeDelta& delta) {
   g_fake_time_now_secs += delta.InSecondsF();
+}
+
+void SetPositionFix(MockLocationProvider* provider,
+                    double latitude,
+                    double longitude,
+                    double accuracy) {
+  Geoposition position;
+  position.error_code = Geoposition::ERROR_CODE_NONE;
+  position.latitude = latitude;
+  position.longitude = longitude;
+  position.accuracy = accuracy;
+  position.timestamp = GetTimeNow();
+  ASSERT_TRUE(position.IsInitialized());
+  ASSERT_TRUE(position.IsValidFix());
+  provider->HandlePositionChanged(position);
+}
+
+void SetReferencePosition(MockLocationProvider* provider) {
+  SetPositionFix(provider, 51.0, -0.1, 400);
 }
 
 class GeolocationLocationArbitratorTest : public testing::Test {
@@ -158,8 +158,7 @@ TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->gps_->state_);
   EXPECT_FALSE(observer_->last_position_.IsInitialized());
 
-  SetReferencePosition(&providers_->cell_->position_);
-  providers_->cell_->HandlePositionChanged();
+  SetReferencePosition(providers_->cell_);
 
   EXPECT_TRUE(observer_->last_position_.IsInitialized());
   EXPECT_EQ(providers_->cell_->position_.latitude,
@@ -195,8 +194,7 @@ TEST_F(GeolocationLocationArbitratorTest, SetObserverOptionsAfterFixArrives) {
   ASSERT_TRUE(providers_->gps_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->cell_->state_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->gps_->state_);
-  SetReferencePosition(&providers_->cell_->position_);
-  providers_->cell_->HandlePositionChanged();
+  SetReferencePosition(providers_->cell_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->cell_->state_);
   EXPECT_EQ(MockLocationProvider::LOW_ACCURACY, providers_->gps_->state_);
   arbitrator_->SetObserverOptions(GeolocationObserverOptions(true));
@@ -209,61 +207,48 @@ TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
   ASSERT_TRUE(providers_->cell_);
   ASSERT_TRUE(providers_->gps_);
 
-  SetPositionFix(&providers_->cell_->position_, 1, 2, 150, GetTimeNow());
-  providers_->cell_->HandlePositionChanged();
+  SetPositionFix(providers_->cell_, 1, 2, 150);
 
   // First position available
   EXPECT_TRUE(observer_->last_position_.IsValidFix());
   CheckLastPositionInfo(1, 2, 150);
 
-  SetPositionFix(&providers_->gps_->position_, 3, 4, 50, GetTimeNow());
-  providers_->gps_->HandlePositionChanged();
+  SetPositionFix(providers_->gps_, 3, 4, 50);
 
   // More accurate fix available
   CheckLastPositionInfo(3, 4, 50);
 
-  SetPositionFix(&providers_->cell_->position_, 5, 6, 150, GetTimeNow());
-  providers_->cell_->HandlePositionChanged();
+  SetPositionFix(providers_->cell_, 5, 6, 150);
 
   // New fix is available but it's less accurate, older fix should be kept.
   CheckLastPositionInfo(3, 4, 50);
 
   // Advance time, and notify once again
   AdvanceTimeNow(SwitchOnFreshnessCliff());
-  providers_->cell_->HandlePositionChanged();
+  providers_->cell_->HandlePositionChanged(providers_->cell_->position_);
 
   // New fix is available, less accurate but fresher
   CheckLastPositionInfo(5, 6, 150);
 
   // Advance time, and set a low accuracy position
   AdvanceTimeNow(SwitchOnFreshnessCliff());
-  SetPositionFix(&providers_->cell_->position_, 5.676731, 139.629385, 1000,
-                 GetTimeNow());
-  providers_->cell_->HandlePositionChanged();
+  SetPositionFix(providers_->cell_, 5.676731, 139.629385, 1000);
   CheckLastPositionInfo(5.676731, 139.629385, 1000);
 
   // 15 secs later, step outside. Switches to gps signal.
   AdvanceTimeNow(base::TimeDelta::FromSeconds(15));
-  SetPositionFix(&providers_->gps_->position_, 3.5676457, 139.629198, 50,
-                 GetTimeNow());
-  providers_->gps_->HandlePositionChanged();
+  SetPositionFix(providers_->gps_, 3.5676457, 139.629198, 50);
   CheckLastPositionInfo(3.5676457, 139.629198, 50);
 
   // 5 mins later switch cells while walking. Stay on gps.
   AdvanceTimeNow(base::TimeDelta::FromMinutes(5));
-  SetPositionFix(&providers_->cell_->position_, 3.567832, 139.634648, 300,
-                 GetTimeNow());
-  SetPositionFix(&providers_->gps_->position_, 3.5677675, 139.632314, 50,
-                 GetTimeNow());
-  providers_->cell_->HandlePositionChanged();
-  providers_->gps_->HandlePositionChanged();
+  SetPositionFix(providers_->cell_, 3.567832, 139.634648, 300);
+  SetPositionFix(providers_->gps_, 3.5677675, 139.632314, 50);
   CheckLastPositionInfo(3.5677675, 139.632314, 50);
 
   // Ride train and gps signal degrades slightly. Stay on fresher gps
   AdvanceTimeNow(base::TimeDelta::FromMinutes(5));
-  SetPositionFix(&providers_->gps_->position_, 3.5679026, 139.634777, 300,
-                 GetTimeNow());
-  providers_->gps_->HandlePositionChanged();
+  SetPositionFix(providers_->gps_, 3.5679026, 139.634777, 300);
   CheckLastPositionInfo(3.5679026, 139.634777, 300);
 
   // 14 minutes later
@@ -271,34 +256,24 @@ TEST_F(GeolocationLocationArbitratorTest, Arbitration) {
 
   // GPS reading misses a beat, but don't switch to cell yet to avoid
   // oscillating.
-  SetPositionFix(&providers_->gps_->position_, 3.5659005, 139.682579, 300,
-                 GetTimeNow());
-  providers_->gps_->HandlePositionChanged();
+  SetPositionFix(providers_->gps_, 3.5659005, 139.682579, 300);
 
   AdvanceTimeNow(base::TimeDelta::FromSeconds(7));
-  SetPositionFix(&providers_->cell_->position_, 3.5689579, 139.691420, 1000,
-                 GetTimeNow());
-  providers_->cell_->HandlePositionChanged();
+  SetPositionFix(providers_->cell_, 3.5689579, 139.691420, 1000);
   CheckLastPositionInfo(3.5659005, 139.682579, 300);
 
   // 1 minute later
   AdvanceTimeNow(base::TimeDelta::FromMinutes(1));
 
   // Enter tunnel. Stay on fresher gps for a moment.
-  SetPositionFix(&providers_->cell_->position_, 3.5657078, 139.68922, 300,
-                 GetTimeNow());
-  providers_->cell_->HandlePositionChanged();
-  SetPositionFix(&providers_->gps_->position_, 3.5657104, 139.690341, 300,
-                 GetTimeNow());
-  providers_->gps_->HandlePositionChanged();
+  SetPositionFix(providers_->cell_, 3.5657078, 139.68922, 300);
+  SetPositionFix(providers_->gps_, 3.5657104, 139.690341, 300);
   CheckLastPositionInfo(3.5657104, 139.690341, 300);
 
   // 2 minutes later
   AdvanceTimeNow(base::TimeDelta::FromMinutes(2));
   // Arrive in station. Cell moves but GPS is stale. Switch to fresher cell.
-  SetPositionFix(&providers_->cell_->position_, 3.5658700, 139.069979, 1000,
-                 GetTimeNow());
-  providers_->cell_->HandlePositionChanged();
+  SetPositionFix(providers_->cell_, 3.5658700, 139.069979, 1000);
   CheckLastPositionInfo(3.5658700, 139.069979, 1000);
 }
 

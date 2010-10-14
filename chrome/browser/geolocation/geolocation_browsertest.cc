@@ -173,8 +173,7 @@ class GeolocationNotificationObserver : public NotificationObserver {
 
 void NotifyGeoposition(const Geoposition& geoposition) {
   DCHECK(MockLocationProvider::instance_);
-  MockLocationProvider::instance_->position_ = geoposition;
-  MockLocationProvider::instance_->HandlePositionChanged();
+  MockLocationProvider::instance_->HandlePositionChanged(geoposition);
   LOG(WARNING) << "MockLocationProvider listeners updated";
 }
 
@@ -332,6 +331,11 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
         expected, function, current_browser_->GetSelectedTabContents());
   }
 
+  // InProcessBrowserTest
+  virtual void TearDownInProcessBrowserTestFixture() {
+    LOG(WARNING) << "TearDownInProcessBrowserTestFixture. Test Finished.";
+  }
+
   InfoBarDelegate* infobar_;
   Browser* current_browser_;
   // path element of a URL referencing the html content for this test.
@@ -466,7 +470,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   // Infobar was displayed, allow access and check there's no error code.
   SetInfobarResponse(iframe1_url_, true);
+  LOG(WARNING) << "Checking position...";
   CheckGeoposition(fresh_position);
+  LOG(WARNING) << "...done.";
 }
 
 

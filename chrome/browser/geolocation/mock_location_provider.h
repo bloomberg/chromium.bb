@@ -23,7 +23,7 @@ class MockLocationProvider : public LocationProviderBase {
   ~MockLocationProvider();
 
   // Updates listeners with the new position.
-  void HandlePositionChanged();
+  void HandlePositionChanged(const Geoposition& position);
 
   // LocationProviderBase implementation.
   virtual bool StartProvider(bool high_accuracy);

@@ -33,14 +33,15 @@ MockLocationProvider::~MockLocationProvider() {
   *self_ref_ = NULL;
 }
 
-void MockLocationProvider::HandlePositionChanged() {
+void MockLocationProvider::HandlePositionChanged(const Geoposition& position) {
   if (provider_loop_->BelongsToCurrentThread()) {
     // The location arbitrator unit tests rely on this method running
     // synchronously.
+    position_ = position;
     UpdateListeners();
   } else {
     Task* task = NewRunnableMethod(
-        this, &MockLocationProvider::HandlePositionChanged);
+        this, &MockLocationProvider::HandlePositionChanged, position);
     provider_loop_->PostTask(FROM_HERE, task);
   }
 }
@@ -102,7 +103,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
       listeners_updated_ = true;
       MessageLoop::current()->PostTask(
           FROM_HERE, task_factory_.NewRunnableMethod(
-          &MockLocationProvider::HandlePositionChanged));
+          &MockLocationProvider::HandlePositionChanged, position_));
     }
   }
 
