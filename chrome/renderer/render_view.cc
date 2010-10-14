@@ -4439,7 +4439,7 @@ void RenderView::OnDisableScrollbarsForSmallWindows(
 void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_USES_GTK)
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
   WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
