@@ -880,3 +880,21 @@
    fun:_ZN5NPAPI10PluginList10GetPluginsEbPSt6vectorI13WebPluginInfoSaIS2_EE
    fun:_ZN13PluginUpdater30GetPreferencesDataOnFileThreadEPv
 }
+{
+   bug_59243_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN20BrowserAccessibility6CreateEv
+   fun:_ZN24BrowserAccessibilityTest5SetUpEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
+{
+   bug_59243_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt3mapIiSbItN4base20string16_char_traitsESaItEESt4lessIiESaISt4pairIKiS3_EEEaSERKSA_
+   fun:_ZN20BrowserAccessibility10InitializeEP27BrowserAccessibilityManagerPS_iiRKN11webkit_glue16WebAccessibilityE
+   fun:_ZN24BrowserAccessibilityTest5SetUpEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
