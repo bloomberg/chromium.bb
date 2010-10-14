@@ -28,7 +28,7 @@ struct SSLConfig;
 
 namespace chrome_browser_net {
 
-class Preconnect : public net::StreamFactory::StreamRequestDelegate {
+class Preconnect : public net::StreamRequest::Delegate {
  public:
   // Try to preconnect.  Typically motivated by OMNIBOX to reach search service.
   static void PreconnectOnUIThread(const GURL& url,
@@ -50,10 +50,8 @@ class Preconnect : public net::StreamFactory::StreamRequestDelegate {
  private:
   friend class base::RefCountedThreadSafe<Preconnect>;
 
-  explicit Preconnect(UrlInfo::ResolutionMotivation motivation)
-      : motivation_(motivation) {
-  }
-  virtual ~Preconnect() {}
+  explicit Preconnect(UrlInfo::ResolutionMotivation motivation);
+  virtual ~Preconnect();
 
   // Request actual connection.
   void Connect(const GURL& url);
@@ -75,10 +73,11 @@ class Preconnect : public net::StreamFactory::StreamRequestDelegate {
   net::BoundNetLog net_log_;
 
   // Our preconnect.
-  scoped_refptr<net::StreamFactory::StreamRequestJob> stream_request_job_;
+  scoped_ptr<net::StreamRequest> stream_request_;
 
   DISALLOW_COPY_AND_ASSIGN(Preconnect);
 };
+
 }  // chrome_browser_net
 
 #endif  // CHROME_BROWSER_NET_PRECONNECT_H_

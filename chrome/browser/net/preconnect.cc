@@ -40,6 +40,10 @@ void Preconnect::PreconnectOnIOThread(const GURL& url,
   preconnect->Connect(url);
 }
 
+Preconnect::Preconnect(UrlInfo::ResolutionMotivation motivation)
+    : motivation_(motivation) {}
+Preconnect::~Preconnect() {}
+
 void Preconnect::Connect(const GURL& url) {
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   if (!getter)
@@ -101,9 +105,10 @@ void Preconnect::Connect(const GURL& url) {
 
   proxy_info_.reset(new net::ProxyInfo());
   net::StreamFactory* stream_factory = session->http_stream_factory();
-  stream_factory->RequestStream(request_info_.get(), ssl_config_.get(),
-                                proxy_info_.get(), this, net_log_, session,
-                                &stream_request_job_);
+  stream_request_.reset(
+      stream_factory->RequestStream(request_info_.get(), ssl_config_.get(),
+                                    proxy_info_.get(), session, this,
+                                    net_log_));
 }
 
 void Preconnect::OnStreamReady(net::HttpStream* stream) {
