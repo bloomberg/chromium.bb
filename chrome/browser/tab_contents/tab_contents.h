@@ -65,8 +65,8 @@ struct PasswordForm;
 
 class AutocompleteHistoryManager;
 class AutoFillManager;
+class BlockedContentContainer;
 class BlockedPluginManager;
-class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
 class Extension;
@@ -485,8 +485,8 @@ class TabContents : public PageNavigator,
   // Called when a ConstrainedWindow we own is about to be closed.
   void WillClose(ConstrainedWindow* window);
 
-  // Called when a BlockedPopupContainer we own is about to be closed.
-  void WillCloseBlockedPopupContainer(BlockedPopupContainer* container);
+  // Called when a BlockedContentContainer we own is about to be closed.
+  void WillCloseBlockedContentContainer(BlockedContentContainer* container);
 
   // Called when a ConstrainedWindow we own is moved or resized.
   void DidMoveOrResize(ConstrainedWindow* window);
@@ -620,8 +620,14 @@ class TabContents : public PageNavigator,
 
   void WindowMoveOrResizeStarted();
 
-  BlockedPopupContainer* blocked_popup_container() const {
-    return blocked_popups_;
+  // Sets whether all TabContents added by way of |AddNewContents| should be
+  // blocked. Transitioning from all blocked to not all blocked results in
+  // reevaluating any blocked TabContents, which may result in unblocking some
+  // of the blocked TabContents.
+  void SetAllContentsBlocked(bool value);
+
+  BlockedContentContainer* blocked_content_container() const {
+    return blocked_contents_;
   }
 
   RendererPreferences* GetMutableRendererPrefs() {
@@ -745,7 +751,7 @@ class TabContents : public PageNavigator,
   void SetIsLoading(bool is_loading,
                     LoadNotificationDetails* details);
 
-  // Adds the incoming |new_contents| to the |blocked_popups_| container.
+  // Adds the incoming |new_contents| to the |blocked_contents_| container.
   void AddPopup(TabContents* new_contents,
                 const gfx::Rect& initial_pos);
 
@@ -1155,8 +1161,11 @@ class TabContents : public PageNavigator,
   // Character encoding. TODO(jungshik) : convert to std::string
   std::string encoding_;
 
-  // Object that holds any blocked popups frmo the current page.
-  BlockedPopupContainer* blocked_popups_;
+  // Object that holds any blocked TabContents spawned from this TabContents.
+  BlockedContentContainer* blocked_contents_;
+
+  // Should we block all child TabContents this attempts to spawn.
+  bool all_contents_blocked_;
 
   // TODO(pkasting): Hack to try and fix Linux browser tests.
   bool dont_notify_render_view_;

@@ -4211,6 +4211,7 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
         instant()->last_transition_type(),
         disposition == NEW_FOREGROUND_TAB ? TabStripModel::ADD_SELECTED :
                                             TabStripModel::ADD_NONE);
+    instant()->CompleteRelease(preview_contents);
     return true;
   }
   // The omnibox currently doesn't use other dispositions, so we don't attempt

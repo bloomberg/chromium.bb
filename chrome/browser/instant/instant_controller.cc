@@ -116,7 +116,9 @@ bool InstantController::IsCurrent() {
 void InstantController::CommitCurrentPreview(InstantCommitType type) {
   DCHECK(loader_manager_.get());
   DCHECK(loader_manager_->current_loader());
-  delegate_->CommitInstant(ReleasePreviewContents(type));
+  TabContents* tab = ReleasePreviewContents(type);
+  delegate_->CommitInstant(tab);
+  CompleteRelease(tab);
 }
 
 void InstantController::SetCommitOnMouseUp() {
@@ -143,6 +145,10 @@ TabContents* InstantController::ReleasePreviewContents(InstantCommitType type) {
   loader_manager_.reset(NULL);
   update_timer_.Stop();
   return tab;
+}
+
+void InstantController::CompleteRelease(TabContents* tab) {
+  tab->SetAllContentsBlocked(false);
 }
 
 TabContents* InstantController::GetPreviewContents() {

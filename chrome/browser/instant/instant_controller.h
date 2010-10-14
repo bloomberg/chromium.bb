@@ -87,7 +87,13 @@ class InstantController : public InstantLoaderDelegate {
   // Releases the preview TabContents passing ownership to the caller. This is
   // intended to be called when the preview TabContents is committed. This does
   // not notify the delegate.
+  // WARNING: be sure and invoke CompleteRelease after adding the returned
+  // TabContents to a tabstrip.
   TabContents* ReleasePreviewContents(InstantCommitType type);
+
+  // Does cleanup after the preview contents has been added to the tabstrip.
+  // Invoke this if you explicitly invoke ReleasePreviewContents.
+  void CompleteRelease(TabContents* tab);
 
   // TabContents the match is being shown for.
   TabContents* tab_contents() const { return tab_contents_; }

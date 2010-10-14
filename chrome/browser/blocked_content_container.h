@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Defines the public interface for the blocked popup notifications. This
-// interface should only be used by TabContents. Users and subclasses of
-// TabContents should use the appropriate methods on TabContents to access
-// information about blocked popups.
+// Defines the public interface for the blocked content (including popup)
+// notifications. This interface should only be used by TabContents. Users and
+// subclasses of TabContents should use the appropriate methods on TabContents
+// to access information about blocked content.
 
-#ifndef CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
-#define CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
+#ifndef CHROME_BROWSER_BLOCKED_CONTENT_CONTAINER_H_
+#define CHROME_BROWSER_BLOCKED_CONTENT_CONTAINER_H_
 #pragma once
 
 #include <vector>
@@ -16,27 +16,27 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
 // Takes ownership of TabContents that are unrequested popup windows.
-class BlockedPopupContainer : public TabContentsDelegate {
+class BlockedContentContainer : public TabContentsDelegate {
  public:
-  typedef std::vector<TabContents*> BlockedContents;
-
   // Creates a container for a certain TabContents:
-  explicit BlockedPopupContainer(TabContents* owner);
+  explicit BlockedContentContainer(TabContents* owner);
 
-  // Adds a popup to this container. |bounds| are the window bounds requested by
-  // the popup window.
+  // Adds a TabContents to this container. |bounds| are the window bounds
+  // requested for the TabContents.
   void AddTabContents(TabContents* tab_contents,
-                      const gfx::Rect& bounds);
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& bounds,
+                      bool user_gesture);
 
-  // Shows the blocked popup with TabContents |tab_contents|.
-  void LaunchPopupForContents(TabContents* tab_contents);
+  // Shows the blocked TabContents |tab_contents|.
+  void LaunchForContents(TabContents* tab_contents);
 
-  // Returns the number of blocked popups.
-  size_t GetBlockedPopupCount() const;
+  // Returns the number of blocked contents.
+  size_t GetBlockedContentsCount() const;
 
   // Returns the contained TabContents pointers.  |blocked_contents| must be
   // non-NULL.
-  void GetBlockedContents(BlockedContents* blocked_contents) const;
+  void GetBlockedContents(std::vector<TabContents*>* blocked_contents) const;
 
   // Sets this object up to delete itself.
   void Destroy();
@@ -49,7 +49,7 @@ class BlockedPopupContainer : public TabContentsDelegate {
                               WindowOpenDisposition disposition,
                               PageTransition::Type transition);
 
-  // Ignored; BlockedPopupContainer doesn't display a throbber.
+  // Ignored; BlockedContentContainer doesn't display a throbber.
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {}
 
@@ -65,10 +65,10 @@ class BlockedPopupContainer : public TabContentsDelegate {
   virtual void ActivateContents(TabContents* contents) {}
   virtual void DeactivateContents(TabContents* contents) {}
 
-  // Ignored; BlockedPopupContainer doesn't display a throbber.
+  // Ignored; BlockedContentContainer doesn't display a throbber.
   virtual void LoadingStateChanged(TabContents* source) {}
 
-  // Removes |source| from our internal list of blocked popups.
+  // Removes |source| from our internal list of blocked contents.
   virtual void CloseContents(TabContents* source);
 
   // Changes the opening rectangle associated with |source|.
@@ -80,32 +80,32 @@ class BlockedPopupContainer : public TabContentsDelegate {
   // Returns our |owner_|.
   virtual TabContents* GetConstrainingContents(TabContents* source);
 
-  // Ignored; BlockedPopupContainer doesn't display a toolbar.
+  // Ignored; BlockedContentContainer doesn't display a toolbar.
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
 
-  // Ignored; BlockedPopupContainer doesn't display a bookmarking star.
+  // Ignored; BlockedContentContainer doesn't display a bookmarking star.
   virtual void URLStarredChanged(TabContents* source, bool starred) {}
 
-  // Ignored; BlockedPopupContainer doesn't display a URL bar.
+  // Ignored; BlockedContentContainer doesn't display a URL bar.
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
 
-  // A number larger than the internal popup count on the Renderer; meant for
-  // preventing a compromised renderer from exhausting GDI memory by spawning
-  // infinite windows.
+  // Maximum number of blocked contents we allow. No page should really need
+  // this many anyway. If reached it typically means there is a compromised
+  // renderer.
   static const size_t kImpossibleNumberOfPopups;
 
- protected:
-  struct BlockedPopup;
-  typedef std::vector<BlockedPopup> BlockedPopups;
-
  private:
-  // The TabContents that owns and constrains this BlockedPopupContainer.
+  struct BlockedContent;
+
+  typedef std::vector<BlockedContent> BlockedContents;
+
+  // The TabContents that owns and constrains this BlockedContentContainer.
   TabContents* owner_;
 
-  // Information about all blocked popups.
-  BlockedPopups blocked_popups_;
+  // Information about all blocked contents.
+  BlockedContents blocked_contents_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(BlockedPopupContainer);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(BlockedContentContainer);
 };
 
-#endif  // CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
+#endif  // CHROME_BROWSER_BLOCKED_CONTENT_CONTAINER_H_

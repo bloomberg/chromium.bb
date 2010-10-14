@@ -23,8 +23,8 @@
 #include "base/time.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/blocked_plugin_manager.h"
-#include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -345,7 +345,8 @@ TabContents::TabContents(Profile* profile,
       is_starred_(false),
       contents_mime_type_(),
       encoding_(),
-      blocked_popups_(NULL),
+      blocked_contents_(NULL),
+      all_contents_blocked_(false),
       dont_notify_render_view_(false),
       displayed_insecure_content_(false),
       infobar_delegates_(),
@@ -457,9 +458,9 @@ TabContents::~TabContents() {
   // twice before it runs.
   CloseConstrainedWindows();
 
-  // Close all blocked popups.
-  if (blocked_popups_)
-    blocked_popups_->Destroy();
+  // Close all blocked contents.
+  if (blocked_contents_)
+    blocked_contents_->Destroy();
 
   // Notify any observer that have a reference on this tab contents.
   NotificationService::current()->Notify(
@@ -971,6 +972,14 @@ void TabContents::AddNewContents(TabContents* new_contents,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture) {
+  if (all_contents_blocked_) {
+    if (!blocked_contents_)
+      blocked_contents_ = new BlockedContentContainer(this);
+    blocked_contents_->AddTabContents(
+        new_contents, disposition, initial_pos, user_gesture);
+    return;
+  }
+
   if (!delegate_)
     return;
 
@@ -992,7 +1001,7 @@ void TabContents::AddNewContents(TabContents* new_contents,
   }
 
   // TODO(pkasting): Why is this necessary?
-  PopupNotificationVisibilityChanged(blocked_popups_ != NULL);
+  PopupNotificationVisibilityChanged(blocked_contents_ != NULL);
 }
 
 bool TabContents::ExecuteCode(int request_id, const std::string& extension_id,
@@ -1221,10 +1230,10 @@ void TabContents::WillClose(ConstrainedWindow* window) {
   }
 }
 
-void TabContents::WillCloseBlockedPopupContainer(
-    BlockedPopupContainer* container) {
-  DCHECK(blocked_popups_ == container);
-  blocked_popups_ = NULL;
+void TabContents::WillCloseBlockedContentContainer(
+    BlockedContentContainer* container) {
+  DCHECK(blocked_contents_ == container);
+  blocked_contents_ = NULL;
   PopupNotificationVisibilityChanged(false);
 }
 
@@ -1379,6 +1388,19 @@ void TabContents::WindowMoveOrResizeStarted() {
   render_view_host()->WindowMoveOrResizeStarted();
 }
 
+void TabContents::SetAllContentsBlocked(bool value) {
+  if (all_contents_blocked_ == value)
+    return;
+
+  all_contents_blocked_ = value;
+  if (!all_contents_blocked_ && blocked_contents_) {
+    std::vector<TabContents*> blocked;
+    blocked_contents_->GetBlockedContents(&blocked);
+    for (size_t i = 0; i < blocked.size(); ++i)
+      blocked_contents_->LaunchForContents(blocked[i]);
+  }
+}
+
 void TabContents::LogNewTabTime(const std::string& event_name) {
   // Not all new tab pages get timed.  In those cases, we don't have a
   // new_tab_start_time_.
@@ -1515,9 +1537,10 @@ void TabContents::AddPopup(TabContents* new_contents,
           creator, CONTENT_SETTINGS_TYPE_POPUPS, "") == CONTENT_SETTING_ALLOW) {
     AddNewContents(new_contents, NEW_POPUP, initial_pos, true);
   } else {
-    if (!blocked_popups_)
-      blocked_popups_ = new BlockedPopupContainer(this);
-    blocked_popups_->AddTabContents(new_contents, initial_pos);
+    if (!blocked_contents_)
+      blocked_contents_ = new BlockedContentContainer(this);
+    blocked_contents_->AddTabContents(new_contents, NEW_POPUP, initial_pos,
+                                      true);
     content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS,
                                                  std::string());
   }
@@ -1657,10 +1680,10 @@ void TabContents::DidNavigateMainFramePostCommit(
     }
 
     // Close blocked popups.
-    if (blocked_popups_) {
+    if (blocked_contents_) {
       AutoReset<bool> auto_reset(&dont_notify_render_view_, true);
-      blocked_popups_->Destroy();
-      blocked_popups_ = NULL;
+      blocked_contents_->Destroy();
+      blocked_contents_ = NULL;
     }
 
     // Clear "blocked" flags.

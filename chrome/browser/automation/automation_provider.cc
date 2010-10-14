@@ -38,7 +38,7 @@
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/automation/extension_port_container.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/blocked_popup_container.h"
+#include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/browser_list.h"

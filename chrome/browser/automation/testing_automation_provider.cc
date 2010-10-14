@@ -27,7 +27,7 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
-#include "chrome/browser/blocked_popup_container.h"
+#include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
@@ -1956,10 +1956,10 @@ void TestingAutomationProvider::GetBlockedPopupCount(int handle, int* count) {
       NavigationController* nav_controller = tab_tracker_->GetResource(handle);
       TabContents* tab_contents = nav_controller->tab_contents();
       if (tab_contents) {
-        BlockedPopupContainer* container =
-            tab_contents->blocked_popup_container();
+        BlockedContentContainer* container =
+            tab_contents->blocked_content_container();
         if (container) {
-          *count = static_cast<int>(container->GetBlockedPopupCount());
+          *count = static_cast<int>(container->GetBlockedContentsCount());
         } else {
           // If we don't have a container, we don't have any blocked popups to
           // contain!
@@ -3598,13 +3598,13 @@ void TestingAutomationProvider::GetBlockedPopupsInfo(
     return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  BlockedPopupContainer* popup_container =
-      tab_contents->blocked_popup_container();
+  BlockedContentContainer* popup_container =
+      tab_contents->blocked_content_container();
   ListValue* blocked_popups_list = new ListValue;
   if (popup_container) {
-    BlockedPopupContainer::BlockedContents blocked_contents;
+    std::vector<TabContents*> blocked_contents;
     popup_container->GetBlockedContents(&blocked_contents);
-    for (BlockedPopupContainer::BlockedContents::const_iterator it =
+    for (std::vector<TabContents*>::const_iterator it =
              blocked_contents.begin(); it != blocked_contents.end(); ++it) {
       DictionaryValue* item = new DictionaryValue;
       item->SetString("url", (*it)->GetURL().spec());
@@ -3635,16 +3635,16 @@ void TestingAutomationProvider::UnblockAndLaunchBlockedPopup(
     return;
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  BlockedPopupContainer* popup_container =
-      tab_contents->blocked_popup_container();
-  if (!popup_container ||
-      popup_index >= (int)popup_container->GetBlockedPopupCount()) {
+  BlockedContentContainer* content_container =
+      tab_contents->blocked_content_container();
+  if (!content_container ||
+      popup_index >= (int)content_container->GetBlockedContentsCount()) {
     reply.SendError(StringPrintf("No popup at index %d", popup_index));
     return;
   }
-  BlockedPopupContainer::BlockedContents blocked_contents;
-  popup_container->GetBlockedContents(&blocked_contents);
-  popup_container->LaunchPopupForContents(blocked_contents[popup_index]);
+  std::vector<TabContents*> blocked_contents;
+  content_container->GetBlockedContents(&blocked_contents);
+  content_container->LaunchForContents(blocked_contents[popup_index]);
   reply.SendSuccess(NULL);
 }
 

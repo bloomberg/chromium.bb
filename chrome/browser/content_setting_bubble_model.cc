@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/blocked_popup_container.h"
+#include "chrome/browser/blocked_content_container.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -329,12 +329,12 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
  private:
   void SetPopups() {
     // check for crbug.com/53176
-    if (!tab_contents()->blocked_popup_container())
+    if (!tab_contents()->blocked_content_container())
       return;
-    BlockedPopupContainer::BlockedContents blocked_contents;
-    tab_contents()->blocked_popup_container()->GetBlockedContents(
+    std::vector<TabContents*> blocked_contents;
+    tab_contents()->blocked_content_container()->GetBlockedContents(
         &blocked_contents);
-    for (BlockedPopupContainer::BlockedContents::const_iterator
+    for (std::vector<TabContents*>::const_iterator
          i(blocked_contents.begin()); i != blocked_contents.end(); ++i) {
       std::string title(UTF16ToUTF8((*i)->GetTitle()));
       // The popup may not have committed a load yet, in which case it won't
@@ -350,8 +350,8 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
   }
 
   virtual void OnPopupClicked(int index) {
-    if (tab_contents() && tab_contents()->blocked_popup_container()) {
-      tab_contents()->blocked_popup_container()->LaunchPopupForContents(
+    if (tab_contents() && tab_contents()->blocked_content_container()) {
+      tab_contents()->blocked_content_container()->LaunchForContents(
           bubble_content().popup_items[index].tab_contents);
     }
   }

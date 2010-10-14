@@ -536,6 +536,7 @@ void InstantLoader::Update(TabContents* tab_contents,
     preview_contents_.reset(
         new TabContents(tab_contents->profile(), NULL, MSG_ROUTING_NONE,
                         NULL, NULL));
+    preview_contents_->SetAllContentsBlocked(true);
     // Propagate the max page id. That way if we end up merging the two
     // NavigationControllers (which happens if we commit) none of the page ids
     // will overlap.
