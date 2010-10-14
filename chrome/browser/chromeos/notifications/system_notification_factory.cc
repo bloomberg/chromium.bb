@@ -18,7 +18,10 @@ Notification SystemNotificationFactory::Create(
     const GURL& icon, const string16& title,
     const string16& text,
     NotificationDelegate* delegate) {
-  return Create(icon, title, text, string16(), delegate);
+  string16 content_url = DesktopNotificationService::CreateDataUrl(
+      icon, title, text, WebKit::WebTextDirectionDefault);
+  return Notification(GURL(), GURL(content_url), string16(), string16(),
+                      delegate);
 }
 
 // static
