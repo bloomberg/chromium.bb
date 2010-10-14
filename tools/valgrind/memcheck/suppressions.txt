@@ -528,57 +528,57 @@
 {
    Memcheck sanity test 02 (malloc/read left).
    Memcheck:Addr1
-   fun:_Z29ReadValueOutOfArrayBoundsLeftPc
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*ReadValueOutOfArrayBoundsLeft*
+   fun:*MakeSomeErrors*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 03 (malloc/read right).
    Memcheck:Addr1
-   fun:_Z30ReadValueOutOfArrayBoundsRightPc*
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*ReadValueOutOfArrayBoundsRight*
+   fun:*MakeSomeErrors*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 04 (malloc/write left).
    Memcheck:Addr1
-   fun:_Z30WriteValueOutOfArrayBoundsLeftPc
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*WriteValueOutOfArrayBoundsLeft*
+   fun:*MakeSomeErrors*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 05 (malloc/write right).
    Memcheck:Addr1
-   fun:_Z31WriteValueOutOfArrayBoundsRightPc*
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*WriteValueOutOfArrayBoundsRight*
+   fun:*MakeSomeErrors*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 06 (new/read left).
    Memcheck:Addr1
-   fun:_Z29ReadValueOutOfArrayBoundsLeftPc
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*ReadValueOutOfArrayBoundsLeft*
+   fun:*MakeSomeErrors*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 07 (new/read right).
    Memcheck:Addr1
-   fun:_Z30ReadValueOutOfArrayBoundsRightPc*
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*ReadValueOutOfArrayBoundsRight*
+   fun:*MakeSomeErrors*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 08 (new/write left).
    Memcheck:Addr1
-   fun:_Z30WriteValueOutOfArrayBoundsLeftPc
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*WriteValueOutOfArrayBoundsLeft*
+   fun:*MakeSomeErrors*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 09 (new/write right).
    Memcheck:Addr1
-   fun:_Z31WriteValueOutOfArrayBoundsRightPc*
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*WriteValueOutOfArrayBoundsRight*
+   fun:*MakeSomeErrors*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
@@ -606,15 +606,15 @@
 {
    Memcheck sanity test 14 (malloc/read uninit).
    Memcheck:Cond
-   fun:_Z22ReadUninitializedValuePc
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*ReadUninitializedValue*
+   fun:*MakeSomeErrors*
    fun:_ZN43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 15 (new/read uninit).
    Memcheck:Cond
-   fun:_Z22ReadUninitializedValuePc
-   fun:_Z14MakeSomeErrorsPc*
+   fun:*ReadUninitializedValue*
+   fun:*MakeSomeErrors*
    fun:_ZN40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
