@@ -154,7 +154,7 @@ void BaseTabStrip::AddTabAt(int model_index,
   if (tab_count() > 1 && GetWindow() && GetWindow()->IsVisible())
     StartInsertTabAnimation(model_index, foreground);
   else
-    Layout();
+    DoLayout();
 }
 
 void BaseTabStrip::MoveTab(int from_model_index, int to_model_index) {
@@ -182,7 +182,7 @@ void BaseTabStrip::SetTabData(int model_index, const TabRendererData& data) {
     if (GetWindow() && GetWindow()->IsVisible())
       StartMiniTabAnimation();
     else
-      Layout();
+      DoLayout();
   }
 }
 
@@ -332,14 +332,10 @@ BaseTab* BaseTabStrip::GetTabAt(BaseTab* tab,
 }
 
 void BaseTabStrip::Layout() {
-  StopAnimating(false);
-
-  GenerateIdealBounds();
-
-  for (int i = 0; i < tab_count(); ++i)
-    tab_data_[i].tab->SetBounds(tab_data_[i].ideal_bounds);
-
-  SchedulePaint();
+  // Only do a layout if our size changed.
+  if (last_layout_size_ == size())
+    return;
+  DoLayout();
 }
 
 bool BaseTabStrip::OnMouseDragged(const views::MouseEvent&  event) {
@@ -461,4 +457,17 @@ void BaseTabStrip::PrepareForAnimation() {
 
 AnimationDelegate* BaseTabStrip::CreateRemoveTabDelegate(BaseTab* tab) {
   return new RemoveTabDelegate(this, tab);
+}
+
+void BaseTabStrip::DoLayout() {
+  last_layout_size_ = size();
+
+  StopAnimating(false);
+
+  GenerateIdealBounds();
+
+  for (int i = 0; i < tab_count(); ++i)
+    tab_data_[i].tab->SetBounds(tab_data_[i].ideal_bounds);
+
+  SchedulePaint();
 }

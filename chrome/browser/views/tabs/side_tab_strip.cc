@@ -236,7 +236,7 @@ void SideTabStrip::StopAnimating(bool layout) {
   bounds_animator().Cancel();
 
   if (layout)
-    Layout();
+    DoLayout();
 }
 
 void SideTabStrip::AnimateToIdealBounds() {
@@ -251,8 +251,8 @@ void SideTabStrip::AnimateToIdealBounds() {
   bounds_animator().AnimateViewTo(separator_, separator_bounds_);
 }
 
-void SideTabStrip::Layout() {
-  BaseTabStrip::Layout();
+void SideTabStrip::DoLayout() {
+  BaseTabStrip::DoLayout();
 
   newtab_button_->SetBounds(newtab_button_bounds_);
 

@@ -45,7 +45,7 @@ class SideTabStrip : public BaseTabStrip {
   virtual void StartMoveTabAnimation();
   virtual void StopAnimating(bool layout);
   virtual void AnimateToIdealBounds();
-  virtual void Layout();
+  virtual void DoLayout();
 
  private:
   // The "New Tab" button.

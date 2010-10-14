@@ -232,6 +232,9 @@ class BaseTabStrip : public views::View,
   // completes. The caller owns the returned object.
   AnimationDelegate* CreateRemoveTabDelegate(BaseTab* tab);
 
+  // Invoked from Layout if the size changes or layout is really needed.
+  virtual void DoLayout();
+
  private:
   class RemoveTabDelegate;
 
@@ -255,6 +258,9 @@ class BaseTabStrip : public views::View,
   bool attaching_dragged_tab_;
 
   views::BoundsAnimator bounds_animator_;
+
+  // Size we last layed out at.
+  gfx::Size last_layout_size_;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TABS_BASE_TAB_STRIP_H_

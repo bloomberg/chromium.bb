@@ -235,7 +235,7 @@ void TabStrip::SelectTabAt(int old_model_index, int new_model_index) {
   // a different size to the selected ones.
   bool tiny_tabs = current_unselected_width_ != current_selected_width_;
   if (!IsAnimating() && (!in_tab_close_ || tiny_tabs)) {
-    Layout();
+    DoLayout();
   } else {
     SchedulePaint();
   }
@@ -330,14 +330,6 @@ views::View* TabStrip::GetViewByID(int view_id) const {
   }
 
   return View::GetViewByID(view_id);
-}
-
-void TabStrip::Layout() {
-  BaseTabStrip::Layout();
-
-  newtab_button_->SetBounds(newtab_button_bounds_);
-
-  SchedulePaint();
 }
 
 gfx::Size TabStrip::GetPreferredSize() {
@@ -461,6 +453,12 @@ void TabStrip::AnimateToIdealBounds() {
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
   return in_tab_close_;
+}
+
+void TabStrip::DoLayout() {
+  BaseTabStrip::DoLayout();
+
+  newtab_button_->SetBounds(newtab_button_bounds_);
 }
 
 void TabStrip::ViewHierarchyChanged(bool is_add,
@@ -958,7 +956,7 @@ void TabStrip::StopAnimating(bool layout) {
   DCHECK(!IsAnimating());
 
   if (layout)
-    Layout();
+    DoLayout();
 }
 
 int TabStrip::GetMiniTabCount() const {
