@@ -529,6 +529,9 @@ class ExtensionsService
   // app launcher.
   DefaultApps default_apps_;
 
+  // Flag to make sure event routers are only initialized once.
+  bool event_routers_initialized_;
+
   FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);
   FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,

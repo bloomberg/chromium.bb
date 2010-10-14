@@ -1408,6 +1408,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   metrics->StartExternalMetrics();
 #endif
 
+  // Initialize extension event routers. Note that on Chrome OS, this will
+  // not succeed if the user has not logged in yet, in which case the
+  // event routers are initialized in LoginUtilsImpl::CompleteLogin instead.
   if (profile->GetExtensionsService()) {
     // This will initialize bookmarks. Call it after bookmark import is done.
     // See issue 40144.

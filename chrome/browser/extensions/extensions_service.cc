@@ -566,7 +566,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
       show_extensions_prompts_(true),
       ready_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(toolbar_model_(this)),
-      default_apps_(profile->GetPrefs()) {
+      default_apps_(profile->GetPrefs()),
+      event_routers_initialized_(false) {
   // Figure out if extension installation should be enabled.
   if (command_line->HasSwitch(switches::kDisableExtensions)) {
     extensions_enabled_ = false;
@@ -612,6 +613,9 @@ ExtensionsService::~ExtensionsService() {
 }
 
 void ExtensionsService::InitEventRouters() {
+  if (event_routers_initialized_)
+    return;
+
   ExtensionHistoryEventRouter::GetInstance()->ObserveProfile(profile_);
   ExtensionAccessibilityEventRouter::GetInstance()->ObserveProfile(profile_);
   ExtensionBrowserEventRouter::GetInstance()->Init(profile_);
@@ -620,6 +624,7 @@ void ExtensionsService::InitEventRouters() {
   ExtensionCookiesEventRouter::GetInstance()->Init();
   ExtensionManagementEventRouter::GetInstance()->Init();
   ExtensionWebNavigationEventRouter::GetInstance()->Init();
+  event_routers_initialized_ = true;
 }
 
 void ExtensionsService::Init() {
