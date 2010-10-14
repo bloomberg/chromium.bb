@@ -288,23 +288,43 @@ bool GetAllWindowsFunction::RunImpl() {
 }
 
 bool CreateWindowFunction::RunImpl() {
-  GURL url;
   DictionaryValue* args = NULL;
+  std::vector<GURL> urls;
 
   if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   // Look for optional url.
   if (args) {
-    std::string url_string;
     if (args->HasKey(keys::kUrlKey)) {
-      EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
-                                                  &url_string));
-      url = ResolvePossiblyRelativeURL(url_string, GetExtension());
-      if (!url.is_valid()) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(
-            keys::kInvalidUrlError, url_string);
-        return false;
+      Value* url_value;
+      std::vector<std::string> url_strings;
+      args->Get(keys::kUrlKey, &url_value);
+
+      // First, get all the URLs the client wants to open.
+      if (url_value->IsType(Value::TYPE_STRING)) {
+        std::string url_string;
+        url_value->GetAsString(&url_string);
+        url_strings.push_back(url_string);
+      } else if (url_value->IsType(Value::TYPE_LIST)) {
+        const ListValue* url_list = static_cast<const ListValue*>(url_value);
+        for (size_t i = 0; i < url_list->GetSize(); ++i) {
+          std::string url_string;
+          EXTENSION_FUNCTION_VALIDATE(url_list->GetString(i, &url_string));
+          url_strings.push_back(url_string);
+        }
+      }
+
+      // Second, resolve, validate and convert them to GURLs.
+      for (std::vector<std::string>::iterator i = url_strings.begin();
+           i != url_strings.end(); ++i) {
+        GURL url = ResolvePossiblyRelativeURL(*i, GetExtension());
+        if (!url.is_valid()) {
+          error_ = ExtensionErrorUtils::FormatErrorMessage(
+              keys::kInvalidUrlError, *i);
+          return false;
+        }
+        urls.push_back(url);
       }
     }
   }
@@ -386,7 +406,14 @@ bool CreateWindowFunction::RunImpl() {
   }
 
   Browser* new_window = Browser::CreateForType(window_type, window_profile);
-  new_window->AddSelectedTabWithURL(url, PageTransition::LINK);
+  for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
+    Browser::AddTabWithURLParams addTabParams =
+        Browser::AddTabWithURLParams(*i, PageTransition::LINK);
+    new_window->AddTabWithURL(&addTabParams);
+  }
+  if (urls.size() == 0)
+    new_window->NewTab();
+  new_window->SelectNumberedTab(0);
   if (window_type & Browser::TYPE_POPUP)
     new_window->window()->SetBounds(popup_bounds);
   else
@@ -397,7 +424,7 @@ bool CreateWindowFunction::RunImpl() {
     // Don't expose incognito windows if the extension isn't allowed.
     result_.reset(Value::CreateNullValue());
   } else {
-    result_.reset(ExtensionTabUtil::CreateWindowValue(new_window, false));
+    result_.reset(ExtensionTabUtil::CreateWindowValue(new_window, true));
   }
 
   return true;

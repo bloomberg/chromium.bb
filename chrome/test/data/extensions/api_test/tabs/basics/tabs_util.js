@@ -27,25 +27,16 @@ function setupWindow(tabUrls, callback) {
 // At least one url must be specified.
 // The |callback| should look like function(windowId, tabIds) {...}.
 function createWindow(tabUrls, winOptions, callback) {
-  winOptions["url"] = tabUrls[0];
+  winOptions["url"] = tabUrls;
   chrome.windows.create(winOptions, function(win) {
-    assertTrue(win.id > 0);
     var newTabIds = [];
+    assertTrue(win.id > 0);
+    assertEq(tabUrls.length, win.tabs.length);
 
-    // Create tabs and populate newTabIds array.
-    chrome.tabs.getSelected(win.id, function (tab) {
-      newTabIds.push(tab.id);
-      for (var i = 1; i < tabUrls.length; i++) {
-        chrome.tabs.create({"windowId": win.id, "url": tabUrls[i]},
-                           function(tab){
-          newTabIds.push(tab.id);
-          if (newTabIds.length == tabUrls.length)
-            callback(win.id, newTabIds);
-        });
-      }
-      if (tabUrls.length == 1)
-        callback(win.id, newTabIds);
-    });
+    for (var i = 0; i < win.tabs.length; i++)
+      newTabIds.push(win.tabs[i].id);
+
+    callback(win.id, newTabIds);
   });
 }
 

@@ -71,6 +71,19 @@ chrome.test.runTests([
     }));
   },
 
+  function createWindowWithDefaultTab() {
+    var verify_default = function() {
+      return pass(function(win) {
+        assertEq(1, win.tabs.length);
+        assertEq("chrome://newtab/", win.tabs[0].url);
+      });
+    };
+
+    // Make sure the window always has the NTP when no URL is supplied.
+    chrome.windows.create({}, verify_default());
+    chrome.windows.create({url:[]}, verify_default());
+  },
+
   function setupTwoWindows() {
     setupWindow(["about:blank", "chrome://newtab/", pageUrl("a")],
                 pass(function(winId, tabIds) {
@@ -92,8 +105,8 @@ chrome.test.runTests([
         assertEq(firstWindowId, tabs[i].windowId);
         assertEq(i, tabs[i].index);
 
-        // The most recent tab should be selected
-        assertEq((i == 2), tabs[i].selected);
+        // The first tab should be selected
+        assertEq((i == 0), tabs[i].selected);
       }
       assertEq("about:blank", tabs[0].url);
       assertEq("chrome://newtab/", tabs[1].url);
@@ -139,8 +152,9 @@ chrome.test.runTests([
 
   function updateSelect() {
     chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
+      assertEq(true, tabs[0].selected);
       assertEq(false, tabs[1].selected);
-      assertEq(true, tabs[2].selected);
+      assertEq(false, tabs[2].selected);
       // Select tab[1].
       chrome.tabs.update(tabs[1].id, {selected: true},
                          pass(function(tab1){
@@ -257,6 +271,9 @@ chrome.test.runTests([
   function tabsOnCreated() {
     chrome.test.listenOnce(chrome.tabs.onCreated, function(tab) {
       assertEq(pageUrl("f"), tab.url);
+      // TODO(jstritar): http://crbug.com/59194 tab.selected is always false
+      //                 when passed into chrome.tabs.onCreated listener
+      //assertEq(true, tab.selected);
     });
 
     chrome.tabs.create({"windowId": firstWindowId, "url": pageUrl("f"),
