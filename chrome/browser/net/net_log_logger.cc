@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 
-NetLogLogger::NetLogLogger() : Observer(net::NetLog::LOG_ALL) {}
+NetLogLogger::NetLogLogger() : Observer(net::NetLog::LOG_ALL_BUT_BYTES) {}
 
 NetLogLogger::~NetLogLogger() {}
 

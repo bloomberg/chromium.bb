@@ -218,7 +218,7 @@ int TCPClientSocketPool::RequestSocket(
   const scoped_refptr<TCPSocketParams>* casted_params =
       static_cast<const scoped_refptr<TCPSocketParams>*>(params);
 
-  if (net_log.IsLoggingAll()) {
+  if (net_log.IsLoggingAllEvents()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(
         NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
@@ -239,7 +239,7 @@ void TCPClientSocketPool::RequestSockets(
   const scoped_refptr<TCPSocketParams>* casted_params =
       static_cast<const scoped_refptr<TCPSocketParams>*>(params);
 
-  if (net_log.IsLoggingAll()) {
+  if (net_log.IsLoggingAllEvents()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(
         NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,

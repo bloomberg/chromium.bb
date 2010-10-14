@@ -17,6 +17,14 @@
 
 ChromeNetLog::Observer::Observer(LogLevel log_level) : log_level_(log_level) {}
 
+net::NetLog::LogLevel ChromeNetLog::Observer::log_level() const {
+  return log_level_;
+}
+
+void ChromeNetLog::Observer::set_log_level(net::NetLog::LogLevel log_level) {
+  log_level_ = log_level;
+}
+
 ChromeNetLog::ChromeNetLog()
     : next_id_(1),
       passive_collector_(new PassiveLogCollector),

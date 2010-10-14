@@ -17,7 +17,7 @@ const size_t kMaxNumEntries = 1000;
 DevToolsNetLogObserver* DevToolsNetLogObserver::instance_ = NULL;
 
 DevToolsNetLogObserver::DevToolsNetLogObserver(ChromeNetLog* chrome_net_log)
-    : ChromeNetLog::Observer(net::NetLog::LOG_ALL),
+    : ChromeNetLog::Observer(net::NetLog::LOG_ALL_BUT_BYTES),
       chrome_net_log_(chrome_net_log) {
   chrome_net_log_->AddObserver(this);
 }

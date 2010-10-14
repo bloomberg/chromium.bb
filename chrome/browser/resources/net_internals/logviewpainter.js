@@ -136,6 +136,47 @@ PrintSourceEntriesAsText = function(sourceEntries, doSecurityStripping) {
   return tablePrinter.toText(0);
 }
 
+/**
+ * |hexString| must be a string of hexadecimal characters with no whitespace,
+ * whose length is a multiple of two.  Returns a string spanning multiple lines,
+ * with the hexadecimal characters from |hexString| on the left, in groups of
+ * two, and their corresponding ASCII characters on the right.
+ *
+ * |asciiCharsPerLine| specifies how many ASCII characters will be put on each
+ * line of the output string.
+ */
+function formatHexString(hexString, asciiCharsPerLine) {
+  // Number of transferred bytes in a line of output.  Length of a
+  // line is roughly 4 times larger.
+  var hexCharsPerLine = 2 * asciiCharsPerLine;
+  var out = [];
+  for (var i = 0; i < hexString.length; i += hexCharsPerLine) {
+    var hexLine = '';
+    var asciiLine = '';
+    for (var j = i; j < i + hexCharsPerLine && j < hexString.length; j += 2) {
+      var hex = hexString.substr(j, 2);
+      hexLine += hex + ' ';
+      var charCode = parseInt(hex, 16);
+      // For ASCII codes 32 though 126, display the corresponding
+      // characters.  Use a space for nulls, and a period for
+      // everything else.
+      if (charCode >= 0x20 && charCode <= 0x7E) {
+        asciiLine += String.fromCharCode(charCode);
+      } else if (charCode == 0x00) {
+        asciiLine += ' ';
+      } else {
+        asciiLine += '.';
+      }
+    }
+
+    // Max sure the ASCII text on last line of output lines up with previous
+    // lines.
+    hexLine += makeRepeatedString(' ', 3 * asciiCharsPerLine - hexLine.length);
+    out.push('   ' + hexLine + '  ' + asciiLine);
+  }
+  return out.join('\n');
+}
+
 function getTextForExtraParams(entry, doSecurityStripping) {
   // Format the extra parameters (use a custom formatter for certain types,
   // but default to displaying as JSON).
@@ -160,6 +201,13 @@ function getTextForExtraParams(entry, doSecurityStripping) {
           continue;
         }
         var value = entry.params[k];
+        // For transferred bytes, display the bytes in hex and ASCII.
+        if (k == 'hex_encoded_bytes') {
+          out.push(' --> ' + k + ' =');
+          out.push(formatHexString(value, 20));
+          continue;
+        }
+
         var paramStr = ' --> ' + k + ' = ' + JSON.stringify(value);
 
         // Append the symbolic name for certain constants. (This relies

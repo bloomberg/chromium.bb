@@ -44,7 +44,9 @@ class ChromeNetLog : public net::NetLog {
                             const Source& source,
                             EventPhase phase,
                             EventParameters* params) = 0;
-    LogLevel log_level() const { return log_level_; }
+    LogLevel log_level() const;
+   protected:
+    void set_log_level(LogLevel log_level);
    private:
     LogLevel log_level_;
     DISALLOW_COPY_AND_ASSIGN(Observer);

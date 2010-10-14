@@ -16,6 +16,7 @@ function DataView(mainBoxId,
                   outputTextBoxId,
                   exportTextButtonId,
                   securityStrippingCheckboxId,
+                  byteLoggingCheckboxId,
                   passivelyCapturedCountId,
                   activelyCapturedCountId,
                   deleteAllId) {
@@ -24,6 +25,10 @@ function DataView(mainBoxId,
   this.textPre_ = document.getElementById(outputTextBoxId);
   this.securityStrippingCheckbox_ =
       document.getElementById(securityStrippingCheckboxId);
+
+  var byteLoggingCheckbox = document.getElementById(byteLoggingCheckboxId);
+  byteLoggingCheckbox.onclick =
+      this.onSetByteLogging_.bind(this, byteLoggingCheckbox);
 
   var exportTextButton = document.getElementById(exportTextButtonId);
   exportTextButton.onclick = this.onExportToText_.bind(this);
@@ -73,6 +78,18 @@ DataView.prototype.updateEventCounts_ = function() {
       g_browser.getNumActivelyCapturedEvents()
   this.passivelyCapturedCountBox_.innerText =
       g_browser.getNumPassivelyCapturedEvents();
+};
+
+/**
+ * Depending on the value of the checkbox, enables or disables logging of
+ * actual bytes transferred.
+ */
+DataView.prototype.onSetByteLogging_ = function(byteLoggingCheckbox) {
+  if (byteLoggingCheckbox.checked) {
+    g_browser.setLogLevel(LogLevelType.LOG_ALL);
+  } else {
+    g_browser.setLogLevel(LogLevelType.LOG_ALL_BUT_BYTES);
+  }
 };
 
 /**

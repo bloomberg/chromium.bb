@@ -210,6 +210,8 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnGetServiceProviders(const ListValue* list);
 #endif
 
+  void OnSetLogLevel(const ListValue* list);
+
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
                           const base::TimeTicks& time,
@@ -403,6 +405,10 @@ void NetInternalsMessageHandler::RegisterMessages() {
       "getServiceProviders",
       proxy_->CreateCallback(&IOThreadImpl::OnGetServiceProviders));
 #endif
+
+  dom_ui_->RegisterMessageCallback(
+      "setLogLevel",
+      proxy_->CreateCallback(&IOThreadImpl::OnSetLogLevel));
 }
 
 void NetInternalsMessageHandler::CallJavascriptFunction(
@@ -426,7 +432,7 @@ NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
     const base::WeakPtr<NetInternalsMessageHandler>& handler,
     IOThread* io_thread,
     URLRequestContextGetter* context_getter)
-    : Observer(net::NetLog::LOG_ALL),
+    : Observer(net::NetLog::LOG_ALL_BUT_BYTES),
       handler_(handler),
       io_thread_(io_thread),
       context_getter_(context_getter),
@@ -557,6 +563,18 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 #undef SOURCE_TYPE
 
     CallJavascriptFunction(L"g_browser.receivedLogSourceTypeConstants", dict);
+  }
+
+  // Tell the javascript about the relationship between LogLevel enums and their
+  // symbolic names.
+  {
+    DictionaryValue* dict = new DictionaryValue();
+
+    dict->SetInteger("LOG_ALL", net::NetLog::LOG_ALL);
+    dict->SetInteger("LOG_ALL_BUT_BYTES", net::NetLog::LOG_ALL_BUT_BYTES);
+    dict->SetInteger("LOG_BASIC", net::NetLog::LOG_BASIC);
+
+    CallJavascriptFunction(L"g_browser.receivedLogLevelConstants", dict);
   }
 
   // Tell the javascript about the relationship between address family enums and
@@ -889,6 +907,21 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetServiceProviders(
                          service_providers);
 }
 #endif
+
+void NetInternalsMessageHandler::IOThreadImpl::OnSetLogLevel(
+    const ListValue* list) {
+  int log_level;
+  std::string log_level_string;
+  if (!list->GetString(0, &log_level_string) ||
+      !base::StringToInt(log_level_string, &log_level)) {
+    NOTREACHED();
+    return;
+  }
+
+  DCHECK_GE(log_level, net::NetLog::LOG_ALL);
+  DCHECK_LE(log_level, net::NetLog::LOG_BASIC);
+  set_log_level(static_cast<net::NetLog::LogLevel>(log_level));
+}
 
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     net::NetLog::EventType type,

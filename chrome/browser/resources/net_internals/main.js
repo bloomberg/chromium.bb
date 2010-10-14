@@ -9,6 +9,7 @@ var LogEventType = null;
 var LogEventPhase = null;
 var ClientInfo = null;
 var LogSourceType = null;
+var LogLevelType = null;
 var NetError = null;
 var LoadFlag = null;
 var AddressFamily = null;
@@ -73,6 +74,7 @@ function onLoaded() {
   // captured data.
   var dataView = new DataView("dataTabContent", "exportedDataText",
                               "exportToText", "securityStrippingCheckbox",
+                              "byteLoggingCheckbox",
                               "passivelyCapturedCount",
                               "activelyCapturedCount",
                               "dataViewDeleteAll");
@@ -296,6 +298,10 @@ BrowserBridge.prototype.enableIPv6 = function() {
   chrome.send('enableIPv6');
 };
 
+BrowserBridge.prototype.setLogLevel = function(logLevel) {
+  chrome.send('setLogLevel', ['' + logLevel]);
+}
+
 //------------------------------------------------------------------------------
 // Messages received from the browser
 //------------------------------------------------------------------------------
@@ -331,6 +337,11 @@ function(constantsMap) {
 BrowserBridge.prototype.receivedLogSourceTypeConstants =
 function(constantsMap) {
   LogSourceType = constantsMap;
+};
+
+BrowserBridge.prototype.receivedLogLevelConstants =
+function(constantsMap) {
+  LogLevelType = constantsMap;
 };
 
 BrowserBridge.prototype.receivedLoadFlagConstants = function(constantsMap) {
