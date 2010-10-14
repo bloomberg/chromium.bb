@@ -71,6 +71,7 @@ bool SyncResourceHandler::OnResponseStarted(int request_id,
   result_.connection_id = response->response_head.connection_id;
   result_.connection_reused = response->response_head.connection_reused;
   result_.load_timing = response->response_head.load_timing;
+  result_.devtools_info = response->response_head.devtools_info;
   return true;
 }
 

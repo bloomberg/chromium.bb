@@ -265,6 +265,7 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
   response->connection_id = result.connection_id;
   response->connection_reused = result.connection_reused;
   response->load_timing = result.load_timing;
+  response->devtools_info = result.devtools_info;
   response->data.swap(result.data);
   response->download_file_path = result.download_file_path;
 }
