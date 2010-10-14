@@ -149,7 +149,8 @@ class FetcherDelegate {
 FetcherDelegate* FetcherDelegate::instance_ = NULL;
 
 // Test a fetch from the test server.
-TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
+// Flaky, http://crbug.com/51622.
+TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDownload) {
   ASSERT_TRUE(test_server_.Start());
 
   WebFrame* frame = test_shell_->webView()->mainFrame();
@@ -178,7 +179,8 @@ TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
   EXPECT_TRUE(delegate->data().find("Not Found.") != std::string::npos);
 }
 
-TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
+// Flaky, http://crbug.com/51622.
+TEST_F(ResourceFetcherTests, FLAKY_ResourceFetcherDidFail) {
   ASSERT_TRUE(test_server_.Start());
 
   WebFrame* frame = test_shell_->webView()->mainFrame();
