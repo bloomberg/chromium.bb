@@ -46,10 +46,11 @@ export_map_ = None
 files_info_ = None
 delete_map_ = None
 file_pattern_ =  r"[ ]+([MADUC])[ ]+/((?:trunk|branches/.*?)/src(.*)/(.*))"
+depot_tools_dir_ = os.path.dirname(os.path.abspath(__file__))
 
 
 def runGcl(subcommand):
-  gcl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gcl")
+  gcl_path = os.path.join(depot_tools_dir_, "gcl")
   if not os.path.exists(gcl_path):
     print "WARNING: gcl not found beside drover.py. Using system gcl instead..."
     gcl_path = 'gcl'
