@@ -212,8 +212,12 @@ class BugReportHandler : public DOMMessageHandler,
 #endif
 
   TabContents* tab_;
-  TabContents* target_tab_;
   DOMUIScreenshotSource* screenshot_source_;
+
+  // Target tab url.
+  std::string target_tab_url_;
+  // Target tab page title.
+  string16 target_tab_title_;
 
   // These are filled in by HandleSendReport and used in SendReport.
   int problem_type_;
@@ -472,7 +476,11 @@ base::StringPiece BugReportHandler::Init() {
             IDR_BUGREPORT_HTML_INVALID));
   }
 
-  target_tab_ = browser->GetTabContentsAt(index);
+  TabContents* target_tab = browser->GetTabContentsAt(index);
+  if (target_tab) {
+    target_tab_title_ = target_tab->GetTitle();
+    target_tab_url_ = target_tab->controller().GetActiveEntry()->url().spec();
+  }
 
   // Setup the screenshot source after we've verified input is legit.
   SetupScreenshotsSource();
@@ -500,9 +508,8 @@ void BugReportHandler::HandleGetDialogDefaults(const ListValue*) {
   ListValue dialog_defaults;
 
   // 0: current url
-  if (target_tab_)
-    dialog_defaults.Append(new StringValue(
-        target_tab_->controller().GetActiveEntry()->url().spec()));
+  if (target_tab_url_.length())
+    dialog_defaults.Append(new StringValue(target_tab_url_));
   else
     dialog_defaults.Append(new StringValue(""));
 
@@ -619,8 +626,10 @@ void BugReportHandler::SendReport() {
   int image_data_size = image_.size();
   char* image_data = image_data_size ?
       reinterpret_cast<char*>(&(image_.front())) : NULL;
+  if (!dom_ui_)
+    return;
   BugReportUtil::SendReport(dom_ui_->GetProfile()
-                            , UTF16ToUTF8(target_tab_->GetTitle())
+                            , UTF16ToUTF8(target_tab_title_)
                             , problem_type_
                             , page_url_
                             , description_
