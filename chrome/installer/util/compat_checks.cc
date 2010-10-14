@@ -26,7 +26,7 @@ std::wstring GetSEPVersion() {
 // does not fit the format.
 bool ParseSEPVersion(const std::wstring& version, int* v0, int* v1, int* v2) {
   std::vector<std::wstring> v;
-  SplitString(version, L'.', &v);
+  base::SplitString(version, L'.', &v);
   if (v.size() != 4)
     return false;
   if (!base::StringToInt(v[0], v0))

@@ -196,7 +196,7 @@ void LanguageConfigModel::GetActiveInputMethodIds(
   const std::string value = preload_engines_pref_.GetValue();
   out_input_method_ids->clear();
   if (!value.empty())
-    SplitString(value, ',', out_input_method_ids);
+    base::SplitString(value, ',', out_input_method_ids);
 }
 
 void LanguageConfigModel::GetPreferredLanguageCodes(
@@ -204,7 +204,7 @@ void LanguageConfigModel::GetPreferredLanguageCodes(
   const std::string value = preferred_languages_pref_.GetValue();
   out_language_codes->clear();
   if (!value.empty())
-    SplitString(value, ',', out_language_codes);
+    base::SplitString(value, ',', out_language_codes);
 }
 
 void LanguageConfigModel::GetInputMethodIdsFromLanguageCode(

@@ -575,7 +575,7 @@ void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
     return;
   }
   std::vector<std::string> blacklist;
-  SplitString(data, '\n', &blacklist);
+  base::SplitString(data, '\n', &blacklist);
 
   // Tell ExtensionService to update prefs.
   service_->UpdateExtensionBlacklist(blacklist);

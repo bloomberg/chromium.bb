@@ -339,7 +339,7 @@ std::string GetSystemLocale() {
 void SplitAndNormalizeLanguageList(const std::string& env_language,
                                    std::vector<std::string>* result) {
   std::vector<std::string> langs;
-  SplitString(env_language, ':', &langs);
+  base::SplitString(env_language, ':', &langs);
   std::vector<std::string>::iterator i = langs.begin();
   for (; i != langs.end(); ++i) {
     size_t end_pos = i->find_first_of(".@");

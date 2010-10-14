@@ -53,7 +53,7 @@ class SeleniumTest : public UITest {
       return;
 
     std::vector<std::string> tokens;
-    SplitString(input, ',', &tokens);
+    base::SplitString(input, ',', &tokens);
     for (size_t i = 0; i < tokens.size(); ++i) {
       TrimWhitespaceASCII(tokens[i], TRIM_ALL, &tokens[i]);
       output->insert(tokens[i]);

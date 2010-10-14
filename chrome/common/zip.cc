@@ -49,7 +49,7 @@ static bool ExtractCurrentFile(unzFile zip_file,
   if (filename.find(FILE_PATH_LITERAL("..")) != FilePath::StringType::npos)
     return false;
 
-  SplitString(filename, '/', &filename_parts);
+  base::SplitString(filename, '/', &filename_parts);
 
   FilePath dest_file(dest_dir);
   std::vector<FilePath::StringType>::iterator iter;

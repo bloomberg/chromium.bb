@@ -235,7 +235,7 @@ void PluginLib::ParseMIMEDescription(
     if (end == std::string::npos)
       break;
     const std::string extensions = description.substr(ofs, end - ofs);
-    SplitString(extensions, ',', &mime_type.file_extensions);
+    base::SplitString(extensions, ',', &mime_type.file_extensions);
     ofs = end + 1;
 
     end = description.find(';', ofs);

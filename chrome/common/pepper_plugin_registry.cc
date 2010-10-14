@@ -75,17 +75,17 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
   //                *1( LWS + ";" + LWS + <mime-type> )
 
   std::vector<std::string> modules;
-  SplitString(value, ',', &modules);
+  base::SplitString(value, ',', &modules);
   for (size_t i = 0; i < modules.size(); ++i) {
     std::vector<std::string> parts;
-    SplitString(modules[i], ';', &parts);
+    base::SplitString(modules[i], ';', &parts);
     if (parts.size() < 2) {
       DLOG(ERROR) << "Required mime-type not found";
       continue;
     }
 
     std::vector<std::string> name_parts;
-    SplitString(parts[0], '#', &name_parts);
+    base::SplitString(parts[0], '#', &name_parts);
 
     PepperPluginInfo plugin;
 #if defined(OS_WIN)

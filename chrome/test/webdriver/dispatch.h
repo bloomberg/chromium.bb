@@ -49,7 +49,7 @@ void Dispatch(struct mg_connection* connection,
 
   std::vector<std::string> path_segments;
   std::string uri(request_info->uri);
-  SplitString(uri, '/', &path_segments);
+  base::SplitString(uri, '/', &path_segments);
 
   DictionaryValue* parameters = NULL;
   if ((method == "POST" || method == "PUT") &&

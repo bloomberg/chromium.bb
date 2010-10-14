@@ -328,7 +328,7 @@ TEST_F(WebSocketJobTest, SlowHandshake) {
       "8jKS'y:G*Co,Wxa-";
 
   std::vector<std::string> lines;
-  SplitString(kHandshakeResponseMessage, '\n', &lines);
+  base::SplitString(kHandshakeResponseMessage, '\n', &lines);
   for (size_t i = 0; i < lines.size() - 2; i++) {
     std::string line = lines[i] + "\r\n";
     SCOPED_TRACE("Line: " + line);

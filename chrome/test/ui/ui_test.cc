@@ -724,7 +724,7 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   if (!extra_chrome_flags.empty()) {
     // Split by spaces and append to command line
     std::vector<CommandLine::StringType> flags;
-    SplitString(extra_chrome_flags, ' ', &flags);
+    base::SplitString(extra_chrome_flags, ' ', &flags);
     for (size_t i = 0; i < flags.size(); ++i)
       command_line.AppendArgNative(flags[i]);
   }

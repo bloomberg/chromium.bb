@@ -804,7 +804,7 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
     // default to the entire screen. This is mostly useful for testing.
     if (size_arg.size()) {
       std::vector<std::string> dimensions;
-      SplitString(size_arg, ',', &dimensions);
+      base::SplitString(size_arg, ',', &dimensions);
       if (dimensions.size() == 2) {
         int width, height;
         if (base::StringToInt(dimensions[0], &width) &&

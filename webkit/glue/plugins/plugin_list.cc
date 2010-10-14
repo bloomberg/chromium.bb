@@ -116,9 +116,9 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
                                      WebPluginInfo* info) {
   std::vector<std::string> mime_types, file_extensions;
   std::vector<string16> descriptions;
-  SplitString(WideToUTF8(pvi.mime_types), '|', &mime_types);
-  SplitString(WideToUTF8(pvi.file_extensions), '|', &file_extensions);
-  SplitString(WideToUTF16(pvi.type_descriptions), '|', &descriptions);
+  base::SplitString(WideToUTF8(pvi.mime_types), '|', &mime_types);
+  base::SplitString(WideToUTF8(pvi.file_extensions), '|', &file_extensions);
+  base::SplitString(WideToUTF16(pvi.type_descriptions), '|', &descriptions);
 
   info->mime_types.clear();
 
@@ -138,7 +138,7 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
     WebPluginMimeType mime_type;
     mime_type.mime_type = StringToLowerASCII(mime_types[i]);
     if (file_extensions.size() > i)
-      SplitString(file_extensions[i], ',', &mime_type.file_extensions);
+      base::SplitString(file_extensions[i], ',', &mime_type.file_extensions);
 
     if (descriptions.size() > i) {
       mime_type.description = descriptions[i];
@@ -369,7 +369,8 @@ void PluginList::GetPluginInfoArray(const GURL& url,
                                     const std::string& mime_type,
                                     bool allow_wildcard,
                                     std::vector<WebPluginInfo>* info,
-                                    std::vector<std::string>* actual_mime_types) {
+                                    std::vector<std::string>* actual_mime_types)
+{
   DCHECK(mime_type == StringToLowerASCII(mime_type));
   DCHECK(info);
 
@@ -454,7 +455,8 @@ bool PluginList::GetPluginInfo(const GURL& url,
   // NULL for the mime type list...
   if (actual_mime_type) {
     std::vector<std::string> mime_type_list;
-    GetPluginInfoArray(url, mime_type, allow_wildcard, &info_list, &mime_type_list);
+    GetPluginInfoArray(
+        url, mime_type, allow_wildcard, &info_list, &mime_type_list);
     if (!info_list.empty()) {
       *info = info_list[0];
       *actual_mime_type = mime_type_list[0];

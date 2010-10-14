@@ -271,7 +271,7 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
     csv_auth_schemes = StringToLowerASCII(
         command_line.GetSwitchValueASCII(switches::kAuthSchemes));
   std::vector<std::string> supported_schemes;
-  SplitString(csv_auth_schemes, ',', &supported_schemes);
+  base::SplitString(csv_auth_schemes, ',', &supported_schemes);
 
   return net::HttpAuthHandlerRegistryFactory::Create(
       supported_schemes,

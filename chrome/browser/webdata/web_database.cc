@@ -915,7 +915,7 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
     template_url->set_usage_count(s.ColumnInt(8));
 
     std::vector<std::string> encodings;
-    SplitString(s.ColumnString(9), ';', &encodings);
+    base::SplitString(s.ColumnString(9), ';', &encodings);
     template_url->set_input_encodings(encodings);
 
     template_url->set_show_in_default_list(s.ColumnInt(10) == 1);

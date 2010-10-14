@@ -414,7 +414,7 @@ std::string EncodeImportParams(int browser_type, int options,
 bool DecodeImportParams(const std::string& encoded, int* browser_type,
                         int* options, int* skip_first_run_ui, HWND* window) {
   std::vector<std::string> parts;
-  SplitString(encoded, '@', &parts);
+  base::SplitString(encoded, '@', &parts);
   if (parts.size() != 4)
     return false;
 

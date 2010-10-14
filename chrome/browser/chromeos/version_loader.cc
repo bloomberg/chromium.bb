@@ -52,7 +52,7 @@ std::string VersionLoader::ParseVersion(const std::string& contents) {
   // Split the lines and look for the one that starts with kPrefix. The version
   // file is small, which is why we don't try and be tricky.
   std::vector<std::string> lines;
-  SplitString(contents, '\n', &lines);
+  base::SplitString(contents, '\n', &lines);
   for (size_t i = 0; i < lines.size(); ++i) {
     if (StartsWithASCII(lines[i], kPrefix, false)) {
       std::string version = lines[i].substr(std::string(kPrefix).size());

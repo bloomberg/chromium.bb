@@ -160,7 +160,7 @@ class StartupTest : public UIPerfTest {
       {
         std::string server_version = automation()->server_version();
         std::vector<std::string> version_numbers;
-        SplitString(server_version, '.', &version_numbers);
+        base::SplitString(server_version, '.', &version_numbers);
         int chrome_buildnum = 0;
         ASSERT_TRUE(base::StringToInt(version_numbers[2], &chrome_buildnum));
         if (chrome_buildnum < 368) {

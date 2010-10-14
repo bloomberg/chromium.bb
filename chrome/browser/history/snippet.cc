@@ -167,7 +167,7 @@ void Snippet::ExtractMatchPositions(const std::string& offsets_str,
   if (offsets_str.empty())
     return;
   std::vector<std::string> offsets;
-  SplitString(offsets_str, ' ', &offsets);
+  base::SplitString(offsets_str, ' ', &offsets);
   // SQLite offsets are sets of four integers:
   //   column, query term, match offset, match length
   // Matches within a string are marked by (start, end) pairs.

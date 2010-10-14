@@ -168,7 +168,7 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
 
     std::string csv_auth_schemes = "basic,digest,ntlm,negotiate";
     std::vector<std::string> supported_schemes;
-    SplitString(csv_auth_schemes, ',', &supported_schemes);
+    base::SplitString(csv_auth_schemes, ',', &supported_schemes);
 
     http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
         supported_schemes, url_security_manager_.get(), host_resolver_, false,

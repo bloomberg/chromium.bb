@@ -247,10 +247,10 @@ static const int kUpdateFrequencySecs = 15;
 static void ExtractParameters(const std::string& params,
                               std::map<std::string, std::string>* result) {
   std::vector<std::string> pairs;
-  SplitString(params, '&', &pairs);
+  base::SplitString(params, '&', &pairs);
   for (size_t i = 0; i < pairs.size(); i++) {
     std::vector<std::string> key_val;
-    SplitString(pairs[i], '=', &key_val);
+    base::SplitString(pairs[i], '=', &key_val);
     if (key_val.size() > 0) {
       std::string key = key_val[0];
       EXPECT_TRUE(result->find(key) == result->end());
@@ -326,7 +326,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // look something like "?x=id%3D<id>%26v%3D<version>%26uc".
     EXPECT_TRUE(url.has_query());
     std::vector<std::string> parts;
-    SplitString(url.query(), '=', &parts);
+    base::SplitString(url.query(), '=', &parts);
     EXPECT_EQ(2u, parts.size());
     EXPECT_EQ("x", parts[0]);
     std::string decoded = UnescapeURLComponent(parts[1],
@@ -388,7 +388,7 @@ class ExtensionUpdaterTest : public testing::Test {
     // look something like "?x=id%3D<id>%26v%3D<version>%26uc".
     EXPECT_TRUE(url.has_query());
     std::vector<std::string> parts;
-    SplitString(url.query(), '=', &parts);
+    base::SplitString(url.query(), '=', &parts);
     EXPECT_EQ(2u, parts.size());
     EXPECT_EQ("x", parts[0]);
     std::string decoded = UnescapeURLComponent(parts[1],

@@ -407,7 +407,7 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
 
   std::vector<std::string> split_values;
   if (!value.empty())
-    SplitString(value, ',', &split_values);
+    base::SplitString(value, ',', &split_values);
 
   // We should call the cros API even when |value| is empty, to disable default
   // config.

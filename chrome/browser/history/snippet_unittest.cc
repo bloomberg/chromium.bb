@@ -98,7 +98,7 @@ string16 BuildSnippet(const std::string& document,
   const std::string document_folded = StringToLowerASCII(std::string(document));
 
   std::vector<std::string> query_words;
-  SplitString(query, ' ', &query_words);
+  base::SplitString(query, ' ', &query_words);
 
   // Manually construct match_positions of the document.
   Snippet::MatchPositions match_positions;

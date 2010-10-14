@@ -133,7 +133,7 @@ class TemplateURLModelTest : public testing::Test {
     template_url->set_autogenerate_keyword(autogenerate_keyword);
     template_url->set_short_name(short_name);
     std::vector<std::string> encodings_vector;
-    SplitString(encodings, ';', &encodings_vector);
+    base::SplitString(encodings, ';', &encodings_vector);
     template_url->set_input_encodings(encodings_vector);
     template_url->set_date_created(created_date);
     template_url->set_safe_for_autoreplace(safe_for_autoreplace);
@@ -774,8 +774,8 @@ TEST_F(TemplateURLModelTest, BuildQueryTerms) {
     if (data[i].result) {
       std::vector<std::string> keys;
       std::vector<std::string> values;
-      SplitString(data[i].keys, ';', &keys);
-      SplitString(data[i].values, ';', &values);
+      base::SplitString(data[i].keys, ';', &keys);
+      base::SplitString(data[i].values, ';', &values);
       ASSERT_TRUE(keys.size() == values.size());
       ASSERT_EQ(keys.size(), terms.size());
       for (size_t j = 0; j < keys.size(); ++j) {
@@ -1129,7 +1129,7 @@ TEST_F(TemplateURLModelTest, TestManagedDefaultSearch) {
   expected_managed_default1->SetFavIconURL(GURL(kIconURL));
   expected_managed_default1->set_short_name(L"test1");
   std::vector<std::string> encodings_vector;
-  SplitString(kEncodings, ';', &encodings_vector);
+  base::SplitString(kEncodings, ';', &encodings_vector);
   expected_managed_default1->set_input_encodings(encodings_vector);
   expected_managed_default1->set_show_in_default_list(true);
   const TemplateURL* actual_managed_default =

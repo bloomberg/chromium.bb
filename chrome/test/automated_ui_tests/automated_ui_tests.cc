@@ -153,7 +153,7 @@ void AutomatedUITest::RunReproduction() {
         &num_reproductions);
   }
   std::vector<std::string> actions;
-  SplitString(action_string, ',', &actions);
+  base::SplitString(action_string, ',', &actions);
   bool did_crash = false;
   bool command_complete = false;
 

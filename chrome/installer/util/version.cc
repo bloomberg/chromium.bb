@@ -40,7 +40,7 @@ bool installer::Version::IsHigherThan(const installer::Version* other) const {
 installer::Version* installer::Version::GetVersionFromString(
     const string16& version_str) {
   std::vector<string16> numbers;
-  SplitString(version_str, '.', &numbers);
+  base::SplitString(version_str, '.', &numbers);
 
   if (numbers.size() != 4) {
     LOG(ERROR) << "Invalid version string: " << version_str;

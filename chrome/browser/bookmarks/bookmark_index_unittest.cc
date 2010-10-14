@@ -68,10 +68,10 @@ class BookmarkIndexTest : public testing::Test {
   void ExtractMatchPositions(const std::string& string,
                              Snippet::MatchPositions* matches) {
     std::vector<std::string> match_strings;
-    SplitString(string, ':', &match_strings);
+    base::SplitString(string, ':', &match_strings);
     for (size_t i = 0; i < match_strings.size(); ++i) {
       std::vector<std::string> chunks;
-      SplitString(match_strings[i], ',', &chunks);
+      base::SplitString(match_strings[i], ',', &chunks);
       ASSERT_EQ(2U, chunks.size());
       matches->push_back(Snippet::MatchPosition());
       int chunks0, chunks1;
@@ -135,12 +135,12 @@ TEST_F(BookmarkIndexTest, Tests) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     std::vector<std::string> titles;
-    SplitString(data[i].input, ';', &titles);
+    base::SplitString(data[i].input, ';', &titles);
     AddBookmarksWithTitles(titles);
 
     std::vector<std::string> expected;
     if (!data[i].expected.empty())
-      SplitString(data[i].expected, ';', &expected);
+      base::SplitString(data[i].expected, ';', &expected);
 
     ExpectMatches(data[i].query, expected);
 

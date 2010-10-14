@@ -105,7 +105,7 @@ void Firefox2Importer::LoadDefaultBookmarks(const FilePath& app_path,
   std::string content;
   file_util::ReadFileToString(file, &content);
   std::vector<std::string> lines;
-  SplitString(content, '\n', &lines);
+  base::SplitString(content, '\n', &lines);
 
   std::string charset;
   for (size_t i = 0; i < lines.size(); ++i) {
@@ -160,7 +160,7 @@ void Firefox2Importer::ImportBookmarksFile(
   std::string content;
   file_util::ReadFileToString(file_path, &content);
   std::vector<std::string> lines;
-  SplitString(content, '\n', &lines);
+  base::SplitString(content, '\n', &lines);
 
   std::vector<ProfileWriter::BookmarkEntry> toolbar_bookmarks;
   std::wstring last_folder = first_folder_name;

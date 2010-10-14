@@ -43,7 +43,7 @@ bool toolbar_importer_utils::IsGoogleGAIACookieInstalled() {
   options.set_include_httponly();  // The SID cookie might be httponly.
   std::string cookies = store->GetCookiesWithOptions(url, options);
   std::vector<std::string> cookie_list;
-  SplitString(cookies, kSplitStringToken, &cookie_list);
+  base::SplitString(cookies, kSplitStringToken, &cookie_list);
   for (std::vector<std::string>::iterator current = cookie_list.begin();
        current != cookie_list.end();
        ++current) {
@@ -581,7 +581,7 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
     // IE or Firefox folder.  We undo the label creation and recreate the
     // correct folder.
     std::vector<std::wstring> folder_names;
-    SplitString(label_vector[index], L':', &folder_names);
+    base::SplitString(label_vector[index], L':', &folder_names);
     (*bookmark_folders)[index].insert((*bookmark_folders)[index].end(),
         folder_names.begin(), folder_names.end());
   }

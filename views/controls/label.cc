@@ -231,7 +231,7 @@ void Label::SizeToFit(int max_width) {
   DCHECK(is_multi_line_);
 
   std::vector<std::wstring> lines;
-  SplitString(text_, L'\n', &lines);
+  base::SplitString(text_, L'\n', &lines);
 
   int label_width = 0;
   for (std::vector<std::wstring>::const_iterator iter = lines.begin();

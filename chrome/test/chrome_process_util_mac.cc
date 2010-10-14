@@ -37,14 +37,14 @@ MacChromeProcessInfoList GetRunningMacProcessInfo(
 
   // Process the results
   std::vector<std::string> ps_output_lines;
-  SplitString(ps_output, '\n', &ps_output_lines);
+  base::SplitString(ps_output, '\n', &ps_output_lines);
   std::vector<std::string>::const_iterator line_iter;
   for (line_iter = ps_output_lines.begin();
        line_iter != ps_output_lines.end();
        ++line_iter) {
     std::string line(CollapseWhitespaceASCII(*line_iter, false));
     std::vector<std::string> values;
-    SplitString(line, ' ', &values);
+    base::SplitString(line, ' ', &values);
     if (values.size() == 3) {
       MacChromeProcessInfo proc_info;
       int pid;

@@ -409,7 +409,7 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
   // The CHROME_RESTART var contains the dialog strings separated by '|'.
   // See PrepareRestartOnCrashEnviroment() function for details.
   std::vector<std::wstring> dlg_strings;
-  SplitString(restart_data, L'|', &dlg_strings);
+  base::SplitString(restart_data, L'|', &dlg_strings);
   delete[] restart_data;
   if (dlg_strings.size() < 3)
     return true;

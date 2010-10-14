@@ -289,7 +289,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
   } else if (filename == kAcrobatReaderPlugin) {
     // Check for the version number above or equal 9.
     std::vector<std::wstring> version;
-    SplitString(plugin_info.version, L'.', &version);
+    base::SplitString(plugin_info.version, L'.', &version);
     if (version.size() > 0) {
       int major;
       base::StringToInt(version[0], &major);

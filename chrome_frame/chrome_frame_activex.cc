@@ -445,10 +445,10 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
         std::string automated_functions(
             WideToASCII(static_cast<BSTR>(automated_functions_arg)));
         functions_enabled_.clear();
-        // SplitString writes one empty entry for blank strings, so we need this
-        // to allow specifying zero automation of API functions.
+        // base::SplitString writes one empty entry for blank strings, so we
+        // need this to allow specifying zero automation of API functions.
         if (!automated_functions.empty())
-          SplitString(automated_functions, ',', &functions_enabled_);
+          base::SplitString(automated_functions, ',', &functions_enabled_);
       }
 
       ScopedBstr profile_name_arg;

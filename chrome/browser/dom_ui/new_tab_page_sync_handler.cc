@@ -60,7 +60,7 @@ bool IsGoogleGAIACookieInstalled() {
     options.set_include_httponly();  // The SID cookie might be httponly.
     std::string cookies = store->GetCookiesWithOptions(url, options);
     std::vector<std::string> cookie_list;
-    SplitString(cookies, ';', &cookie_list);
+    base::SplitString(cookies, ';', &cookie_list);
     for (std::vector<std::string>::iterator current = cookie_list.begin();
          current != cookie_list.end();
          ++current) {

@@ -112,7 +112,7 @@ bool URLPattern::Parse(const std::string& pattern) {
 
     // The first component can optionally be '*' to match all subdomains.
     std::vector<std::string> host_components;
-    SplitString(host_, '.', &host_components);
+    base::SplitString(host_, '.', &host_components);
     if (host_components[0] == "*") {
       match_subdomains_ = true;
       host_components.erase(host_components.begin(),

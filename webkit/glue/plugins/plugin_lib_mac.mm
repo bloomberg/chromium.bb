@@ -200,8 +200,8 @@ bool ReadSTRPluginInfo(const FilePath& filename, CFBundleRef bundle,
     mime.mime_type = StringToLowerASCII(type_strings[2*i]);
     if (have_type_descs && i < type_descs.size())
       mime.description = UTF8ToUTF16(type_descs[i]);
-    SplitString(StringToLowerASCII(type_strings[2*i+1]), ',',
-                &mime.file_extensions);
+    base::SplitString(
+        StringToLowerASCII(type_strings[2*i+1]), ',', &mime.file_extensions);
 
     info->mime_types.push_back(mime);
   }

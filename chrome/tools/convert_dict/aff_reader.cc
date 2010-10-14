@@ -221,7 +221,7 @@ void AffReader::AddAffix(std::string* rule) {
           // a compound flag as listed below.
           //   AFX D   0 d/M e
           std::vector<std::string> tokens;
-          SplitString(part, ' ', &tokens);
+          base::SplitString(part, ' ', &tokens);
           if (tokens.size() >= 5) {
             part = StringPrintf("%s %s/%s %s",
                                 tokens[0].c_str(),
@@ -248,7 +248,7 @@ void AffReader::AddAffix(std::string* rule) {
           // After the slash are both the flags, then whitespace, then the part
           // that tells us what to strip.
           std::vector<std::string> after_slash;
-          SplitString(part.substr(slash_index + 1), ' ', &after_slash);
+          base::SplitString(part.substr(slash_index + 1), ' ', &after_slash);
           if (after_slash.size() < 2) {
             // Note that we may get a third term here which is the
             // morphological description of this rule. This happens in the tests
@@ -287,7 +287,7 @@ void AffReader::AddReplacement(std::string* rule) {
     return;
 
   std::vector<std::string> split;
-  SplitString(utf8rule, ' ', &split);
+  base::SplitString(utf8rule, ' ', &split);
 
   // There should be two parts.
   if (split.size() != 2)

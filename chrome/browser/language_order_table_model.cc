@@ -111,7 +111,7 @@ int LanguageOrderTableModel::RowCount() {
 
 void LanguageOrderTableModel::ListToVector(const std::string& list,
                                            std::vector<std::string>* vector) {
-  SplitString(list, ',', vector);
+  base::SplitString(list, ',', vector);
 }
 
 std::string LanguageOrderTableModel::VectorToList(

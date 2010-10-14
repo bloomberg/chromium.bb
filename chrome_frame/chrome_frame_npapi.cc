@@ -212,10 +212,10 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
     } else if (LowerCaseEqualsASCII(argn[i],
                                     kPluginChromeFunctionsAutomatedAttribute)) {
       functions_enabled_.clear();
-      // SplitString writes one empty entry for blank strings, so we need this
-      // to allow specifying zero automation of API functions.
+      // base::SplitString writes one empty entry for blank strings, so we need
+      // this to allow specifying zero automation of API functions.
       if (argv[i][0] != '\0')
-        SplitString(argv[i], ',', &functions_enabled_);
+        base::SplitString(argv[i], ',', &functions_enabled_);
     } else if (LowerCaseEqualsASCII(argn[i], kPluginUseChromeNetwork)) {
       chrome_network_arg_set = true;
       chrome_network_arg = atoi(argv[i]) ? true : false;
@@ -1321,10 +1321,10 @@ bool ChromeFrameNPAPI::enableExtensionAutomation(NPObject* npobject,
     std::string functions_a(functions_str.UTF8Characters,
                             functions_str.UTF8Length);
 
-    // SplitString writes one empty entry for blank strings, so we need this
-    // to allow specifying zero automation of API functions.
+    // base::SplitString writes one empty entry for blank strings, so we need
+    // this to allow specifying zero automation of API functions.
     if (functions_a[0] != '\0')
-      SplitString(functions_a, ',', &functions);
+      base::SplitString(functions_a, ',', &functions);
   }
 
   automation_client_->tab()->SetEnableExtensionAutomation(functions);

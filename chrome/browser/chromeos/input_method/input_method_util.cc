@@ -435,7 +435,7 @@ std::string GetLanguageCodeFromDescriptor(
        language_code == "zh" ||
        language_code == "pt")) {
     std::vector<std::string> portions;
-    SplitString(descriptor.id, ':', &portions);
+    base::SplitString(descriptor.id, ':', &portions);
     if (portions.size() >= 2 && !portions[1].empty()) {
       language_code.append("-");
       language_code.append(StringToUpperASCII(portions[1]));
@@ -463,7 +463,7 @@ std::string GetKeyboardLayoutName(const std::string& input_method_id) {
   }
 
   std::vector<std::string> splitted_id;
-  SplitString(input_method_id, ':', &splitted_id);
+  base::SplitString(input_method_id, ':', &splitted_id);
   return (splitted_id.size() > 1) ? splitted_id[1] : "";
 }
 

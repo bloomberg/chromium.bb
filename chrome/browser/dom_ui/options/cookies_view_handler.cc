@@ -370,7 +370,7 @@ void CookiesViewHandler::LoadChildren(const ListValue* args) {
 CookieTreeNode* CookiesViewHandler::GetTreeNodeFromPath(
     const std::string& path) {
   std::vector<std::string> node_ids;
-  SplitString(path, ',', &node_ids);
+  base::SplitString(path, ',', &node_ids);
 
   CookieTreeNode* child = NULL;
   CookieTreeNode* parent = cookies_tree_model_->GetRoot();

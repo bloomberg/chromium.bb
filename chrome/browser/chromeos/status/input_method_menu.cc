@@ -570,7 +570,7 @@ std::wstring InputMethodMenu::GetTextForIndicator(
     // rather than "ZH".
     if (StartsWithASCII(language_code, "zh-", false)) {
       std::vector<std::string> portions;
-      SplitString(language_code, '-', &portions);
+      base::SplitString(language_code, '-', &portions);
       if (portions.size() >= 2 && !portions[1].empty()) {
         language_code = portions[1];
       }

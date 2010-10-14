@@ -382,7 +382,7 @@ bool ReadHostsAndTimesFromFile(const FilePath& path,
   std::vector<std::string> lines;
   // TODO(cbentzel): This should probably handle CRLF-style separators as well.
   // Maybe it's worth adding functionality like this to base tools.
-  SplitString(file_contents, '\n', &lines);
+  base::SplitString(file_contents, '\n', &lines);
   std::vector<std::string>::const_iterator line_end = lines.end();
   int previous_timestamp = 0;
   for (std::vector<std::string>::const_iterator it = lines.begin();

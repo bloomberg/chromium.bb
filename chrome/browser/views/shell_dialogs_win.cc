@@ -309,7 +309,7 @@ bool SaveFileAsWithFilter(HWND owner,
   // instance of null to get to "*.jpg".
   std::vector<std::wstring> filters;
   if (!filter.empty() && save_as.nFilterIndex > 0)
-    SplitString(filter, '\0', &filters);
+    base::SplitString(filter, '\0', &filters);
   std::wstring filter_selected;
   if (!filters.empty())
     filter_selected = filters[(2 * (save_as.nFilterIndex - 1)) + 1];

@@ -547,7 +547,7 @@ void TranslateManager::InitAcceptLanguages(PrefService* prefs) {
   std::string accept_langs_str = prefs->GetString(prefs::kAcceptLanguages);
   std::vector<std::string> accept_langs_list;
   LanguageSet accept_langs_set;
-  SplitString(accept_langs_str, ',', &accept_langs_list);
+  base::SplitString(accept_langs_str, ',', &accept_langs_list);
   std::vector<std::string>::const_iterator iter;
   std::string ui_lang =
       GetLanguageCode(g_browser_process->GetApplicationLocale());

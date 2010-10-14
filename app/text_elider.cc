@@ -123,7 +123,7 @@ std::wstring ElideUrl(const GURL& url,
   if (url.SchemeIsFile()) {
     // Split the path string using ":"
     std::vector<std::wstring> file_path_split;
-    SplitString(url_path, L':', &file_path_split);
+    base::SplitString(url_path, L':', &file_path_split);
     if (file_path_split.size() > 1) {  // File is of type "file:///C:/.."
       url_host.clear();
       url_domain.clear();
@@ -164,7 +164,7 @@ std::wstring ElideUrl(const GURL& url,
 
   // Parse url_path using '/'.
   std::vector<std::wstring> url_path_elements;
-  SplitString(url_path, L'/', &url_path_elements);
+  base::SplitString(url_path, L'/', &url_path_elements);
 
   // Get filename - note that for a path ending with /
   // such as www.google.com/intl/ads/, the file name is ads/.

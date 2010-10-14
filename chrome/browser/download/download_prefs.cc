@@ -22,7 +22,7 @@ DownloadPrefs::DownloadPrefs(PrefService* prefs) : prefs_(prefs) {
   std::string extensions_to_open =
       prefs->GetString(prefs::kDownloadExtensionsToOpen);
   std::vector<std::string> extensions;
-  SplitString(extensions_to_open, ':', &extensions);
+  base::SplitString(extensions_to_open, ':', &extensions);
 
   for (size_t i = 0; i < extensions.size(); ++i) {
 #if defined(OS_POSIX)

@@ -346,8 +346,9 @@ bool PluginDatabaseHandler::ReadPluginInfo(_xmlNode* plugin_node,
   plugin_detail->download_url =
       reinterpret_cast<const char*>(plugin_download_url_val->content);
 
-  SplitString(reinterpret_cast<const char*>(plugin_mime_type_vals->content),
-              kMimeTypeSeparator, &plugin_detail->mime_types);
+  base::SplitString(
+      reinterpret_cast<const char*>(plugin_mime_type_vals->content),
+      kMimeTypeSeparator, &plugin_detail->mime_types);
 
   plugin_detail->language =
       reinterpret_cast<const char*>(plugin_lang_val->content);

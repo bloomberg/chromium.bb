@@ -34,7 +34,7 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
       submit_result_(kSubmitResultNotSubmitted) {
   DCHECK(profile_);
   if (observed_form_.origin.is_valid())
-    SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
+    base::SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
   observed_form_.ssl_valid = ssl_valid;
 }
 
@@ -453,7 +453,7 @@ int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
     // Walk the origin URL paths one directory at a time to see how
     // deep the two match.
     std::vector<std::string> candidate_path_tokens;
-    SplitString(candidate.origin.path(), '/', &candidate_path_tokens);
+    base::SplitString(candidate.origin.path(), '/', &candidate_path_tokens);
     size_t depth = 0;
     size_t max_dirs = std::min(form_path_tokens_.size(),
                                candidate_path_tokens.size());

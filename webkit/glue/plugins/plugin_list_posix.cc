@@ -133,7 +133,7 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
   const char* moz_plugin_path = getenv("MOZ_PLUGIN_PATH");
   if (moz_plugin_path) {
     std::vector<std::string> paths;
-    SplitString(moz_plugin_path, ':', &paths);
+    base::SplitString(moz_plugin_path, ':', &paths);
     for (size_t i = 0; i < paths.size(); ++i)
       plugin_dirs->push_back(FilePath(paths[i]));
   }

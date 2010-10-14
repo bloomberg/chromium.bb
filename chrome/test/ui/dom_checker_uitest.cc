@@ -120,7 +120,7 @@ class DomCheckerTest : public UITest {
       return;
 
     std::vector<std::string> tokens;
-    SplitString(input, '\n', &tokens);
+    base::SplitString(input, '\n', &tokens);
 
     std::vector<std::string>::const_iterator it = tokens.begin();
     for (; it != tokens.end(); ++it) {

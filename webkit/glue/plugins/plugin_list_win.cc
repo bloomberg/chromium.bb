@@ -304,13 +304,13 @@ bool HaveSharedMimeType(const WebPluginInfo& plugin1,
 // version is newer than a's, or false if it's equal or older.
 bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
   std::vector<std::wstring> a_ver, b_ver;
-  SplitString(a, ',', &a_ver);
-  SplitString(b, ',', &b_ver);
+  base::SplitString(a, ',', &a_ver);
+  base::SplitString(b, ',', &b_ver);
   if (a_ver.size() == 1 && b_ver.size() == 1) {
     a_ver.clear();
     b_ver.clear();
-    SplitString(a, '.', &a_ver);
-    SplitString(b, '.', &b_ver);
+    base::SplitString(a, '.', &a_ver);
+    base::SplitString(b, '.', &b_ver);
   }
   if (a_ver.size() != b_ver.size())
     return false;
@@ -371,7 +371,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   // and don't depend on XPCOM.
   if (filename == kJavaPlugin1 || filename == kJavaPlugin2) {
     std::vector<std::wstring> ver;
-    SplitString(info.version, '.', &ver);
+    base::SplitString(info.version, '.', &ver);
     int major, minor, update;
     if (ver.size() == 4 &&
         base::StringToInt(ver[0], &major) &&

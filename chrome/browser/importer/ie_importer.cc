@@ -190,7 +190,7 @@ void IEImporter::ImportPasswordsIE6() {
         ac.key.erase(i);
         ac.is_url = (ac.key.find(L"://") != std::wstring::npos);
         ac_list.push_back(ac);
-        SplitString(data, L'\0', &ac_list[ac_list.size() - 1].data);
+        base::SplitString(data, L'\0', &ac_list[ac_list.size() - 1].data);
       }
       CoTaskMemFree(buffer);
     }

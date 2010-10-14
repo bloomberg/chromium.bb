@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "net/ftp/ftp_directory_listing_parser_mlsd.h"
 
@@ -60,7 +60,7 @@ bool FtpDirectoryListingParserMlsd::ConsumeLine(const string16& line) {
   string16 facts_string = line.substr(0, first_space_pos - 1);
   string16 filename = line.substr(first_space_pos + 1);
   std::vector<string16> facts_split;
-  SplitString(facts_string, ';', &facts_split);
+  base::SplitString(facts_string, ';', &facts_split);
 
   const char* keys[] = {
       "modify",

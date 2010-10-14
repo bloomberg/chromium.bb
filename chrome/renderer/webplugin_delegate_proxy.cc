@@ -257,7 +257,7 @@ static bool SilverlightColorIsTransparent(const std::string& color) {
       return false;
     std::string value_string = color.substr(3, std::string::npos);
     std::vector<std::string> components;
-    SplitString(value_string, ',', &components);
+    base::SplitString(value_string, ',', &components);
     if (components.size() == 4 && !StartsWithASCII(components[0], "1", false))
       return true;
   } else if (LowerCaseEqualsASCII(color, "transparent")) {

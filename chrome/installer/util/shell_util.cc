@@ -365,8 +365,8 @@ bool AnotherUserHasDefaultBrowser(const std::wstring& chrome_exe) {
     return false;
 
   std::vector<std::wstring> v1, v2;
-  SplitString(registry_chrome_exe, L'\\', &v1);
-  SplitString(chrome_exe, L'\\', &v2);
+  base::SplitString(registry_chrome_exe, L'\\', &v1);
+  base::SplitString(chrome_exe, L'\\', &v2);
   if (v1.size() == 0 || v2.size() == 0 || v1.size() != v2.size())
     return false;
 

@@ -125,7 +125,7 @@ int SpellCheckHost::GetSpellCheckLanguages(
   if (SpellCheckerPlatform::SpellCheckerAvailable())
     SpellCheckerPlatform::GetAvailableLanguages(&accept_languages);
   else
-    SplitString(accept_languages_pref.GetValue(), ',', &accept_languages);
+    base::SplitString(accept_languages_pref.GetValue(), ',', &accept_languages);
 
   for (std::vector<std::string>::const_iterator i = accept_languages.begin();
        i != accept_languages.end(); ++i) {
@@ -189,7 +189,7 @@ void SpellCheckHost::InitializeInternal() {
     std::string contents;
     file_util::ReadFileToString(custom_dictionary_file_, &contents);
     std::vector<std::string> list_of_words;
-    SplitString(contents, '\n', &list_of_words);
+    base::SplitString(contents, '\n', &list_of_words);
     for (size_t i = 0; i < list_of_words.size(); ++i)
       custom_words_.push_back(list_of_words[i]);
   }

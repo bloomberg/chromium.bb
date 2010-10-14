@@ -835,7 +835,7 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
   (*default_provider)->set_keyword(keyword);
   (*default_provider)->SetFavIconURL(GURL(icon_url));
   std::vector<std::string> encodings_vector;
-  SplitString(encodings, ';', &encodings_vector);
+  base::SplitString(encodings, ';', &encodings_vector);
   (*default_provider)->set_input_encodings(encodings_vector);
   if (!id_string.empty()) {
     int64 value;

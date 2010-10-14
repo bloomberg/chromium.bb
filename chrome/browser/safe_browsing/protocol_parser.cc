@@ -83,7 +83,7 @@ bool SafeBrowsingProtocolParser::ParseGetHash(
     length -= offset;
 
     std::vector<std::string> cmd_parts;
-    SplitString(line, ':', &cmd_parts);
+    base::SplitString(line, ':', &cmd_parts);
     if (cmd_parts.size() != 3)
       return false;
 
@@ -151,7 +151,7 @@ bool SafeBrowsingProtocolParser::ParseUpdate(
       return false;  // Error: bad list format!
 
     std::vector<std::string> cmd_parts;
-    SplitString(cmd_line, ':', &cmd_parts);
+    base::SplitString(cmd_line, ':', &cmd_parts);
     if (cmd_parts.empty())
       return false;
     const std::string& command = cmd_parts[0];
@@ -266,7 +266,7 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
 
     const int line_len = static_cast<int>(cmd_line.length()) + 1;
     std::vector<std::string> cmd_parts;
-    SplitString(cmd_line, ':', &cmd_parts);
+    base::SplitString(cmd_line, ':', &cmd_parts);
 
     // Handle a possible re-key command.
     if (cmd_parts.size() != 4) {
@@ -467,7 +467,7 @@ bool SafeBrowsingProtocolParser::ParseNewKey(const char* chunk_data,
       return false;
 
     std::vector<std::string> cmd_parts;
-    SplitString(line, ':', &cmd_parts);
+    base::SplitString(line, ':', &cmd_parts);
     if (cmd_parts.size() != 3)
       return false;
 

@@ -24,7 +24,7 @@ Authenticator::~Authenticator() {}
 std::string Authenticator::Canonicalize(const std::string& email_address) {
   std::vector<std::string> parts;
   char at = '@';
-  SplitString(email_address, at, &parts);
+  base::SplitString(email_address, at, &parts);
   DCHECK_EQ(parts.size(), 2U) << "email_address should have only one @";
   RemoveChars(parts[0], ".", &parts[0]);
   if (parts[0].find('+') != std::string::npos)

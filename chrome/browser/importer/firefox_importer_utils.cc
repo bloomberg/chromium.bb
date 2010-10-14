@@ -99,7 +99,7 @@ bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
   file_util::ReadFileToString(compatibility_file, &content);
   ReplaceSubstringsAfterOffset(&content, 0, "\r\n", "\n");
   std::vector<std::string> lines;
-  SplitString(content, '\n', &lines);
+  base::SplitString(content, '\n', &lines);
 
   for (size_t i = 0; i < lines.size(); ++i) {
     const std::string& line = lines[i];
@@ -130,7 +130,7 @@ void ParseProfileINI(const FilePath& file, DictionaryValue* root) {
   file_util::ReadFileToString(file, &content);
   ReplaceSubstringsAfterOffset(&content, 0, "\r\n", "\n");
   std::vector<std::string> lines;
-  SplitString(content, '\n', &lines);
+  base::SplitString(content, '\n', &lines);
 
   // Parses the file.
   root->Clear();
@@ -345,7 +345,7 @@ bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path) {
 
   // Crack the string into separate homepage urls.
   std::vector<std::string> urls;
-  SplitString(default_homepages, '|', &urls);
+  base::SplitString(default_homepages, '|', &urls);
 
   for (size_t i = 0; i < urls.size(); ++i) {
     if (homepage.spec() == GURL(urls[i]).spec())

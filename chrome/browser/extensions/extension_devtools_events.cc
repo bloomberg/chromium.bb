@@ -28,7 +28,8 @@ bool ExtensionDevToolsEvents::IsDevToolsEventName(
                       true /* case_sensitive */)) {
     // At this point we want something like "4.onPageEvent"
     std::vector<std::string> parts;
-    SplitString(event_name.substr(strlen(kDevToolsEventPrefix)), '.', &parts);
+    base::SplitString(
+        event_name.substr(strlen(kDevToolsEventPrefix)), '.', &parts);
     if (parts.size() == 2 && base::StringToInt(parts[0], tab_id)) {
       return true;
     }

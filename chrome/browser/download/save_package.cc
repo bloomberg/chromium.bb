@@ -1133,7 +1133,7 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(
   if (page_url_ == fixed_up_title_url) {
     std::string url_path;
     std::vector<std::string> url_parts;
-    SplitString(page_url_.path(), '/', &url_parts);
+    base::SplitString(page_url_.path(), '/', &url_parts);
     if (!url_parts.empty()) {
       for (int i = static_cast<int>(url_parts.size()) - 1; i >= 0; --i) {
         url_path = url_parts[i];
