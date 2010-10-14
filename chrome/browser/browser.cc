@@ -1920,12 +1920,6 @@ void Browser::OpenThemeGalleryTabAndActivate() {
   window_->Activate();
 }
 
-void Browser::OpenPrivacyDashboardTabAndActivate() {
-  OpenURL(GURL(l10n_util::GetStringUTF8(IDS_PRIVACY_DASHBOARD_URL)),
-          GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-  window_->Activate();
-}
-
 void Browser::OpenAutoFillHelpTabAndActivate() {
   OpenURL(GURL(l10n_util::GetStringUTF8(IDS_AUTOFILL_HELP_URL)),
           GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);

@@ -12,11 +12,11 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="692"/>
-			<integer value="482"/>
-			<integer value="483"/>
 			<integer value="74"/>
+			<integer value="482"/>
 			<integer value="481"/>
+			<integer value="692"/>
+			<integer value="483"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1823,7 +1823,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSTextField" id="20640598">
 						<reference key="NSNextResponder" ref="393583039"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{17, 279}, {126, 60}}</string>
+						<string key="NSFrame">{{17, 259}, {126, 60}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="101746388">
@@ -2051,7 +2051,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSButton" id="203729106">
 						<reference key="NSNextResponder" ref="393583039"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{144, 311}, {184, 32}}</string>
+						<string key="NSFrame">{{144, 291}, {184, 32}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="431766699">
@@ -2071,7 +2071,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSButton" id="175093092">
 						<reference key="NSNextResponder" ref="393583039"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{389, 311}, {137, 32}}</string>
+						<string key="NSFrame">{{389, 291}, {137, 32}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="342125840">
@@ -2139,7 +2139,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSTextField" id="90260648">
 						<reference key="NSNextResponder" ref="393583039"/>
 						<int key="NSvFlags">266</int>
-						<string key="NSFrame">{{150, 284}, {373, 28}}</string>
+						<string key="NSFrame">{{150, 264}, {373, 28}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="123936632">
@@ -2196,7 +2196,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSButton" id="1022040155">
 						<reference key="NSNextResponder" ref="393583039"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{150, 265}, {82, 17}}</string>
+						<string key="NSFrame">{{150, 245}, {82, 17}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="1047338722">
@@ -2205,26 +2205,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string key="NSContents">^IDS_SYNC_RELOGIN_LINK_LABEL</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="1022040155"/>
-							<int key="NSButtonFlags">-2038284033</int>
-							<int key="NSButtonFlags2">134</int>
-							<string key="NSAlternateContents"/>
-							<string key="NSKeyEquivalent"/>
-							<int key="NSPeriodicDelay">200</int>
-							<int key="NSPeriodicInterval">25</int>
-						</object>
-					</object>
-					<object class="NSButton" id="59469178">
-						<reference key="NSNextResponder" ref="393583039"/>
-						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{150, 248}, {82, 17}}</string>
-						<reference key="NSSuperview" ref="393583039"/>
-						<bool key="NSEnabled">YES</bool>
-						<object class="NSButtonCell" key="NSCell" id="1071892392">
-							<int key="NSCellFlags">67239424</int>
-							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">^IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL</string>
-							<reference key="NSSupport" ref="445696277"/>
-							<reference key="NSControlView" ref="59469178"/>
 							<int key="NSButtonFlags">-2038284033</int>
 							<int key="NSButtonFlags2">134</int>
 							<string key="NSAlternateContents"/>
@@ -2274,7 +2254,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 					</object>
 				</object>
-				<string key="NSFrameSize">{540, 359}</string>
+				<string key="NSFrameSize">{540, 339}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
 			</object>
@@ -2473,9 +2453,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 			</object>
 			<object class="NSCustomObject" id="938815385">
 				<string key="NSClassName">GTMUILocalizerAndLayoutTweaker</string>
-			</object>
-			<object class="NSCustomObject" id="276476617">
-				<string key="NSClassName">GTMIBArray</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -3683,46 +3660,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<int key="connectionID">702</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">privacyDashboardLink_</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="59469178"/>
-					</object>
-					<int key="connectionID">705</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">object5_</string>
-						<reference key="source" ref="821768455"/>
-						<reference key="destination" ref="276476617"/>
-					</object>
-					<int key="connectionID">709</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">object2_</string>
-						<reference key="source" ref="276476617"/>
-						<reference key="destination" ref="59469178"/>
-					</object>
-					<int key="connectionID">710</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">object1_</string>
-						<reference key="source" ref="276476617"/>
-						<reference key="destination" ref="1022040155"/>
-					</object>
-					<int key="connectionID">711</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">showPrivacyDashboard:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="59469178"/>
-					</object>
-					<int key="connectionID">712</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
 						<string key="label">enabled: showHomeButtonEnabled</string>
 						<reference key="source" ref="136601899"/>
@@ -4049,6 +3986,14 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 					</object>
 					<int key="connectionID">767</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">object5_</string>
+						<reference key="source" ref="821768455"/>
+						<reference key="destination" ref="1022040155"/>
+					</object>
+					<int key="connectionID">768</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -4459,7 +4404,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="155299174"/>
 							<reference ref="921350969"/>
 							<reference ref="1022040155"/>
-							<reference ref="59469178"/>
 						</object>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Personal Stuff View</string>
@@ -5326,26 +5270,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<reference key="parent" ref="0"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">703</int>
-						<reference key="object" ref="59469178"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="1071892392"/>
-						</object>
-						<reference key="parent" ref="393583039"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">704</int>
-						<reference key="object" ref="1071892392"/>
-						<reference key="parent" ref="59469178"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">708</int>
-						<reference key="object" ref="276476617"/>
-						<reference key="parent" ref="0"/>
-						<string key="objectName">Personal Stuff Sync Group Cont</string>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">740</int>
 						<reference key="object" ref="499998551"/>
 						<object class="NSMutableArray" key="children">
@@ -5583,10 +5507,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>696.IBPluginDependency</string>
 					<string>699.IBPluginDependency</string>
 					<string>70.IBPluginDependency</string>
-					<string>703.IBPluginDependency</string>
-					<string>704.CustomClassName</string>
-					<string>704.IBPluginDependency</string>
-					<string>708.IBPluginDependency</string>
 					<string>71.IBPluginDependency</string>
 					<string>74.IBEditorWindowLastContentRect</string>
 					<string>74.IBPluginDependency</string>
@@ -5701,7 +5621,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSMutableArray">
 						<bool key="EncodedWithXMLCoder">YES</bool>
 					</object>
-					<string>{{329, 497}, {540, 359}}</string>
+					<string>{{329, 517}, {540, 339}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{278, 393}, {540, 463}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5789,11 +5709,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>HyperlinkButtonCell</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{389, 7}, {443, 849}}</string>
+					<string>{{389, 108}, {443, 849}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>HyperlinkButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -5830,7 +5746,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">767</int>
+			<int key="maxID">768</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -6149,7 +6065,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>showCertificates:</string>
 							<string>showContentSettings:</string>
 							<string>showPreferences:</string>
-							<string>showPrivacyDashboard:</string>
 							<string>showSavedPasswords:</string>
 							<string>themesGallery:</string>
 							<string>toolbarButtonSelected:</string>
@@ -6157,7 +6072,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -6210,7 +6124,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>showCertificates:</string>
 							<string>showContentSettings:</string>
 							<string>showPreferences:</string>
-							<string>showPrivacyDashboard:</string>
 							<string>showSavedPasswords:</string>
 							<string>themesGallery:</string>
 							<string>toolbarButtonSelected:</string>
@@ -6303,10 +6216,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">showPrivacyDashboard:</string>
-								<string key="candidateClassName">id</string>
-							</object>
-							<object class="IBActionInfo">
 								<string key="name">showSavedPasswords:</string>
 								<string key="candidateClassName">id</string>
 							</object>
@@ -6353,7 +6262,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>personalStuffGroupSync_</string>
 							<string>personalStuffGroupThemes_</string>
 							<string>personalStuffView_</string>
-							<string>privacyDashboardLink_</string>
 							<string>resetFileHandlersButton_</string>
 							<string>syncButton_</string>
 							<string>syncCustomizeButton_</string>
@@ -6395,7 +6303,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>NSButton</string>
 							<string>NSButton</string>
 							<string>NSButton</string>
-							<string>NSButton</string>
 							<string>NSTextField</string>
 							<string>NSToolbar</string>
 							<string>NSView</string>
@@ -6432,7 +6339,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<string>personalStuffGroupSync_</string>
 							<string>personalStuffGroupThemes_</string>
 							<string>personalStuffView_</string>
-							<string>privacyDashboardLink_</string>
 							<string>resetFileHandlersButton_</string>
 							<string>syncButton_</string>
 							<string>syncCustomizeButton_</string>
@@ -6544,10 +6450,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="IBToOneOutletInfo">
 								<string key="name">personalStuffView_</string>
 								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">privacyDashboardLink_</string>
-								<string key="candidateClassName">NSButton</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">resetFileHandlersButton_</string>
