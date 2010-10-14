@@ -48,8 +48,8 @@ struct Experiment {
 const Experiment kExperiments[] = {
   {
     "expose-for-tabs",  // Do not change; see above.
-    IDS_LABS_TABPOSE_NAME,
-    IDS_LABS_TABPOSE_DESCRIPTION,
+    IDS_FLAGS_TABPOSE_NAME,
+    IDS_FLAGS_TABPOSE_DESCRIPTION,
     kOsMac,
 #if defined(OS_MACOSX)
     // The switch exists only on OS X.
@@ -60,27 +60,27 @@ const Experiment kExperiments[] = {
   },
   {
     "vertical-tabs",  // Do not change; see above.
-    IDS_LABS_SIDE_TABS_NAME,
-    IDS_LABS_SIDE_TABS_DESCRIPTION,
+    IDS_FLAGS_SIDE_TABS_NAME,
+    IDS_FLAGS_SIDE_TABS_DESCRIPTION,
     kOsWin,
     switches::kEnableVerticalTabs
   },
   {
     "tabbed-options",  // Do not change; see above.
-    IDS_LABS_TABBED_OPTIONS_NAME,
-    IDS_LABS_TABBED_OPTIONS_DESCRIPTION,
+    IDS_FLAGS_TABBED_OPTIONS_NAME,
+    IDS_FLAGS_TABBED_OPTIONS_DESCRIPTION,
     kOsAll,
     switches::kEnableTabbedOptions
   },
   {
     "remoting",  // Do not change; see above.
-    IDS_LABS_REMOTING_NAME,
+    IDS_FLAGS_REMOTING_NAME,
 #if defined(OS_WIN)
     // Windows only supports host functionality at the moment.
-    IDS_LABS_REMOTING_HOST_DESCRIPTION,
+    IDS_FLAGS_REMOTING_HOST_DESCRIPTION,
 #elif defined(OS_LINUX)
     // Linux only supports client functionality at the moment.
-    IDS_LABS_REMOTING_CLIENT_DESCRIPTION,
+    IDS_FLAGS_REMOTING_CLIENT_DESCRIPTION,
 #else
     // On other platforms, this lab isn't available at all.
     0,
@@ -90,29 +90,29 @@ const Experiment kExperiments[] = {
   },
   {
     "disable-outdated-plugins",  // Do not change; see above.
-    IDS_LABS_DISABLE_OUTDATED_PLUGINS_NAME,
-    IDS_LABS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION,
+    IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_NAME,
+    IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION,
     kOsAll,
     switches::kDisableOutdatedPlugins
   },
   {
     "xss-auditor",  // Do not change; see above.
-    IDS_LABS_XSS_AUDITOR_NAME,
-    IDS_LABS_XSS_AUDITOR_DESCRIPTION,
+    IDS_FLAGS_XSS_AUDITOR_NAME,
+    IDS_FLAGS_XSS_AUDITOR_DESCRIPTION,
     kOsAll,
     switches::kEnableXSSAuditor
   },
   {
     "background-webapps", // Do not change; see above
-    IDS_LABS_BACKGROUND_WEBAPPS_NAME,
-    IDS_LABS_BACKGROUND_WEBAPPS_DESCRIPTION,
+    IDS_FLAGS_BACKGROUND_WEBAPPS_NAME,
+    IDS_FLAGS_BACKGROUND_WEBAPPS_DESCRIPTION,
     kOsAll,
     switches::kEnableBackgroundMode
   },
   {
     "cloud-print-proxy", // Do not change; see above.
-    IDS_LABS_CLOUD_PRINT_PROXY_NAME,
-    IDS_LABS_CLOUD_PRINT_PROXY_DESCRIPTION,
+    IDS_FLAGS_CLOUD_PRINT_PROXY_NAME,
+    IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION,
 #if defined(GOOGLE_CHROME_BUILD)
     // For a Chrome build, we know we have a PDF plug-in, and so we'll
     // enable by platform as we get things working.
@@ -126,8 +126,8 @@ const Experiment kExperiments[] = {
   },
   {
     "match-preview",  // Do not change; see above.
-    IDS_LABS_INSTANT_NAME,
-    IDS_LABS_INSTANT_DESCRIPTION,
+    IDS_FLAGS_INSTANT_NAME,
+    IDS_FLAGS_INSTANT_DESCRIPTION,
     kOsMac,
     switches::kEnableMatchPreview
   },
@@ -135,15 +135,15 @@ const Experiment kExperiments[] = {
   // or pull it and the strings in generated_resources.grd by Dec 2010
   //{
   //  "gpu-compositing", // Do not change; see above
-  //  IDS_LABS_ACCELERATED_COMPOSITING_NAME,
-  //  IDS_LABS_ACCELERATED_COMPOSITING_DESCRIPTION,
+  //  IDS_FLAGS_ACCELERATED_COMPOSITING_NAME,
+  //  IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION,
   //  kOsAll,
   //  switches::kDisableAcceleratedCompositing
   //},
   {
     "gpu-canvas-2d", // Do not change; see above
-    IDS_LABS_ACCELERATED_CANVAS_2D_NAME,
-    IDS_LABS_ACCELERATED_CANVAS_2D_DESCRIPTION,
+    IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME,
+    IDS_FLAGS_ACCELERATED_CANVAS_2D_DESCRIPTION,
     kOsWin | kOsLinux,
     switches::kEnableAccelerated2dCanvas
   },
@@ -151,15 +151,15 @@ const Experiment kExperiments[] = {
   // or pull it and the strings in generated_resources.grd by Dec 2010
   //{
   //  "webgl", // Do not change; see above
-  //  IDS_LABS_WEBGL_NAME,
-  //  IDS_LABS_WEBGL_DESCRIPTION,
+  //  IDS_FLAGS_WEBGL_NAME,
+  //  IDS_FLAGS_WEBGL_DESCRIPTION,
   //  kOsAll,
   //  switches::kDisableExperimentalWebGL
   //}
   {
     "print-preview",  // Do not change; see above
-    IDS_LABS_PRINT_PREVIEW_NAME,
-    IDS_LABS_PRINT_PREVIEW_DESCRIPTION,
+    IDS_FLAGS_PRINT_PREVIEW_NAME,
+    IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION,
     kOsAll,
     switches::kEnablePrintPreview
   }

@@ -101,9 +101,9 @@ const char kBlobInternalsPath[] = "blob-internals";
 const char kCreditsPath[] = "credits";
 const char kCachePath[] = "view-http-cache";
 const char kDnsPath[] = "dns";
+const char kFlagsPath[] = "flags";
 const char kGpuPath[] = "gpu";
 const char kHistogramsPath[] = "histograms";
-const char kLabsPath[] = "labs";
 const char kMemoryRedirectPath[] = "memory-redirect";
 const char kMemoryPath[] = "memory";
 const char kStatsPath[] = "stats";
@@ -134,9 +134,9 @@ const char *kAllAboutPaths[] = {
   kCachePath,
   kCreditsPath,
   kDnsPath,
+  kFlagsPath,
   kGpuPath,
   kHistogramsPath,
-  kLabsPath,
   kMemoryPath,
   kNetInternalsPath,
   kPluginsPath,
@@ -259,12 +259,12 @@ std::string AboutAbout() {
   html.append("<html><head><title>About Pages</title></head><body>\n");
   html.append("<h2>List of About pages</h2><ul>\n");
   for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
-    if (kAllAboutPaths[i] == kLabsPath && !about_labs::IsEnabled())
+    if (kAllAboutPaths[i] == kFlagsPath && !about_labs::IsEnabled())
       continue;
     if (kAllAboutPaths[i] == kAppCacheInternalsPath ||
         kAllAboutPaths[i] == kBlobInternalsPath ||
         kAllAboutPaths[i] == kCachePath ||
-        kAllAboutPaths[i] == kLabsPath ||
+        kAllAboutPaths[i] == kFlagsPath ||
         kAllAboutPaths[i] == kNetInternalsPath ||
         kAllAboutPaths[i] == kPluginsPath) {
       html.append("<li><a href='chrome://");
@@ -1180,9 +1180,9 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
 
   if (about_labs::IsEnabled()) {
     // Rewrite about:labs and about:vaporware to chrome://labs/.
-    if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutLabsURL) ||
+    if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL) ||
         LowerCaseEqualsASCII(url->spec(), chrome::kAboutVaporwareURL)) {
-      *url = GURL(chrome::kChromeUILabsURL);
+      *url = GURL(chrome::kChromeUIFlagsURL);
       return true;
     }
   }

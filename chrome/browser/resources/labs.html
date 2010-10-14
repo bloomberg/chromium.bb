@@ -2,7 +2,6 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
-<title i18n-content="labsTitle"></title>
 <style>
 body {
   margin: 10px;
@@ -52,8 +51,14 @@ h1 {
   margin: 0;
 }
 
-div.blurb {
+#blurb-container {
   padding-bottom: 1.5em;
+  font-size: 120%;
+}
+
+#blurb-warning {
+  color: red;
+  font-weight: bold;
 }
 
 div.content {
@@ -236,7 +241,10 @@ document.addEventListener('DOMContentLoaded', requestLabsExperimentsData);
 
   <div id="header"><h1 i18n-content="labsLongTitle">TITLE</h1></div>
 
-  <div class="blurb" i18n-content="labsBlurb">BLURB</div>
+  <div id="blurb-container">
+    <span id="blurb-warning" i18n-content="flagsWarningHeader">WARNING</span>
+    <span i18n-content="labsBlurb">WARNING TEXT</span>
+  </div>
 
   <div id="labsExperimentTemplate">
 

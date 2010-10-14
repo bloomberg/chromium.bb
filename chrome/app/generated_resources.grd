@@ -3988,113 +3988,113 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Priority:
       </message>
 
-      <!-- Labs -->
-      <message name="IDS_LABS_TITLE" desc="Title for the chrome://labs page. Should be translated like 'Labs' is at googlelabs.com.">
-        Labs
+      <!-- about:flags -->
+      <message name="IDS_FLAGS_LONG_TITLE" desc="Long version of the title for the about:flags page.">
+        Careful, these experiments may bite
       </message>
-      <message name="IDS_LABS_LONG_TITLE" desc="Long version of the title for the chrome://labs page.">
-        Labs: Some crazy experimental stuff.
+      <message name="IDS_FLAGS_TABLE_TITLE" desc="Title for the experiments table on the about:flags page.">
+        Experiments
       </message>
-      <message name="IDS_LABS_TABLE_TITLE" desc="Title for the experiments table on the chrome://labs page.">
-        Labs Experiments
+      <message name="IDS_FLAGS_WARNING_HEADER" desc="Text right before the warning body text.">
+        WARNING
       </message>
-      <message name="IDS_LABS_BLURB" desc="Text at the top of the about:labs page, warning users that the about:labs contents are volatile.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Labs is a testing ground for experimental features that aren't quite ready for primetime. They may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on. Your browser may spontaneously combust and/or acquire sentience.
+      <message name="IDS_FLAGS_WARNING_TEXT" desc="Text at the top of the about:flags page, warning users that the about:flags contents are volatile.">
+        These experimental features may change, break, or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data, or your security and privacy could be compromised in unexpected ways. Please proceed with caution.
       </message>
-      <message name="IDS_LABS_NO_EXPERIMENTS_AVAILABLE" desc="Shown if no labs experiments are available">
+      <message name="IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE" desc="Shown if no experiments are available">
         Aww, it looks like there are currently no experiments available.
       </message>
-      <message name="IDS_LABS_RESTART_NOTICE" desc="Notifies the user that he needs to restart chrome. Shown next to a button that says 'Restart Now'.">
+      <message name="IDS_FLAGS_RESTART_NOTICE" desc="Notifies the user that he needs to restart chrome. Shown next to a button that says 'Restart Now'.">
         Your changes will take effect the next time you restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
       </message>
-      <message name="IDS_LABS_RESTART_BUTTON" desc="Text on a button that restarts chrome when clicked. ">
+      <message name="IDS_FLAGS_RESTART_BUTTON" desc="Text on a button that restarts chrome when clicked. ">
         Restart Now
       </message>
-      <message name="IDS_LABS_DISABLE" desc="The link for disabling a labs experiment.">
+      <message name="IDS_FLAGS_DISABLE" desc="The link for disabling a labs experiment.">
         Disable
       </message>
-      <message name="IDS_LABS_ENABLE" desc="The link for enabling a labs experiment.">
+      <message name="IDS_FLAGS_ENABLE" desc="The link for enabling a labs experiment.">
         Enable
       </message>
-      <message name="IDS_LABS_TABPOSE_NAME" desc="Name of the 'Tab Overview' lab.">
+      <message name="IDS_FLAGS_TABPOSE_NAME" desc="Name of the 'Tab Overview' lab.">
         Tab Overview
       </message>
-      <message name="IDS_LABS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
+      <message name="IDS_FLAGS_TABPOSE_DESCRIPTION" desc="Description of the 'Tab Overview' lab.">
         Swipe down with three fingers on your trackpad to see an overview of all your tabs. Click on a thumbnail to select it. Works great in fullscreen mode.
       </message>
-      <message name="IDS_LABS_SIDE_TABS_NAME" desc="Name of the 'Left Tabs' lab.">
+      <message name="IDS_FLAGS_SIDE_TABS_NAME" desc="Name of the 'Left Tabs' lab.">
         Side Tabs
       </message>
-      <message name="IDS_LABS_SIDE_TABS_DESCRIPTION" desc="Description of the 'Left Tabs' lab.">
+      <message name="IDS_FLAGS_SIDE_TABS_DESCRIPTION" desc="Description of the 'Left Tabs' lab.">
         Adds a "Use Side Tabs" entry to the tabstrip's context menu. Use this to toggle between tabs on top (default) and tabs on the side. Useful on widescreen monitors.
       </message>
-      <message name="IDS_LABS_TABBED_OPTIONS_NAME" desc="Description of the 'Tabbed Settings' lab.">
+      <message name="IDS_FLAGS_TABBED_OPTIONS_NAME" desc="Description of the 'Tabbed Settings' lab.">
         Tabbed Settings
       </message>
-      <message name="IDS_LABS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Settings' lab.">
+      <message name="IDS_FLAGS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Settings' lab.">
         Uses an in-tab UI for the Settings (Options/Preferences) dialog instead of a stand-alone window.
       </message>
-      <message name="IDS_LABS_INSTANT_NAME" desc="Description of the 'Instant' lab.">
+      <message name="IDS_FLAGS_INSTANT_NAME" desc="Description of the 'Instant' lab.">
         Instant
       </message>
-      <message name="IDS_LABS_INSTANT_DESCRIPTION" desc="Description of the 'Instant' lab.">
+      <message name="IDS_FLAGS_INSTANT_DESCRIPTION" desc="Description of the 'Instant' lab.">
         Makes the address bar load urls as you type.
       </message>
-      <message name="IDS_LABS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
+      <message name="IDS_FLAGS_REMOTING_NAME" desc="Description of the 'Remoting' lab.">
         Remoting
       </message>
-      <message name="IDS_LABS_REMOTING_CLIENT_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
+      <message name="IDS_FLAGS_REMOTING_CLIENT_DESCRIPTION" desc="Description of the 'Remoting' client lab.">
         Enable Remoting Client support.
       </message>
-      <message name="IDS_LABS_REMOTING_HOST_DESCRIPTION" desc="Description of the 'Remoting' host lab.">
+      <message name="IDS_FLAGS_REMOTING_HOST_DESCRIPTION" desc="Description of the 'Remoting' host lab.">
         Enable Remoting Host support.
       </message>
-      <message name="IDS_LABS_DISABLE_OUTDATED_PLUGINS_NAME" desc="Name of the 'Disable outdated plug-ins' lab">
+      <message name="IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_NAME" desc="Name of the 'Disable outdated plug-ins' lab">
         Disable outdated plug-ins
       </message>
-      <message name="IDS_LABS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION" desc="Description of the 'Disable outdated plug-ins' lab">
+      <message name="IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION" desc="Description of the 'Disable outdated plug-ins' lab">
         Automatically disables plug-ins with known security vulnerabilities and offers update links for them.
       </message>
-      <message name="IDS_LABS_XSS_AUDITOR_NAME" desc="Description of the 'XSS Auditor' lab.">
+      <message name="IDS_FLAGS_XSS_AUDITOR_NAME" desc="Description of the 'XSS Auditor' lab.">
         XSS Auditor
       </message>
-      <message name="IDS_LABS_XSS_AUDITOR_DESCRIPTION" desc="Description of the 'XSS Auditor' lab.">
+      <message name="IDS_FLAGS_XSS_AUDITOR_DESCRIPTION" desc="Description of the 'XSS Auditor' lab.">
         Enables WebKit's XSS Auditor (cross-site scripting protection). This feature aims to protect you from certain attacks of malicious web sites. It improves your security, but it might not be compatible with all web sites.
       </message>
-      <message name="IDS_LABS_BACKGROUND_WEBAPPS_NAME" desc="Name of the 'Background WebApps' lab.">
+      <message name="IDS_FLAGS_BACKGROUND_WEBAPPS_NAME" desc="Name of the 'Background WebApps' lab.">
         Background WebApps
       </message>
-      <message name="IDS_LABS_BACKGROUND_WEBAPPS_DESCRIPTION" desc="Description of the 'Background WebApps' lab.">
+      <message name="IDS_FLAGS_BACKGROUND_WEBAPPS_DESCRIPTION" desc="Description of the 'Background WebApps' lab.">
         Allows installed web apps to run in the background at system startup and continue running after all windows are closed.
       </message>
-      <message name="IDS_LABS_CLOUD_PRINT_PROXY_NAME" desc="Title of the Cloud Print Proxy lab">
+      <message name="IDS_FLAGS_CLOUD_PRINT_PROXY_NAME" desc="Title of the Cloud Print Proxy lab">
         Cloud Print Proxy
       </message>
-      <message name="IDS_LABS_CLOUD_PRINT_PROXY_DESCRIPTION" desc="Description of the Cloud Print Proxy lab">
+      <message name="IDS_FLAGS_CLOUD_PRINT_PROXY_DESCRIPTION" desc="Description of the Cloud Print Proxy lab">
         Enables a background service that connects the <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> service to any printers installed on this computer. Once this lab is enabled, you can turn <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> on by logging in with your Google account in the Options/Preferences in the Under the Hood section.
       </message>
-      <message name="IDS_LABS_ACCELERATED_COMPOSITING_NAME" desc="Name of the 'GPU Accelerated Compositing' lab.">
+      <message name="IDS_FLAGS_ACCELERATED_COMPOSITING_NAME" desc="Name of the 'GPU Accelerated Compositing' lab.">
         GPU Accelerated Compositing
       </message>
-      <message name="IDS_LABS_ACCELERATED_COMPOSITING_DESCRIPTION" desc="Description of the 'GPU Accelerated Compositing' lab.">
+      <message name="IDS_FLAGS_ACCELERATED_COMPOSITING_DESCRIPTION" desc="Description of the 'GPU Accelerated Compositing' lab.">
         Enables 3D CSS and higher performance compositing of web pages using Graphics Processor Unit (GPU) hardware.
       </message>
-      <message name="IDS_LABS_ACCELERATED_CANVAS_2D_NAME" desc="Name of the 'GPU Accelerated Canvas 2D' lab.">
+      <message name="IDS_FLAGS_ACCELERATED_CANVAS_2D_NAME" desc="Name of the 'GPU Accelerated Canvas 2D' lab.">
         GPU Accelerated Canvas 2D
       </message>
-      <message name="IDS_LABS_ACCELERATED_CANVAS_2D_DESCRIPTION" desc="Description of the 'GPU Accelerated Canvas 2D' lab.">
+      <message name="IDS_FLAGS_ACCELERATED_CANVAS_2D_DESCRIPTION" desc="Description of the 'GPU Accelerated Canvas 2D' lab.">
         Enables higher performance of canvas tags with a 2D context by rendering using Graphics Processor Unit (GPU) hardware.
       </message>
-      <message name="IDS_LABS_WEBGL_NAME" desc="Name of the 'WebGL' lab.">
+      <message name="IDS_FLAGS_WEBGL_NAME" desc="Name of the 'WebGL' lab.">
         WebGL
       </message>
-      <message name="IDS_LABS_WEBGL_DESCRIPTION" desc="Description of the 'WebGL' lab.">
+      <message name="IDS_FLAGS_WEBGL_DESCRIPTION" desc="Description of the 'WebGL' lab.">
         Enables canvas elements to use 3D graphics via the WebGL API.
       </message>
-      <message name="IDS_LABS_PRINT_PREVIEW_NAME" desc="Name of the 'Print Preview' lab.">
+      <message name="IDS_FLAGS_PRINT_PREVIEW_NAME" desc="Name of the 'Print Preview' lab.">
         Print Preview
       </message>
-      <message name="IDS_LABS_PRINT_PREVIEW_DESCRIPTION" desc="Description of the 'Print Preview' lab.">
+      <message name="IDS_FLAGS_PRINT_PREVIEW_DESCRIPTION" desc="Description of the 'Print Preview' lab.">
         Enables an in-tab preview of a print operation.
       </message>
 

@@ -36,7 +36,7 @@ namespace {
 class LabsUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
   LabsUIHTMLSource()
-      : DataSource(chrome::kChromeUILabsHost, MessageLoop::current()) {}
+      : DataSource(chrome::kChromeUIFlagsHost, MessageLoop::current()) {}
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
@@ -54,30 +54,30 @@ class LabsUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 void LabsUIHTMLSource::StartDataRequest(const std::string& path,
-                                           bool is_off_the_record,
-                                           int request_id) {
+                                        bool is_off_the_record,
+                                        int request_id) {
   // Strings used in the JsTemplate file.
   DictionaryValue localized_strings;
-  localized_strings.SetString("labsTitle",
-      l10n_util::GetStringUTF16(IDS_LABS_TITLE));
   localized_strings.SetString("labsLongTitle",
-      l10n_util::GetStringUTF16(IDS_LABS_LONG_TITLE));
+      l10n_util::GetStringUTF16(IDS_FLAGS_LONG_TITLE));
   localized_strings.SetString("labsTableTitle",
-      l10n_util::GetStringUTF16(IDS_LABS_TABLE_TITLE));
+      l10n_util::GetStringUTF16(IDS_FLAGS_TABLE_TITLE));
   localized_strings.SetString("labsNoExperimentsAvailable",
-      l10n_util::GetStringUTF16(IDS_LABS_NO_EXPERIMENTS_AVAILABLE));
+      l10n_util::GetStringUTF16(IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE));
+  localized_strings.SetString("flagsWarningHeader", l10n_util::GetStringUTF16(
+      IDS_FLAGS_WARNING_HEADER));
   localized_strings.SetString("labsBlurb", l10n_util::GetStringFUTF16(
-      IDS_LABS_BLURB,
+      IDS_FLAGS_WARNING_TEXT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings.SetString("labsRestartNotice", l10n_util::GetStringFUTF16(
-      IDS_LABS_RESTART_NOTICE,
+      IDS_FLAGS_RESTART_NOTICE,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings.SetString("labsRestartButton",
-      l10n_util::GetStringUTF16(IDS_LABS_RESTART_BUTTON));
+      l10n_util::GetStringUTF16(IDS_FLAGS_RESTART_BUTTON));
   localized_strings.SetString("disable",
-      l10n_util::GetStringUTF16(IDS_LABS_DISABLE));
+      l10n_util::GetStringUTF16(IDS_FLAGS_DISABLE));
   localized_strings.SetString("enable",
-      l10n_util::GetStringUTF16(IDS_LABS_ENABLE));
+      l10n_util::GetStringUTF16(IDS_FLAGS_ENABLE));
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
