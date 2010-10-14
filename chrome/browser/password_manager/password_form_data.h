@@ -31,57 +31,20 @@ struct PasswordFormData {
 webkit_glue::PasswordForm* CreatePasswordFormFromData(
     const PasswordFormData& form_data);
 
-typedef std::set<webkit_glue::PasswordForm*> SetOfForms;
+// Checks whether two vectors of PasswordForms contain equivalent elements,
+// regardless of order.
+bool ContainsSamePasswordFormsPtr(
+    const std::vector<webkit_glue::PasswordForm*>& first,
+    const std::vector<webkit_glue::PasswordForm*>& second);
+
+bool ContainsSamePasswordForms(
+    std::vector<webkit_glue::PasswordForm>& first,
+    std::vector<webkit_glue::PasswordForm>& second);
 
 // This gmock matcher is used to check that the |arg| contains exactly the same
 // PasswordForms as |forms|, regardless of order.
 MATCHER_P(ContainsAllPasswordForms, forms, "") {
-  if (forms.size() != arg.size())
-    return false;
-  SetOfForms expectations(forms.begin(), forms.end());
-  for (unsigned int i = 0; i < arg.size(); ++i) {
-    webkit_glue::PasswordForm* actual = arg[i];
-    bool found_match = false;
-    for (SetOfForms::iterator it = expectations.begin();
-         it != expectations.end(); ++it) {
-      webkit_glue::PasswordForm* expected = *it;
-      if (expected->scheme == actual->scheme &&
-          expected->signon_realm == actual->signon_realm &&
-          expected->origin == actual->origin &&
-          expected->action == actual->action &&
-          expected->submit_element == actual->submit_element &&
-          expected->username_element == actual->username_element &&
-          expected->password_element == actual->password_element &&
-          expected->username_value == actual->username_value &&
-          expected->password_value == actual->password_value &&
-          expected->blacklisted_by_user == actual->blacklisted_by_user &&
-          expected->preferred == actual->preferred &&
-          expected->ssl_valid == actual->ssl_valid &&
-          expected->date_created == actual->date_created) {
-        found_match = true;
-        expectations.erase(it);
-        break;
-      }
-    }
-    if (!found_match) {
-      LOG(ERROR) << "No match for:" << std::endl
-                 << "scheme: " << actual->scheme << std::endl
-                 << "signon_realm: " << actual->signon_realm << std::endl
-                 << "origin: " << actual->origin << std::endl
-                 << "action: " << actual->action << std::endl
-                 << "submit_element: " << actual->submit_element << std::endl
-                 << "username_elem: " << actual->username_element << std::endl
-                 << "password_elem: " << actual->password_element << std::endl
-                 << "username_value: " << actual->username_value << std::endl
-                 << "password_value: " << actual->password_value << std::endl
-                 << "blacklisted: " << actual->blacklisted_by_user << std::endl
-                 << "preferred: " << actual->preferred << std::endl
-                 << "ssl_valid: " << actual->ssl_valid << std::endl
-                 << "date_created: " << actual->date_created.ToDoubleT();
-      return false;
-    }
-  }
-  return true;
+  return ContainsSamePasswordFormsPtr(forms, arg);
 }
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_DATA_H_
