@@ -1,0 +1,7 @@
+// This file should almost always be empty. Normally Chromium test expectations
+// are found in
+// src/third_party/WebKit/LayoutTests/platform/chromium/test_expectations.txt
+//
+// Only add expectations here to temporarily suppress messages on the bots
+// until the changes can be landed upstream.
+BUG54465 WIN SKIP : http/tests/media/video-play-stall-seek.html = FAIL
