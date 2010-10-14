@@ -9,6 +9,7 @@
 #include "third_party/ppapi/c/pp_module.h"
 #include "third_party/ppapi/c/pp_point.h"
 #include "third_party/ppapi/c/pp_rect.h"
+#include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/pp_var.h"
 
 #define PPB_PRIVATE2_INTERFACE "PPB_Private2;2"
