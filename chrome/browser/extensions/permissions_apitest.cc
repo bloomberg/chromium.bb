@@ -53,8 +53,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlwaysAllowed) {
 // Meanwhile we run it on Mac OSX only, since we can be sure that an x86-32 NaCl
 // module will work there.
 // Mark as Flaky.  http://crbug.com/51861
+//
+// FLAKY --> DISABLED since it takes 10sec to timeout a dialog.  Need
+// faster timeout.
 #if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_NaClPermissionEnabled) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NaClPermissionEnabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kInternalNaCl);
   ASSERT_TRUE(RunExtensionTest("permissions/nacl_enabled")) << message_;
 }
