@@ -866,7 +866,7 @@ def TryChange(change_info, args, swallow_exception):
     file_list = change_info.GetFileNames()
   else:
     trychange_args.extend(args)
-    file_list = None
+    file_list = []
   return trychange.TryChange(
       trychange_args,
       file_list=file_list,
