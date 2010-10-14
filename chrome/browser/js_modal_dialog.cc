@@ -96,7 +96,7 @@ void JavaScriptAppModalDialog::InitNotifications() {
   }
 }
 
-void JavaScriptAppModalDialog::OnCancel() {
+void JavaScriptAppModalDialog::OnCancel(bool suppress_js_messages) {
   // If we are shutting down and this is an onbeforeunload dialog, cancel the
   // shutdown.
   if (is_before_unload_dialog_)
@@ -112,6 +112,8 @@ void JavaScriptAppModalDialog::OnCancel() {
 
   if (!skip_this_dialog_) {
     delegate_->OnMessageBoxClosed(reply_msg_, false, std::wstring());
+    if (suppress_js_messages)
+      delegate_->SetSuppressMessageBoxes(true);
   }
 
   Cleanup();

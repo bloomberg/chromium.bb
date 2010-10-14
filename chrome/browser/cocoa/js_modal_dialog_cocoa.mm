@@ -61,11 +61,11 @@
   std::wstring input;
   if (textField_)
     input = base::SysNSStringToWide([textField_ stringValue]);
+  bool shouldSuppress = false;
+  if ([alert showsSuppressionButton])
+    shouldSuppress = [[alert suppressionButton] state] == NSOnState;
   switch (returnCode) {
     case NSAlertFirstButtonReturn:  {  // OK
-      bool shouldSuppress = false;
-      if ([alert showsSuppressionButton])
-        shouldSuppress = [[alert suppressionButton] state] == NSOnState;
       native_dialog->dialog()->OnAccept(input, shouldSuppress);
       break;
     }
@@ -74,15 +74,14 @@
       // progress).
       if (native_dialog->dialog()->is_before_unload_dialog())
         chrome_browser_application_mac::CancelTerminate();
-
-      native_dialog->dialog()->OnCancel();
+      native_dialog->dialog()->OnCancel(shouldSuppress);
       break;
     }
     case NSRunStoppedResponse: {  // Window was closed underneath us
       // Need to call OnCancel() because there is some cleanup that needs
       // to be done.  It won't call back to the javascript since the
       // JavaScriptAppModalDialog knows that the TabContents was destroyed.
-      native_dialog->dialog()->OnCancel();
+      native_dialog->dialog()->OnCancel(shouldSuppress);
       break;
     }
     default:  {

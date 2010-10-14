@@ -101,7 +101,7 @@ void JSModalDialogViews::DeleteDelegate() {
 }
 
 bool JSModalDialogViews::Cancel() {
-  parent_->OnCancel();
+  parent_->OnCancel(message_box_view_->IsCheckBoxSelected());
   return true;
 }
 

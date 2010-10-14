@@ -67,7 +67,7 @@ class JavaScriptAppModalDialog : public AppModalDialog,
   JavaScriptAppModalDialogDelegate* delegate() const { return delegate_; }
 
   // Callbacks from NativeDialog when the user accepts or cancels the dialog.
-  void OnCancel();
+  void OnCancel(bool suppress_js_messages);
   void OnAccept(const std::wstring& prompt_text, bool suppress_js_messages);
   void OnClose();
 

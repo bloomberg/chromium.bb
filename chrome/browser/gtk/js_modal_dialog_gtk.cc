@@ -200,7 +200,7 @@ void JSModalDialogGtk::HandleDialogResponse(GtkDialog* dialog,
 
     case GTK_RESPONSE_CANCEL:
     case GTK_RESPONSE_DELETE_EVENT:   // User hit the X on the dialog.
-      dialog_->OnCancel();
+      dialog_->OnCancel(ShouldSuppressJSDialogs(dialog));
       break;
 
     default:
