@@ -12,12 +12,13 @@ readonly SB_ROOT=$(dirname $0)
 readonly BIN_ROOT=${SB_ROOT}/bin
 readonly LIB_ROOT=${SB_ROOT}/../../libs-x8664
 readonly SCRIPT_ROOT=${SB_ROOT}/script
+readonly SEL_LDR_ROOT=${SB_ROOT}/../../../../.
 
-# Executables
+# Translator executables
 readonly LLC=${BIN_ROOT}/llc
 readonly AS=${BIN_ROOT}/as
 readonly LD=${BIN_ROOT}/ld
-readonly SEL_LDR=${BIN_ROOT}/sel_ldr
+readonly SEL_LDR="${SEL_LDR_ROOT}/scons-out/opt-linux-x86-64/staging/sel_ldr"
 
 # Flags
 readonly LLC_FLAGS=(-march=x86-64
@@ -53,7 +54,7 @@ if [ $# != 2 ]; then
   exit -1
 fi
 
-for x in "$1" "${LLC}" "${AS}" "${LD}"; do
+for x in "$1" "${LLC}" "${AS}" "${LD}" "${SEL_LDR}"; do
   if [ ! -f $x ] ; then
     echo "ERROR: $x does not exist"
     exit -1
