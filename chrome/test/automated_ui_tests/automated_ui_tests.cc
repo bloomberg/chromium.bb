@@ -379,8 +379,7 @@ bool AutomatedUITest::DoAction(const std::string& action) {
   } else if (LowerCaseEqualsASCII(action, "showbookmarks")) {
     did_complete_action = ShowBookmarkBar();
   } else if (LowerCaseEqualsASCII(action, "setup")) {
-    LaunchBrowserAndServer();
-    set_active_browser(automation()->GetBrowserWindow(0));
+    AutomatedUITestBase::SetUp();
     did_complete_action = true;
   } else if (LowerCaseEqualsASCII(action, "sleep")) {
     // This is for debugging, it probably shouldn't be used real tests.
