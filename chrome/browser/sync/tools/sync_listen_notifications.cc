@@ -161,7 +161,9 @@ class CacheInvalidationNotifierDelegate
     : public XmppNotificationClient::Observer,
       public sync_notifier::StateWriter {
  public:
-  CacheInvalidationNotifierDelegate() {}
+  explicit CacheInvalidationNotifierDelegate(
+      const std::string& cache_invalidation_state)
+      : cache_invalidation_state_(cache_invalidation_state) {}
 
   virtual ~CacheInvalidationNotifierDelegate() {}
 
@@ -170,8 +172,7 @@ class CacheInvalidationNotifierDelegate
 
     // TODO(akalin): app_name should be per-client unique.
     const std::string kAppName = "cc_sync_listen_notifications";
-    std::string state = "";
-    chrome_invalidation_client_.Start(kAppName, state,
+    chrome_invalidation_client_.Start(kAppName, cache_invalidation_state_,
                                       &chrome_invalidation_listener_,
                                       this, base_task);
     chrome_invalidation_client_.RegisterTypes();
@@ -184,11 +185,15 @@ class CacheInvalidationNotifierDelegate
   virtual void WriteState(const std::string& state) {
     std::string base64_state;
     CHECK(base::Base64Encode(state, &base64_state));
-    LOG(INFO) << "Writing state: " << base64_state;
+    LOG(INFO) << "New state: " << base64_state;
   }
 
  private:
   ChromeInvalidationListener chrome_invalidation_listener_;
+  // Opaque blob capturing the notifications state of a previous run
+  // (i.e., the base64-decoded value of a string output by
+  // WriteState()).
+  std::string cache_invalidation_state_;
   sync_notifier::ChromeInvalidationClient chrome_invalidation_client_;
 };
 
@@ -210,7 +215,8 @@ int main(int argc, char* argv[]) {
   if (email.empty()) {
     printf("Usage: %s --email=foo@bar.com [--password=mypassword] "
            "[--server=talk.google.com] [--port=5222] [--allow-plain] "
-           "[--disable-tls] [--use-cache-invalidation] [--use-ssl-tcp]\n",
+           "[--disable-tls] [--use-cache-invalidation] [--use-ssl-tcp] "
+           "[--cache-invalidtion-state]\n",
            argv[0]);
     return -1;
   }
@@ -239,6 +245,15 @@ int main(int argc, char* argv[]) {
     LOG(WARNING) << switches::kSyncUseSslTcp << " is set but port is " << port
                  << " instead of 443";
   }
+  std::string cache_invalidation_state;
+  std::string cache_invalidation_state_encoded =
+      command_line.GetSwitchValueASCII("cache-invalidation-state");
+  if (!cache_invalidation_state_encoded.empty() &&
+      !base::Base64Decode(cache_invalidation_state_encoded,
+                          &cache_invalidation_state)) {
+    LOG(ERROR) << "Could not decode state: "
+               << cache_invalidation_state_encoded;
+  }
 
   // Build XMPP client settings.
   buzz::XmppClientSettings xmpp_client_settings;
@@ -266,7 +281,8 @@ int main(int argc, char* argv[]) {
 
   // Connect and listen.
   LegacyNotifierDelegate legacy_notifier_delegate;
-  CacheInvalidationNotifierDelegate cache_invalidation_notifier_delegate;
+  CacheInvalidationNotifierDelegate cache_invalidation_notifier_delegate(
+      cache_invalidation_state);
   std::vector<XmppNotificationClient::Observer*> observers;
   // TODO(akalin): Add switch to listen to both.
   if (command_line.HasSwitch(switches::kSyncUseCacheInvalidation)) {

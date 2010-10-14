@@ -1066,6 +1066,10 @@ class SyncManager::SyncInternal
   // SyncEngineEventListener implementation.
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
  private:
+  // Helper to handle the details of initializing the TalkMediator.
+  // Must be called only after OpenDirectory() is called.
+  void InitializeTalkMediator();
+
   // Helper to call OnAuthError when no authentication credentials are
   // available.
   void RaiseAuthNeededEvent();
@@ -1329,35 +1333,6 @@ bool SyncManager::SyncInternal::Init(
   core_message_loop_->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(&SyncInternal::CheckServerReachable));
 
-  if (notifier_options_.notification_method ==
-      notifier::NOTIFICATION_SERVER) {
-    // TODO(akalin): Grab persisted state from storage and then
-    // immediately erase it (This simplifies things for
-    // ChromeSystemResources).
-    std::string state;
-    sync_notifier::ServerNotifierThread* server_notifier_thread =
-        new sync_notifier::ServerNotifierThread(
-            notifier_options, state, this);
-    talk_mediator_.reset(
-        new TalkMediatorImpl(server_notifier_thread, false));
-  } else {
-    notifier::MediatorThread* mediator_thread =
-        new notifier::MediatorThreadImpl(notifier_options);
-    talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, false));
-    if (notifier_options_.notification_method !=
-        notifier::NOTIFICATION_LEGACY) {
-      if (notifier_options_.notification_method ==
-          notifier::NOTIFICATION_TRANSITIONAL) {
-        talk_mediator_->AddSubscribedServiceUrl(
-            browser_sync::kSyncLegacyServiceUrl);
-      }
-      talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
-    }
-  }
-
-  // Listen to TalkMediator events ourselves
-  talk_mediator_->SetDelegate(this);
-
   // Test mode does not use a syncer context or syncer thread.
   if (!setup_for_test_mode) {
     // Build a SyncSessionContext and store the worker in it.
@@ -1501,6 +1476,43 @@ void SyncManager::SyncInternal::UpdateCredentials(
   TalkMediatorLogin(credentials.email, credentials.sync_token);
   CheckServerReachable();
   sync_manager_->RequestNudge();
+}
+
+void SyncManager::SyncInternal::InitializeTalkMediator() {
+  if (notifier_options_.notification_method ==
+      notifier::NOTIFICATION_SERVER) {
+    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+    std::string state;
+    if (lookup.good()) {
+      state = lookup->GetAndClearNotificationState();
+    } else {
+      LOG(ERROR) << "Could not read notification state";
+    }
+    if (VLOG_IS_ON(1)) {
+      std::string encoded_state;
+      base::Base64Encode(state, &encoded_state);
+      LOG(INFO) << "Read notification state: " << encoded_state;
+    }
+    sync_notifier::ServerNotifierThread* server_notifier_thread =
+        new sync_notifier::ServerNotifierThread(
+            notifier_options_, state, this);
+    talk_mediator_.reset(
+        new TalkMediatorImpl(server_notifier_thread, false));
+  } else {
+    notifier::MediatorThread* mediator_thread =
+        new notifier::MediatorThreadImpl(notifier_options_);
+    talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, false));
+    if (notifier_options_.notification_method !=
+        notifier::NOTIFICATION_LEGACY) {
+      if (notifier_options_.notification_method ==
+          notifier::NOTIFICATION_TRANSITIONAL) {
+        talk_mediator_->AddSubscribedServiceUrl(
+            browser_sync::kSyncLegacyServiceUrl);
+      }
+      talk_mediator_->AddSubscribedServiceUrl(browser_sync::kSyncServiceUrl);
+    }
+  }
+  talk_mediator_->SetDelegate(this);
 }
 
 void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
@@ -1978,13 +1990,7 @@ void SyncManager::SyncInternal::TalkMediatorLogin(
   DCHECK_EQ(MessageLoop::current(), core_message_loop_);
   DCHECK(!email.empty());
   DCHECK(!token.empty());
-  if (!talk_mediator_.get()) {
-    LOG(INFO) << "Not logging in: shutting down "
-              << "(talk_mediator_ is NULL)";
-    return;
-  }
-  LOG(INFO) << "P2P: Trying talk mediator login.";
-
+  InitializeTalkMediator();
   talk_mediator_->SetAuthToken(email, token, SYNC_SERVICE_NAME);
   talk_mediator_->Login();
 }
@@ -2020,8 +2026,20 @@ void SyncManager::SyncInternal::OnOutgoingNotification() {
 }
 
 void SyncManager::SyncInternal::WriteState(const std::string& state) {
-  // TODO(akalin): Write state to persistent storage.
-  NOTIMPLEMENTED();
+  syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+  if (!lookup.good()) {
+    LOG(ERROR) << "Could not write notification state";
+    // TODO(akalin): Propagate result callback all the way to this
+    // function and call it with "false" to signal failure.
+    return;
+  }
+  if (VLOG_IS_ON(1)) {
+    std::string encoded_state;
+    base::Base64Encode(state, &encoded_state);
+    LOG(INFO) << "Writing notification state: " << encoded_state;
+  }
+  lookup->SetNotificationState(state);
+  lookup->SaveChanges();
 }
 
 SyncManager::Status::Summary SyncManager::GetStatusSummary() const {
