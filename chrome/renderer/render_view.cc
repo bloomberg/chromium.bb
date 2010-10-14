@@ -4190,8 +4190,8 @@ WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
 }
 
 void RenderView::SetSuggestResult(const std::string& suggest) {
-  if (!suggest.empty())
-    Send(new ViewHostMsg_SetSuggestResult(routing_id_, page_id_, suggest));
+  // Explicitly allow empty strings to be sent to the browser.
+  Send(new ViewHostMsg_SetSuggestResult(routing_id_, page_id_, suggest));
 }
 
 void RenderView::EvaluateScript(const string16& frame_xpath,
