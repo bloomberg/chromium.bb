@@ -1791,7 +1791,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
       } else {
         LOG(INFO) << "GL_OES_packed_depth_stencil not supported.";
       }
-      if (attrib_parser.depth_size_ > 0 && depth24_stencil8_supported) {
+      if ((attrib_parser.depth_size_ > 0 || attrib_parser.stencil_size_ > 0) &&
+          depth24_stencil8_supported) {
         offscreen_target_depth_format_ = GL_DEPTH24_STENCIL8;
         offscreen_target_stencil_format_ = 0;
       } else {
@@ -1817,7 +1818,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
         LOG(INFO) << "GL_EXT_packed_depth_stencil not supported.";
       }
 
-      if (attrib_parser.depth_size_ > 0 && depth24_stencil8_supported) {
+      if ((attrib_parser.depth_size_ > 0 || attrib_parser.stencil_size_ > 0) &&
+          depth24_stencil8_supported) {
         offscreen_target_depth_format_ = GL_DEPTH24_STENCIL8;
         offscreen_target_stencil_format_ = 0;
       } else {
