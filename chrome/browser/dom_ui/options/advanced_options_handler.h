@@ -62,6 +62,14 @@ class AdvancedOptionsHandler
   // manual handling on Windows.
   void HandleUseSSL2Checkbox(const ListValue* args);
 
+  // Callback for the "Use SSL3" checkbox.  This is needed so we can support
+  // manual handling on Windows.
+  void HandleUseSSL3Checkbox(const ListValue* args);
+
+  // Callback for the "Use TLS1" checkbox.  This is needed so we can support
+  // manual handling on Windows.
+  void HandleUseTLS1Checkbox(const ListValue* args);
+
   // Callback for the "Show Gears Settings" button.
   void HandleShowGearsSettings(const ListValue* args);
 #endif
@@ -109,4 +117,4 @@ class AdvancedOptionsHandler
   DISALLOW_COPY_AND_ASSIGN(AdvancedOptionsHandler);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_ADVANCED_OPTIONS_HANDLER_H_
+#endif  // CHROME_BROWSER_DOM_UI_OPTIONS_ADVANCED_OPTIONS_HANDLER_H_

@@ -119,6 +119,14 @@
         <input id="sslUseSSL2" type="checkbox">
         <span i18n-content="sslUseSSL2"></span>
       </label>
+      <label class="checkbox">
+        <input id="sslUseSSL3" type="checkbox">
+        <span i18n-content="sslUseSSL3"></span>
+      </label>
+      <label class="checkbox">
+        <input id="sslUseTLS1" type="checkbox">
+        <span i18n-content="sslUseTLS1"></span>
+      </label>
 </if>
 <if expr="not pp_ifdef('chromeos') and (os == 'linux2' or os.find('bsd') != -1)">
       <!-- Configure these options for Linux/BSD as preference keys -->

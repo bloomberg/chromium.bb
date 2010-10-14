@@ -228,6 +228,12 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("useSSL2CheckboxAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleUseSSL2Checkbox));
+  dom_ui_->RegisterMessageCallback("useSSL3CheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleUseSSL3Checkbox));
+  dom_ui_->RegisterMessageCallback("useTLS1CheckboxAction",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleUseTLS1Checkbox));
   dom_ui_->RegisterMessageCallback("showGearsSettings",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleShowGearsSettings));
@@ -300,20 +306,39 @@ void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
 void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
     const ListValue* args) {
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  bool enabled = (checked_str == "true");
   std::string metric =
-      (checked_str == "true" ? "Options_CheckCertRevocation_Enable"
-                             : "Options_CheckCertRevocation_Disable");
+      (enabled ? "Options_CheckCertRevocation_Enable"
+               : "Options_CheckCertRevocation_Disable");
   UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
-  net::SSLConfigServiceWin::SetRevCheckingEnabled(checked_str == "true");
+  net::SSLConfigServiceWin::SetRevCheckingEnabled(enabled);
 }
 
 void AdvancedOptionsHandler::HandleUseSSL2Checkbox(const ListValue* args) {
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  bool enabled = (checked_str == "true");
   std::string metric =
-      (checked_str == "true" ? "Options_SSL2_Enable"
-                             : "Options_SSL2_Disable");
+      (enabled ? "Options_SSL2_Enable" : "Options_SSL2_Disable");
   UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
-  net::SSLConfigServiceWin::SetSSL2Enabled(checked_str == "true");
+  net::SSLConfigServiceWin::SetSSL2Enabled(enabled);
+}
+
+void AdvancedOptionsHandler::HandleUseSSL3Checkbox(const ListValue* args) {
+  std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  bool enabled = (checked_str == "true");
+  std::string metric =
+      (enabled ? "Options_SSL3_Enable" : "Options_SSL3_Disable");
+  UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
+  net::SSLConfigServiceWin::SetSSL3Enabled(enabled);
+}
+
+void AdvancedOptionsHandler::HandleUseTLS1Checkbox(const ListValue* args) {
+  std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  bool enabled = (checked_str == "true");
+  std::string metric =
+      (enabled ? "Options_TLS1_Enable" : "Options_TLS1_Disable");
+  UserMetricsRecordAction(UserMetricsAction(metric.c_str()));
+  net::SSLConfigServiceWin::SetTLS1Enabled(enabled);
 }
 
 void AdvancedOptionsHandler::HandleShowGearsSettings(const ListValue* args) {
@@ -393,19 +418,29 @@ void AdvancedOptionsHandler::SetupProxySettingsSection() {
 #if defined(OS_WIN)
 void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   bool checkRevocationSetting = false;
-  bool useSSLSetting = false;
+  bool useSSL2Setting = false;
+  bool useSSL3Setting = false;
+  bool useTLS1Setting = false;
 
   net::SSLConfig config;
   if (net::SSLConfigServiceWin::GetSSLConfigNow(&config)) {
     checkRevocationSetting = config.rev_checking_enabled;
-    useSSLSetting = config.ssl2_enabled;
+    useSSL2Setting = config.ssl2_enabled;
+    useSSL3Setting = config.ssl3_enabled;
+    useTLS1Setting = config.tls1_enabled;
   }
   FundamentalValue checkRevocationValue(checkRevocationSetting);
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetCheckRevocationCheckboxState",
       checkRevocationValue);
-  FundamentalValue useSSLValue(useSSLSetting);
+  FundamentalValue useSSL2Value(useSSL2Setting);
   dom_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetUseSSL2CheckboxStatechecked", useSSLValue);
+      L"options.AdvancedOptions.SetUseSSL2CheckboxStatechecked", useSSL2Value);
+  FundamentalValue useSSL3Value(useSSL3Setting);
+  dom_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.SetUseSSL3CheckboxStatechecked", useSSL3Value);
+  FundamentalValue useTLS1Value(useTLS1Setting);
+  dom_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.SetUseTLS1CheckboxStatechecked", useTLS1Value);
 }
 #endif

@@ -108,6 +108,14 @@ var OptionsPage = options.OptionsPage;
           chrome.send('useSSL2CheckboxAction',
               [String($('sslUseSSL2').checked)]);
         };
+        $('sslUseSSL3').onclick = function(event) {
+          chrome.send('useSSL3CheckboxAction',
+              [String($('sslUseSSL3').checked)]);
+        };
+        $('sslUseTLS1').onclick = function(event) {
+          chrome.send('useTLS1CheckboxAction',
+              [String($('sslUseTLS1').checked)]);
+        };
         $('gearSettingsConfigureGearsButton').onclick = function(event) {
           chrome.send('showGearsSettings');
         };
@@ -164,6 +172,16 @@ var OptionsPage = options.OptionsPage;
   // Set the checked state for the sslUseSSL2 checkbox.
   AdvancedOptions.SetUseSSL2CheckboxState = function(checked) {
     $('sslUseSSL2').checked = checked;
+  };
+
+  // Set the checked state for the sslUseSSL3 checkbox.
+  AdvancedOptions.SetUseSSL3CheckboxState = function(checked) {
+    $('sslUseSSL3').checked = checked;
+  };
+
+  // Set the checked state for the sslUseTLS1 checkbox.
+  AdvancedOptions.SetUseTLS1CheckboxState = function(checked) {
+    $('sslUseTLS1').checked = checked;
   };
 
   // Export
