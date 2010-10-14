@@ -1526,9 +1526,11 @@ void TableView::UpdateContentOffset() {
 void TableView::UpdateGroups() {
   // Add the groups.
   if (model_ && model_->HasGroups()) {
-    ListView_EnableGroupView(list_view_, true);
-
     ListView_RemoveAllGroups(list_view_);
+
+    // Windows XP seems to disable groups if we remove them, so we
+    // re-enable them.
+    ListView_EnableGroupView(list_view_, true);
 
     TableModel::Groups groups = model_->GetGroups();
     LVGROUP group = { 0 };
