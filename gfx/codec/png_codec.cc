@@ -80,16 +80,16 @@ void ConvertSkiatoRGB(const unsigned char* skia, int pixel_width,
     const uint32_t pixel_in = *reinterpret_cast<const uint32_t*>(&skia[x * 4]);
     unsigned char* pixel_out = &rgb[x * 3];
 
-    int alpha = SkColorGetA(pixel_in);
+    int alpha = SkGetPackedA32(pixel_in);
     if (alpha != 0 && alpha != 255) {
       SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(pixel_in);
       pixel_out[0] = SkColorGetR(unmultiplied);
       pixel_out[1] = SkColorGetG(unmultiplied);
       pixel_out[2] = SkColorGetB(unmultiplied);
     } else {
-      pixel_out[0] = SkColorGetR(pixel_in);
-      pixel_out[1] = SkColorGetG(pixel_in);
-      pixel_out[2] = SkColorGetB(pixel_in);
+      pixel_out[0] = SkGetPackedR32(pixel_in);
+      pixel_out[1] = SkGetPackedG32(pixel_in);
+      pixel_out[2] = SkGetPackedB32(pixel_in);
     }
   }
 }
@@ -101,7 +101,7 @@ void ConvertSkiatoRGBA(const unsigned char* skia, int pixel_width,
     const uint32_t pixel_in = *reinterpret_cast<const uint32_t*>(&skia[i]);
 
     // Pack the components here.
-    int alpha = SkColorGetA(pixel_in);
+    int alpha = SkGetPackedA32(pixel_in);
     if (alpha != 0 && alpha != 255) {
       SkColor unmultiplied = SkUnPreMultiply::PMColorToColor(pixel_in);
       rgba[i + 0] = SkColorGetR(unmultiplied);
@@ -109,9 +109,9 @@ void ConvertSkiatoRGBA(const unsigned char* skia, int pixel_width,
       rgba[i + 2] = SkColorGetB(unmultiplied);
       rgba[i + 3] = alpha;
     } else {
-      rgba[i + 0] = SkColorGetR(pixel_in);
-      rgba[i + 1] = SkColorGetG(pixel_in);
-      rgba[i + 2] = SkColorGetB(pixel_in);
+      rgba[i + 0] = SkGetPackedR32(pixel_in);
+      rgba[i + 1] = SkGetPackedG32(pixel_in);
+      rgba[i + 2] = SkGetPackedB32(pixel_in);
       rgba[i + 3] = alpha;
     }
   }
