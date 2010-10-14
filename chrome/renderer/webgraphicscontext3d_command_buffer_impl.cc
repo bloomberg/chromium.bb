@@ -38,9 +38,14 @@ WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
 #if defined(OS_MACOSX)
   if (web_view_) {
-    RenderView* renderview = RenderView::FromWebView(web_view_);
     DCHECK(plugin_handle_ != gfx::kNullPluginWindow);
-    renderview->DestroyFakePluginWindowHandle(plugin_handle_);
+    RenderView* renderview = RenderView::FromWebView(web_view_);
+    // The RenderView might already have been freed, but in its
+    // destructor it destroys all fake plugin window handles it
+    // allocated.
+    if (renderview) {
+      renderview->DestroyFakePluginWindowHandle(plugin_handle_);
+    }
     plugin_handle_ = gfx::kNullPluginWindow;
   }
 #endif
@@ -190,7 +195,8 @@ bool WebGraphicsContext3DCommandBufferImpl::isGLES2NPOTStrict() {
   return false;
 }
 
-bool WebGraphicsContext3DCommandBufferImpl::isErrorGeneratedOnOutOfBoundsAccesses() {
+bool WebGraphicsContext3DCommandBufferImpl::
+    isErrorGeneratedOnOutOfBoundsAccesses() {
   return false;
 }
 

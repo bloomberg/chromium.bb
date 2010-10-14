@@ -491,6 +491,14 @@ RenderView::~RenderView() {
   // Tell the spellchecker that the document is closed.
   if (has_document_tag_)
     Send(new ViewHostMsg_DocumentWithTagClosed(routing_id_, document_tag_));
+
+  // Destroy all fake plugin window handles on the browser side.
+  while (!fake_plugin_window_handles_.empty()) {
+    // Make sure no NULL plugin window handles were inserted into this list.
+    DCHECK(*fake_plugin_window_handles_.begin());
+    // DestroyFakePluginWindowHandle modifies fake_plugin_window_handles_.
+    DestroyFakePluginWindowHandle(*fake_plugin_window_handles_.begin());
+  }
 #endif
 
   render_thread_->RemoveFilter(audio_message_filter_);
@@ -5786,12 +5794,18 @@ gfx::PluginWindowHandle RenderView::AllocateFakePluginWindowHandle(
   gfx::PluginWindowHandle window = NULL;
   Send(new ViewHostMsg_AllocateFakePluginWindowHandle(
       routing_id(), opaque, root, &window));
+  if (window) {
+    fake_plugin_window_handles_.insert(window);
+  }
   return window;
 }
 
 void RenderView::DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window) {
-  if (window)
+  if (window && fake_plugin_window_handles_.find(window) !=
+      fake_plugin_window_handles_.end()) {
     Send(new ViewHostMsg_DestroyFakePluginWindowHandle(routing_id(), window));
+    fake_plugin_window_handles_.erase(window);
+  }
 }
 
 void RenderView::AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,

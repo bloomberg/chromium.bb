@@ -1217,6 +1217,13 @@ class RenderView : public RenderWidget,
   // https://bugs.webkit.org/show_bug.cgi?id=32807.
   base::RepeatingTimer<RenderView> preferred_size_change_timer_;
 
+#if defined(OS_MACOSX)
+  // Track the fake plugin window handles allocated on the browser side for
+  // the accelerated compositor and (currently) accelerated plugins so that
+  // we can discard them when the view goes away.
+  std::set<gfx::PluginWindowHandle> fake_plugin_window_handles_;
+#endif
+
   // Plugins -------------------------------------------------------------------
 
   // Remember the first uninstalled plugin, so that we can ask the plugin
