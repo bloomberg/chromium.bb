@@ -504,7 +504,8 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestScrollBalloonToVisible) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationTest, TestActivateDeactivate) {
+// Fails intermittently on ChromiumOS.  http://crbug.com/59195
+IN_PROC_BROWSER_TEST_F(NotificationTest, FLAKY_TestActivateDeactivate) {
   BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
   NotificationPanel* panel = GetNotificationPanel();
   NotificationPanelTester* tester = panel->GetTester();
