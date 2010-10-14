@@ -2,6 +2,7 @@ body {
   background: -webkit-gradient(linear, left top, left bottom,
                                from(white),
                                to(#EEE));
+  cursor: default;
   margin: 0;
   -webkit-user-select: none;
   overflow: hidden;
@@ -32,7 +33,7 @@ body {
   vertical-align: middle;
 }
 
-.accelerator { 
+.accelerator {
   opacity: 0.3;
   -webkit-margin-start: 15px;
 }
@@ -41,7 +42,7 @@ body {
   background-position: 4px center;
 }
 
-.right-icon { 
+.right-icon {
   background-position: right center;
 }
 

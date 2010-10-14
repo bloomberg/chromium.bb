@@ -197,6 +197,8 @@ std::string GetMenuUIHTMLSourceFromString(
     strings.SetString("menu_css", menu_css.as_string());
   }
 
+  menu_ui.AddLocalizedStrings(&strings);
+
   return jstemplate_builder::GetI18nTemplateHtml(menu_template, &strings);
 }
 

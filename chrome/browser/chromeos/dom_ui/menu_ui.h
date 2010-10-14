@@ -39,6 +39,11 @@ class MenuUI : public DOMUI {
   // Subclass can add extra parameters or replaces default configuration.
   virtual void AddCustomConfigValues(DictionaryValue* config) const {};
 
+  // Subclass can add their values to |localized_strings| and those values
+  // are used by JS template builder and could be accessed via JS class
+  // LocalStrings.
+  virtual void AddLocalizedStrings(DictionaryValue* localized_strings) const {};
+
   // A utility function which creates a concrete html file from
   // template file |menu_resource_id| and |menu_css_id| for given |menu_class|.
   // The resource_name is the host part of DOMUI's url.

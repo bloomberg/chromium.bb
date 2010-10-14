@@ -1,0 +1,25 @@
+input:invalid {
+  background-color: #ff6666;
+}
+
+.network-menu-item {
+  width: 100%;
+}
+
+.network-label-icon {
+  -webkit-box-align: center;
+  display: -webkit-box;
+  min-height: 24px;
+}
+
+.network-label {
+  -webkit-box-flex: 1;
+}
+
+.network-icon {
+  border: 0;
+}
+
+.network-status {
+  color: grey;
+}

@@ -13,6 +13,8 @@ var SCROLL_TICK_PX = 4;
 // Regular expression to match/find mnemonic key.
 var MNEMONIC_REGEXP = /([^&]*)&(.)(.*)/;
 
+var localStrings = new LocalStrings();
+
 /**
  * Sends 'activate' DOMUI message.
  * @param {number} index The index of menu item to activate in menu model.
