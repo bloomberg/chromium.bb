@@ -735,6 +735,9 @@ solutions = [
       # delete_unversioned_trees is set to true.
       entries = [i.name for i in self.tree(False)]
       for entry, prev_url in self._ReadEntries().iteritems():
+        if not prev_url:
+          # entry must have been overridden via .gclient custom_deps
+          continue
         # Fix path separator on Windows.
         entry_fixed = entry.replace('/', os.path.sep)
         e_dir = os.path.join(self.root_dir(), entry_fixed)
