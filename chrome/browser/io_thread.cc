@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
+#include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/common/chrome_switches.h"
@@ -115,6 +116,10 @@ class LoggingNetworkChangeObserver
 // The IOThread object must outlive any tasks posted to the IO thread before the
 // Quit task.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(IOThread);
+
+IOThread::Globals::Globals() {}
+
+IOThread::Globals::~Globals() {}
 
 IOThread::IOThread()
     : BrowserProcessSubThread(BrowserThread::IO),

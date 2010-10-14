@@ -7,6 +7,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/chrome_blob_storage_context.h"
 #include "chrome/common/url_constants.h"
+#include "net/url_request/url_request.h"
 #include "webkit/blob/view_blob_internals_job.h"
 
 // static.

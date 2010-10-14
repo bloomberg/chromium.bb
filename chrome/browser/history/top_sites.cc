@@ -279,11 +279,10 @@ bool TopSites::AddPrepopulatedPages(MostVisitedURLList* urls) {
   bool added = false;
   GURL welcome_url(l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL));
   if (urls->size() < kTopSitesNumber && IndexOf(*urls, welcome_url) == -1) {
-    MostVisitedURL url = {
-      welcome_url,
-      GURL("chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON"),
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE)
-    };
+    MostVisitedURL url(
+        welcome_url,
+        GURL("chrome://theme/IDR_NEWTAB_CHROME_WELCOME_PAGE_FAVICON"),
+        l10n_util::GetStringUTF16(IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE));
     url.redirects.push_back(welcome_url);
     urls->push_back(url);
     added = true;
@@ -291,11 +290,10 @@ bool TopSites::AddPrepopulatedPages(MostVisitedURLList* urls) {
 
   GURL themes_url(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL));
   if (urls->size() < kTopSitesNumber && IndexOf(*urls, themes_url) == -1) {
-    MostVisitedURL url = {
-      themes_url,
-      GURL("chrome://theme/IDR_NEWTAB_THEMES_GALLERY_FAVICON"),
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE)
-    };
+    MostVisitedURL url(
+        themes_url,
+        GURL("chrome://theme/IDR_NEWTAB_THEMES_GALLERY_FAVICON"),
+        l10n_util::GetStringUTF16(IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE));
     url.redirects.push_back(themes_url);
     urls->push_back(url);
     added = true;

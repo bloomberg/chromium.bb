@@ -16,7 +16,8 @@ class Connection;
 namespace webkit_database {
 
 struct DatabaseDetails {
-  DatabaseDetails() : estimated_size(0) { }
+  DatabaseDetails();
+  ~DatabaseDetails();
 
   string16 origin_identifier;
   string16 database_name;

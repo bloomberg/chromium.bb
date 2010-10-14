@@ -13,6 +13,9 @@
 
 // Describes a mime type entry for a plugin.
 struct WebPluginMimeType {
+  WebPluginMimeType();
+  ~WebPluginMimeType();
+
   // The name of the mime type (e.g., "application/x-shockwave-flash").
   std::string mime_type;
 
@@ -25,6 +28,16 @@ struct WebPluginMimeType {
 
 // Describes an available NPAPI plugin.
 struct WebPluginInfo {
+  WebPluginInfo();
+  WebPluginInfo(const WebPluginInfo& rhs);
+  ~WebPluginInfo();
+  WebPluginInfo& operator=(const WebPluginInfo& rhs);
+
+  // Special constructor only used during unit testing:
+  WebPluginInfo(const string16& fake_name,
+                const string16& fake_version,
+                const string16& fake_desc);
+
   // The name of the plugin (i.e. Flash).
   string16 name;
 

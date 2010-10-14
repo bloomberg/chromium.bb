@@ -418,11 +418,11 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
 TEST_F(TopSitesTest, GetPageThumbnail) {
   BrowserThread db_loop(BrowserThread::DB, MessageLoop::current());
   MostVisitedURLList url_list;
-  MostVisitedURL url1 = {GURL("http://asdf.com")};
+  MostVisitedURL url1(GURL("http://asdf.com"), GURL(), string16());
   url1.redirects.push_back(url1.url);
   url_list.push_back(url1);
 
-  MostVisitedURL url2 = {GURL("http://gmail.com")};
+  MostVisitedURL url2(GURL("http://gmail.com"), GURL(), string16());
   url2.redirects.push_back(url2.url);
   url2.redirects.push_back(GURL("http://mail.google.com"));
   url_list.push_back(url2);
@@ -1326,7 +1326,7 @@ TEST_F(TopSitesTest, AddPrepopulatedPages) {
 
   pages.clear();
 
-  MostVisitedURL url = {themes_url()};
+  MostVisitedURL url(themes_url(), GURL(), string16());
   pages.push_back(url);
 
   top_sites().AddPrepopulatedPages(&pages);

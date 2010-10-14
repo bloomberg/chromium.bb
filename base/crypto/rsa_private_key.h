@@ -49,7 +49,9 @@ class PrivateKeyInfoCodec {
   // that will be parsed & serialized (modulus(), etc...) during Import(),
   // Export() and ExportPublicKeyInfo() -- not the ASN.1 DER encoding of the
   // PrivateKeyInfo/PublicKeyInfo (which is always big-endian).
-  explicit PrivateKeyInfoCodec(bool big_endian) : big_endian_(big_endian) {}
+  explicit PrivateKeyInfoCodec(bool big_endian);
+
+  ~PrivateKeyInfoCodec();
 
   // Exports the contents of the integer components to the ASN.1 DER encoding
   // of the PrivateKeyInfo structure to |output|.

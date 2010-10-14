@@ -16,8 +16,10 @@ namespace fileapi {
 // and just allows unlimited quota for apps.
 class FileSystemQuota {
  public:
-  FileSystemQuota() { }
   static const int64 kUnknownSize;
+
+  FileSystemQuota();
+  ~FileSystemQuota();
 
   // Checks if the origin can grow its usage by |growth| bytes.
   // This only performs in-memory check and returns immediately.

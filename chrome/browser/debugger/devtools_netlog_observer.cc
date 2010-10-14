@@ -9,6 +9,7 @@
 #include "chrome/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_net_log_params.h"
+#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_netlog_params.h"
 #include "webkit/glue/resource_loader_bridge.h"
 

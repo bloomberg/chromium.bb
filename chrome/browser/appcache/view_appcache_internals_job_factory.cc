@@ -6,6 +6,7 @@
 
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/url_constants.h"
+#include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/view_appcache_internals_job.h"
 

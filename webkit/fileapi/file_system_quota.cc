@@ -13,6 +13,10 @@ namespace fileapi {
 
 const int64 FileSystemQuota::kUnknownSize = -1;
 
+FileSystemQuota::FileSystemQuota() {}
+
+FileSystemQuota::~FileSystemQuota() {}
+
 bool FileSystemQuota::CheckOriginQuota(const GURL& origin, int64) {
   return CheckIfOriginGrantedUnlimitedQuota(origin);
 }

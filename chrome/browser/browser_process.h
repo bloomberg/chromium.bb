@@ -49,8 +49,8 @@ class IOThread;
 // These functions shouldn't return NULL unless otherwise noted.
 class BrowserProcess {
  public:
-  BrowserProcess() {}
-  virtual ~BrowserProcess() {}
+  BrowserProcess();
+  virtual ~BrowserProcess();
 
   // Invoked when the user is logging out/shutting down. When logging off we may
   // not have enough time to do a normal shutdown. This method is invoked prior

@@ -10,6 +10,10 @@
 
 namespace webkit_database {
 
+DatabaseDetails::DatabaseDetails() : estimated_size(0) { }
+
+DatabaseDetails::~DatabaseDetails() {}
+
 bool DatabasesTable::Init() {
   // 'Databases' schema:
   //   id              A unique ID assigned to each database

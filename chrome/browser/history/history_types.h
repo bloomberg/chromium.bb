@@ -527,6 +527,12 @@ struct KeywordSearchTermVisit {
 
 // Holds the per-URL information of the most visited query.
 struct MostVisitedURL {
+  MostVisitedURL();
+  MostVisitedURL(const GURL& in_url,
+                 const GURL& in_favicon_url,
+                 const string16& in_title);
+  ~MostVisitedURL();
+
   GURL url;
   GURL favicon_url;
   string16 title;

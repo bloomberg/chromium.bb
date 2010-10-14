@@ -25,26 +25,21 @@ static const PluginGroupDefinition kPluginDefNotVulnerable = {
     "myplugin-latest", "MyPlugin", "MyPlugin", "", "", "", "http://latest" };
 
 // name, path, version, desc, mime_types, enabled.
-static WebPluginInfo kPlugin2043 = {
-    ASCIIToUTF16("MyPlugin"), FilePath(), ASCIIToUTF16("2.0.43"),
-    ASCIIToUTF16("MyPlugin version 2.0.43"),
-    std::vector<WebPluginMimeType>(), true };
-static WebPluginInfo kPlugin3043 = {
-    ASCIIToUTF16("MyPlugin"), FilePath(), ASCIIToUTF16("3.0.43"),
-    ASCIIToUTF16("MyPlugin version 3.0.43"),
-    std::vector<WebPluginMimeType>(), true };
-static WebPluginInfo kPlugin3044 = {
-    ASCIIToUTF16("MyPlugin"), FilePath(), ASCIIToUTF16("3.0.44"),
-    ASCIIToUTF16("MyPlugin version 3.0.44"),
-    std::vector<WebPluginMimeType>(), true };
-static WebPluginInfo kPlugin3045 = {
-    ASCIIToUTF16("MyPlugin"), FilePath(), ASCIIToUTF16("3.0.45"),
-    ASCIIToUTF16("MyPlugin version 3.0.45"),
-    std::vector<WebPluginMimeType>(), true };
-static WebPluginInfo kPlugin4043 = {
-    ASCIIToUTF16("MyPlugin"), FilePath(), ASCIIToUTF16("4.0.43"),
-    ASCIIToUTF16("MyPlugin version 4.0.43"),
-    std::vector<WebPluginMimeType>(), true };
+static WebPluginInfo kPlugin2043 = WebPluginInfo(
+    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("2.0.43"),
+    ASCIIToUTF16("MyPlugin version 2.0.43"));
+static WebPluginInfo kPlugin3043 = WebPluginInfo(
+    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("3.0.43"),
+    ASCIIToUTF16("MyPlugin version 3.0.43"));
+static WebPluginInfo kPlugin3044 = WebPluginInfo(
+    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("3.0.44"),
+    ASCIIToUTF16("MyPlugin version 3.0.44"));
+static WebPluginInfo kPlugin3045 = WebPluginInfo(
+    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("3.0.45"),
+    ASCIIToUTF16("MyPlugin version 3.0.45"));
+static WebPluginInfo kPlugin4043 = WebPluginInfo(
+    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("4.0.43"),
+    ASCIIToUTF16("MyPlugin version 4.0.43"));
 
 class PluginGroupTest : public testing::Test {
  protected:
@@ -160,9 +155,8 @@ TEST(PluginGroupTest, VersionExtraction) {
   };
 
   for (size_t i = 0; i < arraysize(versions); i++) {
-    const WebPluginInfo plugin = {
-        ASCIIToUTF16("Blah Plugin"), FilePath(), ASCIIToUTF16(versions[i][0]),
-        string16(),std::vector<WebPluginMimeType>(), true };
+    const WebPluginInfo plugin = WebPluginInfo(
+        ASCIIToUTF16("Blah Plugin"), ASCIIToUTF16(versions[i][0]), string16());
     scoped_ptr<PluginGroup> group(PluginGroup::FromWebPluginInfo(plugin));
     EXPECT_TRUE(group->Match(plugin));
     group->AddPlugin(plugin, 0);

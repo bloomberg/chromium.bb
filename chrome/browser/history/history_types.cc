@@ -311,19 +311,29 @@ void QueryOptions::SetRecentDayRange(int days_ago) {
 
 // KeywordSearchTermVisit -----------------------------------------------------
 
-KeywordSearchTermVisit::KeywordSearchTermVisit() {
+KeywordSearchTermVisit::KeywordSearchTermVisit() {}
+
+KeywordSearchTermVisit::~KeywordSearchTermVisit() {}
+
+// MostVisitedURL --------------------------------------------------------------
+
+MostVisitedURL::MostVisitedURL() {}
+
+MostVisitedURL::MostVisitedURL(const GURL& in_url,
+                               const GURL& in_favicon_url,
+                               const string16& in_title)
+    : url(in_url),
+      favicon_url(in_favicon_url),
+      title(in_title) {
 }
 
-KeywordSearchTermVisit::~KeywordSearchTermVisit() {
-}
+MostVisitedURL::~MostVisitedURL() {}
 
 // Images ---------------------------------------------------------------------
 
-Images::Images() {
-}
+Images::Images() {}
 
-Images::~Images() {
-}
+Images::~Images() {}
 
 // HistoryAddPageArgs ---------------------------------------------------------
 
@@ -348,8 +358,7 @@ HistoryAddPageArgs::HistoryAddPageArgs(
         did_replace_entry(arg_did_replace_entry) {
 }
 
-HistoryAddPageArgs::~HistoryAddPageArgs() {
-}
+HistoryAddPageArgs::~HistoryAddPageArgs() {}
 
 HistoryAddPageArgs* HistoryAddPageArgs::Clone() const {
   return new HistoryAddPageArgs(

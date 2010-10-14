@@ -300,6 +300,7 @@
         'plugins/webplugin_delegate_impl_win.cc',
         'plugins/webplugin_impl.cc',
         'plugins/webplugin_impl.h',
+        'plugins/webplugininfo.cc',
         'plugins/webplugininfo.h',
         'alt_error_page_resource_fetcher.cc',
         'alt_error_page_resource_fetcher.h',

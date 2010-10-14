@@ -160,6 +160,11 @@ bool PrivateKeyInfoCodec::ReadVersion(uint8** pos, uint8* end) {
   return true;
 }
 
+PrivateKeyInfoCodec::PrivateKeyInfoCodec(bool big_endian)
+    : big_endian_(big_endian) {}
+
+PrivateKeyInfoCodec::~PrivateKeyInfoCodec() {}
+
 bool PrivateKeyInfoCodec::Export(std::vector<uint8>* output) {
   std::list<uint8> content;
 

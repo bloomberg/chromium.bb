@@ -12,19 +12,19 @@
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/common/net/predictor_common.h"
-#include "chrome/browser/net/connect_interceptor.h"
-#include "net/base/host_resolver.h"
 #include "net/base/network_change_notifier.h"
 
 class ChromeNetLog;
 class ListValue;
 
 namespace chrome_browser_net {
+class ConnectInterceptor;
 class Predictor;
 }  // namespace chrome_browser_net
 
 namespace net {
 class DnsRRResolver;
+class HostResolver;
 class HttpAuthHandlerFactory;
 class URLSecurityManager;
 }  // namespace net
@@ -32,6 +32,9 @@ class URLSecurityManager;
 class IOThread : public BrowserProcessSubThread {
  public:
   struct Globals {
+    Globals();
+    ~Globals();
+
     scoped_ptr<ChromeNetLog> net_log;
     scoped_ptr<net::HostResolver> host_resolver;
     scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
