@@ -180,22 +180,21 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
-  void OnGetPluginInfoArray(const GURL& url,
-                            const GURL& policy_url,
-                            const std::string& mime_type,
-                            IPC::Message* reply_msg);
+  void OnGetPluginInfo(const GURL& url,
+                       const GURL& policy_url,
+                       const std::string& mime_type,
+                       IPC::Message* reply_msg);
   void OnGetPluginInfoOnFileThread(const GURL& url,
                                    const GURL& policy_url,
                                    const std::string& mime_type,
                                    IPC::Message* reply_msg);
-  void OnGotPluginInfo(
-      std::vector<WebPluginInfo> info,
-      const std::vector<std::string>& actual_mime_types,
-      const GURL& policy_url,
-      IPC::Message* reply_msg);
+  void OnGotPluginInfo(bool found,
+                       WebPluginInfo info,
+                       const std::string& actual_mime_type,
+                       const GURL& policy_url,
+                       IPC::Message* reply_msg);
   void OnOpenChannelToPlugin(const GURL& url,
                              const std::string& mime_type,
-                             const std::string& locale,
                              IPC::Message* reply_msg);
   void OnLaunchNaCl(const std::wstring& url,
                     int channel_descriptor,

@@ -10,13 +10,13 @@
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
-#include "base/file_util.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
-#include "base/thread.h"
 #include "base/sys_string_conversions.h"
+#include "base/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/worker_pool.h"
 #include "chrome/browser/appcache/appcache_dispatcher_host.h"
@@ -32,8 +32,8 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/file_system/file_system_host_context.h"
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
@@ -44,8 +44,11 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
-#include "chrome/browser/plugin_updater.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/plugin_selection_policy.h"
+#endif
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
@@ -406,8 +409,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPluginInfoArray,
-                                      OnGetPluginInfoArray)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPluginInfo,
+                                      OnGetPluginInfo)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
                                   OnReceiveContextMenuMsg(msg))
@@ -759,12 +762,12 @@ void ResourceMessageFilter::OnGetPluginsOnFileThread(
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
-void ResourceMessageFilter::OnGetPluginInfoArray(const GURL& url,
-                                                 const GURL& policy_url,
-                                                 const std::string& mime_type,
-                                                 IPC::Message* reply_msg) {
-  // The PluginList::GetPluginInfo may need to load the plugins.  Don't do it
-  // on the IO thread.
+void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
+                                            const GURL& policy_url,
+                                            const std::string& mime_type,
+                                            IPC::Message* reply_msg) {
+  // The PluginService::GetFirstAllowedPluginInfo may need to load the
+  // plugins.  Don't do it on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
@@ -777,50 +780,45 @@ void ResourceMessageFilter::OnGetPluginInfoOnFileThread(
     const GURL& policy_url,
     const std::string& mime_type,
     IPC::Message* reply_msg) {
-  std::vector<WebPluginInfo> info;
-  std::vector<std::string> actual_mime_types;
-  bool allow_wildcard = true;
-  NPAPI::PluginList::Singleton()->GetPluginInfoArray(
-      url, mime_type, allow_wildcard, &info, &actual_mime_types);
+  std::string actual_mime_type;
+  WebPluginInfo info;
+  bool found = plugin_service_->GetFirstAllowedPluginInfo(url,
+                                                          mime_type,
+                                                          &info,
+                                                          &actual_mime_type);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGotPluginInfo,
-          info, actual_mime_types, policy_url, reply_msg));
+          found, info, actual_mime_type, policy_url, reply_msg));
 }
 
-void ResourceMessageFilter::OnGotPluginInfo(
-    std::vector<WebPluginInfo> info,
-    const std::vector<std::string>& actual_mime_types,
-    const GURL& policy_url,
-    IPC::Message* reply_msg) {
-  std::vector<ContentSetting> settings;
-  for (std::vector<WebPluginInfo>::iterator iter = info.begin();
-       iter != info.end(); ++iter) {
-    ContentSetting setting = CONTENT_SETTING_DEFAULT;
-    WebPluginInfo& item(*iter);
-    item.enabled = item.enabled &&
-        plugin_service_->PrivatePluginAllowedForURL(item.path, policy_url);
+void ResourceMessageFilter::OnGotPluginInfo(bool found,
+                                            WebPluginInfo info,
+                                            const std::string& actual_mime_type,
+                                            const GURL& policy_url,
+                                            IPC::Message* reply_msg) {
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  if (found) {
+    info.enabled = info.enabled &&
+        plugin_service_->PrivatePluginAllowedForURL(info.path, policy_url);
     HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
-    scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(item));
+    scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
     std::string resource = group->identifier();
     setting = map->GetContentSetting(policy_url,
                                      CONTENT_SETTINGS_TYPE_PLUGINS,
                                      resource);
-    settings.push_back(setting);
   }
 
-  ViewHostMsg_GetPluginInfoArray::WriteReplyParams(
-      reply_msg, info, settings, actual_mime_types);
+  ViewHostMsg_GetPluginInfo::WriteReplyParams(
+      reply_msg, found, info, setting, actual_mime_type);
   Send(reply_msg);
 }
 
 void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
                                                   const std::string& mime_type,
-                                                  const std::string& locale,
                                                   IPC::Message* reply_msg) {
-  plugin_service_->OpenChannelToPlugin(
-      this, url, mime_type, locale, reply_msg);
+  plugin_service_->OpenChannelToPlugin(this, url, mime_type, reply_msg);
 }
 
 void ResourceMessageFilter::OnLaunchNaCl(

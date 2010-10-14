@@ -25,6 +25,12 @@
 #include "base/scoped_ptr.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class PluginSelectionPolicy;
+}
+#endif
+
 namespace IPC {
 class Message;
 }
@@ -32,9 +38,10 @@ class Message;
 class MessageLoop;
 class PluginProcessHost;
 class Profile;
-class URLRequestContext;
 class ResourceDispatcherHost;
 class ResourceMessageFilter;
+class URLRequestContext;
+struct WebPluginInfo;
 
 // This must be created on the main thread but it's only called on the IO/file
 // thread.
@@ -78,8 +85,14 @@ class PluginService
   void OpenChannelToPlugin(ResourceMessageFilter* renderer_msg_filter,
                            const GURL& url,
                            const std::string& mime_type,
-                           const std::string& locale,
                            IPC::Message* reply_msg);
+
+  // Gets the first allowed plugin in the list of plugins that matches
+  // the given url and mime type.  Must be called on the FILE thread.
+  bool GetFirstAllowedPluginInfo(const GURL& url,
+                                 const std::string& mime_type,
+                                 WebPluginInfo* info,
+                                 std::string* actual_mime_type);
 
   // Returns true if the given plugin is allowed to be used by a page with
   // the given URL.
@@ -111,6 +124,21 @@ class PluginService
 
   void RegisterPepperPlugins();
 
+  // Helper so we can do the plugin lookup on the FILE thread.
+  void GetAllowedPluginForOpenChannelToPlugin(
+      ResourceMessageFilter* renderer_msg_filter,
+      const GURL& url,
+      const std::string& mime_type,
+      IPC::Message* reply_msg);
+
+  // Helper so we can finish opening the channel after looking up the
+  // plugin.
+  void FinishOpenChannelToPlugin(
+      ResourceMessageFilter* renderer_msg_filter,
+      const std::string& mime_type,
+      const FilePath& plugin_path,
+      IPC::Message* reply_msg);
+
   // mapping between plugin path and PluginProcessHost
   typedef base::hash_map<FilePath, PluginProcessHost*> PluginMap;
   PluginMap plugin_hosts_;
@@ -134,6 +162,10 @@ class PluginService
 
   NotificationRegistrar registrar_;
 
+#if defined(OS_CHROMEOS)
+  scoped_refptr<chromeos::PluginSelectionPolicy> plugin_selection_policy_;
+#endif
+
 #if defined(OS_WIN)
   // Registry keys for getting notifications when new plugins are installed.
   RegKey hkcu_key_;
@@ -149,5 +181,7 @@ class PluginService
 
   DISALLOW_COPY_AND_ASSIGN(PluginService);
 };
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(PluginService);
 
 #endif  // CHROME_BROWSER_PLUGIN_SERVICE_H_

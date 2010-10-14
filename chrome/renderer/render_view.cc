@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "app/message_box_flags.h"
 #include "app/l10n_util.h"
+#include "app/message_box_flags.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -22,8 +22,8 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "base/time.h"
 #include "base/sys_string_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
@@ -56,9 +56,9 @@
 #include "chrome/renderer/dom_ui_bindings.h"
 #include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/bindings_utils.h"
-#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
+#include "chrome/renderer/extensions/extension_renderer_info.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/geolocation_dispatcher.h"
@@ -101,8 +101,6 @@
 #include "net/base/net_errors.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
@@ -111,9 +109,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -126,8 +124,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
@@ -145,6 +143,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWindowFeatures.h"
+#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "v8/include/v8.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/context_menu.h"
@@ -182,28 +182,17 @@
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
-using appcache::WebApplicationCacheHostImpl;
-using base::Time;
-using base::TimeDelta;
-using webkit_glue::AltErrorPageResourceFetcher;
-using webkit_glue::FormData;
-using webkit_glue::FormField;
-using webkit_glue::ImageResourceFetcher;
-using webkit_glue::PasswordForm;
-using webkit_glue::PasswordFormDomManager;
-using webkit_glue::SiteIsolationMetrics;
-using webkit_glue::WebAccessibility;
 using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityNotification;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
+using WebKit::WebCString;
 using WebKit::WebColor;
 using WebKit::WebColorName;
 using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
 using WebKit::WebCookieJar;
-using WebKit::WebCString;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDevToolsAgent;
@@ -255,9 +244,20 @@ using WebKit::WebURLResponse;
 using WebKit::WebVector;
 using WebKit::WebView;
 using WebKit::WebWidget;
+using WebKit::WebWindowFeatures;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
-using WebKit::WebWindowFeatures;
+using appcache::WebApplicationCacheHostImpl;
+using base::Time;
+using base::TimeDelta;
+using webkit_glue::AltErrorPageResourceFetcher;
+using webkit_glue::FormData;
+using webkit_glue::FormField;
+using webkit_glue::ImageResourceFetcher;
+using webkit_glue::PasswordForm;
+using webkit_glue::PasswordFormDomManager;
+using webkit_glue::SiteIsolationMetrics;
+using webkit_glue::WebAccessibility;
 
 //-----------------------------------------------------------------------------
 
@@ -299,10 +299,8 @@ static const int kDelaySecondsForContentStateSync = 1;
 // The maximum number of popups that can be spawned from one page.
 static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 
-static const char* const kUnreachableWebDataURL =
-    "chrome://chromewebdata/";
-
-static const char* const kBackForwardNavigationScheme = "history";
+static const char kUnreachableWebDataURL[] = "chrome://chromewebdata/";
+static const char kBackForwardNavigationScheme[] = "history";
 
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   WebVector<WebURL> urls;
@@ -573,22 +571,21 @@ void RenderView::PluginCrashed(const FilePath& plugin_path) {
 
 WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
-  std::vector<WebPluginInfo> info;
-  std::vector<ContentSetting> settings;
-  std::vector<std::string> mime_types;
-  Send(new ViewHostMsg_GetPluginInfoArray(
-      params.url, frame->top()->url(), params.mimeType.utf8(),
-      &info, &settings, &mime_types));
-
-  // Select the first plugin returned, but only if it's enabled.
-  if (info.empty() || !info[0].enabled)
+  WebPluginInfo info;
+  bool found;
+  ContentSetting setting;
+  std::string mime_type;
+  Send(new ViewHostMsg_GetPluginInfo(
+      params.url, frame->top()->url(), params.mimeType.utf8(), &found,
+      &info, &setting, &mime_type));
+  if (!found || !info.enabled)
     return NULL;
   scoped_refptr<pepper::PluginModule> pepper_module =
-      PepperPluginRegistry::GetInstance()->GetModule(info[0].path);
+      PepperPluginRegistry::GetInstance()->GetModule(info.path);
   if (pepper_module)
-    return CreatePepperPlugin(frame, params, info[0].path, pepper_module.get());
+    return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
   else
-    return CreateNPAPIPlugin(frame, params, info[0].path, mime_types[0]);
+    return CreateNPAPIPlugin(frame, params, info.path, mime_type);
 }
 
 void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
@@ -2381,27 +2378,28 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
-  std::vector<ContentSetting> settings;
+  bool found = false;
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  std::vector<WebPluginInfo> info;
+  WebPluginInfo info;
   GURL url(params.url);
-  std::vector<std::string> actual_mime_types;
-  Send(new ViewHostMsg_GetPluginInfoArray(url,
-                                          frame->top()->url(),
-                                          params.mimeType.utf8(),
-                                          &info,
-                                          &settings,
-                                          &actual_mime_types));
+  std::string actual_mime_type;
+  Send(new ViewHostMsg_GetPluginInfo(url,
+                                     frame->top()->url(),
+                                     params.mimeType.utf8(),
+                                     &found,
+                                     &info,
+                                     &setting,
+                                     &actual_mime_type));
 
-  if (info.empty())
+  if (!found)
     return NULL;
+  DCHECK(setting != CONTENT_SETTING_DEFAULT);
 
-  DCHECK(settings[0] != CONTENT_SETTING_DEFAULT);
+  scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info));
+  group->AddPlugin(info, 0);
 
-  scoped_ptr<PluginGroup> group(PluginGroup::CopyOrCreatePluginGroup(info[0]));
-  group->AddPlugin(info[0], 0);
-
-  if (!info[0].enabled) {
+  if (!info.enabled) {
     if (cmd->HasSwitch(switches::kDisableOutdatedPlugins) &&
         group->IsVulnerable()) {
       Send(new ViewHostMsg_DisabledOutdatedPlugin(routing_id_,
@@ -2412,17 +2410,17 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return NULL;
   }
 
-  if (info[0].path.value() == kDefaultPluginLibraryName ||
-      settings[0] == CONTENT_SETTING_ALLOW) {
+  if (info.path.value() == kDefaultPluginLibraryName ||
+      setting == CONTENT_SETTING_ALLOW) {
     scoped_refptr<pepper::PluginModule> pepper_module =
-        PepperPluginRegistry::GetInstance()->GetModule(info[0].path);
+    PepperPluginRegistry::GetInstance()->GetModule(info.path);
     if (pepper_module) {
       return CreatePepperPlugin(frame,
                                 params,
-                                info[0].path,
+                                info.path,
                                 pepper_module.get());
     }
-    return CreateNPAPIPlugin(frame, params, info[0].path, actual_mime_types[0]);
+    return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
   }
   std::string resource;
   if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
@@ -2430,14 +2428,13 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
   int resource_id;
   int message_id;
-  if (settings[0] == CONTENT_SETTING_ASK) {
+  if (setting == CONTENT_SETTING_ASK) {
     resource_id = IDR_BLOCKED_PLUGIN_HTML;
     message_id = IDS_PLUGIN_LOAD;
   } else {
     resource_id = IDR_OUTDATED_PLUGIN_HTML;
     message_id = IDS_PLUGIN_BLOCKED;
   }
-
   // |blocked_plugin| will delete itself when the WebViewPlugin
   // is destroyed.
   BlockedPlugin* blocked_plugin =
@@ -5330,7 +5327,8 @@ void RenderView::DumpLoadHistograms() const {
   }
 
   // Histograms to determine if cache throttling has an impact on PLT.
-  static bool use_cache_histogram2(base::FieldTrialList::Find("CacheThrottle") &&
+  static bool use_cache_histogram2(
+      base::FieldTrialList::Find("CacheThrottle") &&
       !base::FieldTrialList::Find("CacheThrottle")->group_name().empty());
   if (use_cache_histogram2) {
     UMA_HISTOGRAM_ENUMERATION(

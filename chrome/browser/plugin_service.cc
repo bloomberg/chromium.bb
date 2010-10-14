@@ -40,6 +40,11 @@
 #endif
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugininfo.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/plugin_selection_policy.h"
+#endif
 
 #if defined(OS_MACOSX)
 static void NotifyPluginsOfActivation() {
@@ -121,6 +126,11 @@ PluginService::PluginService()
   if (command_line->HasSwitch(switches::kInternalNaCl)) {
     RegisterInternalNaClPlugin();
   }
+#endif
+
+#if defined(OS_CHROMEOS)
+  plugin_selection_policy_ = new chromeos::PluginSelectionPolicy;
+  plugin_selection_policy_->StartInit();
 #endif
 
   chrome::RegisterInternalGPUPlugin();
@@ -243,17 +253,42 @@ void PluginService::OpenChannelToPlugin(
     ResourceMessageFilter* renderer_msg_filter,
     const GURL& url,
     const std::string& mime_type,
-    const std::string& locale,
+    IPC::Message* reply_msg) {
+  // The PluginList::GetFirstAllowedPluginInfo may need to load the
+  // plugins.  Don't do it on the IO thread.
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &PluginService::GetAllowedPluginForOpenChannelToPlugin,
+          renderer_msg_filter, url, mime_type, reply_msg));
+}
+
+void PluginService::GetAllowedPluginForOpenChannelToPlugin(
+    ResourceMessageFilter* renderer_msg_filter,
+    const GURL& url,
+    const std::string& mime_type,
+    IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  WebPluginInfo info;
+  bool found = GetFirstAllowedPluginInfo(url, mime_type, &info, NULL);
+  FilePath plugin_path;
+  if (found && info.enabled)
+    plugin_path = FilePath(info.path);
+
+  // Now we jump back to the IO thread to finish opening the channel.
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &PluginService::FinishOpenChannelToPlugin,
+          renderer_msg_filter, mime_type, plugin_path, reply_msg));
+}
+
+void PluginService::FinishOpenChannelToPlugin(
+    ResourceMessageFilter* renderer_msg_filter,
+    const std::string& mime_type,
+    const FilePath& plugin_path,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  bool allow_wildcard = true;
-  WebPluginInfo info;
-  FilePath plugin_path;
-  if (NPAPI::PluginList::Singleton()->GetPluginInfo(
-          url, mime_type, allow_wildcard, &info, NULL) && info.enabled) {
-    plugin_path = info.path;
-  }
 
   PluginProcessHost* plugin_host = FindOrStartPluginProcess(plugin_path);
   if (plugin_host) {
@@ -262,6 +297,37 @@ void PluginService::OpenChannelToPlugin(
     PluginProcessHost::ReplyToRenderer(
         renderer_msg_filter, IPC::ChannelHandle(), WebPluginInfo(), reply_msg);
   }
+}
+
+bool PluginService::GetFirstAllowedPluginInfo(
+    const GURL& url,
+    const std::string& mime_type,
+    WebPluginInfo* info,
+    std::string* actual_mime_type) {
+  // GetPluginInfoArray may need to load the plugins, so we need to be
+  // on the FILE thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  bool allow_wildcard = true;
+#if defined(OS_CHROMEOS)
+  std::vector<WebPluginInfo> info_array;
+  std::vector<std::string> actual_mime_types;
+  NPAPI::PluginList::Singleton()->GetPluginInfoArray(
+      url, mime_type, allow_wildcard, &info_array, &actual_mime_types);
+
+  // Now we filter by the plugin selection policy.
+  int allowed_index = plugin_selection_policy_->FindFirstAllowed(url,
+                                                                 info_array);
+  if (!info_array.empty() && allowed_index >= 0) {
+    *info = info_array[allowed_index];
+    if (actual_mime_type)
+      *actual_mime_type = actual_mime_types[allowed_index];
+    return true;
+  }
+  return false;
+#else
+  return NPAPI::PluginList::Singleton()->GetPluginInfo(
+      url, mime_type, allow_wildcard, info, actual_mime_type);
+#endif
 }
 
 static void PurgePluginListCache(bool reload_pages) {

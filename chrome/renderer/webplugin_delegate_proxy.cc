@@ -274,8 +274,7 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
     bool load_manually) {
   IPC::ChannelHandle channel_handle;
   if (!RenderThread::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
-          url, mime_type_, webkit_glue::GetWebKitLocale(),
-          &channel_handle, &info_))) {
+          url, mime_type_, &channel_handle, &info_))) {
     return false;
   }
 
