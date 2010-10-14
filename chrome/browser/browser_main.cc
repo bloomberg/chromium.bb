@@ -863,6 +863,29 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 }
 #endif
 
+#if defined(USE_LINUX_BREAKPAD)
+bool IsMetricsReportingEnabled(const PrefService* local_state) {
+  // Check whether we should initialize the crash reporter. It may be disabled
+  // through configuration policy or user preference. The kHeadless environment
+  // variable overrides the decision, but only if the crash service is under
+  // control of the user. The CHROME_HEADLESS environment variable is used by QA
+  // testing infrastructure to switch on generation of crash reports.
+#if defined(OS_CHROMEOS)
+  bool breakpad_enabled =
+      chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
+#else
+  const PrefService::Preference* metrics_reporting_enabled =
+      local_state->FindPreference(prefs::kMetricsReportingEnabled);
+  CHECK(metrics_reporting_enabled);
+  bool breakpad_enabled =
+      local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+  if (!breakpad_enabled && metrics_reporting_enabled->IsUserModifiable())
+    breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
+#endif  // #if defined(OS_CHROMEOS)
+  return breakpad_enabled;
+}
+#endif  // #if defined(USE_LINUX_BREAKPAD)
+
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN("BrowserMain", 0, "");
@@ -955,23 +978,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
       new GetLinuxDistroTask());
 
-  // Check whether we should initialize the crash reporter. It may be disabled
-  // through configuration policy or user preference. The kHeadless environment
-  // variable overrides the decision, but only if the crash service is under
-  // control of the user.
-#if !defined(OS_CHROMEOS)
-  const PrefService::Preference* metrics_reporting_enabled =
-      local_state->FindPreference(prefs::kMetricsReportingEnabled);
-  CHECK(metrics_reporting_enabled);
-  bool breakpad_enabled =
-      local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-  if (!breakpad_enabled && metrics_reporting_enabled->IsUserModifiable())
-    breakpad_enabled = getenv(env_vars::kHeadless) != NULL;
-#else
-  bool breakpad_enabled =
-      chromeos::MetricsCrosSettingsProvider::GetMetricsStatus();
-#endif  // #if !defined(OS_CHROMEOS)
-  if (breakpad_enabled)
+  if (IsMetricsReportingEnabled(local_state))
     InitCrashReporter();
 #endif
 
