@@ -13,6 +13,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
@@ -74,6 +75,10 @@ void WrenchMenuUI::Observe(NotificationType type,
 }
 
 void WrenchMenuUI::UpdateZoomControls() {
+  DOMUIMenuWidget* widget = DOMUIMenuWidget::FindDOMUIMenuWidget(
+      tab_contents()->GetNativeView());
+  if (!widget || !widget->is_root())
+    return;
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;

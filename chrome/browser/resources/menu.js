@@ -238,7 +238,7 @@ Menu.prototype = {
    * True to enable scroll button.
    * @type {boolean}
    */
-  scrollEnabled_ : false,
+  scrollEnabled : false,
 
   /**
    * Decorates the menu element.
@@ -443,21 +443,6 @@ Menu.prototype = {
   },
 
   /**
-   * Enable/disable menu scroll.
-   * @param {boolean} enabled True to enable scroll, or false otherwise.
-   */
-  set scrollEnabled(enabled) {
-    this.scrollEnabled_ = enabled;
-  },
-
-  /**
-   * Tells if the menu scroll is enabled.
-   */
-  get scrollEnabled() {
-    return this.scrollEnabled_;
-  },
-
-  /**
    * Handle keyboard navigation and activation.
    * @private
    */
@@ -528,7 +513,8 @@ Menu.prototype = {
   onResize_: function() {
     var up = document.getElementById('scroll-up');
     var down = document.getElementById('scroll-down');
-    if (window.innerHeight == 0) {
+    // this needs to be < 2 as empty page has height of 1.
+    if (window.innerHeight < 2) {
       // menu window is not visible yet. just hide buttons.
       up.classList.add('hidden');
       down.classList.add('hidden');
@@ -537,7 +523,7 @@ Menu.prototype = {
     // Do not use screen width to determin if we need scroll buttons
     // as the max renderer hight can be shorter than actual screen size.
     // TODO(oshima): Fix this when we implement transparent renderer.
-    if (this.scrollHeight > window.innerHeight && this.scrollEnabled_) {
+    if (this.scrollHeight > window.innerHeight && this.scrollEnabled) {
       this.style.height = (window.innerHeight - this.buttonHeight_) + 'px';
       up.classList.remove('hidden');
       down.classList.remove('hidden');

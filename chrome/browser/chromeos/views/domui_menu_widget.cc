@@ -270,6 +270,8 @@ void DOMUIMenuWidget::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 void DOMUIMenuWidget::Hide() {
   ReleaseGrab();
   WidgetGtk::Hide();
+  // Clears the content.
+  ExecuteJavascript(L"updateModel({'items':[]})");
 }
 
 void DOMUIMenuWidget::Close() {
@@ -403,9 +405,18 @@ void DOMUIMenuWidget::SetSize(const gfx::Size& new_size) {
   DCHECK(domui_menu_);
   // Ignore the empty new_size request which is called when
   // menu.html is loaded.
-  if (new_size.IsEmpty()) return;
-
-  menu_locator_->SetBounds(this, new_size);
+  if (new_size.IsEmpty())
+    return;
+  int width, height;
+  gtk_widget_get_size_request(GetNativeView(), &width, &height);
+  gfx::Size real_size(std::max(new_size.width(), width),
+                      new_size.height());
+  // Ignore the size request with the same size.
+  gfx::Rect bounds;
+  GetBounds(&bounds, false);
+  if (bounds.size() == real_size)
+    return;
+  menu_locator_->SetBounds(this, real_size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
