@@ -25,6 +25,7 @@
 #include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/test/testing_profile.h"
+#include "chrome/test/thread_test_helper.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -40,6 +41,28 @@ using ::testing::SetArgumentPointee;
 using ::testing::_;
 
 namespace chromeos {
+class ResolveChecker : public ThreadTestHelper {
+ public:
+  ResolveChecker(TestAttemptState* state,
+                 ParallelAuthenticator* auth,
+                 ParallelAuthenticator::AuthState expected)
+      : ThreadTestHelper(BrowserThread::IO),
+        state_(state),
+        auth_(auth),
+        expected_(expected) {
+  }
+  ~ResolveChecker() {}
+
+  virtual void RunTest() {
+    auth_->set_attempt_state(state_);
+    set_test_result(expected_ == auth_->ResolveState());
+  }
+
+ private:
+  TestAttemptState* state_;
+  ParallelAuthenticator* auth_;
+  ParallelAuthenticator::AuthState expected_;
+};
 
 class ParallelAuthenticatorTest : public ::testing::Test {
  public:
@@ -177,13 +200,6 @@ class ParallelAuthenticatorTest : public ::testing::Test {
     auth->set_attempt_state(state);
   }
 
-  static void CheckResolve(TestAttemptState* state,
-                           ParallelAuthenticator* auth,
-                           ParallelAuthenticator::AuthState expected) {
-    auth->set_attempt_state(state);
-    EXPECT_EQ(expected, auth->ResolveState());
-  }
-
   MessageLoop message_loop_;
   BrowserThread ui_thread_;
   BrowserThread file_thread_;
@@ -261,12 +277,11 @@ TEST_F(ParallelAuthenticatorTest, OnPasswordChangeDetected) {
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveNothingDone) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&ParallelAuthenticatorTest::CheckResolve,
-                          state_.release(),
-                          auth_.get(),
-                          ParallelAuthenticator::CONTINUE));
+  scoped_refptr<ResolveChecker> checker(
+      new ResolveChecker(state_.release(),
+                         auth_.get(),
+                         ParallelAuthenticator::CONTINUE));
+  EXPECT_TRUE(checker->Run());
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChange) {
@@ -274,12 +289,11 @@ TEST_F(ParallelAuthenticatorTest, ResolvePossiblePwChange) {
   // and been rejected.
   state_->PresetCryptohomeStatus(false,
                                  chromeos::kCryptohomeMountErrorKeyFailure);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&ParallelAuthenticatorTest::CheckResolve,
-                          state_.release(),
-                          auth_.get(),
-                          ParallelAuthenticator::POSSIBLE_PW_CHANGE));
+  scoped_refptr<ResolveChecker> checker(
+      new ResolveChecker(state_.release(),
+                         auth_.get(),
+                         ParallelAuthenticator::POSSIBLE_PW_CHANGE));
+  EXPECT_TRUE(checker->Run());
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveFailedMount) {
@@ -423,13 +437,11 @@ TEST_F(ParallelAuthenticatorTest, ResolveNoMount) {
   state_->PresetCryptohomeStatus(
       false,
       chromeos::kCryptohomeMountErrorUserDoesNotExist);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&ParallelAuthenticatorTest::CheckResolve,
-                          state_.release(),
-                          auth_.get(),
-                          ParallelAuthenticator::NO_MOUNT));
+  scoped_refptr<ResolveChecker> checker(
+      new ResolveChecker(state_.release(),
+                         auth_.get(),
+                         ParallelAuthenticator::NO_MOUNT));
+  EXPECT_TRUE(checker->Run());
 }
 
 TEST_F(ParallelAuthenticatorTest, ResolveCreateNew) {
@@ -441,13 +453,11 @@ TEST_F(ParallelAuthenticatorTest, ResolveCreateNew) {
       chromeos::kCryptohomeMountErrorUserDoesNotExist);
   state_->PresetOnlineLoginStatus(GaiaAuthConsumer::ClientLoginResult(),
                                  LoginFailure::None());
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&ParallelAuthenticatorTest::CheckResolve,
-                          state_.release(),
-                          auth_.get(),
-                          ParallelAuthenticator::CREATE_NEW));
+  scoped_refptr<ResolveChecker> checker(
+      new ResolveChecker(state_.release(),
+                         auth_.get(),
+                         ParallelAuthenticator::CREATE_NEW));
+  EXPECT_TRUE(checker->Run());
 }
 
 TEST_F(ParallelAuthenticatorTest, DriveCreateForNewUser) {

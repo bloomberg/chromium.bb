@@ -31,7 +31,8 @@ class Profile;
 namespace chromeos {
 
 class LoginStatusConsumer;
-class ParallelAuthenticatorTest;
+class ParallelAuthenticator;
+class ResolveChecker;
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
 //
@@ -258,6 +259,7 @@ class ParallelAuthenticator : public Authenticator,
   bool checked_for_localaccount_;  // needed because empty localaccount_ is ok.
   Lock localaccount_lock_;  // a lock around checked_for_localaccount_.
 
+  friend class ResolveChecker;
   friend class ParallelAuthenticatorTest;
   FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, SaltToAscii);
   FRIEND_TEST_ALL_PREFIXES(ParallelAuthenticatorTest, ReadLocalaccount);
