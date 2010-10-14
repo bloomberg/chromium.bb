@@ -99,7 +99,8 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
     // Establish the communication for handle passing protocol
     struct NaClDesc* desc = NaClHandlePassBrowserGetSocketAddress();
-    if (!runtime_channel_->InitHandlePassing(desc, subprocess_->child())) {
+    if (!runtime_channel_->InitHandlePassing(desc,
+                                             subprocess_->child_process())) {
       return Failure("service runtime: failed handle passing protocol");
     }
 #endif
