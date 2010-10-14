@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,10 +202,10 @@ class TabRestoreService : public BaseSessionService {
   // Notifies observers the tabs have changed.
   void NotifyTabsChanged();
 
-  // Adds |entry| to the list of entries. If |prune| is true |PruneAndNotify|
-  // is invoked. If |to_front| is true the entry is added to the front,
-  // otherwise the back. Normal closes go to the front, but tab/window closes
-  // from the previous session are added to the back.
+  // Adds |entry| to the list of entries and takes ownership. If |prune| is true
+  // |PruneAndNotify| is invoked. If |to_front| is true the entry is added to
+  // the front, otherwise the back. Normal closes go to the front, but
+  // tab/window closes from the previous session are added to the back.
   void AddEntry(Entry* entry, bool prune, bool to_front);
 
   // Prunes entries_ to contain only kMaxEntries and invokes NotifyTabsChanged.

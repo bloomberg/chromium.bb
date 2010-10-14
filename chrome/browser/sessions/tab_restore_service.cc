@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,7 +222,7 @@ void TabRestoreService::BrowserClosing(Browser* browser) {
 
   closing_browsers_.insert(browser);
 
-  Window* window = new Window();
+  scoped_ptr<Window> window(new Window());
   window->selected_tab_index = browser->selected_index();
   window->timestamp = TimeNow();
   // Don't use std::vector::resize() because it will push copies of an empty tab
@@ -242,14 +242,16 @@ void TabRestoreService::BrowserClosing(Browser* browser) {
       entry_index++;
     }
   }
-  if (window->tabs.empty()) {
-    delete window;
-    window = NULL;
-  } else {
+  if (window->tabs.size() == 1) {
+    // Short-circuit creating a Window if only 1 tab was present. This fixes
+    // http://crbug.com/56744. Copy the Tab because it's owned by an object on
+    // the stack.
+    AddEntry(new Tab(window->tabs[0]), true, true);
+  } else if (!window->tabs.empty()) {
     window->selected_tab_index =
         std::min(static_cast<int>(window->tabs.size() - 1),
                  window->selected_tab_index);
-    AddEntry(window, true, true);
+    AddEntry(window.release(), true, true);
   }
 }
 

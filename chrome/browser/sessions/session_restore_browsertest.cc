@@ -117,3 +117,31 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
   window = static_cast<TabRestoreService::Window*>(service->entries().front());
   EXPECT_EQ(2U, window->tabs.size());
 }
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, WindowWithOneTab) {
+  GURL url(ui_test_utils::GetTestUrl(
+      FilePath(FilePath::kCurrentDirectory),
+      FilePath(FILE_PATH_LITERAL("title1.html"))));
+
+  // Add a single tab.
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  TabRestoreService* service = browser()->profile()->GetTabRestoreService();
+  service->ClearEntries();
+  EXPECT_EQ(0U, service->entries().size());
+
+  // Close the window.
+  browser()->window()->Close();
+
+  // Expect the window to be converted to a tab by the TRS.
+  EXPECT_EQ(1U, service->entries().size());
+  ASSERT_EQ(TabRestoreService::TAB, service->entries().front()->type);
+  const TabRestoreService::Tab* tab =
+      static_cast<TabRestoreService::Tab*>(service->entries().front());
+
+  // Restore the tab.
+  service->RestoreEntryById(NULL, tab->id, false);
+
+  // Make sure the restore was successful.
+  EXPECT_EQ(0U, service->entries().size());
+}
