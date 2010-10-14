@@ -17,42 +17,6 @@ BlobStorageController::BlobStorageController() {
 BlobStorageController::~BlobStorageController() {
 }
 
-void BlobStorageController::AppendStorageItems(
-    BlobData* target_blob_data, BlobData* src_blob_data,
-    uint64 offset, uint64 length) {
-  DCHECK(target_blob_data && src_blob_data &&
-         length != static_cast<uint64>(-1));
-
-  std::vector<BlobData::Item>::const_iterator iter =
-      src_blob_data->items().begin();
-  if (offset) {
-    for (; iter != src_blob_data->items().end(); ++iter) {
-      if (offset >= iter->length())
-        offset -= iter->length();
-      else
-        break;
-    }
-  }
-
-  for (; iter != src_blob_data->items().end() && length > 0; ++iter) {
-    uint64 current_length = iter->length() - offset;
-    uint64 new_length = current_length > length ? length : current_length;
-    if (iter->type() == BlobData::TYPE_DATA) {
-      target_blob_data->AppendData(iter->data(),
-                                   static_cast<uint32>(iter->offset() + offset),
-                                   static_cast<uint32>(new_length));
-    } else {
-      DCHECK(iter->type() == BlobData::TYPE_FILE);
-      target_blob_data->AppendFile(iter->file_path(),
-                                   iter->offset() + offset,
-                                   new_length,
-                                   iter->expected_modification_time());
-    }
-    length -= new_length;
-    offset = 0;
-  }
-}
-
 void BlobStorageController::RegisterBlobUrl(
     const GURL& url, const BlobData* blob_data) {
   scoped_refptr<BlobData> target_blob_data = new BlobData();
@@ -78,10 +42,11 @@ void BlobStorageController::RegisterBlobUrl(
         break;
       }
       case BlobData::TYPE_FILE:
-        target_blob_data->AppendFile(iter->file_path(),
-                                     iter->offset(),
-                                     iter->length(),
-                                     iter->expected_modification_time());
+        AppendFileItem(target_blob_data,
+                       iter->file_path(),
+                       iter->offset(),
+                       iter->length(),
+                       iter->expected_modification_time());
         break;
       case BlobData::TYPE_BLOB: {
         BlobData* src_blob_data = GetBlobDataFromUrl(iter->blob_url());
@@ -177,6 +142,57 @@ void BlobStorageController::ResolveBlobReferencesInUploadData(
       }
     }
   }
+}
+
+void BlobStorageController::AppendStorageItems(
+    BlobData* target_blob_data, BlobData* src_blob_data,
+    uint64 offset, uint64 length) {
+  DCHECK(target_blob_data && src_blob_data &&
+         length != static_cast<uint64>(-1));
+
+  std::vector<BlobData::Item>::const_iterator iter =
+      src_blob_data->items().begin();
+  if (offset) {
+    for (; iter != src_blob_data->items().end(); ++iter) {
+      if (offset >= iter->length())
+        offset -= iter->length();
+      else
+        break;
+    }
+  }
+
+  for (; iter != src_blob_data->items().end() && length > 0; ++iter) {
+    uint64 current_length = iter->length() - offset;
+    uint64 new_length = current_length > length ? length : current_length;
+    if (iter->type() == BlobData::TYPE_DATA) {
+      target_blob_data->AppendData(iter->data(),
+                                   static_cast<uint32>(iter->offset() + offset),
+                                   static_cast<uint32>(new_length));
+    } else {
+      DCHECK(iter->type() == BlobData::TYPE_FILE);
+      AppendFileItem(target_blob_data,
+                     iter->file_path(),
+                     iter->offset() + offset,
+                     new_length,
+                     iter->expected_modification_time());
+    }
+    length -= new_length;
+    offset = 0;
+  }
+}
+
+void BlobStorageController::AppendFileItem(
+    BlobData* target_blob_data,
+    const FilePath& file_path, uint64 offset, uint64 length,
+    const base::Time& expected_modification_time) {
+  target_blob_data->AppendFile(file_path, offset, length,
+                               expected_modification_time);
+
+  // It may be a temporary file that should be deleted when no longer needed.
+  scoped_refptr<DeletableFileReference> deletable_file =
+      DeletableFileReference::Get(file_path);
+  if (deletable_file)
+    target_blob_data->AttachDeletableFileReference(deletable_file);
 }
 
 }  // namespace webkit_blob

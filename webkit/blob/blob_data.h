@@ -12,6 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/blob/deletable_file_reference.h"
 
 namespace WebKit {
 class WebBlobData;
@@ -117,13 +118,11 @@ class BlobData : public base::RefCounted<BlobData> {
     items_.back().SetToBlob(blob_url, offset, length);
   }
 
+  void AttachDeletableFileReference(DeletableFileReference* reference) {
+    deletable_files_.push_back(reference);
+  }
+
   const std::vector<Item>& items() const { return items_; }
-  void set_items(const std::vector<Item>& items) {
-    items_ = items;
-  }
-  void swap_items(std::vector<Item>* items) {
-    items_.swap(*items);
-  }
 
   const std::string& content_type() const { return content_type_; }
   void set_content_type(const std::string& content_type) {
@@ -137,6 +136,11 @@ class BlobData : public base::RefCounted<BlobData> {
     content_disposition_ = content_disposition;
   }
 
+  // Should only be called by the IPC ParamTraits for this class.
+  void swap_items(std::vector<Item>* items) {
+    items_.swap(*items);
+  }
+
  private:
   friend class base::RefCounted<BlobData>;
 
@@ -145,6 +149,9 @@ class BlobData : public base::RefCounted<BlobData> {
   std::string content_type_;
   std::string content_disposition_;
   std::vector<Item> items_;
+  std::vector<scoped_refptr<DeletableFileReference> > deletable_files_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobData);
 };
 
 #if defined(UNIT_TEST)

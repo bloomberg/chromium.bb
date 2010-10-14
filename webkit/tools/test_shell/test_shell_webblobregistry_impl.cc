@@ -16,8 +16,12 @@ using WebKit::WebBlobData;
 using WebKit::WebString;
 using WebKit::WebURL;
 
+namespace {
+
 MessageLoop* g_io_thread;
 webkit_blob::BlobStorageController* g_blob_storage_controller;
+
+}  // namespace
 
 /* static */
 void TestShellWebBlobRegistryImpl::InitializeOnIOThread(
@@ -38,15 +42,14 @@ TestShellWebBlobRegistryImpl::TestShellWebBlobRegistryImpl() {
 void TestShellWebBlobRegistryImpl::registerBlobURL(
     const WebURL& url, WebBlobData& data) {
   DCHECK(g_io_thread);
+  // Note: BlobData is not refcounted thread safe.
   scoped_refptr<webkit_blob::BlobData> blob_data(
       new webkit_blob::BlobData(data));
-  blob_data->AddRef();  // Release on DoRegisterBlobURL.
   g_io_thread->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &TestShellWebBlobRegistryImpl::DoRegisterBlobUrl,
-                        url,
-                        blob_data.get()));
+      NewRunnableMethod(
+          this, &TestShellWebBlobRegistryImpl::DoRegisterBlobUrl, url,
+          blob_data.release()));  // Released in DoRegisterBlobUrl.
 }
 
 void TestShellWebBlobRegistryImpl::registerBlobURL(
