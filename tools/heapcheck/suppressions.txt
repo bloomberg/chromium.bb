@@ -1124,9 +1124,3 @@
    fun:main
    fun:__libc_start_main
 }
-{
-   bug_59019
-   Heapcheck:Leak
-   fun:invalidation::NewPermanentCallback
-   fun:sync_notifier::::ChromeSystemResourcesTest_WriteState_Test::TestBody
-}
