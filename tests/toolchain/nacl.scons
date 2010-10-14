@@ -1,7 +1,6 @@
 # Copyright 2009 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
-# Copyright 2009, Google Inc.
 
 Import('env')
 
@@ -33,11 +32,13 @@ if not ARGUMENTS.get('bitcode'):
   node = env.CommandSelLdrTestNacl('setlongjmp.out',
                                    command=[nexe],
                                    exit_status='55')
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_setlongjmp_test')
+  env.AddNodeToTestSuite(node,
+                         ['toolchain_tests','small_tests'],
+                         'run_setlongjmp_test')
 
 # NOTE: this currently only works for PNaCl, c.f:
 # http://code.google.com/p/nativeclient/issues/detail?id=968
-INITFINIT_TESTS=['small_tests']
+INITFINIT_TESTS=['toolchain_tests', 'small_tests']
 if not ARGUMENTS.get('bitcode'):
   INITFINIT_TESTS=[]
 
@@ -46,3 +47,21 @@ node = env.CommandSelLdrTestNacl('initfini.out',
                                  command=[nexe],
                                  stdout_golden=env.File('initfini.stdout'))
 env.AddNodeToTestSuite(node, INITFINIT_TESTS, 'run_initfini_test')
+
+
+
+# NOTE: these currently do not work with PNaCl, c.f.:
+# http://code.google.com/p/nativeclient/issues/detail?id=720
+EH_TESTS=['toolchain_tests', 'small_tests']
+if ARGUMENTS.get('bitcode'):
+  EH_TESTS=[]
+for t in ['eh_virtual_dtor',
+          'eh_loop_single',
+          'eh_loop_many',
+          'eh_catch_many',
+          'eh_loop_break']:
+  nexe = env.ComponentProgram(t + '.nexe', t + '.cc')
+  node = env.CommandSelLdrTestNacl(t + '.out',
+                                   command=[nexe],
+                                   exit_status='55')
+  env.AddNodeToTestSuite(node, EH_TESTS, 'run_' + t + '_test')
