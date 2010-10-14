@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "app/gfx/gl/gl_mock.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::gfx::MockGLInterface;

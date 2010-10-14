@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <string>
 
-#include "app/gfx/gl/gl_mock.h"
 #include "base/string_number_conversions.h"
+#include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"

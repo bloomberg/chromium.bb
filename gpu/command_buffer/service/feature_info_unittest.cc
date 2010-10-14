@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/feature_info.h"
-#include "app/gfx/gl/gl_mock.h"
+
 #include "base/scoped_ptr.h"
+#include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/GLES2/gles2_command_buffer.h"

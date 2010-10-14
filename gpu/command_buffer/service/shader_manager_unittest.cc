@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/shader_manager.h"
+
 #include "base/scoped_ptr.h"
-#include "app/gfx/gl/gl_mock.h"
+#include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {

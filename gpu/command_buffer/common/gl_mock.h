@@ -16,8 +16,8 @@ namespace gfx {
 
 class MockGLInterface : public GLInterface {
  public:
-  virtual ~MockGLInterface() {
-  }
+  MockGLInterface();
+  virtual ~MockGLInterface();
 
   MOCK_METHOD1(ActiveTexture, void(GLenum texture));
 

@@ -138,7 +138,6 @@
         'gfx/gl/gl_implementation_win.cc',
         'gfx/gl/gl_interface.h',
         'gfx/gl/gl_interface.cc',
-        'gfx/gl/gl_mock.h',
         'gtk_dnd_util.cc',
         'gtk_dnd_util.h',
         'gtk_signal.h',

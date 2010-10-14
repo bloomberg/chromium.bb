@@ -5,7 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_TEST_HELPER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_TEST_HELPER_H_
 
-#include "app/gfx/gl/gl_mock.h"
+#include "gpu/command_buffer/common/gl_mock.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 
 namespace gpu {

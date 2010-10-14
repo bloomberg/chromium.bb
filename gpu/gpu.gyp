@@ -229,6 +229,8 @@
         'command_buffer/client/mapped_memory_unittest.cc',
         'command_buffer/client/ring_buffer_test.cc',
         'command_buffer/common/bitfield_helpers_test.cc',
+        'command_buffer/common/gl_mock.h',
+        'command_buffer/common/gl_mock.cc',
         'command_buffer/common/gles2_cmd_format_test.cc',
         'command_buffer/common/gles2_cmd_format_test_autogen.h',
         'command_buffer/common/gles2_cmd_id_test.cc',

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/buffer_manager.h"
-#include "app/gfx/gl/gl_mock.h"
+#include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
