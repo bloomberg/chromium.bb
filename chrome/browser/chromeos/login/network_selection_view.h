@@ -110,6 +110,7 @@ class NetworkSelectionView : public views::View,
   views::NativeButton* continue_button_;
   views::Throbber* throbber_;
   views::Link* proxy_settings_link_;
+  bool show_keyboard_button_;
 
   // NetworkScreen delegate.
   NetworkScreenDelegate* delegate_;

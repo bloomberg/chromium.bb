@@ -158,6 +158,7 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       continue_button_(NULL),
       throbber_(CreateDefaultSmoothedThrobber()),
       proxy_settings_link_(NULL),
+      show_keyboard_button_(false),
       delegate_(delegate) {
 }
 
@@ -188,13 +189,16 @@ void NetworkSelectionView::AddControlsToLayout(const gfx::Size& size,
                     GridLayout::FILL, GridLayout::FILL,
                     languages_menubutton_->GetPreferredSize().width(),
                     kSelectionBoxHeight);
-    contents_layout->AddPaddingRow(0, kControlPaddingRow);
-    contents_layout->StartRow(0, STANDARD_ROW);
-    contents_layout->AddView(select_keyboard_label_);
-    contents_layout->AddView(keyboards_menubutton_, 1, 1,
-                    GridLayout::FILL, GridLayout::FILL,
-                    keyboards_menubutton_->GetPreferredSize().width(),
-                    kSelectionBoxHeight);
+    if (show_keyboard_button_) {
+      contents_layout->AddPaddingRow(0, kControlPaddingRow);
+      contents_layout->StartRow(0, STANDARD_ROW);
+      contents_layout->AddView(select_keyboard_label_);
+      contents_layout->AddView(
+          keyboards_menubutton_, 1, 1,
+          GridLayout::FILL, GridLayout::FILL,
+          keyboards_menubutton_->GetPreferredSize().width(),
+          kSelectionBoxHeight);
+    }
     contents_layout->AddPaddingRow(0, kControlPaddingRow);
     contents_layout->StartRow(0, STANDARD_ROW);
     contents_layout->AddView(select_network_label_);
@@ -372,6 +376,7 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
 // views::View: implementation:
 
 void NetworkSelectionView::OnLocaleChanged() {
+  show_keyboard_button_ = true;
   UpdateLocalizedStrings();
   // Proxy settings dialog contains localized title.  Zap it.
   proxy_settings_dialog_.reset(NULL);
