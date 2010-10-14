@@ -169,9 +169,6 @@ static const char kWindowPermission[] = "windows";
 
 }  // namespace
 
-// static
-bool Extension::emit_traces_for_whitelist_extension_test_ = false;
-
 const FilePath::CharType Extension::kManifestFilename[] =
     FILE_PATH_LITERAL("manifest.json");
 const FilePath::CharType Extension::kLocaleFolder[] =
@@ -2102,8 +2099,6 @@ bool Extension::CanExecuteScriptOnPage(
           switches::kAllowScriptingGallery)) {
     if (error)
       *error = errors::kCannotScriptGallery;
-    if (Extension::emit_traces_for_whitelist_extension_test_)
-      printf("***** CANNOT SCRIPT GALLERY!! \n");
     return false;
   }
 
@@ -2112,14 +2107,10 @@ bool Extension::CanExecuteScriptOnPage(
       if ((*host_permissions)[i].MatchesUrl(page_url))
         return true;
     }
-    if (Extension::emit_traces_for_whitelist_extension_test_)
-      printf("***** HAS NO HOST PERMISSIONS!! \n");
   }
   if (script) {
     if (script->MatchesUrl(page_url))
       return true;
-    if (Extension::emit_traces_for_whitelist_extension_test_)
-      printf("***** HAS NO SCRIPT PERMISSIONS!! \n");
   }
 
   if (error) {
@@ -2191,8 +2182,6 @@ bool Extension::CanExecuteScriptEverywhere() const {
     }
   }
 
-  if (emit_traces_for_whitelist_extension_test_)
-    printf("***** CanExecuteScriptEverywhere returns FALSE \n");
   return false;
 }
 

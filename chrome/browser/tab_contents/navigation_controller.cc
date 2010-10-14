@@ -1110,18 +1110,10 @@ void NavigationController::NotifyNavigationEntryCommitted(
   tab_contents_->NotifyNavigationStateChanged(
       kInvalidateAllButShelves | extra_invalidate_flags);
 
-  // TODO(finnur): Remove once I have results from failed run of this test.
-  if (Extension::emit_traces_for_whitelist_extension_test_)
-    printf("***** Sending NAV_ENTRY_COMMITTED\n");
-
   NotificationService::current()->Notify(
       NotificationType::NAV_ENTRY_COMMITTED,
       Source<NavigationController>(this),
       notification_details);
-
-  // TODO(finnur): Remove once I have results from failed run of this test.
-  if (Extension::emit_traces_for_whitelist_extension_test_)
-    printf("***** NAV_ENTRY_COMMITTED sent\n");
 }
 
 // static

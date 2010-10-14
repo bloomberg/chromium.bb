@@ -30,8 +30,6 @@ ExecuteCodeInTabFunction::~ExecuteCodeInTabFunction() {
 }
 
 bool ExecuteCodeInTabFunction::RunImpl() {
-  if (Extension::emit_traces_for_whitelist_extension_test_)
-    printf("***** ExecuteCodeInTabFunction::RunImpl() runs\n");
   DictionaryValue* script_info;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &script_info));
   size_t number_of_value = script_info->size();
@@ -89,12 +87,8 @@ bool ExecuteCodeInTabFunction::RunImpl() {
         &host_permissions,
         NULL,
         &error_)) {
-    if (Extension::emit_traces_for_whitelist_extension_test_)
-      printf("***** CANNOT EXECUTE!! \n");
     return false;
   }
-  if (Extension::emit_traces_for_whitelist_extension_test_)
-    printf("***** ALLOWED to execute. \n");
 
   if (script_info->HasKey(keys::kAllFramesKey)) {
     if (!script_info->GetBoolean(keys::kAllFramesKey, &all_frames_))

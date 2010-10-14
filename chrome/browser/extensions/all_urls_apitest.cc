@@ -21,8 +21,6 @@ typedef ExtensionApiTest AllUrlsApiTest;
 // problem lies and needs to check in these traces because the problem doesn't
 // repro locally (nor on the try bots).
 IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
-  Extension::emit_traces_for_whitelist_extension_test_ = true;
-
   // First setup the two extensions.
   FilePath extension_dir1 = test_data_dir_.AppendASCII("all_urls")
                                           .AppendASCII("content_script");

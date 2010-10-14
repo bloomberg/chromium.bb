@@ -90,9 +90,6 @@ class Extension {
     TYPE_PACKAGED_APP
   };
 
-  // TODO(finur): Remove once I have one failed run of this test.
-  static bool emit_traces_for_whitelist_extension_test_;
-
   // Contains a subset of the extension's data that doesn't change once
   // initialized, and therefore shareable across threads without locking.
   struct StaticData : public base::RefCountedThreadSafe<StaticData> {
