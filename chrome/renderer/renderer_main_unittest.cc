@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
 #include "ipc/ipc_channel.h"
@@ -25,6 +26,8 @@ extern int RendererMain(const MainFunctionParams& parameters);
 // functionality, we should combine them.
 class RendererMainTest : public base::MultiProcessTest {
  protected:
+  RendererMainTest() {}
+
   // Create a new MessageLoopForIO For each test.
   virtual void SetUp();
   virtual void TearDown();
@@ -65,7 +68,11 @@ ProcessHandle RendererMainTest::SpawnChild(const std::string& procname,
 // Listener class that kills the message loop when it connects.
 class SuicidalListener : public IPC::Channel::Listener {
  public:
+  explicit SuicidalListener(bool* suicide_success)
+      : suicide_success_(suicide_success) {}
+
   void OnChannelConnected(int32 peer_pid) {
+    *suicide_success_ = true;
     MessageLoop::current()->Quit();
   }
 
@@ -73,6 +80,9 @@ class SuicidalListener : public IPC::Channel::Listener {
     // We shouldn't receive any messages
     ASSERT_TRUE(false);
   }
+
+  // A flag that we set when we have successfully suicided.
+  bool* suicide_success_;
 };
 
 MULTIPROCESS_TEST_MAIN(SimpleRenderer) {
@@ -85,19 +95,28 @@ MULTIPROCESS_TEST_MAIN(SimpleRenderer) {
 }
 
 TEST_F(RendererMainTest, CreateDestroy) {
-  SuicidalListener listener;
+  bool suicide_success = false;
+  SuicidalListener listener(&suicide_success);
   IPC::Channel control_channel(kRendererTestChannelName,
                                IPC::Channel::MODE_SERVER,
                                &listener);
   base::ProcessHandle renderer_pid = SpawnChild("SimpleRenderer",
                                                 &control_channel);
 
-  control_channel.Connect();
+  ASSERT_TRUE(control_channel.Connect());
+
+  // The SuicidalListener *should* cause the following MessageLoop run
+  // to quit, but just in case it doesn't, insert a QuitTask at the back
+  // of the queue.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
+                                          TestTimeouts::action_timeout_ms());
   MessageLoop::current()->Run();
+  ASSERT_TRUE(suicide_success);
 
   // The renderer should exit when we close the channel.
   control_channel.Close();
 
-  EXPECT_TRUE(base::WaitForSingleProcess(renderer_pid, 5000));
+  EXPECT_TRUE(base::WaitForSingleProcess(renderer_pid,
+                                         TestTimeouts::action_timeout_ms()));
 }
 #endif  // defined(OS_POSIX)
