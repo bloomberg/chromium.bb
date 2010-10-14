@@ -398,8 +398,7 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer,
 }
 
 - (BOOL)isSyncVisible {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableClearServerData);
+  return YES;
 }
 
 - (BOOL)isSyncEnabled {

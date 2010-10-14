@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -167,20 +168,15 @@ void ClearServerDataView::InitControlLayout() {
 }
 
 void ClearServerDataView::InitControlVisibility() {
-  bool allow_clear_server_data_ui =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClearServerData);
-
   // Hide progress indicators
   throbber_->SetVisible(false);
   status_label_->SetVisible(false);
 
-  // Only show the sync portion if behind the flag
-  chrome_sync_title_label_->SetVisible(allow_clear_server_data_ui);
-  chrome_sync_description_label_->SetVisible(allow_clear_server_data_ui);
-  clear_server_data_button_->SetVisible(allow_clear_server_data_ui);
-  dashboard_label_->SetVisible(allow_clear_server_data_ui);
-  dashboard_link_->SetVisible(allow_clear_server_data_ui);
+  chrome_sync_title_label_->SetVisible(true);
+  chrome_sync_description_label_->SetVisible(true);
+  clear_server_data_button_->SetVisible(true);
+  dashboard_label_->SetVisible(true);
+  dashboard_link_->SetVisible(true);
 
   // Enable our clear button, set false for delete_in_progress
   UpdateClearButtonEnabledState(false);
