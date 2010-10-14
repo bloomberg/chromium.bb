@@ -94,6 +94,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
       "       \"search_url\":\"http://foo.com/s?q={searchTerms}\","
       "       \"favicon_url\":\"http://foi.com/favicon.ico\","
       "       \"suggest_url\":\"\","
+      "       \"instant_url\":\"\","
       "       \"encoding\":\"UTF-8\","
       "       \"search_engine_type\":1,"
       "       \"logo_id\":0,"

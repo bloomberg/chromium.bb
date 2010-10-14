@@ -144,6 +144,11 @@ const char kDefaultSearchProviderSearchURL[] =
 const char kDefaultSearchProviderSuggestURL[] =
     "default_search_provider.suggest_url";
 
+// The URL (as understood by TemplateURLRef) the default search provider uses
+// for instant results.
+const char kDefaultSearchProviderInstantURL[] =
+    "default_search_provider.instant_url";
+
 // The Fav Icon URL (as understood by TemplateURLRef) of the default search
 // provider.
 const char kDefaultSearchProviderIconURL[] =

@@ -590,6 +590,8 @@ void TemplateURLModel::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(
       prefs::kDefaultSearchProviderSearchURL, std::string());
   prefs->RegisterStringPref(
+      prefs::kDefaultSearchProviderInstantURL, std::string());
+  prefs->RegisterStringPref(
       prefs::kDefaultSearchProviderKeyword, std::string());
   prefs->RegisterStringPref(
       prefs::kDefaultSearchProviderIconURL, std::string());
@@ -756,6 +758,7 @@ void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
   bool enabled = false;
   std::string search_url;
   std::string suggest_url;
+  std::string instant_url;
   std::string icon_url;
   std::string encodings;
   std::string short_name;
@@ -768,6 +771,8 @@ void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
       search_url = t_url->url()->url();
     if (t_url->suggestions_url())
       suggest_url = t_url->suggestions_url()->url();
+    if (t_url->instant_url())
+      instant_url = t_url->instant_url()->url();
     GURL icon_gurl = t_url->GetFavIconURL();
     if (!icon_gurl.is_empty())
       icon_url = icon_gurl.spec();
@@ -780,6 +785,7 @@ void TemplateURLModel::SaveDefaultSearchProviderToPrefs(
   prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, enabled);
   prefs->SetString(prefs::kDefaultSearchProviderSearchURL, search_url);
   prefs->SetString(prefs::kDefaultSearchProviderSuggestURL, suggest_url);
+  prefs->SetString(prefs::kDefaultSearchProviderInstantURL, instant_url);
   prefs->SetString(prefs::kDefaultSearchProviderIconURL, icon_url);
   prefs->SetString(prefs::kDefaultSearchProviderEncodings, encodings);
   prefs->SetString(prefs::kDefaultSearchProviderName, short_name);
@@ -809,6 +815,8 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
       prefs->GetString(prefs::kDefaultSearchProviderSuggestURL);
   std::string search_url =
       prefs->GetString(prefs::kDefaultSearchProviderSearchURL);
+  std::string instant_url =
+      prefs->GetString(prefs::kDefaultSearchProviderInstantURL);
 
   if (!enabled || (suggest_url.empty() && search_url.empty())) {
     // The user doesn't want a default search provider.
@@ -832,6 +840,7 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
   (*default_provider)->set_short_name(name);
   (*default_provider)->SetURL(search_url, 0, 0);
   (*default_provider)->SetSuggestionsURL(suggest_url, 0, 0);
+  (*default_provider)->SetInstantURL(instant_url, 0, 0);
   (*default_provider)->set_keyword(keyword);
   (*default_provider)->SetFavIconURL(GURL(icon_url));
   std::vector<std::string> encodings_vector;

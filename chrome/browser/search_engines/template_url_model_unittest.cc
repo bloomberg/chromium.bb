@@ -703,6 +703,7 @@ TEST_F(TemplateURLModelTest, DefaultSearchProviderLoadedFromPrefs) {
   TemplateURL* template_url = new TemplateURL();
   template_url->SetURL("http://url", 0, 0);
   template_url->SetSuggestionsURL("http://url2", 0, 0);
+  template_url->SetInstantURL("http://instant", 0, 0);
   template_url->set_short_name(L"a");
   template_url->set_safe_for_autoreplace(true);
   template_url->set_date_created(Time::FromTimeT(100));
@@ -731,6 +732,8 @@ TEST_F(TemplateURLModelTest, DefaultSearchProviderLoadedFromPrefs) {
   ASSERT_EQ("http://url", default_turl->url()->url());
   ASSERT_TRUE(default_turl->suggestions_url());
   ASSERT_EQ("http://url2", default_turl->suggestions_url()->url());
+  ASSERT_TRUE(default_turl->instant_url());
+  EXPECT_EQ("http://instant", default_turl->instant_url()->url());
   ASSERT_EQ(L"a", default_turl->short_name());
   ASSERT_EQ(id, default_turl->id());
 

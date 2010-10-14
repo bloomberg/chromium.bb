@@ -570,8 +570,7 @@ TemplateURL::TemplateURL()
       usage_count_(0),
       search_engine_type_(TemplateURLPrepopulateData::SEARCH_ENGINE_OTHER),
       logo_id_(0),
-      prepopulate_id_(0),
-      supports_instant_(false) {
+      prepopulate_id_(0) {
 }
 
 TemplateURL::~TemplateURL() {
@@ -595,6 +594,12 @@ void TemplateURL::SetURL(const std::string& url,
                          int index_offset,
                          int page_offset) {
   url_.Set(url, index_offset, page_offset);
+}
+
+void TemplateURL::SetInstantURL(const std::string& url,
+                                int index_offset,
+                                int page_offset) {
+  instant_url_.Set(url, index_offset, page_offset);
 }
 
 void TemplateURL::set_keyword(const std::wstring& keyword) {
