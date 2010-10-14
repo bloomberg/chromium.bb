@@ -855,6 +855,7 @@
    fun:ScopedRunnableMethodFactory::NewRunnableMethod
    fun:sync_notifier::ChromeSystemResources::MakeTaskToPost
    fun:sync_notifier::ChromeSystemResources::Schedule*
+   ...
    fun:sync_notifier::::ChromeSystemResourcesTest::ScheduleShouldNotRun
 }
 {
