@@ -188,7 +188,7 @@
       <include name="IDR_INFO_BUBBLE_CLOSE" file="bubble_close.png" type="BINDATA" />
       <include name="IDR_INPUT_ALERT" file="input_alert.png" type="BINDATA" />
       <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" type="BINDATA" />
-      <include name="IDR_LABS" file="labs.png" type="BINDATA" />
+      <include name="IDR_FLAGS" file="flags.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_C" file="omnibox_c.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_L" file="omnibox_l.png" type="BINDATA" />
       <include name="IDR_LOCATIONBG_POPUPMODE_CENTER" file="omnibox_popup_c.png" type="BINDATA" />

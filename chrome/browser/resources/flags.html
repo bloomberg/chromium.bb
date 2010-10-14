@@ -30,7 +30,7 @@ html[dir=rtl] #header {
 }
 
 #header h1 {
-  background: url('../../app/theme/labs_section.png') 0px 20px no-repeat;
+  background: url('../../app/theme/flags_section.png') 0px 20px no-repeat;
   display: inline;
   margin: 0;
   padding-bottom: 43px;
@@ -39,7 +39,7 @@ html[dir=rtl] #header {
 }
 
 html[dir=rtl] #header h1 {
-  background: url('../../app/theme/labs_section.png') right no-repeat;
+  background: url('../../app/theme/flags_section.png') right no-repeat;
   padding-right: 95px;
   padding-left: 0;
 }
@@ -170,8 +170,8 @@ button {
  * This variable structure is here to document the structure that the template
  * expects to correctly populate the page.
  */
-var labsExperimentsDataFormat = {
-  'labsExperiments': [
+var flagsExperimentsDataFormat = {
+  'flagsExperiments': [
     {
       'internal_name': 'Experiment ID string',
       'name': 'Experiment Name',
@@ -183,25 +183,25 @@ var labsExperimentsDataFormat = {
 };
 
 /**
- * Takes the |labsExperimentsData| input argument which represents data about
+ * Takes the |flagsExperimentsData| input argument which represents data about
  * the currently available experiments and populates the html jstemplate
  * with that data. It expects an object structure like the above.
- * @param {Object} labsExperimentsData Detailed info about available experiments
+ * @param {Object} flagsExperimentsData Information about available experiments
  */
-function renderTemplate(labsExperimentsData) {
+function renderTemplate(flagsExperimentsData) {
   // This is the javascript code that processes the template:
-  var input = new JsEvalContext(labsExperimentsData);
-  var output = document.getElementById('labsExperimentTemplate');
+  var input = new JsEvalContext(flagsExperimentsData);
+  var output = document.getElementById('flagsExperimentTemplate');
   jstProcess(input, output);
 }
 
 /**
  * Asks the C++ LabsDOMHandler to get details about the available experiments
  * and return detailed data about the configuration. The LabsDOMHandler
- * should reply to returnLabsExperiments() (below).
+ * should reply to returnFlagsExperiments() (below).
  */
-function requestLabsExperimentsData() {
-  chrome.send('requestLabsExperiments', []);
+function requestFlagsExperimentsData() {
+  chrome.send('requestFlagsExperiments', []);
 }
 
 /**
@@ -215,9 +215,9 @@ function restartBrowser() {
  * Called by the dom_ui to re-populate the page with data representing the
  * current state of installed experiments.
  */
-function returnLabsExperiments(labsExperimentsData){
+function returnFlagsExperiments(flagsExperimentsData){
   var bodyContainer = document.getElementById('body-container');
-  renderTemplate(labsExperimentsData);
+  renderTemplate(flagsExperimentsData);
   bodyContainer.style.visibility = 'visible';
 }
 
@@ -226,27 +226,27 @@ function returnLabsExperiments(labsExperimentsData){
  */
 function handleEnableExperiment(node, enable) {
   // Tell the C++ LabsDOMHandler to enable/disable the experiment.
-  chrome.send('enableLabsExperiment', [String(node.internal_name),
+  chrome.send('enableFlagsExperiment', [String(node.internal_name),
                                        String(enable)]);
-  requestLabsExperimentsData();
+  requestFlagsExperimentsData();
 }
 
 // Get data and have it displayed upon loading.
-document.addEventListener('DOMContentLoaded', requestLabsExperimentsData);
+document.addEventListener('DOMContentLoaded', requestFlagsExperimentsData);
 
 </script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div id="body-container" style="visibility:hidden">
 
-  <div id="header"><h1 i18n-content="labsLongTitle">TITLE</h1></div>
+  <div id="header"><h1 i18n-content="flagsLongTitle">TITLE</h1></div>
 
   <div id="blurb-container">
     <span id="blurb-warning" i18n-content="flagsWarningHeader">WARNING</span>
-    <span i18n-content="labsBlurb">WARNING TEXT</span>
+    <span i18n-content="flagsBlurb">WARNING TEXT</span>
   </div>
 
-  <div id="labsExperimentTemplate">
+  <div id="flagsExperimentTemplate">
 
     <div id="container" class="vbox-container">
     <div id="top" class="wbox">
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', requestLabsExperimentsData);
       <div class="section-header">
         <table cellpadding="0" cellspacing="0"><tr valign="center">
           <td>
-            <span class="section-header-title" i18n-content="labsTableTitle"
+            <span class="section-header-title" i18n-content="flagsTableTitle"
               >TITLE</span>
           </td>
         </tr></table>
@@ -265,13 +265,13 @@ document.addEventListener('DOMContentLoaded', requestLabsExperimentsData);
 
     <div class="content">
       <div class="experiment-name no-experiments"
-           jsdisplay="labsExperiments.length === 0">
-        <div i18n-content="labsNoExperimentsAvailable"
+           jsdisplay="flagsExperiments.length === 0">
+        <div i18n-content="flagsNoExperimentsAvailable"
           >NO_EXPERIMENTS_ARE_AVAILABLE</div>
       </div>
 
-      <div jsdisplay="labsExperiments.length > 0">
-      <div class="experiment" jsselect="labsExperiments">
+      <div jsdisplay="flagsExperiments.length > 0">
+      <div class="experiment" jsselect="flagsExperiments">
         <table width="100%" cellpadding="2" cellspacing="0">
         <tr class="experiment-enabled">
         <td valign="top">
@@ -309,10 +309,10 @@ document.addEventListener('DOMContentLoaded', requestLabsExperimentsData);
       </div>
 
       <div class="needs-restart" jsdisplay="needsRestart">
-        <div i18n-content="labsRestartNotice">NEEDS_RESTART</div>
+        <div i18n-content="flagsRestartNotice">NEEDS_RESTART</div>
         <button type="button"
                 onclick="restartBrowser();"
-                i18n-content="labsRestartButton">RESTART</button>
+                i18n-content="flagsRestartButton">RESTART</button>
       </div>
     </div>
   </div>

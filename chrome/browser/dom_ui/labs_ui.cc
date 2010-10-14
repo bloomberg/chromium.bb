@@ -58,21 +58,21 @@ void LabsUIHTMLSource::StartDataRequest(const std::string& path,
                                         int request_id) {
   // Strings used in the JsTemplate file.
   DictionaryValue localized_strings;
-  localized_strings.SetString("labsLongTitle",
+  localized_strings.SetString("flagsLongTitle",
       l10n_util::GetStringUTF16(IDS_FLAGS_LONG_TITLE));
-  localized_strings.SetString("labsTableTitle",
+  localized_strings.SetString("flagsTableTitle",
       l10n_util::GetStringUTF16(IDS_FLAGS_TABLE_TITLE));
-  localized_strings.SetString("labsNoExperimentsAvailable",
+  localized_strings.SetString("flagsNoExperimentsAvailable",
       l10n_util::GetStringUTF16(IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE));
   localized_strings.SetString("flagsWarningHeader", l10n_util::GetStringUTF16(
       IDS_FLAGS_WARNING_HEADER));
-  localized_strings.SetString("labsBlurb", l10n_util::GetStringFUTF16(
+  localized_strings.SetString("flagsBlurb", l10n_util::GetStringFUTF16(
       IDS_FLAGS_WARNING_TEXT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings.SetString("labsRestartNotice", l10n_util::GetStringFUTF16(
+  localized_strings.SetString("flagsRestartNotice", l10n_util::GetStringFUTF16(
       IDS_FLAGS_RESTART_NOTICE,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  localized_strings.SetString("labsRestartButton",
+  localized_strings.SetString("flagsRestartButton",
       l10n_util::GetStringUTF16(IDS_FLAGS_RESTART_BUTTON));
   localized_strings.SetString("disable",
       l10n_util::GetStringUTF16(IDS_FLAGS_DISABLE));
@@ -82,7 +82,7 @@ void LabsUIHTMLSource::StartDataRequest(const std::string& path,
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
   static const base::StringPiece labs_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_LABS_HTML));
+      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_FLAGS_HTML));
   std::string full_html(labs_html.data(), labs_html.size());
   jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
   jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
@@ -125,9 +125,9 @@ class LabsDOMHandler : public DOMMessageHandler {
 };
 
 void LabsDOMHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("requestLabsExperiments",
+  dom_ui_->RegisterMessageCallback("requestFlagsExperiments",
       NewCallback(this, &LabsDOMHandler::HandleRequestLabsExperiments));
-  dom_ui_->RegisterMessageCallback("enableLabsExperiment",
+  dom_ui_->RegisterMessageCallback("enableFlagsExperiment",
       NewCallback(this, &LabsDOMHandler::HandleEnableLabsExperimentMessage));
   dom_ui_->RegisterMessageCallback("restartBrowser",
       NewCallback(this, &LabsDOMHandler::HandleRestartBrowser));
@@ -135,12 +135,12 @@ void LabsDOMHandler::RegisterMessages() {
 
 void LabsDOMHandler::HandleRequestLabsExperiments(const ListValue* args) {
   DictionaryValue results;
-  results.Set("labsExperiments",
+  results.Set("flagsExperiments",
               about_labs::GetLabsExperimentsData(
                   dom_ui_->GetProfile()->GetPrefs()));
   results.SetBoolean("needsRestart",
                      about_labs::IsRestartNeededToCommitChanges());
-  dom_ui_->CallJavascriptFunction(L"returnLabsExperiments", results);
+  dom_ui_->CallJavascriptFunction(L"returnFlagsExperiments", results);
 }
 
 void LabsDOMHandler::HandleEnableLabsExperimentMessage(const ListValue* args) {
@@ -191,7 +191,7 @@ LabsUI::LabsUI(TabContents* contents) : DOMUI(contents) {
 // static
 RefCountedMemory* LabsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytes(IDR_LABS);
+      LoadDataResourceBytes(IDR_FLAGS);
 }
 
 // static
