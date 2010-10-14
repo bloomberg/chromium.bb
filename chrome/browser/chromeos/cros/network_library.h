@@ -227,6 +227,9 @@ class WifiNetwork : public WirelessNetwork {
   // This not translated and should be only used for debugging purposes.
   std::string GetEncryptionString();
 
+  // Return true if cert_path_ indicates that we have loaded the certificate.
+  bool IsCertificateLoaded() const;
+
  protected:
   ConnectionSecurity encryption_;
   std::string passphrase_;

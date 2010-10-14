@@ -73,6 +73,9 @@ void NetworkDropdownButton::NetworkChanged(NetworkLibrary* cros) {
   // user selected. For example user selected WiFi network but we have Ethernet
   // connection and Chrome OS device will actually use Ethernet.
 
+  // This gets called on initialization, so any changes should be reflected
+  // in CrosMock::SetNetworkLibraryStatusAreaExpectations().
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (CrosLibrary::Get()->EnsureLoaded()) {
     // Always show the higher priority connection first. Ethernet then wifi.

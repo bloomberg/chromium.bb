@@ -24,59 +24,42 @@
 
 namespace chromeos {
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::InvokeWithoutArgs;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::ReturnRef;
-using ::testing::NiceMock;
 
-class LoginTestBase : public InProcessBrowserTest {
+class LoginTestBase : public CrosInProcessBrowserTest {
  public:
-  LoginTestBase() {
-    testApi_ = chromeos::CrosLibrary::Get()->GetTestApi();
-    testApi_->SetLibraryLoader(&loader_, false);
-    EXPECT_CALL(loader_, Load(_))
-        .WillRepeatedly(Return(true));
-
-    testApi_->SetKeyboardLibrary(&mock_keyboard_library_, false);
-    testApi_->SetInputMethodLibrary(&mock_input_method_library_, false);
-    EXPECT_CALL(mock_input_method_library_, GetActiveInputMethods())
-        .WillRepeatedly(
-            InvokeWithoutArgs(CreateFallbackInputMethodDescriptors));
-
-    testApi_->SetNetworkLibrary(&mock_network_library_, false);
-
-    testApi_->SetPowerLibrary(&mock_power_library_, false);
-    EXPECT_CALL(mock_power_library_, battery_time_to_empty())
-        .WillRepeatedly((Return(base::TimeDelta::FromMinutes(42))));
-    EXPECT_CALL(mock_power_library_, battery_time_to_full())
-        .WillRepeatedly((Return(base::TimeDelta::FromMinutes(24))));
-
-    testApi_->SetTouchpadLibrary(&mock_touchpad_library_, false);
-    testApi_->SetCryptohomeLibrary(&mock_cryptohome_library_, false);
-    testApi_->SetScreenLockLibrary(&mock_screen_lock_library_, false);
-    testApi_->SetSystemLibrary(&mock_system_library_, false);
+  LoginTestBase() : mock_cryptohome_library_(NULL),
+                    mock_screen_lock_library_(NULL) {
   }
 
  protected:
-  NiceMock<MockLibraryLoader> loader_;
-  NiceMock<MockCryptohomeLibrary> mock_cryptohome_library_;
-  NiceMock<MockKeyboardLibrary> mock_keyboard_library_;
-  NiceMock<MockInputMethodLibrary> mock_input_method_library_;
-  NiceMock<MockNetworkLibrary> mock_network_library_;
-  NiceMock<MockPowerLibrary> mock_power_library_;
-  NiceMock<MockScreenLockLibrary> mock_screen_lock_library_;
-  NiceMock<MockTouchpadLibrary> mock_touchpad_library_;
-  NiceMock<MockSystemLibrary> mock_system_library_;
-  ImePropertyList ime_properties_;
-  chromeos::CrosLibrary::TestApi* testApi_;
+  virtual void SetUpInProcessBrowserTestFixture() {
+    cros_mock_->InitStatusAreaMocks();
+    cros_mock_->SetStatusAreaMocksExpectations();
+    cros_mock_->InitMockCryptohomeLibrary();
+    cros_mock_->InitMockScreenLockLibrary();
+    mock_cryptohome_library_ = cros_mock_->mock_cryptohome_library();
+    mock_screen_lock_library_ = cros_mock_->mock_screen_lock_library();
+    EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
+        .WillRepeatedly(Return(true));
+  }
+
+  MockCryptohomeLibrary* mock_cryptohome_library_;
+  MockScreenLockLibrary* mock_screen_lock_library_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginTestBase);
 };
 
 class LoginUserTest : public LoginTestBase {
- public:
-  LoginUserTest() {
-    EXPECT_CALL(mock_cryptohome_library_, IsMounted())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(mock_screen_lock_library_, AddObserver(_))
+ protected:
+  virtual void SetUpInProcessBrowserTestFixture() {
+    LoginTestBase::SetUpInProcessBrowserTestFixture();
+    EXPECT_CALL(*mock_screen_lock_library_, AddObserver(_))
         .WillOnce(Return());
   }
 
@@ -88,12 +71,7 @@ class LoginUserTest : public LoginTestBase {
 };
 
 class LoginProfileTest : public LoginTestBase {
- public:
-  LoginProfileTest() {
-    EXPECT_CALL(mock_cryptohome_library_, IsMounted())
-        .WillRepeatedly(Return(true));
-  }
-
+ protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
     command_line->AppendSwitch(switches::kNoFirstRun);

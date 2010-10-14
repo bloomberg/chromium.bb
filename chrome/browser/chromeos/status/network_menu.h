@@ -74,6 +74,11 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // |index| is the index in menu_items_, set when the menu is built.
   bool GetNetworkAt(int index, NetworkInfo* info) const;
 
+  // Connect or reconnect to the network at |index|.
+  void ConnectToNetworkAt(int index,
+                          const std::string& passphrase,
+                          const std::string& identity) const;
+
   // menus::MenuModel implementation.
   virtual bool HasIcons() const  { return true; }
   virtual int GetItemCount() const;
@@ -119,6 +124,8 @@ class NetworkMenu : public views::ViewMenuDelegate,
   // Notify subclasses that connection to |network| was initiated.
   virtual void OnConnectNetwork(const Network& network,
                                 SkBitmap selected_icon_) {}
+  // Update the menu (e.g. when the network list or status has changed).
+  void UpdateMenu();
 
  private:
   enum MenuItemFlags {
@@ -163,6 +170,10 @@ class NetworkMenu : public views::ViewMenuDelegate,
 
   // Shows network details in DOM UI options window.
   void ShowTabbedNetworkSettings(const Network& network);
+
+  // Show a NetworkConfigView modal dialog instance.
+  // TODO(stevenjb): deprecate this once all of the UI is embedded in the menu.
+  void ShowNetworkConfigView(NetworkConfigView* view, bool focus_login) const;
 
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;

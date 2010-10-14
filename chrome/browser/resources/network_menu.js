@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * Sends 'activate' DOMUI message.
+ * Sends "connect" using the 'action' DOMUI message.
  */
-function sendAction(values) {
-  chrome.send('action', values);
+function sendConnect(index, passphrase, identity) {
+  chrome.send('action', [ 'connect', String(index), passphrase, identity ]);
 }
 
 var NetworkMenuItem = cr.ui.define('div');
@@ -74,4 +74,18 @@ NetworkMenu.prototype = {
       return new MenuItem();
     }
   },
+
+  onKeydown_: function(event) {
+    switch (event.keyIdentifier) {
+      case 'Enter':
+      case 'U+0020':  // space
+        // Temporary, for testing sendConnect()
+        sendConnect(this.getMenuItemIndexOf(this.current_),
+                    "passphrase", "identity");
+        break;
+      default:
+        Menu.prototype.onKeydown_.call(this, event);
+        break;
+    }
+  }
 };

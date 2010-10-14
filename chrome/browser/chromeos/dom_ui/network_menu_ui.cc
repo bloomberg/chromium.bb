@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/dom_ui/network_menu_ui.h"
 
 #include "base/values.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
@@ -85,8 +86,33 @@ void NetworkMenuUI::AddCustomConfigValues(DictionaryValue* config) const {
 
 void NetworkMenuUI::ModelAction(const menus::MenuModel* model,
                                 const ListValue* values) {
-  //const NetworkMenu* network_menu = static_cast<const NetworkMenu*>(model);
-  // Invoke model methods here.
+  const NetworkMenu* network_menu = static_cast<const NetworkMenu*>(model);
+  std::string action;
+  bool success = values->GetString(0, &action);
+  if (!success) {
+    LOG(WARNING) << "ModelAction called with no arguments from: "
+                 << chrome::kChromeUINetworkMenu;
+    return;
+  }
+  int index;
+  std::string index_str;
+  success = values->GetString(1, &index_str);
+  success = success && base::StringToInt(index_str, &index);
+  if (!success) {
+    LOG(WARNING) << "ModelAction called with no index from: "
+                 << chrome::kChromeUINetworkMenu;
+    return;
+  }
+  std::string passphrase;
+  values->GetString(2, &passphrase);  // Optional
+  std::string identity;
+  values->GetString(3, &identity);  // Optional
+  if (action == "connect" || action == "reconnect") {
+    network_menu->ConnectToNetworkAt(index, passphrase, identity);
+  } else {
+    LOG(WARNING) << "Unrecognized action: " << action
+                 << " from: " << chrome::kChromeUINetworkMenu;
+  }
 }
 
 DictionaryValue* NetworkMenuUI::CreateMenuItem(const menus::MenuModel* model,

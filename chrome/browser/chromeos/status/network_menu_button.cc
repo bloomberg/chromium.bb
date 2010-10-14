@@ -148,6 +148,7 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
   }
 
   SchedulePaint();
+  UpdateMenu();
 }
 
 void NetworkMenuButton::SetBadge(const SkBitmap& badge) {
