@@ -117,26 +117,6 @@ void JingleHostConnection::OnStateChange(JingleClient* client,
   }
 }
 
-bool JingleHostConnection::OnAcceptConnection(
-    JingleClient* client,
-    const std::string& jid,
-    JingleChannel::Callback** callback) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  // Client rejects all connection.
-  return false;
-}
-
-void JingleHostConnection::OnNewConnection(
-   JingleClient* client,
-   scoped_refptr<JingleChannel> channel) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  // TODO(ajwong): Should we log more aggressively on this and above? We
-  // shouldn't be getting any inbound connections.
-  NOTREACHED() << "Clients can't accept inbound connections.";
-}
-
 void JingleHostConnection::OnNewChromotocolConnection(
     ChromotingConnection* connection, bool* accept) {
   DCHECK_EQ(message_loop(), MessageLoop::current());

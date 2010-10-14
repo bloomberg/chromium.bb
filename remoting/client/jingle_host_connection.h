@@ -5,8 +5,9 @@
 // JingleHostConnection implements the HostConnection interface using
 // libjingle as the transport protocol.
 //
-// Much of this class focuses on translating JingleClient and JingleChannel
-// callbacks into HostConnection::HostEventCallback messages.
+// Much of this class focuses on translating JingleClient and
+// ChromotingConnection callbacks into HostConnection::HostEventCallback
+// messages.
 //
 // The public API of this class is designed to be asynchronous, and thread
 // safe for invocation from other threads.
@@ -51,10 +52,6 @@ class JingleHostConnection : public HostConnection,
 
   // JingleClient::Callback interface.
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
-  virtual bool OnAcceptConnection(JingleClient* client, const std::string& jid,
-                                  JingleChannel::Callback** callback);
-  void OnNewConnection(JingleClient* client,
-                       scoped_refptr<JingleChannel> channel);
 
   // Callback for ChromotingServer.
   void OnNewChromotocolConnection(

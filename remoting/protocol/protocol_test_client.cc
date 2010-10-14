@@ -96,10 +96,6 @@ class ProtocolTestClient
 
   // JingleClient::Callback interface.
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
-  virtual bool OnAcceptConnection(JingleClient* client, const std::string& jid,
-                                  JingleChannel::Callback** callback);
-  virtual void OnNewConnection(JingleClient* client,
-                               scoped_refptr<JingleChannel> channel);
 
   // callback for JingleChromotingServer interface.
   virtual void OnNewChromotocolConnection(ChromotingConnection* connection,
@@ -296,17 +292,6 @@ void ProtocolTestClient::OnStateChange(
   } else if (state == JingleClient::CLOSED) {
     std::cerr << "Connection closed" << std::endl;
   }
-}
-
-bool ProtocolTestClient::OnAcceptConnection(
-    JingleClient* client, const std::string& jid,
-    JingleChannel::Callback** callback) {
-  return false;
-}
-
-void ProtocolTestClient::OnNewConnection(
-    JingleClient* client, scoped_refptr<JingleChannel> channel) {
-  NOTREACHED();
 }
 
 void ProtocolTestClient::OnNewChromotocolConnection(

@@ -14,7 +14,6 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/session_manager.h"
-#include "remoting/jingle_glue/jingle_channel.h"
 #include "remoting/protocol/messages_decoder.h"
 #include "remoting/protocol/jingle_chromoting_server.h"
 
@@ -261,17 +260,6 @@ void ChromotingHost::OnNewClientConnection(
   // callback.
   client_ = new ClientConnection(context_->main_message_loop(), this);
   client_->Init(connection);
-}
-
-bool ChromotingHost::OnAcceptConnection(
-    JingleClient* jingle_client, const std::string& jid,
-    JingleChannel::Callback** channel_callback) {
-  return false;
-}
-
-void ChromotingHost::OnNewConnection(JingleClient* jingle_client,
-                                     scoped_refptr<JingleChannel> channel) {
-  NOTREACHED();
 }
 
 void ChromotingHost::OnServerClosed() {

@@ -17,11 +17,6 @@ class MockJingleClientCallback : public JingleClient::Callback {
   ~MockJingleClientCallback() { }
 
   MOCK_METHOD2(OnStateChange, void(JingleClient*, JingleClient::State));
-  MOCK_METHOD3(OnAcceptConnection, bool(
-      JingleClient*, const std::string&,
-      JingleChannel::Callback**_callback));
-  MOCK_METHOD2(OnNewConnection, void(
-      JingleClient*, scoped_refptr<JingleChannel>));
 };
 
 class JingleClientTest : public testing::Test {

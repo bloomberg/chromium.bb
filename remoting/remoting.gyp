@@ -313,8 +313,6 @@
         'jingle_glue/channel_socket_adapter.h',
         'jingle_glue/iq_request.cc',
         'jingle_glue/iq_request.h',
-        'jingle_glue/jingle_channel.cc',
-        'jingle_glue/jingle_channel.h',
         'jingle_glue/jingle_client.cc',
         'jingle_glue/jingle_client.h',
         'jingle_glue/jingle_info_task.cc',
@@ -335,19 +333,6 @@
         'jingle_glue/xmpp_socket_adapter.h',
       ],
     },  # end of target 'chromoting_jingle_glue'
-
-    {
-      'target_name': 'chromoting_jingle_test_client',
-      'type': 'executable',
-      'dependencies': [
-        'chromoting_base',
-        'chromoting_jingle_glue',
-        '../media/media.gyp:media',
-      ],
-      'sources': [
-        'jingle_glue/jingle_test_client.cc',
-      ],
-    },  # end of target 'chromoting_jingle_test_client'
 
     {
       'target_name': 'chromoting_protocol',
@@ -438,7 +423,6 @@
         'host/test_key_pair.h',
         'jingle_glue/channel_socket_adapter_unittest.cc',
         'jingle_glue/jingle_client_unittest.cc',
-        'jingle_glue/jingle_channel_unittest.cc',
         'jingle_glue/jingle_thread_unittest.cc',
         'jingle_glue/iq_request_unittest.cc',
         'jingle_glue/mock_objects.h',

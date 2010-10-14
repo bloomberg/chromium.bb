@@ -22,25 +22,6 @@
 
 namespace remoting {
 
-namespace {
-// A TunnelSessionClient that allows local connections.
-class LocalTunnelSessionClient : public cricket::TunnelSessionClient {
- public:
-  LocalTunnelSessionClient(const buzz::Jid& jid,
-                           cricket::SessionManager* manager)
-      : TunnelSessionClient(jid, manager) {
-  }
-
- protected:
-  virtual cricket::TunnelSession* MakeTunnelSession(
-      cricket::Session* session, talk_base::Thread* stream_thread,
-      cricket::TunnelSessionRole role) {
-    session->set_allow_local_ips(true);
-    return new cricket::TunnelSession(this, session, stream_thread);
-  }
-};
-}  // namespace
-
 JingleClient::JingleClient(JingleThread* thread)
     : thread_(thread),
       callback_(NULL),
@@ -108,41 +89,10 @@ void JingleClient::DoInitialize(const std::string& username,
 
   session_manager_.reset(new cricket::SessionManager(port_allocator_.get()));
 
-  tunnel_session_client_.reset(
-      new LocalTunnelSessionClient(client_->jid(),
-                                   session_manager_.get()));
-
   cricket::SessionManagerTask* receiver =
       new cricket::SessionManagerTask(client_, session_manager_.get());
   receiver->EnableOutgoingMessages();
   receiver->Start();
-
-  tunnel_session_client_->SignalIncomingTunnel.connect(
-      this, &JingleClient::OnIncomingTunnel);
-}
-
-JingleChannel* JingleClient::Connect(const std::string& host_jid,
-                                     JingleChannel::Callback* callback) {
-  DCHECK(initialized_ && !closed_);
-
-  // Ownership if channel is given to DoConnect.
-  scoped_refptr<JingleChannel> channel = new JingleChannel(callback);
-  message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &JingleClient::DoConnect,
-                                   channel, host_jid, callback));
-  return channel;
-}
-
-void JingleClient::DoConnect(scoped_refptr<JingleChannel> channel,
-                             const std::string& host_jid,
-                             JingleChannel::Callback* callback) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  talk_base::StreamInterface* stream =
-      tunnel_session_client_->CreateTunnel(buzz::Jid(host_jid), "");
-  DCHECK(stream != NULL);
-
-  channel->Init(thread_, stream, host_jid);
 }
 
 void JingleClient::Close() {
@@ -170,7 +120,6 @@ void JingleClient::DoClose() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(closed_);
 
-  tunnel_session_client_.reset();
   session_manager_.reset();
   port_allocator_.reset();
   network_manager_.reset();
@@ -223,30 +172,6 @@ void JingleClient::OnConnectionStateChanged(buzz::XmppEngine::State state) {
     default:
       NOTREACHED();
       break;
-  }
-}
-
-void JingleClient::OnIncomingTunnel(
-    cricket::TunnelSessionClient* client, buzz::Jid jid,
-    std::string description, cricket::Session* session) {
-  // Must always lock state and check closed_ when calling callback.
-  AutoLock auto_lock(state_lock_);
-
-  if (closed_) {
-    // Always reject connection if we are closed.
-    client->DeclineTunnel(session);
-    return;
-  }
-
-  JingleChannel::Callback* channel_callback;
-  if (callback_->OnAcceptConnection(this, jid.Str(), &channel_callback)) {
-    DCHECK(channel_callback != NULL);
-    talk_base::StreamInterface* stream = client->AcceptTunnel(session);
-    scoped_refptr<JingleChannel> channel(new JingleChannel(channel_callback));
-    channel->Init(thread_, stream, jid.Str());
-    callback_->OnNewConnection(this, channel);
-  } else {
-    client->DeclineTunnel(session);
   }
 }
 

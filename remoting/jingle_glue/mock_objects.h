@@ -6,22 +6,10 @@
 #define REMOTING_JINGLE_GLUE_MOCK_OBJECTS_H_
 
 #include "media/base/data_buffer.h"
-#include "remoting/jingle_glue/jingle_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libjingle/source/talk/base/stream.h"
 
 namespace remoting {
-
-class MockJingleChannel : public JingleChannel {
- public:
-  MockJingleChannel() {}
-
-  MOCK_METHOD1(Write, void(scoped_refptr<media::DataBuffer> data));
-  MOCK_METHOD0(Close, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockJingleChannel);
-};
 
 class MockStream : public talk_base::StreamInterface {
  public:

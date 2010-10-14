@@ -93,12 +93,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ////////////////////////////////////////////////////////////////////////////
   // JingleClient::Callback implementations
   virtual void OnStateChange(JingleClient* client, JingleClient::State state);
-  virtual bool OnAcceptConnection(
-      JingleClient* jingle, const std::string& jid,
-      JingleChannel::Callback** channel_callback);
-  virtual void OnNewConnection(
-      JingleClient* jingle,
-      scoped_refptr<JingleChannel> channel);
 
   // Callback for ChromotingServer.
   void OnNewClientConnection(ChromotingConnection* connection, bool* accept);

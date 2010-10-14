@@ -7,10 +7,12 @@
 
 #include <string>
 
-#include "remoting/jingle_glue/jingle_channel.h"
+#include "base/lock.h"
+#include "base/ref_counted.h"
 #include "third_party/libjingle/source/talk/xmpp/xmppclient.h"
 
 class MessageLoop;
+class Task;
 
 namespace talk_base {
 class NetworkManager;
@@ -31,6 +33,7 @@ class Session;
 namespace remoting {
 
 class IqRequest;
+class JingleThread;
 
 class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                      public sigslot::has_slots<> {
@@ -48,18 +51,6 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
 
     // Called when state of the connection is changed.
     virtual void OnStateChange(JingleClient* client, State state) = 0;
-
-    // Called when a client attempts to connect to the machine. If the
-    // connection should be accepted, must return true and must set
-    // channel_callback to the callback for the new channel.
-    virtual bool OnAcceptConnection(
-        JingleClient* client, const std::string& jid,
-        JingleChannel::Callback** channel_callback) = 0;
-
-    // Called when a new client connects to the host. Ownership of the |channel|
-    // is transfered to the callee.
-    virtual void OnNewConnection(JingleClient* client,
-                                 scoped_refptr<JingleChannel> channel) = 0;
   };
 
   // Creates a JingleClient object that executes on |thread|.  This does not
@@ -73,14 +64,6 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // |callback| specifies callback object for the client and must not be NULL.
   void Init(const std::string& username, const std::string& auth_token,
             const std::string& auth_token_service, Callback* callback);
-
-  // Creates new JingleChannel connected to the host with the specified jid.
-  // The result is returned immediately but the channel fails if the host
-  // rejects connection. |host_jid| must be a full jid (includes resource ID).
-  // Ownership of the result is transfered to the caller. The channel must
-  // be closed/destroyed before JingleClient is destroyed.
-  JingleChannel* Connect(const std::string& host_jid,
-                         JingleChannel::Callback* callback);
 
   // Closes XMPP connection and stops the thread. Must be called before the
   // object is destroyed. If specified, |closed_task| is executed after the
@@ -115,17 +98,9 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
 
   void OnConnectionStateChanged(buzz::XmppEngine::State state);
 
-  void OnIncomingTunnel(cricket::TunnelSessionClient* client, buzz::Jid jid,
-                        std::string description, cricket::Session* session);
-
   void DoInitialize(const std::string& username,
                     const std::string& auth_token,
                     const std::string& auth_token_service);
-
-  // Used by Connect().
-  void DoConnect(scoped_refptr<JingleChannel> channel,
-                 const std::string& host_jid,
-                 JingleChannel::Callback* callback);
 
   // Used by Close().
   void DoClose();
@@ -160,7 +135,6 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   scoped_ptr<talk_base::NetworkManager> network_manager_;
   scoped_ptr<cricket::BasicPortAllocator> port_allocator_;
   scoped_ptr<cricket::SessionManager> session_manager_;
-  scoped_ptr<cricket::TunnelSessionClient> tunnel_session_client_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleClient);
 };
