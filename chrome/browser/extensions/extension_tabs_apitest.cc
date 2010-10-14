@@ -17,6 +17,13 @@
 #define MAYBE_Tabs Tabs
 #endif
 
+// Possible race in ChromeURLDataManager. http://crbug.com/59198
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_TabOnRemoved FLAKY_TabOnRemoved
+#else
+#define MAYBE_TabOnRemoved TabOnRemoved
+#endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
   ASSERT_TRUE(test_server()->Start());
 
@@ -39,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabConnect) {
   ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabOnRemoved) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOnRemoved) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
