@@ -1164,8 +1164,8 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeError) {
                    Details<AutofillChangeList>(&changes));
 }
 
-// Flaky: http://crbug.com/57884
-TEST_F(ProfileSyncServiceAutofillTest, FLAKY_ServerChangeRace) {
+// Crashy, http://crbug.com/57884
+TEST_F(ProfileSyncServiceAutofillTest, DISABLED_ServerChangeRace) {
   EXPECT_CALL(web_database_, GetAllAutofillEntries(_)).WillOnce(Return(true));
   EXPECT_CALL(web_database_, GetAutoFillProfiles(_)).WillOnce(Return(true));
   EXPECT_CALL(web_database_, UpdateAutofillEntries(_)).
