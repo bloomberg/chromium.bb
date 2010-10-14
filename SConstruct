@@ -272,10 +272,13 @@ bad_build_lists['dbg-win-64'] = ['run_srpc_basic_test',
 # TODO(mseaborn): Enable more of these tests!
 nacl_glibc_skiplist = [
     # Some tests using multi-threading pass, but the following do not.
+    # run_egyptian_cotton_test creates a smaller number of threads than
+    # expected because the threads are given 2MB-sized stacks.
     'run_egyptian_cotton_test',
-    'run_race_test',
-    'run_thread_stack_alloc_test',
+    # run_thread_test fails, apparently because
+    # global_futex_emulation_mutex_desc is getting corrupted.
     'run_thread_test',
+    # Checksum assumes newlib's random number generator.
     'run_voronoi',
     # This test assumes it can allocate address ranges from the
     # dynamic code area itself.  However, this does not work when
