@@ -120,8 +120,9 @@ cr.define('options.language', function() {
      * @param {string} languageCode language code (ex. "fr").
      */
     addLanguage: function(languageCode) {
-      // It shouldn't happen but ignore the language code if it's present.
-      if (this.dataModel.indexOf(languageCode) >= 0) {
+      // It shouldn't happen but ignore the language code if it's
+      // null/undefined, or already present.
+      if (!languageCode || this.dataModel.indexOf(languageCode) >= 0) {
         return;
       }
       this.dataModel.push(languageCode);

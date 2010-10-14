@@ -472,6 +472,11 @@ cr.define('options', function() {
     handleAddLanguageListClick_ : function(e) {
       var languageOptionsList = $('language-options-list');
       var languageCode = e.target.languageCode;
+      // languageCode can be undefined, if click was made on some random
+      // place in the overlay, rather than a button. Ignore it.
+      if (!languageCode) {
+        return;
+      }
       languageOptionsList.addLanguage(languageCode);
       var inputMethodIds = this.languageCodeToInputMethodIdsMap_[languageCode];
       // Enable the first input method for the language added.
