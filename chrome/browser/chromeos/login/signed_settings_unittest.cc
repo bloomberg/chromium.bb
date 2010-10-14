@@ -84,6 +84,7 @@ class SignedSettingsTest : public ::testing::Test {
 
   virtual void TearDown() {
     OwnerKeyUtils::set_factory(NULL);
+    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
   }
 
   void mock_service(SignedSettings* s, MockOwnershipService* m) {

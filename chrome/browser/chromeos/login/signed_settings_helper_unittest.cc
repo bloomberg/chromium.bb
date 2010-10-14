@@ -52,6 +52,7 @@ class SignedSettingsHelperTest : public ::testing::Test,
 
   virtual void TearDown() {
     SignedSettingsHelper::Get()->set_test_delegate(NULL);
+    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
   }
 
   virtual void OnOpCreated(SignedSettings* op) {

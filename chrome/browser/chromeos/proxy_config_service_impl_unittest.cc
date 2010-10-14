@@ -229,6 +229,7 @@ class ProxyConfigServiceImplTest : public PlatformTest {
 
   virtual ~ProxyConfigServiceImplTest() {
     config_service_ = NULL;
+    chromeos::CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
     MessageLoop::current()->RunAllPending();
   }
 
