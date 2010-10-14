@@ -485,7 +485,8 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 // this function return an error reason as well so that callers can show
 // reasonable errors?
 TabContents* Browser::OpenApplication(Profile* profile,
-                                      const std::string& app_id) {
+                                      const std::string& app_id,
+                                      TabContents* existing_tab) {
   ExtensionsService* extensions_service = profile->GetExtensionsService();
   if (!extensions_service->is_ready())
     return NULL;
@@ -496,14 +497,16 @@ TabContents* Browser::OpenApplication(Profile* profile,
   if (!extension)
     return NULL;
 
-  return OpenApplication(profile, extension, extension->launch_container());
+  return OpenApplication(profile, extension, extension->launch_container(),
+                         existing_tab);
 }
 
 // static
 TabContents* Browser::OpenApplication(
     Profile* profile,
     Extension* extension,
-    extension_misc::LaunchContainer container) {
+    extension_misc::LaunchContainer container,
+    TabContents* existing_tab) {
   TabContents* tab = NULL;
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchContainer", container, 100);
@@ -516,7 +519,7 @@ TabContents* Browser::OpenApplication(
                                            GURL());
       break;
     case extension_misc::LAUNCH_TAB: {
-      tab = Browser::OpenApplicationTab(profile, extension);
+      tab = Browser::OpenApplicationTab(profile, extension, existing_tab);
       break;
     }
     default:
@@ -580,7 +583,8 @@ TabContents* Browser::OpenApplicationWindow(Profile* profile, GURL& url) {
 
 // static
 TabContents* Browser::OpenApplicationTab(Profile* profile,
-                                         Extension* extension) {
+                                         Extension* extension,
+                                         TabContents* existing_tab) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   TabContents* contents = NULL;
   if (!browser || browser->type() != Browser::TYPE_NORMAL)
@@ -602,7 +606,24 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
   AddTabWithURLParams params(extension->GetFullLaunchURL(),
                              PageTransition::START_PAGE);
   params.add_types = add_type;
-  contents = browser->AddTabWithURL(&params);
+
+  // Launch the application in the existing TabContents, if it was supplied.
+  if (existing_tab) {
+    TabStripModel* model = browser->tabstrip_model();
+    int tab_index = model->GetIndexOfTabContents(existing_tab);
+
+    existing_tab->OpenURL(extension->GetFullLaunchURL(), existing_tab->GetURL(),
+                          CURRENT_TAB, PageTransition::LINK);
+    if (params.add_types & TabStripModel::ADD_PINNED)
+      model->SetTabPinned(tab_index, true);
+    if (params.add_types & TabStripModel::ADD_SELECTED)
+      model->SelectTabContentsAt(tab_index, true);
+
+    contents = existing_tab;
+  } else {
+    contents = browser->AddTabWithURL(&params);
+  }
+
   if (launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN)
     browser->window()->SetFullscreen(true);
 

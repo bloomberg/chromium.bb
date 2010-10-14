@@ -529,7 +529,7 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     if (IsAppLaunch(NULL, &app_id) && !app_id.empty()) {
       // TODO(erikkay): This could fail if |app_id| is invalid (the app was
       // uninstalled).  We may want to show some reasonable error here.
-      Browser::OpenApplication(profile, app_id);
+      Browser::OpenApplication(profile, app_id, NULL);
     }
 
     if (process_startup) {
@@ -610,7 +610,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   // TODO(rafaelw): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
   if (!app_id.empty())
-    return Browser::OpenApplication(profile, app_id) != NULL;
+    return Browser::OpenApplication(profile, app_id, NULL) != NULL;
 
   if (url_string.empty())
     return false;

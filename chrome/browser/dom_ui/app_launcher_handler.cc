@@ -211,13 +211,11 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     old_contents = browser->GetSelectedTabContents();
 
   AnimateAppIcon(extension, rect);
-  Browser::OpenApplication(profile, extension, extension->launch_container());
+  TabContents* new_contents = Browser::OpenApplication(
+      profile, extension, extension->launch_container(), old_contents);
 
-  if (old_contents &&
-      old_contents->GetURL().GetOrigin() ==
-          GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
+  if (new_contents != old_contents)
     browser->CloseTabContents(old_contents);
-  }
 }
 
 void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {

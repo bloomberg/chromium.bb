@@ -120,7 +120,7 @@ bool LaunchAppFunction::RunImpl() {
   }
 
   extension_misc::LaunchContainer container = extension->launch_container();
-  Browser::OpenApplication(profile(), extension, container);
+  Browser::OpenApplication(profile(), extension, container, NULL);
 
   return true;
 }
