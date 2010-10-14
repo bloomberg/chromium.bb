@@ -162,7 +162,6 @@
 #include "base/command_line.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
-#include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
@@ -170,6 +169,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/guid.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -808,7 +808,7 @@ void MetricsService::OnInitTaskComplete(
 }
 
 std::string MetricsService::GenerateClientID() {
-  return base::GenerateGUID();
+  return guid::GenerateGUID();
 }
 
 //------------------------------------------------------------------------------
