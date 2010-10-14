@@ -182,6 +182,7 @@ enum NaClSignalResult Handler(int untrusted, int signal_number, void *ctx) {
 
 #define ATTEMPT(x,sig) Attempt(#x,x,sig)
 int main(int argc, const char *argv[]) {
+  int handlerId;
   UNREFERENCED_PARAMETER(argc);
   UNREFERENCED_PARAMETER(argv);
 
@@ -189,7 +190,17 @@ int main(int argc, const char *argv[]) {
   NaClTimeInit();
   NaClInitGlobals();
   NaClSignalHandlerInit();
+
+  /* Add this one first, we should never call it */
+  NaClSignalHandlerAdd(NaClSignalHandleNone);
   NaClSignalHandlerAdd(Handler);
+
+  /* Add and remove it to make sure we can. */
+  handlerId = NaClSignalHandlerAdd(NaClSignalHandleNone);
+  if (0 == NaClSignalHandlerRemove(handlerId)) {
+    printf("Failed to unload handler.\n");
+    exit(-1);
+  }
 
   /* Loop every ms. */
   g_WaitShort.tv_sec = 0;
