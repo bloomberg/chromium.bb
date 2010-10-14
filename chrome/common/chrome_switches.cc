@@ -1234,10 +1234,6 @@ const char kPasswordStore[]                 = "password-store";
 #endif
 
 #if defined(OS_MACOSX)
-// Temporary flag to prevent Flash from negotiating the Core Animation drawing
-// model. This will be removed once the last issues have been resolved.
-const char kDisableFlashCoreAnimation[]     = "disable-flash-core-animation";
-
 // Temporary flag to disable hole punching for accelerated surfaces. This is
 // here to aid debugging eventual problems, it can be removed once hole punching
 // has been out there for a few dev channel releases without problems.

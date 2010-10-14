@@ -350,19 +350,9 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
       // Older versions of Flash don't support CA (and they assume QuickDraw
       // support, so we can't rely on negotiation to do the right thing).
       force_opaque_mode = true;
-    } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kDisableFlashCoreAnimation)) {
-      // Temporary switch for testing; once any Flash + Core Animation issues
-      // have been shaken out, this switch (and the chrome_switches.h and
-      // command_line.h includes) can be removed.
-      force_opaque_mode = true;
     } else {
-      // Current betas of Flash 10.1 don't respect QuickDraw negotiation either,
-      // so we still have to force opaque mode on 10.5 (where we don't support
-      // Core Animation). If the final version of Flash 10.1 is fixed to do
-      // drawing model negotiation correctly instead of assuming that QuickDraw
-      // is available without asking, this whole block (and the sys_info.h
-      // include) can be removed.
+      // Flash 10.1 doesn't respect QuickDraw negotiation either, so we still
+      // have to force opaque mode on 10.5 (where it doesn't use CA).
       int32 major, minor, bugfix;
       base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
       if (major < 10 || (major == 10 && minor < 6))

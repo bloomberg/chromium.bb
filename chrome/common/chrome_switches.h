@@ -363,7 +363,6 @@ extern const char kPasswordStore[];
 #endif
 
 #if defined(OS_MACOSX)
-extern const char kDisableFlashCoreAnimation[];
 extern const char kDisableHolePunching[];
 extern const char kEnableExposeForTabs[];
 extern const char kEnableSandboxLogging[];
