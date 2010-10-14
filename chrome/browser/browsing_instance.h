@@ -109,6 +109,11 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
   // SiteInstanceMap.
   SiteInstanceMap* GetSiteInstanceMap(Profile* profile, const GURL& url);
 
+  // Utility routine which removes the passed SiteInstance from the passed
+  // SiteInstanceMap.
+  bool RemoveSiteInstanceFromMap(SiteInstanceMap* map, const std::string& site,
+                                 SiteInstance* site_instance);
+
   // Common profile to which all SiteInstances in this BrowsingInstance
   // must belong.
   Profile* const profile_;

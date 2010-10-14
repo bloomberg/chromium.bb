@@ -121,12 +121,32 @@ void BrowsingInstance::UnregisterSiteInstance(SiteInstance* site_instance) {
   // Only unregister the SiteInstance if it is the same one that is registered
   // for the site.  (It might have been an unregistered SiteInstance.  See the
   // comments in RegisterSiteInstance.)
-  SiteInstanceMap* map = GetSiteInstanceMap(profile_, site_instance->site());
+
+  // We look for the site instance in both the local site_instance_map_ and also
+  // the static profile_site_instance_map_ - this is because the logic in
+  // ShouldUseProcessPerSite() can produce different results over the lifetime
+  // of Chrome (e.g. installation of apps with web extents can change our
+  // process-per-site policy for a given domain), so we don't know which map
+  // the site was put into when it was originally registered.
+  if (!RemoveSiteInstanceFromMap(&site_instance_map_, site, site_instance)) {
+    // Wasn't in our local map, so look in the static per-profile map.
+    ProfileId runtime_id = profile_ ? profile_->GetRuntimeId()
+                                    : Profile::InvalidProfileId;
+    RemoveSiteInstanceFromMap(
+        &profile_site_instance_map_[runtime_id], site, site_instance);
+  }
+}
+
+bool BrowsingInstance::RemoveSiteInstanceFromMap(SiteInstanceMap* map,
+                                                 const std::string& site,
+                                                 SiteInstance* site_instance) {
   SiteInstanceMap::iterator i = map->find(site);
   if (i != map->end() && i->second == site_instance) {
     // Matches, so erase it.
     map->erase(i);
+    return true;
   }
+  return false;
 }
 
 BrowsingInstance::~BrowsingInstance() {
