@@ -7,11 +7,9 @@
 #include <vector>
 
 #include "base/file_util.h"
-#if defined(OS_WIN)
-#include "base/iat_patch.h"
-#endif
 #include "base/path_service.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_unpacker.h"
@@ -25,9 +23,13 @@
 #include "printing/page_range.h"
 #include "printing/units.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/image_decoder.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
+
+#if defined(OS_WIN)
+#include "app/win/iat_patch_function.h"
+#endif
 
 namespace {
 
@@ -156,7 +158,7 @@ typedef bool (*GetPDFDocInfoProc)(const unsigned char* pdf_buffer,
 // The 2 below IAT patch functions are almost identical to the code in
 // render_process_impl.cc. This is needed to work around specific Windows APIs
 // used by the Chrome PDF plugin that will fail in the sandbox.
-static iat_patch::IATPatchFunction g_iat_patch_createdca;
+static app::win::IATPatchFunction g_iat_patch_createdca;
 HDC WINAPI UtilityProcess_CreateDCAPatch(LPCSTR driver_name,
                                          LPCSTR device_name,
                                          LPCSTR output,
@@ -170,7 +172,7 @@ HDC WINAPI UtilityProcess_CreateDCAPatch(LPCSTR driver_name,
   return CreateDCA(driver_name, device_name, output, init_data);
 }
 
-static iat_patch::IATPatchFunction g_iat_patch_get_font_data;
+static app::win::IATPatchFunction g_iat_patch_get_font_data;
 DWORD WINAPI UtilityProcess_GetFontDataPatch(
     HDC hdc, DWORD table, DWORD offset, LPVOID buffer, DWORD length) {
   int rv = GetFontData(hdc, table, offset, buffer, length);

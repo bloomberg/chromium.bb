@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "app/win/iat_patch_function.h"
 #include "base/file_util.h"
-#include "base/iat_patch.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
@@ -70,15 +70,15 @@ base::LazyInstance<std::map<HWND, WNDPROC> > g_window_handle_proc_map(
 
 
 // Helper object for patching the TrackPopupMenu API.
-base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_track_popup_menu(
+base::LazyInstance<app::win::IATPatchFunction> g_iat_patch_track_popup_menu(
     base::LINKER_INITIALIZED);
 
 // Helper object for patching the SetCursor API.
-base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_set_cursor(
+base::LazyInstance<app::win::IATPatchFunction> g_iat_patch_set_cursor(
     base::LINKER_INITIALIZED);
 
 // Helper object for patching the RegEnumKeyExW API.
-base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w(
+base::LazyInstance<app::win::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w(
     base::LINKER_INITIALIZED);
 
 // http://crbug.com/16114

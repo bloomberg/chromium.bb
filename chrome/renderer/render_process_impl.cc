@@ -41,7 +41,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #elif defined(OS_WIN)
-#include "base/iat_patch.h"
+#include "app/win/iat_patch_function.h"
 #endif
 
 namespace {
@@ -80,7 +80,7 @@ bool LaunchNaClProcessMultiFD(const char* alleged_url,
 
 #if defined(OS_WIN)
 
-static iat_patch::IATPatchFunction g_iat_patch_createdca;
+static app::win::IATPatchFunction g_iat_patch_createdca;
 HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
                           LPCSTR device_name,
                           LPCSTR output,
@@ -94,7 +94,7 @@ HDC WINAPI CreateDCAPatch(LPCSTR driver_name,
   return CreateCompatibleDC(NULL);
 }
 
-static iat_patch::IATPatchFunction g_iat_patch_get_font_data;
+static app::win::IATPatchFunction g_iat_patch_get_font_data;
 DWORD WINAPI GetFontDataPatch(HDC hdc,
                               DWORD table,
                               DWORD offset,

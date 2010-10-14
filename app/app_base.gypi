@@ -220,6 +220,8 @@
         'throb_animation.h',
         'tween.cc',
         'tween.h',
+        'win/iat_patch_function.cc',
+        'win/iat_patch_function.h',
         'x11_util.cc',
         'x11_util.h',
         'x11_util_internal.h',
@@ -306,6 +308,11 @@
             'gfx/native_theme_win.cc',
             'gfx/native_theme_win.h',
             'os_exchange_data.cc',
+            'win/iat_patch_function.cc',
+            'win/iat_patch_function.h',
+          ],
+          'sources/': [
+            ['exclude', '/win/*'],
           ],
         }],
         ['OS=="linux"', {

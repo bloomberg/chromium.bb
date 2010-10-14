@@ -19,12 +19,12 @@
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
 #include "app/win_util.h"
+#include "app/win/iat_patch_function.h"
 #include "base/auto_reset.h"
 #include "base/base_drag_source.h"
 #include "base/base_drop_target.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
-#include "base/iat_patch.h"
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
@@ -371,8 +371,8 @@ class PaintPatcher {
 
  private:
   size_t refcount_;
-  iat_patch::IATPatchFunction begin_paint_;
-  iat_patch::IATPatchFunction end_paint_;
+  app::win::IATPatchFunction begin_paint_;
+  app::win::IATPatchFunction end_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintPatcher);
 };
