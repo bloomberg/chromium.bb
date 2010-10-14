@@ -40,7 +40,7 @@
     'omnibox',
     'passwords',
     'plugins',
-    'popups',
+    # 'popups',  crbug.com/59208
     'prefs',
     'search_engines',
     'special_tabs',
