@@ -328,9 +328,10 @@ def _SendChangeHTTP(options):
   logging.info('Sending by HTTP')
   logging.info(description)
   logging.info(url)
-  logging.info(options.diff)
   if options.dry_run:
+    print options.diff
     return
+  logging.info(options.diff)
 
   try:
     connection = urllib.urlopen(url, urllib.urlencode(values), proxies=proxies)
