@@ -7570,11 +7570,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_OPTIONS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference">
-        Show suggestions for navigation errors
+        Use a web service to help resolve navigation errors
       </message>
 
       <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
-        Use a suggestion service to help complete searches and URLs typed in the address bar
+        Use a prediction service to help complete searches and URLs typed in the address bar
       </message>
 
       <message name="IDS_OPTIONS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
