@@ -260,7 +260,8 @@ AutocompletePopupViewMac::AutocompletePopupViewMac(
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
       field_(field),
-      popup_(nil) {
+      popup_(nil),
+      targetPopupFrame_(NSZeroRect) {
   DCHECK(edit_view);
   DCHECK(edit_model);
   DCHECK(profile);
@@ -446,6 +447,15 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   // animation.
   DCHECK_EQ([matrix intercellSpacing].height, 0.0);
   PositionPopup(rows * cellHeight);
+}
+
+gfx::Rect AutocompletePopupViewMac::GetTargetBounds() {
+  // Flip the coordinate system before returning.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSRect monitorFrame = [screen frame];
+  gfx::Rect bounds(NSRectToCGRect(targetPopupFrame_));
+  bounds.set_y(monitorFrame.size.height - bounds.y() - bounds.height());
+  return bounds;
 }
 
 void AutocompletePopupViewMac::SetSelectedLine(size_t line) {

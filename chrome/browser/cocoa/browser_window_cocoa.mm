@@ -573,9 +573,13 @@ void BrowserWindowCocoa::HideInstant() {
 }
 
 gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
-  // TODO: implement me
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  // Flip coordinates based on the primary screen.
+  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
+  NSRect monitorFrame = [screen frame];
+  NSRect frame = [controller_ instantFrame];
+  gfx::Rect bounds(NSRectToCGRect(frame));
+  bounds.set_y(NSHeight(monitorFrame) - bounds.y() - bounds.height());
+  return bounds;
 }
 
 void BrowserWindowCocoa::Observe(NotificationType type,

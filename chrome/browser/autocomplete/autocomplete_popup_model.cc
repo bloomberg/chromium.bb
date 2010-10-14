@@ -292,12 +292,7 @@ void AutocompletePopupModel::Observe(NotificationType type,
     SetHoveredLine(kNoMatch);
 
   view_->UpdatePopupAppearance();
-
-#if defined(TOOLKIT_VIEWS)
   edit_model_->PopupBoundsChangedTo(view_->GetTargetBounds());
-#else
-  // TODO: port
-#endif
 }
 
 const SkBitmap* AutocompletePopupModel::GetSpecialIconForMatch(

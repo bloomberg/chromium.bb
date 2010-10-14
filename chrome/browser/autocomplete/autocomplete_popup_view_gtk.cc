@@ -355,6 +355,12 @@ void AutocompletePopupViewGtk::UpdatePopupAppearance() {
   gtk_widget_queue_draw(window_);
 }
 
+gfx::Rect AutocompletePopupViewGtk::GetTargetBounds() {
+  NOTIMPLEMENTED();
+  return gfx::Rect();
+}
+
+
 void AutocompletePopupViewGtk::PaintUpdatesNow() {
   // Paint our queued invalidations now, synchronously.
   gdk_window_process_updates(window_->window, FALSE);

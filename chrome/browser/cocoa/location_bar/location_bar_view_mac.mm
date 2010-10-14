@@ -239,6 +239,9 @@ bool LocationBarViewMac::OnCommitSuggestedText(const std::wstring& typed_text) {
 }
 
 void LocationBarViewMac::OnPopupBoundsChanged(const gfx::Rect& bounds) {
+  InstantController* instant = browser_->instant();
+  if (instant)
+    instant->SetOmniboxBounds(bounds);
 }
 
 void LocationBarViewMac::OnAutocompleteAccept(const GURL& url,

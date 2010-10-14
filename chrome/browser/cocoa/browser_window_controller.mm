@@ -1738,6 +1738,21 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
+- (NSRect)instantFrame {
+  // The view's bounds are in its own coordinate system.  Convert that to the
+  // window base coordinate system, then translate it into the screen's
+  // coordinate system.
+  NSView* view = [previewableContentsController_ view];
+  if (!view)
+    return NSZeroRect;
+
+  NSRect frame = [view convertRect:[view bounds] toView:nil];
+  NSPoint originInScreenCoords =
+      [[view window] convertBaseToScreen:frame.origin];
+  frame.origin = originInScreenCoords;
+  return frame;
+}
+
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)code
             context:(void*)context {

@@ -37,6 +37,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView,
   virtual bool IsOpen() const { return opened_; }
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
+  virtual gfx::Rect GetTargetBounds();
   virtual void PaintUpdatesNow();
   virtual void OnDragCanceled();
   virtual AutocompletePopupModel* GetModel();

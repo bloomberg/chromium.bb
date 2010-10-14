@@ -858,6 +858,7 @@ void AutocompleteEditViewMac::OnFrameChanged() {
   // things even cheaper by refactoring between the popup-placement
   // code and the matrix-population code.
   popup_view_->UpdatePopupAppearance();
+  model_->PopupBoundsChangedTo(popup_view_->GetTargetBounds());
 
   // Give controller a chance to rearrange decorations.
   controller_->OnChanged();

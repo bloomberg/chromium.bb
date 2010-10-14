@@ -62,6 +62,8 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   }
   virtual void UpdatePopupAppearance();
 
+  virtual gfx::Rect GetTargetBounds();
+
   // Set |line| to be selected.
   void SetSelectedLine(size_t line);
 
