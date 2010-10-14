@@ -9,6 +9,7 @@
 #include "app/gtk_dnd_util.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -17,6 +18,26 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
+
+namespace {
+
+// Returns the bookmark target atom, based on the underlying toolkit.
+//
+// For GTK, bookmark drag data is encoded as pickle and associated with
+// gtk_dnd_util::CHROME_BOOKMARK_ITEM. See
+// bookmark_utils::WriteBookmarksToSelection() for details.
+// For Views, bookmark drag data is encoded in the same format, and
+// associated with a custom format. See BookmarkDragData::Write() for
+// details.
+GdkAtom GetBookmarkTargetAtom() {
+#if defined(TOOLKIT_VIEWS)
+  return BookmarkDragData::GetBookmarkCustomFormat();
+#else
+  return gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM);
+#endif
+}
+
+}  // namespace
 
 WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
     : tab_contents_(tab_contents),
@@ -87,7 +108,6 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
       gtk_dnd_util::TEXT_HTML,
       gtk_dnd_util::NETSCAPE_URL,
       gtk_dnd_util::CHROME_NAMED_URL,
-      gtk_dnd_util::CHROME_BOOKMARK_ITEM,
       // TODO(estade): support image drags?
     };
 
@@ -97,6 +117,9 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
                         gtk_dnd_util::GetAtomForTarget(supported_targets[i]),
                         time);
     }
+    // Add the bookmark target as well.
+    ++data_requests_;
+    gtk_drag_get_data(widget_, context, GetBookmarkTargetAtom(), time);
   } else if (data_requests_ == 0) {
     tab_contents_->render_view_host()->
         DragTargetDragOver(
@@ -187,8 +210,9 @@ void WebDragDestGtk::OnDragDataReceived(
   // For CHROME_BOOKMARK_ITEM, we have to handle the case where the drag source
   // doesn't have any data available for us. In this case we try to synthesize a
   // URL bookmark.
-  if (data->target ==
-      gtk_dnd_util::GetAtomForTarget(gtk_dnd_util::CHROME_BOOKMARK_ITEM))  {
+  // Note that bookmark drag data is encoded in the same format for both
+  // GTK and Views, hence we can share the same logic here.
+  if (data->target == GetBookmarkTargetAtom()) {
     if (data->data && data->length > 0) {
       bookmark_drag_data_.ReadFromVector(
           bookmark_utils::GetNodesFromSelection(
