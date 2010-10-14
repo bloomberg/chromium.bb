@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
   } else {
     printf("This test needs command line arguments.\n");
     printf("Usage: %ls -{clean|backup} [-build <version>] [-force] \n",
-        command_line.program().c_str());
+           command_line.GetProgram().value().c_str());
     printf("-clean arg will uninstall your chrome at all levels"
            " and also delete profile.\n"
            "-backup arg will make a copy of User Data before uninstalling"

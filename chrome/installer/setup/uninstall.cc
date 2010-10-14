@@ -470,7 +470,7 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
         !::IsUserAnAdmin() &&
         (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) &&
         !cmd_line.HasSwitch(installer_util::switches::kRunAsAdmin)) {
-      std::wstring exe = cmd_line.program();
+      std::wstring exe = cmd_line.GetProgram().value();
       std::wstring params(cmd_params);
       // Append --run-as-admin flag to let the new instance of setup.exe know
       // that we already tried to launch ourselves as admin.

@@ -298,18 +298,20 @@ bool IsChromeRegistered(const std::wstring& chrome_exe,
 // we capture and return.
 bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
                               const std::wstring& suffix) {
-  std::wstring exe_path(file_util::GetDirectoryFromPath(chrome_exe));
-  file_util::AppendToPath(&exe_path, installer_util::kSetupExe);
-  if (!file_util::PathExists(FilePath::FromWStringHack(exe_path))) {
+  FilePath exe_path =
+      FilePath::FromWStringHack(chrome_exe).DirName()
+          .Append(installer_util::kSetupExe);
+  if (!file_util::PathExists(exe_path)) {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     HKEY reg_root = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
         HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
     RegKey key(reg_root, dist->GetUninstallRegPath().c_str(), KEY_READ);
-    key.ReadValue(installer_util::kUninstallStringField, &exe_path);
-    CommandLine command_line = CommandLine::FromString(exe_path);
-    exe_path = command_line.program();
+    std::wstring uninstall_string;
+    key.ReadValue(installer_util::kUninstallStringField, &uninstall_string);
+    CommandLine command_line = CommandLine::FromString(uninstall_string);
+    exe_path = command_line.GetProgram();
   }
-  if (file_util::PathExists(FilePath::FromWStringHack(exe_path))) {
+  if (file_util::PathExists(exe_path)) {
     std::wstring params(L"--");
     params.append(
         ASCIIToWide(installer_util::switches::kRegisterChromeBrowser));
@@ -328,7 +330,7 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
     }
 
     DWORD ret_val = 0;
-    InstallUtil::ExecuteExeAsAdmin(exe_path, params, &ret_val);
+    InstallUtil::ExecuteExeAsAdmin(exe_path.value(), params, &ret_val);
     if (ret_val == 0)
       return true;
   }

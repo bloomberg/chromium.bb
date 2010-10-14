@@ -87,8 +87,9 @@ DWORD UnPackArchive(const std::wstring& archive, bool system_install,
                             installed_version->GetString());
     file_util::AppendToPath(&existing_archive, installer_util::kInstallerDir);
     file_util::AppendToPath(&existing_archive, installer::kChromeArchive);
-    if (int i = setup_util::ApplyDiffPatch(existing_archive, unpacked_file,
-                                           uncompressed_archive)) {
+    if (int i = setup_util::ApplyDiffPatch(FilePath(existing_archive),
+                                           FilePath(unpacked_file),
+                                           FilePath(uncompressed_archive))) {
       LOG(ERROR) << "Binary patching failed with error " << i;
       return i;
     }
@@ -227,16 +228,16 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
 
   // For install the default location for chrome.packed.7z is in current
   // folder, so get that value first.
-  std::wstring archive = file_util::GetDirectoryFromPath(cmd_line.program());
-  file_util::AppendToPath(&archive,
-                          std::wstring(installer::kChromeCompressedArchive));
+  FilePath archive =
+      cmd_line.GetProgram().DirName().Append(
+          installer::kChromeCompressedArchive);
 
   // If --install-archive is given, get the user specified value
   if (cmd_line.HasSwitch(installer_util::switches::kInstallArchive)) {
-    archive = cmd_line.GetSwitchValueNative(
+    archive = cmd_line.GetSwitchValuePath(
         installer_util::switches::kInstallArchive);
   }
-  LOG(INFO) << "Archive found to install Chrome " << archive;
+  LOG(INFO) << "Archive found to install Chrome " << archive.value();
 
   // Create a temp folder where we will unpack Chrome archive. If it fails,
   // then we are doomed, so return immediately and no cleanup is required.
@@ -256,7 +257,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   file_util::AppendToPath(&unpack_path,
                           std::wstring(installer::kInstallSourceDir));
   bool incremental_install = false;
-  if (UnPackArchive(archive, system_level, installed_version,
+  if (UnPackArchive(archive.value(), system_level, installed_version,
                     temp_path.ToWStringHack(), unpack_path,
                     incremental_install)) {
     install_status = installer_util::UNCOMPRESSION_FAILED;
@@ -269,7 +270,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
     file_util::AppendToPath(&src_path,
         std::wstring(installer::kInstallSourceChromeDir));
     scoped_ptr<installer::Version>
-        installer_version(setup_util::GetVersionFromDir(src_path));
+        installer_version(setup_util::GetVersionFromDir(FilePath(src_path)));
     if (!installer_version.get()) {
       LOG(ERROR) << "Did not find any valid version in installer.";
       install_status = installer_util::INVALID_ARCHIVE;
@@ -287,12 +288,12 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
       } else {
         // We want to keep uncompressed archive (chrome.7z) that we get after
         // uncompressing and binary patching. Get the location for this file.
-        std::wstring archive_to_copy(temp_path.ToWStringHack());
-        file_util::AppendToPath(&archive_to_copy, installer::kChromeArchive);
+        FilePath archive_to_copy = temp_path.Append(installer::kChromeArchive);
         std::wstring prefs_source_path = cmd_line.GetSwitchValueNative(
             installer_util::switches::kInstallerData);
         install_status = installer::InstallOrUpdateChrome(
-            cmd_line.program(), archive_to_copy, temp_path.ToWStringHack(),
+            cmd_line.GetProgram().value(), archive_to_copy.value(),
+            temp_path.ToWStringHack(),
             prefs_source_path, prefs, *installer_version, installed_version);
 
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
@@ -398,7 +399,8 @@ installer_util::InstallStatus UninstallChrome(const CommandLine& cmd_line,
   bool remove_all = !cmd_line.HasSwitch(
       installer_util::switches::kDoNotRemoveSharedItems);
 
-  return installer_setup::UninstallChrome(cmd_line.program(), system_install,
+  return installer_setup::UninstallChrome(cmd_line.GetProgram().value(),
+                                          system_install,
                                           remove_all, force,
                                           cmd_line, cmd_params);
 }
@@ -454,10 +456,11 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
       std::wstring uncompressed_patch;
       if (LzmaUtil::UnPackArchive(setup_patch, temp_path.ToWStringHack(),
                                   &uncompressed_patch) == NO_ERROR) {
-        std::wstring old_setup_exe = cmd_line.program();
-        std::wstring new_setup_exe = cmd_line.GetSwitchValueNative(
+        FilePath old_setup_exe = cmd_line.GetProgram();
+        FilePath new_setup_exe = cmd_line.GetSwitchValuePath(
             installer_util::switches::kNewSetupExe);
-        if (!setup_util::ApplyDiffPatch(old_setup_exe, uncompressed_patch,
+        if (!setup_util::ApplyDiffPatch(old_setup_exe,
+                                        FilePath(uncompressed_patch),
                                         new_setup_exe))
           status = installer_util::NEW_VERSION_UPDATED;
       }
@@ -676,7 +679,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   if (system_install && !IsUserAnAdmin()) {
     if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&
         !parsed_command_line.HasSwitch(installer_util::switches::kRunAsAdmin)) {
-      std::wstring exe = parsed_command_line.program();
+      std::wstring exe = parsed_command_line.GetProgram().value();
       std::wstring params(command_line);
       // Append --run-as-admin flag to let the new instance of setup.exe know
       // that we already tried to launch ourselves as admin.

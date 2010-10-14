@@ -562,7 +562,7 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   TRACE_EVENT_BEGIN("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
   result = g_broker_services->SpawnTarget(
-      cmd_line->program().c_str(),
+      cmd_line->GetProgram().value().c_str(),
       cmd_line->command_line_string().c_str(),
       policy, &target);
   policy->Release();

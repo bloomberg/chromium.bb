@@ -13,34 +13,38 @@
 #include "courgette/courgette.h"
 #include "third_party/bspatch/mbspatch.h"
 
-int setup_util::ApplyDiffPatch(const std::wstring& src,
-                               const std::wstring& patch,
-                               const std::wstring& dest) {
-  LOG(INFO) << "Applying patch " << patch
-            << " to file " << src
-            << " and generating file " << dest;
+int setup_util::ApplyDiffPatch(const FilePath& src,
+                               const FilePath& patch,
+                               const FilePath& dest) {
+  LOG(INFO) << "Applying patch " << patch.value()
+            << " to file " << src.value()
+            << " and generating file " << dest.value();
 
   // Try Courgette first.  Courgette checks the patch file first and fails
   // quickly if the patch file does not have a valid Courgette header.
   courgette::Status patch_status =
-      courgette::ApplyEnsemblePatch(src.c_str(), patch.c_str(), dest.c_str());
+      courgette::ApplyEnsemblePatch(src.value().c_str(),
+                                    patch.value().c_str(),
+                                    dest.value().c_str());
   if (patch_status == courgette::C_OK) {
     return 0;
   } else {
-    LOG(INFO) << "Failed to apply patch " << patch << " using courgette.";
+    LOG(INFO) << "Failed to apply patch " << patch.value()
+              << " using courgette.";
   }
 
-  return ApplyBinaryPatch(src.c_str(), patch.c_str(), dest.c_str());
+  return ApplyBinaryPatch(src.value().c_str(), patch.value().c_str(),
+                          dest.value().c_str());
 }
 
 installer::Version* setup_util::GetVersionFromDir(
-    const std::wstring& chrome_path) {
-  LOG(INFO) << "Looking for Chrome version folder under " << chrome_path;
-  std::wstring root_path(chrome_path);
-  file_util::AppendToPath(&root_path, L"*");
+    const FilePath& chrome_path) {
+  LOG(INFO) << "Looking for Chrome version folder under "
+            << chrome_path.value();
+  FilePath root_path = chrome_path.Append(L"*");
 
   WIN32_FIND_DATA find_data;
-  HANDLE file_handle = FindFirstFile(root_path.c_str(), &find_data);
+  HANDLE file_handle = FindFirstFile(root_path.value().c_str(), &find_data);
   BOOL ret = TRUE;
   installer::Version *version = NULL;
   // Here we are assuming that the installer we have is really valid so there

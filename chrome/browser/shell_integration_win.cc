@@ -346,7 +346,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       // Need to normalize path in case it's been munged.
       CommandLine command_line = CommandLine::FromString(value);
       std::wstring short_path;
-      GetShortPathName(command_line.program().c_str(),
+      GetShortPathName(command_line.GetProgram().value().c_str(),
                        WriteInto(&short_path, MAX_PATH), MAX_PATH);
       if (!FilePath::CompareEqualIgnoreCase(short_path, short_app_path))
         return NOT_DEFAULT_BROWSER;

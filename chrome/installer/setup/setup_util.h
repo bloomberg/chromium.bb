@@ -10,18 +10,20 @@
 
 #include "chrome/installer/util/version.h"
 
+class FilePath;
+
 namespace setup_util {
   // Apply a diff patch to source file. First tries to apply it using courgette
   // since it checks for courgette header and fails quickly. If that fails
   // tries to apply the patch using regular bsdiff. Returns status code.
-  int ApplyDiffPatch(const std::wstring& src,
-                     const std::wstring& patch,
-                     const std::wstring& dest);
+  int ApplyDiffPatch(const FilePath& src,
+                     const FilePath& patch,
+                     const FilePath& dest);
 
   // Find the version of Chrome from an install source directory.
   // Chrome_path should contain a version folder.
   // Returns the first version found or NULL if no version is found.
-  installer::Version* GetVersionFromDir(const std::wstring& chrome_path);
+  installer::Version* GetVersionFromDir(const FilePath& chrome_path);
 }  // namespace setup_util
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
