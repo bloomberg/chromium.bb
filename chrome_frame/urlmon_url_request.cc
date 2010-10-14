@@ -157,6 +157,7 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
 void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
   DLOG(INFO) << __FUNCTION__ << me();
+  cleanup_transaction_ = false;
   if (status_.get_state() == Status::DONE) {
     // Binding is stopped. Note result could be an error.
     callback->Run(moniker_, bind_context_);
