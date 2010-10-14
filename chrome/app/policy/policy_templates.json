@@ -480,6 +480,16 @@
         }
       }],
     },
+    {
+      'name': 'ChromeOsLockOnIdleSuspend',
+      'type': 'main',
+      'annotations': {
+        'platforms': ['linux'],  # Note this should be ChromeOs.
+        'products': ['chrome'],
+        'features': {'dynamic_refresh': 1},
+        'example_value': True,
+      }
+    },
   ],
   'placeholders': [
     # Note: keys $1 and $3 are reserved for Chromium and Chromium Frame.

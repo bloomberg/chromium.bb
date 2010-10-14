@@ -495,7 +495,7 @@ templates and will be translated for each locale. -->
       You can specify the default search provider to be used by setting the rest of the default search policies. If these are left empty, the user can choose the default provider.
 
       If you diable this setting, no search is performed when the user enters non-URL text in the omnibox.
-      
+
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">
         $1<ex>Google Chrome</ex>
       </ph>.
@@ -590,6 +590,23 @@ templates and will be translated for each locale. -->
       Allow <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> to handle the following content types.
     </message>
     <!-- End Chrome Frame messages -->
+
+    <!-- Begin ChromeOs messages -->
+    <message name="IDS_POLICY_CHROMEOSLOCKONIDLESUSPEND_CAPTION"
+             desc="Caption of ChromeOsLockOnIdleSuspend policy">
+      Enable lock when ChromeOS devices become idle or suspended.
+    </message>
+    <message name="IDS_POLICY_CHROMEOSLOCKONIDLESUSPEND_DESC"
+             desc="Description of ChromeOsLockOnIdleSuspend policy">
+      Enable lock when ChromeOS devices become idle or suspended.
+
+      If you enable this setting, users will be asked for a password to unlock ChromeOS devices from sleep.
+
+      If you disable this setting, users will not be asked for a password to wake ChromeOS devices from sleep.
+
+      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome OS</ex></ph>.
+    </message>
+    <!-- End ChromeOs messages -->
 
     <!-- Generated documentation messages -->
     <message name="IDS_POLICY_DOC_DATA_TYPE"

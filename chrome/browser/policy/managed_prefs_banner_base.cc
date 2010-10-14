@@ -68,6 +68,9 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       AddUserPref(prefs::kSyncManaged);
       AddUserPref(prefs::kAutoFillEnabled);
       AddUserPref(prefs::kPasswordManagerEnabled);
+#if defined(OS_CHROMEOS)
+      AddUserPref(prefs::kEnableScreenLock);
+#endif
       break;
     case OPTIONS_PAGE_ADVANCED:
       AddUserPref(prefs::kAlternateErrorPagesEnabled);

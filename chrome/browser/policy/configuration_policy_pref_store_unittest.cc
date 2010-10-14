@@ -164,6 +164,16 @@ INSTANTIATE_TEST_CASE_P(
                         kPolicySavingBrowserHistoryDisabled,
                     prefs::kSavingBrowserHistoryDisabled)));
 
+#if defined(OS_CHROMEOS)
+INSTANTIATE_TEST_CASE_P(
+    CrosConfigurationPolicyPrefStoreBooleanTestInstance,
+    ConfigurationPolicyPrefStoreBooleanTest,
+    testing::Values(
+        TypeAndName(ConfigurationPolicyStore::
+                        kPolicyChromeOsLockOnIdleSuspend,
+                    prefs::kEnableScreenLock)));
+#endif  // defined(OS_CHROMEOS)
+
 // Test cases for integer-valued policy settings.
 class ConfigurationPolicyPrefStoreIntegerTest
     : public testing::TestWithParam<TypeAndName> {

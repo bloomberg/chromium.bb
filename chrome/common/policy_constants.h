@@ -56,6 +56,12 @@ extern const char kChromeFrameRendererSettings[];
 extern const char kRenderInChromeFrameList[];
 extern const char kRenderInHostList[];
 extern const char kChromeFrameContentTypes[];
+
+#if defined(OS_CHROMEOS)
+// ChromeOS policy constants
+extern const char kChromeOsLockOnIdleSuspend[];
+#endif
+
 }  // namespace key
 
 }  // namespace policy

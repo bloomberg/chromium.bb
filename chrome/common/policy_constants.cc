@@ -60,6 +60,11 @@ const char kRenderInChromeFrameList[] = "RenderInChromeFrameList";
 const char kRenderInHostList[] = "RenderInHostList";
 const char kChromeFrameContentTypes[] = "ChromeFrameContentTypes";
 
+#if defined(OS_CHROMEOS)
+// ChromeOS policy constants
+const char kChromeOsLockOnIdleSuspend[] = "ChromeOsLockOnIdleSuspend";
+#endif
+
 }  // namespace key
 
 }  // namespace policy
