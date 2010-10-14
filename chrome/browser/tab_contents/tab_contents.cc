@@ -3078,9 +3078,8 @@ void TabContents::Observe(NotificationType type,
       DCHECK(Source<PrefService>(source).ptr() == profile()->GetPrefs());
       if (*pref_name_in == prefs::kAlternateErrorPagesEnabled) {
         UpdateAlternateErrorPageURL();
-      } else if (*pref_name_in == prefs::kDefaultCharset ||
-          StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)
-          ) {
+      } else if ((*pref_name_in == prefs::kDefaultCharset) ||
+                 StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)) {
         UpdateWebPreferences();
       } else {
         NOTREACHED() << "unexpected pref change notification" << *pref_name_in;
