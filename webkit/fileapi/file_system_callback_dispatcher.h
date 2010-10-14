@@ -16,6 +16,8 @@ namespace fileapi {
 // but uses chromium types.
 class FileSystemCallbackDispatcher {
  public:
+  virtual ~FileSystemCallbackDispatcher() {}
+
   // Callback for various operations that don't require return values.
   virtual void DidSucceed() = 0;
 

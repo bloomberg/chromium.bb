@@ -68,6 +68,7 @@
 #include "webkit/blob/deletable_file_reference.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_file_writer.h"
 #include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 #include "webkit/tools/test_shell/test_shell_webblobregistry_impl.h"
@@ -142,6 +143,7 @@ class IOThread : public base::Thread {
 
     SimpleAppCacheSystem::InitializeOnIOThread(g_request_context);
     SimpleSocketStreamBridge::InitializeOnIOThread(g_request_context);
+    SimpleFileWriter::InitializeOnIOThread(g_request_context);
 
     TestShellWebBlobRegistryImpl::InitializeOnIOThread(
         static_cast<TestShellRequestContext*>(g_request_context)->
@@ -152,6 +154,7 @@ class IOThread : public base::Thread {
   virtual void CleanUp() {
     SimpleSocketStreamBridge::Cleanup();
     TestShellWebBlobRegistryImpl::Cleanup();
+    SimpleFileWriter::CleanupOnIOThread();
     if (g_request_context) {
       g_request_context->Release();
       g_request_context = NULL;

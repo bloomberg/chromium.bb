@@ -1126,6 +1126,7 @@ void TestWebViewDelegate::openFileSystem(
     // The FileSystem temp directory was not initialized successfully.
     callbacks->didFail(WebKit::WebFileErrorSecurity);
   } else {
+    // TODO(michaeln): need to put origin/type in the path.
     callbacks->didOpenFileSystem(
         "TestShellFileSystem",
         webkit_glue::FilePathToWebString(shell_->file_system_root()));

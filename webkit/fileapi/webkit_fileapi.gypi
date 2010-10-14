@@ -24,6 +24,8 @@
         'file_system_types.h',
         'file_writer_delegate.cc',
         'file_writer_delegate.h',
+        'webfilewriter_base.cc',
+        'webfilewriter_base.h',
       ],
       'conditions': [
         ['inside_chromium_build==0', {

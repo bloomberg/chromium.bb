@@ -54,6 +54,8 @@
         '<(DEPTH)/webkit/tools/test_shell/simple_appcache_system.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_file_system.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_file_system.h',
+        '<(DEPTH)/webkit/tools/test_shell/simple_file_writer.cc',
+        '<(DEPTH)/webkit/tools/test_shell/simple_file_writer.h',
         '<(DEPTH)/webkit/tools/test_shell/simple_clipboard_impl.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_database_system.cc',
         '<(DEPTH)/webkit/tools/test_shell/simple_database_system.h',

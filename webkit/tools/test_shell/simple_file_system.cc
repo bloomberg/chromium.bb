@@ -12,10 +12,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/tools/test_shell/simple_file_writer.h"
 
 using WebKit::WebFileInfo;
 using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFileSystemEntry;
+using WebKit::WebFileWriter;
+using WebKit::WebFileWriterClient;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -61,7 +64,10 @@ class TestShellFileSystemCallbackDispatcher
 
   virtual void DidReadMetadata(const base::PlatformFileInfo& info) {
     WebFileInfo web_file_info;
+    web_file_info.length = info.size;
     web_file_info.modificationTime = info.last_modified.ToDoubleT();
+    web_file_info.type = info.is_directory ?
+        WebFileInfo::TypeDirectory : WebFileInfo::TypeFile;
     callbacks_->didReadMetadata(web_file_info);
     file_system_->RemoveCompletedOperation(request_id_);
   }
@@ -165,7 +171,7 @@ void SimpleFileSystem::createDirectory(
 }
 
 void SimpleFileSystem::fileExists(
-  const WebString& path, WebFileSystemCallbacks* callbacks) {
+    const WebString& path, WebFileSystemCallbacks* callbacks) {
   FilePath filepath(webkit_glue::WebStringToFilePath(path));
 
   GetNewOperation(callbacks)->FileExists(filepath);
@@ -183,6 +189,11 @@ void SimpleFileSystem::readDirectory(
   FilePath filepath(webkit_glue::WebStringToFilePath(path));
 
   GetNewOperation(callbacks)->ReadDirectory(filepath);
+}
+
+WebFileWriter* SimpleFileSystem::createFileWriter(
+    const WebString& path, WebFileWriterClient* client) {
+  return new SimpleFileWriter(path, client);
 }
 
 fileapi::FileSystemOperation* SimpleFileSystem::GetNewOperation(

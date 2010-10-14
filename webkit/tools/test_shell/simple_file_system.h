@@ -44,6 +44,8 @@ class SimpleFileSystem : public WebKit::WebFileSystem {
                                WebKit::WebFileSystemCallbacks* callbacks);
   virtual void readDirectory(const WebKit::WebString& path,
                              WebKit::WebFileSystemCallbacks* callbacks);
+  virtual WebKit::WebFileWriter* createFileWriter(
+      const WebKit::WebString& path, WebKit::WebFileWriterClient* client);
 
  private:
   // Helpers.

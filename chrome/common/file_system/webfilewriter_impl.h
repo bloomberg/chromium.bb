@@ -5,54 +5,30 @@
 #ifndef CHROME_COMMON_FILE_SYSTEM_WEBFILEWRITER_IMPL_H_
 #define CHROME_COMMON_FILE_SYSTEM_WEBFILEWRITER_IMPL_H_
 
-#include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "base/weak_ptr.h"
-#include "chrome/common/file_system/file_system_dispatcher.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileWriter.h"
+#include "webkit/fileapi/webfilewriter_base.h"
 
-namespace WebKit {
-class WebFileWriterClient;
-class WebString;
-class WebURL;
-}
+class FileSystemDispatcher;
 
-class WebFileWriterImpl
-  : public WebKit::WebFileWriter,
-    public base::SupportsWeakPtr<WebFileWriterImpl> {
+// An implementation of WebFileWriter for use in chrome renderers and workers.
+class WebFileWriterImpl : public fileapi::WebFileWriterBase,
+                          public base::SupportsWeakPtr<WebFileWriterImpl> {
  public:
   WebFileWriterImpl(
       const WebKit::WebString& path, WebKit::WebFileWriterClient* client);
   virtual ~WebFileWriterImpl();
 
-  // WebFileWriter implementation
-  virtual void truncate(long long length);
-  virtual void write(long long position, const WebKit::WebURL& blobURL);
-  virtual void cancel();
+ protected:
+  // WebFileWriterBase overrides
+  virtual void DoTruncate(const FilePath& path, int64 offset);
+  virtual void DoWrite(const FilePath& path, const GURL& blob_url,
+                       int64 offset);
+  virtual void DoCancel();
 
  private:
-  class FileSystemCallbackDispatcherImpl;
-  enum OperationType {
-    kOperationNone,
-    kOperationWrite,
-    kOperationTruncate
-  };
-
-  enum CancelState {
-    kCancelNotInProgress,
-    kCancelSent,
-    kCancelReceivedWriteResponse,
-  };
-
-  void DidSucceed();
-  void DidFail(base::PlatformFileError error_code);
-  void DidWrite(int64 bytes, bool complete);
-  void FinishCancel();
-
-  FilePath path_;
-  WebKit::WebFileWriterClient* client_;
+  class CallbackDispatcher;
   int request_id_;
-  OperationType operation_;
-  CancelState cancel_state_;
 };
 
 #endif  // CHROME_COMMON_FILE_SYSTEM_WEBFILEWRITER_IMPL_H_
