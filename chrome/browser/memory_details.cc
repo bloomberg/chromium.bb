@@ -5,7 +5,7 @@
 #include "chrome/browser/memory_details.h"
 
 #include "base/file_version_info.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

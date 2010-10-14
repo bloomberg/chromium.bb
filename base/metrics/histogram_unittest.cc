@@ -4,12 +4,11 @@
 
 // Test of Histogram class
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::TimeDelta;
-
+namespace base {
 namespace {
 
 class HistogramTest : public testing::Test {
@@ -308,5 +307,5 @@ TEST(HistogramTest, BucketPlacementTest) {
     EXPECT_EQ(i + 1, sample.counts(i));
 }
 
-
 }  // namespace
+}  // namespace base

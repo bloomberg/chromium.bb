@@ -1,12 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/metrics/stats_counters.h"
 #include "base/singleton.h"
-#include "base/stats_counters.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -24,7 +24,7 @@ void usage(const char* program_name) {
 
 int main(int argc, char**argv) {
   base::AtExitManager exit;
-  StatsTable table("fetchserver", 50, 1000);
+  base::StatsTable table("fetchserver", 50, 1000);
   table.set_current(&table);
 
 #if defined(OS_WIN)

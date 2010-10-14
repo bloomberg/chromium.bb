@@ -14,8 +14,8 @@
 
 #include "base/file_util.h"
 #include "base/hash_tables.h"
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"

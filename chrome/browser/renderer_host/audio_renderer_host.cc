@@ -4,8 +4,8 @@
 
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 
-#include "base/histogram.h"
 #include "base/lock.h"
+#include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/sys_info.h"

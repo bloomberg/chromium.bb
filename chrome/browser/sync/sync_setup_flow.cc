@@ -6,9 +6,9 @@
 
 #include "app/gfx/font_util.h"
 #include "base/callback.h"
-#include "base/histogram.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

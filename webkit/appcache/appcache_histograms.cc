@@ -4,7 +4,7 @@
 
 #include "webkit/appcache/appcache_histograms.h"
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 
 namespace appcache {
 

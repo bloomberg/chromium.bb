@@ -15,19 +15,19 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/histogram.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
 #include "base/md5.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #if defined(OS_MACOSX)
 #include "base/scoped_cftyperef.h"
 #endif
 #include "base/scoped_ptr.h"
-#include "base/stats_counters.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"

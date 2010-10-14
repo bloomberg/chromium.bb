@@ -8,8 +8,8 @@
 #include "base/base64.h"
 #endif
 #include "base/environment.h"
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"

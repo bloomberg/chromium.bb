@@ -7,8 +7,8 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/metrics/stats_counters.h"
 #include "base/singleton.h"
-#include "base/stats_counters.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/base/completion_callback.h"
@@ -86,7 +86,7 @@ class Client {
     }
 
     // Deal with received data here.
-    static StatsCounter bytes_read("FetchClient.bytes_read");
+    static base::StatsCounter bytes_read("FetchClient.bytes_read");
     bytes_read.Add(result);
 
     // Issue a read for more data.
@@ -99,7 +99,7 @@ class Client {
   }
 
   void OnRequestComplete(int result) {
-    static StatsCounter requests("FetchClient.requests");
+    static base::StatsCounter requests("FetchClient.requests");
     requests.Increment();
     driver_->ClientStopped();
     printf(".");
@@ -117,7 +117,7 @@ class Client {
 
 int main(int argc, char**argv) {
   base::AtExitManager exit;
-  StatsTable table("fetchclient", 50, 1000);
+  base::StatsTable table("fetchclient", 50, 1000);
   table.set_current(&table);
 
   CommandLine::Init(argc, argv);
@@ -163,8 +163,8 @@ int main(int argc, char**argv) {
   }
 
   {
-    StatsCounterTimer driver_time("FetchClient.total_time");
-    StatsScope<StatsCounterTimer> scope(driver_time);
+    base::StatsCounterTimer driver_time("FetchClient.total_time");
+    base::StatsScope<base::StatsCounterTimer> scope(driver_time);
 
     Client** clients = new Client*[client_limit];
     for (int i = 0; i < client_limit; i++)

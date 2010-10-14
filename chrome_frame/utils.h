@@ -13,9 +13,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/histogram.h"
 #include "base/lock.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/thread.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
@@ -433,8 +433,8 @@ extern Lock g_ChromeFrameHistogramLock;
 
 // Thread safe versions of the UMA histogram macros we use for ChromeFrame.
 // These should be used for histograms in ChromeFrame. If other histogram
-// macros from base/histogram.h are needed then thread safe versions of those
-// should be defined and used.
+// macros from base/metrics/histogram.h are needed then thread safe versions of
+// those should be defined and used.
 #define THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, \
                                                 bucket_count) { \
   AutoLock lock(g_ChromeFrameHistogramLock); \

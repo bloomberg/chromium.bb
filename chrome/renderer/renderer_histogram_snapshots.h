@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/task.h"
 
@@ -24,17 +24,17 @@ class RendererHistogramSnapshots {
   void SendHistograms(int sequence_number);
 
   // Maintain a map of histogram names to the sample stats we've sent.
-  typedef std::map<std::string, Histogram::SampleSet> LoggedSampleMap;
+  typedef std::map<std::string, base::Histogram::SampleSet> LoggedSampleMap;
   typedef std::vector<std::string> HistogramPickledList;
 
  private:
   // Extract snapshot data and then send it off the the Browser process.
   // Send only a delta to what we have already sent.
   void UploadAllHistrograms(int sequence_number);
-  void UploadHistrogram(const Histogram& histogram,
+  void UploadHistrogram(const base::Histogram& histogram,
                         HistogramPickledList* histograms);
-  void UploadHistogramDelta(const Histogram& histogram,
-                            const Histogram::SampleSet& snapshot,
+  void UploadHistogramDelta(const base::Histogram& histogram,
+                            const base::Histogram::SampleSet& snapshot,
                             HistogramPickledList* histograms);
 
   ScopedRunnableMethodFactory<RendererHistogramSnapshots>

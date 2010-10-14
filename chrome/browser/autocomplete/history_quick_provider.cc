@@ -5,7 +5,6 @@
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 
 #include "base/basictypes.h"
-#include "base/histogram.h"
 #include "base/i18n/word_iterator.h"
 #include "base/string_util.h"
 #include "base/logging.h"

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/net/preconnect.h"
 
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/browser_thread.h"

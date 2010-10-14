@@ -4,7 +4,6 @@
 
 #import "chrome/browser/cocoa/objc_method_swizzle.h"
 
-#import "base/histogram.h"
 #import "base/logging.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/app/breakpad_mac.h"

@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/external_protocol_handler.h"

@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/sqlite_compiled_statement.h"

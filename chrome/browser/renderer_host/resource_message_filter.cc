@@ -12,7 +12,7 @@
 #endif
 #include "base/file_util.h"
 #include "base/file_path.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/thread.h"

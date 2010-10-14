@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/field_trial.h"
 #include "base/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/task.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_thread.h"
@@ -28,10 +28,12 @@ static scoped_refptr<WebSocketExperimentRunner> runner;
 void WebSocketExperimentRunner::Start() {
   DCHECK(!runner.get());
 
-  scoped_refptr<FieldTrial> trial = new FieldTrial("WebSocketExperiment", 1000);
+  scoped_refptr<base::FieldTrial> trial =
+      new base::FieldTrial("WebSocketExperiment", 1000);
   trial->AppendGroup("active", 5);  // 0.5% in active group.
 
-  bool run_experiment = (trial->group() != FieldTrial::kNotParticipating);
+  bool run_experiment =
+      (trial->group() != base::FieldTrial::kNotParticipating);
 #ifndef NDEBUG
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   std::string experiment_host = command_line.GetSwitchValueASCII(

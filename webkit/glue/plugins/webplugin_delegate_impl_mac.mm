@@ -13,8 +13,8 @@
 
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/metrics/stats_counters.h"
 #include "base/scoped_ptr.h"
-#include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
@@ -650,8 +650,8 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
     return;
   DCHECK(buffer_context_ == context);
 
-  static StatsRate plugin_paint("Plugin.Paint");
-  StatsScope<StatsRate> scope(plugin_paint);
+  static base::StatsRate plugin_paint("Plugin.Paint");
+  base::StatsScope<base::StatsRate> scope(plugin_paint);
 
   // Plugin invalidates trigger asynchronous paints with the original
   // invalidation rect; the plugin may be resized before the paint is handled,

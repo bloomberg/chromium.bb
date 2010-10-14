@@ -40,11 +40,11 @@
 #include "base/debug_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/message_loop.h"
+#include "base/metrics/stats_counters.h"
+#include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_nsautorelease_pool.h"
-#include "base/stats_counters.h"
-#include "base/stats_table.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -450,9 +450,9 @@ void InitializeStatsTable(base::ProcessId browser_pid,
     std::string statsfile =
         StringPrintf("%s-%u", chrome::kStatsFilename,
                      static_cast<unsigned int>(browser_pid));
-    StatsTable *stats_table = new StatsTable(statsfile,
+    base::StatsTable *stats_table = new base::StatsTable(statsfile,
         chrome::kStatsMaxThreads, chrome::kStatsMaxCounters);
-    StatsTable::set_current(stats_table);
+    base::StatsTable::set_current(stats_table);
   }
 }
 
@@ -705,7 +705,7 @@ int ChromeMain(int argc, char** argv) {
 
   InitializeStatsTable(browser_pid, parsed_command_line);
 
-  StatsScope<StatsCounterTimer>
+  base::StatsScope<base::StatsCounterTimer>
       startup_timer(chrome::Counters::chrome_main());
 
   // Enable the heap profiler as early as possible!

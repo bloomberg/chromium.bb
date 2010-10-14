@@ -7,7 +7,7 @@
 #include <set>
 
 #include "base/hash_tables.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "net/base/mime_sniffer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"

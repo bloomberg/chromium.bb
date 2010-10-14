@@ -1,15 +1,17 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-#ifndef BASE_STATS_COUNTERS_H__
-#define BASE_STATS_COUNTERS_H__
+#ifndef BASE_METRICS_STATS_COUNTERS_H_
+#define BASE_METRICS_STATS_COUNTERS_H_
 #pragma once
 
 #include <string>
-#include "base/stats_table.h"
+
+#include "base/metrics/stats_table.h"
 #include "base/time.h"
+
+namespace base {
 
 // StatsCounters are dynamically created values which can be tracked in
 // the StatsTable.  They are designed to be lightweight to create and
@@ -44,14 +46,14 @@
 //------------------------------------------------------------------------------
 // First provide generic macros, which exist in production as well as debug.
 #define STATS_COUNTER(name, delta) do { \
-  static StatsCounter counter(name); \
+  static base::StatsCounter counter(name); \
   counter.Add(delta); \
 } while (0)
 
 #define SIMPLE_STATS_COUNTER(name) STATS_COUNTER(name, 1)
 
 #define RATE_COUNTER(name, duration) do { \
-  static StatsRate hit_count(name); \
+  static base::StatsRate hit_count(name); \
   hit_count.AddTime(duration); \
 } while (0)
 
@@ -142,14 +144,14 @@ class StatsCounterTimer : protected StatsCounter {
   bool Running();
 
   // Accept a TimeDelta to increment.
-  virtual void AddTime(base::TimeDelta time);
+  virtual void AddTime(TimeDelta time);
 
  protected:
   // Compute the delta between start and stop, in milliseconds.
   void Record();
 
-  base::TimeTicks start_time_;
-  base::TimeTicks stop_time_;
+  TimeTicks start_time_;
+  TimeTicks stop_time_;
 };
 
 // A StatsRate is a timer that keeps a count of the number of intervals added so
@@ -158,7 +160,7 @@ class StatsCounterTimer : protected StatsCounter {
 class StatsRate : public StatsCounterTimer {
  public:
   // Constructs and starts the timer.
-  explicit StatsRate(const char* name);
+  explicit StatsRate(const std::string& name);
   virtual ~StatsRate();
 
   virtual void Add(int value);
@@ -189,4 +191,6 @@ template<class T> class StatsScope {
   T& timer_;
 };
 
-#endif  // BASE_STATS_COUNTERS_H__
+}  // namespace base
+
+#endif  // BASE_METRICS_STATS_COUNTERS_H_

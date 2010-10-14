@@ -48,8 +48,8 @@
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
@@ -148,49 +148,49 @@ CookieMonster::~CookieMonster() {
 // initialization is based are included in comments below.
 void CookieMonster::InitializeHistograms() {
   // From UMA_HISTOGRAM_CUSTOM_COUNTS
-  histogram_expiration_duration_minutes_ = Histogram::FactoryGet(
+  histogram_expiration_duration_minutes_ = base::Histogram::FactoryGet(
       "Cookie.ExpirationDurationMinutes",
       1, kMinutesInTenYears, 50,
-      Histogram::kUmaTargetedHistogramFlag);
-  histogram_between_access_interval_minutes_ = Histogram::FactoryGet(
+      base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_between_access_interval_minutes_ = base::Histogram::FactoryGet(
       "Cookie.BetweenAccessIntervalMinutes",
       1, kMinutesInTenYears, 50,
-      Histogram::kUmaTargetedHistogramFlag);
-  histogram_evicted_last_access_minutes_ = Histogram::FactoryGet(
+      base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_evicted_last_access_minutes_ = base::Histogram::FactoryGet(
       "Cookie.EvictedLastAccessMinutes",
       1, kMinutesInTenYears, 50,
-      Histogram::kUmaTargetedHistogramFlag);
-  histogram_count_ = Histogram::FactoryGet(
+      base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_count_ = base::Histogram::FactoryGet(
       "Cookie.Count", 1, 4000, 50,
-      Histogram::kUmaTargetedHistogramFlag);
-  histogram_domain_count_ = Histogram::FactoryGet(
+      base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_domain_count_ = base::Histogram::FactoryGet(
       "Cookie.DomainCount", 1, 4000, 50,
-      Histogram::kUmaTargetedHistogramFlag);
-  histogram_etldp1_count_ = Histogram::FactoryGet(
+      base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_etldp1_count_ = base::Histogram::FactoryGet(
       "Cookie.Etldp1Count", 1, 4000, 50,
-      Histogram::kUmaTargetedHistogramFlag);
-  histogram_domain_per_etldp1_count_ = Histogram::FactoryGet(
+      base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_domain_per_etldp1_count_ = base::Histogram::FactoryGet(
       "Cookie.DomainPerEtldp1Count", 1, 4000, 50,
-      Histogram::kUmaTargetedHistogramFlag);
+      base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_COUNTS_10000 & UMA_HISTOGRAM_CUSTOM_COUNTS
-  histogram_number_duplicate_db_cookies_ = Histogram::FactoryGet(
+  histogram_number_duplicate_db_cookies_ = base::Histogram::FactoryGet(
       "Net.NumDuplicateCookiesInDb", 1, 10000, 50,
-      Histogram::kUmaTargetedHistogramFlag);
+      base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_ENUMERATION
-  histogram_cookie_deletion_cause_ = LinearHistogram::FactoryGet(
+  histogram_cookie_deletion_cause_ = base::LinearHistogram::FactoryGet(
       "Cookie.DeletionCause", 1,
       DELETE_COOKIE_LAST_ENTRY - 1, DELETE_COOKIE_LAST_ENTRY,
-      Histogram::kUmaTargetedHistogramFlag);
+      base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
-  histogram_time_get_ = Histogram::FactoryTimeGet("Cookie.TimeGet",
+  histogram_time_get_ = base::Histogram::FactoryTimeGet("Cookie.TimeGet",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
-      50, Histogram::kUmaTargetedHistogramFlag);
-  histogram_time_load_ = Histogram::FactoryTimeGet("Cookie.TimeLoad",
+      50, base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_time_load_ = base::Histogram::FactoryTimeGet("Cookie.TimeLoad",
       base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
-      50, Histogram::kUmaTargetedHistogramFlag);
+      50, base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 void CookieMonster::InitStore() {

@@ -15,8 +15,8 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/field_trial.h"
-#include "base/histogram.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
@@ -5065,33 +5065,33 @@ void RenderView::DumpLoadHistograms() const {
   }
 
   // Histograms to determine if DNS prefetching has an impact on PLT.
-  static bool use_dns_histogram(FieldTrialList::Find("DnsImpact") &&
-      !FieldTrialList::Find("DnsImpact")->group_name().empty());
+  static bool use_dns_histogram(base::FieldTrialList::Find("DnsImpact") &&
+      !base::FieldTrialList::Find("DnsImpact")->group_name().empty());
   if (use_dns_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.Abandoned", "DnsImpact"),
+        base::FieldTrial::MakeName("PLT.Abandoned", "DnsImpact"),
         abandoned_page ? 1 : 0, 2);
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.LoadType", "DnsImpact"),
+        base::FieldTrial::MakeName("PLT.LoadType", "DnsImpact"),
         load_type, NavigationState::kLoadTypeMax);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "DnsImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "DnsImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "DnsImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
             begin_to_finish_all_loads);
         break;
@@ -5102,66 +5102,68 @@ void RenderView::DumpLoadHistograms() const {
 
   // Histograms to determine if content prefetching has an impact on PLT.
   static const bool prefetching_fieldtrial =
-      FieldTrialList::Find("Prefetch") &&
-      !FieldTrialList::Find("Prefetch")->group_name().empty();
+      base::FieldTrialList::Find("Prefetch") &&
+      !base::FieldTrialList::Find("Prefetch")->group_name().empty();
   if (prefetching_fieldtrial) {
     if (navigation_state->was_prefetcher()) {
       PLT_HISTOGRAM(
-          FieldTrial::MakeName("PLT.BeginToFinishDoc_ContentPrefetcher",
+          base::FieldTrial::MakeName("PLT.BeginToFinishDoc_ContentPrefetcher",
                                "Prefetch"),
           begin_to_finish_doc);
       PLT_HISTOGRAM(
-          FieldTrial::MakeName("PLT.BeginToFinish_ContentPrefetcher",
-                               "Prefetch"),
+          base::FieldTrial::MakeName("PLT.BeginToFinish_ContentPrefetcher",
+                                     "Prefetch"),
           begin_to_finish_all_loads);
     }
     if (navigation_state->was_referred_by_prefetcher()) {
-      PLT_HISTOGRAM(
-          FieldTrial::MakeName("PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
-                               "Prefetch"),
+      PLT_HISTOGRAM(base::FieldTrial::MakeName(
+              "PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
+              "Prefetch"),
           begin_to_finish_doc);
-      PLT_HISTOGRAM(
-          FieldTrial::MakeName("PLT.BeginToFinish_ContentPrefetcherReferrer",
-                               "Prefetch"),
+      PLT_HISTOGRAM(base::FieldTrial::MakeName(
+              "PLT.BeginToFinish_ContentPrefetcherReferrer",
+              "Prefetch"),
           begin_to_finish_all_loads);
     }
-    UMA_HISTOGRAM_ENUMERATION(FieldTrial::MakeName("PLT.Abandoned", "Prefetch"),
-                              abandoned_page ? 1 : 0, 2);
-    PLT_HISTOGRAM(FieldTrial::MakeName("PLT.BeginToFinishDoc", "Prefetch"),
+    UMA_HISTOGRAM_ENUMERATION(
+        base::FieldTrial::MakeName("PLT.Abandoned", "Prefetch"),
+                                   abandoned_page ? 1 : 0, 2);
+    PLT_HISTOGRAM(base::FieldTrial::MakeName("PLT.BeginToFinishDoc",
+                                             "Prefetch"),
                   begin_to_finish_doc);
-    PLT_HISTOGRAM(FieldTrial::MakeName("PLT.BeginToFinish", "Prefetch"),
+    PLT_HISTOGRAM(base::FieldTrial::MakeName("PLT.BeginToFinish", "Prefetch"),
                   begin_to_finish_all_loads);
   }
 
   // Histograms to determine if backup connection jobs have an impact on PLT.
   static const bool connect_backup_jobs_fieldtrial(
-      FieldTrialList::Find("ConnnectBackupJobs") &&
-      !FieldTrialList::Find("ConnnectBackupJobs")->group_name().empty());
+      base::FieldTrialList::Find("ConnnectBackupJobs") &&
+      !base::FieldTrialList::Find("ConnnectBackupJobs")->group_name().empty());
   if (connect_backup_jobs_fieldtrial) {
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.Abandoned", "ConnnectBackupJobs"),
+        base::FieldTrial::MakeName("PLT.Abandoned", "ConnnectBackupJobs"),
         abandoned_page ? 1 : 0, 2);
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.LoadType", "ConnnectBackupJobs"),
+        base::FieldTrial::MakeName("PLT.LoadType", "ConnnectBackupJobs"),
         load_type, NavigationState::kLoadTypeMax);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "ConnnectBackupJobs"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "ConnnectBackupJobs"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "ConnnectBackupJobs"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "ConnnectBackupJobs"),
             begin_to_finish_all_loads);
         break;
@@ -5175,30 +5177,30 @@ void RenderView::DumpLoadHistograms() const {
   // TODO(jar): Consider removing the per-link-type versions.  We
   //   really only need LINK_LOAD_NORMAL and NORMAL_LOAD.
   static bool use_connection_impact_histogram(
-      FieldTrialList::Find("ConnCountImpact") &&
-      !FieldTrialList::Find("ConnCountImpact")->group_name().empty());
+      base::FieldTrialList::Find("ConnCountImpact") &&
+      !base::FieldTrialList::Find("ConnCountImpact")->group_name().empty());
   if (use_connection_impact_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.Abandoned", "ConnCountImpact"),
+        base::FieldTrial::MakeName("PLT.Abandoned", "ConnCountImpact"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "ConnCountImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "ConnCountImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "ConnCountImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "ConnCountImpact"),
             begin_to_finish_all_loads);
         break;
@@ -5209,30 +5211,30 @@ void RenderView::DumpLoadHistograms() const {
 
   // Histograms to determine effect of idle socket timeout.
   static bool use_idle_socket_timeout_histogram(
-      FieldTrialList::Find("IdleSktToImpact") &&
-      !FieldTrialList::Find("IdleSktToImpact")->group_name().empty());
+      base::FieldTrialList::Find("IdleSktToImpact") &&
+      !base::FieldTrialList::Find("IdleSktToImpact")->group_name().empty());
   if (use_idle_socket_timeout_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.Abandoned", "IdleSktToImpact"),
+        base::FieldTrial::MakeName("PLT.Abandoned", "IdleSktToImpact"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "IdleSktToImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "IdleSktToImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "IdleSktToImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "IdleSktToImpact"),
             begin_to_finish_all_loads);
         break;
@@ -5243,30 +5245,31 @@ void RenderView::DumpLoadHistograms() const {
 
   // Histograms to determine effect of number of connections per proxy.
   static bool use_proxy_connection_impact_histogram(
-      FieldTrialList::Find("ProxyConnectionImpact") &&
-      !FieldTrialList::Find("ProxyConnectionImpact")->group_name().empty());
+      base::FieldTrialList::Find("ProxyConnectionImpact") &&
+      !base::FieldTrialList::Find("ProxyConnectionImpact")->
+          group_name().empty());
   if (use_proxy_connection_impact_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.Abandoned", "ProxyConnectionImpact"),
+        base::FieldTrial::MakeName("PLT.Abandoned", "ProxyConnectionImpact"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "ProxyConnectionImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "ProxyConnectionImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "ProxyConnectionImpact"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "ProxyConnectionImpact"),
             begin_to_finish_all_loads);
         break;
@@ -5277,35 +5280,35 @@ void RenderView::DumpLoadHistograms() const {
 
   // Histograms to determine if SDCH has an impact.
   // TODO(jar): Consider removing per-link load types and the enumeration.
-  static bool use_sdch_histogram(FieldTrialList::Find("GlobalSdch") &&
-      !FieldTrialList::Find("GlobalSdch")->group_name().empty());
+  static bool use_sdch_histogram(base::FieldTrialList::Find("GlobalSdch") &&
+      !base::FieldTrialList::Find("GlobalSdch")->group_name().empty());
   if (use_sdch_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.LoadType", "GlobalSdch"),
+        base::FieldTrial::MakeName("PLT.LoadType", "GlobalSdch"),
         load_type, NavigationState::kLoadTypeMax);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_ONLY:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadCacheOnly", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
@@ -5315,56 +5318,57 @@ void RenderView::DumpLoadHistograms() const {
   }
 
   // Histograms to determine if cache size has an impact on PLT.
-  static bool use_cache_histogram1(FieldTrialList::Find("CacheSize") &&
-      !FieldTrialList::Find("CacheSize")->group_name().empty());
-  if (use_cache_histogram1 && NavigationState::LINK_LOAD_NORMAL <= load_type &&
+  static bool use_cache_histogram1(base::FieldTrialList::Find("CacheSize") &&
+      !base::FieldTrialList::Find("CacheSize")->group_name().empty());
+  if (use_cache_histogram1 &&
+      NavigationState::LINK_LOAD_NORMAL <= load_type &&
       NavigationState::LINK_LOAD_CACHE_ONLY >= load_type) {
     // TODO(mbelshe): Do we really want BeginToFinishDoc here?  It seems like
     //                StartToFinish or BeginToFinish would be better.
-    PLT_HISTOGRAM(FieldTrial::MakeName(
+    PLT_HISTOGRAM(base::FieldTrial::MakeName(
         "PLT.BeginToFinishDoc_LinkLoad", "CacheSize"), begin_to_finish_doc);
   }
 
   // Histograms to determine if cache throttling has an impact on PLT.
-  static bool use_cache_histogram2(FieldTrialList::Find("CacheThrottle") &&
-      !FieldTrialList::Find("CacheThrottle")->group_name().empty());
+  static bool use_cache_histogram2(base::FieldTrialList::Find("CacheThrottle") &&
+      !base::FieldTrialList::Find("CacheThrottle")->group_name().empty());
   if (use_cache_histogram2) {
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("PLT.Abandoned", "CacheThrottle"),
+        base::FieldTrial::MakeName("PLT.Abandoned", "CacheThrottle"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
       case NavigationState::RELOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_Reload", "CacheThrottle"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::HISTORY_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_HistoryLoad", "CacheThrottle"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::NORMAL_LOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "CacheThrottle"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "CacheThrottle"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "CacheThrottle"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "CacheThrottle"),
             begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_ONLY:
-        PLT_HISTOGRAM(FieldTrial::MakeName(
+        PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadCacheOnly", "CacheThrottle"),
             begin_to_finish_all_loads);
         break;
@@ -5373,7 +5377,7 @@ void RenderView::DumpLoadHistograms() const {
     }
     if (NavigationState::RELOAD <= load_type &&
         NavigationState::LINK_LOAD_CACHE_ONLY >= load_type) {
-      PLT_HISTOGRAM(FieldTrial::MakeName(
+      PLT_HISTOGRAM(base::FieldTrial::MakeName(
           "PLT.BeginToFinish", "CacheThrottle"),
            begin_to_finish_all_loads);
     }
@@ -5385,14 +5389,16 @@ void RenderView::DumpLoadHistograms() const {
   //   if we asked for a HTTP request, we got a HTTP request
   // Due to spdy version mismatches, it is possible that we ask for SPDY
   // but didn't get SPDY.
-  static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
-      !FieldTrialList::Find("SpdyImpact")->group_name().empty());
+  static bool use_spdy_histogram(base::FieldTrialList::Find("SpdyImpact") &&
+      !base::FieldTrialList::Find("SpdyImpact")->group_name().empty());
   if (use_spdy_histogram) {
     // We take extra effort to only compute these once.
     static bool in_spdy_trial =
-        FieldTrialList::Find("SpdyImpact")->group_name() == "npn_with_spdy";
+        base::FieldTrialList::Find("SpdyImpact")->group_name() ==
+        "npn_with_spdy";
     static bool in_http_trial =
-        FieldTrialList::Find("SpdyImpact")->group_name() == "npn_with_http";
+        base::FieldTrialList::Find("SpdyImpact")->group_name() ==
+        "npn_with_http";
 
     bool spdy_trial_success = navigation_state->was_fetched_via_spdy() ?
         in_spdy_trial : in_http_trial;
@@ -5403,28 +5409,28 @@ void RenderView::DumpLoadHistograms() const {
       if (scheme_type == URLPattern::SCHEME_HTTPS &&
           navigation_state->was_npn_negotiated()) {
         UMA_HISTOGRAM_ENUMERATION(
-            FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
+            base::FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
             abandoned_page ? 1 : 0, 2);
         switch (load_type) {
           case NavigationState::LINK_LOAD_NORMAL:
-            PLT_HISTOGRAM(FieldTrial::MakeName(
+            PLT_HISTOGRAM(base::FieldTrial::MakeName(
                 "PLT.BeginToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
                 begin_to_finish_all_loads);
-            PLT_HISTOGRAM(FieldTrial::MakeName(
+            PLT_HISTOGRAM(base::FieldTrial::MakeName(
                 "PLT.StartToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
                 start_to_finish_all_loads);
-            PLT_HISTOGRAM(FieldTrial::MakeName(
+            PLT_HISTOGRAM(base::FieldTrial::MakeName(
                 "PLT.StartToCommit_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
                 start_to_commit);
             break;
           case NavigationState::NORMAL_LOAD:
-            PLT_HISTOGRAM(FieldTrial::MakeName(
+            PLT_HISTOGRAM(base::FieldTrial::MakeName(
                 "PLT.BeginToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
                 begin_to_finish_all_loads);
-            PLT_HISTOGRAM(FieldTrial::MakeName(
+            PLT_HISTOGRAM(base::FieldTrial::MakeName(
                 "PLT.StartToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
                 start_to_finish_all_loads);
-            PLT_HISTOGRAM(FieldTrial::MakeName(
+            PLT_HISTOGRAM(base::FieldTrial::MakeName(
                 "PLT.StartToCommit_NormalLoad_SpdyTrial", "SpdyImpact"),
                 start_to_commit);
             break;
@@ -5439,7 +5445,7 @@ void RenderView::DumpLoadHistograms() const {
           navigation_state->was_alternate_protocol_available()) {
         if (!navigation_state->was_npn_negotiated()) {
           // This means that even there is alternate protocols for npn_http or
-          // npn_spdy, they are not taken (due to the fieldtrial).
+          // npn_spdy, they are not taken (due to the base::FieldTrial).
           switch (load_type) {
             case NavigationState::LINK_LOAD_NORMAL:
               PLT_HISTOGRAM(

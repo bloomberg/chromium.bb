@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/basictypes.h"
-#include "base/histogram.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"

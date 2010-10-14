@@ -5,7 +5,7 @@
 #include "chrome/browser/translate/options_menu_model.h"
 
 #include "app/l10n_util.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile.h"

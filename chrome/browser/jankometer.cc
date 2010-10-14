@@ -8,10 +8,10 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/histogram.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/stats_counters.h"
 #include "base/ref_counted.h"
-#include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -102,10 +102,10 @@ class JankObserverHelper {
   TimeDelta queueing_time_;
 
   // Counters for the two types of jank we measure.
-  StatsCounter slow_processing_counter_;  // Messages with long processing time.
-  StatsCounter queueing_delay_counter_;   // Messages with long queueing delay.
-  scoped_refptr<Histogram> process_times_;  // Time spent processing task.
-  scoped_refptr<Histogram> total_times_;  // Total queueing plus processing.
+  base::StatsCounter slow_processing_counter_;  // Msgs w/ long proc time.
+  base::StatsCounter queueing_delay_counter_;   // Msgs w/ long queueing delay.
+  scoped_refptr<base::Histogram> process_times_;  // Time spent proc. task.
+  scoped_refptr<base::Histogram> total_times_;  // Total queueing plus proc.
   JankWatchdog total_time_watchdog_;  // Watching for excessive total_time.
 
   DISALLOW_COPY_AND_ASSIGN(JankObserverHelper);
@@ -119,12 +119,12 @@ JankObserverHelper::JankObserverHelper(
       slow_processing_counter_(std::string("Chrome.SlowMsg") + thread_name),
       queueing_delay_counter_(std::string("Chrome.DelayMsg") + thread_name),
       total_time_watchdog_(excessive_duration, thread_name, watchdog_enable) {
-  process_times_ = Histogram::FactoryGet(
+  process_times_ = base::Histogram::FactoryGet(
       std::string("Chrome.ProcMsgL ") + thread_name,
-      1, 3600000, 50, Histogram::kUmaTargetedHistogramFlag);
-  total_times_ = Histogram::FactoryGet(
+      1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag);
+  total_times_ = base::Histogram::FactoryGet(
       std::string("Chrome.TotalMsgL ") + thread_name,
-      1, 3600000, 50, Histogram::kUmaTargetedHistogramFlag);
+      1, 3600000, 50, base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 JankObserverHelper::~JankObserverHelper() {}

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,8 +59,8 @@
 
 //------------------------------------------------------------------------------
 
-#ifndef BASE_FIELD_TRIAL_H_
-#define BASE_FIELD_TRIAL_H_
+#ifndef BASE_METRICS_FIELD_TRIAL_H_
+#define BASE_METRICS_FIELD_TRIAL_H_
 #pragma once
 
 #include <map>
@@ -70,8 +70,9 @@
 #include "base/ref_counted.h"
 #include "base/time.h"
 
+namespace base {
 
-class FieldTrial : public base::RefCounted<FieldTrial> {
+class FieldTrial : public RefCounted<FieldTrial> {
  public:
   typedef int Probability;  // Probability type for being selected in a trial.
 
@@ -117,7 +118,7 @@ class FieldTrial : public base::RefCounted<FieldTrial> {
                               const std::string& trial_name);
 
  private:
-  friend class base::RefCounted<FieldTrial>;
+  friend class RefCounted<FieldTrial>;
 
   virtual ~FieldTrial();
 
@@ -198,11 +199,11 @@ class FieldTrialList {
   // of the application.  In some experiments it may be useful to discount
   // data that is gathered before the application has reached sufficient
   // stability (example: most DLL have loaded, etc.)
-  static base::TimeTicks application_start_time() {
+  static TimeTicks application_start_time() {
     if (global_)
       return global_->application_start_time_;
     // For testing purposes only, or when we don't yet have a start time.
-    return base::TimeTicks::Now();
+    return TimeTicks::Now();
   }
 
  private:
@@ -222,7 +223,7 @@ class FieldTrialList {
   // A helper value made availabel to users, that shows when the FieldTrialList
   // was initialized.  Note that this is a singleton instance, and hence is a
   // good approximation to the start of the process.
-  base::TimeTicks application_start_time_;
+  TimeTicks application_start_time_;
 
   // Lock for access to registered_.
   Lock lock_;
@@ -231,5 +232,7 @@ class FieldTrialList {
   DISALLOW_COPY_AND_ASSIGN(FieldTrialList);
 };
 
-#endif  // BASE_FIELD_TRIAL_H_
+}  // namespace base
+
+#endif  // BASE_METRICS_FIELD_TRIAL_H_
 

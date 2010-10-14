@@ -14,10 +14,10 @@
 #include "base/i18n/icu_util.h"
 #include "base/memory_debug.h"
 #include "base/message_loop.h"
+#include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
-#include "base/stats_table.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "base/trace_event.h"
@@ -273,10 +273,10 @@ int main(int argc, char* argv[]) {
   std::string stats_filename = kStatsFilePrefix +
       base::Uint64ToString(base::RandUint64() & 0xFFFFFFFFL);
   RemoveSharedMemoryFile(stats_filename);
-  StatsTable *table = new StatsTable(stats_filename,
+  base::StatsTable *table = new base::StatsTable(stats_filename,
       kStatsFileThreads,
       kStatsFileCounters);
-  StatsTable::set_current(table);
+  base::StatsTable::set_current(table);
 
   TestShell* shell;
   if (TestShell::CreateNewWindow(starting_url, &shell)) {
@@ -398,7 +398,7 @@ int main(int argc, char* argv[]) {
   TestShell::CleanupLogging();
 
   // Tear down shared StatsTable; prevents unit_tests from leaking it.
-  StatsTable::set_current(NULL);
+  base::StatsTable::set_current(NULL);
   delete table;
   RemoveSharedMemoryFile(stats_filename);
 

@@ -4,9 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::Histogram;
+using base::StatisticsRecorder;
 
 namespace chrome_browser_application_mac {
 

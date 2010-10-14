@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/support/test_webkit_client.h"
+
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "base/stats_counters.h"
+#include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/cookie_monster.h"
@@ -37,7 +39,6 @@
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
-#include "webkit/support/test_webkit_client.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
@@ -62,7 +63,7 @@ using WebKit::WebScriptController;
 
 TestWebKitClient::TestWebKitClient(bool unit_test_mode)
       : unit_test_mode_(unit_test_mode) {
-  v8::V8::SetCounterFunction(StatsTable::FindLocation);
+  v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
   WebKit::setLayoutTestMode(true);

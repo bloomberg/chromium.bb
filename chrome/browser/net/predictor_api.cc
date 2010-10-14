@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include <map>
 #include <string>
 
+#include "base/metrics/field_trial.h"
 #include "base/singleton.h"
-#include "base/stats_counters.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/thread.h"
@@ -506,11 +506,11 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Set up a field trial to see what disabling DNS pre-resolution does to
   // latency of page loads.
-  FieldTrial::Probability kDivisor = 1000;
+  base::FieldTrial::Probability kDivisor = 1000;
   // For each option (i.e., non-default), we have a fixed probability.
-  FieldTrial::Probability kProbabilityPerGroup = 1;  // 0.1% probability.
+  base::FieldTrial::Probability kProbabilityPerGroup = 1;  // 0.1% probability.
 
-  trial_ = new FieldTrial("DnsImpact", kDivisor);
+  trial_ = new base::FieldTrial("DnsImpact", kDivisor);
 
   // First option is to disable prefetching completely.
   int disabled_prefetch = trial_->AppendGroup("disabled_prefetch",
@@ -546,7 +546,7 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
       "max_6 concurrent_prefetch", kProbabilityPerGroup);
 
   trial_->AppendGroup("default_enabled_prefetch",
-      FieldTrial::kAllRemainingProbability);
+      base::FieldTrial::kAllRemainingProbability);
 
   // We will register the incognito observer regardless of whether prefetching
   // is enabled, as it is also used to clear the host cache.
@@ -585,5 +585,7 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
   }
 }
 
+PredictorInit::~PredictorInit() {
+}
 
 }  // namespace chrome_browser_net

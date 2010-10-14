@@ -9,8 +9,8 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/time.h"

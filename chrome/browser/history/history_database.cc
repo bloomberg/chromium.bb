@@ -13,7 +13,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"

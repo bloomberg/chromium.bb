@@ -5,9 +5,9 @@
 #include "net/socket/tcp_client_socket_pool.h"
 
 #include "base/compiler_specific.h"
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "net/base/net_log.h"

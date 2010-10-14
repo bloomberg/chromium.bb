@@ -1,13 +1,15 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Test of FieldTrial class
 
-#include "base/field_trial.h"
+#include "base/metrics/field_trial.h"
 
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
 
 class FieldTrialTest : public testing::Test {
  public:
@@ -76,7 +78,7 @@ TEST_F(FieldTrialTest, RemainingProbability) {
   scoped_refptr<FieldTrial> trial;
   int counter = 0;
   do {
-    std::string name = base::StringPrintf("trial%d", ++counter);
+    std::string name = StringPrintf("trial%d", ++counter);
     trial = new FieldTrial(name, 10);
     trial->AppendGroup(loser, 5);  // 50% chance of not being chosen.
   } while (trial->group() != FieldTrial::kNotParticipating);
@@ -227,3 +229,5 @@ TEST_F(FieldTrialTest, MakeName) {
   EXPECT_EQ("Histogram_Winner",
             FieldTrial::MakeName("Histogram", "Field Trial"));
 }
+
+}  // namespace base

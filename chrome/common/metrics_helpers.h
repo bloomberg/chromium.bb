@@ -13,7 +13,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/common/page_transition_types.h"
 
@@ -54,8 +54,8 @@ class MetricsLogBase {
                        base::TimeDelta load_time);
 
   // Record any changes in a given histogram for transmission.
-  void RecordHistogramDelta(const Histogram& histogram,
-                            const Histogram::SampleSet& snapshot);
+  void RecordHistogramDelta(const base::Histogram& histogram,
+                            const base::Histogram::SampleSet& snapshot);
 
   // Stop writing to this record and generate the encoded representation.
   // None of the Record* methods can be called after this is called.
@@ -200,7 +200,7 @@ class MetricsServiceBase {
   void RecordCurrentHistograms();
 
   // Record a specific histogram .
-  void RecordHistogram(const Histogram& histogram);
+  void RecordHistogram(const base::Histogram& histogram);
 
   // A log that we are currently transmiting, or about to try to transmit.
   MetricsLogBase* pending_log_;
@@ -214,7 +214,7 @@ class MetricsServiceBase {
   MetricsLogBase* current_log_;
 
   // Maintain a map of histogram names to the sample stats we've sent.
-  typedef std::map<std::string, Histogram::SampleSet> LoggedSampleMap;
+  typedef std::map<std::string, base::Histogram::SampleSet> LoggedSampleMap;
 
   // For histograms, record what we've already logged (as a sample for each
   // histogram) so that we can send only the delta with the next log.

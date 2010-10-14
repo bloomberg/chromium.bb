@@ -23,6 +23,10 @@ class Profile;
 class ProfileSyncFactory;
 class ProfileSyncService;
 
+namespace history {
+class HistoryBackend;
+}
+
 namespace browser_sync {
 
 class AssociatorInterface;

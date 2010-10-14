@@ -9,7 +9,7 @@
 #define CHROME_BROWSER_BROWSER_TRIAL_H_
 #pragma once
 
-#include "base/field_trial.h"
+#include "base/basictypes.h"
 
 // Currently we use this as a name space, to hold static shared constants which
 // define current and past trials.

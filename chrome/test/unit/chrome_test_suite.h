@@ -19,7 +19,9 @@
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 
+namespace base {
 class StatsTable;
+}
 
 // In many cases it may be not obvious that a test makes a real DNS lookup.
 // We generally don't want to rely on external DNS servers for our tests,
@@ -50,7 +52,8 @@ class ChromeTestSuite : public base::TestSuite {
     browser_dir_ = browser_dir;
   }
 
-  StatsTable* stats_table_;
+  base::StatsTable* stats_table_;
+
   // The name used for the stats file so it can be cleaned up on posix during
   // test shutdown.
   std::string stats_filename_;

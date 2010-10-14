@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/lock.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -26,7 +26,7 @@
 class ChromeFrameHistogramSnapshots {
  public:
   // Maintain a map of histogram names to the sample stats we've sent.
-  typedef std::map<std::string, Histogram::SampleSet> LoggedSampleMap;
+  typedef std::map<std::string, base::Histogram::SampleSet> LoggedSampleMap;
   typedef std::vector<std::string> HistogramPickledList;
 
   ChromeFrameHistogramSnapshots();
@@ -38,11 +38,11 @@ class ChromeFrameHistogramSnapshots {
   HistogramPickledList GatherAllHistograms();
 
  private:
-  void GatherHistogram(const Histogram& histogram,
+  void GatherHistogram(const base::Histogram& histogram,
                        HistogramPickledList* histograms);
 
-  void GatherHistogramDelta(const Histogram& histogram,
-                            const Histogram::SampleSet& snapshot,
+  void GatherHistogramDelta(const base::Histogram& histogram,
+                            const base::Histogram::SampleSet& snapshot,
                             HistogramPickledList* histograms);
 
   // For histograms, record what we've already logged (as a sample for each

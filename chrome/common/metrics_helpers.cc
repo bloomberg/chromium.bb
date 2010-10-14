@@ -27,6 +27,8 @@
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
 
+using base::Histogram;
+using base::StatisticsRecorder;
 using base::Time;
 using base::TimeDelta;
 

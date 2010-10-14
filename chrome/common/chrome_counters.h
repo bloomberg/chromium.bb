@@ -8,31 +8,33 @@
 #define CHROME_COMMON_CHROME_COUNTERS_H_
 #pragma once
 
+namespace base {
 class StatsCounter;
 class StatsCounterTimer;
 class StatsRate;
+}
 
 namespace chrome {
 
 class Counters {
  public:
   // The amount of time spent in chrome initialization.
-  static StatsCounterTimer& chrome_main();
+  static base::StatsCounterTimer& chrome_main();
 
   // The amount of time spent in renderer initialization.
-  static StatsCounterTimer& renderer_main();
+  static base::StatsCounterTimer& renderer_main();
 
   // Time spent in spellchecker initialization.
-  static StatsCounterTimer& spellcheck_init();
+  static base::StatsCounterTimer& spellcheck_init();
 
   // Time/Count of spellcheck lookups.
-  static StatsRate& spellcheck_lookup();
+  static base::StatsRate& spellcheck_lookup();
 
   // Time spent loading the Chrome plugins.
-  static StatsCounterTimer& plugin_load();
+  static base::StatsCounterTimer& plugin_load();
 
   // Time/Count of plugin network interception.
-  static StatsRate& plugin_intercept();
+  static base::StatsRate& plugin_intercept();
 };
 
 }  // namespace chrome

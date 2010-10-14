@@ -16,10 +16,13 @@
 #include <string>
 #include <vector>
 
-#include "base/field_trial.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/net/predictor.h"
+
+namespace base {
+class FieldTrial;
+}
 
 class PrefService;
 
@@ -90,10 +93,11 @@ class PredictorInit {
 
   PredictorInit(PrefService* user_prefs, PrefService* local_state,
                 bool preconnect_enabled);
+  ~PredictorInit();
 
  private:
   // Maintain a field trial instance when we do A/B testing.
-  scoped_refptr<FieldTrial> trial_;
+  scoped_refptr<base::FieldTrial> trial_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictorInit);
 };

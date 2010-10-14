@@ -9,10 +9,10 @@
 
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/sha2.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"

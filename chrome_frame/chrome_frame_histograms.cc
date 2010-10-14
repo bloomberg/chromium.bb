@@ -4,10 +4,13 @@
 
 #include "chrome_frame/chrome_frame_histograms.h"
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+
+using base::Histogram;
+using base::StatisticsRecorder;
 
   // Initialize histogram statistics gathering system.
 base::LazyInstance<StatisticsRecorder>

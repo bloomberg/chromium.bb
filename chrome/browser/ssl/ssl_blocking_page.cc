@@ -6,8 +6,8 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/histogram.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

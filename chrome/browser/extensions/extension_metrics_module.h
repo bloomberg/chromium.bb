@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 class MetricsRecordUserActionFunction : public SyncExtensionFunction {
@@ -19,8 +19,9 @@ class MetricsRecordUserActionFunction : public SyncExtensionFunction {
 class MetricsHistogramHelperFunction : public SyncExtensionFunction {
  protected:
   bool GetNameAndSample(std::string* name, int* sample);
-  virtual bool RecordValue(const std::string& name, Histogram::ClassType type,
-      int min, int max, size_t buckets, int sample);
+  virtual bool RecordValue(const std::string& name,
+                           base::Histogram::ClassType type,
+                           int min, int max, size_t buckets, int sample);
 };
 
 class MetricsRecordValueFunction : public MetricsHistogramHelperFunction {

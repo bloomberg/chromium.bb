@@ -7,7 +7,7 @@
 #include "chrome/renderer/net/predictor_queue.h"
 
 #include "base/logging.h"
-#include "base/stats_counters.h"
+#include "base/metrics/stats_counters.h"
 
 DnsQueue::DnsQueue(BufferSize size)
     : buffer_(new char[size + 2]),

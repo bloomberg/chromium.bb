@@ -10,8 +10,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
-#include "base/histogram.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/common/spellcheck_common.h"
 

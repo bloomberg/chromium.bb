@@ -4,7 +4,7 @@
 
 #include "chrome/browser/translate/languages_menu_model.h"
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 
 LanguagesMenuModel::LanguagesMenuModel(

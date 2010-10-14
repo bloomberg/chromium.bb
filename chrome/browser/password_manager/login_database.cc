@@ -11,8 +11,8 @@
 #include "app/sql/transaction.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 

@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/autofill/autofill_cc_infobar.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser_list.h"

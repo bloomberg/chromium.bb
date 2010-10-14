@@ -14,7 +14,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/stats_counters.h"
+#include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
 #include "gfx/blit.h"
 #include "skia/ext/platform_canvas.h"
@@ -443,8 +443,8 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
     }
 
     // Tell the plugin to paint into the pixmap.
-    static StatsRate plugin_paint("Plugin.Paint");
-    StatsScope<StatsRate> scope(plugin_paint);
+    static base::StatsRate plugin_paint("Plugin.Paint");
+    base::StatsScope<base::StatsRate> scope(plugin_paint);
     NPError err = instance()->NPP_HandleEvent(&np_event);
     DCHECK_EQ(err, NPERR_NO_ERROR);
 
@@ -474,8 +474,8 @@ void WebPluginDelegateImpl::WindowlessPaint(cairo_t* context,
     event.drawable = GDK_PIXMAP_XID(pixmap_);
 
     // Tell the plugin to paint into the pixmap.
-    static StatsRate plugin_paint("Plugin.Paint");
-    StatsScope<StatsRate> scope(plugin_paint);
+    static base::StatsRate plugin_paint("Plugin.Paint");
+    base::StatsScope<base::StatsRate> scope(plugin_paint);
     NPError err = instance()->NPP_HandleEvent(&np_event);
     DCHECK_EQ(err, NPERR_NO_ERROR);
 

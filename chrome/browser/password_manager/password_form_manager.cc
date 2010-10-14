@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/browser/password_manager/password_manager.h"

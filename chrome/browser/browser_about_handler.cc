@@ -12,11 +12,11 @@
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/histogram.h"
 #include "base/i18n/number_formatting.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
-#include "base/stats_table.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -403,7 +403,7 @@ std::string AboutHistograms(const std::string& query) {
   current_synchronizer->FetchRendererHistogramsSynchronously(wait_time);
 
   std::string data;
-  StatisticsRecorder::WriteHTMLGraph(query, &data);
+  base::StatisticsRecorder::WriteHTMLGraph(query, &data);
   return data;
 }
 
@@ -428,7 +428,7 @@ std::string AboutStats() {
   // stats computations across runs.
   static DictionaryValue root;
 
-  StatsTable* table = StatsTable::current();
+  base::StatsTable* table = base::StatsTable::current();
   if (!table)
     return std::string();
 

@@ -16,7 +16,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/histogram.h"
 #include "base/linked_ptr.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

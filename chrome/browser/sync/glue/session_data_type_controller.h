@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/session_model_associator.h"
 
 class ProfileSyncFactory;
 class ProfileSyncService;

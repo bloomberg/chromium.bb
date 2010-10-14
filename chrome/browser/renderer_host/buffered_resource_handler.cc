@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
@@ -29,19 +29,21 @@ namespace {
 void RecordSnifferMetrics(bool sniffing_blocked,
                           bool we_would_like_to_sniff,
                           const std::string& mime_type) {
-  static scoped_refptr<Histogram> nosniff_usage = BooleanHistogram::FactoryGet(
-      "nosniff.usage", Histogram::kUmaTargetedHistogramFlag);
+  static scoped_refptr<base::Histogram> nosniff_usage =
+      base::BooleanHistogram::FactoryGet(
+          "nosniff.usage", base::Histogram::kUmaTargetedHistogramFlag);
   nosniff_usage->AddBoolean(sniffing_blocked);
 
   if (sniffing_blocked) {
-    static scoped_refptr<Histogram> nosniff_otherwise =
-        BooleanHistogram::FactoryGet("nosniff.otherwise",
-                                     Histogram::kUmaTargetedHistogramFlag);
+    static scoped_refptr<base::Histogram> nosniff_otherwise =
+        base::BooleanHistogram::FactoryGet(
+            "nosniff.otherwise", base::Histogram::kUmaTargetedHistogramFlag);
     nosniff_otherwise->AddBoolean(we_would_like_to_sniff);
 
-    static scoped_refptr<Histogram> nosniff_empty_mime_type =
-        BooleanHistogram::FactoryGet("nosniff.empty_mime_type",
-                                     Histogram::kUmaTargetedHistogramFlag);
+    static scoped_refptr<base::Histogram> nosniff_empty_mime_type =
+        base::BooleanHistogram::FactoryGet(
+            "nosniff.empty_mime_type",
+            base::Histogram::kUmaTargetedHistogramFlag);
     nosniff_empty_mime_type->AddBoolean(mime_type.empty());
   }
 }

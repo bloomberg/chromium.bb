@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/hash_tables.h"
-#include "base/histogram.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
 #include "base/thread.h"

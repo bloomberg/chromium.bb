@@ -4,8 +4,8 @@
 
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 
-#include "base/histogram.h"
 #include "base/path_service.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
 #include "chrome/browser/browser_thread.h"
@@ -396,7 +396,7 @@ void AutomationResourceMessageFilter::OnGetFilteredInetHitCount(
 void AutomationResourceMessageFilter::OnRecordHistograms(
     const std::vector<std::string>& histogram_list) {
   for (size_t index = 0; index < histogram_list.size(); ++index) {
-    Histogram::DeserializeHistogramInfo(histogram_list[index]);
+    base::Histogram::DeserializeHistogramInfo(histogram_list[index]);
   }
 }
 

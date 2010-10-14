@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/histogram.h"
+#include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
+
+#include "base/metrics/histogram.h"
 #include "base/logging.h"
 #include "base/task.h"
 #include "base/time.h"
@@ -10,7 +12,6 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
-#include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/glue/typed_url_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory.h"

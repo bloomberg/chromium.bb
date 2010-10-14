@@ -17,21 +17,18 @@
 // threads/processes which can use it.
 //
 
-#ifndef BASE_STATS_TABLE_H__
-#define BASE_STATS_TABLE_H__
+#ifndef BASE_METRICS_STATS_TABLE_H_
+#define BASE_METRICS_STATS_TABLE_H_
 #pragma once
 
 #include <string>
+
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/lock.h"
 #include "base/thread_local_storage.h"
 
-class StatsTablePrivate;
-
-namespace {
-struct StatsTableTLSData;
-}
+namespace base {
 
 class StatsTable {
  public:
@@ -133,6 +130,9 @@ class StatsTable {
   static int* FindLocation(const char *name);
 
  private:
+  class Private;
+  struct TLSData;
+
   // Returns the space occupied by a thread in the table.  Generally used
   // if a thread terminates but the process continues.  This function
   // does not zero out the thread's counters.
@@ -141,7 +141,7 @@ class StatsTable {
 
   // This variant expects the tls data to be passed in, so it is safe to
   // call from inside a posix tls destructor (see doc for pthread_key_create).
-  void UnregisterThread(StatsTableTLSData* tls_data);
+  void UnregisterThread(TLSData* tls_data);
 
   // The SlotReturnFunction is called at thread exit for each thread
   // which used the StatsTable.
@@ -169,13 +169,15 @@ class StatsTable {
 
   // Get the TLS data for the calling thread.  Returns NULL if none is
   // initialized.
-  StatsTableTLSData* GetTLSData() const;
+  TLSData* GetTLSData() const;
 
-  typedef base::hash_map<std::string, int> CountersMap;
+  typedef hash_map<std::string, int> CountersMap;
 
-  StatsTablePrivate* impl_;
+  Private* impl_;
+
   // The counters_lock_ protects the counters_ hash table.
   Lock counters_lock_;
+
   // The counters_ hash map is an in-memory hash of the counters.
   // It is used for quick lookup of counters, but is cannot be used
   // as a substitute for what is in the shared memory.  Even though
@@ -189,4 +191,6 @@ class StatsTable {
   DISALLOW_COPY_AND_ASSIGN(StatsTable);
 };
 
-#endif  // BASE_STATS_TABLE_H__
+}  // namespace base
+
+#endif  // BASE_METRICS_STATS_TABLE_H_

@@ -22,7 +22,10 @@
 #include "net/base/cookie_store.h"
 
 class GURL;
+
+namespace base {
 class Histogram;
+}
 
 namespace net {
 
@@ -409,17 +412,17 @@ class CookieMonster : public CookieStore {
 
   // Histogram variables; see CookieMonster::InitializeHistograms() in
   // cookie_monster.cc for details.
-  scoped_refptr<Histogram> histogram_expiration_duration_minutes_;
-  scoped_refptr<Histogram> histogram_between_access_interval_minutes_;
-  scoped_refptr<Histogram> histogram_evicted_last_access_minutes_;
-  scoped_refptr<Histogram> histogram_count_;
-  scoped_refptr<Histogram> histogram_domain_count_;
-  scoped_refptr<Histogram> histogram_etldp1_count_;
-  scoped_refptr<Histogram> histogram_domain_per_etldp1_count_;
-  scoped_refptr<Histogram> histogram_number_duplicate_db_cookies_;
-  scoped_refptr<Histogram> histogram_cookie_deletion_cause_;
-  scoped_refptr<Histogram> histogram_time_get_;
-  scoped_refptr<Histogram> histogram_time_load_;
+  scoped_refptr<base::Histogram> histogram_expiration_duration_minutes_;
+  scoped_refptr<base::Histogram> histogram_between_access_interval_minutes_;
+  scoped_refptr<base::Histogram> histogram_evicted_last_access_minutes_;
+  scoped_refptr<base::Histogram> histogram_count_;
+  scoped_refptr<base::Histogram> histogram_domain_count_;
+  scoped_refptr<base::Histogram> histogram_etldp1_count_;
+  scoped_refptr<base::Histogram> histogram_domain_per_etldp1_count_;
+  scoped_refptr<base::Histogram> histogram_number_duplicate_db_cookies_;
+  scoped_refptr<base::Histogram> histogram_cookie_deletion_cause_;
+  scoped_refptr<base::Histogram> histogram_time_get_;
+  scoped_refptr<base::Histogram> histogram_time_load_;
 
   // Initialize the above variables; should only be called from
   // the constructor.

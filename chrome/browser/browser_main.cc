@@ -14,10 +14,10 @@
 #include "app/system_monitor.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/field_trial.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/histogram.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
@@ -206,11 +206,11 @@ void BrowserMainParts::EarlyInitialization() {
 // on browsing. Too large a value might cause us to run into SYN flood detection
 // mechanisms.
 void BrowserMainParts::ConnectionFieldTrial() {
-  const FieldTrial::Probability kConnectDivisor = 100;
-  const FieldTrial::Probability kConnectProbability = 1;  // 1% probability
+  const base::FieldTrial::Probability kConnectDivisor = 100;
+  const base::FieldTrial::Probability kConnectProbability = 1;  // 1% prob.
 
-  scoped_refptr<FieldTrial> connect_trial =
-      new FieldTrial("ConnCountImpact", kConnectDivisor);
+  scoped_refptr<base::FieldTrial> connect_trial =
+      new base::FieldTrial("ConnCountImpact", kConnectDivisor);
 
   const int connect_5 = connect_trial->AppendGroup("conn_count_5",
                                                    kConnectProbability);
@@ -225,7 +225,7 @@ void BrowserMainParts::ConnectionFieldTrial() {
   // probability value will be assigned to all the other groups, while
   // preserving the remainder of the of probability space to the default value.
   const int connect_6 = connect_trial->AppendGroup("conn_count_6",
-      FieldTrial::kAllRemainingProbability);
+      base::FieldTrial::kAllRemainingProbability);
 
   const int connect_trial_group = connect_trial->group();
 
@@ -250,12 +250,12 @@ void BrowserMainParts::ConnectionFieldTrial() {
 // result in more ERR_CONNECT_RESETs, requiring one RTT to receive the RST
 // packet and possibly another RTT to re-establish the connection.
 void BrowserMainParts::SocketTimeoutFieldTrial() {
-  const FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
+  const base::FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
   // 1% probability for all experimental settings.
-  const FieldTrial::Probability kSocketTimeoutProbability = 1;
+  const base::FieldTrial::Probability kSocketTimeoutProbability = 1;
 
-  scoped_refptr<FieldTrial> socket_timeout_trial =
-      new FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor);
+  scoped_refptr<base::FieldTrial> socket_timeout_trial =
+      new base::FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor);
 
   const int socket_timeout_5 =
       socket_timeout_trial->AppendGroup("idle_timeout_5",
@@ -268,7 +268,7 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
                                         kSocketTimeoutProbability);
   const int socket_timeout_60 =
       socket_timeout_trial->AppendGroup("idle_timeout_60",
-                                        FieldTrial::kAllRemainingProbability);
+          base::FieldTrial::kAllRemainingProbability);
 
   const int idle_to_trial_group = socket_timeout_trial->group();
 
@@ -286,12 +286,12 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
 }
 
 void BrowserMainParts::ProxyConnectionsFieldTrial() {
-  const FieldTrial::Probability kProxyConnectionsDivisor = 100;
+  const base::FieldTrial::Probability kProxyConnectionsDivisor = 100;
   // 25% probability
-  const FieldTrial::Probability kProxyConnectionProbability = 1;
+  const base::FieldTrial::Probability kProxyConnectionProbability = 1;
 
-  scoped_refptr<FieldTrial> proxy_connection_trial =
-      new FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor);
+  scoped_refptr<base::FieldTrial> proxy_connection_trial =
+      new base::FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor);
 
   // The number of max sockets per group cannot be greater than the max number
   // of sockets per proxy server.  We tried using 8, and it can easily
@@ -309,7 +309,7 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
   // which allows for cleaner and quicker changes down the line if needed.
   const int proxy_connections_32 =
       proxy_connection_trial->AppendGroup("proxy_connections_32",
-                                          FieldTrial::kAllRemainingProbability);
+          base::FieldTrial::kAllRemainingProbability);
 
   const int proxy_connections_trial_group = proxy_connection_trial->group();
 
@@ -338,15 +338,16 @@ void BrowserMainParts::SpdyFieldTrial() {
         parsed_command_line().GetSwitchValueASCII(switches::kUseSpdy);
     net::HttpNetworkLayer::EnableSpdy(spdy_mode);
   } else {
-    const FieldTrial::Probability kSpdyDivisor = 100;
-    FieldTrial::Probability npnhttp_probability = 10;  // 10% to preclude SPDY.
-    scoped_refptr<FieldTrial> trial =
-        new FieldTrial("SpdyImpact", kSpdyDivisor);
+    const base::FieldTrial::Probability kSpdyDivisor = 100;
+    // 10% to preclude SPDY.
+    base::FieldTrial::Probability npnhttp_probability = 10;
+    scoped_refptr<base::FieldTrial> trial =
+        new base::FieldTrial("SpdyImpact", kSpdyDivisor);
     // npn with only http support, no spdy.
     int npn_http_grp = trial->AppendGroup("npn_with_http", npnhttp_probability);
     // npn with spdy support.
     int npn_spdy_grp = trial->AppendGroup("npn_with_spdy",
-                                          FieldTrial::kAllRemainingProbability);
+        base::FieldTrial::kAllRemainingProbability);
     int trial_grp = trial->group();
     if (trial_grp == npn_http_grp) {
       is_spdy_trial = true;
@@ -368,14 +369,14 @@ void BrowserMainParts::PrefetchFieldTrial() {
   else if (parsed_command_line().HasSwitch(switches::kDisableContentPrefetch)) {
     ResourceDispatcherHost::set_is_prefetch_enabled(false);
   } else {
-    const FieldTrial::Probability kPrefetchDivisor = 1000;
-    const FieldTrial::Probability no_prefetch_probability = 500;
-    scoped_refptr<FieldTrial> trial =
-        new FieldTrial("Prefetch", kPrefetchDivisor);
+    const base::FieldTrial::Probability kPrefetchDivisor = 1000;
+    const base::FieldTrial::Probability no_prefetch_probability = 500;
+    scoped_refptr<base::FieldTrial> trial =
+        new base::FieldTrial("Prefetch", kPrefetchDivisor);
     trial->AppendGroup("ContentPrefetchDisabled", no_prefetch_probability);
     const int yes_prefetch_grp =
         trial->AppendGroup("ContentPrefetchEnabled",
-                           FieldTrial::kAllRemainingProbability);
+                           base::FieldTrial::kAllRemainingProbability);
     const int trial_grp = trial->group();
     ResourceDispatcherHost::set_is_prefetch_enabled(
         trial_grp == yes_prefetch_grp);
@@ -394,16 +395,17 @@ void BrowserMainParts::ConnectBackupJobsFieldTrial() {
     net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
         false);
   } else {
-    const FieldTrial::Probability kConnectBackupJobsDivisor = 100;
-    // 50% probability.
-    const FieldTrial::Probability kConnectBackupJobsProbability = 1;  // 1%.
-    scoped_refptr<FieldTrial> trial = new FieldTrial("ConnnectBackupJobs",
-                                                     kConnectBackupJobsDivisor);
+    const base::FieldTrial::Probability kConnectBackupJobsDivisor = 100;
+    // 1% probability.
+    const base::FieldTrial::Probability kConnectBackupJobsProbability = 1;
+    scoped_refptr<base::FieldTrial> trial =
+        new base::FieldTrial("ConnnectBackupJobs",
+                             kConnectBackupJobsDivisor);
     trial->AppendGroup("ConnectBackupJobsDisabled",
                        kConnectBackupJobsProbability);
     const int connect_backup_jobs_enabled =
         trial->AppendGroup("ConnectBackupJobsEnabled",
-                           FieldTrial::kAllRemainingProbability);
+                           base::FieldTrial::kAllRemainingProbability);
     const int trial_group = trial->group();
     net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
         trial_group == connect_backup_jobs_enabled);
@@ -942,7 +944,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   InitializeBrokerServices(parameters, parsed_command_line);
 
   // Initialize histogram statistics gathering system.
-  StatisticsRecorder statistics;
+  base::StatisticsRecorder statistics;
 
   PrefService* local_state = InitializeLocalState(parsed_command_line,
                                                   is_first_run);
@@ -1354,10 +1356,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Perform A/B test to measure global impact of SDCH support.
   // Set up a field trial to see what disabling SDCH does to latency of page
   // layout globally.
-  FieldTrial::Probability kSDCH_DIVISOR = 1000;
-  FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 1;  // 0.1% probability.
-  scoped_refptr<FieldTrial> sdch_trial =
-      new FieldTrial("GlobalSdch", kSDCH_DIVISOR);
+  base::FieldTrial::Probability kSDCH_DIVISOR = 1000;
+  base::FieldTrial::Probability kSDCH_DISABLE_PROBABILITY = 1;  // 0.1% prob.
+  scoped_refptr<base::FieldTrial> sdch_trial =
+      new base::FieldTrial("GlobalSdch", kSDCH_DIVISOR);
 
   // Use default of "" so that all domains are supported.
   std::string sdch_supported_domain("");
@@ -1368,7 +1370,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     sdch_trial->AppendGroup("global_disable_sdch",
                             kSDCH_DISABLE_PROBABILITY);
     int sdch_enabled = sdch_trial->AppendGroup("global_enable_sdch",
-        FieldTrial::kAllRemainingProbability);
+        base::FieldTrial::kAllRemainingProbability);
     if (sdch_enabled != sdch_trial->group())
       sdch_supported_domain = "never_enabled_sdch_for_any_domain";
   }

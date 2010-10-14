@@ -125,7 +125,7 @@ base::LazyInstance<base::Thread, UploadThreadInstanceTraits>
 
 Lock g_metrics_service_lock;
 
-extern base::LazyInstance<StatisticsRecorder> g_statistics_recorder_;
+extern base::LazyInstance<base::StatisticsRecorder> g_statistics_recorder_;
 
 // This class provides HTTP request context information for metrics upload
 // requests initiated by ChromeFrame.

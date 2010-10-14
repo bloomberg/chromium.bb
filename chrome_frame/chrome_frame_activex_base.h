@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"

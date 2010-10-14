@@ -5,7 +5,7 @@
 #include "chrome/common/child_process_host.h"
 
 #include "base/command_line.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"

@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
-#include "base/stats_counters.h"
+#include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -1145,7 +1145,7 @@ void RenderViewHost::OnMsgDidLoadResourceFromMemoryCache(
     const std::string& frame_origin,
     const std::string& main_frame_origin,
     const std::string& security_info) {
-  static StatsCounter cache("WebKit.CacheHit");
+  static base::StatsCounter cache("WebKit.CacheHit");
   cache.Increment();
 
   RenderViewHostDelegate::Resource* resource_delegate =

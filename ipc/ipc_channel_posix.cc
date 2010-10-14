@@ -23,7 +23,6 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
-#include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"

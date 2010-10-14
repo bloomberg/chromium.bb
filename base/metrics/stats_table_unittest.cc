@@ -1,17 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#if defined(OS_WIN)
-#include <process.h>
-#include <windows.h>
-#endif
 
 #include "base/platform_thread.h"
 #include "base/simple_thread.h"
 #include "base/shared_memory.h"
-#include "base/stats_table.h"
-#include "base/stats_counters.h"
+#include "base/metrics/stats_table.h"
+#include "base/metrics/stats_counters.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/test/multiprocess_test.h"
@@ -24,7 +19,7 @@ namespace base {
 class StatsTableTest : public MultiProcessTest {
  public:
   void DeleteShmem(const std::string& name) {
-    base::SharedMemory mem;
+    SharedMemory mem;
     mem.Delete(name);
   }
 };
@@ -77,10 +72,11 @@ const std::string kCounterMixed = "CounterMixed";
 // The number of thread loops that we will do.
 const int kThreadLoops = 100;
 
-class StatsTableThread : public base::SimpleThread {
+class StatsTableThread : public SimpleThread {
  public:
   StatsTableThread(std::string name, int id)
-      : base::SimpleThread(name), id_(id) { }
+      : SimpleThread(name),
+      id_(id) {}
   virtual void Run();
  private:
   int id_;
@@ -208,13 +204,13 @@ TEST_F(StatsTableTest, FLAKY_MultipleProcesses) {
   // Spawn the processes.
   for (int16 index = 0; index < kMaxProcs; index++) {
     procs[index] = this->SpawnChild("StatsTableMultipleProcessMain", false);
-    EXPECT_NE(base::kNullProcessHandle, procs[index]);
+    EXPECT_NE(kNullProcessHandle, procs[index]);
   }
 
   // Wait for the processes to finish.
   for (int index = 0; index < kMaxProcs; index++) {
     EXPECT_TRUE(WaitForSingleProcess(procs[index], 60 * 1000));
-    base::CloseProcessHandle(procs[index]);
+    CloseProcessHandle(procs[index]);
   }
 
   StatsCounter zero_counter(kCounterZero);

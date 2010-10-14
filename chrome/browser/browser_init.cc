@@ -11,7 +11,7 @@
 #include "base/environment.h"
 #include "base/event_recorder.h"
 #include "base/file_path.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -490,7 +490,7 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
     chrome_browser_net::EnablePredictor(false);
 
   if (command_line_.HasSwitch(switches::kDumpHistogramsOnExit))
-    StatisticsRecorder::set_dump_on_exit(true);
+    base::StatisticsRecorder::set_dump_on_exit(true);
 
   if (command_line_.HasSwitch(switches::kRemoteShellPort)) {
     std::string port_str =

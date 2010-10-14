@@ -12,9 +12,9 @@
 #include "base/iat_patch.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/metrics/stats_counters.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
-#include "base/stats_counters.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -1029,8 +1029,8 @@ void WebPluginDelegateImpl::WindowlessPaint(HDC hdc,
   // NOTE: NPAPI is not 64bit safe.  It puts pointers into 32bit values.
   paint_event.wParam = PtrToUlong(hdc);
   paint_event.lParam = PtrToUlong(&damage_rect_win);
-  static StatsRate plugin_paint("Plugin.Paint");
-  StatsScope<StatsRate> scope(plugin_paint);
+  static base::StatsRate plugin_paint("Plugin.Paint");
+  base::StatsScope<base::StatsRate> scope(plugin_paint);
   instance()->NPP_HandleEvent(&paint_event);
   window_.window = old_dc;
 }

@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/field_trial.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/stats_table.h"
 #include "base/nullable_string16.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
-#include "base/stats_table.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread_local.h"
@@ -283,8 +283,8 @@ void RenderThread::Init() {
   // channel is established in time, EstablishGpuChannelSync will not block when
   // it is later called. Delays by a fixed period of time to avoid loading the
   // GPU immediately in an attempt to not slow startup time.
-  scoped_refptr<FieldTrial> prelaunch_trial(
-      new FieldTrial("PrelaunchGpuProcessExperiment", 100));
+  scoped_refptr<base::FieldTrial> prelaunch_trial(
+      new base::FieldTrial("PrelaunchGpuProcessExperiment", 100));
   int prelaunch_group = prelaunch_trial->AppendGroup("prelaunch_gpu_process",
                                                      kPrelauchGpuPercentage);
   if (prelaunch_group == prelaunch_trial->group() ||
@@ -808,8 +808,8 @@ static void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
   if (min <= 0)
     min = 1;
-  scoped_refptr<Histogram> histogram = Histogram::FactoryGet(
-      name, min, max, buckets, Histogram::kUmaTargetedHistogramFlag);
+  scoped_refptr<base::Histogram> histogram = base::Histogram::FactoryGet(
+      name, min, max, buckets, base::Histogram::kUmaTargetedHistogramFlag);
   // We'll end up leaking these histograms, unless there is some code hiding in
   // there to do the dec-ref.
   // TODO(jar): Handle reference counting in webkit glue.
@@ -818,7 +818,7 @@ static void* CreateHistogram(
 }
 
 static void AddHistogramSample(void* hist, int sample) {
-  Histogram* histogram = static_cast<Histogram *>(hist);
+  base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
 }
 
@@ -834,7 +834,7 @@ void RenderThread::EnsureWebKitInitialized() {
         this, &RenderThread::IdleHandler);
   }
 
-  v8::V8::SetCounterFunction(StatsTable::FindLocation);
+  v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
   v8::V8::SetCreateHistogramFunction(CreateHistogram);
   v8::V8::SetAddHistogramSampleFunction(AddHistogramSample);
 

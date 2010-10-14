@@ -5,7 +5,7 @@
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_task.h"
 
 #include "base/hash_tables.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -13,6 +13,9 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/websockets/websocket.h"
+
+using base::Histogram;
+using base::LinearHistogram;
 
 namespace chrome_browser_net_websocket_experiment {
 

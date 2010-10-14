@@ -7,9 +7,9 @@
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/metrics/stats_table.h"
 #include "base/process_util.h"
 #include "base/scoped_nsautorelease_pool.h"
-#include "base/stats_table.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
@@ -120,8 +120,8 @@ void ChromeTestSuite::Initialize() {
   std::string pid_string = StringPrintf("-%d", base::GetCurrentProcId());
   stats_filename_ += pid_string;
   RemoveSharedMemoryFile(stats_filename_);
-  stats_table_ = new StatsTable(stats_filename_, 20, 200);
-  StatsTable::set_current(stats_table_);
+  stats_table_ = new base::StatsTable(stats_filename_, 20, 200);
+  base::StatsTable::set_current(stats_table_);
 }
 
 void ChromeTestSuite::Shutdown() {
@@ -135,7 +135,7 @@ void ChromeTestSuite::Shutdown() {
   g_browser_process = NULL;
 
   // Tear down shared StatsTable; prevents unit_tests from leaking it.
-  StatsTable::set_current(NULL);
+  base::StatsTable::set_current(NULL);
   delete stats_table_;
   RemoveSharedMemoryFile(stats_filename_);
 

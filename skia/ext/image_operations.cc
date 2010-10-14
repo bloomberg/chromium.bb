@@ -9,8 +9,8 @@
 #include "skia/ext/image_operations.h"
 
 // TODO(pkasting): skia/ext should not depend on base/!
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/stack_container.h"
 #include "base/time.h"
 #include "build/build_config.h"

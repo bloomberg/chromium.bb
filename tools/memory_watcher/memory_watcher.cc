@@ -10,16 +10,16 @@
 #include "base/file_util.h"
 #include "base/lock.h"
 #include "base/logging.h"
-#include "base/stats_counters.h"
+#include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "tools/memory_watcher/call_stack.h"
 #include "tools/memory_watcher/preamble_patcher.h"
 
-static StatsCounter mem_in_use("MemoryInUse.Bytes");
-static StatsCounter mem_in_use_blocks("MemoryInUse.Blocks");
-static StatsCounter mem_in_use_allocs("MemoryInUse.Allocs");
-static StatsCounter mem_in_use_frees("MemoryInUse.Frees");
+static base::StatsCounter mem_in_use("MemoryInUse.Bytes");
+static base::StatsCounter mem_in_use_blocks("MemoryInUse.Blocks");
+static base::StatsCounter mem_in_use_allocs("MemoryInUse.Allocs");
+static base::StatsCounter mem_in_use_frees("MemoryInUse.Frees");
 
 // ---------------------------------------------------------------------
 

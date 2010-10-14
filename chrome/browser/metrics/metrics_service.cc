@@ -160,8 +160,8 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/histogram.h"
 #include "base/md5.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/thread.h"

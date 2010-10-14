@@ -14,10 +14,10 @@
 
 #include "base/lock.h"
 #include "base/message_loop.h"
+#include "base/metrics/stats_counters.h"
 #include "base/process_util.h"
 #include "base/platform_file.h"
 #include "base/singleton.h"
-#include "base/stats_counters.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
@@ -217,11 +217,11 @@ void WebKitClientImpl::getPluginList(bool refresh,
 }
 
 void WebKitClientImpl::decrementStatsCounter(const char* name) {
-  StatsCounter(name).Decrement();
+  base::StatsCounter(name).Decrement();
 }
 
 void WebKitClientImpl::incrementStatsCounter(const char* name) {
-  StatsCounter(name).Increment();
+  base::StatsCounter(name).Increment();
 }
 
 void WebKitClientImpl::traceEventBegin(const char* name, void* id,

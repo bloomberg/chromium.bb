@@ -19,7 +19,6 @@
 #include "base/memory_debug.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/stats_table.h"
 #include "base/string16.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"

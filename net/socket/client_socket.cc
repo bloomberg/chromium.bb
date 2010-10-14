@@ -4,8 +4,8 @@
 
 #include "net/socket/client_socket.h"
 
-#include "base/field_trial.h"
-#include "base/histogram.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 
 namespace net {
 
@@ -46,12 +46,12 @@ void ClientSocket::UseHistory::EmitPreconnectionHistograms() const {
   UMA_HISTOGRAM_ENUMERATION("Net.PreconnectUtilization2", result, 9);
 
   static const bool connect_backup_jobs_fieldtrial =
-      FieldTrialList::Find("ConnnectBackupJobs") &&
-      !FieldTrialList::Find("ConnnectBackupJobs")->group_name().empty();
+      base::FieldTrialList::Find("ConnnectBackupJobs") &&
+      !base::FieldTrialList::Find("ConnnectBackupJobs")->group_name().empty();
   if (connect_backup_jobs_fieldtrial) {
     UMA_HISTOGRAM_ENUMERATION(
-        FieldTrial::MakeName("Net.PreconnectUtilization2",
-                             "ConnnectBackupJobs"),
+        base::FieldTrial::MakeName("Net.PreconnectUtilization2",
+                                   "ConnnectBackupJobs"),
         result, 9);
   }
 }

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/glue/app_data_type_controller.h"
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"

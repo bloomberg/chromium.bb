@@ -15,7 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/eintr_wrapper.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/perftimer.h"
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
@@ -91,8 +91,8 @@ void ExternalMetrics::RecordHistogram(const char* histogram_data) {
   }
   // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
   // instance and thus only work if |name| is constant.
-  scoped_refptr<Histogram> counter = Histogram::FactoryGet(
-      name, min, max, nbuckets, Histogram::kUmaTargetedHistogramFlag);
+  scoped_refptr<base::Histogram> counter = base::Histogram::FactoryGet(
+      name, min, max, nbuckets, base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
 
@@ -106,8 +106,8 @@ void ExternalMetrics::RecordLinearHistogram(const char* histogram_data) {
   }
   // Do not use the UMA_HISTOGRAM_... macros here.  They cache the Histogram
   // instance and thus only work if |name| is constant.
-  scoped_refptr<Histogram> counter = LinearHistogram::FactoryGet(
-      name, 1, max, max + 1, Histogram::kUmaTargetedHistogramFlag);
+  scoped_refptr<base::Histogram> counter = base::LinearHistogram::FactoryGet(
+      name, 1, max, max + 1, base::Histogram::kUmaTargetedHistogramFlag);
   counter->Add(sample);
 }
 

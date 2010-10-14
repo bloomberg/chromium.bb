@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/field_trial.h"
+#include "base/metrics/field_trial.h"
 #include "base/scoped_ptr.h"
 #include "base/tracked_objects.h"
 
@@ -140,7 +140,7 @@ class BrowserMainParts {
 #endif
 
   // Statistical testing infrastructure for the entire browser.
-  FieldTrialList field_trial_;
+  base::FieldTrialList field_trial_;
 
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<MessageLoop> main_message_loop_;

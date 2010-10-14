@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/file_util.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/scoped_vector.h"
 #include "net/base/file_stream.h"
 

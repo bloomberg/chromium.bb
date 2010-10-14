@@ -5,7 +5,7 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 
 #include "base/command_line.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"

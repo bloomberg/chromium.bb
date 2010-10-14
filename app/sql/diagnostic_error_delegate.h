@@ -7,8 +7,8 @@
 #pragma once
 
 #include "app/sql/connection.h"
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 
 namespace sql {
 

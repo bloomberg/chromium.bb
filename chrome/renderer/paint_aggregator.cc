@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/paint_aggregator.h"
 
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 
 // ----------------------------------------------------------------------------
 // ALGORITHM NOTES
@@ -25,7 +25,7 @@
 // If the combined area of paint rects contained within the scroll rect grows
 // too large, then we might as well just treat the scroll rect as a paint rect.
 // This constant sets the max ratio of paint rect area to scroll rect area that
-// we will tolerate before downgrading the scroll into a repaint.
+// we will tolerate before dograding the scroll into a repaint.
 static const float kMaxRedundantPaintToScrollArea = 0.8f;
 
 // The maximum number of paint rects.  If we exceed this limit, then we'll
@@ -227,7 +227,7 @@ void PaintAggregator::InvalidateScrollRect() {
 }
 
 void PaintAggregator::CombinePaintRects() {
-  // Combine paint rects down to at most two rects: one inside the scroll_rect
+  // Combine paint rects do to at most two rects: one inside the scroll_rect
   // and one outside the scroll_rect.  If there is no scroll_rect, then just
   // use the smallest bounding box for all paint rects.
   //

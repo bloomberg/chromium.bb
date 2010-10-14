@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/stats_counters.h"
+#include "base/metrics/stats_counters.h"
 #include "base/string_util.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -72,7 +72,7 @@ PluginLib::PluginLib(const WebPluginInfo& info,
       saved_data_(0),
       instance_count_(0),
       skip_unload_(false) {
-  StatsCounter(kPluginLibrariesLoadedCounter).Increment();
+  base::StatsCounter(kPluginLibrariesLoadedCounter).Increment();
   memset(static_cast<void*>(&plugin_funcs_), 0, sizeof(plugin_funcs_));
   g_loaded_libs->push_back(this);
 
@@ -87,7 +87,7 @@ PluginLib::PluginLib(const WebPluginInfo& info,
 }
 
 PluginLib::~PluginLib() {
-  StatsCounter(kPluginLibrariesLoadedCounter).Decrement();
+  base::StatsCounter(kPluginLibrariesLoadedCounter).Decrement();
   if (saved_data_ != 0) {
     // TODO - delete the savedData object here
   }
@@ -143,13 +143,13 @@ void PluginLib::PreventLibraryUnload() {
 PluginInstance* PluginLib::CreateInstance(const std::string& mime_type) {
   PluginInstance* new_instance = new PluginInstance(this, mime_type);
   instance_count_++;
-  StatsCounter(kPluginInstancesActiveCounter).Increment();
+  base::StatsCounter(kPluginInstancesActiveCounter).Increment();
   DCHECK_NE(static_cast<PluginInstance*>(NULL), new_instance);
   return new_instance;
 }
 
 void PluginLib::CloseInstance() {
-  StatsCounter(kPluginInstancesActiveCounter).Decrement();
+  base::StatsCounter(kPluginInstancesActiveCounter).Decrement();
   instance_count_--;
   // If a plugin is running in its own process it will get unloaded on process
   // shutdown.

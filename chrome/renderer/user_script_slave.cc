@@ -6,11 +6,11 @@
 
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/perftimer.h"
 #include "base/pickle.h"
 #include "base/shared_memory.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"

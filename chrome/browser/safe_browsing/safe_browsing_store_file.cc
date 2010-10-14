@@ -5,7 +5,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
 #include "base/callback.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/md5.h"
 
 // TODO(shess): Remove after migration.

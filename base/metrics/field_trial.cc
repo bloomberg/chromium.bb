@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/field_trial.h"
+#include "base/metrics/field_trial.h"
 
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 
-using base::TimeTicks;
+namespace base {
 
 // static
 const int FieldTrial::kNotParticipating = -1;
@@ -190,3 +190,4 @@ bool FieldTrialList::StringAugmentsState(const std::string& prior_state) {
   return true;
 }
 
+}  // namespace base

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/browser_list.h"
 
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"

@@ -4,8 +4,8 @@
 
 #include "webkit/tools/test_shell/test_shell_webkit_init.h"
 
+#include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
-#include "base/stats_counters.h"
 #include "media/base/media.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
@@ -20,7 +20,7 @@
 #endif
 
 TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
-  v8::V8::SetCounterFunction(StatsTable::FindLocation);
+  v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);
   WebKit::setLayoutTestMode(layout_test_mode);

@@ -1,12 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/chrome_counters.h"
 
-#include "base/stats_counters.h"
+#include "base/metrics/stats_counters.h"
 
 namespace chrome {
+
+using base::StatsCounterTimer;
+using base::StatsRate;
 
 // Note: We use the construct-on-first-use pattern here, because we don't
 //       want to fight with any static initializer ordering problems later.

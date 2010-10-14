@@ -18,7 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
@@ -159,7 +159,7 @@ RenderProcessImpl::RenderProcessImpl()
   }
 
   if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
-    StatisticsRecorder::set_dump_on_exit(true);
+    base::StatisticsRecorder::set_dump_on_exit(true);
   }
 
 #if !defined(DISABLE_NACL)

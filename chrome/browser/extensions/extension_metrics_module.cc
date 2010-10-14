@@ -4,10 +4,13 @@
 
 #include "chrome/browser/extensions/extension_metrics_module.h"
 
+#include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "base/histogram.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/browser/metrics/user_metrics.h"
+
+using base::Histogram;
+using base::LinearHistogram;
 
 namespace {
 

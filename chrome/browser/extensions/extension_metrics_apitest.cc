@@ -4,7 +4,7 @@
 
 #include <map>
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,20 +29,20 @@ struct RecordedUserAction {
 // updated.
 struct RecordedHistogram {
   const char* name;  // base name of metric without extension id.
-  Histogram::ClassType type;
+  base::Histogram::ClassType type;
   int min;
   int max;
   size_t buckets;
 } g_histograms[] = {
-  {"test.h.1", Histogram::HISTOGRAM, 1, 100, 50},  // custom
-  {"test.h.2", Histogram::LINEAR_HISTOGRAM, 1, 200, 50},  // custom
-  {"test.h.3", Histogram::LINEAR_HISTOGRAM, 1, 101, 102},  // percentage
-  {"test.time", Histogram::HISTOGRAM, 1, 10000, 50},
-  {"test.medium.time", Histogram::HISTOGRAM, 1, 180000, 50},
-  {"test.long.time", Histogram::HISTOGRAM, 1, 3600000, 50},
-  {"test.count", Histogram::HISTOGRAM, 1, 1000000, 50},
-  {"test.medium.count", Histogram::HISTOGRAM, 1, 10000, 50},
-  {"test.small.count", Histogram::HISTOGRAM, 1, 100, 50},
+  {"test.h.1", base::Histogram::HISTOGRAM, 1, 100, 50},  // custom
+  {"test.h.2", base::Histogram::LINEAR_HISTOGRAM, 1, 200, 50},  // custom
+  {"test.h.3", base::Histogram::LINEAR_HISTOGRAM, 1, 101, 102},  // percentage
+  {"test.time", base::Histogram::HISTOGRAM, 1, 10000, 50},
+  {"test.medium.time", base::Histogram::HISTOGRAM, 1, 180000, 50},
+  {"test.long.time", base::Histogram::HISTOGRAM, 1, 3600000, 50},
+  {"test.count", base::Histogram::HISTOGRAM, 1, 1000000, 50},
+  {"test.medium.count", base::Histogram::HISTOGRAM, 1, 10000, 50},
+  {"test.small.count", base::Histogram::HISTOGRAM, 1, 100, 50},
 };
 
 // Build the full name of a metrics for the given extension.  Each metric
@@ -110,8 +110,8 @@ void UserActionObserver::ValidateUserActions(const Extension* extension,
 void ValidateHistograms(const Extension* extension,
                         const RecordedHistogram* recorded,
                         int count) {
-  StatisticsRecorder::Histograms histograms;
-  StatisticsRecorder::GetHistograms(&histograms);
+  base::StatisticsRecorder::Histograms histograms;
+  base::StatisticsRecorder::GetHistograms(&histograms);
 
   // Code other than the tests tun here will record some histogram values, but
   // we will ignore those. This function validates that all the histogram we
@@ -123,7 +123,7 @@ void ValidateHistograms(const Extension* extension,
 
     size_t j = 0;
     for (j = 0; j < histograms.size(); ++j) {
-      scoped_refptr<Histogram> histogram(histograms[j]);
+      scoped_refptr<base::Histogram> histogram(histograms[j]);
 
       if (name == histogram->histogram_name()) {
         EXPECT_EQ(r.type, histogram->histogram_type());

@@ -17,9 +17,9 @@
 
 #include "app/app_switches.h"
 #include "base/command_line.h"
-#include "base/field_trial.h"
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
@@ -490,11 +490,11 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   const std::string locale = g_browser_process->GetApplicationLocale();
   command_line->AppendSwitchASCII(switches::kLang, locale);
 
-  // If we run FieldTrials, we want to pass to their state to the renderer so
+  // If we run base::FieldTrials, we want to pass to their state to the renderer so
   // that it can act in accordance with each state, or record histograms
-  // relating to the FieldTrial states.
+  // relating to the base::FieldTrial states.
   std::string field_trial_states;
-  FieldTrialList::StatesToString(&field_trial_states);
+  base::FieldTrialList::StatesToString(&field_trial_states);
   if (!field_trial_states.empty()) {
     command_line->AppendSwitchASCII(switches::kForceFieldTestNameAndValue,
                                     field_trial_states);

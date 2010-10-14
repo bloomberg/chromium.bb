@@ -5,8 +5,8 @@
 #include "printing/emf_win.h"
 
 #include "base/file_path.h"
-#include "base/histogram.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "gfx/codec/jpeg_codec.h"

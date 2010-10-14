@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/table_model_observer.h"
 #include "base/command_line.h"
-#include "base/stats_table.h"
+#include "base/metrics/stats_table.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_list.h"
@@ -384,7 +384,7 @@ void TaskManagerView::Init() {
 }
 
 void TaskManagerView::UpdateStatsCounters() {
-  StatsTable* stats = StatsTable::current();
+  base::StatsTable* stats = base::StatsTable::current();
   if (stats != NULL) {
     int max = stats->GetMaxCounters();
     // skip the first row (it's header data)

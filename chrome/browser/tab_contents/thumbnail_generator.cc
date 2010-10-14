@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <map>
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"

@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/file_util.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/sha2.h"
 #include "base/stl_util-inl.h"

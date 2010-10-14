@@ -5,7 +5,7 @@
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
 #include "base/logging.h"
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #include "base/scoped_cftyperef.h"

@@ -10,8 +10,8 @@
 
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/histogram.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/scoped_vector.h"
 #include "base/thread.h"

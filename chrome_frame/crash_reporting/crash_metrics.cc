@@ -4,7 +4,7 @@
 
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 
-#include "base/histogram.h"
+#include "base/metrics/histogram.h"
 #include "base/registry.h"
 #include "chrome_frame/utils.h"
 

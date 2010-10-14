@@ -6,9 +6,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/hash_tables.h"
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/time.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"

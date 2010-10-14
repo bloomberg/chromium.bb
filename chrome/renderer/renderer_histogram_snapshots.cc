@@ -6,14 +6,17 @@
 
 #include <ctype.h>
 
-#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 
 // TODO(raman): Before renderer shuts down send final snapshot lists.
+
+using base::Histogram;
+using base::StatisticsRecorder;
 
 RendererHistogramSnapshots::RendererHistogramSnapshots()
     : ALLOW_THIS_IN_INITIALIZER_LIST(

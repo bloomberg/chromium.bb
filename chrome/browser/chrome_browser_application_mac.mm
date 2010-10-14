@@ -4,8 +4,8 @@
 
 #import "chrome/browser/chrome_browser_application_mac.h"
 
-#import "base/histogram.h"
 #import "base/logging.h"
+#import "base/metrics/histogram.h"
 #import "base/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
 #import "chrome/app/breakpad_mac.h"

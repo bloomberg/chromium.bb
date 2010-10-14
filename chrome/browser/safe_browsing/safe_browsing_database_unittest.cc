@@ -10,11 +10,11 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/sha2.h"
-#include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
@@ -1168,7 +1168,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
 namespace {
 
 void PrintStat(const char* name) {
-  int value = StatsTable::current()->GetCounterValue(name);
+  int value = base::StatsTable::current()->GetCounterValue(name);
   SB_DLOG(INFO) << StringPrintf("%s %d", name, value);
 }
 

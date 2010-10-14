@@ -1,13 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/extensions/v8/benchmarking_extension.h"
+
 #include "base/command_line.h"
-#include "base/stats_table.h"
+#include "base/metrics/stats_table.h"
 #include "base/time.h"
 #include "net/http/http_network_layer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
-#include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebCache;
@@ -107,7 +108,7 @@ class BenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> GetCounter(const v8::Arguments& args) {
-    if (!args.Length() || !args[0]->IsString() || !StatsTable::current())
+    if (!args.Length() || !args[0]->IsString() || !base::StatsTable::current())
       return v8::Undefined();
 
     // Extract the name argument
@@ -116,7 +117,7 @@ class BenchmarkingWrapper : public v8::Extension {
     name[1] = ':';
     args[0]->ToString()->WriteAscii(&name[2], 0, sizeof(name) - 3);
 
-    int counter = StatsTable::current()->GetCounterValue(name);
+    int counter = base::StatsTable::current()->GetCounterValue(name);
     return v8::Integer::New(counter);
   }
 
