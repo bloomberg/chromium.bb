@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"
@@ -46,6 +47,48 @@ Browser* GetOrCreateBrowser(Profile* profile) {
                                                       Browser::TYPE_NORMAL,
                                                       false);
   return browser ? browser : Browser::Create(profile);
+}
+
+// Returns true if two URLs are equal ignoring their ref (hash fragment).
+bool CompareURLsIgnoreRef(const GURL& url, const GURL& other) {
+  if (url == other)
+    return true;
+  // If neither has a ref than there is no point in stripping the refs and
+  // the URLs are different since the comparison failed in the previous if
+  // statement.
+  if (!url.has_ref() && !other.has_ref())
+    return false;
+  url_canon::Replacements<char> replacements;
+  replacements.ClearRef();
+  GURL url_no_ref = url.ReplaceComponents(replacements);
+  GURL other_no_ref = other.ReplaceComponents(replacements);
+  return url_no_ref == other_no_ref;
+}
+
+// Returns the index of an existing singleton tab in |params->browser| matching
+// the URL specified in |params|.
+int GetIndexOfSingletonTab(browser::NavigateParams* params) {
+  if (params->disposition != SINGLETON_TAB)
+    return -1;
+
+  // In case the URL was rewritten by the BrowserURLHandler we need to ensure
+  // that we do not open another URL that will get redirected to the rewritten
+  // URL.
+  GURL rewritten_url(params->url);
+  bool reverse_on_redirect = false;
+  BrowserURLHandler::RewriteURLIfNecessary(&rewritten_url,
+                                           params->browser->profile(),
+                                           &reverse_on_redirect);
+
+  for (int i = 0; i < params->browser->tab_count(); ++i) {
+    TabContents* tab = params->browser->GetTabContentsAt(i);
+    if (CompareURLsIgnoreRef(tab->GetURL(), params->url) ||
+        CompareURLsIgnoreRef(tab->GetURL(), rewritten_url)) {
+      params->target_contents = tab;
+      return i;
+    }
+  }
+  return -1;
 }
 
 // Returns a Browser that can host the navigation or tab addition specified in
@@ -207,8 +250,7 @@ NavigateParams::NavigateParams(Browser* a_browser,
 NavigateParams::~NavigateParams() {
 }
 
-void Navigate(NavigateParams* params, NavigatorDelegate* delegate) {
-  DCHECK(delegate);
+void Navigate(NavigateParams* params) {
   params->browser = GetBrowserForDisposition(params);
   if (!params->browser)
     return;
@@ -266,27 +308,33 @@ void Navigate(NavigateParams* params, NavigatorDelegate* delegate) {
   }
 
   // Perform the actual navigation.
-  GURL url = params->url.is_empty() ? delegate->GetHomePage() : params->url;
+  GURL url = params->url.is_empty() ? params->browser->GetHomePage()
+                                    : params->url;
   params->target_contents->controller().LoadURL(url, params->referrer,
                                                 params->transition);
 
-  // Update the UI for the navigation.
   if (params->source_contents == params->target_contents) {
-    // The navigation occurred in the source tab.
-    delegate->UpdateUIForNavigationInTab(params->target_contents,
-                                         params->transition,
-                                         user_initiated);
+    // The navigation occurred in the source tab, so update the UI.
+    params->browser->UpdateUIForNavigationInTab(params->target_contents,
+                                                params->transition,
+                                                user_initiated);
   } else {
-    // The navigation occurred in some other tab yet to be added to the
-    // tabstrip. Add it now.
-    params->browser->tabstrip_model()->AddTabContents(
-        params->target_contents,
-        params->tabstrip_index,
-        params->transition,
-        params->tabstrip_add_types);
-    // Now that the |params->target_contents| is safely owned by the target
-    // Browser's TabStripModel, we can release ownership.
-    target_contents_owner.ReleaseOwnership();
+    // The navigation occurred in some other tab.
+    int singleton_index = GetIndexOfSingletonTab(params);
+    if (params->disposition == SINGLETON_TAB && singleton_index >= 0) {
+      // The navigation should re-select an existing tab in the target Browser.
+      params->browser->SelectTabContentsAt(singleton_index, user_initiated);
+    } else {
+      // The navigation should insert a new tab into the target Browser.
+      params->browser->tabstrip_model()->AddTabContents(
+          params->target_contents,
+          params->tabstrip_index,
+          params->transition,
+          params->tabstrip_add_types);
+      // Now that the |params->target_contents| is safely owned by the target
+      // Browser's TabStripModel, we can release ownership.
+      target_contents_owner.ReleaseOwnership();
+    }
   }
 }
 

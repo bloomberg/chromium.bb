@@ -16,19 +16,7 @@
 
 namespace {
 
-class BrowserNavigatorTest : public InProcessBrowserTest,
-                             public NavigatorDelegate {
- public:
-  // Overridden from NavigatorDelegate:
-  virtual void UpdateUIForNavigationInTab(TabContents* contents,
-                                          PageTransition::Type transition,
-                                          bool user_initiated) {
-    // Nothing needed.
-  }
-  virtual GURL GetHomePage() const {
-    return GURL("http://www.google.com/ig");
-  }
-
+class BrowserNavigatorTest : public InProcessBrowserTest {
  protected:
   GURL GetGoogleURL() const {
     return GURL("http://www.google.com/");
@@ -62,7 +50,7 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
     GURL old_url = browser()->GetSelectedTabContents()->GetURL();
     browser::NavigateParams p(MakeNavigateParams());
     p.disposition = disposition;
-    browser::Navigate(&p, this);
+    browser::Navigate(&p);
 
     // Nothing should have happened as a result of Navigate();
     EXPECT_EQ(1, browser()->tab_count());
@@ -75,7 +63,7 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
 // of the Browser remains the same and the current tab bears the loaded URL.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
   browser::NavigateParams p(MakeNavigateParams());
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
   ui_test_utils::WaitForNavigationInCurrentTab(browser());
   EXPECT_EQ(GetGoogleURL(), browser()->GetSelectedTabContents()->GetURL());
   // We should have one window with one tab.
@@ -83,8 +71,48 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_CurrentTab) {
   EXPECT_EQ(1, browser()->tab_count());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTab) {
-  // TODO(beng): TBD
+// This test verifies that a singleton tab is refocused if one is already open
+// in another or an existing window, or added if it is not.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_SingletonTabExisting) {
+  GURL url("http://www.google.com/");
+  GURL singleton_url1("http://maps.google.com/");
+  browser()->AddSelectedTabWithURL(singleton_url1, PageTransition::LINK);
+  browser()->AddSelectedTabWithURL(url, PageTransition::LINK);
+
+  // We should have one browser with 3 tabs, the 3rd selected.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(2, browser()->selected_index());
+
+  // Navigate to singleton_url1.
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = SINGLETON_TAB;
+  p.url = singleton_url1;
+  browser::Navigate(&p);
+
+  // The middle tab should now be selected.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_EQ(1, browser()->selected_index());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_SingletonTabNoneExisting) {
+  GURL url("http://www.google.com/");
+  GURL singleton_url1("http://maps.google.com/");
+
+  // We should have one browser with 3 tabs, the 3rd selected.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(0, browser()->selected_index());
+
+  // Navigate to singleton_url1.
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = SINGLETON_TAB;
+  p.url = singleton_url1;
+  browser::Navigate(&p);
+
+  // We should now have 2 tabs, the 2nd one selected.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->selected_index());
 }
 
 // This test verifies that when a navigation results in a foreground tab, the
@@ -94,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewForegroundTab) {
   TabContents* old_contents = browser()->GetSelectedTabContents();
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
   EXPECT_NE(old_contents, browser()->GetSelectedTabContents());
   EXPECT_EQ(browser()->GetSelectedTabContents(), p.target_contents);
   EXPECT_EQ(2, browser()->tab_count());
@@ -106,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewBackgroundTab) {
   TabContents* old_contents = browser()->GetSelectedTabContents();
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_BACKGROUND_TAB;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
   TabContents* new_contents = browser()->GetSelectedTabContents();
   // The selected tab should have remained unchanged, since the new tab was
   // opened in the background.
@@ -125,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                              browser()->profile());
   browser::NavigateParams p(MakeNavigateParams(popup));
   p.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened the tab in a different browser since the
   // one we supplied didn't support additional tabs.
@@ -157,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
       Browser::TYPE_POPUP, browser()->profile()->GetOffTheRecordProfile());
   browser::NavigateParams p(MakeNavigateParams(popup));
   p.disposition = NEW_FOREGROUND_TAB;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened the tab in a different browser since the
   // one we supplied didn't support additional tabs.
@@ -183,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_POPUP;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened a new popup window.
   EXPECT_NE(browser(), p.browser);
@@ -204,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                                                    browser()->profile());
   browser::NavigateParams p(MakeNavigateParams(app_browser));
   p.disposition = NEW_POPUP;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened a new popup app window.
   EXPECT_NE(app_browser, p.browser);
@@ -231,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_WINDOW;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened a new toplevel window.
   EXPECT_NE(browser(), p.browser);
@@ -249,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_Incognito) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = OFF_THE_RECORD;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened a new toplevel incognito window.
   EXPECT_NE(browser(), p.browser);
@@ -271,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IncognitoRefocus) {
                                 browser()->profile()->GetOffTheRecordProfile());
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = OFF_THE_RECORD;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened a new tab in the existing incognito window.
   EXPECT_NE(browser(), p.browser);
@@ -307,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
   browser::NavigateParams p(MakeNavigateParams());
   p.disposition = NEW_FOREGROUND_TAB;
   p.target_contents = CreateTabContents();
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened the contents in a new foreground in the
   // current Browser.
@@ -326,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_Popup) {
   p.disposition = NEW_POPUP;
   p.target_contents = CreateTabContents();
   p.window_bounds = gfx::Rect(10, 10, 500, 500);
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have opened a new popup window.
   EXPECT_NE(browser(), p.browser);
@@ -367,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
   p.disposition = NEW_FOREGROUND_TAB;
   p.tabstrip_index = 0;
   p.tabstrip_add_types = TabStripModel::ADD_FORCE_INDEX;
-  browser::Navigate(&p, this);
+  browser::Navigate(&p);
 
   // Navigate() should have inserted a new tab at slot 0 in the tabstrip.
   EXPECT_EQ(browser(), p.browser);

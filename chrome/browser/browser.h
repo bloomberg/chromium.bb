@@ -631,6 +631,16 @@ class Browser : public TabHandlerDelegate,
   // not null.
   int GetLastBlockedCommand(WindowOpenDisposition* disposition);
 
+  // Called by browser::Navigate() when a navigation has occurred in a tab in
+  // this Browser. Updates the UI for the start of this navigation.
+  void UpdateUIForNavigationInTab(TabContents* contents,
+                                  PageTransition::Type transition,
+                                  bool user_initiated);
+
+  // Called by browser::Navigate() to retrieve the home page if no URL is
+  // specified.
+  GURL GetHomePage() const;
+
   // Interface implementations ////////////////////////////////////////////////
 
   // Overridden from PageNavigator:
@@ -644,6 +654,7 @@ class Browser : public TabHandlerDelegate,
   // Overridden from TabRestoreServiceObserver:
   virtual void TabRestoreServiceChanged(TabRestoreService* service);
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+
 
   // Overridden from TabHandlerDelegate:
   virtual Profile* GetProfile() const;
@@ -929,10 +940,6 @@ class Browser : public TabHandlerDelegate,
                       PageTransition::Type transition,
                       int index,
                       int add_types);
-
-  // Returns what the user's home page is, or the new tab page if the home page
-  // has not been set.
-  GURL GetHomePage() const;
 
   // Shows the Find Bar, optionally selecting the next entry that matches the
   // existing search string for that Tab. |forward_direction| controls the

@@ -4,6 +4,7 @@
 
 #ifndef CHROME_BROWSER_BROWSER_NAVIGATOR_H_
 #define CHROME_BROWSER_BROWSER_NAVIGATOR_H_
+#pragma once
 
 #include <string>
 
@@ -16,21 +17,6 @@ class Browser;
 class Profile;
 class TabContents;
 
-class NavigatorDelegate {
- public:
-  // Called by Navigate() after a navigation in |contents| has been performed.
-  virtual void UpdateUIForNavigationInTab(TabContents* contents,
-                                          PageTransition::Type transition,
-                                          bool user_initiated) = 0;
-
-  // Returns the URL of the home page. This URL will be loaded if the URL
-  // specified in NavigateParams is empty.
-  virtual GURL GetHomePage() const = 0;
-
- protected:
-  virtual ~NavigatorDelegate() {}
-};
-
 namespace browser {
 
 // Parameters that tell Navigate() what to do.
@@ -40,17 +26,17 @@ namespace browser {
 // Simple Navigate to URL in current tab:
 // browser::NavigateParams params(browser, GURL("http://www.google.com/"),
 //                                PageTransition::LINK);
-// browser::Navigate(&params, delegate);
+// browser::Navigate(&params);
 //
 // Open bookmark in new background tab:
 // browser::NavigateParams params(browser, url, PageTransition::AUTO_BOOKMARK);
 // params.disposition = NEW_BACKGROUND_TAB;
-// browser::Navigate(&params, delegate);
+// browser::Navigate(&params);
 //
 // Opens a popup TabContents:
 // browser::NavigateParams params(browser, popup_contents);
 // params.source_contents = source_contents;
-// browser::Navigate(&params, delegate);
+// browser::Navigate(&params);
 //
 // See browser_navigator_browsertest.cc for more examples.
 //
@@ -67,8 +53,8 @@ struct NavigateParams {
   GURL referrer;
 
   // [in]  A TabContents to be navigated or inserted into the target Browser's
-  //       tabstrip. If NULL, |url| or the homepage supplied by the
-  //       NavigatorDelegate will be used instead. Default is NULL.
+  //       tabstrip. If NULL, |url| or the homepage will be used instead.
+  //       Default is NULL.
   // [out] The TabContents in which the navigation occurred or that was
   //       inserted. Guaranteed non-NULL except for note below:
   // Note: If this field is set to NULL by the caller and Navigate() creates
@@ -135,7 +121,7 @@ struct NavigateParams {
 };
 
 // Navigates according to the configuration specified in |params|.
-void Navigate(NavigateParams* params, NavigatorDelegate* delegate);
+void Navigate(NavigateParams* params);
 
 }  // namespace browser
 

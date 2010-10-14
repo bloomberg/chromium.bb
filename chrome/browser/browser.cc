@@ -2305,8 +2305,59 @@ int Browser::GetLastBlockedCommand(WindowOpenDisposition* disposition) {
   return last_blocked_command_id_;
 }
 
+void Browser::UpdateUIForNavigationInTab(TabContents* contents,
+                                         PageTransition::Type transition,
+                                         bool user_initiated) {
+  tabstrip_model()->TabNavigating(contents, transition);
+
+  bool contents_is_selected = contents == GetSelectedTabContents();
+  if (user_initiated && contents_is_selected && window()->GetLocationBar()) {
+    // Forcibly reset the location bar if the url is going to change in the
+    // current tab, since otherwise it won't discard any ongoing user edits,
+    // since it doesn't realize this is a user-initiated action.
+    window()->GetLocationBar()->Revert();
+  }
+
+  if (GetStatusBubble())
+    GetStatusBubble()->Hide();
+
+  // Update the location bar. This is synchronous. We specifically don't
+  // update the load state since the load hasn't started yet and updating it
+  // will put it out of sync with the actual state like whether we're
+  // displaying a favicon, which controls the throbber. If we updated it here,
+  // the throbber will show the default favicon for a split second when
+  // navigating away from the new tab page.
+  ScheduleUIUpdate(contents, TabContents::INVALIDATE_URL);
+
+  if (contents_is_selected)
+    contents->Focus();
+}
+
+GURL Browser::GetHomePage() const {
+  // --homepage overrides any preferences.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kHomePage)) {
+    FilePath browser_directory;
+    PathService::Get(base::DIR_CURRENT, &browser_directory);
+    GURL home_page(URLFixerUpper::FixupRelativeFile(browser_directory,
+        command_line.GetSwitchValuePath(switches::kHomePage)));
+    if (home_page.is_valid())
+      return home_page;
+  }
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
+    return GURL(chrome::kChromeUINewTabURL);
+  GURL home_page(URLFixerUpper::FixupURL(
+      profile_->GetPrefs()->GetString(prefs::kHomePage),
+      std::string()));
+  if (!home_page.is_valid())
+    return GURL(chrome::kChromeUINewTabURL);
+  return home_page;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, PageNavigator implementation:
+
 void Browser::OpenURL(const GURL& url, const GURL& referrer,
                       WindowOpenDisposition disposition,
                       PageTransition::Type transition) {
@@ -4106,28 +4157,6 @@ void Browser::OpenURLAtIndex(TabContents* source,
     // front-most.
     new_contents->Focus();
   }
-}
-
-GURL Browser::GetHomePage() const {
-  // --homepage overrides any preferences.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kHomePage)) {
-    FilePath browser_directory;
-    PathService::Get(base::DIR_CURRENT, &browser_directory);
-    GURL home_page(URLFixerUpper::FixupRelativeFile(browser_directory,
-        command_line.GetSwitchValuePath(switches::kHomePage)));
-    if (home_page.is_valid())
-      return home_page;
-  }
-
-  if (profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
-    return GURL(chrome::kChromeUINewTabURL);
-  GURL home_page(URLFixerUpper::FixupURL(
-      profile_->GetPrefs()->GetString(prefs::kHomePage),
-      std::string()));
-  if (!home_page.is_valid())
-    return GURL(chrome::kChromeUINewTabURL);
-  return home_page;
 }
 
 void Browser::FindInPage(bool find_next, bool forward_direction) {
