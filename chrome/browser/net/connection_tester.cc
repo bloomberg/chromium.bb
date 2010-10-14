@@ -159,7 +159,8 @@ class ExperimentURLRequestContext : public URLRequestContext {
       return net::ERR_NOT_IMPLEMENTED;
     }
 
-    *proxy_service = net::ProxyService::Create(config_service.release(), true,
+    *proxy_service = net::ProxyService::CreateUsingV8ProxyResolver(
+        config_service.release(),
         0u, this, NULL, MessageLoop::current());
 
     return net::OK;

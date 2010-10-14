@@ -33,9 +33,8 @@ ServiceURLRequestContext::ServiceURLRequestContext() {
       net::ProxyService::CreateSystemProxyConfigService(
           g_service_process->io_thread()->message_loop(),
           g_service_process->file_thread()->message_loop());
-  proxy_service_ =
-      net::ProxyService::Create(
-          proxy_config_service, false, 0u, this, NULL, NULL);
+  proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
+      proxy_config_service, 0u, NULL);
   dnsrr_resolver_ = new net::DnsRRResolver;
   ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
   ssl_config_service_ = new net::SSLConfigServiceDefaults;

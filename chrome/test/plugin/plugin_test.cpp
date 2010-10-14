@@ -225,9 +225,8 @@ class PluginInstallerDownloadTest
       const size_t kNetLogBound = 50u;
       net_log_.reset(new net::CapturingNetLog(kNetLogBound));
 
-      proxy_service_ = net::ProxyService::Create(proxy_config_service, false, 0,
-                                                 this, net_log_.get(),
-                                                 MessageLoop::current());
+      proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
+          proxy_config_service, 0, net_log_.get());
       DCHECK(proxy_service_);
 
       ssl_config_service_ = new net::SSLConfigServiceDefaults;

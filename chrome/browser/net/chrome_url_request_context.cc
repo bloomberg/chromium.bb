@@ -122,13 +122,19 @@ net::ProxyService* CreateProxyService(
     }
   }
 
-  return net::ProxyService::Create(
+  if (use_v8) {
+    return net::ProxyService::CreateUsingV8ProxyResolver(
+        proxy_config_service,
+        num_pac_threads,
+        context,
+        net_log,
+        io_loop);
+  }
+
+  return net::ProxyService::CreateUsingSystemProxyResolver(
       proxy_config_service,
-      use_v8,
       num_pac_threads,
-      context,
-      net_log,
-      io_loop);
+      net_log);
 }
 
 // ----------------------------------------------------------------------------

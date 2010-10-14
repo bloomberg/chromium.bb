@@ -131,7 +131,7 @@ extern base::LazyInstance<StatisticsRecorder> g_statistics_recorder_;
 // requests initiated by ChromeFrame.
 class ChromeFrameUploadRequestContext : public URLRequestContext {
  public:
-  ChromeFrameUploadRequestContext(MessageLoop* io_loop)
+  explicit ChromeFrameUploadRequestContext(MessageLoop* io_loop)
       : io_loop_(io_loop) {
     Initialize();
   }
@@ -157,8 +157,8 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
     const size_t kNetLogBound = 50u;
     net_log_.reset(new net::CapturingNetLog(kNetLogBound));
 
-    proxy_service_ = net::ProxyService::Create(proxy_config_service, false, 0,
-                                               this, net_log_.get(), io_loop_);
+    proxy_service_ = net::ProxyService::CreateUsingSystemProxyResolver(
+        proxy_config_service, 0, net_log_.get());
     DCHECK(proxy_service_);
 
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
@@ -200,7 +200,7 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
 // metrics HTTP upload requests initiated by ChromeFrame.
 class ChromeFrameUploadRequestContextGetter : public URLRequestContextGetter {
  public:
-  ChromeFrameUploadRequestContextGetter(MessageLoop* io_loop)
+  explicit ChromeFrameUploadRequestContextGetter(MessageLoop* io_loop)
       : io_loop_(io_loop) {}
 
   virtual URLRequestContext* GetURLRequestContext() {
