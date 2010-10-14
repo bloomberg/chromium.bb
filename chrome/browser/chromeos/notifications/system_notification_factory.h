@@ -23,6 +23,12 @@ class SystemNotificationFactory {
       const GURL& icon, const string16& title,
       const string16& text,
       NotificationDelegate* delegate);
+
+  // Creates a system notification with a footer link.
+  static Notification Create(
+      const GURL& icon, const string16& title,
+      const string16& text, const string16& link,
+      NotificationDelegate* delegate);
 };
 
 }  // namespace chromeos

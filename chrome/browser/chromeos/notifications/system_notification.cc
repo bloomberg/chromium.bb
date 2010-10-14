@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 
+#include "base/callback.h"
 #include "base/move.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/notifications/system_notification_factory.h"
@@ -35,8 +36,16 @@ SystemNotification::~SystemNotification() {
 void SystemNotification::Show(const string16& message,
                               bool urgent,
                               bool sticky) {
+  Show(message, string16(), NULL, urgent, sticky);
+}
+
+void SystemNotification::Show(const string16& message,
+                              const string16& link,
+                              MessageCallback* callback,
+                              bool urgent,
+                              bool sticky) {
   Notification notify = SystemNotificationFactory::Create(icon_,
-      title_, message, delegate_.get());
+      title_, message, link, delegate_.get());
   if (visible_) {
     // Force showing a user hidden notification on an urgent transition.
     if (urgent && !urgent_) {
@@ -48,6 +57,7 @@ void SystemNotification::Show(const string16& message,
     collection_->AddSystemNotification(notify, profile_,
                                        sticky,
                                        false /* no controls */);
+    collection_->AddDOMUIMessageCallback(notify, "link", callback);
   }
   visible_ = true;
   urgent_ = urgent;

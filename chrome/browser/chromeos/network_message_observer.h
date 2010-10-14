@@ -38,11 +38,12 @@ class NetworkMessageObserver : public NetworkLibrary::Observer {
   typedef std::map<std::string, CellularNetwork> ServicePathCellularMap;
  private:
   virtual void CreateModalPopup(views::WindowDelegate* view);
+  virtual void MobileSetup(const ListValue* args);
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* obj);
   virtual void CellularDataPlanChanged(const std::string& service_path,
-                                       const CellularDataPlan& plan);
+                                       const CellularDataPlanList& plans);
 
   bool initialized_;
   // Wifi networks by service path.

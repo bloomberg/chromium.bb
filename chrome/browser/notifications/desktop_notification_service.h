@@ -83,6 +83,12 @@ class DesktopNotificationService : public NotificationObserver {
                                 const string16& body,
                                 WebKit::WebTextDirection dir);
 
+  // Creates a data:xxxx URL which contains the full HTML for a notification
+  // using resource template which contains the standard formatting for
+  // notifications.
+  static string16 CreateDataUrl(int resource,
+                                const std::vector<std::string>& subst);
+
   // The default content setting determines how to handle origins that haven't
   // been allowed or denied yet.
   ContentSetting GetDefaultContentSetting();

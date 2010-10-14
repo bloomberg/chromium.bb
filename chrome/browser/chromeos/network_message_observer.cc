@@ -5,12 +5,15 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/views/window.h"
 #include "grit/generated_resources.h"
@@ -53,6 +56,10 @@ void NetworkMessageObserver::CreateModalPopup(views::WindowDelegate* view) {
       browser->window()->GetNativeHandle(), gfx::Rect(), view);
   window->SetIsAlwaysOnTop(true);
   window->Show();
+}
+
+void NetworkMessageObserver::MobileSetup(const ListValue* args) {
+  BrowserList::GetLastActive()->OpenMobilePlanTabAndActivate();
 }
 
 void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
@@ -137,7 +144,9 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
 }
 
 void NetworkMessageObserver::CellularDataPlanChanged(
-    const std::string& service_path, const CellularDataPlan& plan) {
+    const std::string& service_path, const CellularDataPlanList& plans) {
+  // Active plan is the first one in the list. Use empty one if none found.
+  CellularDataPlan plan = plans.empty() ? CellularDataPlan() : plans[0];
   // If connected cellular network changed, or data plan is different, then
   // it's a new network. Then hide all previous notifications.
   bool new_plan = false;
@@ -176,12 +185,16 @@ void NetworkMessageObserver::CellularDataPlanChanged(
       notification_low_data_.Hide();
       notification_no_data_.Show(l10n_util::GetStringFUTF16(
           IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0")),
+          l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
+          NewCallback(this, &NetworkMessageObserver::MobileSetup),
           false, false);
     } else if (time_left <= kDataNearingExpirationSecs) {
       notification_no_data_.Hide();
       notification_low_data_.Show(l10n_util::GetStringFUTF16(
           IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
           UTF8ToUTF16(base::Int64ToString(time_left/60))),
+          l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
+          NewCallback(this, &NetworkMessageObserver::MobileSetup),
           false, false);
     } else {
       // Got more data, so hide notifications.
@@ -196,12 +209,16 @@ void NetworkMessageObserver::CellularDataPlanChanged(
       notification_low_data_.Hide();
       notification_no_data_.Show(l10n_util::GetStringFUTF16(
           IDS_NETWORK_DATA_REMAINING_MESSAGE, ASCIIToUTF16("0")),
+          l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
+          NewCallback(this, &NetworkMessageObserver::MobileSetup),
           false, false);
     } else if (bytes_remaining <= kDataLowDataBytes) {
       notification_no_data_.Hide();
       notification_low_data_.Show(l10n_util::GetStringFUTF16(
           IDS_NETWORK_DATA_REMAINING_MESSAGE,
           UTF8ToUTF16(base::Int64ToString(bytes_remaining/1024))),
+          l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
+          NewCallback(this, &NetworkMessageObserver::MobileSetup),
           false, false);
     } else {
       // Got more data, so hide notifications.

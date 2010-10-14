@@ -8808,6 +8808,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_NETWORK_PURCHASE_MORE_MESSAGE" desc="Message for purchase more link">
+        Purchase more...
+      </message>
       <message name="IDS_NETWORK_LOW_DATA_TITLE" desc="Title for network low data notification">
         Low <ph name="network">$1<ex>YBH</ex></ph> data
       </message>

@@ -16,6 +16,7 @@
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "googleurl/src/gurl.h"
 
+class MessageCallback;
 class Profile;
 
 namespace chromeos {
@@ -38,6 +39,11 @@ class SystemNotification {
   // on a transition to urgent, the notification will be shown if it was
   // previously hidden or minimized by the user.
   void Show(const string16& message, bool urgent, bool sticky);
+
+  // Same as Show() above with a footer link at the bottom and a callback
+  // for when the link is clicked.
+  void Show(const string16& message, const string16& link_text,
+            MessageCallback* callback, bool urgent, bool sticky);
 
   // Hide will dismiss the notification, if the notification is already
   // hidden it does nothing

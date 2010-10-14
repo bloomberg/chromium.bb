@@ -48,8 +48,6 @@ string16 DesktopNotificationService::CreateDataUrl(
     const GURL& icon_url, const string16& title, const string16& body,
     WebTextDirection dir) {
   int resource;
-  string16 line_name;
-  string16 line;
   std::vector<std::string> subst;
   if (icon_url.is_valid()) {
     resource = IDR_NOTIFICATION_ICON_HTML;
@@ -61,10 +59,10 @@ string16 DesktopNotificationService::CreateDataUrl(
                     "right" : "left");
   } else if (title.empty() || body.empty()) {
     resource = IDR_NOTIFICATION_1LINE_HTML;
-    line = title.empty() ? body : title;
+    string16 line = title.empty() ? body : title;
     // Strings are div names in the template file.
-    line_name = title.empty() ? ASCIIToUTF16("description")
-                              : ASCIIToUTF16("title");
+    string16 line_name = title.empty() ? ASCIIToUTF16("description")
+                                       : ASCIIToUTF16("title");
     subst.push_back(EscapeForHTML(UTF16ToUTF8(line_name)));
     subst.push_back(EscapeForHTML(UTF16ToUTF8(line)));
   } else {
@@ -76,6 +74,12 @@ string16 DesktopNotificationService::CreateDataUrl(
   subst.push_back(dir == WebKit::WebTextDirectionRightToLeft ?
                   "rtl" : "ltr");
 
+  return CreateDataUrl(resource, subst);
+}
+
+// static
+string16 DesktopNotificationService::CreateDataUrl(
+    int resource, const std::vector<std::string>& subst) {
   const base::StringPiece template_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           resource));
