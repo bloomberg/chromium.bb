@@ -308,8 +308,10 @@ void DOMUIMenuWidget::OnSizeAllocate(GtkWidget* widget,
   gfx::Rect bounds;
   GetBounds(&bounds, false);
   // Don't move until the menu gets contents.
-  if (bounds.height() > 1)
+  if (bounds.height() > 1) {
     menu_locator_->Move(this);
+    domui_menu_->InputIsReady();
+  }
 }
 
 gboolean MapToFocus(GtkWidget* widget, GdkEvent* event, gpointer data) {
@@ -356,7 +358,6 @@ void DOMUIMenuWidget::EnableInput(bool select_item) {
   if (select_item) {
     ExecuteJavascript(L"selectItem()");
   }
-  domui_menu_->InputIsReady();
 }
 
 void DOMUIMenuWidget::ExecuteJavascript(const std::wstring& script) {
