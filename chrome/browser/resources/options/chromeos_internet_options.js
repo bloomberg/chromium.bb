@@ -123,20 +123,20 @@ cr.define('options', function() {
 
   InternetOptions.setupAttributes = function(data) {
     var buttons = $('wirelessButtons');
-    if (data.wirelessList.length == 0) {
-      buttons.removeAttribute('hasWifi');
+    if (data.wifiEnabled) {
+      buttons.setAttribute('wifiEnabled', true);
     } else {
-      buttons.setAttribute('hasWifi', 'true');
+      buttons.removeAttribute('wifiEnabled');
     }
-    if (!data.cellularAvailable) {
-      buttons.removeAttribute('cellularAvail');
-    } else {
-      buttons.setAttribute('cellularAvail', 'true');
+    if (data.cellularAvailable) {
+      buttons.setAttribute('cellularAvail', true);
       if (data.cellularEnabled) {
-        buttons.setAttribute('hasCellular', 'true');
+        buttons.setAttribute('cellularEnabled', true);
       } else {
-        buttons.removeAttribute('hasCellular');
+        buttons.removeAttribute('cellularEnabled');
       }
+    } else {
+      buttons.removeAttribute('cellularAvail');
     }
   };
 

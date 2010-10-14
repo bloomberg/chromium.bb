@@ -317,6 +317,8 @@ void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
   dictionary.Set("wiredList", GetWiredList());
   dictionary.Set("wirelessList", GetWirelessList());
   dictionary.Set("rememberedList", GetRememberedList());
+  dictionary.SetBoolean("wifiAvailable", cros->wifi_available());
+  dictionary.SetBoolean("wifiEnabled", cros->wifi_enabled());
   dictionary.SetBoolean("cellularAvailable", cros->cellular_available());
   dictionary.SetBoolean("cellularEnabled", cros->cellular_enabled());
   dom_ui_->CallJavascriptFunction(

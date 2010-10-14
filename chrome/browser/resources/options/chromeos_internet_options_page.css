@@ -151,11 +151,12 @@ html[dir='rtl'] .details-button {
   display: block;
 }
 
-#wirelessButtons[haswifi] > * > #enableWifi,
-#wirelessButtons:not([haswifi]) > * > #disableWifi,
+
+#wirelessButtons[wifiEnabled] > * > #enableWifi,
+#wirelessButtons:not([wifiEnabled]) > * > #disableWifi,
+#wirelessButtons[cellularEnabled] > * > #enableCellular,
+#wirelessButtons:not([cellularEnabled]) > * > #disableCellular,
 #wirelessButtons:not([cellularAvail]) > * > #disableCellular,
-#wirelessButtons:not([cellularAvail]) > * > #enableCellular,
-#wirelessButtons[hasCellular] > * > #enableCellular,
-#wirelessButtons:not([hasCellular]) > * > #disableCellular {
+#wirelessButtons:not([cellularAvail]) > * > #enableCellular {
   display: none;
 }

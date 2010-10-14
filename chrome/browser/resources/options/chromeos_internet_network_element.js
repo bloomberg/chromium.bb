@@ -60,15 +60,21 @@ cr.define('options.internet', function() {
           while (item && !item.data) {
             item = item.parentNode;
           }
+          if (item.connecting)
+            return;
 
           if (item) {
             var data = item.data;
+            // Don't try to connect to Ethernet.
+            if (data && data.networkType == 1)
+              return;
             for (var i = 0; i < this.childNodes.length; i++) {
-              this.childNodes[i].hidePassword();
+              if (this.childNodes[i] != item)
+                this.childNodes[i].hidePassword();
             }
             // If clicked on other networks item.
             if (data && data.servicePath == '?') {
-              el.showOtherLogin();
+              item.showOtherLogin();
             } else if (data) {
                 if (!data.connecting && !data.connected) {
                   chrome.send('buttonClickCallback',
@@ -104,6 +110,13 @@ cr.define('options.internet', function() {
     NetworkItem.decorate(el);
     return el;
   }
+
+
+  /**
+   * Minimum length for wireless network password.
+   * @type {number}
+   */
+  NetworkItem.MIN_WIRELESS_PASSWORD_LENGTH = 5;
 
   /**
    * Decorates an element as a network item.
@@ -182,6 +195,8 @@ cr.define('options.internet', function() {
     },
 
     showPassword: function(password) {
+      if (this.connecting)
+        return;
       var passwordDiv = this.ownerDocument.createElement('div');
       passwordDiv.className = 'network-password';
       var passInput = this.ownerDocument.createElement('input');
@@ -195,6 +210,7 @@ cr.define('options.internet', function() {
       buttonEl.style.right = '0';
       buttonEl.style.position = 'absolute';
       buttonEl.style.visibility = 'visible';
+      buttonEl.disabled = true;
 
       var togglePassLabel = this.ownerDocument.createElement('label');
       togglePassLabel.style.display = 'inline';
@@ -208,6 +224,12 @@ cr.define('options.internet', function() {
       togglePassLabel.appendChild(togglePassSpan);
       passwordDiv.appendChild(togglePassCheckbox);
       passwordDiv.appendChild(togglePassLabel);
+
+      // Disable login button if there is no password.
+      passInput.addEventListener('keyup', function(e) {
+        buttonEl.disabled =
+          passInput.value.length < NetworkItem.MIN_WIRELESS_PASSWORD_LENGTH;
+      });
 
       passwordDiv.appendChild(buttonEl);
       this.connecting = true;
@@ -236,6 +258,8 @@ cr.define('options.internet', function() {
     },
 
     showOtherLogin: function() {
+      if (this.connecting)
+        return;
       var passwordDiv = this.ownerDocument.createElement('div');
       passwordDiv.className = 'other-network';
       var ssidInput = this.ownerDocument.createElement('input');
@@ -243,6 +267,9 @@ cr.define('options.internet', function() {
       passwordDiv.appendChild(ssidInput);
       var passInput = this.ownerDocument.createElement('input');
       passInput.placeholder = localStrings.getString('inetPassPrompt');
+      passInput.addEventListener('keydown', function(e) {
+        e.returnValue = e.keyCode != ' '.charCodeAt();
+      });
       passwordDiv.appendChild(passInput);
       var buttonEl = this.ownerDocument.createElement('button');
       buttonEl.textContent = localStrings.getString('inetLogin');
@@ -250,8 +277,8 @@ cr.define('options.internet', function() {
       buttonEl.addEventListener('click', this.handleOtherLogin_);
       buttonEl.style.visibility = 'visible';
       passwordDiv.appendChild(buttonEl);
-      this.connecting = true;
       this.appendChild(passwordDiv);
+      this.connecting = true;
     },
 
     handleLogin_: function(e) {
