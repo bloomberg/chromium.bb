@@ -1351,8 +1351,11 @@ TEST_F(AutomationProxyTest, AutocompleteParallelProxy) {
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 #if defined(OS_MACOSX)
-// TODO(port): Implement AutocompleteEditProxy on Mac.
+// Disabled, http://crbug.com/48601.
 #define AutocompleteMatchesTest DISABLED_AutocompleteMatchesTest
+#else
+// Flaky, http://crbug.com/19876.
+#define AutocompleteMatchesTest FLAKY_AutocompleteMatchesTest
 #endif
 TEST_F(AutomationProxyVisibleTest, AutocompleteMatchesTest) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
