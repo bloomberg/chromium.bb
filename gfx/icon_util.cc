@@ -187,7 +187,7 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
 }
 
 bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
-                                          const std::wstring& icon_file_name) {
+                                          const FilePath& icon_path) {
   // Only 32 bit ARGB bitmaps are supported. We also make sure the bitmap has
   // been properly initialized.
   SkAutoLockPixels bitmap_lock(bitmap);
@@ -197,8 +197,8 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
     return false;
 
   // We start by creating the file.
-  ScopedHandle icon_file(::CreateFile(icon_file_name.c_str(), GENERIC_WRITE, 0,
-       NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL));
+  ScopedHandle icon_file(::CreateFile(icon_path.value().c_str(),
+       GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL));
 
   if (icon_file.Get() == INVALID_HANDLE_VALUE)
     return false;
@@ -248,17 +248,13 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
   ::CloseHandle(icon_file.Take());
   delete [] buffer;
   if (delete_file) {
-    bool success = file_util::Delete(icon_file_name, false);
+    bool success = file_util::Delete(icon_path, false);
     DCHECK(success);
   }
 
   return !delete_file;
 }
 
-bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
-                                          const FilePath& icon_path) {
-  return CreateIconFileFromSkBitmap(bitmap, icon_path.ToWStringHack());
-}
 bool IconUtil::PixelsHaveAlpha(const uint32* pixels, size_t num_pixels) {
   for (const uint32* end = pixels + num_pixels; pixels != end; ++pixels) {
     if ((*pixels & 0xff000000) != 0)

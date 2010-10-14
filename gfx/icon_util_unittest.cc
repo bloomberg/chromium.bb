@@ -113,7 +113,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   scoped_ptr<SkBitmap> bitmap;
   FilePath valid_icon_filename = test_data_directory_.AppendASCII(
       kSmallIconName);
-  std::wstring invalid_icon_filename(L"C:\\<>?.ico");
+  FilePath invalid_icon_filename(FILE_PATH_LITERAL("C:\\<>?.ico"));
 
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);

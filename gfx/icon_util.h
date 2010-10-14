@@ -78,9 +78,6 @@ class IconUtil {
   // the desired .ico file.
   //
   // The function returns true on success and false otherwise.
-  // TODO(tfarina): Deprecated version of the FilePath version below.
-  static bool CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
-                                         const std::wstring& icon_file_name);
   static bool CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
                                          const FilePath& icon_path);
 
