@@ -105,9 +105,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// Hangs flakily on mac and linux: http://crbug.com/53991
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_IncognitoSplitMode DISABLED_IncognitoSplitMode
+#else
+#define MAYBE_IncognitoSplitMode IncognitoSplitMode
+#endif
+
 // Tests that the APIs in an incognito-enabled split-mode extension work
 // properly.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoSplitMode) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoSplitMode) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
