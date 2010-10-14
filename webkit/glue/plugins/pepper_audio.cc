@@ -12,21 +12,47 @@ namespace pepper {
 
 namespace {
 
-// PPB_AudioConfig functions
+// PPB_AudioConfig -------------------------------------------------------------
+
+uint32_t RecommendSampleFrameCount(uint32_t requested_sample_frame_count);
 
 PP_Resource CreateStereo16bit(PP_Module module_id,
                               PP_AudioSampleRate_Dev sample_rate,
-                              uint32_t sample_frame_count,
-                              uint32_t* obtained_frame_count) {
+                              uint32_t sample_frame_count) {
   PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return 0;
 
+  // TODO(brettw): Currently we don't actually check what the hardware
+  // supports, so just allow sample rates of the "guaranteed working" ones.
+  if (sample_rate != PP_AUDIOSAMPLERATE_44100 &&
+      sample_rate != PP_AUDIOSAMPLERATE_48000)
+    return 0;
+
+  // TODO(brettw): Currently we don't actually query to get a value from the
+  // hardware, so just validate the range.
+  if (RecommendSampleFrameCount(sample_frame_count) != sample_frame_count)
+    return 0;
+
   scoped_refptr<AudioConfig> config(new AudioConfig(module,
                                                     sample_rate,
-                                                    sample_frame_count,
-                                                    obtained_frame_count));
+                                                    sample_frame_count));
   return config->GetReference();
+}
+
+uint32_t RecommendSampleFrameCount(uint32_t requested_sample_frame_count) {
+  // TODO(brettw) Currently we don't actually query to get a value from the
+  // hardware, so we always return the input for in-range values.
+  if (requested_sample_frame_count < PP_AUDIOMINSAMPLEFRAMECOUNT)
+    return PP_AUDIOMINSAMPLEFRAMECOUNT;
+  if (requested_sample_frame_count > PP_AUDIOMAXSAMPLEFRAMECOUNT)
+    return PP_AUDIOMAXSAMPLEFRAMECOUNT;
+  return requested_sample_frame_count;
+}
+
+bool IsAudioConfig(PP_Resource resource) {
+  scoped_refptr<AudioConfig> config = Resource::GetAs<AudioConfig>(resource);
+  return config;
 }
 
 PP_AudioSampleRate_Dev GetSampleRate(PP_Resource config_id) {
@@ -39,7 +65,15 @@ uint32_t GetSampleFrameCount(PP_Resource config_id) {
   return config ? config->sample_frame_count() : 0;
 }
 
-// PPB_Audio functions
+const PPB_AudioConfig_Dev ppb_audioconfig = {
+  &CreateStereo16bit,
+  &RecommendSampleFrameCount,
+  &IsAudioConfig,
+  &GetSampleRate,
+  &GetSampleFrameCount
+};
+
+// PPB_Audio -------------------------------------------------------------------
 
 PP_Resource Create(PP_Instance instance_id, PP_Resource config_id,
                    PPB_Audio_Callback callback, void* user_data) {
@@ -51,6 +85,11 @@ PP_Resource Create(PP_Instance instance_id, PP_Resource config_id,
   if (!audio->Init(instance->delegate(), config_id, callback, user_data))
     return 0;
   return audio->GetReference();
+}
+
+bool IsAudio(PP_Resource resource) {
+  scoped_refptr<Audio> audio = Resource::GetAs<Audio>(resource);
+  return audio;
 }
 
 PP_Resource GetCurrentConfiguration(PP_Resource audio_id) {
@@ -68,7 +107,15 @@ bool StopPlayback(PP_Resource audio_id) {
   return audio ? audio->StopPlayback() : false;
 }
 
-// PPB_AudioTrusted functions
+const PPB_Audio_Dev ppb_audio = {
+  &Create,
+  &IsAudio,
+  &GetCurrentConfiguration,
+  &StartPlayback,
+  &StopPlayback,
+};
+
+// PPB_AudioTrusted ------------------------------------------------------------
 
 PP_Resource GetBuffer(PP_Resource audio_id) {
   // TODO(neb): Implement me!
@@ -80,19 +127,6 @@ int GetOSDescriptor(PP_Resource audio_id) {
   return -1;
 }
 
-const PPB_AudioConfig_Dev ppb_audioconfig = {
-  &CreateStereo16bit,
-  &GetSampleRate,
-  &GetSampleFrameCount
-};
-
-const PPB_Audio_Dev ppb_audio = {
-  &Create,
-  &GetCurrentConfiguration,
-  &StartPlayback,
-  &StopPlayback,
-};
-
 const PPB_AudioTrusted_Dev ppb_audiotrusted = {
   &GetBuffer,
   &GetOSDescriptor
@@ -100,18 +134,14 @@ const PPB_AudioTrusted_Dev ppb_audiotrusted = {
 
 }  // namespace
 
+// AudioConfig -----------------------------------------------------------------
+
 AudioConfig::AudioConfig(PluginModule* module,
                          PP_AudioSampleRate_Dev sample_rate,
-                         uint32_t sample_frame_count,
-                         uint32_t* obtained_frame_count)
+                         uint32_t sample_frame_count)
     : Resource(module),
       sample_rate_(sample_rate),
       sample_frame_count_(sample_frame_count) {
-  // TODO(audio): adjust obtained frame count as needed.  Some systems
-  // may need to adjust the sample frame count for best performance, for
-  // example to avoid audio glitching if the requested sample frame size
-  // reflects too low a latency.  For now, do not adjust.
-  *obtained_frame_count = sample_frame_count;
 }
 
 const PPB_AudioConfig_Dev* AudioConfig::GetInterface() {
@@ -131,6 +161,8 @@ size_t AudioConfig::BufferSize() {
 AudioConfig* AudioConfig::AsAudioConfig() {
   return this;
 }
+
+// Audio -----------------------------------------------------------------------
 
 Audio::Audio(PluginModule* module)
     : Resource(module),
@@ -153,7 +185,6 @@ Audio::~Audio() {
   }
   // Shared memory destructor will unmap the memory automatically.
 }
-
 
 const PPB_Audio_Dev* Audio::GetInterface() {
   return &ppb_audio;

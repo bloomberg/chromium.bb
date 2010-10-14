@@ -27,8 +27,7 @@ class AudioConfig : public Resource {
  public:
   AudioConfig(PluginModule* module,
               PP_AudioSampleRate_Dev sample_rate,
-              uint32_t sample_frame_count,
-              uint32_t* obtained_frame_count);
+              uint32_t sample_frame_count);
   size_t BufferSize();
   static const PPB_AudioConfig_Dev* GetInterface();
 
