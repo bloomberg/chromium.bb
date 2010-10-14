@@ -34,8 +34,11 @@ class StatusBubbleViews : public StatusBubble {
   // The combined vertical padding above and below the text.
   static const int kTotalVerticalPadding = 7;
 
+  // |base_view| is the view that this bubble is positioned relative to.
   explicit StatusBubbleViews(views::View* base_view);
   ~StatusBubbleViews();
+
+  views::View* base_view() { return base_view_; }
 
   // Reposition the bubble - as we are using a WS_POPUP for the bubble,
   // we have to manually position it when the browser window moves.
@@ -45,7 +48,7 @@ class StatusBubbleViews : public StatusBubble {
   // the font and kTotalVerticalPadding.
   gfx::Size GetPreferredSize();
 
-  // Set the bounds of the bubble relative to the browser window.
+  // Set the bounds of the bubble relative to |base_view_|.
   void SetBounds(int x, int y, int w, int h);
 
   // Set bubble to new width.

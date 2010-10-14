@@ -1775,6 +1775,9 @@ void BrowserView::Layout() {
     return;
   views::View::Layout();
 
+  // The status bubble position requires that all other layout finish first.
+  LayoutStatusBubble();
+
 #if defined(OS_WIN)
   // Send the margins of the "user-perceived content area" of this
   // browser window so AeroPeekManager can render a background-tab image in
@@ -1959,7 +1962,7 @@ BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
   return static_cast<BrowserViewLayout*>(GetLayoutManager());
 }
 
-void BrowserView::LayoutStatusBubble(int top) {
+void BrowserView::LayoutStatusBubble() {
   // In restored mode, the client area has a client edge between it and the
   // frame.
   int overlap = StatusBubbleViews::kShadowThickness +
@@ -1968,8 +1971,8 @@ void BrowserView::LayoutStatusBubble(int top) {
   if (UseVerticalTabs() && IsTabStripVisible())
     x += tabstrip_->bounds().right();
   int height = status_bubble_->GetPreferredSize().height();
-  gfx::Point origin(
-      -overlap, contents_container_->bounds().height() - height + overlap);
+  int contents_height = status_bubble_->base_view()->bounds().height();
+  gfx::Point origin(-overlap, contents_height - height + overlap);
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
 

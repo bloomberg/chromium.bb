@@ -438,7 +438,7 @@ class BrowserView : public BrowserBubbleHost,
   BrowserViewLayout* GetBrowserViewLayout() const;
 
   // Layout the Status Bubble.
-  void LayoutStatusBubble(int top);
+  void LayoutStatusBubble();
 
   // Prepare to show the Bookmark Bar for the specified TabContents. Returns
   // true if the Bookmark Bar can be shown (i.e. it's supported for this

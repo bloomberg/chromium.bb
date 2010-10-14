@@ -263,10 +263,6 @@ void BrowserViewLayout::Layout(views::View* host) {
     browser()->GetFindBarController()->find_bar()->MoveWindowIfNecessary(
         gfx::Rect(), true);
   }
-  // Align status bubble with the bottom of the contents_container.
-  browser_view_->LayoutStatusBubble(
-      top + contents_container_->bounds().height());
-  browser_view_->SchedulePaint();
 }
 
 // Return the preferred size which is the size required to give each
