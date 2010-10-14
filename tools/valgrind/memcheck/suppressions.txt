@@ -679,7 +679,6 @@
    Memcheck:Leak
    ...
    fun:_ZN7WebCore8XMLNames4initEv
-   ...
 }
 {
    # Intentional crash test
@@ -1447,7 +1446,7 @@
    fun:crc32
    ...
    fun:png_write_row
-   fun:_ZN3gfx51_GLOBAL__N_gfx_codec_png_codec.cc_00000000_*
+   ...
    fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
    fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
 }
@@ -1457,7 +1456,7 @@
    fun:crc32
    ...
    fun:png_write_row
-   fun:_ZN3gfx51_GLOBAL__N_gfx_codec_png_codec.cc_00000000_*
+   ...
    fun:_ZN3gfx8PNGCodec6EncodeEPKhNS0_11ColorFormatEiiibPSt6vectorIhSaIhEE
    fun:_ZN3gfx8PNGCodec18EncodeBGRASkBitmapERK8SkBitmapbPSt6vectorIhSaIhEE
 }
@@ -1736,7 +1735,6 @@
    fun:_ZNK7WebCore8Document14implementationEv
    fun:_ZN7WebCore10V8Document28implementationAccessorGetterEN2v85LocalINS1_6StringEEERKNS1_12AccessorInfoE
    fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
-   obj:*
 }
 {
    bug_38138
@@ -1814,8 +1812,7 @@
    fun:_ZN7WebCore6WorkerC1EPNS_22ScriptExecutionContextE
    fun:_ZN7WebCore6Worker6createERKN3WTF6StringEPNS_22ScriptExecutionContextERi
    fun:_ZN7WebCore8V8Worker19constructorCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internal19HandleApiCallHelperILb1EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_1F3276AF16BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
-   obj:*
+   fun:_ZN2v88internal19HandleApiCallHelperILb1EEEPNS0_6ObjectENS0_47_GLOBAL__N_v8_src_builtins.cc_00000000_*16BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEE
 }
 {
    bug_42942
@@ -1915,7 +1912,6 @@
    fun:ssl_Close
    fun:PR_Close
    fun:_ZN3net18SSLClientSocketNSS10DisconnectEv
-   ...
 }
 {
    bug_44341c
@@ -1932,7 +1928,6 @@
    fun:ssl_Close
    fun:PR_Close
    fun:_ZN3net18SSLClientSocketNSS10DisconnectEv
-   ...
 }
 {
    bug_44341d
@@ -1941,7 +1936,6 @@
    fun:rijndael_encryptCBC
    ...
    fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
-   ...
 }
 {
    bug_44341e
@@ -1951,7 +1945,6 @@
    fun:deflate_slow
    ...
    fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
-   ...
 }
 {
    bug_44341f
@@ -1961,7 +1954,6 @@
    fun:deflate_slow
    ...
    fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
-   ...
 }
 {
    bug_44966a
@@ -2802,9 +2794,9 @@
    fun:_ZN7WebCore14ResourceLoader18didReceiveResponseEPNS_14ResourceHandleERKNS_16ResourceResponseE
    fun:_ZN7WebCore22ResourceHandleInternal18didReceiveResponseEPN6WebKit12WebURLLoaderERKNS1_14WebURLResponseE
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context18OnReceivedResponseERKNS_20ResourceLoaderBridge12ResponseInfoEb
-   fun:_ZN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_4649D62612RequestProxy22NotifyReceivedResponseERKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEb
-   fun:_Z16DispatchToMethodIN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_4649D62612RequestProxyEMS1_FvRKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEbES4_bEvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN14RunnableMethodIN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_4649D62612RequestProxyEMS1_FvRKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEbE6Tuple2IS4_bEE3RunEv
+   fun:_ZN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_*12RequestProxy22NotifyReceivedResponseERKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEb
+   fun:_Z16DispatchToMethodIN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_*12RequestProxyEMS1_FvRKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEbES4_bEvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodIN85_GLOBAL__N_webkit_tools_test_shell_simple_resource_loader_bridge.cc_00000000_*12RequestProxyEMS1_FvRKN11webkit_glue20ResourceLoaderBridge12ResponseInfoEbE6Tuple2IS4_bEE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
@@ -2876,7 +2868,7 @@
    fun:_ZN3net12CertVerifier7Request8DoVerifyEv
    fun:_Z16DispatchToMethodIN3net12CertVerifier7RequestEMS2_FvvEEvPT_T0_RK6Tuple0
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
-   fun:_ZN54_GLOBAL__N_base_worker_pool_linux.cc_00000000_0D71404812WorkerThread10ThreadMainEv
+   fun:_ZN54_GLOBAL__N_base_worker_pool_linux.cc_00000000_*12WorkerThread10ThreadMainEv
 }
 {
    bug_58863
@@ -2899,7 +2891,7 @@
    fun:SECOID_FindOID_Util
    fun:SECOID_FindOIDTag_Util
    fun:SECOID_FindOIDTag
-   fun:_ZN3net61_GLOBAL__N_net_base_x509_certificate_nss.cc_00000000_98C1B34716GetCertChainInfoEP15CERTCertListStrPNS_16CertVerifyResultE
+   fun:_ZN3net61_GLOBAL__N_net_base_x509_certificate_nss.cc_00000000_*16GetCertChainInfoEP15CERTCertListStrPNS_16CertVerifyResultE
 }
 {
    bug_58973
