@@ -72,13 +72,14 @@ void InstantController::Update(TabContents* tab_contents,
     return;
   }
 
-  TemplateURLID template_url_id = GetTemplateURLID(match);
+  const TemplateURL* template_url = GetTemplateURL(match);
+  TemplateURLID template_url_id = template_url ? template_url->id() : 0;
 
   if (!loader_manager_.get())
     loader_manager_.reset(new InstantLoaderManager(this));
 
   if (ShouldUpdateNow(template_url_id, match.destination_url)) {
-    UpdateLoader(template_url_id, match.destination_url, match.transition,
+    UpdateLoader(template_url, match.destination_url, match.transition,
                  user_text, suggested_text);
   } else {
     ScheduleUpdate(match.destination_url);
@@ -269,11 +270,11 @@ void InstantController::ProcessScheduledUpdate() {
   // We only delay loading of sites that don't support instant, so we can ignore
   // suggested_text here.
   string16 suggested_text;
-  UpdateLoader(0, scheduled_url_, last_transition_type_, string16(),
+  UpdateLoader(NULL, scheduled_url_, last_transition_type_, string16(),
                &suggested_text);
 }
 
-void InstantController::UpdateLoader(TemplateURLID template_url_id,
+void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      const GURL& url,
                                      PageTransition::Type transition_type,
                                      const string16& user_text,
@@ -282,11 +283,12 @@ void InstantController::UpdateLoader(TemplateURLID template_url_id,
 
   InstantLoader* old_loader = loader_manager_->current_loader();
   scoped_ptr<InstantLoader> owned_loader;
+  TemplateURLID template_url_id = template_url ? template_url->id() : 0;
   InstantLoader* new_loader =
       loader_manager_->UpdateLoader(template_url_id, &owned_loader);
 
   new_loader->SetOmniboxBounds(omnibox_bounds_);
-  new_loader->Update(tab_contents_, template_url_id, url, transition_type,
+  new_loader->Update(tab_contents_, template_url, url, transition_type,
                      user_text, suggested_text);
   if (old_loader != new_loader && new_loader->ready())
     delegate_->ShowInstant(new_loader->preview_contents());
@@ -308,7 +310,7 @@ void InstantController::ClearBlacklist() {
   blacklisted_ids_.clear();
 }
 
-TemplateURLID InstantController::GetTemplateURLID(
+const TemplateURL* InstantController::GetTemplateURL(
     const AutocompleteMatch& match) {
   const TemplateURL* template_url = match.template_url;
   if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
@@ -318,9 +320,10 @@ TemplateURLID InstantController::GetTemplateURLID(
     template_url = model ? model->GetDefaultSearchProvider() : NULL;
   }
   if (template_url && template_url->id() &&
+      template_url->instant_url() &&
       !IsBlacklistedFromInstant(template_url->id()) &&
-      TemplateURL::SupportsReplacement(template_url)) {
-    return template_url->id();
+      template_url->instant_url()->SupportsReplacement()) {
+    return template_url;
   }
-  return 0;
+  return NULL;
 }

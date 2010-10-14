@@ -39,7 +39,7 @@ class InstantLoader {
   // Invoked to load a URL. |tab_contents| is the TabContents the preview is
   // going to be shown on top of and potentially replace.
   void Update(TabContents* tab_contents,
-              TemplateURLID template_url_id,
+              const TemplateURL* template_url,
               const GURL& url,
               PageTransition::Type transition_type,
               const string16& user_text,

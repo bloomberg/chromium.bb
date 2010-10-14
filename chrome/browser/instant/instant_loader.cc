@@ -517,7 +517,7 @@ InstantLoader::~InstantLoader() {
 }
 
 void InstantLoader::Update(TabContents* tab_contents,
-                           TemplateURLID template_url_id,
+                           const TemplateURL* template_url,
                            const GURL& url,
                            PageTransition::Type transition_type,
                            const string16& user_text,
@@ -557,8 +557,8 @@ void InstantLoader::Update(TabContents* tab_contents,
   }
   preview_tab_contents_delegate_->PrepareForNewLoad();
 
-  if (template_url_id) {
-    DCHECK(template_url_id_ == template_url_id);
+  if (template_url) {
+    DCHECK(template_url_id_ == template_url->id());
     if (!created_preview_contents) {
       if (is_waiting_for_load()) {
         // The page hasn't loaded yet. We'll send the script down when it does.
@@ -571,8 +571,14 @@ void InstantLoader::Update(TabContents* tab_contents,
         *suggested_text = complete_suggested_text_.substr(user_text_.size());
       }
     } else {
+      // Load the instant URL. We don't reflect the url we load in url() as
+      // callers expect that we're loading the URL they tell us to.
+      GURL instant_url(
+          template_url->instant_url()->ReplaceSearchTerms(
+              *template_url, UTF16ToWideHack(user_text), -1, std::wstring()));
       initial_instant_url_ = url;
-      preview_contents_->controller().LoadURL(url, GURL(), transition_type);
+      preview_contents_->controller().LoadURL(
+          instant_url, GURL(), transition_type);
       frame_load_observer_.reset(new FrameLoadObserver(this, user_text_));
     }
   } else {

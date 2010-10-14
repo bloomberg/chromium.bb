@@ -136,7 +136,7 @@ class InstantController : public InstantLoaderDelegate {
 
   // Updates InstantLoaderManager and its current InstantLoader. This is invoked
   // internally from Update.
-  void UpdateLoader(TemplateURLID template_url_id,
+  void UpdateLoader(const TemplateURL* template_url,
                     const GURL& url,
                     PageTransition::Type transition_type,
                     const string16& user_text,
@@ -155,9 +155,9 @@ class InstantController : public InstantLoaderDelegate {
   // Clears the set of search engines blacklisted.
   void ClearBlacklist();
 
-  // Returns the id of the template url to use for the specified
-  // AutocompleteMatch.
-  TemplateURLID GetTemplateURLID(const AutocompleteMatch& match);
+  // Returns the TemplateURL to use for the specified AutocompleteMatch, or NULL
+  // if non TemplateURL should be used.
+  const TemplateURL* GetTemplateURL(const AutocompleteMatch& match);
 
   InstantDelegate* delegate_;
 
