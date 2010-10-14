@@ -6,7 +6,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
@@ -14,19 +13,16 @@
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
-#include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/browser/geolocation/mock_location_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/geoposition.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
@@ -104,19 +100,24 @@ class IFrameLoader : public NotificationObserver {
 class GeolocationNotificationObserver : public NotificationObserver {
  public:
   // If |wait_for_infobar| is true, AddWatchAndWaitForNotification will block
-  // until the inforbar has been displayed; otherwise it will block until the
-  // javascript alert box is displayed.
+  // until the infobar has been displayed; otherwise it will block until the
+  // navigation is completed.
   explicit GeolocationNotificationObserver(bool wait_for_infobar)
     : wait_for_infobar_(wait_for_infobar),
       infobar_(NULL),
-      js_prompt_(NULL) {
+      navigation_started_(false),
+      navigation_completed_(false) {
     registrar_.Add(this, NotificationType::DOM_OPERATION_RESPONSE,
                    NotificationService::AllSources());
     if (wait_for_infobar) {
       registrar_.Add(this, NotificationType::TAB_CONTENTS_INFOBAR_ADDED,
                      NotificationService::AllSources());
     } else {
-      registrar_.Add(this, NotificationType::APP_MODAL_DIALOG_SHOWN,
+      registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                     NotificationService::AllSources());
+      registrar_.Add(this, NotificationType::LOAD_START,
+                     NotificationService::AllSources());
+      registrar_.Add(this, NotificationType::LOAD_STOP,
                      NotificationService::AllSources());
     }
   }
@@ -136,8 +137,7 @@ class GeolocationNotificationObserver : public NotificationObserver {
     if (wait_for_infobar_) {
       EXPECT_TRUE(infobar_);
     } else {
-      EXPECT_TRUE(js_prompt_);
-      js_prompt_->CloseModalDialog();
+      EXPECT_TRUE(navigation_completed_);
     }
   }
 
@@ -153,21 +153,29 @@ class GeolocationNotificationObserver : public NotificationObserver {
       Details<DomOperationNotificationDetails> dom_op_details(details);
       javascript_response_ = dom_op_details->json();
       LOG(WARNING) << "javascript_response " << javascript_response_;
-    } else if (type == NotificationType::APP_MODAL_DIALOG_SHOWN) {
-      js_prompt_ = Source<AppModalDialog>(source).ptr();
+    } else if (type == NotificationType::NAV_ENTRY_COMMITTED ||
+               type == NotificationType::LOAD_START) {
+      navigation_started_ = true;
+    } else if (type == NotificationType::LOAD_STOP) {
+      if (navigation_started_) {
+        navigation_started_ = false;
+        navigation_completed_ = true;
+      }
     }
+
     // We're either waiting for just the inforbar, or for both a javascript
     // prompt and response.
     if (wait_for_infobar_ && infobar_)
       MessageLoopForUI::current()->Quit();
-    else if (js_prompt_ && !javascript_response_.empty())
+    else if (navigation_completed_ && !javascript_response_.empty())
       MessageLoopForUI::current()->Quit();
   }
 
   NotificationRegistrar registrar_;
   bool wait_for_infobar_;
   InfoBarDelegate* infobar_;
-  AppModalDialog* js_prompt_;
+  bool navigation_started_;
+  bool navigation_completed_;
   std::string javascript_response_;
 };
 
@@ -291,7 +299,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
       infobar_->AsConfirmInfoBarDelegate()->Accept();
     else
       infobar_->AsConfirmInfoBarDelegate()->Cancel();
-    WaitForJSPrompt();
+    WaitForNavigation();
     tab_contents->RemoveInfoBar(infobar_);
     LOG(WARNING) << "infobar response set";
     infobar_ = NULL;
@@ -304,13 +312,12 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
               settings_state.state_map().find(requesting_origin)->second);
   }
 
-  void WaitForJSPrompt() {
-    LOG(WARNING) << "will block for JS prompt";
-    AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
-    ASSERT_TRUE(alert);
-    LOG(WARNING) << "JS prompt received, will close";
-    alert->CloseModalDialog();
-    LOG(WARNING) << "closed JS prompt";
+  void WaitForNavigation() {
+    LOG(WARNING) << "will block for navigation";
+    NavigationController* controller =
+        &current_browser_->GetSelectedTabContents()->controller();
+    ui_test_utils::WaitForNavigation(controller);
+    LOG(WARNING) << "navigated";
   }
 
   void CheckStringValueFromJavascriptForTab(
@@ -385,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   AddGeolocationWatch(true);
   SetInfobarResponse(current_url_, true);
   // Disables further prompts from this tab.
-  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
+  CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Checks infobar will not be created a second tab.
   ASSERT_TRUE(Initialize(INITIALIZATION_NEWTAB));
@@ -429,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   SetInfobarResponse(current_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this tab.
-  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
+  CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
   // Go off the record, and checks no infobar will be created.
   ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
   AddGeolocationWatch(false);
@@ -446,25 +453,25 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   SetInfobarResponse(iframe0_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this iframe.
-  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
+  CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Test second iframe from a different origin with a cached geoposition will
   // create the infobar.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
 
-  // Back to the first frame, enable alert and refresh geoposition.
+  // Back to the first frame, enable navigation and refresh geoposition.
   iframe_xpath_ = L"//iframe[@id='iframe_0']";
-  CheckStringValueFromJavascript("1", "geoSetMaxAlertCount(1)");
+  CheckStringValueFromJavascript("1", "geoSetMaxNavigateCount(1)");
   // MockLocationProvider must have been created.
   ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition fresh_position = GeopositionFromLatLong(3.17, 4.23);
   NotifyGeoposition(fresh_position);
-  WaitForJSPrompt();
+  WaitForNavigation();
   CheckGeoposition(fresh_position);
 
-  // Disable alert for this frame.
-  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
+  // Disable navigation for this frame.
+  CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Now go ahead an authorize the second frame.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
@@ -474,7 +481,6 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   CheckGeoposition(fresh_position);
   LOG(WARNING) << "...done.";
 }
-
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
@@ -491,19 +497,19 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
   ASSERT_TRUE(MockLocationProvider::instance_);
   Geoposition cached_position = GeopositionFromLatLong(5.67, 8.09);
   NotifyGeoposition(cached_position);
-  WaitForJSPrompt();
+  WaitForNavigation();
   CheckGeoposition(cached_position);
 
-  // Disable alert for this frame.
-  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
+  // Disable navigation for this frame.
+  CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Now go ahead an authorize the second frame.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
   AddGeolocationWatch(true);
   // WebKit will use its cache, but we also broadcast a position shortly
-  // afterwards. We're only interested in the first alert for the success
+  // afterwards. We're only interested in the first navigation for the success
   // callback from the cached position.
-  CheckStringValueFromJavascript("1", "geoSetMaxAlertCount(1)");
+  CheckStringValueFromJavascript("1", "geoSetMaxNavigateCount(1)");
   SetInfobarResponse(iframe1_url_, true);
   CheckGeoposition(cached_position);
 }
@@ -520,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   SetInfobarResponse(iframe0_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
   // Disables further prompts from this iframe.
-  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
+  CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Test second iframe from a different origin with a cached geoposition will
   // create the infobar.
@@ -560,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
   AddGeolocationWatch(true);
   SetInfobarResponse(iframe0_url_, true);
   CheckGeoposition(MockLocationProvider::instance_->position_);
-  CheckStringValueFromJavascript("0", "geoSetMaxAlertCount(0)");
+  CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Permission should be requested after adding a watch.
   iframe_xpath_ = L"//iframe[@id='iframe_1']";
@@ -572,8 +578,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   html_for_tests_ = "files/geolocation/two_watches.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
-  // First, set the JavaScript to popup an alert when it receives
-  // |final_position|.
+  // First, set the JavaScript to navigate when it receives |final_position|.
   const Geoposition final_position = GeopositionFromLatLong(3.17, 4.23);
   std::string script = StringPrintf(
       "window.domAutomationController.send(geoSetFinalPosition(%f, %f))",
@@ -592,6 +597,6 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   // The second watch will now have cancelled. Ensure an update still makes
   // its way through to the first watcher.
   NotifyGeoposition(final_position);
-  WaitForJSPrompt();
+  WaitForNavigation();
   CheckGeoposition(final_position);
 }

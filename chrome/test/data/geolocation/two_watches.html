@@ -8,18 +8,22 @@
     var last_error = 0;
     var final_position_latitude = 0;
     var final_position_longitude = 0;
-    var initial_alert_sent = false;
-
+    var initial_navigation_sent = false;
+    var iteration = 0;
+    function geoNavigate(msg) {
+      ++iteration;
+      document.location.hash = '#' + iteration + ':' + msg;
+    }
     function geoSendInitialAlertIfNeeded() {
-     if (position_1 != 0 && position_2 != 0 && !initial_alert_sent) {
+     if (position_1 != 0 && position_2 != 0 && !initial_navigation_sent) {
        if (position_1.coords.latitude != position_2.coords.latitude ||
            position_1.coords.longitude != position_2.coords.longitude) {
          last_error = "TEST FAIL: watches received different locations. " +
                       " Watch 1 (" + watch_1_id + ") got " + position_1 +
                       " Watch 2 (" + watch_2_id + ") got " + position_2;
        }
-       initial_alert_sent = true;
-       alert("Both watches received initial position");
+       initial_navigation_sent = true;
+       geoNavigate("Both watches received initial position");
      }
     }
     function geoSuccessCallback1(position) {
@@ -27,7 +31,7 @@
       geoSendInitialAlertIfNeeded();
       if (position.coords.latitude == final_position_latitude &&
           position.coords.longitude == final_position_longitude) {
-        alert("Watch ID " + watch_1_id + " got final position.");
+        geoNavigate("Watch ID " + watch_1_id + " got final position.");
       }
     }
     function geoSuccessCallback2(position) {
@@ -37,12 +41,12 @@
       if (position.coords.latitude == final_position_latitude ||
           position.coords.longitude == final_position_longitude) {
         last_error = "TEST FAIL: watch 2 received the final position";
-        alert(last_error);
+        geoNavigate(last_error);
       }
     }
     function geoErrorCallback(error) {
       last_error = error;
-      alert("Got error: " + error);
+      geoNavigate("Got error: " + error);
     }
     function geoStart() {
       watch_1_id = navigator.geolocation.watchPosition(
@@ -57,7 +61,6 @@
         return "Bad watch 2 ID";
       if (watch_1_id == watch_2_id)
         return "Watch 1 & 2 share ID " + watch_1_id;
-      
     }
     function geoGetLastPositionLatitude() {
       return "" + position_1.coords.latitude;

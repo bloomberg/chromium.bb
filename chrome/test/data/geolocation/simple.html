@@ -4,20 +4,23 @@
     var last_position = 0;
     var last_error = 0;
     var watch_id = 0;
-    var alert_count = 0;
-    var max_alert_count = undefined;
-    function geoShowAlertIfNeeded(msg) {
-      if (max_alert_count == undefined || alert_count++ < max_alert_count) {
-        alert(msg);
+    var navigation_count = 0;
+    var max_navigation_count = undefined;
+    var iteration = 0;
+    function geoNavigateIfNeeded(msg) {
+      if (max_navigation_count == undefined ||
+          navigation_count++ < max_navigation_count) {
+        ++iteration;
+        document.location.hash = '#' + iteration + ':' + msg;
       }
     }
     function geoSuccessCallback(position) {
       last_position = position;
-      geoShowAlertIfNeeded('geoSuccessCallback');
+      geoNavigateIfNeeded('geoSuccessCallback');
     }
     function geoErrorCallback(error) {
       last_error = error;
-      geoShowAlertIfNeeded('geoErrorCallback');
+      geoNavigateIfNeeded('geoErrorCallback');
     }
     function geoStart() {
       watch_id = navigator.geolocation.watchPosition(
@@ -34,10 +37,10 @@
     function geoGetLastError() {
       return "" + (last_error ? last_error.code : 0);
     }
-    function geoSetMaxAlertCount(max_alerts) {
-      alert_count = 0;
-      max_alert_count = max_alerts;
-      return "" + max_alert_count;
+    function geoSetMaxNavigateCount(max_navigations) {
+      navigation_count = 0;
+      max_navigation_count = max_navigations;
+      return "" + max_navigation_count;
     }
     function geoAccessNavigatorGeolocation() {
       return "" + typeof(navigator.geolocation);
