@@ -391,6 +391,10 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
   int                 cur_ph;
 
   memset(image.loadable, 0, sizeof image.loadable);
+  if (-1 == (*gp->vtbl->Seek)(gp, 0, 0)) {
+    NaClLog(2, "could not seek to beginning of Gio object containing nexe\n");
+    return 0;
+  }
   if ((*gp->vtbl->Read)(gp,
                         &image.ehdr,
                         sizeof image.ehdr)
