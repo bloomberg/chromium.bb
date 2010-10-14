@@ -1478,6 +1478,8 @@ void CloudPrintProxySection::OnDialogClosed() {
   if (!Enabled()) {
     enable_disable_button_->SetLabel(
         l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON));
+    enable_disable_button_->InvalidateLayout();
+    Layout();
   }
 }
 
