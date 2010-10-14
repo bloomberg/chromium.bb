@@ -4,10 +4,13 @@
 
 #import "chrome/browser/cocoa/reload_button.h"
 
+#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/nsimage_cache_mac.h"
 #include "chrome/app/chrome_dll_resource.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/view_id_util.h"
+#include "grit/generated_resources.h"
 
 namespace {
 
@@ -63,10 +66,12 @@ NSString* const kStopImageName = @"stop_Template.pdf";
   if (isLoading) {
     [self setImage:nsimage_cache::ImageNamed(kStopImageName)];
     [self setTag:IDC_STOP];
+    [self setToolTip:l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STOP)];
     [self setEnabled:YES];
   } else if (force || ![self isMouseInside]) {
     [self setImage:nsimage_cache::ImageNamed(kReloadImageName)];
     [self setTag:IDC_RELOAD];
+    [self setToolTip:l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_RELOAD)];
 
     // This button's cell may not have received a mouseExited event, and
     // therefore it could still think that the mouse is inside the button.  Make

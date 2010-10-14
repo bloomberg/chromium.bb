@@ -282,10 +282,6 @@ class NotificationBridge : public NotificationObserver {
   NSView* toolbarView = [self view];
   [toolbarView addTrackingArea:trackingArea_.get()];
 
-  // We want a dynamic tooltip on the reload button, so tell the
-  // reload button to ask us for the tooltip.
-  [reloadButton_ addToolTipRect:[reloadButton_ bounds] owner:self userData:nil];
-
   // If the user has any Browser Actions installed, the container view for them
   // may have to be resized depending on the width of the toolbar frame.
   [toolbarView setPostsFrameChangedNotifications:YES];
@@ -720,16 +716,6 @@ class NotificationBridge : public NotificationObserver {
 
 - (BrowserActionsController*)browserActionsController {
   return browserActionsController_.get();
-}
-
-- (NSString*)view:(NSView*)view
- stringForToolTip:(NSToolTipTag)tag
-            point:(NSPoint)point
-         userData:(void*)userData {
-  DCHECK(view == reloadButton_);
-
-  return l10n_util::GetNSStringWithFixup(
-      [reloadButton_ tag] == IDC_STOP ? IDS_TOOLTIP_STOP : IDS_TOOLTIP_RELOAD);
 }
 
 // (URLDropTargetController protocol)
