@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Namespace for globals.
-var chromoting = {};
-
 // Message id so that we can identify (and ignore) message fade operations for
 // old messages.  This starts at 1 and is incremented for each new message.
 chromoting.messageId = 1;
@@ -56,7 +53,7 @@ function requestListener(request, sender, sendResponse) {
 }
 
 /**
- * This is that callback that the plugin invokes to indicate that the host/
+ * This is the callback that the plugin invokes to indicate that the host/
  * client connection status has changed.
  */
 function pluginCallback() {
@@ -103,6 +100,62 @@ function showClientStateMessage(message, duration) {
                             "100, 10, 200)",
                       duration);
   }
+}
+
+/**
+ * This is that callback that the plugin invokes to indicate that the
+ * host/client connection status has changed.
+ */
+function pluginCallback() {
+  var status = chromoting.plugin.status;
+  var quality = chromoting.plugin.quality;
+
+  if (status == chromoting.plugin.STATUS_UNKNOWN) {
+    setClientStateMessage('');
+  } else if (status == chromoting.plugin.STATUS_CONNECTING) {
+    setClientStateMessage('Connecting to ' + chromoting.hostname
+                   + ' as ' + chromoting.username);
+  } else if (status == chromoting.plugin.STATUS_INITIALIZING) {
+    setClientStateMessageFade('Initializing connection to ' +
+                              chromoting.hostname);
+  } else if (status == chromoting.plugin.STATUS_CONNECTED) {
+    setClientStateMessageFade('Connected to ' + chromoting.hostname, 1000);
+  } else if (status == chromoting.plugin.STATUS_CLOSED) {
+    setClientStateMessage('Closed');
+  } else if (status == chromoting.plugin.STATUS_FAILED) {
+    setClientStateMessage('Failed');
+  }
+}
+
+/**
+ * Show a client message that stays on the screeen until the state changes.
+ *
+ * @param {string} message The message to display.
+ */
+function setClientStateMessage(message) {
+  // Increment message id to ignore any previous fadeout requests.
+  chromoting.messageId++;
+  console.log('setting message ' + chromoting.messageId);
+
+  // Update the status message.
+  var msg = document.getElementById('status_msg');
+  msg.innerText = message;
+  msg.style.opacity = 1;
+}
+
+/**
+ * Show a client message for the specified amount of time.
+ *
+ * @param {string} message The message to display.
+ * @param {number} duration Milliseconds to show message before fading.
+ */
+function setClientStateMessageFade(message, duration) {
+  setClientStateMessage(message);
+
+  // Set message duration.
+  window.setTimeout("fade('status_msg', " + chromoting.messageId + ", " +
+                          "100, 10, 200)",
+                    duration);
 }
 
 /**

@@ -2,6 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * If there is already a tab with the given URL, switch focus to it. Otherwise,
+ * create a new tab and open the URL.
+ *
+ * @param url The URL to open.
+ */
+function focusOrCreateTab(url) {
+  chrome.windows.getAll({"populate":true}, function(windows) {
+      var existing_tab = null;
+      for (var i in windows) {
+        var tabs = windows[i].tabs;
+        for (var j in tabs) {
+          var tab = tabs[j];
+          if (tab.url == url) {
+            existing_tab = tab;
+            break;
+          }
+        }
+      }
+      if (existing_tab) {
+        chrome.tabs.update(existing_tab.id, {"selected": true});
+      } else {
+        chrome.tabs.create({"url": url, "selected": true});
+      }
+    });
+}
+
+/**
+ * In the current tab, navigate to the specified URL.
+ *
+ * @param url The URL to navigate to.
+ */
+function navigate(url, callback) {
+  chrome.tabs.getSelected(null, function(tab) {
+      chrome.tabs.update(tab.id, {url: url}, callback);
+  });
+}
+
+// Open the Chromoting HostList tab when
+chrome.browserAction.onClicked.addListener(function(tab) {
+    var hostlist_url = chrome.extension.getURL("hostlist.html");
+    focusOrCreateTab(hostlist_url);
+  });
+
+
 function openChromotingTab(hostName, hostJid) {
   var username = getCookie('username');
   var xmppAuth = getCookie('xmpp_auth');
@@ -12,16 +57,13 @@ function openChromotingTab(hostName, hostJid) {
     hostName: hostName,
     hostJid: hostJid,
   };
-  var tabArgs = {
-    url: newTabUrl,
-  };
 
   console.log("Attempt to connect with" +
               " username='" + request.username + "'" +
               " hostName='" + request.hostName + "'" +
               " hostJid='" + request.hostJid + "'" +
               " auth_token='" + request.xmppAuth + "'");
-  chrome.tabs.create(tabArgs, function(tab) {
+  navigate(newTabUrl, function(tab) {
       console.log("We're trying now to send to " + tab.id);
       chrome.tabs.sendRequest(
           tab.id, request, function() {

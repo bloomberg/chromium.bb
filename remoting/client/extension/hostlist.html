@@ -11,19 +11,22 @@ found in the LICENSE file.
     <link rel="stylesheet" type="text/css" href="main.css" />
     <title>Remote Access</title>
   </head>
-  <body class="popup_body" onload="init();">
+  <body class="hostlist_body" onload="init();">
 
     <h1>Remote Access</h1>
 
-    <div id="hostlist_div" class="hostlist">
-      <p class='message'>Initializing...</p>
+    <div id="login_div" class="login">
     </div>
 
     <p class="reload">
-    <a href="javascript:listHosts()">Reload host list</a>
+    <a href="javascript:populateHostList()">Reload host list</a>
     </p>
 
-    <div id="login_div" class="login">
+    <input type=checkbox name="show_offline" id="show_offline"
+      onClick="updateShowOfflineHosts(this)"/>Show offline hosts
+
+    <div id="hostlist_div" class="hostlist">
+      <p class='message'>Initializing...</p>
     </div>
 
     <br />

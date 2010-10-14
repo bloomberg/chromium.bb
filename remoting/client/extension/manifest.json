@@ -1,10 +1,10 @@
 {
   "name": "Chromoting Client",
   "version": "1.0",
-  "description": "Lists the hosts that the user can access.",
+  "description": "Lists the Chromoting hosts that the current user can access.",
   "browser_action": {
     "default_icon": "chromoticon.png",
-    "popup": "popup.html"
+    "default_title": "Chromoting"
   },
   "background_page": "background.html",
   "permissions": [

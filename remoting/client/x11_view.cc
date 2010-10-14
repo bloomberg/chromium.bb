@@ -139,7 +139,6 @@ void X11View::SetConnectionState(ConnectionState s) {
 
 void X11View::SetViewport(int x, int y, int width, int height) {
   // TODO(garykac): Implement.
-  // NOTIMPLEMENTED();
 }
 
 void X11View::InitPaintTarget() {

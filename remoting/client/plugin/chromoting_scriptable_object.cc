@@ -30,6 +30,7 @@ void ChromotingScriptableObject::Init() {
 
   // Connection status.
   AddAttribute(kStatusAttribute, Var(STATUS_UNKNOWN));
+
   // Connection status values.
   AddAttribute("STATUS_UNKNOWN", Var(STATUS_UNKNOWN));
   AddAttribute("STATUS_CONNECTING", Var(STATUS_CONNECTING));
@@ -40,6 +41,8 @@ void ChromotingScriptableObject::Init() {
 
   // Connection quality.
   AddAttribute(kQualityAttribute, Var(QUALITY_UNKNOWN));
+
+  // Connection quality values.
   AddAttribute("QUALITY_UNKNOWN", Var(QUALITY_UNKNOWN));
   AddAttribute("QUALITY_GOOD", Var(QUALITY_GOOD));
   AddAttribute("QUALITY_BAD", Var(QUALITY_BAD));
@@ -64,8 +67,8 @@ bool ChromotingScriptableObject::HasProperty(const Var& name, Var* exception) {
 
   // TODO(ajwong): Investigate why ARM build breaks if you do:
   //    properties_[iter->second].method == NULL;
-  // Somehow the ARM compiler is thinking that the above is using
-  // NULL as an arithmetic expression.
+  // Somehow the ARM compiler is thinking that the above is using NULL as an
+  // arithmetic expression.
   return properties_[iter->second].method == 0;
 }
 

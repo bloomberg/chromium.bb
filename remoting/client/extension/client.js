@@ -2,14 +2,41 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Flag to indicate whether or not to show offline hosts in the host list.
+chromoting.showOfflineHosts = true;
+
+// String to identify bad auth tokens.
 var BAD_AUTH_TOKEN = 'bad_token';
+
+// Number of days before auth token cookies expire.
+// TODO(garykac): 21 days is arbitrary. Need to change this to the appropriate
+// value from security review.
+var AUTH_EXPIRES = 21;
 
 function init() {
   updateLoginStatus();
 
   // Defer getting the host list for a little bit so that we don't
   // block the display of the extension popup.
-  window.setTimeout(listHosts, 100);
+  window.setTimeout(populateHostList, 100);
+
+  var showOff = getCookie('offline');
+  chromoting.showOfflineHosts = (!showOff || showOff == '1');
+  updateShowOfflineCheckbox();
+}
+
+function updateShowOfflineHosts(cbox) {
+  chromoting.showOfflineHosts = cbox.checked;
+
+  // Save pref in cookie with long expiration.
+  setCookie('offline', chromoting.showOfflineHosts ? '1' : '0', 1000);
+
+  populateHostList();
+}
+
+function updateShowOfflineCheckbox() {
+  var cbox = document.getElementById('show_offline');
+  cbox.checked = chromoting.showOfflineHosts;
 }
 
 // Update the login status region (at the bottom of the popup) with the
@@ -44,12 +71,12 @@ function updateLoginStatus() {
 
 // Sign out the current user by erasing the auth cookies.
 function logout(form) {
-  setCookie('username', '', 100);
-  setCookie('chromoting_auth', '', 100);
-  setCookie('xmpp_auth', '', 100);
+  setCookie('username', '', AUTH_EXPIRES);
+  setCookie('chromoting_auth', '', AUTH_EXPIRES);
+  setCookie('xmpp_auth', '', AUTH_EXPIRES);
 
   updateLoginStatus();
-  listHosts();
+  populateHostList();
 }
 
 function login(form) {
@@ -69,7 +96,7 @@ function checkLogin() {
   if (cauth == BAD_AUTH_TOKEN || xauth == BAD_AUTH_TOKEN) {
     appendMessage(status, '', 'Sign in failed!');
     if (username) {
-      setCookie('username', '', 100);
+      setCookie('username', '', AUTH_EXPIRES);
     }
   } else {
     appendMessage(status, '', 'Successfully signed in as ' + username);
@@ -85,15 +112,15 @@ function doLogin(username, password, done) {
       done();
     }
   }
-  setCookie('username', username, 100);
+  setCookie('username', username, AUTH_EXPIRES);
   doGaiaLogin(username, password, 'chromoting',
               function(cAuthToken) {
-                setCookie('chromoting_auth', cAuthToken, 100);
+                setCookie('chromoting_auth', cAuthToken, AUTH_EXPIRES);
                 barrier();
               });
   doGaiaLogin(username, password, 'chromiumsync',
               function(xAuthToken) {
-                setCookie('xmpp_auth', xAuthToken, 100);
+                setCookie('xmpp_auth', xAuthToken, AUTH_EXPIRES);
                 barrier();
               });
 }
@@ -158,7 +185,7 @@ function appendMessage(e, classname, message) {
   e.appendChild(p);
 }
 
-function listHosts() {
+function populateHostList() {
   var username = getCookie('username');
 
   var hostlistDiv = document.getElementById('hostlist_div');
@@ -217,19 +244,40 @@ function appendHostLinks(hostlist) {
   // Clear the div before adding the host info.
   clear(hostlistDiv);
 
+  var numHosts = 0;
+  var numOfflineHosts = 0;
+
   // Add the hosts.
-  // TODO(garykac): We should have some sort of MRU list here.
+  // TODO(garykac): We should have some sort of MRU list here or have
+  // the Chromoting Directory provide a MRU list.
   // First, add all of the connected hosts.
   for (var i = 0; i < hostlist.length; ++i) {
     if (hostlist[i].status == "ONLINE") {
       hostlistDiv.appendChild(addHostInfo(hostlist[i]));
+      numHosts++;
     }
   }
   // Add non-online hosts at the end.
   for (var i = 0; i < hostlist.length; ++i) {
     if (hostlist[i].status != "ONLINE") {
-      hostlistDiv.appendChild(addHostInfo(hostlist[i]));
+      if (chromoting.showOfflineHosts == 1) {
+        hostlistDiv.appendChild(addHostInfo(hostlist[i]));
+        numHosts++;
+      }
+      numOfflineHosts++;
     }
+  }
+
+  if (numHosts == 0) {
+    var message;
+    if (numOfflineHosts == 0) {
+      message = 'No hosts available.';
+    } else {
+      message = 'No online hosts available (' +
+          numOfflineHosts + ' offline hosts).';
+    }
+    message += ' See LINK for info on how to set up a new host.';
+    displayMessage(hostlistDiv, 'message', message);
   }
 }
 
@@ -243,29 +291,31 @@ function addHostInfo(host) {
   hostIcon.setAttribute('class', 'hosticon');
   hostEntry.appendChild(hostIcon);
 
-  var span = document.createElement('span');
-  span.setAttribute('class', 'connect');
-  var connect = document.createElement('input');
-  connect.setAttribute('type', 'button');
-  connect.setAttribute('value', 'Connect');
-  connect.setAttribute('onclick', "openChromotingTab('" + host.hostName +
-                       "', '" + host.jabberId + "'); return false;");
-  span.appendChild(connect);
-  hostEntry.appendChild(span);
+  if (host.status == 'ONLINE') {
+    var span = document.createElement('span');
+    span.setAttribute('class', 'connect');
+    var connect = document.createElement('input');
+    connect.setAttribute('type', 'button');
+    connect.setAttribute('value', 'Connect');
+    connect.setAttribute('onclick', "openChromotingTab('" + host.hostName +
+                         "', '" + host.jabberId + "'); return false;");
+    span.appendChild(connect);
+    hostEntry.appendChild(span);
+  }
 
   var hostName = document.createElement('p');
-  hostName.setAttribute('class', 'hostname');
+  hostName.setAttribute('class', 'hostindent hostname');
   hostName.appendChild(document.createTextNode(host.hostName));
   hostEntry.appendChild(hostName);
 
   var hostStatus = document.createElement('p');
-  hostStatus.setAttribute('class', 'hostinfo hoststatus_' +
+  hostStatus.setAttribute('class', 'hostindent hostinfo hoststatus_' +
                           ((host.status == 'ONLINE') ? 'good' : 'bad'));
   hostStatus.appendChild(document.createTextNode(host.status));
   hostEntry.appendChild(hostStatus);
 
   var hostInfo = document.createElement('p');
-  hostInfo.setAttribute('class', 'hostinfo');
+  hostInfo.setAttribute('class', 'hostindent hostinfo');
   hostInfo.appendChild(document.createTextNode(host.jabberId));
   hostEntry.appendChild(hostInfo);
 
