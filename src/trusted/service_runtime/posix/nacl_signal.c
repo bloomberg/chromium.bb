@@ -8,8 +8,8 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/ucontext.h>
 #include <unistd.h>
-#include <ucontext.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
