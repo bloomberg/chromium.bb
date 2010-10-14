@@ -3338,6 +3338,8 @@
           'sources!': [
             'browser/dom_ui/keyboard_ui.cc',
             'browser/dom_ui/keyboard_ui.h',
+            'browser/renderer_host/render_widget_host_view_views.cc',
+            'browser/renderer_host/render_widget_host_view_views.h',
           ],
         }],
         ['touchui==1', {
@@ -3611,8 +3613,6 @@
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
             'browser/power_save_blocker_stub.cc',
-            'browser/renderer_host/render_widget_host_view_views.cc',
-            'browser/renderer_host/render_widget_host_view_views.h',
             'browser/views/select_file_dialog.cc',
           ],
           'conditions': [
