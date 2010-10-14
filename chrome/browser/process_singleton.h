@@ -13,7 +13,7 @@
 #endif
 
 #include "base/basictypes.h"
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(OS_MACOSX)
 #include "base/file_path.h"
 #endif
 #include "base/logging.h"
@@ -152,6 +152,14 @@ class ProcessSingleton : public NonThreadSafe {
   // because it posts messages between threads.
   class LinuxWatcher;
   scoped_refptr<LinuxWatcher> watcher_;
+#elif defined(OS_MACOSX)
+  // Path in file system to the lock.
+  FilePath lock_path_;
+
+  // File descriptor associated with the lockfile, valid between
+  // |Create()| and |Cleanup()|.  Two instances cannot have a lock on
+  // the same file at the same time.
+  int lock_fd_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProcessSingleton);

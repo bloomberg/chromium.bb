@@ -1387,6 +1387,7 @@
         'browser/printing/print_dialog_cloud_unittest.cc',
         'browser/printing/print_job_unittest.cc',
         'browser/process_info_snapshot_mac_unittest.cc',
+        'browser/process_singleton_mac_unittest.cc',
         'browser/profile_manager_unittest.cc',
         'browser/renderer_host/audio_renderer_host_unittest.cc',
         'browser/renderer_host/gtk_im_context_wrapper_unittest.cc',
