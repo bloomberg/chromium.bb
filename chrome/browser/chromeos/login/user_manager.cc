@@ -299,7 +299,7 @@ void UserManager::SetDefaultUserImage(const std::string& username) {
   const ListValue* prefs_users = local_state->GetList(kLoggedInUsers);
   DCHECK(prefs_users);
   const DictionaryValue* prefs_images =
-      local_state->GetDictionary(kUserImages);
+      local_state->GetMutableDictionary(kUserImages);
   DCHECK(prefs_images);
 
   // We want to distribute default images between users uniformly so that if
