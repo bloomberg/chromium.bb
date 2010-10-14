@@ -252,6 +252,17 @@ typedef nacl_abi___time_t nacl_abi_time_t;
  */
 #define NACL_NO_STRIP(t) nacl_ ## abi_ ## t
 
+/*
+ * NO_STRIP blocks stripping of NACL_ABI_ from any symbols between the
+ * #define and #undef.  This causes NACL_ABI_WORDSIZE to be undefined below
+ * in the NACL_PRI?NACL_SIZE macros.  If it is not defined and we are in
+ * __native_client__, then define it in terms of WORDSIZE, which is the
+ * stripped result of the #define above.
+ */
+#if defined(__native_client__) && !defined(NACL_ABI_WORDSIZE)
+#define NACL_ABI_WORDSIZE WORDSIZE
+#endif  /* defined(__native_client__) && !defined(NACL_ABI_WORDSIZE) */
+
 #ifndef nacl_abi_size_t_defined
 #define nacl_abi_size_t_defined
 typedef uint32_t NACL_NO_STRIP(size_t);
@@ -265,10 +276,10 @@ typedef uint32_t NACL_NO_STRIP(size_t);
 typedef int32_t NACL_NO_STRIP(ssize_t);
 #endif
 
-#define NACL_ABI_SSIZE_T_MIN \
-  ((nacl_abi_ssize_t) 1 << (NACL_ABI_WORDSIZE - 1))
 #define NACL_ABI_SSIZE_T_MAX \
-  (~((nacl_abi_ssize_t) 1 << (NACL_ABI_WORDSIZE - 1)))
+  ((nacl_abi_ssize_t) (NACL_ABI_SIZE_T_MAX >> 1))
+#define NACL_ABI_SSIZE_T_MIN \
+  (~NACL_ABI_SSIZE_T_MAX)
 
 #define NACL_PRIdNACL_SIZE NACL_PRI_(d, NACL_ABI_WORDSIZE)
 #define NACL_PRIiNACL_SIZE NACL_PRI_(i, NACL_ABI_WORDSIZE)
