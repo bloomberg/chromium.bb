@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -82,9 +83,18 @@ void WifiConfigView::UpdateCanLogin(void) {
   }
 }
 
+void WifiConfigView::UpdateCanViewPassword() {
+  if (!passphrase_visible_button_->IsVisible() &&
+      passphrase_textfield_->text().empty()) {
+    // Once initial password has been deleted, it's safe to show field content.
+    passphrase_visible_button_->SetVisible(true);
+  }
+}
+
 void WifiConfigView::ContentsChanged(views::Textfield* sender,
                                      const string16& new_contents) {
   UpdateCanLogin();
+  UpdateCanViewPassword();
 }
 
 bool WifiConfigView::HandleKeystroke(
@@ -311,6 +321,11 @@ void WifiConfigView::Init() {
         GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
     passphrase_visible_button_->SetImageAlignment(
         views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
+    // Disable viewing password by unauthenticated user.
+    if (!wifi_.passphrase().empty() &&
+        chromeos::UserManager::Get()->logged_in_user().email().empty()) {
+      passphrase_visible_button_->SetVisible(false);
+    }
     layout->AddView(passphrase_visible_button_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }

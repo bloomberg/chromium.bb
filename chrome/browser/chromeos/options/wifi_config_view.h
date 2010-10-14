@@ -72,7 +72,11 @@ class WifiConfigView : public views::View,
   // Initializes UI.
   void Init();
 
+  // Updates state of the Login button.
   void UpdateCanLogin();
+
+  // Updates state of the "view password" button.
+  void UpdateCanViewPassword();
 
   NetworkConfigView* parent_;
 
