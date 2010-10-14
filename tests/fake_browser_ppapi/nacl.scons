@@ -14,6 +14,13 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   # to fail.
   Return()
 
+if env.Bit('disable_hardy64_vmware_failures'):
+  # Platform qualification check is unreliable on vmware test bots.
+  # Ideally, this test would accept the sel_ldr -Q option, but for now,
+  # we skip this test on hardy64 bots.
+  Return()
+
+
 trusted_env = env['TRUSTED_ENV'].Clone()
 
 if not trusted_env.Bit('mac'):

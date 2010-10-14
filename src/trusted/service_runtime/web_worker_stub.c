@@ -27,6 +27,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
@@ -139,6 +140,12 @@ int NaClStartNativeWebWorker(char *buffer,
    * Ensure this operating system platform is supported.
    */
   if (!NaClOsIsSupported()) {
+    goto done;
+  }
+  /*
+   * Ensure this platform has Data Execution Prevention enabled.
+   */
+  if (!NaClCheckDEP()) {
     goto done;
   }
   /*

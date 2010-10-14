@@ -49,9 +49,9 @@ if env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_ARCHITECTURE'] == 'x86':
 
   if env['TARGET_SUBARCH'] == '64':
     # Compile x86-64 primitives for verifying NX functionality
-    pql_inputs += ['arch/x86_64/nacl_dep_qualify.c']
+    pql_inputs += ['arch/x86_64/nacl_dep_qualify_arch.c']
   elif env['TARGET_SUBARCH'] == '32':
-    pql_inputs += ['arch/x86_32/nacl_dep_qualify.c']
+    pql_inputs += ['arch/x86_32/nacl_dep_qualify_arch.c']
 
 # TODO(bradchen): re-enable when issue 440 is fixed
 #  env.ComponentProgram('platform_qual_test',
@@ -63,7 +63,7 @@ if env['BUILD_ARCHITECTURE'] == 'x86' and env['TARGET_ARCHITECTURE'] == 'x86':
 
 if env['BUILD_ARCHITECTURE'] == 'arm':
   # Compile ARM primitives for checking XN functionality
-  pql_inputs += ['arch/arm/nacl_dep_qualify.c']
+  pql_inputs += ['arch/arm/nacl_dep_qualify_arch.c']
 
 
 # ----------------------------------------------------------
@@ -77,4 +77,3 @@ env.DualLibrary('platform_qual_lib', pql_inputs)
 # TODO(bradnelson): figure out a way to get coverage working for these.
 if env.Bit('windows') and env.get('COVERAGE_ENABLED'):
   Return()
-

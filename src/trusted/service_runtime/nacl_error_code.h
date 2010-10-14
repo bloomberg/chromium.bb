@@ -19,6 +19,7 @@ typedef enum NaClErrorCode {
   LOAD_OK,
   LOAD_STATUS_UNKNOWN,  /* load status not available yet */
   LOAD_UNSUPPORTED_OS_PLATFORM,
+  LOAD_DEP_UNSUPPORTED,
   LOAD_INTERNAL,
   LOAD_READ_ERROR,
   LOAD_TOO_MANY_PROG_HDRS,

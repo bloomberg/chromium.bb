@@ -28,6 +28,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
+#include "native_client/src/trusted/platform_qualify/nacl_dep_qualify.h"
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
 #ifdef NACL_BREAKPAD
@@ -444,6 +445,17 @@ int main(int  ac,
    */
   if (!skip_qualification && !NaClOsIsSupported()) {
     errcode = LOAD_UNSUPPORTED_OS_PLATFORM;
+    nap->module_load_status = errcode;
+    fprintf(stderr, "Error while loading \"%s\": %s\n",
+            nacl_file,
+            NaClErrorString(errcode));
+  }
+
+  /*
+   * Ensure this platform has Data Execution Prevention enabled.
+   */
+  if (!skip_qualification && !NaClCheckDEP()) {
+    errcode = LOAD_DEP_UNSUPPORTED;
     nap->module_load_status = errcode;
     fprintf(stderr, "Error while loading \"%s\": %s\n",
             nacl_file,

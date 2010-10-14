@@ -410,6 +410,8 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "Load status unknown (load incomplete)";
     case LOAD_UNSUPPORTED_OS_PLATFORM:
       return "Operating system platform is not supported";
+    case LOAD_DEP_UNSUPPORTED:
+      return "Data Execution Prevention is required but is not supported";
     case LOAD_INTERNAL:
       return "Internal error";
     case LOAD_READ_ERROR:

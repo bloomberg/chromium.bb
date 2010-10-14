@@ -51,13 +51,19 @@
           # x86-32 specifics
           ['target_arch=="ia32"', {
             'sources': [
-              'arch/x86_32/nacl_dep_qualify.c',
+              'arch/x86_32/nacl_dep_qualify_arch.c',
             ],
           }],
           # x86-64 specifics
           ['target_arch=="x64"', {
             'sources': [
-              'arch/x86_64/nacl_dep_qualify.c',
+              'arch/x86_64/nacl_dep_qualify_arch.c',
+            ],
+          }],
+          # arm specifics
+          ['target_arch=="arm"', {
+            'sources': [
+              'arch/arm/nacl_dep_qualify_arch.c',
             ],
           }],
         ],

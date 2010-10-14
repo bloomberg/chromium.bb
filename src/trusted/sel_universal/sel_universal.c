@@ -61,7 +61,7 @@ int main(int  argc, char *argv[]) {
   const char**               module_argv;
   static const char*         kFixedArgs[] = { "-X", "5" };
   int                        pass_debug = 0;
-
+  int                        pass_pq_disable = 0;
 
   /* Descriptor transfer requires the following. */
   NaClNrdAllModulesInit();
@@ -79,7 +79,10 @@ int main(int  argc, char *argv[]) {
         NaClLogIncrVerbosity();
         break;
       case 'Q':
-        /* TODO(cbiffle): disable platform qualification, once it's used here */
+        /* TODO(cbiffle): pass this in the sel_ldr flags portion of the
+           sel_universal commandline options. I.e., fix scons invocations
+           etc. so that we don't need this special case here */
+        pass_pq_disable = 1;
         break;
       default:
        fputs(kUsage, stderr);
@@ -125,7 +128,7 @@ int main(int  argc, char *argv[]) {
    * Prepend the fixed arguments to the command line.
    */
   sel_ldr_argv =
-    (const char**) malloc((pass_debug + sel_ldr_argc
+    (const char**) malloc((pass_debug + pass_pq_disable + sel_ldr_argc
                            + NACL_ARRAY_SIZE(kFixedArgs)) *
                           sizeof(*sel_ldr_argv));
   for (n = 0; n < NACL_ARRAY_SIZE(kFixedArgs); ++n) {
@@ -137,13 +140,17 @@ int main(int  argc, char *argv[]) {
   if (pass_debug) {
     sel_ldr_argv[sel_ldr_argc + NACL_ARRAY_SIZE(kFixedArgs)] = "-d";
   }
+  if (pass_pq_disable) {
+    sel_ldr_argv[sel_ldr_argc + NACL_ARRAY_SIZE(kFixedArgs) + pass_debug] =
+        "-Q";
+  }
 
   /*
    * Start sel_ldr with the given application and arguments.
    */
   launcher = NaClSelLdrStart(application_name,
                              5,
-                             (pass_debug + sel_ldr_argc
+                             (pass_debug + pass_pq_disable + sel_ldr_argc
                               + NACL_ARRAY_SIZE(kFixedArgs)),
                              (const char**) sel_ldr_argv,
                              module_argc,
