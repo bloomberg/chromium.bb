@@ -52,7 +52,7 @@ uint32_t RecommendSampleFrameCount(uint32_t requested_sample_frame_count) {
 
 bool IsAudioConfig(PP_Resource resource) {
   scoped_refptr<AudioConfig> config = Resource::GetAs<AudioConfig>(resource);
-  return config;
+  return !!config;
 }
 
 PP_AudioSampleRate_Dev GetSampleRate(PP_Resource config_id) {
@@ -89,7 +89,7 @@ PP_Resource Create(PP_Instance instance_id, PP_Resource config_id,
 
 bool IsAudio(PP_Resource resource) {
   scoped_refptr<Audio> audio = Resource::GetAs<Audio>(resource);
-  return audio;
+  return !!audio;
 }
 
 PP_Resource GetCurrentConfiguration(PP_Resource audio_id) {
