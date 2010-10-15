@@ -68,11 +68,7 @@ ProcessHandle RendererMainTest::SpawnChild(const std::string& procname,
 // Listener class that kills the message loop when it connects.
 class SuicidalListener : public IPC::Channel::Listener {
  public:
-  explicit SuicidalListener(bool* suicide_success)
-      : suicide_success_(suicide_success) {}
-
   void OnChannelConnected(int32 peer_pid) {
-    *suicide_success_ = true;
     MessageLoop::current()->Quit();
   }
 
@@ -80,9 +76,6 @@ class SuicidalListener : public IPC::Channel::Listener {
     // We shouldn't receive any messages
     ASSERT_TRUE(false);
   }
-
-  // A flag that we set when we have successfully suicided.
-  bool* suicide_success_;
 };
 
 MULTIPROCESS_TEST_MAIN(SimpleRenderer) {
@@ -95,8 +88,7 @@ MULTIPROCESS_TEST_MAIN(SimpleRenderer) {
 }
 
 TEST_F(RendererMainTest, CreateDestroy) {
-  bool suicide_success = false;
-  SuicidalListener listener(&suicide_success);
+  SuicidalListener listener;
   IPC::Channel control_channel(kRendererTestChannelName,
                                IPC::Channel::MODE_SERVER,
                                &listener);
@@ -105,13 +97,9 @@ TEST_F(RendererMainTest, CreateDestroy) {
 
   ASSERT_TRUE(control_channel.Connect());
 
-  // The SuicidalListener *should* cause the following MessageLoop run
-  // to quit, but just in case it doesn't, insert a QuitTask at the back
-  // of the queue.
   MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
                                           TestTimeouts::action_timeout_ms());
   MessageLoop::current()->Run();
-  ASSERT_TRUE(suicide_success);
 
   // The renderer should exit when we close the channel.
   control_channel.Close();
