@@ -152,7 +152,8 @@ TEST(EtwTraceControllerTest, StartFileSession) {
   EXPECT_STREQ(L"", controller.session_name());
 }
 
-TEST(EtwTraceControllerTest, EnableDisable) {
+// Flaky, http://crbug.com/59328.
+TEST(EtwTraceControllerTest, FLAKY_EnableDisable) {
   TestingProvider provider(kTestProvider);
 
   EXPECT_EQ(ERROR_SUCCESS, provider.Register());
