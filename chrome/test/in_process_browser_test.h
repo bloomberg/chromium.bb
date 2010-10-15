@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,11 +70,12 @@ class InProcessBrowserTest : public testing::Test {
   // Override this rather than TestBody.
   virtual void RunTestOnMainThread() = 0;
 
-  // Helper to initialize the user data directory.  Called by SetUp() after
-  // erasing the user data directory, but before any browser is launched.
-  // If a test wishes to set up some initial non-empty state in the user
-  // data directory before the browser starts up, it can do so here.
-  virtual void SetUpUserDataDirectory() {};
+  // Initializes the contents of the user data directory. Called by SetUp()
+  // after creating the user data directory, but before any browser is launched.
+  // If a test wishes to set up some initial non-empty state in the user data
+  // directory before the browser starts up, it can do so here. Returns true if
+  // successful.
+  virtual bool SetUpUserDataDirectory() WARN_UNUSED_RESULT { return true; }
 
   // We need these special methods because InProcessBrowserTest::SetUp is the
   // bottom of the stack that winds up calling your test method, so it is not
@@ -123,6 +125,10 @@ class InProcessBrowserTest : public testing::Test {
   }
 
  private:
+  // Creates a user data directory for the test if one is needed. Returns true
+  // if successful.
+  virtual bool CreateUserDataDirectory() WARN_UNUSED_RESULT;
+
   // This is invoked from main after browser_init/browser_main have completed.
   // This prepares for the test by creating a new browser, runs the test
   // (RunTestOnMainThread), quits the browsers and returns.
@@ -158,6 +164,10 @@ class InProcessBrowserTest : public testing::Test {
 
   // Host resolver to use during the test.
   scoped_refptr<net::RuleBasedHostResolverProc> host_resolver_;
+
+  // Temporary user data directory. Used only when a user data directory is not
+  // specified in the command line.
+  ScopedTempDir temp_user_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessBrowserTest);
 };

@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_nsautorelease_pool.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/browser.h"
@@ -115,17 +114,9 @@ void InProcessBrowserTest::SetUp() {
   CommandLine* command_line = CommandLine::ForCurrentProcessMutable();
   original_command_line_.reset(new CommandLine(*command_line));
 
-  // Update the information about user data directory location before calling
-  // BrowserMain().  In some cases there will be no --user-data-dir switch (for
-  // example, when debugging).  If there is no switch, do nothing.
-  FilePath user_data_dir =
-      command_line->GetSwitchValuePath(switches::kUserDataDir);
-  if (user_data_dir.empty()) {
-    // TODO(rohitrao): Create a ScopedTempDir here if people have problems.
-    LOG(ERROR) << "InProcessBrowserTest is using the default user data dir.";
-  } else {
-    ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir));
-  }
+  // Create a temporary user data directory if required.
+  ASSERT_TRUE(CreateUserDataDirectory())
+      << "Could not create user data directory.";
 
   // The unit test suite creates a testingbrowser, but we want the real thing.
   // Delete the current one. We'll install the testing one in TearDown.
@@ -134,7 +125,8 @@ void InProcessBrowserTest::SetUp() {
 
   // Allow subclasses the opportunity to make changes to the default user data
   // dir before running any tests.
-  SetUpUserDataDirectory();
+  ASSERT_TRUE(SetUpUserDataDirectory())
+      << "Could not set up user data directory.";
 
   // Don't delete the resources when BrowserMain returns. Many ui classes
   // cache SkBitmaps in a static field so that if we delete the resource
@@ -153,8 +145,6 @@ void InProcessBrowserTest::SetUp() {
 
   if (dom_automation_enabled_)
     command_line->AppendSwitch(switches::kDomAutomationController);
-
-  command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 
   // This is a Browser test.
   command_line->AppendSwitchASCII(switches::kTestType, kBrowserTestType);
@@ -245,6 +235,23 @@ void InProcessBrowserTest::SetUp() {
 
   BrowserMain(params);
   TearDownInProcessBrowserTestFixture();
+}
+
+bool InProcessBrowserTest::CreateUserDataDirectory() {
+  CommandLine* command_line = CommandLine::ForCurrentProcessMutable();
+  FilePath user_data_dir =
+      command_line->GetSwitchValuePath(switches::kUserDataDir);
+  if (user_data_dir.empty()) {
+    if (temp_user_data_dir_.CreateUniqueTempDir() &&
+        temp_user_data_dir_.IsValid()) {
+      user_data_dir = temp_user_data_dir_.path();
+    } else {
+      LOG(ERROR) << "Could not create temporary user data directory \""
+                 << temp_user_data_dir_.path().value() << "\".";
+      return false;
+    }
+  }
+  return test_launcher_utils::OverrideUserDataDir(user_data_dir);
 }
 
 void InProcessBrowserTest::TearDown() {
