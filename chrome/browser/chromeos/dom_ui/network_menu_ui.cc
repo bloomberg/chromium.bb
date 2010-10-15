@@ -10,7 +10,9 @@
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
+#include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -50,8 +52,21 @@ void NetworkMenuHandler::RegisterMessages() {
 
 void NetworkMenuHandler::HandleAction(const ListValue* values) {
   menus::MenuModel* model = GetMenuModel();
-  if (model)
-    static_cast<chromeos::NetworkMenuUI*>(dom_ui_)->ModelAction(model, values);
+  if (model) {
+    chromeos::NetworkMenuUI* network_menu_ui =
+        static_cast<chromeos::NetworkMenuUI*>(dom_ui_);
+    bool close_menu = network_menu_ui->ModelAction(model, values);
+    if (close_menu) {
+      chromeos::DOMUIMenuWidget* widget
+          = chromeos::DOMUIMenuWidget::FindDOMUIMenuWidget(
+              dom_ui_->tab_contents()->GetNativeView());
+      if (widget) {
+        chromeos::NativeMenuDOMUI* domui_menu = widget->domui_menu();
+        if (domui_menu)
+          domui_menu->Hide();
+      }
+    }
+  }
 }
 
 NetworkMenuHandler::NetworkMenuHandler() {
@@ -100,15 +115,16 @@ void NetworkMenuUI::AddLocalizedStrings(
       l10n_util::GetStringUTF16(IDS_NETWORK_PASSWORD_HINT));
 }
 
-void NetworkMenuUI::ModelAction(const menus::MenuModel* model,
+bool NetworkMenuUI::ModelAction(const menus::MenuModel* model,
                                 const ListValue* values) {
   const NetworkMenu* network_menu = static_cast<const NetworkMenu*>(model);
   std::string action;
   bool success = values->GetString(0, &action);
+  bool close_menu = true;
   if (!success) {
     LOG(WARNING) << "ModelAction called with no arguments from: "
                  << chrome::kChromeUINetworkMenu;
-    return;
+    return close_menu;
   }
   int index;
   std::string index_str;
@@ -117,18 +133,25 @@ void NetworkMenuUI::ModelAction(const menus::MenuModel* model,
   if (!success) {
     LOG(WARNING) << "ModelAction called with no index from: "
                  << chrome::kChromeUINetworkMenu;
-    return;
+    return close_menu;
   }
   std::string passphrase;
   values->GetString(2, &passphrase);  // Optional
-  std::string identity;
-  values->GetString(3, &identity);  // Optional
+  std::string ssid;
+  values->GetString(3, &ssid);  // Optional
+  int remember = -1;  // -1 indicates not set
+  std::string remember_str;
+  if (values->GetString(4, &remember_str))  // Optional
+    base::StringToInt(remember_str, &remember);
+
   if (action == "connect" || action == "reconnect") {
-    network_menu->ConnectToNetworkAt(index, passphrase, identity);
+    close_menu = network_menu->ConnectToNetworkAt(index, passphrase, ssid,
+                                                  remember);
   } else {
     LOG(WARNING) << "Unrecognized action: " << action
                  << " from: " << chrome::kChromeUINetworkMenu;
   }
+  return close_menu;
 }
 
 DictionaryValue* NetworkMenuUI::CreateMenuItem(const menus::MenuModel* model,

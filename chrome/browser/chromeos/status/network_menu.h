@@ -75,9 +75,12 @@ class NetworkMenu : public views::ViewMenuDelegate,
   bool GetNetworkAt(int index, NetworkInfo* info) const;
 
   // Connect or reconnect to the network at |index|.
-  void ConnectToNetworkAt(int index,
+  // If remember >= 0, set the favorite state of the network.
+  // Returns true if a connect occurred (e.g. menu should be closed).
+  bool ConnectToNetworkAt(int index,
                           const std::string& passphrase,
-                          const std::string& identity) const;
+                          const std::string& ssid,
+                          int remember) const;
 
   // menus::MenuModel implementation.
   virtual bool HasIcons() const  { return true; }
@@ -169,11 +172,17 @@ class NetworkMenu : public views::ViewMenuDelegate,
   void InitMenuItems();
 
   // Shows network details in DOM UI options window.
-  void ShowTabbedNetworkSettings(const Network& network);
+  void ShowTabbedNetworkSettings(const Network& network) const;
 
   // Show a NetworkConfigView modal dialog instance.
   // TODO(stevenjb): deprecate this once all of the UI is embedded in the menu.
   void ShowNetworkConfigView(NetworkConfigView* view, bool focus_login) const;
+
+  // Wrappers for the ShowNetworkConfigView / ShowTabbedNetworkSettings.
+  void ShowWifi(const WifiNetwork& wifi, bool focus_login) const;
+  void ShowCellular(const CellularNetwork& cellular, bool focus_login) const;
+  void ShowEthernet(const EthernetNetwork& ethernet) const;
+  void ShowOther() const;
 
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;

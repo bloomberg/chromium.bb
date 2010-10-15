@@ -25,7 +25,8 @@ class NetworkMenuUI : public MenuUI {
   // A callback method that is invoked when the JavaScript wants
   // to invoke an action in the model.
   // By convention the first member of 'values' describes the action.
-  void ModelAction(const menus::MenuModel* model,
+  // Returns true if the menu should be closed.
+  bool ModelAction(const menus::MenuModel* model,
                    const ListValue* values);
 
   // MenuUI overrides

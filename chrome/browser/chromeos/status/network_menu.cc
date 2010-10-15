@@ -96,8 +96,17 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
         info->message = l10n_util::GetStringUTF8(
             IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
       }
+      if (wifi.encrypted()) {
+        if (wifi.IsCertificateLoaded() ||
+            wifi.encryption() == SECURITY_8021X) {
+          info->need_passphrase = false;
+        } else {
+          info->need_passphrase = true;
+        }
+      } else {
+        info->need_passphrase = false;
+      }
       info->ip_address = wifi.ip_address();
-      info->need_passphrase = wifi.encrypted();
       info->remembered = wifi.favorite();
     } else {
       res = false;  // Network not found, hide entry.
@@ -151,9 +160,10 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
   return res;
 }
 
-void NetworkMenu::ConnectToNetworkAt(int index,
+bool NetworkMenu::ConnectToNetworkAt(int index,
                                      const std::string& passphrase,
-                                     const std::string& identity) const {
+                                     const std::string& ssid,
+                                     int remember) const {
   int flags = menu_items_[index].flags;
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   if (flags & FLAG_WIFI) {
@@ -162,20 +172,22 @@ void NetworkMenu::ConnectToNetworkAt(int index,
         menu_items_[index].wireless_path, &wifi);
     if (found) {
       // Connect or reconnect.
+      if (remember >= 0)
+        wifi.set_favorite(remember ? true : false);
       if (wifi.encrypted()) {
         if (wifi.IsCertificateLoaded()) {
-          cros->ConnectToWifiNetwork(wifi, std::string(),
-                                     std::string(), wifi.cert_path());
+          cros->ConnectToWifiNetwork(wifi, std::string(), std::string(),
+                                     wifi.cert_path());
+        } else if (wifi.encryption() == SECURITY_8021X) {
+          // Show the wifi settings/dialog to load/select a certificate.
+          ShowWifi(wifi, true);
         } else {
-          // TODO(stevenjb): use passphrase/identity once provided.
-          // cros->ConnectToWifiNetwork(wifi, passphrase,
-          //                            identity, menu_items[index].path);
-          const bool kFocusLogin = true;
-          ShowNetworkConfigView(new NetworkConfigView(wifi, true), kFocusLogin);
+          cros->ConnectToWifiNetwork(wifi, passphrase, std::string(),
+                                     std::string());
         }
       } else {
-        cros->ConnectToWifiNetwork(wifi, std::string(),
-                                   std::string(), std::string());
+        cros->ConnectToWifiNetwork(wifi, std::string(), std::string(),
+                                   std::string());
       }
     }
   } else if (flags & FLAG_CELLULAR) {
@@ -187,9 +199,11 @@ void NetworkMenu::ConnectToNetworkAt(int index,
       cros->ConnectToCellularNetwork(cellular);
     }
   } else if (flags & FLAG_OTHER_NETWORK) {
-    const bool kFocusLogin = true;
-    ShowNetworkConfigView(new NetworkConfigView(), kFocusLogin);
+    bool favorite = remember == 0 ? false : true;  // default is true
+    cros->ConnectToWifiNetwork(ssid, passphrase, std::string(), std::string(),
+                               favorite);
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,17 +262,10 @@ void NetworkMenu::ActivatedAt(int index) {
   } else if (flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
   } else if (flags & FLAG_OTHER_NETWORK) {
-    const bool kFocusLogin = true;
-    ShowNetworkConfigView(new NetworkConfigView(), kFocusLogin);
+    ShowOther();
   } else if (flags & FLAG_ETHERNET) {
     if (cros->ethernet_connected()) {
-      if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTabbedOptions)) {
-        ShowTabbedNetworkSettings(cros->ethernet_network());
-      } else {
-        ShowNetworkConfigView(
-            new NetworkConfigView(cros->ethernet_network()), false);
-      }
+      ShowEthernet(cros->ethernet_network());
     }
   } else if (flags & FLAG_WIFI) {
     WifiNetwork wifi;
@@ -269,52 +276,24 @@ void NetworkMenu::ActivatedAt(int index) {
       // display a notification.
       // TODO(stevenjb): Show notification.
     } else if (wifi.name() == cros->wifi_name()) {
-      if (cros->wifi_connected()) {
-        // If we are already connected, show the config settings.
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableTabbedOptions)) {
-          ShowTabbedNetworkSettings(wifi);
-        } else {
-          ShowNetworkConfigView(new NetworkConfigView(wifi, false), false);
-        }
-      } else {
-        // TODO(stevenjb): Connection in progress. Show dialog?
-      }
+      // Show the config settings for the active network.
+      ShowWifi(wifi, false);
     } else {
-      // If wifi network is not encrypted, then directly connect.
-      // Otherwise, open the password dialog window.
-      if (!wifi.encrypted()) {
-        cros->ConnectToWifiNetwork(wifi, std::string(),
-                                   std::string(), std::string());
-      } else {
-        const bool kFocusLogin = true;
-        ShowNetworkConfigView(new NetworkConfigView(wifi, true), kFocusLogin);
-      }
+      ConnectToNetworkAt(index, std::string(), std::string(), -1);
     }
   } else if (flags & FLAG_CELLULAR) {
     CellularNetwork cellular;
     bool cellular_exists = cros->FindCellularNetworkByPath(
         menu_items_[index].wireless_path, &cellular);
-
     if (!cellular_exists) {
       // If we are attempting to connect to a network that no longer exists,
       // display a notification.
       // TODO(stevenjb): Show notification.
     } else if (cellular.name() == cros->cellular_name()) {
-      // If clicked on a network that we are already connected to or we are
-      // currently trying to connect to, then open config dialog.
-      if (cros->cellular_connected()) {
-        if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableTabbedOptions)) {
-          ShowTabbedNetworkSettings(cellular);
-        } else {
-          ShowNetworkConfigView(new NetworkConfigView(cellular), false);
-        }
-      } else {
-        // TODO(stevenjb): Connection in progress. Show dialog?
-      }
+      // Show the config settings for the cellular network.
+      ShowCellular(cellular, false);
     } else {
-      cros->ConnectToCellularNetwork(cellular);
+      ConnectToNetworkAt(index, std::string(), std::string(), -1);
     }
   }
 }
@@ -525,7 +504,7 @@ void NetworkMenu::InitMenuItems() {
   }
 }
 
-void NetworkMenu::ShowTabbedNetworkSettings(const Network& network) {
+void NetworkMenu::ShowTabbedNetworkSettings(const Network& network) const {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
@@ -536,7 +515,8 @@ void NetworkMenu::ShowTabbedNetworkSettings(const Network& network) {
   browser->ShowOptionsTab(page);
 }
 
-// TODO(stevenjb): deprecate this once all of the UI is embedded in the menu.
+// TODO(stevenjb): deprecate this once we've committed to the embedded
+// menu UI and fully deprecated NetworkConfigView.
 void NetworkMenu::ShowNetworkConfigView(NetworkConfigView* view,
                                         bool focus_login) const {
   view->set_browser_mode(IsBrowserMode());
@@ -546,6 +526,50 @@ void NetworkMenu::ShowNetworkConfigView(NetworkConfigView* view,
   window->Show();
   if (focus_login)
     view->SetLoginTextfieldFocus();
+}
+
+void NetworkMenu::ShowWifi(const WifiNetwork& wifi, bool focus_login) const{
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedOptions)) {
+    ShowTabbedNetworkSettings(wifi);
+  } else {
+    ShowNetworkConfigView(new NetworkConfigView(wifi, true), focus_login);
+  }
+}
+
+void NetworkMenu::ShowCellular(const CellularNetwork& cellular,
+                               bool focus_login) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedOptions)) {
+    ShowTabbedNetworkSettings(cellular);
+  } else {
+    ShowNetworkConfigView(new NetworkConfigView(cellular), focus_login);
+  }
+}
+
+void NetworkMenu::ShowEthernet(const EthernetNetwork& ethernet) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedOptions)) {
+    ShowTabbedNetworkSettings(ethernet);
+  } else {
+    ShowNetworkConfigView(new NetworkConfigView(ethernet), false);
+  }
+}
+
+void NetworkMenu::ShowOther() const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTabbedOptions)) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (browser) {
+      std::string page = StringPrintf("%s?networkType=%d",
+                                      chrome::kInternetOptionsSubPage,
+                                      chromeos::TYPE_WIFI);
+      browser->ShowOptionsTab(page);
+    }
+  } else {
+    const bool kFocusLogin = true;
+    ShowNetworkConfigView(new NetworkConfigView(), kFocusLogin);
+  }
 }
 
 }  // namespace chromeos
