@@ -436,12 +436,12 @@ def DecodePlatform(platform):
   assert 0
 
 BUILD_NAME = GetPlatform('buildplatform')
-pre_base_env.Replace(BUILD_PLATFORM=BUILD_NAME)
+pre_base_env.Replace(BUILD_FULLARCH=BUILD_NAME)
 pre_base_env.Replace(BUILD_ARCHITECTURE=DecodePlatform(BUILD_NAME)['arch'])
 pre_base_env.Replace(BUILD_SUBARCH=DecodePlatform(BUILD_NAME)['subarch'])
 
 TARGET_NAME = GetPlatform('targetplatform')
-pre_base_env.Replace(TARGET_PLATFORM=TARGET_NAME)
+pre_base_env.Replace(TARGET_FULLARCH=TARGET_NAME)
 pre_base_env.Replace(TARGET_ARCHITECTURE=DecodePlatform(TARGET_NAME)['arch'])
 pre_base_env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
 

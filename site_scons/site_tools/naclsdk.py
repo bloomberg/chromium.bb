@@ -332,7 +332,7 @@ def generate(env):
   else:
     # if bitcode=1 use pnacl toolchain
     if SCons.Script.ARGUMENTS.get('bitcode'):
-      _SetEnvForPnacl(env, env['TARGET_PLATFORM'])
+      _SetEnvForPnacl(env, env['TARGET_FULLARCH'])
     elif env['TARGET_ARCHITECTURE'] == 'x86':
       _SetEnvForX86Sdk(env, root)
     else:
