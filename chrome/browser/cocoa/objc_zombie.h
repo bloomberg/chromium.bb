@@ -12,7 +12,11 @@
 // namespace.
 namespace ObjcEvilDoers {
 
-// Enable zombies.  Returns NO if it fails to enable.
+// Enable zombie object debugging. This implements a variant of Apple's
+// NSZombieEnabled which can help expose use-after-free errors where messages
+// are sent to freed Objective-C objects in production builds.
+//
+// Returns NO if it fails to enable.
 //
 // When |zombieAllObjects| is YES, all objects inheriting from
 // NSObject become zombies on -dealloc.  If NO, -shouldBecomeCrZombie
