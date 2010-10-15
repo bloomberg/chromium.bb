@@ -286,10 +286,12 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
       PrepareDragForFileContents(drop_data, &data);
     if (!drop_data.text_html.empty())
       data.SetHtml(drop_data.text_html, drop_data.html_base_url);
-    if (drop_data.url.is_valid())
-      PrepareDragForUrl(drop_data, &data);
+    // We set the text contents before the URL because the URL also sets text
+    // content.
     if (!drop_data.plain_text.empty())
       data.SetString(drop_data.plain_text);
+    if (drop_data.url.is_valid())
+      PrepareDragForUrl(drop_data, &data);
   }
 
   // Set drag image.
