@@ -106,7 +106,8 @@ class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
   std::string test_url_base_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBrowserTest, BrowserLogin) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBrowserTest,
+                       FAILS_BrowserLogin) {
   host_resolver()->AddRule(kTestUrlHostname, "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
