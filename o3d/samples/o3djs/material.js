@@ -201,6 +201,7 @@ o3djs.material.prepareMaterials = function(pack,
     o3djs.material.prepareMaterial(opt_effectPack || pack,
                                    viewInfo,
                                    materials[mm],
+                                   undefined,
                                    opt_options);
   }
 };

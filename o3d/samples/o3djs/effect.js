@@ -1399,7 +1399,7 @@ o3djs.effect.buildStandardShaderString = function(material,
  * @param {!o3d.Material} material Material for which to build the shader.
  * @param {string} effectType Type of effect to create ('phong', 'lambert',
  *     'constant', 'blinn').
- * @param {{lights: number}} opt_options Extra options.
+ * @param {Object} opt_options Extra options in the form {lights: number}.
  *     If 'lights' is non-zero, creates an array of light params; otherwise
  *     only a single light is supported.
  * @return {o3d.Effect} The created effect.

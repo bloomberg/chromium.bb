@@ -82,7 +82,7 @@ o3djs.cameracontroller.DragMode = {
    * Dragging moves the centerPos around the plane perpendicular to
    * the camera view direction.
    */
-  MOVE_CENTER_IN_VIEW_PLANE: 5,
+  MOVE_CENTER_IN_VIEW_PLANE: 5
 };
 
 /**
