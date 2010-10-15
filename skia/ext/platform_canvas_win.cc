@@ -76,11 +76,8 @@ void CrashIfInvalidSection(HANDLE shared_section) {
 // Restore the optimization options.
 #pragma optimize("", on)
 
-PlatformCanvas::PlatformCanvas() : SkCanvas() {
-}
-
 PlatformCanvas::PlatformCanvas(int width, int height, bool is_opaque)
-    : SkCanvas() {
+    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
   bool initialized = initialize(width, height, is_opaque, NULL);
   if (!initialized)
     CrashForBitmapAllocationFailure(width, height);
@@ -90,7 +87,7 @@ PlatformCanvas::PlatformCanvas(int width,
                                int height,
                                bool is_opaque,
                                HANDLE shared_section)
-    : SkCanvas() {
+    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
   bool initialized = initialize(width, height, is_opaque, shared_section);
   if (!initialized) {
     CrashIfInvalidSection(shared_section);
@@ -122,14 +119,6 @@ HDC PlatformCanvas::beginPlatformPaint() {
 void PlatformCanvas::endPlatformPaint() {
   // we don't clear the DC here since it will be likely to be used again
   // flushing will be done in onAccessBitmap
-}
-
-SkDevice* PlatformCanvas::createDevice(SkBitmap::Config config,
-                                       int width,
-                                       int height,
-                                       bool is_opaque, bool isForLayer) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return BitmapPlatformDevice::create(width, height, is_opaque, NULL);
 }
 
 }  // namespace skia

@@ -6,7 +6,11 @@
 
 namespace skia {
 
-VectorCanvas::VectorCanvas() {
+VectorCanvas::VectorCanvas()
+    : PlatformCanvas(SkNEW(SkVectorPlatformDeviceFactory)) {
+}
+
+VectorCanvas::VectorCanvas(SkDeviceFactory* factory) : PlatformCanvas(factory) {
 }
 
 VectorCanvas::~VectorCanvas() {

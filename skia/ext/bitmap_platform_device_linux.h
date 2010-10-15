@@ -43,6 +43,12 @@ typedef struct _cairo_surface cairo_surface_t;
 
 namespace skia {
 
+class SkBitmapPlatformDeviceFactory : public SkRasterDeviceFactory {
+ public:
+  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
+                              bool isOpaque, bool isForLayer);
+};
+
 // -----------------------------------------------------------------------------
 // This is the Linux bitmap backing for Skia. We create a Cairo image surface
 // to store the backing buffer. This buffer is BGRA in memory (on little-endian
@@ -78,6 +84,10 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   // A stub copy constructor.  Needs to be properly implemented.
   BitmapPlatformDevice(const BitmapPlatformDevice& other);
+
+  virtual SkDeviceFactory* getDeviceFactory() {
+    return SkNEW(SkBitmapPlatformDeviceFactory);
+  }
 
   virtual void makeOpaque(int x, int y, int width, int height);
 

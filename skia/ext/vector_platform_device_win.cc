@@ -6,10 +6,50 @@
 
 #include "skia/ext/vector_platform_device_win.h"
 
+#include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkUtils.h"
 
 namespace skia {
+
+SkDevice* SkVectorPlatformDeviceFactory::newDevice(SkBitmap::Config config,
+                                                   int width, int height,
+                                                   bool isOpaque,
+                                                   bool isForLayer) {
+  SkASSERT(config == SkBitmap::kARGB_8888_Config);
+  return CreateDevice(width, height, isOpaque, NULL);
+}
+
+//static
+SkDevice* SkVectorPlatformDeviceFactory::CreateDevice(int width, int height,
+                                                      bool is_opaque,
+                                                      HANDLE shared_section) {
+  if (!is_opaque) {
+    // TODO(maruel):  http://crbug.com/18382 When restoring a semi-transparent
+    // layer, i.e. merging it, we need to rasterize it because GDI doesn't
+    // support transparency except for AlphaBlend(). Right now, a
+    // BitmapPlatformDevice is created when VectorCanvas think a saveLayers()
+    // call is being done. The way to save a layer would be to create an
+    // EMF-based VectorDevice and have this device registers the drawing. When
+    // playing back the device into a bitmap, do it at the printer's dpi instead
+    // of the layout's dpi (which is much lower).
+    return BitmapPlatformDevice::create(width, height,
+                                        is_opaque, shared_section);
+  }
+
+  // TODO(maruel):  http://crbug.com/18383 Look if it would be worth to
+  // increase the resolution by ~10x (any worthy factor) to increase the
+  // rendering precision (think about printing) while using a relatively
+  // low dpi. This happens because we receive float as input but the GDI
+  // functions works with integers. The idea is to premultiply the matrix
+  // with this factor and multiply each SkScalar that are passed to
+  // SkScalarRound(value) as SkScalarRound(value * 10). Safari is already
+  // doing the same for text rendering.
+  SkASSERT(shared_section);
+  PlatformDevice* device = VectorPlatformDevice::create(
+      reinterpret_cast<HDC>(shared_section), width, height);
+  return device;
+}
 
 static void FillBitmapInfoHeader(int width, int height, BITMAPINFOHEADER* hdr) {
   hdr->biSize = sizeof(BITMAPINFOHEADER);

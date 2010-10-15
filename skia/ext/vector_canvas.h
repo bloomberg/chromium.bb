@@ -22,6 +22,7 @@ namespace skia {
 class VectorCanvas : public PlatformCanvas {
  public:
   VectorCanvas();
+  explicit VectorCanvas(SkDeviceFactory* factory);
 #if defined(WIN32)
   VectorCanvas(HDC dc, int width, int height);
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
@@ -39,26 +40,9 @@ class VectorCanvas : public PlatformCanvas {
 #endif
 
   virtual SkBounder* setBounder(SkBounder* bounder);
-#if defined(WIN32) || defined(__linux__) || defined(__FreeBSD__) || \
-  defined(__OpenBSD__)
-  virtual SkDevice* createDevice(SkBitmap::Config config,
-                                 int width, int height,
-                                 bool is_opaque, bool isForLayer);
-#endif
   virtual SkDrawFilter* setDrawFilter(SkDrawFilter* filter);
 
  private:
-#if defined(WIN32)
-  // |shared_section| is in fact the HDC used for output. |is_opaque| is unused.
-  virtual SkDevice* createPlatformDevice(int width, int height, bool is_opaque,
-                                         HANDLE shared_section);
-#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
-  // Ownership of |context| is not transferred. |is_opaque| is unused.
-  virtual SkDevice* createPlatformDevice(cairo_t* context,
-                                         int width, int height,
-                                         bool is_opaque);
-#endif
-
   // Returns true if the top device is vector based and not bitmap based.
   bool IsTopDeviceVectorial() const;
 

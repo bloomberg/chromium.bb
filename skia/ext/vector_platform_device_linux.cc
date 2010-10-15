@@ -12,12 +12,12 @@
 
 #include <map>
 
+#include "base/logging.h"
+#include "base/singleton.h"
+#include "skia/ext/bitmap_platform_device.h"
 #include "third_party/skia/include/core/SkFontHost.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-
-#include "base/logging.h"
-#include "base/singleton.h"
 
 namespace {
 
@@ -64,6 +64,31 @@ bool IsContextValid(cairo_t* context) {
 }  // namespace
 
 namespace skia {
+
+SkDevice* SkVectorPlatformDeviceFactory::newDevice(SkBitmap::Config config,
+                                                   int width, int height,
+                                                   bool isOpaque,
+                                                   bool isForLayer) {
+  SkASSERT(config == SkBitmap::kARGB_8888_Config);
+  return CreateDevice(NULL, width, height, isOpaque);
+}
+
+// static
+SkDevice* SkVectorPlatformDeviceFactory::CreateDevice(cairo_t* context,
+                                                      int width, int height,
+                                                      bool isOpaque) {
+  // TODO(myhuang): Here we might also have similar issues as those on Windows
+  // (vector_canvas_win.cc, http://crbug.com/18382 & http://crbug.com/18383).
+  // Please note that is_opaque is true when we use this class for printing.
+  // Fallback to bitmap when context is NULL.
+  if (!isOpaque || NULL == context) {
+    return BitmapPlatformDevice::Create(width, height, isOpaque);
+  }
+
+  PlatformDevice* device =
+    VectorPlatformDevice::create(context, width, height);
+  return device;
+}
 
 VectorPlatformDevice* VectorPlatformDevice::create(PlatformSurface context,
                                                    int width, int height) {

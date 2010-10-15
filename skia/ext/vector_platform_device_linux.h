@@ -12,6 +12,15 @@
 
 namespace skia {
 
+class SkVectorPlatformDeviceFactory : public SkRasterDeviceFactory {
+ public:
+  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
+                              bool isOpaque, bool isForLayer);
+
+  static SkDevice* CreateDevice(cairo_t* context, int width, int height,
+                                bool isOpaque);
+};
+
 // This device is basically a wrapper that provides a surface for SkCanvas
 // to draw into. It is basically an adaptor which converts skia APIs into
 // cooresponding Cairo APIs and outputs to a Cairo surface. Please NOTE that
@@ -23,6 +32,10 @@ class VectorPlatformDevice : public PlatformDevice {
   static VectorPlatformDevice* create(PlatformSurface context,
                                       int width, int height);
   virtual ~VectorPlatformDevice();
+
+  virtual SkDeviceFactory* getDeviceFactory() {
+    return SkNEW(SkVectorPlatformDeviceFactory);
+  }
 
   virtual bool IsVectorial() { return true; }
   virtual PlatformSurface beginPlatformPaint() { return context_; }

@@ -10,6 +10,12 @@
 
 namespace skia {
 
+class SkBitmapPlatformDeviceFactory : public SkRasterDeviceFactory {
+ public:
+  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
+                              bool isOpaque, bool isForLayer);
+};
+
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. Our device provides a surface Windows can also write
 // to. BitmapPlatformDevice creates a bitmap using CreateDIBSection() in a
@@ -61,6 +67,10 @@ class BitmapPlatformDevice : public PlatformDevice {
 
   // See warning for copy constructor above.
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
+
+  virtual SkDeviceFactory* getDeviceFactory() {
+    return SkNEW(SkBitmapPlatformDeviceFactory);
+  }
 
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
   // bitmap DC is lazy created.

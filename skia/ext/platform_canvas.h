@@ -18,10 +18,11 @@ namespace skia {
 // using both Skia operations and platform-specific operations.
 class PlatformCanvas : public SkCanvas {
  public:
-  // Set is_opaque if you are going to erase the bitmap and not use
-  // transparency: this will enable some optimizations.
   // If you use the version with no arguments, you MUST call initialize()
   PlatformCanvas();
+  explicit PlatformCanvas(SkDeviceFactory* factory);
+  // Set is_opaque if you are going to erase the bitmap and not use
+  // transparency: this will enable some optimizations.
   PlatformCanvas(int width, int height, bool is_opaque);
   virtual ~PlatformCanvas();
 
@@ -95,16 +96,6 @@ class PlatformCanvas : public SkCanvas {
   // override of a virtual one.
   // FIXME(brettw) is this necessary?
   using SkCanvas::clipRect;
-
- protected:
-  // Creates a device store for use by the canvas. We override this so that
-  // the device is always our own so we know that we can use platform
-  // operations on it.
-  virtual SkDevice* createDevice(SkBitmap::Config,
-                                 int width,
-                                 int height,
-                                 bool is_opaque,
-                                 bool isForLayer);
 
  private:
   // Unimplemented. This is to try to prevent people from calling this function

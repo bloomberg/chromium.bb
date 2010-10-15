@@ -9,11 +9,8 @@
 
 namespace skia {
 
-PlatformCanvas::PlatformCanvas() : SkCanvas() {
-}
-
 PlatformCanvas::PlatformCanvas(int width, int height, bool is_opaque)
-    : SkCanvas() {
+    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
   initialize(width, height, is_opaque);
 }
 
@@ -21,7 +18,7 @@ PlatformCanvas::PlatformCanvas(int width,
                                int height,
                                bool is_opaque,
                                CGContextRef context)
-    : SkCanvas() {
+    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
   initialize(width, height, is_opaque);
 }
 
@@ -29,7 +26,7 @@ PlatformCanvas::PlatformCanvas(int width,
                                int height,
                                bool is_opaque,
                                uint8_t* data)
-    : SkCanvas() {
+    : SkCanvas(SkNEW(SkBitmapPlatformDeviceFactory)) {
   initialize(width, height, is_opaque, data);
 }
 
@@ -56,14 +53,6 @@ CGContextRef PlatformCanvas::beginPlatformPaint() {
 
 void PlatformCanvas::endPlatformPaint() {
   // Flushing will be done in onAccessBitmap.
-}
-
-SkDevice* PlatformCanvas::createDevice(SkBitmap::Config config,
-                                       int width,
-                                       int height,
-                                       bool is_opaque, bool isForLayer) {
-  SkASSERT(config == SkBitmap::kARGB_8888_Config);
-  return BitmapPlatformDevice::Create(NULL, width, height, is_opaque);
 }
 
 }  // namespace skia

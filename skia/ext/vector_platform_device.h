@@ -12,6 +12,11 @@
 #include "skia/ext/vector_platform_device_win.h"
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include "skia/ext/vector_platform_device_linux.h"
+#elif defined(__APPLE__)
+#include "skia/ext/bitmap_platform_device_mac.h"
+namespace skia {
+typedef SkBitmapPlatformDeviceFactory SkVectorPlatformDeviceFactory;
+}  // namespace skia
 #endif
 
 #endif

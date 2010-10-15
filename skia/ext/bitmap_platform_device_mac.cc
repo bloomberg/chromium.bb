@@ -49,6 +49,14 @@ static CGContextRef CGContextForData(void* data, int width, int height) {
 
 }  // namespace
 
+SkDevice* SkBitmapPlatformDeviceFactory::newDevice(SkBitmap::Config config,
+                                                   int width, int height,
+                                                   bool isOpaque,
+                                                   bool isForLayer) {
+  SkASSERT(config == SkBitmap::kARGB_8888_Config);
+  return BitmapPlatformDevice::Create(NULL, width, height, isOpaque);
+}
+
 BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
     CGContextRef bitmap)
     : bitmap_context_(bitmap),

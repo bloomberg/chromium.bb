@@ -10,6 +10,13 @@
 
 namespace skia {
 
+class SkBitmapPlatformDeviceFactory : public SkRasterDeviceFactory {
+ public:
+  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
+                              bool isOpaque, bool isForLayer);
+};
+
+
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. Our device provides a surface CoreGraphics can also
 // write to. BitmapPlatformDevice creates a bitmap using
@@ -49,6 +56,10 @@ class BitmapPlatformDevice : public PlatformDevice {
   // around to another routine willing to deal with the bitmap data directly.
   BitmapPlatformDevice(const BitmapPlatformDevice& other);
   virtual ~BitmapPlatformDevice();
+
+  virtual SkDeviceFactory* getDeviceFactory() {
+    return SkNEW(SkBitmapPlatformDeviceFactory);
+  }
 
   // See warning for copy constructor above.
   BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);

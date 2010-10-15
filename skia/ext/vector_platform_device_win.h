@@ -12,6 +12,14 @@
 
 namespace skia {
 
+class SkVectorPlatformDeviceFactory : public SkRasterDeviceFactory {
+ public:
+  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
+                              bool isOpaque, bool isForLayer);
+  static SkDevice* CreateDevice(int width, int height, bool isOpaque,
+                                HANDLE shared_section);
+};
+
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. This specific device is not not backed by a surface
 // and is thus unreadable. This is because the backend is completely vectorial.
@@ -23,6 +31,10 @@ class VectorPlatformDevice : public PlatformDevice {
 
   VectorPlatformDevice(HDC dc, const SkBitmap& bitmap);
   virtual ~VectorPlatformDevice();
+
+  virtual SkDeviceFactory* getDeviceFactory() {
+    return SkNEW(SkVectorPlatformDeviceFactory);
+  }
 
   virtual HDC getBitmapDC() {
     return hdc_;
