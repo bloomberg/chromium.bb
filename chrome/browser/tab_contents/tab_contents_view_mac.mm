@@ -248,7 +248,7 @@ void TabContentsViewMac::TakeFocus(bool reverse) {
 void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
   RenderViewContextMenuMac menu(tab_contents(),
                                 params,
-                                GetNativeView());
+                                GetContentNativeView());
   menu.Init();
 }
 
