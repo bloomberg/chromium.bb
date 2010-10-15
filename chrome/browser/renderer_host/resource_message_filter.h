@@ -37,6 +37,7 @@ class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
 class FileSystemDispatcherHost;
+class FileUtilitiesDispatcherHost;
 struct FontDescriptor;
 class GeolocationDispatcherHost;
 class HostZoomMap;
@@ -130,8 +131,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
  private:
   friend class BrowserThread;
   friend class DeleteTask<ResourceMessageFilter>;
-  typedef void (*FileInfoWriteFunc)(IPC::Message* reply_msg,
-                                    const base::PlatformFileInfo& file_info);
 
   virtual ~ResourceMessageFilter();
 
@@ -357,15 +356,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                                     double expected_response_time,
                                     const std::vector<char>& data);
   void OnEnableSpdy(bool enable);
-  void OnGetFileSize(const FilePath& path, IPC::Message* reply_msg);
-  void OnGetFileModificationTime(const FilePath& path, IPC::Message* reply_msg);
-  void OnGetFileInfoOnFileThread(const FilePath& path,
-                                 IPC::Message* reply_msg,
-                                 FileInfoWriteFunc write_func);
-  void OnOpenFile(const FilePath& path, int mode,IPC::Message* reply_msg);
-  void OnOpenFileOnFileThread(const FilePath& path,
-                              int mode,
-                              IPC::Message* reply_msg);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
                 const GURL& url, IPC::Message* reply_msg);
   void OnKeygenOnWorkerThread(
@@ -504,6 +494,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Handles blob related messages.
   scoped_ptr<BlobDispatcherHost> blob_dispatcher_host_;
+
+  // Handles file utilities messages.
+  scoped_refptr<FileUtilitiesDispatcherHost> file_utilities_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

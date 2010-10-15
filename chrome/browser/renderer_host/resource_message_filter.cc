@@ -57,6 +57,7 @@
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
+#include "chrome/browser/renderer_host/file_utilities_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/search_engines/search_provider_install_state_dispatcher_host.h"
@@ -199,17 +200,6 @@ class ClearCacheCompletion : public net::CompletionCallback {
   scoped_refptr<ResourceMessageFilter> filter_;
 };
 
-void WriteFileSize(IPC::Message* reply_msg,
-                   const base::PlatformFileInfo& file_info) {
-  ViewHostMsg_GetFileSize::WriteReplyParams(reply_msg, file_info.size);
-}
-
-void WriteFileModificationTime(IPC::Message* reply_msg,
-                               const base::PlatformFileInfo& file_info) {
-  ViewHostMsg_GetFileModificationTime::WriteReplyParams(
-      reply_msg, file_info.last_modified);
-}
-
 }  // namespace
 
 ResourceMessageFilter::ResourceMessageFilter(
@@ -261,7 +251,9 @@ ResourceMessageFilter::ResourceMessageFilter(
           new FileSystemDispatcherHost(this, profile))),
       ALLOW_THIS_IN_INITIALIZER_LIST(blob_dispatcher_host_(
           new BlobDispatcherHost(
-              this->id(), profile->GetBlobStorageContext()))) {
+              this->id(), profile->GetBlobStorageContext()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(file_utilities_dispatcher_host_(
+          new FileUtilitiesDispatcherHost(this, this->id()))) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
@@ -296,6 +288,9 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 
   // Shut down the blob dispatcher host.
   blob_dispatcher_host_->Shutdown();
+
+  // Shut down the async file_utilities dispatcher host.
+  file_utilities_dispatcher_host_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -333,6 +328,7 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   indexed_db_dispatcher_host_->Init(id(), handle());
   db_dispatcher_host_->Init(handle());
   file_system_dispatcher_host_->Init(handle());
+  file_utilities_dispatcher_host_->Init(handle());
 }
 
 void ResourceMessageFilter::OnChannelError() {
@@ -373,7 +369,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
           msg, &msg_is_ok) ||
       device_orientation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       file_system_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      blob_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
+      blob_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      file_utilities_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.
@@ -513,10 +510,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                           OnCacheableMetadataAvailable)
       IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileModificationTime,
-                                      OnGetFileModificationTime)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenFile, OnOpenFile)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
                                       OnGetExtensionMessageBundle)
@@ -1484,130 +1477,6 @@ void ResourceMessageFilter::OnEnableSpdy(bool enable) {
   } else {
     net::HttpNetworkLayer::EnableSpdy("npn-http");
   }
-}
-
-void ResourceMessageFilter::OnGetFileSize(const FilePath& path,
-                                          IPC::Message* reply_msg) {
-  // Get file size only when the child process has been granted permission to
-  // upload the file.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path)) {
-    ViewHostMsg_GetFileSize::WriteReplyParams(
-        reply_msg, static_cast<int64>(-1));
-    Send(reply_msg);
-    return;
-  }
-
-  // Getting file size could take long time if it lives on a network share,
-  // so run it on FILE thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &ResourceMessageFilter::OnGetFileInfoOnFileThread, path,
-          reply_msg, &WriteFileSize));
-}
-
-void ResourceMessageFilter::OnGetFileModificationTime(const FilePath& path,
-                                                      IPC::Message* reply_msg) {
-  // Get file modification time only when the child process has been granted
-  // permission to upload the file.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path)) {
-    ViewHostMsg_GetFileModificationTime::WriteReplyParams(reply_msg,
-                                                          base::Time());
-    Send(reply_msg);
-    return;
-  }
-
-  // Getting file modification time could take a long time if it lives on a
-  // network share, so run it on the FILE thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &ResourceMessageFilter::OnGetFileInfoOnFileThread,
-          path, reply_msg, &WriteFileModificationTime));
-}
-
-void ResourceMessageFilter::OnGetFileInfoOnFileThread(
-    const FilePath& path,
-    IPC::Message* reply_msg,
-    FileInfoWriteFunc write_func) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  base::PlatformFileInfo file_info;
-  file_info.size = 0;
-  file_util::GetFileInfo(path, &file_info);
-
-  (*write_func)(reply_msg, file_info);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
-}
-
-void ResourceMessageFilter::OnOpenFile(const FilePath& path,
-                                       int mode,
-                                       IPC::Message* reply_msg) {
-  // Open the file only when the child process has been granted permission to
-  // upload the file.
-  // TODO(jianli): Do we need separate permission to control opening the file?
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path)) {
-    ViewHostMsg_OpenFile::WriteReplyParams(
-        reply_msg,
-#if defined(OS_WIN)
-        base::kInvalidPlatformFileValue
-#elif defined(OS_POSIX)
-        base::FileDescriptor(base::kInvalidPlatformFileValue, true)
-#endif
-        );
-    Send(reply_msg);
-    return;
-  }
-
-  // Opening the file could take a long time if it lives on a network share,
-  // so run it on the FILE thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &ResourceMessageFilter::OnOpenFileOnFileThread,
-          path, mode, reply_msg));
-}
-
-void ResourceMessageFilter::OnOpenFileOnFileThread(const FilePath& path,
-                                                   int mode,
-                                                   IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  base::PlatformFile file_handle = base::CreatePlatformFile(
-      path,
-      (mode == 0) ? (base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ)
-                  : (base::PLATFORM_FILE_CREATE_ALWAYS |
-                        base::PLATFORM_FILE_WRITE),
-      NULL, NULL);
-
-  base::PlatformFile target_file_handle;
-#if defined(OS_WIN)
-  // Duplicate the file handle so that the renderer process can access the file.
-  if (!DuplicateHandle(GetCurrentProcess(), file_handle,
-                       handle(), &target_file_handle, 0, false,
-                       DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    // file_handle is closed whether or not DuplicateHandle succeeds.
-    target_file_handle = INVALID_HANDLE_VALUE;
-  }
-#else
-  target_file_handle = file_handle;
-#endif
-
-  ViewHostMsg_OpenFile::WriteReplyParams(
-      reply_msg,
-#if defined(OS_WIN)
-      target_file_handle
-#elif defined(OS_POSIX)
-      base::FileDescriptor(target_file_handle, true)
-#endif
-      );
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
 void ResourceMessageFilter::OnKeygen(uint32 key_size_index,

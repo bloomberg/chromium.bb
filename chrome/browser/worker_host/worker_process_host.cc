@@ -21,6 +21,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/blob_dispatcher_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
+#include "chrome/browser/renderer_host/file_utilities_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
@@ -33,6 +34,7 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/worker_messages.h"
+#include "net/base/mime_util.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"
 
@@ -70,7 +72,9 @@ WorkerProcessHost::WorkerProcessHost(
           new BlobDispatcherHost(
               this->id(), request_context->blob_storage_context()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
-          new FileSystemDispatcherHost(this, request_context))) {
+          new FileSystemDispatcherHost(this, request_context))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(file_utilities_dispatcher_host_(
+          new FileUtilitiesDispatcherHost(this, this->id()))) {
   next_route_id_callback_.reset(NewCallbackWithReturnValue(
       WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
   db_dispatcher_host_ = new DatabaseDispatcherHost(
@@ -88,6 +92,9 @@ WorkerProcessHost::~WorkerProcessHost() {
 
   // Shut down the file system dispatcher host.
   file_system_dispatcher_host_->Shutdown();
+
+  // Shut down the file utilities dispatcher host.
+  file_utilities_dispatcher_host_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -249,6 +256,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
       db_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       blob_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       file_system_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
+      file_utilities_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       MessagePortDispatcher::GetInstance()->OnMessageReceived(
           message, this, next_route_id_callback_.get(), &msg_is_ok);
 
@@ -263,6 +271,12 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
                           OnWorkerContextClosed);
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
                           OnForwardToWorker)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromExtension,
+                          OnGetMimeTypeFromExtension)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromFile,
+                          OnGetMimeTypeFromFile)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_GetPreferredExtensionForMimeType,
+                          OnGetPreferredExtensionForMimeType)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP_EX()
   }
@@ -298,6 +312,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 void WorkerProcessHost::OnProcessLaunched() {
   db_dispatcher_host_->Init(handle());
   file_system_dispatcher_host_->Init(handle());
+  file_utilities_dispatcher_host_->Init(handle());
 }
 
 CallbackWithReturnValue<int>::Type* WorkerProcessHost::GetNextRouteIdCallback(
@@ -485,6 +500,21 @@ void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
 
 void WorkerProcessHost::OnForwardToWorker(const IPC::Message& message) {
   WorkerService::GetInstance()->ForwardMessage(message, this);
+}
+
+void WorkerProcessHost::OnGetMimeTypeFromExtension(
+    const FilePath::StringType& ext, std::string* mime_type) {
+  net::GetMimeTypeFromExtension(ext, mime_type);
+}
+
+void WorkerProcessHost::OnGetMimeTypeFromFile(
+    const FilePath& file_path, std::string* mime_type) {
+  net::GetMimeTypeFromFile(file_path, mime_type);
+}
+
+void WorkerProcessHost::OnGetPreferredExtensionForMimeType(
+    const std::string& mime_type, FilePath::StringType* ext) {
+  net::GetPreferredExtensionForMimeType(mime_type, ext);
 }
 
 void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,

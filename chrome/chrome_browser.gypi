@@ -2467,6 +2467,8 @@
         'browser/renderer_host/download_resource_handler.h',
         'browser/renderer_host/download_throttling_resource_handler.cc',
         'browser/renderer_host/download_throttling_resource_handler.h',
+        'browser/renderer_host/file_utilities_dispatcher_host.cc',
+        'browser/renderer_host/file_utilities_dispatcher_host.h',
         'browser/renderer_host/global_request_id.h',
         'browser/renderer_host/gpu_view_host.cc',
         'browser/renderer_host/gpu_view_host.h',

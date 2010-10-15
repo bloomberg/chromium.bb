@@ -127,12 +127,10 @@ class RendererWebKitClientImpl::SandboxSupport
 
 RendererWebKitClientImpl::RendererWebKitClientImpl()
     : clipboard_(new webkit_glue::WebClipboardImpl),
-      file_utilities_(new RendererWebKitClientImpl::FileUtilities),
       mime_registry_(new RendererWebKitClientImpl::MimeRegistry),
       sandbox_support_(new RendererWebKitClientImpl::SandboxSupport),
       sudden_termination_disables_(0),
       shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
-  file_utilities_->set_sandbox_enabled(sandboxEnabled());
 }
 
 RendererWebKitClientImpl::~RendererWebKitClientImpl() {
@@ -149,6 +147,10 @@ WebKit::WebMimeRegistry* RendererWebKitClientImpl::mimeRegistry() {
 }
 
 WebKit::WebFileUtilities* RendererWebKitClientImpl::fileUtilities() {
+  if (!file_utilities_.get()) {
+    file_utilities_.reset(new FileUtilities);
+    file_utilities_->set_sandbox_enabled(sandboxEnabled());
+  }
   return file_utilities_.get();
 }
 

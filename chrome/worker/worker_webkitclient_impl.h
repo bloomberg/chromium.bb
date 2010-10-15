@@ -8,10 +8,13 @@
 
 #include "base/scoped_ptr.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMimeRegistry.h"
-#include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
 
 class WebFileSystemImpl;
+
+namespace WebKit {
+class WebFileUtilities;
+}
 
 class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
                                public WebKit::WebMimeRegistry {
@@ -37,7 +40,6 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
       const WebKit::WebURL& url,
       const WebKit::WebURL& first_party_for_cookies);
   virtual void prefetchHostName(const WebKit::WebString&);
-  virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual WebKit::WebString defaultLocale();
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path, unsigned quota);
@@ -75,7 +77,9 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
       const WebKit::WebString&);
 
  private:
-  webkit_glue::WebFileUtilitiesImpl file_utilities_;
+
+  class FileUtilities;
+  scoped_ptr<FileUtilities> file_utilities_;
 
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
 
