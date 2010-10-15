@@ -101,6 +101,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void SetActive(bool active);
   virtual void SetWindowVisibility(bool visible) {}
   virtual void WindowFrameChanged() {}
+  virtual void SetPluginImeEnabled(bool enabled, int plugin_id);
+  virtual bool PostProcessEventForPluginIme(
+      const NativeWebKeyboardEvent& event);
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
       bool opaque,
       bool root);

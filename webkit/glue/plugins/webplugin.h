@@ -149,6 +149,9 @@ class WebPlugin {
                                        bool defer) = 0;
 
 #if defined(OS_MACOSX)
+  // Enables/disables plugin IME.
+  virtual void SetImeEnabled(bool enabled) {};
+
   // Synthesize a fake window handle for the plug-in to identify the instance
   // to the browser, allowing mapping to a surface for hardware accelleration
   // of plug-in content. The browser generates the handle which is then set on

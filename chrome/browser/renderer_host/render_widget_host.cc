@@ -168,6 +168,8 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetPluginImeEnabled,
+                        OnMsgSetPluginImeEnabled)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateFakePluginWindowHandle,
                         OnAllocateFakePluginWindowHandle)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyFakePluginWindowHandle,
@@ -1006,6 +1008,10 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
   }
 }
 
+void RenderWidgetHost::OnMsgSetPluginImeEnabled(bool enabled, int plugin_id) {
+  view_->SetPluginImeEnabled(enabled, plugin_id);
+}
+
 void RenderWidgetHost::OnAllocateFakePluginWindowHandle(
     bool opaque,
     bool root,
@@ -1208,6 +1214,11 @@ void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {
   } else {
     NativeWebKeyboardEvent front_item = key_queue_.front();
     key_queue_.pop_front();
+
+#if defined(OS_MACOSX)
+    if (!is_hidden_ && view_->PostProcessEventForPluginIme(front_item))
+      return;
+#endif
 
     // We only send unprocessed key event upwards if we are not hidden,
     // because the user has moved away from us and no longer expect any effect

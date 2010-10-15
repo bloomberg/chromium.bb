@@ -17,6 +17,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/sys_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -263,6 +264,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       initial_window_focus_(false),
       container_is_visible_(false),
       have_called_set_window_(false),
+      ime_enabled_(false),
       external_drag_tracker_(new ExternalDragTracker()),
       handle_event_depth_(0),
       first_set_window_call_(true),
@@ -573,7 +575,13 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     event_scope.reset(new NPAPI::ScopedCurrentPluginEvent(
         instance(), static_cast<NPCocoaEvent*>(plugin_event)));
   }
-  bool handled = instance()->NPP_HandleEvent(plugin_event) != 0;
+  int16_t handle_response = instance()->NPP_HandleEvent(plugin_event);
+  bool handled = handle_response != kNPEventNotHandled;
+
+  if (handled && event.type == WebInputEvent::KeyDown) {
+    // Update IME state as requested by the plugin.
+    SetImeEnabled(handle_response == kNPEventStartIME);
+  }
 
   // Plugins don't give accurate information about whether or not they handled
   // events, so browsers on the Mac ignore the return value.
@@ -778,6 +786,9 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
     return;
   containing_window_has_focus_ = has_focus;
 
+  if (!has_focus)
+    SetImeEnabled(false);
+
 #ifndef NP_NO_QUICKDRAW
   // Make sure controls repaint with the correct look.
   if (quirks_ & PLUGIN_QUIRK_ALLOW_FASTER_QUICKDRAW_PATH)
@@ -813,6 +824,9 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
 bool WebPluginDelegateImpl::PlatformSetPluginHasFocus(bool focused) {
   if (!have_called_set_window_)
     return false;
+
+  if (!focused)
+    SetImeEnabled(false);
 
   ScopedActiveDelegate active_delegate(this);
 
@@ -878,6 +892,20 @@ void WebPluginDelegateImpl::WindowFrameChanged(const gfx::Rect& window_frame,
   SetContentAreaOrigin(gfx::Point(view_frame.x(), view_frame.y()));
 }
 
+void WebPluginDelegateImpl::ImeCompositionConfirmed(const string16& text) {
+  if (instance()->event_model() != NPEventModelCocoa) {
+    DLOG(ERROR) << "IME text receieved in Carbon event model";
+    return;
+  }
+
+  NPCocoaEvent text_event;
+  memset(&text_event, 0, sizeof(NPCocoaEvent));
+  text_event.type = NPCocoaEventTextInput;
+  text_event.data.text.text =
+      reinterpret_cast<NPNSString*>(base::SysUTF16ToNSString(text));
+  instance()->NPP_HandleEvent(&text_event);
+}
+
 void WebPluginDelegateImpl::SetThemeCursor(ThemeCursor cursor) {
   current_windowless_cursor_.InitFromThemeCursor(cursor);
 }
@@ -934,6 +962,15 @@ void WebPluginDelegateImpl::PluginVisibilityChanged() {
       redraw_timer_->Stop();
     }
   }
+}
+
+void WebPluginDelegateImpl::SetImeEnabled(bool enabled) {
+  if (instance()->event_model() != NPEventModelCocoa)
+    return;
+  if (enabled == ime_enabled_)
+    return;
+  ime_enabled_ = enabled;
+  plugin_->SetImeEnabled(enabled);
 }
 
 #pragma mark -

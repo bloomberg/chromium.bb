@@ -851,6 +851,11 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED2(ViewMsg_WindowFrameChanged,
                       gfx::Rect /* window frame */,
                       gfx::Rect /* content view frame */)
+
+  // Tell the renderer that text has been retured from plugin IME.
+  IPC_MESSAGE_ROUTED2(ViewMsg_PluginImeCompositionConfirmed,
+                      string16 /* text */,
+                      int /* plugin_id */)
 #endif
 
   // Response message to ViewHostMsg_CreateShared/DedicatedWorker.
@@ -2148,8 +2153,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
                        TransportDIB::Id /* DIB id */)
 
+  // Instructs the browser to start or stop plugin IME.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_SetPluginImeEnabled,
+                      bool, /* enabled */
+                      int /* plugin_id */)
+
   //---------------------------------------------------------------------------
-  // Messages related to the GPU plugin on Mac OS X 10.6 and later
+  // Messages related to accelerated plugins
 
   // This is sent from the renderer to the browser to allocate a fake
   // PluginWindowHandle on the browser side which is used to identify

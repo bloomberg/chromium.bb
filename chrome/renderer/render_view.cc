@@ -789,6 +789,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
     IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
+    IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionConfirmed,
+                        OnPluginImeCompositionConfirmed)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
@@ -4872,6 +4874,17 @@ void RenderView::OnWindowFrameChanged(const gfx::Rect& window_frame,
     (*plugin_it)->WindowFrameChanged(window_frame, view_frame);
   }
 }
+
+void RenderView::OnPluginImeCompositionConfirmed(const string16& text,
+                                                 int plugin_id) {
+  // WebPluginDelegateProxy is responsible for figuring out if this text
+  // applies to it or not, so inform all the delegates.
+  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
+  for (plugin_it = plugin_delegates_.begin();
+       plugin_it != plugin_delegates_.end(); ++plugin_it) {
+    (*plugin_it)->ImeCompositionConfirmed(text, plugin_id);
+  }
+}
 #endif  // OS_MACOSX
 
 void RenderView::SendExtensionRequest(
@@ -5794,6 +5807,15 @@ void RenderView::EnsureDocumentTag() {
 }
 
 #if defined(OS_MACOSX)
+void RenderView::SetPluginImeEnabled(bool enabled, int plugin_id) {
+  IPC::Message* msg = new ViewHostMsg_SetPluginImeEnabled(routing_id(),
+                                                          enabled, plugin_id);
+  // This message can be sent during event-handling, and needs to be delivered
+  // within that context.
+  msg->set_unblock(true);
+  Send(msg);
+}
+
 gfx::PluginWindowHandle RenderView::AllocateFakePluginWindowHandle(
     bool opaque, bool root) {
   gfx::PluginWindowHandle window = NULL;

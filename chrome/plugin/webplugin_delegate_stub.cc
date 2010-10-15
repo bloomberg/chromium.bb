@@ -122,6 +122,8 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_ContainerHidden, OnContainerHidden)
     IPC_MESSAGE_HANDLER(PluginMsg_ContainerShown, OnContainerShown)
     IPC_MESSAGE_HANDLER(PluginMsg_WindowFrameChanged, OnWindowFrameChanged)
+    IPC_MESSAGE_HANDLER(PluginMsg_ImeCompositionConfirmed,
+                        OnImeCompositionConfirmed)
 #endif
     IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveManualResponse,
                         OnDidReceiveManualResponse)
@@ -366,6 +368,11 @@ void WebPluginDelegateStub::OnWindowFrameChanged(const gfx::Rect& window_frame,
                                                  const gfx::Rect& view_frame) {
   if (delegate_)
     delegate_->WindowFrameChanged(window_frame, view_frame);
+}
+
+void WebPluginDelegateStub::OnImeCompositionConfirmed(const string16& text) {
+  if (delegate_)
+    delegate_->ImeCompositionConfirmed(text);
 }
 #endif  // OS_MACOSX
 

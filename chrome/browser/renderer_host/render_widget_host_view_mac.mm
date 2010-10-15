@@ -15,6 +15,7 @@
 #import "base/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/browser_trial.h"
@@ -38,6 +39,7 @@
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webmenurunner_mac.h"
+#import "third_party/mozilla/ComplexTextInputPanel.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
@@ -58,7 +60,6 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
 - (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
-- (void)attachPluginLayer;
 @end
 
 // This API was published since 10.6. Provide the declaration so it can be
@@ -890,6 +891,31 @@ void RenderWidgetHostViewMac::KillSelf() {
   }
 }
 
+void RenderWidgetHostViewMac::SetPluginImeEnabled(bool enabled, int plugin_id) {
+  [cocoa_view_ setPluginImeEnabled:(enabled ? YES : NO) forPlugin:plugin_id];
+}
+
+bool RenderWidgetHostViewMac::PostProcessEventForPluginIme(
+    const NativeWebKeyboardEvent& event) {
+  // Check WebInputEvent type since multiple types of events can be sent into
+  // WebKit for the same OS event (e.g., RawKeyDown and Char), so filtering is
+  // necessary to avoid double processing.
+  // Also check the native type, since NSFlagsChanged is considered a key event
+  // for WebKit purposes, but isn't considered a key event by the OS.
+  if (event.type == WebInputEvent::RawKeyDown &&
+      [event.os_event type] == NSKeyDown)
+    return [cocoa_view_ postProcessEventForPluginIme:event.os_event];
+  return false;
+}
+
+void RenderWidgetHostViewMac::PluginImeCompositionConfirmed(
+    const string16& text, int plugin_id) {
+  if (render_widget_host_) {
+    render_widget_host_->Send(new ViewMsg_PluginImeCompositionConfirmed(
+        render_widget_host_->routing_id(), text, plugin_id));
+  }
+}
+
 gfx::PluginWindowHandle
 RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque,
                                                         bool root) {
@@ -1194,6 +1220,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     canBeKeyView_ = YES;
     takesFocusOnlyOnMouseDown_ = NO;
     closeOnDeactivate_ = NO;
+    pluginImeIdentifier_ = -1;
   }
   return self;
 }
@@ -1351,7 +1378,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   // Sends key down events to input method first, then we can decide what should
   // be done according to input method's feedback.
-  [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+  // If a plugin is active, bypass this step since events are forwarded directly
+  // to the plugin IME.
+  if (pluginImeIdentifier_ == -1)
+    [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 
   handlingKeyDown_ = NO;
 
@@ -2239,6 +2269,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 // nil when the caret is in non-editable content or password box to avoid
 // making input methods do their work.
 - (NSTextInputContext *)inputContext {
+  if (pluginImeIdentifier_ != -1)
+    return [[ComplexTextInputPanel sharedComplexTextInputPanel] inputContext];
+
   switch(renderWidgetHostView_->text_input_type_) {
     case WebKit::WebTextInputTypeNone:
     case WebKit::WebTextInputTypePassword:
@@ -2467,6 +2500,46 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition();
 
   [self cancelComposition];
+}
+
+- (void)setPluginImeEnabled:(BOOL)enabled forPlugin:(int)pluginId {
+  if ((enabled && pluginId == pluginImeIdentifier_) ||
+      (!enabled && pluginId != pluginImeIdentifier_))
+    return;
+
+  // If IME was already active then either it is being cancelled, or the plugin
+  // changed; either way the current input needs to be cleared.
+  if (pluginImeIdentifier_ != -1)
+    [[ComplexTextInputPanel sharedComplexTextInputPanel] cancelInput];
+
+  pluginImeIdentifier_ = enabled ? pluginId : -1;
+}
+
+- (BOOL)postProcessEventForPluginIme:(NSEvent*)event {
+  if (pluginImeIdentifier_ == -1)
+    return false;
+
+  // ComplexTextInputPanel only works on 10.6+.
+  static BOOL sImeSupported = NO;
+  static BOOL sHaveCheckedSupport = NO;
+  if (!sHaveCheckedSupport) {
+    int32 major, minor, bugfix;
+    base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+    sImeSupported = major > 10 || (major == 10 && minor > 5);
+  }
+  if (!sImeSupported)
+    return false;
+
+  ComplexTextInputPanel* inputPanel =
+      [ComplexTextInputPanel sharedComplexTextInputPanel];
+  NSString* composited_string = nil;
+  BOOL handled = [inputPanel interpretKeyEvent:event
+                                        string:&composited_string];
+  if (composited_string) {
+    renderWidgetHostView_->PluginImeCompositionConfirmed(
+        base::SysNSStringToUTF16(composited_string), pluginImeIdentifier_);
+  }
+  return handled;
 }
 
 - (ViewID)viewID {

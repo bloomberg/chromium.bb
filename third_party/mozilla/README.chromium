@@ -20,3 +20,14 @@ Local modifications:
   -[NSPasteboard getURLs:andTitles:] to determine whether or not filenames in
   the drag should be converted to file URLs.
   -[NSPasteboard htmlFromRtf] added to do rtf->html conversion.
+
+-----------------------------------------------------------------
+
+Also includes IME panel from Gecko, which is based on WebKit's implementation.
+Although it comes from Mozilla (http://mxr.mozilla.org), it uses the original
+WebKit license.
+
+Local modifitations:
+- Added a cancelInput method.
+- Add #ifdef'd definifitions of a few symbols to support 10.5 SDK.
+

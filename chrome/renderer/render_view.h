@@ -304,7 +304,10 @@ class RenderView : public RenderWidget,
   uint32 GetCPBrowsingContext();
 
 #if defined(OS_MACOSX)
-  // Helper routines for GPU plugin support. Used by the
+  // Enables/disabled plugin IME for the given plugin.
+  void SetPluginImeEnabled(bool enabled, int plugin_id);
+
+  // Helper routines for accelerated plugin support. Used by the
   // WebPluginDelegateProxy, which has a pointer to the RenderView.
   gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
                                                          bool root);
@@ -824,6 +827,9 @@ class RenderView : public RenderWidget,
   void OnFillPasswordForm(
       const webkit_glue::PasswordFormFillData& form_data);
   void OnPaste();
+#if defined(OS_MACOSX)
+  void OnPluginImeCompositionConfirmed(const string16& text, int plugin_id);
+#endif
   void OnPrintingDone(int document_cookie, bool success);
   void OnPrintPages();
   void OnRedo();

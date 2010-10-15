@@ -32,6 +32,7 @@ class RenderProcessHost;
 class RenderWidgetHost;
 class VideoLayer;
 class WebCursor;
+struct NativeWebKeyboardEvent;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct WebMenuItem;
 
@@ -210,6 +211,16 @@ class RenderWidgetHostView {
 
   // Informs the view that its containing window's frame changed.
   virtual void WindowFrameChanged() = 0;
+
+  // Start or stop plugin IME for the given plugin.
+  virtual void SetPluginImeEnabled(bool enabled, int plugin_id) = 0;
+
+  // Does any event handling necessary for plugin IME; should be called after
+  // the plugin has already had a chance to process the event. If plugin IME is
+  // not enabled, this is a no-op, so it is always safe to call.
+  // Returns true if the event was handled by IME.
+  virtual bool PostProcessEventForPluginIme(
+      const NativeWebKeyboardEvent& event) = 0;
 
   // Methods associated with GPU-accelerated plug-in instances.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(

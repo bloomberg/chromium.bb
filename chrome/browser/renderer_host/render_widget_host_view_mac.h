@@ -124,6 +124,9 @@ class RWHVMEditCommandHelper;
   // handling a key down event, not including inserting commands, eg. insertTab,
   // etc.
   EditCommands editCommands_;
+
+  // The plugin for which IME is currently enabled (-1 if not enabled).
+  int pluginImeIdentifier_;
 }
 
 @property(assign, nonatomic) NSRect caretRect;
@@ -145,6 +148,11 @@ class RWHVMEditCommandHelper;
 - (void)setAccessibilityTreeRoot:(BrowserAccessibility*) treeRoot;
 // Confirm ongoing composition.
 - (void)confirmComposition;
+// Enables or disables plugin IME for the given plugin.
+- (void)setPluginImeEnabled:(BOOL)enabled forPlugin:(int)pluginId;
+// Evaluates the event in the context of plugin IME, if plugin IME is enabled.
+// Returns YES if the event was handled.
+- (BOOL)postProcessEventForPluginIme:(NSEvent*)event;
 
 @end
 
@@ -224,6 +232,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params);
 
+  virtual void SetPluginImeEnabled(bool enabled, int plugin_id);
+  virtual bool PostProcessEventForPluginIme(
+      const NativeWebKeyboardEvent& event);
+
   // Methods associated with GPU-accelerated plug-in instances and the
   // accelerated compositor.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
@@ -262,6 +274,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   void set_parent_view(NSView* parent_view) { parent_view_ = parent_view; }
 
   void SetTextInputActive(bool active);
+
+  // Sends confirmed plugin IME text back to the renderer.
+  void PluginImeCompositionConfirmed(const string16& text, int plugin_id);
 
   const std::string& selected_text() const { return selected_text_; }
 

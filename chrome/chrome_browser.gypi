@@ -3496,6 +3496,8 @@
             '../third_party/mozilla/NSURL+Utils.m',
             '../third_party/mozilla/NSWorkspace+Utils.h',
             '../third_party/mozilla/NSWorkspace+Utils.m',
+            '../third_party/mozilla/ComplexTextInputPanel.h',
+            '../third_party/mozilla/ComplexTextInputPanel.mm',
             # Headers so that IB can find classes it needs to resolve classes
             # in XIB files.
             '../base/chrome_application_mac.h',

@@ -143,6 +143,15 @@ void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
 }
 
+void TestRenderWidgetHostView::SetPluginImeEnabled(bool enabled,
+                                                   int plugin_id) {
+}
+
+bool TestRenderWidgetHostView::PostProcessEventForPluginIme(
+    const NativeWebKeyboardEvent& event) {
+  return false;
+}
+
 gfx::PluginWindowHandle
 TestRenderWidgetHostView::AllocateFakePluginWindowHandle(
     bool opaque,
