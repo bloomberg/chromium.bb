@@ -9,19 +9,22 @@ function indexErrorExpected()
 function indexSuccess()
 {
   debug('Index created successfully.');
-  createIndex(true);
+  try {
+    result = objectStore.createIndex('myIndex', 'aKey', true);
+    fail('Re-creating an index must throw an exception');
+  } catch (e) {
+    indexErrorExpected();
+  }
 }
 
 function createIndex(expect_error)
 {
   debug('Creating an index.');
-  result = objectStore.createIndex('myIndex', 'aKey', true);
-  if (expect_error) {
-    result.onsuccess = unexpectedErrorCallback;
-    result.onerror = indexErrorExpected;
-  } else {
-    result.onsuccess = indexSuccess;
-    result.onerror = unexpectedErrorCallback;
+  try {
+    result = objectStore.createIndex('myIndex', 'aKey', true);
+    indexSuccess();
+  } catch (e) {
+    unexpectedErrorCallback();
   }
 }
 
@@ -34,18 +37,19 @@ function dataAddedSuccess()
 function populateObjectStore()
 {
   debug('Populating object store');
-  objectStore = event.result;
+  deleteAllObjectStores(db);
+  window.objectStore = db.createObjectStore('test');
   var myValue = {'aKey': 21, 'aValue': '!42'};
   var result = objectStore.add(myValue, 0);
-  result.onsuccess = dataAddedSuccess();
+  result.onsuccess = dataAddedSuccess;
   result.onerror = unexpectedErrorCallback;
 }
 
-function openSuccess()
+function setVersion()
 {
-  debug('Creating object store');
-  var db = event.result;
-  var result = db.createObjectStore('test');
+  debug('setVersion');
+  window.db = event.result;
+  var result = db.setVersion('new version');
   result.onsuccess = populateObjectStore;
   result.onerror = unexpectedErrorCallback;
 }
@@ -53,7 +57,7 @@ function openSuccess()
 function test()
 {
   debug('Connecting to indexedDB');
-  var result = indexedDB.open('name', 'description');
-  result.onsuccess = openSuccess;
+  var result = webkitIndexedDB.open('name', 'description');
+  result.onsuccess = setVersion;
   result.onerror = unexpectedErrorCallback;
 }

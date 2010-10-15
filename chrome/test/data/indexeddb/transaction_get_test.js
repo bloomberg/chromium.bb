@@ -5,7 +5,7 @@ function afterCommit()
         var store = transaction.objectStore('storeName');
     } catch (e) {
         exc = e;
-        shouldBe('exc.code', '9');
+        shouldBe('exc.code', 'webkitIDBDatabaseException.NOT_ALLOWED_ERR');
     }
     done();
 }
@@ -37,33 +37,27 @@ function startTransaction()
     emptyResult.onerror = nonExistingKey;
 }
 
-function populateObjectStore(objectStore)
+function populateObjectStore()
 {
-    result = objectStore.add('myValue', 'myKey');
-    result.onsuccess = startTransaction;
-}
-
-function createObjectStoreSuccess()
-{
-    var objectStore = event.result;
-    populateObjectStore(objectStore);
-}
-
-function openSuccess()
-{
-    db = event.result;
-
     deleteAllObjectStores(db);
+    window.objectStore = db.createObjectStore('storeName');
+    var result = objectStore.add('myValue', 'myKey');
+    result.onsuccess = startTransaction;
+    result.onerror = unexpectedErrorCallback;
+}
 
-    result = db.createObjectStore('storeName');
-    result.onsuccess = createObjectStoreSuccess;
+function setVersion()
+{
+    window.db = event.result;
+    var result = db.setVersion('new version');
+    result.onsuccess = populateObjectStore;
     result.onerror = unexpectedErrorCallback;
 }
 
 function test()
 {
-    result = indexedDB.open('name', 'description');
-    result.onsuccess = openSuccess;
+    result = webkitIndexedDB.open('name', 'description');
+    result.onsuccess = setVersion;
     result.onerror = unexpectedErrorCallback;
 }
 

@@ -78,19 +78,6 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// TODO(jorlow): Re-enable once the other side of the transaction changes lands.
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_CursorTest) {
-  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
-}
-
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_IndexTest) {
-  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
-}
-
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_KeyPathTest) {
-  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
-}
-
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, SplitFilename) {
   scoped_refptr<TestOnWebKitThread> test_on_webkit_thread(
       new TestOnWebKitThread);
@@ -102,6 +89,18 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, SplitFilename) {
   EXPECT_EQ("http://host:1", origin_str);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionGetTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("transaction_get_test.html"))));
 }

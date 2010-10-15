@@ -30,7 +30,7 @@ void RendererWebIDBFactoryImpl::open(
     const WebSecurityOrigin& origin,
     WebFrame* web_frame,
     const WebString& dataDir,
-    uint64 maximum_size) {
+    unsigned long long maximum_size) {
   // Don't send the dataDir. We know what we want on the Browser side of things.
   IndexedDBDispatcher* dispatcher =
       RenderThread::current()->indexed_db_dispatcher();

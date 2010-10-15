@@ -17,7 +17,7 @@ function cursorSuccess()
 function openCursor()
 {
     debug("Opening cursor #" + count);
-    keyRange = IDBKeyRange.leftBound("myKey" + count);
+    keyRange = webkitIDBKeyRange.leftBound("myKey" + count);
     result = objectStore.openCursor(keyRange);
     result.onsuccess = cursorSuccess;
     result.onerror = unexpectedErrorCallback;
@@ -37,27 +37,29 @@ function populateObjectStore()
     }
 }
 
-function createObjectStoreSuccess()
+function createObjectStore()
 {
-    objectStore = event.result;
+    debug('createObjectStore');
+    deleteAllObjectStores(db);
+    window.objectStore = db.createObjectStore('test', 'keyPath');
     count = 0;
     populateObjectStore();
 }
 
-function openSuccess()
+function setVersion()
 {
-    debug("Creating object store");
-    var db = event.result;
-    result = db.createObjectStore('test', 'keyPath');
-    result.onsuccess = createObjectStoreSuccess;
+    debug('setVersion');
+    window.db = event.result;
+    var result = db.setVersion('new version');
+    result.onsuccess = createObjectStore;
     result.onerror = unexpectedErrorCallback;
 }
 
 function test()
 {
     debug("Opening IndexedDB");
-    result = indexedDB.open('name', 'description');
-    result.onsuccess = openSuccess;
+    result = webkitIndexedDB.open('name', 'description');
+    result.onsuccess = setVersion;
     result.onerror = unexpectedErrorCallback;
 }
 
