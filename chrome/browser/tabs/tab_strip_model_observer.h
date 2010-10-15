@@ -7,6 +7,7 @@
 #pragma once
 
 class TabContents;
+class TabStripModel;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -45,8 +46,10 @@ class TabStripModelObserver {
                              bool foreground);
 
   // The specified TabContents at |index| is being closed (and eventually
-  // destroyed).
-  virtual void TabClosingAt(TabContents* contents, int index);
+  // destroyed). |tab_strip_model| is the TabStripModel the tab was part of.
+  virtual void TabClosingAt(TabStripModel* tab_strip_model,
+                            TabContents* contents,
+                            int index);
 
   // The specified TabContents at |index| is being detached, perhaps to be
   // inserted in another TabStripModel. The implementer should take whatever

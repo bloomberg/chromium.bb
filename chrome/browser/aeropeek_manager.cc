@@ -1097,7 +1097,11 @@ void AeroPeekManager::TabInsertedAt(TabContents* contents,
   tab_list_.push_back(window);
 }
 
-void AeroPeekManager::TabClosingAt(TabContents* contents, int index) {
+void AeroPeekManager::TabClosingAt(TabStripModel* tab_strip_model,
+                                   TabContents* contents,
+                                   int index) {
+  // |tab_strip_model| is NULL when this is being called from TabDetachedAt
+  // below.
   // Delete the AeroPeekWindow object associated with this tab and all its
   // resources. (AeroPeekWindow::Destory() also removes this tab from the tab
   // list of Windows.)
@@ -1115,7 +1119,7 @@ void AeroPeekManager::TabDetachedAt(TabContents* contents, int index) {
   // Chrome will call TabInsertedAt() when this tab is inserted to another
   // TabStrip. We will re-create an AeroPeekWindow object for this tab and
   // re-add it to the tab list there.
-  TabClosingAt(contents, index);
+  TabClosingAt(NULL, contents, index);
 }
 
 void AeroPeekManager::TabSelectedAt(TabContents* old_contents,

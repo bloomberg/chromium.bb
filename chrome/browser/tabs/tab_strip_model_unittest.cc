@@ -289,7 +289,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     states_.push_back(s);
   }
 
-  virtual void TabClosingAt(TabContents* contents, int index) {
+  virtual void TabClosingAt(TabStripModel* tab_strip_model,
+                            TabContents* contents,
+                            int index) {
     states_.push_back(new State(contents, index, CLOSE));
   }
   virtual void TabDetachedAt(TabContents* contents, int index) {

@@ -74,7 +74,9 @@ class BrowserListener : public TabStripModelObserver {
   virtual void TabInsertedAt(TabContents* contents,
                              int index,
                              bool foreground);
-  virtual void TabClosingAt(TabContents* contents, int index) {}
+  virtual void TabClosingAt(TabStripModel* tab_strip_model,
+                            TabContents* contents,
+                            int index) {}
   virtual void TabDetachedAt(TabContents* contents, int index);
   virtual void TabMoved(TabContents* contents,
                         int from_index,

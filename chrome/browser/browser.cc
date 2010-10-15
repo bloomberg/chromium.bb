@@ -2620,7 +2620,9 @@ void Browser::TabInsertedAt(TabContents* contents,
                  Source<TabContents>(contents));
 }
 
-void Browser::TabClosingAt(TabContents* contents, int index) {
+void Browser::TabClosingAt(TabStripModel* tab_strip_model,
+                           TabContents* contents,
+                           int index) {
   NotificationService::current()->Notify(
       NotificationType::TAB_CLOSING,
       Source<NavigationController>(&contents->controller()),

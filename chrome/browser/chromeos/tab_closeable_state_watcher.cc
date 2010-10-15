@@ -41,10 +41,9 @@ void TabCloseableStateWatcher::TabStripWatcher::TabInsertedAt(
 }
 
 void TabCloseableStateWatcher::TabStripWatcher::TabClosingAt(
-    TabContents* tab_contents, int index) {
-  TabStripModel* tabstrip = browser_->tabstrip_model();
+    TabStripModel* tab_strip_model, TabContents* tab_contents, int index) {
   // Check if the last tab is closing.
-  if (tabstrip->count() == 1)
+  if (tab_strip_model->count() == 1)
     main_watcher_->OnTabStripChanged(browser_, true);
 }
 

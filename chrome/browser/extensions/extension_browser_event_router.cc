@@ -299,12 +299,18 @@ void ExtensionBrowserEventRouter::TabDetachedAt(TabContents* contents,
   DispatchEvent(contents->profile(), events::kOnTabDetached, json_args);
 }
 
-void ExtensionBrowserEventRouter::TabClosingAt(TabContents* contents,
+void ExtensionBrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
+                                               TabContents* contents,
                                                int index) {
   int tab_id = ExtensionTabUtil::GetTabId(contents);
 
   ListValue args;
   args.Append(Value::CreateIntegerValue(tab_id));
+
+  DictionaryValue* object_args = new DictionaryValue();
+  object_args->SetBoolean(tab_keys::kWindowClosing,
+                          tab_strip_model->closing_all());
+  args.Append(object_args);
 
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);

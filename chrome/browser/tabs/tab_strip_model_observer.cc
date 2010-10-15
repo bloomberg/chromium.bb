@@ -9,7 +9,9 @@ void TabStripModelObserver::TabInsertedAt(TabContents* contents,
                                           bool foreground) {
 }
 
-void TabStripModelObserver::TabClosingAt(TabContents* contents, int index) {
+void TabStripModelObserver::TabClosingAt(TabStripModel* tab_strip_model,
+                                         TabContents* contents,
+                                         int index) {
 }
 
 void TabStripModelObserver::TabDetachedAt(TabContents* contents, int index) {

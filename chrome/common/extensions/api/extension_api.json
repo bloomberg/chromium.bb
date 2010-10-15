@@ -1303,7 +1303,14 @@
         "type": "function",
         "description": "Fires when a tab is closed.",
         "parameters": [
-          {"type": "integer", "name": "tabId", "minimum": 0}
+          {"type": "integer", "name": "tabId", "minimum": 0},
+          { 
+            "type": "object",
+            "name": "removeInfo",
+            "properties": {
+              "isWindowClosing": {"type": "boolean", "description": "True when the tab is being closed because its window is being closed." }
+            }            
+          }          
         ]
       }
     ]

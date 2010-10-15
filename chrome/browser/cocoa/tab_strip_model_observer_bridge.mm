@@ -31,7 +31,8 @@ void TabStripModelObserverBridge::TabInsertedAt(TabContents* contents,
   }
 }
 
-void TabStripModelObserverBridge::TabClosingAt(TabContents* contents,
+void TabStripModelObserverBridge::TabClosingAt(TabStripModel* tab_strip_model,
+                                               TabContents* contents,
                                                int index) {
   if ([controller_ respondsToSelector:
           @selector(tabClosingWithContents:atIndex:)]) {

@@ -858,7 +858,7 @@ void TabStripModel::InternalCloseTab(TabContents* contents,
                                      int index,
                                      bool create_historical_tabs) {
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabClosingAt(contents, index));
+                    TabClosingAt(this, contents, index));
 
   // Ask the delegate to save an entry for this tab in the historical tab
   // database if applicable.

@@ -42,8 +42,10 @@ chrome.test.runTests([
   },
 
   function tabsOnRemoved() {
-    chrome.test.listenOnce(chrome.tabs.onRemoved, function(tabid) {
-      assertEq(moveTabIds['c'], tabid);
+    chrome.test.listenOnce(chrome.tabs.onRemoved,
+      function(tabid, removeInfo) {
+        assertEq(moveTabIds['c'], tabid);
+        assertEq(false, removeInfo.isWindowClosing);
     });
 
     chrome.tabs.remove(moveTabIds['c'], pass());
@@ -63,6 +65,11 @@ chrome.test.runTests([
   function windowsOnRemoved() {
     chrome.test.listenOnce(chrome.windows.onRemoved, function(windowId) {
       assertEq(windowEventsWindow.id, windowId);
+    });
+
+    chrome.test.listenOnce(chrome.tabs.onRemoved,
+      function(tabId, removeInfo) {
+        assertEq(true, removeInfo.isWindowClosing);
     });
 
     chrome.windows.remove(windowEventsWindow.id, pass());
