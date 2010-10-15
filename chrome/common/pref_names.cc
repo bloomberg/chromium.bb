@@ -837,7 +837,7 @@ const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
 
 // String containing the last known intranet redirect URL, if any.  See
 // intranet_redirect_detector.h for more information.
-const char kLastKnownIntranetRedirectOrigin[] = "";
+const char kLastKnownIntranetRedirectOrigin[] = "browser.last_redirect_origin";
 
 // Integer containing the system Country ID the first time we checked the
 // template URL prepopulate data.  This is used to avoid adding a whole bunch of
