@@ -305,7 +305,6 @@ void EulaView::Init() {
   if (!chromeos::CrosLibrary::Get()->EnsureLoaded() ||
       !chromeos::CryptohomeTpmIsEnabled()) {
     system_security_settings_link_->SetEnabled(false);
-    // TODO(glotov): add tooltip with description.
   }
   layout->AddView(system_security_settings_link_);
 
@@ -331,6 +330,12 @@ void EulaView::UpdateLocalizedStrings() {
   if (!usage_statistics_checkbox_->IsEnabled()) {
     usage_statistics_checkbox_->SetTooltipText(
         l10n_util::GetString(IDS_OPTION_DISABLED_BY_POLICY));
+  }
+
+  // Set tooltip for system security settings link if TPM is disabled.
+  if (!system_security_settings_link_->IsEnabled()) {
+    system_security_settings_link_->SetTooltipText(
+        l10n_util::GetString(IDS_EULA_TPM_DISABLED));
   }
 
   // Load other labels from resources.
