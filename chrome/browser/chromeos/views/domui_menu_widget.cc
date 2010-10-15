@@ -176,7 +176,9 @@ class DOMViewCache : NotificationObserver {
 
   // Create a cache if one does not exist yet.
   void WarmUp() {
-    if (cache_) {// domui is created in delay.
+    // skip if domui is created in delay, or
+    // chromeos is shutting down.
+    if (cache_ || !current_profile_) {
       CheckClassInvariant();
       return;
     }
