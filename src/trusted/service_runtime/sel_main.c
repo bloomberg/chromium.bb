@@ -23,6 +23,7 @@
 
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -120,7 +121,7 @@ static void PrintUsage() {
           "Usage: sel_ldr [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
           "               [-l log_file]\n"
-          "               [-X d] [-acdFgImMsQv] -- [nacl_file] [args]\n"
+          "               [-X d] [-acdFgImMRsQv] -- [nacl_file] [args]\n"
           "\n");
   fprintf(stderr,
           " -h\n"
@@ -146,6 +147,9 @@ static void PrintUsage() {
           "    since these (windows-library-using) syscalls are\n"
           "    actually done via a work queue using the sel_ldr\n"
           "    main thread anyway\n"
+          " -R an RPC supplies the NaCl module.\n"
+          "    No nacl_file argument is expected, and the -f flag cannot be\n"
+          "    used with this flag.\n"
           "\n"
           " (testing flags)\n"
           " -a allow file access! dangerous!\n"
@@ -172,8 +176,8 @@ static void PrintUsage() {
  * This is because the OSX version of SDL ignores main's return value
  * and always exits with an exit status of 0, breaking tests.
  */
-int main(int  ac,
-         char **av) {
+int main(int  argc,
+         char **argv) {
   char const *const             *envp;
   int                           opt;
   char                          *rest;
@@ -181,8 +185,10 @@ int main(int  ac,
   struct redir                  *redir_queue;
   struct redir                  **redir_qend;
 
+
   struct NaClApp                state;
-  char                          *nacl_file = 0;
+  char                          *nacl_file = NULL;
+  int                           rpc_supplies_nexe = 0;
   int                           main_thread_only = 1;
   int                           export_addr_to = -2;
   enum NaClAbiCheckOption       check_abi = NACL_ABI_CHECK_OPTION_CHECK;
@@ -260,7 +266,7 @@ int main(int  ac,
     exit(1);
   }
 
-  while ((opt = getopt(ac, av, "abcf:Fgh:i:Il:mMQr:svw:X:")) != -1) {
+  while ((opt = getopt(argc, argv, "abcf:Fgh:i:Il:mMQr:Rsvw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -325,10 +331,15 @@ int main(int  ac,
       case 'M':
         main_thread_only = 0;
         break;
+      case 'R':
+        rpc_supplies_nexe = 1;
+        break;
+      /* case 'r':  with 'h' and 'w' above */
       case 'v':
         ++verbosity;
         NaClLogIncrVerbosity();
         break;
+      /* case 'w':  with 'h' and 'r' above */
       case 'X':
         export_addr_to = strtol(optarg, (char **) 0, 0);
         break;
@@ -345,6 +356,18 @@ int main(int  ac,
        PrintUsage();
        exit(-1);
     }
+  }
+
+  if (verbosity) {
+    int         ix;
+    char const  *separator = "";
+
+    fprintf(stderr, "sel_ldr argument list:\n");
+    for (ix = 0; ix < argc; ++ix) {
+      fprintf(stderr, "%s%s", separator, argv[ix]);
+      separator = " ";
+    }
+    putc('\n', stderr);
   }
 
   /* Check if we should start broken */
@@ -402,23 +425,42 @@ int main(int  ac,
    */
   log_desc = fileno(log_gio->iop);
 
-  if (!nacl_file && optind < ac) {
-    nacl_file = av[optind];
-    ++optind;
+  if (rpc_supplies_nexe) {
+    if (NULL != nacl_file) {
+      fprintf(stderr,
+              "sel_ldr: mutually exclusive flags -f and -R both used\n");
+      exit(1);
+    }
+    /* post: NULL == nacl_file */
+    if (export_addr_to < 0) {
+      fprintf(stderr,
+              "sel_ldr: -R requires -X to set up secure command channel\n");
+      exit(1);
+    }
+  } else {
+    if (NULL == nacl_file && optind < argc) {
+      nacl_file = argv[optind];
+      ++optind;
+    }
+    if (NULL == nacl_file) {
+      fprintf(stderr, "No nacl file specified\n");
+      exit(1);
+    }
+    /* post: NULL != nacl_file */
   }
-  if (!nacl_file) {
-    fprintf(stderr, "No nacl file specified\n");
-    exit(1);
-  }
+  /*
+   * post condition established by the above code (in Hoare logic
+   * terminology):
+   *
+   * NULL == nacl_file iff rpc_supplies_nexe
+   *
+   * so hence forth, testing !rpc_supplies_nexe suffices for
+   * establishing NULL != nacl_file.
+   */
+  CHECK((NULL == nacl_file) == rpc_supplies_nexe);
 
   /* to be passed to NaClMain, eventually... */
-  av[--optind] = (char*)"NaClMain";
-
-  if (0 == GioMemoryFileSnapshotCtor(&gf, nacl_file)) {
-    perror("sel_main");
-    fprintf(stderr, "Cannot open \"%s\".\n", nacl_file);
-    exit(1);
-  }
+  argv[--optind] = (char *) "NaClMain";
 
   if (!NaClAppCtor(&state)) {
     fprintf(stderr, "Error while constructing app state\n");
@@ -447,33 +489,34 @@ int main(int  ac,
     errcode = LOAD_UNSUPPORTED_OS_PLATFORM;
     nap->module_load_status = errcode;
     fprintf(stderr, "Error while loading \"%s\": %s\n",
-            nacl_file,
+            NULL != nacl_file ? nacl_file : "(no file, to-be-supplied-via-RPC)",
             NaClErrorString(errcode));
   }
 
-  /*
-   * Ensure this platform has Data Execution Prevention enabled.
-   */
-  if (!skip_qualification && !NaClCheckDEP()) {
-    errcode = LOAD_DEP_UNSUPPORTED;
-    nap->module_load_status = errcode;
-    fprintf(stderr, "Error while loading \"%s\": %s\n",
-            nacl_file,
-            NaClErrorString(errcode));
-  }
+  if (!rpc_supplies_nexe) {
+    if (0 == GioMemoryFileSnapshotCtor(&gf, nacl_file)) {
+      perror("sel_main");
+      fprintf(stderr, "Cannot open \"%s\".\n", nacl_file);
+      errcode = LOAD_OPEN_ERROR;
+    }
 
-  if (LOAD_OK == errcode) {
-    errcode = NaClAppLoadFile((struct Gio *) &gf, nap, check_abi);
-    if (LOAD_OK != errcode) {
+    if (LOAD_OK == errcode) {
+      errcode = NaClAppLoadFile((struct Gio *) &gf, nap, check_abi);
+      if (LOAD_OK != errcode) {
+        fprintf(stderr, "Error while loading \"%s\": %s\n",
+                nacl_file,
+                NaClErrorString(errcode));
+        fprintf(stderr,
+                ("Using the wrong type of nexe (nacl-x86-32"
+                 " on an x86-64 or vice versa)\n"
+                 "or a corrupt nexe file may be"
+                 " responsible for this error.\n"));
+      }
+
+      NaClXMutexLock(&nap->mu);
       nap->module_load_status = errcode;
-      fprintf(stderr, "Error while loading \"%s\": %s\n",
-              nacl_file,
-              NaClErrorString(errcode));
-      fprintf(stderr,
-              ("Using the wrong type of nexe (nacl-x86-32"
-               " on an x86-64 or vice versa)\n"
-               "or a corrupt nexe file may be responsible for this error.\n"));
-      exit(1);
+      NaClXCondVarBroadcast(&nap->cv);
+      NaClXMutexUnlock(&nap->mu);
     }
 
     if (fuzzing_quit_after_load) {
@@ -496,41 +539,6 @@ int main(int  ac,
   }
 #endif
 
-  if (LOAD_OK == errcode) {
-    if (verbosity) {
-      gprintf((struct Gio *) &gout, "printing NaClApp details\n");
-      NaClAppPrintDetails(nap, (struct Gio *) &gout);
-    }
-
-    /*
-     * Finish setting up the NaCl App.  This includes dup'ing
-     * descriptors 0-2 and making them available to the NaCl App.
-     *
-     * If a log file were specified at the command-line and the
-     * logging module was set to use a log file instead of standard
-     * error, then we redirect standard output of the NaCl module to
-     * that log file too.  Standard input is inherited, and could
-     * result in a NaCl module competing for input from the terminal;
-     * for graphical / browser plugin environments, this never is
-     * allowed to happen, and having this is useful for debugging, and
-     * for potential standalone text-mode applications of NaCl.
-     *
-     * TODO(bsy): consider whether inheriting stdin should occur only
-     * in debug mode.
-     */
-    errcode = NaClAppPrepareToLaunch(nap,
-                                     0,
-                                     (2 == log_desc) ? 1 : log_desc,
-                                     log_desc);
-    if (LOAD_OK != errcode) {
-      nap->module_load_status = errcode;
-      fprintf(stderr, "NaClAppPrepareToLaunch returned %d", errcode);
-    }
-  }
-
-  /* Give debuggers a well known point at which xlate_base is known.  */
-  NaClGdbHook(&state);
-
   /*
    * Execute additional I/O redirections.  NB: since the NaClApp
    * takes ownership of host / IMC socket descriptors, all but
@@ -539,6 +547,7 @@ int main(int  ac,
    * close descriptors, since the underlying host OS will do so
    * as part of service runtime exit.
    */
+  NaClLog(4, "Processing I/O redirection/inheritance from environment\n");
   for (entry = redir_queue; NULL != entry; entry = entry->next) {
     switch (entry->tag) {
       case HOST_DESC:
@@ -550,6 +559,7 @@ int main(int  ac,
         break;
     }
   }
+
   /*
    * If export_addr_to is set to a non-negative integer, we create a
    * bound socket and socket address pair and bind the former to
@@ -578,9 +588,61 @@ int main(int  ac,
     }
   }
   /*
-   * may have created a thread, so need to synchronize uses of nap
-   * contents
+   * May have created a thread, so need to synchronize uses of nap
+   * contents henceforth.
    */
+
+  if (rpc_supplies_nexe) {
+    errcode = NaClWaitForLoadModuleStatus(nap);
+  } else {
+    /**************************************************************************
+     * TODO(bsy): This else block should be made unconditional and
+     * invoked after the LoadModule RPC completes, eliminating the
+     * essentially dulicated code in latter part of NaClLoadModuleRpc.
+     * This cannot be done until we have full saucer separation
+     * technology, since Chrome currently uses sel_main_chrome.c and
+     * relies on the functionality of the duplicated code.
+     *************************************************************************/
+    if (LOAD_OK == errcode) {
+      if (verbosity) {
+        gprintf((struct Gio *) &gout, "printing NaClApp details\n");
+        NaClAppPrintDetails(nap, (struct Gio *) &gout);
+      }
+
+      /*
+       * Finish setting up the NaCl App.  This includes dup'ing
+       * descriptors 0-2 and making them available to the NaCl App.
+       *
+       * If a log file were specified at the command-line and the
+       * logging module was set to use a log file instead of standard
+       * error, then we redirect standard output of the NaCl module to
+       * that log file too.  Standard input is inherited, and could
+       * result in a NaCl module competing for input from the terminal;
+       * for graphical / browser plugin environments, this never is
+       * allowed to happen, and having this is useful for debugging, and
+       * for potential standalone text-mode applications of NaCl.
+       *
+       * TODO(bsy): consider whether inheriting stdin should occur only
+       * in debug mode.
+       */
+      errcode = NaClAppPrepareToLaunch(nap,
+                                       0,
+                                       (2 == log_desc) ? 1 : log_desc,
+                                       log_desc);
+      if (LOAD_OK != errcode) {
+        nap->module_load_status = errcode;
+        fprintf(stderr, "NaClAppPrepareToLaunch returned %d", errcode);
+      }
+    }
+
+    if (-1 == (*((struct Gio *) &gf)->vtbl->Close)((struct Gio *) &gf)) {
+      fprintf(stderr, "Error while closing \"%s\".\n", argv[optind]);
+    }
+    (*((struct Gio *) &gf)->vtbl->Dtor)((struct Gio *) &gf);
+
+    /* Give debuggers a well known point at which xlate_base is known.  */
+    NaClGdbHook(&state);
+  }
 
   /*
    * Print out a marker for scripts to use to mark the start of app
@@ -652,16 +714,11 @@ int main(int  ac,
    */
   fflush((FILE *) NULL);
 
-  NaClXMutexLock(&nap->mu);
-  nap->module_load_status = LOAD_OK;
-  NaClXCondVarBroadcast(&nap->cv);
-  NaClXMutexUnlock(&nap->mu);
-
-  if (NULL != nap->secure_channel) {
+  if (NULL != nap->secure_channel && LOAD_OK == errcode) {
     /*
      * wait for start_module RPC call on secure channel thread.
      */
-    NaClWaitForModuleStartStatusCall(nap);
+    errcode = NaClWaitForStartModuleCommand(nap);
   }
 
   /*
@@ -686,8 +743,8 @@ int main(int  ac,
    * available.
    */
   if (!NaClCreateMainThread(nap,
-                            ac - optind,
-                            av + optind,
+                            argc - optind,
+                            argv + optind,
                             NaClEnvCleanserEnvironment(&filtered_env))) {
     fprintf(stderr, "creating main thread failed\n");
     NaClEnvCleanserDtor(&filtered_env);
@@ -714,17 +771,9 @@ int main(int  ac,
     printf("Dumping vmmap.\n"); fflush(stdout);
     PrintVmmap(nap);
     fflush(stdout);
-
-    printf("appdtor\n");
-    fflush(stdout);
   }
 
  done_file_dtor:
-  if ((*((struct Gio *) &gf)->vtbl->Close)((struct Gio *) &gf) == -1) {
-    fprintf(stderr, "Error while closing \"%s\".\n", av[optind]);
-  }
-  (*((struct Gio *) &gf)->vtbl->Dtor)((struct Gio *) &gf);
-
   if (verbosity > 0) {
     printf("Done.\n");
   }

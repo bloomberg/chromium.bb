@@ -294,8 +294,7 @@ enum NaClAbiCheckOption {
 
 NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
                               struct NaClApp  *nap,
-                              enum NaClAbiCheckOption check_abi)
-  NACL_WUR;
+                              enum NaClAbiCheckOption check_abi) NACL_WUR;
 
 size_t  NaClAlignPad(size_t val,
                      size_t align);
@@ -453,7 +452,9 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
 
 void NaClSecureCommandChannel(struct NaClApp  *nap);
 
-void NaClWaitForModuleStartStatusCall(struct NaClApp *nap);
+NaClErrorCode NaClWaitForLoadModuleStatus(struct NaClApp *nap) NACL_WUR;
+
+NaClErrorCode NaClWaitForStartModuleCommand(struct NaClApp *nap) NACL_WUR;
 
 void NaClFillMemoryRegionWithHalt(void *start, size_t size);
 
