@@ -34,11 +34,6 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
   BrowsingDataRemover* remover_;
   scoped_ptr<ClearBrowsingObserver> observer_;
   BOOL isClearing_;  // YES while clearing data is ongoing.
-  NSString* clearingStatus_;
-
-  IBOutlet NSTabView* tabView_;
-  IBOutlet NSView* otherDataTab_;
-  IBOutlet NSArray* objectsToVerticallySize_;
 
   // Values for checkboxes, kept in sync with bindings. These values get
   // persisted into prefs if the user accepts the dialog.
@@ -65,10 +60,7 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
 // IBActions for the dialog buttons
 - (IBAction)clearData:(id)sender;
 - (IBAction)cancel:(id)sender;
-
 - (IBAction)openFlashPlayerSettings:(id)sender;
-- (IBAction)stopSyncAndDeleteData:(id)sender;
-- (IBAction)openGoogleDashboard:(id)sender;
 
 // Properties for bindings
 @property (nonatomic) BOOL clearBrowsingHistory;
@@ -79,10 +71,6 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
 @property (nonatomic) BOOL clearFormData;
 @property (nonatomic) NSInteger timePeriod;
 @property (nonatomic) BOOL isClearing;
-@property (nonatomic, copy) NSString* clearingStatus;
-@property (readonly, nonatomic) BOOL isSyncEnabled;
-
-@property (readonly) NSFont* labelFont;
 
 @end
 

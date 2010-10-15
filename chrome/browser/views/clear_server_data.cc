@@ -286,13 +286,12 @@ void ClearServerDataView::OnStateChanged() {
 void ClearServerDataView::UpdateControlEnabledState() {
   bool delete_in_progress = false;
 
-  // Succeeded/FailedClearingServerData should only be called once, not every
-  // time the view is refreshed.  As such, on success/failure handle that state
-  // and immediately reset things back to CLEAR_NOT_STARTED.
+  // We only want to call Suceeded/FailedClearingServerData once, not every
+  // time the view is refreshed.  As such, on success/failure we handle that
+  // state and immediately reset things back to CLEAR_NOT_STARTED.
   ProfileSyncService::ClearServerDataState clear_state =
-      (sync_service_ == NULL) ?
-      ProfileSyncService::CLEAR_NOT_STARTED :
-      sync_service_->GetClearServerDataState();
+    profile_->GetProfileSyncService()->GetClearServerDataState();
+  profile_->GetProfileSyncService()->ResetClearServerDataState();
 
   if (NULL != sync_service_) {
     sync_service_->ResetClearServerDataState();
@@ -300,30 +299,30 @@ void ClearServerDataView::UpdateControlEnabledState() {
 
   switch (clear_state) {
     case ProfileSyncService::CLEAR_NOT_STARTED:
-      // This can occur on a first start and after a failed clear (which does
-      // not close the tab). Do nothing.
+      // We can get here when we first start and after a failed clear (which
+      // does not close the tab), do nothing.
       break;
     case ProfileSyncService::CLEAR_CLEARING:
-      // Clearing buttons on all tabs are disabled at this point, throbber is
-      // going.
-      status_label_->SetText(l10n_util::GetString(IDS_CLEAR_DATA_SENDING));
-      status_label_->SetVisible(true);
-      delete_in_progress = true;
+        // Clearing buttons on all tabs are disabled at this
+        // point, throbber is going
+        status_label_->SetText(l10n_util::GetString(IDS_CLEAR_DATA_SENDING));
+        status_label_->SetVisible(true);
+        delete_in_progress = true;
       break;
     case ProfileSyncService::CLEAR_FAILED:
-      // Show an error and reallow clearing.
-      clear_data_parent_window_->FailedClearingServerData();
-      status_label_->SetText(l10n_util::GetString(IDS_CLEAR_DATA_ERROR));
-      status_label_->SetVisible(true);
-      delete_in_progress = false;
+        // Show an error and reallow clearing
+        clear_data_parent_window_->FailedClearingServerData();
+        status_label_->SetText(l10n_util::GetString(IDS_CLEAR_DATA_ERROR));
+        status_label_->SetVisible(true);
+        delete_in_progress = false;
       break;
     case ProfileSyncService::CLEAR_SUCCEEDED:
-      // Close the dialog box, success!
-      status_label_->SetVisible(false);
-      delete_in_progress = false;
-      clear_data_parent_window_->SucceededClearingServerData();
+        // Close the dialog box, success!
+        status_label_->SetVisible(false);
+        delete_in_progress = false;
+        clear_data_parent_window_->SucceededClearingServerData();
       break;
-  }
+    }
 
   // allow_clear can be false when a local browsing data clear is happening
   // from the neighboring tab.  delete_in_progress means that a clear is
