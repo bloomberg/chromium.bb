@@ -151,6 +151,8 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
     return false;
   }
 
+  // TODO(thestig) This is for debugging bug 59317. Remove this when done.
+  LOG(INFO) << "PluginLib::ReadWebPluginInfo loading " << filename.value();
   void* dl = base::LoadNativeLibrary(filename);
   if (!dl) {
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
