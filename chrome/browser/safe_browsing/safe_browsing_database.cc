@@ -559,14 +559,6 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
                               pending_hashes_.begin(), pending_hashes_.end());
   }
 
-  std::vector<SBAddPrefix> add_prefixes;
-  std::vector<SBAddFullHash> add_full_hashes;
-  if (!store_->FinishUpdate(pending_add_hashes,
-                            &add_prefixes, &add_full_hashes)) {
-    RecordFailure(FAILURE_DATABASE_UPDATE_FINISH);
-    return;
-  }
-
   // Measure the amount of IO during the bloom filter build.
   base::IoCounters io_before, io_after;
   base::ProcessHandle handle = base::Process::Current().handle();
@@ -585,6 +577,14 @@ void SafeBrowsingDatabaseNew::UpdateFinished(bool update_succeeded) {
   const bool got_counters = metric->GetIOCounters(&io_before);
 
   const base::Time before = base::Time::Now();
+
+  std::vector<SBAddPrefix> add_prefixes;
+  std::vector<SBAddFullHash> add_full_hashes;
+  if (!store_->FinishUpdate(pending_add_hashes,
+                            &add_prefixes, &add_full_hashes)) {
+    RecordFailure(FAILURE_DATABASE_UPDATE_FINISH);
+    return;
+  }
 
   // Create and populate |filter| from |add_prefixes|.
   // TODO(shess): The bloom filter doesn't need to be a
