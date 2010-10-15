@@ -3115,6 +3115,7 @@ void RenderView::didClearWindowObject(WebFrame* frame) {
   GURL frame_url = frame->url();
   if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) &&
       (frame_url.SchemeIs(chrome::kChromeUIScheme) ||
+      frame_url.SchemeIs(chrome::kGearsScheme) ||
       frame_url.SchemeIs(chrome::kDataScheme))) {
     GetDOMUIBindings()->set_message_sender(this);
     GetDOMUIBindings()->set_routing_id(routing_id_);
