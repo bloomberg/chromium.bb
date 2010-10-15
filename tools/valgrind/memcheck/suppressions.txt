@@ -2755,7 +2755,7 @@
    fun:_ZNK15BrowserFrameGtk20GetBoundsForTabStripEP12BaseTabStrip
    fun:_ZN8chromeos17BrowserViewLayout14LayoutTabStripEv
    fun:_ZN17BrowserViewLayout6LayoutEPN5views4ViewE
-   fun:_ZN11BrowserView6LayoutEv
+   ...
    fun:_ZN8chromeos11BrowserView25ChildPreferredSizeChangedEPN5views4ViewE
    fun:_ZN5views4View20PreferredSizeChangedEv
    fun:_ZN8chromeos14StatusAreaView25ChildPreferredSizeChangedEPN5views4ViewE
@@ -2770,7 +2770,6 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
-   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
 }
 {
    bug_58074
