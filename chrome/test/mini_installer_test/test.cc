@@ -6,7 +6,7 @@
 #include "base/file_path.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/util_constants.h"
@@ -51,7 +51,7 @@ class MiniInstallTest : public testing::Test {
       build = L"latest";
     force_tests_ = cmd->HasSwitch(switches::kInstallerTestForce);
     chrome_frame_ = cmd->HasSwitch(installer_util::switches::kChromeFrame);
-    if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA ||
+    if (base::win::GetVersion() < base::win::VERSION_VISTA ||
         force_tests_) {
       CleanTheSystem();
       // Separate the test output from cleaning output

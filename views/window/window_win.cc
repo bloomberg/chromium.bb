@@ -12,6 +12,7 @@
 #include "app/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/font.h"
 #include "gfx/icon_util.h"
@@ -193,7 +194,7 @@ static BOOL CALLBACK SendDwmCompositionChanged(HWND window, LPARAM param) {
 }  // namespace
 
 void WindowWin::FrameTypeChanged() {
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // We need to toggle the rendering policy of the DWM/glass frame as we
     // change from opaque to glass. "Non client rendering enabled" means that
     // the DWM's glass non-client rendering is enabled, which is why

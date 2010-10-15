@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/scoped_comptr_win.h"
 #include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
@@ -39,7 +40,7 @@ void NativeButtonWin::UpdateLabel() {
   // Show or hide the shield icon of Windows onto this button every time when we
   // update the button text so Windows can lay out the shield icon and the
   // button text correctly.
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
       win_util::UserAccountControlIsEnabled()) {
     Button_SetElevationRequiredState(native_view(),
                                      native_button_->need_elevation());

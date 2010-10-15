@@ -14,7 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 
 const wchar_t kLocalesDirName[] = L"Locales";
 
@@ -114,7 +114,7 @@ bool SimpleResourceLoader::GetLocaleFilePath(const std::wstring& language,
 
 HINSTANCE SimpleResourceLoader::LoadLocaleDll(const FilePath& dll_path) {
   DWORD load_flags = 0;
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     load_flags = LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE |
                  LOAD_LIBRARY_AS_IMAGE_RESOURCE;
   } else {

@@ -23,6 +23,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -598,7 +599,7 @@ void UpdateAppIconDownloadProgress(int download_count,
                                    float progress) {
 #if defined(OS_WIN)
   // Taskbar progress bar is only supported on Win7.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
   ScopedComPtr<ITaskbarList3> taskbar;

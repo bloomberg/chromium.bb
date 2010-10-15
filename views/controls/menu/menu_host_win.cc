@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "views/controls/menu/menu_host_win.h"
 
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_host_root_view.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -23,7 +23,7 @@ MenuHostWin::MenuHostWin(SubmenuView* submenu)
       owns_capture_(false) {
   set_window_style(WS_POPUP);
   set_initial_class_style(
-      (win_util::GetWinVersion() < win_util::WINVERSION_XP) ?
+      (base::win::GetVersion() < base::win::VERSION_XP) ?
       0 : CS_DROPSHADOW);
   is_mouse_down_ =
       ((GetKeyState(VK_LBUTTON) & 0x80) ||

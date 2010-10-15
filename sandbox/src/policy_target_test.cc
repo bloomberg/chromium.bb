@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/sandbox_utils.h"
@@ -158,7 +158,7 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_process(int argc, wchar_t **argv) {
 
 TEST(PolicyTargetTest, SetInformationThread) {
   TestRunner runner;
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() >= base::win::VERSION_XP) {
     runner.SetTestState(BEFORE_REVERT);
     EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_token"));
   }
@@ -167,13 +167,13 @@ TEST(PolicyTargetTest, SetInformationThread) {
   EXPECT_EQ(ERROR_NO_TOKEN, runner.RunTest(L"PolicyTargetTest_token"));
 
   runner.SetTestState(EVERY_STATE);
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_XP)
+  if (base::win::GetVersion() >= base::win::VERSION_XP)
     EXPECT_EQ(SBOX_TEST_FAILED, runner.RunTest(L"PolicyTargetTest_steal"));
 }
 
 TEST(PolicyTargetTest, OpenThreadToken) {
   TestRunner runner;
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() >= base::win::VERSION_XP) {
     runner.SetTestState(BEFORE_REVERT);
     EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_token2"));
   }
@@ -184,7 +184,7 @@ TEST(PolicyTargetTest, OpenThreadToken) {
 
 TEST(PolicyTargetTest, OpenThreadTokenEx) {
   TestRunner runner;
-  if (win_util::GetWinVersion() < win_util::WINVERSION_XP)
+  if (base::win::GetVersion() < base::win::VERSION_XP)
     return;
 
   runner.SetTestState(BEFORE_REVERT);

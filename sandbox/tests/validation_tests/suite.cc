@@ -11,6 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "sandbox/tests/common/controller.h"
 
+#pragma comment(lib, "shlwapi.lib")
+
 namespace sandbox {
 
 // Returns true if the volume that contains any_path supports ACL security. The

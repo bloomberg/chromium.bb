@@ -7,6 +7,7 @@
 
 #include "chrome/browser/browsing_data_remover.h"
 
+#include "base/win/windows_version.h"
 #include "chrome_frame/chrome_frame_activex.h"
 #include "chrome_frame/utils.h"
 
@@ -65,7 +66,7 @@ STDMETHODIMP DeleteChromeHistory::DeleteBrowsingHistory(DWORD flags) {
   // effort to connect. Thus, we detect if we are in that circumstance and exit
   // silently.
   base::IntegrityLevel integrity_level;
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
       !base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(),
                                       &integrity_level)) {
     return E_UNEXPECTED;

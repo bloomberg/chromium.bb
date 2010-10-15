@@ -19,7 +19,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/plugins/default_plugin_shared.h"
@@ -415,7 +415,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   // name of the current process.  We do it in the installer for admin users,
   // for the rest patch this function.
   if ((quirks_ & PLUGIN_QUIRK_PATCH_REGENUMKEYEXW) &&
-      win_util::GetWinVersion() == win_util::WINVERSION_XP &&
+      base::win::GetVersion() == base::win::VERSION_XP &&
       !RegKey().Open(HKEY_LOCAL_MACHINE,
           L"SOFTWARE\\Microsoft\\MediaPlayer\\ShimInclusionList\\chrome.exe",
           KEY_READ) &&

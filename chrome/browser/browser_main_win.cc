@@ -19,7 +19,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -49,7 +49,7 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
 }
 
 void WarnAboutMinimumSystemRequirements() {
-  if (win_util::GetWinVersion() < win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() < base::win::VERSION_XP) {
     // Display a warning message if the user is running chrome on Windows 2000.
     const std::wstring text =
         l10n_util::GetString(IDS_UNSUPPORTED_OS_PRE_WIN_XP);
@@ -148,10 +148,10 @@ void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
 int HandleIconsCommands(const CommandLine &parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kHideIcons)) {
     std::wstring cp_applet;
-    win_util::WinVersion version = win_util::GetWinVersion();
-    if (version >= win_util::WINVERSION_VISTA) {
+    base::win::Version version = base::win::GetVersion();
+    if (version >= base::win::VERSION_VISTA) {
       cp_applet.assign(L"Programs and Features");  // Windows Vista and later.
-    } else if (version >= win_util::WINVERSION_XP) {
+    } else if (version >= base::win::VERSION_XP) {
       cp_applet.assign(L"Add/Remove Programs");  // Windows XP.
     } else {
       return ResultCodes::UNSUPPORTED_PARAM;  // Not supported

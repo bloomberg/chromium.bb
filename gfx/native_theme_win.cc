@@ -11,7 +11,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_handle.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "gfx/gdi_util.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
@@ -535,7 +535,7 @@ HRESULT NativeTheme::PaintProgressBar(HDC hdc,
   // The thickness of the bar frame inside |value_rect|
   const int kXPBarPadding = 3;
 
-  bool pre_vista = win_util::GetWinVersion() < win_util::WINVERSION_VISTA;
+  bool pre_vista = base::win::GetVersion() < base::win::VERSION_VISTA;
   HANDLE handle = GetThemeHandle(PROGRESS);
   if (handle && draw_theme_ && draw_theme_ex_) {
     draw_theme_(handle, hdc, PP_BAR, 0, bar_rect, NULL);

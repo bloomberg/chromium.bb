@@ -19,7 +19,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #endif
 
 using WebKit::WebInputEvent;
@@ -164,7 +164,7 @@ bool Scrollbar::Paint(const PP_Rect* rect, ImageData* image) {
   scrollbar_->paint(webkit_glue::ToWebCanvas(canvas), gfx_rect);
 
 #if defined(OS_WIN)
-  if (win_util::GetWinVersion() == win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() == base::win::VERSION_XP) {
     canvas->getTopPlatformDevice().makeOpaque(
         gfx_rect.x(), gfx_rect.y(), gfx_rect.width(), gfx_rect.height());
   }

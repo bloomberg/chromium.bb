@@ -22,7 +22,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -300,7 +300,7 @@ HRESULT RefreshElevationPolicy() {
 // The idea here is to try this out on chrome frame dev channel
 // and see if it produces a significant drift in startup numbers.
 HRESULT SetupRunOnce() {
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA)
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
     return S_OK;
 
   std::wstring channel_name;
@@ -699,7 +699,7 @@ static bool SetOrDeleteMimeHandlerKey(bool set, HKEY root_key) {
 bool RegisterSecuredMimeHandler(bool enable, bool is_system) {
   if (!is_system) {
     return SetOrDeleteMimeHandlerKey(enable, HKEY_CURRENT_USER);
-  } else if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+  } else if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     return SetOrDeleteMimeHandlerKey(enable, HKEY_LOCAL_MACHINE);
   }
 

@@ -21,7 +21,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
@@ -228,7 +228,7 @@ bool RelaunchSetupAsConsoleUser(const std::wstring& flag) {
       WideToASCII(installer_util::switches::kToastResultsKey),
       base::IntToString(key));
 
-  if (win_util::GetWinVersion() > win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() > base::win::VERSION_XP) {
     // Make sure that in Vista and Above we have the proper DACLs so
     // the interactive user can launch it.
     if (!FixDACLsForExecute(setup_exe.ToWStringHack().c_str()))

@@ -17,14 +17,15 @@
 #include "base/resource_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
+
 #include "gfx/font.h"
 
 namespace {
 
 // Returns the flags that should be passed to LoadLibraryEx.
 DWORD GetDataDllLoadFlags() {
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA)
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
     return LOAD_LIBRARY_AS_DATAFILE_EXCLUSIVE | LOAD_LIBRARY_AS_IMAGE_RESOURCE;
 
   return DONT_RESOLVE_DLL_REFERENCES;

@@ -21,7 +21,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
@@ -390,7 +390,7 @@ bool UpdateJumpList(const wchar_t* app_id,
   // JumpList is implemented only on Windows 7 or later.
   // So, we should return now when this function is called on earlier versions
   // of Windows.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return true;
 
   // Create an ICustomDestinationList object and attach it to our application.
@@ -579,7 +579,7 @@ JumpList::~JumpList() {
 
 // static
 bool JumpList::Enabled() {
-  return (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7 &&
+  return (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
           !CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableCustomJumpList));
 }
@@ -590,7 +590,7 @@ bool JumpList::AddObserver(Profile* profile) {
   // When we add this object to the observer list, we save the pointer to this
   // TabRestoreService object. This pointer is used when we remove this object
   // from the observer list.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7 || !profile)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7 || !profile)
     return false;
 
   TabRestoreService* tab_restore_service = profile->GetTabRestoreService();

@@ -12,7 +12,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -468,7 +468,7 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
     if (remove_all &&
         (!suffix.empty() || CurrentUserHasDefaultBrowser(system_uninstall)) &&
         !::IsUserAnAdmin() &&
-        (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) &&
+        (base::win::GetVersion() >= base::win::VERSION_VISTA) &&
         !cmd_line.HasSwitch(installer_util::switches::kRunAsAdmin)) {
       std::wstring exe = cmd_line.GetProgram().value();
       std::wstring params(cmd_params);

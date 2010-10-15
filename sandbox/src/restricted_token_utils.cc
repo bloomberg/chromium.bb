@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_handle_win.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/job.h"
 #include "sandbox/src/restricted_token.h"
 #include "sandbox/src/security_level.h"
@@ -85,9 +85,8 @@ DWORD CreateRestrictedToken(HANDLE *token_handle,
       // in the token to achieve this. You should also set the process to be
       // low integrity level so it can't access object created by other
       // processes.
-      if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+      if (base::win::GetVersion() >= base::win::VERSION_VISTA)
         restricted_token.AddRestrictingSidLogonSession();
-      }
       break;
     }
     case USER_RESTRICTED: {
@@ -286,7 +285,7 @@ const wchar_t* GetIntegrityLevelString(IntegrityLevel integrity_level) {
   return NULL;
 }
 DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return ERROR_SUCCESS;
 
   const wchar_t* integrity_level_str = GetIntegrityLevelString(integrity_level);
@@ -312,7 +311,7 @@ DWORD SetTokenIntegrityLevel(HANDLE token, IntegrityLevel integrity_level) {
 }
 
 DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level) {
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return ERROR_SUCCESS;
 
   const wchar_t* integrity_level_str = GetIntegrityLevelString(integrity_level);

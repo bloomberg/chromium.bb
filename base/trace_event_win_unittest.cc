@@ -1,13 +1,16 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "base/trace_event.h"
+
 #include <strstream>
+
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/event_trace_consumer_win.h"
 #include "base/event_trace_controller_win.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <initguid.h>  // NOLINT - must be last include.
@@ -74,7 +77,7 @@ TestEventConsumer* TestEventConsumer::current_ = NULL;
 class TraceEventTest: public testing::Test {
  public:
   void SetUp() {
-    bool is_xp = win_util::GetWinVersion() < win_util::WINVERSION_VISTA;
+    bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
 
     // Resurrect and initialize the TraceLog singleton instance.
     // On Vista and better, we need the provider registered before we

@@ -21,6 +21,7 @@
 #include "base/thread.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profile.h"
@@ -293,9 +294,9 @@ bool CreateShortcutTask::CreateShortcut() {
       shortcut_info_.create_in_quick_launch_bar,
       // For Win7, create_in_quick_launch_bar means pinning to taskbar. Use
       // base::PATH_START as a flag for this case.
-      (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7) ?
+      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
           base::PATH_START : base::DIR_APP_DATA,
-      (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7) ?
+      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
           NULL : L"Microsoft\\Internet Explorer\\Quick Launch"
     }
   };
@@ -323,7 +324,7 @@ bool CreateShortcutTask::CreateShortcut() {
 
   bool pin_to_taskbar =
       shortcut_info_.create_in_quick_launch_bar &&
-      (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7);
+      (base::win::GetVersion() >= base::win::VERSION_WIN7);
 
   // For Win7's pinning support, any shortcut could be used. So we only create
   // the shortcut file when there is no shortcut file will be created. That is,
@@ -577,7 +578,7 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
       shortcut_info_.create_in_quick_launch_bar,
       // For Win7, create_in_quick_launch_bar means pinning to taskbar.
       base::DIR_APP_DATA,
-      (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7) ?
+      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
           L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar" :
           L"Microsoft\\Internet Explorer\\Quick Launch"
     }

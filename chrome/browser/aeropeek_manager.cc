@@ -13,7 +13,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/scoped_native_library.h"
 #include "base/waitable_event.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -1029,7 +1029,7 @@ bool AeroPeekManager::Enabled() {
   // TODO(hbono): Bug 37957 <http://crbug.com/37957>: find solutions that avoid
   // flooding users with tab thumbnails.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return win_util::GetWinVersion() >= win_util::WINVERSION_WIN7 &&
+  return base::win::GetVersion() >= base::win::VERSION_WIN7 &&
       win_util::ShouldUseVistaFrame() &&
       !command_line->HasSwitch(switches::kApp) &&
       command_line->HasSwitch(switches::kEnableAeroPeekTabs);

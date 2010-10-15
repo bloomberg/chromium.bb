@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "sandbox/src/registry_dispatcher.h"
 
 #include "base/scoped_handle_win.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/interception.h"
 #include "sandbox/src/interceptors.h"
@@ -63,7 +63,7 @@ bool RegistryDispatcher::SetupService(InterceptionManager* manager,
 
   if (IPC_NTOPENKEY_TAG == service) {
     bool result = INTERCEPT_NT(manager, NtOpenKey, OPEN_KEY_ID, 16);
-    if (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7)
+    if (base::win::GetVersion() >= base::win::VERSION_WIN7)
       result &= INTERCEPT_NT(manager, NtOpenKeyEx, OPEN_KEY_EX_ID, 20);
     return result;
   }

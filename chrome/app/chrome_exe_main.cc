@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/result_codes.h"
@@ -37,7 +37,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
   if (!sandbox_info.broker_services)
     sandbox_info.target_services = sandbox::SandboxFactory::GetTargetServices();
 
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // Enforces strong DEP support. Vista uses the NXCOMPAT flag in the exe.
     sandbox::SetCurrentProcessDEP(sandbox::DEP_ENABLED);
   }

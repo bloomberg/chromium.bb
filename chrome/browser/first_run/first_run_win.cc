@@ -24,7 +24,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/importer/importer.h"
@@ -439,7 +439,7 @@ bool DecodeImportParams(const std::string& encoded, int* browser_type,
 void FirstRun::PlatformSetup() {
   FirstRun::CreateChromeDesktopShortcut();
   // Windows 7 has deprecated the quick launch bar.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     CreateChromeQuickLaunchShortcut();
 }
 

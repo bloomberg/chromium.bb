@@ -5,9 +5,9 @@
 #include "chrome/browser/shell_integration.h"
 
 #include <windows.h>
-#include <propvarutil.h>
-#include <shlobj.h>
 #include <shobjidl.h>
+#include <propkey.h>
+#include <propvarutil.h>
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -19,6 +19,7 @@
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -249,7 +250,7 @@ bool MigrateChromiumShortcutsTask::GetShortcutAppId(
 
   PROPVARIANT appid_value;
   PropVariantInit(&appid_value);
-  if (FAILED(property_store->GetValue(win_util::kPKEYAppUserModelID,
+  if (FAILED(property_store->GetValue(PKEY_AppUserModel_ID,
                                       &appid_value)))
     return false;
 
@@ -300,7 +301,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
   // to show up in Add/Remove programs for us.
   const std::wstring kChromeProtocols[] = {L"http", L"https"};
 
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     IApplicationAssociationRegistration* pAAR;
     HRESULT hr = CoCreateInstance(CLSID_ApplicationAssociationRegistration,
         NULL, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistration),
@@ -368,7 +369,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
 // is false.
 bool ShellIntegration::IsFirefoxDefaultBrowser() {
   bool ff_default = false;
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     std::wstring app_cmd;
     RegKey key(HKEY_CURRENT_USER, ShellUtil::kRegVistaUrlPrefs, KEY_READ);
     if (key.Valid() && key.ReadValue(L"Progid", &app_cmd) &&
@@ -407,7 +408,7 @@ std::wstring ShellIntegration::GetChromiumAppId(const FilePath& profile_path) {
 }
 
 void ShellIntegration::MigrateChromiumShortcuts() {
-  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
   BrowserThread::PostTask(

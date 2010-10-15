@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "base/pe_image.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 
 // Just counts the number of invocations.
 bool ExportsCallback(const PEImage &image,
@@ -147,7 +147,7 @@ int GetExpectedValue(Value value, DWORD os) {
 // the actual number of items found is within the expected range.
 TEST(PEImageTest, EnumeratesPE) {
   // Windows Server 2003 is not supported as a test environment for this test.
-  if (win_util::GetWinVersion() == win_util::WINVERSION_SERVER_2003)
+  if (base::win::GetVersion() == base::win::VERSION_SERVER_2003)
     return;
   HMODULE module = LoadLibrary(L"advapi32.dll");
   ASSERT_TRUE(NULL != module);

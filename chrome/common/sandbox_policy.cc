@@ -17,7 +17,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/trace_event.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -228,7 +228,7 @@ bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
   policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
-  if (win_util::GetWinVersion() > win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() > base::win::VERSION_XP) {
     // On 2003/Vista the initial token has to be restricted if the main token
     // is restricted.
     initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;
@@ -279,7 +279,7 @@ bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
                         policy))
     return false;
 
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\AppDataLow",
                           sandbox::TargetPolicy::REG_ALLOW_ANY,
                           policy))
@@ -343,7 +343,7 @@ bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
 
-  if (win_util::GetWinVersion() > win_util::WINVERSION_XP)
+  if (base::win::GetVersion() > base::win::VERSION_XP)
     initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;
 
   policy->SetTokenLevel(initial_token, sandbox::USER_LIMITED);
@@ -417,7 +417,7 @@ void AddPolicyForRenderer(sandbox::TargetPolicy* policy,
   policy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0);
 
   sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
-  if (win_util::GetWinVersion() > win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() > base::win::VERSION_XP) {
     // On 2003/Vista the initial token has to be restricted if the main
     // token is restricted.
     initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;

@@ -22,7 +22,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #endif
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -239,7 +239,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale("en"));
 
   // Amharic should be blocked unless OS is Vista or newer.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     SetICUDefaultLocale("am");
     EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
     SetICUDefaultLocale("en-GB");

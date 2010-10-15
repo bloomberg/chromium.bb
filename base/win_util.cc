@@ -5,6 +5,8 @@
 #include "base/win_util.h"
 
 #include <aclapi.h>
+#include <shobjidl.h>  // Must be before propkey.
+#include <propkey.h>
 #include <propvarutil.h>
 #include <sddl.h>
 #include <shlobj.h>
@@ -15,6 +17,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/win/windows_version.h"
 
 namespace win_util {
 
@@ -24,149 +27,17 @@ namespace win_util {
 #define NONCLIENTMETRICS_SIZE_PRE_VISTA \
     SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(NONCLIENTMETRICS, lfMessageFont)
 
-const PROPERTYKEY kPKEYAppUserModelID =
-    { { 0x9F4C2855, 0x9F79, 0x4B39,
-    { 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3, } }, 5 };
-
 void GetNonClientMetrics(NONCLIENTMETRICS* metrics) {
   DCHECK(metrics);
 
   static const UINT SIZEOF_NONCLIENTMETRICS =
-      (GetWinVersion() >= WINVERSION_VISTA) ?
+      (base::win::GetVersion() >= base::win::VERSION_VISTA) ?
       sizeof(NONCLIENTMETRICS) : NONCLIENTMETRICS_SIZE_PRE_VISTA;
   metrics->cbSize = SIZEOF_NONCLIENTMETRICS;
   const bool success = !!SystemParametersInfo(SPI_GETNONCLIENTMETRICS,
                                               SIZEOF_NONCLIENTMETRICS, metrics,
                                               0);
   DCHECK(success);
-}
-
-WinVersion GetWinVersion() {
-  static bool checked_version = false;
-  static WinVersion win_version = WINVERSION_PRE_2000;
-  if (!checked_version) {
-    OSVERSIONINFOEX version_info;
-    version_info.dwOSVersionInfoSize = sizeof version_info;
-    GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version_info));
-    if (version_info.dwMajorVersion == 5) {
-      switch (version_info.dwMinorVersion) {
-        case 0:
-          win_version = WINVERSION_2000;
-          break;
-        case 1:
-          win_version = WINVERSION_XP;
-          break;
-        case 2:
-        default:
-          win_version = WINVERSION_SERVER_2003;
-          break;
-      }
-    } else if (version_info.dwMajorVersion == 6) {
-      if (version_info.wProductType != VER_NT_WORKSTATION) {
-        // 2008 is 6.0, and 2008 R2 is 6.1.
-        win_version = WINVERSION_2008;
-      } else {
-        if (version_info.dwMinorVersion == 0) {
-          win_version = WINVERSION_VISTA;
-        } else {
-          win_version = WINVERSION_WIN7;
-        }
-      }
-    } else if (version_info.dwMajorVersion > 6) {
-      win_version = WINVERSION_WIN7;
-    }
-    checked_version = true;
-  }
-  return win_version;
-}
-
-void GetServicePackLevel(int* major, int* minor) {
-  DCHECK(major && minor);
-  static bool checked_version = false;
-  static int service_pack_major = -1;
-  static int service_pack_minor = -1;
-  if (!checked_version) {
-    OSVERSIONINFOEX version_info = {0};
-    version_info.dwOSVersionInfoSize = sizeof(version_info);
-    GetVersionEx(reinterpret_cast<OSVERSIONINFOW*>(&version_info));
-    service_pack_major = version_info.wServicePackMajor;
-    service_pack_minor = version_info.wServicePackMinor;
-    checked_version = true;
-  }
-
-  *major = service_pack_major;
-  *minor = service_pack_minor;
-}
-
-bool AddAccessToKernelObject(HANDLE handle, WELL_KNOWN_SID_TYPE known_sid,
-                             ACCESS_MASK access) {
-  PSECURITY_DESCRIPTOR descriptor = NULL;
-  PACL old_dacl = NULL;
-  PACL new_dacl = NULL;
-
-  if (ERROR_SUCCESS != GetSecurityInfo(handle, SE_KERNEL_OBJECT,
-            DACL_SECURITY_INFORMATION, NULL, NULL, &old_dacl, NULL,
-            &descriptor))
-    return false;
-
-  BYTE sid[SECURITY_MAX_SID_SIZE] = {0};
-  DWORD size_sid = SECURITY_MAX_SID_SIZE;
-
-  if (known_sid == WinSelfSid) {
-    // We hijack WinSelfSid when we want to add the current user instead of
-    // a known sid.
-    HANDLE token = NULL;
-    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &token)) {
-      LocalFree(descriptor);
-      return false;
-    }
-
-    DWORD size = sizeof(TOKEN_USER) + size_sid;
-    scoped_array<BYTE> token_user_bytes(new BYTE[size]);
-    TOKEN_USER* token_user =
-        reinterpret_cast<TOKEN_USER*>(token_user_bytes.get());
-    BOOL ret = GetTokenInformation(token, TokenUser, token_user, size, &size);
-
-    CloseHandle(token);
-
-    if (!ret) {
-      LocalFree(descriptor);
-      return false;
-    }
-    memcpy(sid, token_user->User.Sid, size_sid);
-  } else {
-    if (!CreateWellKnownSid(known_sid , NULL, sid, &size_sid)) {
-      LocalFree(descriptor);
-      return false;
-    }
-  }
-
-  EXPLICIT_ACCESS new_access = {0};
-  new_access.grfAccessMode = GRANT_ACCESS;
-  new_access.grfAccessPermissions = access;
-  new_access.grfInheritance = NO_INHERITANCE;
-
-  new_access.Trustee.pMultipleTrustee = NULL;
-  new_access.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
-  new_access.Trustee.TrusteeForm = TRUSTEE_IS_SID;
-  new_access.Trustee.ptstrName = reinterpret_cast<LPWSTR>(&sid);
-
-  if (ERROR_SUCCESS != SetEntriesInAcl(1, &new_access, old_dacl, &new_dacl)) {
-    LocalFree(descriptor);
-    return false;
-  }
-
-  DWORD result = SetSecurityInfo(handle, SE_KERNEL_OBJECT,
-                                 DACL_SECURITY_INFORMATION, NULL, NULL,
-                                 new_dacl, NULL);
-
-  LocalFree(new_dacl);
-  LocalFree(descriptor);
-
-  if (ERROR_SUCCESS != result)
-    return false;
-
-  return true;
 }
 
 bool GetUserSidString(std::wstring* user_sid) {
@@ -198,62 +69,6 @@ bool GetUserSidString(std::wstring* user_sid) {
   return true;
 }
 
-bool GetLogonSessionOnlyDACL(SECURITY_DESCRIPTOR** security_descriptor) {
-  // Get the current token.
-  HANDLE token = NULL;
-  if (!OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
-    return false;
-  ScopedHandle token_scoped(token);
-
-  // Get the size of the TokenGroups structure.
-  DWORD size = 0;
-  BOOL result = GetTokenInformation(token, TokenGroups, NULL,  0, &size);
-  if (result != FALSE && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-    return false;
-
-  // Get the data.
-  scoped_array<char> token_groups_chars(new char[size]);
-  TOKEN_GROUPS* token_groups =
-      reinterpret_cast<TOKEN_GROUPS*>(token_groups_chars.get());
-
-  if (!GetTokenInformation(token, TokenGroups, token_groups, size, &size))
-    return false;
-
-  // Look for the logon sid.
-  SID* logon_sid = NULL;
-  for (unsigned int i = 0; i < token_groups->GroupCount ; ++i) {
-    if ((token_groups->Groups[i].Attributes & SE_GROUP_LOGON_ID) != 0) {
-        logon_sid = static_cast<SID*>(token_groups->Groups[i].Sid);
-        break;
-    }
-  }
-
-  if (!logon_sid)
-    return false;
-
-  // Convert the data to a string.
-  wchar_t* sid_string;
-  if (!ConvertSidToStringSid(logon_sid, &sid_string))
-    return false;
-
-  static const wchar_t dacl_format[] = L"D:(A;OICI;GA;;;%ls)";
-  wchar_t dacl[SECURITY_MAX_SID_SIZE + arraysize(dacl_format) + 1] = {0};
-  wsprintf(dacl, dacl_format, sid_string);
-
-  LocalFree(sid_string);
-
-  // Convert the string to a security descriptor
-  if (!ConvertStringSecurityDescriptorToSecurityDescriptor(
-      dacl,
-      SDDL_REVISION_1,
-      reinterpret_cast<PSECURITY_DESCRIPTOR*>(security_descriptor),
-      NULL)) {
-    return false;
-  }
-
-  return true;
-}
-
 #pragma warning(push)
 #pragma warning(disable:4312 4244)
 WNDPROC SetWindowProc(HWND hwnd, WNDPROC proc) {
@@ -274,46 +89,6 @@ void* SetWindowUserData(HWND hwnd, void* user_data) {
 
 void* GetWindowUserData(HWND hwnd) {
   return reinterpret_cast<void*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-}
-
-// Maps to the WNDPROC for a window that was active before the subclass was
-// installed.
-static const wchar_t* const kHandlerKey = L"__ORIGINAL_MESSAGE_HANDLER__";
-
-bool IsSubclassed(HWND window, WNDPROC subclass_proc) {
-  WNDPROC original_handler =
-      reinterpret_cast<WNDPROC>(GetWindowLongPtr(window, GWLP_WNDPROC));
-  return original_handler == subclass_proc;
-}
-
-bool Subclass(HWND window, WNDPROC subclass_proc) {
-  WNDPROC original_handler =
-      reinterpret_cast<WNDPROC>(GetWindowLongPtr(window, GWLP_WNDPROC));
-  if (original_handler != subclass_proc) {
-    win_util::SetWindowProc(window, subclass_proc);
-    SetProp(window, kHandlerKey, original_handler);
-    return true;
-  }
-  return false;
-}
-
-bool Unsubclass(HWND window, WNDPROC subclass_proc) {
-  WNDPROC current_handler =
-      reinterpret_cast<WNDPROC>(GetWindowLongPtr(window, GWLP_WNDPROC));
-  if (current_handler == subclass_proc) {
-    HANDLE original_handler = GetProp(window, kHandlerKey);
-    if (original_handler) {
-      RemoveProp(window, kHandlerKey);
-      win_util::SetWindowProc(window,
-                              reinterpret_cast<WNDPROC>(original_handler));
-      return true;
-    }
-  }
-  return false;
-}
-
-WNDPROC GetSuperclassWNDPROC(HWND window) {
-  return reinterpret_cast<WNDPROC>(GetProp(window, kHandlerKey));
 }
 
 #pragma warning(pop)
@@ -398,7 +173,7 @@ bool SetAppIdForPropertyStore(IPropertyStore* property_store,
   if (FAILED(InitPropVariantFromString(app_id, &property_value)))
     return false;
 
-  HRESULT result = property_store->SetValue(kPKEYAppUserModelID,
+  HRESULT result = property_store->SetValue(PKEY_AppUserModel_ID,
                                             property_value);
   if (S_OK == result)
     result = property_store->Commit();

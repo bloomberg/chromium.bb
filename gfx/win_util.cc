@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 
 namespace {
 
@@ -29,10 +29,10 @@ bool Direct2dIsAvailable() {
   static bool available = false;
 
   if (!checked) {
-    win_util::WinVersion version = win_util::GetWinVersion();
-    if (version < win_util::WINVERSION_VISTA)
+    base::win::Version version = base::win::GetVersion();
+    if (version < base::win::VERSION_VISTA)
       available = false;
-    else if (version >= win_util::WINVERSION_WIN7)
+    else if (version >= base::win::VERSION_WIN7)
       available = true;
     else
       available = DynamicLibraryPresent(L"d2d1.dll");
@@ -47,10 +47,10 @@ bool DirectWriteIsAvailable() {
   static bool available = false;
 
   if (!checked) {
-    win_util::WinVersion version = win_util::GetWinVersion();
-    if (version < win_util::WINVERSION_VISTA)
+    base::win::Version version = base::win::GetVersion();
+    if (version < base::win::VERSION_VISTA)
       available = false;
-    else if (version >= win_util::WINVERSION_WIN7)
+    else if (version >= base::win::VERSION_WIN7)
       available = true;
     else
       available = DynamicLibraryPresent(L"dwrite.dll");

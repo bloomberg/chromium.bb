@@ -8,7 +8,7 @@
 #include "gfx/rect.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #endif
 
 Animation::Animation(base::TimeDelta timer_interval)
@@ -90,7 +90,7 @@ void Animation::SetContainer(AnimationContainer* container) {
 // static
 bool Animation::ShouldRenderRichAnimation() {
 #if defined(OS_WIN)
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     BOOL result;
     // Get "Turn off all unnecessary animations" value.
     if (::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0)) {

@@ -15,7 +15,7 @@
 #include "base/thread.h"
 #include "base/values.h"
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #endif
 #include "chrome/browser/appcache/view_appcache_internals_job_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -305,7 +305,7 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
 #if defined(OS_WIN)
   // Some fonts used for some languages changed a lot in terms of the font
   // metric in Vista. So, we need to use different size before Vista.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     web_font_size_id = IDS_WEB_FONT_SIZE_XP;
 #endif
   localized_strings->SetString("fontsize",

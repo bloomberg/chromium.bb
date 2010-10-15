@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <windows.h>
 #include <atlsecurity.h>
 
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_policy.h"
@@ -45,7 +45,7 @@ SBOX_TESTS_COMMAND int CheckIntegrityLevel(int argc, wchar_t **argv) {
 }
 
 TEST(IntegrityLevelTest, TestLowILReal) {
-  if (win_util::WINVERSION_VISTA != win_util::GetWinVersion())
+  if (base::win::VERSION_VISTA != base::win::GetVersion())
     return;
 
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);
@@ -61,7 +61,7 @@ TEST(IntegrityLevelTest, TestLowILReal) {
 }
 
 TEST(DelayedIntegrityLevelTest, TestLowILDelayed) {
-  if (win_util::WINVERSION_VISTA != win_util::GetWinVersion())
+  if (base::win::VERSION_VISTA != base::win::GetVersion())
     return;
 
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);
@@ -77,7 +77,7 @@ TEST(DelayedIntegrityLevelTest, TestLowILDelayed) {
 }
 
 TEST(IntegrityLevelTest, TestNoILChange) {
-  if (win_util::WINVERSION_VISTA != win_util::GetWinVersion())
+  if (base::win::VERSION_VISTA != base::win::GetVersion())
     return;
 
   TestRunner runner(JOB_LOCKDOWN, USER_INTERACTIVE, USER_INTERACTIVE);

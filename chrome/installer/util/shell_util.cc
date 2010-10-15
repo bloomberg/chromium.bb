@@ -24,7 +24,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -551,7 +551,7 @@ bool ShellUtil::GetQuickLaunchPath(bool system_level, std::wstring* path) {
     if ((p == NULL) || ((p)(qlaunch, &size) != TRUE))
       return false;
     *path = qlaunch;
-    if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
       file_util::AppendToPath(path, L"AppData\\Roaming");
     } else {
       file_util::AppendToPath(path, L"Application Data");
@@ -618,7 +618,7 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
   bool ret = true;
   // First use the new "recommended" way on Vista to make Chrome default
   // browser.
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     LOG(INFO) << "Registering Chrome as default browser on Vista.";
     IApplicationAssociationRegistration* pAAR;
     HRESULT hr = CoCreateInstance(CLSID_ApplicationAssociationRegistration,
@@ -699,7 +699,7 @@ bool ShellUtil::RegisterChromeBrowser(const std::wstring& chrome_exe,
 
   // If user is not an admin and OS is Vista, try to elevate and register.
   if (elevate_if_not_admin &&
-      win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&
+      base::win::GetVersion() >= base::win::VERSION_VISTA &&
       ElevateAndRegisterChrome(chrome_exe, suffix))
     return true;
 

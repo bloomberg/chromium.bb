@@ -21,6 +21,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -224,11 +225,10 @@ base::ProcessHandle LaunchIEOnVista(const std::wstring& url) {
 }
 
 base::ProcessHandle LaunchIE(const std::wstring& url) {
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     return LaunchIEOnVista(url);
-  } else {
-    return LaunchExecutable(kIEImageName, url);
   }
+  return LaunchExecutable(kIEImageName, url);
 }
 
 int CloseAllIEWindows() {
@@ -372,7 +372,7 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   // This causes the IWebBrowser2 interface which is returned to be useless,
   // i.e it does not receive any events, etc. Our workaround for this is
   // to impersonate a low integrity token and then launch IE.
-  if (win_util::GetWinVersion() == win_util::WINVERSION_VISTA &&
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
       GetInstalledIEVersion() == IE_7) {
     // Create medium integrity browser that will launch IE broker.
     ScopedComPtr<IWebBrowser2> medium_integrity_browser;

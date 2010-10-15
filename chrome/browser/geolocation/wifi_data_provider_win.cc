@@ -26,8 +26,9 @@
 #include <windows.h>
 #include <winioctl.h>
 #include <wlanapi.h>
+
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/geolocation/wifi_data_provider_common.h"
 #include "chrome/browser/geolocation/wifi_data_provider_common_win.h"
 
@@ -194,7 +195,7 @@ WindowsWlanApi::~WindowsWlanApi() {
 }
 
 WindowsWlanApi* WindowsWlanApi::Create() {
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return NULL;
   // We use an absolute path to load the DLL to avoid DLL preloading attacks.
   string16 system_directory;

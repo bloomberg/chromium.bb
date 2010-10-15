@@ -14,7 +14,7 @@
 #include "webkit/glue/plugins/webplugin_delegate.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #endif
 
 static int g_next_id;
@@ -65,7 +65,7 @@ NPError NPPaintWidget(NPP instance,
   iter->second->Paint(gdc, *dirty);
 
 #if defined(OS_WIN)
-  if (win_util::GetWinVersion() == win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() == base::win::VERSION_XP) {
     gdc->canvas()->getTopPlatformDevice().makeOpaque(
         dirty->left, dirty->top, dirty->right - dirty->left,
         dirty->bottom - dirty->top);

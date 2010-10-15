@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -264,7 +265,7 @@ void CreateApplicationShortcutView::Init() {
       profile->GetPrefs()->GetBoolean(prefs::kWebAppCreateInAppsMenu));
 
   quick_launch_check_box_ = AddCheckbox(
-      (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7) ?
+      (base::win::GetVersion() >= base::win::VERSION_WIN7) ?
         l10n_util::GetString(IDS_PIN_TO_TASKBAR_CHKBOX) :
         l10n_util::GetString(IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX),
       profile->GetPrefs()->GetBoolean(prefs::kWebAppCreateInQuickLaunchBar));

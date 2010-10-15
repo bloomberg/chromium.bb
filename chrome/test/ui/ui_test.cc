@@ -50,7 +50,7 @@
 #include "net/base/net_util.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #endif
 
 
@@ -940,7 +940,7 @@ void UITest::StartHttpServerWithPort(const FilePath& root_directory,
   // it will mess up with the command window and cause conhost.exe to crash. To
   // work around this, we start the http server on the background mode.
 #if defined(OS_WIN)
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
     cmd_line->AppendSwitch("run_background");
 #endif
 

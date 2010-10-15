@@ -26,7 +26,7 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -463,7 +463,7 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo *info) {
   // is not recording in Vista's registry. So in Vista, we assume the Links
   // folder is under Favorites folder since it looks like there is not name
   // different in every language version of Windows Vista.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // The Link folder name is stored in the registry.
     DWORD buffer_length = sizeof(buffer);
     RegKey reg_key(HKEY_CURRENT_USER,

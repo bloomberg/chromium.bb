@@ -20,7 +20,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -80,14 +80,14 @@ installer::Version* InstallUtil::GetChromeVersion(bool system_install) {
 
 bool InstallUtil::IsOSSupported() {
   int major, minor;
-  win_util::WinVersion version = win_util::GetWinVersion();
-  win_util::GetServicePackLevel(&major, &minor);
+  base::win::Version version = base::win::GetVersion();
+  base::win::GetServicePackLevel(&major, &minor);
 
   // We do not support Win2K or older, or XP without service pack 2.
   LOG(INFO) << "Windows Version: " << version
             << ", Service Pack: " << major << "." << minor;
-  if ((version > win_util::WINVERSION_XP) ||
-      (version == win_util::WINVERSION_XP && major >= 2)) {
+  if ((version > base::win::VERSION_XP) ||
+      (version == base::win::VERSION_XP && major >= 2)) {
     return true;
   }
   return false;

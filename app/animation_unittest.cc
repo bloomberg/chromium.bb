@@ -5,7 +5,7 @@
 #include "app/linear_animation.h"
 #include "app/test_animation_delegate.h"
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #endif
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -122,7 +122,7 @@ TEST_F(AnimationTest, DeleteFromEnd) {
 
 TEST_F(AnimationTest, ShouldRenderRichAnimation) {
 #if defined(OS_WIN)
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     BOOL result;
     ASSERT_NE(
         0, ::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0));

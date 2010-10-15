@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/helper.h"
@@ -868,7 +868,7 @@ const wchar_t kInstallFlowTestUrl[] =
     L"install_flow_test.html";
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_InstallFlowTest) {
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     ScopedChromeFrameRegistrar::UnregisterAtPath(
         ScopedChromeFrameRegistrar::GetChromeFrameBuildPath().value());
 

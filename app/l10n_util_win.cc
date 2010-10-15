@@ -10,9 +10,7 @@
 #include "app/l10n_util_win.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
-//#include "base/string_util.h"
-#include "base/win_util.h"
-
+#include "base/win/windows_version.h"
 #include "grit/app_locale_settings.h"
 
 namespace {
@@ -86,7 +84,7 @@ bool IsLocaleSupportedByOS(const std::string& locale) {
   // On Win XP, no Ethiopic/Amahric font is availabel out of box. We hard-coded
   // 'Abyssinica SIL' in the resource bundle to use in the UI. Check
   // for its presence to determine whether or not to support Amharic UI on XP.
-  return (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA ||
+  return (base::win::GetVersion() >= base::win::VERSION_VISTA ||
       !LowerCaseEqualsASCII(locale, "am") || IsFontPresent(L"Abyssinica SIL"));
 }
 
@@ -102,7 +100,7 @@ bool NeedOverrideDefaultUIFont(std::wstring* override_font_family,
   // we need separate ui font specifications.
   int ui_font_family_id = IDS_UI_FONT_FAMILY;
   int ui_font_size_scaler_id = IDS_UI_FONT_SIZE_SCALER;
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     ui_font_family_id = IDS_UI_FONT_FAMILY_XP;
     ui_font_size_scaler_id = IDS_UI_FONT_SIZE_SCALER_XP;
   }

@@ -20,7 +20,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -677,7 +677,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     return exit_code;
 
   if (system_install && !IsUserAnAdmin()) {
-    if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&
+    if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
         !parsed_command_line.HasSwitch(installer_util::switches::kRunAsAdmin)) {
       std::wstring exe = parsed_command_line.GetProgram().value();
       std::wstring params(command_line);

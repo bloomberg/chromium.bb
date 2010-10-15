@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,13 @@
 #include "base/basictypes.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The test is somewhat silly, because the Vista bots some have UAC enabled
 // and some have it disabled. At least we check that it does not crash.
 TEST(BaseWinUtilTest, TestIsUACEnabled) {
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     win_util::UserAccountControlIsEnabled();
   } else {
     EXPECT_TRUE(win_util::UserAccountControlIsEnabled());

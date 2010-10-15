@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/pe_image.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/interception.h"
 #include "sandbox/src/interceptors.h"
 #include "sandbox/src/policy_target.h"
@@ -100,7 +100,7 @@ bool SetupBasicInterceptions(InterceptionManager* manager) {
       !INTERCEPT_NT(manager, NtOpenThreadToken, OPEN_THREAD_TOKEN_ID, 20))
     return false;
 
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_XP) {
+  if (base::win::GetVersion() >= base::win::VERSION_XP) {
     // Bug 27218: We don't have dispatch for some x64 syscalls.
     // This one is also provided by process_thread_policy.
     if (!INTERCEPT_NT(manager, NtOpenProcessTokenEx, OPEN_PROCESS_TOKEN_EX_ID,

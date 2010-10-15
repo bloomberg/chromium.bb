@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/gdi_util.h"
 
@@ -99,7 +100,7 @@ bool IsDrag(const POINT& origin, const POINT& current) {
 }
 
 bool ShouldUseVistaFrame() {
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return false;
   // If composition is not enabled, we behave like on XP.
   BOOL f;
@@ -545,7 +546,7 @@ gfx::Font GetWindowTitleFont() {
 
 void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd) {
   // This functionality is only available on Win7+.
-  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
   // Load Shell32.dll into memory.

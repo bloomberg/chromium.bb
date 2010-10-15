@@ -20,7 +20,7 @@
 #include "chrome/common/json_value_serializer.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/installer/util/install_util.h"
 #endif
 
@@ -49,13 +49,13 @@ class OperatingSystemTest : public DiagnosticTest {
     int major = 0;
     int minor = 0;
 #if defined(OS_WIN)
-    version = win_util::GetWinVersion();
-    if (version < win_util::WINVERSION_XP) {
+    version = base::win::GetVersion();
+    if (version < base::win::VERSION_XP) {
       RecordFailure(ASCIIToUTF16("Windows 2000 or earlier"));
       return false;
     }
-    win_util::GetServicePackLevel(&major, &minor);
-    if ((version == win_util::WINVERSION_XP) && (major < 2)) {
+    base::win::GetServicePackLevel(&major, &minor);
+    if ((version == base::win::VERSION_XP) && (major < 2)) {
       RecordFailure(ASCIIToUTF16("XP Service Pack 1 or earlier"));
       return false;
     }

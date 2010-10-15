@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -63,7 +63,7 @@ HRESULT CoCreateInstanceAsAdmin(REFCLSID class_id, REFIID interface_id,
 
   // For Vista we need to instantiate the COM server via the elevation
   // moniker. This ensures that the UAC dialog shows up.
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     wchar_t class_id_as_string[MAX_PATH] = {0};
     StringFromGUID2(class_id, class_id_as_string,
                     arraysize(class_id_as_string));

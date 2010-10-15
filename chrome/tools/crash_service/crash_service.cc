@@ -14,7 +14,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
 #include "breakpad/src/client/windows/sender/crash_report_sender.h"
@@ -213,7 +213,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
   SECURITY_ATTRIBUTES security_attributes = {0};
   SECURITY_ATTRIBUTES* security_attributes_actual = NULL;
 
-  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     SECURITY_DESCRIPTOR* security_descriptor =
         reinterpret_cast<SECURITY_DESCRIPTOR*>(
             GetSecurityDescriptorForLowIntegrity());

@@ -12,6 +12,8 @@
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #include "base/sys_info.h"
+#elif defined(OS_WIN)
+#include "base/win/windows_version.h"
 #endif
 #include "chrome/browser/userfeedback/proto/common.pb.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
@@ -54,7 +56,7 @@ class BugReportUtil {
 
   // SetOSVersion copies the maj.minor.build + servicePack_string
   // into a string. We currently have:
-  //   win_util::GetWinVersion returns WinVersion, which is just
+  //   base::win::GetVersion returns WinVersion, which is just
   //     an enum of 2000, XP, 2003, or VISTA. Not enough detail for
   //     bug reports.
   //   base::SysInfo::OperatingSystemVersion returns an std::string

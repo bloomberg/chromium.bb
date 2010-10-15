@@ -15,7 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "gfx/native_theme_win.h"
 #include "grit/app_strings.h"
 #include "skia/ext/skia_utils_win.h"
@@ -761,7 +761,7 @@ void NativeTextfieldWin::OnNCPaint(HRGN region) {
   int part;
   int state;
 
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     part = EP_EDITTEXT;
 
     if (!textfield_->IsEnabled())

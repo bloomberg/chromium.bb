@@ -19,7 +19,7 @@
 #include "base/string_split.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "gfx/font.h"
 #include "grit/app_strings.h"
@@ -277,7 +277,7 @@ bool SaveFileAsWithFilter(HWND owner,
   save_as.lpstrDefExt = &def_ext[0];
   save_as.lCustData = NULL;
 
-  if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA) {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
     // The save as on Windows XP remembers its last position,
     // and if the screen resolution changed, it will be off screen.
     save_as.Flags |= OFN_ENABLEHOOK;
