@@ -69,7 +69,8 @@ void PluginChannelBase::Broadcast(IPC::Message* message) {
 }
 
 PluginChannelBase::PluginChannelBase()
-    : plugin_count_(0),
+    : mode_(IPC::Channel::MODE_NONE),
+      plugin_count_(0),
       peer_pid_(0),
       in_remove_route_(false),
       channel_valid_(false),

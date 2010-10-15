@@ -7,7 +7,14 @@
 #include "base/logging.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 
-BrowserAccessibility::BrowserAccessibility() {
+BrowserAccessibility::BrowserAccessibility()
+    : manager_(NULL),
+      parent_(NULL),
+      child_id_(0),
+      index_in_parent_(0),
+      renderer_id_(0),
+      role_(0),
+      state_(0) {
 }
 
 BrowserAccessibility::~BrowserAccessibility() {

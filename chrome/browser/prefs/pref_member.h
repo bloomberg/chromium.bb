@@ -82,8 +82,8 @@ class PrefMember : public subtle::PrefMemberBase {
  public:
   // Defer initialization to an Init method so it's easy to make this class be
   // a member variable.
-  PrefMember() { }
-  virtual ~PrefMember() { }
+  PrefMember() : value_(ValueType()) {}
+  virtual ~PrefMember() {}
 
   // Do the actual initialization of the class.  |observer| may be null if you
   // don't want any notifications of changes.

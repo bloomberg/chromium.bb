@@ -17,7 +17,7 @@
 // messages with an error when is_listening_ is false.
 class IsListeningFilter : public IPC::ChannelProxy::MessageFilter {
  public:
-  IsListeningFilter() {}
+  IsListeningFilter() : channel_(NULL) {}
 
   // MessageFilter overrides
   virtual void OnFilterRemoved() {}

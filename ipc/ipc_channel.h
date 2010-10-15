@@ -35,6 +35,7 @@ class Channel : public Message::Sender {
   };
 
   enum Mode {
+    MODE_NONE,
     MODE_SERVER,
     MODE_CLIENT
   };
