@@ -15,8 +15,10 @@
 
 namespace {
 
-// From "man 2 intro".
-const int kMaxErrno = EOPNOTSUPP;
+// From "man 2 intro", the largest errno is |EOPNOTSUPP|, which is
+// |102|.  Since the histogram memory usage is proportional to this
+// number, using the |102| directly rather than the macro.
+const int kMaxErrno = 102;
 
 }  // namespace
 
@@ -110,7 +112,9 @@ bool ProcessSingleton::Create() {
 
 void ProcessSingleton::Cleanup() {
   // Closing the file also releases the lock.
-  if (lock_fd_ != -1)
-    HANDLE_EINTR(close(lock_fd_));
+  if (lock_fd_ != -1) {
+    int rc = HANDLE_EINTR(close(lock_fd_));
+    DPCHECK(!rc) << "Closing lock_fd_:";
+  }
   lock_fd_ = -1;
 }
