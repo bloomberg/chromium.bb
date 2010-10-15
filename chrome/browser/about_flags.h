@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_ABOUT_FLAGS_H_
 #pragma once
 
+#include <map>
 #include <string>
 
-class CommandLine;
+#include "base/command_line.h"
+
 class ListValue;
 class PrefService;
 
@@ -30,6 +32,16 @@ bool IsRestartNeededToCommitChanges();
 // Enables or disables the experiment with id |internal_name|.
 void SetExperimentEnabled(
     PrefService* prefs, const std::string& internal_name, bool enable);
+
+// Removes all switches that were added to a command line by a previous call to
+// |ConvertFlagsToSwitches()|.
+void RemoveFlagsSwitches(
+    std::map<std::string, CommandLine::StringType>* switch_list);
+
+namespace testing {
+// Clears internal global state, for unit tests.
+void ClearState();
+}  // namespace testing
 
 }  // namespace about_flags
 

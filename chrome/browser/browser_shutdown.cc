@@ -18,6 +18,7 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "build/build_config.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
@@ -182,6 +183,7 @@ void Shutdown() {
     std::map<std::string, CommandLine::StringType> switches =
         old_cl.GetSwitches();
     // Remove the switches that shouldn't persist across restart.
+    about_flags::RemoveFlagsSwitches(&switches);
     switches::RemoveSwitchesForAutostart(&switches);
     // Append the old switches to the new command line.
     for (std::map<std::string, CommandLine::StringType>::const_iterator i =

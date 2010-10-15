@@ -11,6 +11,7 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
+#include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -18,6 +19,8 @@
 #include "grit/generated_resources.h"
 
 namespace about_flags {
+
+namespace {
 
 enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 };
 
@@ -165,6 +168,30 @@ const Experiment kExperiments[] = {
   }
 };
 
+// Stores and encapsulates the little state that about:flags has.
+class FlagsState {
+ public:
+  FlagsState() : needs_restart_(false) {}
+  void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line);
+  bool IsRestartNeededToCommitChanges();
+  void SetExperimentEnabled(
+    PrefService* prefs, const std::string& internal_name, bool enable);
+  void RemoveFlagsSwitches(
+      std::map<std::string, CommandLine::StringType>* switch_list);
+  void reset();
+
+  // Returns the singleton instance of this class
+  static FlagsState* instance() {
+    return Singleton<FlagsState>::get();
+  }
+
+ private:
+  bool needs_restart_;
+  std::set<std::string> flags_switches_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlagsState);
+};
+
 // Extracts the list of enabled lab experiments from preferences and stores them
 // in a set.
 void GetEnabledFlags(const PrefService* prefs, std::set<std::string>* result) {
@@ -239,6 +266,8 @@ int GetCurrentPlatform() {
 #endif
 }
 
+}  // namespace
+
 bool IsEnabled() {
 #if defined(OS_CHROMEOS)
   // TODO(thakis): Port about:flags to chromeos -- http://crbug.com/57634
@@ -249,31 +278,7 @@ bool IsEnabled() {
 }
 
 void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line) {
-  if (!IsEnabled())
-    return;
-
-  if (command_line->HasSwitch(switches::kNoExperiments))
-    return;
-
-  std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledFlags(prefs, &enabled_experiments);
-
-  std::map<std::string, const Experiment*> experiments;
-  for (size_t i = 0; i < arraysize(kExperiments); ++i)
-    experiments[kExperiments[i].internal_name] = &kExperiments[i];
-
-  for (std::set<std::string>::iterator it = enabled_experiments.begin();
-       it != enabled_experiments.end();
-       ++it) {
-    const std::string& experiment_name = *it;
-    std::map<std::string, const Experiment*>::iterator experiment =
-        experiments.find(experiment_name);
-    DCHECK(experiment != experiments.end());
-    if (experiment == experiments.end())
-      continue;
-
-    command_line->AppendSwitch(experiment->second->command_line);
-  }
+  FlagsState::instance()->ConvertFlagsToSwitches(prefs, command_line);
 }
 
 ListValue* GetFlagsExperimentsData(PrefService* prefs) {
@@ -303,13 +308,64 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
   return experiments_data;
 }
 
-static bool needs_restart_ = false;
-
 bool IsRestartNeededToCommitChanges() {
-  return needs_restart_;
+  return FlagsState::instance()->IsRestartNeededToCommitChanges();
 }
 
 void SetExperimentEnabled(
+    PrefService* prefs, const std::string& internal_name, bool enable) {
+  FlagsState::instance()->SetExperimentEnabled(prefs, internal_name, enable);
+}
+
+void RemoveFlagsSwitches(
+    std::map<std::string, CommandLine::StringType>* switch_list) {
+  FlagsState::instance()->RemoveFlagsSwitches(switch_list);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// FlagsState implementation.
+
+namespace {
+
+void FlagsState::ConvertFlagsToSwitches(
+    PrefService* prefs, CommandLine* command_line) {
+  if (!IsEnabled())
+    return;
+
+  if (command_line->HasSwitch(switches::kNoExperiments))
+    return;
+
+  std::set<std::string> enabled_experiments;
+  GetSanitizedEnabledFlags(prefs, &enabled_experiments);
+
+  std::map<std::string, const Experiment*> experiments;
+  for (size_t i = 0; i < arraysize(kExperiments); ++i)
+    experiments[kExperiments[i].internal_name] = &kExperiments[i];
+
+  command_line->AppendSwitch(switches::kFlagSwitchesBegin);
+  flags_switches_.insert(switches::kFlagSwitchesBegin);
+  for (std::set<std::string>::iterator it = enabled_experiments.begin();
+       it != enabled_experiments.end();
+       ++it) {
+    const std::string& experiment_name = *it;
+    std::map<std::string, const Experiment*>::iterator experiment =
+        experiments.find(experiment_name);
+    DCHECK(experiment != experiments.end());
+    if (experiment == experiments.end())
+      continue;
+
+    command_line->AppendSwitch(experiment->second->command_line);
+    flags_switches_.insert(experiment->second->command_line);
+  }
+  command_line->AppendSwitch(switches::kFlagSwitchesEnd);
+  flags_switches_.insert(switches::kFlagSwitchesEnd);
+}
+
+bool FlagsState::IsRestartNeededToCommitChanges() {
+  return needs_restart_;
+}
+
+void FlagsState::SetExperimentEnabled(
     PrefService* prefs, const std::string& internal_name, bool enable) {
   needs_restart_ = true;
 
@@ -323,5 +379,27 @@ void SetExperimentEnabled(
 
   SetEnabledFlags(prefs, enabled_experiments);
 }
+
+void FlagsState::RemoveFlagsSwitches(
+    std::map<std::string, CommandLine::StringType>* switch_list) {
+  for (std::set<std::string>::const_iterator it = flags_switches_.begin();
+       it != flags_switches_.end();
+       ++it) {
+    switch_list->erase(*it);
+  }
+}
+
+void FlagsState::reset() {
+  needs_restart_ = false;
+  flags_switches_.clear();
+}
+
+} // namespace
+
+namespace testing {
+void ClearState() {
+  FlagsState::instance()->reset();
+}
+}  // namespace testing
 
 }  // namespace about_flags

@@ -587,6 +587,12 @@ const char kExtensionProcess[]              = "extension";
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 
+// These two flags are added around the switches about:flags adds to the
+// command line. This is useful to see which switches were added by about:flags
+// on about:version. They don't have any effect.
+const char kFlagSwitchesBegin[]             = "flag-switches-begin";
+const char kFlagSwitchesEnd[]               = "flag-switches-end";
+
 // Alternative feedback server to use when submitting user feedback
 const char kFeedbackServer[]                = "feedback-server";
 
