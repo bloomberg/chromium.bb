@@ -6394,6 +6394,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use Current
       </message>
 
+      <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
+        Toolbar
+      </message>
+
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
         <message name="IDS_OPTIONS_HOMEPAGE_GROUP_NAME" desc="The title of the home pages group">
           Home page:
@@ -6409,6 +6413,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_HOMEPAGE_USE_URL" desc="The title of the 'Use this page' for the home page radio">
         Open this page:
+      </message>
+      <message name="IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON" desc="The label of the 'Show Home button' checkbox">
+        Show Home button
       </message>
       <!-- Windows and Linux put this checkbox in the "home page" section of the prefs, Mac puts -->
       <!-- it in a 'toolbar' section, so it does not need to say toolbar. -->

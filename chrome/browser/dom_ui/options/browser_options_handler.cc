@@ -63,8 +63,10 @@ void BrowserOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_USE_NEWTAB));
   localized_strings->SetString("homepageUseURL",
       l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_USE_URL));
-  localized_strings->SetString("homepageShowButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON));
+  localized_strings->SetString("toolbarGroupName",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_TOOLBAR_GROUP_NAME));
+  localized_strings->SetString("toolbarShowHomeButton",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON));
   localized_strings->SetString("defaultSearchGroupName",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME));
   localized_strings->SetString("defaultSearchManageEnginesLink",
