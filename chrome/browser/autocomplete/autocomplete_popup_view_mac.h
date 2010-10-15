@@ -97,7 +97,7 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   static NSMutableAttributedString* DecorateMatchedString(
       const std::wstring &matchString,
       const AutocompleteMatch::ACMatchClassifications &classifications,
-      NSColor* textColor, gfx::Font& font);
+      NSColor* textColor, NSColor* dimTextColor, gfx::Font& font);
 
   // Helper for MatchText() to elide a marked-up string using
   // gfx::ElideText() as a model.  Modifies |aString| in place.
