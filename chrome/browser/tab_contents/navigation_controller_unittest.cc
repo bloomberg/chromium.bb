@@ -1718,6 +1718,7 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
 
 // Tests CopyStateFromAndPrune with 2 urls in source, 1 in dest.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
+  SessionID id(controller().session_id());
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
   const GURL url3("http://foo3");
@@ -1728,7 +1729,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationController& other_controller = other_contents->controller();
   other_contents->NavigateAndCommit(url3);
-  other_controller.CopyStateFromAndPrune(controller());
+  other_controller.CopyStateFromAndPrune(&controller());
 
   // other_controller should now contain the 3 urls: url1, url2 and url3.
 
@@ -1740,13 +1741,16 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune) {
   EXPECT_EQ(url2, other_controller.GetEntryAtIndex(1)->url());
   EXPECT_EQ(url3, other_controller.GetEntryAtIndex(2)->url());
 
-  // And the session id should have been copied.
-  EXPECT_EQ(controller().session_id().id(), other_controller.session_id().id());
+  // The session id of the new tab should be that of the old, and the old should
+  // be set to 0.
+  EXPECT_EQ(id.id(), other_controller.session_id().id());
+  EXPECT_EQ(0, controller().session_id().id());
 }
 
 // Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
 // the target.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
+  SessionID id(controller().session_id());
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
   const GURL url3("http://foo3");
@@ -1757,7 +1761,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
 
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationController& other_controller = other_contents->controller();
-  other_controller.CopyStateFromAndPrune(controller());
+  other_controller.CopyStateFromAndPrune(&controller());
 
   // other_controller should now contain the 1 url: url1.
 
@@ -1767,13 +1771,16 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune2) {
 
   EXPECT_EQ(url1, other_controller.GetEntryAtIndex(0)->url());
 
-  // And the session id should have been copied.
-  EXPECT_EQ(controller().session_id().id(), other_controller.session_id().id());
+  // The session id of the new tab should be that of the old, and the old should
+  // be set to 0.
+  EXPECT_EQ(id.id(), other_controller.session_id().id());
+  EXPECT_EQ(0, controller().session_id().id());
 }
 
 // Test CopyStateFromAndPrune with 2 urls, the first selected and nothing in
 // the target.
 TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
+  SessionID id(controller().session_id());
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
   const GURL url3("http://foo3");
@@ -1785,7 +1792,7 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
   scoped_ptr<TestTabContents> other_contents(CreateTestTabContents());
   NavigationController& other_controller = other_contents->controller();
   other_controller.LoadURL(url3, GURL(), PageTransition::TYPED);
-  other_controller.CopyStateFromAndPrune(controller());
+  other_controller.CopyStateFromAndPrune(&controller());
 
   // other_controller should now contain 1 entry for url1, and a pending entry
   // for url3.
@@ -1801,8 +1808,10 @@ TEST_F(NavigationControllerTest, CopyStateFromAndPrune3) {
 
   EXPECT_EQ(url3, other_controller.pending_entry()->url());
 
-  // And the session id should have been copied.
-  EXPECT_EQ(controller().session_id().id(), other_controller.session_id().id());
+  // The session id of the new tab should be that of the old, and the old should
+  // be set to 0.
+  EXPECT_EQ(id.id(), other_controller.session_id().id());
+  EXPECT_EQ(0, controller().session_id().id());
 }
 
 // Tests that navigations initiated from the page (with the history object)

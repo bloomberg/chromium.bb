@@ -2710,6 +2710,15 @@ void Browser::TabReplacedAt(TabContents* old_contents,
         new_contents->controller().GetEntryAtIndex(entry_count - 1),
         entry_count - 1);
   }
+
+  SessionService* session_service = profile()->GetSessionService();
+  if (session_service) {
+    // The new_contents may end up with a different navigation stack. Force
+    // the session service to update itself.
+    session_service->TabRestored(
+        &new_contents->controller(),
+        tab_handler_->GetTabStripModel()->IsTabPinned(index));
+  }
 }
 
 void Browser::TabPinnedStateChanged(TabContents* contents, int index) {
@@ -3404,7 +3413,7 @@ void Browser::CommitInstant(TabContents* preview_contents) {
       tab_contents);
   DCHECK_NE(-1, index);
   preview_contents->controller().CopyStateFromAndPrune(
-      tab_contents->controller());
+      &tab_contents->controller());
   // TabStripModel takes ownership of preview_contents.
   tab_handler_->GetTabStripModel()->ReplaceTabContentsAt(
       index, preview_contents);

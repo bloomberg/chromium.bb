@@ -944,8 +944,7 @@ void NavigationController::CopyStateFrom(const NavigationController& source) {
   FinishRestore(source.last_committed_entry_index_, false);
 }
 
-void NavigationController::CopyStateFromAndPrune(
-    const NavigationController& source) {
+void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
   // This code is intended for use when the last entry is the active entry.
   DCHECK((transient_entry_index_ != -1 &&
           transient_entry_index_ == entry_count() - 1) ||
@@ -956,15 +955,15 @@ void NavigationController::CopyStateFromAndPrune(
   // Remove all the entries leaving the active entry.
   PruneAllButActive();
 
-  // Insert the entries from source. Don't use source.GetCurrentEntryIndex as
+  // Insert the entries from source. Don't use source->GetCurrentEntryIndex as
   // we don't want to copy over the transient entry.
-  int max_source_index = source.pending_entry_index_ != -1 ?
-      source.pending_entry_index_ : source.last_committed_entry_index_;
+  int max_source_index = source->pending_entry_index_ != -1 ?
+      source->pending_entry_index_ : source->last_committed_entry_index_;
   if (max_source_index == -1)
-    max_source_index = source.entry_count();
+    max_source_index = source->entry_count();
   else
     max_source_index++;
-  InsertEntriesFrom(source, max_source_index);
+  InsertEntriesFrom(*source, max_source_index);
 
   // Adjust indices such that the last entry and pending are at the end now.
   last_committed_entry_index_ = entry_count() - 1;
@@ -979,7 +978,10 @@ void NavigationController::CopyStateFromAndPrune(
   }
 
   // Take over the session id from source.
-  session_id_ = source.session_id_;
+  session_id_ = source->session_id_;
+
+  // Reset source's session id as we're taking it over.
+  source->session_id_.clear();
 }
 
 void NavigationController::PruneAllButActive() {

@@ -427,9 +427,6 @@ void ExtensionBrowserEventRouter::TabChangedAt(TabContents* contents,
 void ExtensionBrowserEventRouter::TabReplacedAt(TabContents* old_contents,
                                                 TabContents* new_contents,
                                                 int index) {
-  // The ids of the two tabs should remain the same:
-  DCHECK_EQ(old_contents->controller().session_id().id(),
-            new_contents->controller().session_id().id());
   UnregisterForTabNotifications(old_contents);
   RegisterForTabNotifications(new_contents);
 }

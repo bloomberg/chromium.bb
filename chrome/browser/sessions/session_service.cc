@@ -215,6 +215,9 @@ void SessionService::SetPinnedState(const SessionID& window_id,
 void SessionService::TabClosed(const SessionID& window_id,
                                const SessionID& tab_id,
                                bool closed_by_user_gesture) {
+  if (!tab_id.id())
+    return;  // Hapens when the tab is replaced.
+
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
