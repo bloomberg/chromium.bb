@@ -68,8 +68,6 @@ struct StackFrame {
   // by the stackwalker.
   string trust_description() const {
     switch (trust) {
-      case StackFrame::FRAME_TRUST_NONE:
-        return "unknown";
       case StackFrame::FRAME_TRUST_CONTEXT:
         return "given as instruction pointer in context";
       case StackFrame::FRAME_TRUST_CFI:
@@ -80,6 +78,8 @@ struct StackFrame {
         return "previous frame's frame pointer";
       case StackFrame::FRAME_TRUST_SCAN:
         return "stack scanning";
+      default:
+        return "unknown";
     }
   };
 

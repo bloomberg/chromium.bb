@@ -108,6 +108,8 @@ u_int32_t DisassemblerX86::NextInstruction() {
               }
             }
             break;
+          default:
+            break;
         }
         break;
 
@@ -160,6 +162,8 @@ u_int32_t DisassemblerX86::NextInstruction() {
         if (dest->data.reg.id == bad_register_.id)
           pushed_bad_value_ = true;
         break;
+      default:
+        break;
     }
   }
 
@@ -194,6 +198,8 @@ u_int32_t DisassemblerX86::NextInstruction() {
           else if (src->data.reg.id == bad_register_.id)
             memcpy(&bad_register_, &dest->data.reg, sizeof(libdis::x86_reg_t));
         }
+        break;
+      default:
         break;
     }
   }
