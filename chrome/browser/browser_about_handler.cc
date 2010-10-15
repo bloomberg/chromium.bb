@@ -42,6 +42,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
@@ -675,38 +676,7 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
       version_html, localized_strings, "t" /* template root node id */);
 }
 
-static void AddBoolSyncDetail(ListValue* details, const std::string& stat_name,
-                              bool stat_value) {
-  DictionaryValue* val = new DictionaryValue;
-  val->SetString("stat_name", stat_name);
-  val->SetBoolean("stat_value", stat_value);
-  details->Append(val);
-}
 
-static void AddIntSyncDetail(ListValue* details, const std::string& stat_name,
-                             int64 stat_value) {
-  DictionaryValue* val = new DictionaryValue;
-  val->SetString("stat_name", stat_name);
-  val->SetString("stat_value", base::FormatNumber(stat_value));
-  details->Append(val);
-}
-
-static std::string MakeSyncAuthErrorText(
-    const GoogleServiceAuthError::State& state) {
-  switch (state) {
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-    case GoogleServiceAuthError::ACCOUNT_DELETED:
-    case GoogleServiceAuthError::ACCOUNT_DISABLED:
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      return "INVALID_GAIA_CREDENTIALS";
-    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-      return "USER_NOT_SIGNED_UP";
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-      return "CONNECTION_FAILED";
-    default:
-      return std::string();
-  }
-}
 
 std::string AboutSync() {
   FilePath user_data_dir;
@@ -717,71 +687,10 @@ std::string AboutSync() {
   ProfileSyncService* service = profile->GetProfileSyncService();
 
   DictionaryValue strings;
-  if (!service || !service->HasSyncSetupCompleted()) {
+  if (!service) {
     strings.SetString("summary", "SYNC DISABLED");
   } else {
-    SyncManager::Status full_status(service->QueryDetailedSyncStatus());
-
-    strings.SetString("service_url", service->sync_service_url().spec());
-    strings.SetString("summary",
-        ProfileSyncService::BuildSyncStatusSummaryText(
-            full_status.summary));
-
-    strings.Set("authenticated",
-        new FundamentalValue(full_status.authenticated));
-    strings.SetString("auth_problem",
-        MakeSyncAuthErrorText(service->GetAuthError().state()));
-
-    strings.SetString("time_since_sync", service->GetLastSyncedTimeString());
-
-    ListValue* details = new ListValue();
-    strings.Set("details", details);
-    AddBoolSyncDetail(details, "Server Up", full_status.server_up);
-    AddBoolSyncDetail(details, "Server Reachable",
-                      full_status.server_reachable);
-    AddBoolSyncDetail(details, "Server Broken", full_status.server_broken);
-    AddBoolSyncDetail(details, "Notifications Enabled",
-                      full_status.notifications_enabled);
-    AddIntSyncDetail(details, "Notifications Received",
-                     full_status.notifications_received);
-    AddIntSyncDetail(details, "Notifications Sent",
-                     full_status.notifications_sent);
-    AddIntSyncDetail(details, "Unsynced Count", full_status.unsynced_count);
-    AddIntSyncDetail(details, "Conflicting Count",
-                     full_status.conflicting_count);
-    AddBoolSyncDetail(details, "Syncing", full_status.syncing);
-    AddBoolSyncDetail(details, "Initial Sync Ended",
-                      full_status.initial_sync_ended);
-    AddBoolSyncDetail(details, "Syncer Stuck", full_status.syncer_stuck);
-    AddIntSyncDetail(details, "Updates Available",
-                     full_status.updates_available);
-    AddIntSyncDetail(details, "Updates Received", full_status.updates_received);
-    AddBoolSyncDetail(details, "Disk Full", full_status.disk_full);
-    AddBoolSyncDetail(details, "Invalid Store", full_status.invalid_store);
-    AddIntSyncDetail(details, "Max Consecutive Errors",
-                     full_status.max_consecutive_errors);
-
-    if (service->unrecoverable_error_detected()) {
-      strings.Set("unrecoverable_error_detected", new FundamentalValue(true));
-      strings.SetString("unrecoverable_error_message",
-                        service->unrecoverable_error_message());
-      tracked_objects::Location loc(service->unrecoverable_error_location());
-      std::string location_str;
-      loc.Write(true, true, &location_str);
-      strings.SetString("unrecoverable_error_location", location_str);
-    }
-
-    browser_sync::ModelSafeRoutingInfo routes;
-    service->backend()->GetModelSafeRoutingInfo(&routes);
-    ListValue* routing_info = new ListValue();
-    strings.Set("routing_info", routing_info);
-    browser_sync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
-    for (; it != routes.end(); ++it) {
-      DictionaryValue* val = new DictionaryValue;
-      val->SetString("model_type", ModelTypeToString(it->first));
-      val->SetString("group", ModelSafeGroupToString(it->second));
-      routing_info->Append(val);
-    }
+    sync_ui_util::ConstructAboutInformation(service, &strings);
   }
 
   static const base::StringPiece sync_html(

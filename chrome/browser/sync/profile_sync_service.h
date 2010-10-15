@@ -205,7 +205,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Get various information for displaying in the user interface.
   browser_sync::SyncBackendHost::StatusSummary QuerySyncStatusSummary();
-  browser_sync::SyncBackendHost::Status QueryDetailedSyncStatus();
+  virtual browser_sync::SyncBackendHost::Status QueryDetailedSyncStatus();
 
   const GoogleServiceAuthError& GetAuthError() const {
     return last_auth_error_;
@@ -233,7 +233,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // TODO(timsteele): What happens if the bookmark model is loaded, a change
   // takes place, and the backend isn't initialized yet?
   bool sync_initialized() const { return backend_initialized_; }
-  bool unrecoverable_error_detected() const {
+  virtual bool unrecoverable_error_detected() const {
     return unrecoverable_error_detected_;
   }
   const std::string& unrecoverable_error_message() {
@@ -256,7 +256,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   const base::Time& last_synced_time() const { return last_synced_time_; }
 
   // Returns a user-friendly string form of last synced time (in minutes).
-  string16 GetLastSyncedTimeString() const;
+  virtual string16 GetLastSyncedTimeString() const;
 
   // Returns the authenticated username of the sync user, or empty if none
   // exists. It will only exist if the authentication service provider (e.g

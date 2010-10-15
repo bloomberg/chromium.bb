@@ -51,6 +51,11 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                      void(syncable::ModelTypeSet* preferred_types));
   MOCK_CONST_METHOD1(GetRegisteredDataTypes,
                      void(syncable::ModelTypeSet* registered_types));
+
+  MOCK_METHOD0(QueryDetailedSyncStatus,
+               browser_sync::SyncBackendHost::Status());
+  MOCK_CONST_METHOD0(GetLastSyncedTimeString, string16());
+  MOCK_CONST_METHOD0(unrecoverable_error_detected, bool());
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_

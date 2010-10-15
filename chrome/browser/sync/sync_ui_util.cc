@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -193,6 +194,135 @@ void OpenSyncMyBookmarksDialog(
   } else {
     service->ShowLoginDialog(NULL);
     ProfileSyncService::SyncEvent(code);  // UMA stats
+  }
+}
+
+void AddBoolSyncDetail(ListValue* details,
+                       const std::string& stat_name,
+                       bool stat_value) {
+  DictionaryValue* val = new DictionaryValue;
+  val->SetString("stat_name", stat_name);
+  val->SetBoolean("stat_value", stat_value);
+  details->Append(val);
+}
+
+void AddIntSyncDetail(ListValue* details, const std::string& stat_name,
+                      int64 stat_value) {
+  DictionaryValue* val = new DictionaryValue;
+  val->SetString("stat_name", stat_name);
+  val->SetString("stat_value", base::FormatNumber(stat_value));
+  details->Append(val);
+}
+
+std::string MakeSyncAuthErrorText(
+    const GoogleServiceAuthError::State& state) {
+  switch (state) {
+    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
+    case GoogleServiceAuthError::ACCOUNT_DELETED:
+    case GoogleServiceAuthError::ACCOUNT_DISABLED:
+    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+      return "INVALID_GAIA_CREDENTIALS";
+    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
+      return "USER_NOT_SIGNED_UP";
+    case GoogleServiceAuthError::CONNECTION_FAILED:
+      return "CONNECTION_FAILED";
+    default:
+      return std::string();
+  }
+}
+
+void ConstructAboutInformation(ProfileSyncService* service,
+                               DictionaryValue* strings) {
+  CHECK(strings != NULL);
+  if (!service->HasSyncSetupCompleted()) {
+    strings->SetString("summary", "SYNC DISABLED");
+  } else {
+    sync_api::SyncManager::Status full_status(
+        service->QueryDetailedSyncStatus());
+
+    strings->SetString("service_url", service->sync_service_url().spec());
+    strings->SetString("summary",
+                       ProfileSyncService::BuildSyncStatusSummaryText(
+                       full_status.summary));
+
+    strings->Set("authenticated",
+                 new FundamentalValue(full_status.authenticated));
+    strings->SetString("auth_problem",
+                       sync_ui_util::MakeSyncAuthErrorText(
+                       service->GetAuthError().state()));
+
+    strings->SetString("time_since_sync", service->GetLastSyncedTimeString());
+
+    ListValue* details = new ListValue();
+    strings->Set("details", details);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Server Up",
+                                    full_status.server_up);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Server Reachable",
+                                    full_status.server_reachable);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Server Broken",
+                                    full_status.server_broken);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Notifications Enabled",
+                                    full_status.notifications_enabled);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Notifications Received",
+                                   full_status.notifications_received);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Notifications Sent",
+                                   full_status.notifications_sent);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Unsynced Count",
+                                   full_status.unsynced_count);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Conflicting Count",
+                                   full_status.conflicting_count);
+    sync_ui_util::AddBoolSyncDetail(details, "Syncing", full_status.syncing);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Initial Sync Ended",
+                                    full_status.initial_sync_ended);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Syncer Stuck",
+                                    full_status.syncer_stuck);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Updates Available",
+                                   full_status.updates_available);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Updates Received",
+                                   full_status.updates_received);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Disk Full",
+                                    full_status.disk_full);
+    sync_ui_util::AddBoolSyncDetail(details,
+                                    "Invalid Store",
+                                    full_status.invalid_store);
+    sync_ui_util::AddIntSyncDetail(details,
+                                   "Max Consecutive Errors",
+                                   full_status.max_consecutive_errors);
+
+    if (service->unrecoverable_error_detected()) {
+      strings->Set("unrecoverable_error_detected", new FundamentalValue(true));
+      strings->SetString("unrecoverable_error_message",
+                         service->unrecoverable_error_message());
+      tracked_objects::Location loc(service->unrecoverable_error_location());
+      std::string location_str;
+      loc.Write(true, true, &location_str);
+      strings->SetString("unrecoverable_error_location", location_str);
+    } else {
+      browser_sync::ModelSafeRoutingInfo routes;
+      service->backend()->GetModelSafeRoutingInfo(&routes);
+      ListValue* routing_info = new ListValue();
+      strings->Set("routing_info", routing_info);
+      browser_sync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
+      for (; it != routes.end(); ++it) {
+        DictionaryValue* val = new DictionaryValue;
+        val->SetString("model_type", ModelTypeToString(it->first));
+        val->SetString("group", ModelSafeGroupToString(it->second));
+        routing_info->Append(val);
+      }
+    }
   }
 }
 

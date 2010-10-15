@@ -6,10 +6,15 @@
 #define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 #pragma once
 
+#include <string>
+
 #include "base/string16.h"
+#include "base/values.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 
 class Profile;
+class ListValue;
+class DictionaryValue;
 
 // Utility functions to gather current sync status information from the sync
 // service and constructs messages suitable for showing in UI.
@@ -42,7 +47,17 @@ string16 GetSyncMenuLabel(ProfileSyncService* service);
 // incognito).  |code| should be one of the START_FROM_* codes.
 void OpenSyncMyBookmarksDialog(
     Profile* profile, ProfileSyncService::SyncEventCodes code);
-}  // namespace sync_ui_util
 
+void AddBoolSyncDetail(ListValue* details,
+                       const std::string& stat_name,
+                       bool stat_value);
+
+void ConstructAboutInformation(ProfileSyncService* service,
+                               DictionaryValue* strings);
+
+void AddIntSyncDetail(ListValue* details,
+                      const std::string& stat_name,
+                      int64 stat_value);
+}  // namespace sync_ui_util
 #endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 
