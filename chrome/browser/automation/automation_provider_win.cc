@@ -16,7 +16,7 @@
 #include "chrome/browser/automation/extension_port_container.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/external_tab_container_win.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -495,8 +495,8 @@ bool AutomationProvider::InterceptBrowserEventMessageFromExternalHost(
     return false;
   }
 
-  if (profile()->GetExtensionMessageService()) {
-    profile()->GetExtensionMessageService()->DispatchEventToRenderers(
+  if (profile()->GetExtensionEventRouter()) {
+    profile()->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, json_args, profile(), GURL());
   }
 

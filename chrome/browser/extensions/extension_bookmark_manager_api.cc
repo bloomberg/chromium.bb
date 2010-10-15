@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/extension_bookmark_helpers.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -155,12 +155,12 @@ ExtensionBookmarkManagerEventRouter::~ExtensionBookmarkManagerEventRouter() {
 
 void ExtensionBookmarkManagerEventRouter::DispatchEvent(const char* event_name,
                                                         const ListValue* args) {
-  if (!profile_->GetExtensionMessageService())
+  if (!profile_->GetExtensionEventRouter())
     return;
 
   std::string json_args;
   base::JSONWriter::Write(args, false, &json_args);
-  profile_->GetExtensionMessageService()->DispatchEventToRenderers(
+  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       event_name, json_args, NULL, GURL());
 }
 

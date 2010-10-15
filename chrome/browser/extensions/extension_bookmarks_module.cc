@@ -17,7 +17,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_bookmark_helpers.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -95,8 +95,8 @@ void ExtensionBookmarkEventRouter::Observe(BookmarkModel* model) {
 void ExtensionBookmarkEventRouter::DispatchEvent(Profile *profile,
                                                  const char* event_name,
                                                  const std::string json_args) {
-  if (profile->GetExtensionMessageService()) {
-    profile->GetExtensionMessageService()->DispatchEventToRenderers(
+  if (profile->GetExtensionEventRouter()) {
+    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, json_args, NULL, GURL());
   }
 }

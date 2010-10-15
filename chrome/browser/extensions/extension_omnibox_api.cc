@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 
@@ -35,7 +35,7 @@ const char kDescriptionStylesOffset[] = "offset";
 // static
 void ExtensionOmniboxEventRouter::OnInputStarted(
     Profile* profile, const std::string& extension_id) {
-  profile->GetExtensionMessageService()->DispatchEventToExtension(
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputStarted, "[]", profile, GURL());
 }
 
@@ -43,9 +43,9 @@ void ExtensionOmniboxEventRouter::OnInputStarted(
 bool ExtensionOmniboxEventRouter::OnInputChanged(
     Profile* profile, const std::string& extension_id,
     const std::string& input, int suggest_id) {
-  std::string event_name = ExtensionMessageService::GetPerExtensionEventName(
+  std::string event_name = ExtensionEventRouter::GetPerExtensionEventName(
       events::kOnInputChanged, extension_id);
-  if (!profile->GetExtensionMessageService()->HasEventListener(event_name))
+  if (!profile->GetExtensionEventRouter()->HasEventListener(event_name))
     return false;
 
   ListValue args;
@@ -54,7 +54,7 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  profile->GetExtensionMessageService()->DispatchEventToExtension(
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputChanged, json_args, profile, GURL());
   return true;
 }
@@ -70,7 +70,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  profile->GetExtensionMessageService()->DispatchEventToExtension(
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputEntered, json_args, profile, GURL());
 
   NotificationService::current()->Notify(
@@ -81,7 +81,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 // static
 void ExtensionOmniboxEventRouter::OnInputCancelled(
     Profile* profile, const std::string& extension_id) {
-  profile->GetExtensionMessageService()->DispatchEventToExtension(
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, events::kOnInputCancelled, "[]", profile, GURL());
 }
 

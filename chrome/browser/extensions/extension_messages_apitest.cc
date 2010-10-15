@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -21,24 +21,24 @@ class MessageSender : public NotificationObserver {
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    ExtensionMessageService* message_service =
-        Source<Profile>(source).ptr()->GetExtensionMessageService();
+    ExtensionEventRouter* event_router =
+        Source<Profile>(source).ptr()->GetExtensionEventRouter();
 
     // Sends four messages to the extension. All but the third message sent
     // from the origin http://b.com/ are supposed to arrive.
-    message_service->DispatchEventToRenderers("test.onMessage",
+    event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"no restriction\"}]",
         Source<Profile>(source).ptr(),
         GURL());
-    message_service->DispatchEventToRenderers("test.onMessage",
+    event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://a.com/\"}]",
         Source<Profile>(source).ptr(),
         GURL("http://a.com/"));
-    message_service->DispatchEventToRenderers("test.onMessage",
+    event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":false,\"data\":\"http://b.com/\"}]",
         Source<Profile>(source).ptr(),
         GURL("http://b.com/"));
-    message_service->DispatchEventToRenderers("test.onMessage",
+    event_router->DispatchEventToRenderers("test.onMessage",
         "[{\"lastMessage\":true,\"data\":\"last message\"}]",
         Source<Profile>(source).ptr(),
         GURL());

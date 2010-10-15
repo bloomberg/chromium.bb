@@ -13,7 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/json/json_writer.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -373,8 +373,8 @@ void ExtensionMenuManager::ExecuteCommand(
     TabContents* tab_contents,
     const ContextMenuParams& params,
     const ExtensionMenuItem::Id& menuItemId) {
-  ExtensionMessageService* service = profile->GetExtensionMessageService();
-  if (!service)
+  ExtensionEventRouter* event_router = profile->GetExtensionEventRouter();
+  if (!event_router)
     return;
 
   ExtensionMenuItem* item = GetItemById(menuItemId);
@@ -441,7 +441,8 @@ void ExtensionMenuManager::ExecuteCommand(
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
   std::string event_name = "contextMenus/" + item->extension_id();
-  service->DispatchEventToRenderers(event_name, json_args, profile, GURL());
+  event_router->DispatchEventToRenderers(
+      event_name, json_args, profile, GURL());
 }
 
 void ExtensionMenuManager::Observe(NotificationType type,

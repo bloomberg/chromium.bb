@@ -9,7 +9,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -67,8 +67,8 @@ ExtensionBrowserEventRouter* ExtensionBrowserEventRouter::GetInstance() {
 static void DispatchEvent(Profile* profile,
                           const char* event_name,
                           const std::string json_args) {
-  if (profile->GetExtensionMessageService()) {
-    profile->GetExtensionMessageService()->DispatchEventToRenderers(
+  if (profile->GetExtensionEventRouter()) {
+    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, json_args, profile, GURL());
   }
 }
@@ -476,7 +476,7 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
                                     NULL, NULL, &tab_contents, NULL)) {
     return;
   }
-  std::string event_name = ExtensionMessageService::GetPerExtensionEventName(
+  std::string event_name = ExtensionEventRouter::GetPerExtensionEventName(
       "pageAction.onClicked", extension_id);
   DispatchEventWithTab(profile, event_name.c_str(), tab_contents);
 }
@@ -487,7 +487,7 @@ void ExtensionBrowserEventRouter::BrowserActionExecuted(
   int tab_id = 0;
   if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
     return;
-  std::string event_name = ExtensionMessageService::GetPerExtensionEventName(
+  std::string event_name = ExtensionEventRouter::GetPerExtensionEventName(
       "browserAction.onClicked", extension_id);
   DispatchEventWithTab(profile, event_name.c_str(), tab_contents);
 }

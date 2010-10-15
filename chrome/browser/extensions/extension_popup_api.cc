@@ -9,8 +9,8 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
@@ -508,6 +508,6 @@ void PopupEventRouter::OnPopupClosed(Profile* profile,
       extension_popup_module_events::kOnPopupClosed,
       routing_id);
 
-  profile->GetExtensionMessageService()->DispatchEventToRenderers(
+  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
       full_event_name, base::JSONWriter::kEmptyArray, profile, GURL());
 }

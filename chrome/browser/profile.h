@@ -47,8 +47,9 @@ class DesktopNotificationService;
 class DownloadManager;
 class Extension;
 class ExtensionDevToolsManager;
-class ExtensionProcessManager;
+class ExtensionEventRouter;
 class ExtensionMessageService;
+class ExtensionProcessManager;
 class ExtensionsService;
 class FaviconService;
 class FilePath;
@@ -197,6 +198,9 @@ class Profile {
   // Retrieves a pointer to the ExtensionMessageService associated with this
   // profile.  The instance is created at startup.
   virtual ExtensionMessageService* GetExtensionMessageService() = 0;
+
+  // Accessor. The instance is created at startup.
+  virtual ExtensionEventRouter* GetExtensionEventRouter() = 0;
 
   // Retrieves a pointer to the SSLHostState associated with this profile.
   // The SSLHostState is lazily created the first time that this method is

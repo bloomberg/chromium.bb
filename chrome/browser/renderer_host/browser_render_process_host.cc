@@ -27,6 +27,7 @@
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_security_policy.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -490,9 +491,9 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   const std::string locale = g_browser_process->GetApplicationLocale();
   command_line->AppendSwitchASCII(switches::kLang, locale);
 
-  // If we run base::FieldTrials, we want to pass to their state to the renderer so
-  // that it can act in accordance with each state, or record histograms
-  // relating to the base::FieldTrial states.
+  // If we run base::FieldTrials, we want to pass to their state to the
+  // renderer so that it can act in accordance with each state, or record
+  // histograms relating to the base::FieldTrial states.
   std::string field_trial_states;
   base::FieldTrialList::StatesToString(&field_trial_states);
   if (!field_trial_states.empty()) {
@@ -1059,16 +1060,16 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
 void BrowserRenderProcessHost::OnExtensionAddListener(
     const std::string& event_name) {
-  if (profile()->GetExtensionMessageService()) {
-    profile()->GetExtensionMessageService()->AddEventListener(
+  if (profile()->GetExtensionEventRouter()) {
+    profile()->GetExtensionEventRouter()->AddEventListener(
         event_name, id());
   }
 }
 
 void BrowserRenderProcessHost::OnExtensionRemoveListener(
     const std::string& event_name) {
-  if (profile()->GetExtensionMessageService()) {
-    profile()->GetExtensionMessageService()->RemoveEventListener(
+  if (profile()->GetExtensionEventRouter()) {
+    profile()->GetExtensionEventRouter()->RemoveEventListener(
         event_name, id());
   }
 }

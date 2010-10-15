@@ -231,6 +231,10 @@ class OffTheRecordProfileImpl : public Profile,
     return GetOriginalProfile()->GetExtensionMessageService();
   }
 
+  virtual ExtensionEventRouter* GetExtensionEventRouter() {
+    return GetOriginalProfile()->GetExtensionEventRouter();
+  }
+
   virtual SSLHostState* GetSSLHostState() {
     if (!ssl_host_state_.get())
       ssl_host_state_.reset(new SSLHostState());

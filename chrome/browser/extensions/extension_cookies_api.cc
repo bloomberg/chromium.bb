@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -75,8 +75,8 @@ void ExtensionCookiesEventRouter::DispatchEvent(Profile* profile,
                                                 const char* event_name,
                                                 const std::string& json_args,
                                                 GURL& cookie_domain) {
-  if (profile && profile->GetExtensionMessageService()) {
-    profile->GetExtensionMessageService()->DispatchEventToRenderers(
+  if (profile && profile->GetExtensionEventRouter()) {
+    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, json_args, profile, cookie_domain);
   }
 }

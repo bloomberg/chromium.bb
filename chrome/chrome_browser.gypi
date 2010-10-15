@@ -1476,6 +1476,8 @@
         'browser/extensions/extension_error_reporter.h',
         'browser/extensions/extension_event_names.cc',
         'browser/extensions/extension_event_names.h',
+        'browser/extensions/extension_event_router.cc',
+        'browser/extensions/extension_event_router.h',
         'browser/extensions/execute_code_in_tab_function.cc',
         'browser/extensions/execute_code_in_tab_function.h',
         'browser/extensions/extension_browser_event_router.cc',

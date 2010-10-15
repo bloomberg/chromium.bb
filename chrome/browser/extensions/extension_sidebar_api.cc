@@ -9,7 +9,7 @@
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profile.h"
@@ -89,7 +89,7 @@ void ExtensionSidebarEventRouter::OnStateChanged(
   base::JSONWriter::Write(&args, false, &json_args);
 
   const std::string& extension_id(content_id);
-  profile->GetExtensionMessageService()->DispatchEventToExtension(
+  profile->GetExtensionEventRouter()->DispatchEventToExtension(
       extension_id, kOnStateChanged, json_args, profile, GURL());
 }
 

@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_event_names.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -229,10 +229,6 @@ void ExtensionManagementEventRouter::Observe(
   std::string args_json;
   base::JSONWriter::Write(&args, false /* pretty_print */, &args_json);
 
-  ExtensionMessageService* message_service =
-      profile->GetExtensionMessageService();
-  message_service->DispatchEventToRenderers(event_name,
-                                            args_json,
-                                            NULL,
-                                            GURL());
+  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
+      event_name, args_json, NULL, GURL());
 }

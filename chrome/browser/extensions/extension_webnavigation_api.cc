@@ -9,7 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_webnavigation_api_constants.h"
 #include "chrome/browser/profile.h"
@@ -148,8 +148,8 @@ void ExtensionWebNavigationEventRouter::DispatchEvent(
     Profile* profile,
     const char* event_name,
     const std::string& json_args) {
-  if (profile && profile->GetExtensionMessageService()) {
-    profile->GetExtensionMessageService()->DispatchEventToRenderers(
+  if (profile && profile->GetExtensionEventRouter()) {
+    profile->GetExtensionEventRouter()->DispatchEventToRenderers(
         event_name, json_args, profile, GURL());
   }
 }

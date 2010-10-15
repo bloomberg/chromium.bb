@@ -15,9 +15,9 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_idle_api_constants.h"
-#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/extensions/extension.h"
@@ -152,6 +152,6 @@ void ExtensionIdleEventRouter::OnIdleStateChange(Profile* profile,
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  profile->GetExtensionMessageService()->DispatchEventToRenderers(
+  profile->GetExtensionEventRouter()->DispatchEventToRenderers(
       keys::kOnStateChanged, json_args, profile, GURL());
 }

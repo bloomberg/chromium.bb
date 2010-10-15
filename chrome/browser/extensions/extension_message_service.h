@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/ref_counted.h"
-#include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "ipc/ipc_message.h"
@@ -48,21 +47,15 @@ class ExtensionMessageService
     : public base::RefCounted<ExtensionMessageService>,
       public NotificationObserver {
  public:
-  // Javascript function name constants.
-  static const char kDispatchOnConnect[];
-  static const char kDispatchOnDisconnect[];
-  static const char kDispatchOnMessage[];
-  static const char kDispatchEvent[];
-  static const char kDispatchError[];
-
-  // A messaging channel.  Note that the opening port can be the same as the
+  // A messaging channel. Note that the opening port can be the same as the
   // receiver, if an extension toolstrip wants to talk to its tab (for example).
   struct MessageChannel;
   struct MessagePort;
 
-  // Returns the event name for an event that is extension-specific.
-  static std::string GetPerExtensionEventName(const std::string& event_name,
-                                              const std::string& extension_id);
+  // Javascript function name constants.
+  static const char kDispatchOnConnect[];
+  static const char kDispatchOnDisconnect[];
+  static const char kDispatchOnMessage[];
 
   // Allocates a pair of port ids.
   // NOTE: this can be called from any thread.
@@ -72,31 +65,6 @@ class ExtensionMessageService
 
   // Notification that our owning profile is going away.
   void DestroyingProfile();
-
-  // Add or remove |render_process_pid| as a listener for |event_name|.
-  void AddEventListener(const std::string& event_name, int render_process_id);
-  void RemoveEventListener(const std::string& event_name,
-                           int render_process_id);
-
-  // Returns true if there is at least one listener for the given event.
-  bool HasEventListener(const std::string& event_name);
-
-  // Send an event to every registered extension renderer. If
-  // |restrict_to_profile| is non-NULL, then the event will not be sent to other
-  // profiles unless the extension has permission (e.g. incognito tab update ->
-  // normal profile only works if extension is allowed incognito access). If
-  // |event_url| is not empty, the event is only sent to extension with host
-  // permissions for this url.
-  virtual void DispatchEventToRenderers(
-      const std::string& event_name, const std::string& event_args,
-      Profile* restrict_to_profile, const GURL& event_url);
-
-  // Same as above, except use the extension-specific naming scheme for the
-  // event. This is used by events that are per-extension.
-  void DispatchEventToExtension(
-      const std::string& extension_id,
-      const std::string& event_name, const std::string& event_args,
-      Profile* restrict_to_profile, const GURL& event_url);
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is
@@ -178,13 +146,6 @@ class ExtensionMessageService
   NotificationRegistrar registrar_;
 
   MessageChannelMap channels_;
-
-  scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
-
-  // A map between an event name and a set of process id's that are listening
-  // to that event.
-  typedef std::map<std::string, std::set<int> > ListenerMap;
-  ListenerMap listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageService);
 };

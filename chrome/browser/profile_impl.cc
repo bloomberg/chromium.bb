@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_info_map.h"
+#include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -353,6 +354,7 @@ void ProfileImpl::InitExtensions() {
   }
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(this));
+  extension_event_router_.reset(new ExtensionEventRouter(this));
   extension_message_service_ = new ExtensionMessageService(this);
 
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
@@ -646,6 +648,10 @@ ExtensionProcessManager* ProfileImpl::GetExtensionProcessManager() {
 
 ExtensionMessageService* ProfileImpl::GetExtensionMessageService() {
   return extension_message_service_.get();
+}
+
+ExtensionEventRouter* ProfileImpl::GetExtensionEventRouter() {
+  return extension_event_router_.get();
 }
 
 SSLHostState* ProfileImpl::GetSSLHostState() {
