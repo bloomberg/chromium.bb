@@ -508,7 +508,7 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
   // latency of page loads.
   base::FieldTrial::Probability kDivisor = 1000;
   // For each option (i.e., non-default), we have a fixed probability.
-  base::FieldTrial::Probability kProbabilityPerGroup = 1;  // 0.1% probability.
+  base::FieldTrial::Probability kProbabilityPerGroup = 100;  // 10% probability.
 
   trial_ = new base::FieldTrial("DnsImpact", kDivisor);
 
