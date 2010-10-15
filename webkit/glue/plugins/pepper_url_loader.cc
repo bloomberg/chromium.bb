@@ -44,7 +44,7 @@ PP_Resource Create(PP_Instance instance_id) {
   if (!instance)
     return 0;
 
-  URLLoader* loader = new URLLoader(instance);
+  URLLoader* loader = new URLLoader(instance, false);
   return loader->GetReference();
 }
 
@@ -167,9 +167,10 @@ const PPB_URLLoaderTrusted_Dev ppb_urlloadertrusted = {
 
 }  // namespace
 
-URLLoader::URLLoader(PluginInstance* instance)
+URLLoader::URLLoader(PluginInstance* instance, bool main_document_loader)
     : Resource(instance->module()),
       instance_(instance),
+      main_document_loader_(main_document_loader),
       pending_callback_(),
       bytes_sent_(0),
       total_bytes_to_be_sent_(-1),
@@ -216,10 +217,8 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   frame->dispatchWillSendRequest(web_request);
 
   loader_.reset(WebKit::webKitClient()->createURLLoader());
-  if (!loader_.get()) {
-    loader_.reset();
+  if (!loader_.get())
     return PP_ERROR_FAILED;
-  }
   loader_->loadAsynchronously(web_request, this);
 
   pending_callback_ = callback;
@@ -279,7 +278,12 @@ int32_t URLLoader::FinishStreamingToFile(PP_CompletionCallback callback) {
 }
 
 void URLLoader::Close() {
-  NOTIMPLEMENTED();  // TODO(darin): Implement me.
+  if (loader_.get()) {
+    loader_->cancel();
+  } else if (main_document_loader_) {
+    WebFrame* frame = instance_->container()->element().document().frame();
+    frame->stopLoading();
+  }
 }
 
 void URLLoader::GrantUniversalAccess() {

@@ -24,7 +24,7 @@ class URLResponseInfo;
 
 class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
  public:
-  explicit URLLoader(PluginInstance* instance);
+  URLLoader(PluginInstance* instance, bool main_document_loader);
   virtual ~URLLoader();
 
   // Returns a pointer to the interface implementing PPB_URLLoader that is
@@ -83,6 +83,9 @@ class URLLoader : public Resource, public WebKit::WebURLLoaderClient {
   size_t FillUserBuffer();
 
   scoped_refptr<PluginInstance> instance_;
+  // If true, then the plugin instance is a full-frame plugin and we're just
+  // wrapping the main document's loader (i.e. loader_ is null).
+  bool main_document_loader_;
   scoped_ptr<WebKit::WebURLLoader> loader_;
   scoped_refptr<URLResponseInfo> response_info_;
   PP_CompletionCallback pending_callback_;
