@@ -64,7 +64,11 @@ int SpeechInputDispatcherHost::SpeechInputCallers::GetId(int render_process_id,
       return it->first;
     }
   }
-  NOTREACHED() << "Entry not found";
+
+  // Not finding an entry here is valid since a cancel/stop may have been issued
+  // by the renderer and before it received our response the user may have
+  // clicked the button to stop again. The caller of this method should take
+  // care of this case.
   return 0;
 }
 
@@ -148,15 +152,18 @@ void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,
                                                     int request_id) {
   int caller_id = callers_->GetId(resource_message_filter_process_id_,
                                  render_view_id, request_id);
-  manager()->CancelRecognition(caller_id);
-  callers_->RemoveId(caller_id);  // Request sequence ended, so remove mapping.
+  if (caller_id) {
+    manager()->CancelRecognition(caller_id);
+    callers_->RemoveId(caller_id);  // Request sequence ended so remove mapping.
+  }
 }
 
 void SpeechInputDispatcherHost::OnStopRecording(int render_view_id,
                                                 int request_id) {
   int caller_id = callers_->GetId(resource_message_filter_process_id_,
                                   render_view_id, request_id);
-  manager()->StopRecording(caller_id);
+  if (caller_id)
+    manager()->StopRecording(caller_id);
 }
 
 void SpeechInputDispatcherHost::SendMessageToRenderView(IPC::Message* message,

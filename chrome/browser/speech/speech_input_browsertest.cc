@@ -97,6 +97,12 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
   }
 };
 
+// Marked as FLAKY due to http://crbug.com/51337
+//
+// TODO(satish): Once this flakiness has been fixed, add a second test here to
+// check for sending many clicks in succession to the speech button and verify
+// that it doesn't cause any crash but works as expected. This should act as the
+// test for http://crbug.com/59173
 IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, FLAKY_TestBasicRecognition) {
   // Inject the fake manager factory so that the test result is returned to the
   // web page.
