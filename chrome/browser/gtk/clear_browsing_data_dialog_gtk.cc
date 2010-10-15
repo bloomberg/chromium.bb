@@ -39,24 +39,8 @@ void ClearBrowsingDataDialogGtk::Show(GtkWindow* parent, Profile* profile) {
 }
 
 ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
-                                                       Profile* profile)
-    : clear_server_data_button_(NULL),
-      clear_server_status_label_(NULL),
-      profile_(profile),
-      remover_(NULL) {
-  DCHECK(profile);
-
-  // Always show preferences for the original profile. Most state when off
-  // the record comes from the original profile, but we explicitly use
-  // the original profile to avoid potential problems.
-  profile_ = profile->GetOriginalProfile();
-  sync_service_ = profile_->GetProfileSyncService();
-
-  if (sync_service_) {
-    sync_service_->ResetClearServerDataState();
-    sync_service_->AddObserver(this);
-  }
-
+                                                       Profile* profile) :
+    profile_(profile), remover_(NULL) {
   // Build the dialog.
   std::string dialog_name = l10n_util::GetStringUTF8(
       IDS_CLEAR_BROWSING_DATA_TITLE);
@@ -103,8 +87,6 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
 }
 
 ClearBrowsingDataDialogGtk::~ClearBrowsingDataDialogGtk() {
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
 }
 
 GtkWidget* ClearBrowsingDataDialogGtk::BuildClearBrowsingDataPage() {
@@ -218,13 +200,22 @@ GtkWidget* ClearBrowsingDataDialogGtk::BuildOtherDataPage() {
       options_builder(OptionsLayoutBuilderGtk::Create());
 
   GtkWidget* adobe_flash_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  GtkWidget* description = gtk_label_new(l10n_util::GetStringUTF8(
+      IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION).c_str());
+  gtk_misc_set_alignment(GTK_MISC(description), 0, 0);
+  gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
+  gtk_box_pack_start(GTK_BOX(adobe_flash_vbox), description, FALSE, FALSE, 0);
 
-  GtkWidget* flash_link = AddDescriptionAndLink(
-      adobe_flash_vbox,
-      IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION,
-      IDS_FLASH_STORAGE_SETTINGS);
+  GtkWidget* flash_link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_SETTINGS).c_str());
   g_signal_connect(G_OBJECT(flash_link), "clicked",
                    G_CALLBACK(OnFlashLinkClickedThunk), this);
+
+  // Stick it in an hbox so it doesn't expand to the whole width.
+  GtkWidget* flash_link_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(flash_link_hbox), flash_link, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(adobe_flash_vbox),
+                     flash_link_hbox, FALSE, FALSE, 0);
 
   options_builder->AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_CLEAR_DATA_ADOBE_FLASH_TITLE),
@@ -233,9 +224,11 @@ GtkWidget* ClearBrowsingDataDialogGtk::BuildOtherDataPage() {
   bool allow_clear_server_data_ui =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClearServerData);
+  bool sync_enabled =
+      allow_clear_server_data_ui &&
+      profile_->GetProfileSyncService()->HasSyncSetupCompleted();
 
-  // Only build this portion if behind a flag.
-  if (allow_clear_server_data_ui) {
+  if (sync_enabled) {
     GtkWidget* clear_sync_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
     GtkWidget* description = gtk_label_new(l10n_util::GetStringUTF8(
         IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION).c_str());
@@ -243,57 +236,22 @@ GtkWidget* ClearBrowsingDataDialogGtk::BuildOtherDataPage() {
     gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
     gtk_box_pack_start(GTK_BOX(clear_sync_vbox), description, FALSE, FALSE, 0);
 
-    GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
-
-    clear_server_data_button_ = gtk_button_new_with_label(
+    GtkWidget* clear_button = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(IDS_CLEAR_DATA_CLEAR_BUTTON).c_str());
-    g_signal_connect(clear_server_data_button_, "clicked",
+    g_signal_connect(clear_button, "clicked",
                      G_CALLBACK(OnClearSyncDataClickThunk), this);
-    gtk_box_pack_start(GTK_BOX(button_hbox), clear_server_data_button_,
-                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(clear_sync_vbox), clear_button, FALSE, FALSE, 0);
 
-    clear_server_status_label_ = gtk_label_new(NULL);
-    gtk_box_pack_start(GTK_BOX(button_hbox), clear_server_status_label_,
-                       FALSE, FALSE, 0);
-
-    gtk_box_pack_start(GTK_BOX(clear_sync_vbox), button_hbox,
-                       FALSE, FALSE, 0);
-
-    GtkWidget* dashboard_link = AddDescriptionAndLink(
-        clear_sync_vbox,
-        IDS_CLEAR_DASHBOARD_DESCRIPTION,
-        IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL);
-    g_signal_connect(G_OBJECT(dashboard_link), "clicked",
-                     G_CALLBACK(OnPrivacyLinkClickedThunk), this);
+    // TODO(erg): We still need to have a link to the google privacy dashboard
+    // here, which is a label with a link embedded in it. This is too hard for
+    // the first pass. crbug.com/57877
 
     options_builder->AddOptionGroup(
         l10n_util::GetStringUTF8(IDS_CLEAR_DATA_CHROME_SYNC_TITLE),
         clear_sync_vbox, false);
   }
 
-  UpdateClearButtonState(false);
-
   return options_builder->get_page_widget();
-}
-
-GtkWidget* ClearBrowsingDataDialogGtk::AddDescriptionAndLink(GtkWidget* box,
-                                                             int description,
-                                                             int link) {
-  GtkWidget* description_label = gtk_label_new(l10n_util::GetStringUTF8(
-      description).c_str());
-  gtk_misc_set_alignment(GTK_MISC(description_label), 0, 0);
-  gtk_label_set_line_wrap(GTK_LABEL(description_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(box), description_label, FALSE, FALSE, 0);
-
-  GtkWidget* link_widget = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(link).c_str());
-
-  // Stick it in an hbox so it doesn't expand to the whole width.
-  GtkWidget* link_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(link_hbox), link_widget, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(box), link_hbox, FALSE, FALSE, 0);
-
-  return link_widget;
 }
 
 void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,
@@ -356,58 +314,13 @@ void ClearBrowsingDataDialogGtk::OnClearSyncDataConfirmResponse(
   if (response != GTK_RESPONSE_YES)
     return;
 
-  sync_service_->ClearServerData();
-  OnStateChanged();
-}
+  // TODO(erg): The views version disables all controls and then starts a
+  // throbber, in both tabs. We currently don't have a way to do this in the
+  // GTK+ UI. It was a purely cosmetic thing, but now that this sync step can
+  // fail and needs to report stuff to the user, we'll need to implement that.
+  profile_->GetProfileSyncService()->ClearServerData();
 
-void ClearBrowsingDataDialogGtk::OnStateChanged() {
-  // Succeeded/FailedClearingServerData should only be called once, not every
-  // time the view is refreshed.  As such, on success/failure handle that state
-  // and immediately reset things back to CLEAR_NOT_STARTED.
-  ProfileSyncService::ClearServerDataState clear_state =
-      sync_service_ ?
-      sync_service_->GetClearServerDataState() :
-      ProfileSyncService::CLEAR_NOT_STARTED;
-
-  if (sync_service_)
-    sync_service_->ResetClearServerDataState();
-
-  bool delete_in_progress = false;
-  switch (clear_state) {
-    case ProfileSyncService::CLEAR_NOT_STARTED:
-      // This can occur on a first start and after a failed clear (which does
-      // not close the tab). Do nothing.
-      break;
-    case ProfileSyncService::CLEAR_CLEARING:
-      // Clearing buttons on all tabs are disabled at this point, throbber is
-      // going.
-      gtk_widget_set_sensitive(GTK_WIDGET(dialog_), FALSE);
-      gtk_label_set_text(
-          GTK_LABEL(clear_server_status_label_),
-          l10n_util::GetStringUTF8(IDS_CLEAR_DATA_SENDING).c_str());
-      delete_in_progress = true;
-      break;
-    case ProfileSyncService::CLEAR_FAILED:
-      // Show an error and reallow clearing.
-      gtk_widget_set_sensitive(GTK_WIDGET(dialog_), TRUE);
-      gtk_label_set_text(
-          GTK_LABEL(clear_server_status_label_),
-          l10n_util::GetStringUTF8(IDS_CLEAR_DATA_ERROR).c_str());
-      delete_in_progress = false;
-      break;
-    case ProfileSyncService::CLEAR_SUCCEEDED:
-      // Close the dialog box, success!
-      OnDialogResponse(dialog_, GTK_RESPONSE_CLOSE);
-      return;
-  }
-
-  // allow_clear can be false when a local browsing data clear is happening
-  // from the neighboring tab.  |delete_in_progress| means that a clear is
-  // pending in the current tab.
-  UpdateClearButtonState(delete_in_progress);
-
-  // TODO(erg): There is no decent throbber widget available to us. For the
-  // time being, just disable the box while doing this.
+  OnDialogResponse(dialog_, GTK_RESPONSE_CLOSE);
 }
 
 void ClearBrowsingDataDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {
@@ -419,13 +332,6 @@ void ClearBrowsingDataDialogGtk::OnFlashLinkClicked(GtkWidget* button) {
   // behind other windows.
   Browser* browser = Browser::Create(profile_);
   browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
-                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
-  browser->window()->Show();
-}
-
-void ClearBrowsingDataDialogGtk::OnPrivacyLinkClicked(GtkWidget* button) {
-  Browser* browser = Browser::Create(profile_);
-  browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_PRIVACY_DASHBOARD_URL)),
                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   browser->window()->Show();
 }
@@ -450,14 +356,4 @@ int ClearBrowsingDataDialogGtk::GetCheckedItems() {
   if (IsChecked(del_cache_checkbox_))
     items |= BrowsingDataRemover::REMOVE_CACHE;
   return items;
-}
-
-void ClearBrowsingDataDialogGtk::UpdateClearButtonState(
-    bool delete_in_progress) {
-  if (clear_server_data_button_) {
-    gtk_widget_set_sensitive(clear_server_data_button_,
-                             sync_service_ != NULL &&
-                             sync_service_->HasSyncSetupCompleted() &&
-                             !delete_in_progress);
-  }
 }
