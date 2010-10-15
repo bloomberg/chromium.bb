@@ -170,6 +170,7 @@ bool FilePathWatcherImpl::SetupWatchHandle(const FilePath& dir,
   if (error_code != ERROR_FILE_NOT_FOUND &&
       error_code != ERROR_PATH_NOT_FOUND &&
       error_code != ERROR_ACCESS_DENIED &&
+      error_code != ERROR_SHARING_VIOLATION &&
       error_code != ERROR_DIRECTORY) {
     PLOG(ERROR) << "FindFirstChangeNotification failed for "
                 << dir.value();
