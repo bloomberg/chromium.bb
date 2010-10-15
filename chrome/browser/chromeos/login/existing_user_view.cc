@@ -49,7 +49,9 @@ class UserEntryTextfield : public views::Textfield {
 
 
 ExistingUserView::ExistingUserView(UserController* uc)
-    : password_field_(NULL),
+    : accel_login_off_the_record_(
+        views::Accelerator(app::VKEY_B, false, false, true)),
+      password_field_(NULL),
       user_controller_(uc),
       accel_enable_accessibility_(
           WizardAccessibilityHelper::GetAccelerator()) {
