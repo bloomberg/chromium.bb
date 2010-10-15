@@ -25,6 +25,26 @@ extern void atexit(void (*funptr)());
 extern void __av_wait();
 
 /*
+ * We have to force the symbols below to be linked in as they
+ * are referenced in libgcc_eh.a
+ * c.f. http://code.google.com/p/nativeclient/issues/detail?id=1044
+ */
+void HackToForceSymbolsToBeLinkedIn(char *s) {
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[4] */
+  extern void abort();
+  extern int strlen(const char* cp);
+  extern void *malloc(int);
+  extern void free(void*);
+
+  char* d = malloc(10);
+  if (d == 0) {
+    malloc(strlen(s));
+    abort();
+  }
+  free(d);
+}
+
+/*
  *  __nacl_startup is called from crt1XXX, it ultimately calls main().
  */
 void __nacl_startup(int argc, char *argv[], char *envp[]) {
@@ -69,6 +89,9 @@ void __nacl_startup(int argc, char *argv[], char *envp[]) {
    * definition in libnacl that can be overridden by libsrpc.
    */
   __srpc_init();
+
+  HackToForceSymbolsToBeLinkedIn(argv[0]);
+
   /*
    * Wait for libav startup to connect to the browser.  There is a weak
    * definition in libnacl that can be overridden by libav.

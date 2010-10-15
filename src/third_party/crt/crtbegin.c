@@ -10,7 +10,7 @@
 /* NOTE: currently disable as it would pull in parts
    of libgcc_eh.a which depend on free/malloc
 */
-#undef HAVE_EH
+#define HAVE_EH
 #ifdef HAVE_EH
 /* HACK HACK HACK */
 /* The real structure is defined in llvm-gcc-4.2/gcc/unwind-dw2-fde.h
