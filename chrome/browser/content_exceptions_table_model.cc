@@ -30,13 +30,16 @@ ContentExceptionsTableModel::ContentExceptionsTableModel(
 ContentExceptionsTableModel::~ContentExceptionsTableModel() {}
 
 void ContentExceptionsTableModel::AddException(
-    const HostContentSettingsMap::Pattern& pattern,
+    const HostContentSettingsMap::Pattern& original_pattern,
     ContentSetting setting,
     bool is_off_the_record) {
   DCHECK(!is_off_the_record || off_the_record_map_);
 
   int insert_position =
       is_off_the_record ? RowCount() : static_cast<int>(entries_.size());
+
+  const HostContentSettingsMap::Pattern pattern(
+      original_pattern.CanonicalizePattern());
 
   entries(is_off_the_record).push_back(
       HostContentSettingsMap::PatternSettingPair(pattern, setting));
@@ -74,12 +77,15 @@ void ContentExceptionsTableModel::RemoveAll() {
 }
 
 int ContentExceptionsTableModel::IndexOfExceptionByPattern(
-    const HostContentSettingsMap::Pattern& pattern,
+    const HostContentSettingsMap::Pattern& original_pattern,
     bool is_off_the_record) {
   DCHECK(!is_off_the_record || off_the_record_map_);
 
   int offset =
       is_off_the_record ? static_cast<int>(entries_.size()) : 0;
+
+  const HostContentSettingsMap::Pattern pattern(
+      original_pattern.CanonicalizePattern());
 
   // This is called on every key type in the editor. Move to a map if we end up
   // with lots of exceptions.

@@ -63,6 +63,10 @@ class HostContentSettingsMap
       return pattern_ == other.pattern_;
     }
 
+    // Canonicalizes the pattern so that it's ASCII only, either
+    // in original or punycode form.
+    std::string CanonicalizePattern() const;
+
    private:
     std::string pattern_;
   };
@@ -280,6 +284,17 @@ class HostContentSettingsMap
   void NotifyObservers(const ContentSettingsDetails& details);
 
   void UnregisterObservers();
+
+  // Various migration methods (old cookie, popup and per-host data gets
+  // migrated to the new format).
+  void MigrateObsoleteCookiePref(PrefService* prefs);
+  void MigrateObsoletePopupsPref(PrefService* prefs);
+  void MigrateObsoletePerhostPref(PrefService* prefs);
+
+  // Converts all exceptions that have non-canonicalized pattern into
+  // canonicalized pattern. If such pattern already exists, we just remove the
+  // old exception.
+  void CanonicalizeContentSettingsExceptions(DictionaryValue* settings);
 
   // The profile we're associated with.
   Profile* profile_;

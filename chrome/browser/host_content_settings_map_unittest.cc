@@ -15,6 +15,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/static_cookie_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
@@ -246,6 +247,40 @@ TEST_F(HostContentSettingsMapTest, PatternSupport) {
                GURL("http://example.org/")));
   EXPECT_FALSE(HostContentSettingsMap::Pattern("example.com").Matches(
                GURL("http://example.org/")));
+}
+
+TEST_F(HostContentSettingsMapTest, CanonicalizePattern) {
+  // Basic patterns.
+  EXPECT_STREQ("[*.]ikea.com", HostContentSettingsMap::Pattern("[*.]ikea.com")
+      .CanonicalizePattern().c_str());
+  EXPECT_STREQ("example.com", HostContentSettingsMap::Pattern("example.com")
+      .CanonicalizePattern().c_str());
+  EXPECT_STREQ("192.168.1.1", HostContentSettingsMap::Pattern("192.168.1.1")
+      .CanonicalizePattern().c_str());
+  EXPECT_STREQ("[::1]", HostContentSettingsMap::Pattern("[::1]")
+      .CanonicalizePattern().c_str());
+  // IsValid returns false for file:/// patterns.
+  EXPECT_STREQ("", HostContentSettingsMap::Pattern(
+      "file:///temp/file.html").CanonicalizePattern().c_str());
+
+  // UTF-8 patterns.
+  EXPECT_STREQ("[*.]xn--ira-ppa.com", HostContentSettingsMap::Pattern(
+      "[*.]\xC4\x87ira.com").CanonicalizePattern().c_str());
+  EXPECT_STREQ("xn--ira-ppa.com", HostContentSettingsMap::Pattern(
+      "\xC4\x87ira.com").CanonicalizePattern().c_str());
+  // IsValid returns false for file:/// patterns.
+  EXPECT_STREQ("", HostContentSettingsMap::Pattern(
+      "file:///\xC4\x87ira.html").CanonicalizePattern().c_str());
+
+  // Invalid patterns.
+  EXPECT_STREQ("", HostContentSettingsMap::Pattern(
+      "*example.com").CanonicalizePattern().c_str());
+  EXPECT_STREQ("", HostContentSettingsMap::Pattern(
+      "example.*").CanonicalizePattern().c_str());
+  EXPECT_STREQ("", HostContentSettingsMap::Pattern(
+      "*\xC4\x87ira.com").CanonicalizePattern().c_str());
+  EXPECT_STREQ("", HostContentSettingsMap::Pattern(
+      "\xC4\x87ira.*").CanonicalizePattern().c_str());
 }
 
 TEST_F(HostContentSettingsMapTest, Observer) {
@@ -527,6 +562,94 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             otr_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+}
+
+TEST_F(HostContentSettingsMapTest, MigrateObsoletePrefs) {
+  // This feature is currently behind a flag.
+  CommandLine cl(*CommandLine::ForCurrentProcess());
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableResourceContentSettings);
+
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+
+  // Set obsolete data.
+  prefs->SetInteger(prefs::kCookieBehavior,
+                    net::StaticCookiePolicy::BLOCK_ALL_COOKIES);
+
+  ListValue popup_hosts;
+  popup_hosts.Append(new StringValue("[*.]example.com"));
+  prefs->Set(prefs::kPopupWhitelistedHosts, popup_hosts);
+
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_COOKIES));
+
+  GURL host("http://example.com");
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+  *CommandLine::ForCurrentProcess() = cl;
+}
+
+// For a single Unicode encoded pattern, check if it gets converted to punycode
+// and old pattern gets deleted.
+TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
+  TestingProfile profile;
+  PrefService* prefs = profile.GetPrefs();
+
+  // Set utf-8 data.
+  DictionaryValue* all_settings_dictionary =
+      prefs->GetMutableDictionary(prefs::kContentSettingsPatterns);
+  ASSERT_TRUE(NULL != all_settings_dictionary);
+
+  DictionaryValue* dummy_payload = new DictionaryValue;
+  dummy_payload->SetInteger("images", CONTENT_SETTING_ALLOW);
+  all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com",
+                                                   dummy_payload);
+
+  profile.GetHostContentSettingsMap();
+
+  DictionaryValue* result = NULL;
+  EXPECT_FALSE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+      "[*.]\xC4\x87ira.com", &result));
+  EXPECT_TRUE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+      "[*.]xn--ira-ppa.com", &result));
+}
+
+// If both Unicode and its punycode pattern exist, make sure we don't touch the
+// settings for the punycode, and that Unicode pattern gets deleted.
+TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
+  // This feature is currently behind a flag.
+  CommandLine cl(*CommandLine::ForCurrentProcess());
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableResourceContentSettings);
+
+  TestingProfile profile;
+
+  scoped_ptr<Value> value(base::JSONReader::Read(
+      "{\"[*.]\\xC4\\x87ira.com\":{\"per_plugin\":{\"pluginx\":2}}}", false));
+  profile.GetPrefs()->Set(prefs::kContentSettingsPatterns, *value);
+
+  // Set punycode equivalent, with different setting.
+  scoped_ptr<Value> puny_value(base::JSONReader::Read(
+      "{\"[*.]xn--ira-ppa.com\":{\"per_plugin\":{\"pluginy\":2}}}", false));
+  profile.GetPrefs()->Set(prefs::kContentSettingsPatterns, *puny_value);
+
+  // Initialize the content map.
+  profile.GetHostContentSettingsMap();
+
+  const DictionaryValue* content_setting_prefs =
+      profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatterns);
+  std::string prefs_as_json;
+  base::JSONWriter::Write(content_setting_prefs, false, &prefs_as_json);
+  EXPECT_STREQ("{\"[*.]xn--ira-ppa.com\":{\"per_plugin\":{\"pluginy\":2}}}",
+               prefs_as_json.c_str());
+
+  *CommandLine::ForCurrentProcess() = cl;
 }
 
 TEST_F(HostContentSettingsMapTest, NonDefaultSettings) {
