@@ -49,8 +49,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
         const ConnectionOptions& options,
         net::HostResolver* host_resolver,
         ServerInformation* server_list,
-        int server_count,
-        bool try_ssltcp_first);
+        int server_count);
   virtual ~Login();
 
   void StartConnection();

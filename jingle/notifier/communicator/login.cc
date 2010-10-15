@@ -34,14 +34,12 @@ Login::Login(const buzz::XmppClientSettings& user_settings,
              const ConnectionOptions& options,
              net::HostResolver* host_resolver,
              ServerInformation* server_list,
-             int server_count,
-             bool try_ssltcp_first)
+             int server_count)
     : login_settings_(new LoginSettings(user_settings,
                                         options,
                                         host_resolver,
                                         server_list,
-                                        server_count,
-                                        try_ssltcp_first)),
+                                        server_count)),
       redirect_port_(0) {
   net::NetworkChangeNotifier::AddObserver(this);
   ResetReconnectState();

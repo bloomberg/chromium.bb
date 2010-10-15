@@ -240,9 +240,9 @@ int main(int argc, char* argv[]) {
   }
   bool allow_plain = command_line.HasSwitch(switches::kSyncAllowPlain);
   bool disable_tls = command_line.HasSwitch(switches::kSyncDisableTls);
-  bool use_ssl_tcp = command_line.HasSwitch(switches::kSyncUseSslTcp);
+  bool use_ssl_tcp = command_line.HasSwitch("use-ssl-tcp");
   if (use_ssl_tcp && (port != 443)) {
-    LOG(WARNING) << switches::kSyncUseSslTcp << " is set but port is " << port
+    LOG(WARNING) << "--use-ssl-tcp is set but port is " << port
                  << " instead of 443";
   }
   std::string cache_invalidation_state;

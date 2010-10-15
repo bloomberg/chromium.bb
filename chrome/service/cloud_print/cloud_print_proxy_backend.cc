@@ -321,10 +321,12 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
 
   const notifier::NotifierOptions kNotifierOptions;
   const bool kInvalidateXmppAuthToken = false;
+  const bool kAllowInsecureXmppConnection = false;
   talk_mediator_.reset(new notifier::TalkMediatorImpl(
       new notifier::PushNotificationsThread(kNotifierOptions,
                                             kCloudPrintPushNotificationsSource),
-      kInvalidateXmppAuthToken));
+      kInvalidateXmppAuthToken,
+      kAllowInsecureXmppConnection));
   push_notifications_channel_ = kCloudPrintPushNotificationsSource;
   push_notifications_channel_.append("/proxy/");
   push_notifications_channel_.append(proxy_id);

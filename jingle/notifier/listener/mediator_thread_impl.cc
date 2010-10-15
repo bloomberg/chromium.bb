@@ -157,8 +157,7 @@ void MediatorThreadImpl::DoLogin(
                                    options,
                                    host_resolver_.get(),
                                    server_list,
-                                   server_list_count,
-                                   notifier_options_.try_ssltcp_first));
+                                   server_list_count));
 
   login_->SignalConnect.connect(
       this, &MediatorThreadImpl::OnConnect);
