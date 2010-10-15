@@ -42,7 +42,7 @@ class TestingProvider: public EtwTraceProvider {
   virtual void OnEventsEnabled() {
     ::SetEvent(callback_event_.Get());
   }
-  virtual void OnEventsDisabled() {
+  virtual void PostEventsDisabled() {
     ::SetEvent(callback_event_.Get());
   }
 
@@ -55,7 +55,8 @@ class TestingProvider: public EtwTraceProvider {
 
 TEST(EtwTraceTest, Cleanup) {
   // Clean up potential leftover sessions from previous unsuccessful runs.
-  EtwTraceController::Stop(kTestSessionName, NULL);
+  EtwTraceProperties ignore;
+  EtwTraceController::Stop(kTestSessionName, &ignore);
 }
 
 TEST(EtwTracePropertiesTest, Initialization) {
@@ -152,8 +153,7 @@ TEST(EtwTraceControllerTest, StartFileSession) {
   EXPECT_STREQ(L"", controller.session_name());
 }
 
-// Flaky, http://crbug.com/59328.
-TEST(EtwTraceControllerTest, FLAKY_EnableDisable) {
+TEST(EtwTraceControllerTest, EnableDisable) {
   TestingProvider provider(kTestProvider);
 
   EXPECT_EQ(ERROR_SUCCESS, provider.Register());

@@ -72,7 +72,8 @@ const wchar_t* const kTestSessionName = L"TestLogSession";
 class EtwTraceConsumerBaseTest: public testing::Test {
  public:
   virtual void SetUp() {
-    EtwTraceController::Stop(kTestSessionName, NULL);
+    EtwTraceProperties ignore;
+    EtwTraceController::Stop(kTestSessionName, &ignore);
   }
 };
 
@@ -245,14 +246,16 @@ class EtwTraceConsumerDataTest: public testing::Test {
   }
 
   virtual void SetUp() {
-    EtwTraceController::Stop(kTestSessionName, NULL);
+    EtwTraceProperties prop;
+    EtwTraceController::Stop(kTestSessionName, &prop);
     // Construct a temp file name.
     ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file_));
   }
 
   virtual void TearDown() {
     EXPECT_TRUE(file_util::Delete(temp_file_, false));
-    EtwTraceController::Stop(kTestSessionName, NULL);
+    EtwTraceProperties ignore;
+    EtwTraceController::Stop(kTestSessionName, &ignore);
   }
 
   HRESULT LogEventToTempSession(PEVENT_TRACE_HEADER header) {

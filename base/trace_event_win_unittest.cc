@@ -79,6 +79,13 @@ class TraceEventTest: public testing::Test {
   void SetUp() {
     bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
 
+    if (is_xp) {
+      // Tear down any dangling session from an earlier failing test.
+      EtwTraceProperties ignore;
+
+      EtwTraceController::Stop(kTestSessionName, &ignore);
+    }
+
     // Resurrect and initialize the TraceLog singleton instance.
     // On Vista and better, we need the provider registered before we
     // start the private, in-proc session, but on XP we need the global
@@ -254,8 +261,7 @@ TEST_F(TraceEventTest, TraceLog) {
   PlayLog();
 }
 
-// Marked flaky per http://crbug.com/52388
-TEST_F(TraceEventTest, FLAKY_Macros) {
+TEST_F(TraceEventTest, Macros) {
   ExpectPlayLog();
 
   // The events should arrive in the same sequence as the expects.
