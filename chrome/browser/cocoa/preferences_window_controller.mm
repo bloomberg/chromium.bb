@@ -1339,6 +1339,15 @@ const int kDisabledIndex = 1;
   }
 }
 
+// Called when the user clicks on the link to the privacy dashboard.
+- (IBAction)showPrivacyDashboard:(id)sender {
+  Browser* browser = BrowserList::GetLastActive();
+
+  if (!browser || !browser->GetSelectedTabContents())
+    browser = Browser::Create(profile_);
+  browser->OpenPrivacyDashboardTabAndActivate();
+}
+
 // Called when the user clicks the "Customize Sync" button in the
 // "Personal Stuff" pane.  Spawns a dialog-modal sheet that cleans
 // itself up on close.
