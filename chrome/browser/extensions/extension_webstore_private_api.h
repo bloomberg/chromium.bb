@@ -11,6 +11,13 @@
 
 class ProfileSyncService;
 
+class WebstorePrivateApi {
+ public:
+  // Allows you to set the ProfileSyncService the function will use for
+  // testing purposes.
+  static void SetTestingProfileSyncService(ProfileSyncService* service);
+};
+
 class InstallFunction : public SyncExtensionFunction {
  public:
   static void SetTestingInstallBaseUrl(const char* testing_install_base_url);
@@ -39,20 +46,12 @@ class SetStoreLoginFunction : public SyncExtensionFunction {
 class PromptBrowserLoginFunction : public AsyncExtensionFunction,
                                    public ProfileSyncServiceObserver {
  public:
-  // Allows you to set the ProfileSyncService the function will use for
-  // testing purposes.
-  static void SetTestingProfileSyncService(ProfileSyncService* service);
-
   // Implements ProfileSyncServiceObserver interface.
   virtual void OnStateChanged();
 
  protected:
   virtual ~PromptBrowserLoginFunction();
   virtual bool RunImpl();
-
-  // Returns either the actual ProfileSyncService or the test service if one
-  // was set.
-  ProfileSyncService* profile_sync_service();
 
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.promptBrowserLogin");
 

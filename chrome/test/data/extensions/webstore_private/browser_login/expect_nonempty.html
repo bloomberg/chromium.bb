@@ -1,0 +1,9 @@
+<script>
+chrome.test.log("calling getBrowserLogin");
+chrome.webstorePrivate.getBrowserLogin(function(info) {
+  chrome.test.log("inside callback - got: " + JSON.stringify(info));
+  if (info.login == "foo@bar.com") {
+    chrome.test.sendMessage("success");
+  }
+});
+</script>

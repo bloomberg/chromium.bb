@@ -28,14 +28,20 @@ class FakeProfileSyncService : public ProfileSyncService {
  public:
   // The |username_after_login| parameter determines what this fake
   // ProfileSyncService will set the username to when ShowLoginDialog is called.
-  explicit FakeProfileSyncService(const std::string& username_after_login) :
-      username_after_login_(username_after_login), observer_(NULL) {}
+  FakeProfileSyncService(const std::string& initial_username,
+                         const std::string& username_after_login) :
+      username_(ASCIIToUTF16(initial_username)),
+      username_after_login_(username_after_login),
+      observer_(NULL) {}
+
   virtual ~FakeProfileSyncService() {
     EXPECT_TRUE(observer_ == NULL);
   }
 
   // Overrides of virtual methods in ProfileSyncService.
-  virtual string16 GetAuthenticatedUsername() const { return username_; }
+  virtual string16 GetAuthenticatedUsername() const {
+    return username_;
+  }
   virtual void ShowLoginDialog(gfx::NativeWindow) {
     EXPECT_TRUE(observer_ != NULL);
     username_ = ASCIIToUTF16(username_after_login_);
@@ -54,8 +60,8 @@ class FakeProfileSyncService : public ProfileSyncService {
   }
 
  private:
-  std::string username_after_login_;
   string16 username_;
+  std::string username_after_login_;
   ProfileSyncServiceObserver* observer_;
 };
 
@@ -85,14 +91,15 @@ class ExtensionWebstorePrivateBrowserTest : public ExtensionBrowserTest {
   }
 
   void RunLoginTest(const std::string& relative_path,
+                    const std::string& initial_login,
                     const std::string& login_result) {
-    FakeProfileSyncService sync_service(login_result);
-    PromptBrowserLoginFunction::SetTestingProfileSyncService(&sync_service);
+    FakeProfileSyncService sync_service(initial_login, login_result);
+    WebstorePrivateApi::SetTestingProfileSyncService(&sync_service);
     ExtensionTestMessageListener listener("success", false);
     GURL url = GetUrl(relative_path);
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(listener.WaitUntilSatisfied());
-    PromptBrowserLoginFunction::SetTestingProfileSyncService(NULL);
+    WebstorePrivateApi::SetTestingProfileSyncService(NULL);
   }
 
  protected:
@@ -103,7 +110,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateBrowserTest, BrowserLogin) {
   host_resolver()->AddRule(kTestUrlHostname, "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
-  RunLoginTest("browser_login/no_preferred.html", "");
-  RunLoginTest("browser_login/preferred.html", "foo@bar.com");
+  RunLoginTest("browser_login/expect_nonempty.html", "foo@bar.com", "");
+  RunLoginTest("browser_login/prompt_no_preferred.html", "", "");
+  RunLoginTest("browser_login/prompt_preferred.html", "", "foo@bar.com");
+  RunLoginTest("browser_login/prompt_already_logged_in_error.html",
+               "foo@bar.com",
+               "foo@bar.com");
 }
-

@@ -4142,8 +4142,14 @@
             "type": "function",
             "optional": "false",
             "parameters": [
-              { "name": "login", "type": "string" },
-              { "name": "token", "type": "string", "optional": true }
+              {
+                "name": "info",
+                "type": "object",
+                "properties": {
+                  "login": { "type": "string" },
+                  "token": { "type": "string", "optional": true }
+                }
+              }
             ]
           }
         ]
