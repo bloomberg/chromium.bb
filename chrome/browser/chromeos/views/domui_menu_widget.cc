@@ -124,7 +124,8 @@ class DOMViewCache : NotificationObserver {
  public:
   DOMViewCache()
       : current_profile_(NULL),
-        cache_(NULL) {
+        cache_(NULL),
+        warmup_enabled_(true) {
     registrar_.Add(this, NotificationType::APP_TERMINATING,
                    NotificationService::AllSources());
   }
@@ -160,7 +161,7 @@ class DOMViewCache : NotificationObserver {
 
   // (Re)Initiailzes the cache with profile.
   // If the current profile does not match the new profile,
-  // it delets the existing cache (if any) and creates new one.
+  // it deletes the existing cache (if any) and creates new one.
   void Init(Profile* profile) {
     if (current_profile_ != profile) {
       delete cache_;
@@ -178,7 +179,7 @@ class DOMViewCache : NotificationObserver {
   void WarmUp() {
     // skip if domui is created in delay, or
     // chromeos is shutting down.
-    if (cache_ || !current_profile_) {
+    if (cache_ || !current_profile_ || !warmup_enabled_) {
       CheckClassInvariant();
       return;
     }
@@ -196,6 +197,12 @@ class DOMViewCache : NotificationObserver {
     // Reset current_profile_ as well so that a domview that
     // is currently in use will be deleted in Release as well.
     current_profile_ = NULL;
+  }
+
+  // Enable/disable warmup. This has to be called
+  // before WarmUp method is invoked.
+  void set_warmup_enabled(bool enabled) {
+    warmup_enabled_ = enabled;
   }
 
  private:
@@ -216,6 +223,7 @@ class DOMViewCache : NotificationObserver {
   Profile* current_profile_;
   DOMView* cache_;
   NotificationRegistrar registrar_;
+  bool warmup_enabled_;
 };
 
 void WarmUpTask::Run() {
@@ -446,6 +454,10 @@ void DOMUIMenuWidget::ClearGrabWidget() {
   GtkWidget* grab_widget;
   while ((grab_widget = gtk_grab_get_current()))
     gtk_grab_remove(grab_widget);
+}
+
+void DOMUIMenuWidget::DisableWarmUp() {
+  Singleton<DOMViewCache>::get()->set_warmup_enabled(false);
 }
 
 }   // namespace chromeos

@@ -11,6 +11,7 @@
 #include "views/widget/widget_gtk.h"
 
 class DOMView;
+class ExtensionApiTest;
 
 namespace chromeos {
 
@@ -76,6 +77,11 @@ class DOMUIMenuWidget : public views::WidgetGtk {
   static DOMUIMenuWidget* FindDOMUIMenuWidget(gfx::NativeView native);
 
  private:
+  friend class ::ExtensionApiTest;
+  // Disable warming up domview. This is to avoid confusing Extension
+  // API tests which listens to load notification with AllSources().
+  static void DisableWarmUp();
+
   // Capture the X pointer grab. This also enables input on the widget by
   // calling EnableInput(false).
   void CaptureGrab();
