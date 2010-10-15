@@ -50,18 +50,25 @@ env.AddNodeToTestSuite(node, INITFINIT_TESTS, 'run_initfini_test')
 
 
 
-# NOTE: these currently do not work with PNaCl, c.f.:
-# http://code.google.com/p/nativeclient/issues/detail?id=720
-EH_TESTS=['toolchain_tests', 'small_tests']
+eh_env = env.Clone()
 if ARGUMENTS.get('bitcode'):
-  EH_TESTS=[]
+  # http://code.google.com/p/nativeclient/issues/detail?id=720
+  eh_env.FilterOut(CFLAGS=['-O2'])
+  eh_env.FilterOut(CCFLAGS=['-O2'])
+
 for t in ['eh_virtual_dtor',
           'eh_loop_single',
           'eh_loop_many',
           'eh_catch_many',
           'eh_loop_break']:
-  nexe = env.ComponentProgram(t + '.nexe', t + '.cc')
-  node = env.CommandSelLdrTestNacl(t + '.out',
-                                   command=[nexe],
-                                   exit_status='55')
-  env.AddNodeToTestSuite(node, EH_TESTS, 'run_' + t + '_test')
+  EH_TESTS=['toolchain_tests', 'small_tests']
+  # http://code.google.com/p/nativeclient/issues/detail?id=720
+  if ARGUMENTS.get('bitcode'):
+    if t == 'eh_catch_many' or eh_env['TARGET_FULLARCH'] != 'x86-32':
+      EH_TESTS=[]
+
+  nexe = eh_env.ComponentProgram(t + '.nexe', t + '.cc')
+  node = eh_env.CommandSelLdrTestNacl(t + '.out',
+                                      command=[nexe],
+                                      exit_status='55')
+  eh_env.AddNodeToTestSuite(node, EH_TESTS, 'run_' + t + '_test')
