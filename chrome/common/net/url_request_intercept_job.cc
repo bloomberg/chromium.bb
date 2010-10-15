@@ -160,7 +160,7 @@ void URLRequestInterceptJob::GetResponseInfo(net::HttpResponseInfo* info) {
                                  Time::Now() +
                                      TimeDelta::FromDays(kLifetimeDays));
     info->ssl_info.cert_status = 0;
-    info->ssl_info.security_bits = 0;
+    info->ssl_info.security_bits = -1;
   }
 }
 
