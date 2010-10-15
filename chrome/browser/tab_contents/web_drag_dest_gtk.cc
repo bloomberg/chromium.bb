@@ -111,14 +111,14 @@ gboolean WebDragDestGtk::OnDragMotion(GtkWidget* sender,
       // TODO(estade): support image drags?
     };
 
-    data_requests_ = arraysize(supported_targets);
+    // Add the bookmark target as well.
+    data_requests_ = arraysize(supported_targets) + 1;
     for (size_t i = 0; i < arraysize(supported_targets); ++i) {
       gtk_drag_get_data(widget_, context,
                         gtk_dnd_util::GetAtomForTarget(supported_targets[i]),
                         time);
     }
-    // Add the bookmark target as well.
-    ++data_requests_;
+
     gtk_drag_get_data(widget_, context, GetBookmarkTargetAtom(), time);
   } else if (data_requests_ == 0) {
     tab_contents_->render_view_host()->
