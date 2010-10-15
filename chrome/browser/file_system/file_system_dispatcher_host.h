@@ -81,17 +81,28 @@ class FileSystemDispatcherHost
   // Creates a new FileSystemOperation.
   fileapi::FileSystemOperation* GetNewOperation(int request_id);
 
-  // Checks the validity of a given |path|. Returns true if the given |path|
-  // is valid as a path for FileSystem API. Otherwise it sends back
-  // PLATFORM_FILE_ERROR_SECURITY to the dispatcher and returns false.
-  bool CheckValidFileSystemPath(const FilePath& path, int request_id);
+  // Checks the validity of a given |path| for reading.
+  // Returns true if the given |path| is a valid FileSystem path.
+  // Otherwise it sends back PLATFORM_FILE_ERROR_SECURITY to the
+  // dispatcher and returns false.
+  bool VerifyFileSystemPathForRead(const FilePath& path, int request_id);
 
-  // Checks the quota for the given |path|. This method only performs a
-  // in-memory quick check and returns immediately.
-  // Returns true if the given |path| will be able to grow by |growth|.
-  // Otherwise it sends back PLATFORM_FILE_ERROR_NO_SPACE to the dispatcher
-  // and returns false.
-  bool CheckQuotaForPath(const FilePath& path, int64 growth, int request_id);
+  // Checks the validity of a given |path| for writing.
+  // Returns true if the given |path| is a valid FileSystem path, and
+  // its origin embedded in the path has the right to write as much as
+  // the given |growth|.
+  // Otherwise it sends back PLATFORM_FILE_ERROR_SECURITY if the path
+  // is not valid for writing, or sends back PLATFORM_FILE_ERROR_NO_SPACE
+  // if the origin is not allowed to increase the usage by |growth|.
+  // If |create| flag is true this also checks if the |path| contains
+  // any restricted names and chars. If it does, the call sends back
+  // PLATFORM_FILE_ERROR_SECURITY to the dispatcher.
+  bool VerifyFileSystemPathForWrite(const FilePath& path,
+                                    int request_id,
+                                    bool create,
+                                    int64 growth);
+
+  class OpenFileSystemTask;
 
   // Checks if a given |path| does not contain any restricted names/chars
   // for new files. Returns true if the given |path| is safe.

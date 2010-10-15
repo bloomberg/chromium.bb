@@ -25,24 +25,24 @@
 
 using fileapi::FileSystemQuota;
 
-// A class to hold an ongoing openFileSystem completion task.
-struct OpenFileSystemCompletionTask {
+class FileSystemDispatcherHost::OpenFileSystemTask {
  public:
-  static void Run(
+  static void Start(
       int request_id,
-      const std::string& name,
-      const FilePath& root_path,
+      const GURL& origin_url,
+      fileapi::FileSystemType type,
       FileSystemDispatcherHost* dispatcher_host) {
     // The task is self-destructed.
-    new OpenFileSystemCompletionTask(request_id, name, root_path,
-        dispatcher_host);
+    new OpenFileSystemTask(request_id, origin_url, type, dispatcher_host);
   }
 
-  void DidFinish(base::PlatformFileError error) {
-    if (error == base::PLATFORM_FILE_OK)
+ private:
+  void DidGetRootPath(bool success, const FilePath& root_path,
+                      const std::string& name) {
+    if (success)
       dispatcher_host_->Send(
           new ViewMsg_OpenFileSystemRequest_Complete(
-              request_id_, true, name_, root_path_));
+              request_id_, true, name, root_path));
     else
       dispatcher_host_->Send(
           new ViewMsg_OpenFileSystemRequest_Complete(
@@ -50,28 +50,24 @@ struct OpenFileSystemCompletionTask {
     delete this;
   }
 
- private:
-  OpenFileSystemCompletionTask(
+  OpenFileSystemTask(
       int request_id,
-      const std::string& name,
-      const FilePath& root_path,
+      const GURL& origin_url,
+      fileapi::FileSystemType type,
       FileSystemDispatcherHost* dispatcher_host)
     : request_id_(request_id),
-      name_(name),
-      root_path_(root_path),
       dispatcher_host_(dispatcher_host),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-    base::FileUtilProxy::CreateDirectory(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-        root_path_, false, true, callback_factory_.NewCallback(
-            &OpenFileSystemCompletionTask::DidFinish));
+    dispatcher_host->context_->path_manager()->GetFileSystemRootPath(
+        origin_url, type, true /* create */,
+        callback_factory_.NewCallback(&OpenFileSystemTask::DidGetRootPath));
   }
 
   int request_id_;
   std::string name_;
   FilePath root_path_;
   scoped_refptr<FileSystemDispatcherHost> dispatcher_host_;
-  base::ScopedCallbackFactory<OpenFileSystemCompletionTask> callback_factory_;
+  base::ScopedCallbackFactory<OpenFileSystemTask> callback_factory_;
 };
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
@@ -157,26 +153,14 @@ void FileSystemDispatcherHost::OnOpenFileSystem(
     return;
   }
 
-  FilePath root_path;
-  std::string name;
-  if (!context_->path_manager()->GetFileSystemRootPath(
-      origin_url, type, &root_path, &name)) {
-    Send(new ViewMsg_OpenFileSystemRequest_Complete(
-        request_id, false, std::string(), FilePath()));
-    return;
-  }
-
-  // Run the completion task that creates the root directory and sends
-  // back the status code to the dispatcher.
-  OpenFileSystemCompletionTask::Run(request_id, name, root_path, this);
+  OpenFileSystemTask::Start(request_id, origin_url, type, this);
 }
 
 void FileSystemDispatcherHost::OnMove(
     int request_id, const FilePath& src_path, const FilePath& dest_path) {
-  if (!CheckValidFileSystemPath(src_path, request_id) ||
-      !CheckValidFileSystemPath(dest_path, request_id) ||
-      !CheckIfFilePathIsSafe(dest_path, request_id) ||
-      !CheckQuotaForPath(dest_path, FileSystemQuota::kUnknownSize, request_id))
+  if (!VerifyFileSystemPathForRead(src_path, request_id) ||
+      !VerifyFileSystemPathForWrite(dest_path, request_id, true /* create */,
+                                    FileSystemQuota::kUnknownSize))
     return;
 
   GetNewOperation(request_id)->Move(src_path, dest_path);
@@ -184,10 +168,9 @@ void FileSystemDispatcherHost::OnMove(
 
 void FileSystemDispatcherHost::OnCopy(
     int request_id, const FilePath& src_path, const FilePath& dest_path) {
-  if (!CheckValidFileSystemPath(src_path, request_id) ||
-      !CheckValidFileSystemPath(dest_path, request_id) ||
-      !CheckIfFilePathIsSafe(dest_path, request_id) ||
-      !CheckQuotaForPath(dest_path, FileSystemQuota::kUnknownSize, request_id))
+  if (!VerifyFileSystemPathForRead(src_path, request_id) ||
+      !VerifyFileSystemPathForWrite(dest_path, request_id, true /* create */,
+                                    FileSystemQuota::kUnknownSize))
     return;
 
   GetNewOperation(request_id)->Copy(src_path, dest_path);
@@ -195,14 +178,14 @@ void FileSystemDispatcherHost::OnCopy(
 
 void FileSystemDispatcherHost::OnRemove(
     int request_id, const FilePath& path, bool recursive) {
-  if (!CheckValidFileSystemPath(path, request_id))
+  if (!VerifyFileSystemPathForWrite(path, request_id, false /* create */, 0))
     return;
   GetNewOperation(request_id)->Remove(path, recursive);
 }
 
 void FileSystemDispatcherHost::OnReadMetadata(
     int request_id, const FilePath& path) {
-  if (!CheckValidFileSystemPath(path, request_id))
+  if (!VerifyFileSystemPathForRead(path, request_id))
     return;
   GetNewOperation(request_id)->GetMetadata(path);
 }
@@ -210,9 +193,7 @@ void FileSystemDispatcherHost::OnReadMetadata(
 void FileSystemDispatcherHost::OnCreate(
     int request_id, const FilePath& path, bool exclusive,
     bool is_directory, bool recursive) {
-  if (!CheckValidFileSystemPath(path, request_id) ||
-      !CheckIfFilePathIsSafe(path, request_id) ||
-      !CheckQuotaForPath(path, 0L, request_id))
+  if (!VerifyFileSystemPathForWrite(path, request_id, true /* create */, 0))
     return;
   if (is_directory)
     GetNewOperation(request_id)->CreateDirectory(path, exclusive, recursive);
@@ -222,7 +203,7 @@ void FileSystemDispatcherHost::OnCreate(
 
 void FileSystemDispatcherHost::OnExists(
     int request_id, const FilePath& path, bool is_directory) {
-  if (!CheckValidFileSystemPath(path, request_id))
+  if (!VerifyFileSystemPathForRead(path, request_id))
     return;
   if (is_directory)
     GetNewOperation(request_id)->DirectoryExists(path);
@@ -232,7 +213,7 @@ void FileSystemDispatcherHost::OnExists(
 
 void FileSystemDispatcherHost::OnReadDirectory(
     int request_id, const FilePath& path) {
-  if (!CheckValidFileSystemPath(path, request_id))
+  if (!VerifyFileSystemPathForRead(path, request_id))
     return;
   GetNewOperation(request_id)->ReadDirectory(path);
 }
@@ -242,9 +223,8 @@ void FileSystemDispatcherHost::OnWrite(
     const FilePath& path,
     const GURL& blob_url,
     int64 offset) {
-  if (!CheckValidFileSystemPath(path, request_id) ||
-      !CheckIfFilePathIsSafe(path, request_id) ||
-      !CheckQuotaForPath(path, FileSystemQuota::kUnknownSize, request_id))
+  if (!VerifyFileSystemPathForWrite(path, request_id, true /* create */,
+                                    FileSystemQuota::kUnknownSize))
     return;
   GetNewOperation(request_id)->Write(
       request_context_, path, blob_url, offset);
@@ -254,7 +234,7 @@ void FileSystemDispatcherHost::OnTruncate(
     int request_id,
     const FilePath& path,
     int64 length) {
-  if (!CheckValidFileSystemPath(path, request_id))
+  if (!VerifyFileSystemPathForWrite(path, request_id, false /* create */, 0))
     return;
   GetNewOperation(request_id)->Truncate(path, length);
 }
@@ -264,8 +244,7 @@ void FileSystemDispatcherHost::OnTouchFile(
     const FilePath& path,
     const base::Time& last_access_time,
     const base::Time& last_modified_time) {
-  if (!CheckValidFileSystemPath(path, request_id) ||
-      !CheckIfFilePathIsSafe(path, request_id))
+  if (!VerifyFileSystemPathForWrite(path, request_id, true /* create */, 0))
     return;
   GetNewOperation(request_id)->TouchFile(
       path, last_access_time, last_modified_time);
@@ -295,11 +274,12 @@ void FileSystemDispatcherHost::Send(IPC::Message* message) {
     delete message;
 }
 
-bool FileSystemDispatcherHost::CheckValidFileSystemPath(
+bool FileSystemDispatcherHost::VerifyFileSystemPathForRead(
     const FilePath& path, int request_id) {
   // We may want do more checks, but for now it just checks if the given
   // |path| is under the valid FileSystem root path for this host context.
-  if (!context_->path_manager()->CheckValidFileSystemPath(path)) {
+  if (!context_->path_manager()->CrackFileSystemPath(
+          path, NULL, NULL, NULL)) {
     Send(new ViewMsg_FileSystem_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_SECURITY));
     return false;
@@ -307,11 +287,25 @@ bool FileSystemDispatcherHost::CheckValidFileSystemPath(
   return true;
 }
 
-bool FileSystemDispatcherHost::CheckQuotaForPath(
-    const FilePath& path, int64 growth, int request_id) {
+bool FileSystemDispatcherHost::VerifyFileSystemPathForWrite(
+    const FilePath& path, int request_id, bool create, int64 growth) {
   GURL origin_url;
-  if (!context_->path_manager()->GetOriginFromPath(path, &origin_url)) {
-    // Appears to be an ill-formed path or for an unallowed scheme.
+  FilePath virtual_path;
+  if (!context_->path_manager()->CrackFileSystemPath(
+          path, &origin_url, NULL, &virtual_path)) {
+    Send(new ViewMsg_FileSystem_DidFail(
+        request_id, base::PLATFORM_FILE_ERROR_SECURITY));
+    return false;
+  }
+  // Any write access is disallowed on the root path.
+  if (virtual_path.value().length() == 0 ||
+      virtual_path.DirName().value() == virtual_path.value()) {
+    Send(new ViewMsg_FileSystem_DidFail(
+        request_id, base::PLATFORM_FILE_ERROR_SECURITY));
+    return false;
+  }
+  if (create && context_->path_manager()->IsRestrictedFileName(
+          path.BaseName())) {
     Send(new ViewMsg_FileSystem_DidFail(
         request_id, base::PLATFORM_FILE_ERROR_SECURITY));
     return false;

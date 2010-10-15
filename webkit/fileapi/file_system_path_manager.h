@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/message_loop_proxy.h"
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/fileapi/file_system_types.h"
@@ -17,32 +18,46 @@ namespace fileapi {
 
 class FileSystemPathManager {
  public:
-  FileSystemPathManager(const FilePath& data_path,
+  FileSystemPathManager(scoped_refptr<base::MessageLoopProxy> file_message_loop,
+                        const FilePath& profile_path,
                         bool is_incognito,
                         bool allow_file_access_from_files);
 
-  // Returns the root path and name for the file system specified by given
-  // |origin_url| and |type|.  Returns true if the file system is available
-  // for the profile and |root_path| and |name| are filled successfully.
-  bool GetFileSystemRootPath(const GURL& origin_url,
+  // Callback for GetFileSystemRootPath.
+  // If the request is accepted and the root filesystem for the origin exists
+  // the callback is called with success=true and valid root_path and name.
+  // If the request is accepted, |create| is specified for
+  // GetFileSystemRootPath, and the root directory does not exist, it creates
+  // a new one and calls back with success=true if the creation has succeeded.
+  typedef Callback3<bool /* success */,
+                    const FilePath& /* root_path */,
+                    const std::string& /* name */>::Type GetRootPathCallback;
+
+  // Retrieves the root path for the given |origin_url| and |type|, and
+  // calls the given |callback| with the root path and name.
+  // If |create| is true this also creates the directory if it doesn't exist.
+  void GetFileSystemRootPath(const GURL& origin_url,
                              fileapi::FileSystemType type,
-                             FilePath* root_path,
-                             std::string* name) const;
+                             bool create,
+                             GetRootPathCallback* callback);
 
-  // Checks if a given |path| is in the FileSystem base directory.
-  bool CheckValidFileSystemPath(const FilePath& path) const;
+  // Cracks the given |path|, retrieves the information embedded in the path
+  // and populates |origin_url| and |type|.  Also it populates |virtual_path|
+  // that is a sandboxed path in the file system, i.e. the relative path to
+  // the file system's root path for the given origin and type.
+  // It returns false if the path does not conform to the expected
+  // filesystem path format.
+  bool CrackFileSystemPath(const FilePath& path,
+                           GURL* origin_url,
+                           FileSystemType* type,
+                           FilePath* virtual_path) const;
 
-  // Retrieves the origin URL for the given |path| and populates
-  // |origin_url|.  It returns false when the given |path| is not a
-  // valid filesystem path.
-  bool GetOriginFromPath(const FilePath& path, GURL* origin_url);
+  // Checks if a given |name| contains any restricted names/chars in it.
+  bool IsRestrictedFileName(const FilePath& filename) const;
 
   // Returns true if the given |url|'s scheme is allowed to access
   // filesystem.
   bool IsAllowedScheme(const GURL& url) const;
-
-  // Checks if a given |filename| contains any restricted names/chars in it.
-  bool IsRestrictedFileName(const FilePath& filename) const;
 
   // The FileSystem directory name.
   static const FilePath::CharType kFileSystemDirectory[];
@@ -52,14 +67,15 @@ class FileSystemPathManager {
 
  private:
   class GetFileSystemRootPathTask;
-  friend class GetFileSystemRootPathTask;
 
   // Returns the storage identifier string for the given |url|.
   static std::string GetStorageIdentifierFromURL(const GURL& url);
 
+  scoped_refptr<base::MessageLoopProxy> file_message_loop_;
+
   const FilePath base_path_;
   const bool is_incognito_;
-  bool allow_file_access_from_files_;
+  const bool allow_file_access_from_files_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemPathManager);
 };

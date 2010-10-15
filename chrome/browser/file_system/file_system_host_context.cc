@@ -19,6 +19,7 @@ FileSystemHostContext::FileSystemHostContext(
               switches::kAllowFileAccessFromFiles)),
       quota_manager_(new fileapi::FileSystemQuota()),
       path_manager_(new fileapi::FileSystemPathManager(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
           data_path, is_incognito, allow_file_access_from_files_)) {
 }
 

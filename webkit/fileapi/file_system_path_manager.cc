@@ -5,9 +5,9 @@
 #include "webkit/fileapi/file_system_path_manager.h"
 
 #include "base/file_util.h"
-#include "base/file_util_proxy.h"
 #include "base/rand_util.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/scoped_callback_factory.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -24,7 +24,6 @@ using WebKit::WebFileSystem;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 
-using base::FileUtilProxy;
 using base::PlatformFileError;
 
 namespace fileapi {
@@ -34,6 +33,12 @@ const FilePath::CharType FileSystemPathManager::kFileSystemDirectory[] =
 
 const char FileSystemPathManager::kPersistentName[] = "Persistent";
 const char FileSystemPathManager::kTemporaryName[] = "Temporary";
+
+static const FilePath::CharType kFileSystemUniqueNamePrefix[] =
+    FILE_PATH_LITERAL("chrome-");
+static const int kFileSystemUniqueLength = 16;
+static const unsigned kFileSystemUniqueDirectoryNameLength =
+    kFileSystemUniqueLength + arraysize(kFileSystemUniqueNamePrefix) - 1;
 
 namespace {
 
@@ -59,50 +64,163 @@ inline std::string FilePathStringToASCII(
 #endif
 }
 
+FilePath::StringType CreateUniqueDirectoryName(const GURL& origin_url) {
+  // This can be anything but need to be unpredictable.
+  static const FilePath::CharType letters[] = FILE_PATH_LITERAL(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+  FilePath::StringType unique(kFileSystemUniqueNamePrefix);
+  for (int i = 0; i < kFileSystemUniqueLength; ++i)
+    unique += letters[base::RandInt(0, arraysize(letters) - 2)];
+  return unique;
+}
+
 }  // anonymous namespace
 
+class FileSystemPathManager::GetFileSystemRootPathTask
+    : public base::RefCountedThreadSafe<
+        FileSystemPathManager::GetFileSystemRootPathTask> {
+ public:
+  GetFileSystemRootPathTask(
+      scoped_refptr<base::MessageLoopProxy> file_message_loop,
+      const std::string& name,
+      FileSystemPathManager::GetRootPathCallback* callback)
+      : file_message_loop_(file_message_loop),
+        origin_message_loop_proxy_(
+            base::MessageLoopProxy::CreateForCurrentThread()),
+        name_(name),
+        callback_(callback) {
+  }
+
+  void Start(const GURL& origin_url,
+             const FilePath& origin_base_path,
+             bool create) {
+    file_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+        &GetFileSystemRootPathTask::GetFileSystemRootPathOnFileThread,
+        origin_url, origin_base_path, create));
+  }
+
+ private:
+  void GetFileSystemRootPathOnFileThread(
+      const GURL& origin_url,
+      const FilePath& base_path,
+      bool create) {
+    FilePath root;
+    if (ReadOriginDirectory(base_path, origin_url, &root)) {
+      DispatchCallbackOnCallerThread(root);
+      return;
+    }
+
+    if (!create) {
+      DispatchCallbackOnCallerThread(FilePath());
+      return;
+    }
+
+    // Creates the root directory.
+    root = base_path.Append(CreateUniqueDirectoryName(origin_url));
+    if (!file_util::CreateDirectory(root)) {
+      DispatchCallbackOnCallerThread(FilePath());
+      return;
+    }
+    DispatchCallbackOnCallerThread(root);
+  }
+
+  bool ReadOriginDirectory(const FilePath& base_path,
+                           const GURL& origin_url,
+                           FilePath* unique) {
+    file_util::FileEnumerator file_enum(
+        base_path, false /* recursive */,
+        file_util::FileEnumerator::DIRECTORIES,
+        FilePath::StringType(kFileSystemUniqueNamePrefix) +
+            FILE_PATH_LITERAL("*"));
+    FilePath current;
+    bool found = false;
+    while (!(current = file_enum.Next()).empty()) {
+      if (current.BaseName().value().length() !=
+          kFileSystemUniqueDirectoryNameLength)
+        continue;
+      if (found) {
+        // TODO(kinuko): Should notify the user to ask for some action.
+        LOG(WARNING) << "Unexpectedly found more than one FileSystem "
+                     << "directories for " << origin_url;
+        return false;
+      }
+      found = true;
+      *unique = current;
+    }
+    return !unique->empty();
+  }
+
+  void DispatchCallbackOnCallerThread(const FilePath& root_path) {
+    origin_message_loop_proxy_->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &GetFileSystemRootPathTask::DispatchCallback,
+                          root_path));
+  }
+
+  void DispatchCallback(const FilePath& root_path) {
+    callback_->Run(!root_path.empty(), root_path, name_);
+  }
+
+  scoped_refptr<base::MessageLoopProxy> file_message_loop_;
+  scoped_refptr<base::MessageLoopProxy> origin_message_loop_proxy_;
+  std::string name_;
+  scoped_ptr<FileSystemPathManager::GetRootPathCallback> callback_;
+};
+
 FileSystemPathManager::FileSystemPathManager(
-    const FilePath& data_path,
+    scoped_refptr<base::MessageLoopProxy> file_message_loop,
+    const FilePath& profile_path,
     bool is_incognito,
     bool allow_file_access_from_files)
-    : base_path_(data_path.Append(kFileSystemDirectory)),
+    : file_message_loop_(file_message_loop),
+      base_path_(profile_path.Append(kFileSystemDirectory)),
       is_incognito_(is_incognito),
       allow_file_access_from_files_(allow_file_access_from_files) {
 }
 
-bool FileSystemPathManager::GetFileSystemRootPath(
+void FileSystemPathManager::GetFileSystemRootPath(
     const GURL& origin_url, fileapi::FileSystemType type,
-    FilePath* root_path, std::string* name) const {
-  // TODO(kinuko): should return an isolated temporary file system space.
-  if (is_incognito_)
-    return false;
+    bool create, GetRootPathCallback* callback_ptr) {
+  scoped_ptr<GetRootPathCallback> callback(callback_ptr);
+  if (is_incognito_) {
+    // TODO(kinuko): return an isolated temporary directory.
+    callback->Run(false, FilePath(), std::string());
+    return;
+  }
 
-  if (!IsAllowedScheme(origin_url))
-    return false;
+  if (!IsAllowedScheme(origin_url)) {
+    callback->Run(false, FilePath(), std::string());
+    return;
+  }
+
+  if (type != fileapi::kFileSystemTypeTemporary &&
+      type != fileapi::kFileSystemTypePersistent) {
+    LOG(WARNING) << "Unknown filesystem type is requested:" << type;
+    callback->Run(false, FilePath(), std::string());
+    return;
+  }
 
   std::string storage_identifier = GetStorageIdentifierFromURL(origin_url);
-  switch (type) {
-    case fileapi::kFileSystemTypeTemporary:
-      if (root_path)
-        *root_path = base_path_.AppendASCII(storage_identifier)
-                               .AppendASCII(kTemporaryName);
-      if (name)
-        *name = storage_identifier + ":" + kTemporaryName;
-      return true;
-    case fileapi::kFileSystemTypePersistent:
-      if (root_path)
-        *root_path = base_path_.AppendASCII(storage_identifier)
-                               .AppendASCII(kPersistentName);
-      if (name)
-        *name = storage_identifier + ":" + kPersistentName;
-      return true;
-  }
-  LOG(WARNING) << "Unknown filesystem type is requested:" << type;
-  return false;
+
+  std::string type_string;
+  if (type == fileapi::kFileSystemTypeTemporary)
+    type_string = kTemporaryName;
+  else if (type == fileapi::kFileSystemTypePersistent)
+    type_string = kPersistentName;
+  DCHECK(!type_string.empty());
+
+  FilePath origin_base_path = base_path_.AppendASCII(storage_identifier)
+                                        .AppendASCII(type_string);
+  std::string name = storage_identifier + ":" + type_string;
+
+  scoped_refptr<GetFileSystemRootPathTask> task =
+      new GetFileSystemRootPathTask(file_message_loop_,
+                                    name, callback.release());
+  task->Start(origin_url, origin_base_path, create);
 }
 
-bool FileSystemPathManager::CheckValidFileSystemPath(
-    const FilePath& path) const {
+bool FileSystemPathManager::CrackFileSystemPath(
+    const FilePath& path, GURL* origin_url, FileSystemType* type,
+    FilePath* virtual_path) const {
   // Any paths that includes parent references are considered invalid.
   if (path.ReferencesParent())
     return false;
@@ -112,12 +230,12 @@ bool FileSystemPathManager::CheckValidFileSystemPath(
   if (!base_path_.AppendRelativePath(path, &relative))
     return false;
 
-  // The relative path from the profile FileSystem path should at least
-  // contains two components, one for storage identifier and the other for type
-
+  // The relative path from the profile FileSystem path should contain
+  // at least three components, one for storage identifier, one for type
+  // and one for the 'unique' part.
   std::vector<FilePath::StringType> components;
   relative.GetComponents(&components);
-  if (components.size() < 2)
+  if (components.size() < 3)
     return false;
 
   // The second component of the relative path to the root directory
@@ -126,48 +244,42 @@ bool FileSystemPathManager::CheckValidFileSystemPath(
     return false;
 
   std::string ascii_type_component = FilePathStringToASCII(components[1]);
-  if (ascii_type_component != kPersistentName &&
-      ascii_type_component != kTemporaryName)
+  FileSystemType cracked_type = kFileSystemTypeUnknown;
+  if (ascii_type_component == kPersistentName)
+    cracked_type = kFileSystemTypePersistent;
+  else if (ascii_type_component == kTemporaryName)
+    cracked_type = kFileSystemTypeTemporary;
+  else
     return false;
+
+  DCHECK(cracked_type != kFileSystemTypeUnknown);
+
+  // The given |path| seems valid. Populates the |origin_url|, |type|
+  // and |virtual_path| if they are given.
+
+  if (origin_url) {
+    WebSecurityOrigin web_security_origin =
+        WebSecurityOrigin::createFromDatabaseIdentifier(
+            webkit_glue::FilePathStringToWebString(components[0]));
+    *origin_url = GURL(web_security_origin.toString());
+
+    // We need this work-around for file:/// URIs as
+    // createFromDatabaseIdentifier returns empty origin_url for them.
+    if (allow_file_access_from_files_ && origin_url->spec().empty() &&
+        components[0].find(FILE_PATH_LITERAL("file")) == 0)
+      *origin_url = GURL("file:///");
+  }
+
+  if (type)
+    *type = cracked_type;
+
+  if (virtual_path) {
+    virtual_path->clear();
+    for (size_t i = 3; i < components.size(); ++i)
+      *virtual_path = virtual_path->Append(components[i]);
+  }
 
   return true;
-}
-
-bool FileSystemPathManager::GetOriginFromPath(
-    const FilePath& path, GURL* origin_url) {
-  DCHECK(origin_url);
-  FilePath relative;
-  if (!base_path_.AppendRelativePath(path, &relative)) {
-    // The path should be a child of the profile's FileSystem path.
-    return false;
-  }
-  std::vector<FilePath::StringType> components;
-  relative.GetComponents(&components);
-  if (components.size() < 2) {
-    // The relative path should at least contain storage identifier and type.
-    return false;
-  }
-  WebSecurityOrigin web_security_origin =
-      WebSecurityOrigin::createFromDatabaseIdentifier(
-          webkit_glue::FilePathStringToWebString(components[0]));
-  *origin_url = GURL(web_security_origin.toString());
-
-  // We need this work-around for file:/// URIs as
-  // createFromDatabaseIdentifier returns empty origin_url for them.
-  if (allow_file_access_from_files_ && origin_url->spec().empty() &&
-      components[0].find(FILE_PATH_LITERAL("file")) == 0) {
-    *origin_url = GURL("file:///");
-    return true;
-  }
-
-  return IsAllowedScheme(*origin_url);
-}
-
-bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
-  // Basically we only accept http or https. We allow file:// URLs
-  // only if --allow-file-access-from-files flag is given.
-  return url.SchemeIs("http") || url.SchemeIs("https") ||
-         (url.SchemeIsFile() && allow_file_access_from_files_);
 }
 
 bool FileSystemPathManager::IsRestrictedFileName(
@@ -198,6 +310,13 @@ bool FileSystemPathManager::IsRestrictedFileName(
   }
 
   return false;
+}
+
+bool FileSystemPathManager::IsAllowedScheme(const GURL& url) const {
+  // Basically we only accept http or https. We allow file:// URLs
+  // only if --allow-file-access-from-files flag is given.
+  return url.SchemeIs("http") || url.SchemeIs("https") ||
+         (url.SchemeIsFile() && allow_file_access_from_files_);
 }
 
 std::string FileSystemPathManager::GetStorageIdentifierFromURL(
