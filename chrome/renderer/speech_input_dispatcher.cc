@@ -5,10 +5,10 @@
 #include "chrome/renderer/speech_input_dispatcher.h"
 
 #include "chrome/renderer/render_view.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputListener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebFrame;
@@ -31,6 +31,12 @@ bool SpeechInputDispatcher::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+bool SpeechInputDispatcher::startRecognition(
+    int request_id, const WebKit::WebString& language,
+    const WebKit::WebRect& element_rect) {
+  return startRecognition(request_id, element_rect);
 }
 
 bool SpeechInputDispatcher::startRecognition(

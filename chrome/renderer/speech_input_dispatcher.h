@@ -13,6 +13,7 @@ class GURL;
 class RenderView;
 
 namespace WebKit {
+class WebString;
 struct WebRect;
 class WebSpeechInputListener;
 }
@@ -29,7 +30,13 @@ class SpeechInputDispatcher : public WebKit::WebSpeechInputController {
   bool OnMessageReceived(const IPC::Message& msg);
 
   // WebKit::WebSpeechInputController.
+  // TODO(leandro): this is a temporary fix for a two-sided patch.
+  // https://bugs.webkit.org/show_bug.cgi?id=47089
+  bool startRecognition(int request_id, const WebKit::WebString& language,
+                        const WebKit::WebRect& element_rect);
+
   bool startRecognition(int request_id, const WebKit::WebRect& element_rect);
+
   void cancelRecognition(int request_id);
   void stopRecording(int request_id);
 
