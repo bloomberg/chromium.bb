@@ -566,10 +566,8 @@ TEST_F(PrefValueStoreTest, DetectProxyConfigurationConflict) {
 
   // Create conflicting proxy settings in the managed and command-line
   // preference stores.
-  command_line_prefs_->SetBoolean(prefs::kProxyAutoDetect,
-                                  Value::CreateBooleanValue(false));
-  enforced_prefs_->SetBoolean(prefs::kProxyAutoDetect,
-                              Value::CreateBooleanValue(true));
+  command_line_prefs_->SetBoolean(prefs::kProxyAutoDetect, false);
+  enforced_prefs_->SetBoolean(prefs::kProxyAutoDetect, true);
   ASSERT_TRUE(pref_value_store_->HasPolicyConflictingUserProxySettings());
 }
 
