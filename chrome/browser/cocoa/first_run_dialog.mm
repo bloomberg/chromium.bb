@@ -63,7 +63,7 @@ void FirstRunShowBridge::ShowDialog() {
   self = [super initWithWindowNibPath:nibpath owner:self];
   if (self != nil) {
     // Bound to the dialog checkbox, default to true.
-    statsEnabled_ = YES;
+    makeDefaultBrowser_ = YES;
   }
   return self;
 }
