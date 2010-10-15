@@ -59,6 +59,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for tests and
         # mocks.
+        'browser/about_flags.cc',
+        'browser/about_flags.h',
         'browser/accessibility/browser_accessibility.cc',
         'browser/accessibility/browser_accessibility.h',
         'browser/accessibility/browser_accessibility_state.cc',
@@ -1290,6 +1292,8 @@
         'browser/dom_ui/fileicon_source.h',
         'browser/dom_ui/filebrowse_ui.cc',
         'browser/dom_ui/filebrowse_ui.h',
+        'browser/dom_ui/flags_ui.cc',
+        'browser/dom_ui/flags_ui.h',
         'browser/dom_ui/foreign_session_handler.cc',
         'browser/dom_ui/foreign_session_handler.h',
         'browser/dom_ui/history_ui.cc',
@@ -1302,8 +1306,6 @@
         'browser/dom_ui/html_dialog_ui.h',
         'browser/dom_ui/keyboard_ui.cc',
         'browser/dom_ui/keyboard_ui.h',
-        'browser/dom_ui/labs_ui.cc',
-        'browser/dom_ui/labs_ui.h',
         'browser/dom_ui/mediaplayer_ui.cc',
         'browser/dom_ui/mediaplayer_ui.h',
         'browser/dom_ui/most_visited_handler.cc',
@@ -2125,8 +2127,6 @@
         'browser/js_modal_dialog.h',
         'browser/keychain_mac.cc',
         'browser/keychain_mac.h',
-        'browser/labs.cc',
-        'browser/labs.h',
         'browser/language_combobox_model.cc',
         'browser/language_combobox_model.h',
         'browser/language_order_table_model.cc',

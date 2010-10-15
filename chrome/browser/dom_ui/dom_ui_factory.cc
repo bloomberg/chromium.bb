@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/bookmarks_ui.h"
 #include "chrome/browser/dom_ui/bug_report_ui.h"
@@ -16,7 +17,7 @@
 #if defined(TOUCH_UI)
 #include "chrome/browser/dom_ui/keyboard_ui.h"
 #endif
-#include "chrome/browser/dom_ui/labs_ui.h"
+#include "chrome/browser/dom_ui/flags_ui.h"
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/dom_ui/plugins_ui.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extensions_ui.h"
-#include "chrome/browser/labs.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -128,8 +128,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<HistoryUI>;
   if (url.host() == chrome::kChromeUIHistory2Host)
     return &NewDOMUI<HistoryUI2>;
-  if (about_labs::IsEnabled() && url.host() == chrome::kChromeUIFlagsHost)
-    return &NewDOMUI<LabsUI>;
+  if (about_flags::IsEnabled() && url.host() == chrome::kChromeUIFlagsHost)
+    return &NewDOMUI<FlagsUI>;
 #if defined(TOUCH_UI)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewDOMUI<KeyboardUI>;
@@ -266,8 +266,8 @@ RefCountedMemory* DOMUIFactory::GetFaviconResourceBytes(Profile* profile,
   if (page_url.host() == chrome::kChromeUIHistory2Host)
     return HistoryUI2::GetFaviconResourceBytes();
 
-  if (about_labs::IsEnabled() && page_url.host() == chrome::kChromeUIFlagsHost)
-    return LabsUI::GetFaviconResourceBytes();
+  if (about_flags::IsEnabled() && page_url.host() == chrome::kChromeUIFlagsHost)
+    return FlagsUI::GetFaviconResourceBytes();
 
   if (page_url.host() == chrome::kChromeUISettingsHost)
     return OptionsUI::GetFaviconResourceBytes();

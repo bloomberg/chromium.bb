@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/dom_ui/labs_ui.h"
+#include "chrome/browser/dom_ui/flags_ui.h"
 
 #include <string>
 
@@ -10,11 +10,11 @@
 #include "app/resource_bundle.h"
 #include "base/singleton.h"
 #include "base/values.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/labs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -29,13 +29,13 @@ namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// LabsUIHTMLSource
+// FlagsUIHTMLSource
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-class LabsUIHTMLSource : public ChromeURLDataManager::DataSource {
+class FlagsUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
-  LabsUIHTMLSource()
+  FlagsUIHTMLSource()
       : DataSource(chrome::kChromeUIFlagsHost, MessageLoop::current()) {}
 
   // Called when the network layer has requested a resource underneath
@@ -48,12 +48,12 @@ class LabsUIHTMLSource : public ChromeURLDataManager::DataSource {
   }
 
  private:
-  ~LabsUIHTMLSource() {}
+  ~FlagsUIHTMLSource() {}
 
-  DISALLOW_COPY_AND_ASSIGN(LabsUIHTMLSource);
+  DISALLOW_COPY_AND_ASSIGN(FlagsUIHTMLSource);
 };
 
-void LabsUIHTMLSource::StartDataRequest(const std::string& path,
+void FlagsUIHTMLSource::StartDataRequest(const std::string& path,
                                         bool is_off_the_record,
                                         int request_id) {
   // Strings used in the JsTemplate file.
@@ -81,9 +81,9 @@ void LabsUIHTMLSource::StartDataRequest(const std::string& path,
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
-  static const base::StringPiece labs_html(
+  static const base::StringPiece flags_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_FLAGS_HTML));
-  std::string full_html(labs_html.data(), labs_html.size());
+  std::string full_html(flags_html.data(), flags_html.size());
   jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
   jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
   jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
@@ -98,52 +98,53 @@ void LabsUIHTMLSource::StartDataRequest(const std::string& path,
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// LabsDOMHandler
+// FlagsDOMHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// The handler for Javascript messages for the chrome://labs/ page.
-class LabsDOMHandler : public DOMMessageHandler {
+// The handler for Javascript messages for the about:flags page.
+class FlagsDOMHandler : public DOMMessageHandler {
  public:
-  LabsDOMHandler() {}
-  virtual ~LabsDOMHandler() {}
+  FlagsDOMHandler() {}
+  virtual ~FlagsDOMHandler() {}
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 
-  // Callback for the "requestLabsExperiments" message.
-  void HandleRequestLabsExperiments(const ListValue* args);
+  // Callback for the "requestFlagsExperiments" message.
+  void HandleRequestFlagsExperiments(const ListValue* args);
 
-  // Callback for the "enableLabsExperiment" message.
-  void HandleEnableLabsExperimentMessage(const ListValue* args);
+  // Callback for the "enableFlagsExperiment" message.
+  void HandleEnableFlagsExperimentMessage(const ListValue* args);
 
   // Callback for the "restartBrowser" message. Restores all tabs on restart.
   void HandleRestartBrowser(const ListValue* args);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LabsDOMHandler);
+  DISALLOW_COPY_AND_ASSIGN(FlagsDOMHandler);
 };
 
-void LabsDOMHandler::RegisterMessages() {
+void FlagsDOMHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("requestFlagsExperiments",
-      NewCallback(this, &LabsDOMHandler::HandleRequestLabsExperiments));
+      NewCallback(this, &FlagsDOMHandler::HandleRequestFlagsExperiments));
   dom_ui_->RegisterMessageCallback("enableFlagsExperiment",
-      NewCallback(this, &LabsDOMHandler::HandleEnableLabsExperimentMessage));
+      NewCallback(this, &FlagsDOMHandler::HandleEnableFlagsExperimentMessage));
   dom_ui_->RegisterMessageCallback("restartBrowser",
-      NewCallback(this, &LabsDOMHandler::HandleRestartBrowser));
+      NewCallback(this, &FlagsDOMHandler::HandleRestartBrowser));
 }
 
-void LabsDOMHandler::HandleRequestLabsExperiments(const ListValue* args) {
+void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
   DictionaryValue results;
   results.Set("flagsExperiments",
-              about_labs::GetLabsExperimentsData(
+              about_flags::GetFlagsExperimentsData(
                   dom_ui_->GetProfile()->GetPrefs()));
   results.SetBoolean("needsRestart",
-                     about_labs::IsRestartNeededToCommitChanges());
+                     about_flags::IsRestartNeededToCommitChanges());
   dom_ui_->CallJavascriptFunction(L"returnFlagsExperiments", results);
 }
 
-void LabsDOMHandler::HandleEnableLabsExperimentMessage(const ListValue* args) {
+void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
+    const ListValue* args) {
   DCHECK_EQ(2u, args->GetSize());
   if (args->GetSize() != 2)
     return;
@@ -154,13 +155,13 @@ void LabsDOMHandler::HandleEnableLabsExperimentMessage(const ListValue* args) {
       !args->GetString(1, &enable_str))
     return;
 
-  about_labs::SetExperimentEnabled(
+  about_flags::SetExperimentEnabled(
       dom_ui_->GetProfile()->GetPrefs(),
       experiment_internal_name,
       enable_str == "true");
 }
 
-void LabsDOMHandler::HandleRestartBrowser(const ListValue* args) {
+void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
   // Set the flag to restore state after the restart.
   PrefService* pref_service = g_browser_process->local_state();
   pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
@@ -171,16 +172,16 @@ void LabsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// LabsUI
+// FlagsUI
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-LabsUI::LabsUI(TabContents* contents) : DOMUI(contents) {
-  AddMessageHandler((new LabsDOMHandler())->Attach(this));
+FlagsUI::FlagsUI(TabContents* contents) : DOMUI(contents) {
+  AddMessageHandler((new FlagsDOMHandler())->Attach(this));
 
-  LabsUIHTMLSource* html_source = new LabsUIHTMLSource();
+  FlagsUIHTMLSource* html_source = new FlagsUIHTMLSource();
 
-  // Set up the chrome://labs/ source.
+  // Set up the about:flags source.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
@@ -189,12 +190,12 @@ LabsUI::LabsUI(TabContents* contents) : DOMUI(contents) {
 }
 
 // static
-RefCountedMemory* LabsUI::GetFaviconResourceBytes() {
+RefCountedMemory* FlagsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytes(IDR_FLAGS);
 }
 
 // static
-void LabsUI::RegisterUserPrefs(PrefService* prefs) {
+void FlagsUI::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(prefs::kEnabledLabsExperiments);
 }

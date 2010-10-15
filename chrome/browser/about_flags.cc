@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/labs.h"
+#include "chrome/browser/about_flags.h"
 
 #include <algorithm>
 #include <iterator>
@@ -17,7 +17,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
-namespace about_labs {
+namespace about_flags {
 
 enum { kOsMac = 1 << 0, kOsWin = 1 << 1, kOsLinux = 1 << 2 };
 
@@ -26,7 +26,7 @@ unsigned kOsAll = kOsMac | kOsWin | kOsLinux;
 struct Experiment {
   // The internal name of the experiment. This is never shown to the user.
   // It _is_ however stored in the prefs file, so you shouldn't change the
-  // name of existing labs.
+  // name of existing flags.
   const char* internal_name;
 
   // String id of the message containing the experiment's name.
@@ -131,7 +131,7 @@ const Experiment kExperiments[] = {
     kOsMac,
     switches::kEnableMatchPreview
   },
-  // FIXME(scheib): Add Labs entry for accelerated Compositing,
+  // FIXME(scheib): Add Flags entry for accelerated Compositing,
   // or pull it and the strings in generated_resources.grd by Dec 2010
   //{
   //  "gpu-compositing", // Do not change; see above
@@ -147,7 +147,7 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux,
     switches::kEnableAccelerated2dCanvas
   },
-  // FIXME(scheib): Add Labs entry for WebGL,
+  // FIXME(scheib): Add Flags entry for WebGL,
   // or pull it and the strings in generated_resources.grd by Dec 2010
   //{
   //  "webgl", // Do not change; see above
@@ -167,7 +167,7 @@ const Experiment kExperiments[] = {
 
 // Extracts the list of enabled lab experiments from preferences and stores them
 // in a set.
-void GetEnabledLabs(const PrefService* prefs, std::set<std::string>* result) {
+void GetEnabledFlags(const PrefService* prefs, std::set<std::string>* result) {
   const ListValue* enabled_experiments = prefs->GetList(
       prefs::kEnabledLabsExperiments);
   if (!enabled_experiments)
@@ -186,7 +186,7 @@ void GetEnabledLabs(const PrefService* prefs, std::set<std::string>* result) {
 }
 
 // Takes a set of enabled lab experiments
-void SetEnabledLabs(
+void SetEnabledFlags(
     PrefService* prefs, const std::set<std::string>& enabled_experiments) {
   ListValue* experiments_list = prefs->GetMutableList(
       prefs::kEnabledLabsExperiments);
@@ -210,7 +210,7 @@ void SanitizeList(PrefService* prefs) {
     known_experiments.insert(kExperiments[i].internal_name);
 
   std::set<std::string> enabled_experiments;
-  GetEnabledLabs(prefs, &enabled_experiments);
+  GetEnabledFlags(prefs, &enabled_experiments);
 
   std::set<std::string> new_enabled_experiments;
   std::set_intersection(
@@ -218,13 +218,13 @@ void SanitizeList(PrefService* prefs) {
       enabled_experiments.begin(), enabled_experiments.end(),
       std::inserter(new_enabled_experiments, new_enabled_experiments.begin()));
 
-  SetEnabledLabs(prefs, new_enabled_experiments);
+  SetEnabledFlags(prefs, new_enabled_experiments);
 }
 
-void GetSanitizedEnabledLabs(
+void GetSanitizedEnabledFlags(
     PrefService* prefs, std::set<std::string>* result) {
   SanitizeList(prefs);
-  GetEnabledLabs(prefs, result);
+  GetEnabledFlags(prefs, result);
 }
 
 int GetCurrentPlatform() {
@@ -241,24 +241,22 @@ int GetCurrentPlatform() {
 
 bool IsEnabled() {
 #if defined(OS_CHROMEOS)
-  // ChromeOS uses a different mechanism for about:labs; integrated with their
-  // dom ui options.
-  // TODO(thakis): Port about:labs to chromeos -- http://crbug.com/57634
+  // TODO(thakis): Port about:flags to chromeos -- http://crbug.com/57634
   return false;
 #else
   return true;
 #endif
 }
 
-void ConvertLabsToSwitches(PrefService* prefs, CommandLine* command_line) {
+void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line) {
   if (!IsEnabled())
     return;
 
-  if (command_line->HasSwitch(switches::kNoLabs))
+  if (command_line->HasSwitch(switches::kNoExperiments))
     return;
 
   std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledLabs(prefs, &enabled_experiments);
+  GetSanitizedEnabledFlags(prefs, &enabled_experiments);
 
   std::map<std::string, const Experiment*> experiments;
   for (size_t i = 0; i < arraysize(kExperiments); ++i)
@@ -278,9 +276,9 @@ void ConvertLabsToSwitches(PrefService* prefs, CommandLine* command_line) {
   }
 }
 
-ListValue* GetLabsExperimentsData(PrefService* prefs) {
+ListValue* GetFlagsExperimentsData(PrefService* prefs) {
   std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledLabs(prefs, &enabled_experiments);
+  GetSanitizedEnabledFlags(prefs, &enabled_experiments);
 
   int current_platform = GetCurrentPlatform();
 
@@ -316,14 +314,14 @@ void SetExperimentEnabled(
   needs_restart_ = true;
 
   std::set<std::string> enabled_experiments;
-  GetSanitizedEnabledLabs(prefs, &enabled_experiments);
+  GetSanitizedEnabledFlags(prefs, &enabled_experiments);
 
   if (enable)
     enabled_experiments.insert(internal_name);
   else
     enabled_experiments.erase(internal_name);
 
-  SetEnabledLabs(prefs, enabled_experiments);
+  SetEnabledFlags(prefs, enabled_experiments);
 }
 
-}  // namespace Labs
+}  // namespace about_flags

@@ -196,8 +196,8 @@ function renderTemplate(flagsExperimentsData) {
 }
 
 /**
- * Asks the C++ LabsDOMHandler to get details about the available experiments
- * and return detailed data about the configuration. The LabsDOMHandler
+ * Asks the C++ FlagsDOMHandler to get details about the available experiments
+ * and return detailed data about the configuration. The FlagsDOMHandler
  * should reply to returnFlagsExperiments() (below).
  */
 function requestFlagsExperimentsData() {
@@ -205,7 +205,7 @@ function requestFlagsExperimentsData() {
 }
 
 /**
- * Asks the C++ LabsDOMHandler to restart the browser (restoring tabs).
+ * Asks the C++ FlagsDOMHandler to restart the browser (restoring tabs).
  */
 function restartBrowser() {
   chrome.send('restartBrowser', []);
@@ -225,7 +225,7 @@ function returnFlagsExperiments(flagsExperimentsData){
  * Handles a 'enable' or 'disable' button getting clicked.
  */
 function handleEnableExperiment(node, enable) {
-  // Tell the C++ LabsDOMHandler to enable/disable the experiment.
+  // Tell the C++ FlagsDOMHandler to enable/disable the experiment.
   chrome.send('enableFlagsExperiment', [String(node.internal_name),
                                        String(enable)]);
   requestFlagsExperimentsData();

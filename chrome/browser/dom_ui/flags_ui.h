@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_LABS_UI_H_
-#define CHROME_BROWSER_DOM_UI_LABS_UI_H_
+#ifndef CHROME_BROWSER_DOM_UI_FLAGS_UI_H_
+#define CHROME_BROWSER_DOM_UI_FLAGS_UI_H_
 #pragma once
 
 #include "chrome/browser/dom_ui/dom_ui.h"
@@ -11,15 +11,15 @@
 class PrefService;
 class RefCountedMemory;
 
-class LabsUI : public DOMUI {
+class FlagsUI : public DOMUI {
  public:
-  explicit LabsUI(TabContents* contents);
+  explicit FlagsUI(TabContents* contents);
 
   static RefCountedMemory* GetFaviconResourceBytes();
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LabsUI);
+  DISALLOW_COPY_AND_ASSIGN(FlagsUI);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_LABS_UI_H_
+#endif  // CHROME_BROWSER_DOM_UI_FLAGS_UI_H_

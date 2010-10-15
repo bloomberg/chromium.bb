@@ -24,6 +24,7 @@
 #include "base/thread.h"
 #include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
-#include "chrome/browser/labs.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -259,7 +259,7 @@ std::string AboutAbout() {
   html.append("<html><head><title>About Pages</title></head><body>\n");
   html.append("<h2>List of About pages</h2><ul>\n");
   for (size_t i = 0; i < arraysize(kAllAboutPaths); i++) {
-    if (kAllAboutPaths[i] == kFlagsPath && !about_labs::IsEnabled())
+    if (kAllAboutPaths[i] == kFlagsPath && !about_flags::IsEnabled())
       continue;
     if (kAllAboutPaths[i] == kAppCacheInternalsPath ||
         kAllAboutPaths[i] == kBlobInternalsPath ||
@@ -1178,8 +1178,8 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
     return true;
   }
 
-  if (about_labs::IsEnabled()) {
-    // Rewrite about:labs and about:vaporware to chrome://labs/.
+  if (about_flags::IsEnabled()) {
+    // Rewrite about:flags and about:vaporware to chrome://flags/.
     if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutFlagsURL) ||
         LowerCaseEqualsASCII(url->spec(), chrome::kAboutVaporwareURL)) {
       *url = GURL(chrome::kChromeUIFlagsURL);

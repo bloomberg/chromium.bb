@@ -763,6 +763,12 @@ const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";
 const char kNoEvents[]                      = "no-events";
 
 // Bypass the First Run experience when the browser is started, regardless of
+// Disables all experiments set on about:flags. Does not disable about:flags
+// itself. Useful if an experiment makes chrome crash at startup: One can start
+// chrome with --no-experiments, disable the problematic lab at about:flags and
+// then restart chrome without this switch again.
+const char kNoExperiments[]                 = "no-experiments";
+
 // whether or not it's actually the first run. Overrides kFirstRun in case
 // you're for some reason tempted to pass them both.
 const char kNoFirstRun[]                    = "no-first-run";
@@ -773,12 +779,6 @@ const char kNoFirstRun[]                    = "no-first-run";
 // page will result in consistent js-generated data and XHR requests.
 // Pages may still be able to generate inconsistent data from plugins.
 const char kNoJsRandomness[]                = "no-js-randomness";
-
-// Disables all labs. Does not disable about:labs. Useful if a lab makes chrome
-// crash at startup: One can start chrome with --no-labs, disable the
-// problematic lab at about:labs and then restart chrome without this switch
-// again.
-const char kNoLabs[]                        = "no-labs";
 
 // Don't send hyperlink auditing pings
 const char kNoPings[]                       = "no-pings";

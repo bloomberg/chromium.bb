@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_LABS_H_
-#define CHROME_BROWSER_LABS_H_
+#ifndef CHROME_BROWSER_ABOUT_FLAGS_H_
+#define CHROME_BROWSER_ABOUT_FLAGS_H_
 #pragma once
 
 #include <string>
@@ -12,18 +12,17 @@ class CommandLine;
 class ListValue;
 class PrefService;
 
-// Can't be called "labs", that collides with the C function |labs()|.
-namespace about_labs {
+namespace about_flags {
 
-// Returns if Labs is enabled (it isn't on the stable channel).
+// Returns if Flags is enabled (it isn't for ChromeOS at the moment).
 bool IsEnabled();
 
-// Reads the Labs |prefs| and adds the commandline flags belonging
-// to the active experiments to |command_line|.
-void ConvertLabsToSwitches(PrefService* prefs, CommandLine* command_line);
+// Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
+// commandline flags belonging to the active experiments to |command_line|.
+void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line);
 
 // Get a list of all available experiments. The caller owns the result.
-ListValue* GetLabsExperimentsData(PrefService* prefs);
+ListValue* GetFlagsExperimentsData(PrefService* prefs);
 
 // Returns true if one of the experiment flags has been flipped since startup.
 bool IsRestartNeededToCommitChanges();
@@ -32,6 +31,6 @@ bool IsRestartNeededToCommitChanges();
 void SetExperimentEnabled(
     PrefService* prefs, const std::string& internal_name, bool enable);
 
-}  // namespace Labs
+}  // namespace about_flags
 
-#endif  // CHROME_BROWSER_LABS_H_
+#endif  // CHROME_BROWSER_ABOUT_FLAGS_H_

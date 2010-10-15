@@ -46,7 +46,6 @@
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/jankometer.h"
-#include "chrome/browser/labs.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -1214,7 +1213,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   SetBrowserX11ErrorHandlers();
 #endif
 
-  // Modifies the current command line based on active labs.
+  // Modifies the current command line based on active experiments on
+  // about:flags.
   Profile* profile = CreateProfile(parameters, user_data_dir);
   if (!profile)
     return ResultCodes::NORMAL_EXIT;
