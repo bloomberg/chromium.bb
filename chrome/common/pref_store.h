@@ -7,6 +7,7 @@
 #pragma once
 
 class DictionaryValue;
+class Value;
 
 // This is an abstract interface for reading and writing from/to a persistent
 // preference store, used by |PrefService|. An implementation using a JSON file
@@ -31,6 +32,18 @@ class PrefStore {
     PREF_READ_ERROR_FILE_NOT_SPECIFIED
   };
 
+  // To require that the default value be used for a preference, a
+  // PrefStore can set the value in its own prefs dictionary to the
+  // sentinel Value returned by this function.
+  // TODO(danno): Instead of having a sentinel value, pref stores
+  // should return a richer set of information from the property
+  // accessor methods to indicate that the default should be used.
+  static Value* CreateUseDefaultSentinelValue();
+
+  // Returns true if a value is the special sentinel value created by
+  // CreateUseDefaultSentinelValue.
+  static bool IsUseDefaultSentinelValue(Value* value);
+
   virtual ~PrefStore() { }
 
   // Whether the store is in a pseudo-read-only mode where changes are not
@@ -38,6 +51,10 @@ class PrefStore {
   // read errors during startup.
   virtual bool ReadOnly() { return true; }
 
+  // TODO(danno): PrefValueStore shouldn't allow direct access to the
+  // DictionaryValue. Instead, it should have getters that return a
+  // richer set of information for a pref, including if the store
+  // wants to return the default value for a preference.
   virtual DictionaryValue* prefs() = 0;
 
   virtual PrefReadError ReadPrefs() = 0;

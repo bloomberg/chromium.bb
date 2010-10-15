@@ -385,6 +385,7 @@ void PrefService::RegisterPreference(const char* path, Value* default_value) {
     pref_value_store_->SetDefaultPrefValue(path, Value::CreateNullValue());
   } else {
     // Hand off ownership.
+    DCHECK(!PrefStore::IsUseDefaultSentinelValue(default_value));
     pref_value_store_->SetDefaultPrefValue(path, scoped_value.release());
   }
 

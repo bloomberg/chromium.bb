@@ -5,12 +5,19 @@
 #include <string>
 
 #include "app/test/data/resource.h"
+#include "base/command_line.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/dummy_pref_store.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -176,6 +183,164 @@ TEST(PrefServiceTest, Observers) {
   prefs.SetString(pref_name, new_pref_value);
   EXPECT_FALSE(obs.observer_fired());
   EXPECT_TRUE(obs2.observer_fired());
+}
+
+TEST(PrefServiceTest, ProxyFromCommandLineNotPolicy) {
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  command_line.AppendSwitch(switches::kProxyAutoDetect);
+  TestingPrefService prefs(NULL, &command_line);
+  browser::RegisterUserPrefs(&prefs);
+  EXPECT_TRUE(prefs.GetBoolean(prefs::kProxyAutoDetect));
+  const PrefService::Preference* pref =
+      prefs.FindPreference(prefs::kProxyAutoDetect);
+  ASSERT_TRUE(pref);
+  EXPECT_FALSE(pref->IsManaged());
+}
+
+TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  command_line.AppendSwitchASCII(switches::kProxyBypassList, "123");
+  command_line.AppendSwitchASCII(switches::kProxyPacUrl, "456");
+  command_line.AppendSwitchASCII(switches::kProxyServer, "789");
+  scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
+      new policy::MockConfigurationPolicyProvider());
+  Value* mode_value = Value::CreateIntegerValue(
+      policy::ConfigurationPolicyStore::kPolicyManuallyConfiguredProxyMode);
+  provider->AddPolicy(
+      policy::ConfigurationPolicyStore::kPolicyProxyServerMode,
+      mode_value);
+  provider->AddPolicy(
+      policy::ConfigurationPolicyStore::kPolicyProxyBypassList,
+      Value::CreateStringValue("abc"));
+  provider->AddPolicy(
+      policy::ConfigurationPolicyStore::kPolicyProxyPacUrl,
+      Value::CreateStringValue("def"));
+  provider->AddPolicy(
+      policy::ConfigurationPolicyStore::kPolicyProxyServer,
+      Value::CreateStringValue("ghi"));
+
+  // First verify that command-line options are set correctly when
+  // there is no policy in effect.
+  TestingPrefService prefs(NULL, &command_line);
+  browser::RegisterUserPrefs(&prefs);
+  EXPECT_FALSE(prefs.GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_FALSE(prefs.GetBoolean(prefs::kNoProxyServer));
+  EXPECT_EQ("789", prefs.GetString(prefs::kProxyServer));
+  EXPECT_EQ("456", prefs.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ("123", prefs.GetString(prefs::kProxyBypassList));
+
+  // Try a second time time with the managed PrefStore in place, the
+  // manual proxy policy should have removed all traces of the command
+  // line and replaced them with the policy versions.
+  TestingPrefService prefs2(provider.get(), &command_line);
+  browser::RegisterUserPrefs(&prefs2);
+  EXPECT_FALSE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_FALSE(prefs2.GetBoolean(prefs::kNoProxyServer));
+  EXPECT_EQ("ghi", prefs2.GetString(prefs::kProxyServer));
+  EXPECT_EQ("def", prefs2.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ("abc", prefs2.GetString(prefs::kProxyBypassList));
+}
+
+TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  command_line.AppendSwitchASCII(switches::kProxyBypassList, "123");
+  command_line.AppendSwitchASCII(switches::kProxyPacUrl, "456");
+  command_line.AppendSwitchASCII(switches::kProxyServer, "789");
+  scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
+      new policy::MockConfigurationPolicyProvider());
+  Value* mode_value = Value::CreateIntegerValue(
+      policy::ConfigurationPolicyStore::kPolicyUseSystemProxyMode);
+  provider->AddPolicy(
+      policy::ConfigurationPolicyStore::kPolicyProxyServerMode,
+      mode_value);
+
+  // First verify that command-line options are set correctly when
+  // there is no policy in effect.
+  TestingPrefService prefs(NULL, &command_line);
+  browser::RegisterUserPrefs(&prefs);
+  EXPECT_FALSE(prefs.GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_FALSE(prefs.GetBoolean(prefs::kNoProxyServer));
+  EXPECT_EQ("789", prefs.GetString(prefs::kProxyServer));
+  EXPECT_EQ("456", prefs.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ("123", prefs.GetString(prefs::kProxyBypassList));
+
+  // Try a second time time with the managed PrefStore in place, the
+  // no proxy policy should have removed all traces of the command
+  // line proxy settings, even though they were not the specific one
+  // set in policy.
+  TestingPrefService prefs2(provider.get(), &command_line);
+  browser::RegisterUserPrefs(&prefs2);
+  EXPECT_FALSE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_FALSE(prefs2.GetBoolean(prefs::kNoProxyServer));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyServer));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyBypassList));
+}
+
+TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  command_line.AppendSwitch(switches::kNoProxyServer);
+  scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
+      new policy::MockConfigurationPolicyProvider());
+  Value* mode_value = Value::CreateIntegerValue(
+      policy::ConfigurationPolicyStore::kPolicyAutoDetectProxyMode);
+  provider->AddPolicy(
+      policy::ConfigurationPolicyStore::kPolicyProxyServerMode,
+      mode_value);
+
+  // First verify that command-line options are set correctly when
+  // there is no policy in effect.
+  TestingPrefService prefs(NULL, &command_line);
+  browser::RegisterUserPrefs(&prefs);
+  EXPECT_FALSE(prefs.GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_TRUE(prefs.GetBoolean(prefs::kNoProxyServer));
+  EXPECT_EQ("", prefs.GetString(prefs::kProxyServer));
+  EXPECT_EQ("", prefs.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ("", prefs.GetString(prefs::kProxyBypassList));
+
+  // Try a second time time with the managed PrefStore in place, the
+  // auto-detect should be overridden. The default pref store must be
+  // in place with the appropriate default value for this to work.
+  TestingPrefService prefs2(provider.get(), &command_line);
+  browser::RegisterUserPrefs(&prefs2);
+  EXPECT_TRUE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_FALSE(prefs2.GetBoolean(prefs::kNoProxyServer));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyServer));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyBypassList));
+}
+
+TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
+  CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
+  command_line.AppendSwitch(switches::kProxyAutoDetect);
+  scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
+      new policy::MockConfigurationPolicyProvider());
+  Value* mode_value = Value::CreateIntegerValue(
+      policy::ConfigurationPolicyStore::kPolicyNoProxyServerMode);
+  provider->AddPolicy(
+      policy::ConfigurationPolicyStore::kPolicyProxyServerMode,
+      mode_value);
+
+  // First verify that the auto-detect is set if there is no managed
+  // PrefStore.
+  TestingPrefService prefs(NULL, &command_line);
+  browser::RegisterUserPrefs(&prefs);
+  EXPECT_TRUE(prefs.GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_FALSE(prefs.GetBoolean(prefs::kNoProxyServer));
+  EXPECT_EQ("", prefs.GetString(prefs::kProxyServer));
+  EXPECT_EQ("", prefs.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ("", prefs.GetString(prefs::kProxyBypassList));
+
+  // Try a second time time with the managed PrefStore in place, the
+  // auto-detect should be overridden. The default pref store must be
+  // in place with the appropriate default value for this to work.
+  TestingPrefService prefs2(provider.get(), &command_line);
+  browser::RegisterUserPrefs(&prefs2);
+  EXPECT_FALSE(prefs2.GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_TRUE(prefs2.GetBoolean(prefs::kNoProxyServer));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyServer));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyPacUrl));
+  EXPECT_EQ("", prefs2.GetString(prefs::kProxyBypassList));
 }
 
 class PrefServiceSetValueTest : public testing::Test {

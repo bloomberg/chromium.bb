@@ -8,6 +8,10 @@
 
 #include "chrome/browser/prefs/pref_service.h"
 
+class CommandLine;
+namespace policy {
+class ConfigurationPolicyProvider;
+}
 class PrefStore;
 
 // A PrefService subclass for testing. It operates totally in memory and
@@ -28,6 +32,16 @@ class TestingPrefService : public PrefService {
 
   // Create an empty instance.
   TestingPrefService();
+
+  // Create an instance that has a managed PrefStore and a command-
+  // line PrefStore. |provider| contains the provider with which to
+  // initialize the managed PrefStore. If it is NULL, then a
+  // DummyPrefStore will be created. |command_line| contains the
+  // provider with which to initialize the command line PrefStore. If
+  // it is NULL then a DummyPrefStore will be created as the command
+  // line PrefStore.
+  TestingPrefService(policy::ConfigurationPolicyProvider* provider,
+                     CommandLine* command_line);
 
   // Read the value of a preference from the managed layer. Returns NULL if the
   // preference is not defined at the managed layer.
@@ -59,6 +73,15 @@ class TestingPrefService : public PrefService {
   void RemoveUserPref(const char* path);
 
  private:
+  // Creates a ConfigurationPolicyPrefStore based on the provided
+  // |provider| or a DummyPrefStore if |provider| is NULL.
+  PrefStore* CreateManagedPrefStore(
+      policy::ConfigurationPolicyProvider* provider);
+
+  // Creates a CommandLinePrefStore based on the supplied
+  // |command_line| or a DummyPrefStore if |command_line| is NULL.
+  PrefStore* CreateCommandLinePrefStore(CommandLine* command_line);
+
   // Reads the value of the preference indicated by |path| from |pref_store|.
   // Returns NULL if the preference was not found.
   const Value* GetPref(PrefStore* pref_store, const char* path);

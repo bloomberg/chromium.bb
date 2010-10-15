@@ -4,8 +4,10 @@
 
 #include "chrome/test/testing_pref_service.h"
 
+#include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/dummy_pref_store.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 
 TestingPrefService::TestingPrefValueStore::TestingPrefValueStore(
     PrefStore* managed_prefs,
@@ -22,12 +24,38 @@ TestingPrefService::TestingPrefValueStore::TestingPrefValueStore(
 // which they want, and expand usage of this class to more unit tests.
 TestingPrefService::TestingPrefService()
     : PrefService(new TestingPrefValueStore(
-          managed_prefs_ = new DummyPrefStore(),
-          NULL,
-          NULL,
-          user_prefs_ = new DummyPrefStore(),
-          NULL,
-          default_prefs_ = new DummyPrefStore())) {
+        managed_prefs_ = new DummyPrefStore(),
+        NULL,
+        NULL,
+        user_prefs_ = new DummyPrefStore(),
+        NULL,
+        default_prefs_ = new DummyPrefStore())) {
+}
+
+TestingPrefService::TestingPrefService(
+    policy::ConfigurationPolicyProvider* provider,
+    CommandLine* command_line)
+    : PrefService(new TestingPrefValueStore(
+        managed_prefs_ = CreateManagedPrefStore(provider),
+        NULL,
+        CreateCommandLinePrefStore(command_line),
+        user_prefs_ = new DummyPrefStore(),
+        NULL,
+        default_prefs_ = new DummyPrefStore())) {
+}
+
+PrefStore* TestingPrefService::CreateManagedPrefStore(
+    policy::ConfigurationPolicyProvider* provider) {
+  if (provider)
+    return new policy::ConfigurationPolicyPrefStore(provider);
+  return new DummyPrefStore();
+}
+
+PrefStore* TestingPrefService::CreateCommandLinePrefStore(
+    CommandLine* command_line) {
+  if (command_line)
+    return new CommandLinePrefStore(command_line);
+  return new DummyPrefStore();
 }
 
 const Value* TestingPrefService::GetManagedPref(const char* path) {

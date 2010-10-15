@@ -118,6 +118,13 @@ PrefStore::PrefReadError PrefValueStore::ReadPrefs() {
         result = this_error;
     }
   }
+
+  if (HasPolicyConflictingUserProxySettings()) {
+    LOG(WARNING) << "user-requested proxy options have been overridden"
+                 << " by a proxy configuration specified in a centrally"
+                 << " administered policy.";
+  }
+
   // TODO(markusheintz): Return a better error status: maybe a struct with
   // the error status of all PrefStores.
   return result;
@@ -196,6 +203,23 @@ bool PrefValueStore::PrefValueInUserStore(const char* name) const {
   return PrefValueInStore(name, PrefNotifier::USER_STORE);
 }
 
+bool PrefValueStore::PrefValueInStoreRange(
+    const char* name,
+    PrefNotifier::PrefStoreType first_checked_store,
+    PrefNotifier::PrefStoreType last_checked_store) {
+  if (first_checked_store > last_checked_store) {
+    NOTREACHED();
+    return false;
+  }
+
+  for (size_t i = first_checked_store;
+       i <= static_cast<size_t>(last_checked_store); ++i) {
+    if (PrefValueInStore(name, static_cast<PrefNotifier::PrefStoreType>(i)))
+      return true;
+  }
+  return false;
+}
+
 bool PrefValueStore::PrefValueFromExtensionStore(const char* name) const {
   return ControllingPrefStoreForPref(name) == PrefNotifier::EXTENSION_STORE;
 }
@@ -240,9 +264,23 @@ bool PrefValueStore::GetValueFromStore(
   // Only return true if we find a value and it is the correct type, so stale
   // values with the incorrect type will be ignored.
   if (pref_stores_[store].get() &&
-      pref_stores_[store]->prefs()->Get(name, out_value) &&
-      IsValidType(GetRegisteredType(name), (*out_value)->GetType(), store)) {
-    return true;
+      pref_stores_[store]->prefs()->Get(name, out_value)) {
+    // If the value is the sentinel that redirects to the default
+    // store, re-fetch the value from the default store explicitly.
+    // Because the default values are not available when creating
+    // stores, the default value must be fetched dynamically for every
+    // redirect.
+    if (PrefStore::IsUseDefaultSentinelValue(*out_value)) {
+      DCHECK(pref_stores_[PrefNotifier::DEFAULT_STORE].get());
+      if (!pref_stores_[PrefNotifier::DEFAULT_STORE]->prefs()->Get(name,
+                                                                   out_value)) {
+        *out_value = NULL;
+        return false;
+      }
+      store = PrefNotifier::DEFAULT_STORE;
+    }
+    if (IsValidType(GetRegisteredType(name), (*out_value)->GetType(), store))
+      return true;
   }
   // No valid value found for the given preference name: set the return false.
   *out_value = NULL;
@@ -319,9 +357,19 @@ void PrefValueStore::RefreshPolicyPrefsOnFileThread(
 }
 
 void PrefValueStore::RefreshPolicyPrefs(
-    PrefStore* new_managed_pref_store,
-    PrefStore* new_recommended_pref_store,
     AfterRefreshCallback* callback) {
+  using policy::ConfigurationPolicyPrefStore;
+  // Because loading of policy information must happen on the FILE
+  // thread, it's not possible to just replace the contents of the
+  // managed and recommended stores in place due to possible
+  // concurrent access from the UI thread. Instead, new stores are
+  // created and the refreshed policy read into them. The new stores
+  // are swapped with the old from a Task on the UI thread after the
+  // load is complete.
+  PrefStore* new_managed_pref_store(
+      ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore());
+  PrefStore* new_recommended_pref_store(
+      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore());
   BrowserThread::ID current_thread_id;
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&current_thread_id));
   BrowserThread::PostTask(
@@ -332,6 +380,21 @@ void PrefValueStore::RefreshPolicyPrefs(
                         new_managed_pref_store,
                         new_recommended_pref_store,
                         callback));
+}
+
+bool PrefValueStore::HasPolicyConflictingUserProxySettings() {
+  using policy::ConfigurationPolicyPrefStore;
+  ConfigurationPolicyPrefStore::ProxyPreferenceSet proxy_prefs;
+  ConfigurationPolicyPrefStore::GetProxyPreferenceSet(&proxy_prefs);
+  ConfigurationPolicyPrefStore::ProxyPreferenceSet::const_iterator i;
+  for (i = proxy_prefs.begin(); i != proxy_prefs.end(); ++i) {
+    if (PrefValueInManagedStore(*i) &&
+        PrefValueInStoreRange(*i,
+                              PrefNotifier::COMMAND_LINE_STORE,
+                              PrefNotifier::USER_STORE))
+      return true;
+  }
+  return false;
 }
 
 PrefValueStore::PrefValueStore(PrefStore* managed_prefs,

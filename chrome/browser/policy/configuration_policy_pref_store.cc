@@ -4,7 +4,6 @@
 
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
@@ -244,27 +243,30 @@ ConfigurationPolicyPrefStore::GetChromePolicyValueMap() {
   return map;
 }
 
+void ConfigurationPolicyPrefStore::GetProxyPreferenceSet(
+    ProxyPreferenceSet* proxy_pref_set) {
+  proxy_pref_set->clear();
+  for (size_t current = 0; current < arraysize(proxy_policy_map_); ++current) {
+    proxy_pref_set->insert(proxy_policy_map_[current].preference_path);
+  }
+  proxy_pref_set->insert(prefs::kNoProxyServer);
+  proxy_pref_set->insert(prefs::kProxyAutoDetect);
+}
+
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
-    const CommandLine* command_line,
     ConfigurationPolicyProvider* provider)
-    : command_line_(command_line),
-      provider_(provider),
+    : provider_(provider),
       prefs_(new DictionaryValue()),
-      command_line_proxy_settings_cleared_(false),
+      lower_priority_proxy_settings_overridden_(false),
       proxy_disabled_(false),
       proxy_configuration_specified_(false),
       use_system_proxy_(false) {
 }
 
 PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
-  // Initialize proxy preference values from command-line switches. This is done
-  // before calling Provide to allow the provider to overwrite proxy-related
-  // preferences that are specified by line settings.
-  ApplyProxySwitches();
-
   proxy_disabled_ = false;
   proxy_configuration_specified_ = false;
-  command_line_proxy_settings_cleared_ = false;
+  lower_priority_proxy_settings_overridden_ = false;
 
   bool success = (provider_ == NULL || provider_->Provide(this));
   FinalizeDefaultSearchPolicySettings();
@@ -298,17 +300,17 @@ void ConfigurationPolicyPrefStore::Apply(PolicyType policy, Value* value) {
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(CommandLine::ForCurrentProcess(),
-      Singleton<ConfigurationPolicyProviderKeeper>::get()->managed_provider());
+  ConfigurationPolicyProviderKeeper* keeper =
+      Singleton<ConfigurationPolicyProviderKeeper>::get();
+  return new ConfigurationPolicyPrefStore(keeper->managed_provider());
 }
 
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
-  ConfigurationPolicyProviderKeeper* manager =
+  ConfigurationPolicyProviderKeeper* keeper =
       Singleton<ConfigurationPolicyProviderKeeper>::get();
-  return new ConfigurationPolicyPrefStore(CommandLine::ForCurrentProcess(),
-      manager->recommended_provider());
+  return new ConfigurationPolicyPrefStore(keeper->recommended_provider());
 }
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry*
@@ -345,40 +347,6 @@ bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(PolicyType policy,
   return false;
 }
 
-void ConfigurationPolicyPrefStore::ApplyProxySwitches() {
-  bool proxy_disabled = command_line_->HasSwitch(switches::kNoProxyServer);
-  if (proxy_disabled) {
-    prefs_->Set(prefs::kNoProxyServer, Value::CreateBooleanValue(true));
-  }
-  bool has_explicit_proxy_config = false;
-  if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
-    has_explicit_proxy_config = true;
-    prefs_->Set(prefs::kProxyAutoDetect, Value::CreateBooleanValue(true));
-  }
-  if (command_line_->HasSwitch(switches::kProxyServer)) {
-    has_explicit_proxy_config = true;
-    prefs_->Set(prefs::kProxyServer, Value::CreateStringValue(
-        command_line_->GetSwitchValueASCII(switches::kProxyServer)));
-  }
-  if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
-    has_explicit_proxy_config = true;
-    prefs_->Set(prefs::kProxyPacUrl, Value::CreateStringValue(
-        command_line_->GetSwitchValueASCII(switches::kProxyPacUrl)));
-  }
-  if (command_line_->HasSwitch(switches::kProxyBypassList)) {
-    has_explicit_proxy_config = true;
-    prefs_->Set(prefs::kProxyBypassList, Value::CreateStringValue(
-        command_line_->GetSwitchValueASCII(switches::kProxyBypassList)));
-  }
-
-  // Warn about all the other proxy config switches we get if
-  // the --no-proxy-server command-line argument is present.
-  if (proxy_disabled && has_explicit_proxy_config) {
-    LOG(WARNING) << "Additional command-line proxy switches specified when --"
-                 << switches::kNoProxyServer << " was also specified.";
-  }
-}
-
 bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
                                                     Value* value) {
   bool result = false;
@@ -389,23 +357,22 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
       FindPolicyInMap(policy, proxy_policy_map_, arraysize(proxy_policy_map_));
 
   // When the first proxy-related policy is applied, ALL proxy-related
-  // preferences that have been set by command-line switches must be
-  // removed. Otherwise it's possible for a user to interfere with proxy
-  // policy by using proxy-related switches that are related to, but not
-  // identical, to the ones set through policy.
-  if ((match_entry ||
-      policy == ConfigurationPolicyPrefStore::kPolicyProxyServerMode) &&
-      !command_line_proxy_settings_cleared_) {
-    if (RemovePreferencesOfMap(proxy_policy_map_,
-                               arraysize(proxy_policy_map_))) {
-      LOG(WARNING) << "proxy configuration options were specified on the"
-                      " command-line but will be ignored because an"
-                      " explicit proxy configuration has been specified"
-                      " through a centrally-administered policy.";
+  // preferences that have been set by command-line switches, extensions,
+  // user preferences or any other mechanism are overridden. Otherwise
+  // it's possible for a user to interfere with proxy policy by setting
+  // proxy-related command-line switches or set proxy-related prefs in an
+  // extension that are related, but not identical, to the ones set through
+  // policy.
+  if (!lower_priority_proxy_settings_overridden_ &&
+      (match_entry ||
+       policy == ConfigurationPolicyPrefStore::kPolicyProxyServerMode)) {
+    ProxyPreferenceSet proxy_preference_set;
+    GetProxyPreferenceSet(&proxy_preference_set);
+    for (ProxyPreferenceSet::const_iterator i = proxy_preference_set.begin();
+         i != proxy_preference_set.end(); ++i) {
+      prefs_->Set(*i, PrefStore::CreateUseDefaultSentinelValue());
     }
-    prefs_->Remove(prefs::kNoProxyServer, NULL);
-    prefs_->Remove(prefs::kProxyAutoDetect, NULL);
-    command_line_proxy_settings_cleared_ = true;
+    lower_priority_proxy_settings_overridden_ = true;
   }
 
   // Translate the proxy policy into preferences.
@@ -445,16 +412,6 @@ bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
                     Value::CreateBooleanValue(proxy_disabled_));
         prefs_->Set(prefs::kProxyAutoDetect,
                     Value::CreateBooleanValue(proxy_auto_detect));
-      }
-
-      // No proxy and system proxy mode should ensure that no other
-      // proxy preferences are set.
-      if (int_value == ConfigurationPolicyStore::kPolicyNoProxyServerMode ||
-          int_value == kPolicyUseSystemProxyMode) {
-        for (const PolicyToPreferenceMapEntry* current = proxy_policy_map_;
-            current != proxy_policy_map_ + arraysize(proxy_policy_map_);
-            ++current)
-          prefs_->Remove(current->preference_path, NULL);
       }
     }
   } else if (match_entry) {

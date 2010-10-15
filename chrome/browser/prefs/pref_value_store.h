@@ -126,6 +126,14 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   bool PrefValueInExtensionStore(const char* name) const;
   bool PrefValueInUserStore(const char* name) const;
 
+  // Returns true if a preference has an explicit value in any of the
+  // stores in the range specified by |first_checked_store| and
+  // |last_checked_store|, even if that value is currently being
+  // overridden by a higher-priority store.
+  bool PrefValueInStoreRange(const char* name,
+                             PrefNotifier::PrefStoreType first_checked_store,
+                             PrefNotifier::PrefStoreType last_checked_store);
+
   // These methods return true if a preference with the given name is actually
   // being controlled by the indicated pref store and not being overridden by
   // a higher-priority source.
@@ -151,19 +159,19 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   typedef Callback1<std::vector<std::string> >::Type AfterRefreshCallback;
 
   // Called as a result of a notification of policy change. Triggers a
-  // reload of managed preferences from policy. Caller must pass in
-  // new, uninitialized managed and recommended PrefStores in
-  // |managed_pref_store| and |recommended_pref_store| respectively, since
-  // PrefValueStore doesn't know about policy-specific PrefStores.
-  // |callback| is called with the set of preferences changed by the policy
-  // refresh. |callback| is called on the caller's thread as a Task
-  // after RefreshPolicyPrefs has returned. RefreshPolicyPrefs takes ownership
-  // of the |callback| object.
-  void RefreshPolicyPrefs(PrefStore* managed_pref_store,
-                          PrefStore* recommended_pref_store,
-                          AfterRefreshCallback* callback);
+  // reload of managed preferences from policy from a Task on the FILE
+  // thread. The Task will take ownership of the |callback|. |callback| is
+  // called with the set of preferences changed by the policy refresh.
+  // |callback| is called on the caller's thread as a Task after
+  // RefreshPolicyPrefs has returned.
+  void RefreshPolicyPrefs(AfterRefreshCallback* callback);
 
- protected:
+  // Returns true if there are proxy preferences in user-modifiable
+  // preference stores (e.g. CommandLinePrefStore, ExtensionPrefStore)
+  // that conflict with proxy settings specified by proxy policy.
+  bool HasPolicyConflictingUserProxySettings();
+
+      protected:
   // In decreasing order of precedence:
   //   |managed_prefs| contains all managed (policy) preference values.
   //   |extension_prefs| contains preference values set by extensions.

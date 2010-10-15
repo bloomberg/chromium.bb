@@ -7,7 +7,7 @@
 #pragma once
 
 #include <string>
-
+#include <set>
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
@@ -15,8 +15,6 @@
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_store.h"
 #include "chrome/common/pref_store.h"
-
-class CommandLine;
 
 namespace policy {
 
@@ -27,8 +25,7 @@ class ConfigurationPolicyPrefStore : public PrefStore,
  public:
   // The ConfigurationPolicyPrefStore does not take ownership of the
   // passed-in |provider|.
-  ConfigurationPolicyPrefStore(const CommandLine* command_line,
-                               ConfigurationPolicyProvider* provider);
+  explicit ConfigurationPolicyPrefStore(ConfigurationPolicyProvider* provider);
   virtual ~ConfigurationPolicyPrefStore() { }
 
   // PrefStore methods:
@@ -48,6 +45,12 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   static ConfigurationPolicyProvider::StaticPolicyValueMap
       GetChromePolicyValueMap();
 
+  typedef std::set<const char*> ProxyPreferenceSet;
+
+  // Returns the set of preference paths that can be affected by a proxy
+  // policy.
+  static void GetProxyPreferenceSet(ProxyPreferenceSet* proxy_pref_set);
+
  private:
   // Policies that map to a single preference are handled
   // by an automated converter. Each one of these policies
@@ -64,14 +67,13 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   static const ConfigurationPolicyProvider::StaticPolicyValueMap
       policy_value_map_;
 
-  const CommandLine* command_line_;
   ConfigurationPolicyProvider* provider_;
   scoped_ptr<DictionaryValue> prefs_;
 
-  // Set to false until the first proxy-relevant policy is applied. Allows
-  // the Apply method to erase all switch-specified proxy configuration before
-  // applying proxy policy configuration;
-  bool command_line_proxy_settings_cleared_;
+  // Set to false until the first proxy-relevant policy is applied. At that
+  // time, default values are provided for all proxy-relevant prefs
+  // to override any values set from stores with a lower priority.
+  bool lower_priority_proxy_settings_overridden_;
 
   // The following are used to track what proxy-relevant policy has been applied
   // accross calls to Apply to provide a warning if a policy specifies a
@@ -97,10 +99,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
 
   bool ApplyPolicyFromMap(PolicyType policy, Value* value,
                           const PolicyToPreferenceMapEntry map[], int size);
-
-  // Initializes default preference values from proxy-related command-line
-  // switches in |command_line_|.
-  void ApplyProxySwitches();
 
   // Processes proxy-specific policies. Returns true if the specified policy
   // is a proxy-related policy. ApplyProxyPolicy assumes the ownership

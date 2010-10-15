@@ -8,6 +8,7 @@
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/dummy_pref_store.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,55 +28,47 @@ class MockPolicyRefreshCallback {
 
 // Names of the preferences used in this test program.
 namespace prefs {
-  const char kCurrentThemeID[] = "extensions.theme.id";
-  const char kDeleteCache[] = "browser.clear_data.cache";
-  const char kHomepage[] = "homepage";
-  const char kMaxTabs[] = "tabs.max_tabs";
-  const char kMissingPref[] = "this.pref.does_not_exist";
-  const char kRecommendedPref[] = "this.pref.recommended_value_only";
-  const char kSampleDict[] = "sample.dict";
-  const char kSampleList[] = "sample.list";
-  const char kDefaultPref[] = "default.pref";
-
-  // This must match the actual pref name so the command-line store knows about
-  // it.
-  const char kApplicationLocale[] = "intl.app_locale";
+const char kMissingPref[] = "this.pref.does_not_exist";
+const char kRecommendedPref[] = "this.pref.recommended_value_only";
+const char kSampleDict[] = "sample.dict";
+const char kSampleList[] = "sample.list";
+const char kDefaultPref[] = "default.pref";
 }
 
 // Potentially expected values of all preferences used in this test program.
 namespace enforced_pref {
-  const std::string kHomepageValue = "http://www.topeka.com";
+const std::string kHomepageValue = "http://www.topeka.com";
 }
 
 namespace extension_pref {
-  const char kCurrentThemeIDValue[] = "set by extension";
-  const char kHomepageValue[] = "http://www.chromium.org";
+const char kCurrentThemeIDValue[] = "set by extension";
+const char kHomepageValue[] = "http://www.chromium.org";
 }
 
 namespace command_line_pref {
-  const char kApplicationLocaleValue[] = "hi-MOM";
-  const char kCurrentThemeIDValue[] = "zyxwvut";
-  const char kHomepageValue[] = "http://www.ferretcentral.org";
+const char kApplicationLocaleValue[] = "hi-MOM";
+const char kCurrentThemeIDValue[] = "zyxwvut";
+const char kHomepageValue[] = "http://www.ferretcentral.org";
 }
 
 // The "user" namespace is defined globally in an ARM system header, so we need
 // something different here.
 namespace user_pref {
-  const int kMaxTabsValue = 31;
-  const bool kDeleteCacheValue = true;
-  const char kCurrentThemeIDValue[] = "abcdefg";
-  const char kHomepageValue[] = "http://www.google.com";
-  const char kApplicationLocaleValue[] = "is-WRONG";
+const int kStabilityLaunchCountValue = 31;
+const bool kDeleteCacheValue = true;
+const char kCurrentThemeIDValue[] = "abcdefg";
+const char kHomepageValue[] = "http://www.google.com";
+const char kApplicationLocaleValue[] = "is-WRONG";
 }
 
 namespace recommended_pref {
-  const int kMaxTabsValue = 10;
-  const bool kRecommendedPrefValue = true;
+const int kStabilityLaunchCountValue = 10;
+const bool kRecommendedPrefValue = true;
 }
 
 namespace default_pref {
-  const int kDefaultValue = 7;
-  const char kHomepageValue[] = "default homepage";
+const int kDefaultValue = 7;
+const char kHomepageValue[] = "default homepage";
 }
 
 class PrefValueStoreTest : public testing::Test {
@@ -120,9 +113,9 @@ class PrefValueStoreTest : public testing::Test {
                                               Value::TYPE_STRING);
     pref_value_store_->RegisterPreferenceType(prefs::kDeleteCache,
                                               Value::TYPE_BOOLEAN);
-    pref_value_store_->RegisterPreferenceType(prefs::kHomepage,
+    pref_value_store_->RegisterPreferenceType(prefs::kHomePage,
                                               Value::TYPE_STRING);
-    pref_value_store_->RegisterPreferenceType(prefs::kMaxTabs,
+    pref_value_store_->RegisterPreferenceType(prefs::kStabilityLaunchCount,
                                               Value::TYPE_INTEGER);
     pref_value_store_->RegisterPreferenceType(prefs::kRecommendedPref,
                                               Value::TYPE_BOOLEAN);
@@ -132,6 +125,8 @@ class PrefValueStoreTest : public testing::Test {
                                               Value::TYPE_LIST);
     pref_value_store_->RegisterPreferenceType(prefs::kDefaultPref,
                                               Value::TYPE_INTEGER);
+    pref_value_store_->RegisterPreferenceType(prefs::kProxyAutoDetect,
+                                              Value::TYPE_BOOLEAN);
 
     ui_thread_.reset(new BrowserThread(BrowserThread::UI, &loop_));
     file_thread_.reset(new BrowserThread(BrowserThread::FILE, &loop_));
@@ -142,19 +137,20 @@ class PrefValueStoreTest : public testing::Test {
   DictionaryValue* CreateUserPrefs() {
     DictionaryValue* user_prefs = new DictionaryValue();
     user_prefs->SetBoolean(prefs::kDeleteCache, user_pref::kDeleteCacheValue);
-    user_prefs->SetInteger(prefs::kMaxTabs, user_pref::kMaxTabsValue);
+    user_prefs->SetInteger(prefs::kStabilityLaunchCount,
+                           user_pref::kStabilityLaunchCountValue);
     user_prefs->SetString(prefs::kCurrentThemeID,
         user_pref::kCurrentThemeIDValue);
     user_prefs->SetString(prefs::kApplicationLocale,
         user_pref::kApplicationLocaleValue);
-    user_prefs->SetString(prefs::kHomepage, user_pref::kHomepageValue);
+    user_prefs->SetString(prefs::kHomePage, user_pref::kHomepageValue);
     return user_prefs;
   }
 
   DictionaryValue* CreateEnforcedPrefs() {
     DictionaryValue* enforced_prefs = new DictionaryValue();
-    enforced_prefs->SetString(prefs::kHomepage, enforced_pref::kHomepageValue);
-    expected_differing_paths_.push_back(prefs::kHomepage);
+    enforced_prefs->SetString(prefs::kHomePage, enforced_pref::kHomepageValue);
+    expected_differing_paths_.push_back(prefs::kHomePage);
     return enforced_prefs;
   }
 
@@ -162,7 +158,7 @@ class PrefValueStoreTest : public testing::Test {
     DictionaryValue* extension_prefs = new DictionaryValue();
     extension_prefs->SetString(prefs::kCurrentThemeID,
         extension_pref::kCurrentThemeIDValue);
-    extension_prefs->SetString(prefs::kHomepage,
+    extension_prefs->SetString(prefs::kHomePage,
         extension_pref::kHomepageValue);
     return extension_prefs;
   }
@@ -173,26 +169,27 @@ class PrefValueStoreTest : public testing::Test {
         command_line_pref::kCurrentThemeIDValue);
     command_line_prefs->SetString(prefs::kApplicationLocale,
         command_line_pref::kApplicationLocaleValue);
-    command_line_prefs->SetString(prefs::kHomepage,
+    command_line_prefs->SetString(prefs::kHomePage,
         command_line_pref::kHomepageValue);
     return command_line_prefs;
   }
 
   DictionaryValue* CreateRecommendedPrefs() {
     DictionaryValue* recommended_prefs = new DictionaryValue();
-    recommended_prefs->SetInteger(prefs::kMaxTabs,
-        recommended_pref::kMaxTabsValue);
+    recommended_prefs->SetInteger(prefs::kStabilityLaunchCount,
+        recommended_pref::kStabilityLaunchCountValue);
     recommended_prefs->SetBoolean(
         prefs::kRecommendedPref,
         recommended_pref::kRecommendedPrefValue);
 
     // Expected differing paths must be added in lexicographic order
     // to work properly
-    expected_differing_paths_.push_back("tabs");
-    expected_differing_paths_.push_back(prefs::kMaxTabs);
     expected_differing_paths_.push_back("this");
     expected_differing_paths_.push_back("this.pref");
     expected_differing_paths_.push_back(prefs::kRecommendedPref);
+    expected_differing_paths_.push_back("user_experience_metrics");
+    expected_differing_paths_.push_back("user_experience_metrics.stability");
+    expected_differing_paths_.push_back(prefs::kStabilityLaunchCount);
     return recommended_prefs;
   }
 
@@ -273,7 +270,7 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // Test getting an enforced value overwriting a user-defined and
   // extension-defined value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomepage, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, &value));
   std::string actual_str_value;
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(enforced_pref::kHomepageValue, actual_str_value);
@@ -300,10 +297,11 @@ TEST_F(PrefValueStoreTest, GetValue) {
 
   // Test getting a user set value overwriting a recommended value.
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kMaxTabs, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kStabilityLaunchCount,
+                                          &value));
   int actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
-  EXPECT_EQ(user_pref::kMaxTabsValue, actual_int_value);
+  EXPECT_EQ(user_pref::kStabilityLaunchCountValue, actual_int_value);
 
   // Test getting a recommended value.
   value = NULL;
@@ -331,26 +329,28 @@ TEST_F(PrefValueStoreTest, GetValue) {
 // the user pref file, it uses the correct fallback value instead.
 TEST_F(PrefValueStoreTest, GetValueChangedType) {
   // Check falling back to a recommended value.
-  user_pref_store_->prefs()->SetString(prefs::kMaxTabs, "not an integer");
+  user_pref_store_->prefs()->SetString(prefs::kStabilityLaunchCount,
+                                       "not an integer");
   Value* value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kMaxTabs, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kStabilityLaunchCount,
+                                          &value));
   ASSERT_TRUE(value != NULL);
   ASSERT_EQ(Value::TYPE_INTEGER, value->GetType());
   int actual_int_value = -1;
   EXPECT_TRUE(value->GetAsInteger(&actual_int_value));
-  EXPECT_EQ(recommended_pref::kMaxTabsValue, actual_int_value);
+  EXPECT_EQ(recommended_pref::kStabilityLaunchCountValue, actual_int_value);
 
   // Check falling back multiple times, to a default string.
-  enforced_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
-  extension_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
-  command_line_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
-  user_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
-  recommended_pref_store_->prefs()->SetInteger(prefs::kHomepage, 1);
-  default_pref_store_->prefs()->SetString(prefs::kHomepage,
+  enforced_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
+  extension_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
+  command_line_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
+  user_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
+  recommended_pref_store_->prefs()->SetInteger(prefs::kHomePage, 1);
+  default_pref_store_->prefs()->SetString(prefs::kHomePage,
                                           default_pref::kHomepageValue);
 
   value = NULL;
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomepage, &value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, &value));
   ASSERT_TRUE(value != NULL);
   ASSERT_EQ(Value::TYPE_STRING, value->GetType());
   std::string actual_str_value;
@@ -360,7 +360,7 @@ TEST_F(PrefValueStoreTest, GetValueChangedType) {
 
 TEST_F(PrefValueStoreTest, HasPrefPath) {
   // Enforced preference
-  EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
+  EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
   // User preference
   EXPECT_TRUE(pref_value_store_->HasPrefPath(prefs::kDeleteCache));
   // Recommended preference
@@ -426,28 +426,29 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   Value* actual_value = NULL;
 
   // Test that enforced values can not be set.
-  ASSERT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomepage));
+  ASSERT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomePage));
   // The Ownership is tranfered to |PrefValueStore|.
   new_value = Value::CreateStringValue("http://www.youtube.com");
-  pref_value_store_->SetUserPrefValue(prefs::kHomepage, new_value);
+  pref_value_store_->SetUserPrefValue(prefs::kHomePage, new_value);
 
-  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomepage, &actual_value));
+  ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomePage, &actual_value));
   std::string value_str;
   actual_value->GetAsString(&value_str);
   ASSERT_EQ(enforced_pref::kHomepageValue, value_str);
 
   // User preferences values can be set
-  ASSERT_FALSE(pref_value_store_->PrefValueInManagedStore(prefs::kMaxTabs));
+  ASSERT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kStabilityLaunchCount));
   actual_value = NULL;
-  pref_value_store_->GetValue(prefs::kMaxTabs, &actual_value);
+  pref_value_store_->GetValue(prefs::kStabilityLaunchCount, &actual_value);
   int int_value;
   EXPECT_TRUE(actual_value->GetAsInteger(&int_value));
-  EXPECT_EQ(user_pref::kMaxTabsValue, int_value);
+  EXPECT_EQ(user_pref::kStabilityLaunchCountValue, int_value);
 
   new_value = Value::CreateIntegerValue(1);
-  pref_value_store_->SetUserPrefValue(prefs::kMaxTabs, new_value);
+  pref_value_store_->SetUserPrefValue(prefs::kStabilityLaunchCount, new_value);
   actual_value = NULL;
-  pref_value_store_->GetValue(prefs::kMaxTabs, &actual_value);
+  pref_value_store_->GetValue(prefs::kStabilityLaunchCount, &actual_value);
   EXPECT_TRUE(new_value->Equals(actual_value));
 
   // Set and Get |DictionaryValue|
@@ -475,8 +476,8 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
 
 TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
   // Test an enforced preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
-  EXPECT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomepage));
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
+  EXPECT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomePage));
 
   // Test an extension preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
@@ -489,8 +490,9 @@ TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
       prefs::kApplicationLocale));
 
   // Test a user preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
-  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(prefs::kMaxTabs));
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
+  EXPECT_FALSE(pref_value_store_->PrefValueInManagedStore(
+      prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
@@ -509,10 +511,10 @@ TEST_F(PrefValueStoreTest, PrefValueInManagedStore) {
 
 TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
   // Test an enforced preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
-  EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(prefs::kHomepage));
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
+  EXPECT_TRUE(pref_value_store_->PrefValueInExtensionStore(prefs::kHomePage));
   EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
-      prefs::kHomepage));
+      prefs::kHomePage));
 
   // Test an extension preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
@@ -529,9 +531,11 @@ TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
       prefs::kApplicationLocale));
 
   // Test a user preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
-  EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(prefs::kMaxTabs));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(prefs::kMaxTabs));
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
+  EXPECT_FALSE(pref_value_store_->PrefValueInExtensionStore(
+      prefs::kStabilityLaunchCount));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromExtensionStore(
+      prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
@@ -555,11 +559,25 @@ TEST_F(PrefValueStoreTest, PrefValueInExtensionStore) {
       prefs::kMissingPref));
 }
 
+TEST_F(PrefValueStoreTest, DetectProxyConfigurationConflict) {
+  // There should be no conflicting proxy prefs in the default
+  // preference stores created for the test.
+  ASSERT_FALSE(pref_value_store_->HasPolicyConflictingUserProxySettings());
+
+  // Create conflicting proxy settings in the managed and command-line
+  // preference stores.
+  command_line_prefs_->SetBoolean(prefs::kProxyAutoDetect,
+                                  Value::CreateBooleanValue(false));
+  enforced_prefs_->SetBoolean(prefs::kProxyAutoDetect,
+                              Value::CreateBooleanValue(true));
+  ASSERT_TRUE(pref_value_store_->HasPolicyConflictingUserProxySettings());
+}
+
 TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
   // Test an enforced preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
-  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(prefs::kHomepage));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kHomepage));
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
+  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(prefs::kHomePage));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kHomePage));
 
   // Test an extension preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
@@ -576,9 +594,11 @@ TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
       prefs::kApplicationLocale));
 
   // Test a user preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
-  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(prefs::kMaxTabs));
-  EXPECT_TRUE(pref_value_store_->PrefValueFromUserStore(prefs::kMaxTabs));
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
+  EXPECT_TRUE(pref_value_store_->PrefValueInUserStore(
+      prefs::kStabilityLaunchCount));
+  EXPECT_TRUE(pref_value_store_->PrefValueFromUserStore(
+      prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
@@ -600,8 +620,8 @@ TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
 
 TEST_F(PrefValueStoreTest, PrefValueFromDefaultStore) {
   // Test an enforced preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomepage));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(prefs::kHomepage));
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kHomePage));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(prefs::kHomePage));
 
   // Test an extension preference.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kCurrentThemeID));
@@ -614,8 +634,9 @@ TEST_F(PrefValueStoreTest, PrefValueFromDefaultStore) {
       prefs::kApplicationLocale));
 
   // Test a user preference.
-  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kMaxTabs));
-  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(prefs::kMaxTabs));
+  ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kStabilityLaunchCount));
+  EXPECT_FALSE(pref_value_store_->PrefValueFromDefaultStore(
+      prefs::kStabilityLaunchCount));
 
   // Test a preference from the recommended pref store.
   ASSERT_TRUE(pref_value_store_->HasPrefPath(prefs::kRecommendedPref));
@@ -645,8 +666,6 @@ TEST_F(PrefValueStoreTest, TestPolicyRefresh) {
       NewRunnableMethod(
           pref_value_store_.get(),
           &PrefValueStore::RefreshPolicyPrefs,
-          new DummyPrefStore(),
-          new DummyPrefStore(),
           NewCallback(&callback,
                       &MockPolicyRefreshCallback::DoCallback)));
   Mock::VerifyAndClearExpectations(&callback);
@@ -723,8 +742,6 @@ TEST_F(PrefValueStoreTest, TestConcurrentPolicyRefresh) {
       NewRunnableMethod(
           pref_value_store_.get(),
           &PrefValueStore::RefreshPolicyPrefs,
-          new DummyPrefStore(),
-          new DummyPrefStore(),
           NewCallback(&callback1,
                       &MockPolicyRefreshCallback::DoCallback)));
   EXPECT_CALL(callback1, DoCallback(_)).Times(0);
@@ -735,8 +752,6 @@ TEST_F(PrefValueStoreTest, TestConcurrentPolicyRefresh) {
       NewRunnableMethod(
           pref_value_store_.get(),
           &PrefValueStore::RefreshPolicyPrefs,
-          new DummyPrefStore(),
-          new DummyPrefStore(),
           NewCallback(&callback2,
                       &MockPolicyRefreshCallback::DoCallback)));
   EXPECT_CALL(callback2, DoCallback(_)).Times(0);
@@ -747,8 +762,6 @@ TEST_F(PrefValueStoreTest, TestConcurrentPolicyRefresh) {
       NewRunnableMethod(
           pref_value_store_.get(),
           &PrefValueStore::RefreshPolicyPrefs,
-          new DummyPrefStore(),
-          new DummyPrefStore(),
           NewCallback(&callback3,
                       &MockPolicyRefreshCallback::DoCallback)));
   EXPECT_CALL(callback3, DoCallback(_)).Times(0);

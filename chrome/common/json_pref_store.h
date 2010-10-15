@@ -54,4 +54,3 @@ class JsonPrefStore : public PrefStore,
 };
 
 #endif  // CHROME_COMMON_JSON_PREF_STORE_H_
-

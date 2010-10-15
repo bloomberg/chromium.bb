@@ -132,8 +132,6 @@ void PrefNotifier::Observe(NotificationType type,
           NewRunnableMethod(
               pref_value_store_,
               &PrefValueStore::RefreshPolicyPrefs,
-              ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore(),
-              ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(),
               callback));
   }
 }
