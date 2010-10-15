@@ -104,3 +104,6 @@ PREFIX: browserview::gettoolbarview___webcore::videolayerchromium::~videolayerch
 
 # 58097
 PREFIX: `anonymous namespace'::purecall____purecall___notificationservice::notify___browserlist::removebrowser___browser::~browser___browser::`scalar deleting destructor'___browserview::~browserview
+
+# 59329
+PREFIX: pluginprocesshost::replytorenderer___pluginprocesshost::onchannelcreated___ipc::messagewithtuple<tuple1<ipc::channelhandle> >::dispatch<pluginprocesshost,void (__thiscall pluginprocesshost::*)(ipc::channelhandle const &)>
