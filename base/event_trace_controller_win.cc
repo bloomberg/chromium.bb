@@ -97,7 +97,6 @@ HRESULT EtwTraceController::Flush(EtwTraceProperties* properties) {
 
 HRESULT EtwTraceController::Start(const wchar_t* session_name,
     EtwTraceProperties* properties, TRACEHANDLE* session_handle) {
-  DCHECK(properties != NULL);
   ULONG err = ::StartTrace(session_handle, session_name, properties->get());
   return HRESULT_FROM_WIN32(err);
 }
@@ -111,7 +110,6 @@ HRESULT EtwTraceController::Query(const wchar_t* session_name,
 
 HRESULT EtwTraceController::Update(const wchar_t* session_name,
     EtwTraceProperties* properties) {
-  DCHECK(properties != NULL);
   ULONG err = ::ControlTrace(NULL, session_name, properties->get(),
                              EVENT_TRACE_CONTROL_UPDATE);
   return HRESULT_FROM_WIN32(err);
@@ -119,7 +117,6 @@ HRESULT EtwTraceController::Update(const wchar_t* session_name,
 
 HRESULT EtwTraceController::Stop(const wchar_t* session_name,
     EtwTraceProperties* properties) {
-  DCHECK(properties != NULL);
   ULONG err = ::ControlTrace(NULL, session_name, properties->get(),
                              EVENT_TRACE_CONTROL_STOP);
   return HRESULT_FROM_WIN32(err);
@@ -127,7 +124,6 @@ HRESULT EtwTraceController::Stop(const wchar_t* session_name,
 
 HRESULT EtwTraceController::Flush(const wchar_t* session_name,
     EtwTraceProperties* properties) {
-  DCHECK(properties != NULL);
   ULONG err = ::ControlTrace(NULL, session_name, properties->get(),
                              EVENT_TRACE_CONTROL_FLUSH);
   return HRESULT_FROM_WIN32(err);

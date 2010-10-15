@@ -48,8 +48,6 @@ ULONG EtwTraceProvider::DisableEvents() {
   enable_flags_ = 0;
   session_handle_ = NULL;
 
-  PostEventsDisabled();
-
   return ERROR_SUCCESS;
 }
 
