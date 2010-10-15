@@ -445,14 +445,6 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
                 url, number_of_navigations)) << url.spec();
 }
 
-bool UITestBase::WaitForDownloadShelfVisible(BrowserProxy* browser) {
-  return WaitForDownloadShelfVisibilityChange(browser, true);
-}
-
-bool UITestBase::WaitForDownloadShelfInvisible(BrowserProxy* browser) {
-  return WaitForDownloadShelfVisibilityChange(browser, false);
-}
-
 bool UITestBase::WaitForBrowserProcessToQuit() {
   // Wait for the browser process to quit.
   int timeout = TestTimeouts::wait_for_terminate_timeout_ms();
@@ -460,48 +452,6 @@ bool UITestBase::WaitForBrowserProcessToQuit() {
   timeout = 500000;
 #endif
   return base::WaitForSingleProcess(process_, timeout);
-}
-
-bool UITestBase::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
-                                                      bool wait_for_open) {
-  const int kCycles = 10;
-  for (int i = 0; i < kCycles; i++) {
-    // Give it a chance to catch up.
-    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
-    EXPECT_TRUE(browser_survived);
-    if (!browser_survived)
-      return false;
-
-    bool visible = !wait_for_open;
-    if (!browser->IsShelfVisible(&visible))
-      continue;
-    if (visible == wait_for_open)
-      return true;  // Got the download shelf.
-  }
-
-  ADD_FAILURE() << "Timeout reached in WaitForDownloadShelfVisibilityChange";
-  return false;
-}
-
-bool UITestBase::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
-                                                   bool wait_for_open) {
-  const int kCycles = 10;
-  for (int i = 0; i < kCycles; i++) {
-    bool visible = false;
-    if (!browser->IsFindWindowFullyVisible(&visible))
-      return false;  // Some error.
-    if (visible == wait_for_open)
-      return true;  // Find window visibility change complete.
-
-    // Give it a chance to catch up.
-    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
-    EXPECT_TRUE(browser_survived);
-    if (!browser_survived)
-      return false;
-  }
-
-  ADD_FAILURE() << "Timeout reached in WaitForFindWindowVisibilityChange";
-  return false;
 }
 
 bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
@@ -1156,3 +1106,52 @@ std::string UITest::WaitUntilCookieNonEmpty(TabProxy* tab,
   return std::string();
 }
 
+bool UITest::WaitForDownloadShelfVisible(BrowserProxy* browser) {
+  return WaitForDownloadShelfVisibilityChange(browser, true);
+}
+
+bool UITest::WaitForDownloadShelfInvisible(BrowserProxy* browser) {
+  return WaitForDownloadShelfVisibilityChange(browser, false);
+}
+
+bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
+                                               bool wait_for_open) {
+  const int kCycles = 10;
+  for (int i = 0; i < kCycles; i++) {
+    bool visible = false;
+    if (!browser->IsFindWindowFullyVisible(&visible))
+      return false;  // Some error.
+    if (visible == wait_for_open)
+      return true;  // Find window visibility change complete.
+
+    // Give it a chance to catch up.
+    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
+  }
+
+  ADD_FAILURE() << "Timeout reached in WaitForFindWindowVisibilityChange";
+  return false;
+}
+
+bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
+                                                  bool wait_for_open) {
+  const int kCycles = 10;
+  for (int i = 0; i < kCycles; i++) {
+    // Give it a chance to catch up.
+    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
+    EXPECT_TRUE(browser_survived);
+    if (!browser_survived)
+      return false;
+
+    bool visible = !wait_for_open;
+    if (!browser->IsShelfVisible(&visible))
+      continue;
+    if (visible == wait_for_open)
+      return true;  // Got the download shelf.
+  }
+
+  ADD_FAILURE() << "Timeout reached in WaitForDownloadShelfVisibilityChange";
+  return false;
+}
