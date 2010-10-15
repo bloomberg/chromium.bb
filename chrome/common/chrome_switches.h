@@ -121,6 +121,7 @@ extern const char kEnableAeroPeekTabs[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableBackgroundMode[];
 extern const char kEnableBenchmarking[];
+extern const char kEnableClearServerData[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableCloudPrint[];
 extern const char kEnableConnectBackupJobs[];

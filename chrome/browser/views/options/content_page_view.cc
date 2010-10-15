@@ -71,6 +71,7 @@ ContentPageView::ContentPageView(Profile* profile)
       sync_status_label_(NULL),
       sync_start_stop_button_(NULL),
       sync_customize_button_(NULL),
+      privacy_dashboard_link_(NULL),
       sync_service_(NULL),
       OptionsPageView(profile) {
   if (profile->GetProfileSyncService()) {
@@ -158,6 +159,10 @@ void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
   if (source == sync_action_link_) {
     DCHECK(sync_service_ && !sync_service_->IsManaged());
     sync_service_->ShowLoginDialog(GetWindow()->GetNativeWindow());
+    return;
+  }
+  if (source == privacy_dashboard_link_) {
+    BrowserList::GetLastActive()->OpenPrivacyDashboardTabAndActivate();
     return;
   }
   NOTREACHED() << "Invalid link source.";
@@ -409,6 +414,12 @@ void ContentPageView::InitSyncGroup() {
   sync_action_link_->set_collapse_when_hidden(true);
   sync_action_link_->SetController(this);
 
+  privacy_dashboard_link_ = new views::Link();
+  privacy_dashboard_link_->set_collapse_when_hidden(true);
+  privacy_dashboard_link_->SetController(this);
+  privacy_dashboard_link_->SetText(
+      l10n_util::GetString(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
+
   sync_start_stop_button_ = new views::NativeButton(this, std::wstring());
   sync_customize_button_ = new views::NativeButton(this, std::wstring());
 
@@ -438,6 +449,7 @@ void ContentPageView::InitSyncGroup() {
   layout->AddView(sync_customize_button_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(privacy_dashboard_link_, 3, 1);
 
   sync_group_ = new OptionsGroupView(contents,
       l10n_util::GetString(IDS_SYNC_OPTIONS_GROUP_NAME), std::wstring(), true);

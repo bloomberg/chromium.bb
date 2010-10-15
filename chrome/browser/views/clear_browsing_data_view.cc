@@ -220,7 +220,6 @@ void ClearBrowsingDataView2::InitControlLayout() {
                   views::GridLayout::CENTER);
 
   layout->AddPaddingRow(0, kUnrelatedControlLargeVerticalSpacing);
-  layout->AddPaddingRow(0, kUnrelatedControlLargeVerticalSpacing);
 
   // Left-align the throbber
   layout->StartRow(0, two_column_set_id);
@@ -229,7 +228,7 @@ void ClearBrowsingDataView2::InitControlLayout() {
 
   // Right-align the clear button
   layout->AddView(clear_browsing_data_button_, 1, 1,
-                  GridLayout::TRAILING, GridLayout::TRAILING);
+                  GridLayout::TRAILING, GridLayout::CENTER);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -285,6 +284,14 @@ void ClearBrowsingDataView2::ButtonPressed(
   // When no checkbox is checked we should not have the action button enabled.
   // This forces the button to evaluate what state they should be in.
   UpdateControlEnabledState();
+}
+
+void ClearBrowsingDataView2::LinkActivated(views::Link* source,
+                                          int event_flags) {
+  Browser* browser = Browser::Create(profile_);
+  browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
+                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

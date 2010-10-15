@@ -387,6 +387,10 @@ const char kEnableBackgroundMode[] = "enable-background-mode";
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 
+// This flag enables UI for clearing server data.  Temporarily in place
+// until there's a server endpoint deployed.
+const char kEnableClearServerData[]         = "enable-clear-server-data";
+
 // This applies only when the process type is "service". Enables the
 // Cloud Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";

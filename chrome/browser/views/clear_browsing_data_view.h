@@ -40,7 +40,8 @@ class ClearBrowsingDataView2 : public views::View,
                                public views::ButtonListener,
                                public ComboboxModel,
                                public views::Combobox::Listener,
-                               public BrowsingDataRemover::Observer {
+                               public BrowsingDataRemover::Observer,
+                               public views::LinkController {
  public:
   ClearBrowsingDataView2(Profile* profile, ClearDataView* clear_data_view);
 
@@ -59,6 +60,9 @@ class ClearBrowsingDataView2 : public views::View,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Overriden from views::LinkController:
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
   // Enable/disable clearing from this tab
   void SetAllowClear(bool allow);

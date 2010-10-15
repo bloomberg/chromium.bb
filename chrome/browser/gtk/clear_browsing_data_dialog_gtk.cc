@@ -230,39 +230,46 @@ GtkWidget* ClearBrowsingDataDialogGtk::BuildOtherDataPage() {
       l10n_util::GetStringUTF8(IDS_CLEAR_DATA_ADOBE_FLASH_TITLE),
       adobe_flash_vbox, false);
 
-  GtkWidget* clear_sync_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  GtkWidget* description = gtk_label_new(l10n_util::GetStringUTF8(
-      IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION).c_str());
-  gtk_misc_set_alignment(GTK_MISC(description), 0, 0);
-  gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
-  gtk_box_pack_start(GTK_BOX(clear_sync_vbox), description, FALSE, FALSE, 0);
+  bool allow_clear_server_data_ui =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClearServerData);
 
-  GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  // Only build this portion if behind a flag.
+  if (allow_clear_server_data_ui) {
+    GtkWidget* clear_sync_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+    GtkWidget* description = gtk_label_new(l10n_util::GetStringUTF8(
+        IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION).c_str());
+    gtk_misc_set_alignment(GTK_MISC(description), 0, 0);
+    gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
+    gtk_box_pack_start(GTK_BOX(clear_sync_vbox), description, FALSE, FALSE, 0);
 
-  clear_server_data_button_ = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_CLEAR_DATA_CLEAR_BUTTON).c_str());
-  g_signal_connect(clear_server_data_button_, "clicked",
-                   G_CALLBACK(OnClearSyncDataClickThunk), this);
-  gtk_box_pack_start(GTK_BOX(button_hbox), clear_server_data_button_,
-                     FALSE, FALSE, 0);
+    GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
 
-  clear_server_status_label_ = gtk_label_new(NULL);
-  gtk_box_pack_start(GTK_BOX(button_hbox), clear_server_status_label_,
-                     FALSE, FALSE, 0);
+    clear_server_data_button_ = gtk_button_new_with_label(
+        l10n_util::GetStringUTF8(IDS_CLEAR_DATA_CLEAR_BUTTON).c_str());
+    g_signal_connect(clear_server_data_button_, "clicked",
+                     G_CALLBACK(OnClearSyncDataClickThunk), this);
+    gtk_box_pack_start(GTK_BOX(button_hbox), clear_server_data_button_,
+                       FALSE, FALSE, 0);
 
-  gtk_box_pack_start(GTK_BOX(clear_sync_vbox), button_hbox,
-                     FALSE, FALSE, 0);
+    clear_server_status_label_ = gtk_label_new(NULL);
+    gtk_box_pack_start(GTK_BOX(button_hbox), clear_server_status_label_,
+                       FALSE, FALSE, 0);
 
-  GtkWidget* dashboard_link = AddDescriptionAndLink(
-      clear_sync_vbox,
-      IDS_CLEAR_DASHBOARD_DESCRIPTION,
-      IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL);
-  g_signal_connect(G_OBJECT(dashboard_link), "clicked",
-                   G_CALLBACK(OnPrivacyLinkClickedThunk), this);
+    gtk_box_pack_start(GTK_BOX(clear_sync_vbox), button_hbox,
+                       FALSE, FALSE, 0);
 
-  options_builder->AddOptionGroup(
-      l10n_util::GetStringUTF8(IDS_CLEAR_DATA_CHROME_SYNC_TITLE),
-      clear_sync_vbox, false);
+    GtkWidget* dashboard_link = AddDescriptionAndLink(
+        clear_sync_vbox,
+        IDS_CLEAR_DASHBOARD_DESCRIPTION,
+        IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL);
+    g_signal_connect(G_OBJECT(dashboard_link), "clicked",
+                     G_CALLBACK(OnPrivacyLinkClickedThunk), this);
+
+    options_builder->AddOptionGroup(
+        l10n_util::GetStringUTF8(IDS_CLEAR_DATA_CHROME_SYNC_TITLE),
+        clear_sync_vbox, false);
+  }
 
   UpdateClearButtonState(false);
 
@@ -447,8 +454,10 @@ int ClearBrowsingDataDialogGtk::GetCheckedItems() {
 
 void ClearBrowsingDataDialogGtk::UpdateClearButtonState(
     bool delete_in_progress) {
-  gtk_widget_set_sensitive(clear_server_data_button_,
-                           sync_service_ != NULL &&
-                           sync_service_->HasSyncSetupCompleted() &&
-                           !delete_in_progress);
+  if (clear_server_data_button_) {
+    gtk_widget_set_sensitive(clear_server_data_button_,
+                             sync_service_ != NULL &&
+                             sync_service_->HasSyncSetupCompleted() &&
+                             !delete_in_progress);
+  }
 }
