@@ -43,7 +43,7 @@
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/bookmark_bar_view.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/cocoa/bookmark_bar_constants.h"
+#include "chrome/browser/cocoa/bookmarks/bookmark_bar_constants.h"
 #elif defined(OS_POSIX)
 #include "chrome/browser/gtk/bookmark_bar_gtk.h"
 #endif

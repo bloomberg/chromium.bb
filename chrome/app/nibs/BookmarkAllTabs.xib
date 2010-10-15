@@ -939,7 +939,7 @@
 					<string key="superclassName">BookmarkEditorBaseController</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/bookmark_all_tabs_controller.h</string>
+						<string key="minorKey">browser/cocoa/bookmarks/bookmark_all_tabs_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -979,7 +979,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/bookmark_editor_base_controller.h</string>
+						<string key="minorKey">browser/cocoa/bookmarks/bookmark_editor_base_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

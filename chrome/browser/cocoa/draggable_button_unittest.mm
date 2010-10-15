@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/draggable_button.h"
 #import "chrome/browser/cocoa/test_event_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

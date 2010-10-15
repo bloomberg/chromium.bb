@@ -8,7 +8,7 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/cocoa/bookmark_drag_source.h"
+#include "chrome/browser/cocoa/bookmarks/bookmark_drag_source.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 
 NSString* const kBookmarkDictionaryListPboardType =

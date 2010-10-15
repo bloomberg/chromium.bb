@@ -12,7 +12,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
-#import "chrome/browser/cocoa/bookmark_bar_constants.h"
+#import "chrome/browser/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"

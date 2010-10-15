@@ -889,7 +889,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/bookmark_bubble_controller.h</string>
+						<string key="minorKey">browser/cocoa/bookmarks/bookmark_bubble_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
