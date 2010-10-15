@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,37 +26,46 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// module_factory.h: ModuleFactory a factory that provides
-// an interface for creating a Module and deferring instantiation to subclasses
-// BasicModuleFactory and FastModuleFactory.
 
+// static_address_map-inl.h: StaticAddressMap implementation.
+//
+// See static_address_map.h for documentation.
+//
 // Author: Siyang Xie (lambxsy@google.com)
 
-#ifndef PROCESSOR_MODULE_FACTORY_H__
-#define PROCESSOR_MODULE_FACTORY_H__
+#ifndef PROCESSOR_STATIC_ADDRESS_MAP_INL_H__
+#define PROCESSOR_STATIC_ADDRESS_MAP_INL_H__
 
-#include "processor/source_line_resolver_base_types.h"
-#include "processor/basic_source_line_resolver_types.h"
+#include "processor/static_address_map.h"
+
+#include "processor/logging.h"
 
 namespace google_breakpad {
 
-class ModuleFactory {
- public:
-  virtual ~ModuleFactory() { };
-  virtual SourceLineResolverBase::Module* CreateModule(
-      const string &name) const = 0;
-};
+template<typename AddressType, typename EntryType>
+bool StaticAddressMap<AddressType, EntryType>::Retrieve(
+    const AddressType &address,
+    const EntryType *&entry, AddressType *entry_address) const {
 
-class BasicModuleFactory : public ModuleFactory {
- public:
-  virtual ~BasicModuleFactory() { }
-  virtual BasicSourceLineResolver::Module* CreateModule(
-      const string &name) const {
-    return new BasicSourceLineResolver::Module(name);
-  }
-};
+  // upper_bound gives the first element whose key is greater than address,
+  // but we want the first element whose key is less than or equal to address.
+  // Decrement the iterator to get there, but not if the upper_bound already
+  // points to the beginning of the map - in that case, address is lower than
+  // the lowest stored key, so return false.
+
+  MapConstIterator iterator = map_.upper_bound(address);
+  if (iterator == map_.begin())
+    return false;
+  --iterator;
+
+  entry = iterator.GetValuePtr();
+  // Make sure AddressType is a copyable basic type
+  if (entry_address)
+    *entry_address = iterator.GetKey();
+
+  return true;
+}
 
 }  // namespace google_breakpad
 
-#endif  // PROCESSOR_MODULE_FACTORY_H__
+#endif  // PROCESSOR_STATIC_ADDRESS_MAP_INL_H__

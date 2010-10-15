@@ -1,4 +1,4 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,33 +27,32 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// address_map.h: Address maps.
+// static_address_map.h: StaticAddressMap.
 //
-// An address map contains a set of objects keyed by address.  Objects are
-// retrieved from the map by returning the object with the highest key less
-// than or equal to the lookup key.
+// StaticAddressMap is a wrapper class of StaticMap, just as AddressMap wraps
+// std::map.  StaticAddressMap provides read-only Retrieve() operation, similar
+// as AddressMap.  However, the difference between StaticAddressMap and
+// AddressMap is that StaticAddressMap does not support dynamic operation
+// Store() due to the static nature of the underlying StaticMap.
 //
-// Author: Mark Mentovai
+// See address_map.h for reference.
+//
+// Author: Siyang Xie (lambxsy@google.com)
 
-#ifndef PROCESSOR_ADDRESS_MAP_H__
-#define PROCESSOR_ADDRESS_MAP_H__
+#ifndef PROCESSOR_STATIC_ADDRESS_MAP_H__
+#define PROCESSOR_STATIC_ADDRESS_MAP_H__
 
-#include <map>
+#include "processor/static_map-inl.h"
 
 namespace google_breakpad {
 
-// Forward declarations (for later friend declarations).
-template<class, class> class AddressMapSerializer;
-
+// AddressType MUST be a basic type, e.g.: integer types etc
+// EntryType could be a complex type, so we retrieve its pointer instead.
 template<typename AddressType, typename EntryType>
-class AddressMap {
+class StaticAddressMap {
  public:
-  AddressMap() : map_() {}
-
-  // Inserts an entry into the map.  Returns false without storing the entry
-  // if an entry is already stored in the map at the same address as specified
-  // by the address argument.
-  bool Store(const AddressType &address, const EntryType &entry);
+  StaticAddressMap(): map_() { }
+  explicit StaticAddressMap(const char *map_data): map_(map_data) { }
 
   // Locates the entry stored at the highest address less than or equal to
   // the address argument.  If there is no such range, returns false.  The
@@ -61,24 +60,19 @@ class AddressMap {
   // entry_address is not NULL, it will be set to the address that the entry
   // was stored at.
   bool Retrieve(const AddressType &address,
-                EntryType *entry, AddressType *entry_address) const;
-
-  // Empties the address map, restoring it to the same state as when it was
-  // initially created.
-  void Clear();
+                const EntryType *&entry, AddressType *entry_address) const;
 
  private:
-  friend class AddressMapSerializer<AddressType, EntryType>;
-
+  friend class ModuleComparer;
   // Convenience types.
-  typedef std::map<AddressType, EntryType> AddressToEntryMap;
+  typedef StaticAddressMap* SelfPtr;
+  typedef StaticMap<AddressType, EntryType> AddressToEntryMap;
   typedef typename AddressToEntryMap::const_iterator MapConstIterator;
-  typedef typename AddressToEntryMap::value_type MapValue;
 
-  // Maps the address of each entry to an EntryType.
   AddressToEntryMap map_;
 };
 
 }  // namespace google_breakpad
 
-#endif  // PROCESSOR_ADDRESS_MAP_H__
+#endif  // PROCESSOR_STATIC_ADDRESS_MAP_H__
+

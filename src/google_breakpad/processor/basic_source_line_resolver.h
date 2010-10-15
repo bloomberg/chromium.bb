@@ -64,6 +64,7 @@ class BasicSourceLineResolver : public SourceLineResolverBase {
  private:
   // friend declarations:
   friend class BasicModuleFactory;
+  template<class> friend class SimpleSerializer;
 
   // Function derives from SourceLineResolverBase::Function.
   struct Function;

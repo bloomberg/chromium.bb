@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,36 +27,37 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// module_factory.h: ModuleFactory a factory that provides
-// an interface for creating a Module and deferring instantiation to subclasses
-// BasicModuleFactory and FastModuleFactory.
-
+// simple_serializer.h: SimpleSerializer is a template for calculating size and
+// writing to specific memory location for objects of primitive types, C-style
+// string, string, breakpad types/structs etc.
+// All specializations of SimpleSerializer template are defined in the
+// "simple_serializer-inl.h" file.
+//
 // Author: Siyang Xie (lambxsy@google.com)
 
-#ifndef PROCESSOR_MODULE_FACTORY_H__
-#define PROCESSOR_MODULE_FACTORY_H__
+#ifndef PROCESSOR_SIMPLE_SERIALIZER_H__
+#define PROCESSOR_SIMPLE_SERIALIZER_H__
 
-#include "processor/source_line_resolver_base_types.h"
-#include "processor/basic_source_line_resolver_types.h"
+#include <sys/types.h>
 
 namespace google_breakpad {
 
-class ModuleFactory {
- public:
-  virtual ~ModuleFactory() { };
-  virtual SourceLineResolverBase::Module* CreateModule(
-      const string &name) const = 0;
-};
+typedef u_int64_t MemAddr;
 
-class BasicModuleFactory : public ModuleFactory {
+// Default implementation of SimpleSerializer template.
+// Specializations are defined in "simple_serializer-inl.h".
+template<class Type> class SimpleSerializer {
  public:
-  virtual ~BasicModuleFactory() { }
-  virtual BasicSourceLineResolver::Module* CreateModule(
-      const string &name) const {
-    return new BasicSourceLineResolver::Module(name);
+  // Calculate and return the size of the 'item'.
+  static size_t SizeOf(const Type &item) { return sizeof(item); }
+  // Write 'item' to memory location 'dest', and return to the "end" address of
+  // data written, i.e., the address after the final byte written.
+  static char *Write(const Type &item, char *dest) {
+    new (dest) Type(item);
+    return dest + SizeOf(item);
   }
 };
 
 }  // namespace google_breakpad
 
-#endif  // PROCESSOR_MODULE_FACTORY_H__
+#endif  // PROCESSOR_SIMPLE_SERIALIZER_H__

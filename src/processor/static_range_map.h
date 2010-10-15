@@ -1,4 +1,4 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,45 +26,36 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-// range_map.h: Range maps.
 //
-// A range map associates a range of addresses with a specific object.  This
-// is useful when certain objects of variable size are located within an
-// address space.  The range map makes it simple to determine which object is
-// associated with a specific address, which may be any address within the
-// range associated with an object.
+// static_range_map.h: StaticRangeMap.
 //
-// Author: Mark Mentovai
+// StaticRangeMap is similar as RangeMap.  However, StaticRangeMap wraps a
+// StaticMap instead of std::map, and does not support dynamic operations like
+// StoreRange(...).  StaticRangeMap provides same Retrieve*() interfaces as
+// RangeMap.  Please see range_map.h for more documentation.
+//
+// Author: Siyang Xie (lambxsy@google.com)
 
-#ifndef PROCESSOR_RANGE_MAP_H__
-#define PROCESSOR_RANGE_MAP_H__
+#ifndef PROCESSOR_STATIC_RANGE_MAP_H__
+#define PROCESSOR_STATIC_RANGE_MAP_H__
 
 
-#include <map>
-
+#include "processor/static_map-inl.h"
 
 namespace google_breakpad {
 
-// Forward declarations (for later friend declarations of specialized template).
-template<class, class> class RangeMapSerializer;
-
+// AddressType is basic type, e.g.: integer types, pointers etc
+// EntryType could be a complex type, so we retrieve its pointer instead.
 template<typename AddressType, typename EntryType>
-class RangeMap {
+class StaticRangeMap {
  public:
-  RangeMap() : map_() {}
-
-  // Inserts a range into the map.  Returns false for a parameter error,
-  // or if the location of the range would conflict with a range already
-  // stored in the map.
-  bool StoreRange(const AddressType &base,
-                  const AddressType &size,
-                  const EntryType &entry);
+  StaticRangeMap(): map_() { }
+  explicit StaticRangeMap(const char *memory): map_(memory) { }
 
   // Locates the range encompassing the supplied address.  If there is
   // no such range, returns false.  entry_base and entry_size, if non-NULL,
   // are set to the base and size of the entry's range.
-  bool RetrieveRange(const AddressType &address, EntryType *entry,
+  bool RetrieveRange(const AddressType &address, const EntryType *&entry,
                      AddressType *entry_base, AddressType *entry_size) const;
 
   // Locates the range encompassing the supplied address, if one exists.
@@ -72,7 +63,7 @@ class RangeMap {
   // to the supplied address that is lower than the address.  Returns false
   // if no range meets these criteria.  entry_base and entry_size, if
   // non-NULL, are set to the base and size of the entry's range.
-  bool RetrieveNearestRange(const AddressType &address, EntryType *entry,
+  bool RetrieveNearestRange(const AddressType &address, const EntryType *&entry,
                             AddressType *entry_base, AddressType *entry_size)
                             const;
 
@@ -83,49 +74,33 @@ class RangeMap {
   // range.
   //
   // RetrieveRangeAtIndex is not optimized for speedy operation.
-  bool RetrieveRangeAtIndex(int index, EntryType *entry,
+  bool RetrieveRangeAtIndex(int index, const EntryType *&entry,
                             AddressType *entry_base, AddressType *entry_size)
                             const;
 
   // Returns the number of ranges stored in the RangeMap.
-  int GetCount() const;
-
-  // Empties the range map, restoring it to the state it was when it was
-  // initially created.
-  void Clear();
+  inline unsigned int GetCount() const { return map_.size(); }
 
  private:
-  // Friend declarations.
-  friend class RangeMapSerializer<AddressType, EntryType>;
-
+  friend class ModuleComparer;
   class Range {
    public:
-    Range(const AddressType &base, const EntryType &entry)
-        : base_(base), entry_(entry) {}
-
-    AddressType base() const { return base_; }
-    EntryType entry() const { return entry_; }
-
-   private:
-    // The base address of the range.  The high address does not need to
-    // be stored, because RangeMap uses it as the key to the map.
-    const AddressType base_;
-
-    // The entry corresponding to a range.
-    const EntryType entry_;
+    AddressType base() const {
+      return *(reinterpret_cast<const AddressType*>(this));
+    }
+    const EntryType* entryptr() const {
+      return reinterpret_cast<const EntryType*>(this + sizeof(AddressType));
+    }
   };
 
   // Convenience types.
-  typedef std::map<AddressType, Range> AddressToRangeMap;
+  typedef StaticRangeMap* SelfPtr;
+  typedef StaticMap<AddressType, Range> AddressToRangeMap;
   typedef typename AddressToRangeMap::const_iterator MapConstIterator;
-  typedef typename AddressToRangeMap::value_type MapValue;
 
-  // Maps the high address of each range to a EntryType.
   AddressToRangeMap map_;
 };
 
-
 }  // namespace google_breakpad
 
-
-#endif  // PROCESSOR_RANGE_MAP_H__
+#endif  // PROCESSOR_STATIC_RANGE_MAP_H__
