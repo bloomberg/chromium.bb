@@ -82,13 +82,13 @@ class FileSystemOperation {
   scoped_refptr<base::MessageLoopProxy> proxy_;
 
  private:
-  // Callbacks for above methods.
-  void DidCreateFileExclusive(
-      base::PlatformFileError rv, base::PassPlatformFile file, bool created);
+  // Callback for CreateFile for |exclusive|=true cases.
+  void DidEnsureFileExistsExclusive(base::PlatformFileError rv,
+                                    bool created);
 
-  // Returns success even if the file already existed.
-  void DidCreateFileNonExclusive(
-      base::PlatformFileError rv, base::PassPlatformFile file, bool created);
+  // Callback for CreateFile for |exclusive|=false cases.
+  void DidEnsureFileExistsNonExclusive(base::PlatformFileError rv,
+                                       bool created);
 
   // Generic callback that translates platform errors to WebKit error codes.
   void DidFinishFileOperation(base::PlatformFileError rv);
