@@ -165,7 +165,8 @@ TEST_F(ExtensionProxyUITest, MoveBrowserAction) {
   ASSERT_FALSE(simple_extension_->MoveBrowserAction(2));
 }
 
-TEST_F(ExtensionProxyUITest, GetProperty) {
+// Flaky, http://crbug.com/59440.
+TEST_F(ExtensionProxyUITest, FLAKY_GetProperty) {
   ASSERT_NO_FATAL_FAILURE(simple_extension_->
                           EnsureIdMatches("aiglobglfckejlcpcbdokbkbjeemfhno"));
   ASSERT_NO_FATAL_FAILURE(simple_extension_->
