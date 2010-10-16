@@ -154,7 +154,8 @@ namespace media {
 MftH264DecodeEngine::MftH264DecodeEngine(bool use_dxva)
     : use_dxva_(use_dxva),
       state_(kUninitialized),
-      event_handler_(NULL) {
+      event_handler_(NULL),
+      context_(NULL) {
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
   memset(&config_, 0, sizeof(config_));
