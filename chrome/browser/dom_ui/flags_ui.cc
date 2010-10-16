@@ -66,9 +66,8 @@ void FlagsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE));
   localized_strings.SetString("flagsWarningHeader", l10n_util::GetStringUTF16(
       IDS_FLAGS_WARNING_HEADER));
-  localized_strings.SetString("flagsBlurb", l10n_util::GetStringFUTF16(
-      IDS_FLAGS_WARNING_TEXT,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings.SetString("flagsBlurb", l10n_util::GetStringUTF16(
+      IDS_FLAGS_WARNING_TEXT));
   localized_strings.SetString("flagsRestartNotice", l10n_util::GetStringFUTF16(
       IDS_FLAGS_RESTART_NOTICE,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
