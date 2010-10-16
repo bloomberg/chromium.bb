@@ -19,10 +19,13 @@ ServerNotifierThread::ServerNotifierThread(
     const notifier::NotifierOptions& notifier_options,
     const std::string& state, StateWriter* state_writer)
     : notifier::MediatorThreadImpl(notifier_options),
-      state_(state), state_writer_(state_writer) {
+      state_(state),
+      state_writers_(new ObserverListThreadSafe<StateWriter>()),
+      state_writer_(state_writer) {
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
             notifier_options.notification_method);
   DCHECK(state_writer_);
+  state_writers_->AddObserver(state_writer_);
 }
 
 ServerNotifierThread::~ServerNotifierThread() {}
@@ -46,6 +49,7 @@ void ServerNotifierThread::SubscribeForUpdates(
 
 void ServerNotifierThread::Logout() {
   DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
+  state_writers_->RemoveObserver(state_writer_);
   state_writer_ = NULL;
   worker_message_loop()->PostTask(
       FROM_HERE,
@@ -72,31 +76,23 @@ void ServerNotifierThread::OnInvalidate(syncable::ModelType model_type) {
     LOG(INFO) << "OnInvalidate: " << syncable::ModelTypeToString(model_type);
   }
   // TODO(akalin): Signal notification only for the invalidated types.
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ServerNotifierThread::SignalIncomingNotification));
+  // TODO(akalin): Fill this in with something meaningful.
+  IncomingNotificationData notification_data;
+  observers_->Notify(&Observer::OnIncomingNotification, notification_data);
 }
 
 void ServerNotifierThread::OnInvalidateAll() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   LOG(INFO) << "OnInvalidateAll";
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ServerNotifierThread::SignalIncomingNotification));
+  // TODO(akalin): Fill this in with something meaningful.
+  IncomingNotificationData notification_data;
+  observers_->Notify(&Observer::OnIncomingNotification, notification_data);
 }
 
 void ServerNotifierThread::WriteState(const std::string& state) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   VLOG(1) << "WriteState";
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ServerNotifierThread::SignalWriteState, state));
+  state_writers_->Notify(&StateWriter::WriteState, state);
 }
 
 void ServerNotifierThread::OnDisconnect() {
@@ -132,34 +128,7 @@ void ServerNotifierThread::RegisterTypesAndSignalSubscribed() {
     return;
   }
   chrome_invalidation_client_->RegisterTypes();
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &ServerNotifierThread::SignalSubscribed));
-}
-
-void ServerNotifierThread::SignalSubscribed() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  if (delegate_) {
-    delegate_->OnSubscriptionStateChange(true);
-  }
-}
-
-void ServerNotifierThread::SignalIncomingNotification() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  if (delegate_) {
-    // TODO(akalin): Fill this in with something meaningful.
-    IncomingNotificationData notification_data;
-    delegate_->OnIncomingNotification(notification_data);
-  }
-}
-
-void ServerNotifierThread::SignalWriteState(const std::string& state) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  if (state_writer_) {
-    state_writer_->WriteState(state);
-  }
+  observers_->Notify(&Observer::OnSubscriptionStateChange, true);
 }
 
 void ServerNotifierThread::StopInvalidationListener() {

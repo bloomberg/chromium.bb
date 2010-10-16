@@ -16,6 +16,8 @@
 #include <string>
 #include <vector>
 
+#include "base/observer_list_threadsafe.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
@@ -73,21 +75,15 @@ class ServerNotifierThread
   // Posted to the worker thread by SubscribeForUpdates().
   void RegisterTypesAndSignalSubscribed();
 
-  // Signal to the delegate that we're subscribed.
-  void SignalSubscribed();
-
-  // Signal to the delegate that we have an incoming notification.
-  void SignalIncomingNotification();
-
-  // Signal to the delegate to write the state.
-  void SignalWriteState(const std::string& state);
-
   // Called by StartInvalidationListener() and posted to the worker
   // thread by Stop().
   void StopInvalidationListener();
 
   std::string state_;
-  // May be NULL.
+  // Hack to get the nice thread-safe behavior for |state_writer_|.
+  scoped_refptr<ObserverListThreadSafe<StateWriter> > state_writers_;
+  // We still need to keep |state_writer_| around to remove it from
+  // |state_writers_|.
   StateWriter* state_writer_;
   scoped_ptr<ChromeInvalidationClient> chrome_invalidation_client_;
 };

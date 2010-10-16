@@ -23,9 +23,9 @@ class MediatorThread {
  public:
   virtual ~MediatorThread() {}
 
-  class Delegate {
+  class Observer {
    public:
-    virtual ~Delegate() {}
+    virtual ~Observer() {}
 
     virtual void OnConnectionStateChange(bool logged_in) = 0;
 
@@ -37,10 +37,13 @@ class MediatorThread {
     virtual void OnOutgoingNotification() = 0;
   };
 
-  // |delegate| can be NULL if we're shutting down.
-  // TODO(akalin): Handle messages during shutdown gracefully so that
-  // we don't have to deal with NULL delegates.
-  virtual void SetDelegate(Delegate* delegate) = 0;
+  // Must be thread-safe (i.e., callable on any thread).
+  virtual void AddObserver(Observer* observer) = 0;
+
+  // Must be called on the same thread that AddObserver() was called
+  // with the given observer.
+  virtual void RemoveObserver(Observer* observer) = 0;
+
   virtual void Login(const buzz::XmppClientSettings& settings) = 0;
   virtual void Logout() = 0;
   virtual void Start() = 0;

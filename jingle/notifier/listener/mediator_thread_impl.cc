@@ -25,7 +25,7 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 namespace notifier {
 
 MediatorThreadImpl::MediatorThreadImpl(const NotifierOptions& notifier_options)
-    : delegate_(NULL),
+    : observers_(new ObserverListThreadSafe<Observer>()),
       parent_message_loop_(MessageLoop::current()),
       notifier_options_(notifier_options),
       worker_thread_("MediatorThread worker thread") {
@@ -42,9 +42,12 @@ MediatorThreadImpl::~MediatorThreadImpl() {
   }
 }
 
-void MediatorThreadImpl::SetDelegate(Delegate* delegate) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  delegate_ = delegate;
+void MediatorThreadImpl::AddObserver(Observer* observer) {
+  observers_->AddObserver(observer);
+}
+
+void MediatorThreadImpl::RemoveObserver(Observer* observer) {
+  observers_->RemoveObserver(observer);
 }
 
 void MediatorThreadImpl::Start() {
@@ -71,13 +74,7 @@ void MediatorThreadImpl::Logout() {
       NewRunnableMethod(this, &MediatorThreadImpl::DoDisconnect));
   // TODO(akalin): Decomp this into a separate stop method.
   worker_thread_.Stop();
-  // Process any messages the worker thread may be posted on our
-  // thread.
-  bool old_state = parent_message_loop_->NestableTasksAllowed();
-  parent_message_loop_->SetNestableTasksAllowed(true);
-  parent_message_loop_->RunAllPending();
-  parent_message_loop_->SetNestableTasksAllowed(old_state);
-  // worker_thread_ should have cleaned all this up.
+  // worker_thread_ should have cleaned this up.
   CHECK(!login_.get());
 }
 
@@ -219,90 +216,31 @@ void MediatorThreadImpl::DoSendNotification(
 void MediatorThreadImpl::OnIncomingNotification(
     const IncomingNotificationData& notification_data) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &MediatorThreadImpl::OnIncomingNotificationOnParentThread,
-          notification_data));
-}
-
-void MediatorThreadImpl::OnIncomingNotificationOnParentThread(
-    const IncomingNotificationData& notification_data) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  if (delegate_) {
-    delegate_->OnIncomingNotification(notification_data);
-  }
+  observers_->Notify(&Observer::OnIncomingNotification, notification_data);
 }
 
 void MediatorThreadImpl::OnOutgoingNotification(bool success) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &MediatorThreadImpl::OnOutgoingNotificationOnParentThread,
-          success));
-}
-
-void MediatorThreadImpl::OnOutgoingNotificationOnParentThread(
-    bool success) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  if (delegate_ && success) {
-    delegate_->OnOutgoingNotification();
+  if (success) {
+    observers_->Notify(&Observer::OnOutgoingNotification);
   }
 }
 
 void MediatorThreadImpl::OnConnect(base::WeakPtr<talk_base::Task> base_task) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   base_task_ = base_task;
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &MediatorThreadImpl::OnConnectOnParentThread));
-}
-
-void MediatorThreadImpl::OnConnectOnParentThread() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  if (delegate_) {
-    delegate_->OnConnectionStateChange(true);
-  }
+  observers_->Notify(&Observer::OnConnectionStateChange, true);
 }
 
 void MediatorThreadImpl::OnDisconnect() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   base_task_.reset();
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &MediatorThreadImpl::OnDisconnectOnParentThread));
-}
-
-void MediatorThreadImpl::OnDisconnectOnParentThread() {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  if (delegate_) {
-    delegate_->OnConnectionStateChange(false);
-  }
+  observers_->Notify(&Observer::OnConnectionStateChange, false);
 }
 
 void MediatorThreadImpl::OnSubscriptionStateChange(bool success) {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
-  parent_message_loop_->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &MediatorThreadImpl::OnSubscriptionStateChangeOnParentThread,
-          success));
-}
-
-void MediatorThreadImpl::OnSubscriptionStateChangeOnParentThread(
-    bool success) {
-  DCHECK_EQ(MessageLoop::current(), parent_message_loop_);
-  if (delegate_) {
-    delegate_->OnSubscriptionStateChange(success);
-  }
+  observers_->Notify(&Observer::OnSubscriptionStateChange, success);
 }
 
 }  // namespace notifier

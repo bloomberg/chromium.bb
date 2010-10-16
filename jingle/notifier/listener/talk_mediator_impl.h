@@ -23,7 +23,7 @@
 namespace notifier {
 
 class TalkMediatorImpl
-    : public TalkMediator, public MediatorThread::Delegate {
+    : public TalkMediator, public MediatorThread::Observer {
  public:
   // Takes ownership of |mediator_thread|.
   TalkMediatorImpl(

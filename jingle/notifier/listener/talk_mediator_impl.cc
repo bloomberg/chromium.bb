@@ -34,7 +34,7 @@ TalkMediatorImpl::~TalkMediatorImpl() {
 bool TalkMediatorImpl::Login() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   // Connect to the mediator thread and start processing messages.
-  mediator_thread_->SetDelegate(this);
+  mediator_thread_->AddObserver(this);
   if (state_.initialized && !state_.logging_in && !state_.logged_in) {
     state_.logging_in = true;
     mediator_thread_->Login(xmpp_settings_);
@@ -52,7 +52,7 @@ bool TalkMediatorImpl::Logout() {
     state_.subscribed = 0;
     // We do not want to be called back during logout since we may be
     // closing.
-    mediator_thread_->SetDelegate(NULL);
+    mediator_thread_->RemoveObserver(this);
     mediator_thread_->Logout();
     return true;
   }

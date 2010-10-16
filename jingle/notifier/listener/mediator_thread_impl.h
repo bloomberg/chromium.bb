@@ -24,6 +24,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/observer_list_threadsafe.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "jingle/notifier/base/notifier_options.h"
@@ -60,7 +62,8 @@ class MediatorThreadImpl
   explicit MediatorThreadImpl(const NotifierOptions& notifier_options);
   virtual ~MediatorThreadImpl();
 
-  virtual void SetDelegate(Delegate* delegate);
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
   // Start the thread.
   virtual void Start();
@@ -89,7 +92,7 @@ class MediatorThreadImpl
   void OnConnect(base::WeakPtr<talk_base::Task> parent);
   void OnSubscriptionStateChange(bool success);
 
-  Delegate* delegate_;
+  scoped_refptr<ObserverListThreadSafe<Observer> > observers_;
   MessageLoop* parent_message_loop_;
   base::WeakPtr<talk_base::Task> base_task_;
 
@@ -101,15 +104,6 @@ class MediatorThreadImpl
   void DoListenForUpdates();
   void DoSendNotification(
       const OutgoingNotificationData& data);
-
-  // Equivalents of the above functions called from the parent thread.
-  void OnIncomingNotificationOnParentThread(
-      const IncomingNotificationData& notification_data);
-  void OnOutgoingNotificationOnParentThread(bool success);
-  void OnConnectOnParentThread();
-  void OnDisconnectOnParentThread();
-  void OnSubscriptionStateChangeOnParentThread(
-      bool success);
 
   const NotifierOptions notifier_options_;
 
