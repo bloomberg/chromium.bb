@@ -57,7 +57,7 @@ WorkerThread::WorkerThread() {
       !command_line.HasSwitch(switches::kDisableWebSockets));
 
   WebRuntimeFeatures::enableFileSystem(
-      command_line.HasSwitch(switches::kEnableFileSystem));
+      !command_line.HasSwitch(switches::kDisableFileSystem));
 }
 
 WorkerThread::~WorkerThread() {

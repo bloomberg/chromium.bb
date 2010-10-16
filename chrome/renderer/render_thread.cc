@@ -934,7 +934,7 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableSpeechInput(IsSpeechInputEnabled(command_line));
 
   WebRuntimeFeatures::enableFileSystem(
-      command_line.HasSwitch(switches::kEnableFileSystem));
+      !command_line.HasSwitch(switches::kDisableFileSystem));
 }
 
 void RenderThread::IdleHandler() {

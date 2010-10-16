@@ -142,7 +142,7 @@ bool WorkerProcessHost::Init() {
 #if defined(OS_WIN)
     switches::kDisableDesktopNotifications,
 #endif
-    switches::kEnableFileSystem,
+    switches::kDisableFileSystem,
   };
   cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(), kSwitchNames,
                              arraysize(kSwitchNames));
