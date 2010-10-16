@@ -1225,7 +1225,11 @@ void BrowserView::ShowPageInfo(Profile* profile,
   parent = GetNormalBrowserWindowForBrowser(browser(), profile);
 #endif  // defined(OS_CHROMEOS)
 
-  browser::ShowPageInfoBubble(parent, profile, url, ssl, show_history);
+  const CommandLine* command_line(CommandLine::ForCurrentProcess());
+  if (!command_line->HasSwitch(switches::kDisableNewPageInfoBubble))
+    browser::ShowPageInfoBubble(parent, profile, url, ssl, show_history);
+  else
+    browser::ShowPageInfo(parent, profile, url, ssl, show_history);
 }
 
 void BrowserView::ShowAppMenu() {

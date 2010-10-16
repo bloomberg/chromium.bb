@@ -243,6 +243,10 @@ const char kDisableLocalStorage[]           = "disable-local-storage";
 // builds.
 const char kDisableLogging[]                = "disable-logging";
 
+// Disable the Page Info SSL dialog as a bubble, reverting back to a separate
+// window.
+const char kDisableNewPageInfoBubble[]      = "disable-new-page-info-bubble";
+
 // Whether we should prevent the new tab page from showing the first run
 // notification.
 const char kDisableNewTabFirstRun[]         = "disable-new-tab-first-run";
