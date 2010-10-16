@@ -546,7 +546,7 @@ HRESULT ChromeFrameActivex::CreateScriptBlockForEvent(
         script_element->put_text(script);
 
         hr = insert_after->insertAdjacentElement(
-            base::win::StackBstr(L"afterEnd"),
+            base::win::ScopedBstr(L"afterEnd"),
             element,
             new_element.Receive());
       }
