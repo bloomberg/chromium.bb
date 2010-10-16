@@ -795,7 +795,8 @@ TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
   EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
                               testing::Field(&VARIANT::bstrVal,
                               StrEq(src_url))));
-  EXPECT_CALL(ie_mock_, OnLoad(true, StrEq(src_url)));
+  EXPECT_CALL(ie_mock_, OnLoad(true, StrEq(src_url)))
+      .Times(testing::AnyNumber());
 
   EXPECT_CALL(ie_mock_, OnLoadError(StrEq(tgt_url)))
       .Times(testing::AnyNumber());
