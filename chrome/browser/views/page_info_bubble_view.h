@@ -18,7 +18,8 @@ class Label;
 class PageInfoBubbleView : public views::View,
                            public PageInfoModel::PageInfoModelObserver,
                            public InfoBubbleDelegate,
-                           public views::LinkController {
+                           public views::LinkController,
+                           public AnimationDelegate {
  public:
   PageInfoBubbleView(gfx::NativeWindow parent_window,
                      Profile* profile,
@@ -48,6 +49,10 @@ class PageInfoBubbleView : public views::View,
   // LinkController methods:
   virtual void LinkActivated(views::Link* source, int event_flags);
 
+  // Overridden from AnimationDelegate.
+  virtual void AnimationEnded(const Animation* animation);
+  virtual void AnimationProgressed(const Animation* animation);
+
  private:
   // Layout the sections within the bubble.
   void LayoutSections();
@@ -65,6 +70,12 @@ class PageInfoBubbleView : public views::View,
 
   // The Help Center link at the bottom of the bubble.
   views::Link* help_center_link_;
+
+  // Animation that helps us change size smoothly as more data comes in.
+  SlideAnimation resize_animation_;
+
+  // The height of the info bubble at the start of the resize animation.
+  int animation_start_height_;
 
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleView);
 };

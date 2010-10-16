@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/cert_store.h"
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/info_bubble.h"
@@ -32,6 +33,10 @@ const int kPaddingBelowSeparator = 4;
 const int kPaddingAboveSeparator = 13;
 const int kIconHorizontalOffset = 27;
 const int kIconVerticalOffset = -7;
+
+// The duration of the animation that resizes the bubble once the async
+// information is provided through the ModelChanged event.
+const int kPageInfoSlideDuration = 300;
 
 // A section contains an image that shows a status (good or bad), a title, an
 // optional head-line (in bold) and a description.
@@ -84,7 +89,18 @@ PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
       parent_window_(parent_window),
       cert_id_(ssl.cert_id()),
       info_bubble_(NULL),
-      help_center_link_(NULL) {
+      help_center_link_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(resize_animation_(this)),
+      animation_start_height_(0) {
+  if (cert_id_ > 0) {
+    scoped_refptr<net::X509Certificate> cert;
+    CertStore::GetSharedInstance()->RetrieveCert(cert_id_, &cert);
+    // When running with fake certificate (Chrome Frame) or Gears in offline
+    // mode, we have no os certificate, so there is no cert to show. Don't
+    // bother showing the cert info link in that case.
+    if (!cert.get() || !cert->os_cert_handle())
+      cert_id_ = 0;
+  }
   LayoutSections();
 }
 
@@ -172,18 +188,36 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
   size.Enlarge(0, separator_plus_padding.height() +
                   link_size.height());
 
+  if (!resize_animation_.is_animating())
+    return size;
+
+  // We are animating from animation_start_height_ to size.
+  int target_height = animation_start_height_ + static_cast<int>(
+      (size.height() - animation_start_height_) *
+      resize_animation_.GetCurrentValue());
+  size.set_height(target_height);
   return size;
 }
 
 void PageInfoBubbleView::ModelChanged() {
+  animation_start_height_ = bounds().height();
   LayoutSections();
-  info_bubble_->SizeToContents();
+  resize_animation_.SetSlideDuration(kPageInfoSlideDuration);
+  resize_animation_.Show();
 }
 
 void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
   GURL url = GURL(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER));
   Browser* browser = BrowserList::GetLastActive();
   browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+}
+
+void PageInfoBubbleView::AnimationEnded(const Animation* animation) {
+  info_bubble_->SizeToContents();
+}
+
+void PageInfoBubbleView::AnimationProgressed(const Animation* animation) {
+  info_bubble_->SizeToContents();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
