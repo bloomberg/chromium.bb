@@ -6,6 +6,7 @@
 
 #include <strstream>
 
+#include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/event_trace_consumer_win.h"
@@ -76,18 +77,29 @@ TestEventConsumer* TestEventConsumer::current_ = NULL;
 
 class TraceEventTest: public testing::Test {
  public:
+  TraceEventTest() {
+  }
+
   void SetUp() {
     bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
+
+    if (is_xp) {
+      // Tear down any dangling session from an earlier failing test.
+      EtwTraceProperties ignore;
+      EtwTraceController::Stop(kTestSessionName, &ignore);
+    }
 
     // Resurrect and initialize the TraceLog singleton instance.
     // On Vista and better, we need the provider registered before we
     // start the private, in-proc session, but on XP we need the global
     // session created and the provider enabled before we register our
     // provider.
+    base::TraceLog* tracelog = NULL;
     if (!is_xp) {
       base::TraceLog::Resurrect();
-      base::TraceLog* tracelog = base::TraceLog::Get();
+      tracelog = base::TraceLog::Get();
       ASSERT_TRUE(tracelog != NULL);
+      ASSERT_FALSE(tracelog->IsTracing());
     }
 
     // Create the log file.
@@ -121,9 +133,10 @@ class TraceEventTest: public testing::Test {
 
     if (is_xp) {
       base::TraceLog::Resurrect();
-      base::TraceLog* tracelog = base::TraceLog::Get();
-      ASSERT_TRUE(tracelog != NULL);
+      tracelog = base::TraceLog::Get();
     }
+    ASSERT_TRUE(tracelog != NULL);
+    EXPECT_TRUE(tracelog->IsTracing());
   }
 
   void TearDown() {
@@ -163,6 +176,7 @@ class TraceEventTest: public testing::Test {
 
   void PlayLog() {
     EtwTraceProperties prop;
+    EXPECT_HRESULT_SUCCEEDED(controller_.Flush(&prop));
     EXPECT_HRESULT_SUCCEEDED(controller_.Stop(&prop));
     ASSERT_HRESULT_SUCCEEDED(
         consumer_.OpenFileSession(log_file_.value().c_str()));
@@ -171,6 +185,8 @@ class TraceEventTest: public testing::Test {
   }
 
  private:
+  // We want our singleton torn down after each test.
+  base::ShadowingAtExitManager at_exit_manager_;
   EtwTraceController controller_;
   FilePath log_file_;
   TestEventConsumer consumer_;
@@ -254,8 +270,7 @@ TEST_F(TraceEventTest, TraceLog) {
   PlayLog();
 }
 
-// Marked flaky per http://crbug.com/52388
-TEST_F(TraceEventTest, FLAKY_Macros) {
+TEST_F(TraceEventTest, Macros) {
   ExpectPlayLog();
 
   // The events should arrive in the same sequence as the expects.

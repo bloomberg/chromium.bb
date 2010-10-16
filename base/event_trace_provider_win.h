@@ -126,12 +126,24 @@ class EtwTraceProvider {
   ULONG Log(EVENT_TRACE_HEADER* event);
 
  protected:
-  // These are called after events have been enabled or disabled.
-  // Override them if you want to do processing at the start or
-  // end of collection.
-  // Note: These may be called ETW's thread and they may be racy.
+  // Called after events have been enabled, override in subclasses
+  // to set up state or log at the start of a session.
+  // Note: This function may be called ETW's thread and may be racy,
+  //    bring your own locking if needed.
   virtual void OnEventsEnabled() {}
+
+  // Called just before events are disabled, override in subclasses
+  // to tear down state or log at the end of a session.
+  // Note: This function may be called ETW's thread and may be racy,
+  //    bring your own locking if needed.
   virtual void OnEventsDisabled() {}
+
+  // Called just after events have been disabled, override in subclasses
+  // to tear down state at the end of a session. At this point it's
+  // to late to log anything to the session.
+  // Note: This function may be called ETW's thread and may be racy,
+  //    bring your own locking if needed.
+  virtual void PostEventsDisabled() {}
 
  private:
   ULONG EnableEvents(PVOID buffer);

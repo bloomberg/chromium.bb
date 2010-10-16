@@ -32,20 +32,12 @@
 // event tracing session.
 class EtwTraceProperties {
  public:
-  EtwTraceProperties() {
-    memset(buffer_, 0, sizeof(buffer_));
-    EVENT_TRACE_PROPERTIES* prop = get();
-
-    prop->Wnode.BufferSize = sizeof(buffer_);
-    prop->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
-    prop->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
-    prop->LogFileNameOffset = sizeof(EVENT_TRACE_PROPERTIES) +
-                              sizeof(wchar_t) * kMaxStringLen;
-  }
+  EtwTraceProperties();
 
   EVENT_TRACE_PROPERTIES* get() {
     return &properties_;
   }
+
   const EVENT_TRACE_PROPERTIES* get() const {
     return reinterpret_cast<const EVENT_TRACE_PROPERTIES*>(&properties_);
   }
@@ -54,31 +46,14 @@ class EtwTraceProperties {
     return reinterpret_cast<const wchar_t *>(buffer_ + get()->LoggerNameOffset);
   }
 
-  HRESULT SetLoggerName(const wchar_t* logger_name) {
-    size_t len = wcslen(logger_name) + 1;
-    if (kMaxStringLen < len)
-      return E_INVALIDARG;
-
-    memcpy(buffer_ + get()->LoggerNameOffset,
-           logger_name,
-           sizeof(wchar_t) * len);
-    return S_OK;
-  }
-
+  // Copies logger_name to the properties structure.
+  HRESULT SetLoggerName(const wchar_t* logger_name);
   const wchar_t* GetLoggerFileName() const {
     return reinterpret_cast<const wchar_t*>(buffer_ + get()->LogFileNameOffset);
   }
 
-  HRESULT SetLoggerFileName(const wchar_t* logger_file_name) {
-    size_t len = wcslen(logger_file_name) + 1;
-    if (kMaxStringLen < len)
-      return E_INVALIDARG;
-
-    memcpy(buffer_ + get()->LogFileNameOffset,
-           logger_file_name,
-           sizeof(wchar_t) * len);
-    return S_OK;
-  }
+  // Copies logger_file_name to the properties structure.
+  HRESULT SetLoggerFileName(const wchar_t* logger_file_name);
 
   // Max string len for name and session name is 1024 per documentation.
   static const size_t kMaxStringLen = 1024;
