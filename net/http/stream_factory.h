@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/ref_counted.h"
+#include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 
 namespace net {
@@ -110,7 +111,7 @@ class StreamFactory {
 
   // Request a stream.
   // Will callback to the StreamRequestDelegate upon completion.
-  // |info|, |ssl_config|, and |proxy_info| must been kept alive until
+  // |info|, |ssl_config|, and |proxy_info| must be kept alive until
   // |delegate| is called.
   virtual StreamRequest* RequestStream(const HttpRequestInfo* info,
                                        SSLConfig* ssl_config,
@@ -119,15 +120,27 @@ class StreamFactory {
                                        StreamRequest::Delegate* delegate,
                                        const BoundNetLog& net_log) = 0;
 
-  // TLS Intolerant Server API
+  // Requests that enough connections for |num_streams| be opened.  If
+  // ERR_IO_PENDING is returned, |info|, |ssl_config|, and |proxy_info| must
+  // be kept alive until |callback| is invoked.
+  virtual int PreconnectStreams(int num_streams,
+                                const HttpRequestInfo* info,
+                                SSLConfig* ssl_config,
+                                ProxyInfo* proxy_info,
+                                HttpNetworkSession* session,
+                                const BoundNetLog& net_log,
+                                CompletionCallback* callback) = 0;
+
   virtual void AddTLSIntolerantServer(const GURL& url) = 0;
   virtual bool IsTLSIntolerantServer(const GURL& url) = 0;
 
-  // Alternate Protocol API
   virtual void ProcessAlternateProtocol(
       HttpAlternateProtocols* alternate_protocols,
       const std::string& alternate_protocol_str,
       const HostPortPair& http_host_port_pair) = 0;
+
+  virtual GURL ApplyHostMappingRules(const GURL& url,
+                                     HostPortPair* endpoint) = 0;
 };
 
 }  // namespace net
