@@ -9,9 +9,11 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
+#include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -96,6 +98,15 @@ NetworkMenuUI::NetworkMenuUI(TabContents* contents)
                                    IDR_NETWORK_MENU_CSS))) {
   NetworkMenuHandler* handler = new NetworkMenuHandler();
   AddMessageHandler((handler)->Attach(this));
+
+  // Set up chrome://theme/ source.
+  DOMUIThemeSource* theme = new DOMUIThemeSource(GetProfile());
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(theme)));
 }
 
 void NetworkMenuUI::AddCustomConfigValues(DictionaryValue* config) const {
