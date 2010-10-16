@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is really Posix minus Mac. Mac code is in base_paths_mac.mm.
-
 #include "base/base_paths.h"
 
 #include <unistd.h>
@@ -19,7 +17,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 
 namespace base {
 
@@ -28,6 +26,10 @@ const char kSelfExe[] = "/proc/self/exe";
 #elif defined(OS_SOLARIS)
 const char kSelfExe[] = getexecname();
 #endif
+
+// The name of this file relative to the source root. This is used for checking
+// that the source checkout is in the correct place.
+static const char kThisSourceFile[] = "base/base_paths_linux.cc";
 
 bool PathProviderPosix(int key, FilePath* result) {
   FilePath path;
@@ -65,7 +67,7 @@ bool PathProviderPosix(int key, FilePath* result) {
       std::string cr_source_root;
       if (env->GetVar("CR_SOURCE_ROOT", &cr_source_root)) {
         path = FilePath(cr_source_root);
-        if (file_util::PathExists(path.Append("base/base_paths_posix.cc"))) {
+        if (file_util::PathExists(path.Append(kThisSourceFile))) {
           *result = path;
           return true;
         } else {
@@ -77,7 +79,7 @@ bool PathProviderPosix(int key, FilePath* result) {
       // For example:  sconsbuild/{Debug|Release}/net_unittest
       if (PathService::Get(base::DIR_EXE, &path)) {
         path = path.DirName().DirName();
-        if (file_util::PathExists(path.Append("base/base_paths_posix.cc"))) {
+        if (file_util::PathExists(path.Append(kThisSourceFile))) {
           *result = path;
           return true;
         }
@@ -87,7 +89,7 @@ bool PathProviderPosix(int key, FilePath* result) {
       // for DIR_SOURCE_ROOT.
       if (PathService::Get(base::DIR_EXE, &path)) {
         path = path.DirName().DirName().Append("WebKit/chromium");
-        if (file_util::PathExists(path.Append("base/base_paths_posix.cc"))) {
+        if (file_util::PathExists(path.Append(kThisSourceFile))) {
           *result = path;
           return true;
         }
@@ -95,7 +97,7 @@ bool PathProviderPosix(int key, FilePath* result) {
       // If that failed (maybe the build output is symlinked to a different
       // drive) try assuming the current directory is the source root.
       if (file_util::GetCurrentDirectory(&path) &&
-          file_util::PathExists(path.Append("base/base_paths_posix.cc"))) {
+          file_util::PathExists(path.Append(kThisSourceFile))) {
         *result = path;
         return true;
       }
@@ -105,8 +107,8 @@ bool PathProviderPosix(int key, FilePath* result) {
     }
     case base::DIR_USER_CACHE:
       scoped_ptr<base::Environment> env(base::Environment::Create());
-      FilePath cache_dir(base::GetXDGDirectory(env.get(), "XDG_CACHE_HOME",
-                                               ".cache"));
+      FilePath cache_dir(base::nix::GetXDGDirectory(env.get(), "XDG_CACHE_HOME",
+                                                    ".cache"));
       *result = cache_dir;
       return true;
   }

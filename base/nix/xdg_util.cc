@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -10,6 +10,7 @@
 #include "base/third_party/xdg_user_dirs/xdg_user_dir_lookup.h"
 
 namespace base {
+namespace nix {
 
 FilePath GetXDGDirectory(Environment* env, const char* env_name,
                          const char* fallback_dir) {
@@ -80,4 +81,5 @@ const char* GetDesktopEnvironmentName(Environment* env) {
   return GetDesktopEnvironmentName(GetDesktopEnvironment(env));
 }
 
+}  // namespace nix
 }  // namespace base

@@ -20,7 +20,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
@@ -429,8 +429,8 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
 
   ProxyConfigCommand command;
   bool found_command = false;
-  switch (base::GetDesktopEnvironment(env.get())) {
-    case base::DESKTOP_ENVIRONMENT_GNOME: {
+  switch (base::nix::GetDesktopEnvironment(env.get())) {
+    case base::nix::DESKTOP_ENVIRONMENT_GNOME: {
       size_t index;
       ProxyConfigCommand commands[2];
       commands[0].argv = kGNOMEProxyConfigCommand;
@@ -441,25 +441,25 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
       break;
     }
 
-    case base::DESKTOP_ENVIRONMENT_KDE3:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE3:
       command.argv = kKDE3ProxyConfigCommand;
       found_command = SearchPATH(&command, 1, NULL);
       break;
 
-    case base::DESKTOP_ENVIRONMENT_KDE4:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE4:
       command.argv = kKDE4ProxyConfigCommand;
       found_command = SearchPATH(&command, 1, NULL);
       break;
 
-    case base::DESKTOP_ENVIRONMENT_XFCE:
-    case base::DESKTOP_ENVIRONMENT_OTHER:
+    case base::nix::DESKTOP_ENVIRONMENT_XFCE:
+    case base::nix::DESKTOP_ENVIRONMENT_OTHER:
       break;
   }
 
   if (found_command) {
     StartProxyConfigUtil(section->profile(), command);
   } else {
-    const char* name = base::GetDesktopEnvironmentName(env.get());
+    const char* name = base::nix::GetDesktopEnvironmentName(env.get());
     if (name)
       LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
     browser::ShowOptionsURL(section->profile(), GURL(kLinuxProxyConfigUrl));

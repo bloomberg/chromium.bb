@@ -2,19 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_XDG_UTIL_H_
-#define BASE_XDG_UTIL_H_
+#ifndef BASE_NIX_XDG_UTIL_H_
+#define BASE_NIX_XDG_UTIL_H_
 #pragma once
 
 // XDG refers to http://en.wikipedia.org/wiki/Freedesktop.org .
-// This file contains utilities found across free desktop
-// environments.
+// This file contains utilities found across free desktop environments.
+//
+// TODO(brettw) this file should be in app/x11, but is currently used by
+// net. We should have a net API to allow the embedder to specify the behavior
+// that it uses XDG for, and then move this file.
+
+#ifdef nix
+#error asdf
+#endif
 
 class FilePath;
 
 namespace base {
 
 class Environment;
+
+namespace nix {
 
 // Utility function for getting XDG directories.
 // |env_name| is the name of an environment variable that we want to use to get
@@ -52,6 +61,7 @@ const char* GetDesktopEnvironmentName(DesktopEnvironment env);
 // Convenience wrapper that calls GetDesktopEnvironment() first.
 const char* GetDesktopEnvironmentName(Environment* env);
 
+}  // namespace nix
 }  // namespace base
 
-#endif  // BASE_XDG_UTIL_H_
+#endif  // BASE_NIX_XDG_UTIL_H_

@@ -8,7 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/environment.h"
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 #include "chrome/browser/gtk/browser_titlebar.h"
 
 namespace {
@@ -46,8 +46,8 @@ void GConfTitlebarListener::RemoveObserver(BrowserTitlebar* titlebar) {
 
 GConfTitlebarListener::GConfTitlebarListener() : client_(NULL) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (base::GetDesktopEnvironment(env.get()) ==
-      base::DESKTOP_ENVIRONMENT_GNOME) {
+  if (base::nix::GetDesktopEnvironment(env.get()) ==
+      base::nix::DESKTOP_ENVIRONMENT_GNOME) {
     client_ = gconf_client_get_default();
     // If we fail to get a context, that's OK, since we'll just fallback on
     // not receiving gconf keys.

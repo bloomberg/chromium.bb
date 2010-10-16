@@ -34,7 +34,7 @@
 #include "base/file_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 #include "chrome/common/chrome_version_info.h"
 #endif
 
@@ -66,7 +66,7 @@ namespace {
 FilePath GetAutostartDirectory(base::Environment* environment) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePath result =
-    base::GetXDGDirectory(environment, kXdgConfigHome, kConfig);
+      base::nix::GetXDGDirectory(environment, kXdgConfigHome, kConfig);
   result = result.Append(kAutostart);
   return result;
 }

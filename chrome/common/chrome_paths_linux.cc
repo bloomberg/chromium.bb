@@ -7,7 +7,7 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/scoped_ptr.h"
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 
 namespace chrome {
 
@@ -19,7 +19,7 @@ namespace chrome {
 bool GetDefaultUserDataDirectory(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   FilePath config_dir(
-      base::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
+      base::nix::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
 #if defined(GOOGLE_CHROME_BUILD)
   *result = config_dir.Append("google-chrome");
 #else
@@ -31,7 +31,7 @@ bool GetDefaultUserDataDirectory(FilePath* result) {
 bool GetChromeFrameUserDataDirectory(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
   FilePath config_dir(
-      base::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
+      base::nix::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
 #if defined(GOOGLE_CHROME_BUILD)
   *result = config_dir.Append("google-chrome-frame");
 #else
@@ -42,7 +42,7 @@ bool GetChromeFrameUserDataDirectory(FilePath* result) {
 
 bool GetUserDocumentsDirectory(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  *result = base::GetXDGUserDirectory(env.get(), "DOCUMENTS", "Documents");
+  *result = base::nix::GetXDGUserDirectory(env.get(), "DOCUMENTS", "Documents");
   return true;
 }
 
@@ -50,7 +50,7 @@ bool GetUserDocumentsDirectory(FilePath* result) {
 // ~ or their desktop directory, in which case we default to ~/Downloads.
 bool GetUserDownloadsDirectory(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  *result = base::GetXDGUserDirectory(env.get(), "DOWNLOAD", "Downloads");
+  *result = base::nix::GetXDGUserDirectory(env.get(), "DOWNLOAD", "Downloads");
 
   FilePath home = file_util::GetHomeDir();
   if (*result == home) {
@@ -69,7 +69,7 @@ bool GetUserDownloadsDirectory(FilePath* result) {
 
 bool GetUserDesktop(FilePath* result) {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  *result = base::GetXDGUserDirectory(env.get(), "DESKTOP", "Desktop");
+  *result = base::nix::GetXDGUserDirectory(env.get(), "DESKTOP", "Desktop");
   return true;
 }
 

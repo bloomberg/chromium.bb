@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 
 #include "base/environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -13,9 +13,12 @@ using ::testing::Return;
 using ::testing::SetArgumentPointee;
 using ::testing::StrEq;
 
+namespace base {
+namespace nix {
+
 namespace {
 
-class MockEnvironment : public base::Environment {
+class MockEnvironment : public Environment {
  public:
   MOCK_METHOD2(GetVar, bool(const char*, std::string* result));
   MOCK_METHOD2(SetVar, bool(const char*, const std::string& new_value));
@@ -35,8 +38,8 @@ TEST(XDGUtilTest, GetDesktopEnvironmentGnome) {
   EXPECT_CALL(getter, GetVar(StrEq("DESKTOP_SESSION"), _))
       .WillOnce(DoAll(SetArgumentPointee<1>(kGnome), Return(true)));
 
-  EXPECT_EQ(base::DESKTOP_ENVIRONMENT_GNOME,
-            base::GetDesktopEnvironment(&getter));
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_GNOME,
+            GetDesktopEnvironment(&getter));
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentKDE4) {
@@ -45,8 +48,8 @@ TEST(XDGUtilTest, GetDesktopEnvironmentKDE4) {
   EXPECT_CALL(getter, GetVar(StrEq("DESKTOP_SESSION"), _))
       .WillOnce(DoAll(SetArgumentPointee<1>(kKDE4), Return(true)));
 
-  EXPECT_EQ(base::DESKTOP_ENVIRONMENT_KDE4,
-            base::GetDesktopEnvironment(&getter));
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_KDE4,
+            GetDesktopEnvironment(&getter));
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentKDE3) {
@@ -55,8 +58,8 @@ TEST(XDGUtilTest, GetDesktopEnvironmentKDE3) {
   EXPECT_CALL(getter, GetVar(StrEq("DESKTOP_SESSION"), _))
       .WillOnce(DoAll(SetArgumentPointee<1>(kKDE), Return(true)));
 
-  EXPECT_EQ(base::DESKTOP_ENVIRONMENT_KDE3,
-            base::GetDesktopEnvironment(&getter));
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_KDE3,
+            GetDesktopEnvironment(&getter));
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentXFCE) {
@@ -65,6 +68,9 @@ TEST(XDGUtilTest, GetDesktopEnvironmentXFCE) {
   EXPECT_CALL(getter, GetVar(StrEq("DESKTOP_SESSION"), _))
       .WillOnce(DoAll(SetArgumentPointee<1>(kXFCE), Return(true)));
 
-  EXPECT_EQ(base::DESKTOP_ENVIRONMENT_XFCE,
-            base::GetDesktopEnvironment(&getter));
+  EXPECT_EQ(DESKTOP_ENVIRONMENT_XFCE,
+            GetDesktopEnvironment(&getter));
 }
+
+}  // namespace nix
+}  // namespace base

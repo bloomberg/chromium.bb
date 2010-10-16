@@ -98,7 +98,7 @@
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 #if defined(USE_GNOME_KEYRING)
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #endif
@@ -929,28 +929,28 @@ void ProfileImpl::CreatePasswordStore() {
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
   // (In all cases we fall back on the default store in case of failure.)
-  base::DesktopEnvironment desktop_env;
+  base::nix::DesktopEnvironment desktop_env;
   std::string store_type =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPasswordStore);
   if (store_type == "kwallet") {
-    desktop_env = base::DESKTOP_ENVIRONMENT_KDE4;
+    desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE4;
   } else if (store_type == "gnome") {
-    desktop_env = base::DESKTOP_ENVIRONMENT_GNOME;
+    desktop_env = base::nix::DESKTOP_ENVIRONMENT_GNOME;
   } else if (store_type == "detect") {
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    desktop_env = base::GetDesktopEnvironment(env.get());
+    desktop_env = base::nix::GetDesktopEnvironment(env.get());
     LOG(INFO) << "Password storage detected desktop environment: " <<
-              base::GetDesktopEnvironmentName(desktop_env);
+              base::nix::GetDesktopEnvironmentName(desktop_env);
   } else {
     // TODO(mdm): If the flag is not given, or has an unknown value, use the
     // default store for now. Once we're confident in the other stores, we can
     // default to detecting the desktop environment instead.
-    desktop_env = base::DESKTOP_ENVIRONMENT_OTHER;
+    desktop_env = base::nix::DESKTOP_ENVIRONMENT_OTHER;
   }
 
   scoped_ptr<PasswordStoreX::NativeBackend> backend;
-  if (desktop_env == base::DESKTOP_ENVIRONMENT_KDE4) {
+  if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
     // KDE3 didn't use DBus, which our KWallet store uses.
     LOG(INFO) << "Trying KWallet for password storage.";
     backend.reset(new NativeBackendKWallet());
@@ -958,8 +958,8 @@ void ProfileImpl::CreatePasswordStore() {
       LOG(INFO) << "Using KWallet for password storage.";
     else
       backend.reset();
-  } else if (desktop_env == base::DESKTOP_ENVIRONMENT_GNOME ||
-             desktop_env == base::DESKTOP_ENVIRONMENT_XFCE) {
+  } else if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_GNOME ||
+             desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
 #if defined(USE_GNOME_KEYRING)
     LOG(INFO) << "Trying GNOME keyring for password storage.";
     backend.reset(new NativeBackendGnome());

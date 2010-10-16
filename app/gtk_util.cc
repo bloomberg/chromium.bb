@@ -10,7 +10,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 
 namespace gtk_util {
 
@@ -98,7 +98,8 @@ void ApplyMessageDialogQuirks(GtkWidget* dialog) {
   if (gtk_window_get_modal(GTK_WINDOW(dialog))) {
     // Work around a KDE 3 window manager bug.
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    if (base::DESKTOP_ENVIRONMENT_KDE3 == GetDesktopEnvironment(env.get()))
+    if (base::nix::DESKTOP_ENVIRONMENT_KDE3 ==
+        base::nix::GetDesktopEnvironment(env.get()))
       gtk_window_set_skip_taskbar_hint(GTK_WINDOW(dialog), FALSE);
   }
 }

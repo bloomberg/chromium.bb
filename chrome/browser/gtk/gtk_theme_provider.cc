@@ -12,7 +12,7 @@
 #include "app/resource_bundle.h"
 #include "base/environment.h"
 #include "base/stl_util-inl.h"
-#include "base/xdg_util.h"
+#include "base/nix/xdg_util.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/hover_controller_gtk.h"
@@ -552,9 +552,9 @@ GdkPixbuf* GtkThemeProvider::GetDefaultFavicon(bool native) {
 bool GtkThemeProvider::DefaultUsesSystemTheme() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
-  switch (base::GetDesktopEnvironment(env.get())) {
-    case base::DESKTOP_ENVIRONMENT_GNOME:
-    case base::DESKTOP_ENVIRONMENT_XFCE:
+  switch (base::nix::GetDesktopEnvironment(env.get())) {
+    case base::nix::DESKTOP_ENVIRONMENT_GNOME:
+    case base::nix::DESKTOP_ENVIRONMENT_XFCE:
       return true;
     default:
       return false;
