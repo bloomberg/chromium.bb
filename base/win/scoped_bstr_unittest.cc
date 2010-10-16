@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_bstr_win.h"
+#include "base/win/scoped_bstr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+namespace win {
 
 namespace {
 
@@ -70,24 +73,5 @@ TEST(ScopedBstrTest, ScopedBstr) {
   BasicBstrTests();
 }
 
-#define kSourceStr L"this is a string"
-#define kSourceStrEmpty L""
-
-TEST(StackBstrTest, StackBstr) {
-  ScopedBstr system_bstr(kSourceStr);
-  StackBstrVar(kSourceStr, stack_bstr);
-  EXPECT_EQ(VARCMP_EQ,
-            VarBstrCmp(system_bstr, stack_bstr, LOCALE_USER_DEFAULT, 0));
-
-  StackBstrVar(kSourceStrEmpty, empty);
-  UINT l1 = SysStringLen(stack_bstr);
-  UINT l2 = SysStringLen(StackBstr(kSourceStr));
-  UINT l3 = SysStringLen(system_bstr);
-  EXPECT_EQ(l1, l2);
-  EXPECT_EQ(l2, l3);
-  EXPECT_EQ(0, SysStringLen(empty));
-
-  const wchar_t one_more_test[] = L"this is my const string";
-  EXPECT_EQ(SysStringLen(StackBstr(one_more_test)),
-            lstrlen(one_more_test));
-}
+}  // namespace win
+}  // namespace base

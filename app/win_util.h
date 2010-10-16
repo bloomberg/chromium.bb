@@ -23,7 +23,6 @@ namespace win_util {
 // Import ScopedHandle and friends into this namespace for backwards
 // compatibility.  TODO(darin): clean this up!
 using ::ScopedHandle;
-using ::ScopedFindFileHandle;
 using ::ScopedHDC;
 using ::ScopedBitmap;
 

@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 
 #include <shlobj.h>
 
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+namespace win {
 
 namespace {
 
@@ -105,3 +108,6 @@ TEST(ScopedComPtrTest, ScopedComPtrVector) {
   EXPECT_EQ(p->adds, 4);
   EXPECT_EQ(p->releases, 4);
 }
+
+}  // namespace win
+}  // namespace base

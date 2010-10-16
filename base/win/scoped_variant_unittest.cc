@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_variant_win.h"
+#include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+namespace win {
 
 namespace {
 
@@ -255,3 +258,6 @@ TEST(ScopedVariantTest, ScopedVariant) {
   EXPECT_EQ(sa, V_ARRAY(&var));
   // The array is destroyed in the destructor of var.
 }
+
+}  // namespace win
+}  // namespace base

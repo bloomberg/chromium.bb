@@ -1,13 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_bstr_win.h"
+#include "base/win/scoped_bstr.h"
 
 #include "base/logging.h"
 
+namespace base {
+namespace win {
 
-ScopedBstr::ScopedBstr(const wchar_t* non_bstr)
+ScopedBstr::ScopedBstr(const char16* non_bstr)
     : bstr_(SysAllocString(non_bstr)) {
 }
 
@@ -41,26 +43,29 @@ BSTR* ScopedBstr::Receive() {
   return &bstr_;
 }
 
-BSTR ScopedBstr::Allocate(const wchar_t* wide_str) {
-  Reset(SysAllocString(wide_str));
+BSTR ScopedBstr::Allocate(const char16* str) {
+  Reset(SysAllocString(str));
   return bstr_;
 }
 
-BSTR ScopedBstr::AllocateBytes(int bytes) {
-  Reset(SysAllocStringByteLen(NULL, bytes));
+BSTR ScopedBstr::AllocateBytes(size_t bytes) {
+  Reset(SysAllocStringByteLen(NULL, static_cast<UINT>(bytes)));
   return bstr_;
 }
 
-void ScopedBstr::SetByteLen(uint32 bytes) {
+void ScopedBstr::SetByteLen(size_t bytes) {
   DCHECK(bstr_ != NULL) << "attempting to modify a NULL bstr";
   uint32* data = reinterpret_cast<uint32*>(bstr_);
-  data[-1] = bytes;
+  data[-1] = static_cast<uint32>(bytes);
 }
 
-uint32 ScopedBstr::Length() const {
+size_t ScopedBstr::Length() const {
   return SysStringLen(bstr_);
 }
 
-uint32 ScopedBstr::ByteLength() const {
+size_t ScopedBstr::ByteLength() const {
   return SysStringByteLen(bstr_);
 }
+
+}  // namespace win
+}  // namespace base
