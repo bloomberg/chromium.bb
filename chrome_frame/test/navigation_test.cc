@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/scoped_comptr_win.h"
+#include "base/test/test_file_util.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
@@ -712,6 +713,126 @@ TEST_P(FullTabNavigationTest, CF_UnloadEventTest) {
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIEAndNavigate(kUnloadEventTestUrl);
+}
+
+// Fixture for ChromeFrame download tests.
+class FullTabDownloadTest
+    : public MockIEEventSinkTest, public testing::TestWithParam<CFInvocation> {
+ public:
+  FullTabDownloadTest() {}
+};
+
+void SaveOwnerWindow(HWND* owner_window, HWND window) {
+  *owner_window = GetWindow(window, GW_OWNER);
+}
+
+void CloseWindow(HWND* window) {
+  if (window)
+    PostMessage(*window, WM_CLOSE, 0, 0);
+}
+
+// See bug http://crbug.com/36694
+// This test does the following:-
+// Navigates IE to a URL which in ChromeFrame.
+// Performs a top level form post in the document
+// In response to the POST we send over an attachment via the
+// content-disposition header.
+// IE brings up a file open dialog in this context.
+// We bring up the Save dialog via accessibility and save the file
+// and validate that all is well.
+TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
+  chrome_frame_test::MockWindowObserver download_watcher;
+  download_watcher.WatchWindow("File Download");
+
+  chrome_frame_test::MockWindowObserver save_dialog_watcher;
+  save_dialog_watcher.WatchWindow("Save As");
+
+  EXPECT_CALL(server_mock_, Get(_, StrEq(L"/post_source.html"), _)).WillOnce(
+    SendFast(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html\r\n",
+      "<html>"
+      "<head><meta http-equiv=\"x-ua-compatible\" content=\"chrome=1\" />"
+      " <script type=\"text/javascript\">"
+      " function onLoad() {"
+      " document.getElementById(\"myform\").submit();}</script></head>"
+      " <body onload=\"setTimeout(onLoad, 2000);\">"
+      " <form id=\"myform\" action=\"post_target.html\" method=\"POST\">"
+      "</form></body></html>"));
+
+  EXPECT_CALL(server_mock_, Post(_, StrEq(L"/post_target.html"), _)).WillOnce(
+    SendFast(
+      "HTTP/1.1 200 OK\r\n"
+      "content-disposition: attachment;filename=\"hello.txt\"\r\n"
+      "Content-Type: application/text\r\n"
+      "Cache-Control: private\r\n",
+      "hello"));
+
+
+  // If you want to debug this action then you may need to
+  // SendMessage(parent_window, WM_NCACTIVATE, TRUE, 0);
+  // SendMessage(parent_window, WM_COMMAND, MAKEWPARAM(0x114B, BN_CLICKED),
+  //             control_window);
+  // For the uninitiated, please debug IEFrame!CDialogActivateGuard::*
+  EXPECT_CALL(download_watcher, OnWindowOpen(_))
+      .Times(2)
+      .WillOnce(DelayAccDoDefaultAction(
+          AccObjectMatcher(L"Save", L"push button"),
+          1000))
+      .WillOnce(testing::Return());
+
+  EXPECT_CALL(download_watcher, OnWindowClose(_))
+      .Times(testing::AnyNumber());
+
+  std::wstring src_url = server_mock_.Resolve(L"/post_source.html");
+  std::wstring tgt_url = server_mock_.Resolve(L"/post_target.html");
+
+  EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
+
+  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              StrEq(src_url)), _, _, _, _, _));
+  EXPECT_CALL(ie_mock_, OnNavigateComplete2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              StrEq(src_url))));
+  EXPECT_CALL(ie_mock_, OnLoad(true, StrEq(src_url)));
+
+  EXPECT_CALL(ie_mock_, OnLoadError(StrEq(tgt_url)))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(ie_mock_, OnBeforeNavigate2(_,
+                              testing::Field(&VARIANT::bstrVal,
+                              StrEq(tgt_url)), _, _, _, _, _));
+  FilePath temp_file_path;
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
+  file_util::DieFileDie(temp_file_path, false);
+
+  temp_file_path = temp_file_path.ReplaceExtension(L"txt");
+  file_util::DieFileDie(temp_file_path, false);
+
+  AccObjectMatcher file_name_box(L"File name:", L"editable text");
+
+  HWND owner_window = NULL;
+
+  EXPECT_CALL(save_dialog_watcher, OnWindowOpen(_))
+        .WillOnce(testing::DoAll(
+            testing::Invoke(testing::CreateFunctor(
+                SaveOwnerWindow, &owner_window)),
+            AccSendCharMessage(file_name_box, L'a'),
+            AccSetValue(file_name_box, temp_file_path.value()),
+            AccDoDefaultAction(AccObjectMatcher(L"Save", L"push button"))));
+
+  EXPECT_CALL(save_dialog_watcher, OnWindowClose(_))
+        .WillOnce(testing::DoAll(
+            WaitForFileSave(temp_file_path, 2000),
+            testing::InvokeWithoutArgs(
+                testing::CreateFunctor(CloseWindow, &owner_window)),
+            CloseBrowserMock(&ie_mock_)));
+  LaunchIENavigateAndLoop(src_url, kChromeFrameLongNavigationTimeoutInSeconds);
+
+  std::string data;
+  EXPECT_TRUE(file_util::ReadFileToString(temp_file_path, &data));
+  EXPECT_EQ("hello", data);
+  file_util::DieFileDie(temp_file_path, false);
 }
 
 }  // namespace chrome_frame_test

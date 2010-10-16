@@ -17,6 +17,7 @@
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
+#include "chrome_frame/test/mock_ie_event_sink_test.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_util.h"
 
@@ -1114,5 +1115,130 @@ TEST_F(ChromeFrameTestWithWebServer, FAILS_FullTabModeIE_RefreshMshtmlTest) {
     }
   }
   EXPECT_GT(requests_for_first_page, 1);
+}
+
+// See bug 36694 for details.  http://crbug.com/36694
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_TestDownloadFromForm) {
+  chrome_frame_test::MockWindowObserver win_observer_mock;
+  win_observer_mock.WatchWindow("File Download");
+
+  // The content of our HTML test page.  This will be returned whenever
+  // we reply to a GET request.
+  static const char kHtml[] =
+      "<html><head>\n"
+      "<title>ChromeFrame Form Download Test</title>\n"
+      // To see how this test runs with only IE (no CF in the picture), comment
+      // out this meta tag.  The outcome of the test should be identical.
+      "<meta http-equiv=\"X-UA-Compatible\" content=\"chrome=1\" />\n"
+      "</head>\n"
+      "<script language=\"javascript\">\n"
+      "function SubmitForm() {\n"
+      "  var form = document.forms['myform'];\n"
+      "  form.action = document.location;\n"
+      "  form.submit();\n"
+      "  return true;\n"
+      "}\n"
+      "</script>\n"
+      "<body onload=\"SubmitForm();\">\n"
+      "<form method=\"post\" action=\"foo.html\" id=\"myform\">\n"
+      "  <input type=\"hidden\" name=\"Field1\" value=\"myvalue\" />\n"
+      "  <input type=\"button\" name=\"btn\" value=\"Test Download\" "
+          "onclick=\"return SubmitForm();\" id=\"Button1\"/>\n"
+      "</form></body></html>\n";
+
+  // The content of our HTML test page.  This will be returned whenever
+  // we reply to a POST request.
+  static const char kText[] =
+      "This is a text file (in case you were wondering).";
+
+  // This http response class will return an HTML document that contains
+  // a form whenever it receives a GET request.  Whenever it gets a POST
+  // request, it will respond with a text file that needs to be downloaded
+  // (content-disposition is "attachment").
+  class CustomResponse : public test_server::ResponseForPath {
+   public:
+    explicit CustomResponse(const char* path)
+      : test_server::ResponseForPath(path), is_post_(false),
+        post_requests_(0), get_requests_(0) {
+    }
+
+    virtual bool GetContentType(std::string* content_type) const {
+      DCHECK(!is_post_);
+      return false;
+    }
+
+    virtual size_t ContentLength() const {
+      DCHECK(!is_post_);
+      return sizeof(kHtml) - 1;
+    }
+
+    virtual bool GetCustomHeaders(std::string* headers) const {
+      if (!is_post_)
+        return false;
+      *headers = StringPrintf(
+          "HTTP/1.1 200 OK\r\n"
+          "Content-Disposition: attachment;filename=\"test.txt\"\r\n"
+          "Content-Type: application/text\r\n"
+          "Connection: close\r\n"
+          "Content-Length: %i\r\n\r\n", sizeof(kText) - 1);
+      return true;
+    }
+
+    virtual bool Matches(const test_server::Request& r) const {
+      bool match = __super::Matches(r);
+      if (match) {
+        is_post_ = LowerCaseEqualsASCII(r.method().c_str(), "post");
+      }
+      return match;
+    }
+
+    virtual void WriteContents(ListenSocket* socket) const {
+      if (is_post_) {
+        socket->Send(kText, sizeof(kText) - 1, false);
+      } else {
+        socket->Send(kHtml, sizeof(kHtml) - 1, false);
+      }
+    }
+
+    virtual void IncrementAccessCounter() {
+      __super::IncrementAccessCounter();
+      if (is_post_) {
+        post_requests_++;
+      } else {
+        get_requests_++;
+      }
+    }
+
+    size_t get_request_count() const {
+      return get_requests_;
+    }
+
+    size_t post_request_count() const {
+      return get_requests_;
+    }
+
+   protected:
+    mutable bool is_post_;
+    size_t post_requests_;
+    size_t get_requests_;
+  };
+
+  EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
+      .WillOnce(chrome_frame_test::DoCloseWindow());
+
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_))
+      .WillOnce(QUIT_LOOP(loop_));
+
+  SimpleWebServerTest server(46664);
+  CustomResponse* response = new CustomResponse("/form.html");
+  server.web_server()->AddResponse(response);
+
+  std::wstring url(server.FormatHttpPath(L"form.html"));
+
+  ASSERT_TRUE(LaunchBrowser(IE, url.c_str()));
+  loop_.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  EXPECT_EQ(1, response->get_request_count());
+  EXPECT_EQ(1, response->post_request_count());
 }
 

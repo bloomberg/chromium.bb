@@ -463,10 +463,11 @@ STDMETHODIMP_(void) IEEventSink::OnFileDownload(
     VARIANT_BOOL active_doc, VARIANT_BOOL* cancel) {
   DLOG(INFO) << __FUNCTION__ << base::StringPrintf(" 0x%08X ad=%i", this,
                                                    active_doc);
-  if (listener_)
+  if (listener_) {
     listener_->OnFileDownload(active_doc, cancel);
-  // Always cancel file downloads in tests.
-  *cancel = VARIANT_TRUE;
+  } else {
+    *cancel = VARIANT_TRUE;
+  }
 }
 
 STDMETHODIMP_(void) IEEventSink::OnNewWindow3(

@@ -69,6 +69,7 @@ ExpectationSet MockIEEventSink::ExpectNavigationCardinality(
   while (!complete_cardinality.IsSaturatedByCallCount(call_count)) {
     navigation += EXPECT_CALL(*this, OnFileDownload(_, _))
         .Times(testing::AtMost(1))
+        .WillOnce(testing::SetArgumentPointee<1>(VARIANT_TRUE))
         .RetiresOnSaturation();
 
     Cardinality split_complete_cardinality = testing::Exactly(1);
