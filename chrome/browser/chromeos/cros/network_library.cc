@@ -450,17 +450,13 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   virtual bool ethernet_connecting() const { return ethernet_.connecting(); }
   virtual bool ethernet_connected() const { return ethernet_.connected(); }
 
-  virtual const std::string& wifi_name() const { return wifi_.name(); }
+  virtual const WifiNetwork& wifi_network() const { return wifi_; }
   virtual bool wifi_connecting() const { return wifi_.connecting(); }
   virtual bool wifi_connected() const { return wifi_.connected(); }
-  virtual int wifi_strength() const { return wifi_.strength(); }
 
-  virtual const std::string& cellular_name() const { return cellular_.name(); }
-  virtual const std::string& cellular_service_path() const {
-    return cellular_.service_path(); }
+  virtual const CellularNetwork& cellular_network() const { return cellular_; }
   virtual bool cellular_connecting() const { return cellular_.connecting(); }
   virtual bool cellular_connected() const { return cellular_.connected(); }
-  virtual int cellular_strength() const { return cellular_.strength(); }
 
   bool Connected() const {
     return ethernet_connected() || wifi_connected() || cellular_connected();
@@ -840,7 +836,8 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     NetworkLibraryImpl* network = static_cast<NetworkLibraryImpl*>(object);
     DCHECK(network);
     // Store data plan for currently connected cellular network.
-    if (network->cellular_service_path().compare(modem_service_path) == 0) {
+    if (network->cellular_network().service_path()
+        .compare(modem_service_path) == 0) {
       if (dataplan != NULL) {
         network->UpdateCellularDataPlan(*dataplan);
       }
@@ -1177,17 +1174,16 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   }
   virtual bool ethernet_connecting() const { return false; }
   virtual bool ethernet_connected() const { return true; }
-  virtual const std::string& wifi_name() const { return EmptyString(); }
+  virtual const WifiNetwork& wifi_network() const {
+    return wifi_;
+  }
   virtual bool wifi_connecting() const { return false; }
   virtual bool wifi_connected() const { return false; }
-  virtual int wifi_strength() const { return 0; }
-
-  virtual const std::string& cellular_name() const { return EmptyString(); }
-  virtual const std::string& cellular_service_path() const {
-    return EmptyString(); }
+  virtual const CellularNetwork& cellular_network() const {
+    return cellular_;
+  }
   virtual bool cellular_connecting() const { return false; }
   virtual bool cellular_connected() const { return false; }
-  virtual int cellular_strength() const { return false; }
 
   bool Connected() const { return true; }
   bool Connecting() const { return false; }
@@ -1251,6 +1247,8 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
  private:
   std::string ip_address_;
   EthernetNetwork ethernet_;
+  WifiNetwork wifi_;
+  CellularNetwork cellular_;
   WifiNetworkVector wifi_networks_;
   CellularNetworkVector cellular_networks_;
 };

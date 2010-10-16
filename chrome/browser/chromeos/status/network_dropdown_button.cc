@@ -85,12 +85,14 @@ void NetworkDropdownButton::NetworkChanged(NetworkLibrary* cros) {
       SetText(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
     } else if (cros->wifi_connected()) {
       animation_connecting_.Stop();
-      SetIcon(IconForNetworkStrength(cros->wifi_strength(), true));
-      SetText(ASCIIToWide(cros->wifi_name()));
+      SetIcon(IconForNetworkStrength(
+          cros->wifi_network().strength(), true));
+      SetText(ASCIIToWide(cros->wifi_network().name()));
     } else if (cros->cellular_connected()) {
       animation_connecting_.Stop();
-      SetIcon(IconForNetworkStrength(cros->cellular_strength(), false));
-      SetText(ASCIIToWide(cros->cellular_name()));
+      SetIcon(IconForNetworkStrength(
+          cros->cellular_network().strength(), false));
+      SetText(ASCIIToWide(cros->cellular_network().name()));
     } else if (cros->wifi_connecting() || cros->cellular_connecting()) {
       if (!animation_connecting_.is_animating()) {
         animation_connecting_.Reset();
@@ -99,9 +101,9 @@ void NetworkDropdownButton::NetworkChanged(NetworkLibrary* cros) {
       }
 
       if (cros->wifi_connecting())
-        SetText(ASCIIToWide(cros->wifi_name()));
+        SetText(ASCIIToWide(cros->wifi_network().name()));
       else if (cros->cellular_connecting())
-        SetText(ASCIIToWide(cros->cellular_name()));
+        SetText(ASCIIToWide(cros->cellular_network().name()));
     }
 
     if (!cros->Connected() && !cros->Connecting()) {

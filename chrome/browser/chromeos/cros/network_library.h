@@ -311,20 +311,20 @@ class NetworkLibrary {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Return the active Ethernet network (or a default structure if inactive).
   virtual const EthernetNetwork& ethernet_network() const = 0;
   virtual bool ethernet_connecting() const = 0;
   virtual bool ethernet_connected() const = 0;
 
-  virtual const std::string& wifi_name() const = 0;
+  // Return the active Wifi network (or a default structure if none active).
+  virtual const WifiNetwork& wifi_network() const = 0;
   virtual bool wifi_connecting() const = 0;
   virtual bool wifi_connected() const = 0;
-  virtual int wifi_strength() const = 0;
 
-  virtual const std::string& cellular_name() const = 0;
-  virtual const std::string& cellular_service_path() const = 0;
+  // Return the active Cellular network (or a default structure if none active).
+  virtual const CellularNetwork& cellular_network() const = 0;
   virtual bool cellular_connecting() const = 0;
   virtual bool cellular_connected() const = 0;
-  virtual int cellular_strength() const = 0;
 
   // Return true if any network is currently connected.
   virtual bool Connected() const = 0;

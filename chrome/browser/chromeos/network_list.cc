@@ -78,7 +78,7 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
                                     ASCIIToUTF16(it->name()),
                                     *it,
                                     CellularNetwork()));
-    if (network_lib->wifi_name() == it->name()) {
+    if (network_lib->wifi_network().service_path() == it->service_path()) {
       AddNetworkIndexToList(index,
                             network_lib->wifi_connected(),
                             network_lib->wifi_connecting());
@@ -92,7 +92,7 @@ void NetworkList::NetworkChanged(chromeos::NetworkLibrary* network_lib) {
                                     ASCIIToUTF16(it->name()),
                                     WifiNetwork(),
                                     *it));
-    if (network_lib->cellular_name() == it->name()) {
+    if (network_lib->cellular_network().service_path() == it->service_path()) {
       AddNetworkIndexToList(index,
                             network_lib->cellular_connected(),
                             network_lib->cellular_connecting());

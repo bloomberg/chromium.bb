@@ -98,7 +98,7 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS1));
       }
       std::string network_name = cros->wifi_connecting() ?
-          cros->wifi_name() : cros->cellular_name();
+          cros->wifi_network().name() : cros->cellular_network().name();
       SetTooltipText(
           l10n_util::GetStringF(IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
                                 UTF8ToWide(network_name)));
@@ -114,15 +114,17 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
                 IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
                 l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)));
       } else if (cros->wifi_connected()) {
-        SetIcon(IconForNetworkStrength(cros->wifi_strength(), false));
+        SetIcon(IconForNetworkStrength(
+            cros->wifi_network().strength(), false));
         SetTooltipText(l10n_util::GetStringF(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(cros->wifi_name())));
+            UTF8ToWide(cros->wifi_network().name())));
       } else if (cros->cellular_connected()) {
-        SetIcon(IconForNetworkStrength(cros->cellular_strength(), false));
+        SetIcon(IconForNetworkStrength(
+            cros->cellular_network().strength(), false));
         SetTooltipText(l10n_util::GetStringF(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(cros->cellular_name())));
+            UTF8ToWide(cros->cellular_network().name())));
       } else {
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
         SetTooltipText(l10n_util::GetString(

@@ -315,17 +315,17 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .Times(1)
       .WillRepeatedly((Return(false)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, wifi_name())
+  EXPECT_CALL(*mock_network_library_, wifi_network())
       .Times(1)
-      .WillRepeatedly((ReturnRef(empty_string_)))
+      .WillRepeatedly((ReturnRef(wifi_network_)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, cellular_networks())
       .Times(1)
       .WillRepeatedly((ReturnRef(cellular_networks_)))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_network_library_, cellular_name())
+  EXPECT_CALL(*mock_network_library_, cellular_network())
       .Times(1)
-      .WillRepeatedly((ReturnRef(empty_string_)))
+      .WillRepeatedly((ReturnRef(cellular_network_)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_network_library_, cellular_available())
       .Times(1)

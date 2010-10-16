@@ -72,7 +72,7 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
         menu_items_[index].wireless_path, &wifi);
     if (found) {
       info->network_type = kNetworkTypeWifi;
-      if (wifi.name() == cros->wifi_name()) {
+      if (wifi.service_path() == cros->wifi_network().service_path()) {
         if (cros->wifi_connected()) {
           info->status = kNetworkStatusConnected;
           info->message = l10n_util::GetStringUTF8(
@@ -117,7 +117,8 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
         menu_items_[index].wireless_path, &cellular);
     if (found) {
       info->network_type = kNetworkTypeCellular;
-      if (cellular.name() == cros->cellular_name()) {
+      if (cellular.service_path() ==
+          cros->cellular_network().service_path()) {
         if (cros->cellular_connected()) {
           info->status = kNetworkStatusConnected;
           info->message = l10n_util::GetStringUTF8(
@@ -275,7 +276,7 @@ void NetworkMenu::ActivatedAt(int index) {
       // If we are attempting to connect to a network that no longer exists,
       // display a notification.
       // TODO(stevenjb): Show notification.
-    } else if (wifi.name() == cros->wifi_name()) {
+    } else if (wifi.service_path() == cros->wifi_network().service_path()) {
       // Show the config settings for the active network.
       ShowWifi(wifi, false);
     } else {
@@ -289,7 +290,8 @@ void NetworkMenu::ActivatedAt(int index) {
       // If we are attempting to connect to a network that no longer exists,
       // display a notification.
       // TODO(stevenjb): Show notification.
-    } else if (cellular.name() == cros->cellular_name()) {
+    } else if (cellular.service_path() ==
+               cros->cellular_network().service_path()) {
       // Show the config settings for the cellular network.
       ShowCellular(cellular, false);
     } else {
@@ -405,29 +407,31 @@ void NetworkMenu::InitMenuItems() {
   SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
   SkBitmap badge = ethernet_connecting || ethernet_connected ?
       SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-  int flag = (ethernet_connecting || ethernet_connected) ?
-      FLAG_ETHERNET | FLAG_ASSOCIATED : FLAG_ETHERNET;
+  int flag = FLAG_ETHERNET;
+  if (ethernet_connecting || ethernet_connected)
+    flag |= FLAG_ASSOCIATED;
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       IconForDisplay(icon, badge), std::string(), flag));
 
   // Wifi
   const WifiNetworkVector& wifi_networks = cros->wifi_networks();
-  const std::string& active_wifi_name = cros->wifi_name();
+  const WifiNetwork& active_wifi = cros->wifi_network();
   // Wifi networks ssids.
   for (size_t i = 0; i < wifi_networks.size(); ++i) {
     label = ASCIIToUTF16(wifi_networks[i].name());
     SkBitmap icon = IconForNetworkStrength(wifi_networks[i].strength(), true);
     SkBitmap badge = wifi_networks[i].encrypted() ?
         *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : SkBitmap();
-    flag = (wifi_networks[i].name() == active_wifi_name) ?
-        FLAG_WIFI | FLAG_ASSOCIATED : FLAG_WIFI;
+    flag = FLAG_WIFI;
+    if (wifi_networks[i].service_path() == active_wifi.service_path())
+      flag |= FLAG_ASSOCIATED;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         IconForDisplay(icon, badge), wifi_networks[i].service_path(), flag));
   }
 
   // Cellular
   const CellularNetworkVector& cell_networks = cros->cellular_networks();
-  const std::string& active_cellular_name = cros->cellular_name();
+  const CellularNetwork& active_cellular = cros->cellular_network();
   // Cellular networks ssids.
   for (size_t i = 0; i < cell_networks.size(); ++i) {
     label = ASCIIToUTF16(cell_networks[i].name());
@@ -435,8 +439,9 @@ void NetworkMenu::InitMenuItems() {
     // TODO(chocobo): Check cellular network 3g/edge.
     SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
 //    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
-    flag = (cell_networks[i].name() == active_cellular_name) ?
-        FLAG_CELLULAR | FLAG_ASSOCIATED : FLAG_CELLULAR;
+    flag = FLAG_CELLULAR;
+    if (cell_networks[i].service_path() == active_cellular.service_path())
+      flag |= FLAG_ASSOCIATED;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         IconForDisplay(icon, badge), cell_networks[i].service_path(), flag));
   }

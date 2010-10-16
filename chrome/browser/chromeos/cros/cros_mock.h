@@ -103,7 +103,9 @@ class CrosMock {
   MockTouchpadLibrary* mock_touchpad_library_;
 
   ImePropertyList ime_properties_;
+  WifiNetwork wifi_network_;
   WifiNetworkVector wifi_networks_;
+  CellularNetwork cellular_network_;
   CellularNetworkVector cellular_networks_;
   std::string empty_string_;
 
