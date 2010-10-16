@@ -813,11 +813,10 @@ TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
 }
 
 // TODO(skrul): The "Pause" and "PauseWhenNotConnected" tests are
-// marked FLAKY because they sometimes fail on the Windows buildbots.
+// marked DISABLED because they sometimes fail on the Windows buildbots.
 // I have been unable to reproduce this hang after extensive testing
-// on a local Windows machine so these tests will remain flaky in
-// order to help diagnose the problem.
-TEST_F(SyncerThreadWithSyncerTest, FLAKY_Pause) {
+// on a local Windows machine.
+TEST_F(SyncerThreadWithSyncerTest, DISABLED_Pause) {
   WaitableEvent sync_cycle_ended_event(false, false);
   WaitableEvent paused_event(false, false);
   WaitableEvent resumed_event(false, false);
@@ -923,7 +922,7 @@ TEST_F(SyncerThreadWithSyncerTest, StartWhenNotConnected) {
 }
 
 // TODO(skrul): See TODO comment on the "Pause" test above for an
-// explanation of the usage of FLAKY here.
+// explanation of the usage of DISABLED here.
 // TODO(pinkerton): disabled due to hanging on test bots http://crbug.com/39070
 TEST_F(SyncerThreadWithSyncerTest, DISABLED_PauseWhenNotConnected) {
   WaitableEvent sync_cycle_ended_event(false, false);
