@@ -139,7 +139,8 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
   StopHttpServer();
 }
 
-TEST_F(ExtensionProxyUITest, MoveBrowserAction) {
+// Flaky, http://crbug.com/59441.
+TEST_F(ExtensionProxyUITest, FLAKY_MoveBrowserAction) {
   scoped_refptr<ExtensionProxy> rename_tab_extension =
       InstallRenameTabExtension();
   ASSERT_TRUE(rename_tab_extension.get());
