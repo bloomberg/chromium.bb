@@ -524,7 +524,7 @@ void ExternalTabContainer::ShowPageInfo(Profile* profile,
                                         const GURL& url,
                                         const NavigationEntry::SSLStatus& ssl,
                                         bool show_history) {
-  browser::ShowPageInfo(GetNativeView(), profile, url, ssl, show_history);
+  browser::ShowPageInfoBubble(GetNativeView(), profile, url, ssl, show_history);
 }
 
 void ExternalTabContainer::RegisterRenderViewHostForAutomation(

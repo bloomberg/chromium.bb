@@ -182,18 +182,8 @@ PageInfoModel::PageInfoModel(Profile* profile,
         subject_name,
         base::IntToString16(ssl.security_bits())));
     if (ssl.displayed_insecure_content() || ssl.ran_insecure_content()) {
-      // The old SSL dialog only had good and bad state, so for the old
-      // implementation we raise an error on finding mixed content. The new
-      // SSL info bubble has a warning state for displaying insecure content,
-      // so we check. The command line check will go away once we eliminate
-      // the old dialogs.
-      const CommandLine* command_line(CommandLine::ForCurrentProcess());
-      if (!command_line->HasSwitch(switches::kDisableNewPageInfoBubble) &&
-          !ssl.ran_insecure_content()) {
-        icon_id = ICON_STATE_WARNING_MINOR;
-      } else {
-        icon_id = ICON_STATE_ERROR;
-      }
+      icon_id = ssl.ran_insecure_content() ?
+          ICON_STATE_ERROR : ICON_STATE_WARNING_MINOR;
       description.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
           description,
@@ -289,13 +279,7 @@ PageInfoModel::SectionInfo PageInfoModel::GetSectionInfo(int index) {
 gfx::NativeImage PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
   if (icon_id == ICON_NONE)
     return NULL;
-  // TODO(rsesek): Remove once the window is replaced with the bubble.
-  const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  if (command_line->HasSwitch(switches::kDisableNewPageInfoBubble) &&
-      icon_id != ICON_STATE_OK) {
-    return icons_[ICON_STATE_WARNING_MAJOR];
-  }
-  // The bubble uses new, various icons.
+
   return icons_[icon_id];
 }
 
@@ -316,12 +300,7 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
   }
 
   // We only show the Site Information heading for the new dialogs.
-  string16 title;
-  const CommandLine* command_line(CommandLine::ForCurrentProcess());
-  bool as_bubble = !command_line->HasSwitch(
-      switches::kDisableNewPageInfoBubble);
-  if (as_bubble)
-    title = l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE);
+  string16 title = l10n_util::GetStringUTF16(IDS_PAGE_INFO_SITE_INFO_TITLE);
 
   if (!visited_before_today) {
     sections_.push_back(SectionInfo(
@@ -334,8 +313,7 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
         SECTION_INFO_FIRST_VISIT));
   } else {
     sections_.push_back(SectionInfo(
-        // TODO(rsesek): Remove once the window is replaced with the bubble.
-        as_bubble ? ICON_STATE_INFO : ICON_STATE_OK,
+        ICON_STATE_INFO,
         l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE),
         title,
