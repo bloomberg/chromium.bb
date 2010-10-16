@@ -536,7 +536,8 @@ HRESULT ChromeFrameActivex::CreateScriptBlockForEvent(
   HRESULT hr = GetContainingDocument(document.Receive());
   if (SUCCEEDED(hr)) {
     ScopedComPtr<IHTMLElement> element, new_element;
-    document->createElement(StackBstr(L"script"), element.Receive());
+    document->createElement(base::win::ScopedBstr(L"script"),
+                            element.Receive());
     if (element) {
       ScopedComPtr<IHTMLScriptElement> script_element;
       if (SUCCEEDED(hr = script_element.QueryFrom(element))) {
@@ -544,9 +545,10 @@ HRESULT ChromeFrameActivex::CreateScriptBlockForEvent(
         script_element->put_event(event_name);
         script_element->put_text(script);
 
-        hr = insert_after->insertAdjacentElement(StackBstr(L"afterEnd"),
-                                                 element,
-                                                 new_element.Receive());
+        hr = insert_after->insertAdjacentElement(
+            base::win::StackBstr(L"afterEnd"),
+            element,
+            new_element.Receive());
       }
     }
   }
