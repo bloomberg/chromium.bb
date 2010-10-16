@@ -112,6 +112,10 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
       url.SchemeIs(chrome::kChromeInternalScheme))
     return &NewDOMUI<NewTabUI>;
 
+  // Give about:about a generic DOM UI so it can navigate to pages with DOM UIs.
+  if (url.spec() == chrome::kChromeUIAboutAboutURL)
+    return &NewDOMUI<DOMUI>;
+
   // We must compare hosts only since some of the DOM UIs append extra stuff
   // after the host name.
   if (url.host() == chrome::kChromeUIBookmarksHost)
