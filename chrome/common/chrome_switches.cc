@@ -51,9 +51,6 @@ const char kAppId[]                         = "app-id";
 // panel window.
 const char kAppLaunchAsPanel[]              = "app-launch-as-panel";
 
-// Makes the app launcher popup when a new tab is created.
-const char kAppsPanel[]                     = "apps-panel";
-
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 

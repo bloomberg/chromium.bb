@@ -120,7 +120,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/view_ids.h"
-#include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
 #endif  // OS_WIN
 
@@ -133,7 +132,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
-#include "chrome/browser/views/app_launcher.h"
 #endif
 
 using base::TimeDelta;
@@ -1149,17 +1147,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_VERTICAL_TABS, show_main_ui);
 }
 
-bool Browser::OpenAppsPanelAsNewTab() {
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAppsPanel)) {
-    AppLauncher::ShowForNewTab(this, std::string());
-    return true;
-  }
-#endif
-  return false;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, Assorted browser commands:
 
@@ -1347,9 +1334,6 @@ void Browser::CloseWindow() {
 
 void Browser::NewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab"), profile_);
-
-  if (OpenAppsPanelAsNewTab())
-    return;
 
   if (type() == TYPE_NORMAL) {
     AddBlankTab(true);

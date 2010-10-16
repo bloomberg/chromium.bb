@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/browser_view_layout.h"

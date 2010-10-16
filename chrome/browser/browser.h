@@ -445,11 +445,6 @@ class Browser : public TabHandlerDelegate,
   // will call this method.
   void UpdateCommandsForFullscreenMode(bool is_fullscreen);
 
-  // Opens the apps panel as a result of a new tab creation, if the browser is
-  // configured in that mode.  Returns true if the apps panel was opened, false
-  // otherwise.
-  bool OpenAppsPanelAsNewTab();
-
   // Assorted browser commands ////////////////////////////////////////////////
 
   // NOTE: Within each of the following sections, the IDs are ordered roughly by

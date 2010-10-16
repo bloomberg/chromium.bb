@@ -13,7 +13,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_menu_model.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/views/app_launcher.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_renderer_data.h"
 #include "chrome/common/chrome_switches.h"
@@ -271,9 +270,6 @@ bool BrowserTabStripController::IsCompatibleWith(BaseTabStrip* other) const {
 void BrowserTabStripController::CreateNewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"),
                             model_->profile());
-
-  if (browser_ && browser_->OpenAppsPanelAsNewTab())
-    return;
 
   model_->delegate()->AddBlankTab(true);
 }
