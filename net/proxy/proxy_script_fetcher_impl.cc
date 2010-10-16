@@ -2,40 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/proxy/proxy_script_fetcher.h"
+#include "net/proxy/proxy_script_fetcher_impl.h"
 
-#include <set>
-
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/icu_string_conversions.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
-#include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 
 // TODO(eroman):
 //   - Support auth-prompts.
 
+// TODO(eroman): Use a state machine rather than recursion. Recursion could
+//               lead to lots of frames.
 namespace net {
 
 namespace {
 
 // The maximum size (in bytes) allowed for a PAC script. Responses exceeding
 // this will fail with ERR_FILE_TOO_BIG.
-int max_response_bytes = 1048576;  // 1 megabyte
+const int kDefaultMaxResponseBytes = 1048576;  // 1 megabyte
 
 // The maximum duration (in milliseconds) allowed for fetching the PAC script.
 // Responses exceeding this will fail with ERR_TIMED_OUT.
-int max_duration_ms = 300000;  // 5 minutes
+const int kDefaultMaxDurationMs = 300000;  // 5 minutes
 
 // Returns true if |mime_type| is one of the known PAC mime type.
 bool IsPacMimeType(const std::string& mime_type) {
@@ -74,123 +69,7 @@ void ConvertResponseToUTF16(const std::string& charset,
                         utf16);
 }
 
-class ProxyScriptFetcherTracker {
- public:
-  void AddFetcher(ProxyScriptFetcher* fetcher) {
-    DCHECK(!ContainsKey(fetchers_, fetcher));
-    fetchers_.insert(fetcher);
-  }
-
-  void RemoveFetcher(ProxyScriptFetcher* fetcher) {
-    DCHECK(ContainsKey(fetchers_, fetcher));
-    fetchers_.erase(fetcher);
-  }
-
-  void CancelAllFetches() {
-    for (std::set<ProxyScriptFetcher*>::const_iterator it = fetchers_.begin();
-         it != fetchers_.end(); ++it) {
-      (*it)->Cancel();
-    }
-  }
-
- private:
-  ProxyScriptFetcherTracker();
-  ~ProxyScriptFetcherTracker();
-
-  friend struct base::DefaultLazyInstanceTraits<ProxyScriptFetcherTracker>;
-
-  std::set<ProxyScriptFetcher*> fetchers_;
-  DISALLOW_COPY_AND_ASSIGN(ProxyScriptFetcherTracker);
-};
-
-ProxyScriptFetcherTracker::ProxyScriptFetcherTracker() {}
-ProxyScriptFetcherTracker::~ProxyScriptFetcherTracker() {}
-
-base::LazyInstance<ProxyScriptFetcherTracker>
-    g_fetcher_tracker(base::LINKER_INITIALIZED);
-
 }  // namespace
-
-void EnsureNoProxyScriptFetches() {
-  g_fetcher_tracker.Get().CancelAllFetches();
-}
-
-class ProxyScriptFetcherImpl : public ProxyScriptFetcher,
-                               public URLRequest::Delegate {
- public:
-  // Creates a ProxyScriptFetcher that issues requests through
-  // |url_request_context|. |url_request_context| must remain valid for the
-  // lifetime of ProxyScriptFetcherImpl.
-  explicit ProxyScriptFetcherImpl(URLRequestContext* url_request_context);
-
-  virtual ~ProxyScriptFetcherImpl();
-
-  // ProxyScriptFetcher methods:
-
-  virtual int Fetch(const GURL& url, string16* text,
-                    CompletionCallback* callback);
-  virtual void Cancel();
-  virtual URLRequestContext* GetRequestContext();
-
-  // URLRequest::Delegate methods:
-
-  virtual void OnAuthRequired(URLRequest* request,
-                              AuthChallengeInfo* auth_info);
-  virtual void OnSSLCertificateError(URLRequest* request, int cert_error,
-                                     X509Certificate* cert);
-  virtual void OnResponseStarted(URLRequest* request);
-  virtual void OnReadCompleted(URLRequest* request, int num_bytes);
-  virtual void OnResponseCompleted(URLRequest* request);
-
- private:
-  // Read more bytes from the response.
-  void ReadBody(URLRequest* request);
-
-  // Called once the request has completed to notify the caller of
-  // |response_code_| and |response_text_|.
-  void FetchCompleted();
-
-  // Clear out the state for the current request.
-  void ResetCurRequestState();
-
-  // Callback for time-out task of request with id |id|.
-  void OnTimeout(int id);
-
-  // Factory for creating the time-out task. This takes care of revoking
-  // outstanding tasks when |this| is deleted.
-  ScopedRunnableMethodFactory<ProxyScriptFetcherImpl> task_factory_;
-
-  // The context used for making network requests.
-  URLRequestContext* url_request_context_;
-
-  // Buffer that URLRequest writes into.
-  enum { kBufSize = 4096 };
-  scoped_refptr<net::IOBuffer> buf_;
-
-  // The next ID to use for |cur_request_| (monotonically increasing).
-  int next_id_;
-
-  // The current (in progress) request, or NULL.
-  scoped_ptr<URLRequest> cur_request_;
-
-  // State for current request (only valid when |cur_request_| is not NULL):
-
-  // Unique ID for the current request.
-  int cur_request_id_;
-
-  // Callback to invoke on completion of the fetch.
-  CompletionCallback* callback_;
-
-  // Holds the error condition that was hit on the current request, or OK.
-  int result_code_;
-
-  // Holds the bytes read so far. Will not exceed |max_response_bytes|.
-  std::string bytes_read_so_far_;
-
-  // This buffer is owned by the owner of |callback|, and will be filled with
-  // UTF16 response on completion.
-  string16* result_text_;
-};
 
 ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
     URLRequestContext* url_request_context)
@@ -202,13 +81,13 @@ ProxyScriptFetcherImpl::ProxyScriptFetcherImpl(
       cur_request_id_(0),
       callback_(NULL),
       result_code_(OK),
-      result_text_(NULL) {
+      result_text_(NULL),
+      max_response_bytes_(kDefaultMaxResponseBytes),
+      max_duration_(base::TimeDelta::FromMilliseconds(kDefaultMaxDurationMs)) {
   DCHECK(url_request_context);
-  g_fetcher_tracker.Get().AddFetcher(this);
 }
 
 ProxyScriptFetcherImpl::~ProxyScriptFetcherImpl() {
-  g_fetcher_tracker.Get().RemoveFetcher(this);
   // The URLRequest's destructor will cancel the outstanding request, and
   // ensure that the delegate (this) is not called again.
 }
@@ -244,7 +123,7 @@ int ProxyScriptFetcherImpl::Fetch(const GURL& url,
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       task_factory_.NewRunnableMethod(&ProxyScriptFetcherImpl::OnTimeout,
                                       cur_request_id_),
-      static_cast<int>(max_duration_ms));
+      static_cast<int>(max_duration_.InMilliseconds()));
 
   // Start the request.
   cur_request_->Start();
@@ -320,7 +199,7 @@ void ProxyScriptFetcherImpl::OnReadCompleted(URLRequest* request,
   if (num_bytes > 0) {
     // Enforce maximum size bound.
     if (num_bytes + bytes_read_so_far_.size() >
-        static_cast<size_t>(max_response_bytes)) {
+        static_cast<size_t>(max_response_bytes_)) {
       result_code_ = ERR_FILE_TOO_BIG;
       request->Cancel();
       return;
@@ -391,26 +270,17 @@ void ProxyScriptFetcherImpl::OnTimeout(int id) {
   cur_request_->Cancel();
 }
 
-// static
-ProxyScriptFetcher* ProxyScriptFetcher::Create(
-    URLRequestContext* url_request_context) {
-  return new ProxyScriptFetcherImpl(url_request_context);
-}
-
-// static
-int ProxyScriptFetcher::SetTimeoutConstraintForUnittest(
-    int timeout_ms) {
-  int prev = max_duration_ms;
-  max_duration_ms = timeout_ms;
+base::TimeDelta ProxyScriptFetcherImpl::SetTimeoutConstraint(
+    base::TimeDelta timeout) {
+  base::TimeDelta prev = max_duration_;
+  max_duration_ = timeout;
   return prev;
 }
 
-// static
-size_t ProxyScriptFetcher::SetSizeConstraintForUnittest(size_t size_bytes) {
-  size_t prev = max_response_bytes;
-  max_response_bytes = size_bytes;
+size_t ProxyScriptFetcherImpl::SetSizeConstraint(size_t size_bytes) {
+  size_t prev = max_response_bytes_;
+  max_response_bytes_ = size_bytes;
   return prev;
 }
-
 
 }  // namespace net

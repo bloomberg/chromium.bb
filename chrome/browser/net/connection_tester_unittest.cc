@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/connection_tester.h"
 
+#include "chrome/browser/io_thread.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,12 +89,13 @@ class ConnectionTesterTest : public PlatformTest {
   net::TestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
   MessageLoop message_loop_;
+  IOThread io_thread_;  // Needed for creating ProxyScriptFetchers.
 };
 
 TEST_F(ConnectionTesterTest, RunAllTests) {
   ASSERT_TRUE(test_server_.Start());
 
-  ConnectionTester tester(&test_delegate_);
+  ConnectionTester tester(&test_delegate_, &io_thread_);
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?
@@ -117,7 +119,8 @@ TEST_F(ConnectionTesterTest, RunAllTests) {
 TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   ASSERT_TRUE(test_server_.Start());
 
-  scoped_ptr<ConnectionTester> tester(new ConnectionTester(&test_delegate_));
+  scoped_ptr<ConnectionTester> tester(
+      new ConnectionTester(&test_delegate_, &io_thread_));
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?

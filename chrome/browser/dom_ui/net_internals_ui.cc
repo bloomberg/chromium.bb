@@ -814,7 +814,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
   // For example, turn "www.google.com" into "http://www.google.com".
   GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(url_str), std::string()));
 
-  connection_tester_.reset(new ConnectionTester(this));
+  connection_tester_.reset(new ConnectionTester(this, io_thread_));
   connection_tester_->RunAllTests(url);
 }
 

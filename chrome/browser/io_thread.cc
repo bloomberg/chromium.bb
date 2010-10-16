@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/leak_tracker.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -15,22 +16,22 @@
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/connect_interceptor.h"
-#include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/passive_log_collector.h"
+#include "chrome/browser/net/predictor_api.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "net/base/dnsrr_resolver.h"
-#include "net/base/mapped_host_resolver.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
+#include "net/base/mapped_host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
-#include "net/proxy/proxy_script_fetcher.h"
+#include "net/proxy/proxy_script_fetcher_impl.h"
 
 namespace {
 
@@ -113,6 +114,34 @@ class LoggingNetworkChangeObserver
 
 }  // namespace
 
+// This is a wrapper class around ProxyScriptFetcherImpl that will
+// keep track of live instances.
+class IOThread::ManagedProxyScriptFetcher
+    : public net::ProxyScriptFetcherImpl {
+ public:
+  ManagedProxyScriptFetcher(URLRequestContext* context,
+                            IOThread* io_thread)
+      : net::ProxyScriptFetcherImpl(context),
+        io_thread_(io_thread) {
+    DCHECK(!ContainsKey(*fetchers(), this));
+    fetchers()->insert(this);
+  }
+
+  virtual ~ManagedProxyScriptFetcher() {
+    DCHECK(ContainsKey(*fetchers(), this));
+    fetchers()->erase(this);
+  }
+
+ private:
+  ProxyScriptFetchers* fetchers() {
+    return &io_thread_->fetchers_;
+  }
+
+  IOThread* io_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(ManagedProxyScriptFetcher);
+};
+
 // The IOThread object must outlive any tasks posted to the IO thread before the
 // Quit task.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(IOThread);
@@ -163,6 +192,11 @@ void IOThread::ChangedToOnTheRecord() {
       NewRunnableMethod(
           this,
           &IOThread::ChangedToOnTheRecordOnIOThread));
+}
+
+net::ProxyScriptFetcher* IOThread::CreateAndRegisterProxyScriptFetcher(
+    URLRequestContext* url_request_context) {
+  return new ManagedProxyScriptFetcher(url_request_context, this);
 }
 
 void IOThread::Init() {
@@ -221,7 +255,11 @@ void IOThread::CleanUp() {
     globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
 
-  net::EnsureNoProxyScriptFetches();
+  // Break any cycles between the ProxyScriptFetcher and URLRequestContext.
+  for (ProxyScriptFetchers::const_iterator it = fetchers_.begin();
+       it != fetchers_.end(); ++it) {
+    (*it)->Cancel();
+  }
 
   // We will delete the NetLog as part of CleanUpAfterMessageLoopDestruction()
   // in case any of the message loop destruction observers try to access it.

@@ -95,7 +95,7 @@ net::ProxyService* CreateProxyService(
     URLRequestContext* context,
     net::ProxyConfigService* proxy_config_service,
     const CommandLine& command_line,
-    MessageLoop* io_loop) {
+    IOThread* io_thread) {
   CheckCurrentlyOnIOThread();
 
   bool use_v8 = !command_line.HasSwitch(switches::kWinHttpProxyResolver);
@@ -126,9 +126,9 @@ net::ProxyService* CreateProxyService(
     return net::ProxyService::CreateUsingV8ProxyResolver(
         proxy_config_service,
         num_pac_threads,
-        context,
-        net_log,
-        io_loop);
+        io_thread->CreateAndRegisterProxyScriptFetcher(context),
+        context->host_resolver(),
+        net_log);
   }
 
   return net::ProxyService::CreateUsingSystemProxyResolver(
@@ -271,7 +271,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          context,
                          proxy_config_service_.release(),
                          command_line,
-                         MessageLoop::current() /*io_loop*/));
+                         io_thread()));
 
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       net::DISK_CACHE, disk_cache_path_, cache_size_,

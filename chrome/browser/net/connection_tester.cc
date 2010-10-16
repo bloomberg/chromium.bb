@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/firefox_proxy_settings.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/dnsrr_resolver.h"
@@ -37,6 +38,9 @@ namespace {
 // to the specified "experiment".
 class ExperimentURLRequestContext : public URLRequestContext {
  public:
+  explicit ExperimentURLRequestContext(IOThread* io_thread)
+      : io_thread_(io_thread) {}
+
   int Init(const ConnectionTester::Experiment& experiment) {
     int rv;
 
@@ -161,7 +165,10 @@ class ExperimentURLRequestContext : public URLRequestContext {
 
     *proxy_service = net::ProxyService::CreateUsingV8ProxyResolver(
         config_service.release(),
-        0u, this, NULL, MessageLoop::current());
+        0u,
+        io_thread_->CreateAndRegisterProxyScriptFetcher(this),
+        host_resolver(),
+        NULL);
 
     return net::OK;
   }
@@ -205,6 +212,8 @@ class ExperimentURLRequestContext : public URLRequestContext {
 
     return net::ERR_FAILED;
   }
+
+  IOThread* io_thread_;
 };
 
 }  // namespace
@@ -291,7 +300,7 @@ void ConnectionTester::TestRunner::OnResponseCompleted(URLRequest* request) {
 void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
   // Try to create a URLRequestContext for this experiment.
   scoped_refptr<ExperimentURLRequestContext> context =
-      new ExperimentURLRequestContext();
+      new ExperimentURLRequestContext(tester_->io_thread_);
   int rv = context->Init(experiment);
   if (rv != net::OK) {
     // Complete the experiment with a failure.
@@ -307,9 +316,10 @@ void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
 
 // ConnectionTester ----------------------------------------------------------
 
-ConnectionTester::ConnectionTester(Delegate* delegate)
-    : delegate_(delegate) {
+ConnectionTester::ConnectionTester(Delegate* delegate, IOThread* io_thread)
+    : delegate_(delegate), io_thread_(io_thread) {
   DCHECK(delegate);
+  DCHECK(io_thread);
 }
 
 ConnectionTester::~ConnectionTester() {
