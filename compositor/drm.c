@@ -123,6 +123,7 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	buffer->base.height = height;
 	buffer->base.visual = visual;
 	buffer->base.attach = drm_buffer_attach;
+	buffer->base.damage = drm_buffer_damage;
 	buffer->image = eglCreateImageKHR(compositor->display,
 					  compositor->context,
 					  EGL_DRM_BUFFER_MESA,
