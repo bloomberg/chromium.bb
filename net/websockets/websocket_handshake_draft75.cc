@@ -83,8 +83,7 @@ int WebSocketHandshakeDraft75::ReadServerHandshake(
       return -1;
     if (memcmp(p, kUpgradeHeader, kUpgradeHeaderLength)) {
       mode_ = MODE_FAILED;
-      DLOG(INFO) << "Bad Upgrade Header "
-                 << std::string(p, kUpgradeHeaderLength);
+      DVLOG(1) << "Bad Upgrade Header " << std::string(p, kUpgradeHeaderLength);
       return p - data;
     }
     p += kUpgradeHeaderLength;
@@ -93,8 +92,8 @@ int WebSocketHandshakeDraft75::ReadServerHandshake(
       return -1;
     if (memcmp(p, kConnectionHeader, kConnectionHeaderLength)) {
       mode_ = MODE_FAILED;
-      DLOG(INFO) << "Bad Connection Header "
-                 << std::string(p, kConnectionHeaderLength);
+      DVLOG(1) << "Bad Connection Header "
+               << std::string(p, kConnectionHeaderLength);
       return p - data;
     }
     p += kConnectionHeaderLength;
@@ -107,8 +106,7 @@ int WebSocketHandshakeDraft75::ReadServerHandshake(
   scoped_refptr<HttpResponseHeaders> headers(
       new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(data, eoh)));
   if (!ProcessHeaders(*headers)) {
-    DLOG(INFO) << "Process Headers failed: "
-               << std::string(data, eoh);
+    DVLOG(1) << "Process Headers failed: " << std::string(data, eoh);
     mode_ = MODE_FAILED;
   }
   switch (mode_) {

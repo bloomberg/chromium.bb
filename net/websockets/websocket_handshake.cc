@@ -93,13 +93,12 @@ int WebSocketHandshake::ReadServerHandshake(const char* data, size_t len) {
 
   if (headers->response_code() != 101) {
     mode_ = MODE_FAILED;
-    DLOG(INFO) << "Bad response code: " << headers->response_code();
+    DVLOG(1) << "Bad response code: " << headers->response_code();
     return eoh;
   }
   mode_ = MODE_NORMAL;
   if (!ProcessHeaders(*headers) || !CheckResponseHeaders()) {
-    DLOG(INFO) << "Process Headers failed: "
-               << std::string(data, eoh);
+    DVLOG(1) << "Process Headers failed: " << std::string(data, eoh);
     mode_ = MODE_FAILED;
     return eoh;
   }

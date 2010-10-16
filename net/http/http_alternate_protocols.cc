@@ -73,7 +73,7 @@ void HttpAlternateProtocols::SetAlternateProtocolFor(
         GetAlternateProtocolFor(http_host_port_pair);
 
     if (existing_alternate.protocol == BROKEN) {
-      DLOG(INFO) << "Ignore alternate protocol since it's known to be broken.";
+      DVLOG(1) << "Ignore alternate protocol since it's known to be broken.";
       return;
     }
 

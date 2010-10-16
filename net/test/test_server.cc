@@ -164,7 +164,7 @@ bool TestServer::Stop() {
     base::CloseProcessHandle(process_handle_);
     process_handle_ = base::kNullProcessHandle;
   } else {
-    LOG(INFO) << "Kill failed?";
+    VLOG(1) << "Kill failed?";
   }
 
   return ret;

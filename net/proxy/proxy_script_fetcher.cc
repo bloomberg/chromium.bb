@@ -293,8 +293,8 @@ void ProxyScriptFetcherImpl::OnResponseStarted(URLRequest* request) {
     // NOTE about status codes: We are like Firefox 3 in this respect.
     // {IE 7, Safari 3, Opera 9.5} do not care about the status code.
     if (request->GetResponseCode() != 200) {
-      LOG(INFO) << "Fetched PAC script had (bad) status line: "
-                << request->response_headers()->GetStatusLine();
+      VLOG(1) << "Fetched PAC script had (bad) status line: "
+              << request->response_headers()->GetStatusLine();
       result_code_ = ERR_PAC_STATUS_NOT_OK;
       request->Cancel();
       return;
@@ -306,8 +306,8 @@ void ProxyScriptFetcherImpl::OnResponseStarted(URLRequest* request) {
     std::string mime_type;
     cur_request_->GetMimeType(&mime_type);
     if (!IsPacMimeType(mime_type)) {
-      LOG(INFO) << "Fetched PAC script does not have a proper mime type: "
-                << mime_type;
+      VLOG(1) << "Fetched PAC script does not have a proper mime type: "
+              << mime_type;
     }
   }
 
