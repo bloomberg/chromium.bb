@@ -31,6 +31,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor_api.h"
+#include "chrome/browser/net/net_pref_observer.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -145,6 +146,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   SigninManager::RegisterUserPrefs(user_prefs);
   TemplateURLModel::RegisterUserPrefs(user_prefs);
   InstantController::RegisterUserPrefs(user_prefs);
+  NetPrefObserver::RegisterPrefs(user_prefs);
 }
 
 }  // namespace browser

@@ -172,6 +172,13 @@ templates and will be translated for each locale. -->
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
 
+    <message name="IDS_POLICY_DISABLESPDY_CAPTION" desc="Caption of the 'Disable SPDY' policy.">
+      Disable SPDY protocol
+    </message>
+    <message name="IDS_POLICY_DISABLESPDY_DESC" desc="Description of the 'Disable SPDY' policy.">
+      Disables use of the SPDY protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+    </message>      
+
     <message name="IDS_POLICY_JAVASCRIPTENABLED_CAPTION" desc="Caption of the 'JavaScript enabled' policy settings page.">
       Enable JavaScript
     </message>

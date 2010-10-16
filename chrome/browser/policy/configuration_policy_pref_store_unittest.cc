@@ -144,6 +144,8 @@ INSTANTIATE_TEST_CASE_P(
                     prefs::kSearchSuggestEnabled),
         TypeAndName(ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
                     prefs::kDnsPrefetchingEnabled),
+        TypeAndName(ConfigurationPolicyStore::kPolicyDisableSpdy,
+                    prefs::kDisableSpdy),
         TypeAndName(ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
                     prefs::kSafeBrowsingEnabled),
         TypeAndName(ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,

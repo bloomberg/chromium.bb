@@ -31,6 +31,7 @@ const char kDefaultSearchProviderIconURL[] =
     "DefaultSearchProviderIconURL";
 const char kDefaultSearchProviderEncodings[] =
     "DefaultSearchProviderEncodings";
+const char kDisableSpdy[] = "DisableSpdy";
 const char kProxyServerMode[] = "ProxyServerMode";
 const char kProxyServer[] = "ProxyServer";
 const char kProxyPacUrl[] = "ProxyPacUrl";

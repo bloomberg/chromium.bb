@@ -194,6 +194,9 @@ const char kDnsPrefetchingEnabled[] = "dns_prefetching.enabled";
 // next startup, based on what was actually needed during this startup.
 const char kDnsStartupPrefetchList[] = "StartupDNSPrefetchList";
 
+// Disables the SPDY protocol.
+const char kDisableSpdy[] = "spdy.disabled";
+
 // A list of host names used to fetch web pages, and their commonly used
 // sub-resource hostnames (and expected latency benefits from pre-resolving, or
 // preconnecting to, such sub-resource hostnames).

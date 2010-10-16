@@ -71,6 +71,7 @@ extern const char kAlternateErrorPagesEnabled[];
 extern const char kDnsPrefetchingEnabled[];
 extern const char kDnsStartupPrefetchList[];
 extern const char kDnsHostReferralList[];
+extern const char kDisableSpdy[];
 extern const char kCookiePromptExpanded[];
 extern const char kInstantConfirmDialogShown[];
 extern const char kInstantEnabled[];

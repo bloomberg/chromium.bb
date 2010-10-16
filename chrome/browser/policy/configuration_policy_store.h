@@ -31,6 +31,7 @@ class ConfigurationPolicyStore {
     kPolicyDefaultSearchProviderSuggestURL,
     kPolicyDefaultSearchProviderIconURL,
     kPolicyDefaultSearchProviderEncodings,
+    kPolicyDisableSpdy,
     kPolicyProxyServerMode,
     kPolicyProxyServer,
     kPolicyProxyPacUrl,

@@ -23,8 +23,13 @@ class NetPrefObserver : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  static void RegisterPrefs(PrefService* prefs);
+
  private:
+  void ApplySettings();
+
   BooleanPrefMember dns_prefetching_enabled_;
+  BooleanPrefMember spdy_disabled_;
 
   DISALLOW_COPY_AND_ASSIGN(NetPrefObserver);
 };

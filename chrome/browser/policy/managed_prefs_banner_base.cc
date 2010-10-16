@@ -76,6 +76,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       AddUserPref(prefs::kAlternateErrorPagesEnabled);
       AddUserPref(prefs::kSearchSuggestEnabled);
       AddUserPref(prefs::kDnsPrefetchingEnabled);
+      AddUserPref(prefs::kDisableSpdy);
       AddUserPref(prefs::kSafeBrowsingEnabled);
 #if defined(GOOGLE_CHROME_BUILD)
       AddLocalStatePref(prefs::kMetricsReportingEnabled);
