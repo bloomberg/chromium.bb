@@ -8,9 +8,9 @@
 #include <Foundation/Foundation.h>
 
 #include "base/file_path.h"
-#include "base/scoped_cftyperef.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "googleurl/src/gurl.h"
 
 namespace file_metadata {
@@ -69,7 +69,7 @@ void AddOriginMetadataToFile(const FilePath& file, const GURL& source,
   if (!file_path)
     return;
 
-  scoped_cftyperef<MDItemRef> md_item(
+  base::mac::ScopedCFTypeRef<MDItemRef> md_item(
       MDItemCreate(NULL, reinterpret_cast<CFStringRef>(file_path)));
   if (!md_item)
     return;

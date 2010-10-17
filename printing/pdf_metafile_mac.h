@@ -9,7 +9,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/basictypes.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 
 namespace gfx {
 class Rect;
@@ -90,13 +90,13 @@ class PdfMetafile {
   CGPDFDocumentRef GetPDFDocument() const;
 
   // Context for rendering to the pdf.
-  scoped_cftyperef<CGContextRef> context_;
+  base::mac::ScopedCFTypeRef<CGContextRef> context_;
 
   // PDF backing store.
-  scoped_cftyperef<CFMutableDataRef> pdf_data_;
+  base::mac::ScopedCFTypeRef<CFMutableDataRef> pdf_data_;
 
   // Lazily-created CGPDFDocument representation of pdf_data_.
-  mutable scoped_cftyperef<CGPDFDocumentRef> pdf_doc_;
+  mutable base::mac::ScopedCFTypeRef<CGPDFDocumentRef> pdf_doc_;
 
   // Whether or not a page is currently open.
   bool page_is_open_;

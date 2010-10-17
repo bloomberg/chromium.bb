@@ -7,7 +7,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "skia/ext/bitmap_platform_device_mac.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
@@ -123,7 +123,7 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
 
   bitmap.setIsOpaque(is_opaque);
 
-  scoped_cftyperef<CGColorSpaceRef> color_space(
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
     CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
   void* data = bitmap.getPixels();
 
@@ -133,7 +133,7 @@ SkBitmap NSImageToSkBitmap(NSImage* image, NSSize size, bool is_opaque) {
             (SK_A32_SHIFT == (a) && SK_R32_SHIFT == (r) \
              && SK_G32_SHIFT == (g) && SK_B32_SHIFT == (b))
 #if defined(SK_CPU_LENDIAN) && HAS_ARGB_SHIFTS(24, 16, 8, 0)
-  scoped_cftyperef<CGContextRef> context(
+  base::mac::ScopedCFTypeRef<CGContextRef> context(
     CGBitmapContextCreate(data, size.width, size.height, 8, size.width*4,
                           color_space,
                           kCGImageAlphaPremultipliedFirst |

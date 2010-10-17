@@ -15,7 +15,7 @@
 #include "gfx/gdi_util.h"  // EMF support
 #elif defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #endif
 
 namespace {
@@ -243,9 +243,9 @@ bool Image::LoadMetafile(const NativeMetafile& metafile) {
     size_t bytes = row_length_ * size_.height();
     DCHECK(bytes);
     data_.resize(bytes);
-    scoped_cftyperef<CGColorSpaceRef> color_space(
+    base::mac::ScopedCFTypeRef<CGColorSpaceRef> color_space(
         CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-    scoped_cftyperef<CGContextRef> bitmap_context(
+    base::mac::ScopedCFTypeRef<CGContextRef> bitmap_context(
         CGBitmapContextCreate(&*data_.begin(), size_.width(), size_.height(),
                               8, row_length_, color_space,
                               kCGImageAlphaPremultipliedLast));

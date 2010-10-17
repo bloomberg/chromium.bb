@@ -11,6 +11,7 @@
 #endif
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #endif
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
@@ -218,7 +219,8 @@ NPObject* WebPluginProxy::GetPluginElement() {
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
-  Send(new PluginHostMsg_GetPluginElement(route_id_, npobject_route_id, &success));
+  Send(new PluginHostMsg_GetPluginElement(route_id_, npobject_route_id,
+                                          &success));
   if (!success)
     return NULL;
 
@@ -416,12 +418,12 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   CGContextRef saved_context_weak = windowless_context_.get();
 
   if (background_context_.get()) {
-    scoped_cftyperef<CGImageRef> image(
+    base::mac::ScopedCFTypeRef<CGImageRef> image(
         CGBitmapContextCreateImage(background_context_));
     CGRect source_rect = rect.ToCGRect();
     // Flip the rect we use to pull from the canvas, since it's upside-down.
     source_rect.origin.y = CGImageGetHeight(image) - rect.y() - rect.height();
-    scoped_cftyperef<CGImageRef> sub_image(
+    base::mac::ScopedCFTypeRef<CGImageRef> sub_image(
         CGImageCreateWithImageInRect(image, source_rect));
     CGContextDrawImage(windowless_context_, rect.ToCGRect(), sub_image);
   } else if (transparent_) {

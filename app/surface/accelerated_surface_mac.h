@@ -11,7 +11,7 @@
 #include "app/gfx/gl/gl_context.h"
 #include "app/surface/transport_dib.h"
 #include "base/callback.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -130,7 +130,7 @@ class AcceleratedSurface {
   // 10.6 and later).
   // TODO(dspringer,kbr): Should the GPU backing store be encapsulated in its
   // own class so all this implementation detail is hidden?
-  scoped_cftyperef<CFTypeRef> io_surface_;
+  base::mac::ScopedCFTypeRef<CFTypeRef> io_surface_;
   // TODO(dspringer): If we end up keeping this TransportDIB mechanism, this
   // should really be a scoped_ptr_malloc<>, with a deallocate functor that
   // runs |dib_free_callback_|.  I was not able to figure out how to

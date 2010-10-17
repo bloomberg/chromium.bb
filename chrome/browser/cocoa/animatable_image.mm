@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #import "base/mac_util.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 @interface AnimatableImage (Private)
@@ -130,7 +130,7 @@
 // Sets the layer contents by converting the NSImage to a CGImageRef.  This will
 // rasterize PDF resources.
 - (void)setLayerContents:(CALayer*)layer {
-  scoped_cftyperef<CGImageRef> image(
+  base::mac::ScopedCFTypeRef<CGImageRef> image(
       mac_util::CopyNSImageToCGImage(image_.get()));
   // Create the layer that will be animated.
   [layer setContents:(id)image.get()];

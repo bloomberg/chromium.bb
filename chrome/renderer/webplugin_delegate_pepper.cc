@@ -25,7 +25,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #if defined(OS_MACOSX)
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #endif
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -1739,11 +1739,11 @@ void WebPluginDelegatePepper::DrawSkBitmapToCanvas(
     int canvas_height) {
   SkAutoLockPixels lock(bitmap);
   DCHECK(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
-  scoped_cftyperef<CGDataProviderRef> data_provider(
+  base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(
           NULL, bitmap.getAddr32(0, 0),
           bitmap.rowBytes() * bitmap.height(), NULL));
-  scoped_cftyperef<CGImageRef> image(
+  base::mac::ScopedCFTypeRef<CGImageRef> image(
       CGImageCreate(
           bitmap.width(), bitmap.height(),
           8, 32, bitmap.rowBytes(),

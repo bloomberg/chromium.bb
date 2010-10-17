@@ -9,6 +9,7 @@
 #include "app/surface/transport_dib.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_info.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
@@ -67,11 +68,11 @@ void BackingStoreMac::PaintToBackingStore(
   if (!dib)
     return;
 
-  scoped_cftyperef<CGDataProviderRef> data_provider(
+  base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, dib->memory(),
       bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
 
-  scoped_cftyperef<CGImageRef> bitmap_image(
+  base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
       CGImageCreate(bitmap_rect.width(), bitmap_rect.height(), 8, 32,
           4 * bitmap_rect.width(), mac_util::GetSystemColorSpace(),
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
@@ -81,7 +82,7 @@ void BackingStoreMac::PaintToBackingStore(
     const gfx::Rect& copy_rect = copy_rects[i];
 
     // Only the subpixels given by copy_rect have pixels to copy.
-    scoped_cftyperef<CGImageRef> image(
+    base::mac::ScopedCFTypeRef<CGImageRef> image(
         CGImageCreateWithImageInRect(bitmap_image, CGRectMake(
             copy_rect.x() - bitmap_rect.x(),
             copy_rect.y() - bitmap_rect.y(),
@@ -93,7 +94,7 @@ void BackingStoreMac::PaintToBackingStore(
       cg_layer_.reset(CreateCGLayer());
       if (cg_layer()) {
         // now that we have a layer, copy the cached image into it
-        scoped_cftyperef<CGImageRef> bitmap_image(
+        base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
             CGBitmapContextCreateImage(cg_bitmap_));
         CGContextDrawImage(CGLayerGetContext(cg_layer()),
                            CGRectMake(0, 0, size().width(), size().height()),
@@ -162,7 +163,7 @@ void BackingStoreMac::ScrollBackingStore(int dx, int dy,
       // See http://crbug.com/45553 , comments 5 and 6.
       static bool needs_layer_workaround = NeedsLayerWorkaround();
 
-      scoped_cftyperef<CGLayerRef> new_layer;
+      base::mac::ScopedCFTypeRef<CGLayerRef> new_layer;
       CGContextRef layer;
 
       if (needs_layer_workaround) {
@@ -189,7 +190,7 @@ void BackingStoreMac::ScrollBackingStore(int dx, int dy,
         cg_layer_.swap(new_layer);
     } else {
       // We don't have a layer, so scroll the contents of the CGBitmapContext.
-      scoped_cftyperef<CGImageRef> bitmap_image(
+      base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
           CGBitmapContextCreateImage(cg_bitmap_));
       CGContextSaveGState(cg_bitmap_);
       CGContextClipToRect(cg_bitmap_,

@@ -25,7 +25,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #endif
 
 namespace pepper {
@@ -416,11 +416,11 @@ void Graphics2D::Paint(WebKit::WebCanvas* canvas,
 #if defined(OS_MACOSX)
   SkAutoLockPixels lock(backing_bitmap);
 
-  scoped_cftyperef<CGDataProviderRef> data_provider(
+  base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(
           NULL, backing_bitmap.getAddr32(0, 0),
           backing_bitmap.rowBytes() * backing_bitmap.height(), NULL));
-  scoped_cftyperef<CGImageRef> image(
+  base::mac::ScopedCFTypeRef<CGImageRef> image(
       CGImageCreate(
           backing_bitmap.width(), backing_bitmap.height(),
           8, 32, backing_bitmap.rowBytes(),

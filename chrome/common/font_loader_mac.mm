@@ -11,7 +11,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
-#include "base/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 
 // static

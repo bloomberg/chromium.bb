@@ -5,6 +5,7 @@
 #include "chrome/common/mach_message_source_mac.h"
 
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
 
 MachMessageSource::MachMessageSource(mach_port_t port,
                                      MachPortListener* msg_listener,
@@ -16,7 +17,7 @@ MachMessageSource::MachMessageSource(mach_port_t port,
   CFMachPortContext port_context = {0};
   port_context.info = msg_listener;
 
-  scoped_cftyperef<CFMachPortRef> cf_mach_port_ref(
+  base::mac::ScopedCFTypeRef<CFMachPortRef> cf_mach_port_ref(
      CFMachPortCreateWithPort(kCFAllocatorDefault,
                               port,
                               MachMessageSource::OnReceiveMachMessage,

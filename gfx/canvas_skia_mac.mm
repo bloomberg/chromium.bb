@@ -6,7 +6,7 @@
 
 #include "gfx/canvas_skia.h"
 
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
@@ -70,7 +70,7 @@ void CanvasSkia::DrawStringInt(const std::wstring& text,
   NSAttributedString* ns_string =
       [[[NSAttributedString alloc] initWithString:base::SysWideToNSString(text)
                                         attributes:attributes] autorelease];
-  scoped_cftyperef<CTFramesetterRef> framesetter(
+  base::mac::ScopedCFTypeRef<CTFramesetterRef> framesetter(
       CTFramesetterCreateWithAttributedString(
       reinterpret_cast<CFAttributedStringRef>(ns_string)));
 
@@ -78,7 +78,7 @@ void CanvasSkia::DrawStringInt(const std::wstring& text,
   CGMutablePathRef path = CGPathCreateMutable();
   CGPathAddRect(path, NULL, text_bounds);
 
-  scoped_cftyperef<CTFrameRef> frame(
+  base::mac::ScopedCFTypeRef<CTFrameRef> frame(
       CTFramesetterCreateFrame(framesetter, CFRangeMake(0, 0), path, NULL));
   CTFrameDraw(frame, context);
   CGContextRestoreGState(context);

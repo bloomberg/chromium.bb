@@ -55,10 +55,6 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "base/scoped_cftyperef.h"
-#endif
-
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
 using WebKit::WebDragData;

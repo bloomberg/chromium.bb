@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "base/scoped_cftyperef.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

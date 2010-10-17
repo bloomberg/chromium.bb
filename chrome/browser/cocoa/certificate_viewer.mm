@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "net/base/x509_certificate.h"
 
 void ShowCertificateViewer(gfx::NativeWindow parent,
@@ -19,7 +19,7 @@ void ShowCertificateViewer(gfx::NativeWindow parent,
   if (!cert_mac)
     return;
 
-  scoped_cftyperef<CFMutableArrayRef> certificates(
+  base::mac::ScopedCFTypeRef<CFMutableArrayRef> certificates(
       CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks));
   if (!certificates.get()) {
     NOTREACHED();

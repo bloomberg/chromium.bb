@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PREFERENCES_MOCK_MAC_H_
 #pragma once
 
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "chrome/browser/preferences_mac.h"
 
 // Mock preferences wrapper for testing code that interacts with CFPreferences.
@@ -24,8 +24,8 @@ class MockPreferences : public MacPreferences {
   void AddTestItem(CFStringRef key, CFPropertyListRef value, bool is_forced);
 
  private:
-  scoped_cftyperef<CFMutableDictionaryRef> values_;
-  scoped_cftyperef<CFMutableSetRef> forced_;
+  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> values_;
+  base::mac::ScopedCFTypeRef<CFMutableSetRef> forced_;
 };
 
 #endif  // CHROME_BROWSER_PREFERENCES_MOCK_MAC_H_

@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include "base/mac/scoped_cftyperef.h"
 #include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
@@ -72,7 +73,7 @@ class PolicyTestParams {
       case Value::TYPE_LIST: {
         const ListValue* list =
             static_cast<const ListValue*>(test_value_.get());
-        scoped_cftyperef<CFMutableArrayRef> array(
+        base::mac::ScopedCFTypeRef<CFMutableArrayRef> array(
             CFArrayCreateMutable(NULL, list->GetSize(),
                                  &kCFTypeArrayCallBacks));
         for (ListValue::const_iterator element(list->begin());
@@ -82,7 +83,7 @@ class PolicyTestParams {
           std::string element_value;
           if (!(*element)->GetAsString(&element_value))
             return NULL;
-          scoped_cftyperef<CFStringRef> cf_element_value(
+          base::mac::ScopedCFTypeRef<CFStringRef> cf_element_value(
               base::SysUTF8ToCFStringRef(element_value));
           CFArrayAppendValue(array, cf_element_value.get());
         }
@@ -150,18 +151,19 @@ TEST_P(ConfigurationPolicyProviderMacTest, Default) {
 }
 
 TEST_P(ConfigurationPolicyProviderMacTest, Invalid) {
-  scoped_cftyperef<CFStringRef> name(
+  base::mac::ScopedCFTypeRef<CFStringRef> name(
       base::SysUTF8ToCFStringRef(GetParam().policy_name()));
-  scoped_cftyperef<CFDataRef> invalid_data(CFDataCreate(NULL, NULL, 0));
+  base::mac::ScopedCFTypeRef<CFDataRef> invalid_data(
+      CFDataCreate(NULL, NULL, 0));
   prefs_->AddTestItem(name, invalid_data.get(), true);
   EXPECT_TRUE(provider_->Provide(store_.get()));
   EXPECT_TRUE(store_->policy_map().empty());
 }
 
 TEST_P(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
-  scoped_cftyperef<CFStringRef> name(
+  base::mac::ScopedCFTypeRef<CFStringRef> name(
       base::SysUTF8ToCFStringRef(GetParam().policy_name()));
-  scoped_cftyperef<CFPropertyListRef> test_value(
+  base::mac::ScopedCFTypeRef<CFPropertyListRef> test_value(
       GetParam().GetPropertyListValue());
   ASSERT_TRUE(test_value.get());
   prefs_->AddTestItem(name, test_value.get(), false);
@@ -170,9 +172,9 @@ TEST_P(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
 }
 
 TEST_P(ConfigurationPolicyProviderMacTest, TestValue) {
-  scoped_cftyperef<CFStringRef> name(
+  base::mac::ScopedCFTypeRef<CFStringRef> name(
       base::SysUTF8ToCFStringRef(GetParam().policy_name()));
-  scoped_cftyperef<CFPropertyListRef> test_value(
+  base::mac::ScopedCFTypeRef<CFPropertyListRef> test_value(
       GetParam().GetPropertyListValue());
   ASSERT_TRUE(test_value.get());
   prefs_->AddTestItem(name, test_value, true);

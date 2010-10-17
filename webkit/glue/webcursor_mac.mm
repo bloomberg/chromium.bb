@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/nsimage_cache_mac.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
@@ -33,11 +33,12 @@ NSCursor* LoadCursor(const char* name, int x, int y) {
 
 CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
                                        const gfx::Size& custom_size) {
-  scoped_cftyperef<CGColorSpaceRef> cg_color(CGColorSpaceCreateDeviceRGB());
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> cg_color(
+      CGColorSpaceCreateDeviceRGB());
   // This is safe since we're not going to draw into the context we're creating.
   void* data = const_cast<char*>(&custom_data[0]);
   // The settings here match SetCustomData() below; keep in sync.
-  scoped_cftyperef<CGContextRef> context(
+  base::mac::ScopedCFTypeRef<CGContextRef> context(
       CGBitmapContextCreate(data,
                             custom_size.width(),
                             custom_size.height(),
@@ -56,7 +57,7 @@ NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
   // results in an infinite loop.  This CHECK ensures that we crash instead.
   CHECK(!custom_data.empty());
 
-  scoped_cftyperef<CGImageRef> cg_image(
+  base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
       CreateCGImageFromCustomData(custom_data, custom_size));
 
   NSBitmapImageRep* ns_bitmap =
@@ -258,7 +259,7 @@ void WebCursor::InitFromCursor(const Cursor* cursor) {
     }
   }
 
-  scoped_cftyperef<CGImageRef> cg_image(
+  base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
       CreateCGImageFromCustomData(raw_data, custom_size));
 
   WebKit::WebCursorInfo cursor_info;
@@ -322,7 +323,7 @@ void WebCursor::SetCustomData(const WebImage& image) {
   if (image.isNull())
     return;
 
-  scoped_cftyperef<CGColorSpaceRef> cg_color(
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> cg_color(
       CGColorSpaceCreateDeviceRGB());
 
   const WebSize& image_dimensions = image.size();
@@ -337,7 +338,7 @@ void WebCursor::SetCustomData(const WebImage& image) {
   // These settings match up with the code in CreateCustomCursor() above; keep
   // them in sync.
   // TODO(avi): test to ensure that the flags here are correct for RGBA
-  scoped_cftyperef<CGContextRef> context(
+  base::mac::ScopedCFTypeRef<CGContextRef> context(
       CGBitmapContextCreate(&custom_data_[0],
                             image_width,
                             image_height,
@@ -354,7 +355,7 @@ void WebCursor::ImageFromCustomData(WebImage* image) const {
   if (custom_data_.empty())
     return;
 
-  scoped_cftyperef<CGImageRef> cg_image(
+  base::mac::ScopedCFTypeRef<CGImageRef> cg_image(
       CreateCGImageFromCustomData(custom_data_, custom_size_));
   *image = cg_image.get();
 }

@@ -8,7 +8,7 @@
 
 #include <CoreServices/CoreServices.h>
 
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 
 // Handles registering and cleaning up after a CFRunloopSource for a Mach port.
 // Messages received on the port are piped through to a delegate.
@@ -56,7 +56,7 @@ class MachMessageSource {
   static void OnReceiveMachMessage(CFMachPortRef port, void* msg, CFIndex size,
                                    void* closure);
 
-  scoped_cftyperef<CFRunLoopSourceRef> machport_runloop_ref_;
+  base::mac::ScopedCFTypeRef<CFRunLoopSourceRef> machport_runloop_ref_;
   DISALLOW_COPY_AND_ASSIGN(MachMessageSource);
 };
 

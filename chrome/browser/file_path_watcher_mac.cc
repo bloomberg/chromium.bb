@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/singleton.h"
 #include "base/time.h"
 
@@ -187,12 +187,12 @@ void FilePathWatcherImpl::UpdateEventStream(FSEventStreamEventId start_event) {
   if (fsevent_stream_)
     DestroyEventStream();
 
-  scoped_cftyperef<CFStringRef> cf_path(CFStringCreateWithCString(
+  base::mac::ScopedCFTypeRef<CFStringRef> cf_path(CFStringCreateWithCString(
       NULL, target_.value().c_str(), kCFStringEncodingMacHFS));
-  scoped_cftyperef<CFStringRef> cf_dir_path(CFStringCreateWithCString(
+  base::mac::ScopedCFTypeRef<CFStringRef> cf_dir_path(CFStringCreateWithCString(
       NULL, target_.DirName().value().c_str(), kCFStringEncodingMacHFS));
   CFStringRef paths_array[] = { cf_path.get(), cf_dir_path.get() };
-  scoped_cftyperef<CFArrayRef> watched_paths(CFArrayCreate(
+  base::mac::ScopedCFTypeRef<CFArrayRef> watched_paths(CFArrayCreate(
       NULL, reinterpret_cast<const void**>(paths_array), arraysize(paths_array),
       &kCFTypeArrayCallBacks));
 

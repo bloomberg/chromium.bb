@@ -23,7 +23,7 @@
 #if defined(OS_WIN)
 #undef IN  // On Windows, windef.h defines this, which screws up "India" cases.
 #elif defined(OS_MACOSX)
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #endif
 
 using base::Time;
@@ -2863,7 +2863,7 @@ int GetCurrentCountryID() {
 #elif defined(OS_MACOSX)
 
 int GetCurrentCountryID() {
-  scoped_cftyperef<CFLocaleRef> locale(CFLocaleCopyCurrent());
+  base::mac::ScopedCFTypeRef<CFLocaleRef> locale(CFLocaleCopyCurrent());
   CFStringRef country = (CFStringRef)CFLocaleGetValue(locale.get(),
                                                       kCFLocaleCountryCode);
   if (!country)

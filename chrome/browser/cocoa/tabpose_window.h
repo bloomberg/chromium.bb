@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
@@ -52,8 +52,8 @@ class TabStripModelObserverBridge;
   CALayer* selectionHighlight_;  // weak
 
   // Colors used by the layers.
-  scoped_cftyperef<CGColorRef> gray_;
-  scoped_cftyperef<CGColorRef> darkBlue_;
+  base::mac::ScopedCFTypeRef<CGColorRef> gray_;
+  base::mac::ScopedCFTypeRef<CGColorRef> darkBlue_;
 
   TabStripModel* tabStripModel_;  // weak
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/configuration_policy_provider_mac.h"
 
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 
 namespace policy {
@@ -26,9 +26,9 @@ bool ConfigurationPolicyProviderMac::Provide(ConfigurationPolicyStore* store) {
 
   for (PolicyValueMap::const_iterator current = mapping.begin();
        current != mapping.end(); ++current) {
-    scoped_cftyperef<CFStringRef> name(
+    base::mac::ScopedCFTypeRef<CFStringRef> name(
         base::SysUTF8ToCFStringRef(current->name));
-    scoped_cftyperef<CFPropertyListRef> value(
+    base::mac::ScopedCFTypeRef<CFPropertyListRef> value(
         preferences_->CopyAppValue(name, kCFPreferencesCurrentApplication));
     if (!value.get())
       continue;

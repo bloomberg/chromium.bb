@@ -11,6 +11,7 @@
 #import "base/chrome_application_mac.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/metrics/histogram.h"
 #import "base/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
@@ -1684,7 +1685,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
         // paints.
         CGContextRef context = static_cast<CGContextRef>(
             [[NSGraphicsContext currentContext] graphicsPort]);
-        scoped_cftyperef<CGImageRef> image(
+        base::mac::ScopedCFTypeRef<CGImageRef> image(
             CGBitmapContextCreateImage(backingStore->cg_bitmap()));
         CGRect imageRect = bitmapRect.ToCGRect();
         imageRect.origin.y = yOffset;

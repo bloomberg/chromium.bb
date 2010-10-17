@@ -41,10 +41,10 @@ class scoped_nsobject {
 
   void reset(NST* object = nil) {
     // We intentionally do not check that object != object_ as the caller must
-    // already have an ownership claim over whatever it gives to scoped_nsobject
-    // and scoped_cftyperef, whether it's in the constructor or in a call to
-    // reset().  In either case, it relinquishes that claim and the scoper
-    // assumes it.
+    // already have an ownership claim over whatever it gives to
+    // scoped_nsobject and ScopedCFTypeRef, whether it's in the constructor or
+    // in a call to reset().  In either case, it relinquishes that claim and
+    // the scoper assumes it.
     [object_ release];
     object_ = object;
   }
@@ -114,10 +114,10 @@ class scoped_nsobject<id> {
 
   void reset(id object = nil) {
     // We intentionally do not check that object != object_ as the caller must
-    // already have an ownership claim over whatever it gives to scoped_nsobject
-    // and scoped_cftyperef, whether it's in the constructor or in a call to
-    // reset().  In either case, it relinquishes that claim and the scoper
-    // assumes it.
+    // already have an ownership claim over whatever it gives to
+    // scoped_nsobject and ScopedCFTypeRef, whether it's in the constructor or
+    // in a call to reset().  In either case, it relinquishes that claim and
+    // the scoper assumes it.
     [object_ release];
     object_ = object;
   }

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #import "base/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/nsimage_cache_mac.h"
-#include "base/scoped_cftyperef.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #import "chrome/browser/cocoa/themed_window.h"
@@ -967,9 +967,9 @@ const CGFloat kRapidCloseDist = 2.5;
 
   int workspace = -1;
   // It's possible to query in bulk, but probably not necessary.
-  scoped_cftyperef<CFArrayRef> windowIDs(CFArrayCreate(
+  base::mac::ScopedCFTypeRef<CFArrayRef> windowIDs(CFArrayCreate(
       NULL, reinterpret_cast<const void **>(&windowID), 1, NULL));
-  scoped_cftyperef<CFArrayRef> descriptions(
+  base::mac::ScopedCFTypeRef<CFArrayRef> descriptions(
       CGWindowListCreateDescriptionFromArray(windowIDs));
   DCHECK(CFArrayGetCount(descriptions.get()) <= 1);
   if (CFArrayGetCount(descriptions.get()) > 0) {

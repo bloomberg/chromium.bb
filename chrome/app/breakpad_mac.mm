@@ -14,8 +14,8 @@
 #include "base/file_util.h"
 #import "base/logging.h"
 #include "base/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
-#include "base/scoped_cftyperef.h"
 #import "base/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
@@ -63,7 +63,7 @@ void InitCrashReporter() {
   if (is_browser) {
     // Since the configuration management infrastructure is possibly not
     // initialized when this code runs, read the policy preference directly.
-    scoped_cftyperef<CFStringRef> key(
+    base::mac::ScopedCFTypeRef<CFStringRef> key(
         base::SysUTF8ToCFStringRef(policy::key::kMetricsReportingEnabled));
     Boolean key_valid;
     Boolean metrics_reporting_enabled = CFPreferencesGetAppBooleanValue(key,

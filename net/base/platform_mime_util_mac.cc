@@ -5,7 +5,7 @@
 #include <CoreServices/CoreServices.h>
 #include <string>
 
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "net/base/platform_mime_util.h"
 
@@ -16,16 +16,17 @@ bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
   std::string ext_nodot = ext;
   if (ext_nodot.length() >= 1 && ext_nodot[0] == L'.')
     ext_nodot.erase(ext_nodot.begin());
-  scoped_cftyperef<CFStringRef> ext_ref(base::SysUTF8ToCFStringRef(ext_nodot));
+  base::mac::ScopedCFTypeRef<CFStringRef> ext_ref(
+      base::SysUTF8ToCFStringRef(ext_nodot));
   if (!ext_ref)
     return false;
-  scoped_cftyperef<CFStringRef> uti(
+  base::mac::ScopedCFTypeRef<CFStringRef> uti(
       UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
                                             ext_ref,
                                             NULL));
   if (!uti)
     return false;
-  scoped_cftyperef<CFStringRef> mime_ref(
+  base::mac::ScopedCFTypeRef<CFStringRef> mime_ref(
       UTTypeCopyPreferredTagWithClass(uti, kUTTagClassMIMEType));
   if (!mime_ref)
     return false;
@@ -36,16 +37,17 @@ bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
 
 bool PlatformMimeUtil::GetPreferredExtensionForMimeType(
     const std::string& mime_type, FilePath::StringType* ext) const {
-  scoped_cftyperef<CFStringRef> mime_ref(base::SysUTF8ToCFStringRef(mime_type));
+  base::mac::ScopedCFTypeRef<CFStringRef> mime_ref(
+      base::SysUTF8ToCFStringRef(mime_type));
   if (!mime_ref)
     return false;
-  scoped_cftyperef<CFStringRef> uti(
+  base::mac::ScopedCFTypeRef<CFStringRef> uti(
       UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType,
                                             mime_ref,
                                             NULL));
   if (!uti)
     return false;
-  scoped_cftyperef<CFStringRef> ext_ref(
+  base::mac::ScopedCFTypeRef<CFStringRef> ext_ref(
       UTTypeCopyPreferredTagWithClass(uti, kUTTagClassFilenameExtension));
   if (!ext_ref)
     return false;

@@ -17,7 +17,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #endif
 
 namespace gfx {
@@ -70,9 +70,9 @@ void BlitContextToContext(NativeDrawingContext dst_context,
                             : transform.ty;
   src_rect.Offset(transform.tx, delta_y);
 
-  scoped_cftyperef<CGImageRef>
+  base::mac::ScopedCFTypeRef<CGImageRef>
       src_image(CGBitmapContextCreateImage(src_context));
-  scoped_cftyperef<CGImageRef> src_sub_image(
+  base::mac::ScopedCFTypeRef<CGImageRef> src_sub_image(
       CGImageCreateWithImageInRect(src_image, src_rect.ToCGRect()));
   CGContextDrawImage(dst_context, dst_rect.ToCGRect(), src_sub_image);
 #else  // Linux, BSD, others

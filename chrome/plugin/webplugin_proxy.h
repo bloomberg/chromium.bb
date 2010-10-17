@@ -15,7 +15,7 @@
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #if defined(OS_MACOSX)
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #endif
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
@@ -208,8 +208,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 #if defined(OS_MACOSX)
   scoped_ptr<TransportDIB> windowless_dib_;
   scoped_ptr<TransportDIB> background_dib_;
-  scoped_cftyperef<CGContextRef> windowless_context_;
-  scoped_cftyperef<CGContextRef> background_context_;
+  base::mac::ScopedCFTypeRef<CGContextRef> windowless_context_;
+  base::mac::ScopedCFTypeRef<CGContextRef> background_context_;
   scoped_ptr<WebPluginAcceleratedSurfaceProxy> accelerated_surface_;
 #else
   scoped_ptr<skia::PlatformCanvas> windowless_canvas_;

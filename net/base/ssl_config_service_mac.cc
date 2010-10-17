@@ -6,7 +6,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -36,7 +36,7 @@ bool RevocationStyleIsEnabled(CFStringRef key) {
       kRevocationPreferencesIdentifier, kCFPreferencesCurrentUser,
       kCFPreferencesAnyHost);
   if (plist_ref) {
-    scoped_cftyperef<CFPropertyListRef> scoped_plist_ref(plist_ref);
+    base::mac::ScopedCFTypeRef<CFPropertyListRef> scoped_plist_ref(plist_ref);
     if (CFGetTypeID(plist_ref) == CFStringGetTypeID()) {
       CFStringRef style = reinterpret_cast<CFStringRef>(plist_ref);
       if (CFStringCompare(kNoneRevocationValue, style,

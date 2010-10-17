@@ -9,7 +9,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -105,16 +105,16 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
   const gfx::Size* size = reinterpret_cast<const gfx::Size*>(size_data);
 
   // Safe because the image goes away before the call returns.
-  scoped_cftyperef<CFDataRef> data(
+  base::mac::ScopedCFTypeRef<CFDataRef> data(
       CFDataCreateWithBytesNoCopy(kCFAllocatorDefault,
                                   reinterpret_cast<const UInt8*>(pixel_data),
                                   size->width()*size->height()*4,
                                   kCFAllocatorNull));
 
-  scoped_cftyperef<CGDataProviderRef> data_provider(
+  base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithCFData(data));
 
-  scoped_cftyperef<CGImageRef> cgimage(
+  base::mac::ScopedCFTypeRef<CGImageRef> cgimage(
       CGImageCreate(size->width(),
                     size->height(),
                     8,

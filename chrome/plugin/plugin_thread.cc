@@ -38,7 +38,7 @@
 #elif defined(OS_MACOSX)
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "grit/chromium_strings.h"
 #endif
@@ -103,13 +103,14 @@ PluginThread::PluginThread()
     plugin->NP_Initialize();
 
 #if defined(OS_MACOSX)
-    scoped_cftyperef<CFStringRef> plugin_name(base::SysUTF16ToCFStringRef(
-        plugin->plugin_info().name));
-    scoped_cftyperef<CFStringRef> app_name(base::SysUTF16ToCFStringRef(
-        l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));
-    scoped_cftyperef<CFStringRef> process_name(CFStringCreateWithFormat(
-        kCFAllocatorDefault, NULL, CFSTR("%@ (%@)"),
-        plugin_name.get(), app_name.get()));
+    base::mac::ScopedCFTypeRef<CFStringRef> plugin_name(
+        base::SysUTF16ToCFStringRef(plugin->plugin_info().name));
+    base::mac::ScopedCFTypeRef<CFStringRef> app_name(
+        base::SysUTF16ToCFStringRef(
+            l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));
+    base::mac::ScopedCFTypeRef<CFStringRef> process_name(
+        CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%@ (%@)"),
+                                 plugin_name.get(), app_name.get()));
     mac_util::SetProcessName(process_name);
 #endif
   }

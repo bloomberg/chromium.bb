@@ -37,8 +37,7 @@
 
 namespace {
 
-// Just like scoped_cftyperef from base/scoped_cftyperef.h, but for
-// io_object_t and subclasses.
+// Just like ScopedCFTypeRef but for io_object_t and subclasses.
 template<typename IOT>
 class scoped_ioobject {
  public:

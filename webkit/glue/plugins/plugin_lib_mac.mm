@@ -6,8 +6,8 @@
 
 #include "webkit/glue/plugins/plugin_lib.h"
 
+#include "base/mac/scoped_cftyperef.h"
 #include "base/native_library.h"
-#include "base/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -19,8 +19,9 @@ static const short kSTRTypeDefinitionResourceID = 128;
 static const short kSTRTypeDescriptionResourceID = 127;
 static const short kSTRPluginDescriptionResourceID = 126;
 
-namespace NPAPI
-{
+using base::mac::ScopedCFTypeRef;
+
+namespace NPAPI {
 
 namespace {
 
@@ -161,7 +162,7 @@ bool GetSTRResource(CFBundleRef bundle, short res_id,
   pointer += sizeof(short);
   for (short i = 0; i < num_strings; ++i) {
     // Despite being 8-bits wide, these are legacy encoded. Make a round trip.
-    scoped_cftyperef<CFStringRef> str(CFStringCreateWithPascalStringNoCopy(
+    ScopedCFTypeRef<CFStringRef> str(CFStringCreateWithPascalStringNoCopy(
         kCFAllocatorDefault,
         (unsigned char*)pointer,
         GetApplicationTextEncoding(),  // is this right?
@@ -309,13 +310,13 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   //
   // Strictly speaking, only STR# 128 is required.
 
-  scoped_cftyperef<CFURLRef> bundle_url(CFURLCreateFromFileSystemRepresentation(
+  ScopedCFTypeRef<CFURLRef> bundle_url(CFURLCreateFromFileSystemRepresentation(
       kCFAllocatorDefault, (const UInt8*)filename.value().c_str(),
       filename.value().length(), true));
   if (!bundle_url)
     return false;
-  scoped_cftyperef<CFBundleRef> bundle(CFBundleCreate(kCFAllocatorDefault,
-                                                      bundle_url.get()));
+  ScopedCFTypeRef<CFBundleRef> bundle(CFBundleCreate(kCFAllocatorDefault,
+                                                     bundle_url.get()));
   if (!bundle)
     return false;
 

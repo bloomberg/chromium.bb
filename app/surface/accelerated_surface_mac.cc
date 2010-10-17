@@ -8,7 +8,7 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "gfx/rect.h"
 
 AcceleratedSurface::AcceleratedSurface()
@@ -110,7 +110,7 @@ static void AddBooleanValue(CFMutableDictionaryRef dictionary,
 static void AddIntegerValue(CFMutableDictionaryRef dictionary,
                             const CFStringRef key,
                             int32 value) {
-  scoped_cftyperef<CFNumberRef> number(
+  base::mac::ScopedCFTypeRef<CFNumberRef> number(
       CFNumberCreate(NULL, kCFNumberSInt32Type, &value));
   CFDictionaryAddValue(dictionary, key, number.get());
 }
@@ -223,7 +223,7 @@ uint64 AcceleratedSurface::SetSurfaceSize(const gfx::Size& size) {
 
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
-  scoped_cftyperef<CFMutableDictionaryRef> properties;
+  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
   properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
                                              0,
                                              &kCFTypeDictionaryKeyCallBacks,

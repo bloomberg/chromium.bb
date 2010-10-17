@@ -8,7 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 
 namespace printing {
@@ -123,7 +123,7 @@ PrintingContext::Result PrintingContextMac::NewDocument(
   PMPageFormat page_format =
       static_cast<PMPageFormat>([print_info_ PMPageFormat]);
 
-  scoped_cftyperef<CFStringRef> job_title(
+  base::mac::ScopedCFTypeRef<CFStringRef> job_title(
       base::SysUTF16ToCFStringRef(document_name));
   PMPrintSettingsSetJobName(print_settings, job_title.get());
 

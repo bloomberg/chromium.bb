@@ -10,7 +10,7 @@
 #import "base/chrome_application_mac.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -151,7 +151,7 @@ TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
 }
 
 TEST_F(MacUtilTest, TestGetValueFromDictionary) {
-  scoped_cftyperef<CFMutableDictionaryRef> dict(
+  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> dict(
       CFDictionaryCreateMutable(0, 0,
                                 &kCFTypeDictionaryKeyCallBacks,
                                 &kCFTypeDictionaryValueCallBacks));
@@ -175,7 +175,7 @@ TEST_F(MacUtilTest, CopyNSImageToCGImage) {
   NSRectFill(rect);
   [nsImage unlockFocus];
 
-  scoped_cftyperef<CGImageRef> cgImage(
+  base::mac::ScopedCFTypeRef<CGImageRef> cgImage(
       mac_util::CopyNSImageToCGImage(nsImage.get()));
   EXPECT_TRUE(cgImage.get());
 }

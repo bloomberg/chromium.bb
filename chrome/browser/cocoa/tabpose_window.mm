@@ -8,6 +8,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_callback_factory.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -45,12 +46,13 @@ const CGFloat kObserverChangeAnimationDuration = 0.75;  // In seconds.
 
 @implementation DarkGradientLayer
 - (void)drawInContext:(CGContextRef)context {
-  scoped_cftyperef<CGColorSpaceRef> grayColorSpace(
+  base::mac::ScopedCFTypeRef<CGColorSpaceRef> grayColorSpace(
       CGColorSpaceCreateWithName(kCGColorSpaceGenericGray));
   CGFloat grays[] = { 0.277, 1.0, 0.39, 1.0 };
   CGFloat locations[] = { 0, 1 };
-  scoped_cftyperef<CGGradientRef> gradient(CGGradientCreateWithColorComponents(
-      grayColorSpace.get(), grays, locations, arraysize(locations)));
+  base::mac::ScopedCFTypeRef<CGGradientRef> gradient(
+      CGGradientCreateWithColorComponents(
+          grayColorSpace.get(), grays, locations, arraysize(locations)));
   CGPoint topLeft = CGPointMake(0.0, kTopGradientHeight);
   CGContextDrawLinearGradient(context, gradient.get(), topLeft, CGPointZero, 0);
 }
@@ -75,7 +77,7 @@ class ThumbnailLoader;
 
   // If the backing store couldn't be used and a thumbnail was returned from a
   // renderer process, it's stored in |thumbnail_|.
-  scoped_cftyperef<CGImageRef> thumbnail_;
+  base::mac::ScopedCFTypeRef<CGImageRef> thumbnail_;
 
   // True if the layer already sent a thumbnail request to a renderer.
   BOOL didSendLoad_;
@@ -222,7 +224,7 @@ void ThumbnailLoader::LoadThumbnail() {
   if (backing_store->cg_layer()) {
     CGContextDrawLayerInRect(context, destRect, backing_store->cg_layer());
   } else {
-    scoped_cftyperef<CGImageRef> image(
+    base::mac::ScopedCFTypeRef<CGImageRef> image(
         CGBitmapContextCreateImage(backing_store->cg_bitmap()));
     CGContextDrawImage(context, destRect, image);
   }
@@ -948,7 +950,7 @@ void AnimateCALayerFrameFromTo(
             IDR_DEFAULT_FAVICON);
     nsFavicon = defaultFavIcon;
   }
-  scoped_cftyperef<CGImageRef> favicon(
+  base::mac::ScopedCFTypeRef<CGImageRef> favicon(
       mac_util::CopyNSImageToCGImage(nsFavicon));
 
   CALayer* faviconLayer = [CALayer layer];

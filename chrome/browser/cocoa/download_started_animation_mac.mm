@@ -12,7 +12,6 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "app/resource_bundle.h"
-#include "base/scoped_cftyperef.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #import "chrome/browser/cocoa/animatable_image.h"

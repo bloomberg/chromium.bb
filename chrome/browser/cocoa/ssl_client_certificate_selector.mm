@@ -11,7 +11,6 @@
 #import "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
-#include "base/scoped_cftyperef.h"
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

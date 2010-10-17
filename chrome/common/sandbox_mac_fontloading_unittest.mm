@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "chrome/common/font_loader_mac.h"
@@ -136,7 +136,7 @@ bool FontLoadingTestCase::SandboxedTest() {
     LOG(ERROR) << "Got NULL CGFontRef";
     return false;
   }
-  scoped_cftyperef<CGFontRef> cgfont;
+  base::mac::ScopedCFTypeRef<CGFontRef> cgfont;
   cgfont.reset(font_ref);
 
   const NSFont* nsfont = reinterpret_cast<const NSFont*>(

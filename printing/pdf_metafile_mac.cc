@@ -6,9 +6,11 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "gfx/rect.h"
+
+using base::mac::ScopedCFTypeRef;
 
 namespace printing {
 
@@ -26,7 +28,7 @@ CGContextRef PdfMetafile::Init() {
     LOG(ERROR) << "Failed to create pdf data for metafile";
     return NULL;
   }
-  scoped_cftyperef<CGDataConsumerRef> pdf_consumer(
+  ScopedCFTypeRef<CGDataConsumerRef> pdf_consumer(
       CGDataConsumerCreateWithCFData(pdf_data_));
   if (!pdf_consumer.get()) {
     LOG(ERROR) << "Failed to create data consumer for metafile";
@@ -202,7 +204,7 @@ bool PdfMetafile::SaveTo(const FilePath& file_path) const {
   DCHECK(!context_.get());
 
   std::string path_string = file_path.value();
-  scoped_cftyperef<CFURLRef> path_url(CFURLCreateFromFileSystemRepresentation(
+  ScopedCFTypeRef<CFURLRef> path_url(CFURLCreateFromFileSystemRepresentation(
       kCFAllocatorDefault, reinterpret_cast<const UInt8*>(path_string.c_str()),
       path_string.length(), false));
   SInt32 error_code;
@@ -216,7 +218,7 @@ CGPDFDocumentRef PdfMetafile::GetPDFDocument() const {
   DCHECK(!context_.get());
 
   if (!pdf_doc_.get()) {
-    scoped_cftyperef<CGDataProviderRef> pdf_data_provider(
+    ScopedCFTypeRef<CGDataProviderRef> pdf_data_provider(
         CGDataProviderCreateWithCFData(pdf_data_));
     pdf_doc_.reset(CGPDFDocumentCreateWithProvider(pdf_data_provider));
   }

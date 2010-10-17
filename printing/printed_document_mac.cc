@@ -8,7 +8,6 @@
 #import <CoreFoundation/CoreFoundation.h>
 
 #include "base/logging.h"
-#include "base/scoped_cftyperef.h"
 #include "printing/page_number.h"
 #include "printing/printed_page.h"
 

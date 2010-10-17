@@ -15,7 +15,7 @@
 #import "base/cocoa_protocols_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
-#include "base/scoped_cftyperef.h"
+#include "base/mac/scoped_cftyperef.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "grit/generated_resources.h"
@@ -308,11 +308,11 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
           file_types->extensions[type];
       DCHECK(!ext_list.empty());
       NSString* type_extension = base::SysUTF8ToNSString(ext_list[0]);
-      scoped_cftyperef<CFStringRef> uti(
+      base::mac::ScopedCFTypeRef<CFStringRef> uti(
           UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
                                                 (CFStringRef)type_extension,
                                                 NULL));
-      scoped_cftyperef<CFStringRef> description(
+      base::mac::ScopedCFTypeRef<CFStringRef> description(
           UTTypeCopyDescription(uti.get()));
 
       type_description =
