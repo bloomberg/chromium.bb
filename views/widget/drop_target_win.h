@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define VIEWS_WIDGET_DROP_TARGET_WIN_H_
 #pragma once
 
-#include "base/base_drop_target.h"
+#include "app/win/drop_target.h"
 #include "views/widget/drop_helper.h"
 
 namespace views {
@@ -19,7 +19,7 @@ class View;
 //
 // DropTargetWin uses DropHelper to manage the appropriate view to target
 // drop messages at.
-class DropTargetWin : public BaseDropTarget {
+class DropTargetWin : public app::win::DropTarget {
  public:
   explicit DropTargetWin(RootView* root_view);
   virtual ~DropTargetWin();

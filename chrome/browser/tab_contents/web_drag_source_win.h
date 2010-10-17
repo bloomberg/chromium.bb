@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
 #pragma once
 
-#include "base/base_drag_source.h"
+#include "app/win/drag_source.h"
 #include "base/basictypes.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -16,21 +16,16 @@
 class RenderViewHost;
 class TabContents;
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// WebDragSource
-//
-//  An IDropSource implementation for a TabContents. Handles notifications sent
-//  by an active drag-drop operation as the user mouses over other drop targets
-//  on their system. This object tells Windows whether or not the drag should
-//  continue, and supplies the appropriate cursors.
-//
-class WebDragSource : public BaseDragSource,
+// An IDropSource implementation for a TabContents. Handles notifications sent
+// by an active drag-drop operation as the user mouses over other drop targets
+// on their system. This object tells Windows whether or not the drag should
+// continue, and supplies the appropriate cursors.
+class WebDragSource : public app::win::DragSource,
                       public NotificationObserver {
  public:
   // Create a new DragSource for a given HWND and TabContents.
   WebDragSource(gfx::NativeWindow source_wnd, TabContents* tab_contents);
-  virtual ~WebDragSource() { }
+  virtual ~WebDragSource();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -40,7 +35,7 @@ class WebDragSource : public BaseDragSource,
   void set_effect(DWORD effect) { effect_ = effect; }
 
  protected:
-  // BaseDragSource
+  // app::win::DragSource
   virtual void OnDragSourceCancel();
   virtual void OnDragSourceDrop();
   virtual void OnDragSourceMove();

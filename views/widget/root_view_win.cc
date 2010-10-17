@@ -7,7 +7,7 @@
 #include "app/drag_drop_types.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
-#include "base/base_drag_source.h"
+#include "app/win/drag_source.h"
 #include "gfx/canvas_skia.h"
 
 namespace views {
@@ -38,7 +38,7 @@ void RootView::StartDragForViewFromMouseEvent(
     int operation) {
   // NOTE: view may be null.
   drag_view_ = view;
-  scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
+  scoped_refptr<app::win::DragSource> drag_source(new app::win::DragSource);
   DWORD effects;
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
              DragDropTypes::DragOperationToDropEffect(operation), &effects);

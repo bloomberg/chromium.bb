@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/tab_contents/web_drop_target_win.h"
+
 #include <windows.h>
 #include <shlobj.h>
-
-#include "chrome/browser/tab_contents/web_drop_target_win.h"
 
 #include "app/clipboard/clipboard_util_win.h"
 #include "app/os_exchange_data.h"
@@ -39,9 +39,9 @@ DWORD GetPreferredDropEffect(DWORD effect) {
   return DROPEFFECT_NONE;
 }
 
-}  // anonymous namespace
+}  // namespace
 
-// InterstitialDropTarget is like a BaseDropTarget implementation that
+// InterstitialDropTarget is like a app::win::DropTarget implementation that
 // WebDropTarget passes through to if an interstitial is showing.  Rather than
 // passing messages on to the renderer, we just check to see if there's a link
 // in the drop data and handle links as navigations.
@@ -81,11 +81,8 @@ class InterstitialDropTarget {
   DISALLOW_COPY_AND_ASSIGN(InterstitialDropTarget);
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// WebDropTarget, public:
-
 WebDropTarget::WebDropTarget(HWND source_hwnd, TabContents* tab_contents)
-    : BaseDropTarget(source_hwnd),
+    : app::win::DropTarget(source_hwnd),
       tab_contents_(tab_contents),
       current_rvh_(NULL),
       drag_cursor_(WebDragOperationNone),

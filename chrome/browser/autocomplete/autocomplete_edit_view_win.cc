@@ -19,10 +19,10 @@
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
 #include "app/win_util.h"
+#include "app/win/drag_source.h"
+#include "app/win/drop_target.h"
 #include "app/win/iat_patch_function.h"
 #include "base/auto_reset.h"
-#include "base/base_drag_source.h"
-#include "base/base_drop_target.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
@@ -67,7 +67,7 @@ namespace {
 // URL. A drop of plain text from the same edit either copies or moves the
 // selected text, and a drop of plain text from a source other than the edit
 // does a paste and go.
-class EditDropTarget : public BaseDropTarget {
+class EditDropTarget : public app::win::DropTarget {
  public:
   explicit EditDropTarget(AutocompleteEditViewWin* edit);
 
@@ -118,7 +118,7 @@ DWORD CopyOrLinkDropEffect(DWORD effect) {
 }
 
 EditDropTarget::EditDropTarget(AutocompleteEditViewWin* edit)
-    : BaseDropTarget(edit->m_hWnd),
+    : app::win::DropTarget(edit->m_hWnd),
       edit_(edit),
       drag_has_url_(false),
       drag_has_string_(false) {
@@ -2419,7 +2419,7 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
 
   data.SetString(text_to_write);
 
-  scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
+  scoped_refptr<app::win::DragSource> drag_source(new app::win::DragSource);
   DWORD dropped_mode;
   AutoReset<bool> auto_reset_in_drag(&in_drag_, true);
   if (DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,

@@ -220,6 +220,10 @@
         'throb_animation.h',
         'tween.cc',
         'tween.h',
+        'win/drag_source.cc',
+        'win/drag_source.h',
+        'win/drop_target.cc',
+        'win/drop_target.h',
         'win/iat_patch_function.cc',
         'win/iat_patch_function.h',
         'x11_util.cc',
@@ -312,7 +316,7 @@
             'win/iat_patch_function.h',
           ],
           'sources/': [
-            ['exclude', '/win/*'],
+            ['exclude', '^win/*'],
           ],
         }],
         ['OS=="linux"', {

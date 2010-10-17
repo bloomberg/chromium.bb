@@ -1,19 +1,20 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base_drop_target.h"
+#include "app/win/drop_target.h"
 
 #include <shlobj.h>
 
 #include "base/logging.h"
 
-///////////////////////////////////////////////////////////////////////////////
+namespace app {
+namespace win {
 
-IDropTargetHelper* BaseDropTarget::cached_drop_target_helper_ = NULL;
-int32 BaseDropTarget::drag_identity_ = 0;
+IDropTargetHelper* DropTarget::cached_drop_target_helper_ = NULL;
+int32 DropTarget::drag_identity_ = 0;
 
-BaseDropTarget::BaseDropTarget(HWND hwnd)
+DropTarget::DropTarget(HWND hwnd)
     : hwnd_(hwnd),
       suspended_(false),
       ref_count_(0) {
@@ -22,11 +23,11 @@ BaseDropTarget::BaseDropTarget(HWND hwnd)
   DCHECK(SUCCEEDED(result));
 }
 
-BaseDropTarget::~BaseDropTarget() {
+DropTarget::~DropTarget() {
 }
 
 // static
-IDropTargetHelper* BaseDropTarget::DropHelper() {
+IDropTargetHelper* DropTarget::DropHelper() {
   if (!cached_drop_target_helper_) {
     CoCreateInstance(CLSID_DragDropHelper, 0, CLSCTX_INPROC_SERVER,
                      IID_IDropTargetHelper,
@@ -36,9 +37,9 @@ IDropTargetHelper* BaseDropTarget::DropHelper() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BaseDropTarget, IDropTarget implementation:
+// DropTarget, IDropTarget implementation:
 
-HRESULT BaseDropTarget::DragEnter(IDataObject* data_object,
+HRESULT DropTarget::DragEnter(IDataObject* data_object,
                                   DWORD key_state,
                                   POINTL cursor_position,
                                   DWORD* effect) {
@@ -65,7 +66,7 @@ HRESULT BaseDropTarget::DragEnter(IDataObject* data_object,
   return S_OK;
 }
 
-HRESULT BaseDropTarget::DragOver(DWORD key_state,
+HRESULT DropTarget::DragOver(DWORD key_state,
                                  POINTL cursor_position,
                                  DWORD* effect) {
   // Tell the helper that we moved over it so it can update the drag image.
@@ -83,7 +84,7 @@ HRESULT BaseDropTarget::DragOver(DWORD key_state,
   return S_OK;
 }
 
-HRESULT BaseDropTarget::DragLeave() {
+HRESULT DropTarget::DragLeave() {
   // Tell the helper that we moved out of it so it can update the drag image.
   IDropTargetHelper* drop_helper = DropHelper();
   if (drop_helper)
@@ -98,7 +99,7 @@ HRESULT BaseDropTarget::DragLeave() {
   return S_OK;
 }
 
-HRESULT BaseDropTarget::Drop(IDataObject* data_object,
+HRESULT DropTarget::Drop(IDataObject* data_object,
                              DWORD key_state,
                              POINTL cursor_position,
                              DWORD* effect) {
@@ -120,9 +121,9 @@ HRESULT BaseDropTarget::Drop(IDataObject* data_object,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BaseDropTarget, IUnknown implementation:
+// DropTarget, IUnknown implementation:
 
-HRESULT BaseDropTarget::QueryInterface(const IID& iid, void** object) {
+HRESULT DropTarget::QueryInterface(const IID& iid, void** object) {
   *object = NULL;
   if (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IDropTarget)) {
     *object = this;
@@ -133,11 +134,11 @@ HRESULT BaseDropTarget::QueryInterface(const IID& iid, void** object) {
   return S_OK;
 }
 
-ULONG BaseDropTarget::AddRef() {
+ULONG DropTarget::AddRef() {
   return ++ref_count_;
 }
 
-ULONG BaseDropTarget::Release() {
+ULONG DropTarget::Release() {
   if (--ref_count_ == 0) {
     delete this;
     return 0U;
@@ -145,26 +146,29 @@ ULONG BaseDropTarget::Release() {
   return ref_count_;
 }
 
-DWORD BaseDropTarget::OnDragEnter(IDataObject* data_object,
-                                  DWORD key_state,
-                                  POINT cursor_position,
-                                  DWORD effect) {
+DWORD DropTarget::OnDragEnter(IDataObject* data_object,
+                              DWORD key_state,
+                              POINT cursor_position,
+                              DWORD effect) {
   return DROPEFFECT_NONE;
 }
 
-DWORD BaseDropTarget::OnDragOver(IDataObject* data_object,
-                                 DWORD key_state,
-                                 POINT cursor_position,
-                                 DWORD effect) {
-  return DROPEFFECT_NONE;
-}
-
-void BaseDropTarget::OnDragLeave(IDataObject* data_object) {
-}
-
-DWORD BaseDropTarget::OnDrop(IDataObject* data_object,
+DWORD DropTarget::OnDragOver(IDataObject* data_object,
                              DWORD key_state,
                              POINT cursor_position,
                              DWORD effect) {
   return DROPEFFECT_NONE;
 }
+
+void DropTarget::OnDragLeave(IDataObject* data_object) {
+}
+
+DWORD DropTarget::OnDrop(IDataObject* data_object,
+                         DWORD key_state,
+                         POINT cursor_position,
+                         DWORD effect) {
+  return DROPEFFECT_NONE;
+}
+
+}  // namespace win
+}  // namespace app

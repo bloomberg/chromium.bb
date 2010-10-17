@@ -71,7 +71,7 @@
 #if defined(OS_WIN)
 #include "app/os_exchange_data_provider_win.h"
 #include "app/win_util.h"
-#include "base/base_drag_source.h"
+#include "app/win/drag_source.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_list.h"
@@ -460,7 +460,7 @@ void DragDownload(const DownloadItem* download,
   }
 
 #if defined(OS_WIN)
-  scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
+  scoped_refptr<app::win::DragSource> drag_source(new app::win::DragSource);
 
   // Run the drag and drop loop
   DWORD effects;

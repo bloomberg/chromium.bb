@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_BASE_DRAG_SOURCE_H_
-#define BASE_BASE_DRAG_SOURCE_H_
+#ifndef APP_WIN_DRAG_SOURCE_H_
+#define APP_WIN_DRAG_SOURCE_H_
 #pragma once
 
 #include <objidl.h>
@@ -11,20 +11,18 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// BaseDragSource
-//
-//  A base IDropSource implementation. Handles notifications sent by an active
-//  drag-drop operation as the user mouses over other drop targets on their
-//  system. This object tells Windows whether or not the drag should continue,
-//  and supplies the appropriate cursors.
-//
-class BaseDragSource : public IDropSource,
-                       public base::RefCountedThreadSafe<BaseDragSource> {
+namespace app {
+namespace win {
+
+// A base IDropSource implementation. Handles notifications sent by an active
+// drag-drop operation as the user mouses over other drop targets on their
+// system. This object tells Windows whether or not the drag should continue,
+// and supplies the appropriate cursors.
+class DragSource : public IDropSource,
+                   public base::RefCountedThreadSafe<DragSource> {
  public:
-  BaseDragSource();
-  virtual ~BaseDragSource() { }
+  DragSource();
+  virtual ~DragSource() {}
 
   // Stop the drag operation at the next chance we get.  This doesn't
   // synchronously stop the drag (since Windows is controlling that),
@@ -43,15 +41,18 @@ class BaseDragSource : public IDropSource,
   ULONG __stdcall Release();
 
  protected:
-  virtual void OnDragSourceCancel() { }
-  virtual void OnDragSourceDrop() { }
-  virtual void OnDragSourceMove() { }
+  virtual void OnDragSourceCancel() {}
+  virtual void OnDragSourceDrop() {}
+  virtual void OnDragSourceMove() {}
 
  private:
   // Set to true if we want to cancel the drag operation.
   bool cancel_drag_;
 
-  DISALLOW_COPY_AND_ASSIGN(BaseDragSource);
+  DISALLOW_COPY_AND_ASSIGN(DragSource);
 };
 
-#endif  // BASE_BASE_DRAG_SOURCE_H_
+}  // namespace win
+}  // namespace app
+
+#endif  // APP_WIN_DRAG_SOURCE_H_

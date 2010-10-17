@@ -2,30 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_BASE_DROP_TARGET_H_
-#define BASE_BASE_DROP_TARGET_H_
+#ifndef APP_WIN_DROP_TARGET_H_
+#define APP_WIN_DROP_TARGET_H_
 #pragma once
 
 #include <objidl.h>
 
 #include "base/ref_counted.h"
 
+// Windows interface.
 struct IDropTargetHelper;
+
+namespace app {
+namespace win {
 
 // A DropTarget implementation that takes care of the nitty gritty
 // of dnd. While this class is concrete, subclasses will most likely
 // want to override various OnXXX methods.
 //
-// Because BaseDropTarget is ref counted you shouldn't delete it directly,
+// Because DropTarget is ref counted you shouldn't delete it directly,
 // rather wrap it in a scoped_refptr. Be sure and invoke RevokeDragDrop(m_hWnd)
 // before the HWND is deleted too.
 //
 // This class is meant to be used in a STA and is not multithread-safe.
-class BaseDropTarget : public IDropTarget {
+class DropTarget : public IDropTarget {
  public:
-  // Create a new BaseDropTarget associating it with the given HWND.
-  explicit BaseDropTarget(HWND hwnd);
-  virtual ~BaseDropTarget();
+  // Create a new DropTarget associating it with the given HWND.
+  explicit DropTarget(HWND hwnd);
+  virtual ~DropTarget();
 
   // When suspended is set to |true|, the drop target does not receive drops
   // from drags initiated within the owning HWND.
@@ -123,7 +127,10 @@ class BaseDropTarget : public IDropTarget {
 
   LONG ref_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(BaseDropTarget);
+  DISALLOW_COPY_AND_ASSIGN(DropTarget);
 };
 
-#endif  // BASE_BASE_DROP_TARGET_H_
+}  // namespace win
+}  // namespace app
+
+#endif  // APP_WIN_DROP_TARGET_H_
