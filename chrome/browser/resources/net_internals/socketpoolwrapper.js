@@ -165,5 +165,5 @@ SocketPoolWrapper.prototype.createGroupTablePrinter = function() {
 SocketPoolWrapper.sourceListLink = function(sources) {
   if (!sources.length)
     return null;
-  return "#events&q=id:" + sources.join("%20id:");
+  return '#events&q=id:' + sources.join('%20id:');
 }

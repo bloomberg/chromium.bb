@@ -618,15 +618,6 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   }
 
   OnGetPassiveLogEntries(NULL);
-  OnGetProxySettings(NULL);
-  OnGetBadProxies(NULL);
-  OnGetHostResolverInfo(NULL);
-  OnGetHttpCacheInfo(NULL);
-  OnGetSocketPoolInfo(NULL);
-  OnGetSpdySessionInfo(NULL);
-#ifdef OS_WIN
-  OnGetServiceProviders(NULL);
-#endif
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(

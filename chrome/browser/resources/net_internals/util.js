@@ -17,22 +17,22 @@ function inherits(childCtor, parentCtor) {
  * Sets the width (in pixels) on a DOM node.
  */
 function setNodeWidth(node, widthPx) {
-  node.style.width = widthPx.toFixed(0) + "px";
+  node.style.width = widthPx.toFixed(0) + 'px';
 }
 
 /**
  * Sets the height (in pixels) on a DOM node.
  */
 function setNodeHeight(node, heightPx) {
-  node.style.height = heightPx.toFixed(0) + "px";
+  node.style.height = heightPx.toFixed(0) + 'px';
 }
 
 /**
  * Sets the position and size of a DOM node (in pixels).
  */
 function setNodePosition(node, leftPx, topPx, widthPx, heightPx) {
-  node.style.left = leftPx.toFixed(0) + "px";
-  node.style.top = topPx.toFixed(0) + "px";
+  node.style.left = leftPx.toFixed(0) + 'px';
+  node.style.top = topPx.toFixed(0) + 'px';
   setNodeWidth(node, widthPx);
   setNodeHeight(node, heightPx);
 }
@@ -78,7 +78,7 @@ function addNodeWithText(parentNode, tagName, text) {
  */
 function changeClassName(node, classNameToAddOrRemove, isAdd) {
   // Multiple classes can be separated by spaces.
-  var currentNames = node.className.split(" ");
+  var currentNames = node.className.split(' ');
 
   if (isAdd) {
     if (!(classNameToAddOrRemove in currentNames)) {
@@ -93,7 +93,7 @@ function changeClassName(node, classNameToAddOrRemove, isAdd) {
     }
   }
 
-  node.className = currentNames.join(" ");
+  node.className = currentNames.join(' ');
 }
 
 function getKeyWithValue(map, value) {

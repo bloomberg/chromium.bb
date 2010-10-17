@@ -190,14 +190,14 @@ SourceEntry.prototype.createRow_ = function() {
   if (this.getSourceId() >= 0)
     addTextNode(idCell, this.getSourceId());
   else
-    addTextNode(idCell, "-");
+    addTextNode(idCell, '-');
   var sourceTypeString = this.getSourceTypeString();
   addTextNode(typeCell, sourceTypeString);
   this.updateDescription_();
 
   // Add a CSS classname specific to this source type (so CSS can specify
   // different stylings for different types).
-  changeClassName(this.row_, "source_" + sourceTypeString, true);
+  changeClassName(this.row_, 'source_' + sourceTypeString, true);
 };
 
 /**
@@ -219,20 +219,36 @@ SourceEntry.prototype.getDescription = function() {
   if (e.params == undefined)
     return '';
 
+  var description = '';
   switch (e.source.type) {
     case LogSourceType.URL_REQUEST:
     case LogSourceType.SOCKET_STREAM:
-      return e.params.url;
+      description = e.params.url;
+      break;
     case LogSourceType.CONNECT_JOB:
-      return e.params.group_name;
+      description = e.params.group_name;
+      break;
     case LogSourceType.HOST_RESOLVER_IMPL_REQUEST:
     case LogSourceType.HOST_RESOLVER_IMPL_JOB:
-      return e.params.host;
+      description = e.params.host;
+      break;
     case LogSourceType.SPDY_SESSION:
-      return e.params.host + ' (' + e.params.proxy + ')';
+      if (e.params.host)
+        description = e.params.host + ' (' + e.params.proxy + ')';
+      break;
+    case LogSourceType.SOCKET:
+      if (e.params.source_dependency != undefined) {
+        var connectJobSourceEntry =
+            this.parentView_.getSourceEntry(e.params.source_dependency.id);
+        if (connectJobSourceEntry)
+          description = connectJobSourceEntry.getDescription();
+      }
+      break;
   }
 
-  return '';
+  if (description == undefined)
+    return '';
+  return description;
 };
 
 /**

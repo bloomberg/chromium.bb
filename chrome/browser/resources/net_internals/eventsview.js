@@ -57,7 +57,7 @@ function EventsView(tableBodyId, filterInputId, filterCountId,
   this.filterInput_ = document.getElementById(filterInputId);
   this.filterCount_ = document.getElementById(filterCountId);
 
-  this.filterInput_.addEventListener("search",
+  this.filterInput_.addEventListener('search',
       this.onFilterTextChanged_.bind(this), true);
 
   document.getElementById(deleteSelectedId).onclick =
@@ -449,6 +449,14 @@ EventsView.prototype.onLogEntryAdded = function(logEntry) {
 };
 
 /**
+ * Returns the SourceEntry with the specified ID, if there is one.
+ * Otherwise, returns undefined.
+ */
+EventsView.prototype.getSourceEntry = function(id) {
+  return this.sourceIdToEntryMap_[id];
+};
+
+/**
  * Called whenever some log events are deleted.  |sourceIds| lists
  * the source IDs of all deleted log entries.
  */
@@ -601,5 +609,5 @@ EventsView.prototype.repaintFilterCounter_ = function() {
   this.outstandingRepaintFilterCounter_ = false;
   this.filterCount_.innerHTML = '';
   addTextNode(this.filterCount_,
-              this.numPostfilter_ + " of " + this.numPrefilter_);
+              this.numPostfilter_ + ' of ' + this.numPrefilter_);
 };

@@ -92,7 +92,7 @@ inherits(DivView, View);
 DivView.prototype.setGeometry = function(left, top, width, height) {
   DivView.superClass_.setGeometry.call(this, left, top, width, height);
 
-  this.node_.style.position = "absolute";
+  this.node_.style.position = 'absolute';
   setNodePosition(this.node_, left, top, width, height);
 };
 
@@ -120,7 +120,7 @@ DivView.prototype.getNode = function() {
 function WindowView(childView) {
   View.call(this);
   this.childView_ = childView;
-  window.addEventListener("resize", this.resetGeometry.bind(this), true);
+  window.addEventListener('resize', this.resetGeometry.bind(this), true);
 }
 
 inherits(WindowView, View);

@@ -35,7 +35,7 @@ function ResizableVerticalSplitView(leftView, rightView, sizerView) {
   // Setup the "sizer" so it can be dragged left/right to reposition the
   // vertical split.
   sizerView.getNode().addEventListener(
-      "mousedown", this.onDragSizerStart_.bind(this), true);
+      'mousedown', this.onDragSizerStart_.bind(this), true);
 }
 
 inherits(ResizableVerticalSplitView, View);
@@ -89,8 +89,8 @@ ResizableVerticalSplitView.prototype.onDragSizerStart_ = function(event) {
   this.sizerMouseMoveListener_ = this.onDragSizer.bind(this);
   this.sizerMouseUpListener_ = this.onDragSizerEnd.bind(this);
 
-  window.addEventListener("mousemove", this.sizerMouseMoveListener_, true);
-  window.addEventListener("mouseup", this.sizerMouseUpListener_, true);
+  window.addEventListener('mousemove', this.sizerMouseMoveListener_, true);
+  window.addEventListener('mouseup', this.sizerMouseUpListener_, true);
 
   event.preventDefault();
 };
@@ -119,8 +119,8 @@ ResizableVerticalSplitView.prototype.onDragSizer = function(event) {
  * Called once the mouse has been released, and the dragging is over.
  */
 ResizableVerticalSplitView.prototype.onDragSizerEnd = function(event) {
-  window.removeEventListener("mousemove", this.sizerMouseMoveListener_, true);
-  window.removeEventListener("mouseup", this.sizerMouseUpListener_, true);
+  window.removeEventListener('mousemove', this.sizerMouseMoveListener_, true);
+  window.removeEventListener('mouseup', this.sizerMouseUpListener_, true);
 
   this.sizerMouseMoveListener_ = null;
   this.sizerMouseUpListener_ = null;

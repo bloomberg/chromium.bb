@@ -100,7 +100,7 @@ DataView.prototype.onExportToText_ = function() {
   if (this.waitingForUpdate_)
     return;
   this.waitingForUpdate = true;
-  this.setText_("Generating...");
+  this.setText_('Generating...');
   g_browser.updateAllInfo(this.onUpdateAllCompleted.bind(this));
 };
 

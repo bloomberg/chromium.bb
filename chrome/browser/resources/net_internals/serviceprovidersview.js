@@ -33,8 +33,8 @@ inherits(ServiceProvidersView, DivView);
 
 ServiceProvidersView.prototype.onServiceProvidersChanged =
 function(serviceProviders) {
-  this.updateServiceProviders_(serviceProviders["service_providers"]);
-  this.updateNamespaceProviders_(serviceProviders["namespace_providers"]);
+  this.updateServiceProviders_(serviceProviders['service_providers']);
+  this.updateNamespaceProviders_(serviceProviders['namespace_providers']);
 };
 
 /**

@@ -39,70 +39,70 @@ function onLoaded() {
                                   'sortByDescription',
 
                                   // IDs for the details view.
-                                  "detailsTabHandles",
-                                  "detailsLogTab",
-                                  "detailsTimelineTab",
-                                  "detailsLogBox",
-                                  "detailsTimelineBox",
+                                  'detailsTabHandles',
+                                  'detailsLogTab',
+                                  'detailsTimelineTab',
+                                  'detailsLogBox',
+                                  'detailsTimelineBox',
 
                                   // IDs for the layout boxes.
-                                  "filterBox",
-                                  "eventsBox",
-                                  "actionBox",
-                                  "splitterBox");
+                                  'filterBox',
+                                  'eventsBox',
+                                  'actionBox',
+                                  'splitterBox');
 
   // Create a view which will display info on the proxy setup.
-  var proxyView = new ProxyView("proxyTabContent",
-                                "proxyOriginalSettings",
-                                "proxyEffectiveSettings",
-                                "proxyReloadSettings",
-                                "badProxiesTableBody",
-                                "clearBadProxies");
+  var proxyView = new ProxyView('proxyTabContent',
+                                'proxyOriginalSettings',
+                                'proxyEffectiveSettings',
+                                'proxyReloadSettings',
+                                'badProxiesTableBody',
+                                'clearBadProxies');
 
   // Create a view which will display information on the host resolver.
-  var dnsView = new DnsView("dnsTabContent",
-                            "hostResolverCacheTbody",
-                            "clearHostResolverCache",
-                            "hostResolverDefaultFamily",
-                            "hostResolverIPv6Disabled",
-                            "hostResolverEnableIPv6",
-                            "hostResolverCacheCapacity",
-                            "hostResolverCacheTTLSuccess",
-                            "hostResolverCacheTTLFailure");
+  var dnsView = new DnsView('dnsTabContent',
+                            'hostResolverCacheTbody',
+                            'clearHostResolverCache',
+                            'hostResolverDefaultFamily',
+                            'hostResolverIPv6Disabled',
+                            'hostResolverEnableIPv6',
+                            'hostResolverCacheCapacity',
+                            'hostResolverCacheTTLSuccess',
+                            'hostResolverCacheTTLFailure');
 
   // Create a view which will display import/export options to control the
   // captured data.
-  var dataView = new DataView("dataTabContent", "exportedDataText",
-                              "exportToText", "securityStrippingCheckbox",
-                              "byteLoggingCheckbox",
-                              "passivelyCapturedCount",
-                              "activelyCapturedCount",
-                              "dataViewDeleteAll");
+  var dataView = new DataView('dataTabContent', 'exportedDataText',
+                              'exportToText', 'securityStrippingCheckbox',
+                              'byteLoggingCheckbox',
+                              'passivelyCapturedCount',
+                              'activelyCapturedCount',
+                              'dataViewDeleteAll');
 
   // Create a view which will display the results and controls for connection
   // tests.
-  var testView = new TestView("testTabContent", "testUrlInput",
-                              "connectionTestsForm", "testSummary");
+  var testView = new TestView('testTabContent', 'testUrlInput',
+                              'connectionTestsForm', 'testSummary');
 
-  var httpCacheView = new HttpCacheView("httpCacheTabContent",
-                                        "httpCacheStats");
+  var httpCacheView = new HttpCacheView('httpCacheTabContent',
+                                        'httpCacheStats');
 
-  var socketsView = new SocketsView("socketsTabContent",
-                                    "socketPoolDiv",
-                                    "socketPoolGroupsDiv");
+  var socketsView = new SocketsView('socketsTabContent',
+                                    'socketPoolDiv',
+                                    'socketPoolGroupsDiv');
 
-  var spdyView = new SpdyView("spdyTabContent",
-                              "spdySessionNoneSpan",
-                              "spdySessionLinkSpan",
-                              "spdySessionDiv");
+  var spdyView = new SpdyView('spdyTabContent',
+                              'spdySessionNoneSpan',
+                              'spdySessionLinkSpan',
+                              'spdySessionDiv');
 
 
   var serviceView;
   if (g_browser.isPlatformWindows()) {
-    serviceView = new ServiceProvidersView("serviceProvidersTab",
-                                           "serviceProvidersTabContent",
-                                           "serviceProvidersTbody",
-                                           "namespaceProvidersTbody");
+    serviceView = new ServiceProvidersView('serviceProvidersTab',
+                                           'serviceProvidersTabContent',
+                                           'serviceProvidersTbody',
+                                           'namespaceProvidersTbody');
   }
 
   // Create a view which lets you tab between the different sub-views.

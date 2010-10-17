@@ -289,7 +289,7 @@ function stripCookieOrLoginInfo(line) {
   for (var i = 0; i < patterns.length; i++) {
     var match = patterns[i].exec(line);
     if (match != null)
-      return match + " [value was stripped]";
+      return match + ' [value was stripped]';
   }
   return line;
 }
