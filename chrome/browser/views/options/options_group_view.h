@@ -25,7 +25,7 @@ class OptionsGroupView : public views::View {
                    const std::wstring& title,
                    const std::wstring& description,
                    bool show_separator);
-  virtual ~OptionsGroupView() {}
+  virtual ~OptionsGroupView();
 
   // Sets the group as being highlighted to attract attention.
   void SetHighlighted(bool highlighted);

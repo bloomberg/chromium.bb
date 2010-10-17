@@ -11,8 +11,11 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
+#include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -209,6 +212,8 @@ GeneralPageView::GeneralPageView(Profile* profile)
       homepage_show_home_button_checkbox_(NULL),
       default_search_group_(NULL),
       default_search_manage_engines_button_(NULL),
+      instant_checkbox_(NULL),
+      instant_link_(NULL),
       default_browser_group_(NULL),
       default_browser_status_label_(NULL),
       default_browser_use_as_default_button_(NULL),
@@ -282,6 +287,16 @@ void GeneralPageView::ButtonPressed(
     UserMetricsRecordAction(UserMetricsAction("Options_ManageSearchEngines"),
                             NULL);
     KeywordEditorView::Show(profile());
+  } else if (sender == instant_checkbox_) {
+    if (instant_checkbox_->checked()) {
+      // Don't toggle immediately, instead let
+      // ShowInstantConfirmDialogIfNecessary do it.
+      instant_checkbox_->SetChecked(false);
+      browser::ShowInstantConfirmDialogIfNecessary(
+          GetWindow()->GetNativeWindow(), profile());
+    } else {
+      profile()->GetPrefs()->SetBoolean(prefs::kInstantEnabled, false);
+    }
   }
 }
 
@@ -358,6 +373,7 @@ void GeneralPageView::InitControlLayout() {
   registrar_.Init(profile()->GetPrefs());
   registrar_.Add(prefs::kRestoreOnStartup, this);
   registrar_.Add(prefs::kURLsToRestoreOnStartup, this);
+  registrar_.Add(prefs::kInstantEnabled, this);
 
   new_tab_page_is_home_page_.Init(prefs::kHomePageIsNewTabPage,
       profile()->GetPrefs(), this);
@@ -366,10 +382,10 @@ void GeneralPageView::InitControlLayout() {
 }
 
 void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
+  PrefService* prefs = profile()->GetPrefs();
   if (!pref_name ||
       *pref_name == prefs::kRestoreOnStartup ||
       *pref_name == prefs::kURLsToRestoreOnStartup) {
-    PrefService* prefs = profile()->GetPrefs();
     const SessionStartupPref startup_pref =
         SessionStartupPref::GetStartupPref(prefs);
     bool radio_buttons_enabled = !SessionStartupPref::TypeIsManaged(prefs);
@@ -424,11 +440,20 @@ void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
     homepage_show_home_button_checkbox_->SetEnabled(
         !show_home_button_.IsManaged());
   }
+
+  if (!pref_name || *pref_name == prefs::kInstantEnabled)
+    instant_checkbox_->SetChecked(prefs->GetBoolean(prefs::kInstantEnabled));
 }
 
 void GeneralPageView::HighlightGroup(OptionsGroup highlight_group) {
   if (highlight_group == OPTIONS_GROUP_DEFAULT_SEARCH)
     default_search_group_->SetHighlighted(true);
+}
+
+void GeneralPageView::LinkActivated(views::Link* source, int event_flags) {
+  DCHECK(source == instant_link_);
+  browser::ShowOptionsURL(profile(),
+                          GURL(browser::kInstantLearnMoreURL));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -628,6 +653,15 @@ void GeneralPageView::InitDefaultSearchGroup() {
       this,
       l10n_util::GetString(IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK));
 
+  instant_checkbox_ = new views::Checkbox(
+      l10n_util::GetString(IDS_INSTANT_PREF));
+  instant_checkbox_->SetMultiLine(true);
+  instant_checkbox_->set_listener(this);
+
+  instant_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
+  instant_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  instant_link_->SetController(this);
+
   using views::GridLayout;
   using views::ColumnSet;
 
@@ -643,9 +677,34 @@ void GeneralPageView::InitDefaultSearchGroup() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
+  const int single_column_view_set_id = 1;
+  column_set = layout->AddColumnSet(single_column_view_set_id);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  const int link_column_set_id = 2;
+  column_set = layout->AddColumnSet(link_column_set_id);
+  // TODO(sky): this isn't right, we need a method to determine real indent.
+  column_set->AddPaddingColumn(0, views::Checkbox::GetTextIndent() + 3);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+
   layout->StartRow(0, double_column_view_set_id);
   layout->AddView(default_search_engine_combobox_);
   layout->AddView(default_search_manage_engines_button_);
+  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(instant_checkbox_);
+  layout->AddPaddingRow(0, 0);
+
+  layout->StartRow(0, link_column_set_id);
+  layout->AddView(
+      new views::Label(l10n_util::GetString(IDS_INSTANT_PREF_WARNING)));
+  layout->AddView(instant_link_);
 
   default_search_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME),

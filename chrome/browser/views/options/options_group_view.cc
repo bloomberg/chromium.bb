@@ -53,6 +53,9 @@ OptionsGroupView::OptionsGroupView(views::View* contents,
   contents->SetAccessibleName(title);
 }
 
+OptionsGroupView::~OptionsGroupView() {
+}
+
 void OptionsGroupView::SetHighlighted(bool highlighted) {
   highlighted_ = highlighted;
   SchedulePaint();

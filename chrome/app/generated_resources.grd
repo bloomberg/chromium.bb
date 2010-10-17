@@ -4114,6 +4114,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant opt-in dialog">
         Instant lets you view web pages and search results faster than ever!\n\nWith Instant enabled, most web pages begin loading as soon as you type a URL in the omnibox, before you hit Enter. In addition, if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.\n\nBecause new search results are requested each time you press a key, anything you type into the omnibox may be logged as a search query by your default search engine.\n\n
       </message>
+      <message name="IDS_INSTANT_PREF" desc="Preference for enabling instant">
+        Enable Instant for faster searching and browsing
+      </message>
+      <message name="IDS_INSTANT_PREF_WARNING" desc="Warning displayed beneath instant pref">
+        Omnibox input may be logged
+      </message>
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in, displayed in the click-to-play UI.">
@@ -6436,12 +6442,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
         <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
-          Default search:
+          Search:
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
         <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the default search engine group">
-          Default Search
+          Search
         </message>
       </if>
       <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK"
