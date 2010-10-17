@@ -72,6 +72,9 @@ static const double kBannerGradientColorBottom[3] =
     {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
 static const double kBannerStrokeColor = 135.0 / 255.0;
 
+// Tag id for retrieval via viewWithTag in NSView (from IB).
+static const uint32 kBasicsStartupPageTableTag = 1000;
+
 bool IsNewTabUIURLString(const GURL& url) {
   return url == GURL(chrome::kChromeUINewTabURL);
 }
@@ -754,6 +757,13 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
       [NSColor colorWithCalibratedWhite:kBannerStrokeColor
                                   alpha:1.0];
   [managedPrefsBannerView_ setStrokeColor:bannerStrokeColor];
+
+  // Set accessibility related attributes.
+  NSTableView* tableView = [basicsView_ viewWithTag:kBasicsStartupPageTableTag];
+  NSString* description =
+      l10n_util::GetNSStringWithFixup(IDS_OPTIONS_STARTUP_SHOW_PAGES);
+  [tableView accessibilitySetOverrideValue:description
+                              forAttribute:NSAccessibilityDescriptionAttribute];
 }
 
 - (void)dealloc {
