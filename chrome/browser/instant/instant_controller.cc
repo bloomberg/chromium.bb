@@ -28,7 +28,8 @@ void InstantController::RegisterUserPrefs(PrefService* prefs) {
 }
 
 // static
-bool InstantController::IsEnabled(Profile* profile) {
+bool InstantController::IsEnabled() {
+  // TODO: convert to kInstantEnabled once pref lands.
   static bool enabled = false;
   static bool checked = false;
   if (!checked) {
@@ -36,8 +37,7 @@ bool InstantController::IsEnabled(Profile* profile) {
     enabled = CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableMatchPreview);
   }
-  PrefService* prefs = profile->GetPrefs();
-  return (enabled || (prefs && prefs->GetBoolean(prefs::kInstantEnabled)));
+  return enabled;
 }
 
 InstantController::InstantController(InstantDelegate* delegate)

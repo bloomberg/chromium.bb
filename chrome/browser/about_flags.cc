@@ -76,6 +76,13 @@ const Experiment kExperiments[] = {
     switches::kEnableTabbedOptions
   },
   {
+    "match-preview",  // Do not change; see above.
+    IDS_FLAGS_INSTANT_NAME,
+    IDS_FLAGS_INSTANT_DESCRIPTION,
+    kOsWin,
+    switches::kEnableMatchPreview
+  },
+  {
     "remoting",  // Do not change; see above.
     IDS_FLAGS_REMOTING_NAME,
 #if defined(OS_WIN)
