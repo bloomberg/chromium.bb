@@ -5,13 +5,15 @@
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
 
 #include "base/basictypes.h"
-#include "base/registry.h"
 #include "base/string16.h"
+#include "base/win/registry.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/util/data_encryption.h"
+
+using base::win::RegKey;
 
 // Forward declaration. This function is not in unnamed namespace as it
 // is referenced in the unittest.
@@ -177,7 +179,8 @@ bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
         profile_reg_values[i].field_type;
   }
 
-  RegistryKeyIterator iterator_profiles(HKEY_CURRENT_USER, kProfileKey);
+  base::win::RegistryKeyIterator iterator_profiles(HKEY_CURRENT_USER,
+                                                   kProfileKey);
   for (; iterator_profiles.Valid(); ++iterator_profiles) {
     std::wstring key_name(kProfileKey);
     key_name.append(L"\\");
@@ -208,7 +211,8 @@ bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
 
   // We import CC profiles only if they are not password protected.
   if (password_hash.empty() && IsEmptySalt(salt)) {
-    RegistryKeyIterator iterator_cc(HKEY_CURRENT_USER, kCreditCardKey);
+    base::win::RegistryKeyIterator iterator_cc(HKEY_CURRENT_USER,
+                                               kCreditCardKey);
     for (; iterator_cc.Valid(); ++iterator_cc) {
       std::wstring key_name(kCreditCardKey);
       key_name.append(L"\\");

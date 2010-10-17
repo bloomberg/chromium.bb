@@ -4,10 +4,11 @@
 
 #include "net/base/ssl_config_service_win.h"
 
-#include "base/registry.h"
+#include "base/win/registry.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
+using base::win::RegKey;
 
 namespace net {
 

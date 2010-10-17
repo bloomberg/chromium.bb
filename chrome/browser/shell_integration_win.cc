@@ -13,12 +13,12 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -340,7 +340,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       HKEY root_key = HKEY_CLASSES_ROOT;
       // Check <protocol>\shell\open\command
       std::wstring key_path(kChromeProtocols[i] + ShellUtil::kRegShellOpen);
-      RegKey key(root_key, key_path.c_str(), KEY_READ);
+      base::win::RegKey key(root_key, key_path.c_str(), KEY_READ);
       std::wstring value;
       if (!key.Valid() || !key.ReadValue(L"", &value))
         return NOT_DEFAULT_BROWSER;
@@ -371,14 +371,15 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
   bool ff_default = false;
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     std::wstring app_cmd;
-    RegKey key(HKEY_CURRENT_USER, ShellUtil::kRegVistaUrlPrefs, KEY_READ);
+    base::win::RegKey key(HKEY_CURRENT_USER,
+                          ShellUtil::kRegVistaUrlPrefs, KEY_READ);
     if (key.Valid() && key.ReadValue(L"Progid", &app_cmd) &&
         app_cmd == L"FirefoxURL")
       ff_default = true;
   } else {
     std::wstring key_path(L"http");
     key_path.append(ShellUtil::kRegShellOpen);
-    RegKey key(HKEY_CLASSES_ROOT, key_path.c_str(), KEY_READ);
+    base::win::RegKey key(HKEY_CLASSES_ROOT, key_path.c_str(), KEY_READ);
     std::wstring app_cmd;
     if (key.Valid() && key.ReadValue(L"", &app_cmd) &&
         std::wstring::npos != StringToLowerASCII(app_cmd).find(L"firefox"))

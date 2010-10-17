@@ -5,7 +5,7 @@
 #include "sandbox/src/service_resolver.h"
 
 #include "base/logging.h"
-#include "base/pe_image.h"
+#include "base/win/pe_image.h"
 
 namespace sandbox {
 
@@ -28,7 +28,7 @@ NTSTATUS ServiceResolverThunk::ResolveTarget(const void* module,
   if (NULL == module)
     return STATUS_UNSUCCESSFUL;
 
-  PEImage module_image(module);
+  base::win::PEImage module_image(module);
   *address = module_image.GetProcAddress(function_name);
 
   if (NULL == *address) {

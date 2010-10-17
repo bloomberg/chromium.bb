@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,12 +8,15 @@
 // Win32 Portable Executable File Format" by Matt Pietrek:
 // http://msdn.microsoft.com/msdnmag/issues/02/02/PE/default.aspx
 
-#ifndef BASE_PE_IMAGE_H_
-#define BASE_PE_IMAGE_H_
+#ifndef BASE_WIN_PE_IMAGE_H_
+#define BASE_WIN_PE_IMAGE_H_
 #pragma once
 
 #include <windows.h>
 #include <DelayIMP.h>
+
+namespace base {
+namespace win {
 
 // This class is a wrapper for the Portable Executable File Format (PE).
 // It's main purpose is to provide an easy way to work with imports and exports
@@ -255,4 +258,7 @@ inline PIMAGE_EXPORT_DIRECTORY PEImage::GetExportDirectory() const {
              GetImageDirectoryEntryAddr(IMAGE_DIRECTORY_ENTRY_EXPORT));
 }
 
-#endif  // BASE_PE_IMAGE_H_
+}  // namespace win
+}  // namespace base
+
+#endif  // BASE_WIN_PE_IMAGE_H_

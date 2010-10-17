@@ -16,11 +16,11 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
@@ -39,6 +39,7 @@
 #pragma comment(lib, "wtsapi32.lib")
 
 namespace {
+
 const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 const wchar_t kBrowserAppId[] = L"Chrome";
 
@@ -437,13 +438,14 @@ std::wstring GoogleChromeDistribution::GetStatsServerURL() {
   return L"https://clients4.google.com/firefox/metrics/collect";
 }
 
-std::wstring GoogleChromeDistribution::GetDistributionData(RegKey* key) {
+std::wstring GoogleChromeDistribution::GetDistributionData(
+    base::win::RegKey* key) {
   DCHECK(NULL != key);
   std::wstring sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");
   sub_key.append(product_guid());
 
-  RegKey client_state_key(key->Handle(), sub_key.c_str(), KEY_READ);
+  base::win::RegKey client_state_key(key->Handle(), sub_key.c_str(), KEY_READ);
   std::wstring result;
   std::wstring brand_value;
   if (client_state_key.ReadValue(google_update::kRegRLZBrandField,

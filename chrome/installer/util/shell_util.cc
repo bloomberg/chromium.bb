@@ -16,7 +16,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
@@ -24,6 +23,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -32,6 +32,8 @@
 #include "chrome/installer/util/master_preferences.h"
 
 #include "installer_util_strings.h"
+
+using base::win::RegKey;
 
 namespace {
 
@@ -570,7 +572,8 @@ void ShellUtil::GetRegisteredBrowsers(std::map<std::wstring,
                                       std::wstring>* browsers) {
   std::wstring base_key(ShellUtil::kRegStartMenuInternet);
   HKEY root = HKEY_LOCAL_MACHINE;
-  for (RegistryKeyIterator iter(root, base_key.c_str()); iter.Valid(); ++iter) {
+  for (base::win::RegistryKeyIterator iter(root, base_key.c_str());
+       iter.Valid(); ++iter) {
     std::wstring key = base_key + L"\\" + iter.Name();
     RegKey capabilities(root, (key + L"\\Capabilities").c_str(), KEY_READ);
     std::wstring name;

@@ -10,8 +10,8 @@
 #include "sandbox/src/interception.h"
 
 #include "base/logging.h"
-#include "base/pe_image.h"
 #include "base/scoped_ptr.h"
+#include "base/win/pe_image.h"
 #include "sandbox/src/interception_internal.h"
 #include "sandbox/src/interceptors.h"
 #include "sandbox/src/sandbox.h"
@@ -411,7 +411,7 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
   if (!ntdll_base)
     return false;
 
-  PEImage ntdll_image(ntdll_base);
+  base::win::PEImage ntdll_image(ntdll_base);
 
   // Bypass purify's interception.
   wchar_t* loader_get = reinterpret_cast<wchar_t*>(

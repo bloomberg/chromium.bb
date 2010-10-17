@@ -5,8 +5,11 @@
 // This file contains unit tests for PEImage.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "base/pe_image.h"
+#include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
+
+namespace base {
+namespace win {
 
 // Just counts the number of invocations.
 bool ExportsCallback(const PEImage &image,
@@ -211,3 +214,6 @@ TEST(PEImageTest, RetrievesExports) {
 
   FreeLibrary(module);
 }
+
+}  // namespace win
+}  // namespace base

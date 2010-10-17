@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/registry.h"
+#include "base/win/registry.h"
 
 #include <shlwapi.h>
 
 #include "base/logging.h"
 
 #pragma comment(lib, "shlwapi.lib")  // for SHDeleteKey
+
+namespace base {
+namespace win {
 
 RegistryValueIterator::RegistryValueIterator(HKEY root_key,
                                              const wchar_t* folder_key) {
@@ -379,3 +382,6 @@ bool RegKey::HasChanged() {
   }
   return false;
 }
+
+}  // namespace win
+}  // namespace base

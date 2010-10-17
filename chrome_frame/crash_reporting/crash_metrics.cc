@@ -5,7 +5,7 @@
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 
 #include "base/metrics/histogram.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "chrome_frame/utils.h"
 
 static const wchar_t kChromeFrameMetricsKey[] =
@@ -28,7 +28,7 @@ CrashMetricsReporter* CrashMetricsReporter::GetInstance() {
 bool CrashMetricsReporter::SetMetric(Metric metric, int value) {
   DCHECK(metric >= NAVIGATION_COUNT && metric <= LAST_METRIC);
 
-  RegKey metric_key;
+  base::win::RegKey metric_key;
   if (metric_key.Create(HKEY_CURRENT_USER, kChromeFrameMetricsKey,
                         KEY_SET_VALUE)) {
     if (metric_key.WriteValue(g_metric_names[metric], value)) {
@@ -47,7 +47,7 @@ int CrashMetricsReporter::GetMetric(Metric metric) {
   DCHECK(metric >= NAVIGATION_COUNT && metric <= LAST_METRIC);
 
   int ret = 0;
-  RegKey metric_key;
+  base::win::RegKey metric_key;
   if (metric_key.Open(HKEY_CURRENT_USER, kChromeFrameMetricsKey,
                       KEY_QUERY_VALUE)) {
     int value = 0;

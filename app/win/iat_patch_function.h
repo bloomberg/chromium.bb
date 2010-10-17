@@ -9,7 +9,6 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "base/pe_image.h"
 
 namespace app {
 namespace win {

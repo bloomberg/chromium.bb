@@ -14,13 +14,13 @@
 #include "base/file_version_info.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/registry.h"   // to find IE and firefox
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
@@ -116,7 +116,8 @@ std::wstring GetExecutableAppPath(const std::wstring& file) {
       L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\";
 
   std::wstring app_path;
-  RegKey key(HKEY_LOCAL_MACHINE, (kAppPathsKey + file).c_str(), KEY_READ);
+  base::win::RegKey key(HKEY_LOCAL_MACHINE, (kAppPathsKey + file).c_str(),
+                        KEY_READ);
   if (key.Handle()) {
     key.ReadValue(NULL, &app_path);
   }
@@ -129,7 +130,7 @@ std::wstring FormatCommandForApp(const std::wstring& exe_name,
   std::wstring reg_path(
       base::StringPrintf(L"Applications\\%ls\\shell\\open\\command",
                          exe_name.c_str()));
-  RegKey key(HKEY_CLASSES_ROOT, reg_path.c_str(), KEY_READ);
+  base::win::RegKey key(HKEY_CLASSES_ROOT, reg_path.c_str(), KEY_READ);
 
   std::wstring command;
   if (key.Handle()) {

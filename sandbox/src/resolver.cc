@@ -4,7 +4,7 @@
 
 #include "sandbox/src/resolver.h"
 
-#include "base/pe_image.h"
+#include "base/win/pe_image.h"
 #include "sandbox/src/sandbox_nt_util.h"
 
 namespace sandbox {
@@ -47,7 +47,7 @@ NTSTATUS ResolverThunk::ResolveInterceptor(const void* interceptor_module,
   if (!interceptor_module)
     return STATUS_INVALID_PARAMETER;
 
-  PEImage pe(interceptor_module);
+  base::win::PEImage pe(interceptor_module);
   if (!pe.VerifyMagic())
     return STATUS_INVALID_IMAGE_FORMAT;
 

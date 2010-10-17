@@ -5,6 +5,7 @@
 #include "app/win/iat_patch_function.h"
 
 #include "base/logging.h"
+#include "base/win/pe_image.h"
 
 namespace app {
 namespace win {
@@ -79,7 +80,7 @@ DWORD ModifyCode(void* old_code, void* new_code, int length) {
   return error;
 }
 
-bool InterceptEnumCallback(const PEImage &image, const char* module,
+bool InterceptEnumCallback(const base::win::PEImage& image, const char* module,
                            DWORD ordinal, const char* name, DWORD hint,
                            IMAGE_THUNK_DATA* iat, void* cookie) {
   InterceptFunctionInformation* intercept_information =
@@ -147,7 +148,7 @@ DWORD InterceptImportedFunction(HMODULE module_handle,
     return ERROR_INVALID_PARAMETER;
   }
 
-  PEImage target_image(module_handle);
+  base::win::PEImage target_image(module_handle);
   if (!target_image.VerifyMagic()) {
     NOTREACHED();
     return ERROR_INVALID_PARAMETER;

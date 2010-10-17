@@ -6,10 +6,12 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/logging_installer.h"
+
+using base::win::RegKey;
 
 namespace {
 

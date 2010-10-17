@@ -4,7 +4,7 @@
 
 #include "sandbox/src/sidestep_resolver.h"
 
-#include "base/pe_image.h"
+#include "base/win/pe_image.h"
 #include "sandbox/src/sandbox_nt_util.h"
 #include "sandbox/src/sidestep/preamble_patcher.h"
 
@@ -191,7 +191,7 @@ bool SmartSidestepResolverThunk::IsInternalCall(const void* base,
   DCHECK_NT(base);
   DCHECK_NT(return_address);
 
-  PEImage pe(base);
+  base::win::PEImage pe(base);
   if (pe.GetImageSectionFromAddr(return_address))
     return true;
   return false;

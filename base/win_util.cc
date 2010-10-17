@@ -12,7 +12,7 @@
 #include <shlobj.h>
 
 #include "base/logging.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -127,7 +127,7 @@ std::wstring GetClassName(HWND window) {
 }
 
 bool UserAccountControlIsEnabled() {
-  RegKey key(HKEY_LOCAL_MACHINE,
+  base::win::RegKey key(HKEY_LOCAL_MACHINE,
       L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
       KEY_READ);
   DWORD uac_enabled;
@@ -187,12 +187,12 @@ static const char16 kAutoRunKeyPath[] =
 
 bool AddCommandToAutoRun(HKEY root_key, const string16& name,
                          const string16& command) {
-  RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
+  base::win::RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
   return autorun_key.WriteValue(name.c_str(), command.c_str());
 }
 
 bool RemoveCommandFromAutoRun(HKEY root_key, const string16& name) {
-  RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
+  base::win::RegKey autorun_key(root_key, kAutoRunKeyPath, KEY_SET_VALUE);
   return autorun_key.DeleteValue(name.c_str());
 }
 

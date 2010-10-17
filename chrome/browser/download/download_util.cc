@@ -72,8 +72,7 @@
 #include "app/os_exchange_data_provider_win.h"
 #include "app/win_util.h"
 #include "base/base_drag_source.h"
-#include "base/registry.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -602,7 +601,7 @@ void UpdateAppIconDownloadProgress(int download_count,
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
-  ScopedComPtr<ITaskbarList3> taskbar;
+  base::win::ScopedComPtr<ITaskbarList3> taskbar;
   HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result)) {

@@ -1,14 +1,14 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/external_registry_extension_provider_win.h"
 
 #include "base/file_path.h"
-#include "base/registry.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
+#include "base/win/registry.h"
 
 // The Registry hive where to look for external extensions.
 const HKEY kRegRoot = HKEY_LOCAL_MACHINE;
@@ -30,10 +30,10 @@ ExternalRegistryExtensionProvider::~ExternalRegistryExtensionProvider() {
 
 void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
     Visitor* visitor, const std::set<std::string>& ids_to_ignore) const {
-  RegistryKeyIterator iterator(kRegRoot,
-                               ASCIIToWide(kRegistryExtensions).c_str());
+  base::win::RegistryKeyIterator iterator(
+      kRegRoot, ASCIIToWide(kRegistryExtensions).c_str());
   while (iterator.Valid()) {
-    RegKey key;
+    base::win::RegKey key;
     std::wstring key_path = ASCIIToWide(kRegistryExtensions);
     key_path.append(L"\\");
     key_path.append(iterator.Name());
@@ -78,7 +78,7 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
 Version* ExternalRegistryExtensionProvider::RegisteredVersion(
     const std::string& id,
     Extension::Location* location) const  {
-  RegKey key;
+  base::win::RegKey key;
   std::wstring key_path = ASCIIToWide(kRegistryExtensions);
   key_path.append(L"\\");
   key_path.append(ASCIIToWide(id));

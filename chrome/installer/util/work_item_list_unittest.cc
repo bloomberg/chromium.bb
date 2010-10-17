@@ -7,48 +7,52 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::win::RegKey;
+
 namespace {
-  wchar_t test_root[] = L"ListList";
-  wchar_t data_str[] = L"data_111";
 
-  class WorkItemListTest : public testing::Test {
-   protected:
-    virtual void SetUp() {
-      // Create a temporary key for testing
-      RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-      key.DeleteKey(test_root);
-      ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
-      ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
+wchar_t test_root[] = L"ListList";
+wchar_t data_str[] = L"data_111";
 
-      // Create a temp directory for test.
-      ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
-      test_dir_ = test_dir_.AppendASCII("WorkItemListTest");
-      file_util::Delete(test_dir_, true);
-      ASSERT_FALSE(file_util::PathExists(test_dir_));
-      file_util::CreateDirectoryW(test_dir_);
-      ASSERT_TRUE(file_util::PathExists(test_dir_));
-    }
+class WorkItemListTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    // Create a temporary key for testing
+    RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
+    key.DeleteKey(test_root);
+    ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
+    ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
 
-    virtual void TearDown() {
-      logging::CloseLogFile();
-      // Clean up test directory
-      ASSERT_TRUE(file_util::Delete(test_dir_, true));
-      ASSERT_FALSE(file_util::PathExists(test_dir_));
-      // Clean up the temporary key
-      RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-      ASSERT_TRUE(key.DeleteKey(test_root));
-    }
+    // Create a temp directory for test.
+    ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
+    test_dir_ = test_dir_.AppendASCII("WorkItemListTest");
+    file_util::Delete(test_dir_, true);
+    ASSERT_FALSE(file_util::PathExists(test_dir_));
+    file_util::CreateDirectoryW(test_dir_);
+    ASSERT_TRUE(file_util::PathExists(test_dir_));
+  }
 
-    FilePath test_dir_;
-  };
+  virtual void TearDown() {
+    logging::CloseLogFile();
+    // Clean up test directory
+    ASSERT_TRUE(file_util::Delete(test_dir_, true));
+    ASSERT_FALSE(file_util::PathExists(test_dir_));
+    // Clean up the temporary key
+    RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
+    ASSERT_TRUE(key.DeleteKey(test_root));
+  }
+
+  FilePath test_dir_;
 };
+
+}  // namespace
 
 // Execute a WorkItem list successfully and then rollback.
 TEST_F(WorkItemListTest, ExecutionSuccess) {

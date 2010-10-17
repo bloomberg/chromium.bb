@@ -5,8 +5,8 @@
 #include "sandbox/src/target_process.h"
 
 #include "base/basictypes.h"
-#include "base/pe_image.h"
 #include "base/scoped_ptr.h"
+#include "base/win/pe_image.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/policy_low_level.h"
@@ -54,7 +54,7 @@ void* GetBaseAddress(const wchar_t* exe_name, void* entry_point) {
   if (NULL == exe)
     return exe;
 
-  PEImage pe(exe);
+  base::win::PEImage pe(exe);
   if (!pe.VerifyMagic()) {
     ::FreeLibrary(exe);
     return exe;

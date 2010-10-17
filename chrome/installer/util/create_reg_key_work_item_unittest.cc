@@ -5,32 +5,37 @@
 #include <windows.h>
 
 #include "base/file_util.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::win::RegKey;
+
 namespace {
-  wchar_t test_root[] = L"TmpTmp";
-  class CreateRegKeyWorkItemTest : public testing::Test {
-   protected:
-    virtual void SetUp() {
-      // Create a temporary key for testing
-      RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-      key.DeleteKey(test_root);
-      ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
-      ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
-    }
-    virtual void TearDown() {
-      logging::CloseLogFile();
-      // Clean up the temporary key
-      RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
-      ASSERT_TRUE(key.DeleteKey(test_root));
-    }
-  };
+
+wchar_t test_root[] = L"TmpTmp";
+
+class CreateRegKeyWorkItemTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    // Create a temporary key for testing
+    RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
+    key.DeleteKey(test_root);
+    ASSERT_FALSE(key.Open(HKEY_CURRENT_USER, test_root, KEY_READ));
+    ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, test_root, KEY_READ));
+  }
+  virtual void TearDown() {
+    logging::CloseLogFile();
+    // Clean up the temporary key
+    RegKey key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
+    ASSERT_TRUE(key.DeleteKey(test_root));
+  }
 };
+
+}  // namespace
 
 TEST_F(CreateRegKeyWorkItemTest, CreateKey) {
   RegKey key;

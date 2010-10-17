@@ -4,7 +4,7 @@
 
 #include <map>
 
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
@@ -51,8 +51,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   rlz_lib::ClearProductState(rlz_lib::DESKTOP, access_points);
 
   // Check that the state has really been cleared.
-  RegKey key(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\N",
-             KEY_READ);
+  base::win::RegKey key(HKEY_CURRENT_USER,
+                        L"Software\\Google\\Common\\Rlz\\Events\\N",
+                        KEY_READ);
   ASSERT_FALSE(key.Valid());
 
   key.Open(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\D",

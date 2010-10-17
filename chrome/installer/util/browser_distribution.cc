@@ -11,7 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/lock.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
@@ -122,7 +122,7 @@ std::wstring BrowserDistribution::GetStatsServerURL() {
   return L"";
 }
 
-std::wstring BrowserDistribution::GetDistributionData(RegKey* key) {
+std::wstring BrowserDistribution::GetDistributionData(base::win::RegKey* key) {
   return L"";
 }
 

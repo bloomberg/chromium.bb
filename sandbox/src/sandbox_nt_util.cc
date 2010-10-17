@@ -4,7 +4,7 @@
 
 #include "sandbox/src/sandbox_nt_util.h"
 
-#include "base/pe_image.h"
+#include "base/win/pe_image.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/target_services.h"
 
@@ -357,7 +357,7 @@ UNICODE_STRING* GetImageInfoFromModule(HMODULE module, uint32* flags) {
   __try {
     do {
       *flags = 0;
-      PEImage pe(module);
+      base::win::PEImage pe(module);
 
       if (!pe.VerifyMagic())
         break;

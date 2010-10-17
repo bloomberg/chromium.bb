@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,9 @@
 #include <shlobj.h>
 
 #include "base/file_util.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,8 +43,9 @@ class DeleteAfterRebootHelperTest : public testing::Test {
 
     // Try and restore the pending moves value, if we have one.
     if (IsUserAnAdmin() && original_pending_moves_.size() > 1) {
-      RegKey session_manager_key(HKEY_LOCAL_MACHINE, kSessionManagerKey,
-                                 KEY_CREATE_SUB_KEY | KEY_SET_VALUE);
+      base::win::RegKey session_manager_key(
+          HKEY_LOCAL_MACHINE, kSessionManagerKey,
+          KEY_CREATE_SUB_KEY | KEY_SET_VALUE);
       if (!session_manager_key.Handle()) {
         // Couldn't open / create the key.
         DLOG(ERROR) << "Failed to open session manager key for writing.";

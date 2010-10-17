@@ -6,18 +6,20 @@
 
 #include <windows.h>
 
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/policy_constants.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::win::RegKey;
 
 namespace policy {
 

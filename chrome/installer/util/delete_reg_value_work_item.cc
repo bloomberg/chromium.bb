@@ -5,8 +5,10 @@
 #include "chrome/installer/util/delete_reg_value_work_item.h"
 
 #include "base/logging.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/logging_installer.h"
+
+using base::win::RegKey;
 
 DeleteRegValueWorkItem::DeleteRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& key_path,

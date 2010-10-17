@@ -7,7 +7,7 @@
 #include "sandbox/src/policy_broker.h"
 
 #include "base/logging.h"
-#include "base/pe_image.h"
+#include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/interception.h"
 #include "sandbox/src/interceptors.h"
@@ -41,7 +41,7 @@ SANDBOX_INTERCEPT NtExports g_nt;
 
 bool SetupNtdllImports(TargetProcess *child) {
   HMODULE ntdll = ::GetModuleHandle(kNtdllName);
-  PEImage ntdll_image(ntdll);
+  base::win::PEImage ntdll_image(ntdll);
 
   // Bypass purify's interception.
   wchar_t* loader_get = reinterpret_cast<wchar_t*>(

@@ -8,10 +8,10 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/chrome_constants.h"
@@ -29,6 +29,8 @@
 
 // Build-time generated include file.
 #include "registered_dlls.h"  // NOLINT
+
+using base::win::RegKey;
 
 namespace {
 

@@ -10,14 +10,16 @@
 #include "base/platform_thread.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/registry.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::win::RegKey;
 
 ChromeMiniInstaller::ChromeMiniInstaller(const std::wstring& install_type,
                                          bool is_chrome_frame)

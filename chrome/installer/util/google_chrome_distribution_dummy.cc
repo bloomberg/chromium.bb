@@ -78,7 +78,8 @@ std::wstring GoogleChromeDistribution::GetStatsServerURL() {
   return std::wstring();
 }
 
-std::wstring GoogleChromeDistribution::GetDistributionData(RegKey* key) {
+std::wstring GoogleChromeDistribution::GetDistributionData(
+    base::win::RegKey* key) {
   NOTREACHED();
   return std::wstring();
 }

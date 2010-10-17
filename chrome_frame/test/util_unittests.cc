@@ -5,11 +5,13 @@
 #include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "chrome_frame/utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+using base::win::RegKey;
 
 const wchar_t kChannelName[] = L"-dev";
 const wchar_t kSuffix[] = L"-fix";

@@ -6,160 +6,34 @@
 #define BASE_REGISTRY_H_
 #pragma once
 
-#include <windows.h>
-#include <string>
+// TODO(brettw) remove this file when all callers are converted to using the
+// new location & namespace.
+#include "base/win/registry.h"
 
-#include "base/basictypes.h"
-
-// Utility class to read, write and manipulate the Windows Registry.
-// Registry vocabulary primer: a "key" is like a folder, in which there
-// are "values", which are <name, data> pairs, with an associated data type.
-class RegKey {
+class RegKey : public base::win::RegKey {
  public:
-  RegKey();
-  RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access);
-  ~RegKey();
-
-  bool Create(HKEY rootkey, const wchar_t* subkey, REGSAM access);
-
-  bool CreateWithDisposition(HKEY rootkey, const wchar_t* subkey,
-                             DWORD* disposition, REGSAM access);
-
-  bool Open(HKEY rootkey, const wchar_t* subkey, REGSAM access);
-
-  // Creates a subkey or open it if it already exists.
-  bool CreateKey(const wchar_t* name, REGSAM access);
-
-  // Opens a subkey
-  bool OpenKey(const wchar_t* name, REGSAM access);
-
-  void Close();
-
-  DWORD ValueCount();
-
-  // Determine the nth value's name.
-  bool ReadName(int index, std::wstring* name);
-
-  // True while the key is valid.
-  bool Valid() const { return key_ != NULL; }
-
-  // Kill a key and everything that live below it; please be careful when using
-  // it.
-  bool DeleteKey(const wchar_t* name);
-
-  // Deletes a single value within the key.
-  bool DeleteValue(const wchar_t* name);
-
-  bool ValueExists(const wchar_t* name);
-
-  bool ReadValue(const wchar_t* name, void* data, DWORD* dsize, DWORD* dtype);
-  bool ReadValue(const wchar_t* name, std::wstring* value);
-  bool ReadValueDW(const wchar_t* name, DWORD* value);
-
-  bool WriteValue(const wchar_t* name, const void* data, DWORD dsize,
-                  DWORD dtype);
-  bool WriteValue(const wchar_t* name, const wchar_t* value);
-  bool WriteValue(const wchar_t* name, DWORD value);
-
-  // Starts watching the key to see if any of its values have changed.
-  // The key must have been opened with the KEY_NOTIFY access privelege.
-  bool StartWatching();
-
-  // If StartWatching hasn't been called, always returns false.
-  // Otherwise, returns true if anything under the key has changed.
-  // This can't be const because the |watch_event_| may be refreshed.
-  bool HasChanged();
-
-  // Will automatically be called by destructor if not manually called
-  // beforehand.  Returns true if it was watching, false otherwise.
-  bool StopWatching();
-
-  inline bool IsWatching() const { return watch_event_ != 0; }
-  HANDLE watch_event() const { return watch_event_; }
-  HKEY Handle() const { return key_; }
-
- private:
-  HKEY key_;  // The registry key being iterated.
-  HANDLE watch_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(RegKey);
+  RegKey() {}
+  RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
+      : base::win::RegKey(rootkey, subkey, access) {}
+  ~RegKey() { base::win::RegKey::~RegKey(); }
 };
 
-// Iterates the entries found in a particular folder on the registry.
-// For this application I happen to know I wont need data size larger
-// than MAX_PATH, but in real life this wouldn't neccessarily be
-// adequate.
-class RegistryValueIterator {
+class RegistryValueIterator : public base::win::RegistryValueIterator {
  public:
-  RegistryValueIterator(HKEY root_key, const wchar_t* folder_key);
-
-  ~RegistryValueIterator();
-
-  DWORD ValueCount() const;
-
-  // True while the iterator is valid.
-  bool Valid() const;
-
-  // Advances to the next registry entry.
-  void operator++();
-
-  const wchar_t* Name() const { return name_; }
-  const wchar_t* Value() const { return value_; }
-  DWORD ValueSize() const { return value_size_; }
-  DWORD Type() const { return type_; }
-
-  int Index() const { return index_; }
-
- private:
-  // Read in the current values.
-  bool Read();
-
-  // The registry key being iterated.
-  HKEY key_;
-
-  // Current index of the iteration.
-  int index_;
-
-  // Current values.
-  wchar_t name_[MAX_PATH];
-  wchar_t value_[MAX_PATH];
-  DWORD value_size_;
-  DWORD type_;
-
-  DISALLOW_COPY_AND_ASSIGN(RegistryValueIterator);
+  RegistryValueIterator(HKEY root_key, const wchar_t* folder_key)
+      : base::win::RegistryValueIterator(root_key, folder_key) {}
+  ~RegistryValueIterator() {
+    base::win::RegistryValueIterator::~RegistryValueIterator();
+  }
 };
 
-class RegistryKeyIterator {
+class RegistryKeyIterator : public base::win::RegistryKeyIterator {
  public:
-  RegistryKeyIterator(HKEY root_key, const wchar_t* folder_key);
-
-  ~RegistryKeyIterator();
-
-  DWORD SubkeyCount() const;
-
-  // True while the iterator is valid.
-  bool Valid() const;
-
-  // Advances to the next entry in the folder.
-  void operator++();
-
-  const wchar_t* Name() const { return name_; }
-
-  int Index() const { return index_; }
-
- private:
-  // Read in the current values.
-  bool Read();
-
-  // The registry key being iterated.
-  HKEY key_;
-
-  // Current index of the iteration.
-  int index_;
-
-  wchar_t name_[MAX_PATH];
-
-  DISALLOW_COPY_AND_ASSIGN(RegistryKeyIterator);
+  RegistryKeyIterator(HKEY root_key, const wchar_t* folder_key)
+      : base::win::RegistryKeyIterator(root_key, folder_key) {}
+  ~RegistryKeyIterator() {
+    base::win::RegistryKeyIterator::~RegistryKeyIterator();
+  }
 };
 
 #endif  // BASE_REGISTRY_H_

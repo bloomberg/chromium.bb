@@ -4,10 +4,10 @@
 
 #include "chrome/installer/util/compat_checks.h"
 
-#include "base/registry.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/win/registry.h"
 
 namespace {
 
@@ -15,7 +15,7 @@ namespace {
 std::wstring GetSEPVersion() {
   const wchar_t kProductKey[] =
       L"SOFTWARE\\Symantec\\Symantec Endpoint Protection\\SMC";
-  RegKey key(HKEY_LOCAL_MACHINE, kProductKey, KEY_READ);
+  base::win::RegKey key(HKEY_LOCAL_MACHINE, kProductKey, KEY_READ);
   std::wstring version_str;
   key.ReadValue(L"ProductVersion", &version_str);
   return version_str;

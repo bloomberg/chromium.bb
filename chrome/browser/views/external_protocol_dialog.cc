@@ -7,10 +7,10 @@
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/metrics/histogram.h"
-#include "base/registry.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -160,7 +160,7 @@ std::wstring ExternalProtocolDialog::GetApplicationForProtocol(
   std::wstring url_spec = ASCIIToWide(url.possibly_invalid_spec());
   std::wstring cmd_key_path =
       ASCIIToWide(url.scheme() + "\\shell\\open\\command");
-  RegKey cmd_key(HKEY_CLASSES_ROOT, cmd_key_path.c_str(), KEY_READ);
+  base::win::RegKey cmd_key(HKEY_CLASSES_ROOT, cmd_key_path.c_str(), KEY_READ);
   size_t split_offset = url_spec.find(L':');
   if (split_offset == std::wstring::npos)
     return std::wstring();

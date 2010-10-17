@@ -16,10 +16,10 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -28,6 +28,8 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
+
+using base::win::RegKey;
 
 bool InstallUtil::ExecuteExeAsAdmin(const std::wstring& exe,
                                     const std::wstring& params,

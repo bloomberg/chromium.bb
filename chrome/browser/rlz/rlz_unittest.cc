@@ -4,11 +4,14 @@
 
 #include "chrome/browser/rlz/rlz.h"
 
-#include "base/registry.h"
 #include "base/path_service.h"
+#include "base/win/registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::win::RegKey;
+
 namespace {
+
 // Gets rid of registry leftovers from testing. Returns false if there
 // is nothing to clean.
 bool CleanValue(const wchar_t* key_name, const wchar_t* value) {

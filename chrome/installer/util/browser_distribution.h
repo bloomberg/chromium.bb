@@ -12,7 +12,11 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
 
+namespace base {
+namespace win {
 class RegKey;
+}  // namespace win
+}  // namespace base
 
 class BrowserDistribution {
  public:
@@ -53,7 +57,7 @@ class BrowserDistribution {
 
   virtual std::wstring GetStatsServerURL();
 
-  virtual std::wstring GetDistributionData(RegKey* key);
+  virtual std::wstring GetDistributionData(base::win::RegKey* key);
 
   virtual std::wstring GetUninstallLinkName();
 

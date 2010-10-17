@@ -18,12 +18,12 @@
 #include "base/file_util.h"
 #include "base/object_watcher.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
@@ -280,7 +280,7 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
   bool user_install = InstallUtil::IsPerUserInstall(curr_chrome_exe.c_str());
   HKEY reg_root = user_install ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
   BrowserDistribution *dist = BrowserDistribution::GetDistribution();
-  RegKey key;
+  base::win::RegKey key;
   std::wstring rename_cmd;
   if (key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_READ) &&
       key.ReadValue(google_update::kRegRenameCmdField, &rename_cmd)) {

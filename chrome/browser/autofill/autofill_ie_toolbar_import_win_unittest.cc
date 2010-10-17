@@ -5,13 +5,15 @@
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
 
 #include "base/basictypes.h"
-#include "base/registry.h"
 #include "base/string16.h"
+#include "base/win/registry.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/sync/util/data_encryption.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::win::RegKey;
 
 // Defined in autofill_ie_toolbar_import_win.cc. Not exposed in the header file.
 bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,

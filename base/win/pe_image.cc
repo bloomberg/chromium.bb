@@ -1,11 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This file implements PEImage, a generic class to manipulate PE files.
 // This file was adapted from GreenBorder's Code.
 
-#include "base/pe_image.h"
+#include "base/win/pe_image.h"
+
+namespace base {
+namespace win {
 
 #if defined(_WIN64) && !defined(NACL_WIN64)
 // TODO(rvargas): Bug 27218. Make sure this is ok.
@@ -562,3 +565,6 @@ PVOID PEImageAsData::RVAToAddr(DWORD rva) const {
 
   return in_memory;
 }
+
+}  // namespace win
+}  // namespace base

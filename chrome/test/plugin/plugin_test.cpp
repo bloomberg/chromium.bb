@@ -51,7 +51,7 @@
 #include "webkit/glue/plugins/plugin_list.h"
 
 #if defined(OS_WIN)
-#include "base/registry.h"
+#include "base/win/registry.h"
 #endif
 
 class PluginTest : public UITest {
@@ -80,7 +80,7 @@ class PluginTest : public UITest {
     if (strcmp(test_info->name(), "MediaPlayerNew") == 0) {
       // The installer adds our process names to the registry key below.  Since
       // the installer might not have run on this machine, add it manually.
-      RegKey regkey;
+      base::win::RegKey regkey;
       if (regkey.Open(HKEY_LOCAL_MACHINE,
                       L"Software\\Microsoft\\MediaPlayer\\ShimInclusionList",
                       KEY_WRITE)) {

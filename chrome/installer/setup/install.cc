@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/setup/install.h"
+
 #include <shlobj.h>
 #include <time.h>
-
-#include "chrome/installer/setup/install.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/win/registry.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -216,7 +216,7 @@ void DeleteUninstallShortcutsForMSI(bool is_system_install) {
 
   // First attempt to delete the old installation's ARP dialog entry.
   HKEY reg_root = is_system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  RegKey root_key(reg_root, L"", KEY_ALL_ACCESS);
+  base::win::RegKey root_key(reg_root, L"", KEY_ALL_ACCESS);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring uninstall_reg = dist->GetUninstallRegPath();
   InstallUtil::DeleteRegistryKey(root_key, uninstall_reg);
@@ -604,7 +604,8 @@ installer_util::InstallStatus InstallNewVersion(
   std::wstring new_chrome_exe = AppendPath(install_path,
                                            installer_util::kChromeNewExe);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  RegKey chrome_key(reg_root, dist->GetVersionKey().c_str(), KEY_READ);
+  base::win::RegKey chrome_key(reg_root, dist->GetVersionKey().c_str(),
+                               KEY_READ);
   if (file_util::PathExists(FilePath::FromWStringHack(new_chrome_exe)))
     chrome_key.ReadValue(google_update::kRegOldVersionField, current_version);
   if (current_version->empty())

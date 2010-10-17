@@ -16,12 +16,12 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
+#include "base/win/registry.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
@@ -432,13 +432,15 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
 static bool MetricsReportingControlledByPolicy(bool* result) {
   std::wstring key_name = UTF8ToWide(policy::key::kMetricsReportingEnabled);
   DWORD value;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey, KEY_READ);
+  base::win::RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE,
+                                    policy::kRegistrySubKey, KEY_READ);
   if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value)) {
     *result = value != 0;
     return true;
   }
 
-  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey, KEY_READ);
+  base::win::RegKey hklm_policy_key(HKEY_CURRENT_USER,
+                                    policy::kRegistrySubKey, KEY_READ);
   if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value)) {
     *result = value != 0;
     return true;

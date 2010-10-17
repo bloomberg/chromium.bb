@@ -17,11 +17,11 @@
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -39,6 +39,8 @@
 #include "chrome_frame/resource.h"
 #include "chrome_frame/utils.h"
 #include "googleurl/src/url_util.h"
+
+using base::win::RegKey;
 
 namespace {
 // This function has the side effect of initializing an unprotected

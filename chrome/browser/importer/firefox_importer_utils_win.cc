@@ -7,7 +7,7 @@
 #include <shlobj.h>
 
 #include "base/file_util.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 
 // NOTE: Keep these in order since we need test all those paths according
 // to priority. For example. One machine has multiple users. One non-admin
@@ -28,8 +28,8 @@ int GetCurrentFirefoxMajorVersionFromRegistry() {
   // written under HKLM\Mozilla. Otherwise it the keys will be written under
   // HKCU\Mozilla.
   for (int i = 0; i < arraysize(kFireFoxRegistryPaths); ++i) {
-    RegKey reg_key(kFireFoxRegistryPaths[i],
-                   L"Software\\Mozilla\\Mozilla Firefox", KEY_READ);
+    base::win::RegKey reg_key(kFireFoxRegistryPaths[i],
+                              L"Software\\Mozilla\\Mozilla Firefox", KEY_READ);
 
     bool result = reg_key.ReadValue(L"CurrentVersion", ver_buffer,
                                     &ver_buffer_length, NULL);
@@ -45,14 +45,16 @@ std::wstring GetFirefoxInstallPathFromRegistry() {
   std::wstring registry_path = L"Software\\Mozilla\\Mozilla Firefox";
   wchar_t buffer[MAX_PATH];
   DWORD buffer_length = sizeof(buffer);
-  RegKey reg_key(HKEY_LOCAL_MACHINE, registry_path.c_str(), KEY_READ);
+  base::win::RegKey reg_key(HKEY_LOCAL_MACHINE, registry_path.c_str(),
+                            KEY_READ);
   bool result = reg_key.ReadValue(L"CurrentVersion", buffer,
                                   &buffer_length, NULL);
   if (!result)
     return std::wstring();
   registry_path += L"\\" + std::wstring(buffer) + L"\\Main";
   buffer_length = sizeof(buffer);
-  RegKey reg_key_directory(HKEY_LOCAL_MACHINE, registry_path.c_str(), KEY_READ);
+  base::win::RegKey reg_key_directory(HKEY_LOCAL_MACHINE,
+                                      registry_path.c_str(), KEY_READ);
   result = reg_key_directory.ReadValue(L"Install Directory", buffer,
                                        &buffer_length, NULL);
   if (!result)

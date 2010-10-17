@@ -12,7 +12,7 @@
 #include "base/perftimer.h"
 #include "base/thread.h"
 #if defined(OS_WIN)
-#include "base/registry.h"
+#include "base/win/registry.h"
 #endif
 #include "base/string_util.h"
 #include "chrome/common/chrome_counters.h"
@@ -149,7 +149,7 @@ void ChromePluginLib::LoadChromePlugins(const CPBrowserFuncs* bfuncs) {
     std::wstring reg_path = kRegistryChromePlugins;
     reg_path.append(L"\\");
     reg_path.append(iter.Name());
-    RegKey key(HKEY_CURRENT_USER, reg_path.c_str());
+    base::win::RegKey key(HKEY_CURRENT_USER, reg_path.c_str());
 
     DWORD is_persistent;
     if (key.ReadValueDW(kRegistryLoadOnStartup, &is_persistent) &&

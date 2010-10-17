@@ -5,13 +5,15 @@
 #include <windows.h>
 #include <shlwapi.h> // For SHDeleteKey.
 
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::win::RegKey;
 
 namespace {
 

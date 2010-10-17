@@ -12,11 +12,11 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/win/registry.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"
@@ -67,7 +67,7 @@ bool GetInstalledPath(const TCHAR* app, FilePath* out) {
   reg_path.append(L"\\");
   reg_path.append(app);
 
-  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
+  base::win::RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
   std::wstring path;
   if (key.ReadValue(kRegistryPath, &path)) {
     *out = FilePath(path);
@@ -82,13 +82,13 @@ void GetPluginsInRegistryDirectory(
     HKEY root_key,
     const std::wstring& registry_folder,
     std::set<FilePath>* plugin_dirs) {
-  for (RegistryKeyIterator iter(root_key, registry_folder.c_str());
+  for (base::win::RegistryKeyIterator iter(root_key, registry_folder.c_str());
        iter.Valid(); ++iter) {
     // Use the registry to gather plugin across the file system.
     std::wstring reg_path = registry_folder;
     reg_path.append(L"\\");
     reg_path.append(iter.Name());
-    RegKey key(root_key, reg_path.c_str(), KEY_READ);
+    base::win::RegKey key(root_key, reg_path.c_str(), KEY_READ);
 
     std::wstring path;
     if (key.ReadValue(kRegistryPath, &path))
@@ -99,11 +99,12 @@ void GetPluginsInRegistryDirectory(
 // Enumerate through the registry key to find all installed FireFox paths.
 // FireFox 3 beta and version 2 can coexist. See bug: 1025003
 void GetFirefoxInstalledPaths(std::vector<FilePath>* out) {
-  RegistryKeyIterator it(HKEY_LOCAL_MACHINE, kRegistryFirefoxInstalled);
+  base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE,
+                                    kRegistryFirefoxInstalled);
   for (; it.Valid(); ++it) {
     std::wstring full_path = std::wstring(kRegistryFirefoxInstalled) + L"\\" +
                              it.Name() + L"\\Main";
-    RegKey key(HKEY_LOCAL_MACHINE, full_path.c_str(), KEY_READ);
+    base::win::RegKey key(HKEY_LOCAL_MACHINE, full_path.c_str(), KEY_READ);
     std::wstring install_dir;
     if (!key.ReadValue(L"Install Directory", &install_dir))
       continue;
@@ -180,7 +181,8 @@ void GetWindowsMediaDirectory(std::set<FilePath>* plugin_dirs) {
 void GetJavaDirectory(std::set<FilePath>* plugin_dirs) {
   // Load the new NPAPI Java plugin
   // 1. Open the main JRE key under HKLM
-  RegKey java_key(HKEY_LOCAL_MACHINE, kRegistryJava, KEY_QUERY_VALUE);
+  base::win::RegKey java_key(HKEY_LOCAL_MACHINE, kRegistryJava,
+                             KEY_QUERY_VALUE);
 
   // 2. Read the current Java version
   std::wstring java_version;

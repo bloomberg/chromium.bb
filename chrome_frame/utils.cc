@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome_frame/utils.h"
+
 #include <htiframe.h>
 #include <mshtml.h>
 #include <shlobj.h>
@@ -14,7 +16,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
@@ -24,6 +25,7 @@
 #include "base/stringprintf.h"
 #include "base/thread_local.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
@@ -31,13 +33,13 @@
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/policy_settings.h"
 #include "chrome_frame/simple_resource_loader.h"
-#include "chrome_frame/utils.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
-
 #include "grit/chromium_strings.h"
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
+
+using base::win::RegKey;
 
 // Note that these values are all lower case and are compared to
 // lower-case-transformed values.
@@ -754,7 +756,7 @@ RendererType RendererTypeForUrl(const std::wstring& url) {
   }
 
   bool match_found = false;
-  RegistryValueIterator url_list(config_key.Handle(), url_list_name);
+  base::win::RegistryValueIterator url_list(config_key.Handle(), url_list_name);
   while (!match_found && url_list.Valid()) {
     if (MatchPattern(url, url_list.Name())) {
       match_found = true;
@@ -1518,7 +1520,7 @@ void WaitWithMessageLoop(HANDLE* handles, int count, DWORD timeout) {
 void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
                         std::vector<std::wstring>* values) {
   DCHECK(values);
-  RegistryValueIterator url_list(parent_key, sub_key_name);
+  base::win::RegistryValueIterator url_list(parent_key, sub_key_name);
   while (url_list.Valid()) {
     values->push_back(url_list.Value());
     ++url_list;

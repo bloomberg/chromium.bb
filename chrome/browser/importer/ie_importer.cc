@@ -19,13 +19,13 @@
 #include "app/win_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/importer_bridge.h"
@@ -40,6 +40,8 @@
 #include "webkit/glue/password_form.h"
 
 using base::Time;
+using base::win::RegKey;
+using base::win::RegistryValueIterator;
 using webkit_glue::PasswordForm;
 
 namespace {
@@ -354,7 +356,8 @@ void IEImporter::ImportSearchEngines() {
   const TemplateURL* default_search_engine = NULL;
   std::map<std::string, TemplateURL*> search_engines_map;
   key.ReadValue(L"DefaultScope", &default_search_engine_name);
-  RegistryKeyIterator key_iterator(HKEY_CURRENT_USER, kSearchScopePath);
+  base::win::RegistryKeyIterator key_iterator(HKEY_CURRENT_USER,
+                                              kSearchScopePath);
   while (key_iterator.Valid()) {
     std::wstring sub_key_name = kSearchScopePath;
     sub_key_name.append(L"\\").append(key_iterator.Name());

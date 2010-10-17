@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/object_watcher.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -18,9 +17,38 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/win/registry.h"
 #include "chrome/common/policy_constants.h"
 
+using base::win::RegKey;
+
 namespace policy {
+
+namespace {
+
+bool ReadRegistryStringValue(RegKey* key, const string16& name,
+                             string16* result) {
+  DWORD value_size = 0;
+  DWORD key_type = 0;
+  scoped_array<uint8> buffer;
+
+  if (!key->ReadValue(name.c_str(), 0, &value_size, &key_type))
+    return false;
+  if (key_type != REG_SZ)
+    return false;
+
+  // According to the Microsoft documentation, the string
+  // buffer may not be explicitly 0-terminated. Allocate a
+  // slightly larger buffer and pre-fill to zeros to guarantee
+  // the 0-termination.
+  buffer.reset(new uint8[value_size + 2]);
+  memset(buffer.get(), 0, value_size + 2);
+  key->ReadValue(name.c_str(), buffer.get(), &value_size, NULL);
+  result->assign(reinterpret_cast<const wchar_t*>(buffer.get()));
+  return true;
+}
+
+}  // namespace
 
 // Period at which to run the reload task in case the group policy change
 // watchers fail.
@@ -153,28 +181,6 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
   if (!policy_key.Open(HKEY_CURRENT_USER, path.c_str(), KEY_READ))
     return false;
   return ReadRegistryStringValue(&policy_key, name, result);
-}
-
-bool ConfigurationPolicyProviderWin::ReadRegistryStringValue(
-    RegKey* key, const string16& name, string16* result) {
-  DWORD value_size = 0;
-  DWORD key_type = 0;
-  scoped_array<uint8> buffer;
-
-  if (!key->ReadValue(name.c_str(), 0, &value_size, &key_type))
-    return false;
-  if (key_type != REG_SZ)
-    return false;
-
-  // According to the Microsoft documentation, the string
-  // buffer may not be explicitly 0-terminated. Allocate a
-  // slightly larger buffer and pre-fill to zeros to guarantee
-  // the 0-termination.
-  buffer.reset(new uint8[value_size + 2]);
-  memset(buffer.get(), 0, value_size + 2);
-  key->ReadValue(name.c_str(), buffer.get(), &value_size, NULL);
-  result->assign(reinterpret_cast<const wchar_t*>(buffer.get()));
-  return true;
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyStringList(

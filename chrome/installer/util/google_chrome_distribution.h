@@ -55,7 +55,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // This method reads data from the Google Update ClientState key for
   // potential use in the uninstall survey. It must be called before the
   // key returned by GetVersionKey() is deleted.
-  virtual std::wstring GetDistributionData(RegKey* key);
+  virtual std::wstring GetDistributionData(base::win::RegKey* key);
 
   virtual std::wstring GetUninstallLinkName();
 

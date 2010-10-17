@@ -5,7 +5,7 @@
 #include "chrome/installer/util/set_reg_value_work_item.h"
 
 #include "base/logging.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/logging_installer.h"
 
 SetRegValueWorkItem::~SetRegValueWorkItem() {
@@ -49,7 +49,7 @@ bool SetRegValueWorkItem::Do() {
     return false;
   }
 
-  RegKey key;
+  base::win::RegKey key;
   if (!key.Open(predefined_root_, key_path_.c_str(),
                 KEY_READ | KEY_SET_VALUE)) {
     LOG(ERROR) << "can not open " << key_path_;
@@ -121,7 +121,7 @@ void SetRegValueWorkItem::Rollback() {
     return;
   }
 
-  RegKey key;
+  base::win::RegKey key;
   if (!key.Open(predefined_root_, key_path_.c_str(),
                 KEY_READ | KEY_SET_VALUE)) {
     status_ = VALUE_ROLL_BACK;

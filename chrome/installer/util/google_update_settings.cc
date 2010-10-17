@@ -7,14 +7,16 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "base/registry.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
+
+using base::win::RegKey;
 
 namespace {
 

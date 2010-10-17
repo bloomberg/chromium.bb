@@ -4,7 +4,7 @@
 
 #include "sandbox/src/eat_resolver.h"
 
-#include "base/pe_image.h"
+#include "base/win/pe_image.h"
 #include "sandbox/src/sandbox_nt_util.h"
 
 namespace sandbox {
@@ -64,7 +64,7 @@ NTSTATUS EatResolverThunk::ResolveTarget(const void* module,
   if (!module)
     return STATUS_INVALID_PARAMETER;
 
-  PEImage pe(module);
+  base::win::PEImage pe(module);
   if (!pe.VerifyMagic())
     return STATUS_INVALID_IMAGE_FORMAT;
 

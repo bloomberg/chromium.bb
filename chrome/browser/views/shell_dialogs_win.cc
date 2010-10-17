@@ -14,11 +14,11 @@
 #include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_split.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "gfx/font.h"
@@ -49,7 +49,7 @@ std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
   std::wstring file_extension(file_util::GetFileExtensionFromPath(filename));
   std::wstring key(L"." + file_extension);
   if (!(filter_selected.empty() || filter_selected == L"*.*") &&
-      !RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).Valid() &&
+      !base::win::RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).Valid() &&
       file_extension != suggested_ext) {
     if (return_value[return_value.length() - 1] != L'.')
       return_value.append(L".");
@@ -73,10 +73,10 @@ namespace {
 static bool GetRegistryDescriptionFromExtension(const std::wstring& file_ext,
                                                 std::wstring* reg_description) {
   DCHECK(reg_description);
-  RegKey reg_ext(HKEY_CLASSES_ROOT, file_ext.c_str(), KEY_READ);
+  base::win::RegKey reg_ext(HKEY_CLASSES_ROOT, file_ext.c_str(), KEY_READ);
   std::wstring reg_app;
   if (reg_ext.ReadValue(NULL, &reg_app) && !reg_app.empty()) {
-    RegKey reg_link(HKEY_CLASSES_ROOT, reg_app.c_str(), KEY_READ);
+    base::win::RegKey reg_link(HKEY_CLASSES_ROOT, reg_app.c_str(), KEY_READ);
     if (reg_link.ReadValue(NULL, reg_description))
       return true;
   }

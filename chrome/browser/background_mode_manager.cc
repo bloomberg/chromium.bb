@@ -53,7 +53,7 @@ static const char kXdgConfigHome[] = "XDG_CONFIG_HOME";
 #endif
 
 #if defined(OS_WIN)
-#include "base/registry.h"
+#include "base/win/registry.h"
 const HKEY kBackgroundModeRegistryRootKey = HKEY_CURRENT_USER;
 const wchar_t* kBackgroundModeRegistrySubkey =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -401,10 +401,10 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
   // TODO(rickcam): Bug 53597: Make RegKey mockable.
   // TODO(rickcam): Bug 53600: Use distinct registry keys per flavor+profile.
   const wchar_t* key_name = kBackgroundModeRegistryKeyName;
-  RegKey read_key(kBackgroundModeRegistryRootKey,
-                  kBackgroundModeRegistrySubkey, KEY_READ);
-  RegKey write_key(kBackgroundModeRegistryRootKey,
-                   kBackgroundModeRegistrySubkey, KEY_WRITE);
+  base::win::RegKey read_key(kBackgroundModeRegistryRootKey,
+                             kBackgroundModeRegistrySubkey, KEY_READ);
+  base::win::RegKey write_key(kBackgroundModeRegistryRootKey,
+                              kBackgroundModeRegistrySubkey, KEY_WRITE);
   if (should_launch) {
     FilePath executable;
     if (!PathService::Get(base::FILE_EXE, &executable))

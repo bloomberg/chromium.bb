@@ -14,10 +14,10 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/logging.h"
-#include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
@@ -110,7 +110,7 @@ void OpenExternal(const GURL& url) {
     return;
   }
 
-  RegKey key;
+  base::win::RegKey key;
   std::wstring registry_path = ASCIIToWide(url.scheme()) +
                                L"\\shell\\open\\command";
   key.Open(HKEY_CLASSES_ROOT, registry_path.c_str(), KEY_READ);

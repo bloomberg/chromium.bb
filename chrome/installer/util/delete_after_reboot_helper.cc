@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "base/file_util.h"
-#include "base/registry.h"
+#include "base/win/registry.h"
 #include "base/string_util.h"
 
 // The moves-pending-reboot is a MULTISZ registry key in the HKLM part of the
@@ -245,8 +245,8 @@ HRESULT GetPendingMovesValue(
 
   // Get the current value of the key
   // If the Key is missing, that's totally acceptable.
-  RegKey session_manager_key(HKEY_LOCAL_MACHINE, kSessionManagerKey,
-                             KEY_QUERY_VALUE);
+  base::win::RegKey session_manager_key(HKEY_LOCAL_MACHINE, kSessionManagerKey,
+                                        KEY_QUERY_VALUE);
   HKEY session_manager_handle = session_manager_key.Handle();
   if (!session_manager_handle) {
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
@@ -351,8 +351,8 @@ bool RemoveFromMovesPendingReboot(const wchar_t* directory) {
   }
 
   // Write the key back into a buffer.
-  RegKey session_manager_key(HKEY_LOCAL_MACHINE, kSessionManagerKey,
-                             KEY_CREATE_SUB_KEY | KEY_SET_VALUE);
+  base::win::RegKey session_manager_key(HKEY_LOCAL_MACHINE, kSessionManagerKey,
+                                        KEY_CREATE_SUB_KEY | KEY_SET_VALUE);
   if (!session_manager_key.Handle()) {
     // Couldn't open / create the key.
     LOG(ERROR) << "Failed to open session manager key for writing.";

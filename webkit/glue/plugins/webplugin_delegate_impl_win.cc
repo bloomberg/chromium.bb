@@ -13,12 +13,12 @@
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
@@ -416,7 +416,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
   // for the rest patch this function.
   if ((quirks_ & PLUGIN_QUIRK_PATCH_REGENUMKEYEXW) &&
       base::win::GetVersion() == base::win::VERSION_XP &&
-      !RegKey().Open(HKEY_LOCAL_MACHINE,
+      !base::win::RegKey().Open(HKEY_LOCAL_MACHINE,
           L"SOFTWARE\\Microsoft\\MediaPlayer\\ShimInclusionList\\chrome.exe",
           KEY_READ) &&
       !g_iat_patch_reg_enum_key_ex_w.Pointer()->is_patched()) {

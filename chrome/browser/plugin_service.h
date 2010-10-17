@@ -21,8 +21,8 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_WIN)
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/win/registry.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -168,8 +168,8 @@ class PluginService
 
 #if defined(OS_WIN)
   // Registry keys for getting notifications when new plugins are installed.
-  RegKey hkcu_key_;
-  RegKey hklm_key_;
+  base::win::RegKey hkcu_key_;
+  base::win::RegKey hklm_key_;
   scoped_ptr<base::WaitableEvent> hkcu_event_;
   scoped_ptr<base::WaitableEvent> hklm_event_;
   base::WaitableEventWatcher hkcu_watcher_;

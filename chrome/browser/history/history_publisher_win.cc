@@ -9,13 +9,13 @@
 #include <oleauto.h>
 #include <wtypes.h>
 
-#include "base/registry.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -42,7 +42,7 @@ bool CoCreateIndexerFromName(const wchar_t* name,
 void AddRegisteredIndexers(HKEY root, const wchar_t* path,
     std::vector< ScopedComPtr<IChromeHistoryIndexer> >* indexers) {
   IChromeHistoryIndexer* indexer;
-  RegistryKeyIterator r_iter(root, path);
+  base::win::RegistryKeyIterator r_iter(root, path);
   while (r_iter.Valid()) {
     if (CoCreateIndexerFromName(r_iter.Name(), &indexer)) {
       indexers->push_back(ScopedComPtr<IChromeHistoryIndexer>(indexer));

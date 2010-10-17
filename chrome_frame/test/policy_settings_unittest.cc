@@ -4,13 +4,15 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/registry.h"
 #include "chrome/common/policy_constants.h"
 #include "chrome_frame/policy_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::win::RegKey;
 
 namespace {
 
