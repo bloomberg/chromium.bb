@@ -4,7 +4,6 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
@@ -13,10 +12,8 @@
 #include "base/process_util.h"
 #include "base/sha2.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
-#include "chrome/browser/safe_browsing/safe_browsing_database_bloom.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_sqlite.h"
-#include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -146,38 +143,13 @@ bool SBAddFullHashPrefixLess(const SBAddFullHash& a, const SBAddFullHash& b) {
 }  // namespace
 
 // Factory method.
-// TODO(shess): Proposed staging of the rolling:
-// - Ship "old" to dev channel to provide a safe fallback.
-// - If that proves stable, change to "newsqlite".  This changes the
-//   code which manipulates the data, without changing the data
-//   format.  At this point all changes could be reverted without
-//   having to resync everyone's database from scratch.
-// - If SafeBrowsingDatabaseNew proves stable, change the default to
-//   "newfile", which will change the file format.  Changing back
-//   would require resync from scratch.
-// - Once enough users are converted to "newfile", remove all of the
-//   redundent indirection classes and functions, perhaps leaving
-//   SafeBrowsingStoreSqlite for on-the-fly conversions.
-// - Once there are few remaining SQLite-format users, remove
-//   SafeBrowsingStoreSqlite.  Remaining users will resync their
-//   safe-browsing database from scratch.  If users haven't sync'ed
-//   their database in months, this probably won't be more expensive
-//   than an incremental sync.
+// TODO(shess): Milestone-7 is converting from SQLite-based
+// SafeBrowsingDatabaseBloom to the new file format with
+// SafeBrowsingDatabaseNew.  Once that conversion is too far along to
+// consider reversing, circle back and lift SafeBrowsingDatabaseNew up
+// to SafeBrowsingDatabase and get rid of the abstract class.
 SafeBrowsingDatabase* SafeBrowsingDatabase::Create() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string value =
-      command_line.GetSwitchValueASCII(switches::kSafeBrowsingDatabaseStore);
-  if (!value.compare("newfile")) {
-    return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile);
-  } else if (!value.compare("newsqlite")) {
-    return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreSqlite);
-  } else if (!value.compare("old")) {
-    return new SafeBrowsingDatabaseBloom;
-  } else {
-    // Default.
-    DCHECK(value.empty());
-    return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile);
-  }
+  return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile);
 }
 
 SafeBrowsingDatabase::~SafeBrowsingDatabase() {

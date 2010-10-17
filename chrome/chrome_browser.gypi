@@ -2568,8 +2568,6 @@
         'browser/safe_browsing/safe_browsing_blocking_page.h',
         'browser/safe_browsing/safe_browsing_database.cc',
         'browser/safe_browsing/safe_browsing_database.h',
-        'browser/safe_browsing/safe_browsing_database_bloom.cc',
-        'browser/safe_browsing/safe_browsing_database_bloom.h',
         'browser/safe_browsing/safe_browsing_service.cc',
         'browser/safe_browsing/safe_browsing_service.h',
         'browser/safe_browsing/safe_browsing_store.cc',

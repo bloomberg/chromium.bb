@@ -268,7 +268,6 @@ extern const char kRendererProcess[];
 extern const char kRendererStartupDialog[];
 extern const char kRestoreLastSession[];
 extern const char kSafePlugins[];
-extern const char kSafeBrowsingDatabaseStore[];
 extern const char kSbInfoURLPrefix[];
 extern const char kSbMacKeyURLPrefix[];
 extern const char kSbDisableAutoUpdate[];

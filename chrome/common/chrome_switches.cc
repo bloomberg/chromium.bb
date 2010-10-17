@@ -948,12 +948,6 @@ const char kRestoreLastSession[]            = "restore-last-session";
 // Runs the plugin processes inside the sandbox.
 const char kSafePlugins[]                   = "safe-plugins";
 
-// Select the safe-browsing database storage.  "old" for the original
-// SQLite-based SafeBrowsingDatabaseBloom, "newsqlite" for the new
-// SQLite-based SafeBrowsingDatabase+SafeBrowsingStoreSQLite, and
-// "newfile" for SafeBrowsingDatabase+SafeBrowsingStoreFile.
-const char kSafeBrowsingDatabaseStore[]     = "safe-browsing-database-store";
-
 // URL prefix used by safebrowsing to fetch hash, download data and
 // report malware.
 const char kSbInfoURLPrefix[] = "safebrowsing-info-url-prefix";
