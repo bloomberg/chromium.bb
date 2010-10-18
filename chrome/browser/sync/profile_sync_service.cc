@@ -62,6 +62,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        Profile* profile,
                                        const std::string& cros_user)
     : last_auth_error_(AuthError::None()),
+      observed_passphrase_required_(false),
       factory_(factory),
       profile_(profile),
       cros_user_(cros_user),
@@ -72,7 +73,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
       unrecoverable_error_detected_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(scoped_runnable_method_factory_(this)),
       token_migrator_(NULL),
-      observed_passphrase_required_(false),
+
       clear_server_data_state_(CLEAR_NOT_STARTED) {
   DCHECK(factory);
   DCHECK(profile);
@@ -569,7 +570,7 @@ void ProfileSyncService::OnBackendInitialized() {
 
   if (!cros_user_.empty()) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kSyncSuppressStart)) {
-      ShowChooseDataTypes(NULL);
+      ShowConfigure(NULL);
     } else {
       SetSyncSetupCompleted();
     }
@@ -673,12 +674,16 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
   }
 
   wizard_.SetParent(parent_window);
-  wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
+  // This method will also be called if a passphrase is needed.
+  if (observed_passphrase_required_)
+    wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
+  else
+    wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
-void ProfileSyncService::ShowChooseDataTypes(gfx::NativeWindow parent_window) {
+void ProfileSyncService::ShowConfigure(gfx::NativeWindow parent_window) {
   if (WizardIsVisible()) {
     wizard_.Focus();
     return;
@@ -962,7 +967,8 @@ void ProfileSyncService::Observe(NotificationType type,
       }
 
       // TODO(sync): Less wizard, more toast.
-      wizard_.Step(SyncSetupWizard::DONE);
+      if (!observed_passphrase_required_)
+        wizard_.Step(SyncSetupWizard::DONE);
       FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 
       break;
@@ -1002,6 +1008,8 @@ void ProfileSyncService::Observe(NotificationType type,
       data_type_manager_->Configure(types);
 
       FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      observed_passphrase_required_ = false;
+      wizard_.Step(SyncSetupWizard::DONE);
       break;
     }
     case NotificationType::PREF_CHANGED: {

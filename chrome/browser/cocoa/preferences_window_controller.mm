@@ -1362,7 +1362,7 @@ const int kDisabledIndex = 1;
 // "Personal Stuff" pane.  Spawns a dialog-modal sheet that cleans
 // itself up on close.
 - (IBAction)doSyncCustomize:(id)sender {
-  syncService_->ShowChooseDataTypes(NULL);
+  syncService_->ShowConfigure(NULL);
 }
 
 - (IBAction)doSyncReauthentication:(id)sender {

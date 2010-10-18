@@ -600,12 +600,12 @@ void ContentPageGtk::OnSyncCustomizeButtonClicked(GtkWidget* widget) {
   // sync_customize_button_ should be invisible if sync is not yet set up.
   DCHECK(sync_service_ && !sync_service_->IsManaged() &&
          sync_service_->HasSyncSetupCompleted());
-  sync_service_->ShowChooseDataTypes(NULL);
+  sync_service_->ShowConfigure(NULL);
 }
 
 void ContentPageGtk::OnSyncActionLinkClicked(GtkWidget* widget) {
   DCHECK(sync_service_ && !sync_service_->IsManaged());
-  sync_service_->ShowChooseDataTypes(NULL);
+  sync_service_->ShowConfigure(NULL);
 }
 
 void ContentPageGtk::OnStopSyncDialogResponse(GtkWidget* widget, int response) {

@@ -124,6 +124,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, DiscreteRunChooseDataTypes);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
                            DiscreteRunChooseDataTypesAbortedByPendingClear);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
 
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,

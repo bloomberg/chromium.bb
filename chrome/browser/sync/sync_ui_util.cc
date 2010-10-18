@@ -88,7 +88,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
 
     // Either show auth error information with a link to re-login, auth in prog,
     // or note that everything is OK with the last synced time.
-    if (status.authenticated) {
+    if (status.authenticated && !service->observed_passphrase_required()) {
       // Everything is peachy.
       if (status_label) {
         status_label->assign(GetSyncedStateStatusLabel(service));
@@ -100,7 +100,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
           l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
       }
       result_type = PRE_SYNCED;
-    } else if (auth_error.state() != AuthError::NONE) {
+    } else if (auth_error.state() != AuthError::NONE ||
+               service->observed_passphrase_required()) {
       if (status_label && link_label) {
         GetStatusLabelsForAuthError(auth_error, service,
                                     status_label, link_label);

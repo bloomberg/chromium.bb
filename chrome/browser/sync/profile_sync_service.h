@@ -222,7 +222,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return wizard_.IsVisible();
   }
   virtual void ShowLoginDialog(gfx::NativeWindow parent_window);
-  void ShowChooseDataTypes(gfx::NativeWindow parent_window);
+  void ShowConfigure(gfx::NativeWindow parent_window);
 
   // Pretty-printed strings for a given StatusSummary.
   static std::string BuildSyncStatusSummaryText(
@@ -246,6 +246,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   bool UIShouldDepictAuthInProgress() const {
     return is_auth_in_progress_;
+  }
+
+  bool observed_passphrase_required() const {
+    return observed_passphrase_required_;
   }
 
   // A timestamp marking the last time the service observed a transition from
@@ -394,6 +398,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Cache of the last name the client attempted to authenticate.
   std::string last_attempted_user_email_;
 
+  // Whether we have seen a SYNC_PASSPHRASE_REQUIRED since initializing the
+  // backend, telling us that it is safe to send a passphrase down ASAP.
+  bool observed_passphrase_required_;
+
  private:
   friend class ProfileSyncServiceTest;
   friend class ProfileSyncServicePasswordTest;
@@ -495,10 +503,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // we don't StartUp until we have a valid token, which happens after valid
   // credentials were provided.
   std::string cached_passphrase_;
-
-  // Whether we have seen a SYNC_PASSPHRASE_REQUIRED since initializing the
-  // backend, telling us that it is safe to send a passphrase down ASAP.
-  bool observed_passphrase_required_;
 
   // Keep track of where we are in a server clear operation
   ClearServerDataState clear_server_data_state_;

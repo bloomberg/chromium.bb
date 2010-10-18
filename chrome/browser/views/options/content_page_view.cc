@@ -145,7 +145,7 @@ void ContentPageView::ButtonPressed(
   } else if (sender == sync_customize_button_) {
     // sync_customize_button_ should be invisible if sync is not yet set up.
     DCHECK(sync_service_->HasSyncSetupCompleted());
-    sync_service_->ShowChooseDataTypes(GetWindow()->GetNativeWindow());
+    sync_service_->ShowConfigure(GetWindow()->GetNativeWindow());
   }
 }
 

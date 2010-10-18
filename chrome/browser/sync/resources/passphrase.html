@@ -79,7 +79,11 @@ html[os='mac'] input[type='submit'] {
       document.getElementById("enter-passphrase").style.display = "block";
       document.getElementById("gaia-passphrase").style.display = "none";
       document.getElementById("new-passphrase").style.display = "none";
-    } 
+    } else if (mode == "gaia") {
+      document.getElementById("enter-passphrase").style.display = "none";
+      document.getElementById("gaia-passphrase").style.display = "block";
+      document.getElementById("new-passphrase").style.display = "none";
+    }
   }
 
   function sendPassphraseAndClose() {

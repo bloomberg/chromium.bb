@@ -465,16 +465,21 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
     case SyncSetupWizard::CREATE_PASSPHRASE:
       return current_state_ == SyncSetupWizard::CONFIGURE;
+    case SyncSetupWizard::ENTER_PASSPHRASE:
+      return current_state_ == SyncSetupWizard::CONFIGURE ||
+             current_state_ == SyncSetupWizard::SETTING_UP;
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR:
       return current_state_ == SyncSetupWizard::CONFIGURE;
     case SyncSetupWizard::SETTING_UP:
       return current_state_ == SyncSetupWizard::CONFIGURE ||
-             current_state_ == SyncSetupWizard::CREATE_PASSPHRASE;
+             current_state_ == SyncSetupWizard::CREATE_PASSPHRASE ||
+             current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE_FIRST_TIME:
     case SyncSetupWizard::DONE:
-      return current_state_ == SyncSetupWizard::SETTING_UP;
+      return current_state_ == SyncSetupWizard::SETTING_UP ||
+             current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
     default:
       NOTREACHED() << "Unhandled State: " << state;
       return false;
@@ -654,7 +659,10 @@ void SyncSetupFlow::OnConfigurationComplete() {
 }
 
 void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
-  if (configuration_pending_) {
+  if (current_state_ == SyncSetupWizard::ENTER_PASSPHRASE) {
+    service_->SetSecondaryPassphrase(passphrase);
+    Advance(SyncSetupWizard::SETTING_UP);
+  } else if (configuration_pending_) {
     configuration_.secondary_passphrase = passphrase;
     OnConfigurationComplete();
   }

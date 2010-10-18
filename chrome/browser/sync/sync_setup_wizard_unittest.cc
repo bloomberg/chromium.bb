@@ -59,6 +59,10 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     user_cancelled_dialog_ = true;
   }
 
+  virtual void SetSecondaryPassphrase(const std::string& passphrase) {
+    passphrase_ = passphrase;
+  }
+
   virtual string16 GetAuthenticatedUsername() const {
     return UTF8ToUTF16(username_);
   }
@@ -67,6 +71,10 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
                       const AuthError& error) {
     last_attempted_user_email_ = last_email;
     last_auth_error_ = error;
+  }
+
+  void set_passphrase_required(bool required) {
+    observed_passphrase_required_ = required;
   }
 
   void ResetTestStats() {
@@ -86,6 +94,8 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   bool user_chose_data_types_;
   bool keep_everything_synced_;
   syncable::ModelTypeSet chosen_data_types_;
+
+  std::string passphrase_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceForWizardTest);
@@ -329,6 +339,22 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   EXPECT_EQ(service_->chosen_data_types_.count(syncable::APPS), 1U);
 
   test_window_->CloseDialog();
+}
+
+TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
+  SKIP_TEST_ON_MACOSX();
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
+  wizard_->Step(SyncSetupWizard::CONFIGURE);
+  wizard_->Step(SyncSetupWizard::SETTING_UP);
+  service_->set_passphrase_required(true);
+  wizard_->Step(SyncSetupWizard::ENTER_PASSPHRASE);
+  EXPECT_EQ(SyncSetupWizard::ENTER_PASSPHRASE,
+            test_window_->flow()->current_state_);
+  ListValue value;
+  value.Append(new StringValue("{\"passphrase\":\"myPassphrase\"}"));
+  test_window_->flow()->flow_handler_->HandlePassphraseEntry(&value);
+  EXPECT_EQ("myPassphrase", service_->passphrase_);
 }
 
 TEST_F(SyncSetupWizardTest, DialogCancelled) {
