@@ -1977,17 +1977,6 @@ bool RenderView::handleCurrentKeyboardEvent() {
   return did_execute_command;
 }
 
-void RenderView::inputElementClicked(const WebKit::WebInputElement& element,
-                                     bool already_focused) {
-#if defined(WEBKIT_BUG_41283_IS_FIXED)
-  if (password_autocomplete_manager_->InputElementClicked(element,
-                                                          already_focused)) {
-    return;
-  }
-  autofill_helper_->InputElementClicked(element, already_focused);
-#endif
-}
-
 void RenderView::spellCheck(const WebString& text,
                             int& misspelled_offset,
                             int& misspelled_length) {

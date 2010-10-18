@@ -372,8 +372,6 @@ class RenderView : public RenderWidget,
       const WebKit::WebInputElement& element,
       const WebKit::WebKeyboardEvent& event);
   virtual bool handleCurrentKeyboardEvent();
-  virtual void inputElementClicked(const WebKit::WebInputElement& element,
-                                   bool already_focused);
   virtual void spellCheck(const WebKit::WebString& text,
                           int& offset,
                           int& length);
