@@ -1,0 +1,2 @@
+# Timing out under TSan, see http://crbug.com/59642
+CookieMonsterTest.GarbageCollectionTriggers
