@@ -1271,19 +1271,23 @@ void WindowWin::SetInitialBounds(const gfx::Rect& create_bounds) {
   // Restore the window's placement from the controller.
   gfx::Rect saved_bounds(create_bounds.ToRECT());
   if (window_delegate_->GetSavedWindowBounds(&saved_bounds)) {
-    // Make sure the bounds are at least the minimum size.
-    if (saved_bounds.width() < minimum_size_.width()) {
-      saved_bounds.SetRect(saved_bounds.x(), saved_bounds.y(),
-                           saved_bounds.right() + minimum_size_.width() -
-                              saved_bounds.width(),
-                           saved_bounds.bottom());
-    }
+    if (!window_delegate_->ShouldRestoreWindowSize()) {
+      saved_bounds.set_size(non_client_view_->GetPreferredSize());
+    } else {
+      // Make sure the bounds are at least the minimum size.
+      if (saved_bounds.width() < minimum_size_.width()) {
+        saved_bounds.SetRect(saved_bounds.x(), saved_bounds.y(),
+                             saved_bounds.right() + minimum_size_.width() -
+                                 saved_bounds.width(),
+                             saved_bounds.bottom());
+      }
 
-    if (saved_bounds.height() < minimum_size_.height()) {
-      saved_bounds.SetRect(saved_bounds.x(), saved_bounds.y(),
-                           saved_bounds.right(),
-                           saved_bounds.bottom() + minimum_size_.height() -
-                              saved_bounds.height());
+      if (saved_bounds.height() < minimum_size_.height()) {
+        saved_bounds.SetRect(saved_bounds.x(), saved_bounds.y(),
+                             saved_bounds.right(),
+                             saved_bounds.bottom() + minimum_size_.height() -
+                                 saved_bounds.height());
+      }
     }
 
     // "Show state" (maximized, minimized, etc) is handled by Show().

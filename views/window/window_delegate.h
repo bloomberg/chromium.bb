@@ -120,13 +120,19 @@ class WindowDelegate {
   virtual bool GetSavedWindowBounds(gfx::Rect* bounds) const;
   virtual bool GetSavedMaximizedState(bool* maximized) const;
 
+  // Returns true if the window's size should be restored. If this is false,
+  // only the window's origin is restored and the window is given its
+  // preferred size.
+  // Default is true.
+  virtual bool ShouldRestoreWindowSize() const;
+
   // Called when the window closes.
-  virtual void WindowClosing() { }
+  virtual void WindowClosing() {}
 
   // Called when the window is destroyed. No events must be sent or received
   // after this point. The delegate can use this opportunity to delete itself at
   // this time if necessary.
-  virtual void DeleteDelegate() { }
+  virtual void DeleteDelegate() {}
 
   // Returns the View that is contained within this Window.
   virtual View* GetContentsView() {

@@ -27,6 +27,9 @@ class NativeFrameView : public NonClientFrameView {
   virtual void EnableClose(bool enable);
   virtual void ResetWindowControls();
 
+  // View overrides:
+  virtual gfx::Size GetPreferredSize();
+
  private:
   // Our containing frame.
   WindowWin* frame_;

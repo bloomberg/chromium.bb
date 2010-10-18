@@ -455,6 +455,8 @@ void WindowGtk::SetInitialBounds(GtkWindow* parent,
                                  const gfx::Rect& create_bounds) {
   gfx::Rect saved_bounds(create_bounds.ToGdkRectangle());
   if (window_delegate_->GetSavedWindowBounds(&saved_bounds)) {
+    if (!window_delegate_->ShouldRestoreWindowSize())
+      saved_bounds.set_size(non_client_view_->GetPreferredSize());
     WidgetGtk::SetBounds(saved_bounds);
   } else {
     if (create_bounds.IsEmpty()) {

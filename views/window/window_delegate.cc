@@ -54,6 +54,10 @@ bool WindowDelegate::GetSavedMaximizedState(bool* maximized) const {
       window_name, maximized);
 }
 
+bool WindowDelegate::ShouldRestoreWindowSize() const {
+  return true;
+}
+
 ClientView* WindowDelegate::CreateClientView(Window* window) {
   return new ClientView(window, GetContentsView());
 }

@@ -49,6 +49,7 @@ class OptionsWindowView : public views::View,
   virtual void WindowClosing();
   virtual bool Cancel();
   virtual views::View* GetContentsView();
+  virtual bool ShouldRestoreWindowSize() const;
 
   // views::TabbedPane::Listener implementation:
   virtual void TabSelectedAt(int index);
@@ -147,6 +148,12 @@ bool OptionsWindowView::Cancel() {
 
 views::View* OptionsWindowView::GetContentsView() {
   return this;
+}
+
+bool OptionsWindowView::ShouldRestoreWindowSize() const {
+  // By returning false the options window is always sized to its preferred
+  // size.
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

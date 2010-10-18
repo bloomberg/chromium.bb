@@ -51,4 +51,11 @@ void NativeFrameView::ResetWindowControls() {
   // Nothing to do.
 }
 
+gfx::Size NativeFrameView::GetPreferredSize() {
+  gfx::Size pref = frame_->GetClientView()->GetPreferredSize();
+  gfx::Rect bounds(0, 0, pref.width(), pref.height());
+  return frame_->GetNonClientView()->GetWindowBoundsForClientBounds(
+      bounds).size();
+}
+
 }  // namespace views
