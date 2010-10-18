@@ -90,6 +90,12 @@ class Extension {
     TYPE_PACKAGED_APP
   };
 
+  // An NPAPI plugin included in the extension.
+  struct PluginInfo {
+    FilePath path;  // Path to the plugin.
+    bool is_public;  // False if only this extension can load this plugin.
+  };
+
   // Contains a subset of the extension's data that doesn't change once
   // initialized, and therefore shareable across threads without locking.
   struct StaticData : public base::RefCountedThreadSafe<StaticData> {
@@ -145,9 +151,124 @@ class Extension {
     // The icons for the extension.
     ExtensionIconSet icons;
 
+    // The base extension url for the extension.
+    GURL extension_url;
+
+    // The location the extension was loaded from.
+    Location location;
+
+    // The extension's version.
+    scoped_ptr<Version> version;
+
+    // An optional longer description of the extension.
+    std::string description;
+
+    // True if the extension was generated from a user script. (We show slightly
+    // different UI if so).
+    bool converted_from_user_script;
+
+    // Paths to the content scripts the extension contains.
+    UserScriptList content_scripts;
+
+    // The extension's page action, if any.
+    scoped_ptr<ExtensionAction> page_action;
+
+    // The extension's browser action, if any.
+    scoped_ptr<ExtensionAction> browser_action;
+
+    // Optional list of NPAPI plugins and associated properties.
+    std::vector<PluginInfo> plugins;
+
+    // Optional URL to a master page of which a single instance should be always
+    // loaded in the background.
+    GURL background_url;
+
+    // Optional URL to a page for setting options/preferences.
+    GURL options_url;
+
+    // Optional URL to a devtools extension page.
+    GURL devtools_url;
+
+    // Optional list of toolstrips and associated properties.
+    std::vector<GURL> toolstrips;
+
+    // The public key used to sign the contents of the crx package.
+    std::string public_key;
+
+    // A map of resource id's to relative file paths.
+    scoped_ptr<DictionaryValue> theme_images;
+
+    // A map of color names to colors.
+    scoped_ptr<DictionaryValue> theme_colors;
+
+    // A map of color names to colors.
+    scoped_ptr<DictionaryValue> theme_tints;
+
+    // A map of display properties.
+    scoped_ptr<DictionaryValue> theme_display_properties;
+
+    // Whether the extension is a theme.
+    bool is_theme;
+
+    // The sites this extension has permission to talk to (using XHR, etc).
+    URLPatternList host_permissions;
+
+    // URL for fetching an update manifest
+    GURL update_url;
+
+    // A copy of the manifest that this extension was created from.
+    scoped_ptr<DictionaryValue> manifest_value;
+
+    // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
+    // which override the handling of those URLs.
+    URLOverrideMap chrome_url_overrides;
+
+    // Whether this extension uses app features.
+    bool is_app;
+
+    // The local path inside the extension to use with the launcher.
+    std::string launch_local_path;
+
+    // A web url to use with the launcher. Note that this might be relative or
+    // absolute. If relative, it is relative to web_origin.
+    std::string launch_web_url;
+
+    // The type of container to launch into.
+    extension_misc::LaunchContainer launch_container;
+
+    // The default size of the container when launching. Only respected for
+    // containers like panels and windows.
+    int launch_width;
+    int launch_height;
+
+    // The Omnibox keyword for this extension, or empty if there is none.
+    std::string omnibox_keyword;
+
    protected:
     friend class base::RefCountedThreadSafe<StaticData>;
     ~StaticData();
+  };
+
+  // Contains the subset of the extension's (private) data that can be modified
+  // after initialization. This class should only be accessed on the UI thread.
+  struct RuntimeData {
+    // We keep a cache of images loaded from extension resources based on their
+    // path and a string representation of a size that may have been used to
+    // scale it (or the empty string if the image is at its original size).
+    typedef std::pair<FilePath, std::string> ImageCacheKey;
+    typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
+
+    RuntimeData();
+    ~RuntimeData();
+
+    // True if the background page is ready.
+    bool background_page_ready;
+
+    // True while the extension is being upgraded.
+    bool being_upgraded;
+
+    // Cached images for this extension.
+    ImageCache image_cache_;
   };
 
   // A permission is defined by its |name| (what is used in the manifest),
@@ -210,12 +331,6 @@ class Extension {
   // Returns true if the string is one of the known hosted app permissions (see
   // kHostedAppPermissionNames).
   static bool IsHostedAppPermission(const std::string& permission);
-
-  // An NPAPI plugin included in the extension.
-  struct PluginInfo {
-    FilePath path;  // Path to the plugin.
-    bool is_public;  // False if only this extension can load this plugin.
-  };
 
   // The name of the manifest inside an extension.
   static const FilePath::CharType kManifestFilename[];
@@ -352,32 +467,45 @@ class Extension {
   const StaticData* static_data() const { return static_data_; }
 
   const FilePath& path() const { return static_data_->path; }
-  const GURL& url() const { return extension_url_; }
-  Location location() const { return location_; }
-  void set_location(Location location) { location_ = location; }
+  const GURL& url() const { return static_data_->extension_url; }
+  Location location() const { return static_data_->location; }
+  void set_location(Location location) {
+    mutable_static_data_->location = location;
+  }
+
   const std::string& id() const { return static_data_->id; }
-  const Version* version() const { return version_.get(); }
+  const Version* version() const { return static_data_->version.get(); }
   // String representation of the version number.
   const std::string VersionString() const;
   const std::string& name() const { return static_data_->name; }
-  const std::string& public_key() const { return public_key_; }
-  const std::string& description() const { return description_; }
+  const std::string& public_key() const { return static_data_->public_key; }
+  const std::string& description() const { return static_data_->description; }
   bool converted_from_user_script() const {
-    return converted_from_user_script_;
+    return static_data_->converted_from_user_script;
   }
-  const UserScriptList& content_scripts() const { return content_scripts_; }
-  ExtensionAction* page_action() const { return page_action_.get(); }
-  ExtensionAction* browser_action() const { return browser_action_.get(); }
-  const std::vector<PluginInfo>& plugins() const { return plugins_; }
-  const GURL& background_url() const { return background_url_; }
-  const GURL& options_url() const { return options_url_; }
-  const GURL& devtools_url() const { return devtools_url_; }
-  const std::vector<GURL>& toolstrips() const { return toolstrips_; }
+  const UserScriptList& content_scripts() const {
+    return static_data_->content_scripts;
+  }
+  ExtensionAction* page_action() const {
+    return static_data_->page_action.get();
+  }
+  ExtensionAction* browser_action() const {
+    return static_data_->browser_action.get();
+  }
+  const std::vector<PluginInfo>& plugins() const {
+    return static_data_->plugins;
+  }
+  const GURL& background_url() const { return static_data_->background_url; }
+  const GURL& options_url() const { return static_data_->options_url; }
+  const GURL& devtools_url() const { return static_data_->devtools_url; }
+  const std::vector<GURL>& toolstrips() const {
+    return static_data_->toolstrips;
+  }
   const std::set<std::string>& api_permissions() const {
     return static_data_->api_permissions;
   }
   const URLPatternList& host_permissions() const {
-    return host_permissions_;
+    return static_data_->host_permissions;
   }
 
   // Returns true if the extension has the specified API permission.
@@ -408,22 +536,30 @@ class Extension {
   // network, etc.)
   bool HasEffectiveAccessToAllHosts() const;
 
-  const GURL& update_url() const { return update_url_; }
+  const GURL& update_url() const { return static_data_->update_url; }
 
-  const ExtensionIconSet& icons() const { return static_data_->icons; }
+  const ExtensionIconSet& icons() const {
+    return static_data_->icons;
+  }
 
   // Returns the Google Gallery URL for this extension, if one exists. For
   // third-party extensions, this returns a blank GURL.
   GURL GalleryUrl() const;
 
   // Theme-related.
-  DictionaryValue* GetThemeImages() const { return theme_images_.get(); }
-  DictionaryValue* GetThemeColors() const { return theme_colors_.get(); }
-  DictionaryValue* GetThemeTints() const { return theme_tints_.get(); }
-  DictionaryValue* GetThemeDisplayProperties() const {
-    return theme_display_properties_.get();
+  DictionaryValue* GetThemeImages() const {
+    return static_data_->theme_images.get();
   }
-  bool is_theme() const { return is_theme_; }
+  DictionaryValue* GetThemeColors() const {
+    return static_data_->theme_colors.get();
+  }
+  DictionaryValue* GetThemeTints() const {
+    return static_data_->theme_tints.get();
+  }
+  DictionaryValue* GetThemeDisplayProperties() const {
+    return static_data_->theme_display_properties.get();
+  }
+  bool is_theme() const { return static_data_->is_theme; }
 
   // Returns a list of paths (relative to the extension dir) for images that
   // the browser might load (like themes and page action icons).
@@ -435,7 +571,7 @@ class Extension {
   GURL GetIconURL(int size, ExtensionIconSet::MatchType match_type);
 
   const DictionaryValue* manifest_value() const {
-    return manifest_value_.get();
+    return static_data_->manifest_value.get();
   }
 
   const std::string default_locale() const {
@@ -444,32 +580,34 @@ class Extension {
 
   // Chrome URL overrides (see ExtensionOverrideUI).
   const URLOverrideMap& GetChromeURLOverrides() const {
-    return chrome_url_overrides_;
+    return static_data_->chrome_url_overrides;
   }
 
-  const std::string omnibox_keyword() const { return omnibox_keyword_; }
+  const std::string omnibox_keyword() const {
+    return static_data_->omnibox_keyword;
+  }
 
-  bool is_app() const { return is_app_; }
-  const ExtensionExtent& web_extent() const { return static_data_->extent; }
-  const std::string& launch_local_path() const { return launch_local_path_; }
-  const std::string& launch_web_url() const { return launch_web_url_; }
-  void set_launch_web_url(const std::string& launch_web_url) {
-    launch_web_url_ = launch_web_url;
+  bool is_app() const { return static_data_->is_app; }
+  const ExtensionExtent& web_extent() const {
+    return static_data_->extent;
+  }
+  const std::string& launch_local_path() const {
+    return static_data_->launch_local_path;
+  }
+  const std::string& launch_web_url() const {
+    return static_data_->launch_web_url;
   }
   extension_misc::LaunchContainer launch_container() const {
-    return launch_container_;
+    return static_data_->launch_container;
   }
-  int launch_width() const { return launch_width_; }
-  int launch_height() const { return launch_height_; }
+  int launch_width() const { return static_data_->launch_width; }
+  int launch_height() const { return static_data_->launch_height; }
   bool incognito_split_mode() const {
     return static_data_->incognito_split_mode;
   }
 
   // Gets the fully resolved absolute launch URL.
   GURL GetFullLaunchURL() const;
-
-  // Runtime data:
-  // Put dynamic data about the state of a running extension below.
 
   // Whether the background page, if any, is ready. We don't load other
   // components until then. If there is no background page, we consider it to
@@ -479,8 +617,10 @@ class Extension {
 
   // Getter and setter for the flag that specifies whether the extension is
   // being upgraded.
-  bool being_upgraded() const { return being_upgraded_; }
-  void set_being_upgraded(bool value) { being_upgraded_ = value; }
+  bool being_upgraded() const { return GetRuntimeData()->being_upgraded; }
+  void set_being_upgraded(bool value) {
+    GetRuntimeData()->being_upgraded = value;
+  }
 
   // Image cache related methods. These are only valid on the UI thread and
   // not maintained by this class. See ImageLoadingTracker for usage. The
@@ -501,12 +641,6 @@ class Extension {
   bool CanExecuteScriptEverywhere() const;
 
  private:
-  // We keep a cache of images loaded from extension resources based on their
-  // path and a string representation of a size that may have been used to
-  // scale it (or the empty string if the image is at its original size).
-  typedef std::pair<FilePath, std::string> ImageCacheKey;
-  typedef std::map<ImageCacheKey, SkBitmap> ImageCache;
-
   // Normalize the path for use by the extension. On Windows, this will make
   // sure the drive letter is uppercase.
   static FilePath MaybeNormalizePath(const FilePath& path);
@@ -573,6 +707,10 @@ class Extension {
   // this extension.
   string16 GetHostPermissionMessage();
 
+  // Returns a mutable pointer to our runtime data. Can only be called on
+  // the UI thread.
+  RuntimeData* GetRuntimeData() const;
+
   // Collection of extension data that doesn't change doesn't change once an
   // Extension object has been initialized. The mutable version is valid only
   // until InitFromValue finishes, to ensure we don't accidentally modify it
@@ -580,110 +718,8 @@ class Extension {
   StaticData* mutable_static_data_;
   scoped_refptr<const StaticData> static_data_;
 
-  // The base extension url for the extension.
-  GURL extension_url_;
-
-  // The location the extension was loaded from.
-  Location location_;
-
-  // The extension's version.
-  scoped_ptr<Version> version_;
-
-  // An optional longer description of the extension.
-  std::string description_;
-
-  // True if the extension was generated from a user script. (We show slightly
-  // different UI if so).
-  bool converted_from_user_script_;
-
-  // Paths to the content scripts the extension contains.
-  UserScriptList content_scripts_;
-
-  // The extension's page action, if any.
-  scoped_ptr<ExtensionAction> page_action_;
-
-  // The extension's browser action, if any.
-  scoped_ptr<ExtensionAction> browser_action_;
-
-  // Optional list of NPAPI plugins and associated properties.
-  std::vector<PluginInfo> plugins_;
-
-  // Optional URL to a master page of which a single instance should be always
-  // loaded in the background.
-  GURL background_url_;
-
-  // Optional URL to a page for setting options/preferences.
-  GURL options_url_;
-
-  // Optional URL to a devtools extension page.
-  GURL devtools_url_;
-
-  // Optional list of toolstrips_ and associated properties.
-  std::vector<GURL> toolstrips_;
-
-  // The public key ('key' in the manifest) used to sign the contents of the
-  // crx package ('signature' in the manifest)
-  std::string public_key_;
-
-  // A map of resource id's to relative file paths.
-  scoped_ptr<DictionaryValue> theme_images_;
-
-  // A map of color names to colors.
-  scoped_ptr<DictionaryValue> theme_colors_;
-
-  // A map of color names to colors.
-  scoped_ptr<DictionaryValue> theme_tints_;
-
-  // A map of display properties.
-  scoped_ptr<DictionaryValue> theme_display_properties_;
-
-  // Whether the extension is a theme - if it is, certain things are disabled.
-  bool is_theme_;
-
-  // The sites this extension has permission to talk to (using XHR, etc).
-  URLPatternList host_permissions_;
-
-  // URL for fetching an update manifest
-  GURL update_url_;
-
-  // A copy of the manifest that this extension was created from.
-  scoped_ptr<DictionaryValue> manifest_value_;
-
-  // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
-  // which override the handling of those URLs.
-  URLOverrideMap chrome_url_overrides_;
-
-  // Whether this extension uses app features.
-  bool is_app_;
-
-  // The local path inside the extension to use with the launcher.
-  std::string launch_local_path_;
-
-  // A web url to use with the launcher. Note that this might be relative or
-  // absolute. If relative, it is relative to web_origin_.
-  std::string launch_web_url_;
-
-  // The type of container to launch into.
-  extension_misc::LaunchContainer launch_container_;
-
-  // The default size of the container when launching. Only respected for
-  // containers like panels and windows.
-  int launch_width_;
-  int launch_height_;
-
-  // Cached images for this extension.
-  ImageCache image_cache_;
-
-  // The Omnibox keyword for this extension, or empty if there is none.
-  std::string omnibox_keyword_;
-
-  // Runtime data:
-
-  // True if the background page is ready.
-  bool background_page_ready_;
-
-  // True while the extension is being upgraded.
-  bool being_upgraded_;
+  // Runtime data.
+  scoped_ptr<const RuntimeData> runtime_data_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionTest, LoadPageActionHelper);
   FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, Apps);

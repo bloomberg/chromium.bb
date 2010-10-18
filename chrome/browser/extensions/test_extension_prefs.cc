@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/test_extension_prefs.h"
 
-
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
@@ -50,18 +49,18 @@ Extension* TestExtensionPrefs::AddExtension(std::string name) {
   DictionaryValue dictionary;
   dictionary.SetString(extension_manifest_keys::kName, name);
   dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
-  return AddExtensionWithManifest(dictionary);
+  return AddExtensionWithManifest(dictionary, Extension::INTERNAL);
 }
 
 Extension* TestExtensionPrefs::AddExtensionWithManifest(
-    const DictionaryValue& manifest) {
+    const DictionaryValue& manifest, Extension::Location location) {
   std::string name;
   EXPECT_TRUE(manifest.GetString(extension_manifest_keys::kName, &name));
   FilePath path =  extensions_dir_.AppendASCII(name);
   Extension* extension = new Extension(path);
   std::string errors;
+  extension->set_location(location);
   EXPECT_TRUE(extension->InitFromValue(manifest, false, &errors));
-  extension->set_location(Extension::INTERNAL);
   EXPECT_TRUE(Extension::IdIsValid(extension->id()));
   const bool kInitialIncognitoEnabled = false;
   prefs_->OnExtensionInstalled(extension, Extension::ENABLED,

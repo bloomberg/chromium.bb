@@ -74,9 +74,9 @@ void MakeExtension(bool is_theme, const GURL& update_url,
     return;
   }
 #endif
+  extension->set_location(location);
   EXPECT_TRUE(extension->InitFromValue(source, false, &error));
   EXPECT_EQ("", error);
-  extension->set_location(location);
 }
 
 TEST_F(ExtensionUtilTest, GetExtensionType) {
@@ -459,9 +459,9 @@ void MakeSyncableExtension(const std::string& version_string,
   source.SetString(extension_manifest_keys::kUpdateURL, update_url_spec);
   source.SetString(extension_manifest_keys::kName, name);
   std::string error;
+  extension->set_location(Extension::INTERNAL);
   EXPECT_TRUE(extension->InitFromValue(source, false, &error));
   EXPECT_EQ("", error);
-  extension->set_location(Extension::INTERNAL);
 }
 
 TEST_F(ExtensionUtilTest, GetExtensionSpecificsHelper) {

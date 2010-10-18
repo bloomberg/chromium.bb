@@ -82,6 +82,7 @@ void UninstallExtension(const FilePath& extensions_dir,
 }
 
 Extension* LoadExtension(const FilePath& extension_path,
+                         Extension::Location location,
                          bool require_key,
                          std::string* error) {
   FilePath manifest_path =
@@ -119,6 +120,7 @@ Extension* LoadExtension(const FilePath& extension_path,
   DictionaryValue* manifest = static_cast<DictionaryValue*>(root.get());
 
   scoped_ptr<Extension> extension(new Extension(extension_path));
+  extension->set_location(location);
 
   if (!extension_l10n_util::LocalizeExtension(extension.get(), manifest, error))
     return NULL;

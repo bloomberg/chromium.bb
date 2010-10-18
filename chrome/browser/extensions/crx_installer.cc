@@ -351,10 +351,9 @@ void CrxInstaller::CompleteInstall() {
   // TODO(aa): All paths to resources inside extensions should be created
   // lazily and based on the Extension's root path at that moment.
   std::string error;
-  extension_.reset(extension_file_util::LoadExtension(version_dir, true,
-                                                      &error));
+  extension_.reset(extension_file_util::LoadExtension(
+      version_dir, install_source_, true, &error));
   DCHECK(error.empty());
-  extension_->set_location(install_source_);
 
   ReportSuccessFromFileThread();
 }

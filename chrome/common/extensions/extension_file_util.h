@@ -9,6 +9,8 @@
 #include <string>
 #include <map>
 
+#include "chrome/common/extensions/extension.h"
+
 class Extension;
 class ExtensionMessageBundle;
 class FilePath;
@@ -36,6 +38,7 @@ void UninstallExtension(const FilePath& extensions_dir,
 // Loads and validates an extension from the specified directory. Returns NULL
 // on failure, with a description of the error in |error|.
 Extension* LoadExtension(const FilePath& extension_root,
+                         Extension::Location location,
                          bool require_key,
                          std::string* error);
 

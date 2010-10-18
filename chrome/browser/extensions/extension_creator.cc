@@ -58,6 +58,7 @@ bool ExtensionCreator::InitializeInput(
   // useful validation of the structure.
   scoped_ptr<Extension> extension(
       extension_file_util::LoadExtension(extension_dir,
+                                         Extension::INTERNAL,
                                          false,  // key not required
                                          &error_message_));
   if (!extension.get())

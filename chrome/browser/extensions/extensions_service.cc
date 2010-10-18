@@ -310,6 +310,7 @@ void ExtensionsServiceBackend::LoadSingleExtension(
   std::string error;
   Extension* extension = extension_file_util::LoadExtension(
       extension_path,
+      Extension::LOAD,
       false,  // Don't require id
       &error);
 
@@ -317,8 +318,6 @@ void ExtensionsServiceBackend::LoadSingleExtension(
     ReportExtensionLoadError(extension_path, error);
     return;
   }
-
-  extension->set_location(Extension::LOAD);
 
   // Report this as an installed extension so that it gets remembered in the
   // prefs.
@@ -461,7 +460,7 @@ void ExtensionsServiceBackend::ReloadExtensionManifests(
     // We need to reload original manifest in order to localize properly.
     std::string error;
     scoped_ptr<Extension> extension(extension_file_util::LoadExtension(
-        info->extension_path, false, &error));
+        info->extension_path, info->extension_location, false, &error));
 
     if (extension.get())
       extensions_to_reload->at(i)->extension_manifest.reset(
@@ -1080,6 +1079,7 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
   } else if (info.extension_manifest.get()) {
     scoped_ptr<Extension> tmp(new Extension(info.extension_path));
     bool require_key = info.extension_location != Extension::LOAD;
+    tmp->set_location(info.extension_location);
     if (tmp->InitFromValue(*info.extension_manifest, require_key, &error))
       extension = tmp.release();
   } else {
@@ -1093,8 +1093,6 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
                              false);
     return;
   }
-
-  extension->set_location(info.extension_location);
 
   if (write_to_prefs)
     extension_prefs_->UpdateManifest(extension);

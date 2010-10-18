@@ -537,11 +537,12 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   input.SetString(keys::kPageActionDefaultTitle, kTitle);
   input.SetString(keys::kPageActionDefaultIcon, kIcon);
 
-  // LoadExtensionActionHelper expects the extension member |extension_url_|
+  // LoadExtensionActionHelper expects the extension member |extension_url|
   // to be set.
-  extension.extension_url_ = GURL(std::string(chrome::kExtensionScheme) +
-                                  chrome::kStandardSchemeSeparator +
-                                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/");
+  extension.mutable_static_data_->extension_url =
+      GURL(std::string(chrome::kExtensionScheme) +
+           chrome::kStandardSchemeSeparator +
+           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/");
 
   // Add key "popup", expect success.
   input.SetString(keys::kPageActionPopup, kPopupHtmlFile);
@@ -549,7 +550,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_TRUE(NULL != action.get());
   ASSERT_TRUE(error_msg.empty());
   ASSERT_STREQ(
-      extension.extension_url_.Resolve(kPopupHtmlFile).spec().c_str(),
+      extension.url().Resolve(kPopupHtmlFile).spec().c_str(),
       action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
 
   // Add key "default_popup", expect failure.
@@ -570,7 +571,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_TRUE(NULL != action.get());
   ASSERT_TRUE(error_msg.empty());
   ASSERT_STREQ(
-      extension.extension_url_.Resolve(kPopupHtmlFile).spec().c_str(),
+      extension.url().Resolve(kPopupHtmlFile).spec().c_str(),
       action->GetPopupUrl(ExtensionAction::kDefaultTabId).spec().c_str());
 
   // Setting default_popup to "" is the same as having no popup.

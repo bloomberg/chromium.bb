@@ -10,9 +10,9 @@
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/common/extensions/extension.h"
 
 class DictionaryValue;
-class Extension;
 class ExtensionPrefs;
 class PrefService;
 
@@ -37,7 +37,8 @@ class TestExtensionPrefs {
   Extension* AddExtension(std::string name);
 
   // Similar to AddExtension, but takes a dictionary with manifest values.
-  Extension* AddExtensionWithManifest(const DictionaryValue& manifest);
+  Extension* AddExtensionWithManifest(const DictionaryValue& manifest,
+                                      Extension::Location location);
 
   // Similar to AddExtension, this adds a new test Extension. This is useful for
   // cases when you don't need the Extension object, but just the id it was
