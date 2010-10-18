@@ -161,8 +161,7 @@ class TestURLRequestContext : public URLRequestContext {
         host_resolver_);
     http_transaction_factory_ = new net::HttpCache(
         net::HttpNetworkLayer::CreateFactory(host_resolver_,
-                                             NULL /* dnsrr_resolver */,
-                                             NULL /* ssl_host_info_factory */,
+                                             NULL,
                                              proxy_service_,
                                              ssl_config_service_,
                                              http_auth_handler_factory_,

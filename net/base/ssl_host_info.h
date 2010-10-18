@@ -15,10 +15,9 @@ namespace net {
 // This information may be stored on disk so does not include keys or session
 // information etc. Primarily it's intended for caching the server's
 // certificates.
-class SSLHostInfo {
+class SSLHostInfo :
+    public base::RefCountedThreadSafe<SSLHostInfo> {
  public:
-  virtual ~SSLHostInfo();
-
   // Start will commence the lookup. This must be called before any other
   // methods. By opportunistically calling this early, it may be possible to
   // overlap this object's lookup and reduce latency.
@@ -46,15 +45,10 @@ class SSLHostInfo {
   // this object and the store operation will still complete. This can only be
   // called once WaitForDataReady has returned OK or called its callback.
   virtual void Set(const std::string& new_data) = 0;
-};
 
-class SSLHostInfoFactory {
- public:
-  virtual ~SSLHostInfoFactory();
-
-  // GetForHost returns a fresh, allocated SSLHostInfo for the given hostname
-  // or NULL on failure.
-  virtual SSLHostInfo* GetForHost(const std::string& hostname) = 0;
+ protected:
+  friend class base::RefCountedThreadSafe<SSLHostInfo>;
+  virtual ~SSLHostInfo() { }
 };
 
 }  // namespace net

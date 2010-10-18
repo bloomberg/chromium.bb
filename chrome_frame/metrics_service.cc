@@ -177,7 +177,6 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
     http_transaction_factory_ = new net::HttpCache(
         net::HttpNetworkLayer::CreateFactory(host_resolver_,
                                              NULL /* dnsrr_resovler */,
-                                             NULL /* ssl_host_info */,
                                              proxy_service_,
                                              ssl_config_service_,
                                              http_auth_handler_factory_,

@@ -11,9 +11,7 @@ namespace net {
 SSLClientSocket* SSLClientSocketMacFactory(
     ClientSocketHandle* transport_socket,
     const std::string& hostname,
-    const SSLConfig& ssl_config,
-    SSLHostInfo* ssl_host_info) {
-  delete ssl_host_info;
+    const SSLConfig& ssl_config) {
   return new SSLClientSocketMac(transport_socket, hostname, ssl_config);
 }
 

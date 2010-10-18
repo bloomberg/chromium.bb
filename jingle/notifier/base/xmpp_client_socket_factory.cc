@@ -33,10 +33,9 @@ net::ClientSocket* XmppClientSocketFactory::CreateTCPClientSocket(
 net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
     net::ClientSocketHandle* transport_socket,
     const std::string& hostname,
-    const net::SSLConfig& ssl_config,
-    net::SSLHostInfo* ssl_host_info) {
+    const net::SSLConfig& ssl_config) {
   return client_socket_factory_->CreateSSLClientSocket(
-      transport_socket, hostname, ssl_config, ssl_host_info);
+      transport_socket, hostname, ssl_config);
 }
 
 }  // namespace
