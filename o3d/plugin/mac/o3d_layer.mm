@@ -80,19 +80,19 @@ using o3d::DisplayWindowMac;
   CGLSetCurrentContext(ctx);
 
   if (created_context_) {
-     DCHECK_EQ(ctx, obj_->mac_cgl_context_);
-     o3d::DisplayWindowMac default_display;
-     default_display.set_agl_context(obj_->mac_agl_context_);
-     default_display.set_cgl_context(obj_->mac_cgl_context_);
-     obj_->CreateRenderer(default_display);
-     obj_->client()->Init();
-     created_context_ = false;
-   }
+    DCHECK_EQ(ctx, obj_->mac_cgl_context_);
+    o3d::DisplayWindowMac default_display;
+    default_display.set_agl_context(obj_->mac_agl_context_);
+    default_display.set_cgl_context(obj_->mac_cgl_context_);
+    obj_->CreateRenderer(default_display);
+    obj_->client()->Init();
+    created_context_ = false;
+  }
 
-   if (was_resized_) {
-     obj_->Resize(width_, height_);
-     was_resized_ = false;
-   }
+  if (was_resized_) {
+    obj_->Resize(width_, height_);
+    was_resized_ = false;
+  }
 
 
   if (obj_) {

@@ -44,6 +44,7 @@
 #include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/config.h"
 #include "plugin/cross/stream_manager.h"
+#include "third_party/nixysa/static_glue/npapi/npn_api.h"
 #include "client_glue.h"
 #include "globals_glue.h"
 
@@ -1030,10 +1031,7 @@ void PluginObject::AsyncTick() {
   } else {
     // Invoke Tick asynchronously if NPN_PluginThreadAsyncCall is supported.
     // Otherwise invoke it synchronously.
-    int plugin_major, plugin_minor, browser_major, browser_minor;
-    NPN_Version(&plugin_major, &plugin_minor, &browser_major, &browser_minor);
-    if (browser_major > 0 ||
-        browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
+    if (IsPluginThreadAsyncCallSupported(npp_)) {
       NPN_PluginThreadAsyncCall(npp_, TickPluginObject, this);
     } else {
       Tick();

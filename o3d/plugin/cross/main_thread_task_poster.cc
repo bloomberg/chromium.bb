@@ -46,7 +46,7 @@ MainThreadTaskPoster::~MainThreadTaskPoster() {
 }
 
 bool MainThreadTaskPoster::IsSupported() {
- return IsPluginThreadAsyncCallSupported();
+  return IsPluginThreadAsyncCallSupported(npp_);
 }
 
 void MainThreadTaskPoster::PostTask(Task* task) {
