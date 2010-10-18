@@ -522,7 +522,13 @@ TEST_F(GeneralMixMemoryTest, SingleTabTest) {
   RunTest("_1t", 1);
 }
 
-TEST_F(GeneralMixMemoryTest, FiveTabTest) {
+// http://crbug.com/59335 Flaky on XP bot
+#if defined(OS_WIN)
+#define MAYBE_FiveTabTest FLAKY_FiveTabTest
+#else
+#define MAYBE_FiveTabTest FiveTabTest
+#endif
+TEST_F(GeneralMixMemoryTest, MAYBE_FiveTabTest) {
   RunTest("_5t", 5);
 }
 
