@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
-#include "base/string_piece.h"
 #include "base/string_number_conversions.h"
+#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/net/url_fetcher.h"
 #include "gfx/rect.h"
 #include "views/window/window.h"
 
@@ -187,13 +186,8 @@ class BugReportHandler : public DOMMessageHandler,
   // DOMMessageHandler implementation.
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
-  void OnURLFetchComplete(const URLFetcher* source,
-                          const GURL& url,
-                          const URLRequestStatus& status,
-                          int response_code,
-                          const ResponseCookies& cookies,
-                          const std::string& data);
 
+ private:
   void HandleGetDialogDefaults(const ListValue* args);
   void HandleRefreshScreenshots(const ListValue* args);
   void HandleSendReport(const ListValue* args);
@@ -202,10 +196,9 @@ class BugReportHandler : public DOMMessageHandler,
 
   void SetupScreenshotsSource();
   void ClobberScreenshotsSource();
-
- private:
   void CloseTab();
   void SendReport();
+
 #if defined(OS_CHROMEOS)
   void SyslogsComplete(chromeos::LogDictionaryType* logs,
                        std::string* zip_content);
@@ -376,7 +369,7 @@ void BugReportUIHTMLSource::StartDataRequest(const std::string& path,
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// BugErportHandler
+// BugReportHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
 BugReportHandler::BugReportHandler(TabContents* tab)
