@@ -1106,14 +1106,7 @@ static void TestHostGarbageCollectHelper(
   }
 }
 
-// Flaky on Win only.  http://crbug.com/58197
-#if defined(OS_WIN)
-#define MAYBE_TestHostGarbageCollection FLAKY_TestHostGarbageCollection
-#else
-#define MAYBE_TestHostGarbageCollection TestHostGarbageCollection
-#endif
-
-TEST(CookieMonsterTest, MAYBE_TestHostGarbageCollection) {
+TEST(CookieMonsterTest, TestHostGarbageCollection) {
   TestHostGarbageCollectHelper(
       CookieMonster::kDomainMaxCookies, CookieMonster::kDomainPurgeCookies,
       CookieMonster::EKS_KEEP_RECENT_AND_PURGE_ETLDP1);

@@ -996,7 +996,8 @@ int CookieMonster::GarbageCollectDeleteList(
   int num_deleted = 0;
   for (std::vector<CookieMap::iterator>::iterator it = cookie_its.begin();
        it != cookie_its.end(); it++) {
-    if ((*it)->second->LastAccessDate() < keep_accessed_after) {
+    if (keep_accessed_after.is_null() ||
+        (*it)->second->LastAccessDate() < keep_accessed_after) {
       histogram_evicted_last_access_minutes_->Add(
           (current - (*it)->second->LastAccessDate()).InMinutes());
       InternalDeleteCookie((*it), true, cause);
@@ -1042,7 +1043,7 @@ int CookieMonster::GarbageCollect(const Time& current,
       num_deleted +=
           GarbageCollectDeleteList(
               current,
-              Time::Now(),
+              Time(),
               DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE,
               cookie_its);
     }

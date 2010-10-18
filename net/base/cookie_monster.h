@@ -390,7 +390,8 @@ class CookieMonster : public CookieStore {
 
   // Helper for GarbageCollect().  Deletes all cookies in the list
   // that were accessed before |keep_accessed_after|, using DeletionCause
-  // |cause|.  Returns the number of cookies deleted.
+  // |cause|.  If |keep_accessed_after| is null, deletes all cookies in the
+  // list.  Returns the number of cookies deleted.
   int GarbageCollectDeleteList(const base::Time& current,
                                const base::Time& keep_accessed_after,
                                DeletionCause cause,
