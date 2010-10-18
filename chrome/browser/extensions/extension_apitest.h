@@ -9,6 +9,7 @@
 #include <deque>
 #include <string>
 
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/notification_service.h"
 
@@ -65,6 +66,9 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     bool waiting_;
   };
 
+  virtual void SetUpInProcessBrowserTestFixture();
+  virtual void TearDownInProcessBrowserTestFixture();
+
   // Load |extension_name| and wait for pass / fail notification.
   // |extension_name| is a directory in "test/data/extensions/api_test".
   bool RunExtensionTest(const char* extension_name);
@@ -84,6 +88,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // API on the page.
   bool RunPageTest(const std::string& page_url);
 
+  // Start the test server, and store details of its state.  Those details
+  // will be available to javascript tests using chrome.test.getConfig().
+  bool StartTestServer();
+
   // Test that exactly one extension loaded.  If so, return a pointer to
   // the extension.  If not, return NULL and set message_.
   Extension* GetSingleLoadedExtension();
@@ -98,6 +106,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunExtensionTestImpl(const char* extension_name,
                             const std::string& test_page,
                             bool enable_incogntio);
+
+  // Hold details of the test, set in C++, which can be accessed by
+  // javascript using chrome.test.getConfig().
+  scoped_ptr<DictionaryValue> test_config_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_

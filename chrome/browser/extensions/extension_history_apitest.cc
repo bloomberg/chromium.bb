@@ -11,7 +11,7 @@
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_History) {
   host_resolver()->AddRule("www.a.com", "127.0.0.1");
   host_resolver()->AddRule("www.b.com", "127.0.0.1");
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
 
   ASSERT_TRUE(RunExtensionTest("history")) << message_;
 }

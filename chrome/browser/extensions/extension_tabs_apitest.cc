@@ -37,34 +37,33 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Tabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabGetCurrent) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabConnect) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/connect")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabOnRemoved) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabJpeg) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_jpeg.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CaptureVisibleTabPng) {
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionSubtest("tabs/capture_visible_tab",
                                   "test_png.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabsOnUpdated) {
-  ASSERT_TRUE(test_server()->Start());
-
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("tabs/on_updated")) << message_;
 }

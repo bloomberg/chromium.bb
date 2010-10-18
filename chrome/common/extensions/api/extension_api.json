@@ -690,7 +690,7 @@
               "url": {
                 "type": "string",
                 "description": "A URL or list of URLs to open as tabs in the window. Fully-qualified URLs must include a scheme (i.e. 'http://www.google.com', not 'www.google.com'). Relative URLs will be relative to the current page within the extension. Defaults to the New Tab Page.",
-                "optional": true, 
+                "optional": true,
                 "choices": [
                   {"type": "string"},
                   {"type": "array", "items": {"type": "string"}}
@@ -2667,9 +2667,9 @@
             "type": "string",
             "optional": true,
             "description": "The text for the context selection, if any."
-          },   
+          },
           "editable": {
-            "type": "string",                   
+            "type": "string",
             "description": "A flag indicating whether the element is editable (text input, textarea, etc.)."
           }
         }
@@ -2726,7 +2726,7 @@
                     "$ref": "Tab",
                     "description": "The details of the tab where the click took place."
                   }
-                ]            
+                ]
               },
               "parentId": {
                 "type": "integer",
@@ -3404,6 +3404,36 @@
     "types": [],
     "functions": [
       {
+        "name": "getConfig",
+        "type": "function",
+        "description": "Gives configuration options set by the test.",
+        "parameters": [
+          {
+            "type": "function", "name": "callback", "parameters": [
+              {
+                "type": "object",
+                "name": "testConfig",
+                "properties": {
+                  "testServer": {
+                    "type": "object",
+                    "optional": true,
+                    "description": "Details on the test server used to mock network responses.  Will be set only if test calls ExtensionApiTest::StartTestServer().",
+                    "properties": {
+                      "port": {
+                        "type": "integer",
+                        "description": "The port on which the test server is listening.",
+                        "minimum": 1024,
+                        "maximum": 65535
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "notifyFail",
         "type": "function",
         "description": "Notify the browser process that test code running in the extension failed.  This is only used for internal unit testing.",
@@ -4074,7 +4104,7 @@
             "type": "function",
             "optional": "true",
             "parameters": []
-          }          
+          }
         ]
       }
     ],
@@ -4091,7 +4121,7 @@
         "type": "function",
         "parameters": [
           {
-           "name": "id", 
+           "name": "id",
            "type": "string",
            "description": "The id of the extension or app that was uninstalled."
           }
@@ -4185,9 +4215,9 @@
             "type": "string",
             "description": "The email address to use to pre-populate the login dialog (can be an empty string)."
           },
-          { 
-            "name": "callback", 
-            "type": "function", 
+          {
+            "name": "callback",
+            "type": "function",
             "optional": "true",
             "parameters": [
               {

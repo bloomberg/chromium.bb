@@ -228,6 +228,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTestQuotaResetFunction>();
   RegisterFunction<ExtensionTestCreateIncognitoTabFunction>();
   RegisterFunction<ExtensionTestSendMessageFunction>();
+  RegisterFunction<ExtensionTestGetConfigFunction>();
 
   // Accessibility.
   RegisterFunction<GetFocusedControlFunction>();

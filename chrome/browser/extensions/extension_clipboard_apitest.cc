@@ -10,6 +10,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Clipboard) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("clipboard")) << message_;
 }

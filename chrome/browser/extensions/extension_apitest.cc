@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_registrar.h"
@@ -15,6 +16,12 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 #endif
+
+namespace {
+
+const char kTestServerPort[] = "testServer.port";
+
+};  // namespace
 
 ExtensionApiTest::ResultCatcher::ResultCatcher()
     : profile_restriction_(NULL),
@@ -79,6 +86,17 @@ void ExtensionApiTest::ResultCatcher::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
+  DCHECK(!test_config_.get()) << "Previous test did not clear config state.";
+  test_config_.reset(new DictionaryValue());
+  ExtensionTestGetConfigFunction::set_test_config_state(test_config_.get());
+}
+
+void ExtensionApiTest::TearDownInProcessBrowserTestFixture() {
+  ExtensionTestGetConfigFunction::set_test_config_state(NULL);
+  test_config_.reset(NULL);
 }
 
 bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
@@ -184,6 +202,19 @@ Extension* ExtensionApiTest::GetSingleLoadedExtension() {
     return NULL;
   }
   return extension;
+}
+
+bool ExtensionApiTest::StartTestServer() {
+  if (!test_server()->Start())
+    return false;
+
+  // Build a dictionary of values that tests can use to build URLs that
+  // access the test server.  Tests can see these values using the extension
+  // API function chrome.test.getConfig().
+  test_config_->SetInteger(kTestServerPort,
+                           test_server()->host_port_pair().port());
+
+  return true;
 }
 
 void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {

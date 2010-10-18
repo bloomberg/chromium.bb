@@ -5,5 +5,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18N) {
+  ASSERT_TRUE(StartTestServer());
   ASSERT_TRUE(RunExtensionTest("i18n")) << message_;
 }
