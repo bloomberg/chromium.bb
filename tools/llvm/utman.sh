@@ -764,6 +764,8 @@ untrusted_sdk() {
   clean
   everything
   prune
+  install-translators
+  prune-translator-install
   tarball $1
 }
 
@@ -1877,13 +1879,14 @@ binutils-sb-install() {
   spopd
 }
 
-#+-------------------------------------------------------------------------
-#@ build-sandboxed-translators - Build and package up sandboxed translators
-build-sandboxed-translators() {
-  StepBanner "BUILD SANDBOXED TRANSLATORS"
+#+--------------------------------------------------------------------------
+#@ install-translators - Builds and installs sandboxed translator components
+install-translators() {
+  StepBanner "INSTALL SANDBOXED TRANSLATORS"
 
-  # TODO(abetul): Missing arm translator work.
   # StepBanner "ARM" "Sandboxing"
+  # StepBanner "---" "----------"
+  # TODO(abetul): Missing arm translator work.
 
   StepBanner "X86" "Prepare"
   StepBanner "---" "-------"
@@ -1896,42 +1899,50 @@ build-sandboxed-translators() {
   llvm-tools-sb x8632
   echo ""
 
-  StepBanner "64-bit X86" "Sandboxing"
-  StepBanner "----------" "----------"
-  binutils-sb x8664
-  llvm-tools-sb x8664
-  echo ""
-}
-
-# TODO(abetul): Missing arm translator work.
-#+-------------------------------------------------------------------------
-#@ install-translators - Installs unsandboxed translator components
-install-translators() {
-  StepBanner "INSTALL UNSANDBOXED TRANSLATOR COMPONENTS"
-
-  assert-dir "${PNACL_SB_X8632}" \
-        "Run this script with build-sandboxed-translators"
-
   mkdir -p ${PNACL_SB_X8632}/script
-
   assert-file "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
         "Install NaCl toolchain."
   cp "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
         "${PNACL_SB_X8632}/script/ld_script"
 
+  assert-file "$(pwd)/tools/llvm/dummy_translator_x8632.sh" \
+        "Install NaCl toolchain."
   cp tools/llvm/dummy_translator_x8632.sh "${PNACL_SB_X8632}/translator"
 
-  assert-dir "${PNACL_SB_X8664}" \
-        "Run this script with build-sandboxed-translators"
+  StepBanner "64-bit X86" "Sandboxing"
+  StepBanner "----------" "----------"
+  binutils-sb x8664
+  llvm-tools-sb x8664
+  echo ""
 
   mkdir -p ${PNACL_SB_X8664}/script
-
   assert-file "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
         "Install NaCl toolchain."
   cp "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
         "${PNACL_SB_X8664}/script/ld_script"
 
+  assert-file "$(pwd)/tools/llvm/dummy_translator_x8664.sh" \
+        "Install NaCl toolchain."
   cp tools/llvm/dummy_translator_x8664.sh "${PNACL_SB_X8664}/translator"
+
+  echo "Done"
+}
+
+#+-------------------------------------------------------------------------
+#@ prune-translator-install - Prunes translator install directories
+prune-translator-install() {
+
+  StepBanner "PRUNE" "Pruning translator installs"
+
+  spushd "${PNACL_SB_X8632}"
+  rm -rf include lib nacl share
+  rm -rf bin/llvm-config bin/tblgen
+  spopd
+
+  spushd "${PNACL_SB_X8664}"
+  rm -rf include lib nacl share
+  rm -rf bin/llvm-config bin/tblgen
+  spopd
 
   echo "Done"
 }
@@ -2813,10 +2824,6 @@ test-bot-base() {
 #@   and measure benchmark stats as well (measurements emitted to stdout).
 timed-test-spec-all() {
   official_specdir=$(readlink -f $1)
-
-  # Make sure the translators are there...
-  build-sandboxed-translators
-  install-translators
 
   spushd tests/spec2k
   ./run_all.sh CleanBenchmarks
