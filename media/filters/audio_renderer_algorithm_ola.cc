@@ -24,6 +24,7 @@ const float kMaxRate = 4.0f;
 AudioRendererAlgorithmOLA::AudioRendererAlgorithmOLA()
     : input_step_(0),
       output_step_(0),
+      crossfade_size_(0),
       window_size_(0) {
 }
 

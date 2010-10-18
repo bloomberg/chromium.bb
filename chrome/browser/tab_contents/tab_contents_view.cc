@@ -117,7 +117,7 @@ bool TabContentsView::ShouldDrawDropShadow() {
   return false;
 }
 
-TabContentsView::TabContentsView() {}
+TabContentsView::TabContentsView() : tab_contents_(NULL) {}
 
 void TabContentsView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (tab_contents_->delegate())
