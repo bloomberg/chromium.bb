@@ -10,11 +10,14 @@
 
 namespace net {
 
+class SSLHostInfo;
+
 // Creates SSLClientSocketMac objects.
 SSLClientSocket* SSLClientSocketMacFactory(
     ClientSocketHandle* transport_socket,
     const std::string& hostname,
-    const SSLConfig& ssl_config);
+    const SSLConfig& ssl_config,
+    SSLHostInfo* ssl_host_info);
 
 }  // namespace net
 

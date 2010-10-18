@@ -435,7 +435,8 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   DCHECK(transport_socket_.get());
   transport_socket_.reset(
       client_socket_factory_->CreateSSLClientSocket(
-          transport_socket_.release(), domain_name, ssl_config_));
+          transport_socket_.release(), domain_name, ssl_config_,
+          NULL /* ssl_host_info */));
   int status = transport_socket_->Connect(&ssl_connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     MessageLoop* message_loop = MessageLoop::current();
