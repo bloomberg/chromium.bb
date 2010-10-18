@@ -40,10 +40,6 @@ bool ScriptableObject::HasProperty(void* object,
   std::string str = Module::VarToStr(name);
   if (str == "__moduleReady")
     result = true;
-//  printf("--- ScriptableObject::HasProperty(%p,'%s') => %s\n",
-//         object,
-//         str.c_str(),
-//         result ? "yes" : "no");
   return result;
 }
 
@@ -54,10 +50,6 @@ bool ScriptableObject::HasMethod(void* object,
   std::string str = Module::VarToStr(name);
   if (str == "loadUrl")
     result = true;
-//  printf("--- ScriptableObject::HasMethod(%p,'%s') => %s\n",
-//         object,
-//         str.c_str(),
-//         result ? "yes" : "no");
   return result;
 }
 
@@ -65,7 +57,6 @@ PP_Var ScriptableObject::GetProperty(void* object,
                                      PP_Var name,
                                      PP_Var* exception) {
   std::string str = Module::VarToStr(name);
-//  printf("--- ScriptableObject::GetProperty(%p,'%s')\n", object, str.c_str());
   PP_Var var = PP_MakeUndefined();
   if (str == "__moduleReady")
     var = PP_MakeInt32(1);
