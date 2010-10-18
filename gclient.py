@@ -878,6 +878,9 @@ def CMDrecurse(parser, args):
   parser.add_option('-s', '--scm', action='append', default=[],
                     help='choose scm types to operate upon')
   options, args = parser.parse_args(args)
+  if not args:
+    print >> sys.stderr, 'Need to supply a command!'
+    return 1
   root_and_entries = gclient_utils.GetGClientRootAndEntries()
   if not root_and_entries:
     print >> sys.stderr, (
