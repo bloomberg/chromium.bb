@@ -146,7 +146,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString("allowFileAccess",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
   localized_strings.SetString("incognitoWarning",
-      l10n_util::GetStringUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING));
+      l10n_util::GetStringFUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   localized_strings.SetString("reload",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD));
   localized_strings.SetString("uninstall",
