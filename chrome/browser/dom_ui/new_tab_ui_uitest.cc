@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/prefs/pref_value_store.h"
+#include "chrome/browser/sync/signin_manager.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -49,6 +50,37 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
       L"window.domAutomationController.send("
       L"document.getElementsByClassName('filler').length <= 5)",
       action_max_timeout_ms()));
+}
+
+TEST_F(NewTabUITest, NTPHasLoginName) {
+  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window.get());
+
+  ASSERT_TRUE(window->SetStringPreference(prefs::kGoogleServicesUsername,
+                                          "user@gmail.com"));
+  // Bring up a new tab page.
+  ASSERT_TRUE(window->RunCommand(IDC_NEW_TAB));
+  int load_time;
+  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
+
+  scoped_refptr<TabProxy> tab = window->GetActiveTab();
+  ASSERT_TRUE(tab.get());
+
+  std::wstring displayed_username;
+  // The login span should be eventually populated and have the
+  // correct value.
+  ASSERT_TRUE(WaitUntilJavaScriptCondition(tab, L"",
+      L"window.domAutomationController.send("
+      L"document.getElementById('login-username').innerText.length > 0)",
+      action_max_timeout_ms()));
+
+  ASSERT_TRUE(tab->ExecuteAndExtractString(
+      L"",
+      L"window.domAutomationController.send("
+      L"document.getElementById('login-username').innerText)",
+      &displayed_username));
+
+  EXPECT_EQ(L"user@gmail.com", displayed_username);
 }
 
 // Fails about ~5% of the time on all platforms. http://crbug.com/45001

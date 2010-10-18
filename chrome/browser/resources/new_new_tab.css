@@ -29,6 +29,7 @@ body.loading #main {
 }
 
 #main,
+#login-container,
 .section,
 .maxiview {
   width: 920px;
@@ -277,6 +278,14 @@ html[hasattribution=false] #attribution > div {
 
 html[anim=true][enable-section-animations=true] .section {
   -webkit-transition: top .15s;
+}
+
+#login-container {
+  position: relative;
+}
+#login {
+  position: absolute;
+  right: 0;
 }
 
 .section.disabled,

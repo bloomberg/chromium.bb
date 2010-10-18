@@ -131,6 +131,12 @@ if ('mode' in hashParams) {
     <span class="link"><span class="link-color"></span></span>
   </div>
 
+  <div class="login-container" id="login-container">
+    <div id="login">
+      <span id="login-username"></span>
+    </div>
+  </div>
+
   <div class="maxiview" id="apps-maxiview">
     <div id="apps-promo">
       <button id="apps-promo-hide" i18n-content="appspromohide"></button>
@@ -267,6 +273,8 @@ cr.ui.decorate('button[menu]', cr.ui.MenuButton);
 </script>
 
 <script>
+  initializeLogin();
+
   initializeSection('apps', MINIMIZED_APPS, Section.APPS);
   initializeSection('most-visited', MINIMIZED_THUMB, Section.THUMB);
   initializeSection('recently-closed', MINIMIZED_RECENT);

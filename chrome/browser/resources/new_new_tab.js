@@ -1059,6 +1059,19 @@ function fixLinkUnderline(el) {
 
 updateAttribution();
 
+function initializeLogin() {
+  chrome.send('initializeLogin', []);
+}
+
+function updateLogin(login) {
+  if (login) {
+    document.getElementById("login-username").innerText = login;
+    document.getElementById("login").style.display = 'block';
+  } else {
+    document.getElementById("login").style.display = 'none';
+  }
+}
+
 var mostVisited = new MostVisited(
     $('most-visited-maxiview'),
     document.querySelector('#most-visited .miniview'),
