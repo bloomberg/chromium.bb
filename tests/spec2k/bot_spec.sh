@@ -79,18 +79,6 @@ BuildAndRunSetups() {
   return ${did_fail}
 }
 
-PrepareTranslators() {
-  # Pull in sources before building translators
-  AnnotatedRun "hg-update-stable" \
-    env UTMAN_DEBUG=true "${TC_SCRIPT}" hg-update-stable
-  # Clean build directories
-  AnnotatedRun "clean-build" "${TC_SCRIPT}" clean-build
-  # Build translators
-  AnnotatedRun "build-sandboxed-translators" \
-    "${TC_SCRIPT}" build-sandboxed-translators
-  AnnotatedRun "install-translators" "${TC_SCRIPT}" install-translators
-}
-
 PrepareTrusted() {
   local arch=$1
   AnnotatedRun "scons-${arch}" \
@@ -140,7 +128,6 @@ SetupPnaclX8664 SetupPnaclX8664Opt"
       # The sandboxed translator bot.
       PrepareTrusted x86-32
       PrepareTrusted x86-64
-      PrepareTranslators
       PrepareSpec ${spec_dir}
       BuildAndRunSetups "SetupPnaclTranslatorX8632 SetupPnaclTranslatorX8632Opt
 SetupPnaclTranslatorX8664 SetupPnaclTranslatorX8664Opt"
