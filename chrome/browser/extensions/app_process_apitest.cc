@@ -78,7 +78,15 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
 
   // Open two tabs in the app, one outside it.
-  GURL base_url("http://localhost:1337/files/extensions/api_test/app_process/");
+  GURL base_url = test_server()->GetURL(
+      "files/extensions/api_test/app_process/");
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr("localhost");
+  base_url = base_url.ReplaceComponents(replace_host);
+
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   browser()->NewTab();

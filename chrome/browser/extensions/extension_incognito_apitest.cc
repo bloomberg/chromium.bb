@@ -18,7 +18,6 @@
 #include "net/base/mock_host_resolver.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
-  host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
   // Loads a simple extension which attempts to change the title of every page
@@ -27,8 +26,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
       .AppendASCII("incognito").AppendASCII("content_scripts")));
 
   // Open incognito window and navigate to test page.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+  ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(),
+      test_server()->GetURL("files/extensions/test_file.html"));
+
   Browser* otr_browser = BrowserList::FindBrowserWithType(
       browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
       false);
@@ -63,8 +64,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
       .AppendASCII("content_scripts").AppendASCII("isolated_world1")));
 
   // Open incognito window and navigate to test page.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+  ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(),
+      test_server()->GetURL("files/extensions/test_file.html"));
+
   Browser* otr_browser = BrowserList::FindBrowserWithType(
       browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
       false);
@@ -96,8 +99,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   ResultCatcher catcher;
 
   // Open incognito window and navigate to test page.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+  ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(),
+      test_server()->GetURL("files/extensions/test_file.html"));
 
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
       .AppendASCII("incognito").AppendASCII("apis")));
@@ -127,8 +131,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoSplitMode) {
       browser()->profile()->GetOffTheRecordProfile());
 
   // Open incognito window and navigate to test page.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+  ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(),
+      test_server()->GetURL("files/extensions/test_file.html"));
 
   ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
       .AppendASCII("incognito").AppendASCII("split")));
@@ -154,8 +159,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
   ResultCatcher catcher;
 
   // Open incognito window and navigate to test page.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+  ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(),
+      test_server()->GetURL("files/extensions/test_file.html"));
 
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("incognito").AppendASCII("apis_disabled")));
@@ -174,8 +180,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoPopup) {
       .AppendASCII("incognito").AppendASCII("popup")));
 
   // Open incognito window and navigate to test page.
-  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
-      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+  ui_test_utils::OpenURLOffTheRecord(
+      browser()->profile(),
+      test_server()->GetURL("files/extensions/test_file.html"));
+
   Browser* incognito_browser = BrowserList::FindBrowserWithType(
       browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL,
       false);
