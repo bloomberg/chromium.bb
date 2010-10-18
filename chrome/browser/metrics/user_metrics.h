@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,6 @@ struct UserMetricsAction {
 };
 
 
-
 class UserMetrics {
  public:
   // Record that the user performed an action.
@@ -34,7 +33,12 @@ class UserMetrics {
   // interacting with the browser.
   // WARNING: Call this function exactly like this:
   //   UserMetrics::RecordAction(UserMetricsAction("foo bar"));
+  // (all on one line and with the metric string literal [no variables])
   // because otherwise our processing scripts won't pick up on new actions.
+  //
+  // Once a new recorded action is added, run chrome/tools/extract_actions.py
+  // to generate a new mapping of [action hashes -> metric names] and send it
+  // out for review to be updated.
   //
   // For more complicated situations (like when there are many different
   // possible actions), see RecordComputedAction.

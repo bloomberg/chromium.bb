@@ -110,49 +110,49 @@ NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
   if ([self isEmpty])
     return;
 
-  if ([self delegate]) {
-    // Ask our delegate to fill the pasteboard for us.
-    NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-    [[self delegate] fillPasteboard:pboard forDragOfButton:self];
-
-    // At the moment, moving bookmarks causes their buttons (like me!)
-    // to be destroyed and rebuilt.  Make sure we don't go away while on
-    // the stack.
-    [self retain];
-
-    // Lock bar visibility, forcing the overlay to stay visible if we are in
-    // fullscreen mode.
-    if ([[self delegate] dragShouldLockBarVisibility]) {
-      DCHECK(!visibilityDelegate_);
-      NSWindow* window = [[self delegate] browserWindow];
-      visibilityDelegate_ =
-          [BrowserWindowController browserWindowControllerForWindow:window];
-      [visibilityDelegate_ lockBarVisibilityForOwner:self
-                                       withAnimation:NO
-                                               delay:NO];
-    }
-    const BookmarkNode* node = [self bookmarkNode];
-    const BookmarkNode* parent = node ? node->GetParent() : NULL;
-    BOOL isWithinFolder = parent && parent->type() == BookmarkNode::FOLDER;
-    UserMetrics::RecordAction(UserMetricsAction(
-        isWithinFolder ? "BookmarkBarFolder_DragStart" :
-            "BookmarkBar_DragStart"));
-
-    dragMouseOffset_ = [self convertPointFromBase:[event locationInWindow]];
-    dragPending_ = YES;
-
-    CGFloat yAt = [self bounds].size.height;
-    NSSize dragOffset = NSMakeSize(0.0, 0.0);
-    [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
-              event:event pasteboard:pboard source:self slideBack:YES];
-
-    // And we're done.
-    dragPending_ = NO;
-    [self autorelease];
-  } else {
-    // Avoid blowing up, but we really shouldn't get here.
+  if (![self delegate]) {
     NOTREACHED();
+    return;
   }
+  // Ask our delegate to fill the pasteboard for us.
+  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+  [[self delegate] fillPasteboard:pboard forDragOfButton:self];
+
+  // At the moment, moving bookmarks causes their buttons (like me!)
+  // to be destroyed and rebuilt.  Make sure we don't go away while on
+  // the stack.
+  [self retain];
+
+  // Lock bar visibility, forcing the overlay to stay visible if we are in
+  // fullscreen mode.
+  if ([[self delegate] dragShouldLockBarVisibility]) {
+    DCHECK(!visibilityDelegate_);
+    NSWindow* window = [[self delegate] browserWindow];
+    visibilityDelegate_ =
+        [BrowserWindowController browserWindowControllerForWindow:window];
+    [visibilityDelegate_ lockBarVisibilityForOwner:self
+                                     withAnimation:NO
+                                             delay:NO];
+  }
+  const BookmarkNode* node = [self bookmarkNode];
+  const BookmarkNode* parent = node ? node->GetParent() : NULL;
+  if (parent && parent->type() == BookmarkNode::FOLDER) {
+    UserMetrics::RecordAction(UserMetricsAction("BookmarkBarFolder_DragStart"));
+  } else {
+    UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragStart"));
+  }
+
+  dragMouseOffset_ = [self convertPointFromBase:[event locationInWindow]];
+  dragPending_ = YES;
+
+  CGFloat yAt = [self bounds].size.height;
+  NSSize dragOffset = NSMakeSize(0.0, 0.0);
+  [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
+            event:event pasteboard:pboard source:self slideBack:YES];
+
+  // And we're done.
+  dragPending_ = NO;
+  [self autorelease];
 }
 
 // Overridden to release bar visibility.

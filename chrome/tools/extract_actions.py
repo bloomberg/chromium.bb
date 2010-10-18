@@ -160,7 +160,7 @@ def GrepForActions(path, actions):
   """
   global number_of_files_total
   number_of_files_total = number_of_files_total + 1
-  # we look for the UserMetricsAction structur constructor
+  # we look for the UserMetricsAction structure constructor
   # this should be on one line
   action_re = re.compile(r'UserMetricsAction\("([^"]*)')
   computed_action_re = re.compile(r'UserMetrics::RecordComputedAction')
