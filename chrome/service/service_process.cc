@@ -351,8 +351,12 @@ void ServiceProcess::SaveChromotingConfig(
 
   // And then do the update.
   chromoting_config_->Update(
-      NewRunnableFunction(&SaveChromotingConfigFunc, chromoting_config_.get(),
-                          login, token, host_id, host_name));
+      NewRunnableFunction(&SaveChromotingConfigFunc,
+                          chromoting_config_,
+                          login,
+                          token,
+                          host_id,
+                          host_name));
 
   // And then save the key pair.
   host_key_pair->Save(chromoting_config_);
