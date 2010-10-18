@@ -484,11 +484,14 @@ void AutomationProvider::SendFindRequest(
     bool find_next,
     IPC::Message* reply_message) {
   int request_id = FindInPageNotificationObserver::kFindInPageRequestId;
-  find_in_page_observer_.reset(
+  FindInPageNotificationObserver* observer =
       new FindInPageNotificationObserver(this,
                                          tab_contents,
                                          with_json,
-                                         reply_message));
+                                         reply_message);
+  if (!with_json) {
+    find_in_page_observer_.reset(observer);
+  }
   tab_contents->set_current_find_request_id(request_id);
   tab_contents->render_view_host()->StartFinding(
       FindInPageNotificationObserver::kFindInPageRequestId,
