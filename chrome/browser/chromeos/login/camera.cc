@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/time.h"
 #include "chrome/browser/browser_thread.h"
 #include "gfx/size.h"
 #include "skia/ext/image_operations.h"
@@ -119,7 +120,7 @@ const int kFrameHeight = 480;
 // Number of buffers to request from the device.
 const int kRequestBuffersCount = 4;
 // Timeout for select() call in microseconds.
-const long kSelectTimeout = 10000;
+const long kSelectTimeout = 1 * base::Time::kMicrosecondsPerSecond;
 
 }  // namespace
 
@@ -421,8 +422,8 @@ void Camera::OnCapture() {
     FD_SET(device_descriptor_, &fds);
 
     timeval tv = {};
-    tv.tv_sec = 0;
-    tv.tv_usec = kSelectTimeout;
+    tv.tv_sec = kSelectTimeout / base::Time::kMicrosecondsPerSecond;
+    tv.tv_usec = kSelectTimeout % base::Time::kMicrosecondsPerSecond;
 
     int result = select(device_descriptor_ + 1, &fds, NULL, NULL, &tv);
     if (result == -1) {

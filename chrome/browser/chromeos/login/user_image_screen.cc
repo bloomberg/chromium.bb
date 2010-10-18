@@ -85,8 +85,11 @@ void UserImageScreen::OnCaptureSuccess(const SkBitmap& frame) {
 }
 
 void UserImageScreen::OnCaptureFailure() {
-  if (view())
-    view()->ShowCameraError();
+  // If camera failed to provide a picture we don't want to show broken
+  // camera image since it may lead to flicker if capturing fails and then
+  // works again.
+  // TODO(avayvod): Find a better way to handle such cases.
+  VLOG(1) << "Capturing image failed.";
 }
 
 void UserImageScreen::OnOK(const SkBitmap& image) {
