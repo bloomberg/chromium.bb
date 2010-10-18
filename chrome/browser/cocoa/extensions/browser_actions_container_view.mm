@@ -82,9 +82,11 @@ const CGFloat kMinimumContainerWidth = 10.0;
   lastXPos_ = [self frame].origin.x;
   userIsResizing_ = YES;
 
-  // TODO(andybons): The cursor does not stick once moved outside of the
-  // toolbar. Investigate further. http://crbug.com/36698
   [[self appropriateCursorForGrippy] push];
+  // Disable cursor rects so that the Omnibox and other UI elements don't push
+  // cursors while the user is dragging. The cursor should be grippy until
+  // the |-mouseUp:| message is received.
+  [[self window] disableCursorRects];
 
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionGrippyDragStartedNotification
@@ -96,6 +98,7 @@ const CGFloat kMinimumContainerWidth = 10.0;
     return;
 
   [NSCursor pop];
+  [[self window] enableCursorRects];
 
   userIsResizing_ = NO;
   [[NSNotificationCenter defaultCenter]
