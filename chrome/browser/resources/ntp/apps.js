@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var MAX_APPS_PER_ROW = [];
+MAX_APPS_PER_ROW[LayoutMode.SMALL] = 4;
+MAX_APPS_PER_ROW[LayoutMode.NORMAL] = 6;
+
 function getAppsCallback(data) {
   logEvent('received apps');
   var appsSection = $('apps');
-  var appsSectionContent = $('apps-maxiview');
+  var appsSectionContent = $('apps-content');
   var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
   var appsPromo = $('apps-promo');
+  var webStoreEntry;
 
   appsMiniview.textContent = '';
-  while (appsSectionContent.lastChild != appsPromo) {
-    appsSectionContent.removeChild(appsSectionContent.lastChild);
-  }
+  appsSectionContent.textContent = '';
 
   data.apps.sort(function(a,b) {
     return a.app_launch_index - b.app_launch_index
@@ -24,10 +27,11 @@ function getAppsCallback(data) {
     layoutSections();
   } else {
     data.apps.forEach(function(app) {
-        appsSectionContent.appendChild(apps.createElement(app));
+      appsSectionContent.appendChild(apps.createElement(app));
     });
 
-    appsSectionContent.appendChild(apps.createWebStoreElement());
+    webStoreEntry = apps.createWebStoreElement();
+    appsSectionContent.appendChild(webStoreEntry);
 
     data.apps.slice(0, MAX_MINIVIEW_ITEMS).forEach(function(app) {
       appsMiniview.appendChild(apps.createMiniviewElement(app));
@@ -48,6 +52,11 @@ function getAppsCallback(data) {
   maybeDoneLoading();
 
   if (data.apps.length > 0 && isDoneLoading()) {
+    if (!data.showPromo && data.apps.length >= MAX_APPS_PER_ROW[layoutMode])
+      webStoreEntry.classList.add('loner');
+    else
+      webStoreEntry.classList.remove('loner');
+
     updateMiniviewClipping(appsMiniview);
     layoutSections();
   }

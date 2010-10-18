@@ -1,5 +1,27 @@
 /* Apps */
 
+#apps-content {
+  position: relative;
+  width: intrinsic;
+  max-width: 780px;  /* (124 + margin * 2) * 6 */
+}
+
+html.apps-promo-visible #apps-content {
+  max-width: 650px; /* (124 + margin * 2) * 5 */
+}
+
+/* small */
+@media (max-width: 940px) {
+  /*
+  We don't need to do anything for html.apps-promo-visible because there is
+  enough extra space in the small grid layout.
+  */
+  #apps-content,
+  html.apps-promo-visible #apps-content {
+    max-width: 520px;  /* (124 + margin * 2) * 4 */
+  }
+}
+
 .app,
 .app[new=installed] {
   -webkit-box-sizing: border-box;
@@ -133,14 +155,32 @@ html[dir=rtl] #apps-promo-hide {
 }
 
 html.apps-promo-visible .app[app-id=web-store-entry] {
-  left: 25px;
+  position: absolute;
+  left: 100%;
+  top: 0;
+  -webkit-margin-start: 22px;
 }
 
 html.apps-promo-visible[dir=rtl] .app[app-id=web-store-entry] {
-  right: 25px;
+  right: 100%;
 }
 
 html.apps-promo-visible .app[app-id=web-store-entry] a {
   font-weight: bold;
 }
 
+/*
+We position the web store entry all by its lonesome in the top of the rightmost
+column when there is at least one full row of apps. Note that this is similar,
+but different than its position during promo (html.apps-promo-visible), so we
+never set .loner while the promo is running.
+*/
+.app[app-id=web-store-entry].loner {
+  position: absolute;
+  left: 100%;
+  top: 0;
+}
+
+html[dir=rtl] .app[app-id=web-store-entry].loner {
+  right: 100%;
+}
