@@ -41,6 +41,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/third_party/nspr/prtypes.h"
 #include "o3d/breakpad/linux/breakpad.h"
 #include "plugin/cross/main.h"
 #include "plugin/cross/out_of_memory.h"
@@ -658,19 +659,23 @@ NPError InitializePlugin() {
 #endif
 
   // Check for XEmbed support in the browser.
-  NPBool xembed_support = 0;
+  // Tragically, nspluginwrapper thinks that the type of boolean variables is
+  // supposed to be PRBool, which has size of 4, and not NPBool, which has size
+  // of 1, so we have to use PRBool here so that an integer-sized write by the
+  // plugin host will succeed and not clobber anything else on our stack.
+  PRBool xembed_support = PR_FALSE;
   NPError err = NPN_GetValue(NULL, NPNVSupportsXEmbedBool, &xembed_support);
   if (err != NPERR_NO_ERROR)
-    xembed_support = 0;
+    xembed_support = PR_FALSE;
 
   if (xembed_support) {
     // Check for Gtk2 toolkit support in the browser.
     NPNToolkitType toolkit = static_cast<NPNToolkitType>(0);
     err = NPN_GetValue(NULL, NPNVToolkit, &toolkit);
     if (err != NPERR_NO_ERROR || toolkit != NPNVGtk2)
-      xembed_support = 0;
+      xembed_support = PR_FALSE;
   }
-  g_xembed_support = xembed_support != 0;
+  g_xembed_support = xembed_support != PR_FALSE;
 
   return NPERR_NO_ERROR;
 }
