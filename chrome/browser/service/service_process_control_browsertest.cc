@@ -22,6 +22,8 @@ class ServiceProcessControlBrowserTest
   ~ServiceProcessControlBrowserTest() {
     base::CloseProcessHandle(service_process_handle_);
     service_process_handle_ = base::kNullProcessHandle;
+    // Delete all instances of ServiceProcessControl.
+    ServiceProcessControlManager::instance()->Shutdown();
   }
 
  protected:
@@ -35,7 +37,10 @@ class ServiceProcessControlBrowserTest
     process->Launch(
         NewRunnableMethod(
             this,
-            &ServiceProcessControlBrowserTest::ProcessControlLaunched));
+            &ServiceProcessControlBrowserTest::ProcessControlLaunched),
+        NewRunnableMethod(
+            this,
+            &ServiceProcessControlBrowserTest::ProcessControlLaunchFailed));
 
     // Then run the message loop to keep things running.
     ui_test_utils::RunMessageLoop();
@@ -68,15 +73,21 @@ class ServiceProcessControlBrowserTest
         base::kProcessAccessWaitForTermination,
         &service_process_handle_));
     process()->SetMessageHandler(this);
+    // Quit the current message. Post a QuitTask instead of just calling Quit()
+    // because this can get invoked in the context of a Launch() call and we
+    // may not be in Run() yet.
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  }
+
+  void ProcessControlLaunchFailed() {
+    ADD_FAILURE();
     // Quit the current message.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        new MessageLoop::QuitTask());
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 
   // ServiceProcessControl::MessageHandler implementations.
   virtual void OnGoodDay() {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        new MessageLoop::QuitTask());
+    MessageLoop::current()->Quit();
   }
 
   ServiceProcessControl* process() { return process_; }
@@ -117,6 +128,50 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
 
   // And then shutdown the service process.
   EXPECT_TRUE(process()->Shutdown());
+}
+
+static void DecrementUntilZero(int* count) {
+  (*count)--;
+  if (!(*count))
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+}
+
+// Invoke multiple Launch calls in succession and ensure that all the tasks
+// get invoked.
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MultipleLaunchTasks) {
+  ServiceProcessControl* process =
+      ServiceProcessControlManager::instance()->GetProcessControl(
+          browser()->profile());
+  int launch_count = 5;
+  for (int i = 0; i < launch_count; i++) {
+    // Launch the process asynchronously.
+    process->Launch(
+        NewRunnableFunction(&DecrementUntilZero, &launch_count),
+        new MessageLoop::QuitTask());
+  }
+  // Then run the message loop to keep things running.
+  ui_test_utils::RunMessageLoop();
+  EXPECT_EQ(0, launch_count);
+  // And then shutdown the service process.
+  EXPECT_TRUE(process->Shutdown());
+}
+
+// Make sure using the same task for success and failure tasks works.
+IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
+  ServiceProcessControl* process =
+      ServiceProcessControlManager::instance()->GetProcessControl(
+          browser()->profile());
+  int launch_count = 5;
+  for (int i = 0; i < launch_count; i++) {
+    // Launch the process asynchronously.
+    Task * task = NewRunnableFunction(&DecrementUntilZero, &launch_count);
+    process->Launch(task, task);
+  }
+  // Then run the message loop to keep things running.
+  ui_test_utils::RunMessageLoop();
+  EXPECT_EQ(0, launch_count);
+  // And then shutdown the service process.
+  EXPECT_TRUE(process->Shutdown());
 }
 
 // Tests whether disconnecting from the service IPC causes the service process

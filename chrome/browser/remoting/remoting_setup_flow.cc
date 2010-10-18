@@ -214,9 +214,10 @@ void RemotingSetupFlow::OnIssueAuthTokenSuccess(const std::string& service,
     // TODO(hclam): This call only works on Windows. I need to make it work
     // on other platforms.
     service_process_helper_ = new RemotingServiceProcessHelper(this);
-    process_control_->Launch(
+    Task* process_launched_task =
         NewRunnableMethod(service_process_helper_.get(),
-                          &RemotingServiceProcessHelper::OnProcessLaunched));
+                          &RemotingServiceProcessHelper::OnProcessLaunched);
+    process_control_->Launch(process_launched_task, process_launched_task);
 #else
     ShowSetupDone();
 #endif

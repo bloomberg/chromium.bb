@@ -1451,7 +1451,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     if (user_prefs->GetBoolean(prefs::kRemotingHasSetupCompleted)) {
       ServiceProcessControl* control = ServiceProcessControlManager::instance()
           ->GetProcessControl(profile);
-       control->Launch(NULL);
+       control->Launch(NULL, NULL);
     }
   }
 

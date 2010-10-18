@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
+#include "base/stl_util-inl.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -87,23 +88,21 @@ ServiceProcessControl::ServiceProcessControl(Profile* profile)
 }
 
 ServiceProcessControl::~ServiceProcessControl() {
+  STLDeleteElements(&connect_done_tasks_);
+  STLDeleteElements(&connect_success_tasks_);
+  STLDeleteElements(&connect_failure_tasks_);
 }
 
-void ServiceProcessControl::ConnectInternal(Task* task) {
+void ServiceProcessControl::ConnectInternal() {
   // If the channel has already been established then we run the task
   // and return.
   if (channel_.get()) {
-    if (task) {
-      task->Run();
-      delete task;
-    }
+    RunConnectDoneTasks();
     return;
   }
 
   // Actually going to connect.
   LOG(INFO) << "Connecting to Service Process IPC Server";
-  connect_done_task_.reset(task);
-
   // Run the IPC channel on the shared IO thread.
   base::Thread* io_thread = g_browser_process->io_thread();
 
@@ -126,19 +125,54 @@ void ServiceProcessControl::ConnectInternal(Task* task) {
   }
 }
 
-void ServiceProcessControl::Launch(Task* task) {
+void ServiceProcessControl::RunConnectDoneTasks() {
+  RunAllTasksHelper(&connect_done_tasks_);
+  DCHECK(connect_done_tasks_.empty());
+  if (is_connected()) {
+    RunAllTasksHelper(&connect_success_tasks_);
+    DCHECK(connect_success_tasks_.empty());
+    STLDeleteElements(&connect_failure_tasks_);
+  } else {
+    RunAllTasksHelper(&connect_failure_tasks_);
+    DCHECK(connect_failure_tasks_.empty());
+    STLDeleteElements(&connect_success_tasks_);
+  }
+}
+
+// static
+void ServiceProcessControl::RunAllTasksHelper(TaskList* task_list) {
+  TaskList::iterator index = task_list->begin();
+  while (index != task_list->end()) {
+    (*index)->Run();
+    delete (*index);
+    index = task_list->erase(index);
+  }
+}
+
+void ServiceProcessControl::Launch(Task* success_task, Task* failure_task) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (success_task) {
+    if (success_task == failure_task) {
+      // If the tasks are the same, then the same task needs to be invoked
+      // for success and failure.
+      failure_task = NULL;
+      connect_done_tasks_.push_back(success_task);
+    } else {
+      connect_success_tasks_.push_back(success_task);
+    }
+  }
+
+  if (failure_task)
+    connect_failure_tasks_.push_back(failure_task);
 
   // If the service process is already running then connects to it.
   if (CheckServiceProcessReady()) {
-    ConnectInternal(task);
+    ConnectInternal();
     return;
   }
 
-  // Prevent quick calls to Launch in succession from causing a crash.
-  // TODO(scottbyer) - ServiceProcessControl launch task callback code needs to
-  // be enhanced to deal with this properly.  See
-  // http://code.google.com/p/chromium/issues/detail?id=58802
+  // If we already in the process of launching, then we are done.
   if (launcher_) {
     return;
   }
@@ -172,20 +206,19 @@ void ServiceProcessControl::Launch(Task* task) {
   // And then start the process asynchronously.
   launcher_ = new Launcher(this, cmd_line);
   launcher_->Run(
-      NewRunnableMethod(this, &ServiceProcessControl::OnProcessLaunched, task));
+      NewRunnableMethod(this, &ServiceProcessControl::OnProcessLaunched));
 }
 
-void ServiceProcessControl::OnProcessLaunched(Task* task) {
+void ServiceProcessControl::OnProcessLaunched() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (launcher_->launched()) {
     // After we have successfully created the service process we try to connect
     // to it. The launch task is transfered to a connect task.
-    ConnectInternal(task);
-  } else if (task) {
+    ConnectInternal();
+  } else {
     // If we don't have process handle that means launching the service process
     // has failed.
-    task->Run();
-    delete task;
+    RunConnectDoneTasks();
   }
 
   // We don't need the launcher anymore.
@@ -202,19 +235,13 @@ void ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
 
 void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!connect_done_task_.get())
-    return;
-  connect_done_task_->Run();
-  connect_done_task_.reset();
+  RunConnectDoneTasks();
 }
 
 void ServiceProcessControl::OnChannelError() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   channel_.reset();
-  if (!connect_done_task_.get())
-    return;
-  connect_done_task_->Run();
-  connect_done_task_.reset();
+  RunConnectDoneTasks();
 }
 
 bool ServiceProcessControl::Send(IPC::Message* message) {
