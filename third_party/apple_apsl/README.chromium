@@ -1,0 +1,32 @@
+Name: Darwin
+URL: http://www.opensource.apple.com/
+
+Three files are excerpted here:
+
+malloc.h from:
+http://www.opensource.apple.com/source/Libc/Libc-583/include/malloc/malloc.h
+
+Modifications:
+- Modified #ifdef guards.
+- Removed everything but the definition of malloc_zone_t.
+- Renamed _malloc_zone_t to ChromeMallocZone to avoid possible name conflicts.
+- Added a few comments.
+
+CFRuntime.h from:
+http://www.opensource.apple.com/source/CF/CF-550/CFRuntime.h
+
+Modifications:
+- Modified #ifdef guards.
+- Removed everything but the definition of CFRuntimeBase.
+- Renamed CFRuntimeBase to ChromeCFRuntimeBase to avoid possible name conflicts.
+
+CFBase.h from:
+http://opensource.apple.com/source/CF/CF-550/CFBase.c
+
+Modifications:
+- Renamed the file to CFBase.h.
+- Added #ifdef guards.
+- Added an #include of the CFRuntime.h file.
+- Removed everything but the definition of __CFAllocator.
+- Modified the reference of CFRuntimeBase to ChromeCFRuntimeBase.
+- Renamed __CFAllocator to ChromeCFAllocator to avoid possible name conflicts.
