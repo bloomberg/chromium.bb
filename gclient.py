@@ -878,7 +878,13 @@ def CMDrecurse(parser, args):
   parser.add_option('-s', '--scm', action='append', default=[],
                     help='choose scm types to operate upon')
   options, args = parser.parse_args(args)
-  root, entries = gclient_utils.GetGClientRootAndEntries()
+  root_and_entries = gclient_utils.GetGClientRootAndEntries()
+  if not root_and_entries:
+    print >> sys.stderr, (
+        'You need to run gclient sync at least once to use \'recurse\'.\n'
+        'This is because .gclient_entries needs to exist and be up to date.')
+    return 1
+  root, entries = root_and_entries
   scm_set = set()
   for scm in options.scm:
     scm_set.update(scm.split(','))
