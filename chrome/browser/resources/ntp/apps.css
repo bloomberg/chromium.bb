@@ -6,6 +6,10 @@
   max-width: 780px;  /* (124 + margin * 2) * 6 */
 }
 
+#apps-maxiview {
+  padding-bottom: 10px;
+}
+
 html.apps-promo-visible #apps-content {
   max-width: 650px; /* (124 + margin * 2) * 5 */
 }

@@ -237,6 +237,9 @@ var apps = (function() {
         div.setAttribute('new', 'new');
         // Delay changing the attribute a bit to let the page settle down a bit.
         setTimeout(function() {
+          // Make sure the new icon is scrolled into view.
+          document.body.scrollTop = document.body.scrollHeight;
+
           // This will trigger the 'bounce' animation defined in apps.css.
           div.setAttribute('new', 'installed');
         }, 500);
