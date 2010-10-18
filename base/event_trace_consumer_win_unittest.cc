@@ -179,7 +179,7 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumerReturnsWhenSessionClosed) {
 
   HRESULT hr = controller.StartRealtimeSession(kTestSessionName, 100 * 1024);
   if (hr == E_ACCESSDENIED) {
-    VLOG(1) << "You must be an administrator to run this test on Vista";
+    LOG(INFO) << "You must be an administrator to run this test on Vista";
     return;
   }
 
@@ -211,7 +211,7 @@ TEST_F(EtwTraceConsumerRealtimeTest, ConsumeEvent) {
   EtwTraceController controller;
   HRESULT hr = controller.StartRealtimeSession(kTestSessionName, 100 * 1024);
   if (hr == E_ACCESSDENIED) {
-    VLOG(1) << "You must be an administrator to run this test on Vista";
+    LOG(INFO) << "You must be an administrator to run this test on Vista";
     return;
   }
 
@@ -331,7 +331,7 @@ TEST_F(EtwTraceConsumerDataTest, RoundTrip) {
   PEVENT_TRACE trace = NULL;
   HRESULT hr = RoundTripEvent(&event.header, &trace);
   if (hr == E_ACCESSDENIED) {
-    VLOG(1) << "You must be an administrator to run this test on Vista";
+    LOG(INFO) << "You must be an administrator to run this test on Vista";
     return;
   }
   ASSERT_TRUE(NULL != trace);

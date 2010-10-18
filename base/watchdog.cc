@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,7 @@ void Watchdog::Disarm() {
 }
 
 void Watchdog::Alarm() {
-  DVLOG(1) << "Watchdog alarmed for " << thread_watched_name_;
+  DLOG(INFO) << "Watchdog alarmed for " << thread_watched_name_;
 }
 
 //------------------------------------------------------------------------------
@@ -128,7 +128,7 @@ void Watchdog::ThreadDelegate::ThreadMain() {
 void Watchdog::ThreadDelegate::SetThreadName() const {
   std::string name = watchdog_->thread_watched_name_ + " Watchdog";
   PlatformThread::SetName(name.c_str());
-  DVLOG(1) << "Watchdog active: " << name;
+  DLOG(INFO) << "Watchdog active: " << name;
 }
 
 // static
