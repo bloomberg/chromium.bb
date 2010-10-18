@@ -6,6 +6,8 @@
 
 #include "remoting/client/chromoting_view.h"
 #include "remoting/client/host_connection.h"
+// TODO(hclam): Should not include internal.pb.h.
+#include "remoting/proto/internal.pb.h"
 
 namespace remoting {
 

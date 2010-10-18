@@ -9,7 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "gfx/rect.h"
 #include "media/base/video_frame.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
+#include "remoting/proto/event.pb.h"
 
 namespace remoting {
 

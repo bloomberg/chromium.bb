@@ -8,6 +8,8 @@
 #include "app/keyboard_codes.h"
 #include "base/stl_util-inl.h"
 #include "remoting/host/capturer.h"
+// TODO(hclam): Should not include internal.pb.h here.
+#include "remoting/proto/internal.pb.h"
 
 namespace remoting {
 

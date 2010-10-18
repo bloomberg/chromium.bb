@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
+#include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/chromoting_connection.h"
 #include "remoting/protocol/stream_reader.h"
 #include "remoting/protocol/stream_writer.h"

@@ -7,7 +7,8 @@
 
 #include "google/protobuf/message_lite.h"
 #include "net/base/io_buffer.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
+// TODO(hclam): Should not include internal.pb.h.
+#include "remoting/proto/internal.pb.h"
 
 // This file defines utility methods used for encoding and decoding the protocol
 // used in Chromoting.

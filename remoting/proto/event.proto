@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Protocol for communication between chromoting client and host.
+// Protocol for event messages.
 
 syntax = "proto2";
 
@@ -145,18 +145,6 @@ message RectangleUpdatePacket {
   optional bytes encoded_rect = 4;
 }
 
-// Defines the message that is sent from the host to the client.
-// Only one of these messages should be present.
-// NEXT ID: 5
-message ChromotingHostMessage {
-  optional InitClientMessage init_client= 1;
-  optional BeginUpdateStreamMessage begin_update_stream = 2;
-  optional EndUpdateStreamMessage end_update_stream = 3;
-  optional UpdateStreamPacketMessage update_stream_packet = 4;
-
-  optional RectangleUpdatePacket rectangle_update = 5;
-}
-
 // Defines a keyboard event.
 // NEXT ID: 3
 message KeyEvent {
@@ -211,16 +199,4 @@ message MouseDownEvent {
 // NEXT ID: 2
 message MouseUpEvent {
   required MouseButton button = 1;
-}
-
-// Defines the message that is sent from the client to the host.
-// Only one of the optional messages should be present.
-// NEXT ID: 7
-message ChromotingClientMessage {
-  optional KeyEvent key_event = 1;
-  optional MouseSetPositionEvent mouse_set_position_event = 2;
-  optional MouseMoveEvent mouse_move_event = 3;
-  optional MouseWheelEvent mouse_wheel_event = 4;
-  optional MouseDownEvent mouse_down_event = 5;
-  optional MouseUpEvent mouse_up_event = 6;
 }

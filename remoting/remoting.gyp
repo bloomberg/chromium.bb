@@ -117,14 +117,14 @@
         '../third_party/libvpx/libvpx.gyp:libvpx_include',
         '../third_party/zlib/zlib.gyp:zlib',
         'chromoting_jingle_glue',
-        'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
-        'base/protocol/chromotocol.gyp:trace_proto_lib',
+        'proto/chromotocol.gyp:chromotocol_proto_lib',
+        'proto/trace.gyp:trace_proto_lib',
         # TODO(hclam): Enable VP8 in the build.
         #'third_party/on2/on2.gyp:vp8',
       ],
       'export_dependent_settings': [
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        'base/protocol/chromotocol.gyp:chromotocol_proto_lib',
+        'proto/chromotocol.gyp:chromotocol_proto_lib',
       ],
       # This target needs a hard dependency because dependent targets
       # depend on chromotocol_proto_lib for headers.

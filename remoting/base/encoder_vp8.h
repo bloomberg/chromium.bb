@@ -6,7 +6,6 @@
 #define REMOTING_BASE_ENCODER_VP8_H_
 
 #include "remoting/base/encoder.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
 
 typedef struct vpx_codec_ctx vpx_codec_ctx_t;
 typedef struct vpx_image vpx_image_t;

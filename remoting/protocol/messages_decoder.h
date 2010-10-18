@@ -11,7 +11,7 @@
 #include "base/ref_counted.h"
 #include "google/protobuf/message_lite.h"
 #include "net/base/io_buffer.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
+#include "remoting/proto/internal.pb.h"
 
 namespace remoting {
 

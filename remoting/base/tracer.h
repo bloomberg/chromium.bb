@@ -59,7 +59,7 @@
 #include "base/task.h"
 #include "base/scoped_ptr.h"
 #include "base/thread_local.h"
-#include "remoting/base/protocol/trace.pb.h"
+#include "remoting/proto/trace.pb.h"
 
 namespace remoting {
 

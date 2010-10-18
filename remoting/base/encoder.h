@@ -8,7 +8,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "media/base/data_buffer.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
+// TODO(hclam): Should not depend on internal.pb.h.
+#include "remoting/proto/internal.pb.h"
 
 namespace media {
   class DataBuffer;

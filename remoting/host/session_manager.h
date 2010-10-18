@@ -13,8 +13,9 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "remoting/base/encoder.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
 #include "remoting/host/capturer.h"
+// TODO(hclam): This class should not know the internal protobuf types.
+#include "remoting/proto/internal.pb.h"
 
 namespace media {
 

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/task.h"
-#include "remoting/base/protocol/chromotocol.pb.h"
+#include "remoting/proto/event.pb.h"
 
 namespace remoting {
 
