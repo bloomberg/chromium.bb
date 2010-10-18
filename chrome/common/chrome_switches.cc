@@ -47,18 +47,11 @@ const char kApp[]                           = "app";
 // according to its configuration.
 const char kAppId[]                         = "app-id";
 
-// Lacks meaning with out kApp. Causes the specified app to be launched in an
-// panel window.
-const char kAppLaunchAsPanel[]              = "app-launch-as-panel";
-
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 
 // Disable throbber for extension apps.
 const char kAppsNoThrob[]                   = "apps-no-throb";
-
-// Whether to display the "Debug" link for app launch behavior.
-const char kAppsDebug[]      = "apps-debug";
 
 // Whitelist of servers that Negotiate will generate delegated Kerberos tickets
 // for.
@@ -304,20 +297,11 @@ const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 // Disable syncing of extensions.
 const char kDisableSyncExtensions[]         = "disable-sync-extensions";
 
-// Disable syncing of passwords.
-const char kDisableSyncPasswords[]          = "disable-sync-passwords";
-
 // Disable syncing of preferences.
 const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 
-// Disable syncing of sessions.
-const char kDisableSyncSessions[]           = "disable-sync-sessions";
-
 // Disable syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
-
-// Disable syncing of typed urls.
-const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
 
 // TabCloseableStateWatcher disallows closing of tabs and browsers under certain
 // situations on ChromeOS.  Some tests expect tabs or browsers to close, so we
@@ -500,29 +484,14 @@ const char kEnableStatsTable[]              = "enable-stats-table";
 // Enable syncing browser data to a Google Account.
 const char kEnableSync[]                    = "enable-sync";
 
-// Enable syncing browser apps.
-const char kEnableSyncApps[]                = "enable-sync-apps";
-
 // Enable syncing browser autofill.
 const char kEnableSyncAutofill[]            = "enable-sync-autofill";
-
-// Enable syncing browser bookmarks.
-const char kEnableSyncBookmarks[]           = "enable-sync-bookmarks";
-
-// Enable syncing browser extensions.
-const char kEnableSyncExtensions[]          = "enable-sync-extensions";
 
 // Enable syncing browser passwords.
 const char kEnableSyncPasswords[]           = "enable-sync-passwords";
 
-// Enable syncing browser preferences.
-const char kEnableSyncPreferences[]         = "enable-sync-preferences";
-
 // Enable syncing browser sessions.
 const char kEnableSyncSessions[]            = "enable-sync-sessions";
-
-// Enable syncing browser themes.
-const char kEnableSyncThemes[]              = "enable-sync-themes";
 
 // Enable syncing browser typed urls.
 const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
