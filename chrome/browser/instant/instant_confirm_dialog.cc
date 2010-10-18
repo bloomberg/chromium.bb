@@ -24,7 +24,6 @@ void ShowInstantConfirmDialogIfNecessary(gfx::NativeWindow parent,
     return;
   }
 
-  prefs->SetBoolean(prefs::kInstantConfirmDialogShown, true);
   ShowInstantConfirmDialog(parent, profile);
 }
 

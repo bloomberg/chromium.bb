@@ -49,8 +49,10 @@ bool InstantConfirmView::Accept(bool window_closing) {
 
 bool InstantConfirmView::Accept() {
   PrefService* prefs = profile_->GetPrefs();
-  if (prefs)
+  if (prefs) {
     prefs->SetBoolean(prefs::kInstantEnabled, true);
+    prefs->SetBoolean(prefs::kInstantConfirmDialogShown, true);
+  }
   return true;
 }
 

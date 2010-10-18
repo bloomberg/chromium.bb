@@ -22,7 +22,9 @@ void ShowInstantConfirmDialogIfNecessary(gfx::NativeWindow parent,
                                          Profile* profile);
 
 // Shows the platform specific dialog to confirm if the user really wants to
-// enable opt-in.
+// enable instant. If the user accepts the dialog implementations must set
+// both |prefs::kInstantEnabled| and |prefs::kInstantConfirmDialogShown| to
+// true.
 void ShowInstantConfirmDialog(gfx::NativeWindow parent,
                               Profile* profile);
 
