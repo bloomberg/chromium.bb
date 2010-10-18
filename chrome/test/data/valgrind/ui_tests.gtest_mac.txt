@@ -62,6 +62,9 @@ NPAPIVisiblePluginTester.OpenPopupWindowWithPlugin
 NPAPIVisiblePluginTester.PluginConvertPointTest
 NPAPIVisiblePluginTester.SelfDeletePluginInvokeInSynchronousPaint
 LayoutPluginTester.SelfDeletePluginGetUrl
+LayoutPluginTester.SelfDeletePluginInvoke
+LayoutPluginTester.NPObjectReleasedOnDestruction
+LayoutPluginTester.NPObjectSetException
 LayoutPluginTester.UnloadNoCrash
 
 # Possible timing related failure triggered only on mac valgrind bots.
