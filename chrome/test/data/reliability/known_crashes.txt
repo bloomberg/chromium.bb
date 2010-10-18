@@ -111,3 +111,6 @@ PREFIX: pluginprocesshost::replytorenderer___pluginprocesshost::onchannelcreated
 
 # 59345
 PREFIX: windowdragresponsetask::run___messageloop::runtask
+
+# 31936
+PREFIX: webcore::uniscribehelpertextrun::uniscribehelpertextrun___webcore::font::floatwidthforcomplextext___webcore::font::floatwidth___webcore::renderimage::setimagesizeforalttext
