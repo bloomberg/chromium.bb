@@ -165,23 +165,28 @@ var OptionsPage = options.OptionsPage;
   };
 
   // Set the checked state for the sslCheckRevocation checkbox.
-  AdvancedOptions.SetCheckRevocationCheckboxState = function(checked) {
+  AdvancedOptions.SetCheckRevocationCheckboxState = function(checked,
+      disabled) {
     $('sslCheckRevocation').checked = checked;
+    $('sslCheckRevocation').disabled = disabled;
   };
 
   // Set the checked state for the sslUseSSL2 checkbox.
-  AdvancedOptions.SetUseSSL2CheckboxState = function(checked) {
+  AdvancedOptions.SetUseSSL2CheckboxState = function(checked, disabled) {
     $('sslUseSSL2').checked = checked;
+    $('sslUseSSL2').disabled = disabled;
   };
 
   // Set the checked state for the sslUseSSL3 checkbox.
-  AdvancedOptions.SetUseSSL3CheckboxState = function(checked) {
+  AdvancedOptions.SetUseSSL3CheckboxState = function(checked, disabled) {
     $('sslUseSSL3').checked = checked;
+    $('sslUseSSL3').disabled = disabled;
   };
 
   // Set the checked state for the sslUseTLS1 checkbox.
-  AdvancedOptions.SetUseTLS1CheckboxState = function(checked) {
+  AdvancedOptions.SetUseTLS1CheckboxState = function(checked, disabled) {
     $('sslUseTLS1').checked = checked;
+    $('sslUseTLS1').disabled = disabled;
   };
 
   // Export

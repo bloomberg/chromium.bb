@@ -421,6 +421,7 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
   bool useSSL2Setting = false;
   bool useSSL3Setting = false;
   bool useTLS1Setting = false;
+  bool disabled = false;
 
   net::SSLConfig config;
   if (net::SSLConfigServiceWin::GetSSLConfigNow(&config)) {
@@ -428,19 +429,25 @@ void AdvancedOptionsHandler::SetupSSLConfigSettings() {
     useSSL2Setting = config.ssl2_enabled;
     useSSL3Setting = config.ssl3_enabled;
     useTLS1Setting = config.tls1_enabled;
+  } else {
+    disabled = true;
   }
+  FundamentalValue disabledValue(disabled);
   FundamentalValue checkRevocationValue(checkRevocationSetting);
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetCheckRevocationCheckboxState",
-      checkRevocationValue);
+      checkRevocationValue, disabledValue);
   FundamentalValue useSSL2Value(useSSL2Setting);
   dom_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetUseSSL2CheckboxStatechecked", useSSL2Value);
+      L"options.AdvancedOptions.SetUseSSL2CheckboxState",
+      useSSL2Value, disabledValue);
   FundamentalValue useSSL3Value(useSSL3Setting);
   dom_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetUseSSL3CheckboxStatechecked", useSSL3Value);
+      L"options.AdvancedOptions.SetUseSSL3CheckboxState",
+      useSSL3Value, disabledValue);
   FundamentalValue useTLS1Value(useTLS1Setting);
   dom_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetUseTLS1CheckboxStatechecked", useTLS1Value);
+      L"options.AdvancedOptions.SetUseTLS1CheckboxState",
+      useTLS1Value, disabledValue);
 }
 #endif
