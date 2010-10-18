@@ -29,9 +29,6 @@ const int kBubbleHorizontalMargin = 5;  // Space on either sides of controls.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                   delegate:(SpeechInputBubbleDelegate*)delegate
               anchoredAt:(NSPoint)anchoredAt {
-  anchoredAt.x -= info_bubble::kBubbleArrowXOffset +
-                  info_bubble::kBubbleCornerRadius +
-                  info_bubble::kBubbleArrowWidth / 2.0;
   anchoredAt.y += info_bubble::kBubbleArrowHeight / 2.0;
   if ((self = [super initWithWindowNibPath:@"SpeechInputBubble"
                               parentWindow:parentWindow

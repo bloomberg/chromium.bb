@@ -60,18 +60,21 @@ SpeechInputBubbleBase::SpeechInputBubbleBase()
   // The sprite image consists of all the animation frames put together in one
   // horizontal/wide image. Each animation frame is square in shape within the
   // sprite.
-  int frame_size = spinner_->height();
-  SkRect dst_rect(SkRect::MakeWH(SkIntToScalar(frame_size),
-                                 SkIntToScalar(frame_size)));
-  for (SkIRect src_rect(SkIRect::MakeWH(frame_size, frame_size));
+  const int kFrameSize = spinner_->height();
+  for (SkIRect src_rect(SkIRect::MakeWH(kFrameSize, kFrameSize));
        src_rect.fLeft < spinner_->width();
-       src_rect.offset(frame_size, 0)) {
+       src_rect.offset(kFrameSize, 0)) {
     SkBitmap frame;
-    frame.setConfig(SkBitmap::kARGB_8888_Config, frame_size, frame_size);
-    frame.allocPixels();
-    SkCanvas canvas(frame);
-    canvas.drawBitmapRect(*spinner_, &src_rect, dst_rect);
-    animation_frames_.push_back(frame);
+    spinner_->extractSubset(&frame, src_rect);
+
+    // The bitmap created by extractSubset just points to the same pixels as
+    // the original and adjusts rowBytes accordingly. However that doesn't
+    // render properly and gets vertically squished in Linux due to a bug in
+    // Skia. Until that gets fixed we work around by taking a real copy of it
+    // below as the copied bitmap has the correct rowBytes and renders fine.
+    SkBitmap frame_copy;
+    frame.copyTo(&frame_copy, SkBitmap::kARGB_8888_Config);
+    animation_frames_.push_back(frame_copy);
   }
 }
 
