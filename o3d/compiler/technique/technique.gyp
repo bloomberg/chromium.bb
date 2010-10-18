@@ -42,6 +42,7 @@
             'org.antlr.Tool',
             '<(RULE_INPUT_PATH)',
             '-fo', '<(technique_out_dir)',
+            '-Xconversiontimeout', '30000',
           ],
         },
       ],
