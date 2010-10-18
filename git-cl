@@ -8,6 +8,8 @@ repo="$base_dir/git_cl_repo"
 url="http://git.chromium.org/git/git-cl.git"
 cur_url=$(git config -f "$repo/.git/config" remote.origin.url)
 
+"$base_dir"/update_depot_tools
+
 if [ -e "$repo" -a "$cur_url" != "$url" ]; then
   # Always override "origin"
   (cd "$repo"; git remote set-url origin $url)
