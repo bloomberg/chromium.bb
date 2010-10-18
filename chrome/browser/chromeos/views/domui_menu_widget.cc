@@ -185,8 +185,12 @@ class DOMViewCache : NotificationObserver {
     }
     cache_ = new DOMView();
     cache_->Init(current_profile_, NULL);
+    /**
+     * Tentative workaround for the failing tests that expects
+     * page loads.
     cache_->LoadURL(
         GURL(StringPrintf("chrome://%s", chrome::kChromeUIMenu)));
+     */
     CheckClassInvariant();
   }
 
