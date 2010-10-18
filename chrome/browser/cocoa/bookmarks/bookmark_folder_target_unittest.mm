@@ -43,7 +43,7 @@ class BookmarkFolderTargetTest : public CocoaTest {
 
   BrowserTestHelper helper_;
   const BookmarkNode* bmbNode_;
-  base::ScopedNSAutoreleasePool pool_;
+  base::mac::ScopedNSAutoreleasePool pool_;
 };
 
 TEST_F(BookmarkFolderTargetTest, StartWithNothing) {

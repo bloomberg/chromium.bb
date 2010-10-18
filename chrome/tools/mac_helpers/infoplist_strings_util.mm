@@ -13,7 +13,7 @@
 
 #include "base/data_pack.h"
 #include "base/file_path.h"
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -134,7 +134,7 @@ const char* kAppType_Helper = "helper";  // Helper app
 }  // namespace
 
 int main(int argc, char* const argv[]) {
-  base::ScopedNSAutoreleasePool autorelease_pool;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   const char* version_file_path = NULL;
   const char* grit_output_dir = NULL;

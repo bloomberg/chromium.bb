@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/process_util.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_suite.h"
@@ -63,7 +63,7 @@ class OutOfProcTestRunner : public tests::TestRunner {
   bool RunTest(const std::string& test_name) {
     // Some of the below method calls will leak objects if there is no
     // autorelease pool in place.
-    base::ScopedNSAutoreleasePool pool;
+    base::mac::ScopedNSAutoreleasePool pool;
 
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
     CommandLine new_cmd_line(cmd_line->GetProgram());

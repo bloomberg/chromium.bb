@@ -7,9 +7,9 @@
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/stats_table.h"
 #include "base/process_util.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
@@ -85,7 +85,7 @@ ChromeTestSuite::~ChromeTestSuite() {
 }
 
 void ChromeTestSuite::Initialize() {
-  base::ScopedNSAutoreleasePool autorelease_pool;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   base::TestSuite::Initialize();
 

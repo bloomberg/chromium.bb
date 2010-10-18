@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/callback.h"
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -41,7 +41,7 @@ class CommandBufferServiceTest : public testing::Test {
     return command_buffer_->GetState().error;
   }
 
-  base::ScopedNSAutoreleasePool autorelease_pool_;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool_;
   scoped_ptr<CommandBufferService> command_buffer_;
 };
 

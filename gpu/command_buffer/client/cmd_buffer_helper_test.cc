@@ -5,8 +5,8 @@
 // Tests for the Command Buffer Helper.
 
 #include "base/callback.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -152,7 +152,7 @@ class CommandBufferHelperTest : public testing::Test {
 
   CommandBufferOffset get_helper_put() { return helper_->put_; }
 
-  base::ScopedNSAutoreleasePool autorelease_pool_;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool_;
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;

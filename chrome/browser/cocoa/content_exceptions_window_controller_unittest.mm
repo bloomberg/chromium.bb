@@ -17,7 +17,7 @@ namespace {
 
 void ProcessEvents() {
   for (;;) {
-    base::ScopedNSAutoreleasePool pool;
+    base::mac::ScopedNSAutoreleasePool pool;
     NSEvent* next_event = [NSApp nextEventMatchingMask:NSAnyEventMask
                                              untilDate:nil
                                                 inMode:NSDefaultRunLoopMode

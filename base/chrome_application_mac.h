@@ -20,7 +20,7 @@
 @interface CrApplication : NSApplication {
  @private
   BOOL handlingSendEvent_;
- // Array of objects implementing the CrApplicationEventHookProtocol
+  // Array of objects implementing the CrApplicationEventHookProtocol
   scoped_nsobject<NSMutableArray> eventHooks_;
 }
 @property(readonly,

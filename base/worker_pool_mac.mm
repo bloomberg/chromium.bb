@@ -5,8 +5,8 @@
 #include "base/worker_pool_mac.h"
 
 #include "base/logging.h"
+#import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
-#import "base/scoped_nsautorelease_pool.h"
 #include "base/scoped_ptr.h"
 #import "base/singleton_objc.h"
 #include "base/task.h"
@@ -83,7 +83,7 @@ size_t outstanding_ = 0;           // Operations posted but not completed.
     ++running_;
   }
 
-  base::ScopedNSAutoreleasePool autoreleasePool;
+  base::mac::ScopedNSAutoreleasePool autoreleasePool;
 
   @try {
     task_->Run();
@@ -117,7 +117,7 @@ size_t outstanding_ = 0;           // Operations posted but not completed.
 
 bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
                           Task* task, bool task_is_slow) {
-  base::ScopedNSAutoreleasePool autorelease_pool;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   // Ignore |task_is_slow|, it doesn't map directly to any tunable aspect of
   // an NSOperation.
@@ -157,7 +157,7 @@ bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
     ++outstanding_;
     running_ops = running_;
     if (last_check_.is_null() || now - last_check_ > kCheckPeriod) {
-      base::ScopedNSAutoreleasePool autoreleasePool;
+      base::mac::ScopedNSAutoreleasePool autoreleasePool;
       std::vector<id> ops;
       for (id op in [operation_queue operations]) {
         // DO NOT RETAIN.

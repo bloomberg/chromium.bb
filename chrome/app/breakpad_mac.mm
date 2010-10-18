@@ -15,8 +15,8 @@
 #import "base/logging.h"
 #include "base/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
-#import "base/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/child_process_logging.h"
@@ -46,7 +46,7 @@ void DestructCrashReporter() {
 // Only called for a branded build of Chrome.app.
 void InitCrashReporter() {
   DCHECK(gBreakpadRef == NULL);
-  base::ScopedNSAutoreleasePool autorelease_pool;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   // Check whether crash reporting should be enabled. If enterprise
   // configuration management controls crash reporting, it takes precedence.

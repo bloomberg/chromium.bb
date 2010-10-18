@@ -7,7 +7,7 @@
 #include "gpu/command_buffer/client/ring_buffer.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/mocks.h"
@@ -67,7 +67,7 @@ class BaseRingBufferTest : public testing::Test {
     return command_buffer_->GetState().token;
   }
 
-  base::ScopedNSAutoreleasePool autorelease_pool_;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool_;
   MessageLoop message_loop_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;

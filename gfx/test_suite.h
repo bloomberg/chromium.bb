@@ -16,7 +16,7 @@
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
 
 class GfxTestSuite : public base::TestSuite {
@@ -27,7 +27,7 @@ class GfxTestSuite : public base::TestSuite {
  protected:
 
   virtual void Initialize() {
-    base::ScopedNSAutoreleasePool autorelease_pool;
+    base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
     TestSuite::Initialize();
 

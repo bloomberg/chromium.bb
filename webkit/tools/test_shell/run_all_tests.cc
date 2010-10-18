@@ -15,13 +15,9 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#include "base/path_service.h"
-#endif
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -30,6 +26,11 @@
 #include "webkit/tools/test_shell/test_shell_test.h"
 #include "webkit/tools/test_shell/test_shell_webkit_init.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#include "base/path_service.h"
+#endif
 
 const char* const TestShellTest::kJavascriptDelayExitScript =
   "<script>"
@@ -41,7 +42,7 @@ const char* const TestShellTest::kJavascriptDelayExitScript =
   "</script>";
 
 int main(int argc, char* argv[]) {
-  base::ScopedNSAutoreleasePool autorelease_pool;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
   base::EnableInProcessStackDumping();
   base::EnableTerminationOnHeapCorruption();
   // Some unittests may use base::Singleton<>, thus we need to instanciate

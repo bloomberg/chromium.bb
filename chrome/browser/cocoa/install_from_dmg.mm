@@ -19,7 +19,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #import "base/mac_util.h"
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/cocoa/authorization_util.h"
 #include "chrome/browser/cocoa/scoped_authorizationref.h"
 #import "chrome/browser/cocoa/keystone_glue.h"
@@ -370,7 +370,7 @@ void ShowErrorDialog() {
 }  // namespace
 
 bool MaybeInstallFromDiskImage() {
-  base::ScopedNSAutoreleasePool autorelease_pool;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
   if (!IsAppRunningFromReadOnlyDiskImage()) {
     return false;

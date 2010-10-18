@@ -10,7 +10,7 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui/ui_test_suite.h"
 
@@ -30,7 +30,7 @@ class PyUITestSuiteBase : public UITestSuite {
   void Initialize(const FilePath& browser_dir);
 
  private:
-  base::ScopedNSAutoreleasePool pool_;
+  base::mac::ScopedNSAutoreleasePool pool_;
 };
 
 // The primary class that interfaces with Automation Proxy.

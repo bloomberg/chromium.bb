@@ -7,7 +7,7 @@
 #include "chrome/browser/dom_ui/options/advanced_options_utils.h"
 
 #include "base/logging.h"
-#include "base/scoped_aedesc.h"
+#include "base/mac/scoped_aedesc.h"
 
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
       TabContents* tab_contents) {
@@ -15,7 +15,7 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
       @"/System/Library/PreferencePanes/Network.prefPane"]];
 
   const char* proxyPrefCommand = "Proxies";
-  scoped_aedesc<> openParams;
+  base::mac::ScopedAEDesc<> openParams;
   OSStatus status = AECreateDesc('ptru',
                                  proxyPrefCommand,
                                  strlen(proxyPrefCommand),

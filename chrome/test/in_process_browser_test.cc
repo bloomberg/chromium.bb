@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "chrome/browser/browser.h"
@@ -298,7 +298,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // deallocation via an autorelease pool (such as browser window closure and
   // browser shutdown). To avoid this, the following pool is recycled after each
   // time code is directly executed.
-  base::ScopedNSAutoreleasePool pool;
+  base::mac::ScopedNSAutoreleasePool pool;
 
   // Pump startup related events.
   MessageLoopForUI::current()->RunAllPending();

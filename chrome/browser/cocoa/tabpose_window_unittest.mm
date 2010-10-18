@@ -43,7 +43,7 @@ TEST_F(TabposeWindowTest, TestShow) {
   for (int i = 0; i < 3; ++i)
     AppendTabToStrip();
 
-  base::ScopedNSAutoreleasePool pool;
+  base::mac::ScopedNSAutoreleasePool pool;
   TabposeWindow* window =
       [TabposeWindow openTabposeFor:parent
                                rect:NSMakeRect(10, 20, 250, 160)
@@ -65,7 +65,7 @@ TEST_F(TabposeWindowTest, TestModelObserver) {
   for (int i = 0; i < 3; ++i)
     AppendTabToStrip();
 
-  base::ScopedNSAutoreleasePool pool;
+  base::mac::ScopedNSAutoreleasePool pool;
   TabposeWindow* window =
       [TabposeWindow openTabposeFor:parent
                                rect:NSMakeRect(10, 20, 250, 160)

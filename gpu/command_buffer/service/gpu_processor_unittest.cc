@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
@@ -77,7 +77,7 @@ class GPUProcessorTest : public testing::Test {
     return command_buffer_->GetState().error;
   }
 
-  base::ScopedNSAutoreleasePool autorelease_pool_;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool_;
   MessageLoop message_loop;
   scoped_ptr<MockCommandBuffer> command_buffer_;
   scoped_ptr<base::SharedMemory> shared_memory_;

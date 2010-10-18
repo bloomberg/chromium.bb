@@ -9,8 +9,8 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
+#include "app/mac/scoped_nsdisable_screen_updates.h"
 #include "base/nsimage_cache_mac.h"
-#include "base/scoped_nsdisable_screen_updates.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
@@ -456,7 +456,7 @@
 // going away) will again call to close the window when it's finally ready.
 - (BOOL)windowShouldClose:(id)sender {
   // Disable updates while closing all tabs to avoid flickering.
-  base::ScopedNSDisableScreenUpdates disabler;
+  app::mac::ScopedNSDisableScreenUpdates disabler;
   // Give beforeunload handlers the chance to cancel the close before we hide
   // the window below.
   if (!browser_->ShouldCloseWindow())
@@ -1174,7 +1174,7 @@
 
 - (TabWindowController*)detachTabToNewWindow:(TabView*)tabView {
   // Disable screen updates so that this appears as a single visual change.
-  base::ScopedNSDisableScreenUpdates disabler;
+  app::mac::ScopedNSDisableScreenUpdates disabler;
 
   // Fetch the tab contents for the tab being dragged.
   int index = [tabStripController_ modelIndexForTabView:tabView];

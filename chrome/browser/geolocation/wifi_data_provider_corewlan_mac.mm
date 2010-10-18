@@ -9,7 +9,7 @@
 #include <dlfcn.h>
 #import <Foundation/Foundation.h>
 
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 
@@ -66,7 +66,7 @@ bool CoreWlanApi::Init() {
   // auto release pool. It's simplest to do this as an automatic variable in
   // each method that needs it, to ensure the scoping is correct and does not
   // interfere with any other code using autorelease pools on the thread.
-  base::ScopedNSAutoreleasePool auto_pool;
+  base::mac::ScopedNSAutoreleasePool auto_pool;
   bundle_.reset([[NSBundle alloc]
       initWithPath:@"/System/Library/Frameworks/CoreWLAN.framework"]);
   if (!bundle_) {
@@ -98,7 +98,7 @@ bool CoreWlanApi::Init() {
 }
 
 bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
-  base::ScopedNSAutoreleasePool auto_pool;
+  base::mac::ScopedNSAutoreleasePool auto_pool;
   // Initialize the scan parameters with scan key merging disabled, so we get
   // every AP listed in the scan without any SSID de-duping logic.
   NSDictionary* params =

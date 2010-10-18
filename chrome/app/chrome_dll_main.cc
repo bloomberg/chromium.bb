@@ -39,12 +39,12 @@
 #include "base/command_line.h"
 #include "base/debug_util.h"
 #include "base/i18n/icu_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -484,7 +484,7 @@ int ChromeMain(int argc, char** argv) {
   // event loop, but we don't want to leave them hanging around until the
   // app quits. Each "main" needs to flush this pool right before it goes into
   // its main event loop to get rid of the cruft.
-  base::ScopedNSAutoreleasePool autorelease_pool;
+  base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesLoader::Get()->SaveChromeMainStats();

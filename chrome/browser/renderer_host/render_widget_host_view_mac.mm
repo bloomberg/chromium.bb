@@ -12,8 +12,8 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
+#import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
-#import "base/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -205,7 +205,7 @@ void DisablePasswordInput() {
 - (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime {
   // There is no autorelease pool when this method is called because it will be
   // called from a background thread.
-  base::ScopedNSAutoreleasePool pool;
+  base::mac::ScopedNSAutoreleasePool pool;
 
   if (![self surfaceWasSwapped])
     return kCVReturnSuccess;

@@ -23,8 +23,8 @@
 #include "base/environment.h"
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/nss_util.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
 #include "remoting/base/encoder_verbatim.h"
 #include "remoting/base/encoder_zlib.h"
@@ -65,7 +65,7 @@ const std::string kVerbatimSwitchName = "verbatim";
 
 int main(int argc, char** argv) {
   // Needed for the Mac, so we don't leak objects when threads are created.
-  base::ScopedNSAutoreleasePool pool;
+  base::mac::ScopedNSAutoreleasePool pool;
 
   CommandLine::Init(argc, argv);
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();

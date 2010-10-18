@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ extern "C" {
 #include "base/mac_util.h"
 #include "base/rand_util_c.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
@@ -187,7 +187,7 @@ bool QuoteStringForRegex(const std::string& str_utf8, std::string* dst) {
 // This function is tested on the following OS versions:
 //     10.5.6, 10.6.0
 void SandboxWarmup() {
-  base::ScopedNSAutoreleasePool scoped_pool;
+  base::mac::ScopedNSAutoreleasePool scoped_pool;
 
   { // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
     base::mac::ScopedCFTypeRef<CGColorSpaceRef> rgb_colorspace(

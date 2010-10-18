@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #import "chrome/browser/cocoa/framed_browser_window.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/themes/browser_theme_provider.h"
@@ -46,7 +46,7 @@ static BOOL gCanGetCornerRadius = NO;
   // others. If they all fail, we will lose window frame theming and
   // roll overs for our close widgets, but things should still function
   // correctly.
-  base::ScopedNSAutoreleasePool pool;
+  base::mac::ScopedNSAutoreleasePool pool;
   Class grayFrameClass = NSClassFromString(@"NSGrayFrame");
   DCHECK(grayFrameClass);
   if (!grayFrameClass) return;

@@ -10,6 +10,7 @@
 #include "app/hi_res_timer_manager.h"
 #include "app/system_monitor.h"
 #include "base/command_line.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/field_trial.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -17,7 +18,6 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/string_util.h"
 #include "base/trace_event.h"
 #include "chrome/common/chrome_constants.h"
@@ -180,7 +180,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN("RendererMain", 0, "");
 
   const CommandLine& parsed_command_line = parameters.command_line_;
-  base::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
+  base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
 
 #if defined(OS_MACOSX)
   // TODO(viettrungluu): Code taken from browser_main.cc.

@@ -11,7 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
-#include "base/scoped_aedesc.h"
+#include "base/mac/scoped_aedesc.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -1520,7 +1520,7 @@ const int kDisabledIndex = 1;
       @"/System/Library/PreferencePanes/Network.prefPane"]];
 
   const char* proxyPrefCommand = "Proxies";
-  scoped_aedesc<> openParams;
+  base::mac::ScopedAEDesc<> openParams;
   OSStatus status = AECreateDesc('ptru',
                                  proxyPrefCommand,
                                  strlen(proxyPrefCommand),

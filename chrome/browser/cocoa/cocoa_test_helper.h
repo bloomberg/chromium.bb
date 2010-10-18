@@ -12,7 +12,7 @@
 #include "base/debug_util.h"
 #include "base/mac_util.h"
 #include "base/path_service.h"
-#import "base/scoped_nsautorelease_pool.h"
+#import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
 #include "chrome/common/chrome_constants.h"
 #include "testing/platform_test.h"
@@ -90,7 +90,7 @@ class CocoaTest : public PlatformTest {
   std::set<NSWindow*> WindowsLeft();
 
   bool called_tear_down_;
-  base::ScopedNSAutoreleasePool pool_;
+  base::mac::ScopedNSAutoreleasePool pool_;
 
   // Windows which existed at the beginning of the test.
   std::set<NSWindow*> initial_windows_;

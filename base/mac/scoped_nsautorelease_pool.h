@@ -1,9 +1,9 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SCOPED_NSAUTORELEASE_POOL_H_
-#define BASE_SCOPED_NSAUTORELEASE_POOL_H_
+#ifndef BASE_MAC_SCOPED_NSAUTORELEASE_POOL_H_
+#define BASE_MAC_SCOPED_NSAUTORELEASE_POOL_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -17,6 +17,7 @@ class NSAutoreleasePool;
 #endif  // OS_MACOSX
 
 namespace base {
+namespace mac {
 
 // On the Mac, ScopedNSAutoreleasePool allocates an NSAutoreleasePool when
 // instantiated and sends it a -drain message when destroyed.  This allows an
@@ -48,6 +49,7 @@ class ScopedNSAutoreleasePool {
   DISALLOW_COPY_AND_ASSIGN(ScopedNSAutoreleasePool);
 };
 
+}  // namespace mac
 }  // namespace base
 
-#endif  // BASE_SCOPED_NSAUTORELEASE_POOL_H_
+#endif  // BASE_MAC_SCOPED_NSAUTORELEASE_POOL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -71,7 +71,7 @@ class KeywordEditorCocoaControllerTest : public CocoaTest {
 
   // Helper to count the keyword editors.
   NSUInteger CountKeywordEditors() {
-    base::ScopedNSAutoreleasePool pool;
+    base::mac::ScopedNSAutoreleasePool pool;
     NSUInteger count = 0;
     for (NSWindow* window in [NSApp windows]) {
       id controller = [window windowController];
@@ -108,7 +108,7 @@ TEST_F(KeywordEditorCocoaControllerTest, ShowKeywordEditor) {
   // The window unwinds using -autorelease, so we need to introduce an
   // autorelease pool to really test whether it went away or not.
   {
-    base::ScopedNSAutoreleasePool pool;
+    base::mac::ScopedNSAutoreleasePool pool;
 
     // +showKeywordEditor: creates a new controller.
     [KeywordEditorCocoaController showKeywordEditor:profile];

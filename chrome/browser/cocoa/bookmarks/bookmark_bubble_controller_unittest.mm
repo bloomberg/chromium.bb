@@ -127,7 +127,7 @@ TEST_F(BookmarkBubbleControllerTest, TestClosingParentWindow) {
   EXPECT_TRUE(controller);
   NSWindow* window = [controller window];
   EXPECT_TRUE(window);
-  base::ScopedNSAutoreleasePool pool;
+  base::mac::ScopedNSAutoreleasePool pool;
   [test_window() performClose:NSApp];
 }
 

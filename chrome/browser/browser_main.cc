@@ -16,9 +16,9 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
@@ -919,7 +919,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // TODO(viettrungluu): put the remainder into BrowserMainParts
   const CommandLine& parsed_command_line = parameters.command_line_;
-  base::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
+  base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
 
   FilePath user_data_dir;
 #if defined(OS_WIN)

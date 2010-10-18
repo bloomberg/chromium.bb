@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
-#include "base/scoped_aedesc.h"
+#include "base/mac/scoped_aedesc.h"
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -43,7 +43,7 @@ void OpenItem(const FilePath& full_path) {
   OSErr status;
 
   // Create the target of this AppleEvent, the Finder.
-  scoped_aedesc<AEAddressDesc> address;
+  base::mac::ScopedAEDesc<AEAddressDesc> address;
   const OSType finderCreatorCode = 'MACS';
   status = AECreateDesc(typeApplSignature,  // type
                         &finderCreatorCode,  // data
@@ -55,7 +55,7 @@ void OpenItem(const FilePath& full_path) {
   }
 
   // Build the AppleEvent data structure that instructs Finder to open files.
-  scoped_aedesc<AppleEvent> theEvent;
+  base::mac::ScopedAEDesc<AppleEvent> theEvent;
   status = AECreateAppleEvent(kCoreEventClass,  // theAEEventClass
                               kAEOpenDocuments,  // theAEEventID
                               address,  // target
@@ -68,7 +68,7 @@ void OpenItem(const FilePath& full_path) {
   }
 
   // Create the list of files (only ever one) to open.
-  scoped_aedesc<AEDescList> fileList;
+  base::mac::ScopedAEDesc<AEDescList> fileList;
   status = AECreateList(NULL,  // factoringPtr
                         0,  // factoredSize
                         false,  // isRecord
@@ -107,7 +107,7 @@ void OpenItem(const FilePath& full_path) {
   }
 
   // Send the actual event.  Do not care about the reply.
-  scoped_aedesc<AppleEvent> reply;
+  base::mac::ScopedAEDesc<AppleEvent> reply;
   status = AESend(theEvent,  // theAppleEvent
                   reply.OutPointer(),  // reply
                   kAENoReply + kAEAlwaysInteract,  // sendMode

@@ -2,29 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SCOPED_AEDESC_H_
-#define BASE_SCOPED_AEDESC_H_
+#ifndef BASE_MAC_SCOPED_AEDESC_H_
+#define BASE_MAC_SCOPED_AEDESC_H_
 #pragma once
 
 #import <CoreServices/CoreServices.h>
 
 #include "base/basictypes.h"
 
-// The scoped_aedesc is used to scope AppleEvent descriptors.  On creation,
+namespace base {
+namespace mac {
+
+// The ScopedAEDesc is used to scope AppleEvent descriptors.  On creation,
 // it will store a NULL descriptor.  On destruction, it will dispose of the
 // descriptor.
 //
 // This class is parameterized for additional type safety checks.  You can use
 // the generic AEDesc type by not providing a template parameter:
-//  scoped_aedesc<> desc;
+//  ScopedAEDesc<> desc;
 template <typename AEDescType = AEDesc>
-class scoped_aedesc {
+class ScopedAEDesc {
  public:
-  scoped_aedesc() {
+  ScopedAEDesc() {
     AECreateDesc(typeNull, NULL, 0, &desc_);
   }
 
-  ~scoped_aedesc() {
+  ~ScopedAEDesc() {
     AEDisposeDesc(&desc_);
   }
 
@@ -41,7 +44,10 @@ class scoped_aedesc {
  private:
   AEDescType desc_;
 
-  DISALLOW_COPY_AND_ASSIGN(scoped_aedesc);
+  DISALLOW_COPY_AND_ASSIGN(ScopedAEDesc);
 };
 
-#endif  // BASE_SCOPED_AEDESC_H_
+}  // namespace mac
+}  // namespace base
+
+#endif  // BASE_MAC_SCOPED_AEDESC_H_
