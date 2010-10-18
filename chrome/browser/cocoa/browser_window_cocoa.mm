@@ -19,7 +19,7 @@
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/collected_cookies_mac.h"
 #import "chrome/browser/cocoa/content_settings_dialog_controller.h"
-#import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"

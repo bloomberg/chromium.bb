@@ -3297,7 +3297,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/download_shelf_controller.h</string>
+						<string key="minorKey">browser/cocoa/download/download_shelf_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

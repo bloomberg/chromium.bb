@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/download_item_button.h"
+#import "chrome/browser/cocoa/download/download_item_button.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

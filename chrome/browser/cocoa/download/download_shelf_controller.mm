@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/download/download_shelf_controller.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -12,9 +12,9 @@
 #import "chrome/browser/cocoa/animatable_view.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
-#include "chrome/browser/cocoa/download_item_controller.h"
-#include "chrome/browser/cocoa/download_shelf_mac.h"
-#import "chrome/browser/cocoa/download_shelf_view.h"
+#include "chrome/browser/cocoa/download/download_item_controller.h"
+#include "chrome/browser/cocoa/download/download_shelf_mac.h"
+#import "chrome/browser/cocoa/download/download_shelf_view.h"
 #import "chrome/browser/cocoa/hyperlink_button_cell.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"

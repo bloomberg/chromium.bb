@@ -4,7 +4,7 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/cocoa/download_shelf_view.h"
+#import "chrome/browser/cocoa/download/download_shelf_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/download_item_button.h"
+#import "chrome/browser/cocoa/download/download_item_button.h"
 
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/cocoa/download_item_cell.h"
-#import "chrome/browser/cocoa/download_item_controller.h"
+#import "chrome/browser/cocoa/download/download_item_cell.h"
+#import "chrome/browser/cocoa/download/download_item_controller.h"
 
 @implementation DownloadItemButton
 

@@ -4,8 +4,8 @@
 //
 // Download utility functions for Mac OS X.
 
-#ifndef CHROME_BROWSER_COCOA_DOWNLOAD_UTIL_MAC_H_
-#define CHROME_BROWSER_COCOA_DOWNLOAD_UTIL_MAC_H_
+#ifndef CHROME_BROWSER_COCOA_DOWNLOAD_DOWNLOAD_UTIL_MAC_H_
+#define CHROME_BROWSER_COCOA_DOWNLOAD_DOWNLOAD_UTIL_MAC_H_
 #pragma once
 
 #import <Cocoa/Cocoa.h>
@@ -22,4 +22,4 @@ void NotifySystemOfDownloadComplete(const FilePath& path);
 
 }  // namespace download_util
 
-#endif  // CHROME_BROWSER_COCOA_DOWNLOAD_UTIL_MAC_H_
+#endif  // CHROME_BROWSER_COCOA_DOWNLOAD_DOWNLOAD_UTIL_MAC_H_

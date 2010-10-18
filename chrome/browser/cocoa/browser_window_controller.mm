@@ -23,7 +23,7 @@
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller_private.h"
 #import "chrome/browser/cocoa/dev_tools_controller.h"
-#import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/fast_resize_view.h"
 #import "chrome/browser/cocoa/find_bar_bridge.h"

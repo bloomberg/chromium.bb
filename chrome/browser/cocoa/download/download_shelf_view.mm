@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/download_shelf_view.h"
+#import "chrome/browser/cocoa/download/download_shelf_view.h"
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/themed_window.h"

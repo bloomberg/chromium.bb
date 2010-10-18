@@ -1,12 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cocoa/download_shelf_mac.h"
+#include "chrome/browser/cocoa/download/download_shelf_mac.h"
 
 #include "chrome/browser/browser.h"
-#import "chrome/browser/cocoa/download_shelf_controller.h"
-#include "chrome/browser/cocoa/download_item_mac.h"
+#import "chrome/browser/cocoa/download/download_shelf_controller.h"
+#include "chrome/browser/cocoa/download/download_item_mac.h"
 #include "chrome/browser/download/download_item_model.h"
 
 DownloadShelfMac::DownloadShelfMac(Browser* browser,

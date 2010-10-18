@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/download_item_cell.h"
+#import "chrome/browser/cocoa/download/download_item_cell.h"
 
 #include "app/l10n_util.h"
 #include "app/text_elider.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/cocoa/download_item_cell.h"
+#import "chrome/browser/cocoa/download/download_item_cell.h"
 #import "chrome/browser/cocoa/image_utils.h"
 #import "chrome/browser/cocoa/themed_window.h"
 #include "chrome/browser/download/download_item.h"

@@ -103,4 +103,3 @@ class DownloadShelfContextMenuMac;
 - (IBAction)handleTogglePause:(id)sender;
 
 @end
-

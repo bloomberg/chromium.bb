@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // Download utility implementation for Mac OS X.
 
-#include "chrome/browser/cocoa/download_util_mac.h"
+#include "chrome/browser/cocoa/download/download_util_mac.h"
 
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/dock_icon.h"

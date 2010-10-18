@@ -943,7 +943,7 @@
 					<string key="superclassName">DraggableButton</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/download_item_button.h</string>
+						<string key="minorKey">browser/cocoa/download/download_item_button.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -951,7 +951,7 @@
 					<string key="superclassName">GradientButtonCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/download_item_cell.h</string>
+						<string key="minorKey">browser/cocoa/download/download_item_cell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1015,7 +1015,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/download_item_controller.h</string>
+						<string key="minorKey">browser/cocoa/download/download_item_controller.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
