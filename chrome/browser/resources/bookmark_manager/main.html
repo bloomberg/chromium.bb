@@ -1682,21 +1682,17 @@ function handleCommand(e) {
 $('delete-command').shortcut = 'U+007F' +
                                (cr.isMac ? ' U+0008 Meta-U+0008' : '');
 
-// Enter on all platforms. Mac we also support space and Command-Down !?!
-$('open-in-same-window-command').shortcut = 'Enter' +
-    (cr.isMac ? ' U+0020 Meta-Down' : '');
+$('open-in-same-window-command').shortcut = cr.isMac ? 'Meta-Down' :
+                                                       'Enter';
 
-//
 $('open-in-new-window-command').shortcut = 'Shift-Enter';
 $('open-in-background-tab-command').shortcut = cr.isMac ? 'Meta-Enter' :
                                                           'Ctrl-Enter';
 $('open-in-new-tab-command').shortcut = cr.isMac ? 'Shift-Meta-Enter' :
                                                    'Shift-Ctrl-Enter';
 
-if (!cr.isMac) {
-  $('rename-folder-command').shortcut = 'F2';
-  $('edit-command').shortcut = 'F2';
-}
+$('rename-folder-command').shortcut = $('edit-command').shortcut =
+    cr.isMac ? 'Enter' : 'F2';
 
 list.addEventListener('command', handleCommand);
 tree.addEventListener('command', handleCommand);
