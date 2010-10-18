@@ -294,28 +294,28 @@ MSWSOCK.dll!WSPStartup
 # Intentional errors in Chromium tests (ToolsSanityTests)
 
 UNADDRESSABLE ACCESS
-base_unittests.exe!ReadValueOutOfArrayBoundsLeft
-base_unittests.exe!MakeSomeErrors
+base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
-base_unittests.exe!ReadValueOutOfArrayBoundsRight
-base_unittests.exe!MakeSomeErrors
+base_unittests.exe!*ReadValueOutOfArrayBoundsRight
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
-base_unittests.exe!WriteValueOutOfArrayBoundsLeft
-base_unittests.exe!MakeSomeErrors
+base_unittests.exe!*WriteValueOutOfArrayBoundsLeft
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
-base_unittests.exe!WriteValueOutOfArrayBoundsRight
-base_unittests.exe!MakeSomeErrors
+base_unittests.exe!*WriteValueOutOfArrayBoundsRight
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNINITIALIZED READ
-base_unittests.exe!ReadUninitializedValue
-base_unittests.exe!MakeSomeErrors
+base_unittests.exe!*ReadUninitializedValue
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 # Write after free
@@ -323,18 +323,18 @@ UNADDRESSABLE ACCESS
 base_unittests.exe!ToolsSanityTest_AccessesToMallocMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
-base_unittests.exe!ReadValueOutOfArrayBoundsLeft
-base_unittests.exe!MakeSomeErrors
+base_unittests.exe!*ReadValueOutOfArrayBoundsLeft
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 UNADDRESSABLE ACCESS
-base_unittests.exe!ReadValueOutOfArrayBoundsRight
-base_unittests.exe!MakeSomeErrors
+base_unittests.exe!*ReadValueOutOfArrayBoundsRight
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 UNINITIALIZED READ
-base_unittests.exe!ReadUninitializedValue
-base_unittests.exe!MakeSomeErrors
+base_unittests.exe!*ReadUninitializedValue
+base_unittests.exe!*MakeSomeErrors
 base_unittests.exe!ToolsSanityTest_AccessesToNewMemory_Test::TestBody
 
 # Write after delete []
