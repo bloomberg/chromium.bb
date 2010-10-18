@@ -752,7 +752,7 @@ class DrMemory(BaseTool):
     if not suppression_count:
       logging.warning("WARNING: NOT USING SUPPRESSIONS!")
 
-    proc += ["-logdir", (os.getcwd() + "\\" + self.temp_dir)]
+    proc += ["-logdir", self.temp_dir]
     proc += ["-batch", "-quiet"]
     proc += ["-no_check_leaks", "-no_count_leaks"]
 
