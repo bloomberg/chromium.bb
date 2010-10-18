@@ -314,6 +314,10 @@ std::string ExtensionMessageBundle::GetL10nMessage(
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+ExtensionToMessagesMap::ExtensionToMessagesMap() {}
+
+ExtensionToMessagesMap::~ExtensionToMessagesMap() {}
+
 ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap() {
   return &Singleton<ExtensionToMessagesMap>()->messages_map;
 }

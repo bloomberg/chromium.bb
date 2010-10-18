@@ -5,6 +5,7 @@
 #include "remoting/protocol/messages_decoder.h"
 
 #include "base/logging.h"
+#include "net/base/io_buffer.h"
 #include "remoting/base/multiple_array_input_stream.h"
 #include "talk/base/byteorder.h"
 
@@ -30,6 +31,13 @@ void MessagesDecoder::ParseHostMessages(scoped_refptr<net::IOBuffer> data,
                                         HostMessageList* messages) {
   ParseMessages<ChromotingHostMessage>(data, data_size, messages);
 }
+
+MessagesDecoder::DataChunk::DataChunk(net::IOBuffer* data, size_t data_size)
+    : data(data),
+      data_size(data_size) {
+}
+
+MessagesDecoder::DataChunk::~DataChunk() {}
 
 template <typename T>
 void MessagesDecoder::ParseMessages(scoped_refptr<net::IOBuffer> data,

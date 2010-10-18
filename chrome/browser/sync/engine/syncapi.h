@@ -574,7 +574,9 @@ class SyncManager {
       ACTION_DELETE,
       ACTION_UPDATE,
     };
-    ChangeRecord() : id(kInvalidId), action(ACTION_ADD) {}
+    ChangeRecord();
+    ~ChangeRecord();
+
     int64 id;
     Action action;
     sync_pb::EntitySpecifics specifics;
@@ -585,9 +587,9 @@ class SyncManager {
   // access to unencrypted bits.
   class ExtraPasswordChangeRecordData : public ExtraChangeRecordData {
    public:
-    ExtraPasswordChangeRecordData(const sync_pb::PasswordSpecificsData& data)
-        : unencrypted_(data) {}
-    virtual ~ExtraPasswordChangeRecordData() {}
+    explicit ExtraPasswordChangeRecordData(
+        const sync_pb::PasswordSpecificsData& data);
+    virtual ~ExtraPasswordChangeRecordData();
     const sync_pb::PasswordSpecificsData& unencrypted() {
       return unencrypted_;
     }

@@ -45,6 +45,7 @@ class MultiAnimation : public Animation {
   typedef std::vector<Part> Parts;
 
   explicit MultiAnimation(const Parts& parts);
+  virtual ~MultiAnimation();
 
   // Returns the current value. The current value for a MultiAnimation is
   // determined from the tween type of the current part.

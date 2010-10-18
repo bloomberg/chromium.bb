@@ -48,8 +48,9 @@ bool MlsdDateListingToTime(const string16& text, base::Time* time) {
 
 namespace net {
 
-FtpDirectoryListingParserMlsd::FtpDirectoryListingParserMlsd() {
-}
+FtpDirectoryListingParserMlsd::FtpDirectoryListingParserMlsd() {}
+
+FtpDirectoryListingParserMlsd::~FtpDirectoryListingParserMlsd() {}
 
 bool FtpDirectoryListingParserMlsd::ConsumeLine(const string16& line) {
   // The first space indicates where the filename begins.

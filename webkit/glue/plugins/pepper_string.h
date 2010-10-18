@@ -14,8 +14,8 @@ namespace pepper {
 
 class String : public base::RefCountedThreadSafe<String> {
  public:
-  String(const char* str, uint32 len) : value_(str, len) {
-  }
+  String(const char* str, uint32 len);
+  virtual ~String();
 
   const std::string& value() const { return value_; }
 

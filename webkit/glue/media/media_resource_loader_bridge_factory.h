@@ -24,7 +24,7 @@ class MediaResourceLoaderBridgeFactory {
       int appcache_host_id,
       int32 routing_id);
 
-  virtual ~MediaResourceLoaderBridgeFactory() {}
+  virtual ~MediaResourceLoaderBridgeFactory();
 
   // Factory method to create a ResourceLoaderBridge with the following
   // parameters:
@@ -40,8 +40,7 @@ class MediaResourceLoaderBridgeFactory {
 
  protected:
   // An empty constructor only used by inherited classes.
-  MediaResourceLoaderBridgeFactory() {
-  }
+  MediaResourceLoaderBridgeFactory();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaResourceLoaderBridgeFactoryTest,

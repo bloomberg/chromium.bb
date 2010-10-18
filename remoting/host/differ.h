@@ -25,6 +25,7 @@ class Differ {
   // Create a differ that operates on bitmaps with the specified width, height
   // and bytes_per_pixel.
   Differ(int width, int height, int bytes_per_pixel, int stride);
+  ~Differ();
 
   // Given the previous and current screen buffer, calculate the set of
   // rectangles that enclose all the changed pixels in the new screen.

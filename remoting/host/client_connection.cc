@@ -76,6 +76,8 @@ void ClientConnection::Disconnect() {
   }
 }
 
+ClientConnection::ClientConnection() {}
+
 void ClientConnection::OnConnectionStateChange(
     ChromotingConnection::State state) {
   if (state == ChromotingConnection::CONNECTED) {

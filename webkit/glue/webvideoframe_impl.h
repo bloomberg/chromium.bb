@@ -18,6 +18,7 @@ class WebVideoFrameImpl : public WebVideoFrame {
   static media::VideoFrame* toVideoFrame(WebVideoFrame* web_video_frame);
 
   WebVideoFrameImpl(scoped_refptr<media::VideoFrame> video_frame);
+  virtual ~WebVideoFrameImpl();
   virtual WebVideoFrame::SurfaceType surfaceType() const;
   virtual WebVideoFrame::Format format() const;
   virtual unsigned width() const;

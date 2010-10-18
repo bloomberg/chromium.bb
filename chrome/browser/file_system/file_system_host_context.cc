@@ -41,3 +41,5 @@ void FileSystemHostContext::ResetOriginQuotaUnlimited(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   quota_manager_->ResetOriginQuotaUnlimited(url);
 }
+
+FileSystemHostContext::~FileSystemHostContext() {}

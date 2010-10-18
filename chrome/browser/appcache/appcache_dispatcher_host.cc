@@ -24,6 +24,8 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
   DCHECK(request_context_getter_.get());
 }
 
+AppCacheDispatcherHost::~AppCacheDispatcherHost() {}
+
 void AppCacheDispatcherHost::Initialize(
     ResourceDispatcherHost::Receiver* receiver) {
   DCHECK(receiver && !receiver_);

@@ -58,7 +58,6 @@
 #include "base/singleton.h"
 #include "base/task.h"
 #include "base/scoped_ptr.h"
-#include "base/thread_local.h"
 #include "remoting/proto/trace.pb.h"
 
 namespace remoting {
@@ -92,40 +91,24 @@ class Tracer : public base::RefCountedThreadSafe<Tracer> {
 class TraceContext {
  public:
   // Get the current tracer.
-  static Tracer* tracer() {
-    return Get()->GetTracerInternal();
-  }
+  static Tracer* tracer();
 
-  static void PushTracer(Tracer* tracer) {
-    Get()->PushTracerInternal(tracer);
-  }
+  static void PushTracer(Tracer* tracer);
 
-  static void PopTracer() {
-    Get()->PopTracerInternal();
-  }
+  static void PopTracer();
 
-  static TraceContext* Get() {
-    TraceContext* context =
-        Singleton<base::ThreadLocalPointer<TraceContext> >::get()->Get();
-    if (context == NULL) {
-      context = new TraceContext();
-      context->PushTracerInternal(new Tracer("default", 0.0));
-      Singleton<base::ThreadLocalPointer<TraceContext> >::get()->Set(context);
-    }
-    return context;
-  }
+  static TraceContext* Get();
 
  private:
-  TraceContext() {
-  }
+  TraceContext();
 
-  ~TraceContext() {}
+  ~TraceContext();
 
-  void PushTracerInternal(Tracer* tracer) { tracers_.push_back(tracer); }
+  void PushTracerInternal(Tracer* tracer);
 
-  void PopTracerInternal() { tracers_.pop_back(); }
+  void PopTracerInternal();
 
-  Tracer* GetTracerInternal() { return tracers_.back(); }
+  Tracer* GetTracerInternal();
 
   std::vector<scoped_refptr<Tracer> > tracers_;
 

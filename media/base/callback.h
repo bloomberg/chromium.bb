@@ -34,11 +34,7 @@ class AutoTaskRunner {
       : task_(task) {
   }
 
-  ~AutoTaskRunner() {
-    if (task_.get()) {
-      task_->Run();
-    }
-  }
+  ~AutoTaskRunner();
 
   Task* release() { return task_.release(); }
 
@@ -71,16 +67,14 @@ class AutoCallbackRunner {
 
 class TaskToCallbackAdapter : public Callback0::Type {
  public:
-  static Callback0::Type* NewCallback(Task* task) {
-    return new TaskToCallbackAdapter(task);
-  }
+  static Callback0::Type* NewCallback(Task* task);
 
-  virtual ~TaskToCallbackAdapter() {}
+  virtual ~TaskToCallbackAdapter();
 
-  virtual void RunWithParams(const Tuple0& params) { task_->Run(); }
+  virtual void RunWithParams(const Tuple0& params);
 
  private:
-  TaskToCallbackAdapter(Task* task) : task_(task) {}
+  TaskToCallbackAdapter(Task* task);
 
   scoped_ptr<Task> task_;
 

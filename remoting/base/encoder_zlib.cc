@@ -21,6 +21,8 @@ EncoderZlib::EncoderZlib() : packet_size_(kPacketSize) {
 EncoderZlib::EncoderZlib(int packet_size) : packet_size_(packet_size) {
 }
 
+EncoderZlib::~EncoderZlib() {}
+
 void EncoderZlib::Encode(scoped_refptr<CaptureData> capture_data,
                          bool key_frame,
                          DataAvailableCallback* data_available_callback) {

@@ -21,6 +21,8 @@ JsonHostConfig::JsonHostConfig(
       message_loop_proxy_(file_message_loop_proxy) {
 }
 
+JsonHostConfig::~JsonHostConfig() {}
+
 bool JsonHostConfig::Read() {
   // TODO(sergeyu): Implement better error handling here.
   std::string file_content;

@@ -10,6 +10,14 @@
 
 using base::TimeDelta;
 
+URLRequestJobMetrics::URLRequestJobMetrics()
+    : total_bytes_read_(0),
+      number_of_read_IO_(0),
+      success_(false) {
+}
+
+URLRequestJobMetrics::~URLRequestJobMetrics() {}
+
 void URLRequestJobMetrics::AppendText(std::wstring* text) {
   if (!text)
     return;

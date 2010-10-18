@@ -157,6 +157,9 @@ typedef std::map<std::string, L10nMessagesMap > ExtensionToL10nMessagesMap;
 
 // Unique class for Singleton.
 struct ExtensionToMessagesMap {
+  ExtensionToMessagesMap();
+  ~ExtensionToMessagesMap();
+
   // Maps extension ID to message map.
   ExtensionToL10nMessagesMap messages_map;
 };

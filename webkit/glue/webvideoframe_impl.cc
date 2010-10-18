@@ -25,6 +25,8 @@ WebVideoFrameImpl::WebVideoFrameImpl(
     : video_frame_(video_frame) {
 }
 
+WebVideoFrameImpl::~WebVideoFrameImpl() {}
+
 #define COMPILE_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
     COMPILE_ASSERT(int(WebKit::WebVideoFrame::webkit_name) == \
                    int(media::VideoFrame::chromium_name), \

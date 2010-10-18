@@ -32,6 +32,8 @@ MediaResourceLoaderBridgeFactory::MediaResourceLoaderBridgeFactory(
       routing_id_(routing_id) {
 }
 
+MediaResourceLoaderBridgeFactory::~MediaResourceLoaderBridgeFactory() {}
+
 ResourceLoaderBridge* MediaResourceLoaderBridgeFactory::CreateBridge(
         const GURL& url,
         int load_flags,
@@ -53,6 +55,8 @@ ResourceLoaderBridge* MediaResourceLoaderBridgeFactory::CreateBridge(
   request_info.routing_id = routing_id_;
   return webkit_glue::ResourceLoaderBridge::Create(request_info);
 }
+
+MediaResourceLoaderBridgeFactory::MediaResourceLoaderBridgeFactory() {}
 
 // static
 const std::string MediaResourceLoaderBridgeFactory::GenerateHeaders (

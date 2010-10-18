@@ -23,6 +23,8 @@ Differ::Differ(int width, int height, int bpp, int stride) {
   diff_info_.reset(new uint8[diff_info_size_]);
 }
 
+Differ::~Differ() {}
+
 void Differ::CalcDirtyRects(const void* prev_buffer, const void* curr_buffer,
                             InvalidRects* rects) {
   if (!rects) {

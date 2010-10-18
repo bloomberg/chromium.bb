@@ -29,6 +29,13 @@ using WebKit::WebView;
 
 namespace pepper {
 
+struct WebPluginImpl::InitData {
+  scoped_refptr<PluginModule> module;
+  base::WeakPtr<PluginDelegate> delegate;
+  std::vector<std::string> arg_names;
+  std::vector<std::string> arg_values;
+};
+
 WebPluginImpl::WebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,

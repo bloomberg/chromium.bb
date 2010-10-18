@@ -18,11 +18,8 @@
 
 class URLRequestJobMetrics {
  public:
-  URLRequestJobMetrics()
-      : total_bytes_read_(0),
-        number_of_read_IO_(0),
-        success_(false) { }
-  ~URLRequestJobMetrics() { }
+  URLRequestJobMetrics();
+  ~URLRequestJobMetrics();
 
   // The original url the job has been created for.
   scoped_ptr<GURL> original_url_;

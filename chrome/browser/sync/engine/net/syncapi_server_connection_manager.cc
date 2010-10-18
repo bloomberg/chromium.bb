@@ -12,6 +12,15 @@ using std::string;
 
 namespace sync_api {
 
+SyncAPIBridgedPost::SyncAPIBridgedPost(
+    browser_sync::ServerConnectionManager* scm,
+    HttpPostProviderFactory* factory)
+    : Post(scm), factory_(factory) {
+}
+
+SyncAPIBridgedPost::~SyncAPIBridgedPost() {}
+
+
 bool SyncAPIBridgedPost::Init(const char* path, const string& auth_token,
     const string& payload, HttpResponse* response) {
   string sync_server;
@@ -67,6 +76,23 @@ bool SyncAPIBridgedPost::Init(const char* path, const string& auth_token,
   return true;
 }
 
+SyncAPIServerConnectionManager::SyncAPIServerConnectionManager(
+    const std::string& server,
+    int port,
+    bool use_ssl,
+    const std::string& client_version,
+    HttpPostProviderFactory* factory)
+    : ServerConnectionManager(server, port, use_ssl, client_version),
+      post_provider_factory_(factory) {
+  DCHECK(post_provider_factory_.get());
+}
+
 SyncAPIServerConnectionManager::~SyncAPIServerConnectionManager() {}
+
+browser_sync::ServerConnectionManager::Post*
+SyncAPIServerConnectionManager::MakePost() {
+  return new SyncAPIBridgedPost(this, post_provider_factory_.get());
+}
+
 
 }  // namespace sync_api

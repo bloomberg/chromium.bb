@@ -10,8 +10,11 @@
 
 #include "base/ref_counted.h"
 #include "google/protobuf/message_lite.h"
-#include "net/base/io_buffer.h"
 #include "remoting/proto/internal.pb.h"
+
+namespace net {
+class IOBuffer;
+}
 
 namespace remoting {
 
@@ -42,10 +45,8 @@ class MessagesDecoder {
   // DataChunk stores reference to a net::IOBuffer and size of the data
   // stored in that buffer.
   struct DataChunk {
-    DataChunk(net::IOBuffer* data, size_t data_size)
-        : data(data),
-          data_size(data_size) {
-    }
+    DataChunk(net::IOBuffer* data, size_t data_size);
+    ~DataChunk();
 
     scoped_refptr<net::IOBuffer> data;
     size_t data_size;

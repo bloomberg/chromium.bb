@@ -22,6 +22,7 @@ class FtpDirectoryListingParserHprc : public FtpDirectoryListingParser {
   // that we don't know, |current_time| will be used. This allows passing
   // a specific date during testing.
   explicit FtpDirectoryListingParserHprc(const base::Time& current_time);
+  virtual ~FtpDirectoryListingParserHprc();
 
   // FtpDirectoryListingParser methods:
   virtual FtpServerType GetServerType() const;

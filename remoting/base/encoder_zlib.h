@@ -20,7 +20,7 @@ class EncoderZlib : public Encoder {
   EncoderZlib();
   EncoderZlib(int packet_size);
 
-  virtual ~EncoderZlib() {}
+  virtual ~EncoderZlib();
 
   virtual void Encode(scoped_refptr<CaptureData> capture_data,
                       bool key_frame,

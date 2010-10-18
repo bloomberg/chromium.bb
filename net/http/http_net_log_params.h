@@ -10,43 +10,28 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "base/stringprintf.h"
-#include "base/values.h"
 #include "net/base/net_log.h"
 #include "net/http/http_request_headers.h"
-#include "net/http/http_response_headers.h"
+
+class Value;
 
 namespace net {
+
+class HttpResponseHeaders;
 
 class NetLogHttpRequestParameter : public NetLog::EventParameters {
  public:
   NetLogHttpRequestParameter(const std::string& line,
-                             const HttpRequestHeaders& headers)
-      : line_(line) {
-    headers_.CopyFrom(headers);
-  }
+                             const HttpRequestHeaders& headers);
 
-  Value* ToValue() const {
-    DictionaryValue* dict = new DictionaryValue();
-    dict->SetString("line", line_);
-    ListValue* headers = new ListValue();
-    HttpRequestHeaders::Iterator iterator(headers_);
-    while (iterator.GetNext()) {
-      headers->Append(
-          new StringValue(base::StringPrintf("%s: %s",
-                                            iterator.name().c_str(),
-                                            iterator.value().c_str())));
-    }
-    dict->Set("headers", headers);
-    return dict;
-  }
+  Value* ToValue() const;
 
   const HttpRequestHeaders& GetHeaders() const {
     return headers_;
   }
 
  private:
-  ~NetLogHttpRequestParameter() {}
+  virtual ~NetLogHttpRequestParameter();
 
   const std::string line_;
   HttpRequestHeaders headers_;
@@ -57,31 +42,16 @@ class NetLogHttpRequestParameter : public NetLog::EventParameters {
 class NetLogHttpResponseParameter : public NetLog::EventParameters {
  public:
   explicit NetLogHttpResponseParameter(
-      const scoped_refptr<HttpResponseHeaders>& headers)
-      : headers_(headers) {}
+      const scoped_refptr<HttpResponseHeaders>& headers);
 
-  Value* ToValue() const {
-    DictionaryValue* dict = new DictionaryValue();
-    ListValue* headers = new ListValue();
-    headers->Append(new StringValue(headers_->GetStatusLine()));
-    void* iterator = NULL;
-    std::string name;
-    std::string value;
-    while (headers_->EnumerateHeaderLines(&iterator, &name, &value)) {
-      headers->Append(
-          new StringValue(base::StringPrintf("%s: %s", name.c_str(),
-                                             value.c_str())));
-    }
-    dict->Set("headers", headers);
-    return dict;
-  }
+  Value* ToValue() const;
 
   const HttpResponseHeaders& GetHeaders() const {
     return *headers_;
   }
 
  private:
-  ~NetLogHttpResponseParameter() {}
+  virtual ~NetLogHttpResponseParameter();
 
   const scoped_refptr<HttpResponseHeaders> headers_;
 

@@ -906,6 +906,18 @@ class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
   DISALLOW_COPY_AND_ASSIGN(BridgedGaiaAuthenticator);
 };
 
+SyncManager::ChangeRecord::ChangeRecord()
+    : id(kInvalidId), action(ACTION_ADD) {}
+
+SyncManager::ChangeRecord::~ChangeRecord() {}
+
+SyncManager::ExtraPasswordChangeRecordData::ExtraPasswordChangeRecordData(
+    const sync_pb::PasswordSpecificsData& data)
+    : unencrypted_(data) {
+}
+
+SyncManager::ExtraPasswordChangeRecordData::~ExtraPasswordChangeRecordData() {}
+
 //////////////////////////////////////////////////////////////////////////
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal

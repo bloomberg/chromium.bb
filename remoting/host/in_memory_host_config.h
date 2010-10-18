@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -22,6 +21,7 @@ namespace remoting {
 class InMemoryHostConfig : public MutableHostConfig {
  public:
   InMemoryHostConfig();
+  virtual ~InMemoryHostConfig();
 
   // MutableHostConfig interface.
   virtual bool GetString(const std::string& path, std::string* out_value);

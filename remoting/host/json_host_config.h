@@ -27,6 +27,7 @@ class JsonHostConfig : public MutableHostConfig {
  public:
   JsonHostConfig(const FilePath& pref_filename,
                  base::MessageLoopProxy* file_message_loop_proxy);
+  virtual ~JsonHostConfig();
 
   virtual bool Read();
 

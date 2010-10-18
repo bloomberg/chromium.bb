@@ -5,6 +5,7 @@
 #include "remoting/protocol/stream_reader.h"
 
 #include "base/message_loop.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "remoting/protocol/chromoting_connection.h"

@@ -76,12 +76,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
   virtual bool printPage(int page_number, WebKit::WebCanvas* canvas);
   virtual void printEnd();
 
-  struct InitData {
-    scoped_refptr<PluginModule> module;
-    base::WeakPtr<PluginDelegate> delegate;
-    std::vector<std::string> arg_names;
-    std::vector<std::string> arg_values;
-  };
+  struct InitData;
 
   scoped_ptr<InitData> init_data_;  // Cleared upon successful initialization.
   // True if the instance represents the entire document in a frame instead of

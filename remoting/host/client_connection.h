@@ -87,7 +87,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection> {
 
  protected:
   // Protected constructor used by unit test.
-  ClientConnection() {}
+  ClientConnection();
 
  private:
   // Callback for ChromotingConnection.

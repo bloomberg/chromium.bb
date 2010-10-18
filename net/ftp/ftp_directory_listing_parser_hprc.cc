@@ -14,6 +14,8 @@ FtpDirectoryListingParserHprc::FtpDirectoryListingParserHprc(
     : current_time_(current_time) {
 }
 
+FtpDirectoryListingParserHprc::~FtpDirectoryListingParserHprc() {}
+
 FtpServerType FtpDirectoryListingParserHprc::GetServerType() const {
   return SERVER_HPRC;
 }

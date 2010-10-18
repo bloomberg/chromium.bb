@@ -25,6 +25,8 @@ MultiAnimation::MultiAnimation(const Parts& parts)
   DCHECK(!parts_.empty());
 }
 
+MultiAnimation::~MultiAnimation() {}
+
 void MultiAnimation::Step(base::TimeTicks time_now) {
   double last_value = current_value_;
   size_t last_index = current_part_index_;

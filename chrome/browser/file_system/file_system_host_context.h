@@ -22,6 +22,7 @@ class FileSystemHostContext
                                         BrowserThread::DeleteOnIOThread> {
  public:
   FileSystemHostContext(const FilePath& data_path, bool is_incognito);
+  virtual ~FileSystemHostContext();
 
   // Quota related methods.
   bool CheckOriginQuota(const GURL& url, int64 growth);

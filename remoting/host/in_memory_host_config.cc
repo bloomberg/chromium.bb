@@ -13,6 +13,8 @@ InMemoryHostConfig::InMemoryHostConfig()
     : values_(new DictionaryValue()) {
 }
 
+InMemoryHostConfig::~InMemoryHostConfig() {}
+
 bool InMemoryHostConfig::GetString(const std::string& path,
                                    std::string* out_value) {
   AutoLock auto_lock(lock_);

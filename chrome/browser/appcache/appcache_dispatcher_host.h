@@ -34,6 +34,8 @@ class AppCacheDispatcherHost {
   explicit AppCacheDispatcherHost(
       URLRequestContextGetter* request_context_getter);
 
+  ~AppCacheDispatcherHost();
+
   void Initialize(ResourceDispatcherHost::Receiver* receiver);
   bool OnMessageReceived(const IPC::Message& msg, bool* msg_is_ok);
 

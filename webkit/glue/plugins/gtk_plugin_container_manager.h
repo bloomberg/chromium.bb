@@ -19,7 +19,8 @@ struct WebPluginGeometry;
 // Helper class that creates and manages plugin containers (GtkSocket).
 class GtkPluginContainerManager {
  public:
-  GtkPluginContainerManager() : host_widget_(NULL) { }
+  GtkPluginContainerManager();
+  ~GtkPluginContainerManager();
 
   // Sets the widget that will host the plugin containers. Must be a GtkFixed.
   void set_host_widget(GtkWidget *widget) { host_widget_ = widget; }

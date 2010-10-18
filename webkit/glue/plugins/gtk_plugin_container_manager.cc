@@ -11,6 +11,10 @@
 #include "webkit/glue/plugins/gtk_plugin_container.h"
 #include "webkit/glue/plugins/webplugin.h"
 
+GtkPluginContainerManager::GtkPluginContainerManager() : host_widget_(NULL) {}
+
+GtkPluginContainerManager::~GtkPluginContainerManager() {}
+
 GtkWidget* GtkPluginContainerManager::CreatePluginContainer(
     gfx::PluginWindowHandle id) {
   DCHECK(host_widget_);

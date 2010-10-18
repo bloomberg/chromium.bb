@@ -21,11 +21,9 @@ class SyncAPIBridgedPost
     : public browser_sync::ServerConnectionManager::Post {
  public:
   SyncAPIBridgedPost(browser_sync::ServerConnectionManager* scm,
-                     HttpPostProviderFactory* factory)
-      : Post(scm), factory_(factory) {
-  }
+                     HttpPostProviderFactory* factory);
 
-  virtual ~SyncAPIBridgedPost() { }
+  virtual ~SyncAPIBridgedPost();
 
   virtual bool Init(const char* path,
                     const std::string& auth_token,
@@ -51,17 +49,12 @@ class SyncAPIServerConnectionManager
                                  int port,
                                  bool use_ssl,
                                  const std::string& client_version,
-                                 HttpPostProviderFactory* factory)
-      : ServerConnectionManager(server, port, use_ssl, client_version),
-        post_provider_factory_(factory) {
-    DCHECK(post_provider_factory_.get());
-  }
-
+                                 HttpPostProviderFactory* factory);
   virtual ~SyncAPIServerConnectionManager();
+
  protected:
-  virtual Post* MakePost() {
-    return new SyncAPIBridgedPost(this, post_provider_factory_.get());
-  }
+  virtual Post* MakePost();
+
  private:
   // A factory creating concrete HttpPostProviders for use whenever we need to
   // issue a POST to sync servers.

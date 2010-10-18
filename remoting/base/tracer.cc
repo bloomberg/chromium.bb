@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/stl_util-inl.h"
 #include "base/thread.h"
+#include "base/thread_local.h"
 #include "base/time.h"
 
 namespace remoting {
@@ -138,6 +139,46 @@ Tracer::~Tracer() {
     Singleton<OutputLogger>::get()->OutputTrace(buffer_.release());
   }
 }
+
+// static
+Tracer* TraceContext::tracer() {
+  return Get()->GetTracerInternal();
+}
+
+// static
+void TraceContext::PushTracer(Tracer* tracer) {
+  Get()->PushTracerInternal(tracer);
+}
+
+// static
+void TraceContext::PopTracer() {
+  Get()->PopTracerInternal();
+}
+
+// static
+TraceContext* TraceContext::Get() {
+  TraceContext* context =
+      Singleton<base::ThreadLocalPointer<TraceContext> >::get()->Get();
+  if (context == NULL) {
+    context = new TraceContext();
+    context->PushTracerInternal(new Tracer("default", 0.0));
+    Singleton<base::ThreadLocalPointer<TraceContext> >::get()->Set(context);
+  }
+  return context;
+}
+
+TraceContext::TraceContext() {}
+
+TraceContext::~TraceContext() {}
+
+void TraceContext::PushTracerInternal(Tracer* tracer) {
+  tracers_.push_back(tracer);
+}
+
+void TraceContext::PopTracerInternal() { tracers_.pop_back(); }
+
+Tracer* TraceContext::GetTracerInternal() { return tracers_.back(); }
+
 
 }  // namespace remoting
 
