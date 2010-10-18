@@ -149,51 +149,44 @@ static void AddCookieToList(
 // Add/Update/Delete and regurgitate it when Load is called.
 class MockSimplePersistentCookieStore
     : public net::CookieMonster::PersistentCookieStore {
- public:
-  typedef std::vector<net::CookieMonster::CanonicalCookie>
-      CanonicalCookieVector;
+ private:
+  typedef std::map<int64, net::CookieMonster::CanonicalCookie>
+      CanonicalCookieMap;
 
+ public:
   virtual bool Load(
       std::vector<net::CookieMonster::CanonicalCookie*>* out_cookies) {
-    for (CanonicalCookieVector::const_iterator it = cookies_.begin();
+    for (CanonicalCookieMap::const_iterator it = cookies_.begin();
          it != cookies_.end(); it++)
-      out_cookies->push_back(new net::CookieMonster::CanonicalCookie(*it));
+      out_cookies->push_back(
+          new net::CookieMonster::CanonicalCookie(it->second));
     return true;
   }
 
   virtual void AddCookie(
       const net::CookieMonster::CanonicalCookie& cookie) {
-    for (CanonicalCookieVector::const_iterator it = cookies_.begin();
-         it != cookies_.end(); it++) {
-      // Caller must assure creation dates unique.
-      EXPECT_NE(cookie.CreationDate().ToInternalValue(),
-                it->CreationDate().ToInternalValue());
-    }
-    cookies_.push_back(cookie);           // Copies.
+    int64 creation_time = cookie.CreationDate().ToInternalValue();
+    EXPECT_TRUE(cookies_.find(creation_time) == cookies_.end());
+    cookies_[creation_time] = cookie;
   }
 
   virtual void UpdateCookieAccessTime(
       const net::CookieMonster::CanonicalCookie& cookie) {
-    for (CanonicalCookieVector::iterator it = cookies_.begin();
-         it != cookies_.end(); it++) {
-      if (it->CreationDate() == cookie.CreationDate())
-        it->SetLastAccessDate(base::Time::Now());
-    }
+    int64 creation_time = cookie.CreationDate().ToInternalValue();
+    ASSERT_TRUE(cookies_.find(creation_time) != cookies_.end());
+    cookies_[creation_time].SetLastAccessDate(base::Time::Now());
   }
 
   virtual void DeleteCookie(
       const net::CookieMonster::CanonicalCookie& cookie) {
-    for (CanonicalCookieVector::iterator it = cookies_.begin();
-         it != cookies_.end(); it++) {
-      if (it->CreationDate() == cookie.CreationDate()) {
-        cookies_.erase(it);
-        return;
-      }
-    }
+    int64 creation_time = cookie.CreationDate().ToInternalValue();
+    CanonicalCookieMap::iterator it = cookies_.find(creation_time);
+    ASSERT_TRUE(it != cookies_.end());
+    cookies_.erase(it);
   }
 
  private:
-  std::vector<net::CookieMonster::CanonicalCookie> cookies_;
+  CanonicalCookieMap cookies_;
 };
 
 // Helper function for creating a CookieMonster backed by a
