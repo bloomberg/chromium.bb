@@ -2902,4 +2902,14 @@
    fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_Fv13scoped_refptrINS0_18HistoryAddPageArgsEEES4_EvPT_T0_RK6Tuple1IT1_E
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_Fv13scoped_refptrINS0_18HistoryAddPageArgsEEE6Tuple1IS4_EE3RunEv
 }
-
+{
+   bug_59670
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
+   fun:_ZN3IPC16MessageWithReplyI6Tuple3IiSbIwSt11char_traitsIwESaIwEES5_E6Tuple1IRSsEE18DispatchDelayReplyI25TestingAutomationProviderMSC_FviRKS5_SE_PNS_7MessageEEEEbPKSF_PT_T0_
+   fun:_ZN25TestingAutomationProvider17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
+}
