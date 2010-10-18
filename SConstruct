@@ -867,10 +867,10 @@ def CommandSelLdrTestNacl(env, name, command,
   if sel_ldr_flags is None:
     sel_ldr_flags = []
 
-  if GetEmulator(env) or env.Bit('disable_hardy64_vmware_failures'):
-    # in emulation we skip platform qualification tests
-    # NOTE: this affects arm with user mode emulation and
-    # some of the hardy64 build bots using vmware.
+  # Skip platform qualification checks on configurations with known issues.
+  if GetEmulator(env) or \
+    env.Bit('disable_hardy64_vmware_failures') or \
+    env.IsRunningUnderValgrind():
     sel_ldr_flags += ['-Q']
 
   if env.Bit('nacl_glibc'):
