@@ -9,19 +9,8 @@ url="http://git.chromium.org/git/git-cl.git"
 cur_url=$(git config -f "$repo/.git/config" remote.origin.url)
 
 if [ -e "$repo" -a "$cur_url" != "$url" ]; then
-  cat <<EOF
-$repo
-is tracking a non-default remote repository:
-
-  default: $url
-  yours:   $cur_url
-
-This is intended to be an automatically-updating, read-only repository.
-Please create a separate repository for making changes to git-cl, move your
-modifications there, and then run:
-  rm -rf $repo
-EOF
-  exit 1
+  # Always override "origin"
+  (cd "$repo"; git remote set-url origin $url)
 fi
 
 if [ ! -f "$repo/git-cl" ]; then
