@@ -88,8 +88,13 @@ PP_Var GetLocalizedString(PP_Module module_id, PP_ResourceString string_id) {
     return PP_MakeUndefined();
 
   std::string rv;
-  if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD)
+  if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD) {
     rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_NEED_PASSWORD));
+  } else if (string_id == PP_RESOURCESTRING_PDFLOADING) {
+    rv = UTF16ToUTF8(webkit_glue::GetLocalizedString(IDS_PDF_PAGE_LOADING));
+  } else {
+    NOTREACHED();
+  }
 
   return StringVar::StringToPPVar(module, rv);
 }

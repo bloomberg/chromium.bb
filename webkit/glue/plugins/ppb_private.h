@@ -18,6 +18,7 @@ struct PP_FontDescription_Dev;
 
 typedef enum {
   PP_RESOURCESTRING_PDFGETPASSWORD = 0,
+  PP_RESOURCESTRING_PDFLOADING = 1
 } PP_ResourceString;
 
 typedef enum {
