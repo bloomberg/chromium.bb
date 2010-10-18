@@ -11,6 +11,13 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 
+ConstrainedWindowGtkDelegate::~ConstrainedWindowGtkDelegate() {
+}
+
+bool ConstrainedWindowGtkDelegate::GetBackgroundColor(GdkColor* color) {
+  return false;
+}
+
 ConstrainedWindowGtk::ConstrainedWindowGtk(
     TabContents* owner, ConstrainedWindowGtkDelegate* delegate)
     : owner_(owner),
@@ -26,10 +33,18 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   GtkWidget* ebox = gtk_event_box_new();
   GtkWidget* frame = gtk_frame_new(NULL);
   gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_OUT);
+
   GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
       gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder,
       gtk_util::kContentAreaBorder, gtk_util::kContentAreaBorder);
+  GdkColor background;
+  if (delegate->GetBackgroundColor(&background)) {
+    gtk_widget_modify_base(ebox, GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_fg(ebox, GTK_STATE_NORMAL, &background);
+    gtk_widget_modify_bg(ebox, GTK_STATE_NORMAL, &background);
+  }
+
   gtk_container_add(GTK_CONTAINER(alignment), dialog);
   gtk_container_add(GTK_CONTAINER(frame), alignment);
   gtk_container_add(GTK_CONTAINER(ebox), frame);

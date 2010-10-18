@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
 
+#include "gfx/gtk_util.h"
 #include "gfx/rect.h"
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
@@ -35,6 +36,10 @@ class ConstrainedHtmlDelegateGtk : public ConstrainedWindowGtkDelegate,
   // ConstrainedHtmlDelegate ---------------------------------------------
   virtual HtmlDialogUIDelegate* GetHtmlDialogUIDelegate();
   virtual void OnDialogClose();
+  virtual bool GetBackgroundColor(GdkColor* color) {
+    *color = gfx::kGdkWhite;
+    return true;
+  }
 
   // HtmlDialogTabContentsDelegate ---------------------------------------------
   void MoveContents(TabContents* source, const gfx::Rect& pos) {}

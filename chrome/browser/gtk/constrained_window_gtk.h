@@ -16,6 +16,7 @@
 
 class TabContents;
 class TabContentsViewGtk;
+typedef struct _GdkColor GdkColor;
 
 class ConstrainedWindowGtkDelegate {
  public:
@@ -26,8 +27,10 @@ class ConstrainedWindowGtkDelegate {
   // itself later.
   virtual void DeleteDelegate() = 0;
 
+  virtual bool GetBackgroundColor(GdkColor* color);
+
  protected:
-  virtual ~ConstrainedWindowGtkDelegate() {}
+  virtual ~ConstrainedWindowGtkDelegate();
 };
 
 // Constrained window implementation for the GTK port. Unlike the Win32 system,
