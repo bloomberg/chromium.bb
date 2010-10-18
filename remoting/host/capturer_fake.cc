@@ -15,6 +15,7 @@ static const int kMaxColorChannelValue = 255;
 
 CapturerFake::CapturerFake()
     : seed_(0) {
+  ScreenConfigurationChanged();
 }
 
 CapturerFake::~CapturerFake() {
