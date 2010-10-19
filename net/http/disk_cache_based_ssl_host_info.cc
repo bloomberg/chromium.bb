@@ -34,7 +34,8 @@ void DiskCacheBasedSSLHostInfo::Start() {
 
 DiskCacheBasedSSLHostInfo::~DiskCacheBasedSSLHostInfo() {
   DCHECK(!user_callback_);
-  DCHECK(!entry_);
+  if (entry_)
+    entry_->Close();
   callback_->Cancel();
 }
 

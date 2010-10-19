@@ -155,6 +155,7 @@ int main(int argc, char**argv) {
         net::ClientSocketFactory::GetDefaultFactory(),
         host_resolver.get(),
         NULL /* dnsrr_resolver */,
+        NULL /* ssl_host_info_factory */,
         proxy_service,
         ssl_config_service,
         http_auth_handler_factory.get(),
