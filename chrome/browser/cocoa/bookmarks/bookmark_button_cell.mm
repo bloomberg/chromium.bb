@@ -12,6 +12,7 @@
 #import "chrome/browser/cocoa/bookmarks/bookmark_menu.h"
 #import "chrome/browser/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/cocoa/image_utils.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "grit/generated_resources.h"
 
 
@@ -143,7 +144,15 @@
   BookmarkMenu* menu = (BookmarkMenu*)[super menu];
   const BookmarkNode* node =
       static_cast<const BookmarkNode*>([[self representedObject] pointerValue]);
+
+  if (node->GetParent() && node->GetParent()->type() == BookmarkNode::FOLDER) {
+    UserMetrics::RecordAction(UserMetricsAction("BookmarkBarFolder_CtxMenu"));
+  } else {
+    UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_CtxMenu"));
+  }
+
   [menu setRepresentedObject:[NSNumber numberWithLongLong:node->id()]];
+
   return menu;
 }
 
