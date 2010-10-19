@@ -34,14 +34,16 @@ void NaClMainPlatformDelegate::EnableSandbox() {
   //
   // The seccomp sandbox is started in the renderer.
   // http://code.google.com/p/seccompsandbox/
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX) && \
-    !defined(__clang__)
-  // N.b. SupportsSeccompSandbox() returns a cached result, as we already
-  // called it earlier in the zygote. Thus, it is OK for us to not pass in
-  // a file descriptor for "/proc".
-  if (switches::SeccompSandboxEnabled() && SupportsSeccompSandbox(-1))
-    StartSeccompSandbox();
-#endif
+  // seccomp is currently disabled for nacl.
+  // http://code.google.com/p/chromium/issues/detail?id=59423
+  // See the code in chrome/renderer/renderer_main_platform_delegate_linux.cc
+  // for how to turn seccomp on.
+  //
+  // The seccomp sandbox should not be enabled for Native Client until
+  // all of these issues are fixed:
+  // http://code.google.com/p/nativeclient/issues/list?q=label:Seccomp
+  // At best, NaCl will not work.  At worst, enabling the seccomp sandbox
+  // could create a hole in the NaCl sandbox.
 }
 
 bool NaClMainPlatformDelegate::RunSandboxTests() {
