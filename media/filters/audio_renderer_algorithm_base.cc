@@ -30,7 +30,7 @@ void AudioRendererAlgorithmBase::Initialize(int channels,
                                             float initial_playback_rate,
                                             RequestReadCallback* callback) {
   DCHECK_GT(channels, 0);
-  DCHECK_LE(channels, 6) << "We only support <=6 channel audio.";
+  DCHECK_LE(channels, 8) << "We only support <= 8 channel audio.";
   DCHECK_GT(sample_rate, 0);
   DCHECK_LE(sample_rate, 256000)
       << "We only support sample rates at or below 256000Hz.";
