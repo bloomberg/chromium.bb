@@ -86,11 +86,10 @@ class SearchEngineObserver : public TemplateURLModelObserver {
 }
 
 // The index into |-searchEngines| of the current default search engine.
-// -1 if there is no default.
-- (NSInteger)defaultIndex {
-  if (!model_) return -1;
+- (NSUInteger)defaultIndex {
+  if (!model_) return 0;
 
-  NSInteger index = 0;
+  NSUInteger index = 0;
   const TemplateURL* defaultSearchProvider = model_->GetDefaultSearchProvider();
   if (defaultSearchProvider) {
     typedef std::vector<const TemplateURL*> TemplateURLs;
@@ -104,15 +103,14 @@ class SearchEngineObserver : public TemplateURLModelObserver {
         ++index;
     }
   }
-  return -1;
+  return 0;
 }
 
-- (void)setDefaultIndex:(NSInteger)index {
+- (void)setDefaultIndex:(NSUInteger)index {
   if (model_) {
     typedef std::vector<const TemplateURL*> TemplateURLs;
     TemplateURLs urls = model_->GetTemplateURLs();
-    DCHECK(index >= 0);
-    DCHECK(index < (NSInteger)urls.size());
+    DCHECK(index < urls.size());
     model_->SetDefaultSearchProvider(urls[index]);
   }
 }
