@@ -12,17 +12,19 @@
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 #include "webkit/fileapi/file_system_operation.h"
 
+namespace fileapi {
+
 const int kInvalidRequestId = -1;
 const int kFileOperationStatusNotSet = 0;
 const int kFileOperationSucceeded = 1;
 
 static int last_request_id = -1;
 
-bool FileExists(FilePath path) {
+static bool FileExists(FilePath path) {
   return file_util::PathExists(path) && !file_util::DirectoryExists(path);
 }
 
-class MockDispatcher : public fileapi::FileSystemCallbackDispatcher {
+class MockDispatcher : public FileSystemCallbackDispatcher {
  public:
   MockDispatcher(int request_id)
       : status_(kFileOperationStatusNotSet),
@@ -80,10 +82,10 @@ class FileSystemOperationTest : public testing::Test {
     EXPECT_TRUE(base_.IsValid());
   }
 
-  fileapi::FileSystemOperation* operation() {
+  FileSystemOperation* operation() {
     request_id_ = ++last_request_id;
     mock_dispatcher_ = new MockDispatcher(request_id_);
-    operation_.reset(new fileapi::FileSystemOperation(
+    operation_.reset(new FileSystemOperation(
         mock_dispatcher_, base::MessageLoopProxy::CreateForCurrentThread()));
     return operation_.get();
   }
@@ -93,7 +95,7 @@ class FileSystemOperationTest : public testing::Test {
   ScopedTempDir base_;
 
   int request_id_;
-  scoped_ptr<fileapi::FileSystemOperation> operation_;
+  scoped_ptr<FileSystemOperation> operation_;
 
   // Owned by |operation_|.
   MockDispatcher* mock_dispatcher_;
@@ -784,3 +786,5 @@ TEST_F(FileSystemOperationTest, TestTruncate) {
   for (int i = 0; i < length; ++i)
     EXPECT_EQ(test_data[i], data[i]);
 }
+
+}  // namespace fileapi
