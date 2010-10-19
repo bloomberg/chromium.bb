@@ -8,6 +8,7 @@
 
 #include <vector>
 
+class GURL;
 class PrefService;
 class TemplateURL;
 
@@ -71,6 +72,11 @@ void GetPrepopulatedEngines(PrefService* prefs,
 // Returns the default search provider specified by the prepopulate data.
 // The caller owns the returned value, which may be NULL.
 TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs);
+
+// Returns a TemplateURL from the prepopulated data which has the same origin
+// as the given url.  The caller is responsible for deleting the returned
+// TemplateURL.
+TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find);
 
 }  // namespace TemplateURLPrepopulateData
 

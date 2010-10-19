@@ -15,9 +15,12 @@
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 
 #if defined(OS_WIN)
@@ -2764,6 +2767,39 @@ const PrepopulatedEngine* engines_ZA[] =
 const PrepopulatedEngine* engines_ZW[] =
     { &google, &yahoo, &bing, };
 
+
+// A list of all the engines that we know about.
+const PrepopulatedEngine* kAllEngines[] =
+    { &abcsok, &altavista, &altavista_ar, &altavista_se, &aol, &araby, &ask,
+      &ask_de, &ask_es, &ask_it, &ask_nl, &ask_uk, &atlas_cz, &atlas_sk, &baidu,
+      &bing, &bing_ar_XA, &bing_bg_BG, &bing_cs_CZ, &bing_da_DK, &bing_de_AT,
+      &bing_de_CH, &bing_de_DE, &bing_el_GR, &bing_en_AU, &bing_en_CA,
+      &bing_en_GB, &bing_en_ID, &bing_en_IE, &bing_en_IN, &bing_en_MY,
+      &bing_en_NZ, &bing_en_PH, &bing_en_SG, &bing_en_US, &bing_en_XA,
+      &bing_en_ZA, &bing_es_AR, &bing_es_CL, &bing_es_ES, &bing_es_MX,
+      &bing_es_XL, &bing_et_EE, &bing_fi_FI, &bing_fr_BE, &bing_fr_CA,
+      &bing_fr_CH, &bing_fr_FR, &bing_he_IL, &bing_hr_HR, &bing_hu_HU,
+      &bing_it_IT, &bing_ja_JP, &bing_ko_KR, &bing_lt_LT, &bing_lv_LV,
+      &bing_nb_NO, &bing_nl_BE, &bing_nl_NL, &bing_pl_PL, &bing_pt_BR,
+      &bing_pt_PT, &bing_ro_RO, &bing_ru_RU, &bing_sl_SI, &bing_sk_SK,
+      &bing_sv_SE, &bing_th_TH, &bing_tr_TR, &bing_uk_UA, &bing_zh_CN,
+      &bing_zh_HK, &bing_zh_TW, &centrum_cz, &centrum_sk, &daum, &delfi_lt,
+      &delfi_lv, &diri, &eniro_fi, &eniro_se, &fonecta_02_fi, &go, &goo,
+      &google, &guruji, &hispavista, &in, &jabse, &jubii, &kvasir, &latne,
+      &leit, &libero, &mail_ru, &maktoob, &masrawy, &mynet, &najdi, &nate,
+      &naver, &neti, &netsprint, &nur_kz, &ok, &onet, &pogodak_ba, &pogodak_hr,
+      &pogodak_rs, &pogodok, &rambler, &rediff, &rednano, &sanook, &sapo,
+      &search_de_CH, &search_fr_CH, &seznam, &spray, &terra_ar, &terra_es, &tut,
+      &uol, &virgilio, &walla, &wp, &yahoo, &yahoo_ar, &yahoo_at, &yahoo_au,
+      &yahoo_br, &yahoo_ca, &yahoo_ch, &yahoo_cl, &yahoo_cn, &yahoo_co,
+      &yahoo_de, &yahoo_dk, &yahoo_es, &yahoo_fi, &yahoo_fr, &yahoo_hk,
+      &yahoo_id, &yahoo_in, &yahoo_it, &yahoo_jp, &yahoo_kr, &yahoo_malaysia,
+      &yahoo_mx, &yahoo_nl, &yahoo_no, &yahoo_nz, &yahoo_pe, &yahoo_ph,
+      &yahoo_qc, &yahoo_ru, &yahoo_se, &yahoo_sg, &yahoo_th, &yahoo_tw,
+      &yahoo_uk, &yahoo_ve, &yahoo_vn, &yamli, &yandex_ru, &yandex_ua,
+      &zoznam };
+
+
 // Geographic mappings /////////////////////////////////////////////////////////
 
 // Please refer to ISO 3166-1 for information about the two-character country
@@ -3418,6 +3454,21 @@ void GetPrepopulatedTemplateFromPrefs(PrefService* prefs,
   }
 }
 
+// The caller owns the returned TemplateURL.
+TemplateURL* MakePrepopulateTemplateURLFromPrepopulateEngine(
+    const PrepopulatedEngine& engine) {
+  return MakePrepopulatedTemplateURL(engine.name,
+                                     engine.keyword,
+                                     engine.search_url,
+                                     engine.favicon_url,
+                                     engine.suggest_url,
+                                     engine.instant_url,
+                                     engine.encoding,
+                                     engine.search_engine_type,
+                                     engine.logo_id,
+                                     engine.id);
+}
+
 void GetPrepopulatedEngines(PrefService* prefs,
                             std::vector<TemplateURL*>* t_urls,
                             size_t* default_search_provider_index) {
@@ -3432,18 +3483,8 @@ void GetPrepopulatedEngines(PrefService* prefs,
   size_t num_engines;
   GetPrepopulationSetFromCountryID(prefs, &engines, &num_engines);
   for (size_t i = 0; i != num_engines; ++i) {
-    TemplateURL* turl =
-        MakePrepopulatedTemplateURL(engines[i]->name,
-                                    engines[i]->keyword,
-                                    engines[i]->search_url,
-                                    engines[i]->favicon_url,
-                                    engines[i]->suggest_url,
-                                    engines[i]->instant_url,
-                                    engines[i]->encoding,
-                                    engines[i]->search_engine_type,
-                                    engines[i]->logo_id,
-                                    engines[i]->id);
-    t_urls->push_back(turl);
+    t_urls->push_back(
+        MakePrepopulateTemplateURLFromPrepopulateEngine(*engines[i]));
   }
 }
 
@@ -3459,6 +3500,62 @@ TemplateURL* GetPrepopulatedDefaultSearch(PrefService* prefs) {
     loaded_urls.weak_erase(loaded_urls.begin() + default_search_index);
   }
   return default_search_provider;
+}
+
+// Helper function for the templated function GetOriginForSearchURL.
+static const std::string& ToUTF8(const std::string& str) {
+  return str;
+}
+
+// Helper function for the templated function GetOriginForSearchURL.
+static std::string ToUTF8(const wchar_t* str) {
+  return WideToUTF8(str);
+}
+
+template<typename STR>
+static GURL GetOriginForSearchURL(const STR& url_string) {
+  // It is much faster to parse the url without generating the search URL, so
+  // try that first.  If it fails, fallback to the slow method.
+  std::string url_utf8_string(ToUTF8(url_string));
+  GURL url(url_utf8_string);
+  if (!url.is_valid()) {
+    TemplateURL turl;
+    turl.SetURL(url_utf8_string, 0, 0);
+
+    UIThreadSearchTermsData search_terms_data;
+    url = TemplateURLModel::GenerateSearchURLUsingTermsData(
+        &turl, search_terms_data);
+  }
+  return url.GetOrigin();
+}
+
+TemplateURL* GetEngineForOrigin(PrefService* prefs, const GURL& url_to_find) {
+  GURL origin_to_find = url_to_find.GetOrigin();
+
+  // Let's first try to find the url in the defaults. (In case the name
+  // of logo is different for the current locale versus others.)
+  ScopedVector<TemplateURL> loaded_urls;
+  size_t default_search_index;
+  GetPrepopulatedEngines(prefs, &loaded_urls.get(), &default_search_index);
+
+  UIThreadSearchTermsData search_terms_data;
+  for (std::vector<TemplateURL*>::iterator i = loaded_urls->begin();
+       i != loaded_urls->end(); ++i) {
+    TemplateURL* template_url = *i;
+    GURL engine_origin(GetOriginForSearchURL((*i)->url()->url()));
+    if (origin_to_find == engine_origin) {
+      loaded_urls.weak_erase(i);
+      return template_url;
+    }
+  }
+
+  // Let's try all of known engines now.
+  for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
+    GURL engine_origin(GetOriginForSearchURL(kAllEngines[i]->search_url));
+    if (origin_to_find == engine_origin)
+      return MakePrepopulateTemplateURLFromPrepopulateEngine(*kAllEngines[i]);
+  }
+  return NULL;
 }
 
 }  // namespace TemplateURLPrepopulateData
