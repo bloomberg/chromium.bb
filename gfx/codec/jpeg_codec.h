@@ -28,7 +28,11 @@ class JPEGCodec {
 
     // 4 bytes per pixel, in BGRA order in mem regardless of endianness.
     // This is the default Windows DIB order.
-    FORMAT_BGRA
+    FORMAT_BGRA,
+
+    // 4 bytes per pixel, it can be either RGBA or BGRA. It depends on the bit
+    // order in kARGB_8888_Config skia bitmap.
+    FORMAT_SkBitmap
   };
 
   // Encodes the given raw 'input' data, with each pixel being represented as

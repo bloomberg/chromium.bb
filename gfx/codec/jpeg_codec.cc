@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 
 extern "C" {
 #if defined(USE_SYSTEM_LIBJPEG)
@@ -243,9 +244,11 @@ bool JPEGCodec::Encode(const unsigned char* input, ColorFormat format,
   } else {
     // get the correct format converter
     void (*converter)(const unsigned char* in, int w, unsigned char* rgb);
-    if (format == FORMAT_RGBA) {
+    if (format == FORMAT_RGBA ||
+        (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
       converter = StripAlpha;
-    } else if (format == FORMAT_BGRA) {
+    } else if (format == FORMAT_BGRA ||
+               (format == FORMAT_SkBitmap && SK_B32_SHIFT == 0)) {
       converter = BGRAtoRGB;
     } else {
       NOTREACHED() << "Invalid pixel format";
@@ -481,10 +484,12 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
     // allocation by doing the expansion in-place.
     int row_write_stride;
     void (*converter)(const unsigned char* rgb, int w, unsigned char* out);
-    if (format == FORMAT_RGBA) {
+    if (format == FORMAT_RGBA ||
+        (format == FORMAT_SkBitmap && SK_R32_SHIFT == 0)) {
       row_write_stride = cinfo.output_width * 4;
       converter = AddAlpha;
-    } else if (format == FORMAT_BGRA) {
+    } else if (format == FORMAT_BGRA ||
+               (format == FORMAT_SkBitmap && SK_B32_SHIFT == 0)) {
       row_write_stride = cinfo.output_width * 4;
       converter = RGBtoBGRA;
     } else {
@@ -513,8 +518,7 @@ bool JPEGCodec::Decode(const unsigned char* input, size_t input_size,
 SkBitmap* JPEGCodec::Decode(const unsigned char* input, size_t input_size) {
   int w, h;
   std::vector<unsigned char> data_vector;
-  // Use FORMAT_BGRA as that maps to Skia's 32 bit (kARGB_8888_Config) format.
-  if (!Decode(input, input_size, FORMAT_BGRA, &data_vector, &w, &h))
+  if (!Decode(input, input_size, FORMAT_SkBitmap, &data_vector, &w, &h))
     return NULL;
 
   // Skia only handles 32 bit images.
