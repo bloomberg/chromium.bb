@@ -46,6 +46,12 @@ PRUNE_PATHS = set([
 
     # Same module occurs in base/ and in net/, so skip one of them.
     "net/third_party/nss",
+
+    # Same module occurs in chrome/ and in net/, so skip one of them.
+    "net/third_party/mozilla_security_manager",
+
+    # Same module occurs in both the top-level third_party and others.
+    "base/third_party/icu",
 ])
 
 # Directories we don't scan through.
