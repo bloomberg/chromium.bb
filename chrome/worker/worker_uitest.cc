@@ -598,7 +598,8 @@ TEST_F(WorkerTest, FLAKY_LimitTotal) {
   ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
 }
 
-TEST_F(WorkerTest, WorkerClose) {
+// Flaky, http://crbug.com/59786.
+TEST_F(WorkerTest, FLAKY_WorkerClose) {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   GURL url = ui_test_utils::GetTestUrl(FilePath(kTestDir),
