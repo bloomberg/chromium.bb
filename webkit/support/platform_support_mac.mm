@@ -143,6 +143,7 @@ void AfterInitialize(bool unit_test_mode) {
 
   // Add <app bundle's parent dir>/plugins to the plugin path so we can load
   // test plugins.
+  FilePath plugins_dir;
   PathService::Get(base::DIR_EXE, &plugins_dir);
   plugins_dir = plugins_dir.AppendASCII("../../../plugins");
   NPAPI::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
