@@ -24,13 +24,21 @@ void SendAccessibilityNotification(
   }
 }
 
+AccessibilityControlInfo::AccessibilityControlInfo(
+    Profile* profile, const std::string& control_name)
+    : profile_(profile), name_(control_name) {
+}
+
+AccessibilityControlInfo::~AccessibilityControlInfo() {
+}
+
 void AccessibilityControlInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetString(keys::kNameKey, name_);
   dict->SetString(keys::kTypeKey, type());
 }
 
 AccessibilityWindowInfo::AccessibilityWindowInfo(Profile* profile,
-                                                 std::string window_name)
+                                                 const std::string& window_name)
     : AccessibilityControlInfo(profile, window_name) {
 }
 
@@ -39,7 +47,7 @@ const char* AccessibilityWindowInfo::type() const {
 }
 
 AccessibilityButtonInfo::AccessibilityButtonInfo(Profile* profile,
-                                                 std::string button_name)
+                                                 const std::string& button_name)
     : AccessibilityControlInfo(profile, button_name) {
 }
 
@@ -48,18 +56,19 @@ const char* AccessibilityButtonInfo::type() const {
 }
 
 AccessibilityLinkInfo::AccessibilityLinkInfo(Profile* profile,
-                                             std::string link_name)
+                                             const std::string& link_name)
       : AccessibilityControlInfo(profile, link_name) { }
 
 const char* AccessibilityLinkInfo::type() const {
   return keys::kTypeLink;
 }
 
-AccessibilityRadioButtonInfo::AccessibilityRadioButtonInfo(Profile* profile,
-                                                           std::string name,
-                                                           bool checked,
-                                                           int item_index,
-                                                           int item_count)
+AccessibilityRadioButtonInfo::AccessibilityRadioButtonInfo(
+    Profile* profile,
+    const std::string& name,
+    bool checked,
+    int item_index,
+    int item_count)
     : AccessibilityControlInfo(profile, name),
       checked_(checked),
       item_index_(item_index),
@@ -79,7 +88,7 @@ void AccessibilityRadioButtonInfo::SerializeToDict(
 }
 
 AccessibilityCheckboxInfo::AccessibilityCheckboxInfo(Profile* profile,
-                                                     std::string name,
+                                                     const std::string& name,
                                                      bool checked)
     : AccessibilityControlInfo(profile, name),
       checked_(checked) {
@@ -95,7 +104,7 @@ void AccessibilityCheckboxInfo::SerializeToDict(DictionaryValue *dict) const {
 }
 
 AccessibilityTabInfo::AccessibilityTabInfo(Profile* profile,
-                                           std::string tab_name,
+                                           const std::string& tab_name,
                                            int tab_index,
                                            int tab_count)
     : AccessibilityControlInfo(profile, tab_name),
@@ -114,8 +123,8 @@ void AccessibilityTabInfo::SerializeToDict(DictionaryValue *dict) const {
 }
 
 AccessibilityComboBoxInfo::AccessibilityComboBoxInfo(Profile* profile,
-                                                     std::string name,
-                                                     std::string value,
+                                                     const std::string& name,
+                                                     const std::string& value,
                                                      int item_index,
                                                      int item_count)
     : AccessibilityControlInfo(profile, name),
@@ -136,7 +145,7 @@ void AccessibilityComboBoxInfo::SerializeToDict(DictionaryValue *dict) const {
 }
 
 AccessibilityTextBoxInfo::AccessibilityTextBoxInfo(Profile* profile,
-                                                   std::string name,
+                                                   const std::string& name,
                                                    bool password)
     : AccessibilityControlInfo(profile, name),
       value_(""),
@@ -158,8 +167,8 @@ void AccessibilityTextBoxInfo::SerializeToDict(DictionaryValue *dict) const {
 }
 
 AccessibilityListBoxInfo::AccessibilityListBoxInfo(Profile* profile,
-                                                   std::string name,
-                                                   std::string value,
+                                                   const std::string& name,
+                                                   const std::string& value,
                                                    int item_index,
                                                    int item_count)
     : AccessibilityControlInfo(profile, name),
@@ -180,7 +189,7 @@ void AccessibilityListBoxInfo::SerializeToDict(DictionaryValue *dict) const {
 }
 
 AccessibilityMenuInfo::AccessibilityMenuInfo(Profile* profile,
-                                             std::string menu_name)
+                                             const std::string& menu_name)
     : AccessibilityControlInfo(profile, menu_name) {
 }
 
@@ -189,7 +198,7 @@ const char* AccessibilityMenuInfo::type() const {
 }
 
 AccessibilityMenuItemInfo::AccessibilityMenuItemInfo(Profile* profile,
-                                                     std::string name,
+                                                     const std::string& name,
                                                      bool has_submenu,
                                                      int item_index,
                                                      int item_count)
