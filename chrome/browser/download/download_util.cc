@@ -619,12 +619,12 @@ void UpdateAppIconDownloadProgress(int download_count,
   for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
       browser_iterator != BrowserList::end(); browser_iterator++) {
     HWND frame = (*browser_iterator)->window()->GetNativeHandle();
-    if (download_count == 0 || progress == 1.0f)
+    /*if (download_count == 0 || progress == 1.0f)
       taskbar->SetProgressState(frame, TBPF_NOPROGRESS);
     else if (!progress_known)
       taskbar->SetProgressState(frame, TBPF_INDETERMINATE);
     else
-      taskbar->SetProgressValue(frame, (int)(progress * 100), 100);
+      taskbar->SetProgressValue(frame, (int)(progress * 100), 100);*/
   }
 #endif
 }
