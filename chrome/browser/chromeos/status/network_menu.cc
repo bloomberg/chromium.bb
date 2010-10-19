@@ -45,6 +45,57 @@ namespace chromeos {
 // static
 const int NetworkMenu::kNumWifiImages = 9;
 
+// NOTE: Use an array rather than just calculating a resource number to avoid
+// creating implicit ordering dependencies on the resource values.
+// static
+const int NetworkMenu::kBarsImages[kNumWifiImages] = {
+  IDR_STATUSBAR_NETWORK_BARS1,
+  IDR_STATUSBAR_NETWORK_BARS2,
+  IDR_STATUSBAR_NETWORK_BARS3,
+  IDR_STATUSBAR_NETWORK_BARS4,
+  IDR_STATUSBAR_NETWORK_BARS5,
+  IDR_STATUSBAR_NETWORK_BARS6,
+  IDR_STATUSBAR_NETWORK_BARS7,
+  IDR_STATUSBAR_NETWORK_BARS8,
+  IDR_STATUSBAR_NETWORK_BARS9,
+};
+// static
+const int NetworkMenu::kBarsImagesBlack[kNumWifiImages] = {
+  IDR_STATUSBAR_NETWORK_BARS1_BLACK,
+  IDR_STATUSBAR_NETWORK_BARS2_BLACK,
+  IDR_STATUSBAR_NETWORK_BARS3_BLACK,
+  IDR_STATUSBAR_NETWORK_BARS4_BLACK,
+  IDR_STATUSBAR_NETWORK_BARS5_BLACK,
+  IDR_STATUSBAR_NETWORK_BARS6_BLACK,
+  IDR_STATUSBAR_NETWORK_BARS7_BLACK,
+  IDR_STATUSBAR_NETWORK_BARS8_BLACK,
+  IDR_STATUSBAR_NETWORK_BARS9_BLACK,
+};
+// static
+const int NetworkMenu::kBarsImagesLowData[kNumWifiImages] = {
+  IDR_STATUSBAR_NETWORK_BARS1_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS2_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS3_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS4_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS5_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS6_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS7_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS8_LOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS9_LOWDATA,
+};
+// static
+const int NetworkMenu::kBarsImagesVLowData[kNumWifiImages] = {
+  IDR_STATUSBAR_NETWORK_BARS1_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS2_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS3_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS4_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS5_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS6_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS7_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS8_VLOWDATA,
+  IDR_STATUSBAR_NETWORK_BARS9_VLOWDATA,
+};
+
 NetworkMenu::NetworkMenu()
     : min_width_(-1) {
   network_menu_.reset(NetworkMenuUI::CreateMenu2(this));
@@ -320,36 +371,32 @@ void NetworkMenu::UpdateMenu() {
 // static
 SkBitmap NetworkMenu::IconForNetworkStrength(int strength, bool black) {
   // Compose wifi icon by superimposing various icons.
-  // NOTE: Use an array rather than just calculating a resource number to avoid
-  // creating implicit ordering dependencies on the resource values.
-  static const int kBarsImages[kNumWifiImages] = {
-    IDR_STATUSBAR_NETWORK_BARS1,
-    IDR_STATUSBAR_NETWORK_BARS2,
-    IDR_STATUSBAR_NETWORK_BARS3,
-    IDR_STATUSBAR_NETWORK_BARS4,
-    IDR_STATUSBAR_NETWORK_BARS5,
-    IDR_STATUSBAR_NETWORK_BARS6,
-    IDR_STATUSBAR_NETWORK_BARS7,
-    IDR_STATUSBAR_NETWORK_BARS8,
-    IDR_STATUSBAR_NETWORK_BARS9,
-  };
-  static const int kBarsBlackImages[kNumWifiImages] = {
-    IDR_STATUSBAR_NETWORK_BARS1_BLACK,
-    IDR_STATUSBAR_NETWORK_BARS2_BLACK,
-    IDR_STATUSBAR_NETWORK_BARS3_BLACK,
-    IDR_STATUSBAR_NETWORK_BARS4_BLACK,
-    IDR_STATUSBAR_NETWORK_BARS5_BLACK,
-    IDR_STATUSBAR_NETWORK_BARS6_BLACK,
-    IDR_STATUSBAR_NETWORK_BARS7_BLACK,
-    IDR_STATUSBAR_NETWORK_BARS8_BLACK,
-    IDR_STATUSBAR_NETWORK_BARS9_BLACK,
-  };
-
   int index = static_cast<int>(strength / 100.0 *
       nextafter(static_cast<float>(kNumWifiImages), 0));
   index = std::max(std::min(index, kNumWifiImages - 1), 0);
-  return *ResourceBundle::GetSharedInstance().GetBitmapNamed(
-      black ? kBarsBlackImages[index] : kBarsImages[index]);
+  const int* images = black ? kBarsImagesBlack : kBarsImages;
+  return *ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
+}
+
+SkBitmap NetworkMenu::IconForNetworkStrength(CellularNetwork cellular) {
+  // Compose wifi icon by superimposing various icons.
+  int index = static_cast<int>(cellular.strength() / 100.0 *
+      nextafter(static_cast<float>(kNumWifiImages), 0));
+  index = std::max(std::min(index, kNumWifiImages - 1), 0);
+  const int* images;
+  switch (cellular.data_left()) {
+    case CellularNetwork::DATA_NONE:
+    case CellularNetwork::DATA_VERY_LOW:
+      images = kBarsImagesVLowData;
+      break;
+    case CellularNetwork::DATA_LOW:
+      images = kBarsImagesLowData;
+      break;
+    case CellularNetwork::DATA_NORMAL:
+      images = kBarsImages;
+      break;
+  }
+  return *ResourceBundle::GetSharedInstance().GetBitmapNamed(images[index]);
 }
 
 // static

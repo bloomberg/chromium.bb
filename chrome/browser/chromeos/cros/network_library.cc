@@ -264,6 +264,35 @@ bool CellularNetwork::is_gsm() const {
       network_technology_ != NETWORK_TECHNOLOGY_UNKNOWN;
 }
 
+CellularNetwork::DataLeft CellularNetwork::data_left() const {
+  if (data_plans_.empty())
+    return DATA_NORMAL;
+  CellularDataPlan plan = data_plans_[0];
+  if (plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
+    int64 remaining = plan.plan_end_time - plan.update_time;
+    if (remaining <= 0)
+      return DATA_NONE;
+    else if (remaining <= kCellularDataVeryLowSecs)
+      return DATA_VERY_LOW;
+    else if (remaining <= kCellularDataLowSecs)
+      return DATA_LOW;
+    else
+      return DATA_NORMAL;
+  } else if (plan.plan_type == CELLULAR_DATA_PLAN_METERED_PAID ||
+             plan.plan_type == CELLULAR_DATA_PLAN_METERED_BASE) {
+    int64 remaining = plan.plan_data_bytes - plan.data_bytes_used;
+    if (remaining <= 0)
+      return DATA_NONE;
+    else if (remaining <= kCellularDataVeryLowBytes)
+      return DATA_VERY_LOW;
+    else if (remaining <= kCellularDataLowBytes)
+      return DATA_LOW;
+    else
+      return DATA_NORMAL;
+  }
+  return DATA_NORMAL;
+}
+
 std::string CellularNetwork::GetNetworkTechnologyString() const {
   // No need to localize these cellular technology abbreviations.
   switch (network_technology_) {
@@ -996,7 +1025,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     test_plan.plan_type = CELLULAR_DATA_PLAN_METERED_PAID;
     test_plan.update_time = base::Time::Now().ToInternalValue() /
         base::Time::kMicrosecondsPerSecond;
-    cellular_data_plans_.push_back(test_plan);
+    chromeos::CellularDataPlanList test_plans;
+    test_plans.push_back(test_plan);
+    cellular_.SetDataPlans(test_plans);
   }
 
   void UpdateSystemInfo() {
@@ -1055,9 +1086,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void NotifyCellularDataPlanChanged() {
-    FOR_EACH_OBSERVER(Observer, observers_,
-        CellularDataPlanChanged(cellular_.service_path(),
-                                cellular_data_plans_));
+    FOR_EACH_OBSERVER(Observer, observers_, CellularDataPlanChanged(this));
   }
 
   void UpdateNetworkStatus() {
@@ -1113,7 +1142,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void UpdateCellularDataPlan(const CellularDataPlanList& data_plans) {
-    cellular_data_plans_ = data_plans;
+    cellular_.SetDataPlans(data_plans);
     NotifyCellularDataPlanChanged();
   }
 
@@ -1142,9 +1171,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
 
   // The current connected (or connecting) cellular network.
   CellularNetwork cellular_;
-
-  // The data plan for the current cellular network.
-  CellularDataPlanList cellular_data_plans_;
 
   // The remembered cellular networks.
   CellularNetworkVector remembered_cellular_networks_;

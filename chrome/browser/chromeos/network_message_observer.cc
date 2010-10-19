@@ -143,15 +143,16 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
     CreateModalPopup(view);
 }
 
-void NetworkMessageObserver::CellularDataPlanChanged(
-    const std::string& service_path, const CellularDataPlanList& plans) {
+void NetworkMessageObserver::CellularDataPlanChanged(NetworkLibrary* obj) {
+  const CellularNetwork& cellular = obj->cellular_network();
   // Active plan is the first one in the list. Use empty one if none found.
+  const CellularDataPlanList& plans = cellular.GetDataPlans();
   CellularDataPlan plan = plans.empty() ? CellularDataPlan() : plans[0];
   // If connected cellular network changed, or data plan is different, then
   // it's a new network. Then hide all previous notifications.
   bool new_plan = false;
-  if (service_path != cellular_service_path_) {
-    cellular_service_path_ = service_path;
+  if (cellular.service_path() != cellular_service_path_) {
+    cellular_service_path_ = cellular.service_path();
     new_plan = true;
   } else if (plan.plan_name != cellular_data_plan_.plan_name ||
       plan.plan_type != cellular_data_plan_.plan_type) {
@@ -178,50 +179,32 @@ void NetworkMessageObserver::CellularDataPlanChanged(
     }
   }
 
-  if (plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED) {
-    // Time based plan. Show nearing expiration and data expiration.
-    int64 time_left = plan.plan_end_time - plan.update_time;
-    if (time_left <= 0) {
+  if (plan.plan_type != CELLULAR_DATA_PLAN_UNKNOWN) {
+    if (cellular.data_left() == CellularNetwork::DATA_NONE) {
       notification_low_data_.Hide();
+      int message = plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
+          IDS_NETWORK_MINUTES_REMAINING_MESSAGE :
+          IDS_NETWORK_DATA_REMAINING_MESSAGE;
       notification_no_data_.Show(l10n_util::GetStringFUTF16(
-          IDS_NETWORK_MINUTES_REMAINING_MESSAGE, ASCIIToUTF16("0")),
+          message, ASCIIToUTF16("0")),
           l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
           NewCallback(this, &NetworkMessageObserver::MobileSetup),
           false, false);
-    } else if (time_left <= kDataNearingExpirationSecs) {
+    } else if (cellular.data_left() == CellularNetwork::DATA_VERY_LOW) {
       notification_no_data_.Hide();
+      int message = plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
+          IDS_NETWORK_MINUTES_REMAINING_MESSAGE :
+          IDS_NETWORK_DATA_REMAINING_MESSAGE;
+      int64 remaining = plan.plan_type == CELLULAR_DATA_PLAN_UNLIMITED ?
+          (plan.plan_end_time - plan.update_time) / 60 :
+          (plan.plan_data_bytes - plan.data_bytes_used) / (1024 * 1024);
       notification_low_data_.Show(l10n_util::GetStringFUTF16(
-          IDS_NETWORK_MINUTES_UNTIL_EXPIRATION_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(time_left/60))),
+          message, UTF8ToUTF16(base::Int64ToString(remaining))),
           l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
           NewCallback(this, &NetworkMessageObserver::MobileSetup),
           false, false);
     } else {
-      // Got more data, so hide notifications.
-      notification_low_data_.Hide();
-      notification_no_data_.Hide();
-    }
-  } else if (plan.plan_type == CELLULAR_DATA_PLAN_METERED_PAID ||
-      plan.plan_type == CELLULAR_DATA_PLAN_METERED_BASE) {
-    // Metered plan. Show low data and out of data.
-    int64 bytes_remaining = plan.plan_data_bytes - plan.data_bytes_used;
-    if (bytes_remaining <= 0) {
-      notification_low_data_.Hide();
-      notification_no_data_.Show(l10n_util::GetStringFUTF16(
-          IDS_NETWORK_DATA_REMAINING_MESSAGE, ASCIIToUTF16("0")),
-          l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
-          NewCallback(this, &NetworkMessageObserver::MobileSetup),
-          false, false);
-    } else if (bytes_remaining <= kDataLowDataBytes) {
-      notification_no_data_.Hide();
-      notification_low_data_.Show(l10n_util::GetStringFUTF16(
-          IDS_NETWORK_DATA_REMAINING_MESSAGE,
-          UTF8ToUTF16(base::Int64ToString(bytes_remaining/1024))),
-          l10n_util::GetStringUTF16(IDS_NETWORK_PURCHASE_MORE_MESSAGE),
-          NewCallback(this, &NetworkMessageObserver::MobileSetup),
-          false, false);
-    } else {
-      // Got more data, so hide notifications.
+      // Got data, so hide notifications.
       notification_low_data_.Hide();
       notification_no_data_.Hide();
     }

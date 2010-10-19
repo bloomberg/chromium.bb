@@ -17,6 +17,18 @@
 
 namespace chromeos {
 
+// Cellular network is considered low data when less than 60 minues.
+static const int kCellularDataLowSecs = 60 * 60;
+
+// Cellular network is considered low data when less than 30 minues.
+static const int kCellularDataVeryLowSecs = 30 * 60;
+
+// Cellular network is considered low data when less than 100MB.
+static const int kCellularDataLowBytes = 100 * 1024 * 1024;
+
+// Cellular network is considered very low data when less than 50MB.
+static const int kCellularDataVeryLowBytes = 50 * 1024 * 1024;
+
 class Network {
  public:
   const std::string& service_path() const { return service_path_; }
@@ -118,6 +130,13 @@ class WirelessNetwork : public Network {
 
 class CellularNetwork : public WirelessNetwork {
  public:
+  enum DataLeft {
+    DATA_NORMAL,
+    DATA_LOW,
+    DATA_VERY_LOW,
+    DATA_NONE
+  };
+
   CellularNetwork();
   explicit CellularNetwork(const ServiceInfo& service)
       : WirelessNetwork() {
@@ -150,6 +169,7 @@ class CellularNetwork : public WirelessNetwork {
   const std::string& last_update() const { return last_update_; }
   const unsigned int prl_version() const { return prl_version_; }
   bool is_gsm() const;
+  DataLeft data_left() const;
 
   // WirelessNetwork overrides.
   virtual void Clear();
@@ -159,7 +179,7 @@ class CellularNetwork : public WirelessNetwork {
     return data_plans_;
   }
 
-  void SetDataPlans(CellularDataPlanList& data_plans) {
+  void SetDataPlans(const CellularDataPlanList& data_plans) {
     data_plans_ = data_plans;
   }
   // Return a string representation of network technology.
@@ -303,8 +323,7 @@ class NetworkLibrary {
     // Called when the network has changed. (wifi networks, and ethernet)
     virtual void NetworkChanged(NetworkLibrary* obj) = 0;
     // Called when the cellular data plan has changed.
-    virtual void CellularDataPlanChanged(const std::string& service_path,
-                                         const CellularDataPlanList& plans) {}
+    virtual void CellularDataPlanChanged(NetworkLibrary* obj) {}
   };
 
   virtual ~NetworkLibrary() {}
@@ -388,8 +407,7 @@ class NetworkLibrary {
 
   // Initiates cellular data plan refresh. Plan data will be passed through
   // Network::Observer::CellularDataPlanChanged callback.
-  virtual void RefreshCellularDataPlans(
-      const CellularNetwork& network) = 0;
+  virtual void RefreshCellularDataPlans(const CellularNetwork& network) = 0;
 
   // Disconnect from the specified wireless (either cellular or wifi) network.
   virtual void DisconnectFromWirelessNetwork(
