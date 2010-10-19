@@ -270,7 +270,7 @@ MULTIPROCESS_TEST_MAIN(RunFuzzServer) {
   MessageLoopForIO main_message_loop;
   FuzzerServerListener listener;
   IPC::Channel chan(kFuzzerChannel, IPC::Channel::MODE_CLIENT, &listener);
-  chan.Connect();
+  CHECK(chan.Connect());
   listener.Init(&chan);
   MessageLoop::current()->Run();
   return 0;

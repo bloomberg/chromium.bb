@@ -6,6 +6,7 @@
 #define IPC_IPC_CHANNEL_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ipc/ipc_message.h"
 
 namespace IPC {
@@ -68,7 +69,7 @@ class Channel : public Message::Sender {
   // connect to a pre-existing pipe.  Note, calling Connect()
   // will not block the calling thread and may complete
   // asynchronously.
-  bool Connect();
+  bool Connect() WARN_UNUSED_RESULT;
 
   // Close this Channel explicitly.  May be called multiple times.
   void Close();

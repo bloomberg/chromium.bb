@@ -110,7 +110,7 @@ int TestDescriptorClient(ino_t expected_inode_num) {
   // Setup IPC channel.
   IPC::Channel chan(kTestClientChannel, IPC::Channel::MODE_CLIENT,
                     &listener);
-  chan.Connect();
+  CHECK(chan.Connect());
   MessageLoop::current()->Run();
 
   return 0;
@@ -157,7 +157,7 @@ TEST_F(IPCChannelTest, DescriptorTestSandboxed) {
 
   IPC::Channel chan(kTestClientChannel, IPC::Channel::MODE_SERVER,
                     &listener);
-  chan.Connect();
+  ASSERT_TRUE(chan.Connect());
 
   base::ProcessHandle process_handle = SpawnChild(
       TEST_DESCRIPTOR_CLIENT_SANDBOXED,
@@ -181,7 +181,7 @@ TEST_F(IPCChannelTest, DescriptorTest) {
 
   IPC::Channel chan(kTestClientChannel, IPC::Channel::MODE_SERVER,
                     &listener);
-  chan.Connect();
+  ASSERT_TRUE(chan.Connect());
 
   base::ProcessHandle process_handle = SpawnChild(TEST_DESCRIPTOR_CLIENT,
                                                   &chan);

@@ -219,7 +219,7 @@ TEST_F(IPCChannelTest, ChannelTest) {
   // Setup IPC channel.
   IPC::Channel chan(kTestClientChannel, IPC::Channel::MODE_SERVER,
                     &channel_listener);
-  chan.Connect();
+  ASSERT_TRUE(chan.Connect());
 
   channel_listener.Init(&chan);
 
@@ -334,7 +334,7 @@ TEST_F(IPCChannelTest, SendMessageInChannelConnected) {
   IPC::Channel channel(kTestClientChannel, IPC::Channel::MODE_SERVER,
                        &channel_listener);
   channel_listener.Init(&channel);
-  channel.Connect();
+  ASSERT_TRUE(channel.Connect());
 
   base::ProcessHandle process_handle = SpawnChild(TEST_CLIENT, &channel);
   ASSERT_TRUE(process_handle);
@@ -359,7 +359,7 @@ MULTIPROCESS_TEST_MAIN(RunTestClient) {
   // setup IPC channel
   IPC::Channel chan(kTestClientChannel, IPC::Channel::MODE_CLIENT,
                     &channel_listener);
-  chan.Connect();
+  CHECK(chan.Connect());
   channel_listener.Init(&chan);
   Send(&chan, "hello from child");
   // run message loop
@@ -492,7 +492,7 @@ TEST_F(IPCChannelTest, Performance) {
   IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_SERVER, NULL);
   ChannelPerfListener perf_listener(&chan, 10000, 100000);
   chan.set_listener(&perf_listener);
-  chan.Connect();
+  ASSERT_TRUE(chan.Connect());
 
   HANDLE process = SpawnChild(TEST_REFLECTOR, &chan);
   ASSERT_TRUE(process);
@@ -524,7 +524,7 @@ MULTIPROCESS_TEST_MAIN(RunReflector) {
   IPC::Channel chan(kReflectorChannel, IPC::Channel::MODE_CLIENT, NULL);
   ChannelReflectorListener channel_reflector_listener(&chan);
   chan.set_listener(&channel_reflector_listener);
-  chan.Connect();
+  ASSERT_TRUE(chan.Connect());
 
   MessageLoop::current()->Run();
   return true;

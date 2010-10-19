@@ -137,7 +137,7 @@ bool FFUnitTestDecryptorProxy::Setup(const std::wstring& nss_path) {
   channel_.reset(new IPC::Channel(kTestChannelID,
                                   IPC::Channel::MODE_SERVER,
                                   listener_.get()));
-  channel_->Connect();
+  CHECK(channel_->Connect());
   listener_->SetSender(channel_.get());
 
   // Spawn child and set up sync IPC connection.
@@ -262,7 +262,7 @@ MULTIPROCESS_TEST_MAIN(NSSDecrypterChildProcess) {
   FFDecryptorClientChannelListener listener;
 
   IPC::Channel channel(kTestChannelID, IPC::Channel::MODE_CLIENT, &listener);
-  channel.Connect();
+  CHECK(channel.Connect());
   listener.SetSender(&channel);
 
   // run message loop
