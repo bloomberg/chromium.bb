@@ -508,7 +508,8 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
 // 2. If destination file/directory do not exist, the source should be copied
 //    in the destination folder after Do() and should be rolled back after
 //    Rollback().
-TEST_F(CopyTreeWorkItemTest, IfNotPresentTest) {
+// Flaky, http://crbug.com/59785.
+TEST_F(CopyTreeWorkItemTest, FLAKY_IfNotPresentTest) {
   // Create source file
   FilePath file_name_from(test_dir_);
   file_name_from = file_name_from.AppendASCII("File_From");
@@ -586,7 +587,8 @@ TEST_F(CopyTreeWorkItemTest, IfNotPresentTest) {
 
 // Copy one file without rollback. The existing one in destination is in use.
 // Verify it is moved to backup location and stays there.
-TEST_F(CopyTreeWorkItemTest, CopyFileInUseAndCleanup) {
+// Flaky, http://crbug.com/59783.
+TEST_F(CopyTreeWorkItemTest, FLAKY_CopyFileInUseAndCleanup) {
   // Create source file
   FilePath file_name_from(test_dir_);
   file_name_from = file_name_from.AppendASCII("File_From");
@@ -654,7 +656,8 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUseAndCleanup) {
 }
 
 // Copy a tree from source to destination.
-TEST_F(CopyTreeWorkItemTest, CopyTree) {
+// Flaky, http://crbug.com/59784.
+TEST_F(CopyTreeWorkItemTest, FLAKY_CopyTree) {
   // Create source tree
   FilePath dir_name_from(test_dir_);
   dir_name_from = dir_name_from.AppendASCII("from");
