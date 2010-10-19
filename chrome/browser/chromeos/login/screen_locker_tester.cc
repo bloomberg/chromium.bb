@@ -26,8 +26,8 @@ test::ScreenLockerTester* ScreenLocker::GetTester() {
 namespace test {
 
 bool ScreenLockerTester::IsLocked() {
-  return ScreenLocker::screen_locker_ != NULL &&
-      ScreenLocker::screen_locker_->lock_widget_->GetRootView()->IsVisible();
+  return ScreenLocker::screen_locker_ &&
+      ScreenLocker::screen_locker_->locked_;
 }
 
 void ScreenLockerTester::InjectMockAuthenticator(

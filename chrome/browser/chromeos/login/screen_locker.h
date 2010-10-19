@@ -172,6 +172,11 @@ class ScreenLocker : public LoginStatusConsumer,
   // password. True when chrome is in BWSI or auto login mode.
   bool unlock_on_input_;
 
+  // True if the screen is locked, or false otherwise.  This changes
+  // from false to true, but will never change from true to
+  // false. Instead, ScreenLocker object gets deleted when unlocked.
+  bool locked_;
+
   // Reference to the single instance of the screen locker object.
   // This is used to make sure there is only one screen locker instance.
   static ScreenLocker* screen_locker_;

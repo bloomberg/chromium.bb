@@ -504,7 +504,8 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
       input_grabbed_(false),
       // TODO(oshima): support auto login mode (this is not implemented yet)
       // http://crosbug.com/1881
-      unlock_on_input_(user_.email().empty()) {
+      unlock_on_input_(user_.email().empty()),
+      locked_(false) {
   DCHECK(!screen_locker_);
   screen_locker_ = this;
 }
@@ -527,6 +528,7 @@ void ScreenLocker::Init() {
   if (!unlock_on_input_) {
     screen_lock_view_ = new ScreenLockView(this);
     screen_lock_view_->Init();
+    screen_lock_view_->SetEnabled(false);
     size = screen_lock_view_->GetPreferredSize();
   } else {
     input_event_observer_.reset(new InputEventObserver(this));
@@ -538,7 +540,6 @@ void ScreenLocker::Init() {
   lock_widget_->InitWithWidget(lock_window_, gfx::Rect(size));
   if (screen_lock_view_)
     lock_widget_->SetContentsView(screen_lock_view_);
-  lock_widget_->GetRootView()->SetVisible(false);
   lock_widget_->Show();
 
   // Configuring the background url.
@@ -547,6 +548,8 @@ void ScreenLocker::Init() {
           switches::kScreenSaverUrl);
   background_view_ = new ScreenLockerBackgroundView(lock_widget_);
   background_view_->Init(GURL(url_string));
+  if (background_view_->ScreenSaverEnabled())
+    StartScreenSaver();
 
   DCHECK(GTK_WIDGET_REALIZED(lock_window_->GetNativeView()));
   WmIpc::instance()->SetWindowType(
@@ -767,16 +770,15 @@ void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
 
 void ScreenLocker::ScreenLockReady() {
   LOG(INFO) << "ScreenLockReady: sending completed signal to power manager.";
-  // Don't show the password field until we grab all inputs.
-  lock_widget_->GetRootView()->SetVisible(true);
+  locked_ = true;
   if (background_view_->ScreenSaverEnabled()) {
     lock_widget_->GetFocusManager()->RegisterAccelerator(
         views::Accelerator(app::VKEY_ESCAPE, false, false, false), this);
     locker_input_event_observer_.reset(new LockerInputEventObserver(this));
     MessageLoopForUI::current()->AddObserver(
         locker_input_event_observer_.get());
-    StartScreenSaver();
   } else {
+    // Don't enable the password field until we grab all inputs.
     EnableInput();
   }
 
