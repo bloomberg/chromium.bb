@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,18 +78,18 @@ void SystemMonitor::RemoveObserver(PowerObserver* obs) {
 }
 
 void SystemMonitor::NotifyPowerStateChange() {
-  LOG(INFO) << L"PowerStateChange: "
-           << (BatteryPower() ? L"On" : L"Off") << L" battery";
+  VLOG(1) << L"PowerStateChange: " << (BatteryPower() ? L"On" : L"Off")
+          << L" battery";
   observer_list_->Notify(&PowerObserver::OnPowerStateChange, BatteryPower());
 }
 
 void SystemMonitor::NotifySuspend() {
-  LOG(INFO) << L"Power Suspending";
+  VLOG(1) << L"Power Suspending";
   observer_list_->Notify(&PowerObserver::OnSuspend);
 }
 
 void SystemMonitor::NotifyResume() {
-  LOG(INFO) << L"Power Resuming";
+  VLOG(1) << L"Power Resuming";
   observer_list_->Notify(&PowerObserver::OnResume);
 }
 

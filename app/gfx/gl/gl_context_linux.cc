@@ -649,7 +649,7 @@ void PbufferGLContext::SetSwapInterval(int interval) {
 }
 
 bool PixmapGLContext::Initialize(GLContext* shared_context) {
-  LOG(INFO) << "GL context: using pixmaps.";
+  VLOG(1) << "GL context: using pixmaps.";
 
   static int attributes[] = {
     GLX_RGBA,

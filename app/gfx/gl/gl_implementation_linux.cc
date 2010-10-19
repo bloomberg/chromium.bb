@@ -48,7 +48,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append("libosmesa.so"));
       if (!library) {
-        DLOG(INFO) << "libosmesa.so not found";
+        DVLOG(1) << "libosmesa.so not found";
         return false;
       }
 

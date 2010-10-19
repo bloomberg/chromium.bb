@@ -45,7 +45,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary library = base::LoadNativeLibrary(
           module_path.Append(L"osmesa.dll"));
       if (!library) {
-        DLOG(INFO) << "osmesa.dll not found";
+        DVLOG(1) << "osmesa.dll not found";
         return false;
       }
 
@@ -123,7 +123,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
       base::NativeLibrary library = base::LoadNativeLibrary(
           FilePath(L"opengl32.dll"));
       if (!library) {
-        LOG(INFO) << "opengl32.dll not found";
+        VLOG(1) << "opengl32.dll not found";
         return false;
       }
 
