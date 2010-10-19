@@ -216,16 +216,43 @@ cr.define('bmm', function() {
      * Handles mousedown events so that we can prevent the auto scroll as
      * necessary.
      * @private
-     * @param {!Event} e The mousedown event object.
+     * @param {!MouseEvent} e The mousedown event object.
      */
     handleMouseDown_: function(e) {
-      // When the user does a middle click we need to prevent the auto scroll
-      // in case the user is trying to middle click to open a bookmark in a
-      // background tab.
-      // We do not do this in case the target is an input since middle click
-      // is also paste on Linux and we don't want to break that.
-      if (e.button == 1 && e.target.tagName != 'INPUT')
-        e.preventDefault();
+      if (e.button == 1) {
+        // WebKit no longer fires click events for middle clicks so we manually
+        // listen to mouse up to dispatch a click event.
+        this.addEventListener('mouseup', this.handleMiddleMouseUp_);
+
+        // When the user does a middle click we need to prevent the auto scroll
+        // in case the user is trying to middle click to open a bookmark in a
+        // background tab.
+        // We do not do this in case the target is an input since middle click
+        // is also paste on Linux and we don't want to break that.
+        if (e.target.tagName != 'INPUT')
+          e.preventDefault();
+      }
+    },
+
+    /**
+     * WebKit no longer dispatches click events for middle clicks so we need
+     * to emulate it.
+     * @private
+     * @param {!MouseEvent} e The mouse up event object.
+     */
+    handleMiddleMouseUp_: function(e) {
+      this.removeEventListener('mouseup', this.handleMiddleMouseUp_);
+      if (e.button == 1) {
+        var clickEvent = document.createEvent('MouseEvent');
+        clickEvent.initMouseEvent('click',
+                                  true,  // canBubble
+                                  true,  // cancelable,
+                                  e.view, e.detail,
+                                  e.screenX, e.screenY, e.clientX, e.clientY,
+                                  e.ctrlKey, e.altKey, e.shiftKey, e.metaKey,
+                                  e.button, e.relatedTarget);
+        e.target.dispatchEvent(clickEvent);
+      }
     },
 
     // Bookmark model update callbacks
