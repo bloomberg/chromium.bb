@@ -22,10 +22,6 @@
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "mfplat.lib")
-#pragma comment(linker, "/DelayLoad:dxva2.dll")
-#pragma comment(linker, "/DelayLoad:d3d9.dll")
-#pragma comment(linker, "/DelayLoad:mf.dll")
-#pragma comment(linker, "/DelayLoad:mfplat.dll")
 
 using base::TimeDelta;
 
