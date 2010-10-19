@@ -193,7 +193,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<PopupShowFunction>();
 
   // Processes.
-  RegisterFunction<GetProcessForTabFunction>();
+  RegisterFunction<GetProcessIdForTabFunction>();
 
   // Metrics.
   RegisterFunction<MetricsRecordUserActionFunction>();

@@ -354,6 +354,36 @@ base::ProcessHandle TaskManagerChildProcessResource::GetProcess() const {
   return child_process_.handle();
 }
 
+TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
+  // Translate types to TaskManager::ResourceType, since ChildProcessInfo's type
+  // is not available for all TaskManager resources.
+  switch (child_process_.type()) {
+    case ChildProcessInfo::BROWSER_PROCESS:
+      return TaskManager::Resource::BROWSER;
+    case ChildProcessInfo::RENDER_PROCESS:
+      return TaskManager::Resource::RENDERER;
+    case ChildProcessInfo::PLUGIN_PROCESS:
+      return TaskManager::Resource::PLUGIN;
+    case ChildProcessInfo::WORKER_PROCESS:
+      return TaskManager::Resource::WORKER;
+    case ChildProcessInfo::NACL_LOADER_PROCESS:
+    case ChildProcessInfo::NACL_BROKER_PROCESS:
+      return TaskManager::Resource::NACL;
+    case ChildProcessInfo::UTILITY_PROCESS:
+      return TaskManager::Resource::UTILITY;
+    case ChildProcessInfo::PROFILE_IMPORT_PROCESS:
+      return TaskManager::Resource::PROFILE_IMPORT;
+    case ChildProcessInfo::ZYGOTE_PROCESS:
+      return TaskManager::Resource::ZYGOTE;
+    case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
+      return TaskManager::Resource::SANDBOX_HELPER;
+    case ChildProcessInfo::GPU_PROCESS:
+      return TaskManager::Resource::GPU;
+    default:
+      return TaskManager::Resource::UNKNOWN;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerChildProcessResourceProvider class
 ////////////////////////////////////////////////////////////////////////////////

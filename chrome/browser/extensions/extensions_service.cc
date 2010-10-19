@@ -35,6 +35,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/extensions/extension_webnavigation_api.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
@@ -622,6 +623,7 @@ void ExtensionsService::InitEventRouters() {
       profile_->GetBookmarkModel());
   ExtensionCookiesEventRouter::GetInstance()->Init();
   ExtensionManagementEventRouter::GetInstance()->Init();
+  ExtensionProcessesEventRouter::GetInstance()->ObserveProfile(profile_);
   ExtensionWebNavigationEventRouter::GetInstance()->Init();
   event_routers_initialized_ = true;
 }

@@ -7,6 +7,8 @@
 #include "base/values.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
+#include "chrome/browser/extensions/extension_processes_api.h"
+#include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -62,6 +64,11 @@ void ExtensionEventRouter::AddEventListener(
     extension_devtools_manager_->AddEventListener(event_name,
                                                   render_process_id);
   }
+
+  // We lazily tell the TaskManager to start updating when listeners to the
+  // processes.onUpdated event arrive.
+  if (event_name.compare(extension_processes_api_constants::kOnUpdated) == 0)
+    ExtensionProcessesEventRouter::GetInstance()->ListenerAdded();
 }
 
 void ExtensionEventRouter::RemoveEventListener(
@@ -75,6 +82,11 @@ void ExtensionEventRouter::RemoveEventListener(
     extension_devtools_manager_->RemoveEventListener(event_name,
                                                      render_process_id);
   }
+
+  // If a processes.onUpdated event listener is removed (or a process with one
+  // exits), then we let the TaskManager know that it has one fewer listener.
+  if (event_name.compare(extension_processes_api_constants::kOnUpdated) == 0)
+    ExtensionProcessesEventRouter::GetInstance()->ListenerRemoved();
 }
 
 bool ExtensionEventRouter::HasEventListener(const std::string& event_name) {

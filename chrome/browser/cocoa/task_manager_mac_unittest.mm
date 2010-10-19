@@ -22,6 +22,7 @@ class TestResource : public TaskManager::Resource {
   virtual std::wstring GetTitle() const { return UTF16ToWide(title_); }
   virtual SkBitmap GetIcon() const { return SkBitmap(); }
   virtual base::ProcessHandle GetProcess() const { return pid_; }
+  virtual Type GetType() const { return RENDERER; }
   virtual bool SupportNetworkUsage() const { return false; }
   virtual void SetSupportNetworkUsage() { NOTREACHED(); }
   virtual void Refresh() {}

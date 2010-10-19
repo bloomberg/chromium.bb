@@ -5,13 +5,13 @@
   function init() {
     chrome.windows.getCurrent(function(currentWindow) {
       chrome.tabs.getSelected(currentWindow.id, function(selectedTab) {
-        chrome.experimental.processes.getProcessForTab(selectedTab.id,
-          function(process) {
+        chrome.experimental.processes.getProcessIdForTab(selectedTab.id,
+          function(pid) {
             var outputDiv = document.getElementById("tab-list");
             var titleDiv = document.getElementById("title");
-            titleDiv.innerHTML = "<b>Tabs in Process " + process.id + ":</b>";
+            titleDiv.innerHTML = "<b>Tabs in Process " + pid + ":</b>";
             displayTabInfo(currentWindow.id, selectedTab, outputDiv);
-            displaySameProcessTabs(selectedTab, process.id, outputDiv);
+            displaySameProcessTabs(selectedTab, pid, outputDiv);
           }
         );
 
@@ -34,9 +34,9 @@
       
       // Display tab in list if it is in the same process
       tabs.forEach(function(tab) {
-        chrome.experimental.processes.getProcessForTab(tab.id,
-          function(process) {
-            if (process.id == processId) {
+        chrome.experimental.processes.getProcessIdForTab(tab.id,
+          function(pid) {
+            if (pid == processId) {
               displayTabInfo(tab.windowId, tab, outputDiv);
             }
           }

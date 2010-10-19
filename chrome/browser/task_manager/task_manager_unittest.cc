@@ -35,6 +35,7 @@ class TestResource : public TaskManager::Resource {
   virtual base::ProcessHandle GetProcess() const {
     return base::GetCurrentProcessHandle();
   }
+  virtual Type GetType() const { return RENDERER; }
   virtual bool SupportNetworkUsage() const { return false; }
   virtual void SetSupportNetworkUsage() { NOTREACHED(); }
   virtual void Refresh() { refresh_called_ = true; }

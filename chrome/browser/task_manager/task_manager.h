@@ -42,9 +42,26 @@ class TaskManager {
    public:
     virtual ~Resource() {}
 
+    enum Type {
+      UNKNOWN = 0,     // An unknown process type.
+      BROWSER,         // The main browser process.
+      RENDERER,        // A normal TabContents renderer process.
+      EXTENSION,       // An extension or app process.
+      NOTIFICATION,    // A notification process.
+      PLUGIN,          // A plugin process.
+      WORKER,          // A web worker process.
+      NACL,            // A NativeClient loader or broker process.
+      UTILITY,         // A browser utility process.
+      PROFILE_IMPORT,  // A profile import process.
+      ZYGOTE,          // A Linux zygote process.
+      SANDBOX_HELPER,  // A sandbox helper process.
+      GPU              // A graphics process.
+    };
+
     virtual std::wstring GetTitle() const = 0;
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
+    virtual Type GetType() const = 0;
 
     virtual bool ReportsCacheStats() const { return false; }
     virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const {
@@ -197,6 +214,11 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   // Returns number of registered resources.
   int ResourceCount() const;
 
+  // Methods to return raw resource information.
+  int64 GetNetworkUsage(int index) const;
+  double GetCPUUsage(int index) const;
+  int GetProcessId(int index) const;
+
   // Methods to return formatted resource information.
   string16 GetResourceTitle(int index) const;
   string16 GetResourceNetworkUsage(int index) const;
@@ -211,6 +233,27 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   string16 GetResourceSqliteMemoryUsed(int index) const;
   string16 GetResourceGoatsTeleported(int index) const;
   string16 GetResourceV8MemoryAllocatedSize(int index) const;
+
+  // Gets the private memory (in bytes) that should be displayed for the passed
+  // resource index. Caches the result since this calculation can take time on
+  // some platforms.
+  bool GetPrivateMemory(int index, size_t* result) const;
+
+  // Gets the shared memory (in bytes) that should be displayed for the passed
+  // resource index. Caches the result since this calculation can take time on
+  // some platforms.
+  bool GetSharedMemory(int index, size_t* result) const;
+
+  // Gets the physical memory (in bytes) that should be displayed for the passed
+  // resource index.
+  bool GetPhysicalMemory(int index, size_t* result) const;
+
+  // Gets the amount of memory allocated for javascript. Returns false if the
+  // resource for the given row isn't a renderer.
+  bool GetV8Memory(int index, size_t* result) const;
+
+  // See design doc at http://go/at-teleporter for more information.
+  int GetGoatsTeleported(int index) const;
 
   // Returns true if the resource is first in its group (resources
   // rendered by the same process are groupped together).
@@ -229,6 +272,9 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
 
   // Returns process handle for given resource.
   base::ProcessHandle GetResourceProcessHandle(int index) const;
+
+  // Returns the type of the given resource.
+  TaskManager::Resource::Type GetResourceType(int index) const;
 
   // Returns TabContents of given resource or NULL if not applicable.
   TabContents* GetResourceTabContents(int index) const;
@@ -265,6 +311,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
  private:
   friend class base::RefCountedThreadSafe<TaskManagerModel>;
   FRIEND_TEST_ALL_PREFIXES(TaskManagerTest, RefreshCalled);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionApiTest, ProcessesVsTaskManager);
 
   ~TaskManagerModel();
 
@@ -332,27 +379,6 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   // |resource|.
   double GetCPUUsage(TaskManager::Resource* resource) const;
 
-  // Gets the private memory (in bytes) that should be displayed for the passed
-  // resource index. Caches the result since this calculation can take time on
-  // some platforms.
-  bool GetPrivateMemory(int index, size_t* result) const;
-
-  // Gets the shared memory (in bytes) that should be displayed for the passed
-  // resource index. Caches the result since this calculation can take time on
-  // some platforms.
-  bool GetSharedMemory(int index, size_t* result) const;
-
-  // Gets the physical memory (in bytes) that should be displayed for the passed
-  // resource index.
-  bool GetPhysicalMemory(int index, size_t* result) const;
-
-  // Gets the amount of memory allocated for javascript. Returns false if the
-  // resource for the given row isn't a renderer.
-  bool GetV8Memory(int index, size_t* result) const;
-
-  // See design doc at http://go/at-teleporter for more information.
-  int GetGoatsTeleported(int index) const;
-
   // Retrieves the ProcessMetrics for the resources at the specified row.
   // Returns true if there was a ProcessMetrics available.
   bool GetProcessMetricsForRow(int row,
@@ -402,6 +428,10 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   mutable MemoryUsageMap memory_usage_map_;
 
   ObserverList<TaskManagerModelObserver> observer_list_;
+
+  // How many calls to StartUpdating have been made without matching calls to
+  // StopUpdating.
+  int update_requests_;
 
   // Whether we are currently in the process of updating.
   UpdateState update_state_;

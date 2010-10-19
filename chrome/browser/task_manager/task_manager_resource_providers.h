@@ -33,6 +33,7 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   std::wstring GetTitle() const;
   SkBitmap GetIcon() const;
   base::ProcessHandle GetProcess() const;
+  Type GetType() const { return RENDERER; }
   TabContents* GetTabContents() const;
 
   virtual bool ReportsCacheStats() const { return true; }
@@ -122,6 +123,7 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
   std::wstring GetTitle() const;
   SkBitmap GetIcon() const;
   base::ProcessHandle GetProcess() const;
+  Type GetType() const;
 
   bool SupportNetworkUsage() const {
     return network_usage_support_;
@@ -211,6 +213,7 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   std::wstring GetTitle() const;
   SkBitmap GetIcon() const;
   base::ProcessHandle GetProcess() const;
+  Type GetType() const { return EXTENSION; }
   bool SupportNetworkUsage() const { return true; }
   void SetSupportNetworkUsage() { NOTREACHED(); }
   const Extension* GetExtension() const;
@@ -282,6 +285,7 @@ class TaskManagerNotificationResource : public TaskManager::Resource {
   std::wstring GetTitle() const { return title_; }
   SkBitmap GetIcon() const;
   base::ProcessHandle GetProcess() const;
+  Type GetType() const { return NOTIFICATION; }
   virtual bool SupportNetworkUsage() const { return false; }
   virtual void SetSupportNetworkUsage() { }
 
@@ -346,6 +350,7 @@ class TaskManagerBrowserProcessResource : public TaskManager::Resource {
   std::wstring GetTitle() const;
   SkBitmap GetIcon() const;
   base::ProcessHandle GetProcess() const;
+  Type GetType() const { return BROWSER; }
 
   bool SupportNetworkUsage() const { return true; }
   void SetSupportNetworkUsage() { NOTREACHED(); }
