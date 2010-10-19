@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/trace_event.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/page_info_bubble_view.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
@@ -36,11 +38,39 @@
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "views/grid_layout.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
+
+// This class overrides the LinkActivated function in the PageInfoBubbleView
+// class and routes the help center link navigation to the host browser.
+class ExternalTabPageInfoBubbleView : public PageInfoBubbleView {
+ public:
+  ExternalTabPageInfoBubbleView(ExternalTabContainer* container,
+                                gfx::NativeWindow parent_window,
+                                Profile* profile,
+                                const GURL& url,
+                                const NavigationEntry::SSLStatus& ssl,
+                                bool show_history)
+      : PageInfoBubbleView(parent_window, profile, url, ssl, show_history),
+        container_(container) {
+    DLOG(INFO) << __FUNCTION__;
+  }
+  virtual ~ExternalTabPageInfoBubbleView() {
+    DLOG(INFO) << __FUNCTION__;
+  }
+  // LinkController methods:
+  virtual void LinkActivated(views::Link* source, int event_flags) {
+    GURL url = GURL(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER));
+    container_->OpenURLFromTab(container_->tab_contents(), url, GURL(),
+                               NEW_FOREGROUND_TAB, PageTransition::LINK);
+  }
+ private:
+  scoped_refptr<ExternalTabContainer> container_;
+};
 
 base::LazyInstance<ExternalTabContainer::PendingTabs>
     ExternalTabContainer::pending_tabs_(base::LINKER_INITIALIZED);
@@ -524,7 +554,20 @@ void ExternalTabContainer::ShowPageInfo(Profile* profile,
                                         const GURL& url,
                                         const NavigationEntry::SSLStatus& ssl,
                                         bool show_history) {
-  browser::ShowPageInfo(GetNativeView(), profile, url, ssl, show_history);
+  POINT cursor_pos = {0};
+  GetCursorPos(&cursor_pos);
+
+  gfx::Rect bounds;
+  bounds.set_origin(gfx::Point(cursor_pos));
+
+  PageInfoBubbleView* page_info_bubble =
+      new ExternalTabPageInfoBubbleView(this, NULL, profile, url,
+                                        ssl, show_history);
+  InfoBubble* info_bubble =
+      InfoBubble::Show(this, bounds,
+                       BubbleBorder::TOP_LEFT,
+                       page_info_bubble, page_info_bubble);
+  page_info_bubble->set_info_bubble(info_bubble);
 }
 
 void ExternalTabContainer::RegisterRenderViewHostForAutomation(

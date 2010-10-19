@@ -116,7 +116,7 @@ TEST_P(FullTabUITest, FLAKY_CtrlN) {
   const char* kNewWindowTitlePattern = "*Internet Explorer*";
   EXPECT_CALL(ie_mock_, OnLoad(is_cf, StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kNewWindowTitlePattern),
+          WatchWindow(&win_observer_mock, kNewWindowTitlePattern, ""),
           SetFocusToRenderer(&ie_mock_),
           DelaySendChar(&loop_, 1000, 'n', simulate_input::CONTROL)));
 
@@ -145,7 +145,7 @@ TEST_P(FullTabUITest, FLAKY_CtrlF) {
   const char* kFindDialogCaption = "Find";
   EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kFindDialogCaption),
+          WatchWindow(&win_observer_mock, kFindDialogCaption, ""),
           SetFocusToRenderer(&ie_mock_),
           DelaySendChar(&loop_, 1500, 'f', simulate_input::CONTROL)));
 
@@ -366,7 +366,7 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
     const char* kSaveDlgCaption = "Save As";
     EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
         .WillOnce(testing::DoAll(
-            WatchWindow(&win_observer_mock, kSaveDlgCaption),
+            WatchWindow(&win_observer_mock, kSaveDlgCaption, ""),
             AccRightClick(AccObjectMatcher(L"", role))));
     EXPECT_CALL(acc_observer_, OnMenuPopup(_))
         .WillOnce(AccLeftClick(AccObjectMatcher(menu_item_name)));
@@ -454,18 +454,19 @@ TEST_F(ContextMenuTest, CFPageInfo) {
   InSequence expect_in_sequence_for_scope;
 
   // View page information.
-  const char* kPageInfoCaption = "Security Information";
   EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kPageInfoCaption),
+          WatchWindow(&win_observer_mock, "", "Chrome_WidgetWin_*"),
           OpenContextMenuAsync()));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"View page info")));
 
+  EXPECT_CALL(win_observer_mock, OnWindowOpen(_)).Times(1);
   // Expect page info dialog to pop up. Dismiss the dialog with 'Esc' key
   EXPECT_CALL(win_observer_mock, OnWindowOpen(_))
       .WillOnce(DoCloseWindow());
 
+  EXPECT_CALL(win_observer_mock, OnWindowClose(_)).Times(1);
   EXPECT_CALL(win_observer_mock, OnWindowClose(_))
     .WillOnce(CloseBrowserMock(&ie_mock_));
 
@@ -483,7 +484,7 @@ TEST_F(ContextMenuTest, CFInspector) {
   const char* kPageInfoCaptionPattern = "Untitled*";
   EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
-          WatchWindow(&win_observer_mock, kPageInfoCaptionPattern),
+          WatchWindow(&win_observer_mock, kPageInfoCaptionPattern, ""),
           OpenContextMenuAsync()));
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(AccLeftClick(AccObjectMatcher(L"Inspect element")));

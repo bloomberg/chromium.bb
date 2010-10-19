@@ -308,7 +308,7 @@ TEST_P(FullTabNavigationTest, FLAKY_RestrictedSite) {
       testing::Field(&VARIANT::bstrVal, testing::StrCaseEq(GetSimplePageUrl())),
       _, _, _, _, _))
     .Times(1)
-    .WillOnce(WatchWindow(&win_observer_mock, kAlertDlgCaption));
+    .WillOnce(WatchWindow(&win_observer_mock, kAlertDlgCaption, ""));
 
   if (patch_method == PATCH_METHOD_INET_PROTOCOL) {
     EXPECT_CALL(ie_mock_, OnBeforeNavigate2(
@@ -742,10 +742,10 @@ void CloseWindow(HWND* window) {
 // and validate that all is well.
 TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
   chrome_frame_test::MockWindowObserver download_watcher;
-  download_watcher.WatchWindow("File Download");
+  download_watcher.WatchWindow("File Download", "");
 
   chrome_frame_test::MockWindowObserver save_dialog_watcher;
-  save_dialog_watcher.WatchWindow("Save As");
+  save_dialog_watcher.WatchWindow("Save As", "");
 
   EXPECT_CALL(server_mock_, Get(_, StrEq(L"/post_source.html"), _)).WillOnce(
     SendFast(

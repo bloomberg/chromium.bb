@@ -87,11 +87,14 @@ class WindowWatchdog : public WinEventListener {
  public:
   WindowWatchdog();
   // Register |observer| to be notified when windows matching |caption_pattern|
-  // are opened or closed. A single observer may be registered multiple times.
-  // If a single window caption matches multiple registrations of a single
-  // observer, the observer will be notified once per matching registration.
+  // and/or |class_name_pattern| are opened or closed. A single observer may be
+  // registered multiple times.
+  // If a single window caption and/or class name matches multiple
+  // registrations of a single observer, the observer will be notified once per
+  // matching registration.
   void AddObserver(WindowObserver* observer,
-                   const std::string& caption_pattern);
+                   const std::string& caption_pattern,
+                   const std::string& class_name_pattern);
 
   // Remove all registrations of |observer|. The |observer| will not be notified
   // during or after this call.
@@ -110,6 +113,7 @@ class WindowWatchdog : public WinEventListener {
   struct ObserverEntry {
     WindowObserver* observer;
     std::string caption_pattern;
+    std::string class_name_pattern;
     OpenWindowList open_windows;
   };
 
@@ -124,6 +128,12 @@ class WindowWatchdog : public WinEventListener {
   void HandleOnOpen(HWND hwnd);
   void HandleOnClose(HWND hwnd);
   void OnHwndProcessExited(HWND hwnd);
+
+  // Returns true if the caption pattern and/or the class name pattern in the
+  // observer entry structure matches the caption and/or class name passed in.
+  bool MatchingWindow(const ObserverEntry& entry,
+                      const std::string& caption,
+                      const std::string& class_name);
 
   ObserverEntryList observers_;
   WinEventReceiver win_event_receiver_;

@@ -219,8 +219,8 @@ ACTION_P2(PostCharMessagesToRenderer, mock, character_codes) {
     ::PostMessage(window, WM_CHAR, codes[i], 0);
 }
 
-ACTION_P2(WatchWindow, mock, window_class) {
-  mock->WatchWindow(window_class);
+ACTION_P3(WatchWindow, mock, caption, window_class) {
+  mock->WatchWindow(caption, window_class);
 }
 
 ACTION_P(StopWindowWatching, mock) {
@@ -244,7 +244,7 @@ ACTION_P2(WatchRendererProcess, mock_observer, mock) {
 namespace { // NOLINT
 
 void DoCloseWindowNow(HWND hwnd) {
-  ::PostMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
+  ::PostMessage(hwnd, WM_CLOSE, 0, 0);
 }
 
 }  // namespace

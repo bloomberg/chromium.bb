@@ -136,7 +136,8 @@ void WindowWatchdog::ProcessExitObserver::OnObjectSignaled(
 WindowWatchdog::WindowWatchdog() {}
 
 void WindowWatchdog::AddObserver(WindowObserver* observer,
-                                 const std::string& caption_pattern) {
+                                 const std::string& caption_pattern,
+                                 const std::string& class_name_pattern) {
   if (observers_.empty()) {
     // SetListenerForEvents takes an event_min and event_max.
     // EVENT_OBJECT_DESTROY, EVENT_OBJECT_SHOW, and EVENT_OBJECT_HIDE are
@@ -149,6 +150,7 @@ void WindowWatchdog::AddObserver(WindowObserver* observer,
   ObserverEntry new_entry = {
       observer,
       caption_pattern,
+      class_name_pattern,
       OpenWindowList() };
 
   observers_.push_back(new_entry);
@@ -172,8 +174,28 @@ std::string WindowWatchdog::GetWindowCaption(HWND hwnd) {
   return caption;
 }
 
+bool WindowWatchdog::MatchingWindow(const ObserverEntry& entry,
+                                    const std::string& caption,
+                                    const std::string& class_name) {
+  bool should_match_caption = !entry.caption_pattern.empty();
+  bool should_match_class = !entry.class_name_pattern.empty();
+
+  if (should_match_caption &&
+      MatchPattern(caption, entry.caption_pattern) &&
+      !should_match_class) {
+    return true;
+  }
+  if (should_match_class &&
+      MatchPattern(class_name, entry.class_name_pattern)) {
+    return true;
+  }
+  return false;
+}
+
 void WindowWatchdog::HandleOnOpen(HWND hwnd) {
   std::string caption = GetWindowCaption(hwnd);
+  char class_name[MAX_PATH] = {0};
+  GetClassNameA(hwnd, class_name, arraysize(class_name));
 
   // Instantiated only if there is at least one interested observer. Each
   // interested observer will maintain a reference to this object, such that it
@@ -185,7 +207,7 @@ void WindowWatchdog::HandleOnOpen(HWND hwnd) {
   ObserverEntryList interested_observers;
   for (ObserverEntryList::iterator entry_iter = observers_.begin();
        entry_iter != observers_.end(); ++entry_iter) {
-    if (MatchPattern(caption, entry_iter->caption_pattern)) {
+    if (MatchingWindow(*entry_iter, caption, class_name)) {
       if (process_exit_observer == NULL) {
         process_exit_observer.reset(new ProcessExitObserver(this, hwnd));
       }
@@ -240,9 +262,6 @@ void WindowWatchdog::OnEventReceived(
   // We need to look for top level windows and a natural check is for
   // WS_CHILD. Instead, checking for WS_CAPTION allows us to filter
   // out other stray popups
-  if (!WS_CAPTION & GetWindowLong(hwnd, GWL_STYLE)) {
-    return;
-  }
   if (event == EVENT_OBJECT_SHOW) {
     HandleOnOpen(hwnd);
   } else {

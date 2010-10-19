@@ -177,7 +177,7 @@ TEST_F(DeleteBrowsingHistoryTest, DISABLED_CFDeleteBrowsingHistory) {
   PageLoadHelper load_helper3(&ie_mock3_);
 
   delete_browsing_history_window_observer_mock_.WatchWindow(
-      "Delete Browsing History");
+      "Delete Browsing History", "");
 
   // For some reason, this page is occasionally being cached, so we randomize
   // its name to ensure that, at least the first time we request it, it is

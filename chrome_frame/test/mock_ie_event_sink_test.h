@@ -252,8 +252,8 @@ class MockWindowObserver : public WindowObserver {
   MOCK_METHOD1(OnWindowOpen, void (HWND hwnd));  // NOLINT
   MOCK_METHOD1(OnWindowClose, void (HWND hwnd));  // NOLINT
 
-  void WatchWindow(std::string caption_pattern) {
-    window_watcher_.AddObserver(this, caption_pattern);
+  void WatchWindow(std::string caption_pattern, std::string class_pattern) {
+    window_watcher_.AddObserver(this, caption_pattern, class_pattern);
   }
 
  private:

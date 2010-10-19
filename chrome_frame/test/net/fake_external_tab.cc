@@ -320,6 +320,7 @@ void CFUrlRequestUnittestRunner::Initialize() {
 void CFUrlRequestUnittestRunner::Shutdown() {
   DCHECK(::GetCurrentThreadId() == test_thread_id_);
   NetTestSuite::Shutdown();
+  OleUninitialize();
 }
 
 void CFUrlRequestUnittestRunner::OnConnectAutomationProviderToChannel(
@@ -342,6 +343,7 @@ void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {
 void CFUrlRequestUnittestRunner::RunMainUIThread() {
   DCHECK(MessageLoop::current());
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
+  OleInitialize(NULL);
   MessageLoop::current()->Run();
 }
 
@@ -473,7 +475,7 @@ int main(int argc, char** argv) {
   WindowWatchdog watchdog;
   // See url_request_unittest.cc for these credentials.
   SupplyProxyCredentials credentials("user", "secret");
-  watchdog.AddObserver(&credentials, "Windows Security");
+  watchdog.AddObserver(&credentials, "Windows Security", "");
   testing::InitGoogleTest(&argc, argv);
   FilterDisabledTests();
   PluginService::EnableChromePlugins(false);
