@@ -14,6 +14,7 @@
 #include "base/global_descriptors_posix.h"
 #include "base/lock.h"
 #include "base/process.h"
+#include "base/process_util.h"
 
 template<typename Type>
 struct DefaultSingletonTraits;
@@ -34,17 +35,18 @@ class ZygoteHost {
                      const base::GlobalDescriptors::Mapping& mapping);
   void EnsureProcessTerminated(pid_t process);
 
-  // Get the termination status (exit code) of the process and return true if
-  // the status indicates the process crashed. |child_exited| is set to true
-  // iff the child process has terminated. (|child_exited| may be NULL.)
-  bool DidProcessCrash(base::ProcessHandle handle, bool* child_exited);
+  // Get the termination status (and, optionally, the exit code) of
+  // the process. |exit_code| is set to the exit code of the child
+  // process. (|exit_code| may be NULL.)
+  base::TerminationStatus GetTerminationStatus(base::ProcessHandle handle,
+                                                int* exit_code);
 
   // These are the command codes used on the wire between the browser and the
   // zygote.
   enum {
     kCmdFork = 0,             // Fork off a new renderer.
     kCmdReap = 1,             // Reap a renderer child.
-    kCmdDidProcessCrash = 2,  // Check if child process crashed.
+    kCmdGetTerminationStatus = 2,  // Check what happend to a child process.
     kCmdGetSandboxStatus = 3, // Read a bitmask of kSandbox*
   };
 

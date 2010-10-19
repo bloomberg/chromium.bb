@@ -306,12 +306,17 @@ void ZygoteHost::EnsureProcessTerminated(pid_t process) {
     PLOG(ERROR) << "write";
 }
 
-bool ZygoteHost::DidProcessCrash(base::ProcessHandle handle,
-                                 bool* child_exited) {
+base::TerminationStatus ZygoteHost::GetTerminationStatus(
+    base::ProcessHandle handle,
+    int* exit_code) {
   DCHECK(init_);
   Pickle pickle;
-  pickle.WriteInt(kCmdDidProcessCrash);
+  pickle.WriteInt(kCmdGetTerminationStatus);
   pickle.WriteInt(handle);
+
+  // Set this now to handle the early termination cases.
+  if (exit_code)
+    *exit_code = 0;
 
   static const unsigned kMaxMessageLength = 128;
   char buf[kMaxMessageLength];
@@ -326,23 +331,23 @@ bool ZygoteHost::DidProcessCrash(base::ProcessHandle handle,
 
   if (len == -1) {
     LOG(WARNING) << "Error reading message from zygote: " << errno;
-    return false;
+    return base::TERMINATION_STATUS_NORMAL_TERMINATION;
   } else if (len == 0) {
     LOG(WARNING) << "Socket closed prematurely.";
-    return false;
+    return base::TERMINATION_STATUS_NORMAL_TERMINATION;
   }
 
   Pickle read_pickle(buf, len);
-  bool did_crash, tmp_child_exited;
+  int status, tmp_exit_code;
   void* iter = NULL;
-  if (!read_pickle.ReadBool(&iter, &did_crash) ||
-      !read_pickle.ReadBool(&iter, &tmp_child_exited)) {
-    LOG(WARNING) << "Error parsing DidProcessCrash response from zygote.";
-    return false;
+  if (!read_pickle.ReadInt(&iter, &status) ||
+      !read_pickle.ReadInt(&iter, &tmp_exit_code)) {
+    LOG(WARNING) << "Error parsing GetTerminationStatus response from zygote.";
+    return base::TERMINATION_STATUS_NORMAL_TERMINATION;
   }
 
-  if (child_exited)
-    *child_exited = tmp_child_exited;
+  if (exit_code)
+    *exit_code = tmp_exit_code;
 
-  return did_crash;
+  return static_cast<base::TerminationStatus>(status);
 }

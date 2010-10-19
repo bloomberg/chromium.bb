@@ -207,7 +207,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
       const std::vector<gfx::Rect>& copy_rects);
-  virtual void RenderViewGone();
+  virtual void RenderViewGone(base::TerminationStatus status,
+                              int error_code);
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {};
   virtual void Destroy();
   virtual void SetTooltipText(const std::wstring& tooltip_text);

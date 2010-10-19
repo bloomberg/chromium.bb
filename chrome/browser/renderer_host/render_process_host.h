@@ -11,6 +11,7 @@
 #include "app/surface/transport_dib.h"
 #include "base/id_map.h"
 #include "base/process.h"
+#include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/common/visitedlink_common.h"
@@ -48,11 +49,15 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // Details for RENDERER_PROCESS_CLOSED notifications.
   struct RendererClosedDetails {
-    RendererClosedDetails(bool did_crash, bool was_extension_renderer) {
-      this->did_crash = did_crash;
+    RendererClosedDetails(base::TerminationStatus status,
+                          int exit_code,
+                          bool was_extension_renderer) {
+      this->status = status;
+      this->exit_code = exit_code;
       this->was_extension_renderer = was_extension_renderer;
     }
-    bool did_crash;
+    base::TerminationStatus status;
+    int exit_code;
     bool was_extension_renderer;
   };
 

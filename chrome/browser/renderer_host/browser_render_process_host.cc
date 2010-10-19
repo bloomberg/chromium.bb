@@ -924,16 +924,20 @@ void BrowserRenderProcessHost::OnChannelError() {
   if (!channel_.get())
     return;
 
-  // NULL in single process mode or if fast termination happened.
-  bool did_crash =
-      child_process_.get() ? child_process_->DidProcessCrash() : false;
+  // child_process_ can be NULL in single process mode or if fast
+  // termination happened.
+  int exit_code = 0;
+  base::TerminationStatus status =
+      child_process_.get() ?
+      child_process_->GetChildTerminationStatus(&exit_code) :
+      base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
-  if (did_crash) {
+  if (status == base::TERMINATION_STATUS_PROCESS_CRASHED) {
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
                              extension_process_ ? 2 : 1);
   }
 
-  RendererClosedDetails details(did_crash, extension_process_);
+  RendererClosedDetails details(status, exit_code, extension_process_);
   NotificationService::current()->Notify(
       NotificationType::RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),
@@ -946,7 +950,9 @@ void BrowserRenderProcessHost::OnChannelError() {
   IDMap<IPC::Channel::Listener>::iterator iter(&listeners_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->OnMessageReceived(
-        ViewHostMsg_RenderViewGone(iter.GetCurrentKey()));
+        ViewHostMsg_RenderViewGone(iter.GetCurrentKey(),
+                                   static_cast<int>(status),
+                                   exit_code));
     iter.Advance();
   }
 

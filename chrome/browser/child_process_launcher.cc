@@ -310,27 +310,30 @@ base::ProcessHandle ChildProcessLauncher::GetHandle() {
   return context_->process_.handle();
 }
 
-bool ChildProcessLauncher::DidProcessCrash() {
-  bool did_crash, child_exited;
+base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
+    int* exit_code) {
+  base::TerminationStatus status;
   base::ProcessHandle handle = context_->process_.handle();
 #if defined(OS_LINUX)
   if (context_->zygote_) {
-    did_crash = Singleton<ZygoteHost>()->DidProcessCrash(handle, &child_exited);
+    status = Singleton<ZygoteHost>()->GetTerminationStatus(handle,
+                                                            exit_code);
   } else
 #endif
   {
-    did_crash = base::DidProcessCrash(&child_exited, handle);
+    status = base::GetTerminationStatus(handle, exit_code);
   }
 
-  // POSIX: If the process crashed, then the kernel closed the socket for it
-  // and so the child has already died by the time we get here. Since
-  // DidProcessCrash called waitpid with WNOHANG, it'll reap the process.
-  // However, if DidProcessCrash didn't reap the child, we'll need to in
+  // POSIX: If the process crashed, then the kernel closed the socket
+  // for it and so the child has already died by the time we get
+  // here. Since GetTerminationStatus called waitpid with WNOHANG,
+  // it'll reap the process.  However, if GetTerminationStatus didn't
+  // reap the child (because it was still running), we'll need to
   // Terminate via ProcessWatcher. So we can't close the handle here.
-  if (child_exited)
+  if (status != base::TERMINATION_STATUS_STILL_RUNNING)
     context_->process_.Close();
 
-  return did_crash;
+  return status;
 }
 
 void ChildProcessLauncher::SetProcessBackgrounded(bool background) {

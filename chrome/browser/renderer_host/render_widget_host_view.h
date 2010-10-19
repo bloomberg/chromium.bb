@@ -14,10 +14,11 @@
 #include <vector>
 
 #include "app/surface/transport_dib.h"
+#include "base/process_util.h"
 #include "gfx/native_widget_types.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace gfx {
 class Rect;
@@ -152,7 +153,8 @@ class RenderWidgetHostView {
       const std::vector<gfx::Rect>& copy_rects) = 0;
 
   // Notifies the View that the renderer has ceased to exist.
-  virtual void RenderViewGone() = 0;
+  virtual void RenderViewGone(base::TerminationStatus status,
+                              int error_code) = 0;
 
   // Notifies the View that the renderer will be delete soon.
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) = 0;

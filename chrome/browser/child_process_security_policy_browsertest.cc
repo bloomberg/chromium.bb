@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(ChildProcessSecurityPolicyInProcessBrowserTest, NoLeak) {
   TabContents* tab = browser()->GetTabContentsAt(0);
   ASSERT_TRUE(tab != NULL);
   base::KillProcess(tab->GetRenderProcessHost()->GetHandle(),
-                    base::PROCESS_END_KILLED_BY_USER, true);
+                    base::TERMINATION_STATUS_PROCESS_WAS_KILLED, true);
 
   tab->controller().Reload(true);
   EXPECT_EQ(

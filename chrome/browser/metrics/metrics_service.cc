@@ -610,7 +610,8 @@ void MetricsService::Observe(NotificationType type,
       {
         RenderProcessHost::RendererClosedDetails* process_details =
             Details<RenderProcessHost::RendererClosedDetails>(details).ptr();
-        if (process_details->did_crash) {
+        if (process_details->status ==
+            base::TERMINATION_STATUS_PROCESS_CRASHED) {
           if (process_details->was_extension_renderer) {
             LogExtensionRendererCrash();
           } else {

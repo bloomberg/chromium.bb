@@ -713,7 +713,8 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
     [cocoa_view_ displayIfNeeded];
 }
 
-void RenderWidgetHostViewMac::RenderViewGone() {
+void RenderWidgetHostViewMac::RenderViewGone(base::TerminationStatus status,
+                                             int error_code) {
   // TODO(darin): keep this around, and draw sad-tab into it.
   UpdateCursorIfOverSelf();
   Destroy();

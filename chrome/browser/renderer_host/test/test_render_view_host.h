@@ -81,7 +81,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
       const std::vector<gfx::Rect>& rects) {}
-  virtual void RenderViewGone() { delete this; }
+  virtual void RenderViewGone(base::TerminationStatus status,
+                              int error_code) { delete this; }
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) { }
   virtual void Destroy() {}
   virtual void PrepareToDestroy() {}

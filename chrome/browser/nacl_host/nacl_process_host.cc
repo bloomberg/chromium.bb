@@ -162,10 +162,11 @@ void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
   OnProcessLaunched();
 }
 
-bool NaClProcessHost::DidChildCrash() {
+base::TerminationStatus NaClProcessHost::GetChildTerminationStatus(
+    int* exit_code) {
   if (running_on_wow64_)
-    return base::DidProcessCrash(NULL, handle());
-  return BrowserChildProcessHost::DidChildCrash();
+    return base::GetTerminationStatus(handle(), exit_code);
+  return BrowserChildProcessHost::GetChildTerminationStatus(exit_code);
 }
 
 void NaClProcessHost::OnChildDied() {

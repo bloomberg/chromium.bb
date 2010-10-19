@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/in_process_webkit/indexed_db_key_utility_client.h"
 
@@ -148,7 +148,7 @@ IndexedDBKeyUtilityClient::Client::Client(IndexedDBKeyUtilityClient* parent)
     : parent_(parent) {
 }
 
-void IndexedDBKeyUtilityClient::Client::OnProcessCrashed() {
+void IndexedDBKeyUtilityClient::Client::OnProcessCrashed(int exit_code) {
   if (parent_->state_ == STATE_CREATING_KEYS)
     parent_->FinishCreatingKeys();
 }

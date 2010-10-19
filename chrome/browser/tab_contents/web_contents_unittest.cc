@@ -120,8 +120,8 @@ class TestInterstitialPage : public InterstitialPage {
     DidNavigate(render_view_host(), params);
   }
 
-  void TestRenderViewGone() {
-    RenderViewGone(render_view_host());
+  void TestRenderViewGone(base::TerminationStatus status, int error_code) {
+    RenderViewGone(render_view_host(), status, error_code);
   }
 
   bool is_showing() const {
@@ -1151,7 +1151,9 @@ TEST_F(TabContentsTest, ShowInterstitialCrashRendererThenGoBack) {
   interstitial->TestDidNavigate(2, interstitial_url);
 
   // Crash the renderer
-  rvh()->TestOnMessageReceived(ViewHostMsg_RenderViewGone(0));
+  rvh()->TestOnMessageReceived(
+      ViewHostMsg_RenderViewGone(
+          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   // While the interstitial is showing, go back.
   controller().GoBack();
@@ -1186,7 +1188,9 @@ TEST_F(TabContentsTest, ShowInterstitialCrashRendererThenNavigate) {
   interstitial->Show();
 
   // Crash the renderer
-  rvh()->TestOnMessageReceived(ViewHostMsg_RenderViewGone(0));
+  rvh()->TestOnMessageReceived(
+      ViewHostMsg_RenderViewGone(
+          0, base::TERMINATION_STATUS_PROCESS_CRASHED, -1));
 
   interstitial->TestDidNavigate(2, interstitial_url);
 }
@@ -1429,7 +1433,8 @@ TEST_F(TabContentsTest, InterstitialCrasher) {
   TestInterstitialPageStateGuard state_guard(interstitial);
   interstitial->Show();
   // Simulate a renderer crash before the interstitial is shown.
-  interstitial->TestRenderViewGone();
+  interstitial->TestRenderViewGone(
+      base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   // The interstitial should have been dismissed.
   EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
@@ -1440,7 +1445,8 @@ TEST_F(TabContentsTest, InterstitialCrasher) {
   interstitial->Show();
   interstitial->TestDidNavigate(1, url);
   // Simulate a renderer crash.
-  interstitial->TestRenderViewGone();
+  interstitial->TestRenderViewGone(
+      base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   // The interstitial should have been dismissed.
   EXPECT_TRUE(deleted);
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);

@@ -74,12 +74,25 @@ class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
       CommandLine* cmd_line);
 
   // ChildProcessLauncher::Client implementation.
-  virtual void OnProcessLaunched() { }
+  virtual void OnProcessLaunched() {}
 
   // Derived classes can override this to know if the process crashed.
-  virtual void OnProcessCrashed() {}
+  // |exit_code| is the status returned when the process crashed (for
+  // posix, as returned from waitpid(), for Windows, as returned from
+  // GetExitCodeProcess()).
+  virtual void OnProcessCrashed(int exit_code) {}
 
-  virtual bool DidChildCrash();
+  // Derived classes can override this to know if the process was
+  // killed.  |exit_code| is the status returned when the process
+  // was killed (for posix, as returned from waitpid(), for Windows,
+  // as returned from GetExitCodeProcess()).
+  virtual void OnProcessWasKilled(int exit_code) {}
+
+  // Returns the termination status of a child.  |exit_code| is the
+  // status returned when the process exited (for posix, as returned
+  // from waitpid(), for Windows, as returned from
+  // GetExitCodeProcess()).  |exit_code| may be NULL.
+  virtual base::TerminationStatus GetChildTerminationStatus(int* exit_code);
 
   // Overrides from ChildProcessHost
   virtual void OnChildDied();
@@ -107,4 +120,3 @@ class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
 };
 
 #endif  // CHROME_BROWSER_BROWSER_CHILD_PROCESS_HOST_H_
-

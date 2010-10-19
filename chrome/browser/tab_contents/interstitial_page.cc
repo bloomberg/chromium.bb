@@ -327,7 +327,9 @@ const GURL& InterstitialPage::GetURL() const {
   return url_;
 }
 
-void InterstitialPage::RenderViewGone(RenderViewHost* render_view_host) {
+void InterstitialPage::RenderViewGone(RenderViewHost* render_view_host,
+                                      base::TerminationStatus status,
+                                      int error_code) {
   // Our renderer died. This should not happen in normal cases.
   // Just dismiss the interstitial.
   DontProceed();
