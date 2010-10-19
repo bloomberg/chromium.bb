@@ -21,6 +21,9 @@ ClientSocketPoolBaseTest.CancelPendingSocketAtSocketLimit
 HttpNetworkTransactionTest.*
 HttpNetworkLayerTest.GET
 
+# Timing out under TSan, see http://crbug.com/59642
+CookieMonsterTest.GarbageCollectionTriggers
+
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
 # Please see http://dev.chromium.org/developers/testing#TOC-SSL-tests
