@@ -7,6 +7,10 @@
 #include <gdk/gdk.h>
 
 #include "base/timer.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
+#include "chrome/browser/profile_manager.h"
 #include "chrome/browser/chromeos/volume_bubble_view.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "views/widget/root_view.h"
@@ -26,24 +30,29 @@ const int kVolumeBubbleBottomGap = 30;
 
 namespace chromeos {
 
-// Temporary helper routine. Returns currently shown Chrome widget or NULL.
+// Temporary helper routine. Returns the widget from the most-recently-focused
+// normal browser window or NULL.
 // TODO(glotov): remove this in favor of enabling InfoBubble class act
 // without |parent| specified. crosbug.com/4025
 static views::Widget* GetToplevelWidget() {
-  views::Widget* widget = NULL;
-  GList *window_list = gtk_window_list_toplevels();
-  for (GList* iter = window_list; iter; iter = g_list_next(iter)) {
-    GtkWindow* const window = GTK_WINDOW(iter->data);
-    if (window && GTK_WIDGET(window)->window ==
-        gdk_screen_get_active_window(gdk_screen_get_default())) {
-      views::RootView* root = views::Widget::FindRootView(window);
-      if (root)
-        widget = root->GetWidget();
-      break;
-    }
-  }
-  g_list_free(window_list);
-  return widget;
+  // We just use the default profile here -- this gets overridden as needed
+  // in Chrome OS depending on whether the user is logged in or not.
+  Browser* browser =
+      BrowserList::FindBrowserWithType(
+          ProfileManager::GetDefaultProfile(),
+          Browser::TYPE_NORMAL,
+          true);  // match_incognito
+  if (!browser)
+    return NULL;
+
+  views::RootView* root =
+      views::Widget::FindRootView(
+          GTK_WINDOW(browser->window()->GetNativeHandle()));
+  DCHECK(root);
+  if (!root)
+    return NULL;
+
+  return root->GetWidget();
 }
 
 VolumeBubble::VolumeBubble()
