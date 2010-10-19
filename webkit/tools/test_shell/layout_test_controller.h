@@ -300,6 +300,8 @@ class LayoutTestController : public CppBoundClass {
   void setMockDeviceOrientation(const CppArgumentList& args,
                                 CppVariant* result);
 
+  void hasSpellingMarker(const CppArgumentList& args, CppVariant* result);
+
  public:
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }

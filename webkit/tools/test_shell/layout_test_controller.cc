@@ -168,6 +168,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("grantDesktopNotificationPermission", &LayoutTestController::grantDesktopNotificationPermission);
   BindMethod("setDomainRelaxationForbiddenForURLScheme", &LayoutTestController::setDomainRelaxationForbiddenForURLScheme);
   BindMethod("sampleSVGAnimationForElementAtTime", &LayoutTestController::sampleSVGAnimationForElementAtTime);
+  BindMethod("hasSpellingMarker", &LayoutTestController::hasSpellingMarker);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -1526,4 +1527,12 @@ void LayoutTestController::setMockDeviceOrientation(const CppArgumentList& args,
                                            args[5].ToDouble());
 
   shell_->device_orientation_client_mock()->setOrientation(orientation);
+}
+
+void LayoutTestController::hasSpellingMarker(const CppArgumentList& arguments, 
+                                             CppVariant* result) {
+  if (arguments.size() < 2 || !arguments[0].isNumber() || !arguments[1].isNumber())
+    return;
+  result->Set(shell_->webView()->mainFrame()->selectionStartHasSpellingMarkerFor(
+      arguments[0].ToInt32(), arguments[1].ToInt32()));
 }
