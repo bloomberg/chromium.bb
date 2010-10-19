@@ -591,7 +591,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
     const std::string message = base::StringPrintf(kFormatString,
         manifest_url_.spec().c_str());
     HandleCacheFailure(message);
-    LOG(INFO) << message;
+    VLOG(1) << message;
     return;
   }
 
@@ -646,9 +646,9 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
     // whose value doesn't match the manifest url of the application cache
     // being processed, mark the entry as being foreign.
   } else {
-    LOG(INFO) << "Request status: " << request->status().status()
-        << " os_error: " << request->status().os_error()
-        << " response code: " << response_code;
+    VLOG(1) << "Request status: " << request->status().status()
+            << " os_error: " << request->status().os_error()
+            << " response code: " << response_code;
     if (entry.IsExplicit() || entry.IsFallback()) {
       if (response_code == 304 && info->existing_entry_.has_response_id()) {
         // Keep the existing response.
@@ -788,9 +788,9 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
                                            &manifest_info_write_callback_);
     }
   } else {
-    LOG(INFO) << "Request status: " << request->status().status()
-        << " os_error: " << request->status().os_error()
-        << " response code: " << response_code;
+    VLOG(1) << "Request status: " << request->status().status()
+            << " os_error: " << request->status().os_error()
+            << " response code: " << response_code;
     ScheduleUpdateRetry(kRerunDelayMs);
     HandleCacheFailure("Manifest changed during update, scheduling retry");
   }

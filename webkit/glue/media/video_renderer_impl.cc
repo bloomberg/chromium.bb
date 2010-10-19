@@ -88,10 +88,8 @@ void VideoRendererImpl::Paint(skia::PlatformCanvas* canvas,
     // on low-end devices.  When profiled on an Intel Atom N280 @ 1.66GHz this
     // code had a ~63 microsecond perf hit when logging to a file (not stdout),
     // which is neglible enough for measuring playback performance.
-    if (pts_logging_) {
-      LOG(INFO) << "pts="
-                << video_frame->GetTimestamp().InMicroseconds();
-    }
+    if (pts_logging_)
+      VLOG(1) << "pts=" << video_frame->GetTimestamp().InMicroseconds();
   }
 
   PutCurrentFrame(video_frame);

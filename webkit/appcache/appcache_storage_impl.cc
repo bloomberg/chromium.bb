@@ -882,7 +882,7 @@ void AppCacheStorageImpl::Initialize(const FilePath& cache_directory,
 void AppCacheStorageImpl::Disable() {
   if (is_disabled_)
     return;
-  LOG(INFO) << "Disabling appcache storage.";
+  VLOG(1) << "Disabling appcache storage.";
   is_disabled_ = true;
   origins_with_groups_.clear();
   working_set()->Disable();
@@ -1318,7 +1318,7 @@ void AppCacheStorageImpl::OnDiskCacheInitialized(int rv) {
     // session should start with a clean slate.
     Disable();
     if (!is_incognito_) {
-      LOG(INFO) << "Deleting existing appcache data and starting over.";
+      VLOG(1) << "Deleting existing appcache data and starting over.";
       AppCacheThread::PostTask(AppCacheThread::db(), FROM_HERE,
           NewRunnableFunction(DeleteDirectory, cache_directory_));
     }

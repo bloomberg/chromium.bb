@@ -164,7 +164,7 @@ void AppCacheDatabase::CloseConnection() {
 }
 
 void AppCacheDatabase::Disable() {
-  LOG(INFO) << "Disabling appcache database.";
+  VLOG(1) << "Disabling appcache database.";
   is_disabled_ = true;
   ResetConnectionAndTables();
 }
@@ -1103,7 +1103,7 @@ void AppCacheDatabase::ResetConnectionAndTables() {
 bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
   DCHECK(!db_file_path_.empty());
   DCHECK(file_util::PathExists(db_file_path_));
-  LOG(INFO) << "Deleting existing appcache data and starting over.";
+  VLOG(1) << "Deleting existing appcache data and starting over.";
 
   ResetConnectionAndTables();
 

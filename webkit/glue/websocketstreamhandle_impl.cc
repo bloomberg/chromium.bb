@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ WebSocketStreamHandleImpl::Context::Context(WebSocketStreamHandleImpl* handle)
 }
 
 void WebSocketStreamHandleImpl::Context::Connect(const WebKit::WebURL& url) {
-  LOG(INFO) << "Connect url=" << url;
+  VLOG(1) << "Connect url=" << url;
   DCHECK(!bridge_);
   bridge_ = WebSocketStreamHandleBridge::Create(handle_, this);
   AddRef();  // Will be released by DidClose().
@@ -80,14 +80,14 @@ void WebSocketStreamHandleImpl::Context::Connect(const WebKit::WebURL& url) {
 }
 
 bool WebSocketStreamHandleImpl::Context::Send(const WebKit::WebData& data) {
-  LOG(INFO) << "Send data.size=" << data.size();
+  VLOG(1) << "Send data.size=" << data.size();
   DCHECK(bridge_);
   return bridge_->Send(
       std::vector<char>(data.data(), data.data() + data.size()));
 }
 
 void WebSocketStreamHandleImpl::Context::Close() {
-  LOG(INFO) << "Close";
+  VLOG(1) << "Close";
   if (bridge_)
     bridge_->Close();
 }
@@ -105,7 +105,7 @@ void WebSocketStreamHandleImpl::Context::Detach() {
 
 void WebSocketStreamHandleImpl::Context::DidOpenStream(
     WebKit::WebSocketStreamHandle* web_handle, int max_amount_send_allowed) {
-  LOG(INFO) << "DidOpen";
+  VLOG(1) << "DidOpen";
   if (client_)
     client_->didOpenStream(handle_, max_amount_send_allowed);
 }
@@ -124,7 +124,7 @@ void WebSocketStreamHandleImpl::Context::DidReceiveData(
 
 void WebSocketStreamHandleImpl::Context::DidClose(
     WebKit::WebSocketStreamHandle* web_handle) {
-  LOG(INFO) << "DidClose";
+  VLOG(1) << "DidClose";
   bridge_ = NULL;
   WebSocketStreamHandleImpl* handle = handle_;
   handle_ = NULL;
@@ -151,7 +151,7 @@ WebSocketStreamHandleImpl::~WebSocketStreamHandleImpl() {
 
 void WebSocketStreamHandleImpl::connect(
     const WebKit::WebURL& url, WebKit::WebSocketStreamHandleClient* client) {
-  LOG(INFO) << "connect url=" << url;
+  VLOG(1) << "connect url=" << url;
   DCHECK(!context_->client());
   context_->set_client(client);
 

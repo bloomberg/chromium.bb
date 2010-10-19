@@ -813,7 +813,7 @@ bool PluginInstance::SetFullscreen(bool fullscreen) {
   bool is_fullscreen = (fullscreen_container_ != NULL);
   if (fullscreen == is_fullscreen)
     return true;
-  LOG(INFO) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
+  VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   if (fullscreen) {
     fullscreen_container_ = delegate_->CreateFullscreenContainer(this);
   } else {
