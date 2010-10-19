@@ -237,6 +237,7 @@ class WebPluginDelegateProxy
   WebPluginInfo info_;
 
   gfx::Rect plugin_rect_;
+  gfx::Rect clip_rect_;
 
   NPObject* npobject_;
   base::WeakPtr<NPObjectStub> window_script_object_;

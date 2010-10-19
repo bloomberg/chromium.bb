@@ -508,6 +508,7 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
   }
 
   plugin_rect_ = window_rect;
+  clip_rect_ = clip_rect;
 
   bool bitmaps_changed = false;
 
@@ -1406,7 +1407,7 @@ bool WebPluginDelegateProxy::BindFakePluginWindowHandle(bool opaque) {
   webkit_glue::WebPluginGeometry geom;
   geom.window = fake_window;
   geom.window_rect = plugin_rect_;
-  geom.clip_rect = gfx::Rect(plugin_rect_.size());
+  geom.clip_rect = clip_rect_;
   geom.rects_valid = true;
   geom.visible = true;
   render_view_->DidMovePlugin(geom);
