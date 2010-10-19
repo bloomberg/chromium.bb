@@ -253,6 +253,63 @@ TEST_F(GetCallerFrame, TraditionalScan) {
   EXPECT_EQ(NULL, frame1->windows_frame_info);
 }
 
+// Force scanning for a return address a long way down the stack
+TEST_F(GetCallerFrame, TraditionalScanLongWay) {
+  stack_section.start() = 0x80000000;
+  Label frame1_ebp;
+  stack_section
+    // frame 0
+    .D32(0xf065dc76)    // locals area:
+    .D32(0x46ee2167)    // garbage that doesn't look like
+    .D32(0xbab023ec)    // a return address
+    .Append(20 * 4, 0)  // a bunch of space
+    .D32(frame1_ebp)    // saved %ebp (%ebp fails to point here, forcing scan)
+    .D32(0x4000129d)    // return address
+    // frame 1
+    .Append(8, 0)       // space
+    .Mark(&frame1_ebp)  // %ebp points here
+    .D32(0)             // saved %ebp (stack end)
+    .D32(0);            // return address (stack end)
+
+  RegionFromSection();
+  raw_context.eip = 0x4000f49d;
+  raw_context.esp = stack_section.start().Value();
+  // Make the frame pointer bogus, to make the stackwalker scan the stack
+  // for something that looks like a return address.
+  raw_context.ebp = 0xd43eed6e;
+
+  StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
+                        &supplier, &resolver);
+  ASSERT_TRUE(walker.Walk(&call_stack));
+  frames = call_stack.frames();
+  ASSERT_EQ(2U, frames->size());
+
+  StackFrameX86 *frame0 = static_cast<StackFrameX86 *>(frames->at(0));
+  EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
+  ASSERT_EQ(StackFrameX86::CONTEXT_VALID_ALL, frame0->context_validity);
+  EXPECT_EQ(0x4000f49dU, frame0->instruction);
+  EXPECT_EQ(0x4000f49dU, frame0->context.eip);
+  EXPECT_EQ(stack_section.start().Value(), frame0->context.esp);
+  EXPECT_EQ(0xd43eed6eU, frame0->context.ebp);
+  EXPECT_EQ(NULL, frame0->windows_frame_info);
+
+  StackFrameX86 *frame1 = static_cast<StackFrameX86 *>(frames->at(1));
+  EXPECT_EQ(StackFrame::FRAME_TRUST_SCAN, frame1->trust);
+  // I'd argue that CONTEXT_VALID_EBP shouldn't be here, since the
+  // walker does not actually fetch the EBP after a scan (forcing the
+  // next frame to be scanned as well). But let's grandfather the existing
+  // behavior in for now.
+  ASSERT_EQ((StackFrameX86::CONTEXT_VALID_EIP
+             | StackFrameX86::CONTEXT_VALID_ESP
+             | StackFrameX86::CONTEXT_VALID_EBP),
+            frame1->context_validity);
+  EXPECT_EQ(0x4000129dU, frame1->instruction + 1);
+  EXPECT_EQ(0x4000129dU, frame1->context.eip);
+  EXPECT_EQ(0x80000064U, frame1->context.esp);
+  EXPECT_EQ(0xd43eed6eU, frame1->context.ebp);
+  EXPECT_EQ(NULL, frame1->windows_frame_info);
+}
+
 // Use Windows frame data (a "STACK WIN 4" record, from a
 // FrameTypeFrameData DIA record) to walk a stack frame.
 TEST_F(GetCallerFrame, WindowsFrameData) {

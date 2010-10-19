@@ -121,7 +121,7 @@ class Stackwalker {
   bool ScanForReturnAddress(InstructionType location_start,
                             InstructionType *location_found,
                             InstructionType *ip_found) {
-    const int kRASearchWords = 15;
+    const int kRASearchWords = 30;
     for (InstructionType location = location_start;
          location <= location_start + kRASearchWords * sizeof(InstructionType);
          location += sizeof(InstructionType)) {
