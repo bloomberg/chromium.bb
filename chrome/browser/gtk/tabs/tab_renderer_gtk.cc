@@ -160,6 +160,8 @@ TabRendererGtk::LoadingAnimation::LoadingAnimation(
       animation_frame_(0) {
 }
 
+TabRendererGtk::LoadingAnimation::~LoadingAnimation() {}
+
 bool TabRendererGtk::LoadingAnimation::ValidateLoadingAnimation(
     AnimationState animation_state) {
   bool has_changed = false;

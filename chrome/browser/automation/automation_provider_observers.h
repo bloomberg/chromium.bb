@@ -508,6 +508,7 @@ class DocumentPrintedNotificationObserver : public NotificationObserver {
 class MetricEventDurationObserver : public NotificationObserver {
  public:
   MetricEventDurationObserver();
+  virtual ~MetricEventDurationObserver();
 
   // Get the duration of an event.  Returns -1 if we haven't seen the event.
   int GetEventDurationMs(const std::string& event_name);
@@ -530,6 +531,7 @@ class PageTranslatedObserver : public NotificationObserver {
   PageTranslatedObserver(AutomationProvider* automation,
                          IPC::Message* reply_message,
                          TabContents* tab_contents);
+  virtual ~PageTranslatedObserver();
 
   // NotificationObserver interface.
   virtual void Observe(NotificationType type,

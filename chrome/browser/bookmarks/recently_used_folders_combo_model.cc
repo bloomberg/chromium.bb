@@ -49,6 +49,8 @@ RecentlyUsedFoldersComboModel::RecentlyUsedFoldersComboModel(
   node_parent_index_ = static_cast<int>(it - nodes_.begin());
 }
 
+RecentlyUsedFoldersComboModel::~RecentlyUsedFoldersComboModel() {}
+
 int RecentlyUsedFoldersComboModel::GetItemCount() {
   return static_cast<int>(nodes_.size() + 1);
 }

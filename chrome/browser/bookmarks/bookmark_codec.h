@@ -33,6 +33,7 @@ class BookmarkCodec {
   // guarantees on how the IDs are reassigned or about doing minimal
   // reassignments to achieve uniqueness.
   BookmarkCodec();
+  ~BookmarkCodec();
 
   // Encodes the model to a JSON value. It's up to the caller to delete the
   // returned object. This is invoked to encode the contents of the bookmark bar

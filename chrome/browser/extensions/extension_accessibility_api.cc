@@ -40,6 +40,9 @@ ExtensionAccessibilityEventRouter*
   return Singleton<ExtensionAccessibilityEventRouter>::get();
 }
 
+ExtensionAccessibilityEventRouter::ExtensionAccessibilityEventRouter()
+    : enabled_(false) {}
+
 ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
   STLDeleteElements(&on_enabled_listeners_);
   STLDeleteElements(&on_disabled_listeners_);

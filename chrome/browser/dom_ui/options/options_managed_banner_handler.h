@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOM_UI_OPTIONS_OPTIONS_MANAGED_BANNER_HANDLER_H_
 #pragma once
 
+#include "base/string16.h"
 #include "chrome/browser/policy/managed_prefs_banner_base.h"
 #include "chrome/browser/options_window.h"
 
@@ -18,7 +19,7 @@ class OptionsManagedBannerHandler : public policy::ManagedPrefsBannerBase {
  public:
   OptionsManagedBannerHandler(DOMUI* dom_ui, const string16& page_name,
                               OptionsPage page);
-  virtual ~OptionsManagedBannerHandler() { }
+  virtual ~OptionsManagedBannerHandler();
 
  protected:
   // ManagedPrefsBannerBase implementation.

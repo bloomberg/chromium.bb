@@ -16,7 +16,8 @@ typedef std::vector<string16> NameTokens;
 // A form group that stores contact information.
 class ContactInfo : public FormGroup {
  public:
-  ContactInfo() {}
+  ContactInfo();
+  virtual ~ContactInfo();
 
   // FormGroup implementation:
   virtual FormGroup* Clone() const;

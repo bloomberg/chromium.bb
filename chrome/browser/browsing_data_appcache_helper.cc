@@ -61,6 +61,8 @@ void BrowsingDataAppCacheHelper::DeleteAppCacheGroup(
   GetAppCacheService()->DeleteAppCacheGroup(manifest_url, NULL);
 }
 
+BrowsingDataAppCacheHelper::~BrowsingDataAppCacheHelper() {}
+
 void BrowsingDataAppCacheHelper::OnFetchComplete(int rv) {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     // Filter out appache info entries for extensions. Extension state is not
@@ -136,3 +138,5 @@ void CannedBrowsingDataAppCacheHelper::StartFetching(
   completion_callback->Run();
   delete completion_callback;
 }
+
+CannedBrowsingDataAppCacheHelper::~CannedBrowsingDataAppCacheHelper() {}

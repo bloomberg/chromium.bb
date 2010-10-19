@@ -103,3 +103,18 @@ size_t ChromeTestProcessMetrics::GetWorkingSetSize() {
 }
 
 #endif  // !defined(OS_MACOSX)
+
+ChromeTestProcessMetrics::~ChromeTestProcessMetrics() {}
+
+ChromeTestProcessMetrics::ChromeTestProcessMetrics(
+    base::ProcessHandle process) {
+#if !defined(OS_MACOSX)
+  process_metrics_.reset(
+      base::ProcessMetrics::CreateProcessMetrics(process));
+#else
+  process_metrics_.reset(
+      base::ProcessMetrics::CreateProcessMetrics(process, NULL));
+#endif
+  process_handle_ = process;
+}
+

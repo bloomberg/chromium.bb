@@ -19,6 +19,20 @@
 URLRequestMockNetErrorJob::URLMockInfoMap
     URLRequestMockNetErrorJob::url_mock_info_map_;
 
+struct URLRequestMockNetErrorJob::MockInfo {
+  MockInfo() : ssl_cert(NULL) { }
+  MockInfo(std::wstring base,
+           std::vector<int> errors,
+           net::X509Certificate* ssl_cert)
+      : base(base),
+        errors(errors),
+        ssl_cert(ssl_cert) { }
+
+  std::wstring base;
+  std::vector<int> errors;
+  scoped_refptr<net::X509Certificate> ssl_cert;
+};
+
 // static
 void URLRequestMockNetErrorJob::AddMockedURL(const GURL& url,
                                              const std::wstring& base,

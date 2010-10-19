@@ -61,6 +61,8 @@ class TabRendererGtk : public AnimationDelegate,
     // Used in unit tests to inject specific data.
     explicit LoadingAnimation(const LoadingAnimation::Data& data);
 
+    virtual ~LoadingAnimation();
+
     // Advance the loading animation to the next frame, or hide the animation if
     // the tab isn't loading. Returns |true| if the icon area needs to be
     // repainted.

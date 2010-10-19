@@ -100,6 +100,8 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
   }
 }
 
+TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {}
+
 int TranslateInfoBarDelegate::GetLanguageCount() const {
   return static_cast<int>(languages_.size());
 }
@@ -207,6 +209,12 @@ SkBitmap* TranslateInfoBarDelegate::GetIcon() const {
 InfoBarDelegate::Type TranslateInfoBarDelegate::GetInfoBarType() {
   return InfoBarDelegate::PAGE_ACTION_TYPE;
 }
+
+TranslateInfoBarDelegate*
+TranslateInfoBarDelegate::AsTranslateInfoBarDelegate() {
+  return this;
+}
+
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
   return prefs_.IsLanguageBlacklisted(GetOriginalLanguageCode());

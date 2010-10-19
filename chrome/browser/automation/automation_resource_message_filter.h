@@ -203,10 +203,7 @@ class AutomationResourceMessageFilter
 
   // Contains information used for completing the request to read cookies from
   // the host coming in from the renderer.
-  struct CookieCompletionInfo {
-    net::CompletionCallback* completion_callback;
-    scoped_refptr<net::CookieStore> cookie_store;
-  };
+  struct CookieCompletionInfo;
 
   // Map of completion callback id to CookieCompletionInfo, which contains the
   // actual callback which is invoked on successful retrieval of cookies from

@@ -74,17 +74,9 @@ class UrlInfo {
 
   // UrlInfo are usually made by the default constructor during
   // initializing of the Predictor's map (of info for Hostnames).
-  UrlInfo()
-      : state_(PENDING),
-        old_prequeue_state_(state_),
-        resolve_duration_(kNullDuration),
-        queue_duration_(kNullDuration),
-        sequence_number_(0),
-        motivation_(NO_PREFETCH_MOTIVATION),
-        was_linked_(false) {
-  }
+  UrlInfo();
 
-  ~UrlInfo() {}
+  ~UrlInfo();
 
   // NeedDnsUpdate decides, based on our internal info,
   // if it would be valuable to attempt to update (prefectch)

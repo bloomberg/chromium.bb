@@ -113,7 +113,7 @@ class CannedBrowsingDataIndexedDBHelper
   virtual void DeleteIndexedDBFile(const FilePath& file_path) {}
 
  private:
-  virtual ~CannedBrowsingDataIndexedDBHelper() {}
+  virtual ~CannedBrowsingDataIndexedDBHelper();
 
   Profile* profile_;
 

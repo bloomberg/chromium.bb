@@ -82,6 +82,10 @@ class AutomationCookieStore : public net::CookieStore {
   DISALLOW_COPY_AND_ASSIGN(AutomationCookieStore);
 };
 
+struct AutomationResourceMessageFilter::CookieCompletionInfo {
+  net::CompletionCallback* completion_callback;
+  scoped_refptr<net::CookieStore> cookie_store;
+};
 
 AutomationResourceMessageFilter::AutomationResourceMessageFilter()
     : channel_(NULL) {

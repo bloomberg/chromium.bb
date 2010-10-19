@@ -215,3 +215,5 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
   callback->Run(indexed_db_info_);
   delete callback;
 }
+
+CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}

@@ -32,7 +32,7 @@ class FileReader : public base::RefCountedThreadSafe<FileReader> {
  private:
   friend class base::RefCountedThreadSafe<FileReader>;
 
-  ~FileReader() {}
+  virtual ~FileReader();
 
   void ReadFileOnBackgroundThread();
   void RunCallback(bool success, const std::string& data);

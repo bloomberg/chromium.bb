@@ -24,16 +24,7 @@ class SkBitmap;
 /////////////////////////////////////////////////////////////////////////////
 class PageUsageData {
  public:
-  explicit PageUsageData(history::URLID id)
-      : id_(id),
-        thumbnail_(NULL),
-        thumbnail_set_(false),
-        thumbnail_pending_(false),
-        favicon_(NULL),
-        favicon_set_(false),
-        favicon_pending_(false),
-        score_(0.0) {
-  }
+  explicit PageUsageData(history::URLID id);
 
   virtual ~PageUsageData();
 

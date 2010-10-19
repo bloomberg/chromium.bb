@@ -85,7 +85,7 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   friend class browser_sync::PasswordModelWorker;
   friend class LivePasswordsSyncTest;
 
-  virtual ~PasswordStore() {}
+  virtual ~PasswordStore();
 
   // Simple container class that represents a login lookup request.
   class GetLoginsRequest {

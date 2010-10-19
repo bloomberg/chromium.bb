@@ -30,6 +30,8 @@ void PackExtensionJob::ClearClient() {
   client_ = NULL;
 }
 
+PackExtensionJob::~PackExtensionJob() {}
+
 void PackExtensionJob::RunOnFileThread() {
   crx_file_out_ = FilePath(root_directory_.value() +
                            chrome::kExtensionFileExtension);

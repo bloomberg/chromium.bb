@@ -48,7 +48,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
  private:
   friend class base::RefCountedThreadSafe<PackExtensionJob>;
 
-  ~PackExtensionJob() {}
+  virtual ~PackExtensionJob();
 
   void RunOnFileThread();
   void ReportSuccessOnClientThread();

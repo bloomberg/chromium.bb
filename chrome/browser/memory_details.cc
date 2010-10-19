@@ -24,6 +24,15 @@
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #endif
 
+ProcessMemoryInformation::ProcessMemoryInformation()
+    : pid(0),
+      num_processes(0),
+      is_diagnostics(false),
+      type(ChildProcessInfo::UNKNOWN_PROCESS) {
+}
+
+ProcessMemoryInformation::~ProcessMemoryInformation() {}
+
 // About threading:
 //
 // This operation will hit no fewer than 3 threads.
@@ -36,7 +45,6 @@
 // one task run for that long on the UI or IO threads.  So, we run the
 // expensive parts of this operation over on the file thread.
 //
-
 void MemoryDetails::StartFetch() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -47,6 +55,8 @@ void MemoryDetails::StartFetch() {
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &MemoryDetails::CollectChildInfoOnIOThread));
 }
+
+MemoryDetails::~MemoryDetails() {}
 
 void MemoryDetails::CollectChildInfoOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

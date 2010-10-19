@@ -58,6 +58,10 @@ const FilePath::CharType kFilePrefix[] = FILE_PATH_LITERAL("History Index ");
 
 }  // namespace
 
+TextDatabase::Match::Match() {}
+
+TextDatabase::Match::~Match() {}
+
 TextDatabase::TextDatabase(const FilePath& path,
                            DBIdent id,
                            bool allow_create)

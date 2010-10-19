@@ -28,8 +28,8 @@ class ExtensionHistoryEventRouter : public NotificationObserver {
  private:
   friend struct DefaultSingletonTraits<ExtensionHistoryEventRouter>;
 
-  ExtensionHistoryEventRouter() {}
-  virtual ~ExtensionHistoryEventRouter() {}
+  ExtensionHistoryEventRouter();
+  virtual ~ExtensionHistoryEventRouter();
 
   // NotificationObserver::Observe.
   virtual void Observe(NotificationType type,

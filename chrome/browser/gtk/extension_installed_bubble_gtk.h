@@ -54,7 +54,7 @@ class ExtensionInstalledBubbleGtk
   ExtensionInstalledBubbleGtk(Extension *extension, Browser *browser,
                               SkBitmap icon);
 
-  ~ExtensionInstalledBubbleGtk() {}
+  virtual ~ExtensionInstalledBubbleGtk();
 
   // Shows the bubble. Called internally via PostTask.
   void ShowInternal();

@@ -973,6 +973,8 @@ MetricEventDurationObserver::MetricEventDurationObserver() {
                  NotificationService::AllSources());
 }
 
+MetricEventDurationObserver::~MetricEventDurationObserver() {}
+
 int MetricEventDurationObserver::GetEventDurationMs(
     const std::string& event_name) {
   EventDurationMap::const_iterator it = durations_.find(event_name);
@@ -1001,6 +1003,8 @@ PageTranslatedObserver::PageTranslatedObserver(AutomationProvider* automation,
   registrar_.Add(this, NotificationType::PAGE_TRANSLATED,
                  Source<TabContents>(tab_contents));
 }
+
+PageTranslatedObserver::~PageTranslatedObserver() {}
 
 void PageTranslatedObserver::Observe(NotificationType type,
                                      const NotificationSource& source,

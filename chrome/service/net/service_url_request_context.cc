@@ -4,6 +4,7 @@
 
 #include "chrome/service/net/service_url_request_context.h"
 
+#include "base/message_loop_proxy.h"
 #include "chrome/service/service_process.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
@@ -15,11 +16,6 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/proxy/proxy_service.h"
-
-ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
-    : io_message_loop_proxy_(
-          g_service_process->io_thread()->message_loop_proxy()) {
-}
 
 ServiceURLRequestContext::ServiceURLRequestContext() {
   host_resolver_ =
@@ -62,3 +58,21 @@ ServiceURLRequestContext::~ServiceURLRequestContext() {
   delete http_auth_handler_factory_;
   delete dnsrr_resolver_;
 }
+
+ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
+    : io_message_loop_proxy_(
+          g_service_process->io_thread()->message_loop_proxy()) {
+}
+
+URLRequestContext* ServiceURLRequestContextGetter::GetURLRequestContext() {
+  if (!url_request_context_)
+    url_request_context_ = new ServiceURLRequestContext();
+  return url_request_context_;
+}
+
+scoped_refptr<base::MessageLoopProxy>
+ServiceURLRequestContextGetter::GetIOMessageLoopProxy() {
+  return io_message_loop_proxy_;
+}
+
+ServiceURLRequestContextGetter::~ServiceURLRequestContextGetter() {}

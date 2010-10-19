@@ -22,6 +22,8 @@ AutomationResourceProxy::~AutomationResourceProxy() {
     tracker_->Remove(this);
 }
 
+AutomationHandleTracker::AutomationHandleTracker() : channel_(NULL) {}
+
 AutomationHandleTracker::~AutomationHandleTracker() {
   // Tell any live objects that the tracker is going away so they don't try to
   // call us when they are being destroyed.

@@ -174,6 +174,9 @@ class UpdateBookmarkFunction : public BookmarksFunction {
 class BookmarksIOFunction : public BookmarksFunction,
                             public SelectFileDialog::Listener {
  public:
+  BookmarksIOFunction();
+  virtual ~BookmarksIOFunction();
+
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params) = 0;
   void MultiFilesSelected(const std::vector<FilePath>& files, void* params);

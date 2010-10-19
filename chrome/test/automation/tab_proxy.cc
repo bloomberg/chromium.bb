@@ -15,6 +15,13 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "googleurl/src/gurl.h"
 
+TabProxy::TabProxy(AutomationMessageSender* sender,
+                   AutomationHandleTracker* tracker,
+                   int handle)
+    : AutomationResourceProxy(tracker, sender, handle) {
+}
+
+
 bool TabProxy::GetTabTitle(std::wstring* title) const {
   if (!is_valid())
     return false;
@@ -798,6 +805,8 @@ void TabProxy::OnChannelError() {
   AutoLock lock(list_lock_);
   FOR_EACH_OBSERVER(TabProxyDelegate, observers_list_, OnChannelError(this));
 }
+
+TabProxy::~TabProxy() {}
 
 bool TabProxy::ExecuteJavaScriptAndGetJSON(const std::string& script,
                                            std::string* json) {

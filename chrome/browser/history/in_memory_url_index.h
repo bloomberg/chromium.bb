@@ -120,18 +120,7 @@ class InMemoryURLIndex {
 
   // Support caching of term character intersections so that we can optimize
   // searches which build upon a previous search.
-  struct TermCharWordSet {
-    TermCharWordSet(Char16Set char_set, WordIDSet word_id_set, bool used)
-        : char_set_(char_set),
-          word_id_set_(word_id_set),
-          used_(used) {}
-
-    bool IsNotUsed() const { return !used_; }
-
-    Char16Set char_set_;
-    WordIDSet word_id_set_;
-    bool used_;  // true if this set has been used for the current term search.
-  };
+  struct TermCharWordSet;
   typedef std::vector<TermCharWordSet> TermCharWordSetVector;
 
   // TODO(rohitrao): Probably replace this with QueryResults.

@@ -51,9 +51,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void ResetVisitedLinks();
   virtual bool FastShutdownIfPossible();
   virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
-  virtual base::ProcessHandle GetHandle() {
-    return base::kNullProcessHandle;
-  }
+  virtual base::ProcessHandle GetHandle();
 
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
 
@@ -82,7 +80,7 @@ class MockRenderProcessHost : public RenderProcessHost {
 
 class MockRenderProcessHostFactory : public RenderProcessHostFactory {
  public:
-  MockRenderProcessHostFactory() {}
+  MockRenderProcessHostFactory();
   virtual ~MockRenderProcessHostFactory();
 
   virtual RenderProcessHost* CreateRenderProcessHost(Profile* profile) const;

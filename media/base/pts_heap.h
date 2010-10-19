@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef MEDIA_BASE_PTS_HEAP_H_
 #define MEDIA_BASE_PTS_HEAP_H_
@@ -36,10 +36,11 @@ namespace media {
 
 class PtsHeap {
  public:
-  PtsHeap() {}
+  PtsHeap();
+  ~PtsHeap();
 
-  void Push(const base::TimeDelta& pts) { queue_.push(pts); }
-  void Pop() { queue_.pop(); }
+  void Push(const base::TimeDelta& pts);
+  void Pop();
 
   const base::TimeDelta& Top() const { return queue_.top(); }
   bool IsEmpty() const { return queue_.empty(); }

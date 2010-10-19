@@ -34,7 +34,7 @@ class ConfigurationPolicyProvider {
 
   explicit ConfigurationPolicyProvider(const StaticPolicyValueMap& policy_map);
 
-  virtual ~ConfigurationPolicyProvider() {}
+  virtual ~ConfigurationPolicyProvider();
 
   // Must be implemented by provider subclasses to specify the
   // provider-specific policy decisions. The preference service

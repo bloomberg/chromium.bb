@@ -12,6 +12,19 @@
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+MockPrinterPage::MockPrinterPage(const void* source_data,
+                                 uint32 source_size,
+                                 const printing::Image& image)
+    : source_size_(source_size),
+      image_(image) {
+  // Create copies of the source data
+  source_data_.reset(new uint8[source_size]);
+  if (source_data_.get())
+    memcpy(source_data_.get(), source_data, source_size);
+}
+
+MockPrinterPage::~MockPrinterPage() {}
+
 MockPrinter::MockPrinter()
   : printable_width_(0),
     printable_height_(0),

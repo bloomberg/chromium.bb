@@ -75,6 +75,8 @@ ExtensionInstalledBubbleGtk::ExtensionInstalledBubbleGtk(Extension *extension,
       NotificationService::AllSources());
 }
 
+ExtensionInstalledBubbleGtk::~ExtensionInstalledBubbleGtk() {}
+
 void ExtensionInstalledBubbleGtk::Observe(NotificationType type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {

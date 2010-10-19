@@ -36,7 +36,7 @@ class DOMUIScreenshotSource : public ChromeURLDataManager::DataSource {
   std::vector<unsigned char> GetScreenshot(const std::string& path);
 
  private:
-  ~DOMUIScreenshotSource() {}
+  virtual ~DOMUIScreenshotSource();
 
 //  scoped_refptr<RefCountedBytes> current_screenshot_;
   std::vector<unsigned char> current_screenshot_;

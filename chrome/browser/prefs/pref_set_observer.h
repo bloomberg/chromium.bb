@@ -20,7 +20,7 @@ class PrefSetObserver : public NotificationObserver {
   // Initialize with an empty set of preferences.
   PrefSetObserver(PrefService* pref_service,
                   NotificationObserver* observer);
-  virtual ~PrefSetObserver() {}
+  virtual ~PrefSetObserver();
 
   // Add a |pref| to the set of preferences to observe.
   void AddPref(const std::string& pref);

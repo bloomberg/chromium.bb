@@ -108,6 +108,8 @@ DOMUIScreenshotSource::DOMUIScreenshotSource(
     current_screenshot_.clear();
 }
 
+DOMUIScreenshotSource::~DOMUIScreenshotSource() {}
+
 void DOMUIScreenshotSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {

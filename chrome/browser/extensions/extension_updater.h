@@ -36,8 +36,8 @@ class ManifestFetchData {
  public:
   static const int kNeverPinged = -1;
 
-  explicit ManifestFetchData(GURL update_url) : base_url_(update_url),
-      full_url_(update_url) {}
+  explicit ManifestFetchData(GURL update_url);
+  ~ManifestFetchData();
 
   // Returns true if this extension information was successfully added. If the
   // return value is false it means the full_url would have become too long, and
@@ -50,9 +50,7 @@ class ManifestFetchData {
   const std::set<std::string>& extension_ids() const { return extension_ids_; }
 
   // Returns true if the given id is included in this manifest fetch.
-  bool Includes(std::string extension_id) const {
-    return extension_ids_.find(extension_id) != extension_ids_.end();
-  }
+  bool Includes(std::string extension_id) const;
 
   // Returns true if a ping parameter was added to full_url for this extension
   // id.

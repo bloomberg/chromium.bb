@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -22,6 +23,8 @@ ManagedPrefsBannerBase::ManagedPrefsBannerBase(PrefService* local_state,
                                                OptionsPage page) {
   Init(local_state, user_prefs, page);
 }
+
+ManagedPrefsBannerBase::~ManagedPrefsBannerBase() {}
 
 void ManagedPrefsBannerBase::AddLocalStatePref(const char* pref) {
   local_state_set_->AddPref(pref);

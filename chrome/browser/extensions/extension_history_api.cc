@@ -82,6 +82,10 @@ void ExtensionHistoryEventRouter::ObserveProfile(Profile* profile) {
   }
 }
 
+ExtensionHistoryEventRouter::ExtensionHistoryEventRouter() {}
+
+ExtensionHistoryEventRouter::~ExtensionHistoryEventRouter() {}
+
 void ExtensionHistoryEventRouter::Observe(NotificationType type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {

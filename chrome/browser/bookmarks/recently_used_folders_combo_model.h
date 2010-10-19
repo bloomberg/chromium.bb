@@ -18,6 +18,7 @@
 class RecentlyUsedFoldersComboModel : public ComboboxModel {
  public:
   RecentlyUsedFoldersComboModel(BookmarkModel* model, const BookmarkNode* node);
+  virtual ~RecentlyUsedFoldersComboModel();
 
   // Overridden from ComboboxModel:
   virtual int GetItemCount();

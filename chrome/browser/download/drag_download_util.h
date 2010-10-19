@@ -42,10 +42,8 @@ net::FileStream* CreateFileStreamForDrop(FilePath* file_path);
 // Implementation of DownloadFileObserver to finalize the download process.
 class PromiseFileFinalizer : public DownloadFileObserver {
  public:
-  explicit PromiseFileFinalizer(DragDownloadFile* drag_file_downloader)
-      : drag_file_downloader_(drag_file_downloader) {
-  }
-  virtual ~PromiseFileFinalizer() { }
+  explicit PromiseFileFinalizer(DragDownloadFile* drag_file_downloader);
+  virtual ~PromiseFileFinalizer();
 
   // DownloadFileObserver methods.
   virtual void OnDownloadCompleted(const FilePath& file_path);

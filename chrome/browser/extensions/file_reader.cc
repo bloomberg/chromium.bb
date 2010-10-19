@@ -22,6 +22,8 @@ void FileReader::Start() {
       NewRunnableMethod(this, &FileReader::ReadFileOnBackgroundThread));
 }
 
+FileReader::~FileReader() {}
+
 void FileReader::ReadFileOnBackgroundThread() {
   std::string data;
   bool success = file_util::ReadFileToString(resource_.GetFilePath(), &data);

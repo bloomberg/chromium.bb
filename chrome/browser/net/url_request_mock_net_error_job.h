@@ -38,19 +38,6 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
 
  private:
   ~URLRequestMockNetErrorJob();
-  struct MockInfo {
-    MockInfo() : ssl_cert(NULL) { }
-    MockInfo(std::wstring base,
-             std::vector<int> errors,
-             net::X509Certificate* ssl_cert)
-        : base(base),
-          errors(errors),
-          ssl_cert(ssl_cert) { }
-
-    std::wstring base;
-    std::vector<int> errors;
-    scoped_refptr<net::X509Certificate> ssl_cert;
-  };
 
   static URLRequest::ProtocolFactory Factory;
 
@@ -62,6 +49,7 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
   // The certificate to use for SSL errors.
   scoped_refptr<net::X509Certificate> ssl_cert_;
 
+  struct MockInfo;
   typedef std::map<GURL, MockInfo> URLMockInfoMap;
   static URLMockInfoMap url_mock_info_map_;
 

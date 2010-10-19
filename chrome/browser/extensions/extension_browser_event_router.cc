@@ -137,6 +137,8 @@ ExtensionBrowserEventRouter::ExtensionBrowserEventRouter()
       focused_window_id_(extension_misc::kUnknownWindowId),
       profile_(NULL) { }
 
+ExtensionBrowserEventRouter::~ExtensionBrowserEventRouter() {}
+
 void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
   RegisterForBrowserNotifications(browser);
 }

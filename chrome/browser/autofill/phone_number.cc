@@ -32,6 +32,10 @@ const int kAutoFillPhoneLength = arraysize(kAutoFillPhoneTypes);
 
 }  // namespace
 
+PhoneNumber::PhoneNumber() {}
+
+PhoneNumber::~PhoneNumber() {}
+
 void PhoneNumber::GetPossibleFieldTypes(const string16& text,
                                         FieldTypeSet* possible_types) const {
   string16 stripped_text(text);

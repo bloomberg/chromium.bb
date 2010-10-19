@@ -74,7 +74,7 @@ class AutomationResourceProxy
 // discard the handle.
 class AutomationHandleTracker {
  public:
-  explicit AutomationHandleTracker() : channel_(NULL) {}
+  explicit AutomationHandleTracker();
   ~AutomationHandleTracker();
 
   // Adds the specified proxy object to the tracker.

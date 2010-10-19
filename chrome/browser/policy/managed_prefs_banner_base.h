@@ -9,10 +9,10 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/options_window.h"
-#include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/common/notification_observer.h"
 
 class PrefService;
+class PrefSetObserver;
 
 namespace policy {
 
@@ -31,6 +31,8 @@ class ManagedPrefsBannerBase : public NotificationObserver {
   // Convenience constructor that fetches the local state PrefService from the
   // global g_browser_process.
   ManagedPrefsBannerBase(PrefService* user_prefs, OptionsPage page);
+
+  virtual ~ManagedPrefsBannerBase();
 
   // Determine whether the banner should be visible.
   bool DetermineVisibility() const;

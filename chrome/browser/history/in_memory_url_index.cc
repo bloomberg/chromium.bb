@@ -33,6 +33,19 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info,
       raw_score(score) {
 }
 
+struct InMemoryURLIndex::TermCharWordSet {
+  TermCharWordSet(Char16Set char_set, WordIDSet word_id_set, bool used)
+      : char_set_(char_set),
+        word_id_set_(word_id_set),
+        used_(used) {}
+
+  bool IsNotUsed() const { return !used_; }
+
+  Char16Set char_set_;
+  WordIDSet word_id_set_;
+  bool used_;  // true if this set has been used for the current term search.
+};
+
 InMemoryURLIndex::InMemoryURLIndex() : history_item_count_(0) {}
 
 InMemoryURLIndex::~InMemoryURLIndex() {}

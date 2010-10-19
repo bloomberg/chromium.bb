@@ -14,6 +14,10 @@ using javascript_utils::JavaScriptPrintf;
 // JavaScriptExecutionController will complain.
 int JavaScriptExecutionController::timeout_ms_ = -1;
 
+JavaScriptExecutionController::JavaScriptExecutionController() {}
+
+JavaScriptExecutionController::~JavaScriptExecutionController() {}
+
 bool JavaScriptExecutionController::ExecuteJavaScript(
     const std::string& script) {
   scoped_ptr<Value> return_value;

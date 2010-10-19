@@ -52,17 +52,10 @@ class ChromeTestProcessMetrics {
 
   base::ProcessHandle process_handle_;
 
+  ~ChromeTestProcessMetrics();
+
  private:
-  explicit ChromeTestProcessMetrics(base::ProcessHandle process) {
-#if !defined(OS_MACOSX)
-    process_metrics_.reset(
-        base::ProcessMetrics::CreateProcessMetrics(process));
-#else
-    process_metrics_.reset(
-        base::ProcessMetrics::CreateProcessMetrics(process, NULL));
-#endif
-    process_handle_ = process;
-  }
+  explicit ChromeTestProcessMetrics(base::ProcessHandle process);
 
   scoped_ptr<base::ProcessMetrics> process_metrics_;
 

@@ -51,6 +51,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
       const std::string& original_language,
       const std::string& target_language);
 
+  virtual ~TranslateInfoBarDelegate();
+
   // Returns the number of languages supported.
   int GetLanguageCount() const;
 
@@ -102,9 +104,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual InfoBarDelegate::Type GetInfoBarType();
-  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() {
-    return this;
-  }
+  virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 
   // Methods called by the Options menu delegate.
   virtual bool IsLanguageBlacklisted();

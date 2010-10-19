@@ -14,6 +14,8 @@ PrefSetObserver::PrefSetObserver(PrefService* pref_service,
   registrar_.Init(pref_service);
 }
 
+PrefSetObserver::~PrefSetObserver() {}
+
 void PrefSetObserver::AddPref(const std::string& pref) {
   if (!prefs_.count(pref) && pref_service_->FindPreference(pref.c_str())) {
     prefs_.insert(pref);

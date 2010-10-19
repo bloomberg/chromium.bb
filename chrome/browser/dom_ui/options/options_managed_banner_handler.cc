@@ -17,6 +17,8 @@ OptionsManagedBannerHandler::OptionsManagedBannerHandler(
   SetupBannerVisibilty();
 }
 
+OptionsManagedBannerHandler::~OptionsManagedBannerHandler() {}
+
 void OptionsManagedBannerHandler::OnUpdateVisibility() {
   // A preference that may be managed has changed.  Update our visibility
   // state.

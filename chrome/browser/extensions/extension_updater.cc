@@ -68,6 +68,12 @@ static const int kMaxUpdateFrequencySeconds = 60 * 60 * 24 * 7;  // 7 days
 // request. We want to stay under 2K because of proxies, etc.
 static const int kExtensionsManifestMaxURLSize = 2000;
 
+ManifestFetchData::ManifestFetchData(GURL update_url)
+    : base_url_(update_url),
+      full_url_(update_url) {
+}
+
+ManifestFetchData::~ManifestFetchData() {}
 
 // The format for request parameters in update checks is:
 //
@@ -124,6 +130,10 @@ bool ManifestFetchData::AddExtension(std::string id, std::string version,
   ping_days_[id] = days;
   full_url_ = GURL(full_url_.possibly_invalid_spec() + extra);
   return true;
+}
+
+bool ManifestFetchData::Includes(std::string extension_id) const {
+  return extension_ids_.find(extension_id) != extension_ids_.end();
 }
 
 bool ManifestFetchData::DidPing(std::string extension_id) const {

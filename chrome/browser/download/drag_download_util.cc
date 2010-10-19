@@ -86,6 +86,13 @@ FileStream* CreateFileStreamForDrop(FilePath* file_path) {
   return NULL;
 }
 
+PromiseFileFinalizer::PromiseFileFinalizer(
+    DragDownloadFile* drag_file_downloader)
+    : drag_file_downloader_(drag_file_downloader) {
+}
+
+PromiseFileFinalizer::~PromiseFileFinalizer() {}
+
 void PromiseFileFinalizer::Cleanup() {
   if (drag_file_downloader_.get())
     drag_file_downloader_ = NULL;

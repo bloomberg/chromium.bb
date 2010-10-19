@@ -510,6 +510,7 @@ class SetCookieCompletion : public net::CompletionCallback {
                       const GURL& url,
                       const std::string& cookie_line,
                       ChromeURLRequestContext* context);
+  virtual ~SetCookieCompletion();
 
   virtual void RunWithParams(const Tuple1<int>& params);
 
@@ -537,6 +538,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
                        ResourceMessageFilter* filter,
                        URLRequestContext* context,
                        bool raw_cookies);
+  virtual ~GetCookiesCompletion();
 
   virtual void RunWithParams(const Tuple1<int>& params);
 

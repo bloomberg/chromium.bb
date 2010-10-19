@@ -51,11 +51,7 @@ class AutoCallbackRunner {
       : callback_(callback) {
   }
 
-  ~AutoCallbackRunner() {
-    if (callback_.get()) {
-      callback_->Run();
-    }
-  }
+  ~AutoCallbackRunner();
 
   Callback0::Type* release() { return callback_.release(); }
 

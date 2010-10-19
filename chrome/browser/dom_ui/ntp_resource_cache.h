@@ -20,7 +20,7 @@ class RefCountedBytes;
 class NTPResourceCache : public NotificationObserver {
  public:
   explicit NTPResourceCache(Profile* profile);
-  virtual ~NTPResourceCache() {}
+  virtual ~NTPResourceCache();
 
   RefCountedBytes* GetNewTabHTML(bool is_off_the_record);
   RefCountedBytes* GetNewTabCSS(bool is_off_the_record);

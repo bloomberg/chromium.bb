@@ -762,6 +762,10 @@ void CreateBookmarkFunction::GetQuotaLimitHeuristics(
   BookmarksQuotaLimitFactory::BuildForCreate(heuristics, profile());
 }
 
+BookmarksIOFunction::BookmarksIOFunction() {}
+
+BookmarksIOFunction::~BookmarksIOFunction() {}
+
 void BookmarksIOFunction::SelectFile(SelectFileDialog::Type type) {
   // Balanced in one of the three callbacks of SelectFileDialog:
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected

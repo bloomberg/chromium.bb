@@ -87,6 +87,10 @@ bool MockRenderProcessHost::SendWithTimeout(IPC::Message* msg, int timeout_ms) {
   return true;
 }
 
+base::ProcessHandle MockRenderProcessHost::GetHandle() {
+  return base::kNullProcessHandle;
+}
+
 bool MockRenderProcessHost::Send(IPC::Message* msg) {
   // Save the message in the sink.
   sink_.OnMessageReceived(*msg);
@@ -118,6 +122,8 @@ void MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
 
 void MockRenderProcessHost::OnChannelConnected(int32 peer_pid) {
 }
+
+MockRenderProcessHostFactory::MockRenderProcessHostFactory() {}
 
 MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
   // Detach this object from MockRenderProcesses to prevent STLDeleteElements()

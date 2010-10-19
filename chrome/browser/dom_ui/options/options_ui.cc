@@ -85,6 +85,8 @@ OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings)
   localized_strings_.reset(localized_strings);
 }
 
+OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
+
 void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
                                            bool is_off_the_record,
                                            int request_id) {
@@ -101,6 +103,10 @@ void OptionsUIHTMLSource::StartDataRequest(const std::string& path,
   std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
 
   SendResponse(request_id, html_bytes);
+}
+
+std::string OptionsUIHTMLSource::GetMimeType(const std::string&) const {
+  return "text/html";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

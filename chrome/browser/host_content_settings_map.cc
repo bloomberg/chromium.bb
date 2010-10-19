@@ -101,6 +101,12 @@ static bool ShouldAllowAllContent(const GURL& url) {
 }
 }  // namespace
 
+
+struct HostContentSettingsMap::ExtendedContentSettings {
+  ContentSettings content_settings;
+  ResourceContentSettings content_settings_for_resources;
+};
+
 // static
 HostContentSettingsMap::Pattern HostContentSettingsMap::Pattern::FromURL(
     const GURL& url) {

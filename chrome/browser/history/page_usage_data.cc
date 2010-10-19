@@ -8,6 +8,17 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 
+PageUsageData::PageUsageData(history::URLID id)
+    : id_(id),
+      thumbnail_(NULL),
+      thumbnail_set_(false),
+      thumbnail_pending_(false),
+      favicon_(NULL),
+      favicon_set_(false),
+      favicon_pending_(false),
+      score_(0.0) {
+}
+
 PageUsageData::~PageUsageData() {
   delete thumbnail_;
   delete favicon_;

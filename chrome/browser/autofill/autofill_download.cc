@@ -25,6 +25,11 @@
 #define AUTO_FILL_QUERY_SERVER_NAME_START_IN_HEADER "SOMESERVER/"
 #endif
 
+struct AutoFillDownloadManager::FormRequestData {
+  std::vector<std::string> form_signatures;
+  AutoFillRequestType request_type;
+};
+
 AutoFillDownloadManager::AutoFillDownloadManager(Profile* profile)
     : profile_(profile),
       observer_(NULL),

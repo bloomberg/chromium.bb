@@ -41,6 +41,14 @@ void UIModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   work_done.Wait();
 }
 
+UIModelWorker::UIModelWorker(MessageLoop* ui_loop)
+    : state_(WORKING),
+      pending_work_(NULL),
+      syncapi_has_shutdown_(false),
+      ui_loop_(ui_loop),
+      syncapi_event_(&lock_) {
+}
+
 UIModelWorker::~UIModelWorker() {
   DCHECK_EQ(state_, STOPPED);
 }

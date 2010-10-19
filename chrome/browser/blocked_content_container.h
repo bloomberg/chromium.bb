@@ -20,6 +20,7 @@ class BlockedContentContainer : public TabContentsDelegate {
  public:
   // Creates a container for a certain TabContents:
   explicit BlockedContentContainer(TabContents* owner);
+  virtual ~BlockedContentContainer();
 
   // Adds a TabContents to this container. |bounds| are the window bounds
   // requested for the TabContents.

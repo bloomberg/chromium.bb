@@ -140,6 +140,8 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   pref_change_registrar_.Add(prefs::kNTPShownSections, this);
 }
 
+NTPResourceCache::~NTPResourceCache() {}
+
 RefCountedBytes* NTPResourceCache::GetNewTabHTML(bool is_off_the_record) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (is_off_the_record) {

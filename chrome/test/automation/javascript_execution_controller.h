@@ -22,8 +22,8 @@ class JavaScriptObjectProxy;
 class JavaScriptExecutionController
     : public base::SupportsWeakPtr<JavaScriptExecutionController> {
  public:
-  JavaScriptExecutionController() {}
-  virtual ~JavaScriptExecutionController() {}
+  JavaScriptExecutionController();
+  virtual ~JavaScriptExecutionController();
 
   // Executes |script| and parse the return value. Returns whether the
   // execution and parsing succeeded.

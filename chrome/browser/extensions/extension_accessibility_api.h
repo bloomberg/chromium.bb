@@ -47,8 +47,7 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
  private:
   friend struct DefaultSingletonTraits<ExtensionAccessibilityEventRouter>;
 
-  ExtensionAccessibilityEventRouter()
-      : enabled_(false) {}
+  ExtensionAccessibilityEventRouter();
   virtual ~ExtensionAccessibilityEventRouter();
 
   // NotificationObserver::Observe.

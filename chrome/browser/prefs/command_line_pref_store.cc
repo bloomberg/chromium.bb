@@ -28,11 +28,15 @@ CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
     : command_line_(command_line),
       prefs_(new DictionaryValue()) {}
 
+CommandLinePrefStore::~CommandLinePrefStore() {}
+
 PrefStore::PrefReadError CommandLinePrefStore::ReadPrefs() {
   ApplySimpleSwitches();
   ValidateProxySwitches();
   return PrefStore::PREF_READ_ERROR_NONE;
 }
+
+DictionaryValue* CommandLinePrefStore::prefs() { return prefs_.get(); }
 
 void CommandLinePrefStore::ApplySimpleSwitches() {
   // Look for each switch we know about and set its preference accordingly.

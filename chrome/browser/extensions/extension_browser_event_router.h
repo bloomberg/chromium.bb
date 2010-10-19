@@ -122,6 +122,7 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void UnregisterForTabNotifications(TabContents* contents);
 
   ExtensionBrowserEventRouter();
+  ~ExtensionBrowserEventRouter();
   friend struct DefaultSingletonTraits<ExtensionBrowserEventRouter>;
 
   NotificationRegistrar registrar_;

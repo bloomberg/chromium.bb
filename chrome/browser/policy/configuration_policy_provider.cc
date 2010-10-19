@@ -21,6 +21,8 @@ ConfigurationPolicyProvider::ConfigurationPolicyProvider(
   }
 }
 
+ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {}
+
 void ConfigurationPolicyProvider::NotifyStoreOfPolicyChange() {
   NotificationService::current()->Notify(
       NotificationType::POLICY_CHANGED,

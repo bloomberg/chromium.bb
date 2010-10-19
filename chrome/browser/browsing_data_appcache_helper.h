@@ -32,7 +32,7 @@ class BrowsingDataAppCacheHelper
 
  protected:
   friend class base::RefCountedThreadSafe<BrowsingDataAppCacheHelper>;
-  virtual ~BrowsingDataAppCacheHelper() {}
+  virtual ~BrowsingDataAppCacheHelper();
 
   scoped_ptr<Callback0::Type> completion_callback_;
   scoped_refptr<appcache::AppCacheInfoCollection> info_collection_;
@@ -71,7 +71,7 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
   virtual void CancelNotification() {}
 
  private:
-  virtual ~CannedBrowsingDataAppCacheHelper() {}
+  virtual ~CannedBrowsingDataAppCacheHelper();
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataAppCacheHelper);
 };

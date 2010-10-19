@@ -12,6 +12,12 @@ AutoTaskRunner::~AutoTaskRunner() {
   }
 }
 
+AutoCallbackRunner::~AutoCallbackRunner() {
+  if (callback_.get()) {
+    callback_->Run();
+  }
+}
+
 Callback0::Type* TaskToCallbackAdapter::NewCallback(Task* task) {
   return new TaskToCallbackAdapter(task);
 }

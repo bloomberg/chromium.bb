@@ -40,6 +40,8 @@ BookmarkCodec::BookmarkCodec()
       maximum_id_(0) {
 }
 
+BookmarkCodec::~BookmarkCodec() {}
+
 Value* BookmarkCodec::Encode(BookmarkModel* model) {
   return Encode(model->GetBookmarkBarNode(), model->other_node());
 }

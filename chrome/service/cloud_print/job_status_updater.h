@@ -39,10 +39,12 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
                    const GURL& cloud_print_server_url,
                    cloud_print::PrintSystem* print_system,
                    Delegate* delegate);
-  virtual ~JobStatusUpdater() {}
+  virtual ~JobStatusUpdater();
+
   // Checks the status of the local print job and sends an update.
   void UpdateStatus();
   void Stop();
+
   // URLFetcher::Delegate implementation.
   virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
                                   const URLRequestStatus& status,

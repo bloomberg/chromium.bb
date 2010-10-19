@@ -28,6 +28,8 @@ void PasswordStore::ReportMetrics() {
   ScheduleTask(NewRunnableMethod(this, &PasswordStore::ReportMetricsImpl));
 }
 
+PasswordStore::~PasswordStore() {}
+
 void PasswordStore::AddLogin(const PasswordForm& form) {
   ScheduleTask(NewRunnableMethod(this, &PasswordStore::AddLoginImpl, form));
 }

@@ -18,6 +18,7 @@
 class CoreOptionsHandler : public OptionsPageUIHandler {
  public:
   CoreOptionsHandler();
+  virtual ~CoreOptionsHandler();
 
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);

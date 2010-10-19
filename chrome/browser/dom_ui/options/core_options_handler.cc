@@ -20,8 +20,9 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 
-CoreOptionsHandler::CoreOptionsHandler() {
-}
+CoreOptionsHandler::CoreOptionsHandler() {}
+
+CoreOptionsHandler::~CoreOptionsHandler() {}
 
 void CoreOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {

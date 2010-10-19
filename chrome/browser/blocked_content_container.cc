@@ -31,6 +31,8 @@ BlockedContentContainer::BlockedContentContainer(TabContents* owner)
     : owner_(owner) {
 }
 
+BlockedContentContainer::~BlockedContentContainer() {}
+
 void BlockedContentContainer::AddTabContents(TabContents* tab_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& bounds,

@@ -14,8 +14,8 @@
 // A form group that stores phone number information.
 class PhoneNumber : public FormGroup {
  public:
-  PhoneNumber() {}
-  virtual ~PhoneNumber() {}
+  PhoneNumber();
+  virtual ~PhoneNumber();
 
   // FormGroup implementation:
   virtual FormGroup* Clone() const = 0;

@@ -18,11 +18,11 @@ class DictionaryValue;
 class CommandLinePrefStore : public PrefStore {
  public:
   explicit CommandLinePrefStore(const CommandLine* command_line);
-  virtual ~CommandLinePrefStore() {}
+  virtual ~CommandLinePrefStore();
 
   // PrefStore methods:
   virtual PrefReadError ReadPrefs();
-  virtual DictionaryValue* prefs() { return prefs_.get(); }
+  virtual DictionaryValue* prefs();
 
  protected:
   // Logs a message and returns false if the proxy switches are

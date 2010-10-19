@@ -57,8 +57,7 @@ class TabProxy : public AutomationResourceProxy,
 
   TabProxy(AutomationMessageSender* sender,
            AutomationHandleTracker* tracker,
-           int handle)
-    : AutomationResourceProxy(tracker, sender, handle) {}
+           int handle);
 
   // Gets the current url of the tab.
   bool GetCurrentURL(GURL* url) const WARN_UNUSED_RESULT;
@@ -410,7 +409,7 @@ class TabProxy : public AutomationResourceProxy,
   void OnMessageReceived(const IPC::Message& message);
   void OnChannelError();
  protected:
-  virtual ~TabProxy() {}
+  virtual ~TabProxy();
 
   // Override JavaScriptExecutionController methods.
   // Executes |script| and gets the response JSON. Returns true on success.

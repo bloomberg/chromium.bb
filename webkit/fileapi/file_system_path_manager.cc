@@ -8,6 +8,7 @@
 #include "base/rand_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
 #include "base/scoped_callback_factory.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
@@ -176,6 +177,8 @@ FileSystemPathManager::FileSystemPathManager(
       is_incognito_(is_incognito),
       allow_file_access_from_files_(allow_file_access_from_files) {
 }
+
+FileSystemPathManager::~FileSystemPathManager() {}
 
 void FileSystemPathManager::GetFileSystemRootPath(
     const GURL& origin_url, fileapi::FileSystemType type,

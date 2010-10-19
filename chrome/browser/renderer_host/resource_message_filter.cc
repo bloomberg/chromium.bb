@@ -1665,6 +1665,8 @@ SetCookieCompletion::SetCookieCompletion(int render_process_id,
       context_(context) {
 }
 
+SetCookieCompletion::~SetCookieCompletion() {}
+
 void SetCookieCompletion::RunWithParams(const Tuple1<int>& params) {
   int result = params.a;
   bool blocked_by_policy = true;
@@ -1702,6 +1704,8 @@ GetCookiesCompletion::GetCookiesCompletion(int render_process_id,
       raw_cookies_(raw_cookies) {
   set_cookie_store(context_->cookie_store());
 }
+
+GetCookiesCompletion::~GetCookiesCompletion() {}
 
 void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
   if (!raw_cookies_) {

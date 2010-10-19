@@ -26,17 +26,7 @@ class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
  public:
   MockPrinterPage(const void* source_data,
                   uint32 source_size,
-                  const printing::Image& image)
-        : source_size_(source_size),
-          image_(image) {
-    // Create copies of the source data
-    source_data_.reset(new uint8[source_size]);
-    if (source_data_.get())
-      memcpy(source_data_.get(), source_data, source_size);
-  }
-
-  ~MockPrinterPage() {
-  }
+                  const printing::Image& image);
 
   int width() const { return image_.size().width(); }
   int height() const { return image_.size().height(); }
@@ -45,6 +35,9 @@ class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
   const printing::Image& image() const { return image_; }
 
  private:
+  friend class base::RefCounted<MockPrinterPage>;
+  virtual ~MockPrinterPage();
+
   uint32 source_size_;
   scoped_array<uint8> source_data_;
   printing::Image image_;

@@ -28,6 +28,9 @@ class TextDatabase {
 
   // Returned from the search function.
   struct Match {
+    Match();
+    ~Match();
+
     // URL of the match.
     GURL url;
 

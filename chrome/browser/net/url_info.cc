@@ -30,6 +30,17 @@ void EnablePredictorDetailedLog(bool enable) {
 // static
 int UrlInfo::sequence_counter = 1;
 
+UrlInfo::UrlInfo()
+    : state_(PENDING),
+      old_prequeue_state_(state_),
+      resolve_duration_(kNullDuration),
+      queue_duration_(kNullDuration),
+      sequence_number_(0),
+      motivation_(NO_PREFETCH_MOTIVATION),
+      was_linked_(false) {
+}
+
+UrlInfo::~UrlInfo() {}
 
 bool UrlInfo::NeedsDnsUpdate() {
   switch (state_) {

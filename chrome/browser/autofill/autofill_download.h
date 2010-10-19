@@ -7,7 +7,6 @@
 #pragma once
 
 #include <map>
-#include <vector>
 #include <string>
 
 #include "base/scoped_vector.h"
@@ -92,10 +91,8 @@ class AutoFillDownloadManager : public URLFetcher::Delegate {
 
  private:
   friend class AutoFillDownloadTestHelper;  // unit-test.
-  struct FormRequestData {
-    std::vector<std::string> form_signatures;
-    AutoFillRequestType request_type;
-  };
+
+  struct FormRequestData;
 
   // Initiates request to AutoFill servers to download/upload heuristics.
   // |form_xml| - form structure XML to upload/download.

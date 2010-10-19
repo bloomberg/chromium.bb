@@ -31,13 +31,7 @@ namespace browser_sync {
 // after the actual syncer pthread has exited.
 class UIModelWorker : public browser_sync::ModelSafeWorker {
  public:
-  explicit UIModelWorker(MessageLoop* ui_loop)
-      : state_(WORKING),
-        pending_work_(NULL),
-        syncapi_has_shutdown_(false),
-        ui_loop_(ui_loop),
-        syncapi_event_(&lock_) {
-  }
+  explicit UIModelWorker(MessageLoop* ui_loop);
   virtual ~UIModelWorker();
 
   // A simple task to signal a waitable event after Run()ning a Closure.

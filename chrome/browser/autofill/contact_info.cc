@@ -23,6 +23,10 @@ static const AutoFillFieldType kAutoFillContactInfoTypes[] = {
 static const size_t kAutoFillContactInfoLength =
     arraysize(kAutoFillContactInfoTypes);
 
+ContactInfo::ContactInfo() {}
+
+ContactInfo::~ContactInfo() {}
+
 FormGroup* ContactInfo::Clone() const {
   return new ContactInfo(*this);
 }
