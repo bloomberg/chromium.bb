@@ -708,10 +708,8 @@ class QueuedReplyServer : public Worker {
   }
 
   virtual void OnNestedTestMsg(Message* reply_msg) {
-    LOG(INFO) << __FUNCTION__ << " Sending reply: "
-              << reply_text_.c_str();
-    SyncChannelNestedTestMsg_String::WriteReplyParams(
-        reply_msg, reply_text_);
+    VLOG(1) << __FUNCTION__ << " Sending reply: " << reply_text_;
+    SyncChannelNestedTestMsg_String::WriteReplyParams(reply_msg, reply_text_);
     Send(reply_msg);
     Done();
   }
@@ -747,8 +745,7 @@ class QueuedReplyClient : public Worker {
     DCHECK(result);
     DCHECK_EQ(response, expected_text_);
 
-    LOG(INFO) << __FUNCTION__ << " Received reply: "
-              << response.c_str();
+    VLOG(1) << __FUNCTION__ << " Received reply: " << response;
     Done();
   }
 

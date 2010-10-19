@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,8 +171,8 @@ void Logging::GetMessageText(uint32 type, std::string* name,
   if (log_function_mapping_[message_class] != NULL) {
     log_function_mapping_[message_class](type, name, message, params);
   } else {
-    DLOG(INFO) << "No logger function associated with message class " <<
-        message_class;
+    DVLOG(1) << "No logger function associated with message class "
+             << message_class;
   }
 }
 

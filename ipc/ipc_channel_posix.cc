@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -684,10 +684,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
               &fds[fds_i], m.header()->num_fds);
           fds_i += m.header()->num_fds;
         }
-#ifdef IPC_MESSAGE_DEBUG_EXTRA
-        DLOG(INFO) << "received message on channel @" << this <<
-                      " with type " << m.type();
-#endif
+        DVLOG(2) << "received message on channel @" << this
+                 << " with type " << m.type();
         if (m.routing_id() == MSG_ROUTING_NONE &&
             m.type() == HELLO_MESSAGE_TYPE) {
           // The Hello message contains only the process id.
@@ -906,10 +904,8 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       message_send_bytes_written_ = 0;
 
       // Message sent OK!
-#ifdef IPC_MESSAGE_DEBUG_EXTRA
-      DLOG(INFO) << "sent message @" << msg << " on channel @" << this <<
-                    " with type " << msg->type();
-#endif
+      DVLOG(2) << "sent message @" << msg << " on channel @" << this
+               << " with type " << msg->type();
       delete output_queue_.front();
       output_queue_.pop();
     }
@@ -918,11 +914,9 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 }
 
 bool Channel::ChannelImpl::Send(Message* message) {
-#ifdef IPC_MESSAGE_DEBUG_EXTRA
-  DLOG(INFO) << "sending message @" << message << " on channel @" << this
-             << " with type " << message->type()
-             << " (" << output_queue_.size() << " in queue)";
-#endif
+  DVLOG(2) << "sending message @" << message << " on channel @" << this
+           << " with type " << message->type()
+           << " (" << output_queue_.size() << " in queue)";
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging::current()->OnSendMessage(message, "");

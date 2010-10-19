@@ -147,11 +147,9 @@ void Channel::ChannelImpl::Close() {
 
 bool Channel::ChannelImpl::Send(Message* message) {
   DCHECK(thread_check_->CalledOnValidThread());
-#ifdef IPC_MESSAGE_DEBUG_EXTRA
-  DLOG(INFO) << "sending message @" << message << " on channel @" << this
-             << " with type " << message->type()
-             << " (" << output_queue_.size() << " in queue)";
-#endif
+  DVLOG(2) << "sending message @" << message << " on channel @" << this
+           << " with type " << message->type()
+           << " (" << output_queue_.size() << " in queue)";
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   Logging::current()->OnSendMessage(message, "");
@@ -360,10 +358,8 @@ bool Channel::ChannelImpl::ProcessIncomingMessages(
       if (message_tail) {
         int len = static_cast<int>(message_tail - p);
         const Message m(p, len);
-#ifdef IPC_MESSAGE_DEBUG_EXTRA
-        DLOG(INFO) << "received message on channel @" << this <<
-                      " with type " << m.type();
-#endif
+        DVLOG(2) << "received message on channel @" << this
+                 << " with type " << m.type();
         if (m.routing_id() == MSG_ROUTING_NONE &&
             m.type() == HELLO_MESSAGE_TYPE) {
           // The Hello message contains only the process id.
@@ -425,10 +421,8 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages(
     if (err == ERROR_IO_PENDING) {
       output_state_.is_pending = true;
 
-#ifdef IPC_MESSAGE_DEBUG_EXTRA
-      DLOG(INFO) << "sent pending message @" << m << " on channel @" <<
-                    this << " with type " << m->type();
-#endif
+      DVLOG(2) << "sent pending message @" << m << " on channel @" << this
+               << " with type " << m->type();
 
       return true;
     }
@@ -436,10 +430,8 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages(
     return false;
   }
 
-#ifdef IPC_MESSAGE_DEBUG_EXTRA
-  DLOG(INFO) << "sent message @" << m << " on channel @" << this <<
-                " with type " << m->type();
-#endif
+  DVLOG(2) << "sent message @" << m << " on channel @" << this
+           << " with type " << m->type();
 
   output_state_.is_pending = true;
   return true;
