@@ -20,7 +20,6 @@
 using base::TimeDelta;
 using base::TimeTicks;
 using media::VideoFrame;
-using std::vector;
 
 namespace {
 
@@ -32,7 +31,7 @@ int num_frames = 500;
 int num_buffers = 50;
 
 double BenchmarkSkia() {
-  vector< scoped_refptr<VideoFrame> > source_frames;
+  std::vector<scoped_refptr<VideoFrame> > source_frames;
   ScopedVector<SkBitmap> dest_frames;
   for (int i = 0; i < num_buffers; i++) {
     scoped_refptr<VideoFrame> source_frame;
@@ -88,8 +87,8 @@ double BenchmarkSkia() {
 }
 
 double BenchmarkFilter(media::ScaleFilter filter) {
-  vector< scoped_refptr<VideoFrame> > source_frames;
-  vector< scoped_refptr<VideoFrame> > dest_frames;
+  std::vector<scoped_refptr<VideoFrame> > source_frames;
+  std::vector<scoped_refptr<VideoFrame> > dest_frames;
 
   for (int i = 0; i < num_buffers; i++) {
     scoped_refptr<VideoFrame> source_frame;

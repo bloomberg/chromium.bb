@@ -65,7 +65,7 @@ void FFmpegVideoDecodeEngine::Initialize(
     direct_rendering_ = codec->capabilities & CODEC_CAP_DR1 ? true : false;
 #endif
     if (direct_rendering_) {
-      DLOG(INFO) << "direct rendering is used";
+      DVLOG(1) << "direct rendering is used";
       allocator_->Initialize(codec_context_, GetSurfaceFormat());
     }
   }
@@ -211,12 +211,10 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
 
   // Log the problem if we can't decode a video frame and exit early.
   if (result < 0) {
-    LOG(INFO) << "Error decoding a video frame with timestamp: "
-              << buffer->GetTimestamp().InMicroseconds() << " us"
-              << " , duration: "
-              << buffer->GetDuration().InMicroseconds() << " us"
-              << " , packet size: "
-              << buffer->GetDataSize() << " bytes";
+    VLOG(1) << "Error decoding a video frame with timestamp: "
+            << buffer->GetTimestamp().InMicroseconds() << " us, duration: "
+            << buffer->GetDuration().InMicroseconds() << " us, packet size: "
+            << buffer->GetDataSize() << " bytes";
     // TODO(jiesun): call event_handler_->OnError() instead.
     event_handler_->ConsumeVideoFrame(video_frame);
     return;

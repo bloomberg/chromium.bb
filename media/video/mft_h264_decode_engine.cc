@@ -127,7 +127,7 @@ static IMFSample* CreateInputSample(const uint8* stream, int size,
     LOG(ERROR) << "Failed to set current length to " << size;
     return NULL;
   }
-  LOG(INFO) << __FUNCTION__ << " wrote " << size << " bytes into input sample";
+  VLOG(1) << __FUNCTION__ << " wrote " << size << " bytes into input sample";
   return sample.Detach();
 }
 
@@ -504,33 +504,32 @@ bool MftH264DecodeEngine::GetStreamsInfoAndBufferReqs() {
     LOG(ERROR) << "Failed to get input stream info";
     return false;
   }
-  LOG(INFO) << "Input stream info: ";
-  LOG(INFO) << "Max latency: " << input_stream_info_.hnsMaxLatency;
-
+  VLOG(1) << "Input stream info:"
+          << "\nMax latency: " << input_stream_info_.hnsMaxLatency
+          << "\nFlags: " << std::hex << std::showbase
+          << input_stream_info_.dwFlags
+          << "\nMin buffer size: " << input_stream_info_.cbSize
+          << "\nMax lookahead: " << input_stream_info_.cbMaxLookahead
+          << "\nAlignment: " << input_stream_info_.cbAlignment;
   // There should be three flags, one for requiring a whole frame be in a
   // single sample, one for requiring there be one buffer only in a single
   // sample, and one that specifies a fixed sample size. (as in cbSize)
-  LOG(INFO) << "Flags: "
-            << std::hex << std::showbase << input_stream_info_.dwFlags;
   CHECK_EQ(input_stream_info_.dwFlags, 0x7u);
-  LOG(INFO) << "Min buffer size: " << input_stream_info_.cbSize;
-  LOG(INFO) << "Max lookahead: " << input_stream_info_.cbMaxLookahead;
-  LOG(INFO) << "Alignment: " << input_stream_info_.cbAlignment;
 
   hr = decode_engine_->GetOutputStreamInfo(0, &output_stream_info_);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get output stream info";
     return false;
   }
-  LOG(INFO) << "Output stream info: ";
+  VLOG(1) << "Output stream info:"
+          << "\nFlags: " << std::hex << std::showbase
+          << output_stream_info_.dwFlags
+          << "\nMin buffer size: " << output_stream_info_.cbSize
+          << "\nAlignment: " << output_stream_info_.cbAlignment;
   // The flags here should be the same and mean the same thing, except when
   // DXVA is enabled, there is an extra 0x100 flag meaning decoder will
   // allocate its own sample.
-  LOG(INFO) << "Flags: "
-            << std::hex << std::showbase << output_stream_info_.dwFlags;
   CHECK_EQ(output_stream_info_.dwFlags, use_dxva_ ? 0x107u : 0x7u);
-  LOG(INFO) << "Min buffer size: " << output_stream_info_.cbSize;
-  LOG(INFO) << "Alignment: " << output_stream_info_.cbAlignment;
 
   return true;
 }
@@ -565,7 +564,7 @@ bool MftH264DecodeEngine::DoDecode() {
 
   IMFCollection* events = output_data_buffer.pEvents;
   if (events != NULL) {
-    LOG(INFO) << "Got events from ProcessOuput, but discarding";
+    VLOG(1) << "Got events from ProcessOuput, but discarding";
     events->Release();
   }
 
@@ -581,11 +580,11 @@ bool MftH264DecodeEngine::DoDecode() {
         // event_handler_->OnFormatChange(info_.stream_info);
         event_handler_->ProduceVideoSample(NULL);
         return true;
-      } else {
-        event_handler_->OnError();
-        return false;
       }
-    } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
+      event_handler_->OnError();
+      return false;
+    }
+    if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
       if (state_ == kEosDrain) {
         // No more output from the decoder. Notify EOS and stop playback.
         scoped_refptr<VideoFrame> frame;
@@ -596,12 +595,11 @@ bool MftH264DecodeEngine::DoDecode() {
       }
       event_handler_->ProduceVideoSample(NULL);
       return true;
-    } else {
-      LOG(ERROR) << "Unhandled error in DoDecode()";
-      state_ = MftH264DecodeEngine::kStopped;
-      event_handler_->OnError();
-      return false;
     }
+    LOG(ERROR) << "Unhandled error in DoDecode()";
+    state_ = MftH264DecodeEngine::kStopped;
+    event_handler_->OnError();
+    return false;
   }
 
   // We succeeded in getting an output sample.
@@ -657,32 +655,31 @@ bool MftH264DecodeEngine::DoDecode() {
         NewRunnableMethod(this, &MftH264DecodeEngine::OnUploadVideoFrameDone,
                           surface, output_frames_[0]));
     return true;
-  } else {
-    // TODO(hclam): Remove this branch.
-    // Not DXVA.
-    VideoFrame::CreateFrame(info_.stream_info.surface_format,
-                            info_.stream_info.surface_width,
-                            info_.stream_info.surface_height,
-                            TimeDelta::FromMicroseconds(timestamp),
-                            TimeDelta::FromMicroseconds(duration),
-                            &frame);
-    if (!frame.get()) {
-      LOG(ERROR) << "Failed to allocate video frame for yuv plane";
-      event_handler_->OnError();
-      return true;
-    }
-    uint8* src_y;
-    DWORD max_length, current_length;
-    HRESULT hr = output_buffer->Lock(&src_y, &max_length, &current_length);
-    if (FAILED(hr))
-      return true;
-    uint8* dst_y = static_cast<uint8*>(frame->data(VideoFrame::kYPlane));
-
-    memcpy(dst_y, src_y, current_length);
-    CHECK(SUCCEEDED(output_buffer->Unlock()));
-    event_handler_->ConsumeVideoFrame(frame);
+  }
+  // TODO(hclam): Remove this branch.
+  // Not DXVA.
+  VideoFrame::CreateFrame(info_.stream_info.surface_format,
+                          info_.stream_info.surface_width,
+                          info_.stream_info.surface_height,
+                          TimeDelta::FromMicroseconds(timestamp),
+                          TimeDelta::FromMicroseconds(duration),
+                          &frame);
+  if (!frame.get()) {
+    LOG(ERROR) << "Failed to allocate video frame for yuv plane";
+    event_handler_->OnError();
     return true;
   }
+  uint8* src_y;
+  DWORD max_length, current_length;
+  hr = output_buffer->Lock(&src_y, &max_length, &current_length);
+  if (FAILED(hr))
+    return true;
+  uint8* dst_y = static_cast<uint8*>(frame->data(VideoFrame::kYPlane));
+
+  memcpy(dst_y, src_y, current_length);
+  CHECK(SUCCEEDED(output_buffer->Unlock()));
+  event_handler_->ConsumeVideoFrame(frame);
+  return true;
 }
 
 void MftH264DecodeEngine::OnUploadVideoFrameDone(

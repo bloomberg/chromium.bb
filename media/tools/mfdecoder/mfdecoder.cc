@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifdef WINVER
 #undef WINVER
@@ -111,7 +111,7 @@ IMFSample* MFDecoder::ReadVideoSample() {
       return NULL;
     }
     if (output_flags & MF_SOURCE_READERF_ENDOFSTREAM) {
-      LOG(INFO) << "Video sample reading has reached the end of stream";
+      VLOG(1) << "Video sample reading has reached the end of stream";
       end_of_stream_ = true;
       return NULL;
     }
@@ -167,7 +167,7 @@ bool MFDecoder::InitSourceReader(const wchar_t* source_url,
     LOG(ERROR) << "Failed to create source reader";
     return false;
   }
-  LOG(INFO) << "Source reader created";
+  VLOG(1) << "Source reader created";
   return true;
 }
 
@@ -226,7 +226,7 @@ bool MFDecoder::SelectVideoStreamOnly() {
           return false;
         }
         video_stream_index_ = stream_index;
-        LOG(INFO) << "Video stream is at " << video_stream_index_;
+        VLOG(1) << "Video stream is at " << video_stream_index_;
       }
     } else if (hr == MF_E_INVALIDSTREAMNUMBER) {
       break;  // No more streams, quit.
@@ -253,22 +253,17 @@ bool MFDecoder::InitVideoInfo(IDirect3DDeviceManager9* dev_manager) {
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to determine video subtype";
     return false;
-  } else {
-    if (video_subtype == MFVideoFormat_H264) {
-      LOG(INFO) << "Video subtype is H.264";
-    } else {
-      LOG(INFO) << "Video subtype is NOT H.264";
-    }
   }
+  VLOG(1) << "Video subtype is "
+          << ((video_subtype == MFVideoFormat_H264) ? "" : "NOT ") << "H.264";
   hr = MFGetAttributeSize(video_type, MF_MT_FRAME_SIZE,
                           reinterpret_cast<UINT32*>(&width_),
                           reinterpret_cast<UINT32*>(&height_));
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to determine frame size";
     return false;
-  } else {
-    LOG(INFO) << "Video width: " << width_ << ", height: " << height_;
   }
+  VLOG(1) << "Video width: " << width_ << ", height: " << height_;
 
   // Try to change to YV12 output format.
   const GUID kOutputVideoSubtype = MFVideoFormat_YV12;
@@ -300,9 +295,8 @@ bool MFDecoder::InitVideoInfo(IDirect3DDeviceManager9* dev_manager) {
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to change output video format and determine stride";
     return false;
-  } else {
-    LOG(INFO) << "IMFMediaBuffer stride: " << mfbuffer_stride_;
   }
+  VLOG(1) << "IMFMediaBuffer stride: " << mfbuffer_stride_;
 
   // Send a message to the decoder to tell it to use DXVA2.
   if (use_dxva2_) {

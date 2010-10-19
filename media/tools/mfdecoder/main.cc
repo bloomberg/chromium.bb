@@ -446,7 +446,7 @@ int main(int argc, char** argv) {
     usage();
     return -1;
   }
-  LOG(INFO) << "use_dxva2: " << use_dxva2;
+  VLOG(1) << "use_dxva2: " << use_dxva2;
 
   g_render_to_window = false;
   g_render_asap = false;
@@ -462,8 +462,8 @@ int main(int argc, char** argv) {
     usage();
     return -1;
   }
-  LOG(INFO) << "g_render_to_window: " << g_render_to_window;
-  LOG(INFO) << "g_render_asap: " << g_render_asap;
+  VLOG(1) << "g_render_to_window: " << g_render_to_window
+          << "\ng_render_asap: " << g_render_asap;
 
   scoped_array<wchar_t> file_name(ConvertASCIIStringToUnicode(argv[argc-1]));
   if (file_name.get() == NULL) {
@@ -528,8 +528,8 @@ int main(int argc, char** argv) {
   }
   base::Time start(base::Time::Now());
   printf("Decoding started\n");
-  LOG(INFO) << "Decoding " << file_name.get()
-            << " started at " << start.ToTimeT();
+  VLOG(1) << "Decoding " << file_name.get()
+          << " started at " << start.ToTimeT();
 
   base::AtExitManager exit_manager;
   MessageLoopForUI message_loop;
@@ -544,19 +544,15 @@ int main(int argc, char** argv) {
 
   printf("Decoding finished\n");
   base::Time end(base::Time::Now());
-  LOG(INFO) << "Decoding finished at " << end.ToTimeT();
-  LOG(INFO) << "Took " << (end-start).InMilliseconds() << "ms";
-  LOG(INFO) << "Number of frames processed: " << g_num_frames;
-  LOG(INFO) << "Decode time: " << g_decode_time->InMilliseconds() << "ms";
-  LOG(INFO) << "Average decode time: "
-            << (g_num_frames == 0 ?
-                0 :
-                g_decode_time->InMillisecondsF() / g_num_frames);
-  LOG(INFO) << "Render time: " << g_render_time->InMilliseconds() << "ms";
-  LOG(INFO) << "Average render time: "
-            << (g_num_frames == 0 ?
-                0 :
-                g_render_time->InMillisecondsF() / g_num_frames);
+  VLOG(1) << "Decoding finished at " << end.ToTimeT()
+          << "\nTook " << (end-start).InMilliseconds() << "ms"
+          << "\nNumber of frames processed: " << g_num_frames
+          << "\nDecode time: " << g_decode_time->InMilliseconds() << "ms"
+          << "\nAverage decode time: " << ((g_num_frames == 0) ?
+              0 : (g_decode_time->InMillisecondsF() / g_num_frames))
+          << "\nRender time: " << g_render_time->InMilliseconds() << "ms"
+          << "\nAverage render time: " << ((g_num_frames == 0) ?
+              0 : (g_render_time->InMillisecondsF() / g_num_frames));
   printf("Normal termination\n");
   delete g_decode_time;
   delete g_render_time;
