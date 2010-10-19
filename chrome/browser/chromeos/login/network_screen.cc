@@ -151,6 +151,7 @@ void NetworkScreen::OnConnectionTimeout() {
                             UTF16ToWide(network_id_)),
       l10n_util::GetString(IDS_NETWORK_SELECTION_ERROR_HELP),
       this);
+  network_control->RequestFocus();
 }
 
 void NetworkScreen::UpdateStatus(NetworkLibrary* network) {

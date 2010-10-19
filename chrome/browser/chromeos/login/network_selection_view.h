@@ -70,7 +70,11 @@ class NetworkSelectionView : public views::View,
 
  protected:
   // Overridden from views::View.
+  virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual void OnLocaleChanged();
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+    return true;
+  }
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
@@ -82,8 +86,7 @@ class NetworkSelectionView : public views::View,
   // Add screen controls to the contents layout specified.
   // Based on state (connecting to the network or not)
   // different controls are added.
-  void AddControlsToLayout(const gfx::Size& size,
-                           views::GridLayout* contents_layout);
+  void AddControlsToLayout(views::GridLayout* contents_layout);
 
   // Initializes grid layout of the screen. Called on language change too.
   void InitLayout();
@@ -95,7 +98,10 @@ class NetworkSelectionView : public views::View,
   // Updates text on label with currently connecting network.
   void UpdateConnectingNetworkLabel();
 
-  // View that contains defines screen contents.
+  // View that defines FillLayout for the whole screen (contents & title).
+  views::View* entire_screen_view_;
+
+  // View that contains screen contents (except title).
   views::View* contents_view_;
 
   // Screen controls.

@@ -35,6 +35,7 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
 
   // NetworkScreenDelegate implementation:
   virtual void ClearErrors();
+  virtual bool is_error_shown() { return bubble_ != NULL; }
   virtual LanguageSwitchMenu* language_switch_menu() {
     return &language_switch_menu_;
   }

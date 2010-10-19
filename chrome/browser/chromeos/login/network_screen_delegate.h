@@ -27,6 +27,9 @@ class NetworkScreenDelegate : public views::ButtonListener,
   // Cleares all error notifications.
   virtual void ClearErrors() = 0;
 
+  // True is MessageBubble with error message is shown.
+  virtual bool is_error_shown() = 0;
+
   virtual LanguageSwitchMenu* language_switch_menu() = 0;
   virtual KeyboardSwitchMenu* keyboard_switch_menu() = 0;
 
