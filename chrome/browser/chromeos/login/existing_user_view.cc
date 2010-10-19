@@ -9,11 +9,9 @@
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
 #include "views/focus/focus_manager.h"
-#include "views/grid_layout.h"
+#include "views/fill_layout.h"
 
 namespace chromeos {
-
-using views::GridLayout;
 
 // Textfield with custom processing for Tab/Shift+Tab to select entries.
 class UserEntryTextfield : public views::Textfield {
@@ -61,21 +59,15 @@ ExistingUserView::ExistingUserView(UserController* uc)
 
 void ExistingUserView::RecreateFields() {
   if (password_field_ == NULL) {
+    SetLayoutManager(new views::FillLayout);
     password_field_ = new UserEntryTextfield(user_controller_,
                                              views::Textfield::STYLE_PASSWORD);
     password_field_->SetFocusable(true);
     password_field_->SetController(user_controller_);
+    AddChildView(password_field_);
   }
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
-  GridLayout* layout = new GridLayout(this);
-  // TODO(nkostylev): Switch to FillLayout.
-  SetLayoutManager(layout);
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
-  layout->StartRow(0, 0);
-  layout->AddView(password_field_);
   Layout();
   SchedulePaint();
 }

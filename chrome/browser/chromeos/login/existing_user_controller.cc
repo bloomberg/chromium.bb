@@ -318,6 +318,7 @@ void ExistingUserController::OnUserSelected(UserController* source) {
   if (new_selected_index != selected_view_index_ &&
       selected_view_index_ != kNotSelected) {
     controllers_[selected_view_index_]->ClearAndEnableFields();
+    controllers_[new_selected_index]->ClearAndEnableFields();
     login_performer_.reset(NULL);
     num_login_attempts_ = 0;
   }

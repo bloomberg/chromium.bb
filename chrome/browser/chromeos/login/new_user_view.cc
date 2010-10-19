@@ -15,7 +15,6 @@
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -270,6 +269,7 @@ void NewUserView::OnLocaleChanged() {
 
   Layout();
   SchedulePaint();
+  RequestFocus();
 }
 
 void NewUserView::RequestFocus() {
