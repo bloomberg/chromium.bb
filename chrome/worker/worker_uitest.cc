@@ -270,7 +270,8 @@ TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
-TEST_F(WorkerTest, WorkerCloseFast) {
+// Flaky, http://crbug.com/59780.
+TEST_F(WorkerTest, FLAKY_WorkerCloseFast) {
   RunWorkerFastLayoutTest("worker-close.html");
 }
 
