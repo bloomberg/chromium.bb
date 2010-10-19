@@ -47,15 +47,15 @@ class TemplateURLFetcherTest : public testing::Test {
   TemplateURLFetcherTest();
 
   virtual void SetUp() {
-    ASSERT_TRUE(test_server_.Start());
-
     test_util_.SetUp();
     test_util_.StartIOThread();
+    ASSERT_TRUE(test_util_.profile());
     test_util_.profile()->CreateTemplateURLFetcher();
     ASSERT_TRUE(test_util_.profile()->GetTemplateURLFetcher());
 
     test_util_.profile()->CreateRequestContext();
     ASSERT_TRUE(test_util_.profile()->GetRequestContext());
+    ASSERT_TRUE(test_server_.Start());
   }
 
   virtual void TearDown() {

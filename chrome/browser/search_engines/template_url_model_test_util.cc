@@ -112,7 +112,7 @@ void TemplateURLModelTestingProfile::SetUp() {
 
   FilePath path = temp_dir_.path().AppendASCII("TestDataService.db");
   service_ = new WebDataService;
-  EXPECT_TRUE(service_->InitWithPath(path));
+  ASSERT_TRUE(service_->InitWithPath(path));
 }
 
 void TemplateURLModelTestingProfile::TearDown() {
@@ -128,7 +128,8 @@ void TemplateURLModelTestingProfile::TearDown() {
   io_thread_.Stop();
 
   // Clean up the test directory.
-  service_->Shutdown();
+  if (service_.get())
+    service_->Shutdown();
   // Note that we must ensure the DB thread is stopped after WDS
   // shutdown (so it can commit pending transactions) but before
   // deleting the test profile directory, otherwise we may not be
@@ -152,8 +153,10 @@ void TemplateURLModelTestUtil::SetUp() {
 }
 
 void TemplateURLModelTestUtil::TearDown() {
-  profile_->TearDown();
-  profile_.reset();
+  if (profile_.get()) {
+    profile_->TearDown();
+    profile_.reset();
+  }
   TemplateURLRef::SetGoogleBaseURL(NULL);
 
   // Flush the message loop to make Purify happy.
