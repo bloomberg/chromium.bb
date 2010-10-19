@@ -99,7 +99,7 @@ class GpuChannelHost : public IPC::Channel::Listener,
 
   // This is a MessageFilter to intercept IPC messages and distribute them
   // to the corresponding GpuVideoDecoderHost.
-  scoped_ptr<GpuVideoServiceHost> gpu_video_service_host_;
+  scoped_refptr<GpuVideoServiceHost> gpu_video_service_host_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelHost);
 };
