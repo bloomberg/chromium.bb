@@ -836,4 +836,67 @@ TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
   file_util::DieFileDie(temp_file_path, false);
 }
 
+// Test fixture for testing if http header works for supported content types
+class HttpHeaderTest : public MockIEEventSinkTest, public testing::Test {
+ public:
+  HttpHeaderTest() {}
+
+  void HeaderTestWithData(const char* content_type, const char* data) {
+    const wchar_t* relative_url = L"/header_test";
+    const char* kHeaderFormat =
+        "HTTP/1.1 200 OK\r\n"
+        "Connection: close\r\n"
+        "Content-Type: %s\r\n"
+        "X-UA-Compatible: chrome=1\r\n";
+    std::string header = StringPrintf(kHeaderFormat, content_type);
+    std::wstring url = server_mock_.Resolve(relative_url);
+    EXPECT_CALL(server_mock_, Get(_, StrEq(relative_url), _))
+        .WillRepeatedly(SendFast(header, data));
+
+    InSequence expect_in_sequence_for_scope;
+
+    ie_mock_.ExpectNavigation(IN_CF, url);
+    EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(url)))
+        .WillOnce(CloseBrowserMock(&ie_mock_));
+
+    LaunchIEAndNavigate(url);
+  }
+};
+
+const char* kXmlContent =
+  "<tree>"
+    "<node href=\"root.htm\" text=\"Root\">"
+      "<node href=\"child1.htm\" text=\"Child 1\" />"
+      "<node href=\"child2.htm\" text=\"Child 2\" />"
+    "</node>"
+  "</tree>";
+
+TEST_F(HttpHeaderTest, ApplicationXhtml) {
+  HeaderTestWithData("application/xhtml+xml", kXmlContent);
+}
+
+TEST_F(HttpHeaderTest, ApplicationXml) {
+  HeaderTestWithData("application/xml", kXmlContent);
+}
+
+TEST_F(HttpHeaderTest, TextXml) {
+  HeaderTestWithData("text/xml", kXmlContent);
+}
+
+const char* kImageSvg =
+  "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" "
+      "\"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">"
+  "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"100%\" height=\"100%\">"
+    "<rect height=\"100\" width=\"300\" "
+        "style=\"fill:rgb(0,0,255);stroke-width:2;\"/>"
+  "</svg>";
+
+TEST_F(HttpHeaderTest, DISABLED_ImageSvg) {
+  HeaderTestWithData("image/svg", kImageSvg);
+}
+
+TEST_F(HttpHeaderTest, ImageSvgXml) {
+  HeaderTestWithData("image/svg+xml", kImageSvg);
+}
+
 }  // namespace chrome_frame_test
